@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Pack Weight Checklist"
+description = "Interactive backpacking gear weight tracker with live totals and pie chart"
+version = "1.0.0"
+id = "artifacts/pack-checklist"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20351
+
+[services.development]
+run = "pnpm --filter @workspace/pack-checklist run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pack-checklist", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/pack-checklist/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20351"
+BASE_PATH = "/"
