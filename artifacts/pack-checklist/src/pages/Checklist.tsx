@@ -9,6 +9,7 @@ import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
+import { ScanGearPanel } from '../components/ScanGearPanel';
 import { RotateCcw, Tent, Printer, Share2, LogOut, User, Shield, Plus, Check, X } from 'lucide-react';
 
 function UnitToggle() {
@@ -272,6 +273,12 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 data={data}
                 categoryOrder={categoryOrder}
                 categoryMeta={categoryMeta}
+              />
+
+              <ScanGearPanel
+                userId={userId}
+                categoryOrder={categoryOrder}
+                onAddItem={(category, prefill) => addItem(category, prefill)}
               />
             </div>
           </div>

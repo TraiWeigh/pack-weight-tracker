@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { GearItem, CategoryMeta } from '../hooks/usePackData';
 import { GearRow } from './GearRow';
-import { calcTotalOz, formatWeight } from '../lib/weightUtils';
+import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUtils';
+import { useUnit } from '../context/UnitContext';
 import { ChevronDown, ChevronRight, Plus, ChevronUp, Trash2 } from 'lucide-react';
 
 interface GearCategoryProps {
@@ -26,13 +27,16 @@ export function GearCategory({
 }: GearCategoryProps) {
   const [isOpen, setIsOpen] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { system } = useUnit();
 
   const categoryTotalOz = items
     .filter(i => i.checked)
     .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
 
-  const displayOz  = formatWeight(categoryTotalOz, 'oz');
-  const displayLbs = formatWeight(categoryTotalOz, 'lbs');
+  const su = smallUnit(system); // oz or g
+  const lu = largeUnit(system); // lbs or kg
+  const displaySmall = formatWeight(categoryTotalOz, system, 'small');
+  const displayLarge = formatWeight(categoryTotalOz, system, 'large');
   const packedCount = items.filter(i => i.checked).length;
 
   const stopProp = (e: React.MouseEvent) => e.stopPropagation();
@@ -122,13 +126,13 @@ export function GearCategory({
           {/* Weight display */}
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 text-right ml-2 pl-2 border-l border-border/50">
             <div className="flex items-baseline gap-1">
-              <span className="font-mono font-bold text-primary tabular-nums">{displayOz}</span>
-              <span className="text-xs font-medium text-muted-foreground">oz</span>
+              <span className="font-mono font-bold text-primary tabular-nums">{displaySmall}</span>
+              <span className="text-xs font-medium text-muted-foreground">{su}</span>
             </div>
             <div className="hidden sm:flex items-baseline gap-1">
               <span className="text-muted-foreground/30">/</span>
-              <span className="font-mono font-medium text-muted-foreground tabular-nums">{displayLbs}</span>
-              <span className="text-[10px] font-medium text-muted-foreground">lbs</span>
+              <span className="font-mono font-medium text-muted-foreground tabular-nums">{displayLarge}</span>
+              <span className="text-[10px] font-medium text-muted-foreground">{lu}</span>
             </div>
           </div>
         </div>

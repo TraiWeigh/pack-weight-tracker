@@ -159,14 +159,19 @@ export function usePackData(userId?: string) {
     });
   }, []);
 
-  const addItem = useCallback((category: string) => {
+  const addItem = useCallback((category: string, prefill?: Partial<GearItem>) => {
     setStore(prev => ({
       ...prev,
       items: {
         ...prev.items,
         [category]: [...(prev.items[category] || []), {
           id: crypto.randomUUID(),
-          sub: '', desc: '', weightOz: 0, qty: 1, checked: true, expendable: false,
+          sub: prefill?.sub ?? '',
+          desc: prefill?.desc ?? '',
+          weightOz: prefill?.weightOz ?? 0,
+          qty: prefill?.qty ?? 1,
+          checked: prefill?.checked ?? true,
+          expendable: prefill?.expendable ?? false,
         }],
       },
     }));
