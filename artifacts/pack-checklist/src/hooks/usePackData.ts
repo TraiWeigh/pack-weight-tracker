@@ -22,13 +22,15 @@ export const CATEGORY_ORDER = [
   "Clothing Packed",
   "Kitchen",
   "Electronics",
-  "Toiletries + Med",
+  "Toiletries",
+  "Med Kit",
+  "Repair Kit",
   "Hydration",
   "Clothing Worn",
   "Dog Pack"
 ];
 
-const STORAGE_KEY = 'pack-checklist-v2';
+const STORAGE_KEY = 'pack-checklist-v3';
 
 // Groups where only one item can be checked at a time.
 // subs: the sub-type values that compete with each other within that category.

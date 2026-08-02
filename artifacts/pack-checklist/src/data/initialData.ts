@@ -68,15 +68,15 @@ export const INITIAL_DATA = {
     { sub: "Air Pump", desc: "GIGA Pump", weightOz: 1.0, qty: 1, checked: false, expendable: false },
     { sub: "Thermometer", desc: "Govee Bluetooth Thermometer", weightOz: 0.87, qty: 1, checked: false, expendable: false },
   ],
-  "Toiletries + Med": [
+  "Toiletries": [
     { sub: "Toothbrush", desc: "", weightOz: 0, qty: 1, checked: false, expendable: false },
     { sub: "Toothpaste", desc: "", weightOz: 0, qty: 1, checked: false, expendable: true },
     { sub: "Floss", desc: "", weightOz: 0, qty: 1, checked: false, expendable: true },
     { sub: "Chapstick", desc: "", weightOz: 0, qty: 1, checked: false, expendable: false },
     { sub: "Sunscreen", desc: "", weightOz: 3.0, qty: 1, checked: false, expendable: true },
-    { sub: "Med Kit", desc: "", weightOz: 0, qty: 1, checked: false, expendable: false },
-    { sub: "Repair Kit", desc: "", weightOz: 0, qty: 1, checked: false, expendable: false },
   ],
+  "Med Kit": [],
+  "Repair Kit": [],
   "Hydration": [
     { sub: "Water Bottle", desc: "CNOC water bottle 1L", weightOz: 3.2, qty: 2, checked: true, expendable: false },
     { sub: "Water Bottle", desc: "Smart Water Bottle 1L Empty", weightOz: 1.2, qty: 4, checked: false, expendable: false },
