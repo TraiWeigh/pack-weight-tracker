@@ -55,10 +55,14 @@ export const GearRow = memo(function GearRow({ item, category, updateItem, remov
         </label>
       </div>
 
-      {/* Sub-type label */}
-      <div className="text-xs sm:text-sm font-medium text-muted-foreground w-20 sm:w-28 truncate select-none">
-        {item.sub || '-'}
-      </div>
+      {/* Sub-type (editable) */}
+      <input
+        type="text"
+        value={item.sub}
+        onChange={(e) => updateItem(category, item.id, { sub: e.target.value })}
+        placeholder="Type"
+        className="text-xs sm:text-sm font-medium text-muted-foreground w-20 sm:w-28 bg-transparent focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate placeholder:text-muted-foreground/30 transition-colors hover:bg-black/5"
+      />
 
       {/* Description */}
       <input
