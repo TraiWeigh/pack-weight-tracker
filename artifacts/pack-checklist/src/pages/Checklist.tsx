@@ -7,7 +7,9 @@ import { PrintLayout } from '../components/PrintLayout';
 import { MailingListModal, hasSeenMailingPrompt } from '../components/MailingListModal';
 import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
-import { RotateCcw, Tent, Printer, Share2, LogOut, User } from 'lucide-react';
+import { useLocation } from 'wouter';
+import { isAdmin } from './AdminPage';
+import { RotateCcw, Tent, Printer, Share2, LogOut, User, Shield } from 'lucide-react';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
@@ -50,6 +52,8 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
   const [sharing, setSharing] = useState(false);
   const [showMailingModal, setShowMailingModal] = useState(() => !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [, setLocation] = useLocation();
+  const admin = isAdmin(userEmail);
 
   const handleReset = () => {
     resetToDefaults();
@@ -134,7 +138,16 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                       <div className="px-3 py-2 border-b border-border">
                         <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                       </div>
+                      {admin && (
                       <button
+                        onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                      >
+                        <Shield className="w-3.5 h-3.5" />
+                        Admin Panel
+                      </button>
+                    )}
+                    <button
                         onClick={handleSignOut}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-colors"
                       >

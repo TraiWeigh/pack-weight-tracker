@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import Checklist from './pages/Checklist';
 import LandingPage from './pages/LandingPage';
+import AdminPage from './pages/AdminPage';
 import NotFound from '@/pages/not-found';
 
 // REQUIRED — copy verbatim per Clerk skill
@@ -163,6 +164,7 @@ function ClerkProviderWithRoutes() {
           {/* REQUIRED — /*? matches both bare URL and Clerk's OAuth sub-paths */}
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route path="/admin" component={AdminPage} />
           <Route component={NotFound} />
         </Switch>
         <Toaster />
