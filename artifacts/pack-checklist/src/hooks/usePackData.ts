@@ -25,10 +25,10 @@ export const CATEGORY_ORDER = [
   "Toiletries + Med",
   "Hydration",
   "Clothing Worn",
-  "Dutch's Carry"
+  "Dog Pack"
 ];
 
-const STORAGE_KEY = 'pack-checklist-v1';
+const STORAGE_KEY = 'pack-checklist-v2';
 
 // Helper to seed IDs
 const seedInitialData = (): PackState => {

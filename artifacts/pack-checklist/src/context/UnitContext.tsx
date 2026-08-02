@@ -1,19 +1,18 @@
 import React, { createContext, useContext, useState } from 'react';
+import { UnitSystem } from '../lib/weightUtils';
 
 type UnitContextType = {
-  unit: 'oz' | 'lbs';
-  toggleUnit: () => void;
+  system: UnitSystem;
+  setSystem: (s: UnitSystem) => void;
 };
 
 const UnitContext = createContext<UnitContextType | undefined>(undefined);
 
 export function UnitProvider({ children }: { children: React.ReactNode }) {
-  const [unit, setUnit] = useState<'oz' | 'lbs'>('oz');
-  
-  const toggleUnit = () => setUnit(prev => prev === 'oz' ? 'lbs' : 'oz');
+  const [system, setSystem] = useState<UnitSystem>('imperial');
 
   return (
-    <UnitContext.Provider value={{ unit, toggleUnit }}>
+    <UnitContext.Provider value={{ system, setSystem }}>
       {children}
     </UnitContext.Provider>
   );
@@ -21,8 +20,6 @@ export function UnitProvider({ children }: { children: React.ReactNode }) {
 
 export function useUnit() {
   const context = useContext(UnitContext);
-  if (context === undefined) {
-    throw new Error('useUnit must be used within a UnitProvider');
-  }
+  if (!context) throw new Error('useUnit must be used within a UnitProvider');
   return context;
 }
