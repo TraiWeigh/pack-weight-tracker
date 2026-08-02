@@ -2,8 +2,6 @@ import React from 'react';
 import { PackState, CATEGORY_ORDER } from '../hooks/usePackData';
 import { UnitSystem, calcTotalOz, formatWeight, largeUnit, smallUnit } from '../lib/weightUtils';
 
-const DOG_PACK = 'Dog Pack';
-
 interface PrintLayoutProps {
   data: PackState;
   system: UnitSystem;
@@ -17,9 +15,9 @@ export function PrintLayout({ data, system }: PrintLayoutProps) {
   CATEGORY_ORDER.forEach(cat => {
     (data[cat] || []).filter(i => i.checked).forEach(item => {
       const oz = calcTotalOz(item.weightOz, item.qty);
-      if (cat === DOG_PACK)            dogOz  += oz;
+      if (cat === 'Dog Pack')         dogOz  += oz;
       else if (cat === 'Clothing Worn') wornOz += oz;
-      else if (item.expendable)        expOz  += oz;
+      else if (cat === 'Expendables' || item.expendable) expOz += oz;
       else                             baseOz += oz;
     });
   });
@@ -28,6 +26,15 @@ export function PrintLayout({ data, system }: PrintLayoutProps) {
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
+
+  // Build summary cells dynamically — Dog Pack and Expendables only if non-zero
+  const summaryCells: { label: string; oz: number }[] = [
+    { label: 'Base Weight', oz: baseOz },
+    { label: 'Clothing Worn', oz: wornOz },
+    ...(dogOz > 0 ? [{ label: 'Dog Pack', oz: dogOz }] : []),
+    ...(expOz > 0 ? [{ label: 'Expendables', oz: expOz }] : []),
+    { label: 'Grand Total', oz: grandOz },
+  ];
 
   return (
     <div className="print-layout">
@@ -39,28 +46,20 @@ export function PrintLayout({ data, system }: PrintLayoutProps) {
 
       {/* Weight Summary */}
       <div className="print-summary">
-        <div className="print-summary-cell">
-          <div className="print-summary-label">Base Weight</div>
-          <div className="print-summary-value">{formatWeight(baseOz, system, 'large')} {lu}</div>
-        </div>
-        <div className="print-summary-divider" />
-        <div className="print-summary-cell">
-          <div className="print-summary-label">Clothing Worn</div>
-          <div className="print-summary-value">{formatWeight(wornOz, system, 'large')} {lu}</div>
-        </div>
-        <div className="print-summary-divider" />
-        <div className="print-summary-cell">
-          <div className="print-summary-label">Dog Pack</div>
-          <div className="print-summary-value">{formatWeight(dogOz, system, 'large')} {lu}</div>
-        </div>
-        <div className="print-summary-divider" />
-        <div className="print-summary-cell">
-          <div className="print-summary-label">Grand Total</div>
-          <div className="print-summary-value print-summary-total">{formatWeight(grandOz, system, 'large')} {lu}</div>
-        </div>
+        {summaryCells.map(({ label, oz }, i) => (
+          <React.Fragment key={label}>
+            {i > 0 && <div className="print-summary-divider" />}
+            <div className="print-summary-cell">
+              <div className="print-summary-label">{label}</div>
+              <div className={`print-summary-value${label === 'Grand Total' ? ' print-summary-total' : ''}`}>
+                {formatWeight(oz, system, 'large')} {lu}
+              </div>
+            </div>
+          </React.Fragment>
+        ))}
       </div>
 
-      {/* Category rows */}
+      {/* Category rows — Dog Pack only appears if items are checked */}
       {CATEGORY_ORDER.map(cat => {
         const items = (data[cat] || []).filter(i => i.checked);
         if (items.length === 0) return null;

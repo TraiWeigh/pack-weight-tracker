@@ -99,4 +99,5 @@ export const INITIAL_DATA = {
     { sub: "Harness", desc: "Ray Allen Icon Air Harness", weightOz: 36.8, qty: 1, checked: true, expendable: false },
     { sub: "Water Bottle", desc: "CNOC water bottle 1L", weightOz: 3.2, qty: 2, checked: false, expendable: false },
   ],
+  "Expendables": [],
 };

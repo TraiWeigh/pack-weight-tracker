@@ -27,63 +27,78 @@ export const CATEGORY_ORDER = [
   "Repair Kit",
   "Hydration",
   "Clothing Worn",
-  "Dog Pack"
+  "Dog Pack",
+  "Expendables"
 ];
 
-const STORAGE_KEY = 'pack-checklist-v3';
-
 // Groups where only one item can be checked at a time.
-// subs: the sub-type values that compete with each other within that category.
 const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
   { category: 'Backpack', subs: ['Backpack'] },
   { category: 'Shelter',  subs: ['Tent', 'Tarp', 'Hammock'] },
   { category: 'Sleep',    subs: ['Sleeping Bag'] },
 ];
 
-// Helper to seed IDs
+const getStorageKey = (userId?: string) =>
+  userId ? `pack-checklist-v4-${userId}` : 'pack-checklist-v4-guest';
+
 const seedInitialData = (): PackState => {
   const seeded: PackState = {};
   for (const [cat, items] of Object.entries(INITIAL_DATA)) {
-    seeded[cat] = items.map(item => ({
-      ...item,
-      id: crypto.randomUUID()
-    }));
+    seeded[cat as string] = items.map(item => ({ ...item, id: crypto.randomUUID() }));
   }
+  // Ensure all categories exist
+  CATEGORY_ORDER.forEach(cat => {
+    if (!seeded[cat]) seeded[cat] = [];
+  });
   return seeded;
 };
 
-export function usePackData() {
+const emptyData = (): PackState => {
+  const empty: PackState = {};
+  CATEGORY_ORDER.forEach(cat => { empty[cat] = []; });
+  return empty;
+};
+
+const loadFromStorage = (key: string): PackState | null => {
+  const stored = localStorage.getItem(key);
+  if (!stored) return null;
+  try {
+    const parsed = JSON.parse(stored);
+    const validated: PackState = {};
+    CATEGORY_ORDER.forEach(cat => {
+      validated[cat] = (parsed[cat] || []).map((item: any) => ({
+        ...item,
+        id: item.id || crypto.randomUUID(),
+        expendable: item.expendable ?? false,
+      }));
+    });
+    return validated;
+  } catch {
+    return null;
+  }
+};
+
+export function usePackData(userId?: string) {
+  const storageKey = getStorageKey(userId);
+
   const [data, setData] = useState<PackState>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Ensure all categories exist even if stored data is partial
-        const validated: PackState = {};
-        CATEGORY_ORDER.forEach(cat => {
-          validated[cat] = parsed[cat] || [];
-        });
-        return validated;
-      } catch (e) {
-        console.error("Failed to parse pack data, using defaults");
-      }
-    }
-    return seedInitialData();
+    const saved = loadFromStorage(storageKey);
+    if (saved) return saved;
+    // Authenticated new user → empty; guest → Kevin's seed data
+    return userId ? emptyData() : seedInitialData();
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  }, [data, storageKey]);
 
   const updateItem = useCallback((category: string, id: string, updates: Partial<GearItem>) => {
     setData(prev => {
-      // If checking an item, see if it belongs to an exclusive group
       if (updates.checked === true) {
         const group = EXCLUSIVE_GROUPS.find(g => g.category === category);
         if (group) {
           const target = prev[category].find(i => i.id === id);
           if (target && group.subs.includes(target.sub)) {
-            // Uncheck all other items in this exclusive sub group
             return {
               ...prev,
               [category]: prev[category].map(item => {
@@ -128,14 +143,8 @@ export function usePackData() {
   }, []);
 
   const resetToDefaults = useCallback(() => {
-    setData(seedInitialData());
-  }, []);
+    setData(userId ? emptyData() : seedInitialData());
+  }, [userId]);
 
-  return {
-    data,
-    updateItem,
-    addItem,
-    removeItem,
-    resetToDefaults
-  };
+  return { data, updateItem, addItem, removeItem, resetToDefaults };
 }

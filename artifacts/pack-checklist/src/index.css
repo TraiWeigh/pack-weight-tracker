@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@layer theme, base, clerk, components, utilities;
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
@@ -278,8 +279,8 @@
   .print-item {
     display: flex;
     align-items: center;
-    font-size: 9px;
-    padding: 2.5px 4px;
+    font-size: 12px;
+    padding: 3px 4px;
     border-bottom: 1px solid #f0f0f0;
   }
   .print-item-alt {
@@ -300,13 +301,13 @@
   .print-type {
     font-weight: 700;
     color: #666;
-    font-size: 8px;
+    font-size: 11px;
   }
   .print-wt {
     font-weight: 700;
     color: #2d5a27;
     font-family: monospace;
-    font-size: 8.5px;
+    font-size: 11px;
   }
 
   /* Footer */

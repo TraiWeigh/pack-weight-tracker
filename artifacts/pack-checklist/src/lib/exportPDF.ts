@@ -2,7 +2,6 @@ import jsPDF from 'jspdf';
 import { PackState, CATEGORY_ORDER } from '../hooks/usePackData';
 import { UnitSystem, calcTotalOz, formatWeight, largeUnit, smallUnit } from './weightUtils';
 
-const DOG_PACK = 'Dog Pack';
 const ML = 14;   // margin left
 const MR = 196;  // right edge (210 - 14)
 const CW = MR - ML; // content width
@@ -12,10 +11,10 @@ function calcTotals(data: PackState, system: UnitSystem) {
   CATEGORY_ORDER.forEach(cat => {
     (data[cat] || []).filter(i => i.checked).forEach(item => {
       const oz = calcTotalOz(item.weightOz, item.qty);
-      if (cat === DOG_PACK)          dogOz  += oz;
-      else if (cat === 'Clothing Worn') wornOz += oz;
-      else if (item.expendable)      expOz  += oz;
-      else                           baseOz += oz;
+      if (cat === 'Dog Pack')            dogOz  += oz;
+      else if (cat === 'Clothing Worn')  wornOz += oz;
+      else if (cat === 'Expendables' || item.expendable) expOz += oz;
+      else                               baseOz += oz;
     });
   });
   return { baseOz, dogOz, wornOz, expOz, grandOz: baseOz + dogOz + wornOz + expOz };
@@ -25,7 +24,7 @@ export function generatePackPDF(data: PackState, system: UnitSystem): Blob {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const lu = largeUnit(system);
   const su = smallUnit(system);
-  const { baseOz, dogOz, wornOz, grandOz } = calcTotals(data, system);
+  const { baseOz, dogOz, wornOz, expOz, grandOz } = calcTotals(data, system);
 
   let y = 18;
 
@@ -44,17 +43,21 @@ export function generatePackPDF(data: PackState, system: UnitSystem): Blob {
   y += 8;
 
   // ── Weight Summary Box ────────────────────────────────────
+  // Build dynamic columns: always Base Weight + Grand Total; conditionally Dog Pack + Expendables
+  const summaryRows: { label: string; oz: number }[] = [
+    { label: 'Base Weight',   oz: baseOz },
+    { label: 'Clothing Worn', oz: wornOz },
+    ...(dogOz > 0 ? [{ label: 'Dog Pack', oz: dogOz }] : []),
+    ...(expOz > 0 ? [{ label: 'Expendables', oz: expOz }] : []),
+    { label: 'Grand Total',   oz: grandOz },
+  ];
+  const col = CW / summaryRows.length;
+
   doc.setFillColor(244, 248, 244);
   doc.setDrawColor(190, 210, 190);
   doc.setLineWidth(0.4);
   doc.roundedRect(ML, y, CW, 14, 2, 2, 'FD');
-  const col = CW / 4;
-  const summaryRows = [
-    { label: 'Base Weight',    oz: baseOz },
-    { label: 'Clothing Worn',  oz: wornOz },
-    { label: 'Dog Pack',       oz: dogOz  },
-    { label: 'Grand Total',    oz: grandOz },
-  ];
+
   summaryRows.forEach(({ label, oz }, i) => {
     const cx = ML + col * i + col / 2;
     doc.setFont('helvetica', 'normal');
@@ -62,8 +65,8 @@ export function generatePackPDF(data: PackState, system: UnitSystem): Blob {
     doc.setTextColor(110, 110, 110);
     doc.text(label, cx, y + 5, { align: 'center' });
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(25, 25, 25);
+    doc.setFontSize(label === 'Grand Total' ? 12 : 10);
+    doc.setTextColor(label === 'Grand Total' ? 45 : 25, label === 'Grand Total' ? 90 : 25, label === 'Grand Total' ? 45 : 25);
     doc.text(`${formatWeight(oz, system, 'large')} ${lu}`, cx, y + 11.5, { align: 'center' });
   });
   y += 19;
@@ -95,17 +98,15 @@ export function generatePackPDF(data: PackState, system: UnitSystem): Blob {
     items.forEach((item, idx) => {
       if (y > 277) { doc.addPage(); y = 18; }
 
-      // Alternating row tint
       if (idx % 2 === 0) {
         doc.setFillColor(249, 253, 249);
         doc.rect(ML, y - 3.2, CW, 5.8, 'F');
       }
 
-      // Checkbox outline
+      // Checkbox
       doc.setDrawColor(70, 115, 70);
       doc.setLineWidth(0.35);
       doc.rect(ML + 0.5, y - 3.2, 3.5, 3.5);
-      // Checkmark
       doc.setDrawColor(35, 100, 45);
       doc.setLineWidth(0.55);
       doc.line(ML + 1, y - 1.5, ML + 2, y - 0.4);
@@ -121,14 +122,12 @@ export function generatePackPDF(data: PackState, system: UnitSystem): Blob {
       // Description
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(20, 20, 20);
-      const desc = item.desc || '—';
-      doc.text(desc, ML + 38, y, { maxWidth: CW - 72 });
+      doc.text(item.desc || '—', ML + 38, y, { maxWidth: CW - 72 });
 
       // Weight
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(45, 85, 45);
-      const wt = `${formatWeight(calcTotalOz(item.weightOz, item.qty), system, 'small')} ${su}`;
-      doc.text(wt, MR, y, { align: 'right' });
+      doc.text(`${formatWeight(calcTotalOz(item.weightOz, item.qty), system, 'small')} ${su}`, MR, y, { align: 'right' });
 
       y += 5.8;
     });
@@ -154,7 +153,6 @@ export async function sharePackList(data: PackState, system: UnitSystem) {
   const blob = generatePackPDF(data, system);
   const file = new File([blob], 'pack-checklist.pdf', { type: 'application/pdf' });
 
-  // Try Web Share API (works on mobile + modern desktop)
   if (typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] })) {
     await navigator.share({
       files: [file],
@@ -164,7 +162,6 @@ export async function sharePackList(data: PackState, system: UnitSystem) {
     return;
   }
 
-  // Fallback: download the PDF, then open mail client
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

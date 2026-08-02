@@ -8,8 +8,6 @@ interface WeightSummaryProps {
   data: PackState;
 }
 
-const SEPARATE_CATEGORIES = new Set(["Dog Pack", "Clothing Worn"]);
-
 export function WeightSummary({ data }: WeightSummaryProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
@@ -31,7 +29,7 @@ export function WeightSummary({ data }: WeightSummaryProps) {
         dogPackOz += itemTotal;
       } else if (cat === "Clothing Worn") {
         clothingWornOz += itemTotal;
-      } else if (item.expendable) {
+      } else if (cat === "Expendables" || item.expendable) {
         expendablesOz += itemTotal;
       } else {
         baseWeightOz += itemTotal;
