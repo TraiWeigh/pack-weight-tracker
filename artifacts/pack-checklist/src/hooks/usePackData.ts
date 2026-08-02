@@ -107,7 +107,7 @@ export function usePackData() {
   const addItem = useCallback((category: string) => {
     const newItem: GearItem = {
       id: crypto.randomUUID(),
-      sub: 'New Item',
+      sub: '',
       desc: '',
       weightOz: 0,
       qty: 1,
