@@ -8,23 +8,24 @@ const MR = 196;  // right edge (210 - 14)
 const CW = MR - ML; // content width
 
 function calcTotals(data: PackState, system: UnitSystem) {
-  let baseOz = 0, dogOz = 0, expOz = 0;
+  let baseOz = 0, dogOz = 0, wornOz = 0, expOz = 0;
   CATEGORY_ORDER.forEach(cat => {
     (data[cat] || []).filter(i => i.checked).forEach(item => {
       const oz = calcTotalOz(item.weightOz, item.qty);
-      if (cat === DOG_PACK) dogOz += oz;
-      else if (item.expendable) expOz += oz;
-      else baseOz += oz;
+      if (cat === DOG_PACK)          dogOz  += oz;
+      else if (cat === 'Clothing Worn') wornOz += oz;
+      else if (item.expendable)      expOz  += oz;
+      else                           baseOz += oz;
     });
   });
-  return { baseOz, dogOz, expOz, grandOz: baseOz + dogOz + expOz };
+  return { baseOz, dogOz, wornOz, expOz, grandOz: baseOz + dogOz + wornOz + expOz };
 }
 
 export function generatePackPDF(data: PackState, system: UnitSystem): Blob {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const lu = largeUnit(system);
   const su = smallUnit(system);
-  const { baseOz, dogOz, grandOz } = calcTotals(data, system);
+  const { baseOz, dogOz, wornOz, grandOz } = calcTotals(data, system);
 
   let y = 18;
 
@@ -47,11 +48,12 @@ export function generatePackPDF(data: PackState, system: UnitSystem): Blob {
   doc.setDrawColor(190, 210, 190);
   doc.setLineWidth(0.4);
   doc.roundedRect(ML, y, CW, 14, 2, 2, 'FD');
-  const col = CW / 3;
+  const col = CW / 4;
   const summaryRows = [
-    { label: 'Base Weight', oz: baseOz },
-    { label: 'Dog Pack',    oz: dogOz  },
-    { label: 'Grand Total', oz: grandOz },
+    { label: 'Base Weight',    oz: baseOz },
+    { label: 'Clothing Worn',  oz: wornOz },
+    { label: 'Dog Pack',       oz: dogOz  },
+    { label: 'Grand Total',    oz: grandOz },
   ];
   summaryRows.forEach(({ label, oz }, i) => {
     const cx = ML + col * i + col / 2;

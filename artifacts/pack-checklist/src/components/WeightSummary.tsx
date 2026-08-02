@@ -8,7 +8,7 @@ interface WeightSummaryProps {
   data: PackState;
 }
 
-const DOG_PACK_CATEGORY = "Dog Pack";
+const SEPARATE_CATEGORIES = new Set(["Dog Pack", "Clothing Worn"]);
 
 export function WeightSummary({ data }: WeightSummaryProps) {
   const { system } = useUnit();
@@ -17,6 +17,7 @@ export function WeightSummary({ data }: WeightSummaryProps) {
   let baseWeightOz = 0;
   let expendablesOz = 0;
   let dogPackOz = 0;
+  let clothingWornOz = 0;
 
   const categoryData = CATEGORY_ORDER.map((cat, index) => {
     const items = data[cat] || [];
@@ -26,8 +27,10 @@ export function WeightSummary({ data }: WeightSummaryProps) {
 
     items.filter(i => i.checked).forEach(item => {
       const itemTotal = calcTotalOz(item.weightOz, item.qty);
-      if (cat === DOG_PACK_CATEGORY) {
+      if (cat === "Dog Pack") {
         dogPackOz += itemTotal;
+      } else if (cat === "Clothing Worn") {
+        clothingWornOz += itemTotal;
       } else if (item.expendable) {
         expendablesOz += itemTotal;
       } else {
@@ -42,7 +45,7 @@ export function WeightSummary({ data }: WeightSummaryProps) {
     };
   }).filter(d => d.value > 0);
 
-  const grandTotalOz = baseWeightOz + expendablesOz + dogPackOz;
+  const grandTotalOz = baseWeightOz + expendablesOz + dogPackOz + clothingWornOz;
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -70,6 +73,14 @@ export function WeightSummary({ data }: WeightSummaryProps) {
             <div className="font-mono text-2xl font-bold text-foreground tabular-nums leading-none">
               {formatWeight(baseWeightOz, system, 'large')}
               <span className="text-sm text-muted-foreground ml-1 font-sans">{lu}</span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-end">
+            <span className="text-sm font-medium text-muted-foreground">Clothing Worn</span>
+            <div className="font-mono text-lg font-semibold text-foreground tabular-nums leading-none">
+              {formatWeight(clothingWornOz, system, 'large')}
+              <span className="text-xs text-muted-foreground ml-1 font-sans">{lu}</span>
             </div>
           </div>
 

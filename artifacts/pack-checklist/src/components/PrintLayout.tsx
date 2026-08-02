@@ -13,16 +13,17 @@ export function PrintLayout({ data, system }: PrintLayoutProps) {
   const lu = largeUnit(system);
   const su = smallUnit(system);
 
-  let baseOz = 0, dogOz = 0, expOz = 0;
+  let baseOz = 0, dogOz = 0, wornOz = 0, expOz = 0;
   CATEGORY_ORDER.forEach(cat => {
     (data[cat] || []).filter(i => i.checked).forEach(item => {
       const oz = calcTotalOz(item.weightOz, item.qty);
-      if (cat === DOG_PACK) dogOz += oz;
-      else if (item.expendable) expOz += oz;
-      else baseOz += oz;
+      if (cat === DOG_PACK)            dogOz  += oz;
+      else if (cat === 'Clothing Worn') wornOz += oz;
+      else if (item.expendable)        expOz  += oz;
+      else                             baseOz += oz;
     });
   });
-  const grandOz = baseOz + dogOz + expOz;
+  const grandOz = baseOz + dogOz + wornOz + expOz;
 
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -41,6 +42,11 @@ export function PrintLayout({ data, system }: PrintLayoutProps) {
         <div className="print-summary-cell">
           <div className="print-summary-label">Base Weight</div>
           <div className="print-summary-value">{formatWeight(baseOz, system, 'large')} {lu}</div>
+        </div>
+        <div className="print-summary-divider" />
+        <div className="print-summary-cell">
+          <div className="print-summary-label">Clothing Worn</div>
+          <div className="print-summary-value">{formatWeight(wornOz, system, 'large')} {lu}</div>
         </div>
         <div className="print-summary-divider" />
         <div className="print-summary-cell">
