@@ -274,12 +274,6 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 categoryOrder={categoryOrder}
                 categoryMeta={categoryMeta}
               />
-
-              <ScanGearPanel
-                userId={userId}
-                categoryOrder={categoryOrder}
-                onAddItem={(category, prefill) => addItem(category, prefill)}
-              />
             </div>
           </div>
         </main>
