@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/mobile/"
+title = "Pack Checklist Mobile"
+description = "A native mobile companion app for the Pack Weight Checklist. Lets hikers tap to check off gear items by category while physically packing. Shows Base Weight, Dog Pack, Clothing Worn, and Grand Total weight summaries. Uses AsyncStorage for offline persistence."
+version = "1.0.0"
+id = "artifacts/pack-checklist-mobile"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/mobile/" ]
+localPort = 22107
+
+[services.development]
+run = "pnpm --filter @workspace/pack-checklist-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pack-checklist-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/pack-checklist-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "22107"
+BASE_PATH = "/mobile/"
