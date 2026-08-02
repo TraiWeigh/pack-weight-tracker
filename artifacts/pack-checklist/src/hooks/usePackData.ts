@@ -143,8 +143,9 @@ export function usePackData(userId?: string) {
   }, []);
 
   const resetToDefaults = useCallback(() => {
-    setData(userId ? emptyData() : seedInitialData());
-  }, [userId]);
+    // Always reset to Kevin's full gear list regardless of auth state
+    setData(seedInitialData());
+  }, []);
 
   return { data, updateItem, addItem, removeItem, resetToDefaults };
 }
