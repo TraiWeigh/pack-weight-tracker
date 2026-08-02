@@ -15,137 +15,235 @@ export type PackState = {
   [category: string]: GearItem[];
 };
 
-export const CATEGORY_ORDER = [
-  "Backpack",
-  "Shelter",
-  "Sleep",
-  "Clothing Packed",
-  "Kitchen",
-  "Electronics",
-  "Toiletries",
-  "Med Kit",
-  "Repair Kit",
-  "Hydration",
-  "Clothing Worn",
-  "Dog Pack",
-  "Expendables"
+export type CategoryMeta = {
+  countsToBase: boolean;
+};
+
+// Default order for built-in categories
+const DEFAULT_CATEGORY_ORDER = [
+  'Backpack', 'Shelter', 'Sleep', 'Clothing Packed', 'Kitchen',
+  'Electronics', 'Toiletries', 'Med Kit', 'Repair Kit', 'Hydration',
+  'Clothing Worn', 'Dog Pack', 'Expendables',
 ];
 
-// Groups where only one item can be checked at a time.
+// Built-in categories excluded from base weight by default
+const DEFAULT_EXCLUDES_BASE = new Set(['Dog Pack', 'Clothing Worn', 'Expendables']);
+
+// Groups where only one item can be checked at a time
 const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
   { category: 'Backpack', subs: ['Backpack'] },
   { category: 'Shelter',  subs: ['Tent', 'Tarp', 'Hammock'] },
   { category: 'Sleep',    subs: ['Sleeping Bag'] },
 ];
 
-const getStorageKey = (userId?: string) =>
-  userId ? `pack-checklist-v4-${userId}` : 'pack-checklist-v4-guest';
+const V5_KEY   = (uid?: string) => uid ? `pack-checklist-v5-${uid}` : 'pack-checklist-v5-guest';
+const V4_KEY   = (uid?: string) => uid ? `pack-checklist-v4-${uid}` : 'pack-checklist-v4-guest';
 
-const seedInitialData = (): PackState => {
-  const seeded: PackState = {};
-  for (const [cat, items] of Object.entries(INITIAL_DATA)) {
-    seeded[cat as string] = items.map(item => ({ ...item, id: crypto.randomUUID() }));
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function defaultMeta(cats: string[]): Record<string, CategoryMeta> {
+  const meta: Record<string, CategoryMeta> = {};
+  cats.forEach(cat => { meta[cat] = { countsToBase: !DEFAULT_EXCLUDES_BASE.has(cat) }; });
+  return meta;
+}
+
+function seedInitialData(): Store {
+  const items: PackState = {};
+  for (const [cat, catItems] of Object.entries(INITIAL_DATA)) {
+    items[cat] = catItems.map(item => ({ ...item, id: crypto.randomUUID() }));
   }
-  // Ensure all categories exist
-  CATEGORY_ORDER.forEach(cat => {
-    if (!seeded[cat]) seeded[cat] = [];
-  });
-  return seeded;
+  DEFAULT_CATEGORY_ORDER.forEach(cat => { if (!items[cat]) items[cat] = []; });
+  return { items, order: [...DEFAULT_CATEGORY_ORDER], meta: defaultMeta(DEFAULT_CATEGORY_ORDER) };
+}
+
+function emptyData(): Store {
+  const items: PackState = {};
+  DEFAULT_CATEGORY_ORDER.forEach(cat => { items[cat] = []; });
+  return { items, order: [...DEFAULT_CATEGORY_ORDER], meta: defaultMeta(DEFAULT_CATEGORY_ORDER) };
+}
+
+type Store = {
+  items: PackState;
+  order: string[];
+  meta: Record<string, CategoryMeta>;
 };
 
-const emptyData = (): PackState => {
-  const empty: PackState = {};
-  CATEGORY_ORDER.forEach(cat => { empty[cat] = []; });
-  return empty;
-};
+function sanitizeItems(raw: any[], cat: string): GearItem[] {
+  return (raw || []).map((item: any) => ({
+    ...item,
+    id: item.id || crypto.randomUUID(),
+    expendable: item.expendable ?? false,
+  }));
+}
 
-const loadFromStorage = (key: string): PackState | null => {
-  const stored = localStorage.getItem(key);
-  if (!stored) return null;
+function loadFromStorage(uid?: string): Store | null {
+  // ── v5 format ─────────────────────────────────────────────
   try {
-    const parsed = JSON.parse(stored);
-    const validated: PackState = {};
-    CATEGORY_ORDER.forEach(cat => {
-      validated[cat] = (parsed[cat] || []).map((item: any) => ({
-        ...item,
-        id: item.id || crypto.randomUUID(),
-        expendable: item.expendable ?? false,
-      }));
-    });
-    return validated;
-  } catch {
-    return null;
-  }
-};
+    const raw = localStorage.getItem(V5_KEY(uid));
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p.__v === 5 && Array.isArray(p.order)) {
+        const order: string[] = p.order;
+        const items: PackState = {};
+        order.forEach(cat => { items[cat] = sanitizeItems(p.items?.[cat], cat); });
+        const meta: Record<string, CategoryMeta> = {};
+        order.forEach(cat => {
+          const m = p.meta?.[cat];
+          meta[cat] = { countsToBase: m?.countsToBase ?? !DEFAULT_EXCLUDES_BASE.has(cat) };
+        });
+        return { items, order, meta };
+      }
+    }
+  } catch { /* fall through */ }
+
+  // ── v4 migration ───────────────────────────────────────────
+  try {
+    const raw = localStorage.getItem(V4_KEY(uid));
+    if (raw) {
+      const p = JSON.parse(raw);
+      // Start with default order; then append any extra keys from the saved data
+      const order = [...DEFAULT_CATEGORY_ORDER];
+      Object.keys(p).forEach(cat => { if (!order.includes(cat)) order.push(cat); });
+      const items: PackState = {};
+      order.forEach(cat => { items[cat] = sanitizeItems(p[cat], cat); });
+      return { items, order, meta: defaultMeta(order) };
+    }
+  } catch { /* fall through */ }
+
+  return null;
+}
+
+// ── Hook ─────────────────────────────────────────────────────────────────────
 
 export function usePackData(userId?: string) {
-  const storageKey = getStorageKey(userId);
-
-  const [data, setData] = useState<PackState>(() => {
-    const saved = loadFromStorage(storageKey);
+  const [store, setStore] = useState<Store>(() => {
+    const saved = loadFromStorage(userId);
     if (saved) return saved;
-    // Authenticated new user → empty; guest → Kevin's seed data
     return userId ? emptyData() : seedInitialData();
   });
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(data));
-  }, [data, storageKey]);
+    localStorage.setItem(V5_KEY(userId), JSON.stringify({ __v: 5, ...store }));
+  }, [store, userId]);
 
   const updateItem = useCallback((category: string, id: string, updates: Partial<GearItem>) => {
-    setData(prev => {
+    setStore(prev => {
       if (updates.checked === true) {
         const group = EXCLUSIVE_GROUPS.find(g => g.category === category);
         if (group) {
-          const target = prev[category].find(i => i.id === id);
+          const target = (prev.items[category] || []).find(i => i.id === id);
           if (target && group.subs.includes(target.sub)) {
             return {
               ...prev,
-              [category]: prev[category].map(item => {
-                if (item.id === id) return { ...item, ...updates };
-                if (group.subs.includes(item.sub)) return { ...item, checked: false };
-                return item;
-              }),
+              items: {
+                ...prev.items,
+                [category]: (prev.items[category] || []).map(item => {
+                  if (item.id === id) return { ...item, ...updates };
+                  if (group.subs.includes(item.sub)) return { ...item, checked: false };
+                  return item;
+                }),
+              },
             };
           }
         }
       }
       return {
         ...prev,
-        [category]: prev[category].map(item =>
-          item.id === id ? { ...item, ...updates } : item
-        ),
+        items: {
+          ...prev.items,
+          [category]: (prev.items[category] || []).map(item =>
+            item.id === id ? { ...item, ...updates } : item
+          ),
+        },
       };
     });
   }, []);
 
   const addItem = useCallback((category: string) => {
-    const newItem: GearItem = {
-      id: crypto.randomUUID(),
-      sub: '',
-      desc: '',
-      weightOz: 0,
-      qty: 1,
-      checked: true,
-      expendable: false
-    };
-    setData(prev => ({
+    setStore(prev => ({
       ...prev,
-      [category]: [...(prev[category] || []), newItem]
+      items: {
+        ...prev.items,
+        [category]: [...(prev.items[category] || []), {
+          id: crypto.randomUUID(),
+          sub: '', desc: '', weightOz: 0, qty: 1, checked: true, expendable: false,
+        }],
+      },
     }));
   }, []);
 
   const removeItem = useCallback((category: string, id: string) => {
-    setData(prev => ({
+    setStore(prev => ({
       ...prev,
-      [category]: prev[category].filter(item => item.id !== id)
+      items: {
+        ...prev.items,
+        [category]: (prev.items[category] || []).filter(item => item.id !== id),
+      },
     }));
   }, []);
 
-  const resetToDefaults = useCallback(() => {
-    // Always reset to Kevin's full gear list regardless of auth state
-    setData(seedInitialData());
+  const addCategory = useCallback((name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setStore(prev => {
+      if (prev.order.includes(trimmed)) return prev;
+      return {
+        items: { ...prev.items, [trimmed]: [] },
+        order: [...prev.order, trimmed],
+        meta: { ...prev.meta, [trimmed]: { countsToBase: true } },
+      };
+    });
   }, []);
 
-  return { data, updateItem, addItem, removeItem, resetToDefaults };
+  const deleteCategory = useCallback((name: string) => {
+    setStore(prev => {
+      const order = prev.order.filter(c => c !== name);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [name]: _i, ...items } = prev.items;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [name]: _m, ...meta } = prev.meta;
+      return { items, order, meta };
+    });
+  }, []);
+
+  const updateCategoryMeta = useCallback((category: string, updates: Partial<CategoryMeta>) => {
+    setStore(prev => ({
+      ...prev,
+      meta: { ...prev.meta, [category]: { ...prev.meta[category], ...updates } },
+    }));
+  }, []);
+
+  const moveCategory = useCallback((category: string, dir: 'up' | 'down') => {
+    setStore(prev => {
+      const idx = prev.order.indexOf(category);
+      if (idx < 0) return prev;
+      const order = [...prev.order];
+      if (dir === 'up' && idx > 0) {
+        [order[idx - 1], order[idx]] = [order[idx], order[idx - 1]];
+      } else if (dir === 'down' && idx < order.length - 1) {
+        [order[idx], order[idx + 1]] = [order[idx + 1], order[idx]];
+      } else {
+        return prev;
+      }
+      return { ...prev, order };
+    });
+  }, []);
+
+  const resetToDefaults = useCallback(() => {
+    setStore(seedInitialData());
+  }, []);
+
+  return {
+    data: store.items,
+    categoryOrder: store.order,
+    categoryMeta: store.meta,
+    updateItem,
+    addItem,
+    removeItem,
+    addCategory,
+    deleteCategory,
+    updateCategoryMeta,
+    moveCategory,
+    resetToDefaults,
+  };
 }

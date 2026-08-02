@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useUser, useClerk } from '@clerk/react';
-import { usePackData, CATEGORY_ORDER } from '../hooks/usePackData';
+import { usePackData } from '../hooks/usePackData';
 import { GearCategory } from '../components/GearCategory';
 import { WeightSummary } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
@@ -9,7 +9,7 @@ import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
-import { RotateCcw, Tent, Printer, Share2, LogOut, User, Shield } from 'lucide-react';
+import { RotateCcw, Tent, Printer, Share2, LogOut, User, Shield, Plus, Check, X } from 'lucide-react';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
@@ -45,7 +45,13 @@ interface ChecklistContentProps {
 }
 
 function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
-  const { data, updateItem, addItem, removeItem, resetToDefaults } = usePackData(userId);
+  const {
+    data, categoryOrder, categoryMeta,
+    updateItem, addItem, removeItem,
+    addCategory, deleteCategory, updateCategoryMeta, moveCategory,
+    resetToDefaults,
+  } = usePackData(userId);
+
   const { system } = useUnit();
   const { signOut } = useClerk();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -55,20 +61,19 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
 
-  const handleReset = () => {
-    resetToDefaults();
-    setShowResetConfirm(false);
-  };
+  // Add Category state
+  const [addingCat, setAddingCat] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const newCatInputRef = useRef<HTMLInputElement>(null);
 
-  const handlePrint = () => window.print();
+  const handleReset = () => { resetToDefaults(); setShowResetConfirm(false); };
+  const handlePrint  = () => window.print();
 
   const handleShare = async () => {
     setSharing(true);
     try {
-      await sharePackList(data, system);
-    } catch {
-      // User cancelled or error — silently ignore
-    } finally {
+      await sharePackList(data, system, categoryOrder, categoryMeta);
+    } catch { /* user cancelled */ } finally {
       setSharing(false);
     }
   };
@@ -77,16 +82,28 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
     signOut({ redirectUrl: import.meta.env.BASE_URL || '/' });
   };
 
-  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const handleAddCategory = () => {
+    const name = newCatName.trim();
+    if (!name) return;
+    addCategory(name);
+    setNewCatName('');
+    setAddingCat(false);
+  };
+
+  const handleAddCatKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleAddCategory();
+    if (e.key === 'Escape') { setAddingCat(false); setNewCatName(''); }
+  };
+
+  const openAddCat = () => {
+    setAddingCat(true);
+    setTimeout(() => newCatInputRef.current?.focus(), 50);
+  };
 
   return (
     <>
-      {/* Mailing list prompt for new users */}
       {showMailingModal && (
-        <MailingListModal
-          userId={userId}
-          onDismiss={() => setShowMailingModal(false)}
-        />
+        <MailingListModal userId={userId} onDismiss={() => setShowMailingModal(false)} />
       )}
 
       {/* ── Screen content ── */}
@@ -104,6 +121,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Reset */}
               <div className="relative">
                 {showResetConfirm ? (
                   <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
@@ -139,15 +157,15 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                         <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
                       </div>
                       {admin && (
+                        <button
+                          onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                        >
+                          <Shield className="w-3.5 h-3.5" />
+                          Admin Panel
+                        </button>
+                      )}
                       <button
-                        onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
-                      >
-                        <Shield className="w-3.5 h-3.5" />
-                        Admin Panel
-                      </button>
-                    )}
-                    <button
                         onClick={handleSignOut}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-colors"
                       >
@@ -170,16 +188,64 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
               <div className="flex justify-end mb-4">
                 <UnitToggle />
               </div>
-              {CATEGORY_ORDER.map(category => (
+
+              {categoryOrder.map((category, idx) => (
                 <GearCategory
                   key={category}
                   name={category}
                   items={data[category] || []}
+                  meta={categoryMeta[category] ?? { countsToBase: true }}
+                  isFirst={idx === 0}
+                  isLast={idx === categoryOrder.length - 1}
                   updateItem={updateItem}
                   removeItem={removeItem}
                   addItem={addItem}
+                  onMoveUp={() => moveCategory(category, 'up')}
+                  onMoveDown={() => moveCategory(category, 'down')}
+                  onUpdateMeta={updates => updateCategoryMeta(category, updates)}
+                  onDelete={() => deleteCategory(category)}
                 />
               ))}
+
+              {/* ── Add Category ── */}
+              <div className="mt-2">
+                {addingCat ? (
+                  <div className="flex items-center gap-2 p-3 bg-card border border-primary/40 rounded-lg shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                    <input
+                      ref={newCatInputRef}
+                      type="text"
+                      value={newCatName}
+                      onChange={e => setNewCatName(e.target.value)}
+                      onKeyDown={handleAddCatKeyDown}
+                      placeholder="Category name…"
+                      maxLength={40}
+                      className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                    />
+                    <button
+                      onClick={handleAddCategory}
+                      disabled={!newCatName.trim()}
+                      className="flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Add
+                    </button>
+                    <button
+                      onClick={() => { setAddingCat(false); setNewCatName(''); }}
+                      className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={openAddCat}
+                    className="w-full flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 px-4 py-3 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Category
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Sidebar */}
@@ -202,14 +268,23 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 </button>
               </div>
 
-              <WeightSummary data={data} />
+              <WeightSummary
+                data={data}
+                categoryOrder={categoryOrder}
+                categoryMeta={categoryMeta}
+              />
             </div>
           </div>
         </main>
       </div>
 
-      {/* ── Print-only layout (always in DOM, hidden on screen) ── */}
-      <PrintLayout data={data} system={system} />
+      {/* ── Print-only layout ── */}
+      <PrintLayout
+        data={data}
+        system={system}
+        categoryOrder={categoryOrder}
+        categoryMeta={categoryMeta}
+      />
     </>
   );
 }
@@ -229,7 +304,6 @@ export default function Checklist() {
 
   return (
     <UnitProvider>
-      {/* key={user.id} forces remount when user changes, re-initializing storage */}
       <ChecklistContent key={user.id} userId={user.id} userEmail={user.primaryEmailAddress?.emailAddress} />
     </UnitProvider>
   );

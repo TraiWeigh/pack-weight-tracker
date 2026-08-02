@@ -1,38 +1,41 @@
 import React from 'react';
-import { PackState, CATEGORY_ORDER } from '../hooks/usePackData';
+import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { UnitSystem, calcTotalOz, formatWeight, largeUnit, smallUnit } from '../lib/weightUtils';
 
 interface PrintLayoutProps {
   data: PackState;
   system: UnitSystem;
+  categoryOrder: string[];
+  categoryMeta: Record<string, CategoryMeta>;
 }
 
-export function PrintLayout({ data, system }: PrintLayoutProps) {
+export function PrintLayout({ data, system, categoryOrder, categoryMeta }: PrintLayoutProps) {
   const lu = largeUnit(system);
   const su = smallUnit(system);
 
-  let baseOz = 0, dogOz = 0, wornOz = 0, expOz = 0;
-  CATEGORY_ORDER.forEach(cat => {
-    (data[cat] || []).filter(i => i.checked).forEach(item => {
-      const oz = calcTotalOz(item.weightOz, item.qty);
-      if (cat === 'Dog Pack')         dogOz  += oz;
-      else if (cat === 'Clothing Worn') wornOz += oz;
-      else if (cat === 'Expendables' || item.expendable) expOz += oz;
-      else                             baseOz += oz;
-    });
+  let baseOz = 0;
+  const nonBaseTotals: { name: string; oz: number }[] = [];
+
+  categoryOrder.forEach(cat => {
+    const items = (data[cat] || []).filter(i => i.checked);
+    const catOz = items.reduce((s, item) => s + calcTotalOz(item.weightOz, item.qty), 0);
+    const countsToBase = categoryMeta[cat]?.countsToBase ?? true;
+    if (countsToBase) {
+      baseOz += catOz;
+    } else {
+      nonBaseTotals.push({ name: cat, oz: catOz });
+    }
   });
-  const grandOz = baseOz + dogOz + wornOz + expOz;
+
+  const grandOz = baseOz + nonBaseTotals.reduce((s, c) => s + c.oz, 0);
 
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  // Build summary cells dynamically — Dog Pack and Expendables only if non-zero
   const summaryCells: { label: string; oz: number }[] = [
     { label: 'Base Weight', oz: baseOz },
-    { label: 'Clothing Worn', oz: wornOz },
-    ...(dogOz > 0 ? [{ label: 'Dog Pack', oz: dogOz }] : []),
-    ...(expOz > 0 ? [{ label: 'Expendables', oz: expOz }] : []),
+    ...nonBaseTotals.filter(c => c.oz > 0).map(c => ({ label: c.name, oz: c.oz })),
     { label: 'Grand Total', oz: grandOz },
   ];
 
@@ -59,8 +62,8 @@ export function PrintLayout({ data, system }: PrintLayoutProps) {
         ))}
       </div>
 
-      {/* Category rows — Dog Pack only appears if items are checked */}
-      {CATEGORY_ORDER.map(cat => {
+      {/* Category rows */}
+      {categoryOrder.map(cat => {
         const items = (data[cat] || []).filter(i => i.checked);
         if (items.length === 0) return null;
         return (
