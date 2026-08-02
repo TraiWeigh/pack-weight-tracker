@@ -84,7 +84,7 @@ export const GearRow = memo(function GearRow({ item, category, updateItem, remov
       </div>
 
       {/* Qty dropdown */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center">
         <select
           value={item.qty}
           onChange={(e) => updateItem(category, item.id, { qty: parseInt(e.target.value) })}
@@ -94,7 +94,6 @@ export const GearRow = memo(function GearRow({ item, category, updateItem, remov
             <option key={n} value={n}>{n}</option>
           ))}
         </select>
-        <span className="text-xs text-muted-foreground select-none">x</span>
       </div>
 
       {/* Total */}

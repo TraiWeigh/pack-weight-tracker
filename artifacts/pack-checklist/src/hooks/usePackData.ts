@@ -30,6 +30,14 @@ export const CATEGORY_ORDER = [
 
 const STORAGE_KEY = 'pack-checklist-v2';
 
+// Groups where only one item can be checked at a time.
+// subs: the sub-type values that compete with each other within that category.
+const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
+  { category: 'Backpack', subs: ['Backpack'] },
+  { category: 'Shelter',  subs: ['Tent', 'Tarp', 'Hammock'] },
+  { category: 'Sleep',    subs: ['Sleeping Bag'] },
+];
+
 // Helper to seed IDs
 const seedInitialData = (): PackState => {
   const seeded: PackState = {};
@@ -66,12 +74,32 @@ export function usePackData() {
   }, [data]);
 
   const updateItem = useCallback((category: string, id: string, updates: Partial<GearItem>) => {
-    setData(prev => ({
-      ...prev,
-      [category]: prev[category].map(item => 
-        item.id === id ? { ...item, ...updates } : item
-      )
-    }));
+    setData(prev => {
+      // If checking an item, see if it belongs to an exclusive group
+      if (updates.checked === true) {
+        const group = EXCLUSIVE_GROUPS.find(g => g.category === category);
+        if (group) {
+          const target = prev[category].find(i => i.id === id);
+          if (target && group.subs.includes(target.sub)) {
+            // Uncheck all other items in this exclusive sub group
+            return {
+              ...prev,
+              [category]: prev[category].map(item => {
+                if (item.id === id) return { ...item, ...updates };
+                if (group.subs.includes(item.sub)) return { ...item, checked: false };
+                return item;
+              }),
+            };
+          }
+        }
+      }
+      return {
+        ...prev,
+        [category]: prev[category].map(item =>
+          item.id === id ? { ...item, ...updates } : item
+        ),
+      };
+    });
   }, []);
 
   const addItem = useCallback((category: string) => {
