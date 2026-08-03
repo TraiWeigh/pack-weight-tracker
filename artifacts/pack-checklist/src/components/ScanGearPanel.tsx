@@ -204,6 +204,9 @@ export function ScanGearPanel({ userId, categoryOrder, onAddItem }: ScanGearPane
         <p className="text-xs text-muted-foreground">
           Paste a product URL or upload a photo — AI fills in the details.
         </p>
+        <p className="text-[11px] text-muted-foreground/70 italic mt-1">
+          Weights are sourced from manufacturer specs and may differ from what you measure on your own scale.
+        </p>
       </div>
 
       <div className="p-4 sm:p-5 space-y-4">
