@@ -324,7 +324,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
             {/* Sidebar */}
             <div className="lg:col-span-4 order-first lg:order-last lg:overflow-y-auto lg:h-full py-8 lg:px-3 lg:[scrollbar-gutter:stable]">
-              <div className="relative flex justify-end gap-2 mb-3">
+              <div className="relative flex flex-wrap justify-end gap-2 mb-3">
                 <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} />
                 <BackgroundPickerPanel open={backgroundPickerOpen} onClose={() => setBackgroundPickerOpen(false)} />
                 <button
