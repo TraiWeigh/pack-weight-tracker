@@ -100,44 +100,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm">
       <div className="p-4 sm:p-5 border-b border-border bg-muted/20 rounded-t-xl">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-foreground text-lg">Pack Summary</h2>
-
-          {/* Palette pill */}
-          <div className="relative">
-            <button
-              onClick={() => setShowPaletteMenu(o => !o)}
-              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              <Palette className="w-3.5 h-3.5" />
-              {palette.label}
-            </button>
-            {showPaletteMenu && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowPaletteMenu(false)} />
-                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
-                  {Object.entries(PALETTES).map(([key, p]) => (
-                    <button
-                      key={key}
-                      onClick={() => { handlePalette(key); setShowPaletteMenu(false); }}
-                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-muted/60 ${
-                        paletteKey === key ? 'text-foreground font-semibold' : 'text-foreground'
-                      }`}
-                    >
-                      <span className="flex gap-0.5 flex-shrink-0">
-                        {p.colors.slice(0, 3).map((c, i) => (
-                          <span key={i} className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: c }} />
-                        ))}
-                      </span>
-                      {p.label}
-                      {paletteKey === key && <span className="ml-auto text-primary text-xs">✓</span>}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <h2 className="font-semibold text-foreground text-lg mb-4">Pack Summary</h2>
 
         <div className="space-y-3">
           {/* Base Weight — always shown */}
@@ -173,19 +136,57 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
         </div>
       </div>
 
-      {/* Collapsible Weight Distribution */}
-      <button
-        onClick={() => setChartOpen(o => !o)}
-        className="w-full flex items-center justify-between px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors border-t border-border"
-      >
-        <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Weight Distribution
-        </span>
-        {chartOpen
-          ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-        }
-      </button>
+      {/* Weight Distribution header row */}
+      <div className="flex items-center border-t border-border">
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setChartOpen(o => !o)}
+          className="flex-1 flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors"
+        >
+          {chartOpen
+            ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          }
+          <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            Weight Distribution
+          </span>
+        </button>
+
+        {/* Palette pill */}
+        <div className="relative pr-4 sm:pr-5">
+          <button
+            onClick={() => setShowPaletteMenu(o => !o)}
+            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            <Palette className="w-3.5 h-3.5" />
+            {palette.label}
+          </button>
+          {showPaletteMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowPaletteMenu(false)} />
+              <div className="absolute right-4 sm:right-5 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                {Object.entries(PALETTES).map(([key, p]) => (
+                  <button
+                    key={key}
+                    onClick={() => { handlePalette(key); setShowPaletteMenu(false); }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-muted/60 ${
+                      paletteKey === key ? 'text-foreground font-semibold' : 'text-foreground'
+                    }`}
+                  >
+                    <span className="flex gap-0.5 flex-shrink-0">
+                      {p.colors.slice(0, 3).map((c, i) => (
+                        <span key={i} className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: c }} />
+                      ))}
+                    </span>
+                    {p.label}
+                    {paletteKey === key && <span className="ml-auto text-primary text-xs">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
 
       {chartOpen && (
