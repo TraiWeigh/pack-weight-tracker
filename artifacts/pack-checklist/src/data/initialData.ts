@@ -17,7 +17,7 @@ export const INITIAL_DATA = {
     { sub: "Tarp", desc: "Six Moons Ponch/Tarp", weightOz: 11.0, qty: 1, checked: false, expendable: false },
     { sub: "Tarp", desc: "Ounce Design Adobi DCF Tarp", weightOz: 5.8, qty: 1, checked: false, expendable: false },
   ],
-  "Sleep": [
+  "Sleep System": [
     { sub: "Sleeping Bag", desc: "UGQ Bandit 10F", weightOz: 26.0, qty: 1, checked: false, expendable: false },
     { sub: "Sleeping Bag", desc: "Enlightened Equipment 30F", weightOz: 17.7, qty: 1, checked: true, expendable: false },
     { sub: "Sleeping Bag", desc: "Emergency Sleeping Bag Thermal Bivvy", weightOz: 5.0, qty: 1, checked: false, expendable: false },
