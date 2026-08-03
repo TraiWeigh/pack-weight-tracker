@@ -98,8 +98,8 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
   };
 
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
-      <div className="p-4 sm:p-5 border-b border-border bg-muted/20">
+    <div className="bg-card border border-card-border rounded-xl shadow-sm">
+      <div className="p-4 sm:p-5 border-b border-border bg-muted/20 rounded-t-xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-foreground text-lg">Pack Summary</h2>
 
