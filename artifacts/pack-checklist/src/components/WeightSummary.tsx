@@ -3,7 +3,7 @@ import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { useUnit } from '../context/UnitContext';
 import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Palette } from 'lucide-react';
 
 // ── Chart palettes ────────────────────────────────────────────────────────────
 
@@ -46,6 +46,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
   const { system } = useUnit();
   const lu = largeUnit(system);
   const [chartOpen, setChartOpen] = useState(true);
+  const [showPaletteMenu, setShowPaletteMenu] = useState(false);
   const [paletteKey, setPaletteKey] = useState<string>(
     () => localStorage.getItem(PALETTE_STORAGE_KEY) ?? 'trail'
   );
@@ -149,29 +150,43 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
         }
       </button>
 
-      {/* Palette picker — visible when chart is open */}
+      {/* Palette pill + dropdown — visible when chart is open */}
       {chartOpen && (
-        <div className="px-4 sm:px-5 pb-3 flex items-center gap-2 flex-wrap">
-          {Object.entries(PALETTES).map(([key, p]) => (
+        <div className="px-4 sm:px-5 pb-3 flex justify-end">
+          <div className="relative">
             <button
-              key={key}
-              onClick={() => handlePalette(key)}
-              title={p.label}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors ${
-                paletteKey === key
-                  ? 'border-foreground/40 bg-muted text-foreground'
-                  : 'border-border bg-transparent text-muted-foreground hover:border-foreground/20 hover:text-foreground'
-              }`}
+              onClick={() => setShowPaletteMenu(o => !o)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
             >
-              {/* Three mini swatches */}
-              <span className="flex gap-0.5">
-                {p.colors.slice(0, 3).map((c, i) => (
-                  <span key={i} className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: c }} />
-                ))}
-              </span>
-              {p.label}
+              <Palette className="w-3.5 h-3.5" />
+              {palette.label}
             </button>
-          ))}
+
+            {showPaletteMenu && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setShowPaletteMenu(false)} />
+                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                  {Object.entries(PALETTES).map(([key, p]) => (
+                    <button
+                      key={key}
+                      onClick={() => { handlePalette(key); setShowPaletteMenu(false); }}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-muted/60 ${
+                        paletteKey === key ? 'text-foreground font-semibold' : 'text-foreground'
+                      }`}
+                    >
+                      <span className="flex gap-0.5 flex-shrink-0">
+                        {p.colors.slice(0, 3).map((c, i) => (
+                          <span key={i} className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: c }} />
+                        ))}
+                      </span>
+                      {p.label}
+                      {paletteKey === key && <span className="ml-auto text-primary text-xs">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 
