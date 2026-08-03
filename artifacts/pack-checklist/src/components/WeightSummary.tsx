@@ -120,7 +120,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
             </div>
 
             <div className="mt-4 space-y-2">
-              {[...categoryData].sort((a, b) => b.value - a.value).map((cat, i) => (
+              {categoryData.map((cat, i) => (
                 <div key={i} className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: cat.fill }} />
