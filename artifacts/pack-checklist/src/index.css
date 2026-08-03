@@ -326,7 +326,3 @@
   }
 }
 
-/* Panel transparency — slider in Background panel sets --panel-opacity on .screen-only */
-.screen-only .bg-card {
-  background-color: hsl(var(--card) / var(--panel-opacity, 1)) !important;
-}
