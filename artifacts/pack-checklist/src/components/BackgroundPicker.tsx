@@ -90,6 +90,7 @@ export function BackgroundPickerPanel({
 }: BackgroundPickerPanelProps) {
   const panelRef  = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -108,12 +109,29 @@ export function BackgroundPickerPanel({
   const handlePickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadError(null);
+
+    // Reject unsupported formats (TIFF/RAW crash the browser canvas)
+    const unsupported = /\.(tiff?|raw|cr2|cr3|nef|arw|dng|orf|rw2|pef)$/i;
+    if (unsupported.test(file.name) || file.type === 'image/tiff') {
+      setUploadError('TIFF and RAW files aren\'t supported. Please export as JPEG or PNG first.');
+      if (fileInput.current) fileInput.current.value = '';
+      return;
+    }
+
+    // Reject files over 25 MB to avoid tab crashes
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError('File is too large (max 25 MB). Please resize and try again.');
+      if (fileInput.current) fileInput.current.value = '';
+      return;
+    }
+
     try {
       const dataUrl = await compressImage(file);
       onBackgroundChange({ type: 'custom', dataUrl });
       onClose();
     } catch {
-      // silently ignore
+      setUploadError('Could not load that image. Try a different file.');
     } finally {
       if (fileInput.current) fileInput.current.value = '';
     }
@@ -147,6 +165,13 @@ export function BackgroundPickerPanel({
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
+
+          {/* Upload error */}
+          {uploadError && (
+            <div className="mx-3 mb-2 px-3 py-2 bg-destructive/10 border border-destructive/30 rounded-lg text-xs text-destructive leading-snug">
+              {uploadError}
+            </div>
+          )}
 
           {/* Photo grid — presets + upload tile */}
           <div className="px-3 pb-3">
