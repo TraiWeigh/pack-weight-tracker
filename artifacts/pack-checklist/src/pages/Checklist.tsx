@@ -355,7 +355,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                           <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                           <div className="text-left">
                             <div>{copied ? 'Copied!' : 'Copy Link'}</div>
-                            <div className="text-[11px] text-muted-foreground">View-only for others</div>
                           </div>
                         </button>
                         <div className="my-1 border-t border-border" />
