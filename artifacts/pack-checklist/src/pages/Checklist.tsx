@@ -229,12 +229,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:h-[calc(100vh-4rem)] lg:overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[auto_1fr_auto] gap-x-8 gap-y-0 lg:h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
-            {/* Gear list — lg:contents flattens children into the grid */}
-            <div className="lg:contents">
-              {/* Pinned pills row — row 1, cols 1–8 */}
-              <div className="lg:col-span-8 lg:row-start-1 pt-8 pb-3 flex items-center justify-between lg:pr-3">
+            {/* Gear list */}
+            <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+              {/* Pinned pills row — never scrolls */}
+              <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => setAllOpen(true)}
@@ -260,8 +260,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 <UnitToggle />
               </div>
 
-              {/* Scrollable categories — row 2, cols 1–8 */}
-              <div className="lg:col-span-8 lg:row-start-2 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
+              {/* Scrollable categories */}
+              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
               {categoryOrder.map((category, idx) => (
                 <GearCategory
                   key={category}
@@ -323,10 +323,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               </div>
             </div>
 
-            {/* Sidebar — order-first on mobile; lg:contents flattens children into the grid */}
-            <div className="order-first lg:contents">
-              {/* Pinned action bar — row 1, cols 9–12 */}
-              <div className="lg:col-span-4 lg:row-start-1 relative flex flex-wrap justify-end gap-2 pt-8 pb-3 lg:px-3">
+            {/* Sidebar */}
+            <div className="lg:col-span-4 order-first lg:order-last lg:overflow-y-auto lg:h-full py-8 lg:px-3 lg:[scrollbar-gutter:stable]">
+              <div className="relative flex flex-wrap justify-end gap-2 mb-3">
                 <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} />
                 <BackgroundPickerPanel open={backgroundPickerOpen} onClose={() => setBackgroundPickerOpen(false)} />
                 <button
@@ -373,18 +372,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
               </div>
 
-              {/* Pack Summary — row 3, cols 9–12; pinned below the scroller.
-                  In DOM before ScanGearPanel so it renders first on mobile. */}
-              <div className="lg:col-span-4 lg:row-start-3 pt-4 pb-8 lg:px-3">
+              <div className="flex flex-col gap-4 pb-2">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}
                   categoryMeta={categoryMeta}
                 />
-              </div>
-
-              {/* Scrollable sidebar content — row 2, cols 9–12 */}
-              <div className="lg:col-span-4 lg:row-start-2 lg:overflow-y-auto lg:min-h-0 pb-4 lg:px-3 lg:[scrollbar-gutter:stable]">
                 <ScanGearPanel
                   userId={userId}
                   categoryOrder={categoryOrder}
