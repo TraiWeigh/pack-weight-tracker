@@ -12,7 +12,7 @@ import { isAdmin } from './AdminPage';
 import { ScanGearPanel } from '../components/ScanGearPanel';
 import { buildShareURL } from '../lib/shareLink';
 import { RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
-import { BackgroundPickerButton, BackgroundPickerPanel } from '../components/BackgroundPicker';
+import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
@@ -63,6 +63,22 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
+  const [background, setBackground] = useState<Background | null>(() => {
+    try {
+      const s = localStorage.getItem(BG_STORAGE_KEY);
+      return s ? (JSON.parse(s) as Background) : null;
+    } catch { return null; }
+  });
+  const handleBackgroundChange = (bg: Background | null) => {
+    setBackground(bg);
+    if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
+    else localStorage.removeItem(BG_STORAGE_KEY);
+  };
+  const bgImageUrl = background
+    ? background.type === 'preset'
+      ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
+      : background.dataUrl
+    : null;
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
@@ -145,7 +161,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       )}
 
       {/* ── Screen content ── */}
-      <div className="screen-only h-[100dvh] overflow-hidden flex flex-col bg-background">
+      <div
+        className="screen-only h-[100dvh] overflow-hidden flex flex-col bg-background"
+        style={bgImageUrl ? { backgroundImage: `url(${bgImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      >
         <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -327,8 +346,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned action bar — mirrors the Open/Close bar on the left */}
               <div className="relative flex flex-wrap justify-end gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
-                <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} />
-                <BackgroundPickerPanel open={backgroundPickerOpen} onClose={() => setBackgroundPickerOpen(false)} />
+                <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} active={!!background} />
+                <BackgroundPickerPanel
+                  open={backgroundPickerOpen}
+                  onClose={() => setBackgroundPickerOpen(false)}
+                  background={background}
+                  onBackgroundChange={handleBackgroundChange}
+                />
                 <button
                   onClick={handlePrint}
                   className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
