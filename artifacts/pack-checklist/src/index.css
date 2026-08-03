@@ -136,6 +136,147 @@
   --radius: 0.5rem;
 }
 
+/* ── Colour Themes ─────────────────────────────────────────────────────────── */
+
+[data-theme="desert"] {
+  --background: 35 30% 96%;
+  --foreground: 25 25% 15%;
+  --border: 35 20% 83%;
+  --card: 35 35% 100%;
+  --card-border: 35 20% 86%;
+  --card-foreground: 25 25% 15%;
+  --popover: 35 35% 100%;
+  --popover-foreground: 25 25% 15%;
+  --popover-border: 35 20% 86%;
+  --primary: 22 45% 40%;
+  --primary-foreground: 35 30% 96%;
+  --secondary: 35 20% 88%;
+  --secondary-foreground: 25 25% 20%;
+  --muted: 35 15% 91%;
+  --muted-foreground: 30 12% 45%;
+  --accent: 40 25% 91%;
+  --accent-foreground: 25 25% 18%;
+  --input: 35 20% 83%;
+  --ring: 22 45% 40%;
+  --chart-1: 22 45% 32%; --chart-2: 32 40% 42%; --chart-3: 42 38% 50%;
+  --chart-4: 14 40% 46%; --chart-5: 52 32% 56%; --chart-6: 10 45% 62%;
+  --chart-7: 5 50% 65%;  --chart-8: 200 20% 46%; --chart-9: 18 35% 42%;
+  --chart-10: 350 30% 52%;
+}
+
+[data-theme="alpine"] {
+  --background: 210 35% 97%;
+  --foreground: 215 30% 15%;
+  --border: 210 22% 84%;
+  --card: 210 40% 100%;
+  --card-border: 210 22% 87%;
+  --card-foreground: 215 30% 15%;
+  --popover: 210 40% 100%;
+  --popover-foreground: 215 30% 15%;
+  --popover-border: 210 22% 87%;
+  --primary: 212 50% 38%;
+  --primary-foreground: 210 35% 97%;
+  --secondary: 210 22% 88%;
+  --secondary-foreground: 215 30% 22%;
+  --muted: 210 18% 91%;
+  --muted-foreground: 212 14% 45%;
+  --accent: 210 28% 91%;
+  --accent-foreground: 215 30% 18%;
+  --input: 210 22% 84%;
+  --ring: 212 50% 38%;
+  --chart-1: 212 50% 30%; --chart-2: 200 45% 42%; --chart-3: 190 38% 50%;
+  --chart-4: 222 35% 56%; --chart-5: 172 28% 56%; --chart-6: 232 28% 62%;
+  --chart-7: 182 32% 65%; --chart-8: 152 22% 46%; --chart-9: 242 22% 42%;
+  --chart-10: 196 32% 52%;
+}
+
+[data-theme="dusk"] {
+  --background: 280 22% 97%;
+  --foreground: 275 22% 15%;
+  --border: 280 15% 83%;
+  --card: 280 28% 100%;
+  --card-border: 280 15% 86%;
+  --card-foreground: 275 22% 15%;
+  --popover: 280 28% 100%;
+  --popover-foreground: 275 22% 15%;
+  --popover-border: 280 15% 86%;
+  --primary: 272 32% 40%;
+  --primary-foreground: 280 22% 97%;
+  --secondary: 280 16% 88%;
+  --secondary-foreground: 275 22% 22%;
+  --muted: 280 12% 91%;
+  --muted-foreground: 278 10% 46%;
+  --accent: 285 22% 91%;
+  --accent-foreground: 275 22% 18%;
+  --input: 280 15% 83%;
+  --ring: 272 32% 40%;
+  --chart-1: 272 32% 32%; --chart-2: 285 28% 44%; --chart-3: 258 30% 52%;
+  --chart-4: 298 24% 56%; --chart-5: 248 28% 62%; --chart-6: 308 22% 66%;
+  --chart-7: 240 24% 66%; --chart-8: 318 20% 52%; --chart-9: 258 20% 46%;
+  --chart-10: 322 28% 56%;
+}
+
+[data-theme="night"] {
+  --button-outline: rgba(255,255,255,0.10);
+  --badge-outline: rgba(255,255,255,0.05);
+  --elevate-1: rgba(255,255,255,0.03);
+  --elevate-2: rgba(255,255,255,0.07);
+  --background: 218 28% 10%;
+  --foreground: 210 20% 90%;
+  --border: 218 22% 22%;
+  --card: 218 28% 13%;
+  --card-border: 218 22% 24%;
+  --card-foreground: 210 20% 90%;
+  --popover: 218 28% 13%;
+  --popover-foreground: 210 20% 90%;
+  --popover-border: 218 22% 24%;
+  --primary: 155 35% 55%;
+  --primary-foreground: 218 28% 10%;
+  --secondary: 218 22% 20%;
+  --secondary-foreground: 210 20% 80%;
+  --muted: 218 22% 18%;
+  --muted-foreground: 210 15% 56%;
+  --accent: 218 22% 18%;
+  --accent-foreground: 210 20% 90%;
+  --destructive: 15 50% 55%;
+  --destructive-foreground: 210 20% 90%;
+  --input: 218 22% 24%;
+  --ring: 155 35% 55%;
+  --sidebar: 218 28% 13%;
+  --sidebar-border: 218 22% 24%;
+  --chart-1: 155 35% 46%; --chart-2: 140 28% 56%; --chart-3: 170 30% 62%;
+  --chart-4: 125 24% 66%; --chart-5: 182 28% 56%; --chart-6: 100 22% 62%;
+  --chart-7: 50 28% 62%;  --chart-8: 202 28% 56%; --chart-9: 165 24% 52%;
+  --chart-10: 30 32% 62%;
+}
+
+/* ── Background photo + frosted glass ─────────────────────────────────────── */
+
+html.photo-active {
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+html.photo-active body {
+  background: transparent;
+}
+
+html.photo-active .bg-card,
+html.photo-active .bg-background {
+  background-color: rgb(255 255 255 / 80%) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-theme="night"].photo-active .bg-card,
+html[data-theme="night"].photo-active .bg-background {
+  background-color: rgb(14 20 32 / 82%) !important;
+}
+
+/* ── Base styles ───────────────────────────────────────────────────────────── */
+
 @layer base {
   * {
     @apply border-border;
