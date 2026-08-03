@@ -11,7 +11,7 @@ import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ScanGearPanel } from '../components/ScanGearPanel';
 import { buildShareURL } from '../lib/shareLink';
-import { RotateCcw, Tent, Printer, Share2, Link, FileDown, PencilLine, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
+import { RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
 import { BackgroundPickerButton, BackgroundPickerPanel } from '../components/BackgroundPicker';
 
 function UnitToggle() {
@@ -72,8 +72,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   // Copy share links
   const [copied, setCopied] = useState(false);
-  const [copiedEditable, setCopiedEditable] = useState(false);
-
   async function copyUrlToClipboard(url: string): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(url);
@@ -100,13 +98,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleCopyEditableLink = async () => {
-    const url = await buildShareURL({ data, categoryOrder, categoryMeta }, { editable: true });
-    const ok = await copyUrlToClipboard(url);
-    if (!ok) window.prompt('Copy this editable link:', url);
-    setCopiedEditable(true);
-    setTimeout(() => setCopiedEditable(false), 2000);
-  };
 
   // Add Category state
   const [addingCat, setAddingCat] = useState(false);
@@ -363,18 +354,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         >
                           <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                           <div className="text-left">
-                            <div>{copied ? 'Copied!' : 'View Link'}</div>
+                            <div>{copied ? 'Copied!' : 'Copy Link'}</div>
                             <div className="text-[11px] text-muted-foreground">View-only for others</div>
-                          </div>
-                        </button>
-                        <button
-                          onClick={() => { handleCopyEditableLink(); setShowShareMenu(false); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
-                        >
-                          <PencilLine className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                          <div className="text-left">
-                            <div>{copiedEditable ? 'Copied!' : 'Editable Link'}</div>
-                            <div className="text-[11px] text-muted-foreground">Loads list into viewer's checklist</div>
                           </div>
                         </button>
                         <div className="my-1 border-t border-border" />
