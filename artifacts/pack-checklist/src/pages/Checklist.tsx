@@ -320,7 +320,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 <button
                   onClick={handleShare}
                   disabled={sharing}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                 >
                   <Share2 className="w-3.5 h-3.5" />
                   {sharing ? 'Sharing…' : 'Share PDF'}
