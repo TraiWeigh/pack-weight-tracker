@@ -11,7 +11,7 @@ import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ScanGearPanel } from '../components/ScanGearPanel';
 import { buildShareURL } from '../lib/shareLink';
-import { RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
+import { RotateCcw, Tent, Printer, Share2, Link, FileDown, PencilLine, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
 import { BackgroundPickerButton, BackgroundPickerPanel } from '../components/BackgroundPicker';
 
 function UnitToggle() {
@@ -70,33 +70,42 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // Expand / collapse all categories
   const [allOpen, setAllOpen] = useState(true);
 
-  // Copy share link
+  // Copy share links
   const [copied, setCopied] = useState(false);
-  const handleCopyLink = async () => {
-    const url = await buildShareURL({ data, categoryOrder, categoryMeta });
-    // navigator.clipboard requires focus & a secure context; use execCommand as fallback
-    let copyOk = false;
+  const [copiedEditable, setCopiedEditable] = useState(false);
+
+  async function copyUrlToClipboard(url: string): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(url);
-      copyOk = true;
+      return true;
     } catch {
       try {
         const el = document.createElement('textarea');
         el.value = url;
         el.style.cssText = 'position:fixed;pointer-events:none;opacity:0';
         document.body.appendChild(el);
-        el.focus();
-        el.select();
-        copyOk = document.execCommand('copy');
+        el.focus(); el.select();
+        const ok = document.execCommand('copy');
         document.body.removeChild(el);
-      } catch { /* ignore */ }
+        return ok;
+      } catch { return false; }
     }
-    if (!copyOk) {
-      // Last resort — show the URL so the user can copy manually
-      window.prompt('Copy this link:', url);
-    }
+  }
+
+  const handleCopyLink = async () => {
+    const url = await buildShareURL({ data, categoryOrder, categoryMeta });
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this link:', url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyEditableLink = async () => {
+    const url = await buildShareURL({ data, categoryOrder, categoryMeta }, { editable: true });
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this editable link:', url);
+    setCopiedEditable(true);
+    setTimeout(() => setCopiedEditable(false), 2000);
   };
 
   // Add Category state
@@ -353,8 +362,22 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
                         >
                           <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                          {copied ? 'Copied!' : 'Copy Link'}
+                          <div className="text-left">
+                            <div>{copied ? 'Copied!' : 'Copy Link'}</div>
+                            <div className="text-[11px] text-muted-foreground">View-only for others</div>
+                          </div>
                         </button>
+                        <button
+                          onClick={() => { handleCopyEditableLink(); setShowShareMenu(false); }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                        >
+                          <PencilLine className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                          <div className="text-left">
+                            <div>{copiedEditable ? 'Copied!' : 'Copy Editable Link'}</div>
+                            <div className="text-[11px] text-muted-foreground">Loads list into viewer's checklist</div>
+                          </div>
+                        </button>
+                        <div className="my-1 border-t border-border" />
                         <button
                           onClick={() => { handleShare(); setShowShareMenu(false); }}
                           disabled={sharing}

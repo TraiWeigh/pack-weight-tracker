@@ -20,10 +20,18 @@ export function decodeSharePayload(encoded: string): SharePayload | null {
   }
 }
 
-/** Creates a short /s/<id> link stored on the server. Falls back to hash URL if offline. */
-export async function buildShareURL(payload: SharePayload): Promise<string> {
+/**
+ * Creates a short /s/<id> link stored on the server. Falls back to hash URL if offline.
+ * Pass `{ editable: true }` to generate a link that loads the list into the viewer's checklist.
+ * Without that option the link opens a read-only view.
+ */
+export async function buildShareURL(
+  payload: SharePayload,
+  opts?: { editable?: boolean },
+): Promise<string> {
   const base = window.location.origin +
     (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+  const suffix = opts?.editable ? '?edit=1' : '';
 
   try {
     const resp = await fetch('/api/links', {
@@ -33,7 +41,7 @@ export async function buildShareURL(payload: SharePayload): Promise<string> {
     });
     if (resp.ok) {
       const { id } = await resp.json() as { id: string };
-      const url = `${base}/s/${id}`;
+      const url = `${base}/s/${id}${suffix}`;
       console.log('[TrailWeigh] Short share URL:', url);
       return url;
     }
