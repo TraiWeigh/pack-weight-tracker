@@ -145,7 +145,7 @@ export function BackgroundPickerPanel({
         ref={fileInput}
         id="bg-file-upload"
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
         className="sr-only"
         onChange={handlePickFile}
       />
