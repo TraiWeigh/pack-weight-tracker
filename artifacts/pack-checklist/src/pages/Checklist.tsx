@@ -10,7 +10,8 @@ import { sharePackList } from '../lib/exportPDF';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ScanGearPanel } from '../components/ScanGearPanel';
-import { RotateCcw, Tent, Printer, Share2, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
+import { buildShareURL } from '../lib/shareLink';
+import { RotateCcw, Tent, Printer, Share2, Link, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
@@ -64,6 +65,15 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
 
   // Expand / collapse all categories
   const [allOpen, setAllOpen] = useState<boolean | null>(null);
+
+  // Copy share link
+  const [copied, setCopied] = useState(false);
+  const handleCopyLink = async () => {
+    const url = buildShareURL({ data, categoryOrder, categoryMeta });
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Add Category state
   const [addingCat, setAddingCat] = useState(false);
@@ -284,6 +294,17 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 >
                   <Printer className="w-3.5 h-3.5" />
                   Print
+                </button>
+                <button
+                  onClick={handleCopyLink}
+                  className={`flex items-center gap-1.5 text-xs font-semibold border px-3 py-1.5 rounded-lg transition-colors ${
+                    copied
+                      ? 'text-green-700 border-green-300 bg-green-50 dark:text-green-400 dark:border-green-700 dark:bg-green-950'
+                      : 'text-muted-foreground hover:text-foreground border-border hover:border-foreground/30 bg-card hover:bg-muted/50'
+                  }`}
+                >
+                  <Link className="w-3.5 h-3.5" />
+                  {copied ? 'Copied!' : 'Copy Link'}
                 </button>
                 <button
                   onClick={handleShare}
