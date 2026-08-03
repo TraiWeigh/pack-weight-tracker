@@ -250,7 +250,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4 order-first lg:order-last mb-8 lg:mb-0">
+            <div className="lg:col-span-4 order-first lg:order-last mb-8 lg:mb-0 lg:self-start lg:sticky lg:top-[4.5rem]">
               <div className="flex justify-end gap-2 mb-3">
                 <button
                   onClick={handlePrint}
@@ -269,11 +269,18 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 </button>
               </div>
 
-              <WeightSummary
-                data={data}
-                categoryOrder={categoryOrder}
-                categoryMeta={categoryMeta}
-              />
+              <div className="flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-6rem)] pb-2">
+                <WeightSummary
+                  data={data}
+                  categoryOrder={categoryOrder}
+                  categoryMeta={categoryMeta}
+                />
+                <ScanGearPanel
+                  userId={userId}
+                  categoryOrder={categoryOrder}
+                  onAddItem={(category, prefill) => addItem(category, prefill)}
+                />
+              </div>
             </div>
           </div>
         </main>
