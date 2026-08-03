@@ -17,4 +17,12 @@
 //   export type InsertPost = z.infer<typeof insertPostSchema>;
 //   export type Post = typeof postsTable.$inferSelect;
 
-export {}
+import { pgTable, text, jsonb, timestamp } from "drizzle-orm/pg-core";
+
+export const shareLinksTable = pgTable("share_links", {
+  id:        text("id").primaryKey(),
+  payload:   jsonb("payload").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type ShareLink = typeof shareLinksTable.$inferSelect;

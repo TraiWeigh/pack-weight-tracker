@@ -70,7 +70,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // Copy share link
   const [copied, setCopied] = useState(false);
   const handleCopyLink = async () => {
-    const url = buildShareURL({ data, categoryOrder, categoryMeta });
+    const url = await buildShareURL({ data, categoryOrder, categoryMeta });
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

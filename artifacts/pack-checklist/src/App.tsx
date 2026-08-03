@@ -9,6 +9,7 @@ import Checklist from './pages/Checklist';
 import LandingPage from './pages/LandingPage';
 import AdminPage from './pages/AdminPage';
 import SharedPackView from './pages/SharedPackView';
+import ShortLinkView from './pages/ShortLinkView';
 import NotFound from '@/pages/not-found';
 
 // REQUIRED — copy verbatim per Clerk skill
@@ -155,6 +156,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/" component={HomeRedirect} />
           <Route path="/checklist" component={ChecklistRoute} />
           <Route path="/shared" component={SharedPackView} />
+          <Route path="/s/:id" component={ShortLinkView} />
           {/* REQUIRED — /*? matches both bare URL and Clerk's OAuth sub-paths */}
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />

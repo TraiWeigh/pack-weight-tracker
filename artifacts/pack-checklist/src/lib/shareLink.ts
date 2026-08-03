@@ -1,7 +1,7 @@
-import { PackData, CategoryMeta } from '../hooks/usePackData';
+import { PackState, CategoryMeta } from '../hooks/usePackData';
 
 export interface SharePayload {
-  data: PackData;
+  data: PackState;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;
 }
@@ -20,7 +20,23 @@ export function decodeSharePayload(encoded: string): SharePayload | null {
   }
 }
 
-export function buildShareURL(payload: SharePayload): string {
-  const base = window.location.origin + window.location.pathname.replace(/\/checklist.*$/, '');
+/** Creates a short /s/<id> link stored on the server. Falls back to hash URL if offline. */
+export async function buildShareURL(payload: SharePayload): Promise<string> {
+  const base = window.location.origin +
+    (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+  try {
+    const resp = await fetch('/api/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payload }),
+    });
+    if (resp.ok) {
+      const { id } = await resp.json() as { id: string };
+      return `${base}/s/${id}`;
+    }
+  } catch { /* fall through to hash fallback */ }
+
+  // Offline / API unavailable — hash-encoded fallback (long but works)
   return `${base}/shared#${encodeSharePayload(payload)}`;
 }
