@@ -63,6 +63,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
+  const bgPickerContainerRef = useRef<HTMLDivElement>(null);
   const [background, setBackground] = useState<Background | null>(() => {
     try {
       const s = localStorage.getItem(BG_STORAGE_KEY);
@@ -382,17 +383,20 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned action bar — mirrors the Open/Close bar on the left */}
               <div className="relative flex flex-wrap justify-end gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
-                <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} active={!!background} />
-                <BackgroundPickerPanel
-                  open={backgroundPickerOpen}
-                  onClose={() => setBackgroundPickerOpen(false)}
-                  background={background}
-                  onBackgroundChange={handleBackgroundChange}
-                  bgFade={bgFade}
-                  onBgFadeChange={handleBgFadeChange}
-                  bgTone={bgTone}
-                  onBgToneChange={handleBgToneChange}
-                />
+                <div ref={bgPickerContainerRef} className="relative">
+                  <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} active={!!background} />
+                  <BackgroundPickerPanel
+                    open={backgroundPickerOpen}
+                    onClose={() => setBackgroundPickerOpen(false)}
+                    background={background}
+                    onBackgroundChange={handleBackgroundChange}
+                    bgFade={bgFade}
+                    onBgFadeChange={handleBgFadeChange}
+                    bgTone={bgTone}
+                    onBgToneChange={handleBgToneChange}
+                    containerRef={bgPickerContainerRef}
+                  />
+                </div>
                 <button
                   onClick={handlePrint}
                   className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"

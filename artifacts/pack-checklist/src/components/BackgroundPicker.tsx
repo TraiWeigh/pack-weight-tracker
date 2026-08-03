@@ -84,6 +84,7 @@ interface BackgroundPickerPanelProps {
   onBgFadeChange: (v: number) => void;
   bgTone: 'light' | 'dark';
   onBgToneChange: (t: 'light' | 'dark') => void;
+  containerRef?: React.RefObject<HTMLDivElement>;
 }
 
 export function BackgroundPickerPanel({
@@ -95,6 +96,7 @@ export function BackgroundPickerPanel({
   onBgFadeChange,
   bgTone,
   onBgToneChange,
+  containerRef,
 }: BackgroundPickerPanelProps) {
   const panelRef       = useRef<HTMLDivElement>(null);
   const fileInput      = useRef<HTMLInputElement>(null);
@@ -127,11 +129,12 @@ export function BackgroundPickerPanel({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+      const root = containerRef?.current ?? panelRef.current;
+      if (root && !root.contains(e.target as Node)) onClose();
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [open, onClose]);
+  }, [open, onClose, containerRef]);
 
   const activePresetId = background?.type === 'preset' ? background.id : null;
   const isCustomActive = background?.type === 'custom';
