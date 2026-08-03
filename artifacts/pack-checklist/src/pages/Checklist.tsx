@@ -363,7 +363,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         >
                           <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                           <div className="text-left">
-                            <div>{copied ? 'Copied!' : 'Copy Link'}</div>
+                            <div>{copied ? 'Copied!' : 'View Link'}</div>
                             <div className="text-[11px] text-muted-foreground">View-only for others</div>
                           </div>
                         </button>
@@ -373,7 +373,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         >
                           <PencilLine className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                           <div className="text-left">
-                            <div>{copiedEditable ? 'Copied!' : 'Copy Editable Link'}</div>
+                            <div>{copiedEditable ? 'Copied!' : 'Editable Link'}</div>
                             <div className="text-[11px] text-muted-foreground">Loads list into viewer's checklist</div>
                           </div>
                         </button>
