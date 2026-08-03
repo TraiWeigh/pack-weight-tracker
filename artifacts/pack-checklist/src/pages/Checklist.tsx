@@ -231,8 +231,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
             {/* Gear list */}
-            <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 py-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              <div className="flex items-center justify-between mb-4">
+            <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
+              <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pt-8 pb-3 flex items-center justify-between">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => setAllOpen(true)}
