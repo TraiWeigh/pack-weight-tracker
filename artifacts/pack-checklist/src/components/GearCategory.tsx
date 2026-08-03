@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GearItem, CategoryMeta } from '../hooks/usePackData';
 import { GearRow } from './GearRow';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUtils';
@@ -21,6 +21,64 @@ interface GearCategoryProps {
   onDelete: () => void;
 }
 
+// ── Inline-editable column header ────────────────────────────────────────────
+function EditableColHeader({
+  value,
+  placeholder,
+  onCommit,
+  className = '',
+}: {
+  value: string;
+  placeholder: string;
+  onCommit: (v: string) => void;
+  className?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft]     = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // keep draft in sync if parent changes (e.g. reset)
+  useEffect(() => { setDraft(value); }, [value]);
+
+  const commit = () => {
+    setEditing(false);
+    const trimmed = draft.trim();
+    onCommit(trimmed);
+  };
+
+  if (editing) {
+    return (
+      <input
+        ref={inputRef}
+        autoFocus
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') { setDraft(value); setEditing(false); } }}
+        className={`${className} bg-transparent border-b border-primary/50 focus:outline-none text-xs font-semibold uppercase tracking-wider text-primary w-full`}
+        placeholder={placeholder}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`${className} group/hdr flex items-center gap-1 cursor-pointer`}
+      title="Click to rename column"
+      onClick={() => setEditing(true)}
+    >
+      <span>{value || placeholder}</span>
+      <svg
+        className="w-3 h-3 opacity-0 group-hover/hdr:opacity-60 transition-opacity flex-shrink-0"
+        viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8"
+      >
+        <path d="M11 2.5 13.5 5 5.5 13H3v-2.5L11 2.5Z" />
+      </svg>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 export function GearCategory({
   name, items, meta, isFirst, isLast, forceOpen,
   updateItem, removeItem, addItem,
@@ -148,10 +206,21 @@ export function GearCategory({
       {/* ── Body ─────────────────────────────────────────────── */}
       {isOpen && (
         <div className="p-2 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="hidden sm:grid grid-cols-[auto_auto_1fr_80px_70px_80px_auto] gap-4 px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider select-none mb-1">
+          <div className="hidden sm:grid grid-cols-[auto_auto_1fr_80px_70px_80px_auto] gap-4 px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
             <div className="w-[30px]" />
-            <div className="w-28">Type</div>
-            <div>Description</div>
+            {/* Editable "Type" column header */}
+            <EditableColHeader
+              value={meta.subLabel ?? ''}
+              placeholder="Type"
+              onCommit={v => onUpdateMeta({ subLabel: v || undefined })}
+              className="w-28"
+            />
+            {/* Editable "Description" column header */}
+            <EditableColHeader
+              value={meta.descLabel ?? ''}
+              placeholder="Description"
+              onCommit={v => onUpdateMeta({ descLabel: v || undefined })}
+            />
             <div className="text-right">Weight</div>
             <div className="text-center">Qty</div>
             <div className="text-right">Total</div>
@@ -164,6 +233,8 @@ export function GearCategory({
                 key={item.id}
                 item={item}
                 category={name}
+                subLabel={meta.subLabel}
+                descLabel={meta.descLabel}
                 updateItem={updateItem}
                 removeItem={removeItem}
               />

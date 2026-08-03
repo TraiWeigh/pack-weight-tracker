@@ -7,13 +7,15 @@ import { X, GripVertical } from 'lucide-react';
 interface GearRowProps {
   item: GearItem;
   category: string;
+  subLabel?: string;
+  descLabel?: string;
   updateItem: (category: string, id: string, updates: Partial<GearItem>) => void;
   removeItem: (category: string, id: string) => void;
 }
 
 const QTY_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
 
-export const GearRow = memo(function GearRow({ item, category, updateItem, removeItem }: GearRowProps) {
+export const GearRow = memo(function GearRow({ item, category, subLabel, descLabel, updateItem, removeItem }: GearRowProps) {
   const { system } = useUnit();
   const totalOz = calcTotalOz(item.weightOz, item.qty);
   const su = smallUnit(system);
@@ -60,7 +62,7 @@ export const GearRow = memo(function GearRow({ item, category, updateItem, remov
         type="text"
         value={item.sub}
         onChange={(e) => updateItem(category, item.id, { sub: e.target.value })}
-        placeholder="Type"
+        placeholder={subLabel || 'Type'}
         className="text-xs sm:text-sm font-medium text-muted-foreground w-20 sm:w-28 bg-transparent focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate placeholder:text-muted-foreground/30 transition-colors hover:bg-black/5"
       />
 
@@ -69,7 +71,7 @@ export const GearRow = memo(function GearRow({ item, category, updateItem, remov
         type="text"
         value={item.desc}
         onChange={(e) => updateItem(category, item.id, { desc: e.target.value })}
-        placeholder="Item description"
+        placeholder={descLabel ? `${descLabel}…` : 'Item description'}
         className="w-full bg-transparent text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate placeholder:text-muted-foreground/50 transition-colors hover:bg-black/5"
       />
 

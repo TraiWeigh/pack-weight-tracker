@@ -17,6 +17,8 @@ export type PackState = {
 
 export type CategoryMeta = {
   countsToBase: boolean;
+  subLabel?: string;   // column header for the "Type" field
+  descLabel?: string;  // column header for the "Description" field
 };
 
 // Default order for built-in categories
@@ -89,7 +91,11 @@ function loadFromStorage(uid?: string): Store | null {
         const meta: Record<string, CategoryMeta> = {};
         order.forEach(cat => {
           const m = p.meta?.[cat];
-          meta[cat] = { countsToBase: m?.countsToBase ?? !DEFAULT_EXCLUDES_BASE.has(cat) };
+          meta[cat] = {
+            countsToBase: m?.countsToBase ?? !DEFAULT_EXCLUDES_BASE.has(cat),
+            subLabel:  m?.subLabel  ?? undefined,
+            descLabel: m?.descLabel ?? undefined,
+          };
         });
         return { items, order, meta };
       }

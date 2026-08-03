@@ -97,11 +97,13 @@ export function generatePackPDF(
     doc.text(cat.toUpperCase(), ML + 3, y + 4.5);
     y += 9;
 
+    const subHdr  = (categoryMeta[cat]?.subLabel  || 'Type').toUpperCase();
+    const descHdr = (categoryMeta[cat]?.descLabel || 'Description').toUpperCase();
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
-    doc.text('TYPE', ML + 6, y);
-    doc.text('DESCRIPTION', ML + 38, y);
+    doc.text(subHdr, ML + 6, y);
+    doc.text(descHdr, ML + 38, y);
     doc.text('WEIGHT', MR, y, { align: 'right' });
     y += 4.5;
 
