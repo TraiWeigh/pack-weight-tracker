@@ -185,7 +185,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
             {/* Gear list */}
-            <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 py-8">
+            <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 py-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
               <div className="flex justify-end mb-4">
                 <UnitToggle />
               </div>
