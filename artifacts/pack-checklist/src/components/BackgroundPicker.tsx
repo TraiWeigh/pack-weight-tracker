@@ -88,19 +88,31 @@ export function BackgroundPickerPanel({
   background,
   onBackgroundChange,
 }: BackgroundPickerPanelProps) {
-  const panelRef  = useRef<HTMLDivElement>(null);
-  const fileInput = useRef<HTMLInputElement>(null);
-  const [uploadError, setUploadError] = React.useState<string | null>(null);
-  const [isDragging, setIsDragging] = React.useState(false);
+  const panelRef       = useRef<HTMLDivElement>(null);
+  const fileInput      = useRef<HTMLInputElement>(null);
+  const processFileRef = useRef<((f: File) => void) | null>(null);
+  const openRef        = useRef(open);
+  useEffect(() => { openRef.current = open; }, [open]);
 
-  // Block browser-level drag-and-drop navigation everywhere on the page
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
+  const [isDragging,  setIsDragging]  = React.useState(false);
+
+  // Block browser-level navigation AND forward drops to processFile when open
   useEffect(() => {
-    const prevent = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); };
-    document.addEventListener('dragover', prevent);
-    document.addEventListener('drop',     prevent);
+    const onDragOver = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (openRef.current) {
+        const file = e.dataTransfer?.files?.[0];
+        if (file && processFileRef.current) processFileRef.current(file);
+      }
+    };
+    document.addEventListener('dragover', onDragOver);
+    document.addEventListener('drop',     onDrop);
     return () => {
-      document.removeEventListener('dragover', prevent);
-      document.removeEventListener('drop',     prevent);
+      document.removeEventListener('dragover', onDragOver);
+      document.removeEventListener('drop',     onDrop);
     };
   }, []);
 
@@ -116,7 +128,7 @@ export function BackgroundPickerPanel({
   const activePresetId = background?.type === 'preset' ? background.id : null;
   const isCustomActive = background?.type === 'custom';
 
-  // Shared validation + compression — used by both file-picker and drag-drop
+  // Shared validation + compression — used by both file-picker and drag-drop.
   const processFile = async (file: File) => {
     setUploadError(null);
 
@@ -141,6 +153,9 @@ export function BackgroundPickerPanel({
       if (fileInput.current) fileInput.current.value = '';
     }
   };
+  // Keep the ref fresh on every render so the document-level drop handler
+  // always calls the latest closure (capturing current state setters).
+  processFileRef.current = processFile;
 
   // Keep this handler and input above the early-return so the <input> stays
   // mounted even if the panel closes mid-dialog (OS file picker focus shift).
@@ -282,13 +297,13 @@ export function BackgroundPickerPanel({
               </label>
 
               {/* Error text — sits in the grid cell to the right of the upload tile */}
-              {uploadError && (
-                <div className="flex items-center">
-                  <p className="text-xs text-foreground leading-snug">{uploadError}</p>
-                </div>
-              )}
             </div>
           </div>
+
+          {/* Persistent format hint below grid */}
+          <p className="px-4 pb-3 text-xs text-foreground">
+            Only JPEG, PNG, WebP, and GIF are supported.
+          </p>
 
           {/* None — only shown when a background is active */}
           {background && (
