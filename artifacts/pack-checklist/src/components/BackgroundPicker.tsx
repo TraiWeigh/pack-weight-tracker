@@ -91,6 +91,18 @@ export function BackgroundPickerPanel({
   const panelRef  = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = React.useState<string | null>(null);
+  const [isDragging, setIsDragging] = React.useState(false);
+
+  // Block browser-level drag-and-drop navigation everywhere on the page
+  useEffect(() => {
+    const prevent = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+    document.addEventListener('dragover', prevent);
+    document.addEventListener('drop',     prevent);
+    return () => {
+      document.removeEventListener('dragover', prevent);
+      document.removeEventListener('drop',     prevent);
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -104,28 +116,21 @@ export function BackgroundPickerPanel({
   const activePresetId = background?.type === 'preset' ? background.id : null;
   const isCustomActive = background?.type === 'custom';
 
-  // Keep this handler and input above the early-return so the <input> stays
-  // mounted even if the panel closes mid-dialog (OS file picker focus shift).
-  const handlePickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Shared validation + compression — used by both file-picker and drag-drop
+  const processFile = async (file: File) => {
     setUploadError(null);
 
-    // Reject unsupported formats (TIFF/RAW crash the browser canvas)
-    const unsupported = /\.(tiff?|raw|cr2|cr3|nef|arw|dng|orf|rw2|pef)$/i;
-    if (unsupported.test(file.name) || file.type === 'image/tiff') {
-      setUploadError('TIFF and RAW files aren\'t supported. Please export as JPEG or PNG first.');
-      if (fileInput.current) fileInput.current.value = '';
+    const SAFE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const unsafeExt  = /\.(tiff?|raw|cr2|cr3|nef|arw|dng|orf|rw2|pef|heic|heif|bmp|svg)$/i;
+
+    if (!SAFE_TYPES.includes(file.type) || unsafeExt.test(file.name)) {
+      setUploadError('Only JPEG, PNG, WebP, and GIF are supported. Export your photo as JPEG first.');
       return;
     }
-
-    // Reject files over 25 MB to avoid tab crashes
     if (file.size > 25 * 1024 * 1024) {
       setUploadError('File is too large (max 25 MB). Please resize and try again.');
-      if (fileInput.current) fileInput.current.value = '';
       return;
     }
-
     try {
       const dataUrl = await compressImage(file);
       onBackgroundChange({ type: 'custom', dataUrl });
@@ -135,6 +140,30 @@ export function BackgroundPickerPanel({
     } finally {
       if (fileInput.current) fileInput.current.value = '';
     }
+  };
+
+  // Keep this handler and input above the early-return so the <input> stays
+  // mounted even if the panel closes mid-dialog (OS file picker focus shift).
+  const handlePickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
   };
 
   return (
@@ -207,13 +236,18 @@ export function BackgroundPickerPanel({
                 );
               })}
 
-              {/* Upload tile — label natively triggers the always-mounted file input */}
+              {/* Upload tile — label natively triggers file input; also accepts drag-and-drop */}
               <label
                 htmlFor="bg-file-upload"
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
                 className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all cursor-pointer ${
-                  isCustomActive
-                    ? 'ring-2 ring-primary ring-offset-1'
-                    : 'ring-1 ring-border hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
+                  isDragging
+                    ? 'ring-2 ring-primary ring-offset-1 bg-primary/5'
+                    : isCustomActive
+                      ? 'ring-2 ring-primary ring-offset-1'
+                      : 'ring-1 ring-border hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
                 }`}
               >
                 {/* Faded uploaded photo when active */}
