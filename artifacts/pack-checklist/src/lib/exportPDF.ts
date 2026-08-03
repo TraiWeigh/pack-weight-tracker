@@ -160,30 +160,17 @@ export function generatePackPDF(
   return doc.output('blob') as Blob;
 }
 
-export async function sharePackList(
+export function sharePackList(
   data: PackState,
   system: UnitSystem,
   categoryOrder: string[],
   categoryMeta: Record<string, CategoryMeta>,
 ) {
   const blob = generatePackPDF(data, system, categoryOrder, categoryMeta);
-  const file = new File([blob], 'pack-checklist.pdf', { type: 'application/pdf' });
-
-  if (typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] })) {
-    await navigator.share({
-      files: [file],
-      title: 'TrailWeigh Pack Checklist',
-      text: 'My pack checklist from TrailWeigh.',
-    });
-    return;
-  }
-
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = 'pack-checklist.pdf';
-  document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }

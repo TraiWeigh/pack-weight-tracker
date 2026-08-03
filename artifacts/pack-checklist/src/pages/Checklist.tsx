@@ -84,11 +84,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const handleReset = () => { resetToDefaults(); setShowResetConfirm(false); };
   const handlePrint  = () => window.print();
 
-  const handleShare = async () => {
+  const handleShare = () => {
     setSharing(true);
     try {
-      await sharePackList(data, system, categoryOrder, categoryMeta);
-    } catch { /* user cancelled */ } finally {
+      sharePackList(data, system, categoryOrder, categoryMeta);
+    } finally {
       setSharing(false);
     }
   };
