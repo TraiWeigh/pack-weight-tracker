@@ -124,7 +124,7 @@ export function BackgroundPickerPanel({
     const unsafeExt  = /\.(tiff?|raw|cr2|cr3|nef|arw|dng|orf|rw2|pef|heic|heif|bmp|svg)$/i;
 
     if (!SAFE_TYPES.includes(file.type) || unsafeExt.test(file.name)) {
-      setUploadError('Only JPEG, PNG, WebP, and GIF are supported. Export your photo as JPEG first.');
+      setUploadError('Only JPEG, PNG, WebP, and GIF are supported.');
       return;
     }
     if (file.size > 25 * 1024 * 1024) {
