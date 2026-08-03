@@ -64,13 +64,15 @@ interface ThemeState {
   bgPhotoId: string;
   bgOpacity: number;   // 0–100, default 70
   customColor: string; // hex '#rrggbb' or '' = off
+  customBgUrl: string; // data URL or HTTP URL, '' = off
 }
 
 interface ThemeContextType extends ThemeState {
-  setTheme:       (t: ThemeName) => void;
-  setBgPhoto:     (id: string)   => void;
-  setBgOpacity:   (v: number)    => void;
-  setCustomColor: (hex: string)  => void;
+  setTheme:        (t: ThemeName) => void;
+  setBgPhoto:      (id: string)   => void;
+  setBgOpacity:    (v: number)    => void;
+  setCustomColor:  (hex: string)  => void;
+  setCustomBgUrl:  (url: string)  => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -106,24 +108,25 @@ function loadState(): ThemeState {
     if (raw) {
       const p = JSON.parse(raw);
       return {
-        theme:       p.theme       ?? 'forest',
-        bgPhotoId:   p.bgPhotoId   ?? '',
-        bgOpacity:   p.bgOpacity   ?? 70,
-        customColor: p.customColor ?? '',
+        theme:        p.theme        ?? 'forest',
+        bgPhotoId:    p.bgPhotoId    ?? '',
+        bgOpacity:    p.bgOpacity    ?? 70,
+        customColor:  p.customColor  ?? '',
+        customBgUrl:  p.customBgUrl  ?? '',
       };
     }
   } catch { /* ignore */ }
-  return { theme: 'forest', bgPhotoId: '', bgOpacity: 70, customColor: '' };
+  return { theme: 'forest', bgPhotoId: '', bgOpacity: 70, customColor: '', customBgUrl: '' };
 }
 
-function applyToDOM({ theme, bgPhotoId, customColor }: ThemeState) {
+function applyToDOM({ theme, bgPhotoId, customColor, customBgUrl }: ThemeState) {
   const html = document.documentElement;
   html.setAttribute('data-theme', theme);
 
   // photo-active class drives frosted-glass CSS; background image itself
   // is rendered by <BgPhotoLayer /> so clear any legacy inline value
   html.style.backgroundImage = '';
-  if (bgPhotoId) {
+  if (bgPhotoId || customBgUrl) {
     html.classList.add('photo-active');
   } else {
     html.classList.remove('photo-active');
@@ -150,13 +153,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const setTheme       = (theme: ThemeName)    => setState(s => ({ ...s, theme }));
-  const setBgPhoto     = (bgPhotoId: string)   => setState(s => ({ ...s, bgPhotoId }));
-  const setBgOpacity   = (bgOpacity: number)   => setState(s => ({ ...s, bgOpacity }));
-  const setCustomColor = (customColor: string) => setState(s => ({ ...s, customColor }));
+  const setTheme        = (theme: ThemeName)    => setState(s => ({ ...s, theme }));
+  const setBgPhoto      = (bgPhotoId: string)   => setState(s => ({ ...s, bgPhotoId, customBgUrl: '' }));
+  const setBgOpacity    = (bgOpacity: number)   => setState(s => ({ ...s, bgOpacity }));
+  const setCustomColor  = (customColor: string) => setState(s => ({ ...s, customColor }));
+  const setCustomBgUrl  = (customBgUrl: string) => setState(s => ({ ...s, customBgUrl, bgPhotoId: '' }));
 
   return (
-    <ThemeContext.Provider value={{ ...state, setTheme, setBgPhoto, setBgOpacity, setCustomColor }}>
+    <ThemeContext.Provider value={{ ...state, setTheme, setBgPhoto, setBgOpacity, setCustomColor, setCustomBgUrl }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -174,9 +178,10 @@ export function useTheme() {
  * Mount this once at the app root, inside <ThemeProvider>.
  */
 export function BgPhotoLayer() {
-  const { bgPhotoId, bgOpacity } = useTheme();
-  const photo = BG_PHOTOS.find(p => p.id === bgPhotoId);
-  if (!photo) return null;
+  const { bgPhotoId, bgOpacity, customBgUrl } = useTheme();
+  const presetUrl = BG_PHOTOS.find(p => p.id === bgPhotoId)?.url;
+  const imageUrl  = customBgUrl || presetUrl;
+  if (!imageUrl) return null;
   return (
     <div
       aria-hidden="true"
@@ -184,7 +189,7 @@ export function BgPhotoLayer() {
         position: 'fixed',
         inset: 0,
         zIndex: -1,
-        backgroundImage: `url("${photo.url}")`,
+        backgroundImage: `url("${imageUrl}")`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
