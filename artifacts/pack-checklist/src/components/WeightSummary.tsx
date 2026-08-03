@@ -5,6 +5,37 @@ import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
+// ── Chart palettes ────────────────────────────────────────────────────────────
+
+const PALETTES: Record<string, { label: string; colors: string[] }> = {
+  trail: {
+    label: 'Trail',
+    colors: ['#3d5c3a','#5e8f58','#7ba36e','#95b58a','#4d7a68','#6b8f7a','#8a9e7a','#aac29e','#3d6557','#c2d4b8'],
+  },
+  ocean: {
+    label: 'Ocean',
+    colors: ['#1a4a6e','#1e6a8e','#2589a8','#3baabf','#5cbfd0','#7dd4df','#2a7a9a','#4da8c0','#164d70','#93dce8'],
+  },
+  sunset: {
+    label: 'Sunset',
+    colors: ['#c0392b','#e05c35','#e67e22','#f39c12','#f1c40f','#d35400','#c0a020','#a04040','#8040a0','#c06080'],
+  },
+  forest: {
+    label: 'Forest',
+    colors: ['#1a4a1a','#2d6a2d','#3d8a3d','#4daa4d','#5dc05d','#2a7a3a','#507060','#3d7a4d','#6a9c5a','#8cba78'],
+  },
+  berry: {
+    label: 'Berry',
+    colors: ['#5b2c6f','#7d3c98','#9b59b6','#a569bd','#bb8fce','#8e44ad','#c39bd3','#6c3483','#d07dc0','#e8a8d8'],
+  },
+  desert: {
+    label: 'Desert',
+    colors: ['#7d5a3c','#a0724d','#c4935e','#d4a676','#e0b990','#8a6045','#b07a50','#c8a070','#9a7050','#ddc098'],
+  },
+};
+
+const PALETTE_STORAGE_KEY = 'trailweigh:chartPalette';
+
 interface WeightSummaryProps {
   data: PackState;
   categoryOrder: string[];
@@ -15,6 +46,16 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
   const { system } = useUnit();
   const lu = largeUnit(system);
   const [chartOpen, setChartOpen] = useState(true);
+  const [paletteKey, setPaletteKey] = useState<string>(
+    () => localStorage.getItem(PALETTE_STORAGE_KEY) ?? 'trail'
+  );
+
+  const palette = PALETTES[paletteKey] ?? PALETTES.trail;
+
+  const handlePalette = (key: string) => {
+    setPaletteKey(key);
+    localStorage.setItem(PALETTE_STORAGE_KEY, key);
+  };
 
   // Tally base vs. non-base per category
   let baseWeightOz = 0;
@@ -34,7 +75,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
     return {
       name: cat,
       value: catTotalOz,
-      fill: `hsl(var(--chart-${(index % 10) + 1}))`,
+      fill: palette.colors[index % palette.colors.length],
     };
   }).filter(d => d.value > 0);
 
@@ -107,6 +148,32 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
           : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         }
       </button>
+
+      {/* Palette picker — visible when chart is open */}
+      {chartOpen && (
+        <div className="px-4 sm:px-5 pb-3 flex items-center gap-2 flex-wrap">
+          {Object.entries(PALETTES).map(([key, p]) => (
+            <button
+              key={key}
+              onClick={() => handlePalette(key)}
+              title={p.label}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-medium transition-colors ${
+                paletteKey === key
+                  ? 'border-foreground/40 bg-muted text-foreground'
+                  : 'border-border bg-transparent text-muted-foreground hover:border-foreground/20 hover:text-foreground'
+              }`}
+            >
+              {/* Three mini swatches */}
+              <span className="flex gap-0.5">
+                {p.colors.slice(0, 3).map((c, i) => (
+                  <span key={i} className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: c }} />
+                ))}
+              </span>
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {chartOpen && (
         <div className="p-4 sm:p-5 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
