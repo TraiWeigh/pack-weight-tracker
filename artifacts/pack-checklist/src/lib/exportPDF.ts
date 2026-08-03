@@ -184,8 +184,4 @@ export async function sharePackList(
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  setTimeout(() => {
-    window.location.href =
-      'mailto:?subject=Pack%20Checklist&body=Please%20find%20the%20pack%20checklist%20PDF%20attached.';
-  }, 600);
 }
