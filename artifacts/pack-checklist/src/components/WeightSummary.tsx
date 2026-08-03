@@ -86,7 +86,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
           {/* Grand Total */}
           <div className="flex justify-between items-end">
             <span className="text-base font-bold text-foreground">Grand Total</span>
-            <div className="font-mono text-3xl font-black text-primary tabular-nums leading-none">
+            <div className="font-mono text-3xl font-black text-foreground tabular-nums leading-none">
               {formatWeight(grandTotalOz, system, 'large')}
               <span className="text-base text-muted-foreground ml-1 font-sans">{lu}</span>
             </div>

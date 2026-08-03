@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Palette, X, Plus, ImagePlus, Link2 } from 'lucide-react';
-import { useTheme, THEMES, BG_PHOTOS } from '../context/ThemeContext';
+import { Palette, X, Plus, ImagePlus, Link2, Type } from 'lucide-react';
+import { useTheme, THEMES, BG_PHOTOS, FONT_OPTIONS, TEXT_COLOR_PRESETS } from '../context/ThemeContext';
 
 interface ThemePickerProps {
   open: boolean;
@@ -19,7 +19,7 @@ async function resizeToDataUrl(file: File, maxWidth = 1920): Promise<string> {
       canvas.width  = Math.round(img.width  * scale);
       canvas.height = Math.round(img.height * scale);
       canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.82));
+      resolve(canvas.toDataURL('image/jpeg', 0.92));
     };
     img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Image load failed')); };
     img.src = objectUrl;
@@ -42,13 +42,18 @@ export function ThemePickerButton({ onClick }: { onClick: () => void }) {
 export function ThemePickerPanel({ open, onClose }: ThemePickerProps) {
   const {
     theme, bgPhotoId, bgOpacity, customColor, customBgUrl,
+    customTextColor, customFont,
     setTheme, setBgPhoto, setBgOpacity, setCustomColor, setCustomBgUrl,
+    setCustomTextColor, setCustomFont,
   } = useTheme();
 
-  const panelRef      = useRef<HTMLDivElement>(null);
-  const colorInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef  = useRef<HTMLInputElement>(null);
+  const panelRef        = useRef<HTMLDivElement>(null);
+  const colorInputRef   = useRef<HTMLInputElement>(null);
+  const textColorRef    = useRef<HTMLInputElement>(null);
+  const fileInputRef    = useRef<HTMLInputElement>(null);
 
+  // 'color' = colour swatches tab, 'text' = text options tab
+  const [colorTab,      setColorTab]      = useState<'color' | 'text'>('color');
   const [showCustomForm, setShowCustomForm] = useState(false);
   const [urlInput,       setUrlInput]       = useState('');
   const [urlError,       setUrlError]       = useState('');
@@ -71,11 +76,12 @@ export function ThemePickerPanel({ open, onClose }: ThemePickerProps) {
 
   if (!open) return null;
 
-  const activeLabel = customColor
+  const activeColorLabel = customColor
     ? 'Custom accent'
     : (THEMES.find(t => t.id === theme)?.label ?? theme);
 
   const hasCustomBg = Boolean(customBgUrl);
+  const activeFontOpt = FONT_OPTIONS.find(f => f.id === customFont) ?? FONT_OPTIONS[0];
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -121,71 +127,237 @@ export function ThemePickerPanel({ open, onClose }: ThemePickerProps) {
         </button>
       </div>
 
-      {/* ── Colour Theme ── */}
+      {/* ── Colour Theme / Text tab row ── */}
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-          Colour Theme
-        </p>
-        <div className="flex gap-2 flex-wrap">
-          {THEMES.map(t => (
-            <button
-              key={t.id}
-              title={t.label}
-              onClick={() => setTheme(t.id)}
-              className={`relative w-9 h-9 rounded-full border-2 transition-all flex-shrink-0 ${
-                theme === t.id && !customColor
-                  ? 'border-foreground scale-110 shadow-md'
-                  : 'border-transparent hover:scale-105 hover:border-foreground/30'
-              }`}
-              style={{ backgroundColor: t.swatch }}
-            >
-              {theme === t.id && !customColor && (
-                <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold drop-shadow">
-                  ✓
-                </span>
+        {/* Tab switcher */}
+        <div className="flex items-center gap-0 mb-3 border border-border rounded-lg overflow-hidden">
+          <button
+            onClick={() => setColorTab('color')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+              colorTab === 'color'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            }`}
+          >
+            <Palette className="w-3 h-3" />
+            Colour Theme
+          </button>
+          <button
+            onClick={() => setColorTab('text')}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-colors border-l border-border ${
+              colorTab === 'text'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            }`}
+          >
+            <Type className="w-3 h-3" />
+            Text
+          </button>
+        </div>
+
+        {/* ── Colour Theme tab ── */}
+        {colorTab === 'color' && (
+          <>
+            <div className="flex gap-2 flex-wrap">
+              {THEMES.map(t => (
+                <button
+                  key={t.id}
+                  title={t.label}
+                  onClick={() => setTheme(t.id)}
+                  className={`relative w-9 h-9 rounded-full border-2 transition-all flex-shrink-0 ${
+                    theme === t.id && !customColor
+                      ? 'border-foreground scale-110 shadow-md'
+                      : 'border-transparent hover:scale-105 hover:border-foreground/30'
+                  }`}
+                  style={{ backgroundColor: t.swatch }}
+                >
+                  {theme === t.id && !customColor && (
+                    <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold drop-shadow">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              ))}
+
+              {/* Custom accent colour swatch */}
+              <div className="relative flex-shrink-0">
+                <button
+                  title="Pick a custom accent colour"
+                  onClick={() => colorInputRef.current?.click()}
+                  className={`relative w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center ${
+                    customColor
+                      ? 'border-foreground scale-110 shadow-md'
+                      : 'border-dashed border-muted-foreground/50 hover:scale-105 hover:border-muted-foreground'
+                  }`}
+                  style={customColor ? { backgroundColor: customColor } : undefined}
+                >
+                  {customColor
+                    ? <span className="text-white text-[10px] font-bold drop-shadow">✓</span>
+                    : <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                  }
+                </button>
+                <input
+                  ref={colorInputRef}
+                  type="color"
+                  value={customColor || '#3d5a40'}
+                  onChange={e => setCustomColor(e.target.value)}
+                  className="sr-only"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-1.5">
+              <p className="text-[11px] text-muted-foreground">{activeColorLabel}</p>
+              {customColor && (
+                <button
+                  onClick={() => setCustomColor('')}
+                  className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                  Clear
+                </button>
               )}
-            </button>
-          ))}
+            </div>
+          </>
+        )}
 
-          {/* Custom accent colour swatch */}
-          <div className="relative flex-shrink-0">
-            <button
-              title="Pick a custom accent colour"
-              onClick={() => colorInputRef.current?.click()}
-              className={`relative w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center ${
-                customColor
-                  ? 'border-foreground scale-110 shadow-md'
-                  : 'border-dashed border-muted-foreground/50 hover:scale-105 hover:border-muted-foreground'
-              }`}
-              style={customColor ? { backgroundColor: customColor } : undefined}
-            >
-              {customColor
-                ? <span className="text-white text-[10px] font-bold drop-shadow">✓</span>
-                : <Plus className="w-3.5 h-3.5 text-muted-foreground" />
-              }
-            </button>
-            <input
-              ref={colorInputRef}
-              type="color"
-              value={customColor || '#3d5a40'}
-              onChange={e => setCustomColor(e.target.value)}
-              className="sr-only"
-            />
+        {/* ── Text tab ── */}
+        {colorTab === 'text' && (
+          <div className="space-y-4">
+            {/* Font family */}
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Font
+              </p>
+              <div className="grid grid-cols-5 gap-1.5">
+                {FONT_OPTIONS.map(f => (
+                  <button
+                    key={f.id}
+                    title={f.label}
+                    onClick={() => setCustomFont(f.id === 'default' ? '' : f.id)}
+                    className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg border-2 transition-all ${
+                      (f.id === 'default' ? !customFont : customFont === f.id)
+                        ? 'border-foreground bg-muted shadow-sm'
+                        : 'border-border hover:border-foreground/30 hover:bg-muted/40'
+                    }`}
+                  >
+                    <span
+                      className="text-base font-bold leading-none text-foreground"
+                      style={{ fontFamily: f.fontFamily || undefined }}
+                    >
+                      {f.preview ?? 'Aa'}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground leading-none text-center">
+                      {f.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              {customFont && (
+                <div className="flex items-center justify-between mt-1.5">
+                  <p className="text-[11px] text-muted-foreground">{activeFontOpt.label}</p>
+                  <button
+                    onClick={() => setCustomFont('')}
+                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                    Reset
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Text colour */}
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Text Colour
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                {/* Default (no override) */}
+                <button
+                  title="Default text colour"
+                  onClick={() => setCustomTextColor('')}
+                  className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center text-[10px] font-bold bg-gradient-to-br from-neutral-200 to-neutral-500 ${
+                    !customTextColor
+                      ? 'border-foreground scale-110 shadow-md'
+                      : 'border-transparent hover:scale-105 hover:border-foreground/30'
+                  }`}
+                >
+                  {!customTextColor && <span className="text-white drop-shadow">✓</span>}
+                </button>
+
+                {/* Preset text colours */}
+                {TEXT_COLOR_PRESETS.map(p => (
+                  <button
+                    key={p.hex}
+                    title={p.label}
+                    onClick={() => setCustomTextColor(p.hex)}
+                    className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center ${
+                      customTextColor === p.hex
+                        ? 'border-foreground scale-110 shadow-md'
+                        : 'border-transparent hover:scale-105 hover:border-foreground/30'
+                    }`}
+                    style={{ backgroundColor: p.hex }}
+                  >
+                    {customTextColor === p.hex && (
+                      <span
+                        className="text-[10px] font-bold drop-shadow"
+                        style={{ color: p.hex === '#f8f8f8' ? '#333' : '#fff' }}
+                      >
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+
+                {/* Custom text colour picker */}
+                <div className="relative flex-shrink-0">
+                  <button
+                    title="Pick a custom text colour"
+                    onClick={() => textColorRef.current?.click()}
+                    className={`w-8 h-8 rounded-full border-2 transition-all flex items-center justify-center ${
+                      customTextColor && !TEXT_COLOR_PRESETS.find(p => p.hex === customTextColor)
+                        ? 'border-foreground scale-110 shadow-md'
+                        : 'border-dashed border-muted-foreground/50 hover:scale-105 hover:border-muted-foreground'
+                    }`}
+                    style={
+                      customTextColor && !TEXT_COLOR_PRESETS.find(p => p.hex === customTextColor)
+                        ? { backgroundColor: customTextColor }
+                        : undefined
+                    }
+                  >
+                    {customTextColor && !TEXT_COLOR_PRESETS.find(p => p.hex === customTextColor)
+                      ? <span className="text-white text-[10px] font-bold drop-shadow">✓</span>
+                      : <Plus className="w-3 h-3 text-muted-foreground" />
+                    }
+                  </button>
+                  <input
+                    ref={textColorRef}
+                    type="color"
+                    value={customTextColor || '#1a1a1a'}
+                    onChange={e => setCustomTextColor(e.target.value)}
+                    className="sr-only"
+                  />
+                </div>
+              </div>
+
+              {customTextColor && (
+                <div className="flex items-center justify-between mt-1.5">
+                  <p className="text-[11px] text-muted-foreground">
+                    {TEXT_COLOR_PRESETS.find(p => p.hex === customTextColor)?.label ?? 'Custom'}
+                  </p>
+                  <button
+                    onClick={() => setCustomTextColor('')}
+                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                    Reset
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-1.5">
-          <p className="text-[11px] text-muted-foreground">{activeLabel}</p>
-          {customColor && (
-            <button
-              onClick={() => setCustomColor('')}
-              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="w-3 h-3" />
-              Clear
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* ── Background Photo ── */}
