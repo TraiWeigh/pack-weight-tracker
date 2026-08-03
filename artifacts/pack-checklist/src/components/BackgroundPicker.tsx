@@ -121,12 +121,14 @@ export function BackgroundPickerPanel({
 
   return (
     <>
-      {/* Always-mounted — must stay in DOM while OS file dialog is open */}
+      {/* Always-mounted — must stay in DOM while OS file dialog is open.
+          Use id + <label htmlFor> instead of ref.click() for cross-browser reliability. */}
       <input
         ref={fileInput}
+        id="bg-file-upload"
         type="file"
         accept="image/*"
-        className="hidden"
+        className="sr-only"
         onChange={handlePickFile}
       />
 
@@ -180,10 +182,10 @@ export function BackgroundPickerPanel({
                 );
               })}
 
-              {/* Upload tile — always last in the grid */}
-              <button
-                onClick={() => fileInput.current?.click()}
-                className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all ${
+              {/* Upload tile — label natively triggers the always-mounted file input */}
+              <label
+                htmlFor="bg-file-upload"
+                className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all cursor-pointer ${
                   isCustomActive
                     ? 'ring-2 ring-primary ring-offset-1'
                     : 'ring-1 ring-border hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
@@ -225,7 +227,7 @@ export function BackgroundPickerPanel({
                     <Check className="w-2.5 h-2.5" />
                   </div>
                 )}
-              </button>
+              </label>
             </div>
           </div>
 
