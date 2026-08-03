@@ -269,7 +269,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 </button>
               </div>
 
-              <div className="flex flex-col gap-4 overflow-y-auto max-h-[calc(100vh-6rem)] pb-2">
+              <div className="flex flex-col gap-4 lg:overflow-y-auto lg:max-h-[calc(100vh-6rem)] pb-2">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}
