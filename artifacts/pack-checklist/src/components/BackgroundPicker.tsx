@@ -195,13 +195,6 @@ export function BackgroundPickerPanel({
             </button>
           </div>
 
-          {/* Upload error */}
-          {uploadError && (
-            <div className="mx-3 mb-2 px-3 py-2 bg-destructive/10 border border-destructive/30 rounded-lg text-xs text-destructive leading-snug">
-              {uploadError}
-            </div>
-          )}
-
           {/* Photo grid — presets + upload tile */}
           <div className="px-3 pb-3">
             <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
@@ -287,6 +280,13 @@ export function BackgroundPickerPanel({
                   </div>
                 )}
               </label>
+
+              {/* Error text — sits in the grid cell to the right of the upload tile */}
+              {uploadError && (
+                <div className="flex items-center">
+                  <p className="text-xs text-foreground leading-snug">{uploadError}</p>
+                </div>
+              )}
             </div>
           </div>
 
