@@ -182,6 +182,9 @@ export function BackgroundPickerPanel({
       {open && (
         <div
           ref={panelRef}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
           className="absolute right-0 top-full mt-2 z-50 w-[22rem] bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
         >
           {/* Header */}
@@ -229,12 +232,9 @@ export function BackgroundPickerPanel({
                 );
               })}
 
-              {/* Upload tile — label natively triggers file input; also accepts drag-and-drop */}
+              {/* Upload tile — label natively triggers file input; panel handles drag-and-drop */}
               <label
                 htmlFor="bg-file-upload"
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
                 className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all cursor-pointer ${
                   isDragging
                     ? 'ring-2 ring-primary ring-offset-1 bg-primary/5'
