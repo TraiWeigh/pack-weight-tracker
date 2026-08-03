@@ -89,8 +89,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const [bgFade, setBgFade] = useState<number>(() => {
     const s = localStorage.getItem('trailweigh:bgFade');
-    const v = s ? parseFloat(s) : 0;
-    return isNaN(v) ? 0 : Math.min(1, Math.max(0, v));
+    const v = s ? parseFloat(s) : 1;
+    return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
   });
   const handleBgFadeChange = (v: number) => {
     setBgFade(v);
@@ -194,8 +194,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       <div
         className={`screen-only h-[100dvh] overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
         style={bgImageUrl ? {
-          backgroundImage: bgFade > 0
-            ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${bgFade})),url(${bgImageUrl})`
+          backgroundImage: bgFade < 1
+            ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade})),url(${bgImageUrl})`
             : `url(${bgImageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
