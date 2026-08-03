@@ -229,7 +229,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:h-[calc(100vh-4rem)] lg:overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[auto_1fr] gap-x-8 gap-y-0 lg:h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 lg:grid-rows-[auto_1fr_auto] gap-x-8 gap-y-0 lg:h-full">
 
             {/* Gear list — lg:contents flattens children into the grid */}
             <div className="lg:contents">
@@ -373,13 +373,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
               </div>
 
-              {/* Scrollable sidebar content — row 2, cols 9–12 */}
-              <div className="lg:col-span-4 lg:row-start-2 lg:overflow-y-auto lg:min-h-0 flex flex-col gap-4 pb-8 lg:px-3 lg:[scrollbar-gutter:stable]">
+              {/* Pack Summary — row 3, cols 9–12; pinned below the scroller.
+                  In DOM before ScanGearPanel so it renders first on mobile. */}
+              <div className="lg:col-span-4 lg:row-start-3 pt-4 pb-8 lg:px-3">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}
                   categoryMeta={categoryMeta}
                 />
+              </div>
+
+              {/* Scrollable sidebar content — row 2, cols 9–12 */}
+              <div className="lg:col-span-4 lg:row-start-2 lg:overflow-y-auto lg:min-h-0 pb-4 lg:px-3 lg:[scrollbar-gutter:stable]">
                 <ScanGearPanel
                   userId={userId}
                   categoryOrder={categoryOrder}
