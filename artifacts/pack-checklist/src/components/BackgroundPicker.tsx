@@ -82,6 +82,8 @@ interface BackgroundPickerPanelProps {
   onBackgroundChange: (bg: Background | null) => void;
   bgFade: number;
   onBgFadeChange: (v: number) => void;
+  bgTone: 'light' | 'dark';
+  onBgToneChange: (t: 'light' | 'dark') => void;
 }
 
 export function BackgroundPickerPanel({
@@ -91,6 +93,8 @@ export function BackgroundPickerPanel({
   onBackgroundChange,
   bgFade,
   onBgFadeChange,
+  bgTone,
+  onBgToneChange,
 }: BackgroundPickerPanelProps) {
   const panelRef       = useRef<HTMLDivElement>(null);
   const fileInput      = useRef<HTMLInputElement>(null);
@@ -217,10 +221,27 @@ export function BackgroundPickerPanel({
             </button>
           </div>
 
-          {/* Background fade slider */}
+          {/* Tone toggle + fade slider */}
           <div className="px-4 pb-3 border-b border-border">
+            <div className="flex items-center justify-between mb-2.5">
+              <span className="text-xs font-semibold text-foreground">Style</span>
+              <div className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold">
+                <button
+                  onClick={() => onBgToneChange('light')}
+                  className={`px-3 py-1 transition-colors ${bgTone === 'light' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  ☀ Light
+                </button>
+                <button
+                  onClick={() => onBgToneChange('dark')}
+                  className={`px-3 py-1 transition-colors border-l border-border ${bgTone === 'dark' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  🌙 Dark
+                </button>
+              </div>
+            </div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-semibold text-foreground">Lighten background</span>
+              <span className="text-xs text-muted-foreground">{bgTone === 'dark' ? 'Darken' : 'Lighten'}</span>
               <span className="text-xs text-muted-foreground tabular-nums">{Math.round(bgFade * 100)}%</span>
             </div>
             <input

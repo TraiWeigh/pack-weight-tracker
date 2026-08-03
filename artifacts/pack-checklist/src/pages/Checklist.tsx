@@ -96,6 +96,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setBgFade(v);
     localStorage.setItem('trailweigh:bgFade', String(v));
   };
+
+  const [bgTone, setBgTone] = useState<'light' | 'dark'>(() =>
+    (localStorage.getItem('trailweigh:bgTone') as 'light' | 'dark') ?? 'light'
+  );
+  const handleBgToneChange = (t: 'light' | 'dark') => {
+    setBgTone(t);
+    localStorage.setItem('trailweigh:bgTone', t);
+  };
   const bgImageUrl = background
     ? background.type === 'preset'
       ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
@@ -184,10 +192,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
       {/* ── Screen content ── */}
       <div
-        className="screen-only h-[100dvh] overflow-hidden flex flex-col bg-background"
+        className={`screen-only h-[100dvh] overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
         style={bgImageUrl ? {
           backgroundImage: bgFade > 0
-            ? `linear-gradient(rgba(255,255,255,${bgFade}),rgba(255,255,255,${bgFade})),url(${bgImageUrl})`
+            ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${bgFade})),url(${bgImageUrl})`
             : `url(${bgImageUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -382,6 +390,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onBackgroundChange={handleBackgroundChange}
                   bgFade={bgFade}
                   onBgFadeChange={handleBgFadeChange}
+                  bgTone={bgTone}
+                  onBgToneChange={handleBgToneChange}
                 />
                 <button
                   onClick={handlePrint}

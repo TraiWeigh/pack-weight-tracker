@@ -326,3 +326,16 @@
   }
 }
 
+/* Dark background mode — toggled via Background panel */
+.screen-dark {
+  --foreground:       0 0% 93%;
+  --card-foreground:  0 0% 93%;
+  --muted-foreground: 0 0% 62%;
+  --card:             220 15% 14%;
+  --card-border:      220 10% 22%;
+  --border:           220 10% 28%;
+  --muted:            220 12% 18%;
+  --background:       220 20% 8%;
+  --input:            220 10% 20%;
+}
+
