@@ -86,6 +86,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
     else localStorage.removeItem(BG_STORAGE_KEY);
   };
+
+  const [panelOpacity, setPanelOpacity] = useState<number>(() => {
+    const s = localStorage.getItem('trailweigh:panelOpacity');
+    const v = s ? parseFloat(s) : 1;
+    return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
+  });
+  const handlePanelOpacityChange = (v: number) => {
+    setPanelOpacity(v);
+    localStorage.setItem('trailweigh:panelOpacity', String(v));
+  };
   const bgImageUrl = background
     ? background.type === 'preset'
       ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
@@ -175,7 +185,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       {/* ── Screen content ── */}
       <div
         className="screen-only h-[100dvh] overflow-hidden flex flex-col bg-background"
-        style={bgImageUrl ? { backgroundImage: `url(${bgImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+        style={{
+          '--panel-opacity': panelOpacity,
+          ...(bgImageUrl ? { backgroundImage: `url(${bgImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
+        } as React.CSSProperties}
       >
         <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -364,6 +377,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onClose={() => setBackgroundPickerOpen(false)}
                   background={background}
                   onBackgroundChange={handleBackgroundChange}
+                  panelOpacity={panelOpacity}
+                  onPanelOpacityChange={handlePanelOpacityChange}
                 />
                 <button
                   onClick={handlePrint}

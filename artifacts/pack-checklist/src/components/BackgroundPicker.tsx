@@ -80,6 +80,8 @@ interface BackgroundPickerPanelProps {
   onClose: () => void;
   background: Background | null;
   onBackgroundChange: (bg: Background | null) => void;
+  panelOpacity: number;
+  onPanelOpacityChange: (v: number) => void;
 }
 
 export function BackgroundPickerPanel({
@@ -87,6 +89,8 @@ export function BackgroundPickerPanel({
   onClose,
   background,
   onBackgroundChange,
+  panelOpacity,
+  onPanelOpacityChange,
 }: BackgroundPickerPanelProps) {
   const panelRef       = useRef<HTMLDivElement>(null);
   const fileInput      = useRef<HTMLInputElement>(null);
@@ -211,6 +215,23 @@ export function BackgroundPickerPanel({
             >
               <X className="w-3.5 h-3.5" />
             </button>
+          </div>
+
+          {/* Panel transparency slider */}
+          <div className="px-4 pb-3 border-b border-border">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-semibold text-foreground">Panel transparency</span>
+              <span className="text-xs text-muted-foreground tabular-nums">{Math.round((1 - panelOpacity) * 100)}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.01}
+              value={panelOpacity}
+              onChange={e => onPanelOpacityChange(parseFloat(e.target.value))}
+              className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-primary bg-border"
+            />
           </div>
 
           {/* Photo grid — presets + upload tile */}
