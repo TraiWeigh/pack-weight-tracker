@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { useUnit } from '../context/UnitContext';
 import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface WeightSummaryProps {
   data: PackState;
@@ -13,6 +14,7 @@ interface WeightSummaryProps {
 export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSummaryProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
+  const [chartOpen, setChartOpen] = useState(true);
 
   // Tally base vs. non-base per category
   let baseWeightOz = 0;
@@ -92,53 +94,67 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSumma
         </div>
       </div>
 
-      <div className="p-4 sm:p-5">
-        <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Weight Distribution</h3>
+      {/* Collapsible Weight Distribution */}
+      <button
+        onClick={() => setChartOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors border-t border-border"
+      >
+        <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          Weight Distribution
+        </span>
+        {chartOpen
+          ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        }
+      </button>
 
-        {grandTotalOz > 0 ? (
-          <>
-            <div className="h-[200px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+      {chartOpen && (
+        <div className="p-4 sm:p-5 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          {grandTotalOz > 0 ? (
+            <>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
 
-            <div className="mt-4 space-y-2">
-              {categoryData.map((cat, i) => (
-                <div key={i} className="flex justify-between items-center text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: cat.fill }} />
-                    <span className="text-foreground font-medium truncate w-32">{cat.name}</span>
+              <div className="mt-4 space-y-2">
+                {categoryData.map((cat, i) => (
+                  <div key={i} className="flex justify-between items-center text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: cat.fill }} />
+                      <span className="text-foreground font-medium truncate w-32">{cat.name}</span>
+                    </div>
+                    <span className="font-mono text-muted-foreground tabular-nums text-xs">
+                      {formatWeight(cat.value, system, 'large')} {lu}
+                    </span>
                   </div>
-                  <span className="font-mono text-muted-foreground tabular-nums text-xs">
-                    {formatWeight(cat.value, system, 'large')} {lu}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm italic">
+              No items packed yet
             </div>
-          </>
-        ) : (
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm italic">
-            No items packed yet
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
