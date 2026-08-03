@@ -33,9 +33,14 @@ export async function buildShareURL(payload: SharePayload): Promise<string> {
     });
     if (resp.ok) {
       const { id } = await resp.json() as { id: string };
-      return `${base}/s/${id}`;
+      const url = `${base}/s/${id}`;
+      console.log('[TrailWeigh] Short share URL:', url);
+      return url;
     }
-  } catch { /* fall through to hash fallback */ }
+    console.warn('[TrailWeigh] Share API returned', resp.status, '— using fallback URL');
+  } catch (err) {
+    console.warn('[TrailWeigh] Share API error — using fallback URL', err);
+  }
 
   // Offline / API unavailable — hash-encoded fallback (long but works)
   return `${base}/shared#${encodeSharePayload(payload)}`;

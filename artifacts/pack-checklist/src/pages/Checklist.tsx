@@ -73,7 +73,27 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [copied, setCopied] = useState(false);
   const handleCopyLink = async () => {
     const url = await buildShareURL({ data, categoryOrder, categoryMeta });
-    await navigator.clipboard.writeText(url);
+    // navigator.clipboard requires focus & a secure context; use execCommand as fallback
+    let copyOk = false;
+    try {
+      await navigator.clipboard.writeText(url);
+      copyOk = true;
+    } catch {
+      try {
+        const el = document.createElement('textarea');
+        el.value = url;
+        el.style.cssText = 'position:fixed;pointer-events:none;opacity:0';
+        document.body.appendChild(el);
+        el.focus();
+        el.select();
+        copyOk = document.execCommand('copy');
+        document.body.removeChild(el);
+      } catch { /* ignore */ }
+    }
+    if (!copyOk) {
+      // Last resort — show the URL so the user can copy manually
+      window.prompt('Copy this link:', url);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

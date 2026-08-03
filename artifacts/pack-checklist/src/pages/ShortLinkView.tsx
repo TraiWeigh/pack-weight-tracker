@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'wouter';
-
-const GUEST_KEY = 'pack-checklist-v5-guest';
+import { INCOMING_SHARE_KEY } from '../hooks/usePackData';
 
 export default function ShortLinkView() {
   const [, setLocation] = useLocation();
@@ -19,13 +18,15 @@ export default function ShortLinkView() {
       })
       .then(({ payload }) => {
         if (payload) {
+          // Write to the staging key — usePackData reads & clears it on next load,
+          // regardless of whether the recipient is signed in or a guest.
           const store = {
             __v: 5,
             order: payload.categoryOrder,
             items: payload.data,
-            meta: payload.categoryMeta,
+            meta:  payload.categoryMeta,
           };
-          localStorage.setItem(GUEST_KEY, JSON.stringify(store));
+          localStorage.setItem(INCOMING_SHARE_KEY, JSON.stringify(store));
         }
         setLocation('/checklist');
       })

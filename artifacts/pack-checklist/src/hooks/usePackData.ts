@@ -38,8 +38,9 @@ const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
   { category: 'Sleep',    subs: ['Sleeping Bag'] },
 ];
 
-const V5_KEY   = (uid?: string) => uid ? `pack-checklist-v5-${uid}` : 'pack-checklist-v5-guest';
-const V4_KEY   = (uid?: string) => uid ? `pack-checklist-v4-${uid}` : 'pack-checklist-v4-guest';
+const V5_KEY       = (uid?: string) => uid ? `pack-checklist-v5-${uid}` : 'pack-checklist-v5-guest';
+const V4_KEY       = (uid?: string) => uid ? `pack-checklist-v4-${uid}` : 'pack-checklist-v4-guest';
+export const INCOMING_SHARE_KEY = 'tw-incoming-share'; // written by ShortLinkView, consumed here
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -123,6 +124,30 @@ function loadFromStorage(uid?: string): Store | null {
 
 export function usePackData(userId?: string) {
   const [store, setStore] = useState<Store>(() => {
+    // If a share link just landed, apply it and clear the staging key
+    try {
+      const incoming = localStorage.getItem(INCOMING_SHARE_KEY);
+      if (incoming) {
+        localStorage.removeItem(INCOMING_SHARE_KEY);
+        const p = JSON.parse(incoming);
+        if (p.__v === 5 && Array.isArray(p.order)) {
+          const order: string[] = p.order;
+          const items: PackState = {};
+          order.forEach(cat => { items[cat] = sanitizeItems(p.items?.[cat], cat); });
+          const meta: Record<string, CategoryMeta> = {};
+          order.forEach(cat => {
+            const m = p.meta?.[cat];
+            meta[cat] = {
+              countsToBase: m?.countsToBase ?? !DEFAULT_EXCLUDES_BASE.has(cat),
+              subLabel:  m?.subLabel  ?? undefined,
+              descLabel: m?.descLabel ?? undefined,
+            };
+          });
+          return { items, order, meta };
+        }
+      }
+    } catch { /* ignore */ }
+
     const saved = loadFromStorage(userId);
     if (saved) return saved;
     return userId ? emptyData() : seedInitialData();
