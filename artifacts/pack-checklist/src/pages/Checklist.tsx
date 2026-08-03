@@ -250,7 +250,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4 order-first lg:order-last lg:overflow-y-auto lg:h-full py-8">
+            <div className="lg:col-span-4 order-first lg:order-last lg:overflow-y-auto lg:h-full py-8 lg:pr-3">
               <div className="flex justify-end gap-2 mb-3">
                 <button
                   onClick={handlePrint}
