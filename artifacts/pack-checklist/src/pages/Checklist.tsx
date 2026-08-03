@@ -66,8 +66,20 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [background, setBackground] = useState<Background | null>(() => {
     try {
       const s = localStorage.getItem(BG_STORAGE_KEY);
-      return s ? (JSON.parse(s) as Background) : null;
-    } catch { return null; }
+      if (!s) return null;
+      const bg = JSON.parse(s) as Background;
+      // Reject stored custom photos that are missing or suspiciously large
+      if (bg.type === 'custom') {
+        if (!bg.dataUrl?.startsWith('data:image/') || bg.dataUrl.length > 12_000_000) {
+          localStorage.removeItem(BG_STORAGE_KEY);
+          return null;
+        }
+      }
+      return bg;
+    } catch {
+      localStorage.removeItem(BG_STORAGE_KEY);
+      return null;
+    }
   });
   const handleBackgroundChange = (bg: Background | null) => {
     setBackground(bg);
