@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'wouter';
 import { INCOMING_SHARE_KEY } from '../hooks/usePackData';
 import type { PackState, CategoryMeta } from '../hooks/usePackData';
 import { calcTotalOz, formatWeight, largeUnit, smallUnit } from '../lib/weightUtils';
-import { Tent, Copy, ClipboardCheck, ArrowRight } from 'lucide-react';
+import { Tent, ArrowRight, UserPlus } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -38,41 +38,43 @@ function ReadOnlyPackView({
     if (categoryMeta[cat]?.countsToBase !== false) baseOz += oz;
   });
 
-  const handleCopy = () => {
+  const basePath = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+
+  const handleAdd = () => {
     onCopyToList();
-    setCopied(true);
+    window.location.href = `${basePath}/sign-up`;
   };
 
   return (
     <div className="min-h-[100dvh] bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 p-2 rounded-lg text-primary">
-              <Tent className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="font-bold text-foreground text-lg leading-tight">TrailWeigh</h1>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                Shared Pack List
-              </p>
-            </div>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+          <div className="bg-primary/10 p-2 rounded-lg text-primary">
+            <Tent className="w-5 h-5" />
           </div>
+          <div>
+            <h1 className="font-bold text-foreground text-lg leading-tight">TrailWeigh</h1>
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+              Shared Pack List
+            </p>
+          </div>
+        </div>
 
-          <button
-            onClick={handleCopy}
-            className={`flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-colors ${
-              copied
-                ? 'bg-green-600 text-white'
-                : 'bg-primary text-primary-foreground hover:bg-primary/90'
-            }`}
-          >
-            {copied
-              ? <><ClipboardCheck className="w-4 h-4" />Copied to my list</>
-              : <><Copy className="w-4 h-4" />Copy to my list</>
-            }
-          </button>
+        {/* View-only banner */}
+        <div className="border-t border-border bg-muted/50">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-2 flex items-center justify-between gap-4">
+            <p className="text-xs text-muted-foreground">
+              This is a view-only pack list. Sign in or create a free account to save your own copy.
+            </p>
+            <button
+              onClick={handleAdd}
+              className="flex items-center gap-1.5 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap flex-shrink-0"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              Add
+            </button>
+          </div>
         </div>
       </header>
 

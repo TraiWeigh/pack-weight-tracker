@@ -91,7 +91,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   }
 
   const handleCopyLink = async () => {
-    const url = await buildShareURL({ data, categoryOrder, categoryMeta }, { editable: true });
+    const url = await buildShareURL({ data, categoryOrder, categoryMeta });
     const ok = await copyUrlToClipboard(url);
     if (!ok) window.prompt('Copy this link:', url);
     setCopied(true);
