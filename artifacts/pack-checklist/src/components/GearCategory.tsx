@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GearItem, CategoryMeta } from '../hooks/usePackData';
 import { GearRow } from './GearRow';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUtils';
@@ -11,6 +11,7 @@ interface GearCategoryProps {
   meta: CategoryMeta;
   isFirst: boolean;
   isLast: boolean;
+  forceOpen?: boolean | null;
   updateItem: (category: string, id: string, updates: Partial<GearItem>) => void;
   removeItem: (category: string, id: string) => void;
   addItem: (category: string) => void;
@@ -21,11 +22,17 @@ interface GearCategoryProps {
 }
 
 export function GearCategory({
-  name, items, meta, isFirst, isLast,
+  name, items, meta, isFirst, isLast, forceOpen,
   updateItem, removeItem, addItem,
   onMoveUp, onMoveDown, onUpdateMeta, onDelete,
 }: GearCategoryProps) {
   const [isOpen, setIsOpen] = useState(true);
+
+  useEffect(() => {
+    if (forceOpen !== null && forceOpen !== undefined) {
+      setIsOpen(forceOpen);
+    }
+  }, [forceOpen]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { system } = useUnit();
 

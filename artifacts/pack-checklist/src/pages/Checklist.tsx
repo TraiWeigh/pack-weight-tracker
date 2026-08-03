@@ -10,7 +10,7 @@ import { sharePackList } from '../lib/exportPDF';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ScanGearPanel } from '../components/ScanGearPanel';
-import { RotateCcw, Tent, Printer, Share2, LogOut, User, Shield, Plus, Check, X } from 'lucide-react';
+import { RotateCcw, Tent, Printer, Share2, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
@@ -61,6 +61,9 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
+
+  // Expand / collapse all categories
+  const [allOpen, setAllOpen] = useState<boolean | null>(null);
 
   // Add Category state
   const [addingCat, setAddingCat] = useState(false);
@@ -186,7 +189,23 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
 
             {/* Gear list */}
             <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 py-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              <div className="flex justify-end mb-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-1">
+                  <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+                  <button
+                    onClick={() => setAllOpen(true)}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-muted"
+                  >
+                    Open
+                  </button>
+                  <span className="text-muted-foreground/40 text-xs">|</span>
+                  <button
+                    onClick={() => setAllOpen(false)}
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-muted"
+                  >
+                    Close
+                  </button>
+                </div>
                 <UnitToggle />
               </div>
 
@@ -198,6 +217,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                   meta={categoryMeta[category] ?? { countsToBase: true }}
                   isFirst={idx === 0}
                   isLast={idx === categoryOrder.length - 1}
+                  forceOpen={allOpen}
                   updateItem={updateItem}
                   removeItem={removeItem}
                   addItem={addItem}
