@@ -231,7 +231,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
             {/* Gear list */}
-            <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col">
+            <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned pills row — never scrolls */}
               <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
