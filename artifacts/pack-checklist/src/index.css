@@ -250,6 +250,141 @@
   --chart-10: 30 32% 62%;
 }
 
+/* ── Sage ─────────────────────────────────────────────────────────────────── */
+[data-theme="sage"] {
+  --background: 80 15% 96%;
+  --foreground: 80 20% 15%;
+  --border: 80 10% 83%;
+  --card: 80 18% 100%;
+  --card-border: 80 10% 86%;
+  --card-foreground: 80 20% 15%;
+  --popover: 80 18% 100%;
+  --popover-foreground: 80 20% 15%;
+  --popover-border: 80 10% 86%;
+  --primary: 80 22% 38%;
+  --primary-foreground: 80 15% 96%;
+  --secondary: 80 12% 88%;
+  --secondary-foreground: 80 20% 22%;
+  --muted: 80 8% 91%;
+  --muted-foreground: 80 8% 46%;
+  --accent: 80 12% 91%;
+  --accent-foreground: 80 20% 18%;
+  --input: 80 10% 83%;
+  --ring: 80 22% 38%;
+  --chart-1: 80 22% 30%;  --chart-2: 95 18% 40%;  --chart-3: 65 20% 48%;
+  --chart-4: 110 15% 54%; --chart-5: 50 22% 56%;  --chart-6: 125 12% 62%;
+  --chart-7: 40 25% 62%;  --chart-8: 165 18% 48%; --chart-9: 75 15% 44%;
+  --chart-10: 20 28% 54%;
+}
+
+/* ── Slate ────────────────────────────────────────────────────────────────── */
+[data-theme="slate"] {
+  --background: 220 18% 96%;
+  --foreground: 220 25% 15%;
+  --border: 220 14% 83%;
+  --card: 220 22% 100%;
+  --card-border: 220 14% 86%;
+  --card-foreground: 220 25% 15%;
+  --popover: 220 22% 100%;
+  --popover-foreground: 220 25% 15%;
+  --popover-border: 220 14% 86%;
+  --primary: 220 30% 42%;
+  --primary-foreground: 220 18% 96%;
+  --secondary: 220 14% 88%;
+  --secondary-foreground: 220 25% 22%;
+  --muted: 220 10% 91%;
+  --muted-foreground: 220 10% 46%;
+  --accent: 220 14% 91%;
+  --accent-foreground: 220 25% 18%;
+  --input: 220 14% 83%;
+  --ring: 220 30% 42%;
+  --chart-1: 220 30% 32%; --chart-2: 205 28% 44%; --chart-3: 235 24% 52%;
+  --chart-4: 190 22% 56%; --chart-5: 250 20% 60%; --chart-6: 175 20% 56%;
+  --chart-7: 265 18% 64%; --chart-8: 160 20% 50%; --chart-9: 280 15% 48%;
+  --chart-10: 145 18% 54%;
+}
+
+/* ── Ember ────────────────────────────────────────────────────────────────── */
+[data-theme="ember"] {
+  --background: 20 25% 97%;
+  --foreground: 15 30% 15%;
+  --border: 20 18% 84%;
+  --card: 20 30% 100%;
+  --card-border: 20 18% 87%;
+  --card-foreground: 15 30% 15%;
+  --popover: 20 30% 100%;
+  --popover-foreground: 15 30% 15%;
+  --popover-border: 20 18% 87%;
+  --primary: 15 55% 42%;
+  --primary-foreground: 20 25% 97%;
+  --secondary: 20 18% 88%;
+  --secondary-foreground: 15 30% 22%;
+  --muted: 20 12% 91%;
+  --muted-foreground: 18 10% 46%;
+  --accent: 20 18% 91%;
+  --accent-foreground: 15 30% 18%;
+  --input: 20 18% 84%;
+  --ring: 15 55% 42%;
+  --chart-1: 15 55% 34%;  --chart-2: 25 48% 44%;  --chart-3: 5 50% 52%;
+  --chart-4: 35 42% 54%;  --chart-5: 350 44% 56%; --chart-6: 45 38% 60%;
+  --chart-7: 340 40% 62%; --chart-8: 195 22% 48%; --chart-9: 20 38% 44%;
+  --chart-10: 330 35% 56%;
+}
+
+/* ── Tide ─────────────────────────────────────────────────────────────────── */
+[data-theme="tide"] {
+  --background: 175 22% 96%;
+  --foreground: 178 28% 14%;
+  --border: 175 16% 83%;
+  --card: 175 26% 100%;
+  --card-border: 175 16% 86%;
+  --card-foreground: 178 28% 14%;
+  --popover: 175 26% 100%;
+  --popover-foreground: 178 28% 14%;
+  --popover-border: 175 16% 86%;
+  --primary: 178 42% 36%;
+  --primary-foreground: 175 22% 96%;
+  --secondary: 175 14% 88%;
+  --secondary-foreground: 178 28% 22%;
+  --muted: 175 10% 91%;
+  --muted-foreground: 176 10% 46%;
+  --accent: 175 14% 91%;
+  --accent-foreground: 178 28% 18%;
+  --input: 175 16% 83%;
+  --ring: 178 42% 36%;
+  --chart-1: 178 42% 28%; --chart-2: 165 36% 40%; --chart-3: 192 34% 48%;
+  --chart-4: 152 30% 52%; --chart-5: 205 28% 56%; --chart-6: 140 26% 56%;
+  --chart-7: 218 24% 62%; --chart-8: 128 22% 52%; --chart-9: 185 28% 46%;
+  --chart-10: 116 20% 56%;
+}
+
+/* ── Smoke ────────────────────────────────────────────────────────────────── */
+[data-theme="smoke"] {
+  --background: 30 8% 96%;
+  --foreground: 25 10% 16%;
+  --border: 30 6% 82%;
+  --card: 30 10% 100%;
+  --card-border: 30 6% 85%;
+  --card-foreground: 25 10% 16%;
+  --popover: 30 10% 100%;
+  --popover-foreground: 25 10% 16%;
+  --popover-border: 30 6% 85%;
+  --primary: 25 20% 40%;
+  --primary-foreground: 30 8% 96%;
+  --secondary: 30 8% 88%;
+  --secondary-foreground: 25 10% 22%;
+  --muted: 30 5% 91%;
+  --muted-foreground: 28 6% 46%;
+  --accent: 30 8% 91%;
+  --accent-foreground: 25 10% 18%;
+  --input: 30 6% 82%;
+  --ring: 25 20% 40%;
+  --chart-1: 25 20% 34%; --chart-2: 35 18% 44%; --chart-3: 15 22% 50%;
+  --chart-4: 45 16% 54%; --chart-5: 5 24% 56%;  --chart-6: 55 14% 60%;
+  --chart-7: 350 20% 62%; --chart-8: 190 16% 48%; --chart-9: 20 16% 44%;
+  --chart-10: 340 18% 54%;
+}
+
 /* ── Background photo + frosted glass ─────────────────────────────────────── */
 
 html.photo-active {
