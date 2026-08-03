@@ -324,8 +324,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4 order-first lg:order-last lg:overflow-y-auto lg:h-full py-8 lg:px-3 lg:[scrollbar-gutter:stable]">
-              <div className="relative flex flex-wrap justify-end gap-2 mb-3">
+            <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+              {/* Pinned action bar — never scrolls */}
+              <div className="relative flex flex-wrap justify-end gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
                 <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} />
                 <BackgroundPickerPanel open={backgroundPickerOpen} onClose={() => setBackgroundPickerOpen(false)} />
                 <button
@@ -372,7 +373,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4 pb-2">
+              {/* Scrollable sidebar content */}
+              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 flex flex-col gap-4 pb-8 lg:px-3 lg:[scrollbar-gutter:stable]">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}
