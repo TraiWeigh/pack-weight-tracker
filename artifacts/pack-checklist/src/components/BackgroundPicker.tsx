@@ -223,8 +223,7 @@ export function BackgroundPickerPanel({
 
           {/* Tone toggle + fade slider */}
           <div className="px-4 pb-3 border-b border-border">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-xs font-semibold text-foreground">Style</span>
+            <div className="flex items-center justify-end mb-2.5">
               <div className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold">
                 <button
                   onClick={() => onBgToneChange('light')}
