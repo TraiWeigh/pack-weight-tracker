@@ -65,7 +65,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const admin = isAdmin(userEmail);
 
   // Expand / collapse all categories
-  const [allOpen, setAllOpen] = useState<boolean | null>(null);
+  const [allOpen, setAllOpen] = useState(true);
 
   // Copy share link
   const [copied, setCopied] = useState(false);
