@@ -231,8 +231,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
             {/* Gear list */}
-            <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              <div className="sticky top-0 z-10 pt-8 pb-3 flex items-center justify-between">
+            <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col">
+              {/* Pinned pills row — never scrolls */}
+              <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => setAllOpen(true)}
@@ -258,6 +259,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 <UnitToggle />
               </div>
 
+              {/* Scrollable categories */}
+              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
               {categoryOrder.map((category, idx) => (
                 <GearCategory
                   key={category}
@@ -315,6 +318,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     Add Category
                   </button>
                 )}
+              </div>
               </div>
             </div>
 
