@@ -12,6 +12,7 @@ import { isAdmin } from './AdminPage';
 import { ScanGearPanel } from '../components/ScanGearPanel';
 import { buildShareURL } from '../lib/shareLink';
 import { RotateCcw, Tent, Printer, Share2, Link, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
+import { BackgroundPickerButton, BackgroundPickerPanel } from '../components/BackgroundPicker';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
@@ -61,6 +62,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [sharing, setSharing] = useState(false);
   const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
 
@@ -323,6 +325,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             {/* Sidebar */}
             <div className="lg:col-span-4 order-first lg:order-last lg:overflow-y-auto lg:h-full py-8 lg:px-3 lg:[scrollbar-gutter:stable]">
               <div className="relative flex justify-end gap-2 mb-3">
+                <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} />
+                <BackgroundPickerPanel open={backgroundPickerOpen} onClose={() => setBackgroundPickerOpen(false)} />
                 <button
                   onClick={handlePrint}
                   className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
