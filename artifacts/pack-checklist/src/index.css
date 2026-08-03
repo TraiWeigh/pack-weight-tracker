@@ -339,5 +339,8 @@
   --input:                220 10% 20%;
   --primary:              0 0% 88%;
   --primary-foreground:   220 15% 10%;
+  --popover:              220 15% 14%;
+  --popover-border:       220 10% 22%;
+  --popover-foreground:   0 0% 93%;
 }
 
