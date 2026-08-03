@@ -119,16 +119,8 @@ function HomeRedirect() {
 }
 
 function ChecklistRoute() {
-  return (
-    <>
-      <Show when="signed-in">
-        <Checklist />
-      </Show>
-      <Show when="signed-out">
-        <Redirect to="/" />
-      </Show>
-    </>
-  );
+  // Allow access whether signed in or not — guests use the local guest key
+  return <Checklist />;
 }
 
 function ClerkProviderWithRoutes() {

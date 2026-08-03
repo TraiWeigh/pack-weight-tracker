@@ -42,11 +42,12 @@ function UnitToggle() {
 }
 
 interface ChecklistContentProps {
-  userId: string;
+  userId?: string;
   userEmail?: string;
+  isGuest?: boolean;
 }
 
-function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
+function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistContentProps) {
   const {
     data, categoryOrder, categoryMeta,
     updateItem, addItem, removeItem,
@@ -58,7 +59,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
   const { signOut } = useClerk();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [showMailingModal, setShowMailingModal] = useState(() => !hasSeenMailingPrompt(userId));
+  const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
@@ -154,42 +155,52 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 )}
               </div>
 
-              {/* User menu */}
-              <div className="relative">
+              {/* User menu / guest CTA */}
+              {isGuest ? (
                 <button
-                  onClick={() => setShowUserMenu(v => !v)}
-                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50"
+                  onClick={() => setLocation('/sign-up')}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
                 >
                   <User className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline max-w-[120px] truncate">{userEmail || 'Account'}</span>
+                  Sign in to save
                 </button>
-                {showUserMenu && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
-                    <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
-                      <div className="px-3 py-2 border-b border-border">
-                        <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
-                      </div>
-                      {admin && (
+              ) : (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(v => !v)}
+                    className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline max-w-[120px] truncate">{userEmail || 'Account'}</span>
+                  </button>
+                  {showUserMenu && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                      <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                        <div className="px-3 py-2 border-b border-border">
+                          <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                        </div>
+                        {admin && (
+                          <button
+                            onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                          >
+                            <Shield className="w-3.5 h-3.5" />
+                            Admin Panel
+                          </button>
+                        )}
                         <button
-                          onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-colors"
                         >
-                          <Shield className="w-3.5 h-3.5" />
-                          Admin Panel
+                          <LogOut className="w-3.5 h-3.5" />
+                          Sign Out
                         </button>
-                      )}
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-colors"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </header>
@@ -355,11 +366,18 @@ export default function Checklist() {
     );
   }
 
-  if (!user) return null;
+  if (user) {
+    return (
+      <UnitProvider>
+        <ChecklistContent key={user.id} userId={user.id} userEmail={user.primaryEmailAddress?.emailAddress} />
+      </UnitProvider>
+    );
+  }
 
+  // Guest — data from localStorage guest key (pre-loaded by SharedPackView)
   return (
     <UnitProvider>
-      <ChecklistContent key={user.id} userId={user.id} userEmail={user.primaryEmailAddress?.emailAddress} />
+      <ChecklistContent key="guest" userId={undefined} isGuest />
     </UnitProvider>
   );
 }
