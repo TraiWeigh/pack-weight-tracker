@@ -190,18 +190,24 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
             {/* Gear list */}
             <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 py-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-1">
-                  <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+                <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => setAllOpen(true)}
-                    className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-muted"
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                      allOpen === true
+                        ? 'bg-card text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
                     Open
                   </button>
-                  <span className="text-muted-foreground/40 text-xs">|</span>
                   <button
                     onClick={() => setAllOpen(false)}
-                    className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-muted"
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                      allOpen === false
+                        ? 'bg-card text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
                     Close
                   </button>
