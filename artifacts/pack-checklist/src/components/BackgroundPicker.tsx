@@ -100,12 +100,11 @@ export function BackgroundPickerPanel({
     return () => document.removeEventListener('mousedown', handler);
   }, [open, onClose]);
 
-  if (!open) return null;
-
-  const activePresetId =
-    background?.type === 'preset' ? background.id : null;
+  const activePresetId = background?.type === 'preset' ? background.id : null;
   const isCustomActive = background?.type === 'custom';
 
+  // Keep this handler and input above the early-return so the <input> stays
+  // mounted even if the panel closes mid-dialog (OS file picker focus shift).
   const handlePickFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -116,98 +115,101 @@ export function BackgroundPickerPanel({
     } catch {
       // silently ignore
     } finally {
-      // reset so same file can be re-picked
       if (fileInput.current) fileInput.current.value = '';
     }
   };
 
   return (
-    <div
-      ref={panelRef}
-      className="absolute right-0 top-full mt-2 z-50 w-[22rem] bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h3 className="text-sm font-semibold text-foreground">Background</h3>
-        <button
-          onClick={onClose}
-          className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
+    <>
+      {/* Always-mounted — must stay in DOM while OS file dialog is open */}
+      <input
+        ref={fileInput}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handlePickFile}
+      />
 
-      {/* Photo grid */}
-      <div className="px-3 pb-1">
-        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-          Landscapes
-        </p>
-        <div className="grid grid-cols-2 gap-1.5">
-          {PRESETS.map((p) => {
-            const isActive = activePresetId === p.id;
-            return (
+      {open && (
+        <div
+          ref={panelRef}
+          className="absolute right-0 top-full mt-2 z-50 w-[22rem] bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <h3 className="text-sm font-semibold text-foreground">Background</h3>
+            <button
+              onClick={onClose}
+              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Photo grid */}
+          <div className="px-3 pb-1">
+            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+              Landscapes
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {PRESETS.map((p) => {
+                const isActive = activePresetId === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => { onBackgroundChange({ type: 'preset', id: p.id }); onClose(); }}
+                    className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all ${
+                      isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
+                    }`}
+                  >
+                    <img
+                      src={getThumbUrl(p.photoId)}
+                      alt={p.label}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
+                    </div>
+                    {isActive && (
+                      <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-border mx-3 mt-3" />
+
+          {/* Upload + None */}
+          <div className="px-3 py-3 flex items-center gap-2">
+            <button
+              onClick={() => fileInput.current?.click()}
+              className={`flex-1 flex items-center justify-center gap-2 text-xs font-semibold border rounded-lg px-3 py-2 transition-colors ${
+                isCustomActive
+                  ? 'bg-primary/10 text-primary border-primary/40'
+                  : 'text-muted-foreground hover:text-foreground border-border hover:border-foreground/30 bg-muted/30 hover:bg-muted/50'
+              }`}
+            >
+              <Upload className="w-3.5 h-3.5" />
+              {isCustomActive ? 'Change photo…' : 'Upload photo…'}
+            </button>
+            {background && (
               <button
-                key={p.id}
-                onClick={() => { onBackgroundChange({ type: 'preset', id: p.id }); onClose(); }}
-                className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all ${
-                  isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
-                }`}
+                onClick={() => { onBackgroundChange(null); onClose(); }}
+                className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive border border-border hover:border-destructive/40 bg-muted/30 hover:bg-destructive/5 px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
               >
-                <img
-                  src={getThumbUrl(p.photoId)}
-                  alt={p.label}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                {/* Label overlay */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
-                </div>
-                {/* Active check */}
-                {isActive && (
-                  <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
-                    <Check className="w-2.5 h-2.5" />
-                  </div>
-                )}
+                <X className="w-3.5 h-3.5" />
+                None
               </button>
-            );
-          })}
+            )}
+          </div>
         </div>
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-border mx-3 mt-3" />
-
-      {/* Upload + None */}
-      <div className="px-3 py-3 flex items-center gap-2">
-        <input
-          ref={fileInput}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handlePickFile}
-        />
-        <button
-          onClick={() => fileInput.current?.click()}
-          className={`flex-1 flex items-center justify-center gap-2 text-xs font-semibold border rounded-lg px-3 py-2 transition-colors ${
-            isCustomActive
-              ? 'bg-primary/10 text-primary border-primary/40'
-              : 'text-muted-foreground hover:text-foreground border-border hover:border-foreground/30 bg-muted/30 hover:bg-muted/50'
-          }`}
-        >
-          <Upload className="w-3.5 h-3.5" />
-          {isCustomActive ? 'Change photo…' : 'Upload photo…'}
-        </button>
-        {background && (
-          <button
-            onClick={() => { onBackgroundChange(null); onClose(); }}
-            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive border border-border hover:border-destructive/40 bg-muted/30 hover:bg-destructive/5 px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
-          >
-            <X className="w-3.5 h-3.5" />
-            None
-          </button>
-        )}
-      </div>
-    </div>
+      )}
+    </>
   );
 }
