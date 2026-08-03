@@ -181,11 +181,11 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:h-[calc(100vh-4rem)] lg:overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
             {/* Gear list */}
-            <div className="lg:col-span-8 space-y-2">
+            <div className="lg:col-span-8 lg:overflow-y-auto lg:h-full space-y-2 py-8">
               <div className="flex justify-end mb-4">
                 <UnitToggle />
               </div>
@@ -250,7 +250,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4 order-first lg:order-last mb-8 lg:mb-0 lg:self-start lg:sticky lg:top-[4.5rem]">
+            <div className="lg:col-span-4 order-first lg:order-last lg:overflow-y-auto lg:h-full py-8">
               <div className="flex justify-end gap-2 mb-3">
                 <button
                   onClick={handlePrint}
@@ -269,7 +269,7 @@ function ChecklistContent({ userId, userEmail }: ChecklistContentProps) {
                 </button>
               </div>
 
-              <div className="flex flex-col gap-4 lg:overflow-y-auto lg:max-h-[calc(100vh-6rem)] pb-2">
+              <div className="flex flex-col gap-4 pb-2">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}
