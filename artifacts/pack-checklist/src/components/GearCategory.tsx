@@ -174,7 +174,7 @@ export function GearCategory({
                     : 'border-border bg-muted/40 text-muted-foreground'
                 }`}
               >
-                {meta.countsToBase ? '✓ Base' : '— Base'}
+                {meta.countsToBase ? '+ Base' : '— Base'}
               </button>
 
               {/* Delete */}
