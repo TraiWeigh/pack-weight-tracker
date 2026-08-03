@@ -145,8 +145,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       )}
 
       {/* ── Screen content ── */}
-      <div className="screen-only min-h-[100dvh] bg-background">
-        <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
+      <div className="screen-only h-[100dvh] overflow-hidden flex flex-col bg-background">
+        <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-primary/10 p-2 rounded-lg text-primary">
@@ -228,7 +228,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:h-[calc(100vh-4rem)] lg:overflow-hidden">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0 lg:overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
             {/* Gear list */}
