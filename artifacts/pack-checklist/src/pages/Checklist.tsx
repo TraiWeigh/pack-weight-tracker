@@ -383,7 +383,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned action bar — mirrors the Open/Close bar on the left */}
               <div className="relative flex flex-wrap justify-end gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
-                <div ref={bgPickerContainerRef} className="relative">
+                <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} active={!!background} />
                   <BackgroundPickerPanel
                     open={backgroundPickerOpen}
