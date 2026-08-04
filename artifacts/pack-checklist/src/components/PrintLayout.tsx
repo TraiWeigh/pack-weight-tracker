@@ -77,7 +77,7 @@ export function PrintLayout({ data, system, categoryOrder, categoryMeta }: Print
             </div>
             {items.map((item, idx) => (
               <div key={item.id} className={`print-item${idx % 2 === 0 ? ' print-item-alt' : ''}`}>
-                <span className="pcol-check print-check">☑</span>
+                <span className="pcol-check print-check" />
                 <span className="pcol-type print-type">{item.sub}</span>
                 <span className="pcol-desc">{item.desc || '—'}</span>
                 <span className="pcol-weight print-wt">

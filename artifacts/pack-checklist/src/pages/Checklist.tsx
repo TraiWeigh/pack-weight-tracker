@@ -10,6 +10,7 @@ import { sharePackList } from '../lib/exportPDF';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ScanGearPanel } from '../components/ScanGearPanel';
+import { ImportGearPanel } from '../components/ImportGearPanel';
 import { buildShareURL } from '../lib/shareLink';
 import { RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
 import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
@@ -52,7 +53,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const {
     data, categoryOrder, categoryMeta,
     updateItem, addItem, removeItem,
-    addCategory, deleteCategory, updateCategoryMeta, moveCategory,
+    addCategory, deleteCategory, updateCategoryMeta, moveCategory, reorderCategory,
     resetToDefaults,
   } = usePackData(userId);
 
@@ -64,6 +65,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
   const bgPickerContainerRef = useRef<HTMLDivElement>(null);
+  const [dragCat, setDragCat] = useState<string | null>(null);
+  const [overCat, setOverCat] = useState<string | null>(null);
   const [background, setBackground] = useState<Background | null>(() => {
     try {
       const s = localStorage.getItem(BG_STORAGE_KEY);
@@ -318,22 +321,29 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
               {/* Scrollable categories */}
               <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              {categoryOrder.map((category, idx) => (
+              {categoryOrder.map((category) => (
                 <GearCategory
                   key={category}
                   name={category}
                   items={data[category] || []}
                   meta={categoryMeta[category] ?? { countsToBase: true }}
-                  isFirst={idx === 0}
-                  isLast={idx === categoryOrder.length - 1}
                   forceOpen={allOpen}
                   updateItem={updateItem}
                   removeItem={removeItem}
                   addItem={addItem}
-                  onMoveUp={() => moveCategory(category, 'up')}
-                  onMoveDown={() => moveCategory(category, 'down')}
                   onUpdateMeta={updates => updateCategoryMeta(category, updates)}
                   onDelete={() => deleteCategory(category)}
+                  isDragOver={overCat === category && dragCat !== category}
+                  onDragStart={() => setDragCat(category)}
+                  onDragEnd={() => { setDragCat(null); setOverCat(null); }}
+                  onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
+                  onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
+                    setDragCat(null);
+                    setOverCat(null);
+                  }}
                 />
               ))}
 
@@ -448,6 +458,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   data={data}
                   categoryOrder={categoryOrder}
                   categoryMeta={categoryMeta}
+                />
+                <ImportGearPanel
+                  categoryOrder={categoryOrder}
+                  onAddItem={(category, prefill) => addItem(category, prefill)}
                 />
                 <ScanGearPanel
                   userId={userId}

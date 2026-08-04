@@ -265,6 +265,18 @@ export function usePackData(userId?: string) {
     });
   }, []);
 
+  const reorderCategory = useCallback((fromCat: string, toCat: string) => {
+    setStore(prev => {
+      const order = [...prev.order];
+      const fromIdx = order.indexOf(fromCat);
+      const toIdx   = order.indexOf(toCat);
+      if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return prev;
+      order.splice(fromIdx, 1);
+      order.splice(toIdx, 0, fromCat);
+      return { ...prev, order };
+    });
+  }, []);
+
   const resetToDefaults = useCallback(() => {
     setStore(seedInitialData());
   }, []);
@@ -280,6 +292,7 @@ export function usePackData(userId?: string) {
     deleteCategory,
     updateCategoryMeta,
     moveCategory,
+    reorderCategory,
     resetToDefaults,
   };
 }

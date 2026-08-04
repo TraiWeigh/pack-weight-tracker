@@ -3,22 +3,25 @@ import { GearItem, CategoryMeta } from '../hooks/usePackData';
 import { GearRow } from './GearRow';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUtils';
 import { useUnit } from '../context/UnitContext';
-import { ChevronDown, ChevronRight, Plus, ChevronUp, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical } from 'lucide-react';
 
 interface GearCategoryProps {
   name: string;
   items: GearItem[];
   meta: CategoryMeta;
-  isFirst: boolean;
-  isLast: boolean;
   forceOpen?: boolean | null;
   updateItem: (category: string, id: string, updates: Partial<GearItem>) => void;
   removeItem: (category: string, id: string) => void;
   addItem: (category: string) => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
   onUpdateMeta: (updates: Partial<CategoryMeta>) => void;
   onDelete: () => void;
+  // Drag-to-reorder
+  isDragOver?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragEnd?: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDragLeave?: (e: React.DragEvent) => void;
+  onDrop?: (e: React.DragEvent) => void;
 }
 
 // ── Inline-editable column header ────────────────────────────────────────────
@@ -80,9 +83,10 @@ function EditableColHeader({
 
 // ─────────────────────────────────────────────────────────────────────────────
 export function GearCategory({
-  name, items, meta, isFirst, isLast, forceOpen,
+  name, items, meta, forceOpen,
   updateItem, removeItem, addItem,
-  onMoveUp, onMoveDown, onUpdateMeta, onDelete,
+  onUpdateMeta, onDelete,
+  isDragOver, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
 }: GearCategoryProps) {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -107,7 +111,14 @@ export function GearCategory({
   const stopProp = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
-    <div className="mb-6 bg-card border border-card-border rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md">
+    <div
+      className={`mb-6 bg-card border rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md ${
+        isDragOver ? 'border-primary shadow-md ring-2 ring-primary/30' : 'border-card-border'
+      }`}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       {/* ── Header ───────────────────────────────────────────── */}
       <div
         className="flex items-center justify-between p-3 sm:p-4 bg-muted/30 cursor-pointer select-none"
@@ -145,24 +156,16 @@ export function GearCategory({
             </div>
           ) : (
             <div className="flex items-center gap-1">
-              {/* Move up */}
-              <button
-                title="Move category up"
-                disabled={isFirst}
-                onClick={onMoveUp}
-                className="p-1 rounded hover:bg-muted/60 text-muted-foreground hover:text-foreground disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
+              {/* Drag handle */}
+              <div
+                draggable
+                onDragStart={e => { e.stopPropagation(); onDragStart?.(e); }}
+                onDragEnd={e => { e.stopPropagation(); onDragEnd?.(e); }}
+                title="Drag to reorder"
+                className="p-1 rounded cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors touch-none"
               >
-                <ChevronUp className="w-3.5 h-3.5" />
-              </button>
-              {/* Move down */}
-              <button
-                title="Move category down"
-                disabled={isLast}
-                onClick={onMoveDown}
-                className="p-1 rounded hover:bg-muted/60 text-muted-foreground hover:text-foreground disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
+                <GripVertical className="w-3.5 h-3.5" />
+              </div>
 
               {/* Base weight toggle */}
               <button
