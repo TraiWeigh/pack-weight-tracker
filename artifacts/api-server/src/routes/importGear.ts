@@ -153,7 +153,7 @@ function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): ExtractedItem[] 
 
 // ── Route ─────────────────────────────────────────────────────────────────────
 
-importGearRouter.post('/api/import-gear', upload.single('file'), async (req, res) => {
+importGearRouter.post('/import-gear', upload.single('file'), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ error: 'No file uploaded' });
     return;

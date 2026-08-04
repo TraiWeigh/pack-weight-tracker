@@ -53,8 +53,19 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
 
     try {
       const resp = await fetch('/api/import-gear', { method: 'POST', body: formData });
-      const data = await resp.json();
 
+      // Guard against HTML error pages (e.g. 404) which would throw
+      // "The string did not match the expected pattern." in WebKit when parsed as JSON.
+      const ct = resp.headers.get('content-type') ?? '';
+      if (!ct.includes('application/json')) {
+        throw new Error(
+          resp.status === 404
+            ? 'Upload route not found — please reload the page and try again.'
+            : `Server error ${resp.status}: unexpected response format.`,
+        );
+      }
+
+      const data = await resp.json();
       if (!resp.ok) throw new Error(data.error ?? 'Import failed');
 
       const parsed: ParsedItem[] = data.items ?? [];

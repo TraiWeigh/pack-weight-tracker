@@ -1,0 +1,156 @@
+The Scan Gear List importer still fails with the exact same message when I upload a valid Excel .xlsx file:
+
+“Import failed — The string did not match the expected pattern.”
+
+This proves the error is not specific to Apple Numbers or numbers-parser. Stop making format-specific changes and diagnose the shared file-upload pipeline.
+
+Do not continue with the Locker or icon tasks until this importer works.
+
+## Required diagnosis
+
+Reproduce the problem through the actual browser interface using a valid .xlsx file.
+
+Inspect all of the following:
+
+- Browser console
+- Network tab
+- Upload request URL
+- HTTP method
+- Request headers
+- FormData construction
+- Server upload route
+- Client-side file validation
+- Server-side file validation
+- Temporary-file creation
+- Response parsing
+- Excel parser invocation
+- Any use of new URL(...)
+- Any regular expression used on the filename, MIME type, route, or response
+- Any fetch call using a relative or malformed URL
+- Any code attempting to parse a normal string as a URL
+
+Find the exact file and line of code that produces:
+
+“The string did not match the expected pattern.”
+
+Do not merely replace the displayed message. Fix the underlying error.
+
+## Upload implementation requirements
+
+1. The browser must send the selected file using FormData.
+
+Use an implementation equivalent to:
+
+const formData = new FormData();
+formData.append("file", selectedFile);
+
+2. Do not manually set the multipart Content-Type header. The browser must set the boundary automatically.
+
+3. Send the request to a valid existing application route.
+
+Do not use:
+- A malformed URL
+- An empty URL
+- A browser blob URL as the server endpoint
+- A file-system path as a fetch URL
+- new URL(...) without a valid base URL
+- A route that does not exist
+
+4. Confirm that the client and server use the same FormData field name.
+
+For example, both must use:
+
+file
+
+5. Confirm that the server receives actual uploaded file bytes, not only:
+- The filename
+- A browser object URL
+- A local computer path
+- A JSON representation of the File object
+- An empty request body
+
+6. Save the uploaded file into a secure temporary file before parsing it.
+
+Preserve the correct suffix, such as:
+
+.xlsx
+
+7. Confirm that the temporary file:
+- Exists
+- Contains more than zero bytes
+- Can be opened by openpyxl
+- Is deleted in a finally block
+
+## Excel parsing requirements
+
+For .xlsx files:
+
+1. Use openpyxl.
+2. Open the workbook in read-only mode.
+3. Examine visible worksheets.
+4. Detect columns for:
+   - Type
+   - Description
+   - Weight
+5. Show the extracted rows in the editable review table.
+6. Do not save rows until the user approves them.
+
+## Error handling
+
+Return structured JSON from the server, for example:
+
+{
+  "success": false,
+  "errorCode": "UPLOAD_FAILED",
+  "message": "The file could not be uploaded."
+}
+
+Do not return an HTML error page to code that expects JSON.
+
+Before calling response.json(), confirm that the response Content-Type is JSON. Handle non-JSON responses safely.
+
+Display useful messages for:
+
+- Upload request failed
+- Server route not found
+- Unsupported file type
+- Empty uploaded file
+- Invalid Excel workbook
+- No recognizable Type, Description, or Weight columns
+- No gear rows found
+
+Log the full technical exception in the development server console, but do not expose stack traces or server paths in the user interface.
+
+## Required testing
+
+Test through the actual browser interface with:
+
+1. A simple valid Excel file containing:
+
+Type | Description | Weight
+Shelter | Zpacks Duplex | 18.5 oz
+Water | Sawyer Squeeze | 3 oz
+
+2. A valid Word .docx file.
+3. A valid text-based PDF.
+4. An unsupported file type.
+5. An empty or corrupted .xlsx file.
+
+Confirm that the valid Excel test reaches the editable review table and displays:
+
+- Type
+- Description
+- Weight
+
+At completion, report:
+
+- The exact cause of “The string did not match the expected pattern.”
+- The exact file and line that caused it
+- The files changed
+- The upload route used
+- Whether the uploaded file bytes reached the server
+- Whether openpyxl successfully opened the workbook
+- Whether the review table displayed the extracted rows
+- Whether Word and PDF still work
+
+Make the repair directly in the existing application. Do not only describe possible causes.
