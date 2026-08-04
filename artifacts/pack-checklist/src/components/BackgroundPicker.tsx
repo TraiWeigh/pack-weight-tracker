@@ -157,7 +157,6 @@ export function BackgroundPickerPanel({
     try {
       const dataUrl = await compressImage(file);
       onBackgroundChange({ type: 'custom', dataUrl });
-      onClose();
     } catch {
       setUploadError('Could not load that image. Try a different file.');
     } finally {
@@ -214,14 +213,8 @@ export function BackgroundPickerPanel({
           className="absolute right-0 top-full mt-2 z-50 w-[22rem] bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="px-4 pt-4 pb-2">
             <h3 className="text-sm font-semibold text-foreground">Background</h3>
-            <button
-              onClick={onClose}
-              className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
           </div>
 
           {/* Tone toggle + fade slider */}
@@ -268,7 +261,7 @@ export function BackgroundPickerPanel({
                 return (
                   <button
                     key={p.id}
-                    onClick={() => { onBackgroundChange({ type: 'preset', id: p.id }); onClose(); }}
+                    onClick={() => { onBackgroundChange({ type: 'preset', id: p.id }); }}
                     className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all ${
                       isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
                     }`}
@@ -355,7 +348,7 @@ export function BackgroundPickerPanel({
               <div className="border-t border-border mx-3" />
               <div className="px-3 py-2.5">
                 <button
-                  onClick={() => { onBackgroundChange(null); onClose(); }}
+                  onClick={() => { onBackgroundChange(null); }}
                   className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive border border-border hover:border-destructive/40 bg-transparent hover:bg-destructive/5 px-3 py-2 rounded-lg transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
