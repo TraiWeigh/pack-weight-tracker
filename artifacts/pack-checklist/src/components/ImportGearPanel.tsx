@@ -27,6 +27,31 @@ interface ImportGearPanelProps {
 const ACCEPTED      = '.pdf,.docx,.doc,.xlsx,.xls,.numbers';
 const ACCEPT_LABEL  = 'PDF, Word (.docx), Excel (.xlsx), or Numbers';
 
+// Fallback order when server returns "Consumables" but that category doesn't exist
+const CONSUMABLES_FALLBACK = ['Consumables', 'Expendables', 'Consumable Weight', 'Miscellaneous'];
+
+/**
+ * Resolve a server-supplied destination to an existing category.
+ * If the destination isn't in categoryOrder, walk the Consumables fallback chain.
+ * As a last resort, return the first category.
+ */
+function resolveDestination(destination: string, categoryOrder: string[]): string {
+  if (!destination) return categoryOrder[0] ?? '';
+  if (categoryOrder.includes(destination)) return destination;
+  // If destination is a consumables variant, try the fallback chain
+  const lower = destination.toLowerCase();
+  const isConsumablesVariant = ['consumables','expendables','consumable weight',
+    'expendable weight','trip consumables','perishables','food and fuel',
+    'consumable','expendable','used up items','used-up items'].includes(lower);
+  if (isConsumablesVariant) {
+    for (const fallback of CONSUMABLES_FALLBACK) {
+      if (categoryOrder.includes(fallback)) return fallback;
+    }
+  }
+  // Destination doesn't match anything — return as-is (user can change in dropdown)
+  return categoryOrder[0] ?? destination;
+}
+
 export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelProps) {
   const [open, setOpen]       = useState(true);
   const [phase, setPhase]     = useState<'idle' | 'parsing' | 'review' | 'error'>('idle');
@@ -82,7 +107,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
         ...item,
         selected: true,
         added: false,
-        destination: item.destination || firstCat,
+        destination: resolveDestination(item.destination ?? '', categoryOrder) || firstCat,
       })));
       if (!targetCategory && firstCat) setTargetCategory(firstCat);
       setPhase('review');

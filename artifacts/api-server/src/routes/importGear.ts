@@ -102,6 +102,105 @@ export function extractFromText(text: string): ExtractedItem[] {
   return results;
 }
 
+// ── Consumables classification ────────────────────────────────────────────────
+
+/** Section headings that map to the "Consumables" destination. */
+export const CONSUMABLES_SECTION_ALIASES = new Set([
+  'consumables', 'consumable', 'expendables', 'expendable',
+  'consumable weight', 'expendable weight', 'trip consumables',
+  'used up items', 'used-up items', 'perishables', 'food and fuel',
+]);
+
+/** Known consumable Types (normalized). Explicit source section takes priority. */
+export const CONSUMABLES_TYPES = new Set([
+  // Food and drinks
+  'food', 'breakfast', 'lunch', 'dinner', 'meal', 'snack',
+  'trail mix', 'energy bar', 'protein bar', 'meal bar', 'energy gel',
+  'energy chews', 'jerky', 'nuts', 'dried fruit', 'candy', 'chocolate',
+  'cheese', 'salami', 'tuna packet', 'salmon packet',
+  'freeze-dried meal', 'dehydrated meal', 'cold-soak meal',
+  'protein powder', 'protein shake', 'coffee', 'tea', 'drink mix',
+  'electrolytes', 'electrolyte powder', 'electrolyte tablets',
+  'olive oil', 'cooking oil', 'condiments', 'seasoning', 'spices',
+  'salt', 'sugar', 'honey', 'maple syrup', 'powdered milk', 'powdered peanut butter',
+  // Water and water treatment
+  'water', 'drinking water', 'carried water', 'water treatment tablets',
+  'purification tablets', 'chlorine dioxide tablets', 'iodine tablets',
+  'water treatment drops', 'purification drops', 'chlorine dioxide drops', 'bleach drops',
+  // Stove and fire
+  'fuel', 'stove fuel', 'canister fuel', 'isobutane fuel', 'butane fuel',
+  'propane fuel', 'alcohol fuel', 'denatured alcohol', 'white gas',
+  'esbit', 'fuel tablet', 'solid fuel', 'matches', 'waterproof matches',
+  'fire starter', 'tinder', 'lighter fuel', 'disposable lighter',
+  // Skin, sun, insect
+  'sunscreen', 'sunblock', 'mineral sunscreen', 'zinc sunscreen',
+  'lip balm', 'lip sunscreen', 'bug spray', 'insect repellent',
+  'picaridin', 'deet', 'permethrin spray', 'anti-chafe', 'chafing balm',
+  'body glide', 'skin protectant', 'foot powder', 'lotion', 'moisturizer',
+  'paw wax', 'foot balm',
+  // Hygiene
+  'toothpaste', 'tooth powder', 'toothpaste tablets', 'dental floss',
+  'floss picks', 'hand sanitizer', 'soap', 'biodegradable soap', 'dish soap',
+  'toilet paper', 'tissue', 'wet wipes', 'body wipes', 'cleaning wipes',
+  'alcohol wipes', 'deodorant', 'shampoo', 'conditioner', 'contact solution',
+  'menstrual products', 'tampons', 'pads', 'wag bag', 'waste bag', 'poop bag', 'pack-out bag',
+  // Medical and first aid
+  'medication', 'prescription medication', 'pain reliever', 'ibuprofen',
+  'acetaminophen', 'aspirin', 'antihistamine', 'anti-diarrheal', 'antacid',
+  'allergy medication', 'antibiotic', 'hydrocortisone', 'antibiotic ointment',
+  'bandage', 'adhesive bandage', 'gauze', 'sterile pad', 'alcohol wipe',
+  'antiseptic wipe', 'medical tape', 'athletic tape', 'leukotape',
+  'kinesiology tape', 'kt tape', 'moleskin', 'blister pad', 'blister treatment',
+  'hydrocolloid bandage', 'disposable gloves', 'oral rehydration salts',
+  // Repair supplies
+  'duct tape', 'gear tape', 'tenacious tape', 'dcf tape', 'repair tape',
+  'patch', 'repair patch', 'sleeping-pad patch', 'tent patch', 'seam sealer',
+  'seam sealant', 'fabric glue', 'super glue', 'adhesive', 'epoxy',
+  'thread', 'zip tie', 'cable tie', 'rubber band', 'waterproofing treatment', 'shoe glue',
+  // Disposable storage and packaging
+  'freezer bag', 'ziploc bag', 'zip-top bag', 'plastic bag', 'grocery bag',
+  'trash bag', 'garbage bag', 'litter bag', 'disposable meal bag', 'disposable food bag',
+  'dog waste bag',
+  // Batteries and chemical products
+  'disposable battery', 'alkaline battery', 'lithium battery', 'coin battery',
+  'button battery', 'aa battery', 'aaa battery', 'cr123 battery', 'cr2032 battery',
+  'glow stick', 'chemical light', 'hand warmer', 'toe warmer',
+  // Dog consumables
+  'dog food', 'dog treats', 'dog snacks', 'dog water', 'dog medication',
+  'flea treatment', 'tick treatment', 'flea and tick treatment', 'dog sunscreen',
+  'dog wipes', 'dog poop bags', 'dog waste bags', 'dog electrolyte powder',
+]);
+
+/**
+ * Normalise a section/destination name: if it is a recognised Consumables alias,
+ * return "Consumables". Otherwise return it unchanged.
+ */
+export function normalizeDestination(destination: string): string {
+  return CONSUMABLES_SECTION_ALIASES.has(norm(destination)) ? 'Consumables' : destination;
+}
+
+/**
+ * Post-extraction pass: apply Consumables classification rules.
+ *
+ * Priority (per spec):
+ *   1. Explicit recognised section alias → already normalised to "Consumables" in extractSectionMode.
+ *   2. Explicit non-alias destination → keep it (source organisation wins).
+ *   3. No destination + known Consumable Type → assign "Consumables".
+ *   4. Otherwise leave unchanged (user selects manually on review screen).
+ */
+export function applyConsumablesClassification(item: ExtractedItem): ExtractedItem {
+  // Priority 1 handled at section-header time; normalizeDestination is idempotent, re-apply to be safe.
+  if (item.destination) {
+    const normalized = normalizeDestination(item.destination);
+    return normalized !== item.destination ? { ...item, destination: normalized } : item;
+  }
+  // Priority 3: no section → check Type
+  if (CONSUMABLES_TYPES.has(norm(item.sub))) {
+    return { ...item, destination: 'Consumables' };
+  }
+  return item;
+}
+
 // ── Spreadsheet: detect section-header format ─────────────────────────────────
 //
 // A repeated section-header row looks like:
@@ -159,8 +258,8 @@ export function extractSectionMode(rows: unknown[][]): ExtractedItem[] {
 
     // ── Section header detection ──────────────────────────────────────────────
     if (isSectionHeaderRow(row)) {
-      // col B (index 1) = destination category name
-      currentDestination = String(row[1] ?? '').trim();
+      // col B (index 1) = destination category name; normalise consumables aliases
+      currentDestination = normalizeDestination(String(row[1] ?? '').trim());
       inSection = true;
 
       // Dynamic column detection from this header row
@@ -321,7 +420,8 @@ export function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): Extracted
     }
   }
 
-  return results;
+  // Final pass: normalise consumables section aliases + apply type-based classification
+  return results.map(applyConsumablesClassification);
 }
 
 // ── Route ─────────────────────────────────────────────────────────────────────

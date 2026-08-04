@@ -1,0 +1,424 @@
+Correct the Consumables classification rules in the Scan Gear List importer.
+
+Do not modify the working upload pipeline, spreadsheet column detection, review screen, or existing Type, Description, and Weight extraction.
+
+## Core rule
+
+For this application, an item is a Consumable when its usable contents are consumed, depleted, applied, eaten, drunk, burned, discarded, or used up during the trip.
+
+Classify the complete listed item as Consumables even when its listed weight includes disposable packaging or a container.
+
+Do not attempt to subtract container or packaging weight.
+
+Examples:
+
+- A full fuel canister is Consumables.
+- A toothpaste tube containing toothpaste is Consumables.
+- Sunscreen in its original bottle is Consumables.
+- Food packaged in a freezer bag is Consumables.
+- Water carried in a disposable bottle is Consumables.
+- Medication in its original container is Consumables.
+- Dog food in its packaging is Consumables.
+
+## Reusable-container rule
+
+A reusable container is durable gear only when the user lists it as a separate item or row.
+
+Examples:
+
+Row 1:
+Type: Toothpaste
+Description: Travel Toothpaste Tube
+Weight: 0.8 oz
+Destination: Consumables
+
+Row 2:
+Type: Toiletry Bottle
+Description: Reusable Silicone Bottle
+Weight: 0.4 oz
+Destination: Hygiene
+
+Row 1:
+Type: Fuel
+Description: 4 oz Isobutane Canister
+Weight: 7.68 oz
+Destination: Consumables
+
+Row 2:
+Type: Fuel Bottle
+Description: Refillable Alcohol Fuel Bottle
+Weight: 1.1 oz
+Destination: Kitchen
+
+Do not split one imported row into separate contents and container records.
+
+Do not create an estimated empty-container weight.
+
+Do not ask the importer to determine how much of the listed weight is contents versus packaging.
+
+Preserve the source row exactly as one Type, one Description, and one Weight.
+
+## Consumables destination name
+
+Use the existing application category named:
+
+Consumables
+
+If no category named Consumables exists, use this priority:
+
+1. Expendables
+2. Consumable Weight
+3. Miscellaneous
+
+Do not create duplicate categories when an equivalent category already exists.
+
+Normalize these section headings to Consumables:
+
+- Consumables
+- Consumable
+- Expendables
+- Expendable
+- Consumable Weight
+- Expendable Weight
+- Trip Consumables
+- Used-Up Items
+- Used Up Items
+- Perishables
+- Food and Fuel
+
+## Items that should normally be Consumables
+
+Recognize these specific Types as Consumables unless an explicit source section requires otherwise:
+
+### Food and drinks
+
+- Food
+- Breakfast
+- Lunch
+- Dinner
+- Meal
+- Snack
+- Trail Mix
+- Energy Bar
+- Protein Bar
+- Meal Bar
+- Energy Gel
+- Energy Chews
+- Jerky
+- Nuts
+- Dried Fruit
+- Candy
+- Chocolate
+- Cheese
+- Salami
+- Tuna Packet
+- Salmon Packet
+- Freeze-Dried Meal
+- Dehydrated Meal
+- Cold-Soak Meal
+- Protein Powder
+- Protein Shake
+- Coffee
+- Tea
+- Drink Mix
+- Electrolytes
+- Electrolyte Powder
+- Electrolyte Tablets
+- Olive Oil
+- Cooking Oil
+- Condiments
+- Seasoning
+- Spices
+- Salt
+- Sugar
+- Honey
+- Maple Syrup
+- Powdered Milk
+- Powdered Peanut Butter
+
+### Water and water treatment
+
+- Water
+- Drinking Water
+- Carried Water
+- Water Treatment Tablets
+- Purification Tablets
+- Chlorine Dioxide Tablets
+- Iodine Tablets
+- Water Treatment Drops
+- Purification Drops
+- Chlorine Dioxide Drops
+- Bleach Drops
+
+Do not classify an empty reusable Water Bottle, Water Bladder, Reservoir, or Water Filter as Consumables when it is listed separately.
+
+### Stove and fire supplies
+
+- Fuel
+- Stove Fuel
+- Canister Fuel
+- Isobutane Fuel
+- Butane Fuel
+- Propane Fuel
+- Alcohol Fuel
+- Denatured Alcohol
+- White Gas
+- Esbit
+- Fuel Tablet
+- Solid Fuel
+- Matches
+- Waterproof Matches
+- Fire Starter
+- Tinder
+- Lighter Fuel
+- Disposable Lighter
+
+A full fuel canister remains one Consumables item. Do not separate the metal canister.
+
+### Skin, sun, and insect products
+
+- Sunscreen
+- Sunblock
+- Mineral Sunscreen
+- Zinc Sunscreen
+- Lip Balm
+- Lip Sunscreen
+- Bug Spray
+- Insect Repellent
+- Picaridin
+- DEET
+- Permethrin Spray
+- Anti-Chafe
+- Chafing Balm
+- Body Glide
+- Skin Protectant
+- Foot Powder
+- Lotion
+- Moisturizer
+- Paw Wax
+- Foot Balm
+
+### Hygiene products
+
+- Toothpaste
+- Tooth Powder
+- Toothpaste Tablets
+- Dental Floss
+- Floss Picks
+- Hand Sanitizer
+- Soap
+- Biodegradable Soap
+- Dish Soap
+- Toilet Paper
+- Tissue
+- Wet Wipes
+- Body Wipes
+- Cleaning Wipes
+- Alcohol Wipes
+- Deodorant
+- Shampoo
+- Conditioner
+- Contact Solution
+- Menstrual Products
+- Tampons
+- Pads
+- WAG Bag
+- Waste Bag
+- Poop Bag
+- Pack-Out Bag
+
+### Medical and first-aid supplies
+
+- Medication
+- Prescription Medication
+- Pain Reliever
+- Ibuprofen
+- Acetaminophen
+- Aspirin
+- Antihistamine
+- Anti-Diarrheal
+- Antacid
+- Allergy Medication
+- Antibiotic
+- Hydrocortisone
+- Antibiotic Ointment
+- Bandage
+- Adhesive Bandage
+- Gauze
+- Sterile Pad
+- Alcohol Wipe
+- Antiseptic Wipe
+- Medical Tape
+- Athletic Tape
+- Leukotape
+- Kinesiology Tape
+- KT Tape
+- Moleskin
+- Blister Pad
+- Blister Treatment
+- Hydrocolloid Bandage
+- Disposable Gloves
+- Oral Rehydration Salts
+
+### Repair supplies
+
+- Duct Tape
+- Gear Tape
+- Tenacious Tape
+- DCF Tape
+- Repair Tape
+- Patch
+- Repair Patch
+- Sleeping-Pad Patch
+- Tent Patch
+- Seam Sealer
+- Seam Sealant
+- Fabric Glue
+- Super Glue
+- Adhesive
+- Epoxy
+- Thread
+- Zip Tie
+- Cable Tie
+- Rubber Band
+- Waterproofing Treatment
+- Shoe Glue
+
+### Disposable storage and packaging
+
+- Freezer Bag
+- Ziploc Bag
+- Zip-Top Bag
+- Plastic Bag
+- Grocery Bag
+- Trash Bag
+- Garbage Bag
+- Litter Bag
+- Disposable Meal Bag
+- Disposable Food Bag
+- Dog Waste Bag
+
+Do not classify a reusable DCF, Dyneema, nylon, roll-top, dry bag, stuff sack, Ditty Bag, food bag, or electronics pouch as Consumables when it is listed separately as durable gear.
+
+### Batteries and chemical products
+
+- Disposable Battery
+- Alkaline Battery
+- Lithium Battery
+- Coin Battery
+- Button Battery
+- AA Battery
+- AAA Battery
+- CR123 Battery
+- CR2032 Battery
+- Glow Stick
+- Chemical Light
+- Hand Warmer
+- Toe Warmer
+
+Do not classify a rechargeable Power Bank, Battery Bank, rechargeable headlamp, charger, or charging cable as Consumables.
+
+### Dog consumables
+
+- Dog Food
+- Dog Treats
+- Dog Snacks
+- Dog Water
+- Dog Medication
+- Flea Treatment
+- Tick Treatment
+- Flea and Tick Treatment
+- Dog Sunscreen
+- Dog Wipes
+- Dog Poop Bags
+- Dog Waste Bags
+- Dog Electrolyte Powder
+
+## Classification priority
+
+Choose the destination in this order:
+
+1. Explicit recognized section heading from the uploaded list
+2. Explicit destination or category column
+3. Known Consumables Type
+4. Manual user selection on the review screen
+
+When a recognized Consumables Type appears under another explicit source section, preserve the source organization unless the source section itself is generic or missing.
+
+Example:
+
+Section: Hygiene
+Type: Toothpaste
+
+The importer may keep Destination as Hygiene because that is how the uploaded list is organized.
+
+Example with no section:
+
+Type: Toothpaste
+
+The importer should use Destination: Consumables.
+
+## Preserve specific Type
+
+Do not replace specific Types with the generic word Consumables.
+
+Correct:
+
+Destination: Consumables
+Type: Sunscreen
+Description: Blue Lizard Mineral Sunscreen
+Weight: 2 oz
+
+Incorrect:
+
+Destination: Consumables
+Type: Consumables
+Description: Blue Lizard Mineral Sunscreen
+Weight: 2 oz
+
+Only retain Type as Consumables when the source provides no more specific recognizable Type.
+
+## Row integrity
+
+Keep each source row together:
+
+- Type
+- Description
+- Weight
+- Destination
+
+Do not split one source row into contents and container rows.
+
+Do not combine neighboring rows.
+
+Do not estimate consumed quantity.
+
+Do not subtract packaging weight.
+
+Do not change the supplied Weight.
+
+## Tests
+
+Add tests confirming:
+
+- Full fuel canister is Consumables.
+- Fuel canister weight is preserved without subtracting the metal container.
+- Toothpaste tube is Consumables.
+- Reusable toiletry bottle listed separately is not Consumables.
+- Sunscreen bottle with sunscreen is Consumables.
+- Food packaged in a freezer bag remains one Consumables row.
+- Disposable freezer bag listed separately is Consumables.
+- Reusable DCF Ditty Bag listed separately is not Consumables.
+- Drinking Water is Consumables.
+- Empty reusable Water Bottle listed separately is not Consumables.
+- Dog Food is Consumables.
+- Dog Bowl is not Consumables.
+- Disposable batteries are Consumables.
+- Rechargeable Power Bank is not Consumables.
+- Type, Description, and Weight remain aligned.
+- No row is automatically split into contents and container.
+- No packaging weight is subtracted.
+
+Do not alter the working upload pipeline or spreadsheet parser.
+
+Make the changes directly in the existing application and report which vocabulary or classification file was updated.
