@@ -1,14 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { GearItem } from '../hooks/usePackData';
 import {
-  FileUp, Loader2, CheckCircle2, AlertCircle, X, Plus, ChevronDown, ChevronRight, Check,
+  FileUp, Loader2, CheckCircle2, AlertCircle, X, Plus, ChevronDown, ChevronRight, Check, AlertTriangle,
 } from 'lucide-react';
 
 interface ParsedItem {
   sub: string;
   desc: string;
   weightOz: number;
-  category: string;
+  warning: boolean;
 }
 
 interface EditedItem extends ParsedItem {
@@ -21,16 +21,18 @@ interface ImportGearPanelProps {
   onAddItem: (category: string, prefill: Partial<GearItem>) => void;
 }
 
-const ACCEPTED = '.pdf,.docx,.doc,.xlsx,.xls,.numbers,.csv';
-const ACCEPT_LABEL = 'PDF, Word (.docx), Excel (.xlsx), Numbers, or CSV';
+// Only accept the four deterministic formats (no CSV)
+const ACCEPTED      = '.pdf,.docx,.doc,.xlsx,.xls,.numbers';
+const ACCEPT_LABEL  = 'PDF, Word (.docx), Excel (.xlsx), or Numbers';
 
 export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelProps) {
-  const [open, setOpen] = useState(true);
-  const [phase, setPhase] = useState<'idle' | 'parsing' | 'review' | 'error'>('idle');
+  const [open, setOpen]       = useState(true);
+  const [phase, setPhase]     = useState<'idle' | 'parsing' | 'review' | 'error'>('idle');
   const [isDragging, setIsDragging] = useState(false);
-  const [fileName, setFileName] = useState('');
-  const [items, setItems] = useState<EditedItem[]>([]);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [fileName, setFileName]     = useState('');
+  const [items, setItems]           = useState<EditedItem[]>([]);
+  const [errorMsg, setErrorMsg]     = useState('');
+  const [targetCategory, setTargetCategory] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
@@ -48,28 +50,25 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('categoryOrder', JSON.stringify(categoryOrder));
 
     try {
       const resp = await fetch('/api/import-gear', { method: 'POST', body: formData });
       const data = await resp.json();
 
-      if (!resp.ok) {
-        if (data.code === 'no_api_key') {
-          setPhase('error');
-          setErrorMsg('OpenAI API key not configured. Add OPENAI_API_KEY to your environment secrets.');
-          return;
-        }
-        throw new Error(data.error ?? 'Import failed');
-      }
+      if (!resp.ok) throw new Error(data.error ?? 'Import failed');
 
       const parsed: ParsedItem[] = data.items ?? [];
-      setItems(parsed.map(item => ({
-        ...item,
-        category: categoryOrder.includes(item.category) ? item.category : (categoryOrder[0] ?? ''),
-        selected: true,
-        added: false,
-      })));
+      if (parsed.length === 0) {
+        setPhase('error');
+        setErrorMsg('No gear items with weight values were found in this file. Try a different file or format.');
+        return;
+      }
+
+      setItems(parsed.map(item => ({ ...item, selected: true, added: false })));
+      // Default target category to first in order
+      if (categoryOrder.length > 0 && !targetCategory) {
+        setTargetCategory(categoryOrder[0]);
+      }
       setPhase('review');
     } catch (err: any) {
       setPhase('error');
@@ -89,42 +88,46 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     if (file) processFile(file);
   };
 
-  const toggleSelect = (idx: number) =>
+  // ── Item edits ──────────────────────────────────────────────────────────────
+
+  const toggleSelect  = (idx: number) =>
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, selected: !it.selected } : it));
 
   const toggleAll = () => {
-    const allSelected = items.filter(i => !i.added).every(i => i.selected);
-    setItems(prev => prev.map(it => it.added ? it : { ...it, selected: !allSelected }));
+    const allSel = items.filter(i => !i.added).every(i => i.selected);
+    setItems(prev => prev.map(it => it.added ? it : { ...it, selected: !allSel }));
   };
+
+  const updateField = (idx: number, patch: Partial<EditedItem>) =>
+    setItems(prev => prev.map((it, i) => i === idx ? { ...it, ...patch } : it));
 
   const addOne = (idx: number) => {
     const it = items[idx];
     if (!it || it.added) return;
-    onAddItem(it.category, { sub: it.sub, desc: it.desc, weightOz: it.weightOz, checked: true });
+    const cat = targetCategory || categoryOrder[0] || '';
+    if (!cat) return;
+    onAddItem(cat, { sub: it.sub, desc: it.desc, weightOz: it.weightOz, checked: true });
     setItems(prev => prev.map((item, i) => i === idx ? { ...item, added: true, selected: false } : item));
   };
 
   const addSelected = () => {
-    items.forEach((it, idx) => { if (it.selected && !it.added) addOne(idx); });
+    items.forEach((_, idx) => { if (items[idx].selected && !items[idx].added) addOne(idx); });
   };
 
-  const updateItem = (idx: number, patch: Partial<EditedItem>) =>
-    setItems(prev => prev.map((it, i) => i === idx ? { ...it, ...patch } : it));
-
-  const pendingCount = items.filter(i => !i.added).length;
-  const selectedCount = items.filter(i => i.selected && !i.added).length;
-  const addedCount = items.filter(i => i.added).length;
+  const pending     = items.filter(i => !i.added);
+  const selectedCnt = items.filter(i => i.selected && !i.added).length;
+  const addedCnt    = items.filter(i => i.added).length;
 
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
 
-      {/* Header */}
+      {/* ── Panel header ── */}
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
       >
         {open
-          ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ? <ChevronDown  className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         }
         <div className="flex-1 min-w-0">
@@ -133,7 +136,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
             <h2 className="font-semibold text-foreground text-base">Scan Gear List</h2>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Upload a file — AI reads it and fills your gear categories.
+            Upload a file to import Type, Description, and Weight.
           </p>
         </div>
       </button>
@@ -141,7 +144,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
       {open && (
         <div className="p-4 sm:p-5 space-y-4">
 
-          {/* Drop zone — shown when idle or after reset */}
+          {/* ── Drop zone ── */}
           {(phase === 'idle' || phase === 'error') && (
             <>
               <div
@@ -183,7 +186,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
             </>
           )}
 
-          {/* Parsing state */}
+          {/* ── Parsing state ── */}
           {phase === 'parsing' && (
             <div className="flex flex-col items-center gap-3 py-6 text-center">
               <Loader2 className="w-7 h-7 text-primary animate-spin" />
@@ -194,16 +197,17 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
             </div>
           )}
 
-          {/* Review list */}
+          {/* ── Review table ── */}
           {phase === 'review' && items.length > 0 && (
             <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+
               {/* Summary bar */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-primary" />
                   <span className="text-xs font-semibold text-foreground">
-                    {pendingCount} item{pendingCount !== 1 ? 's' : ''} found
-                    {addedCount > 0 && <span className="text-muted-foreground font-normal"> · {addedCount} added</span>}
+                    {pending.length} item{pending.length !== 1 ? 's' : ''} found
+                    {addedCnt > 0 && <span className="text-muted-foreground font-normal"> · {addedCnt} added</span>}
                   </span>
                 </div>
                 <button onClick={reset} className="text-muted-foreground hover:text-foreground">
@@ -211,41 +215,58 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                 </button>
               </div>
 
-              {/* Item list */}
-              <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
-                {/* Select-all header */}
-                <div className="flex items-center gap-2 px-3 py-2 bg-muted/30">
+              {/* Target category */}
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                  Add to:
+                </label>
+                <select
+                  value={targetCategory}
+                  onChange={e => setTargetCategory(e.target.value)}
+                  className="flex-1 text-xs text-foreground bg-card border border-border rounded-md px-2 py-1.5 focus:outline-none focus:border-primary/50"
+                >
+                  {categoryOrder.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Table */}
+              <div className="border border-border rounded-lg overflow-hidden">
+
+                {/* Column headers */}
+                <div className="grid grid-cols-[28px_1fr_1fr_68px_28px] gap-x-2 items-center px-2 py-1.5 bg-muted/40 border-b border-border">
+                  {/* Select-all checkbox */}
                   <button
                     onClick={toggleAll}
-                    className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
-                      selectedCount === pendingCount && pendingCount > 0
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors mx-auto ${
+                      selectedCnt === pending.length && pending.length > 0
                         ? 'bg-primary border-primary text-primary-foreground'
                         : 'border-border bg-card'
                     }`}
                   >
-                    {selectedCount === pendingCount && pendingCount > 0 && <Check className="w-3 h-3" />}
+                    {selectedCnt === pending.length && pending.length > 0 && <Check className="w-2.5 h-2.5" />}
                   </button>
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    Select all
-                  </span>
-                  <span className="ml-auto text-[10px] text-muted-foreground">
-                    {selectedCount} / {pendingCount} selected
-                  </span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Type</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Description</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Wt (oz)</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-center">⚠</span>
                 </div>
 
-                <div className="max-h-[300px] overflow-y-auto">
+                {/* Rows */}
+                <div className="max-h-[320px] overflow-y-auto divide-y divide-border">
                   {items.map((item, idx) => (
                     <div
                       key={idx}
-                      className={`flex items-start gap-2 px-3 py-2.5 transition-colors ${
-                        item.added ? 'opacity-40' : 'hover:bg-muted/20'
+                      className={`grid grid-cols-[28px_1fr_1fr_68px_28px] gap-x-2 items-center px-2 py-1.5 transition-colors ${
+                        item.added ? 'opacity-40 bg-muted/10' : 'hover:bg-muted/20'
                       }`}
                     >
                       {/* Checkbox */}
                       <button
                         disabled={item.added}
                         onClick={() => toggleSelect(idx)}
-                        className={`mt-0.5 w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors ${
+                        className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-colors mx-auto ${
                           item.added
                             ? 'border-border bg-muted'
                             : item.selected
@@ -253,69 +274,90 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                               : 'border-border bg-card hover:border-primary/50'
                         }`}
                       >
-                        {(item.selected || item.added) && <Check className="w-3 h-3" />}
+                        {(item.selected || item.added) && <Check className="w-2.5 h-2.5" />}
                       </button>
 
-                      {/* Item info */}
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded truncate max-w-[80px]">
-                            {item.sub || 'Item'}
-                          </span>
-                          <select
-                            disabled={item.added}
-                            value={item.category}
-                            onChange={e => updateItem(idx, { category: e.target.value })}
-                            className="text-[10px] text-muted-foreground bg-transparent border border-border rounded px-1 py-0.5 outline-none focus:border-primary/50 disabled:opacity-60"
-                          >
-                            {categoryOrder.map(c => (
-                              <option key={c} value={c}>{c}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <p className="text-xs text-foreground leading-snug truncate" title={item.desc}>
-                          {item.desc || '—'}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground font-mono">
-                          {item.weightOz > 0 ? `${item.weightOz.toFixed(2)} oz` : 'Weight unknown'}
-                        </p>
-                      </div>
-
-                      {/* Add / added */}
+                      {/* Type (editable) */}
                       {item.added ? (
-                        <span className="text-[10px] font-semibold text-primary flex-shrink-0 mt-0.5">Added ✓</span>
+                        <span className="text-xs text-muted-foreground truncate">{item.sub || '—'}</span>
                       ) : (
-                        <button
-                          onClick={() => addOne(idx)}
-                          title="Add this item"
-                          className="mt-0.5 p-1 rounded-md border border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
+                        <input
+                          value={item.sub}
+                          onChange={e => updateField(idx, { sub: e.target.value })}
+                          placeholder="Type"
+                          maxLength={60}
+                          className="w-full text-xs bg-transparent border-b border-transparent focus:border-primary/40 focus:outline-none text-foreground placeholder:text-muted-foreground/50 truncate"
+                        />
                       )}
+
+                      {/* Description (editable) */}
+                      {item.added ? (
+                        <span className="text-xs text-muted-foreground truncate">{item.desc || '—'}</span>
+                      ) : (
+                        <input
+                          value={item.desc}
+                          onChange={e => updateField(idx, { desc: e.target.value })}
+                          placeholder="Description"
+                          maxLength={150}
+                          className="w-full text-xs bg-transparent border-b border-transparent focus:border-primary/40 focus:outline-none text-foreground placeholder:text-muted-foreground/50 truncate"
+                        />
+                      )}
+
+                      {/* Weight (editable) */}
+                      {item.added ? (
+                        <span className="text-xs text-muted-foreground text-right font-mono">{item.weightOz.toFixed(2)}</span>
+                      ) : (
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={item.weightOz}
+                          onChange={e => updateField(idx, { weightOz: parseFloat(e.target.value) || 0 })}
+                          className="w-full text-xs bg-transparent border-b border-transparent focus:border-primary/40 focus:outline-none text-right font-mono text-foreground"
+                        />
+                      )}
+
+                      {/* Warning */}
+                      <div className="flex justify-center">
+                        {item.added ? (
+                          <span className="text-[10px] text-primary font-semibold">✓</span>
+                        ) : item.warning ? (
+                          <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" title="Review this item — weight or description may need correction" />
+                        ) : (
+                          <span className="w-3 h-3" />
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Add selected button */}
-              {pendingCount > 0 && (
+              {/* Warning legend */}
+              {items.some(i => i.warning && !i.added) && (
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                  Flagged items may have unusual weights or missing descriptions — review before importing.
+                </p>
+              )}
+
+              {/* Actions */}
+              {pending.length > 0 && (
                 <button
                   onClick={addSelected}
-                  disabled={selectedCount === 0}
+                  disabled={selectedCnt === 0}
                   className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  Add {selectedCount > 0 ? `${selectedCount} selected` : 'selected'} item{selectedCount !== 1 ? 's' : ''}
+                  Import {selectedCnt > 0 ? `${selectedCnt} selected` : 'selected'} item{selectedCnt !== 1 ? 's' : ''}
                 </button>
               )}
 
-              {pendingCount === 0 && addedCount > 0 && (
+              {pending.length === 0 && addedCnt > 0 && (
                 <div className="flex items-center justify-center gap-2 py-2 text-xs text-primary font-medium">
                   <CheckCircle2 className="w-4 h-4" />
                   All items added!
                   <button onClick={reset} className="underline text-muted-foreground hover:text-foreground ml-1">
-                    Import another
+                    Import another file
                   </button>
                 </div>
               )}

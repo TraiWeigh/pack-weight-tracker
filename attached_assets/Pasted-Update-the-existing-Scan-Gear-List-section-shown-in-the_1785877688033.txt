@@ -1,0 +1,87 @@
+Update the existing Scan Gear List section shown in the application.
+
+Do not create a new import section, page, card, or button elsewhere.
+
+Use the existing expandable panel titled:
+
+Scan Gear List
+
+This existing panel is the exact location where the file-import feature must be placed.
+
+Make these changes:
+
+1. Keep the existing:
+   - Scan Gear List heading
+   - Upload icon
+   - Expand-and-collapse arrow
+   - White rounded card
+   - Dashed drag-and-drop upload box
+   - Existing visual styling and spacing
+
+2. Delete this description completely:
+
+“Upload a file — AI reads it and fills your gear categories.”
+
+3. Replace it with:
+
+“Upload a file to import Type, Description, and Weight.”
+
+4. Do not use the words:
+   - AI
+   - Artificial intelligence
+   - Smart scan
+   - AI-powered
+   - Automatically understands
+
+5. Inside the dashed upload area, keep:
+
+“Drop your packing list here”
+
+and:
+
+“or click to browse”
+
+6. Change the supported-file text to:
+
+“PDF, Word (.docx), Excel (.xlsx), or Numbers”
+
+Remove CSV from the supported-file text and do not accept CSV files.
+
+7. The upload area must accept only:
+   - .pdf
+   - .docx
+   - .xlsx
+   - .numbers
+
+8. After a file is uploaded, process it using only local, deterministic file-parsing code. Do not call an AI service or external document-processing service.
+
+9. Extract only these three gear fields:
+   - Type
+   - Description
+   - Weight
+
+10. Show the extracted information in an editable review table before saving:
+
+| Include | Type | Description | Weight | Warning |
+
+11. Allow the user to correct Type, Description, and Weight before selecting Import Selected Items.
+
+12. Do not automatically save imported items immediately after upload.
+
+13. Save only Type, Description, and Weight into the existing gear list.
+
+14. Do not add Category, Quantity, Brand, Price, Retailer, Total Weight, Confidence Score, or any other imported fields.
+
+15. Keep this feature inside the existing Scan Gear List expandable panel and ensure it works properly on both desktop and mobile screens.
+
+After making the changes, run the application and verify:
+
+- The AI description has been removed.
+- The replacement description is displayed.
+- CSV is no longer displayed or accepted.
+- The upload box remains in the existing Scan Gear List panel.
+- Only Type, Description, and Weight are extracted and imported.
+- No paid AI API is used.
+- Existing gear-list features still work.
+
+Do not merely explain the changes. Make the changes directly in the existing application.
