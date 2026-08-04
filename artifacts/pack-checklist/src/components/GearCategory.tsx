@@ -15,6 +15,7 @@ interface GearCategoryProps {
   addItem: (category: string) => void;
   onUpdateMeta: (updates: Partial<CategoryMeta>) => void;
   onDelete: () => void;
+  onRename?: (newName: string) => void;
   // Drag-to-reorder
   isDragOver?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
@@ -40,13 +41,11 @@ function EditableColHeader({
   const [draft, setDraft]     = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // keep draft in sync if parent changes (e.g. reset)
   useEffect(() => { setDraft(value); }, [value]);
 
   const commit = () => {
     setEditing(false);
-    const trimmed = draft.trim();
-    onCommit(trimmed);
+    onCommit(draft.trim());
   };
 
   if (editing) {
@@ -81,11 +80,65 @@ function EditableColHeader({
   );
 }
 
+// ── Inline-editable category title ───────────────────────────────────────────
+function EditableCategoryTitle({
+  name,
+  onRename,
+}: {
+  name: string;
+  onRename?: (newName: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft]     = useState(name);
+
+  useEffect(() => { if (!editing) setDraft(name); }, [name, editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const trimmed = draft.trim();
+    if (trimmed && trimmed !== name) onRename?.(trimmed);
+    else setDraft(name);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onClick={e => e.stopPropagation()}
+        onKeyDown={e => {
+          e.stopPropagation();
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') { setDraft(name); setEditing(false); }
+        }}
+        maxLength={40}
+        className="text-base sm:text-lg font-semibold bg-transparent border-b-2 border-primary focus:outline-none text-foreground w-full max-w-[220px]"
+      />
+    );
+  }
+
+  return (
+    <h2
+      className={`text-base sm:text-lg truncate ${onRename ? 'cursor-text select-none' : ''}`}
+      title={onRename ? 'Double-click to rename' : undefined}
+      onDoubleClick={e => {
+        if (!onRename) return;
+        e.stopPropagation();
+        setEditing(true);
+      }}
+    >
+      {name}
+    </h2>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 export function GearCategory({
   name, items, meta, forceOpen,
   updateItem, removeItem, addItem,
-  onUpdateMeta, onDelete,
+  onUpdateMeta, onDelete, onRename,
   isDragOver, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
 }: GearCategoryProps) {
   const [isOpen, setIsOpen] = useState(true);
@@ -102,8 +155,8 @@ export function GearCategory({
     .filter(i => i.checked)
     .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
 
-  const su = smallUnit(system); // oz or g
-  const lu = largeUnit(system); // lbs or kg
+  const su = smallUnit(system);
+  const lu = largeUnit(system);
   const displaySmall = formatWeight(categoryTotalOz, system, 'small');
   const displayLarge = formatWeight(categoryTotalOz, system, 'large');
   const packedCount = items.filter(i => i.checked).length;
@@ -129,7 +182,9 @@ export function GearCategory({
           {isOpen
             ? <ChevronDown  className="w-5 h-5 text-muted-foreground flex-shrink-0" />
             : <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
-          <h2 className="text-base sm:text-lg truncate">{name}</h2>
+          <div onClick={stopProp} className="min-w-0">
+            <EditableCategoryTitle name={name} onRename={onRename} />
+          </div>
           <span className="text-xs font-normal text-muted-foreground bg-black/5 px-2 py-0.5 rounded-full ml-2 flex-shrink-0">
             {packedCount} / {items.length} packed
           </span>
@@ -211,14 +266,12 @@ export function GearCategory({
         <div className="p-2 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="hidden sm:grid grid-cols-[auto_auto_1fr_80px_70px_80px_auto] gap-4 px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
             <div className="w-[30px]" />
-            {/* Editable "Type" column header */}
             <EditableColHeader
               value={meta.subLabel ?? ''}
               placeholder="Type"
               onCommit={v => onUpdateMeta({ subLabel: v || undefined })}
               className="w-28"
             />
-            {/* Editable "Description" column header */}
             <EditableColHeader
               value={meta.descLabel ?? ''}
               placeholder="Description"

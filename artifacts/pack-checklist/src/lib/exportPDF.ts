@@ -115,13 +115,10 @@ export function generatePackPDF(
         doc.rect(ML, y - 3.2, CW, 5.8, 'F');
       }
 
-      doc.setDrawColor(70, 115, 70);
-      doc.setLineWidth(0.35);
+      // Empty checkbox — for pencil marking on the trail
+      doc.setDrawColor(80, 80, 80);
+      doc.setLineWidth(0.4);
       doc.rect(ML + 0.5, y - 3.2, 3.5, 3.5);
-      doc.setDrawColor(35, 100, 45);
-      doc.setLineWidth(0.55);
-      doc.line(ML + 1, y - 1.5, ML + 2, y - 0.4);
-      doc.line(ML + 2, y - 0.4, ML + 3.8, y - 3.0);
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(7.5);

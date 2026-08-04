@@ -130,7 +130,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <FileUp className="w-4 h-4 text-primary flex-shrink-0" />
-            <h2 className="font-semibold text-foreground text-base">Import Packing List</h2>
+            <h2 className="font-semibold text-foreground text-base">Scan Gear List</h2>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             Upload a file — AI reads it and fills your gear categories.

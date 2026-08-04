@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useUser, useClerk } from '@clerk/react';
 import { usePackData } from '../hooks/usePackData';
 import { GearCategory } from '../components/GearCategory';
@@ -9,10 +9,13 @@ import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
-import { ScanGearPanel } from '../components/ScanGearPanel';
 import { ImportGearPanel } from '../components/ImportGearPanel';
+import { LockerPanel, LockerEntry, LOCKER_KEY } from '../components/LockerPanel';
 import { buildShareURL } from '../lib/shareLink';
-import { RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut, User, Shield, Plus, Check, X, ChevronsUpDown } from 'lucide-react';
+import {
+  RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut,
+  User, Shield, Plus, Check, X, ChevronsUpDown,
+} from 'lucide-react';
 import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
 
 function UnitToggle() {
@@ -51,10 +54,12 @@ interface ChecklistContentProps {
 
 function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistContentProps) {
   const {
-    data, categoryOrder, categoryMeta,
+    data, categoryOrder, categoryMeta, store,
     updateItem, addItem, removeItem,
     addCategory, deleteCategory, updateCategoryMeta, moveCategory, reorderCategory,
+    renameCategory, loadStore,
     resetToDefaults,
+    undo, redo, canUndo, canRedo,
   } = usePackData(userId);
 
   const { system } = useUnit();
@@ -72,7 +77,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const s = localStorage.getItem(BG_STORAGE_KEY);
       if (!s) return null;
       const bg = JSON.parse(s) as Background;
-      // Reject stored custom photos that are missing or suspiciously large
       if (bg.type === 'custom') {
         if (!bg.dataUrl?.startsWith('data:image/') || bg.dataUrl.length > 12_000_000) {
           localStorage.removeItem(BG_STORAGE_KEY);
@@ -108,19 +112,19 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setBgTone(t);
     localStorage.setItem('trailweigh:bgTone', t);
   };
+
   const bgImageUrl = background
     ? background.type === 'preset'
       ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
       : background.dataUrl
     : null;
+
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
 
-  // Expand / collapse all categories
   const [allOpen, setAllOpen] = useState(true);
 
-  // Copy share links
   const [copied, setCopied] = useState(false);
   async function copyUrlToClipboard(url: string): Promise<boolean> {
     try {
@@ -148,8 +152,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setTimeout(() => setCopied(false), 2000);
   };
 
-
-  // Add Category state
+  // ── Add Category ──────────────────────────────────────────────────────────
   const [addingCat, setAddingCat] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const newCatInputRef = useRef<HTMLInputElement>(null);
@@ -188,6 +191,82 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setTimeout(() => newCatInputRef.current?.focus(), 50);
   };
 
+  // ── New list in a new tab ─────────────────────────────────────────────────
+  const handleNew = useCallback(() => {
+    const uuid = crypto.randomUUID();
+    const snapshot = { __v: 5, items: data, order: categoryOrder, meta: categoryMeta };
+    localStorage.setItem(`tw-newseed-${uuid}`, JSON.stringify(snapshot));
+    const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
+    window.open(`${window.location.origin}${base}/checklist?newseed=${uuid}`, '_blank');
+  }, [data, categoryOrder, categoryMeta]);
+
+  // ── Keyboard shortcuts (Ctrl/Cmd+Z, Ctrl/Cmd+Y, Ctrl/Cmd+Shift+Z) ────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      if (isInput) return;
+      const meta = e.ctrlKey || e.metaKey;
+      if (!meta) return;
+      if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+      if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [undo, redo]);
+
+  // ── Save to Locker ────────────────────────────────────────────────────────
+  const [lockerEntries, setLockerEntries] = useState<LockerEntry[]>(() => {
+    try {
+      const raw = localStorage.getItem(LOCKER_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  useEffect(() => {
+    localStorage.setItem(LOCKER_KEY, JSON.stringify(lockerEntries));
+  }, [lockerEntries]);
+
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveName, setSaveName] = useState('');
+  const saveInputRef = useRef<HTMLInputElement>(null);
+
+  const openSaveDialog = () => {
+    setShowSaveDialog(true);
+    setTimeout(() => saveInputRef.current?.focus(), 50);
+  };
+
+  const handleSaveToLocker = () => {
+    const name = saveName.trim();
+    if (!name) return;
+    const entry: LockerEntry = {
+      id: crypto.randomUUID(),
+      name,
+      savedAt: Date.now(),
+      store,
+      background,
+      bgFade,
+      bgTone,
+    };
+    setLockerEntries(prev => [entry, ...prev]);
+    setShowSaveDialog(false);
+    setSaveName('');
+  };
+
+  const handleLoadFromLocker = (entry: LockerEntry) => {
+    loadStore(entry.store);
+    handleBackgroundChange(entry.background);
+    handleBgFadeChange(entry.bgFade);
+    handleBgToneChange(entry.bgTone);
+  };
+
+  const handleDeleteFromLocker = (id: string) => {
+    setLockerEntries(prev => prev.filter(e => e.id !== id));
+  };
+
+  // ── Toolbar button style ──────────────────────────────────────────────────
+  const toolBtn = 'flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50';
+  const toolBtnDisabled = 'flex items-center gap-1.5 text-xs font-medium text-muted-foreground/30 px-2 py-1.5 rounded-md cursor-not-allowed';
+
   return (
     <>
       {showMailingModal && (
@@ -206,8 +285,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         } : undefined}
       >
         <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
-          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+            {/* Logo */}
+            <div className="flex items-center gap-3 flex-shrink-0">
               <div className="bg-primary/10 p-2 rounded-lg text-primary">
                 <Tent className="w-6 h-6" />
               </div>
@@ -217,9 +297,87 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Reset */}
-              <div className="relative">
+            {/* Right controls */}
+            <div className="flex items-center gap-1 min-w-0">
+
+              {/* ── New ─────────────────────────────────────────── */}
+              <button
+                onClick={handleNew}
+                title="Open a copy of this list in a new tab"
+                className={toolBtn}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">New</span>
+              </button>
+
+              {/* ── Undo ────────────────────────────────────────── */}
+              <button
+                onClick={undo}
+                disabled={!canUndo}
+                title={canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo'}
+                className={canUndo ? toolBtn : toolBtnDisabled}
+              >
+                <img src="/undo.png" alt="Undo" className="w-3.5 h-3.5 object-contain" />
+                <span className="hidden md:inline">Undo</span>
+              </button>
+
+              {/* ── Redo ────────────────────────────────────────── */}
+              <button
+                onClick={redo}
+                disabled={!canRedo}
+                title={canRedo ? 'Redo (Ctrl+Y)' : 'Nothing to redo'}
+                className={canRedo ? toolBtn : toolBtnDisabled}
+              >
+                <img src="/redo.png" alt="Redo" className="w-3.5 h-3.5 object-contain" />
+                <span className="hidden md:inline">Redo</span>
+              </button>
+
+              {/* ── Save ────────────────────────────────────────── */}
+              {showSaveDialog ? (
+                <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-4 duration-200">
+                  <input
+                    ref={saveInputRef}
+                    type="text"
+                    value={saveName}
+                    onChange={e => setSaveName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleSaveToLocker();
+                      if (e.key === 'Escape') { setShowSaveDialog(false); setSaveName(''); }
+                    }}
+                    placeholder="List name…"
+                    maxLength={40}
+                    className="text-xs border border-border rounded-md px-2 py-1.5 bg-background focus:outline-none focus:border-primary/50 w-28 sm:w-36 text-foreground placeholder:text-muted-foreground"
+                  />
+                  <button
+                    onClick={handleSaveToLocker}
+                    disabled={!saveName.trim()}
+                    className="text-xs font-semibold bg-primary text-primary-foreground px-2.5 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => { setShowSaveDialog(false); setSaveName(''); }}
+                    className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={openSaveDialog}
+                  title="Save current list to Locker"
+                  className={toolBtn}
+                >
+                  <img src="/locker.png" alt="Save" className="w-3.5 h-3.5 object-contain" />
+                  <span className="hidden md:inline">Save</span>
+                </button>
+              )}
+
+              {/* Divider */}
+              <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
+
+              {/* ── Reset ───────────────────────────────────────── */}
+              <div className="relative flex-shrink-0">
                 {showResetConfirm ? (
                   <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
                     <span className="text-sm font-medium text-destructive">Reset all data?</span>
@@ -229,7 +387,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 ) : (
                   <button
                     onClick={() => setShowResetConfirm(true)}
-                    className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50"
+                    className={toolBtn}
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Reset</span>
@@ -237,23 +395,23 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 )}
               </div>
 
-              {/* User menu / guest CTA */}
+              {/* ── User menu / guest CTA ────────────────────────── */}
               {isGuest ? (
                 <button
                   onClick={() => setLocation('/sign-up')}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
                 >
                   <User className="w-3.5 h-3.5" />
                   Sign in to save
                 </button>
               ) : (
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <button
                     onClick={() => setShowUserMenu(v => !v)}
-                    className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50"
+                    className={toolBtn}
                   >
                     <User className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline max-w-[120px] truncate">{userEmail || 'Account'}</span>
+                    <span className="hidden sm:inline max-w-[100px] truncate">{userEmail || 'Account'}</span>
                   </button>
                   {showUserMenu && (
                     <>
@@ -292,7 +450,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
             {/* Gear list */}
             <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-              {/* Pinned pills row — never scrolls */}
+              {/* Pinned pills row */}
               <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
@@ -333,6 +491,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   addItem={addItem}
                   onUpdateMeta={updates => updateCategoryMeta(category, updates)}
                   onDelete={() => deleteCategory(category)}
+                  onRename={newName => renameCategory(category, newName)}
                   isDragOver={overCat === category && dragCat !== category}
                   onDragStart={() => setDragCat(category)}
                   onDragEnd={() => { setDragCat(null); setOverCat(null); }}
@@ -391,7 +550,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
             {/* Sidebar */}
             <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-              {/* Pinned action bar — mirrors the Open/Close bar on the left */}
+              {/* Pinned action bar */}
               <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} active={!!background} />
@@ -463,10 +622,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   categoryOrder={categoryOrder}
                   onAddItem={(category, prefill) => addItem(category, prefill)}
                 />
-                <ScanGearPanel
-                  userId={userId}
-                  categoryOrder={categoryOrder}
-                  onAddItem={(category, prefill) => addItem(category, prefill)}
+                <LockerPanel
+                  entries={lockerEntries}
+                  onLoad={handleLoadFromLocker}
+                  onDelete={handleDeleteFromLocker}
                 />
               </div>
               </div>
@@ -505,7 +664,6 @@ export default function Checklist() {
     );
   }
 
-  // Guest — data from localStorage guest key (pre-loaded by SharedPackView)
   return (
     <UnitProvider>
       <ChecklistContent key="guest" userId={undefined} isGuest />
