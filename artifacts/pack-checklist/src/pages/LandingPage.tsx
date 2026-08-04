@@ -17,7 +17,7 @@ export default function LandingPage() {
           </div>
           <div>
             <span className="font-bold text-foreground text-lg leading-none block">TrailWeigh</span>
-            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Ultralight Gear Tracker</span>
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Gear Tracker</span>
           </div>
         </div>
         <div className="flex items-center gap-2">

@@ -203,14 +203,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         } : undefined}
       >
         <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-primary/10 p-2 rounded-lg text-primary">
                 <Tent className="w-6 h-6" />
               </div>
               <div>
                 <h1 className="font-bold text-foreground text-xl leading-tight">TrailWeigh</h1>
-                <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest">Ultralight Gear Tracker</p>
+                <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest">Gear Tracker</p>
               </div>
             </div>
 
@@ -284,7 +284,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0 lg:overflow-hidden">
+        <main className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0 lg:overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
 
             {/* Gear list */}
@@ -382,7 +382,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             {/* Sidebar */}
             <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned action bar — mirrors the Open/Close bar on the left */}
-              <div className="relative flex flex-wrap justify-end gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
+              <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} active={!!background} />
                   <BackgroundPickerPanel

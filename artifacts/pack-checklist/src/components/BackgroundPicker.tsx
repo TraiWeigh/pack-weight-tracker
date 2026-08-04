@@ -210,7 +210,7 @@ export function BackgroundPickerPanel({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className="absolute right-0 top-full mt-2 z-50 w-[22rem] bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
+          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-[22rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
         >
           {/* Header */}
           <div className="px-4 pt-4 pb-2">
