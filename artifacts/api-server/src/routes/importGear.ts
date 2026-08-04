@@ -183,21 +183,26 @@ export function normalizeDestination(destination: string): string {
  * Post-extraction pass: apply Consumables classification rules.
  *
  * Priority (per spec):
- *   1. Explicit recognised section alias → already normalised to "Consumables" in extractSectionMode.
- *   2. Explicit non-alias destination → keep it (source organisation wins).
- *   3. No destination + known Consumable Type → assign "Consumables".
+ *   1. Known Consumables Type → destination = "Consumables", regardless of source section.
+ *      A consumed item must be in Consumables even if the spreadsheet put it under Kitchen,
+ *      Hygiene, Hydration, First Aid, etc.
+ *   2. Source section is a recognised Consumables alias (e.g. "Expendables") → "Consumables".
+ *   3. Source section is an explicit non-alias destination → keep it.
  *   4. Otherwise leave unchanged (user selects manually on review screen).
+ *
+ * The specific Type is always preserved; only Destination changes.
  */
 export function applyConsumablesClassification(item: ExtractedItem): ExtractedItem {
-  // Priority 1 handled at section-header time; normalizeDestination is idempotent, re-apply to be safe.
-  if (item.destination) {
-    const normalized = normalizeDestination(item.destination);
-    return normalized !== item.destination ? { ...item, destination: normalized } : item;
-  }
-  // Priority 3: no section → check Type
+  // Priority 1: known Consumable Type always wins — overrides any source section.
   if (CONSUMABLES_TYPES.has(norm(item.sub))) {
     return { ...item, destination: 'Consumables' };
   }
+  // Priority 2: source section is a consumables alias → normalise it.
+  if (item.destination) {
+    const normalized = normalizeDestination(item.destination);
+    if (normalized !== item.destination) return { ...item, destination: normalized };
+  }
+  // Priority 3/4: keep source section or leave empty for manual selection.
   return item;
 }
 

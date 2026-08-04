@@ -1,0 +1,223 @@
+Correct the destination-priority rule for Consumables.
+
+Your last response said:
+
+“Fuel stays in Kitchen (explicit section wins).”
+
+That is not the intended behavior.
+
+## Core classification rule
+
+When an item is consumed, depleted, eaten, drunk, burned, applied, discarded, or used up during the trip, its destination must be:
+
+Consumables
+
+A known Consumables Type must override the original spreadsheet section.
+
+The original section must not override a confirmed Consumables classification.
+
+## Correct priority order
+
+Determine Destination in this order:
+
+1. Known Consumables Type
+2. Explicit Consumables section or category
+3. Original spreadsheet section
+4. Default Type-to-category mapping
+5. Manual review selection
+
+This means a recognized consumable must move to Consumables even when it appears under another section such as Kitchen, Hygiene, First Aid, Water, Food, Electronics, or Dog Gear.
+
+## Preserve the specific Type
+
+Do not replace the specific Type with the word Consumables.
+
+Correct:
+
+Destination: Consumables
+Type: Fuel
+Description: 4 oz Isobutane Canister
+Weight: 7.68 oz
+
+Incorrect:
+
+Destination: Kitchen
+Type: Fuel
+Description: 4 oz Isobutane Canister
+Weight: 7.68 oz
+
+Also incorrect:
+
+Destination: Consumables
+Type: Consumables
+Description: 4 oz Isobutane Canister
+Weight: 7.68 oz
+
+## Required examples
+
+### Fuel originally under Kitchen
+
+Source section: Kitchen
+Type: Fuel
+Description: 4 oz Isobutane Canister
+Weight: 7.68 oz
+
+Required result:
+
+Destination: Consumables
+Type: Fuel
+Description: 4 oz Isobutane Canister
+Weight: 7.68 oz
+
+### Toothpaste originally under Hygiene
+
+Source section: Hygiene
+Type: Toothpaste
+Description: Travel Toothpaste
+Weight: 0.8 oz
+
+Required result:
+
+Destination: Consumables
+Type: Toothpaste
+Description: Travel Toothpaste
+Weight: 0.8 oz
+
+### Sunscreen originally under Toiletries
+
+Source section: Toiletries
+Type: Sunscreen
+Description: Mineral Sunscreen
+Weight: 2 oz
+
+Required result:
+
+Destination: Consumables
+Type: Sunscreen
+Description: Mineral Sunscreen
+Weight: 2 oz
+
+### Water originally under Hydration
+
+Source section: Hydration
+Type: Water
+Description: Carried Drinking Water
+Weight: 2.2 lb
+
+Required result:
+
+Destination: Consumables
+Type: Water
+Description: Carried Drinking Water
+Weight: 2.2 lb
+
+### Durable Carry Bag under Electronics
+
+Source section: Electronics
+Type: Carry Bag
+Description: Hilltop Ultralight Ditty Bag
+Weight: 0.71 oz
+
+Required result:
+
+Destination: Electronics
+Type: Carry Bag
+Description: Hilltop Ultralight Ditty Bag
+Weight: 0.71 oz
+
+Carry Bag remains in Electronics because it is durable and is not consumed.
+
+## Items that must override their original section
+
+Known Consumables include:
+
+- Food
+- Meals
+- Snacks
+- Water
+- Fuel
+- Fuel Canister
+- Alcohol Fuel
+- Esbit
+- Electrolytes
+- Drink Mix
+- Sunscreen
+- Lip Balm
+- Insect Repellent
+- Toothpaste
+- Dental Floss
+- Soap
+- Hand Sanitizer
+- Toilet Paper
+- Wipes
+- Medication
+- Bandages
+- Medical Tape
+- Repair Tape
+- Disposable Batteries
+- Dog Food
+- Dog Treats
+- Dog Medication
+- Water Treatment Tablets
+- Water Treatment Drops
+- Disposable Bags
+- Trash Bags
+- WAG Bags
+
+Use the complete existing Consumables vocabulary, not only this abbreviated list.
+
+## Durable-item exclusions
+
+Do not move durable equipment to Consumables.
+
+Examples that remain in their normal destination:
+
+- Stove
+- Cook Pot
+- Water Bottle
+- Water Filter
+- Toothbrush
+- Trowel
+- Power Bank
+- Battery Bank
+- Carry Bag
+- Ditty Bag
+- Dry Bag
+- Stuff Sack
+- Dog Bowl
+- Dog Pack
+- Reusable Fuel Bottle
+
+A reusable container listed as a separate row remains durable gear.
+
+## Review screen
+
+Continue showing:
+
+- Destination
+- Type
+- Description
+- Weight
+
+The user may manually change Destination before importing.
+
+Do not alter the working file-upload or spreadsheet-column parsing.
+
+## Required tests
+
+Add tests confirming:
+
+- Fuel under Kitchen moves to Consumables.
+- Toothpaste under Hygiene moves to Consumables.
+- Sunscreen under Toiletries moves to Consumables.
+- Water under Hydration moves to Consumables.
+- Dog Food under Dog Gear moves to Consumables.
+- Carry Bag under Electronics remains in Electronics.
+- Stove under Kitchen remains in Kitchen.
+- Water Bottle under Hydration remains in Hydration.
+- Type, Description, and Weight remain unchanged and aligned.
+- The specific Type is preserved instead of being replaced by Consumables.
+
+Retest my workbook and confirm that Fuel now appears in Consumables while Carry Bag remains in Electronics.
+
+Make the change directly in the existing application.

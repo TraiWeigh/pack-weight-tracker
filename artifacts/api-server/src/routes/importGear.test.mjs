@@ -115,12 +115,14 @@ const CONSUMABLES_TYPES = new Set([
 ]);
 
 function applyConsumablesClassification(item) {
-  if (item.destination) {
-    const n = item.destination.toLowerCase().replace(/[^\w\s]/g,' ').replace(/\s+/g,' ').trim();
-    return CONSUMABLES_SECTION_ALIASES.has(n) ? { ...item, destination: 'Consumables' } : item;
-  }
+  // Priority 1: known Consumable Type always wins — overrides source section.
   const typeN = item.sub.toLowerCase().replace(/[^\w\s]/g,' ').replace(/\s+/g,' ').trim();
   if (CONSUMABLES_TYPES.has(typeN)) return { ...item, destination: 'Consumables' };
+  // Priority 2: source section is a consumables alias → normalise.
+  if (item.destination) {
+    const n = item.destination.toLowerCase().replace(/[^\w\s]/g,' ').replace(/\s+/g,' ').trim();
+    if (CONSUMABLES_SECTION_ALIASES.has(n)) return { ...item, destination: 'Consumables' };
+  }
   return item;
 }
 
@@ -273,7 +275,7 @@ console.log('T1: Core fixture — canonical rows extracted correctly');
 
   const fuel = items.find(i => i.sub === 'Fuel');
   assert(!!fuel, 'Fuel row found');
-  assertEqual(fuel?.destination, 'Kitchen',              'Fuel → destination Kitchen');
+  assertEqual(fuel?.destination, 'Consumables',          'Fuel → destination Consumables (Type wins over Kitchen section)');
   assertEqual(fuel?.desc,        '4 oz',                 'Fuel → desc is "4 oz" (not weight)');
   assertEqual(fuel?.weightOz,    7.68,                   'Fuel → weight 7.68 oz (from col D, not desc)');
 }
@@ -306,10 +308,11 @@ console.log('\nT4: Repeated section headers change destination');
 {
   const wb = makeWorkbook(FIXTURE_ROWS);
   const items = extractFromWorkbook(wb);
-  const backpackItems = items.filter(i => i.destination === 'Backpack');
-  const kitchenItems  = items.filter(i => i.destination === 'Kitchen');
-  assert(backpackItems.length === 2, '2 items in Backpack section');
-  assert(kitchenItems.length  === 1, '1 item in Kitchen section');
+  const backpackItems     = items.filter(i => i.destination === 'Backpack');
+  const consumablesItems  = items.filter(i => i.destination === 'Consumables');
+  assert(backpackItems.length    === 2, '2 items in Backpack section');
+  // Fuel (originally Kitchen) now moves to Consumables; Kitchen section is empty in fixture
+  assert(consumablesItems.length === 1, '1 item reclassified to Consumables (Fuel)');
 }
 
 // ── T5: Total rows are skipped ────────────────────────────────────────────────
@@ -440,29 +443,15 @@ function makeNoSectionWorkbook(type, desc, weight, unit = 'oz') {
 
 console.log('\n=== Consumables classification tests ===\n');
 
-// ── C1: Full fuel canister → Consumables ──────────────────────────────────────
-console.log('C1: Fuel canister is Consumables');
+// ── C1: Full fuel canister → Consumables (even when source section is Kitchen) ─
+console.log('C1: Fuel canister moves to Consumables regardless of source section');
 {
+  // Under "Kitchen" → Type "Fuel" wins; destination must be Consumables
   const wb = makeConsumablesWorkbook('Kitchen', 'Fuel', '4 oz Isobutane Canister', 7.68);
-  const raw = extractFromWorkbook(wb);
-  const item = applyConsumablesClassification(raw[0]);
-  // Under "Kitchen" → explicit section wins; Fuel stays in Kitchen
-  assertEqual(item.destination, 'Kitchen', 'Fuel under Kitchen section keeps Kitchen (explicit section wins)');
-  // Weight must be preserved
-  assertEqual(item.weightOz, 7.68, 'Fuel canister weight 7.68 oz preserved (not subtracted)');
-
-  // When Fuel has NO section heading, it defaults to Consumables
-  const wb2 = makeNoSectionWorkbook('Fuel', '4 oz Isobutane Canister', 7.68);
-  // extractFromWorkbook uses generic mode → no destination set
-  const raw2 = extractFromWorkbook(wb2);
-  if (raw2.length > 0) {
-    const item2 = applyConsumablesClassification(raw2[0]);
-    assertEqual(item2.destination, 'Consumables', 'Fuel with no section → Consumables');
-    assertEqual(item2.weightOz, 7.68, 'Fuel weight preserved in no-section case');
-  } else {
-    console.log('  (no-section generic mode returned no rows — skipped)');
-    passed++;
-  }
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Consumables', 'Fuel under Kitchen → Consumables (Type wins)');
+  assertEqual(items[0]?.sub, 'Fuel', 'Type remains "Fuel" (not replaced with "Consumables")');
+  assertEqual(items[0]?.weightOz, 7.68, 'Fuel canister weight 7.68 oz preserved (not subtracted)');
 }
 
 // ── C2: Expendables section alias → normalised to Consumables ─────────────────
@@ -486,18 +475,58 @@ console.log('\nC3: Type label preserved — Destination changes, Type does not')
   assertEqual(items[0]?.destination, 'Consumables', 'Destination = "Consumables"');
 }
 
-// ── C4: Toothpaste → Consumables (explicit Hygiene section wins if present) ───
-console.log('\nC4: Toothpaste classification');
+// ── C4: Known consumables override their source section ───────────────────────
+console.log('\nC4: Known consumable Types override source section');
 {
-  // Under Hygiene section → keep Hygiene (explicit source section)
+  // Toothpaste under Hygiene → Type wins → Consumables
   const wb = makeConsumablesWorkbook('Hygiene', 'Toothpaste', 'Travel Toothpaste Tube', 0.8);
   const items = extractFromWorkbook(wb);
-  assertEqual(items[0]?.destination, 'Hygiene', 'Toothpaste under Hygiene section → stays Hygiene');
+  assertEqual(items[0]?.destination, 'Consumables', 'Toothpaste under Hygiene → Consumables (Type wins)');
+  assertEqual(items[0]?.sub, 'Toothpaste', 'Type "Toothpaste" preserved');
 
-  // Reusable toiletry bottle listed separately under Hygiene → also stays Hygiene (not consumable type)
-  const wb2 = makeConsumablesWorkbook('Hygiene', 'Toiletry Bottle', 'Reusable Silicone Bottle', 0.4);
+  // Sunscreen under Toiletries → Consumables
+  const wb2 = makeConsumablesWorkbook('Toiletries', 'Sunscreen', 'Mineral Sunscreen', 2);
   const items2 = extractFromWorkbook(wb2);
-  assertEqual(items2[0]?.destination, 'Hygiene', 'Toiletry Bottle under Hygiene → stays Hygiene');
+  assertEqual(items2[0]?.destination, 'Consumables', 'Sunscreen under Toiletries → Consumables');
+
+  // Water under Hydration → Consumables
+  const wb3 = makeConsumablesWorkbook('Hydration', 'Water', 'Carried Drinking Water', 35.2);
+  const items3 = extractFromWorkbook(wb3);
+  assertEqual(items3[0]?.destination, 'Consumables', 'Water under Hydration → Consumables');
+
+  // Dog Food under Dog Gear → Consumables
+  const wb4 = makeConsumablesWorkbook('Dog Gear', 'Dog Food', 'Fromm Kibble 3 days', 12);
+  const items4 = extractFromWorkbook(wb4);
+  assertEqual(items4[0]?.destination, 'Consumables', 'Dog Food under Dog Gear → Consumables');
+
+  // Reusable Toiletry Bottle under Hygiene → stays Hygiene (not in CONSUMABLES_TYPES)
+  const wb5 = makeConsumablesWorkbook('Hygiene', 'Toiletry Bottle', 'Reusable Silicone Bottle', 0.4);
+  const items5 = extractFromWorkbook(wb5);
+  assertEqual(items5[0]?.destination, 'Hygiene', 'Toiletry Bottle under Hygiene → stays Hygiene (durable)');
+}
+
+// ── C4b: Durable items stay in their source section ───────────────────────────
+console.log('\nC4b: Durable items remain in their source section');
+{
+  // Stove under Kitchen → stays Kitchen
+  const wb = makeConsumablesWorkbook('Kitchen', 'Stove', 'Soto Windmaster', 2.3);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Kitchen', 'Stove under Kitchen → stays Kitchen (durable)');
+
+  // Water Bottle under Hydration → stays Hydration
+  const wb2 = makeConsumablesWorkbook('Hydration', 'Water Bottle', 'Smartwater 1L', 1.2);
+  const items2 = extractFromWorkbook(wb2);
+  assertEqual(items2[0]?.destination, 'Hydration', 'Water Bottle under Hydration → stays Hydration (durable)');
+
+  // Carry Bag under Electronics → stays Electronics
+  const wb3 = makeConsumablesWorkbook('Electronics', 'Carry Bag', 'Hilltop Ultralight Ditty Bag', 0.71);
+  const items3 = extractFromWorkbook(wb3);
+  assertEqual(items3[0]?.destination, 'Electronics', 'Carry Bag under Electronics → stays Electronics (durable)');
+
+  // Dog Bowl under Dog Gear → stays Dog Gear
+  const wb4 = makeConsumablesWorkbook('Dog Gear', 'Dog Bowl', 'Collapsible Silicone Bowl', 1.4);
+  const items4 = extractFromWorkbook(wb4);
+  assertEqual(items4[0]?.destination, 'Dog Gear', 'Dog Bowl under Dog Gear → stays Dog Gear (durable)');
 }
 
 // ── C5: Sunscreen → Consumables ───────────────────────────────────────────────
