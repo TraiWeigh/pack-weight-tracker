@@ -11,47 +11,55 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 const importGearRouter = Router();
 export default importGearRouter;
 
+// ── Shared types ──────────────────────────────────────────────────────────────
+
+export interface ExtractedItem {
+  sub: string;         // Type
+  desc: string;        // Description
+  weightOz: number;
+  warning: boolean;
+  destination?: string; // category from section header (spreadsheets only)
+}
+
+// ── Normalisation helper ──────────────────────────────────────────────────────
+
+/** Lowercase, trim, strip punctuation, collapse whitespace */
+export function norm(v: unknown): string {
+  return String(v ?? '')
+    .toLowerCase()
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 // ── Weight parsing ────────────────────────────────────────────────────────────
 
-interface WeightResult { oz: number; warning: boolean }
+export function parseWeightToOz(raw: string | number, unitHint = ''): { oz: number; warning: boolean } {
+  const num = typeof raw === 'number' ? raw : parseFloat(String(raw ?? '').replace(/[^\d.]/g, ''));
+  if (isNaN(num) || num <= 0) return { oz: 0, warning: true };
 
-function parseWeightToOz(value: string | number): WeightResult {
-  const str = String(value).trim();
-  const m = str.match(/(\d+(?:\.\d+)?)\s*(oz|g(?:rams?)?|lbs?|pounds?|kg(?:s|ilograms?)?)?$/i);
-  if (!m) return { oz: 0, warning: true };
-  const val = parseFloat(m[1]);
-  const unit = (m[2] ?? 'oz').toLowerCase();
+  const unit = norm(unitHint) || norm(String(raw));
   let oz: number;
-  if (unit.startsWith('g'))               oz = val / 28.3495; // grams
-  else if (unit.startsWith('lb') || unit.startsWith('pound')) oz = val * 16;
-  else if (unit.startsWith('kg') || unit.startsWith('kilo'))  oz = val * 35.274;
-  else                                     oz = val; // oz
+  if (/^g(ram)?s?$/.test(unit))           oz = num / 28.3495;
+  else if (/^(lb|lbs|pound|pounds)$/.test(unit)) oz = num * 16;
+  else if (/^(kg|kgs|kilogram|kilograms)$/.test(unit)) oz = num * 35.274;
+  else                                     oz = num; // oz / unknown → treat as oz
   oz = Math.round(oz * 100) / 100;
   return { oz, warning: oz <= 0 || oz > 700 };
 }
 
-// ── Extracted item shape ──────────────────────────────────────────────────────
-
-interface ExtractedItem {
-  sub: string;       // Type
-  desc: string;      // Description
-  weightOz: number;
-  warning: boolean;
-}
-
-// ── Text-based heuristic extraction ──────────────────────────────────────────
+// ── Text-based heuristic extraction (PDF / Word fallback) ─────────────────────
 
 const WEIGHT_RE = /(\d+(?:\.\d+)?)\s*(oz|g(?:rams?)?|lbs?|pounds?|kg(?:s|ilograms?)?)(?=\b|\s|$)/i;
-
 const SKIP_LINE_RE = /^(total|grand\s*total|base\s*weight|sub\s*total|sum\b|clothing\b|weight\b|type\b|description\b|category\b|item\b|gear\b|name\b|qty\b|quantity\b|#\b)/i;
 
-function extractFromText(text: string): ExtractedItem[] {
+export function extractFromText(text: string): ExtractedItem[] {
   const results: ExtractedItem[] = [];
   const lines = text.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 3);
 
   for (const line of lines) {
     if (SKIP_LINE_RE.test(line)) continue;
-
     const wm = line.match(WEIGHT_RE);
     if (!wm) continue;
 
@@ -65,16 +73,14 @@ function extractFromText(text: string): ExtractedItem[] {
     oz = Math.round(oz * 100) / 100;
     if (oz <= 0) continue;
 
-    // Strip weight token from line
     const rest = line
       .replace(wm[0], '')
-      .replace(/\([^)]*\)/g, '')        // remove parenthetical notes
+      .replace(/\([^)]*\)/g, '')
       .replace(/[|,]+/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
     if (!rest) continue;
 
-    // Split into type + description (tab / 2+ spaces / ' - ' are column separators)
     let sub = '', desc = '';
     const parts = rest.split(/\t|  +|\s+-\s+/).map(p => p.trim()).filter(Boolean);
     if (parts.length >= 2) {
@@ -96,55 +102,222 @@ function extractFromText(text: string): ExtractedItem[] {
   return results;
 }
 
-// ── XLSX / Numbers structured extraction ─────────────────────────────────────
+// ── Spreadsheet: detect section-header format ─────────────────────────────────
+//
+// A repeated section-header row looks like:
+//   X | Backpack | Description | Weight | Add | Unit | Qty
+//
+// Detection: norm(row[2]) === 'description' AND norm(row[3]) matches /^(weight|wt)$/
 
-function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): ExtractedItem[] {
+function isSectionHeaderRow(row: unknown[]): boolean {
+  return (
+    norm(row[2]) === 'description' &&
+    /^(weight|wt)$/.test(norm(row[3]))
+  );
+}
+
+// Type aliases used in header detection
+const TYPE_RE   = /^(type|gear type|item type|equipment type)$/;
+const DESC_RE   = /^(description|item|item name|gear|gear item|product|product name|equipment|name)$/;
+const WEIGHT_HDR_RE = /^(weight|item weight|gear weight|wt|ounces|oz|grams|pounds|lbs|kilograms|kg)$/;
+const UNIT_RE   = /^(unit|weight unit|units)$/;
+
+function detectCols(headerRow: unknown[]): {
+  typeCol: number; descCol: number; weightCol: number; unitCol: number;
+} {
+  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  headerRow.forEach((h, i) => {
+    const n = norm(h);
+    if (typeCol   === -1 && TYPE_RE.test(n))        typeCol   = i;
+    if (descCol   === -1 && DESC_RE.test(n))        descCol   = i;
+    if (weightCol === -1 && WEIGHT_HDR_RE.test(n))  weightCol = i;
+    if (unitCol   === -1 && UNIT_RE.test(n))        unitCol   = i;
+  });
+  return { typeCol, descCol, weightCol, unitCol };
+}
+
+// ── Section-mode extraction ───────────────────────────────────────────────────
+//
+// Used when repeated section-headers are detected.
+// Processes only columns A–G (indices 0–6) to avoid right-side summary tables.
+
+const MAX_GEAR_COL = 6; // G (index 6)
+
+export function extractSectionMode(rows: unknown[][]): ExtractedItem[] {
   const results: ExtractedItem[] = [];
 
-  for (const sheetName of wb.SheetNames) {
+  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  let currentDestination = '';
+  let inSection = false;
+
+  for (const rawRow of rows) {
+    // Only inspect cols A–G; ignore summary tables further right
+    const row = (rawRow as unknown[]).slice(0, MAX_GEAR_COL + 1);
+
+    // Skip entirely blank rows
+    if (row.every(c => String(c ?? '').trim() === '')) continue;
+
+    // ── Section header detection ──────────────────────────────────────────────
+    if (isSectionHeaderRow(row)) {
+      // col B (index 1) = destination category name
+      currentDestination = String(row[1] ?? '').trim();
+      inSection = true;
+
+      // Dynamic column detection from this header row
+      const detected = detectCols(row);
+
+      // desc and weight are always at 2 and 3 in this format (checked above)
+      descCol   = detected.descCol   !== -1 ? detected.descCol   : 2;
+      weightCol = detected.weightCol !== -1 ? detected.weightCol : 3;
+      unitCol   = detected.unitCol   !== -1 ? detected.unitCol   : 5;
+
+      // Type: use alias match if found; otherwise the column just before desc
+      typeCol = detected.typeCol !== -1 ? detected.typeCol : (descCol > 1 ? descCol - 1 : 1);
+
+      continue; // don't import the header row as a gear item
+    }
+
+    if (!inSection) continue;
+    if (typeCol === -1 || descCol === -1 || weightCol === -1) continue;
+
+    const rawType   = String(row[typeCol]   ?? '').trim();
+    const rawDesc   = String(row[descCol]   ?? '').trim();
+    const rawWeight = row[weightCol];
+    const rawUnit   = unitCol >= 0 ? String(row[unitCol] ?? '').trim() : '';
+
+    // Skip blanks and boolean checkbox values
+    if (!rawType || !rawDesc)           continue;
+    if (/^(true|false)$/i.test(rawType)) continue;
+    if (/^(true|false)$/i.test(rawDesc)) continue;
+
+    // Skip total / summary rows
+    if (/^(total|grand\s*total|sub\s*total)/i.test(rawType)) continue;
+    if (/^(total|grand\s*total|sub\s*total)/i.test(rawDesc)) continue;
+    // Skip if Weight cell contains non-numeric text like "Total"
+    if (typeof rawWeight === 'string' && /[a-df-z]/i.test(rawWeight)) continue;
+
+    // Parse numeric weight value
+    const weightNum = typeof rawWeight === 'number'
+      ? rawWeight
+      : parseFloat(String(rawWeight ?? '').replace(/[^\d.]/g, ''));
+    if (isNaN(weightNum) || weightNum <= 0) continue;
+
+    // Convert to oz using the Unit column
+    const { oz, warning } = parseWeightToOz(weightNum, rawUnit);
+
+    results.push({
+      sub:         rawType.slice(0, 60),
+      desc:        rawDesc.slice(0, 200),
+      weightOz:    oz,
+      warning:     warning || oz > 500,
+      destination: currentDestination,
+    });
+  }
+
+  return results;
+}
+
+// ── Generic mode extraction ───────────────────────────────────────────────────
+//
+// Used when no repeated section headers are detected.
+// Falls back to scanning the first header row for column aliases.
+
+function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
+  const results: ExtractedItem[] = [];
+
+  // Find the first row that looks like a header (has weight col at minimum)
+  let headerIdx = -1;
+  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+
+  for (let r = 0; r < Math.min(rows.length, 10); r++) {
+    const detected = detectCols(rows[r]);
+    if (detected.weightCol !== -1) {
+      headerIdx  = r;
+      typeCol    = detected.typeCol;
+      descCol    = detected.descCol;
+      weightCol  = detected.weightCol;
+      unitCol    = detected.unitCol;
+      break;
+    }
+  }
+
+  if (headerIdx === -1 || weightCol === -1) {
+    // No structured headers — fall back to CSV text parsing
+    // (Only used for spreadsheets; will be rare.)
+    return [];
+  }
+
+  for (let r = headerIdx + 1; r < rows.length; r++) {
+    const row = rows[r] as unknown[];
+    const rawWeight = row[weightCol];
+    if (rawWeight === '' || rawWeight == null) continue;
+
+    const weightNum = typeof rawWeight === 'number'
+      ? rawWeight
+      : parseFloat(String(rawWeight ?? '').replace(/[^\d.]/g, ''));
+    if (isNaN(weightNum) || weightNum <= 0) continue;
+
+    const rawUnit = unitCol >= 0 ? String(row[unitCol] ?? '').trim() : '';
+    const { oz, warning } = parseWeightToOz(weightNum, rawUnit);
+    if (oz <= 0) continue;
+
+    const sub  = typeCol  >= 0 ? String(row[typeCol]  ?? '').trim().slice(0, 60)  : '';
+    let desc = '';
+    if (descCol >= 0) {
+      desc = String(row[descCol] ?? '').trim();
+    } else {
+      desc = (row as unknown[])
+        .filter((_, i) => i !== typeCol && i !== weightCol && i !== unitCol)
+        .map(v => String(v ?? '').trim())
+        .filter(Boolean)
+        .join(' ');
+    }
+    desc = desc.slice(0, 200);
+
+    if (!desc && !sub) continue;
+    if (/^(true|false)$/i.test(sub)) continue;
+
+    results.push({ sub, desc, weightOz: oz, warning: warning || oz > 500 });
+  }
+
+  return results;
+}
+
+// ── Workbook dispatcher ───────────────────────────────────────────────────────
+
+// Sheet names to skip entirely (case-insensitive)
+const SKIP_SHEET_RE = /^meal\s*planner$/i;
+// Preferred sheet names (match before others)
+const PREFER_SHEET_RE = /pack\s*weight\s*checklist|pack\s*weight/i;
+
+export function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): ExtractedItem[] {
+  const results: ExtractedItem[] = [];
+
+  // Choose which sheets to process
+  let sheetsToProcess = wb.SheetNames.filter(n => !SKIP_SHEET_RE.test(n.trim()));
+
+  // If a preferred sheet exists, process only that one
+  const preferred = sheetsToProcess.find(n => PREFER_SHEET_RE.test(n.trim()));
+  if (preferred) sheetsToProcess = [preferred];
+
+  for (const sheetName of sheetsToProcess) {
     const sheet = wb.Sheets[sheetName];
     const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
     if (rows.length < 2) continue;
 
-    const header = (rows[0] as string[]).map(h => String(h ?? '').toLowerCase().trim());
+    // Detect whether this sheet uses the repeated section-header layout
+    const hasSectionHeaders = rows.some(row => isSectionHeaderRow(row as unknown[]));
 
-    let typeCol = -1, descCol = -1, weightCol = -1;
-    header.forEach((h, i) => {
-      if (typeCol   === -1 && /^(type|sub|item|gear|name|product)/.test(h)) typeCol   = i;
-      if (descCol   === -1 && /^(desc|detail|note|model|spec|brand)/.test(h)) descCol = i;
-      if (weightCol === -1 && /weight|wt\b|oz\b|gram|lb\b/.test(h))         weightCol = i;
-    });
-
-    if (weightCol === -1) {
-      // No weight column found — fall back to CSV text parsing
-      results.push(...extractFromText(XLSX.utils.sheet_to_csv(sheet)));
-      continue;
-    }
-
-    for (let r = 1; r < rows.length; r++) {
-      const row = rows[r] as unknown[];
-      const rawW = row[weightCol];
-      if (rawW === '' || rawW === null || rawW === undefined) continue;
-
-      const { oz, warning } = parseWeightToOz(rawW as string | number);
-      if (oz <= 0) continue;
-
-      const sub  = typeCol  >= 0 ? String(row[typeCol]  ?? '').trim().slice(0, 60)  : '';
-      let desc = '';
-      if (descCol >= 0) {
-        desc = String(row[descCol] ?? '').trim();
+    if (hasSectionHeaders) {
+      results.push(...extractSectionMode(rows));
+    } else {
+      const generic = extractGenericMode(rows);
+      if (generic.length > 0) {
+        results.push(...generic);
       } else {
-        // Concatenate non-type non-weight cells
-        desc = (row as unknown[])
-          .filter((_, i) => i !== typeCol && i !== weightCol)
-          .map(v => String(v ?? '').trim())
-          .filter(Boolean)
-          .join(' ');
+        // Last resort: CSV text parsing
+        results.push(...extractFromText(XLSX.utils.sheet_to_csv(sheet)));
       }
-      desc = desc.slice(0, 200);
-
-      if (!desc && !sub) continue;
-      results.push({ sub, desc, weightOz: oz, warning: warning || oz > 500 });
     }
   }
 
@@ -178,7 +351,9 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       items = extractFromWorkbook(wb);
 
     } else {
-      res.status(400).json({ error: `Unsupported file type: .${ext}. Accepted: PDF, Word (.docx), Excel (.xlsx), Numbers` });
+      res.status(400).json({
+        error: `Unsupported file type: .${ext}. Accepted: PDF, Word (.docx), Excel (.xlsx), Numbers`,
+      });
       return;
     }
 
@@ -191,7 +366,7 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       return true;
     });
 
-    res.json({ items: deduped.slice(0, 150) });
+    res.json({ items: deduped.slice(0, 200) });
   } catch (err: any) {
     console.error('[import-gear]', err);
     res.status(500).json({ error: err?.message ?? 'Failed to parse file' });

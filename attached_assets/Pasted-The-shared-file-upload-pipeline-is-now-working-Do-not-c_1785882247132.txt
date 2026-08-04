@@ -1,0 +1,362 @@
+The shared file-upload pipeline is now working. Do not change or rebuild the upload route.
+
+The next problem is that the Excel parser is reading the wrong cells from my actual workbook:
+
+PACK WEIGHT & MEAL PLANNER CHECKLIST(1).xlsx
+
+Do not work on the Locker, toolbar icons, or expanded backpacking vocabulary yet. Fix the spreadsheet row and column extraction first.
+
+## Current incorrect results
+
+The importer currently:
+
+- Uses the checkbox value FALSE as Type.
+- Combines Type, Description, Weight, Add, Unit, and Quantity into Description.
+- Reads numbers inside the Description as Weight.
+- Interprets “18G” in “18G Compactor Bag” as 18 grams and converts it to approximately 0.63 oz.
+- Uses “4 oz” from the Fuel Description as Weight instead of using the actual 7.68 oz Weight cell.
+- Finds only a few rows instead of all valid gear rows.
+
+Fix the underlying spreadsheet parser. Do not merely change the displayed text.
+
+## Structure of my workbook
+
+Use the worksheet named:
+
+PACK WEIGHT CHECKLIST
+
+Ignore the worksheet named:
+
+Meal Planner
+
+The main gear table uses columns A through G:
+
+- Column A: Checkbox value, TRUE or FALSE — ignore
+- Column B: Type
+- Column C: Description
+- Column D: Weight
+- Column E: Add or calculated selected weight — ignore
+- Column F: Unit
+- Column G: Quantity — ignore
+
+The importer must import only:
+
+- Type
+- Description
+- Weight
+
+## Repeated category headers
+
+The worksheet contains multiple sections such as:
+
+- Backpack
+- Shelter
+- Sleep
+- Clothing Packed
+- Kitchen
+- Electronics
+- Toiletries + Med
+- Hydration
+- Clothing Worn
+- Miscellaneous
+
+Each section begins with a row similar to:
+
+X | Backpack | Description | Weight | Add | Unit | Qty
+
+In a section-header row:
+
+- Column A contains X
+- Column B contains the destination category
+- Column C contains Description
+- Column D contains Weight
+- Column E contains Add
+- Column F contains Unit
+- Column G contains Qty
+
+Treat a row as a repeated section header when:
+
+- Column C normalizes to “description”
+- Column D normalizes to “weight”
+
+When a section header is detected:
+
+1. Store the value from column B as the current destination category.
+2. Do not import the section-header row as a gear item.
+3. Assign subsequent valid gear rows to that destination category.
+4. Continue until another section header is detected.
+
+The destination category determines where the imported row is added in the application. It is not an additional saved gear-item field.
+
+## Exact row mapping for this workbook
+
+For every valid gear row:
+
+- Destination category = most recent section header from column B
+- Type = column B
+- Description = column C
+- Weight value = column D
+- Weight unit = column F
+
+Ignore:
+
+- Column A checkbox
+- Column E Add
+- Column G Quantity
+- Columns H through K summary tables
+
+Never use TRUE or FALSE as:
+
+- Type
+- Description
+- Weight
+- Destination category
+
+Import both checked and unchecked rows. The spreadsheet checkbox does not determine whether the row is imported.
+
+## Valid gear rows
+
+A valid candidate row must have:
+
+- Nonblank text in the detected Type column
+- Nonblank text in the detected Description column
+- A numeric value in the detected Weight column
+- A recognized weight unit when a separate Unit column exists
+
+Skip:
+
+- Repeated header rows
+- Total rows
+- Blank rows
+- Placeholder rows with no Description
+- Rows whose Weight cell is blank
+- Rows whose Type cell is blank
+- Rows whose Description cell is blank
+- Right-side category summaries
+- First Aid and Repair summary tables located outside the main A:G gear table
+- The Meal Planner worksheet
+
+A Total row may contain the word “Total” in the Weight column and must not be imported.
+
+My PACK WEIGHT CHECKLIST worksheet should produce exactly 69 valid gear candidate rows using these rules.
+
+## Dedicated spreadsheet columns take priority
+
+When Type, Description, Weight, and optional Unit columns have been detected:
+
+1. Read only the corresponding cells.
+2. Do not run paragraph-style or regular-expression fallback parsing on that row.
+3. Do not search the Description for Weight.
+4. Do not infer Weight from model names, product sizes, temperature ratings, capacities, or other numbers in Description.
+5. Do not concatenate surrounding cells into Description.
+
+The fallback text parser may be used only for unstructured Word paragraphs or PDF text where dedicated columns do not exist.
+
+## Numbers that must remain part of Description
+
+Do not interpret these as Weight when a dedicated Weight column exists:
+
+- 18G Compactor Bag
+- Durston Wapta 30
+- UGQ Bandit 10F
+- Fire-Maple Petrel G3 600ml HX Pot
+- Zpacks Free-Zip 2
+- CNOC Vecto 2L
+- Alpha 90
+- iPhone 16 Pro
+
+These are product descriptions, sizes, capacities, ratings, or model numbers.
+
+## Exact expected results
+
+For the Pack Liner row, display:
+
+Destination: Backpack
+Type: Pack Liner
+Description: 18G Compactor Bag
+Weight: 1.7 oz
+
+Do not display:
+
+Type: FALSE
+Weight: 0.63 oz
+
+For the Fuel row, display:
+
+Destination: Kitchen
+Type: Fuel
+Description: 4 oz
+Weight: 7.68 oz
+
+The words “4 oz” are the Description of the fuel canister size. The actual gear Weight is 7.68 oz from column D.
+
+For the Backpack row, display:
+
+Destination: Backpack
+Type: Backpack
+Description: ULA Ultra Circuit
+Weight: 40.8 oz
+
+For the Ditty Bag row, display:
+
+Destination: Electronics
+Type: Carry Bag
+Description: Hilltop Ultralight Ditty Bag
+Weight: 0.71 oz
+
+Do not change “Carry Bag” to another Type yet. Expanded backpacking Type recognition will be added in a later task.
+
+## Support spreadsheets with different column orders
+
+Do not permanently hard-code every Excel file to columns B, C, D, and F.
+
+Use dynamic header detection first.
+
+Recognize these header aliases:
+
+Type:
+
+- Type
+- Gear Type
+- Item Type
+- Equipment Type
+
+Description:
+
+- Description
+- Item
+- Item Name
+- Gear
+- Gear Item
+- Product
+- Product Name
+- Equipment
+- Name
+
+Weight:
+
+- Weight
+- Item Weight
+- Gear Weight
+- Wt
+- Ounces
+- Oz
+- Grams
+- Pounds
+- Lbs
+- Kilograms
+- Kg
+
+Unit:
+
+- Unit
+- Weight Unit
+- Units
+
+Normalize headers by:
+
+- Converting to lowercase
+- Trimming whitespace
+- Removing punctuation
+- Replacing line breaks with spaces
+- Collapsing repeated spaces
+- Ignoring capitalization
+
+The columns may appear in any order.
+
+Use my workbook’s B = Type, C = Description, D = Weight, and F = Unit structure as a recognized repeated-header layout, not as the only supported spreadsheet format.
+
+If the importer cannot confidently identify the required columns in another workbook, do not guess. Show a clear error or column-mapping interface.
+
+## Review screen
+
+Continue displaying an editable review table.
+
+Each proposed row must keep these values on the same source row:
+
+- Destination
+- Type
+- Description
+- Weight
+
+Allow the user to edit each value before importing.
+
+Do not save anything until the user selects Import Selected Items.
+
+The permanent gear row must still save only:
+
+- Type
+- Description
+- Weight
+
+Destination only determines which existing category receives the row.
+
+Do not import:
+
+- Checkbox state
+- Add
+- Unit as a separate field
+- Quantity
+- Formulas
+- Total rows
+- Summary information
+
+## Required automated tests
+
+Add tests using a spreadsheet fixture containing:
+
+X | Backpack | Description | Weight | Add | Unit | Qty
+FALSE | Pack Liner | 18G Compactor Bag | 1.7 | 0 | oz | 1
+TRUE | Backpack | ULA Ultra Circuit | 40.8 | 40.8 | oz | 1
+
+X | Kitchen | Description | Weight | Add | Unit | Qty
+FALSE | Fuel | 4 oz | 7.68 | 0 | oz | 1
+
+Confirm that the parser returns:
+
+Backpack | Pack Liner | 18G Compactor Bag | 1.7 oz
+Backpack | Backpack | ULA Ultra Circuit | 40.8 oz
+Kitchen | Fuel | 4 oz | 7.68 oz
+
+Also test:
+
+- TRUE and FALSE are ignored
+- Checked and unchecked rows are both included
+- Repeated category headers change the destination
+- Total rows are skipped
+- Add and Quantity columns are ignored
+- Description and Weight remain on the same row
+- Numbers in Description are not treated as Weight
+- Columns can appear in a different order
+- Blank rows are skipped
+- The Meal Planner worksheet is ignored
+- PDF and Word import behavior remains unchanged
+
+## Browser verification
+
+Retest the actual workbook through the browser upload interface.
+
+Confirm:
+
+- Exactly 69 valid candidate rows are found
+- Pack Liner displays correctly
+- Fuel displays correctly
+- ULA Ultra Circuit displays correctly
+- Hilltop Ultralight Ditty Bag displays correctly
+- No Type contains TRUE or FALSE
+- No Description contains concatenated Add, Unit, or Quantity values
+- No model number or capacity is converted into Weight
+- The review screen remains editable
+- No items are saved before approval
+
+At completion, report:
+
+- The parser file or files changed
+- Why FALSE was previously used as Type
+- Why 18G was previously converted to 0.63 oz
+- Why Fuel previously used 4 oz as its Weight
+- The number of valid rows now found
+- Whether all four example rows display correctly
+- Whether Excel, PDF, and Word importing still work
+
+Make the correction directly in the existing application. Do not only explain how to fix it.

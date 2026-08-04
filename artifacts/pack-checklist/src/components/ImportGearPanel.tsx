@@ -9,11 +9,13 @@ interface ParsedItem {
   desc: string;
   weightOz: number;
   warning: boolean;
+  destination?: string; // category from spreadsheet section header
 }
 
 interface EditedItem extends ParsedItem {
   selected: boolean;
   added: boolean;
+  destination: string; // always a string (defaults to first category)
 }
 
 interface ImportGearPanelProps {
@@ -32,7 +34,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
   const [fileName, setFileName]     = useState('');
   const [items, setItems]           = useState<EditedItem[]>([]);
   const [errorMsg, setErrorMsg]     = useState('');
-  const [targetCategory, setTargetCategory] = useState<string>('');
+  const [targetCategory, setTargetCategory] = useState<string>(''); // global fallback
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reset = () => {
@@ -54,7 +56,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     try {
       const resp = await fetch('/api/import-gear', { method: 'POST', body: formData });
 
-      // Guard against HTML error pages (e.g. 404) which would throw
+      // Guard against HTML error pages (e.g. 404) which cause
       // "The string did not match the expected pattern." in WebKit when parsed as JSON.
       const ct = resp.headers.get('content-type') ?? '';
       if (!ct.includes('application/json')) {
@@ -75,11 +77,14 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
         return;
       }
 
-      setItems(parsed.map(item => ({ ...item, selected: true, added: false })));
-      // Default target category to first in order
-      if (categoryOrder.length > 0 && !targetCategory) {
-        setTargetCategory(categoryOrder[0]);
-      }
+      const firstCat = categoryOrder[0] ?? '';
+      setItems(parsed.map(item => ({
+        ...item,
+        selected: true,
+        added: false,
+        destination: item.destination || firstCat,
+      })));
+      if (!targetCategory && firstCat) setTargetCategory(firstCat);
       setPhase('review');
     } catch (err: any) {
       setPhase('error');
@@ -112,10 +117,15 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
   const updateField = (idx: number, patch: Partial<EditedItem>) =>
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, ...patch } : it));
 
+  // Whether items carry server-supplied destination (spreadsheet mode)
+  const hasDestinations = items.some(i => i.destination);
+
   const addOne = (idx: number) => {
     const it = items[idx];
     if (!it || it.added) return;
-    const cat = targetCategory || categoryOrder[0] || '';
+    const cat = hasDestinations
+      ? (it.destination || targetCategory || categoryOrder[0] || '')
+      : (targetCategory || categoryOrder[0] || '');
     if (!cat) return;
     onAddItem(cat, { sub: it.sub, desc: it.desc, weightOz: it.weightOz, checked: true });
     setItems(prev => prev.map((item, i) => i === idx ? { ...item, added: true, selected: false } : item));
@@ -128,6 +138,11 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
   const pending     = items.filter(i => !i.added);
   const selectedCnt = items.filter(i => i.selected && !i.added).length;
   const addedCnt    = items.filter(i => i.added).length;
+
+  // Grid column layout — 6 cols when destinations shown, 5 otherwise
+  const gridCols = hasDestinations
+    ? 'grid-cols-[20px_minmax(70px,0.9fr)_minmax(70px,0.9fr)_minmax(90px,1.2fr)_56px_20px]'
+    : 'grid-cols-[20px_minmax(80px,1fr)_minmax(100px,1.5fr)_60px_20px]';
 
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
@@ -226,27 +241,29 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                 </button>
               </div>
 
-              {/* Target category */}
-              <div className="flex items-center gap-2">
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-                  Add to:
-                </label>
-                <select
-                  value={targetCategory}
-                  onChange={e => setTargetCategory(e.target.value)}
-                  className="flex-1 text-xs text-foreground bg-card border border-border rounded-md px-2 py-1.5 focus:outline-none focus:border-primary/50"
-                >
-                  {categoryOrder.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Global "Add to:" selector — only shown when items lack per-row destinations */}
+              {!hasDestinations && (
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                    Add to:
+                  </label>
+                  <select
+                    value={targetCategory}
+                    onChange={e => setTargetCategory(e.target.value)}
+                    className="flex-1 text-xs text-foreground bg-card border border-border rounded-md px-2 py-1.5 focus:outline-none focus:border-primary/50"
+                  >
+                    {categoryOrder.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Table */}
               <div className="border border-border rounded-lg overflow-hidden">
 
                 {/* Column headers */}
-                <div className="grid grid-cols-[28px_1fr_1fr_68px_28px] gap-x-2 items-center px-2 py-1.5 bg-muted/40 border-b border-border">
+                <div className={`grid ${gridCols} gap-x-1 items-center px-2 py-1.5 bg-muted/40 border-b border-border`}>
                   {/* Select-all checkbox */}
                   <button
                     onClick={toggleAll}
@@ -258,6 +275,9 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                   >
                     {selectedCnt === pending.length && pending.length > 0 && <Check className="w-2.5 h-2.5" />}
                   </button>
+                  {hasDestinations && (
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Category</span>
+                  )}
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Type</span>
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Description</span>
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-right">Wt (oz)</span>
@@ -265,11 +285,11 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                 </div>
 
                 {/* Rows */}
-                <div className="max-h-[320px] overflow-y-auto divide-y divide-border">
+                <div className="max-h-[360px] overflow-y-auto divide-y divide-border">
                   {items.map((item, idx) => (
                     <div
                       key={idx}
-                      className={`grid grid-cols-[28px_1fr_1fr_68px_28px] gap-x-2 items-center px-2 py-1.5 transition-colors ${
+                      className={`grid ${gridCols} gap-x-1 items-center px-2 py-1.5 transition-colors ${
                         item.added ? 'opacity-40 bg-muted/10' : 'hover:bg-muted/20'
                       }`}
                     >
@@ -287,6 +307,23 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                       >
                         {(item.selected || item.added) && <Check className="w-2.5 h-2.5" />}
                       </button>
+
+                      {/* Destination (per-row, spreadsheet mode only) */}
+                      {hasDestinations && (
+                        item.added ? (
+                          <span className="text-xs text-muted-foreground truncate">{item.destination || '—'}</span>
+                        ) : (
+                          <select
+                            value={item.destination}
+                            onChange={e => updateField(idx, { destination: e.target.value })}
+                            className="w-full text-xs text-foreground bg-transparent border-b border-transparent focus:border-primary/40 focus:outline-none truncate"
+                          >
+                            {categoryOrder.map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        )
+                      )}
 
                       {/* Type (editable) */}
                       {item.added ? (
