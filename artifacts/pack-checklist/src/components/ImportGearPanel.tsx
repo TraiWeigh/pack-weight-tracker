@@ -27,28 +27,72 @@ interface ImportGearPanelProps {
 const ACCEPTED      = '.pdf,.docx,.doc,.xlsx,.xls,.numbers';
 const ACCEPT_LABEL  = 'PDF, Word (.docx), Excel (.xlsx), or Numbers';
 
-// Fallback order when server returns "Consumables" but that category doesn't exist
-const CONSUMABLES_FALLBACK = ['Consumables', 'Expendables', 'Consumable Weight', 'Miscellaneous'];
+/**
+ * Maps canonical API destination strings → lists of display-name aliases.
+ *
+ * The API always returns one of the canonical strings on the left
+ * (matching DEFAULT_CATEGORY_ORDER defaults: "Shelter", "Sleep", "Consumables", …).
+ * When a user renames a category (e.g. "Sleep" → "Sleep System") the canonical
+ * string won't find an exact match in categoryOrder, so we walk the alias list
+ * to find the renamed category instead.
+ *
+ * Rules:
+ *  - Only complete phrases are aliases; generic words like "System", "Gear",
+ *    "Equipment" alone are never used for matching.
+ *  - "System" by itself must never cause Shelter gear to be placed in Sleep System
+ *    or vice-versa.
+ */
+const CATEGORY_ROLE_ALIASES: Record<string, string[]> = {
+  Shelter:          ['Shelter', 'Shelter System', 'Tent System', 'Tarp System', 'Hammock System', 'Camp Shelter'],
+  Sleep:            ['Sleep', 'Sleep System', 'Sleeping System', 'Sleeping Gear', 'Sleep Gear', 'Bedding'],
+  Consumables:      ['Consumables', 'Expendables', 'Consumable Weight', 'Expendable Weight',
+                     'Trip Consumables', 'Used Up Items', 'Used-Up Items', 'Perishables',
+                     'Food and Fuel', 'Consumable', 'Expendable', 'Miscellaneous'],
+  Backpack:         ['Backpack', 'Pack'],
+  Kitchen:          ['Kitchen', 'Cooking', 'Cooking System', 'Cook System'],
+  Hydration:        ['Hydration', 'Water', 'Water System'],
+  Electronics:      ['Electronics', 'Electronics System', 'Electronic Gear'],
+  'Clothing Packed':['Clothing Packed', 'Clothing', 'Packed Clothing'],
+  'Clothing Worn':  ['Clothing Worn', 'Worn Clothing'],
+  'Dog Pack':       ['Dog Pack', 'Dog Gear', 'Pet Gear'],
+  'Med Kit':        ['Med Kit', 'First Aid', 'First Aid Kit', 'Medical Kit'],
+  'Repair Kit':     ['Repair Kit', 'Repair', 'Repair and Tools'],
+  Toiletries:       ['Toiletries', 'Hygiene', 'Personal Care', 'Toiletry Kit'],
+};
 
 /**
- * Resolve a server-supplied destination to an existing category.
- * If the destination isn't in categoryOrder, walk the Consumables fallback chain.
- * As a last resort, return the first category.
+ * Resolve a server-supplied canonical destination to a category that actually
+ * exists in the user's categoryOrder.
+ *
+ * 1. Exact match → use it.
+ * 2. Role-alias match → find a category in categoryOrder that is an alias for
+ *    the same canonical role as the incoming destination.
+ * 3. Case-insensitive match → handles minor casing differences.
+ * 4. Fall back to categoryOrder[0].
  */
 function resolveDestination(destination: string, categoryOrder: string[]): string {
   if (!destination) return categoryOrder[0] ?? '';
+
+  // 1. Exact match (fast path — covers the common case where nothing is renamed)
   if (categoryOrder.includes(destination)) return destination;
-  // If destination is a consumables variant, try the fallback chain
-  const lower = destination.toLowerCase();
-  const isConsumablesVariant = ['consumables','expendables','consumable weight',
-    'expendable weight','trip consumables','perishables','food and fuel',
-    'consumable','expendable','used up items','used-up items'].includes(lower);
-  if (isConsumablesVariant) {
-    for (const fallback of CONSUMABLES_FALLBACK) {
-      if (categoryOrder.includes(fallback)) return fallback;
+
+  // 2. Role-alias lookup: find which canonical role this destination belongs to,
+  //    then find any alias for that role that exists in categoryOrder.
+  for (const aliases of Object.values(CATEGORY_ROLE_ALIASES)) {
+    if (aliases.includes(destination)) {
+      // destination belongs to this role — find its representative in categoryOrder
+      for (const alias of aliases) {
+        if (categoryOrder.includes(alias)) return alias;
+      }
     }
   }
-  // Destination doesn't match anything — return as-is (user can change in dropdown)
+
+  // 3. Case-insensitive fallback (e.g. "shelter" vs "Shelter")
+  const destLower = destination.toLowerCase();
+  const ci = categoryOrder.find(c => c.toLowerCase() === destLower);
+  if (ci) return ci;
+
+  // 4. No match — default to first category; user can change in dropdown
   return categoryOrder[0] ?? destination;
 }
 

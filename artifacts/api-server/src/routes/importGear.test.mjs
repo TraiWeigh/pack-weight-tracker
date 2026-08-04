@@ -114,17 +114,52 @@ const CONSUMABLES_TYPES = new Set([
   'dog waste bags','dog electrolyte powder',
 ]);
 
-function applyConsumablesClassification(item) {
-  // Priority 1: known Consumable Type always wins — overrides source section.
-  const typeN = item.sub.toLowerCase().replace(/[^\w\s]/g,' ').replace(/\s+/g,' ').trim();
-  if (CONSUMABLES_TYPES.has(typeN)) return { ...item, destination: 'Consumables' };
-  // Priority 2: source section is a consumables alias → normalise.
+const SHELTER_TYPES = new Set([
+  'tent','backpacking tent','freestanding tent','semi-freestanding tent',
+  'trekking pole tent','trekking-pole tent','single-wall tent','double-wall tent',
+  'net tent','inner tent','tent body',
+  'tarp','flat tarp','shaped tarp','pyramid tarp','hammock tarp',
+  'hammock',
+  'bivy','bivvy','bug bivy',
+  'groundsheet','ground sheet','ground cloth','groundcloth',
+  'tent footprint','footprint','polycryo','polycro','tyvek groundsheet',
+  'rainfly','rain fly',
+  'tent pole','tent poles','pole set','pole jack',
+  'tent stake','tent stakes','stakes','stake','stake bag',
+  'guylines','guy lines','guyline','guy line','ridgeline',
+  'hammock straps','tree straps','shelter suspension',
+  'bug net','mosquito net',
+]);
+
+const SLEEP_TYPES = new Set([
+  'sleeping bag','quilt','backpacking quilt','top quilt','underquilt',
+  'sleeping pad','sleep pad','inflatable pad','air pad','insulated pad',
+  'foam pad','closed-cell foam pad','ccf pad','air mattress',
+  'pillow','inflatable pillow',
+  'sleeping bag liner','sleep liner','sleeping liner',
+  'quilt straps','pad straps','pump sack','pump bag','pad pump',
+  'down hood','sleeping hood','sleep socks','sleeping clothes',
+]);
+
+function applyGearClassification(item) {
+  const typeN = norm(item.sub);
+  const sectionConflict = (canonical) =>
+    !!(item.destination && norm(item.destination) !== norm(canonical));
+  if (CONSUMABLES_TYPES.has(typeN))
+    return { ...item, destination: 'Consumables', warning: item.warning || sectionConflict('Consumables') };
+  if (SHELTER_TYPES.has(typeN))
+    return { ...item, destination: 'Shelter',     warning: item.warning || sectionConflict('Shelter') };
+  if (SLEEP_TYPES.has(typeN))
+    return { ...item, destination: 'Sleep',        warning: item.warning || sectionConflict('Sleep') };
   if (item.destination) {
-    const n = item.destination.toLowerCase().replace(/[^\w\s]/g,' ').replace(/\s+/g,' ').trim();
+    const n = norm(item.destination);
     if (CONSUMABLES_SECTION_ALIASES.has(n)) return { ...item, destination: 'Consumables' };
   }
   return item;
 }
+
+// alias so existing tests keep compiling
+const applyConsumablesClassification = applyGearClassification;
 
 function normalizeDestination(destination) {
   const n = destination.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -652,6 +687,142 @@ console.log('\nC16: Type, Description, Weight aligned on same row after classifi
   assertEqual(items[2].sub,      'Food',                 'Row 3 Type = Food');
   assertEqual(items[2].desc,     'Freeze-Dried Dinner',  'Row 3 Desc aligned');
   assertEqual(items[2].weightOz, 5,                      'Row 3 Weight = 5');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Shelter / Sleep-System type-routing tests
+// ═══════════════════════════════════════════════════════════════════════════════
+console.log('\n\n=== Shelter / Sleep type-routing tests ===\n');
+
+// ── S1: Core Shelter types route to Shelter regardless of source section ───────
+console.log('S1: Shelter Types → Shelter');
+for (const [type, desc, w] of [
+  ['Tent',        'Zpacks Duplex',           32],
+  ['Tarp',        'Zpacks Flat Tarp',        14],
+  ['Groundsheet', 'Polycryo 8x10',           3.3],
+  ['Tent Stakes', 'Titanium Shepherd Hooks', 0.6],
+  ['Guylines',    '2mm Dyneema x6',          0.4],
+  ['Rainfly',     'Silnylon Fly',            9.5],
+  ['Hammock',     'Warbonnet Blackbird',     18],
+]) {
+  const item = applyGearClassification({ sub: type, desc, weightOz: w, warning: false, destination: 'Shelter' });
+  assertEqual(item.destination, 'Shelter', `${type} → Shelter`);
+  assertEqual(item.sub, type, `${type}: Type string unchanged`);
+}
+
+// ── S2: Core Sleep System types route to Sleep regardless of source section ───
+console.log('\nS2: Sleep System Types → Sleep');
+for (const [type, desc, w] of [
+  ['Quilt',        'Enlightened Eq Revelation', 17],
+  ['Sleeping Bag', 'Feathered Friends Flicker',  24],
+  ['Sleeping Pad', 'NeoAir XLite',               12],
+  ['Pillow',       'Nemo Fillo Elite',             2.3],
+  ['Underquilt',   'WB Underquilt',              18],
+]) {
+  const item = applyGearClassification({ sub: type, desc, weightOz: w, warning: false, destination: 'Sleep' });
+  assertEqual(item.destination, 'Sleep', `${type} → Sleep`);
+  assertEqual(item.sub, type, `${type}: Type string unchanged`);
+}
+
+// ── S3: Tent placed in a "Sleep System" section overrides to Shelter w/ warning ─
+console.log('\nS3: Tent in Sleep System section → Shelter with warning');
+{
+  const wb = makeConsumablesWorkbook('Sleep System', 'Tent', 'Zpacks Duplex', 32);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Shelter', 'Tent under Sleep System → Shelter (Type wins)');
+  assertEqual(items[0]?.sub,         'Tent',     'Type "Tent" preserved unchanged');
+  assertEqual(items[0]?.weightOz,    32,         'Weight 32 oz preserved');
+  assert(items[0]?.warning === true,             'warning=true when Type conflicts with source section');
+}
+
+// ── S4: Tarp placed in a wrong section overrides to Shelter ───────────────────
+console.log('\nS4: Tarp in wrong section → Shelter');
+{
+  const wb = makeConsumablesWorkbook('Sleep', 'Tarp', 'Zpacks Flat Tarp', 14);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Shelter', 'Tarp under Sleep → Shelter (Type wins)');
+  assertEqual(items[0]?.sub,         'Tarp',     'Type "Tarp" preserved');
+  assert(items[0]?.warning === true,             'warning=true (section conflict)');
+}
+
+// ── S5: Sleeping Pad in Shelter section overrides to Sleep ────────────────────
+console.log('\nS5: Sleeping Pad in Shelter section → Sleep');
+{
+  const wb = makeConsumablesWorkbook('Shelter', 'Sleeping Pad', 'NeoAir XLite', 12);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Sleep',        'Sleeping Pad under Shelter → Sleep (Type wins)');
+  assertEqual(items[0]?.sub,         'Sleeping Pad', 'Type "Sleeping Pad" preserved');
+  assert(items[0]?.warning === true,                 'warning=true (section conflict)');
+}
+
+// ── S6: Renaming "Sleep" to "Sleep System" must not affect Shelter mappings ───
+console.log('\nS6: Rename "Sleep" → "Sleep System" does not move Tent into Sleep System');
+{
+  // The API always returns destination:"Shelter" for Tent types.
+  // Even if the user renamed Sleep → Sleep System, Tent still gets Shelter.
+  const tentItem = applyGearClassification({ sub: 'Tent', desc: 'Tent', weightOz: 32, warning: false, destination: 'Sleep System' });
+  assertEqual(tentItem.destination, 'Shelter', 'Tent destination is Shelter even when source section says "Sleep System"');
+}
+
+// ── S7: Renaming "Shelter" to "Shelter System" does not affect Sleep mappings ─
+console.log('\nS7: Rename "Shelter" → "Shelter System" does not move Quilt into Shelter System');
+{
+  const quiltItem = applyGearClassification({ sub: 'Quilt', desc: 'Quilt', weightOz: 17, warning: false, destination: 'Shelter System' });
+  assertEqual(quiltItem.destination, 'Sleep', 'Quilt destination is Sleep even when source section says "Shelter System"');
+}
+
+// ── S8: "System" alone must never drive category matching ─────────────────────
+console.log('\nS8: "System" alone never determines category');
+{
+  // A tent listed under a section called just "System" → still Shelter
+  const item = applyGearClassification({ sub: 'Tent', desc: 'Test Tent', weightOz: 20, warning: false, destination: 'System' });
+  assertEqual(item.destination, 'Shelter', 'Tent under "System" section → Shelter (Type wins, not section name)');
+}
+
+// ── S9: Consumables override continues to work alongside shelter/sleep routing ─
+console.log('\nS9: Consumables override still applies correctly');
+{
+  const fuel = applyGearClassification({ sub: 'Fuel', desc: 'Isobutane', weightOz: 7.68, warning: false, destination: 'Kitchen' });
+  assertEqual(fuel.destination, 'Consumables', 'Fuel → Consumables (not affected by Shelter/Sleep sets)');
+  const tent = applyGearClassification({ sub: 'Tent', desc: 'Zpacks', weightOz: 32, warning: false, destination: 'Sleep' });
+  assertEqual(tent.destination, 'Shelter', 'Tent → Shelter (not Consumables)');
+}
+
+// ── S10: Hammock → Shelter, Underquilt → Sleep ───────────────────────────────
+console.log('\nS10: Hammock → Shelter, Underquilt → Sleep (spec example)');
+{
+  const h = applyGearClassification({ sub: 'Hammock',   desc: 'WB Blackbird', weightOz: 18, warning: false, destination: '' });
+  assertEqual(h.destination, 'Shelter', 'Hammock → Shelter');
+  const u = applyGearClassification({ sub: 'Underquilt', desc: 'WB Underquilt', weightOz: 18, warning: false, destination: '' });
+  assertEqual(u.destination, 'Sleep',   'Underquilt → Sleep');
+}
+
+// ── S11: Type, Description, Weight alignment after shelter/sleep routing ───────
+console.log('\nS11: Type, Description, Weight remain unchanged and aligned');
+{
+  const wb = makeWorkbook([
+    ['X', 'Shelter', 'Description', 'Weight', 'Add', 'Unit', 'Qty'],
+    ['FALSE', 'Tent',        'Zpacks Duplex',     32,  0, 'oz', 1],
+    ['FALSE', 'Sleeping Pad','NeoAir XLite',      12,  0, 'oz', 1],
+    ['FALSE', 'Tarp',        'Gossamer Gear Tarp', 7,  0, 'oz', 1],
+  ]);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items.length, 3, '3 rows extracted');
+  // Tent → Shelter (same section, no conflict)
+  assertEqual(items[0].sub,         'Tent',          'Row 1 Type = Tent');
+  assertEqual(items[0].desc,        'Zpacks Duplex', 'Row 1 Desc aligned');
+  assertEqual(items[0].weightOz,    32,              'Row 1 Weight = 32');
+  assertEqual(items[0].destination, 'Shelter',       'Row 1 Destination = Shelter');
+  // Sleeping Pad → Sleep (overrides Shelter section)
+  assertEqual(items[1].sub,         'Sleeping Pad',  'Row 2 Type = Sleeping Pad');
+  assertEqual(items[1].desc,        'NeoAir XLite',  'Row 2 Desc aligned');
+  assertEqual(items[1].weightOz,    12,              'Row 2 Weight = 12');
+  assertEqual(items[1].destination, 'Sleep',         'Row 2 Destination = Sleep (overrode Shelter section)');
+  // Tarp → Shelter (same section, no conflict)
+  assertEqual(items[2].sub,         'Tarp',                   'Row 3 Type = Tarp');
+  assertEqual(items[2].desc,        'Gossamer Gear Tarp',     'Row 3 Desc aligned');
+  assertEqual(items[2].weightOz,    7,                        'Row 3 Weight = 7');
+  assertEqual(items[2].destination, 'Shelter',                'Row 3 Destination = Shelter');
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────

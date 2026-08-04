@@ -102,6 +102,57 @@ export function extractFromText(text: string): ExtractedItem[] {
   return results;
 }
 
+// ── Gear-type → canonical destination routing ─────────────────────────────────
+//
+// These sets drive Priority 1 (Consumables) and Priority 2 (Shelter / Sleep)
+// in applyGearClassification.  A matching Type always wins over the source
+// section header so that, e.g., a Tent listed under a "Sleep System" section
+// still routes to "Shelter".
+//
+// Canonical destination strings match the app's DEFAULT_CATEGORY_ORDER names:
+//   "Shelter", "Sleep", "Consumables", "Kitchen", etc.
+
+/** Shelter gear — must always land in the Shelter category. */
+export const SHELTER_TYPES = new Set([
+  // Tents
+  'tent', 'backpacking tent', 'freestanding tent', 'semi-freestanding tent',
+  'trekking pole tent', 'trekking-pole tent', 'single-wall tent', 'double-wall tent',
+  'net tent', 'inner tent', 'tent body',
+  // Tarps
+  'tarp', 'flat tarp', 'shaped tarp', 'pyramid tarp', 'hammock tarp',
+  // Hammocks
+  'hammock',
+  // Bivies
+  'bivy', 'bivvy', 'bug bivy',
+  // Ground protection
+  'groundsheet', 'ground sheet', 'ground cloth', 'groundcloth',
+  'tent footprint', 'footprint', 'polycryo', 'polycro', 'tyvek groundsheet',
+  // Fly / poles / stakes
+  'rainfly', 'rain fly',
+  'tent pole', 'tent poles', 'pole set', 'pole jack',
+  'tent stake', 'tent stakes', 'stakes', 'stake', 'stake bag',
+  // Suspension / rigging
+  'guylines', 'guy lines', 'guyline', 'guy line', 'ridgeline',
+  'hammock straps', 'tree straps', 'shelter suspension',
+  // Bug protection
+  'bug net', 'mosquito net',
+]);
+
+/** Sleep-system gear — must always land in the Sleep category. */
+export const SLEEP_TYPES = new Set([
+  // Insulation
+  'sleeping bag', 'quilt', 'backpacking quilt', 'top quilt', 'underquilt',
+  // Pads and mattresses
+  'sleeping pad', 'sleep pad', 'inflatable pad', 'air pad', 'insulated pad',
+  'foam pad', 'closed-cell foam pad', 'ccf pad', 'air mattress',
+  // Pillow
+  'pillow', 'inflatable pillow',
+  // Liners and accessories
+  'sleeping bag liner', 'sleep liner', 'sleeping liner',
+  'quilt straps', 'pad straps', 'pump sack', 'pump bag', 'pad pump',
+  'down hood', 'sleeping hood', 'sleep socks', 'sleeping clothes',
+]);
+
 // ── Consumables classification ────────────────────────────────────────────────
 
 /** Section headings that map to the "Consumables" destination. */
@@ -180,31 +231,53 @@ export function normalizeDestination(destination: string): string {
 }
 
 /**
- * Post-extraction pass: apply Consumables classification rules.
+ * Assign the canonical destination based on gear Type, then section.
  *
- * Priority (per spec):
- *   1. Known Consumables Type → destination = "Consumables", regardless of source section.
- *      A consumed item must be in Consumables even if the spreadsheet put it under Kitchen,
- *      Hygiene, Hydration, First Aid, etc.
- *   2. Source section is a recognised Consumables alias (e.g. "Expendables") → "Consumables".
- *   3. Source section is an explicit non-alias destination → keep it.
- *   4. Otherwise leave unchanged (user selects manually on review screen).
+ * Priority order (per spec):
+ *   1. Known Consumable Type  → "Consumables"   (overrides any source section)
+ *   2. Known Shelter Type     → "Shelter"        (overrides any source section)
+ *   2. Known Sleep Type       → "Sleep"          (overrides any source section)
+ *   3. Source section is a recognised Consumables alias → "Consumables"
+ *   4. Source section kept as-is (user may change on review screen)
  *
- * The specific Type is always preserved; only Destination changes.
+ * When a Type-based override conflicts with the source section the item's
+ * `warning` flag is set so the review screen can surface it.
+ * The specific Type string is never changed — only Destination.
  */
-export function applyConsumablesClassification(item: ExtractedItem): ExtractedItem {
-  // Priority 1: known Consumable Type always wins — overrides any source section.
-  if (CONSUMABLES_TYPES.has(norm(item.sub))) {
-    return { ...item, destination: 'Consumables' };
+export function applyGearClassification(item: ExtractedItem): ExtractedItem {
+  const typeN = norm(item.sub);
+
+  /** Returns true when the source section differs from the canonical destination we're assigning. */
+  const sectionConflict = (canonical: string) =>
+    !!(item.destination && norm(item.destination) !== norm(canonical));
+
+  // Priority 1: Consumable Type always wins.
+  if (CONSUMABLES_TYPES.has(typeN)) {
+    return { ...item, destination: 'Consumables', warning: item.warning || sectionConflict('Consumables') };
   }
-  // Priority 2: source section is a consumables alias → normalise it.
+
+  // Priority 2a: Shelter Type → "Shelter".
+  if (SHELTER_TYPES.has(typeN)) {
+    return { ...item, destination: 'Shelter', warning: item.warning || sectionConflict('Shelter') };
+  }
+
+  // Priority 2b: Sleep Type → "Sleep".
+  if (SLEEP_TYPES.has(typeN)) {
+    return { ...item, destination: 'Sleep', warning: item.warning || sectionConflict('Sleep') };
+  }
+
+  // Priority 3: source section is a consumables alias → normalise.
   if (item.destination) {
     const normalized = normalizeDestination(item.destination);
     if (normalized !== item.destination) return { ...item, destination: normalized };
   }
-  // Priority 3/4: keep source section or leave empty for manual selection.
+
+  // Priority 4: keep source section or leave empty for manual selection.
   return item;
 }
+
+/** @deprecated Use applyGearClassification */
+export const applyConsumablesClassification = applyGearClassification;
 
 // ── Spreadsheet: detect section-header format ─────────────────────────────────
 //
@@ -425,8 +498,8 @@ export function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): Extracted
     }
   }
 
-  // Final pass: normalise consumables section aliases + apply type-based classification
-  return results.map(applyConsumablesClassification);
+  // Final pass: apply type-based canonical routing (Consumables → Shelter → Sleep → section)
+  return results.map(applyGearClassification);
 }
 
 // ── Route ─────────────────────────────────────────────────────────────────────

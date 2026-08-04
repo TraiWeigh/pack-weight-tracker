@@ -1,0 +1,313 @@
+Fix the destination-category mapping after category titles are renamed.
+
+The importer incorrectly placed:
+
+- Tent
+- Tarp
+
+into:
+
+Sleep System
+
+Tent and Tarp must be placed in the Shelter category, not Sleep System.
+
+Do not change the working upload pipeline, spreadsheet column extraction, Consumables rules, or review screen.
+
+## Underlying problem
+
+Category display names can be renamed by the user.
+
+Examples:
+
+- Sleep may be renamed Sleep System
+- Shelter may be renamed Shelter System
+- Kitchen may be renamed Cooking System
+- Water may be renamed Hydration
+
+Do not use the visible category title as the only way to determine a category’s function.
+
+Do not use generic words such as:
+
+- System
+- Gear
+- Equipment
+- Items
+- Kit
+
+to choose between categories.
+
+The word “System” must never cause Shelter gear to be assigned to Sleep System.
+
+## Stable category roles
+
+Use a stable internal category role or canonical key that remains unchanged when the user edits the displayed category title.
+
+Recommended canonical roles:
+
+- backpack
+- shelter
+- sleep_system
+- clothing
+- kitchen
+- hydration
+- electronics
+- navigation
+- first_aid_repair
+- hygiene
+- consumables
+- dog_gear
+- miscellaneous
+
+The displayed title may be changed, but the canonical role must remain unchanged.
+
+Example:
+
+Canonical role:
+
+sleep_system
+
+Displayed title:
+
+Sleep System
+
+Example:
+
+Canonical role:
+
+shelter
+
+Displayed title:
+
+Shelter System
+
+Renaming the displayed title must not change the category’s canonical role.
+
+Inspect the existing category model before adding fields. Reuse an existing stable ID, slug, key, or category type when one already exists.
+
+Do not create duplicate categories.
+
+## Required Shelter mapping
+
+These Types must map to the canonical Shelter category:
+
+- Tent
+- Backpacking Tent
+- Freestanding Tent
+- Semi-Freestanding Tent
+- Trekking Pole Tent
+- Trekking-Pole Tent
+- Single-Wall Tent
+- Double-Wall Tent
+- Net Tent
+- Inner Tent
+- Tent Body
+- Tarp
+- Flat Tarp
+- Shaped Tarp
+- Pyramid Tarp
+- Hammock
+- Bivy
+- Bivvy
+- Bug Bivy
+- Groundsheet
+- Ground Sheet
+- Ground Cloth
+- Groundcloth
+- Tent Footprint
+- Footprint
+- Polycryo
+- Polycro
+- Tyvek Groundsheet
+- Rainfly
+- Rain Fly
+- Tent Pole
+- Tent Poles
+- Pole Set
+- Pole Jack
+- Tent Stake
+- Tent Stakes
+- Stakes
+- Stake
+- Stake Bag
+- Guylines
+- Guy Lines
+- Guyline
+- Guy Line
+- Ridgeline
+- Bug Net
+- Mosquito Net
+- Hammock Straps
+- Tree Straps
+- Shelter Suspension
+
+Tent and Tarp must always resolve to Shelter unless the user manually changes the Destination on the review screen.
+
+## Required Sleep System mapping
+
+These Types must map to the canonical Sleep System category:
+
+- Sleeping Bag
+- Quilt
+- Backpacking Quilt
+- Top Quilt
+- Underquilt
+- Sleeping Pad
+- Sleep Pad
+- Inflatable Pad
+- Air Pad
+- Insulated Pad
+- Foam Pad
+- Closed-Cell Foam Pad
+- CCF Pad
+- Air Mattress
+- Pillow
+- Inflatable Pillow
+- Sleeping Bag Liner
+- Sleep Liner
+- Sleeping Liner
+- Quilt Straps
+- Pad Straps
+- Pump Sack
+- Pump Bag
+- Pad Pump
+- Down Hood
+- Sleeping Hood
+- Sleep Socks
+- Sleeping Clothes
+
+Do not place Tent, Tarp, Stakes, Groundsheet, Guylines, or Rainfly in Sleep System.
+
+## Important hammock distinction
+
+Use:
+
+- Hammock → Shelter
+- Hammock Tarp → Shelter
+- Hammock Straps → Shelter
+- Underquilt → Sleep System
+- Top Quilt → Sleep System
+
+## Destination-selection priority
+
+Use this order:
+
+1. Known Consumables Type overrides other destinations and goes to Consumables.
+2. A strongly recognized specific gear Type maps to its canonical category role.
+3. A recognized source section header maps to its canonical category role.
+4. An exact category alias may be used.
+5. Manual user selection on the review screen.
+
+Do not use broad fuzzy similarity between category display names.
+
+Do not choose a category based only on the word “System.”
+
+When the Type mapping and section header conflict:
+
+- Prefer the strongly recognized specific Type.
+- Show a warning on the review screen.
+- Allow the user to change Destination manually.
+
+Example:
+
+Section header: Sleep System
+Type: Tent
+
+Required result:
+
+Destination: Shelter
+Type: Tent
+Warning: Type conflicts with source section
+
+## Category aliases
+
+Map complete phrases, not isolated generic words.
+
+Shelter aliases:
+
+- Shelter
+- Shelter System
+- Tent System
+- Tarp System
+- Hammock System
+- Camp Shelter
+
+Sleep System aliases:
+
+- Sleep
+- Sleep System
+- Sleeping System
+- Sleeping Gear
+- Sleep Gear
+- Bedding
+
+“System” by itself is not a valid alias.
+
+## User-renamed categories
+
+When a user renames a category:
+
+1. Change only its displayed title.
+2. Preserve its stable category ID and canonical role.
+3. Continue routing imported items using the canonical role.
+4. Do not recalculate the category role from the new displayed title.
+5. Do not allow a rename to break future imports.
+
+For existing renamed categories, inspect their current items and original IDs to preserve the intended role.
+
+Do not automatically rename the user’s visible category titles.
+
+## Review-screen behavior
+
+Continue displaying:
+
+- Destination
+- Type
+- Description
+- Weight
+- Warning
+
+The Destination dropdown should show the current user-facing category title.
+
+Internally, the importer must select the category using its stable ID or canonical role.
+
+## Required tests
+
+Add tests confirming:
+
+- Tent maps to Shelter.
+- Tarp maps to Shelter.
+- Groundsheet maps to Shelter.
+- Tent Stakes map to Shelter.
+- Guylines map to Shelter.
+- Rainfly maps to Shelter.
+- Quilt maps to Sleep System.
+- Sleeping Bag maps to Sleep System.
+- Sleeping Pad maps to Sleep System.
+- Pillow maps to Sleep System.
+- Hammock maps to Shelter.
+- Underquilt maps to Sleep System.
+- Renaming Sleep to Sleep System does not affect Shelter mappings.
+- Renaming Shelter to Shelter System does not affect Sleep System mappings.
+- The word System alone is never used for matching.
+- Consumables classification continues to override normal gear destinations.
+- Type, Description, and Weight remain unchanged and aligned.
+
+Retest the uploaded workbook through the browser.
+
+Confirm specifically:
+
+- Tent appears in Shelter.
+- Tarp appears in Shelter.
+- Quilt appears in Sleep System.
+- Sleeping Pad appears in Sleep System.
+- Fuel remains in Consumables.
+- Carry Bag remains in Electronics.
+- User-renamed category titles remain unchanged.
+
+Make the correction directly in the existing application and report:
+
+- Why Tent and Tarp were assigned to Sleep System
+- How stable category roles are now stored
+- Which files or database fields were changed
+- Whether renamed categories now retain their correct function
+- Whether the required test items route correctly
