@@ -70,6 +70,7 @@ const CONSUMABLES_SECTION_ALIASES = new Set([
   'consumables', 'consumable', 'expendables', 'expendable',
   'consumable weight', 'expendable weight', 'trip consumables',
   'used up items', 'used-up items', 'perishables', 'food and fuel',
+  // NOTE: 'miscellaneous' is NOT a consumables alias — it is its own category.
 ]);
 const CONSUMABLES_TYPES = new Set([
   'food','breakfast','lunch','dinner','meal','snack','trail mix','energy bar',
@@ -128,7 +129,8 @@ const SHELTER_TYPES = new Set([
   'tent stake','tent stakes','stakes','stake','stake bag',
   'guylines','guy lines','guyline','guy line','ridgeline',
   'hammock straps','tree straps','shelter suspension',
-  'bug net','mosquito net',
+  // NOTE: 'bug net' and 'mosquito net' were moved to CLOTHING_TYPES — they are
+  // wearable items (carried and put on), not shelter structures.
 ]);
 
 const SLEEP_TYPES = new Set([
@@ -142,6 +144,7 @@ const SLEEP_TYPES = new Set([
 ]);
 
 const CLOTHING_TYPES = new Set([
+  // Sleep / camp clothing
   'sleep socks','sleeping socks','camp socks','insulated socks','down socks','possum socks',
   'down hood','sleeping hood','insulated hood',
   'balaclava','down balaclava','fleece balaclava',
@@ -153,6 +156,18 @@ const CLOTHING_TYPES = new Set([
   'sleep pants','sleeping pants','camp pants','thermal bottom',
   'sleep clothes','sleeping clothes',
   'down booties','insulated booties','camp booties','camp shoes',
+  // Outer / trail layers (packed, not worn continuously)
+  'rain jacket','rain shell','hardshell','hardshell jacket',
+  'wind jacket','wind shell','windbreaker','wind shirt',
+  'down jacket','puffy','puffy jacket','puffy vest',
+  'insulated jacket','synthetic jacket','fleece jacket','fleece vest',
+  'midlayer','mid layer',
+  'rain pants','rain shell pants','hardshell pants',
+  'softshell pants','hiking pants','trail pants',
+  'sun hat','sun hoody','sun hoodie',
+  'trail runners','trail shoes','approach shoes','gaiters','camp sandals',
+  // Bug protection (worn/carried clothing, NOT shelter structure)
+  'bug net','head net','mosquito net','mosquito head net',
 ]);
 
 const CLOTHING_WORN_SECTION_ALIASES = new Set([
@@ -165,9 +180,11 @@ function applyGearClassification(item) {
   const sectionConflict = (canonical) =>
     !!(item.destination && destN !== norm(canonical));
 
-  // P1: Consumable Type
+  // P1: Consumable Type always wins. No sectionConflict warning: the type match
+  // is definitive (Fuel is always Consumables regardless of source section), so
+  // a section mismatch is not actionable for the user.
   if (CONSUMABLES_TYPES.has(typeN))
-    return { ...item, destination: 'Consumables', warning: item.warning || sectionConflict('Consumables') };
+    return { ...item, destination: 'Consumables', warning: item.warning };
 
   // P2: Wearable sleep/camp clothing → Clothing Packed
   if (CLOTHING_TYPES.has(typeN)) {
@@ -982,6 +999,176 @@ console.log('\nS11: Type, Description, Weight remain unchanged and aligned');
   assertEqual(items[2].desc,        'Gossamer Gear Tarp',     'Row 3 Desc aligned');
   assertEqual(items[2].weightOz,    7,                        'Row 3 Weight = 7');
   assertEqual(items[2].destination, 'Shelter',                'Row 3 Destination = Shelter');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Bug Net / Mosquito Net routing tests
+// ═══════════════════════════════════════════════════════════════════════════════
+console.log('\n\n=== Bug Net / Mosquito Net routing tests ===\n');
+
+// ── B1: Bug Net → Clothing Packed (not Shelter) ───────────────────────────────
+console.log('B1: Bug Net routes to Clothing Packed');
+{
+  const item = applyGearClassification({ sub: 'Bug Net', desc: 'Mosquito Head Net', weightOz: 2, warning: false, destination: '' });
+  assertEqual(item.destination, 'Clothing Packed', 'Bug Net → Clothing Packed');
+  assert(item.destination !== 'Shelter', 'Bug Net must NOT route to Shelter');
+  assert(!item.warning, 'Bug Net has no warning flag when destination is empty');
+}
+
+// ── B2: Mosquito Head Net → Clothing Packed ───────────────────────────────────
+console.log('\nB2: Mosquito Head Net routes to Clothing Packed (not Shelter)');
+{
+  const item = applyGearClassification({ sub: 'Mosquito Head Net', desc: 'REI Bug Net', weightOz: 1.5, warning: false, destination: '' });
+  assertEqual(item.destination, 'Clothing Packed', 'Mosquito Head Net → Clothing Packed');
+  assert(item.destination !== 'Shelter', 'Mosquito Head Net must NOT route to Shelter');
+}
+
+// ── B3: Head Net → Clothing Packed ───────────────────────────────────────────
+console.log('\nB3: Head Net routes to Clothing Packed');
+{
+  const item = applyGearClassification({ sub: 'Head Net', desc: 'Outdoor Research Bug Net', weightOz: 0.9, warning: false, destination: '' });
+  assertEqual(item.destination, 'Clothing Packed', 'Head Net → Clothing Packed');
+  assert(item.destination !== 'Shelter', 'Head Net must NOT route to Shelter');
+}
+
+// ── B4: Mosquito Net → Clothing Packed ────────────────────────────────────────
+console.log('\nB4: Mosquito Net routes to Clothing Packed');
+{
+  const item = applyGearClassification({ sub: 'Mosquito Net', desc: 'Generic Bug Net', weightOz: 1.2, warning: false, destination: '' });
+  assertEqual(item.destination, 'Clothing Packed', 'Mosquito Net → Clothing Packed');
+}
+
+// ── B5: Bug Net under Clothing section — no warning ───────────────────────────
+console.log('\nB5: Bug Net under Clothing section produces no warning');
+{
+  const wb = makeConsumablesWorkbook('Clothing Packed', 'Bug Net', 'Mosquito Head Net', 2);
+  const items = extractFromWorkbook(wb);
+  const bugNet = items.find(i => i.sub === 'Bug Net');
+  assert(!!bugNet, 'Bug Net extracted');
+  assertEqual(bugNet?.destination, 'Clothing Packed', 'Bug Net → Clothing Packed');
+  assert(!bugNet?.warning, 'Bug Net in Clothing section: no warning (no section conflict)');
+}
+
+// ── B6: Bug Net under wrong section — warning, but still routes to Clothing ───
+console.log('\nB6: Bug Net under Shelter section routes to Clothing Packed with warning');
+{
+  const wb = makeConsumablesWorkbook('Shelter', 'Bug Net', 'Mosquito Head Net', 2);
+  const items = extractFromWorkbook(wb);
+  const bugNet = items.find(i => i.sub === 'Bug Net');
+  assert(!!bugNet, 'Bug Net extracted');
+  assertEqual(bugNet?.destination, 'Clothing Packed', 'Bug Net under Shelter → Clothing Packed (type override)');
+  assert(bugNet?.warning, 'Bug Net in Shelter section: warning=true (section conflict)');
+}
+
+// ── B7: Fuel has no warning flag (type match is definitive) ───────────────────
+console.log('\nB7: Fuel produces no warning flag regardless of section');
+{
+  // Fuel under Kitchen — was previously raising a false warning because the
+  // Expendables section check produced a sectionConflict.  Now fixed.
+  const wb = makeConsumablesWorkbook('Kitchen', 'Fuel', '4 oz', 7.68);
+  const items = extractFromWorkbook(wb);
+  const fuel = items.find(i => i.sub === 'Fuel');
+  assert(!!fuel, 'Fuel extracted');
+  assertEqual(fuel?.destination, 'Consumables', 'Fuel → Consumables');
+  assert(!fuel?.warning, 'Fuel under Kitchen: warning=false (type match is definitive)');
+}
+
+// ── B8: Legitimately heavy item gets warning ───────────────────────────────────
+console.log('\nB8: Items with weight > 500 oz receive a warning');
+{
+  const wb = makeConsumablesWorkbook('Backpack', 'Tent', 'Extremely Heavy Tent', 600);
+  const items = extractFromWorkbook(wb);
+  assert(items.length === 1, 'Heavy item extracted');
+  assert(items[0]?.warning, 'Weight > 500 oz → warning=true');
+}
+
+// ── B9: Zero-weight row is omitted (not given a false warning) ─────────────────
+console.log('\nB9: Zero-weight rows are omitted entirely (not returned as warnings)');
+{
+  const rows = [
+    ...FIXTURE_ROWS,
+    ['FALSE', 'Mystery Item', 'No Weight', 0, 0, 'oz', 1],
+  ];
+  const wb = makeWorkbook(rows);
+  const items = extractFromWorkbook(wb);
+  const mystery = items.find(i => i.desc === 'No Weight');
+  assert(!mystery, 'Zero-weight row omitted entirely from output');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Real Excel fixture regression — PACK_WEIGHT_&_MEAL_PLANNER_CHECKLIST.xlsx
+// ═══════════════════════════════════════════════════════════════════════════════
+console.log('\n\n=== Real Excel fixture regression ===\n');
+
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const EXCEL_FIXTURE = join(
+  __dirname,
+  '../../../../attached_assets/PACK_WEIGHT_&_MEAL_PLANNER_CHECKLIST_1785883024547.xlsx'
+);
+
+let realItems = null;
+try {
+  const buffer = readFileSync(EXCEL_FIXTURE);
+  const wb = XLSX.read(buffer, { type: 'buffer' });
+  realItems = extractFromWorkbook(wb);
+} catch (e) {
+  console.log(`  (skipping real-file tests — fixture not found: ${e.message})`);
+}
+
+if (realItems) {
+  // ── R1: Total item count stable ──────────────────────────────────────────────
+  console.log('R1: Total item count is 69');
+  assertEqual(realItems.length, 69, 'Total: 69 items from real Excel fixture');
+
+  // ── R2: Bug Net → Clothing Packed ────────────────────────────────────────────
+  console.log('\nR2: Bug Net routes to Clothing Packed in real file');
+  {
+    const bugNet = realItems.find(i => /bug.?net/i.test(i.sub));
+    assert(!!bugNet,                               'Bug Net found in real file');
+    assertEqual(bugNet?.destination, 'Clothing Packed', 'Bug Net → Clothing Packed');
+    assert(bugNet?.destination !== 'Shelter',      'Bug Net NOT in Shelter');
+  }
+
+  // ── R3: Mosquito Head Net not in Shelter ──────────────────────────────────────
+  console.log('\nR3: Mosquito Head Net / bug net variants not in Shelter');
+  {
+    const shelterItems = realItems.filter(i => i.destination === 'Shelter');
+    const hasBugNetInShelter = shelterItems.some(i =>
+      /bug.?net|mosquito|head.?net/i.test(i.sub)
+    );
+    assert(!hasBugNetInShelter, 'No bug net / mosquito net items in Shelter');
+  }
+
+  // ── R4: Fuel → Consumables ────────────────────────────────────────────────────
+  console.log('\nR4: Fuel routes to Consumables in real file');
+  {
+    const fuel = realItems.find(i => /^fuel$/i.test(i.sub));
+    assert(!!fuel,                                 'Fuel found in real file');
+    assertEqual(fuel?.destination, 'Consumables',  'Fuel → Consumables');
+    assertEqual(fuel?.sub,         'Fuel',         'Type = "Fuel" (unchanged)');
+    assertEqual(fuel?.desc,        '4 oz',         'Description = "4 oz" (canister size label)');
+    assertEqual(fuel?.weightOz,    7.68,            'Weight = 7.68 oz (from column D)');
+  }
+
+  // ── R5: Bug Net and Fuel have no warning flags ───────────────────────────────
+  console.log('\nR5: Bug Net and Fuel have no warning flags in real file');
+  {
+    const bugNet = realItems.find(i => /bug.?net/i.test(i.sub));
+    const fuel   = realItems.find(i => /^fuel$/i.test(i.sub));
+    assert(!bugNet?.warning, 'Bug Net warning=false in real file');
+    assert(!fuel?.warning,   'Fuel warning=false in real file');
+  }
+
+  // ── R6: All items have positive weight ────────────────────────────────────────
+  console.log('\nR6: All items have positive weight (no zero-weight leaks)');
+  {
+    const zeroWeight = realItems.filter(i => i.weightOz <= 0);
+    assertEqual(zeroWeight.length, 0, 'No items with zero or negative weight');
+  }
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────

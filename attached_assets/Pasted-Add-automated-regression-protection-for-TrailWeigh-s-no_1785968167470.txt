@@ -1,0 +1,235 @@
+Add automated regression protection for TrailWeigh’s now-working Scan Gear List importer.
+
+The real rendered application has been tested successfully:
+
+- PDF import returns 68 items.
+- Excel import returns 69 items.
+- Kitchen source categories resolve to Kitchen Gear.
+- Shelter resolves to Shelter System.
+- Sleep resolves to Sleep System.
+- Fuel resolves to Expendables.
+- Bug Net resolves to Clothing Packed.
+- Imported items remain unchecked.
+- Duplicate Shelter, Sleep, and Kitchen categories were merged safely and do not return.
+- Image and screenshot importing remains removed.
+
+## Purpose
+
+Create focused automated tests that protect these working behaviors from future code changes.
+
+Do not redesign the importer.
+
+Do not change working production behavior unless a test reveals a genuine regression.
+
+## Inspect the project’s existing test setup
+
+First determine:
+
+- Which test framework is already installed
+- Where backend tests belong
+- Where frontend/helper tests belong
+- How tests are normally run in this project
+
+Use the existing framework and conventions.
+
+Do not add a large new testing framework when the project already has one.
+
+## Test the shared category resolver
+
+Add tests for the shared category-resolution logic in:
+
+`artifacts/pack-checklist/src/lib/categoryAliases.ts`
+
+Required assertions:
+
+- Shelter resolves to Shelter System when Shelter System exists
+- ` shelter ` resolves to Shelter System
+- SHELTER resolves to Shelter System
+- Sleep resolves to Sleep System
+- Kitchen resolves to Kitchen Gear
+- Kitchen System resolves to Kitchen Gear
+- Kitchen Gear remains Kitchen Gear
+- Consumables resolves to Expendables when Expendables exists
+- Fuel’s supplied Expendables destination remains Expendables
+- Clothing Packed remains separate from Clothing Worn
+- An unknown category does not silently become Backpack
+
+## Test duplicate-category migration
+
+Add tests for the migration used by `usePackData.ts`.
+
+Start with a stored checklist containing:
+
+- Shelter and Shelter System
+- Sleep and Sleep System
+- Kitchen and Kitchen Gear
+
+Confirm:
+
+1. Items from Shelter move into Shelter System.
+2. Items from Sleep move into Sleep System.
+3. Items from Kitchen move into Kitchen Gear.
+4. The complete item objects are preserved, including:
+   - ID
+   - Type
+   - Description
+   - Weight
+   - Quantity
+   - Checked state
+   - Expendable state
+   - Any other stored item metadata
+5. Existing items already in the preferred categories remain.
+6. Duplicate source categories are removed.
+7. Preferred categories remain in their existing positions.
+8. Running the migration a second time makes no additional changes.
+9. Missing default categories are not reinserted when an accepted alias already exists.
+
+## Test PDF parsing behavior
+
+Add a stable PDF-parser fixture or page-text fixture matching the real TrailWeigh PDF structure.
+
+The test must cover:
+
+- Category headers
+- TRUE/FALSE prefixes
+- Type
+- Description
+- Weight
+- Add column
+- Model numbers in descriptions
+- Numeric-leading Types
+
+Required results:
+
+- Backpack — ULA Ultra Circuit — 40.8 oz
+- Backpack — Durston Wapta 30 — 18.3 oz
+- Tent — Zpacks Free-Zip 2 with poles / repair kit — 36.8 oz
+- Sleeping Bag — UGQ Bandit 10F — 26 oz
+- Pot/Mug — Fire-Maple Petrel G3 600ml HX Pot — 5.7 oz
+- 1 Gal Freezer Bag — Amazon — 0.5 oz
+- 1 Qrt Freezer Bag — Amazon — 0.22 oz
+- Fuel — description 4 oz — actual weight 7.68 oz
+
+Required destinations after alias resolution:
+
+- Shelter rows → Shelter System
+- Sleep rows → Sleep System
+- Kitchen rows → Kitchen Gear
+- Fuel → Expendables
+
+Confirm the parser ignores:
+
+- Total
+- Base Weight
+- Expendables summary rows
+- Unit
+- Qty
+- Category Weight Unit
+- Add-column values as item weights
+- Empty rows
+
+Meal Planner importing is not applicable.
+
+Do not add Meal Planner parsing tests.
+
+## Test Excel classification
+
+Add an Excel-row fixture matching the tested checklist structure.
+
+Confirm:
+
+- Total item count remains stable for the fixture
+- Bug Net → Clothing Packed
+- Mosquito Head Net does not route to Shelter
+- Fuel → Expendables
+- Fuel retains:
+  - Type: Fuel
+  - Description: 4 oz
+  - Weight: 7.68 oz
+- Bug Net and Fuel do not receive false warning flags
+- Legitimately invalid rows still receive validation warnings
+
+Do not apply PDF-specific parsing rules to Excel.
+
+## Test final import destination
+
+Test the code path immediately before items are added to the checklist.
+
+Confirm:
+
+- Shelter never creates a new Shelter category when Shelter System exists
+- Sleep never creates a new Sleep category when Sleep System exists
+- Kitchen never creates a new Kitchen category when Kitchen Gear exists
+- Fuel enters Expendables
+- Bug Net enters Clothing Packed
+- Imported items use `checked: false`
+- Unknown destinations do not silently become Backpack
+
+## Unsupported image formats
+
+Add a focused test confirming that Scan Gear List rejects:
+
+- PNG
+- JPG
+- JPEG
+- WebP
+
+The error should clearly state that accepted formats are PDF, Word, Excel, or Numbers.
+
+Do not affect TrailWeigh’s separate background-image feature.
+
+## Preserve current working behavior
+
+Do not change:
+
+- PDFParse v2 implementation
+- PDF import result and category behavior
+- Excel import result and category behavior
+- Word importing
+- Numbers workflow
+- Editable review table
+- Add Row
+- Validation
+- Imported items remaining unchecked
+- Panel reset after import
+- Save and Save As
+- Locker
+- Backgrounds
+- Preview
+- Any unrelated feature
+
+## Test command and documentation
+
+Add one clear project test command if one does not already exist.
+
+Document in a short developer note:
+
+- How to run the importer regression tests
+- What behaviors they protect
+- Where the test fixtures are stored
+
+Keep this documentation brief and technical.
+
+## Required verification
+
+Run the complete new test suite.
+
+Also verify the rendered application still opens without build or runtime errors.
+
+Do not report success based only on creating test files.
+
+## Final report
+
+Report:
+
+- Existing test framework used
+- Test files created or changed
+- Fixtures created
+- Total number of new tests
+- Test command
+- Complete pass/fail result
+- Whether any production code had to change
+- Confirmation that PDF and Excel behavior remains unchanged
+- Confirmation that imported items remain unchecked
+- Confirmation that duplicate categories are not recreated
+- Confirmation that no temporary logs remain
