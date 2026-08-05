@@ -1,0 +1,417 @@
+Add a complete Background Showcase feature to the existing TrailWeigh application.
+
+The feature must include:
+
+1. Automatic activation after five minutes of inactivity
+2. A manual “Showcase” control for immediate testing
+3. The currently selected background filling the screen
+4. An original animated silhouette of a gender-neutral thru-hiker and their dog
+
+Do not change the existing background selector, gear-list Preview function, calculations, saved lists, Locker, Print, Download PDF, Reset, Scan Gear List, importing, or any other working feature.
+
+# 1. Automatic activation after five minutes
+
+After five continuous minutes without user activity:
+
+1. Smoothly fade out the TrailWeigh interface.
+2. Allow the currently selected background image to become the main visual.
+3. Display the background across the entire visible browser viewport.
+4. Start the animated hiker-and-dog silhouette after the interface fades out.
+
+Do not request or enter the browser’s native fullscreen mode.
+
+The user must remain in the same browser tab and at the same scroll position.
+
+# 2. Manual Showcase control
+
+Add a pill-shaped control labeled:
+
+Showcase
+
+Do not call it “Preview,” because TrailWeigh already has a gear-list Preview function.
+
+Place the Showcase pill inside the Background selector heading area, where it is clearly visible but does not cover any background thumbnails.
+
+When the user clicks Showcase:
+
+1. Immediately enter the exact same Background Showcase mode used by the five-minute inactivity feature.
+2. Fade out the complete TrailWeigh interface.
+3. Display the currently selected background across the viewport.
+4. Start the same animated hiker-and-dog silhouette.
+5. Do not require the user to wait five minutes.
+
+The manual Showcase control and automatic five-minute activation must use the same shared component, styling, animation, entry behavior, and exit behavior.
+
+Do not create a separate simplified preview.
+
+# 3. Activity that resets the inactivity timer
+
+Restart the five-minute inactivity timer whenever the user:
+
+- Moves the mouse or trackpad pointer
+- Clicks
+- Taps the screen
+- Scrolls
+- Presses a keyboard key
+- Types in an input
+- Uses a form control
+- Drags an item
+- Uploads or imports a file
+- Opens or closes a category
+- Opens Preview, a menu, or a dialog
+- Changes the selected background
+- Performs any other meaningful interaction with the application
+
+Use one centralized inactivity manager so multiple timers are not created.
+
+# 4. Background display
+
+During Background Showcase mode:
+
+- Use the currently selected background.
+- Support built-in backgrounds.
+- Support the user’s uploaded background.
+- Fill the complete visible browser viewport.
+- Use `background-size: cover`.
+- Use `background-position: center`.
+- Use `background-repeat: no-repeat`.
+- Do not stretch or distort the image.
+- Preserve the highest available image quality.
+- Remove or substantially reduce the normal darkening overlay so the selected image is clearly visible.
+- Do not reload, replace, rotate, or randomly change the selected background.
+
+Use a smooth fade transition lasting approximately 800–1200 milliseconds.
+
+The normal application interface must become fully invisible and non-interactive while Showcase mode is active.
+
+# 5. Original hiker-and-dog silhouette
+
+Create an original locally stored SVG animation showing:
+
+- One gender-neutral adult thru-hiker
+- A hiking backpack
+- A natural walking posture
+- Optional trekking poles
+- One medium-to-large hiking dog walking beside the hiker
+- An optional loose leash between them
+
+The hiker must not have exaggerated masculine or feminine body features.
+
+The artwork must be original and created specifically for TrailWeigh.
+
+Do not copy:
+
+- An existing illustration
+- A logo
+- A commercial character
+- A photograph
+- Book-cover artwork
+- Branded gear artwork
+- Existing stock animation
+
+Use inline SVG or a locally stored SVG component.
+
+Do not use:
+
+- A GIF
+- A video
+- An externally hosted animation
+- Runtime AI generation
+- A paid API
+
+# 6. Movement across the screen
+
+The complete hiker-and-dog group must:
+
+- Enter slightly beyond one side of the screen.
+- Travel horizontally across the viewport.
+- Exit completely beyond the opposite edge.
+- Move near the bottom of the viewport as though walking across the foreground.
+- Stay high enough that the hiker’s feet and the dog’s paws remain visible.
+- Take approximately 30–45 seconds to cross a desktop screen.
+- Move smoothly at a natural walking pace.
+- Pause approximately 5–10 seconds after exiting.
+- Re-enter from the opposite side.
+- Alternate travel direction on each pass.
+
+When moving from right to left, mirror the complete SVG horizontally so the hiker and dog face the direction of travel.
+
+Do not allow the figures to slide backward while facing the wrong direction.
+
+# 7. Internal walking animation
+
+Animate the figures subtly so they appear to walk rather than remain static while sliding.
+
+For the hiker, animate:
+
+- Alternating leg movement
+- Slight opposing arm movement
+- Gentle backpack movement
+- Small vertical body movement
+- Trekking-pole movement, if poles are included
+
+For the dog, animate:
+
+- Alternating leg movement
+- Slight head and body movement
+- Gentle tail movement
+- Small vertical walking movement
+
+Keep the movement calm, natural, and understated.
+
+Do not use:
+
+- Cartoon bouncing
+- Exaggerated motion
+- Flashing
+- Rapid movement
+- Glowing effects
+- Psychedelic animation on the figures
+
+The hiker and dog must stay synchronized and travel together as one group.
+
+# 8. Responsive size and placement
+
+On a normal desktop screen:
+
+- Make the hiker approximately 12–18% of the viewport height.
+- Keep the dog naturally proportionate to the hiker.
+- Keep the full group small enough that it does not dominate the background.
+
+On tablets and phones:
+
+- Scale the figures proportionately.
+- Do not let the group cover most of the screen.
+- Do not clip the hiker or dog.
+- Preserve the natural size relationship between them.
+
+Use responsive CSS such as `clamp()` rather than desktop-only fixed pixel dimensions.
+
+# 9. Silhouette color and contrast
+
+The figures should normally appear as a dark charcoal or black silhouette.
+
+Ensure they remain visible over both bright and dark backgrounds.
+
+Use either:
+
+- Light/dark contrast metadata configured for each background, or
+- A subtle contrasting outline or shadow
+
+The result must remain recognizable without looking like a glowing sticker.
+
+Do not use bright colors or gradients on the silhouette.
+
+# 10. Exit Showcase mode immediately
+
+Immediately begin exiting Background Showcase mode when the user:
+
+- Moves the pointer
+- Clicks
+- Taps
+- Scrolls
+- Presses a keyboard key
+- Uses the trackpad
+
+When activity is detected:
+
+1. Stop and hide the hiker-and-dog animation.
+2. Restore the normal background overlay.
+3. Smoothly fade the TrailWeigh interface back in.
+4. Restore interface interactivity only after it becomes visible.
+5. Preserve the exact data and scroll position.
+6. Start a fresh five-minute inactivity timer.
+
+Pointer movement alone must restore the interface on desktop.
+
+This same exit behavior must apply to both:
+
+- Automatic Showcase mode
+- Manual Showcase mode
+
+# 11. Prevent accidental activation of hidden controls
+
+The first click, tap, keypress, or scroll used to wake the interface must only exit Showcase mode.
+
+It must not also activate the hidden control underneath the pointer.
+
+For example, the wake interaction must not:
+
+- Check or uncheck a gear item
+- Delete an item
+- Open a link
+- Press Reset
+- Change a category
+- Activate Save
+- Open Locker
+- Trigger Preview
+- Change the selected background
+- Press another toolbar control
+
+After the interface is restored, the user can interact normally with a second click or tap.
+
+Pointer movement may restore the interface without blocking the user’s next click.
+
+# 12. Do not activate during active work
+
+Do not automatically enter Background Showcase mode while:
+
+- The user is typing in an input
+- A field has active editing focus
+- A file is uploading
+- A file is being imported
+- Drag-and-drop is active
+- A confirmation dialog is open
+- The gear-list Preview is open
+- Print preparation is active
+- A menu or modal requiring a decision is open
+- An error message requires action
+- Another operation is still processing
+
+Start a new five-minute timer after the active interaction or process ends.
+
+The manual Showcase control may remain unavailable or disabled while one of these blocking conditions is active.
+
+# 13. Browser-tab behavior
+
+Only count inactivity while the TrailWeigh browser tab is visible.
+
+Use the Page Visibility API.
+
+When the document becomes hidden:
+
+- Cancel or pause the inactivity timer.
+- Do not enter Showcase mode in the background.
+- Stop the animation if Showcase mode is somehow active.
+
+When the tab becomes visible again:
+
+- Restore the normal interface if necessary.
+- Start a completely new five-minute timer.
+- Do not immediately enter Showcase mode because the tab was hidden longer than five minutes.
+
+# 14. Accessibility
+
+Respect:
+
+`prefers-reduced-motion: reduce`
+
+When reduced motion is enabled:
+
+- Use an immediate or very short interface transition.
+- Do not animate the hiker and dog across the screen.
+- Either show a stationary silhouette or hide the silhouette completely.
+- Do not use repeated movement.
+
+Do not:
+
+- Trap keyboard focus
+- Interfere with screen readers
+- Announce decorative animation
+- Give the silhouette keyboard focus
+
+Mark the silhouette as decorative, for example:
+
+`aria-hidden="true"`
+
+# 15. Performance
+
+The feature must remain lightweight.
+
+Requirements:
+
+- Use CSS transforms and opacity for movement.
+- Prefer `transform: translate3d(...)`.
+- Avoid repeatedly changing layout properties such as `left`.
+- Use CSS animation instead of a continuous JavaScript animation loop whenever possible.
+- Stop the animation completely when Showcase mode ends.
+- Do not consume animation resources while the tab is hidden.
+- Do not fetch the silhouette from an external server.
+- Do not use runtime AI.
+- Do not use a paid API.
+
+# 16. Data protection
+
+Background Showcase mode is visual only.
+
+It must not:
+
+- Reload the page
+- Clear the current gear list
+- Change item checkboxes
+- Change quantities
+- Change weights
+- Change category order
+- Change expanded or collapsed category states
+- Create an Undo or Redo entry
+- Save automatically
+- Change the selected background
+- Close an unsaved list
+- Affect saved Locker lists
+- Affect lists open in other tabs or windows
+- Change any Base Weight setting
+
+# 17. Required testing
+
+Test all of the following:
+
+1. Leave the application untouched for five minutes.
+   - Confirm the interface fades away.
+   - Confirm the selected background fills the viewport.
+   - Confirm the hiker and dog begin moving across the screen.
+
+2. Click the manual Showcase pill.
+   - Confirm Showcase mode begins immediately.
+   - Confirm it looks and behaves exactly like automatic Showcase mode.
+
+3. Confirm the hiker and dog:
+   - Face their direction of travel.
+   - Move together.
+   - Have subtle walking movement.
+   - Exit completely offscreen.
+   - Pause briefly.
+   - Re-enter from the opposite side.
+   - Alternate travel direction.
+
+4. Move the pointer.
+   - Confirm the animation stops.
+   - Confirm the normal interface returns immediately.
+
+5. Enter Showcase mode and click over the location of a hidden checkbox.
+   - Confirm the first click only restores the interface.
+   - Confirm the checkbox does not change.
+
+6. Enter Showcase mode on a touchscreen and tap over a control.
+   - Confirm the first tap only restores the interface.
+
+7. Select a different built-in background and use the Showcase pill.
+   - Confirm that exact selected background appears.
+
+8. Upload a personal background and use the Showcase pill.
+   - Confirm the uploaded background appears.
+
+9. Keep moving the pointer or typing periodically.
+   - Confirm automatic Showcase mode does not activate.
+
+10. Leave Preview, a confirmation dialog, or an active import open.
+    - Confirm automatic Showcase mode does not activate.
+
+11. Switch to another browser tab for more than five minutes and return.
+    - Confirm the app does not immediately enter Showcase mode.
+
+12. Test reduced-motion mode.
+    - Confirm the walking animation is disabled or stationary.
+
+13. Confirm the Showcase pill does not interfere with the existing gear-list Preview control.
+
+14. Confirm all gear-list data, checkbox states, category states, unsaved changes, and saved Locker lists remain unchanged.
+
+Implement the complete feature directly in the existing TrailWeigh application.
+
+Report:
+
+- Which files were changed
+- Where the new Showcase control was added
+- How the inactivity timer is managed
+- How the SVG animation is implemented
+- Whether every required test passed
