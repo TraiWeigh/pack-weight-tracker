@@ -662,7 +662,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         bgImageUrl={bgImageUrl}
         onWake={exitShowcase}
         bgSize={bgSize}
-        bgTone={bgTone}
+        letterboxColor={bgTone === 'dark' ? 'hsl(220, 20%, 8%)' : 'hsl(40, 20%, 97%)'}
       />
 
       {/* ── Screen content ── */}

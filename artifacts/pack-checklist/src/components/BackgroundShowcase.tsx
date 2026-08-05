@@ -2,7 +2,7 @@
  * BackgroundShowcase — full-viewport overlay shown during Showcase mode.
  *
  * Layer order (bottom → top):
- *   9990  Background image
+ *   9990  Background image (+ letterbox fill behind it)
  *   9991  Wake-event intercept (transparent; captures first click/touch/mousemove)
  *
  * Behaviour:
@@ -11,14 +11,15 @@
  *   hidden app controls beneath are never accidentally triggered.
  * - Mouse movement on the intercept calls onWake without consuming the event.
  *
- * Theme-aware unused-space colour (Fit Image / contain mode):
- * - The showcase div receives the same .screen-dark class as the normal screen
- *   when bgTone === 'dark'.  This means var(--background) resolves from the
- *   showcase div's own CSS variable scope, not from :root, giving an exact
- *   match with the normal screen's unused-space colour in all modes.
- * - The normal screen applies .screen-dark to its wrapper div; the showcase
- *   applies it to its own fixed-position div.  Both read the same --background
- *   value, so they always match.
+ * Letterbox colour (Fit Image / contain mode):
+ * - The caller (ChecklistContent) computes the resolved theme colour and
+ *   passes it as `letterboxColor`.  This avoids any CSS-variable cascade
+ *   ambiguity: because BackgroundShowcase sits OUTSIDE the .screen-dark div,
+ *   `var(--background)` resolves from :root (always light).  An explicit
+ *   colour string sidesteps that entirely.
+ * - The same letterboxColor value is used on both the full-viewport wrapper
+ *   and the image layer, so every pixel behind the contained image matches
+ *   the normal screen's unused-space colour exactly.
  */
 import React, { useEffect, useRef } from 'react';
 
@@ -26,14 +27,15 @@ interface BackgroundShowcaseProps {
   active: boolean;
   bgImageUrl: string | null;
   onWake: () => void;
-  /** 'cover' = Fill Screen (default); 'contain' = Fit Image with theme-aware unused-space fill */
+  /** 'cover' = Fill Screen (default); 'contain' = Fit Image */
   bgSize?: 'cover' | 'contain';
   /**
-   * Light or dark tone — passed from ChecklistContent so the showcase div can
-   * apply the same .screen-dark class as the normal screen, ensuring
-   * var(--background) resolves to the correct theme value in both contexts.
+   * Resolved letterbox colour for Fit Image mode.
+   * Must be a valid CSS colour string (e.g. 'hsl(220, 20%, 8%)').
+   * Passed by the caller so Showcase never has to read a CSS variable
+   * from the wrong cascade scope.
    */
-  bgTone?: 'light' | 'dark';
+  letterboxColor?: string;
 }
 
 export function BackgroundShowcase({
@@ -41,7 +43,7 @@ export function BackgroundShowcase({
   bgImageUrl,
   onWake,
   bgSize = 'cover',
-  bgTone = 'light',
+  letterboxColor = 'hsl(40, 20%, 97%)',
 }: BackgroundShowcaseProps) {
   const prefersReducedMotion =
     typeof window !== 'undefined'
@@ -78,27 +80,23 @@ export function BackgroundShowcase({
       {/*
        * ── Layer 1 (z-9990): Background image ──────────────────────────────
        *
-       * The .screen-dark class is applied when bgTone === 'dark'.  This
-       * overrides --background to the dark value (hsl 220 20% 8%) within
-       * THIS div's CSS scope, so var(--background) resolves correctly even
-       * though this element sits outside the normal screen's .screen-dark div.
+       * backgroundColor is always the explicit resolved letterboxColor —
+       * an HSL string computed in JS by the caller.  This guarantees the
+       * unused-space fill matches the normal screen regardless of where in
+       * the DOM this element is positioned, which CSS class scope it inherits,
+       * or whether the Fullscreen API adds its own backdrop.
        *
        * In Fill Screen (cover) mode the image fills the viewport entirely so
-       * backgroundColor is irrelevant; we still apply .screen-dark for
-       * consistency but it has no visible effect.
+       * backgroundColor is not visible; we still set it for the edge case
+       * where the image hasn't loaded yet.
        */}
       <div
-        className={bgTone === 'dark' ? 'screen-dark' : ''}
         style={{
           position:           'fixed',
           inset:              0,
           zIndex:             9990,
+          backgroundColor:    letterboxColor,
           backgroundImage:    bgImageUrl ? `url(${bgImageUrl})` : undefined,
-          // In Fit Image (contain) mode, unused space uses var(--background)
-          // from THIS div's scope — which is dark when .screen-dark is applied.
-          backgroundColor:    bgSize === 'contain'
-            ? 'var(--background)'
-            : (bgImageUrl ? undefined : 'var(--background)'),
           backgroundSize:     bgSize,
           backgroundPosition: 'center',
           backgroundRepeat:   'no-repeat',

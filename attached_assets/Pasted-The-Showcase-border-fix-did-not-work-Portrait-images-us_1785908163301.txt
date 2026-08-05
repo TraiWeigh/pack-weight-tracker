@@ -1,0 +1,196 @@
+The Showcase border fix did not work. Portrait images using Fit Image still show white unused space in Dark mode when Showcase is activated.
+
+Do not repeat the previous theme-variable change without identifying the exact element producing the white area.
+
+## Diagnose the actual white element
+
+Open the rendered application in Dark mode with:
+
+- A portrait personal background
+- Fit Image selected
+- Showcase active
+
+Use the browser inspector and determine which exact element, pseudo-element, or fullscreen backdrop is producing the white unused space.
+
+Inspect the computed styles of:
+
+- The Showcase fullscreen container
+- The image wrapper
+- The background-image element
+- The Showcase overlay
+- `html`
+- `body`
+- The application root
+- Any portal root
+- Any `::before` or `::after` pseudo-element
+- The fullscreen element’s `::backdrop`
+
+Search the project for hard-coded values such as:
+
+- `white`
+- `#fff`
+- `#ffffff`
+- `rgb(255, 255, 255)`
+- `background: white`
+- `background-color: white`
+- Light-theme fallback colors
+
+Do not report completion until the exact source of the white area has been identified.
+
+## Required behavior
+
+When Fit Image is active:
+
+- Dark mode must show dark unused space around the image.
+- Light mode must show light unused space around the image.
+- System mode must follow the currently resolved operating-system appearance.
+
+This must apply to:
+
+- Normal background view
+- Manual Showcase
+- Automatic inactivity Showcase
+- Fullscreen mode, if Showcase uses the Fullscreen API
+- Safari
+- Chrome
+- Desktop, tablet, and mobile
+
+## Use the resolved theme, not only the selected setting
+
+Determine the actual resolved appearance:
+
+- Selected Light = light
+- Selected Dark = dark
+- Selected System with light OS appearance = light
+- Selected System with dark OS appearance = dark
+
+Create one explicit resolved letterbox color.
+
+For example:
+
+- Resolved dark appearance → the application’s standard dark background color
+- Resolved light appearance → the application’s standard light background color
+
+Apply this resolved color directly to every layer behind the contained image.
+
+The Showcase image must use behavior equivalent to:
+
+- `background-size: contain`
+- `background-position: center`
+- `background-repeat: no-repeat`
+
+The element displaying the image and every visible parent behind it must use the resolved letterbox color.
+
+## Fullscreen requirement
+
+If Showcase uses the browser Fullscreen API, explicitly style both:
+
+- The fullscreen Showcase element
+- Its `::backdrop`
+
+The fullscreen backdrop must not use a browser default or hard-coded white value.
+
+Use the resolved theme color for the fullscreen backdrop.
+
+Make sure Safari’s fullscreen implementation is handled correctly if vendor-specific fullscreen selectors are currently required by the project.
+
+## Image-element requirement
+
+If Showcase displays the photo using an `<img>` element with:
+
+`object-fit: contain`
+
+then the `<img>` element’s parent container must have the resolved theme background color.
+
+Do not rely on the image itself to create the letterbox color.
+
+The full viewport Showcase wrapper must also use the same resolved color.
+
+## Remove conflicting styles
+
+Remove or override the specific style that is making Showcase white.
+
+Check for:
+
+- A white modal background
+- A white card background
+- A light-mode class remaining on the Showcase portal
+- A portal rendered outside the element receiving the dark class
+- An inline white background
+- A higher-specificity CSS rule
+- A late-loading stylesheet overriding the dark color
+- A default body background visible around the image
+- A white fullscreen backdrop
+- A transition layer with a white background
+
+Do not merely add another low-specificity CSS rule that loses to the existing white rule.
+
+Fix the source or apply the correct resolved color at the same or higher effective specificity.
+
+Avoid `!important` unless the existing architecture makes it genuinely necessary. If it is used, explain why.
+
+## Shared rendering logic
+
+Normal view and Showcase should use the same helper for:
+
+- Background image URL
+- Fill Screen or Fit Image
+- Background size
+- Background position
+- Background repeat
+- Resolved letterbox color
+
+However, Showcase must still explicitly apply that result to its own fullscreen wrapper, image container, and backdrop.
+
+## Required tests
+
+Test with a portrait personal image using Fit Image.
+
+### Dark mode
+
+1. Select Dark mode.
+2. Confirm the normal view has dark unused space.
+3. Activate manual Showcase.
+4. Confirm every area around the image is dark.
+5. Wait for automatic inactivity Showcase.
+6. Confirm every area around the image is dark.
+
+### Light mode
+
+1. Select Light mode.
+2. Confirm the normal view has light unused space.
+3. Activate Showcase.
+4. Confirm every area around the image is light.
+
+### System mode
+
+1. Select System mode with macOS in Light appearance.
+2. Confirm normal view and Showcase use light unused space.
+3. Change macOS to Dark appearance.
+4. Confirm normal view and Showcase change to dark unused space without reloading.
+
+### Additional tests
+
+Repeat with:
+
+- A built-in portrait image
+- A personal portrait image
+- Safari
+- Chrome
+- Manual Showcase
+- Automatic Showcase
+- Entering and leaving fullscreen repeatedly
+
+Also verify that Fill Screen still uses `cover` and fills the screen normally.
+
+Do not change background uploads, background selection, Showcase timing, wake behavior, gear-list data, Share Link, New, Save, Locker, Preview, Print, or PDF.
+
+Report:
+
+- The exact DOM element or pseudo-element that produced the white area
+- The computed white background rule that caused it
+- The file and CSS selector where that rule originated
+- How the resolved Light, Dark, or System color is now applied
+- How fullscreen `::backdrop` is handled
+- Which files were changed
+- Whether all rendered tests passed
