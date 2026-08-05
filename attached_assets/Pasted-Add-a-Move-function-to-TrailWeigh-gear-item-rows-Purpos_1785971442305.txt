@@ -1,0 +1,323 @@
+Add a Move function to TrailWeigh gear-item rows.
+
+## Purpose
+
+Users must be able to move an existing gear item from its current category into another existing category.
+
+The move must preserve the complete item and must work with Undo and Redo.
+
+Do not redesign unrelated checklist controls.
+
+## Move control placement
+
+On every normal gear-item row, add a control labeled:
+
+Move
+
+Place it between:
+
+- Description
+- Weight
+
+The desktop row order should be:
+
+1. Checkbox
+2. Type
+3. Description
+4. Move
+5. Weight
+6. Unit
+7. Quantity
+8. Existing item controls
+
+Use the existing TrailWeigh control style.
+
+The Move control may be a compact dropdown or menu, but it must be easy to understand and use.
+
+## Destination list
+
+When Move is opened, list all current categories except the item’s current category.
+
+Examples:
+
+- An item in Backpack should not list Backpack as a destination.
+- An item in Kitchen Gear may list Backpack, Shelter System, Sleep System, Clothing Packed, Electronics, and the other existing categories.
+- User-created custom categories must also appear.
+- Do not list deleted or hidden categories.
+- Do not create a new category from the Move menu.
+
+Use the exact category names and order from the current checklist.
+
+Respect user-defined names and category aliases, including names such as:
+
+- Shelter System
+- Sleep System
+- Kitchen Gear
+- Cook Set
+- Camp Kitchen
+
+Do not rename the destination category.
+
+## Move behavior
+
+When the user selects a destination:
+
+1. Remove the item from its current category.
+2. Insert the same item into the selected destination category.
+3. Do not leave a duplicate in the original category.
+4. Do not create a second copy with a new ID unless the existing data architecture absolutely requires it.
+5. Preserve the destination category’s existing items.
+6. Keep the current category headings and order unchanged.
+
+The item may be appended to the bottom of the destination category unless TrailWeigh already has a consistent insertion rule.
+
+Do not automatically scroll the user away from their current position unless necessary.
+
+## Preserve the complete item
+
+Moving must preserve every available item property, including:
+
+- Item ID
+- Type
+- Description
+- Weight
+- Weight unit
+- Quantity
+- Main checkbox state
+- Expendable state
+- Worn state
+- Dog Pack state
+- Base Weight inclusion state
+- Any warning or validation state that belongs to the item
+- Any other stored item metadata
+
+Do not reset the item to unchecked merely because it was moved.
+
+Imported items should still initially import unchecked, but a later Move must preserve their current checkbox state.
+
+## Undo and Redo
+
+Move must be a normal TrailWeigh history action.
+
+After moving an item:
+
+- Undo restores the item to its original category and original position when practical.
+- Redo moves it back to the selected destination.
+- One move should create one undo-history step.
+- Undo and Redo must not duplicate or delete the item.
+- Background Undo/Redo behavior must remain intact.
+- Moving an item must not clear unrelated history unless the current architecture requires a documented reason.
+
+Inspect the existing history implementation in:
+
+- `artifacts/pack-checklist/src/hooks/usePackData.ts`
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+Use the existing Store/history architecture rather than building a second history system.
+
+## Working-list and saving behavior
+
+Moving an item changes only the currently open working list.
+
+It must not automatically save the file.
+
+The user must still use Save or Save As to persist the moved item to the Locker.
+
+Preserve:
+
+- Active file identity
+- Active filename
+- Save
+- Save As
+- Locker behavior
+- New-file behavior
+- Same-tab and new-tab opening behavior
+
+Do not alter another open tab’s unsaved working list.
+
+## Data implementation
+
+Inspect the current data model:
+
+- Category order is stored in `store.order`
+- Category items are stored in `store.items[category]`
+- Gear item state is managed through `usePackData.ts`
+
+Add one clear reusable operation such as:
+
+`moveItem(sourceCategory, destinationCategory, itemId)`
+
+or the equivalent appropriate to the current architecture.
+
+The operation should:
+
+1. Validate that the source and destination categories exist.
+2. Validate that source and destination are different.
+3. Find the item by stable ID.
+4. Preserve the complete item object.
+5. Remove it exactly once from the source.
+6. Add it exactly once to the destination.
+7. Record the change in Undo/Redo history.
+8. Avoid partially updating the Store if validation fails.
+
+Show a clear user-facing error if the move cannot be completed.
+
+Do not silently lose the item.
+
+## Mobile and responsive behavior
+
+Test the gear row on:
+
+- Desktop
+- Tablet
+- Mobile-width layout
+
+On narrow screens:
+
+- The Move control must remain usable.
+- It may wrap to another line if needed.
+- It must not overlap Weight, Unit, Quantity, or item action controls.
+- Dropdown options must remain visible within the viewport.
+- Long category names such as `Clothing Packed` and `Toiletries + Med` must remain readable.
+- Do not make the entire checklist horizontally unusable.
+
+Do not complete the broader toolbar/mobile audit in this task. Only make the Move control fit cleanly into the existing responsive layout.
+
+## Accessibility
+
+The Move control must have:
+
+- A clear accessible name
+- Keyboard access
+- Visible focus state
+- Correct disabled behavior when no destination categories exist
+
+If there is only one category in the checklist, disable Move and provide an appropriate tooltip or accessible explanation.
+
+## Preserve existing working features
+
+Do not change:
+
+- PDF, Excel, Word, or Numbers importing
+- Category alias behavior
+- Imported items remaining unchecked
+- Save and Save As
+- Filename identity
+- Locker
+- Backgrounds
+- Showcase
+- Preview
+- Print
+- Share Link
+- New
+- Reset
+- Category rename
+- Category order
+- Existing item editing
+- Existing delete behavior
+- Toolbar icon sizing
+- Retail or monetization features
+
+Meal Planner is not applicable to this task.
+
+## Required rendered tests
+
+Use the rendered TrailWeigh application.
+
+### Test 1 — Basic move
+
+1. Create or use an item in Backpack.
+2. Record its Type, Description, Weight, Quantity, and checkbox state.
+3. Move it to Clothing Packed.
+4. Confirm it disappears from Backpack.
+5. Confirm exactly one copy appears in Clothing Packed.
+6. Confirm every item value and state is preserved.
+
+### Test 2 — Undo and Redo
+
+1. Undo the move.
+2. Confirm the item returns to Backpack.
+3. Confirm it disappears from Clothing Packed.
+4. Redo the move.
+5. Confirm it returns to Clothing Packed.
+6. Confirm no duplicates or lost data.
+
+### Test 3 — State preservation
+
+Move an item that has:
+
+- Quantity greater than 1
+- A checked checkbox
+- Expendable or another applicable item state
+
+Confirm all states remain unchanged after Move, Undo, and Redo.
+
+### Test 4 — Custom destination name
+
+Use a checklist containing a custom category such as:
+
+- Cook Set
+- Camp Kitchen
+- Dutch’s Carry
+
+Move an item into that category.
+
+Confirm:
+
+- The exact category name is preserved.
+- No duplicate canonical category is created.
+- The item appears only once.
+
+### Test 5 — Save behavior
+
+1. Open an existing Locker file.
+2. Move an item.
+3. Confirm the file is not automatically saved.
+4. Click Save.
+5. Reload or reopen the file.
+6. Confirm the item remains in its moved category.
+7. Confirm the active filename is unchanged.
+
+### Test 6 — Mobile
+
+At a mobile-width viewport:
+
+1. Open Move.
+2. Select a destination with a long name.
+3. Confirm the menu is readable and usable.
+4. Confirm Weight, Unit, Quantity, and item controls do not overlap.
+
+## Automated tests
+
+Add focused tests using the project’s existing test approach.
+
+Cover:
+
+- Move removes one item from the source.
+- Move adds one item to the destination.
+- Complete item data is preserved.
+- Moving to the same category is rejected or treated as a no-op.
+- Missing source, destination, or item does not corrupt Store state.
+- Undo restores the source state.
+- Redo restores the moved state.
+- Custom category names work.
+- One move creates one history entry.
+- No duplicate item IDs are created.
+
+Add the tests to the existing project test command when appropriate.
+
+## Final report
+
+Report:
+
+- Files changed
+- The move operation added
+- How full item state is preserved
+- How Undo and Redo handle Move
+- Where the Move control appears
+- Desktop rendered-test result
+- Mobile rendered-test result
+- Save/reopen test result
+- Automated test command and pass/fail result
+- Confirmation that no duplicate items or categories were created
+- Confirmation that no temporary logs remain
