@@ -4,6 +4,7 @@ import { usePackData } from '../hooks/usePackData';
 import { GearCategory } from '../components/GearCategory';
 import { WeightSummary } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
+import { PreviewModal } from '../components/PreviewModal';
 import { MailingListModal, hasSeenMailingPrompt } from '../components/MailingListModal';
 import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
@@ -68,6 +69,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const { signOut } = useClerk();
   const { toast } = useToast();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !!userId && !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -659,7 +661,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     Close
                   </button>
                 </div>
-                <UnitToggle />
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowPreview(true)}
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Preview
+                  </button>
+                  <UnitToggle />
+                </div>
               </div>
 
               {/* Scrollable categories */}
@@ -819,6 +829,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           </div>
         </main>
       </div>
+
+      {/* ── Preview modal ── */}
+      {showPreview && (
+        <PreviewModal
+          data={data}
+          system={system}
+          categoryOrder={categoryOrder}
+          categoryMeta={categoryMeta}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
 
       {/* ── Print-only layout ── */}
       <PrintLayout

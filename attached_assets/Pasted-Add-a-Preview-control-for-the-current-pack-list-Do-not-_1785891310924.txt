@@ -1,0 +1,168 @@
+Add a Preview control for the current pack list.
+
+Do not change the working Reset, Locker, Scan Gear List, Print, or Download PDF functions.
+
+## Preview control placement
+
+Add a control labeled:
+
+Preview
+
+Place it immediately to the left of the Imperial pill in the top controls.
+
+The order must be:
+
+Preview
+Imperial
+
+Match the Preview control to the Imperial pill’s:
+
+- Height
+- Border radius
+- Border style
+- Font size
+- Font weight
+- Padding
+- General visual style
+
+Keep enough spacing so the two controls are clearly separate.
+
+Do not move or resize the Imperial pill.
+
+## Preview behavior
+
+When Preview is clicked, open a pop-up preview window or modal inside the application.
+
+Do not immediately print or download anything.
+
+The preview must show only items currently checked in the active working pack list.
+
+Do not include unchecked items.
+
+The Preview button must use the current working list only. It must not display items from:
+
+- Saved Locker lists
+- Other browser tabs or windows
+- Other independent working copies
+
+## Match Print and Download PDF
+
+Reuse the same item-selection logic, category order, calculations, and document layout already used by the existing Print and Download PDF functions.
+
+The Preview must look like the existing printed list and downloaded PDF as closely as possible.
+
+Do not create separate filtering or total-calculation logic when the existing Print/PDF logic can be reused.
+
+The preview must include the same applicable information as the Print and PDF output, including:
+
+- Pack-list title
+- Categories
+- Type
+- Description
+- Weight
+- Category totals
+- Overall totals
+- Imperial or Metric units currently selected
+- Other information already included in the existing Print/PDF layout
+
+Show only categories containing at least one checked item.
+
+## Empty checkboxes
+
+Display an empty checkbox beside every previewed item.
+
+These checkboxes must look the same as the empty checkboxes in the existing Print and Download PDF output.
+
+The Preview checkboxes are visual packing-checklist boxes.
+
+They must appear empty even though the source items are checked in the working list.
+
+Do not uncheck or alter the actual items in the working list.
+
+Do not make clicking a preview checkbox change the working list.
+
+## Preview window controls
+
+Include a clearly visible:
+
+Close
+
+control in the preview window.
+
+Closing the preview must return the user to the current list without changing anything.
+
+If Print and Download PDF controls already appear in the application’s existing preview layout, they may remain available. Do not duplicate them unnecessarily.
+
+## Empty-state behavior
+
+If no items are checked when Preview is selected, do not open an empty document.
+
+Show this message:
+
+“No items are checked for preview.”
+
+## Live accuracy
+
+Each time Preview is opened, generate it from the current state of the active list.
+
+If the user:
+
+- Checks an item
+- Unchecks an item
+- Edits Type
+- Edits Description
+- Edits Weight
+- Changes Imperial or Metric units
+
+the next Preview must show the updated information.
+
+Do not display an outdated cached preview.
+
+## Responsive layout
+
+The preview must work on desktop and mobile.
+
+On smaller screens:
+
+- Keep text readable
+- Prevent fields from overlapping
+- Allow vertical scrolling
+- Keep the Close control accessible
+
+## Do not change or break
+
+Do not change:
+
+- Reset behavior
+- Save behavior
+- Shared Locker synchronization
+- New
+- Undo
+- Redo
+- Print
+- Download PDF
+- Imperial or Metric conversion
+- Gear-item checked status
+- Category names
+- Weight calculations
+- Scan Gear List
+
+## Required testing
+
+Test this exact workflow:
+
+1. Add items to several categories.
+2. Check some items and leave others unchecked.
+3. Click Preview.
+4. Confirm that only checked items appear.
+5. Confirm that unchecked items do not appear.
+6. Confirm that every displayed item has an empty checkbox beside it.
+7. Confirm that the actual checked status in the working list remains unchanged.
+8. Confirm that only categories containing checked items appear.
+9. Confirm that Type, Description, Weight, category totals, and overall totals match the existing Print and Download PDF output.
+10. Close the preview and confirm that the working list remains unchanged.
+11. Change from Imperial to Metric and confirm that Preview uses the selected units.
+12. Open Preview with no checked items and confirm that the message “No items are checked for preview.” appears.
+13. Confirm that Print and Download PDF still work correctly.
+
+Make the changes directly in the existing application and report which files were changed and whether all tests passed.
