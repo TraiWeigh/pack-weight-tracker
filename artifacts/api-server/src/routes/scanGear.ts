@@ -70,32 +70,14 @@ router.post('/scan-gear', async (req, res) => {
       return res.json(JSON.parse(raw));
 
     } else if (type === 'image') {
-      if (!base64 || typeof base64 !== 'string') {
-        return res.status(400).json({ error: 'base64 is required', code: 'missing_image' });
-      }
-
-      const imgUrl = `data:${mimeType ?? 'image/jpeg'};base64,${base64}`;
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: 'Extract gear details from this product image or spec sheet:' },
-              { type: 'image_url', image_url: { url: imgUrl, detail: 'auto' } },
-            ],
-          },
-        ],
-        max_tokens: 300,
-        response_format: { type: 'json_object' },
+      // Image and screenshot scanning is no longer supported.
+      return res.status(400).json({
+        error: 'Image scanning is not supported. Use the Scan Gear List panel to upload a PDF, Word, Excel, or Numbers file instead.',
+        code: 'unsupported_type',
       });
-
-      const raw = completion.choices[0]?.message?.content ?? '{}';
-      return res.json(JSON.parse(raw));
     }
 
-    return res.status(400).json({ error: 'type must be "url" or "image"', code: 'invalid_type' });
+    return res.status(400).json({ error: 'type must be "url"', code: 'invalid_type' });
 
   } catch (err: any) {
     console.error('[scan-gear]', err?.message);

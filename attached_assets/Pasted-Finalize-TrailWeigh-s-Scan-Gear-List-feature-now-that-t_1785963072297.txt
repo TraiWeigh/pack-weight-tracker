@@ -1,0 +1,176 @@
+Finalize TrailWeigh’s Scan Gear List feature now that the real PDF import works correctly.
+
+Current confirmed rendered behavior:
+
+- PACK WEIGHT PDF.pdf returns 68 items.
+- Kitchen items display and import into Kitchen.
+- Fuel routes to Expendables.
+- Backpack, Shelter, Sleep, Clothing Packed, Electronics, Hydration, and Clothing Worn remain correct.
+- Imported items remain unchecked.
+- Image and screenshot scanning are no longer supported.
+
+Do not redesign the importer or rewrite the working PDF parser.
+
+## Primary goal
+
+Perform a final regression test of every supported document format and safely remove any leftover image-OCR code that is no longer used.
+
+Supported formats must remain:
+
+- PDF
+- Word `.docx`
+- Excel `.xlsx`
+- Apple Numbers using the existing Numbers workflow
+
+Unsupported formats must remain:
+
+- PNG
+- JPG or JPEG
+- WebP
+- Screenshots
+- Photographs
+
+Meal Planner importing is not applicable yet.
+
+Do not add, change, or test Meal Planner importing.
+
+## Preserve the working PDF behavior
+
+Do not change:
+
+- PDFParse v2 implementation
+- The 68-item result for PACK WEIGHT PDF.pdf
+- Page-by-page PDF parsing
+- Kitchen category handling
+- Fuel → Expendables
+- Numeric-leading Types
+- Weight-versus-Add handling
+- Model-number handling
+- Summary-row filtering
+- Frontend category migration
+- Category dropdown fallback protection
+- Automatic category creation during import
+
+Use the real PACK WEIGHT PDF.pdf for the PDF regression test.
+
+Confirm:
+
+- 68 items found
+- Kitchen items remain Kitchen
+- Fuel remains Expendables
+- No PDF error appears
+- No valid category silently becomes Backpack
+
+## Test Excel
+
+Use a real `.xlsx` gear-list file.
+
+Confirm:
+
+- Type, Description, Weight, and Unit are detected
+- Categories are assigned correctly
+- Review rows remain editable
+- At least one item imports unchecked
+- The Scan Gear List panel resets after import
+
+Do not apply PDF-specific row parsing to Excel.
+
+## Test Word
+
+Use a real `.docx` file containing a gear table or clear gear lines.
+
+Confirm:
+
+- Gear rows reach the editable review table
+- Type, Description, Weight, Unit, and destination remain editable
+- At least one item imports unchecked
+- The panel resets after import
+
+Do not apply PDF-specific header logic to Word.
+
+## Test Apple Numbers
+
+Verify the existing Numbers workflow remains visible and functions as currently designed.
+
+Do not use OCR for Numbers files.
+
+Confirm the workflow does not advertise image or screenshot importing.
+
+## Clean up obsolete image OCR code
+
+Search the entire project for references to:
+
+- `ImageOcrPreview`
+- `image_ocr.py`
+- `test_ocr.py`
+- `pytesseract`
+- Tesseract subprocess calls
+- PNG, JPG, JPEG, and WebP importer branches
+- OCR-specific error codes
+- `/api/parse-text`
+- Rotate, crop, Read Image, Review Extracted Text, and Analyze Again
+
+Before deleting anything, verify it is no longer referenced by:
+
+- PDF importing
+- Word importing
+- Excel importing
+- Numbers importing
+- Any other TrailWeigh feature
+
+Remove unused image-OCR files, imports, dependencies, scripts, and temporary configuration only when they are confirmed unused.
+
+Do not remove Pillow, Python, or another dependency if another project feature still uses it.
+
+Do not alter general image backgrounds or the user’s custom background-image feature. This cleanup applies only to Scan Gear List OCR.
+
+## Interface verification
+
+The Scan Gear List drop zone must display only:
+
+`PDF, Word, Excel, or Numbers`
+
+The file input must not accept:
+
+- `.png`
+- `.jpg`
+- `.jpeg`
+- `.webp`
+
+Unsupported image uploads should return a clear unsupported-file message rather than attempting OCR.
+
+## Required import behavior
+
+For all supported document formats:
+
+- Review rows are selected before import
+- Category is editable
+- Type is editable
+- Description is editable
+- Weight is editable
+- Unit is editable
+- Invalid rows show a clear validation message
+- Valid selected items import
+- Imported items remain unchecked
+- The panel resets after successful import
+
+Do not silently change an unknown category to Backpack.
+
+Preserve the supplied category when possible and require manual category review when it cannot be matched.
+
+## Final report
+
+Report:
+
+- PDF real-file test results
+- Excel real-file test results
+- Word real-file test results
+- Numbers workflow result
+- Which obsolete OCR files or branches were removed
+- Which dependencies were removed or intentionally retained
+- Which files changed
+- Confirmation that image and screenshot importing no longer appears
+- Confirmation that the real PDF still returns 68 items
+- Confirmation that Kitchen and Fuel remain correct
+- Confirmation that imported items remain unchecked
+- Confirmation that no temporary debug logs remain
