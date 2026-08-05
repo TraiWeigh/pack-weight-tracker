@@ -38,6 +38,7 @@ const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
 const V5_KEY       = (uid?: string) => uid ? `pack-checklist-v5-${uid}` : 'pack-checklist-v5-guest';
 const V4_KEY       = (uid?: string) => uid ? `pack-checklist-v4-${uid}` : 'pack-checklist-v4-guest';
 export const INCOMING_SHARE_KEY = 'tw-incoming-share';
+export const LOCKER_KEY = 'trailweigh:locker';
 const MAX_HISTORY = 200;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -129,19 +130,28 @@ function loadFromStorage(uid?: string): Store | null {
 }
 
 /** Resolve the storage key for this browser session.
- *  Fork tabs (opened via "New" button) get an isolated key stored in sessionStorage. */
+ *  Fork tabs (opened via "New" button or "Load This List") get an isolated key stored in sessionStorage. */
 function resolveStorageKey(userId?: string): { key: string; isFork: boolean } {
   try {
     // Already in a forked session?
     const forkId = sessionStorage.getItem('tw-fork-id');
     if (forkId) return { key: `pack-checklist-v5-fork-${forkId}`, isFork: true };
 
-    // First load of a forked tab?
     const params = new URLSearchParams(window.location.search);
+
+    // First load of a forked tab via "New" button?
     const seedId = params.get('newseed');
     if (seedId) {
       sessionStorage.setItem('tw-fork-id', seedId);
       return { key: `pack-checklist-v5-fork-${seedId}`, isFork: true };
+    }
+
+    // First load of a saved list via "Load This List"?
+    const savedListId = params.get('savedListId');
+    if (savedListId) {
+      const newForkId = crypto.randomUUID();
+      sessionStorage.setItem('tw-fork-id', newForkId);
+      return { key: `pack-checklist-v5-fork-${newForkId}`, isFork: true };
     }
   } catch { /* ignore */ }
   return { key: V5_KEY(userId), isFork: false };
@@ -160,7 +170,38 @@ export function usePackData(userId?: string) {
   const [historyVersion, setHistoryVersion] = useState(0);
 
   const [store, setStore] = useState<Store>(() => {
-    // 1. Newseed (first load of forked tab) — load from temp key
+    // 0. Saved list from Locker (opened via "Load This List" with ?savedListId=<id>)
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const savedListId = params.get('savedListId');
+      if (savedListId) {
+        const lockerRaw = localStorage.getItem(LOCKER_KEY);
+        const entries: any[] = lockerRaw ? JSON.parse(lockerRaw) : [];
+        const entry = entries.find((e: any) => e.id === savedListId);
+        if (entry?.store) {
+          // Write into the fork key (already set by resolveStorageKey above)
+          const v5Store = { __v: 5, ...entry.store };
+          localStorage.setItem(storageKey, JSON.stringify(v5Store));
+          // Stash background settings for ChecklistContent to pick up
+          sessionStorage.setItem('tw-savedlist-bg',     JSON.stringify(entry.background ?? null));
+          sessionStorage.setItem('tw-savedlist-bgfade', String(entry.bgFade ?? 1));
+          sessionStorage.setItem('tw-savedlist-bgtone', entry.bgTone ?? 'light');
+          // Clean URL
+          const url = new URL(window.location.href);
+          url.searchParams.delete('savedListId');
+          window.history.replaceState(null, '', url.toString());
+          const parsed = parseV5(v5Store);
+          if (parsed) return parsed;
+        }
+        // Entry not found — flag for error toast
+        sessionStorage.setItem('tw-savedlist-error', '1');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('savedListId');
+        window.history.replaceState(null, '', url.toString());
+      }
+    } catch { /* ignore */ }
+
+    // 1. Newseed (first load of forked tab via "New" button) — load from temp key
     try {
       const params = new URLSearchParams(window.location.search);
       const seedId = params.get('newseed');

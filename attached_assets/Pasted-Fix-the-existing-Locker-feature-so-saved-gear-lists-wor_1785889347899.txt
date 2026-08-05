@@ -1,0 +1,269 @@
+Fix the existing Locker feature so saved gear lists work across every existing and newly opened pack list, browser tab, and browser window.
+
+Do not redesign the Locker panel or change the working Scan Gear List importer.
+
+## Main Locker rule
+
+The Locker is one shared collection of saved pack lists.
+
+Every pack list belonging to the same user must display the same complete Locker collection, including:
+
+- Pack lists already open in other tabs or windows
+- Pack lists opened after a list has been saved
+- New blank pack lists
+- Copies opened with the New control
+- Saved lists opened from the Locker
+
+Synchronize only the Locker collection.
+
+Do not synchronize unsaved edits between active working pack lists. Each open working list must remain independent.
+
+Example:
+
+- Pack List A is open in one tab.
+- Pack List B is open in another tab.
+- The user saves a list from Pack List A.
+- The saved list must immediately appear in the Locker in Pack List B.
+- The user then opens Pack List C.
+- Pack List C must load the same complete Locker collection automatically.
+- Editing Pack List A, B, or C must not change the other active lists.
+
+## Fix “Load This List”
+
+The “Load This List” button currently does nothing.
+
+When the user clicks “Load This List”:
+
+1. Open the selected saved list in a new browser tab.
+2. Keep the current tab and current working list unchanged.
+3. Load the complete saved snapshot, including:
+   - All categories
+   - Type
+   - Description
+   - Weight
+   - Quantity
+   - Checked or packed status
+   - Background
+   - Category titles
+   - Other saved list settings
+4. Open the saved list as a separate editable working copy.
+5. Editing the newly opened copy must not automatically change:
+   - The saved Locker snapshot
+   - The list in the original tab
+   - Any other active pack list
+6. The user must intentionally click Save to store the edited copy in the Locker.
+
+Use a real application route containing the saved-list ID, adapted to the existing application, such as:
+
+/pack-list?savedListId=123
+
+Load the saved list from persistent storage by its unique ID.
+
+Do not pass the complete list only through temporary component state.
+
+Open the new tab directly during the button-click event so the browser does not block it as a pop-up.
+
+If the saved list cannot be opened, show a clear user-facing error message instead of silently doing nothing.
+
+## Shared persistent storage
+
+Inspect the application’s existing storage system before changing it.
+
+### If the application has user accounts and a database
+
+- Store Locker lists in the shared database.
+- Associate each saved list with the correct user.
+- Do not associate the Locker collection only with one working pack-list ID.
+- Load the user’s complete Locker collection whenever any pack-list page opens.
+- Enforce ownership and authorization on the server.
+- Saved lists should remain available when the user signs in from another supported browser or device.
+
+### If the application currently uses browser storage
+
+- Use one shared localStorage key for the complete Locker collection.
+- Use the same storage key for every pack list.
+- Do not use sessionStorage.
+- Do not keep saved lists only in component state.
+- Load the complete Locker collection whenever a new pack-list page opens.
+- Saved lists will be shared within the same browser profile and device.
+
+Use the application’s existing database when it is already available. Do not replace a working database with localStorage.
+
+## Cross-tab synchronization
+
+Changes made to the Locker in one tab must immediately appear in every other open pack-list tab without requiring a refresh.
+
+Use the existing state-management system together with one of these appropriate methods:
+
+- Existing real-time database subscriptions
+- Database refresh plus BroadcastChannel
+- BroadcastChannel API
+- Browser storage event
+
+Use a shared BroadcastChannel name such as:
+
+gear-locker-sync
+
+Send a synchronization message whenever a saved list is:
+
+- Created
+- Updated
+- Renamed
+- Replaced
+- Deleted
+
+Every receiving tab must reload or update its Locker collection.
+
+Avoid:
+
+- Duplicate saved-list cards
+- Duplicate synchronization events
+- Infinite update loops
+- Overwriting unsaved changes in active pack lists
+
+## Save behavior
+
+When the user clicks Save:
+
+1. Use the existing interface to ask for the saved-list name.
+2. Save a complete snapshot of the current working list.
+3. Give the saved list a permanent unique ID.
+4. Add it to the shared Locker collection.
+5. Immediately update the Locker in every open tab.
+6. Make the saved list available to every pack list opened later.
+7. Do not change the current working list.
+8. Do not remove or replace another saved list unless the user explicitly approves it.
+
+The saved snapshot must include all information required to reproduce the list accurately, including:
+
+- Categories and their current titles
+- Gear rows
+- Type
+- Description
+- Weight
+- Quantity
+- Checked or packed status
+- Background
+- Other saved visual or list settings
+
+If a saved list with the same name already exists, ask the user to choose:
+
+- Replace existing saved list
+- Save as a new list
+- Cancel
+
+Do not silently overwrite an existing saved list.
+
+## Rename behavior
+
+The existing rename control must:
+
+1. Allow the user to enter a new name.
+2. Preserve the saved-list ID and saved contents.
+3. Update the name in every open Locker panel immediately.
+4. Show the updated name in pack lists opened later.
+5. Prevent an accidental duplicate name or ask how to handle it.
+
+## Delete behavior
+
+The existing trash button must:
+
+1. Ask for confirmation.
+2. Delete only the selected saved Locker list.
+3. Remove it from every open Locker panel immediately.
+4. Prevent it from appearing in pack lists opened later.
+5. Update the Locker count.
+6. Leave all active working pack lists unchanged.
+
+Deleting a saved Locker snapshot must not close or delete an already opened working copy.
+
+## Locker count
+
+The number displayed beside “Locker” must always equal the current number of saved lists in the shared Locker collection.
+
+Update the count immediately when a list is:
+
+- Saved
+- Replaced
+- Deleted
+
+Renaming a list must not change the count.
+
+Every newly opened pack-list page must show the correct count as soon as it loads.
+
+## New control compatibility
+
+The New control opens an independent copy of the current working list in another tab.
+
+Every list opened with New must:
+
+- Have its own independent working state
+- Display the same shared Locker collection
+- Receive future Locker synchronization updates
+- Not synchronize unsaved gear edits with the original working list
+
+## Do not break or change
+
+Do not change or break:
+
+- New
+- Undo
+- Redo
+- Save
+- Reset
+- Scan Gear List
+- Imported-item categorization
+- Manual gear editing
+- Weight calculations
+- Background selection
+- Existing category titles
+- Existing Locker card appearance
+- Existing toolbar layout
+- Independent editing between active pack lists
+
+Do not redesign the Locker unless a small internal change is required for functionality.
+
+## Required testing
+
+Test this exact workflow through the browser:
+
+1. Open Pack List A in the first tab.
+2. Open Pack List B in a second tab.
+3. Make different unsaved edits in each tab.
+4. Confirm those working edits remain independent.
+5. Save Pack List A to the Locker.
+6. Confirm the saved list immediately appears in Pack List B without refreshing.
+7. Open a new Pack List C.
+8. Confirm Pack List C automatically displays the same complete Locker collection.
+9. Click “Load This List” from one of the tabs.
+10. Confirm the saved list opens in a new browser tab.
+11. Confirm the original tabs remain open and unchanged.
+12. Edit the newly opened working copy.
+13. Confirm the saved Locker snapshot does not change automatically.
+14. Confirm the other active working lists do not change.
+15. Rename the saved list.
+16. Confirm the new name immediately appears in every open tab.
+17. Delete the saved list from one tab.
+18. Confirm it disappears from every open Locker panel.
+19. Confirm the Locker count updates everywhere.
+20. Confirm an already opened working copy remains open after its saved snapshot is deleted.
+21. Refresh the application.
+22. Confirm all remaining saved Locker lists persist.
+23. Open another new pack list.
+24. Confirm it loads the same remaining Locker collection.
+
+Fix every error found during testing.
+
+At completion, report:
+
+- The files changed
+- The persistent storage method used
+- How saved-list ownership is handled
+- How existing tabs are synchronized
+- How newly opened pack lists load the Locker
+- The route used by “Load This List”
+- Whether saved lists open in a new tab
+- Whether active working lists remain independent
+- Whether all required browser tests passed
+
+Make the changes directly in the existing application. Do not merely explain how to implement them.

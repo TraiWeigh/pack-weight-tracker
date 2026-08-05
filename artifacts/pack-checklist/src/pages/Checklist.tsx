@@ -10,8 +10,10 @@ import { sharePackList } from '../lib/exportPDF';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ImportGearPanel } from '../components/ImportGearPanel';
-import { LockerPanel, LockerEntry, LOCKER_KEY } from '../components/LockerPanel';
+import { LockerPanel, LockerEntry } from '../components/LockerPanel';
+import { LOCKER_KEY } from '../hooks/usePackData';
 import { buildShareURL } from '../lib/shareLink';
+import { useToast } from '../hooks/use-toast';
 import {
   RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut,
   User, Shield, Plus, Check, X, ChevronsUpDown,
@@ -64,15 +66,29 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const { system } = useUnit();
   const { signOut } = useClerk();
+  const { toast } = useToast();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !hasSeenMailingPrompt(userId));
+  const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !!userId && !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
   const bgPickerContainerRef = useRef<HTMLDivElement>(null);
   const [dragCat, setDragCat] = useState<string | null>(null);
   const [overCat, setOverCat] = useState<string | null>(null);
+
+  // ── Background state — also loaded from saved-list session key ────────────
+
   const [background, setBackground] = useState<Background | null>(() => {
+    // If this tab was opened via "Load This List", use the saved background
+    try {
+      const raw = sessionStorage.getItem('tw-savedlist-bg');
+      if (raw !== null) {
+        sessionStorage.removeItem('tw-savedlist-bg');
+        const parsed = JSON.parse(raw);
+        return parsed ?? null;
+      }
+    } catch {}
+    // Normal path
     try {
       const s = localStorage.getItem(BG_STORAGE_KEY);
       if (!s) return null;
@@ -89,6 +105,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       return null;
     }
   });
+
   const handleBackgroundChange = (bg: Background | null) => {
     setBackground(bg);
     if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
@@ -96,18 +113,35 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   };
 
   const [bgFade, setBgFade] = useState<number>(() => {
+    try {
+      const raw = sessionStorage.getItem('tw-savedlist-bgfade');
+      if (raw !== null) {
+        sessionStorage.removeItem('tw-savedlist-bgfade');
+        const v = parseFloat(raw);
+        return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
+      }
+    } catch {}
     const s = localStorage.getItem('trailweigh:bgFade');
     const v = s ? parseFloat(s) : 1;
     return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
   });
+
   const handleBgFadeChange = (v: number) => {
     setBgFade(v);
     localStorage.setItem('trailweigh:bgFade', String(v));
   };
 
-  const [bgTone, setBgTone] = useState<'light' | 'dark'>(() =>
-    (localStorage.getItem('trailweigh:bgTone') as 'light' | 'dark') ?? 'light'
-  );
+  const [bgTone, setBgTone] = useState<'light' | 'dark'>(() => {
+    try {
+      const raw = sessionStorage.getItem('tw-savedlist-bgtone');
+      if (raw !== null) {
+        sessionStorage.removeItem('tw-savedlist-bgtone');
+        return raw as 'light' | 'dark';
+      }
+    } catch {}
+    return (localStorage.getItem('trailweigh:bgTone') as 'light' | 'dark') ?? 'light';
+  });
+
   const handleBgToneChange = (t: 'light' | 'dark') => {
     setBgTone(t);
     localStorage.setItem('trailweigh:bgTone', t);
@@ -215,29 +249,88 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     return () => document.removeEventListener('keydown', onKey);
   }, [undo, redo]);
 
-  // ── Save to Locker ────────────────────────────────────────────────────────
+  // ── Locker ────────────────────────────────────────────────────────────────
+
   const [lockerEntries, setLockerEntries] = useState<LockerEntry[]>(() => {
     try {
       const raw = localStorage.getItem(LOCKER_KEY);
       return raw ? JSON.parse(raw) : [];
     } catch { return []; }
   });
+
+  // Persist whenever lockerEntries changes (does NOT broadcast — broadcasts happen
+  // explicitly in mutating handlers to avoid cross-tab echo loops)
   useEffect(() => {
     localStorage.setItem(LOCKER_KEY, JSON.stringify(lockerEntries));
   }, [lockerEntries]);
 
+  // BroadcastChannel for cross-tab Locker sync
+  const lockerChannelRef = useRef<BroadcastChannel | null>(null);
+
+  useEffect(() => {
+    let ch: BroadcastChannel | null = null;
+    try {
+      ch = new BroadcastChannel('gear-locker-sync');
+      lockerChannelRef.current = ch;
+      ch.onmessage = (e) => {
+        if (e.data?.type === 'locker-update') {
+          const entries: LockerEntry[] = e.data.entries;
+          // Write immediately so any subsequent refresh gets the latest data
+          localStorage.setItem(LOCKER_KEY, JSON.stringify(entries));
+          setLockerEntries(entries);
+        }
+      };
+    } catch {
+      lockerChannelRef.current = null;
+    }
+    return () => {
+      ch?.close();
+      lockerChannelRef.current = null;
+    };
+  }, []);
+
+  /** Broadcast Locker state to every other open tab. */
+  const broadcastLocker = useCallback((entries: LockerEntry[]) => {
+    try {
+      lockerChannelRef.current?.postMessage({ type: 'locker-update', entries });
+    } catch {}
+  }, []);
+
+  // Error toast when a ?savedListId= was not found in the Locker
+  useEffect(() => {
+    const hadError = sessionStorage.getItem('tw-savedlist-error');
+    if (hadError) {
+      sessionStorage.removeItem('tw-savedlist-error');
+      toast({
+        title: 'List not found',
+        description: 'That saved list may have been deleted from the Locker.',
+        variant: 'destructive',
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Save to Locker ────────────────────────────────────────────────────────
+
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveName, setSaveName] = useState('');
+  const [saveConflictId, setSaveConflictId] = useState<string | null>(null);
   const saveInputRef = useRef<HTMLInputElement>(null);
 
   const openSaveDialog = () => {
     setShowSaveDialog(true);
+    setSaveConflictId(null);
     setTimeout(() => saveInputRef.current?.focus(), 50);
   };
 
-  const handleSaveToLocker = () => {
-    const name = saveName.trim();
-    if (!name) return;
+  const closeSaveDialog = () => {
+    setShowSaveDialog(false);
+    setSaveName('');
+    setSaveConflictId(null);
+  };
+
+  /** Save as a brand-new entry (no duplicate check). */
+  const commitSaveNew = useCallback((name: string) => {
     const entry: LockerEntry = {
       id: crypto.randomUUID(),
       name,
@@ -247,21 +340,84 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgFade,
       bgTone,
     };
-    setLockerEntries(prev => [entry, ...prev]);
-    setShowSaveDialog(false);
-    setSaveName('');
+    const updated = [entry, ...lockerEntries];
+    setLockerEntries(updated);
+    broadcastLocker(updated);
+    closeSaveDialog();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
+
+  /** Save and replace an existing entry (same ID, updated content). */
+  const commitSaveReplace = useCallback((existingId: string, name: string) => {
+    const entry: LockerEntry = {
+      id: existingId,
+      name,
+      savedAt: Date.now(),
+      store,
+      background,
+      bgFade,
+      bgTone,
+    };
+    const updated = lockerEntries.map(e => e.id === existingId ? entry : e);
+    setLockerEntries(updated);
+    broadcastLocker(updated);
+    closeSaveDialog();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
+
+  const handleSaveToLocker = () => {
+    const name = saveName.trim();
+    if (!name) return;
+    const existing = lockerEntries.find(e => e.name === name);
+    if (existing) {
+      // Show conflict options (Replace / Save as New / Cancel)
+      setSaveConflictId(existing.id);
+      return;
+    }
+    commitSaveNew(name);
   };
+
+  const handleReplaceInLocker = () => {
+    if (!saveConflictId) return;
+    commitSaveReplace(saveConflictId, saveName.trim());
+  };
+
+  const handleSaveAsNew = () => {
+    commitSaveNew(saveName.trim());
+  };
+
+  // ── Load from Locker — open in a new tab ─────────────────────────────────
 
   const handleLoadFromLocker = (entry: LockerEntry) => {
-    loadStore(entry.store);
-    handleBackgroundChange(entry.background);
-    handleBgFadeChange(entry.bgFade);
-    handleBgToneChange(entry.bgTone);
+    const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
+    const url = `${window.location.origin}${base}/checklist?savedListId=${entry.id}`;
+    const tab = window.open(url, '_blank');
+    if (!tab) {
+      toast({
+        title: 'Pop-up blocked',
+        description: 'Allow pop-ups for this site and try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
+  // ── Delete from Locker ────────────────────────────────────────────────────
+
   const handleDeleteFromLocker = (id: string) => {
-    setLockerEntries(prev => prev.filter(e => e.id !== id));
+    const updated = lockerEntries.filter(e => e.id !== id);
+    setLockerEntries(updated);
+    broadcastLocker(updated);
   };
+
+  // ── Rename in Locker ──────────────────────────────────────────────────────
+
+  const handleRenameInLocker = useCallback((id: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const updated = lockerEntries.map(e => e.id === id ? { ...e, name: trimmed } : e);
+    setLockerEntries(updated);
+    broadcastLocker(updated);
+  }, [lockerEntries, broadcastLocker]);
 
   // ── Toolbar button style ──────────────────────────────────────────────────
   const toolBtn = 'flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50';
@@ -270,7 +426,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   return (
     <>
       {showMailingModal && (
-        <MailingListModal userId={userId} onDismiss={() => setShowMailingModal(false)} />
+        <MailingListModal userId={userId ?? ''} onDismiss={() => setShowMailingModal(false)} />
       )}
 
       {/* ── Screen content ── */}
@@ -334,34 +490,63 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
               {/* ── Save ────────────────────────────────────────── */}
               {showSaveDialog ? (
-                <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-4 duration-200">
-                  <input
-                    ref={saveInputRef}
-                    type="text"
-                    value={saveName}
-                    onChange={e => setSaveName(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') handleSaveToLocker();
-                      if (e.key === 'Escape') { setShowSaveDialog(false); setSaveName(''); }
-                    }}
-                    placeholder="List name…"
-                    maxLength={40}
-                    className="text-xs border border-border rounded-md px-2 py-1.5 bg-background focus:outline-none focus:border-primary/50 w-28 sm:w-36 text-foreground placeholder:text-muted-foreground"
-                  />
-                  <button
-                    onClick={handleSaveToLocker}
-                    disabled={!saveName.trim()}
-                    className="text-xs font-semibold bg-primary text-primary-foreground px-2.5 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => { setShowSaveDialog(false); setSaveName(''); }}
-                    className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                saveConflictId ? (
+                  /* Duplicate-name conflict — ask user what to do */
+                  <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-4 duration-200">
+                    <span className="text-xs text-muted-foreground hidden sm:inline truncate max-w-[120px]">
+                      "{saveName}" exists:
+                    </span>
+                    <button
+                      onClick={handleReplaceInLocker}
+                      className="text-xs font-semibold bg-destructive text-destructive-foreground px-2.5 py-1.5 rounded-md hover:bg-destructive/90 transition-colors"
+                    >
+                      Replace
+                    </button>
+                    <button
+                      onClick={handleSaveAsNew}
+                      className="text-xs font-semibold bg-primary text-primary-foreground px-2.5 py-1.5 rounded-md hover:bg-primary/90 transition-colors"
+                    >
+                      Save as New
+                    </button>
+                    <button
+                      onClick={() => setSaveConflictId(null)}
+                      className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                      title="Back"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  /* Normal save — enter name */
+                  <div className="flex items-center gap-1.5 animate-in fade-in slide-in-from-right-4 duration-200">
+                    <input
+                      ref={saveInputRef}
+                      type="text"
+                      value={saveName}
+                      onChange={e => setSaveName(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleSaveToLocker();
+                        if (e.key === 'Escape') closeSaveDialog();
+                      }}
+                      placeholder="List name…"
+                      maxLength={40}
+                      className="text-xs border border-border rounded-md px-2 py-1.5 bg-background focus:outline-none focus:border-primary/50 w-28 sm:w-36 text-foreground placeholder:text-muted-foreground"
+                    />
+                    <button
+                      onClick={handleSaveToLocker}
+                      disabled={!saveName.trim()}
+                      className="text-xs font-semibold bg-primary text-primary-foreground px-2.5 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={closeSaveDialog}
+                      className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )
               ) : (
                 <button
                   onClick={openSaveDialog}
@@ -563,7 +748,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     onBgFadeChange={handleBgFadeChange}
                     bgTone={bgTone}
                     onBgToneChange={handleBgToneChange}
-                    containerRef={bgPickerContainerRef}
+                    containerRef={bgPickerContainerRef as React.RefObject<HTMLDivElement>}
                   />
                 </div>
                 <button
@@ -626,6 +811,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   entries={lockerEntries}
                   onLoad={handleLoadFromLocker}
                   onDelete={handleDeleteFromLocker}
+                  onRename={handleRenameInLocker}
                 />
               </div>
               </div>
