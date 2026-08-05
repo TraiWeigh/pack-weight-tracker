@@ -420,8 +420,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   }, [lockerEntries, broadcastLocker]);
 
   // ── Toolbar button style ──────────────────────────────────────────────────
-  const toolBtn = 'flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50';
-  const toolBtnDisabled = 'flex items-center gap-1.5 text-xs font-medium text-muted-foreground/30 px-2 py-1.5 rounded-md cursor-not-allowed';
+  const toolBtn = 'flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50';
+  const toolBtnDisabled = 'flex items-center gap-2 text-xs font-medium text-muted-foreground/30 px-2 py-1.5 rounded-md cursor-not-allowed';
 
   return (
     <>
@@ -473,7 +473,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 title={canUndo ? 'Undo (Ctrl+Z)' : 'Nothing to undo'}
                 className={canUndo ? toolBtn : toolBtnDisabled}
               >
-                <img src="/undo.png" alt="Undo" className="w-3.5 h-3.5 object-contain" />
+                <img src="/undo-icon.png" alt="Undo" className="w-5 h-5 min-w-[20px] object-contain flex-shrink-0" />
                 <span className="hidden md:inline">Undo</span>
               </button>
 
@@ -484,7 +484,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 title={canRedo ? 'Redo (Ctrl+Y)' : 'Nothing to redo'}
                 className={canRedo ? toolBtn : toolBtnDisabled}
               >
-                <img src="/redo.png" alt="Redo" className="w-3.5 h-3.5 object-contain" />
+                <img src="/redo-icon.png" alt="Redo" className="w-5 h-5 min-w-[20px] object-contain flex-shrink-0" />
                 <span className="hidden md:inline">Redo</span>
               </button>
 
@@ -553,7 +553,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   title="Save current list to Locker"
                   className={toolBtn}
                 >
-                  <img src="/locker.png" alt="Save" className="w-3.5 h-3.5 object-contain" />
+                  <img src="/locker-icon.png" alt="Save" className="w-5 h-5 min-w-[20px] object-contain flex-shrink-0" />
                   <span className="hidden md:inline">Save</span>
                 </button>
               )}

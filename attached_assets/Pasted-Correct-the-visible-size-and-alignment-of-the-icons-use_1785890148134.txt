@@ -1,0 +1,92 @@
+Correct the visible size and alignment of the icons used for New, Undo, Redo, Save, Reset, and Locker.
+
+Do not change any control’s function, label, order, color, location, or click behavior.
+
+## Required appearance
+
+Use the current Reset icon as the visual size reference.
+
+Make these icons appear visually the same size as the Reset icon:
+
+- New icon
+- undo.png
+- Redo.png
+- locker.png beside Save
+- locker.png beside the Locker heading
+
+Use an icon display area of approximately:
+
+width: 24px;
+height: 24px;
+min-width: 24px;
+min-height: 24px;
+object-fit: contain;
+display: block;
+flex-shrink: 0;
+
+Use approximately an 8px gap between each icon and its text label.
+
+Vertically center each icon with its label.
+
+## Transparent PNG padding
+
+Inspect the PNG files for excessive transparent padding.
+
+If the PNG canvas contains blank transparent space that makes the visible symbol remain too small:
+
+1. Create tightly cropped application copies of the PNG files.
+2. Preserve the original artwork and transparency.
+3. Use the cropped copies in the controls.
+4. Do not replace or redesign the icons.
+5. Do not make the toolbar buttons excessively large to compensate for transparent padding.
+
+The visible black artwork—not merely the PNG canvas—must appear approximately the same size as the Reset icon.
+
+## Toolbar order
+
+Keep the controls in this exact order:
+
+New
+Undo
+Redo
+Save
+Reset
+
+Do not move the controls.
+
+## Locker heading
+
+The locker.png icon beside the Locker heading must:
+
+- Match the Reset icon’s visible size
+- Be vertically centered with the word Locker
+- Use the same icon sizing on desktop and mobile
+
+## Do not change
+
+Do not change or break:
+
+- New behavior
+- Undo history
+- Redo history
+- Save behavior
+- Reset behavior
+- Shared Locker synchronization
+- Load This List
+- Scan Gear List
+- Category names
+- Toolbar layout
+
+## Verification
+
+Run the application and visually verify:
+
+- Undo, Redo, and Save icons match the visible size of Reset.
+- The New icon is aligned consistently.
+- The Locker heading icon matches the visible size of Reset.
+- All icons are vertically centered with their labels.
+- The toolbar order is unchanged.
+- No button functionality has changed.
+- The icons remain readable on desktop and mobile.
+
+Make the correction directly in the existing application. Do not only explain the CSS changes.
