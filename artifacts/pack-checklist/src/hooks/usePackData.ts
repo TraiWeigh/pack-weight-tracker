@@ -434,7 +434,11 @@ export function usePackData(userId?: string) {
   }, [pushAndSet]);
 
   const resetToDefaults = useCallback(() => {
-    pushAndSet(() => seedInitialData());
+    pushAndSet(prev => {
+      const clearedItems: PackState = {};
+      prev.order.forEach(cat => { clearedItems[cat] = []; });
+      return { ...prev, items: clearedItems };
+    });
   }, [pushAndSet]);
 
   return {

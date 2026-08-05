@@ -1,0 +1,91 @@
+Fix the existing Reset function. The confirmation appears correctly, but Confirm does not remove every item from every category.
+
+Do not change the warning text, styling, or button locations.
+
+## Required Reset behavior
+
+When the user clicks Reset and then Confirm:
+
+1. Remove every gear item from every category in the current working list.
+
+2. Remove items regardless of whether they are:
+   - Checked
+   - Unchecked
+   - Packed
+   - Unpacked
+   - Manually entered
+   - Imported
+   - Visible
+   - Hidden inside a collapsed category
+
+3. Do not filter items by checked status.
+
+4. Clear the complete item collection for every category in the underlying application state. Do not clear only the currently displayed or filtered rows.
+
+5. Keep the category sections and their current names in place.
+
+6. After clearing:
+   - Every category item count must be zero.
+   - Every packed count must be zero.
+   - Every category weight total must be zero.
+   - The overall pack-weight totals must be zero.
+   - No checked item may remain.
+   - No unchecked item may remain.
+
+7. If the application requires a blank placeholder row for entering new items, recreate only one blank placeholder row after clearing. Do not preserve any previous gear information in that row.
+
+## Isolation requirements
+
+Reset must affect only the current working list.
+
+It must not affect:
+
+- Saved Locker lists
+- Saved snapshots
+- Lists open in other tabs or windows
+- Other independent working copies
+- The shared Locker collection
+
+## Cancel behavior
+
+When the user clicks Cancel:
+
+- Close the warning.
+- Do not remove or alter any item.
+- Leave checked status, weights, categories, and totals unchanged.
+
+## Do not break
+
+Do not change or break:
+
+- Save
+- Locker synchronization
+- Load This List
+- New
+- Undo
+- Redo
+- Scan Gear List
+- Category names
+- Background selection
+- Other open working lists
+
+## Required testing
+
+Test this exact workflow:
+
+1. Add checked and unchecked items to several different categories.
+2. Collapse at least one category containing items.
+3. Include manually entered and imported items.
+4. Click Reset.
+5. Click Confirm.
+6. Verify that every item is removed from every category, including checked items and items in collapsed categories.
+7. Verify that all category and overall weight totals become zero.
+8. Verify that category headings remain.
+9. Verify that saved Locker lists remain unchanged.
+10. Verify that another list open in a separate tab remains unchanged.
+11. Repeat the test and click Cancel.
+12. Verify that Cancel changes nothing.
+
+Find and remove any logic that clears only unchecked items, only visible rows, or only the active category.
+
+Make the correction directly in the existing application.
