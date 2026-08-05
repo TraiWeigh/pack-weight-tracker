@@ -150,10 +150,10 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
       const data = await resp.json();
 
       if (!resp.ok) {
-        // Surface image-specific errors as user-friendly messages
         if (isImg) {
-          if (data.error === 'OCR_FAILED') {
-            throw new Error('__ocr_failed__');
+          // Map server error codes to distinct user-facing messages
+          if (data.error === 'DAMAGED_IMAGE') {
+            throw new Error('__damaged_image__');
           }
           throw new Error('__ocr_failed__');
         }
@@ -161,6 +161,15 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
       }
 
       const parsed: ParsedItem[] = data.items ?? [];
+
+      // OCR ran but gear parser found no items with weights
+      if (isImg && data.error === 'NO_GEAR_ITEMS') {
+        setPhase('error');
+        setStatusMsg('');
+        setErrorMsg('Text was found, but no gear items with recognizable names and weights were detected.');
+        return;
+      }
+
       if (parsed.length === 0) {
         setPhase('error');
         setStatusMsg('');
@@ -189,7 +198,9 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     } catch (err: any) {
       setPhase('error');
       setStatusMsg('');
-      if (isImg || err.message === '__ocr_failed__') {
+      if (err.message === '__damaged_image__') {
+        setErrorMsg('We could not open this image. Please try another file.');
+      } else if (isImg || err.message === '__ocr_failed__') {
         setErrorMsg('We could not read this image. Please try another screenshot or a clearer photo.');
       } else {
         setErrorMsg(err.message ?? 'Something went wrong. Please try again.');

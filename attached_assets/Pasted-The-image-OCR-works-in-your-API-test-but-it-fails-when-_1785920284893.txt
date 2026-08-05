@@ -1,0 +1,223 @@
+The image OCR works in your API test, but it fails when I upload an image through the rendered TrailWeigh “Scan Gear List” panel.
+
+The rendered app displays:
+
+“Import failed — No readable gear-list text was found. Try a clearer image or crop the screenshot closer to the list.”
+
+Do not assume the user’s image is unreadable. Debug the complete browser-upload path and fix the actual cause.
+
+Relevant files already identified:
+
+- Frontend: ImportGearPanel.tsx
+- Backend importer: importGear.ts
+- OCR service: ocr_service/image_ocr.py
+- Verification script: ocr_service/test_ocr.py
+
+## Reproduce the real failure
+
+Use the rendered Scan Gear List panel—not only a direct API request.
+
+Upload a clear PNG or JPG screenshot containing gear names and weights.
+
+Trace the request through:
+
+1. ImportGearPanel file selection
+2. FormData creation
+3. Uploaded file field name
+4. Backend multipart handler
+5. Image magic-byte validation
+6. Temporary or in-memory image handling
+7. Python OCR subprocess
+8. OCR stdout and stderr
+9. OCR text normalization
+10. Existing gear parser
+11. Response returned to ImportGearPanel
+
+Find where the uploaded browser image becomes empty, invalid, unreadable, or loses its OCR output.
+
+## Check the file upload carefully
+
+Confirm that the frontend and backend use the exact same multipart field name.
+
+Confirm the backend receives:
+
+- A nonzero file size
+- The complete file buffer
+- The correct detected image type
+- Valid PNG, JPEG, or WebP magic bytes
+
+Do not trust only the browser MIME type or extension.
+
+If the backend receives an empty or truncated buffer, fix the multipart upload or middleware configuration.
+
+## Check how Python receives the image
+
+Confirm that importGear.ts passes the actual uploaded image to image_ocr.py.
+
+If using a temporary file:
+
+- Write the complete uploaded buffer
+- Use an absolute file path
+- Wait for the write to finish before starting Python
+- Confirm the file exists and has a nonzero size
+- Delete it only after Python finishes
+
+If passing image data through stdin:
+
+- Use binary-safe input
+- Do not convert the image buffer to UTF-8 text
+- Do not truncate the buffer
+
+Do not pass a browser object URL, filename alone, or inaccessible frontend path to Python.
+
+## Check the OCR subprocess
+
+Use the same Python executable and environment that successfully ran:
+
+python3 ocr_service/test_ocr.py
+
+Confirm that the API-server runtime can locate:
+
+- python3
+- tesseract
+- TESSDATA_PREFIX
+- ocr_service/image_ocr.py
+
+Use an absolute path to image_ocr.py based on the server project location rather than assuming the current working directory.
+
+Capture:
+
+- Subprocess exit code
+- stdout
+- stderr
+- Timeout status
+
+Do not treat every subprocess error as “no readable text.”
+
+If Python or Tesseract fails, return a development log with the actual error and show the user:
+
+“We could not read this image. Please try another screenshot.”
+
+Only show “No readable gear-list text was found” when OCR completed successfully but genuinely returned too little text.
+
+## Add temporary development diagnostics
+
+Temporarily log:
+
+- Uploaded filename
+- File byte length
+- Detected image format
+- Temporary image path and file size
+- Python command being executed
+- Python exit code
+- OCR stdout length
+- First portion of raw OCR text
+- OCR stderr
+- Number of parsed gear items
+
+Do not log the full image or retain the uploaded image permanently.
+
+Remove or reduce these diagnostics after the problem is fixed.
+
+## Make image_ocr.py return reliable structured output
+
+Have image_ocr.py return a clear structured result, preferably JSON, such as:
+
+- success
+- extracted_text
+- selected_psm
+- error
+
+Do not mix status messages with extracted OCR text on stdout.
+
+Send development information to stderr and the structured OCR result to stdout.
+
+The backend must parse that result correctly.
+
+A TESSDATA_PREFIX message or debugging line must not be mistaken for the OCR text.
+
+## Improve the real screenshot path
+
+Keep the existing preprocessing:
+
+- EXIF orientation correction
+- RGB or grayscale conversion
+- Autocontrast
+- Sharpening
+- Upscaling small images
+- PSM 6 with one PSM 11 fallback
+
+Also ensure:
+
+- Transparent PNGs are composited onto a solid light background before OCR
+- Very high-resolution phone screenshots are resized to a reasonable OCR size
+- Very small text is enlarged while preserving aspect ratio
+- The original image is not cropped or stretched
+
+## Parser behavior
+
+After OCR succeeds, pass the extracted text through the existing parser and review table.
+
+Keep the existing OCR corrections such as:
+
+- 0z → oz
+- |b → lb
+
+Also ensure Rain Jacket routes to Clothing using the existing clothing-routing rules.
+
+Do not automatically import items. Show them in the existing review screen first.
+
+Imported items must remain unchecked.
+
+## Error handling
+
+Use distinct errors:
+
+- Upload or damaged-file failure:
+  “We could not open this image.”
+
+- OCR process failure:
+  “We could not read this image. Please try another screenshot.”
+
+- OCR succeeds but finds no useful text:
+  “No readable gear-list text was found. Try a clearer image or crop the screenshot closer to the list.”
+
+- OCR text exists but no gear items can be parsed:
+  “Text was found, but no gear items with recognizable names and weights were detected.”
+
+Do not hide all failures behind the same message.
+
+## Required rendered test
+
+Do not report completion based only on a direct API test.
+
+Perform this test through the rendered TrailWeigh interface:
+
+1. Open Scan Gear List.
+2. Upload a PNG screenshot containing:
+   - Tent — 18.5 oz
+   - Sleeping Pad — 12 oz
+   - Rain Jacket — 7.2 oz
+   - Water — 2 lb
+3. Confirm “Reading image…” appears.
+4. Confirm the review table appears.
+5. Confirm all four items and weights are detected.
+6. Confirm:
+   - Tent → Shelter
+   - Sleeping Pad → Sleep System
+   - Rain Jacket → Clothing
+   - Water → Consumables
+7. Import the selected items.
+8. Confirm they appear in the checklist unchecked.
+9. Confirm the Scan Gear List panel resets after successful import.
+
+Also test one real user-style screenshot through the rendered panel, not only a generated test image.
+
+Report:
+
+- The exact point where the browser-upload path failed
+- Whether the image buffer reached the backend intact
+- Whether Python or Tesseract returned an error
+- The raw OCR text length before parsing
+- Which files were changed
+- Whether the full rendered upload-to-import test passed

@@ -3,6 +3,7 @@ import multer from 'multer';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const pdfParse: (buf: Buffer) => Promise<{ text: string }> = require('pdf-parse');
@@ -103,34 +104,88 @@ function ocrFixupItems(items: ExtractedItem[]): ExtractedItem[] {
 }
 
 /**
- * Spawn the Python OCR script, pipe the image buffer as base64 via stdin,
- * and resolve with the extracted text string.
+ * Write the image buffer to a temp file, spawn the Python OCR script with
+ * the file path as an argument, parse the JSON result, and clean up the temp
+ * file regardless of outcome.
+ *
+ * Using a temp file (rather than stdin piping) is more reliable for large
+ * images under concurrent request load — no pipe-buffer or EOF-ordering issues.
  */
-function runImageOcr(buffer: Buffer): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const proc = spawn('python3', [OCR_SCRIPT], {
-      timeout: 120_000, // 2-minute hard limit
+async function runImageOcr(buffer: Buffer): Promise<string> {
+  const tmpPath = path.join(
+    os.tmpdir(),
+    `tw-ocr-${Date.now()}-${Math.random().toString(36).slice(2)}.img`,
+  );
+
+  console.log(`[import-gear/ocr] writing ${buffer.length} bytes to ${tmpPath}`);
+  await fs.promises.writeFile(tmpPath, buffer);
+
+  // Verify the write landed correctly
+  const { size } = await fs.promises.stat(tmpPath);
+  if (size === 0) {
+    await fs.promises.unlink(tmpPath).catch(() => {});
+    throw new Error('Temp image file is empty after write');
+  }
+  console.log(`[import-gear/ocr] temp file confirmed: ${size} bytes`);
+
+  try {
+    const text = await new Promise<string>((resolve, reject) => {
+      console.log(`[import-gear/ocr] spawning: python3 ${OCR_SCRIPT} ${tmpPath}`);
+      const proc = spawn('python3', [OCR_SCRIPT, tmpPath], { timeout: 120_000 });
+
+      let stdout = '';
+      let stderr = '';
+      proc.stdout.on('data', (d: Buffer) => { stdout += d.toString('utf8'); });
+      proc.stderr.on('data', (d: Buffer) => { stderr += d.toString('utf8'); });
+
+      proc.on('error', (err) => {
+        console.error('[import-gear/ocr] spawn error:', err.message);
+        reject(err);
+      });
+
+      proc.on('close', (code: number | null) => {
+        console.log(
+          `[import-gear/ocr] exit=${code} stdout_len=${stdout.length}` +
+          ` stderr=${stderr.slice(0, 300)}`,
+        );
+
+        if (code !== 0) {
+          reject(new Error(stderr.trim() || `OCR process exited with code ${code}`));
+          return;
+        }
+
+        // Parse structured JSON output from image_ocr.py
+        let parsed: { success: boolean; text?: string; error?: string; selected_psm?: number };
+        try {
+          parsed = JSON.parse(stdout.trim());
+        } catch {
+          // Unexpected output — treat non-empty raw text as the OCR result
+          console.warn('[import-gear/ocr] stdout is not JSON, using raw:', stdout.slice(0, 80));
+          resolve(stdout);
+          return;
+        }
+
+        if (parsed.success) {
+          console.log(
+            `[import-gear/ocr] OCR ok: ${parsed.text?.length ?? 0} chars, psm=${parsed.selected_psm}`,
+          );
+          if (parsed.text) {
+            console.log(`[import-gear/ocr] first 120: ${JSON.stringify(parsed.text.slice(0, 120))}`);
+          }
+          resolve(parsed.text ?? '');
+        } else {
+          reject(new Error(parsed.error || 'OCR script reported failure (no detail)'));
+        }
+      });
     });
 
-    let stdout = '';
-    let stderr = '';
-    proc.stdout.on('data', (d: Buffer) => { stdout += d.toString('utf8'); });
-    proc.stderr.on('data', (d: Buffer) => { stderr += d.toString('utf8'); });
-
-    proc.on('error', reject);
-
-    proc.on('close', (code: number | null) => {
-      if (code === 0) {
-        resolve(stdout);
-      } else {
-        reject(new Error(stderr.trim() || `OCR process exited with code ${code}`));
-      }
+    return text;
+  } finally {
+    // Always remove the temp file
+    fs.unlink(tmpPath, (err) => {
+      if (err) console.warn('[import-gear/ocr] failed to delete temp file:', err.message);
     });
-
-    // Send image bytes as base64 over stdin then close so Python reads EOF
-    proc.stdin.write(buffer.toString('base64'));
-    proc.stdin.end();
-  });
+  }
 }
 
 // ── Shared types ──────────────────────────────────────────────────────────────
@@ -278,16 +333,18 @@ export const SLEEP_TYPES = new Set([
 ]);
 
 /**
- * Wearable sleep / camp clothing — routes to "Clothing Packed".
- * These are packed items, not worn-while-hiking items.
- * They must never land in "Clothing Worn" unless the source section
+ * Packed clothing — routes to "Clothing Packed".
+ * Covers both sleep / camp clothing and trail / outdoor clothing that is
+ * carried in the pack and put on as needed.
+ * Items must never land in "Clothing Worn" unless the source section
  * explicitly identifies the row as worn clothing.
  */
 export const CLOTHING_TYPES = new Set([
+  // ── Sleep / camp clothing ─────────────────────────────────────────────────
   // Socks
   'sleep socks', 'sleeping socks', 'camp socks', 'insulated socks',
   'down socks', 'possum socks',
-  // Headwear
+  // Headwear (sleep / camp)
   'down hood', 'sleeping hood', 'insulated hood',
   'balaclava', 'down balaclava', 'fleece balaclava',
   'beanie', 'warm hat',
@@ -295,15 +352,30 @@ export const CLOTHING_TYPES = new Set([
   'neck gaiter',
   // Hands
   'gloves', 'mittens',
-  // Shirts / tops
+  // Shirts / tops (sleep / camp)
   'sleep shirt', 'sleeping shirt', 'camp shirt',
   'base layer', 'thermal top', 'long underwear',
-  // Pants / bottoms
+  // Pants / bottoms (sleep / camp)
   'sleep pants', 'sleeping pants', 'camp pants', 'thermal bottom',
   // Full sleep clothes
   'sleep clothes', 'sleeping clothes',
-  // Footwear
+  // Footwear (sleep / camp)
   'down booties', 'insulated booties', 'camp booties', 'camp shoes',
+  // ── Outer / trail layers (packed, not worn continuously) ──────────────────
+  // Rain / wind protection
+  'rain jacket', 'rain shell', 'hardshell', 'hardshell jacket',
+  'wind jacket', 'wind shell', 'windbreaker', 'wind shirt',
+  // Insulating layers
+  'down jacket', 'puffy', 'puffy jacket', 'puffy vest',
+  'insulated jacket', 'synthetic jacket', 'fleece jacket', 'fleece vest',
+  'midlayer', 'mid layer',
+  // Bottoms
+  'rain pants', 'rain shell pants', 'hardshell pants',
+  'softshell pants', 'hiking pants', 'trail pants',
+  // Sun protection
+  'sun hat', 'sun hoody', 'sun hoodie',
+  // Footwear (trail)
+  'trail runners', 'trail shoes', 'approach shoes', 'gaiters', 'camp sandals',
 ]);
 
 /**
@@ -713,29 +785,58 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
 
     } else if (IMAGE_EXTS.has(ext) || mimetype?.startsWith('image/')) {
       // ── Image OCR path ──────────────────────────────────────────────────────
-      // Validate magic bytes before spawning Python
-      if (!validateImageMagic(buffer, ext)) {
+      console.log(
+        `[import-gear] image upload: name=${originalname} ext=${ext} mime=${mimetype} size=${buffer.length}`,
+      );
+
+      // Detect actual image format from magic bytes (don't trust extension alone)
+      const detectedExt = (() => {
+        if (buffer.length < 12) return null;
+        if (buffer[0] === 0x89 && buffer[1] === 0x50) return 'png';
+        if (buffer[0] === 0xFF && buffer[1] === 0xD8) return 'jpg';
+        if (buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+            buffer.subarray(8, 12).toString('ascii') === 'WEBP') return 'webp';
+        return null;
+      })();
+
+      console.log(`[import-gear] detected image format: ${detectedExt ?? 'unknown'}`);
+
+      if (!detectedExt) {
         res.status(400).json({
-          error: 'The file appears to be damaged or is not a valid image. Please try another file.',
+          error: 'DAMAGED_IMAGE',
+          message: 'We could not open this image. Please try another file.',
         });
         return;
       }
+
       if (!fs.existsSync(OCR_SCRIPT)) {
-        res.status(500).json({ error: 'OCR service is unavailable. Please contact support.' });
+        console.error('[import-gear] OCR script missing at', OCR_SCRIPT);
+        res.status(500).json({ error: 'OCR_UNAVAILABLE' });
         return;
       }
+
+      let ocrText: string;
       try {
-        const ocrText = await runImageOcr(buffer);
-        const normalizedOcrText = normalizeOcrText(ocrText);
-        items = ocrFixupItems(extractFromText(normalizedOcrText)).map(applyGearClassification);
+        ocrText = await runImageOcr(buffer);
       } catch (ocrErr: any) {
-        console.error('[import-gear] OCR error:', ocrErr?.message);
-        // Distinguish between "no text" (empty output) and a hard crash
-        res.status(500).json({
-          error: 'OCR_FAILED',
-        });
+        console.error('[import-gear] OCR subprocess error:', ocrErr?.message);
+        res.status(500).json({ error: 'OCR_FAILED' });
         return;
       }
+
+      console.log(`[import-gear] raw OCR text length: ${ocrText.length}`);
+
+      const normalizedOcrText = normalizeOcrText(ocrText);
+      const rawItems = extractFromText(normalizedOcrText);
+      console.log(`[import-gear] raw items from parser: ${rawItems.length}`);
+
+      if (rawItems.length === 0 && ocrText.trim().length > 0) {
+        // OCR extracted text but the gear parser found nothing — distinct error
+        res.json({ items: [], error: 'NO_GEAR_ITEMS' });
+        return;
+      }
+
+      items = ocrFixupItems(rawItems).map(applyGearClassification);
 
     } else {
       res.status(400).json({
