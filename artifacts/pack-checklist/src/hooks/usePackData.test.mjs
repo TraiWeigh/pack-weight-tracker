@@ -24,8 +24,10 @@ const CATEGORY_ROLE_ALIASES = {
                       'Trip Consumables', 'Used Up Items', 'Used-Up Items', 'Perishables',
                       'Food and Fuel', 'Consumable', 'Expendable'],
   Backpack:          ['Backpack', 'Pack'],
-  Kitchen:           ['Kitchen', 'Kitchen Gear', 'Kitchen System', 'Cooking',
-                      'Cooking System', 'Cook System', 'Cook Gear'],
+  Kitchen:           ['Kitchen', 'Kitchen Gear', 'Kitchen System', 'Kitchen Kit',
+                      'Cooking', 'Cooking System', 'Cooking Set',
+                      'Cook System', 'Cook Set', 'Cookset', 'Cook Kit', 'Cook Gear',
+                      'Camp Kitchen'],
   Hydration:         ['Hydration', 'Water', 'Water System'],
   Electronics:       ['Electronics', 'Electronics System', 'Electronic Gear'],
   'Clothing Packed': ['Clothing Packed', 'Clothing', 'Clothing System', 'Packed Clothing'],
@@ -334,6 +336,47 @@ console.log('\nE4: Missing defaults without aliases ARE inserted');
   const result = mergeDefaultCategories(order);
   assert(result.includes('Electronics'), '"Electronics" inserted (no alias present)');
   assert(result.includes('Hydration'),   '"Hydration" inserted (no alias present)');
+}
+
+console.log('\nE3b: Kitchen is NOT inserted when Cook Set is already present');
+{
+  const order = ['Backpack', 'Shelter System', 'Sleep System', 'Cook Set', 'Electronics'];
+  const result = mergeDefaultCategories(order);
+  assert(!result.includes('Kitchen'),   '"Kitchen" not inserted — Cook Set alias exists');
+  assert(result.includes('Cook Set'),   '"Cook Set" preserved in order');
+}
+
+console.log('\nE3c: Kitchen is NOT inserted when Cookset is already present');
+{
+  const order = ['Backpack', 'Shelter', 'Sleep', 'Cookset', 'Electronics'];
+  const result = mergeDefaultCategories(order);
+  assert(!result.includes('Kitchen'),   '"Kitchen" not inserted — Cookset alias exists');
+  assert(result.includes('Cookset'),    '"Cookset" preserved in order');
+}
+
+console.log('\nE3d: Kitchen is NOT inserted when Camp Kitchen is already present');
+{
+  const order = ['Backpack', 'Shelter', 'Sleep', 'Camp Kitchen', 'Electronics'];
+  const result = mergeDefaultCategories(order);
+  assert(!result.includes('Kitchen'),   '"Kitchen" not inserted — Camp Kitchen alias exists');
+  assert(result.includes('Camp Kitchen'), '"Camp Kitchen" preserved in order');
+}
+
+console.log('\nE3e: Kitchen is NOT inserted when Cook Kit is already present');
+{
+  const order = ['Backpack', 'Shelter', 'Sleep', 'Cook Kit', 'Electronics'];
+  const result = mergeDefaultCategories(order);
+  assert(!result.includes('Kitchen'),   '"Kitchen" not inserted — Cook Kit alias exists');
+  assert(result.includes('Cook Kit'),   '"Cook Kit" preserved in order');
+}
+
+console.log('\nE3f: User-named categories are never renamed by migration');
+{
+  const order = ['Backpack', 'Cook Set', 'Electronics'];
+  const result = mergeDefaultCategories(order);
+  assert(result.includes('Cook Set'),   '"Cook Set" spelling preserved exactly');
+  assert(!result.includes('Kitchen'),   '"Kitchen" not added');
+  assert(!result.includes('Kitchen Gear'), '"Kitchen Gear" not added');
 }
 
 console.log('\nE5: Combined pipeline — dedup then mergeDefault produces clean order');

@@ -1,0 +1,144 @@
+Expand TrailWeigh’s shared kitchen-category aliases so common user-defined names such as “Cook Set” are recognized as equivalent to Kitchen or Kitchen Gear.
+
+The Scan Gear List importer and its automated regression tests are currently complete and passing.
+
+Do not redesign the importer.
+
+## Required kitchen aliases
+
+Update the shared kitchen alias group in:
+
+`artifacts/pack-checklist/src/lib/categoryAliases.ts`
+
+Recognize these names as equivalent:
+
+- Kitchen
+- Kitchen Gear
+- Kitchen System
+- Kitchen Kit
+- Cooking
+- Cooking System
+- Cooking Set
+- Cook System
+- Cook Set
+- Cookset
+- Cook Kit
+- Camp Kitchen
+
+Matching must remain:
+
+- Case-insensitive
+- Whitespace-normalized
+- Safe with leading or trailing spaces
+
+Examples:
+
+- ` cook set ` must match `Cook Set`
+- `COOKSET` must match `Cookset`
+- `camp kitchen` must match `Camp Kitchen`
+
+## Required resolution behavior
+
+When the user already has one equivalent category, imported kitchen items must use that exact existing category name.
+
+Examples:
+
+- Existing category: `Cook Set`
+  - Imported `Kitchen` → `Cook Set`
+  - Imported `Kitchen Gear` → `Cook Set`
+  - Imported `Cooking System` → `Cook Set`
+
+- Existing category: `Kitchen Gear`
+  - Imported `Cook Set` → `Kitchen Gear`
+  - Imported `Cook Kit` → `Kitchen Gear`
+  - Imported `Camp Kitchen` → `Kitchen Gear`
+
+- Existing category: `Camp Kitchen`
+  - Imported `Kitchen` → `Camp Kitchen`
+
+Do not create a new Kitchen or Kitchen Gear category when an accepted kitchen alias already exists.
+
+Do not silently route an unmatched category to Backpack.
+
+## Default-category migration
+
+Update the alias-aware default-category migration so:
+
+- A user with `Cook Set` does not receive an additional `Kitchen` category.
+- A user with `Cookset` does not receive an additional `Kitchen` category.
+- A user with `Camp Kitchen` does not receive an additional `Kitchen` category.
+
+Do not rename the user’s chosen category.
+
+Preserve the exact existing spelling and capitalization.
+
+## Duplicate handling
+
+Do not automatically merge two genuinely user-created kitchen categories merely because they are aliases unless the existing migration can clearly identify one as an importer-created/default duplicate.
+
+The safe requirement is:
+
+- Prevent new duplicate categories.
+- Continue merging the known importer-created `Kitchen` duplicate into an existing user category such as Kitchen Gear or Cook Set.
+- Never delete or combine two ambiguous custom categories without a clear preferred target.
+
+Preserve all items and metadata during any valid migration.
+
+## Automated tests
+
+Update the existing importer regression tests.
+
+Add assertions for:
+
+- `Kitchen` → `Cook Set`
+- `Kitchen Gear` → `Cook Set`
+- `Cooking System` → `Cook Set`
+- `Cook Set` → `Kitchen Gear`
+- `Cookset` → `Kitchen Gear`
+- `Cook Kit` → `Kitchen Gear`
+- `Camp Kitchen` → `Kitchen Gear`
+- Case-insensitive matching
+- Leading/trailing whitespace
+- A stored `Cook Set` prevents default `Kitchen` from being inserted
+- Importing a Kitchen item when `Cook Set` exists does not create a new category
+- Unknown categories still do not become Backpack
+
+Run:
+
+`pnpm test:importer`
+
+## Preserve all working behavior
+
+Do not change:
+
+- PDF parsing
+- Excel parsing
+- Word parsing
+- Numbers importing
+- Fuel → Expendables
+- Bug Net → Clothing Packed
+- Shelter → Shelter System
+- Sleep → Sleep System
+- Imported items remaining unchecked
+- Existing category order
+- Save or Save As
+- Locker
+- Backgrounds
+- Preview
+- Any unrelated feature
+
+Meal Planner importing is not applicable.
+
+## Final report
+
+Report:
+
+- Kitchen aliases added
+- How the existing user category is selected
+- How duplicate creation is prevented
+- Test files changed
+- Number of new assertions
+- Complete `pnpm test:importer` result
+- Whether production code changed
+- Confirmation that existing category spelling is preserved
+- Confirmation that no temporary logs remain

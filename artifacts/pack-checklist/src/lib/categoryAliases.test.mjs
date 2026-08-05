@@ -24,8 +24,10 @@ const CATEGORY_ROLE_ALIASES = {
                       'Trip Consumables', 'Used Up Items', 'Used-Up Items', 'Perishables',
                       'Food and Fuel', 'Consumable', 'Expendable'],
   Backpack:          ['Backpack', 'Pack'],
-  Kitchen:           ['Kitchen', 'Kitchen Gear', 'Kitchen System', 'Cooking',
-                      'Cooking System', 'Cook System', 'Cook Gear'],
+  Kitchen:           ['Kitchen', 'Kitchen Gear', 'Kitchen System', 'Kitchen Kit',
+                      'Cooking', 'Cooking System', 'Cooking Set',
+                      'Cook System', 'Cook Set', 'Cookset', 'Cook Kit', 'Cook Gear',
+                      'Camp Kitchen'],
   Hydration:         ['Hydration', 'Water', 'Water System'],
   Electronics:       ['Electronics', 'Electronics System', 'Electronic Gear'],
   'Clothing Packed': ['Clothing Packed', 'Clothing', 'Clothing System', 'Packed Clothing'],
@@ -217,7 +219,12 @@ for (const alias of ['Sleep System', 'Sleeping System', 'Sleeping Gear', 'Sleep 
 }
 
 console.log('\nC5: All Kitchen alias variants resolve to Kitchen Gear');
-for (const alias of ['Kitchen', 'Kitchen Gear', 'Kitchen System', 'Cooking', 'Cooking System', 'Cook System']) {
+for (const alias of [
+  'Kitchen', 'Kitchen Gear', 'Kitchen System', 'Kitchen Kit',
+  'Cooking', 'Cooking System', 'Cooking Set',
+  'Cook System', 'Cook Set', 'Cookset', 'Cook Kit', 'Cook Gear',
+  'Camp Kitchen',
+]) {
   assertEqual(resolveDestination(alias, ALIAS_ORDER), 'Kitchen Gear',
     `"${alias}" → "Kitchen Gear"`);
 }
@@ -226,6 +233,118 @@ console.log('\nC6: Non-empty unknown destination never falls back to categoryOrd
 const result = resolveDestination('My Custom Gear Tab', ALIAS_ORDER);
 assert(result !== ALIAS_ORDER[0], '"My Custom Gear Tab" must not silently become first category');
 assertEqual(result, 'My Custom Gear Tab', '"My Custom Gear Tab" returned as-is');
+
+// ── D: Cook Set as the user's existing kitchen category ──────────────────────
+console.log('\n\n=== D: Cook Set as the existing kitchen category ===\n');
+
+// User has 'Cook Set' instead of 'Kitchen Gear'
+const COOK_SET_ORDER = [
+  'Backpack',
+  'Shelter System',
+  'Sleep System',
+  'Clothing Packed',
+  'Cook Set',         // user chose this name instead of Kitchen / Kitchen Gear
+  'Electronics',
+  'Toiletries',
+  'Med Kit',
+  'Repair Kit',
+  'Hydration',
+  'Clothing Worn',
+  'Expendables',
+];
+
+console.log('D1: "Kitchen" routes to "Cook Set" when Cook Set is the existing tab');
+assertEqual(resolveDestination('Kitchen', COOK_SET_ORDER), 'Cook Set',
+  '"Kitchen" → "Cook Set"');
+
+console.log('\nD2: "Kitchen Gear" routes to "Cook Set"');
+assertEqual(resolveDestination('Kitchen Gear', COOK_SET_ORDER), 'Cook Set',
+  '"Kitchen Gear" → "Cook Set"');
+
+console.log('\nD3: "Cooking System" routes to "Cook Set"');
+assertEqual(resolveDestination('Cooking System', COOK_SET_ORDER), 'Cook Set',
+  '"Cooking System" → "Cook Set"');
+
+console.log('\nD4: "Cook Set" routes to "Cook Set" (exact match)');
+assertEqual(resolveDestination('Cook Set', COOK_SET_ORDER), 'Cook Set',
+  '"Cook Set" → "Cook Set" (exact)');
+
+console.log('\nD5: "Cookset" routes to "Cook Set" (alias match)');
+assertEqual(resolveDestination('Cookset', COOK_SET_ORDER), 'Cook Set',
+  '"Cookset" → "Cook Set"');
+
+console.log('\nD6: "Cook Kit" routes to "Cook Set"');
+assertEqual(resolveDestination('Cook Kit', COOK_SET_ORDER), 'Cook Set',
+  '"Cook Kit" → "Cook Set"');
+
+console.log('\nD7: "Camp Kitchen" routes to "Cook Set"');
+assertEqual(resolveDestination('Camp Kitchen', COOK_SET_ORDER), 'Cook Set',
+  '"Camp Kitchen" → "Cook Set"');
+
+console.log('\nD8: Case-insensitive matching against Cook Set');
+assertEqual(resolveDestination('cook set', COOK_SET_ORDER), 'Cook Set',
+  '"cook set" → "Cook Set" (case-insensitive)');
+assertEqual(resolveDestination('COOK SET', COOK_SET_ORDER), 'Cook Set',
+  '"COOK SET" → "Cook Set" (uppercase)');
+assertEqual(resolveDestination('camp kitchen', COOK_SET_ORDER), 'Cook Set',
+  '"camp kitchen" → "Cook Set" (lowercase)');
+
+console.log('\nD9: Leading/trailing whitespace trimmed before matching');
+assertEqual(resolveDestination(' cook set ', COOK_SET_ORDER), 'Cook Set',
+  '" cook set " → "Cook Set" (trimmed)');
+assertEqual(resolveDestination(' COOKSET ', COOK_SET_ORDER), 'Cook Set',
+  '" COOKSET " → "Cook Set" (trimmed + case-insensitive)');
+assertEqual(resolveDestination(' camp kitchen ', COOK_SET_ORDER), 'Cook Set',
+  '" camp kitchen " → "Cook Set" (trimmed)');
+
+console.log('\nD10: Existing user category name is preserved exactly — Cook Set not renamed');
+{
+  const result = resolveDestination('Kitchen', COOK_SET_ORDER);
+  assertEqual(result, 'Cook Set', 'Resolved name matches existing spelling exactly');
+  assert(result !== 'Kitchen',     'Does not rename Cook Set back to Kitchen');
+  assert(result !== 'Kitchen Gear','Does not rename Cook Set to Kitchen Gear');
+}
+
+// ── E: Camp Kitchen as the user's existing kitchen category ───────────────────
+console.log('\n\n=== E: Camp Kitchen as the existing kitchen category ===\n');
+
+const CAMP_KITCHEN_ORDER = [
+  'Backpack', 'Shelter System', 'Sleep System', 'Clothing Packed',
+  'Camp Kitchen', 'Electronics', 'Hydration', 'Clothing Worn', 'Expendables',
+];
+
+console.log('E1: "Kitchen" → "Camp Kitchen"');
+assertEqual(resolveDestination('Kitchen', CAMP_KITCHEN_ORDER), 'Camp Kitchen',
+  '"Kitchen" → "Camp Kitchen"');
+
+console.log('\nE2: "Cook Set" → "Camp Kitchen"');
+assertEqual(resolveDestination('Cook Set', CAMP_KITCHEN_ORDER), 'Camp Kitchen',
+  '"Cook Set" → "Camp Kitchen"');
+
+console.log('\nE3: Case-insensitive: "CAMP KITCHEN" → "Camp Kitchen"');
+assertEqual(resolveDestination('CAMP KITCHEN', CAMP_KITCHEN_ORDER), 'Camp Kitchen',
+  '"CAMP KITCHEN" → "Camp Kitchen"');
+
+// ── F: No new Kitchen category created when an alias already exists ────────────
+console.log('\n\n=== F: Importing does not create a duplicate kitchen category ===\n');
+
+console.log('F1: resolveDestination never returns a category not in the order');
+{
+  // Simulates: import gives destination="Kitchen" but user has "Cook Set"
+  const importedDestination = 'Kitchen';
+  const resolved = resolveDestination(importedDestination, COOK_SET_ORDER);
+  assert(COOK_SET_ORDER.includes(resolved),
+    'Resolved destination is always an existing category — no new tab created');
+  assertEqual(resolved, 'Cook Set',
+    'Kitchen import lands in Cook Set, not a new "Kitchen" tab');
+}
+
+console.log('\nF2: Unknown categories still do not become Backpack');
+{
+  const result = resolveDestination('My Homemade Category', COOK_SET_ORDER);
+  assert(result !== 'Backpack', '"My Homemade Category" must not silently become Backpack');
+  assertEqual(result, 'My Homemade Category', 'Returned as-is for UI validation');
+}
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log(`\n${'─'.repeat(48)}`);
