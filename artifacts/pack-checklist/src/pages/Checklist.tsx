@@ -207,6 +207,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         return newbg as 'cover' | 'contain';
       }
     } catch {}
+    try {
+      // Shared / saved-list tab — stashed by ShortLinkView / SharedPackView
+      const sl = sessionStorage.getItem('tw-savedlist-bgsize');
+      if (sl !== null) {
+        sessionStorage.removeItem('tw-savedlist-bgsize');
+        return sl as 'cover' | 'contain';
+      }
+    } catch {}
     return (localStorage.getItem('trailweigh:bgSize') as 'cover' | 'contain') ?? 'cover';
   });
 
@@ -276,7 +284,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   }
 
   const handleCopyLink = async () => {
-    const url = await buildShareURL({ data, categoryOrder, categoryMeta });
+    // Snapshot the complete current working file — same structure as Save.
+    // Checkbox states are preserved as-is (unlike New which resets them).
+    const url = await buildShareURL({
+      data:          store.items,
+      categoryOrder: store.order,
+      categoryMeta:  store.meta,
+      background:    background ?? null,
+      bgFade,
+      bgTone,
+      bgSize,
+    });
     const ok = await copyUrlToClipboard(url);
     if (!ok) window.prompt('Copy this link:', url);
     setCopied(true);

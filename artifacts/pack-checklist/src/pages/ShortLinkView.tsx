@@ -4,6 +4,8 @@ import { INCOMING_SHARE_KEY } from '../hooks/usePackData';
 import type { PackState, CategoryMeta } from '../hooks/usePackData';
 import { calcTotalOz, formatWeight, largeUnit, smallUnit } from '../lib/weightUtils';
 import { Tent, ArrowRight, UserPlus } from 'lucide-react';
+import type { Background } from '../components/BackgroundPicker';
+import { PRESETS, getFullUrl } from '../components/BackgroundPicker';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -11,6 +13,38 @@ interface StoredPayload {
   categoryOrder: string[];
   data: PackState;
   categoryMeta: Record<string, CategoryMeta>;
+  background?: Background | null;
+  bgFade?: number;
+  bgTone?: 'light' | 'dark';
+  bgSize?: 'cover' | 'contain';
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/** Resolve a Background object to a CSS image URL, or null if not applicable. */
+function resolveBgUrl(bg: Background | null | undefined): string | null {
+  if (!bg) return null;
+  if (bg.type === 'preset' && bg.id) {
+    const preset = PRESETS.find(p => p.id === bg.id);
+    return preset ? getFullUrl(preset.photoId) : null;
+  }
+  if (bg.type === 'custom' && bg.dataUrl?.startsWith('data:image/')) {
+    return bg.dataUrl;
+  }
+  return null;
+}
+
+/**
+ * Write background settings to sessionStorage so ChecklistContent picks them up
+ * when the user loads the shared list into their own checklist.
+ */
+function stashBgToSession(p: StoredPayload) {
+  try {
+    sessionStorage.setItem('tw-savedlist-bg',     JSON.stringify(p.background ?? null));
+    sessionStorage.setItem('tw-savedlist-bgfade', String(p.bgFade ?? 1));
+    sessionStorage.setItem('tw-savedlist-bgtone', p.bgTone ?? 'light');
+    sessionStorage.setItem('tw-savedlist-bgsize', p.bgSize ?? 'cover');
+  } catch { /* ignore */ }
 }
 
 // ── Read-only pack view ───────────────────────────────────────────────────────
@@ -22,17 +56,20 @@ function ReadOnlyPackView({
   payload: StoredPayload;
   onCopyToList: () => void;
 }) {
-  const { data, categoryOrder, categoryMeta } = payload;
+  const { data, categoryOrder, categoryMeta, background, bgFade = 1, bgTone = 'light', bgSize = 'cover' } = payload;
   const [copied, setCopied] = useState(false);
   const system = 'imperial' as const;
   const lu = largeUnit(system);
   const su = smallUnit(system);
 
-  // Compute totals
+  // Resolve background image
+  const bgImageUrl = resolveBgUrl(background);
+
+  // Compute totals — only checked items count (mirrors the main app's WeightSummary)
   let baseOz = 0;
   let totalOz = 0;
   categoryOrder.forEach(cat => {
-    const items = data[cat] ?? [];
+    const items = (data[cat] ?? []).filter(i => i.checked);
     const oz = items.reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
     totalOz += oz;
     if (categoryMeta[cat]?.countsToBase !== false) baseOz += oz;
@@ -45,10 +82,24 @@ function ReadOnlyPackView({
     window.location.href = `${basePath}/sign-up`;
   };
 
+  // Build background inline style for the page wrapper
+  const wrapperStyle: React.CSSProperties = bgImageUrl
+    ? {
+        backgroundImage:
+          bgFade < 1
+            ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade})),url(${bgImageUrl})`
+            : `url(${bgImageUrl})`,
+        backgroundSize:   bgFade < 1 ? `100% 100%, ${bgSize}` : bgSize,
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+      }
+    : {};
+
   return (
-    <div className="min-h-[100dvh] bg-background">
+    <div className="min-h-[100dvh] bg-background" style={wrapperStyle}>
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
+      <header className="bg-card/95 backdrop-blur-sm border-b border-border sticky top-0 z-10 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
           <div className="bg-primary/10 p-2 rounded-lg text-primary">
             <Tent className="w-5 h-5" />
@@ -79,8 +130,8 @@ function ReadOnlyPackView({
       </header>
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-        {/* Summary bar */}
-        <div className="bg-card border border-border rounded-xl p-5 flex flex-wrap gap-6">
+        {/* Summary bar — totals from checked items only */}
+        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl p-5 flex flex-wrap gap-6">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">
               Base Weight
@@ -105,9 +156,10 @@ function ReadOnlyPackView({
         {categoryOrder.map(cat => {
           const items = data[cat] ?? [];
           if (items.length === 0) return null;
-          const catOz = items.reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
+          // Category total — checked items only, matching main app behaviour
+          const catOz = items.filter(i => i.checked).reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
           return (
-            <div key={cat} className="bg-card border border-border rounded-xl overflow-hidden">
+            <div key={cat} className="bg-card/95 backdrop-blur-sm border border-border rounded-xl overflow-hidden">
               {/* Category header */}
               <div className="flex items-center justify-between px-4 py-3 bg-muted/40 border-b border-border">
                 <span className="text-xs font-bold uppercase tracking-wider text-foreground">
@@ -121,7 +173,25 @@ function ReadOnlyPackView({
               {/* Items */}
               <div className="divide-y divide-border">
                 {items.map(item => (
-                  <div key={item.id} className="flex items-center gap-3 px-4 py-2.5">
+                  <div
+                    key={item.id}
+                    className={`flex items-center gap-3 px-4 py-2.5 ${!item.checked ? 'opacity-50' : ''}`}
+                  >
+                    {/* Read-only checkbox indicator */}
+                    <div
+                      className={`w-4 h-4 rounded flex-shrink-0 border ${
+                        item.checked
+                          ? 'bg-primary border-primary'
+                          : 'bg-transparent border-muted-foreground/40'
+                      } flex items-center justify-center`}
+                    >
+                      {item.checked && (
+                        <svg className="w-2.5 h-2.5 text-primary-foreground" fill="none" viewBox="0 0 10 10">
+                          <path d="M1.5 5l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </div>
+
                     <div className="flex-1 min-w-0">
                       {item.sub && (
                         <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mr-2">
@@ -197,6 +267,7 @@ export default function ShortLinkView() {
             meta:  p.categoryMeta,
           };
           localStorage.setItem(INCOMING_SHARE_KEY, JSON.stringify(store));
+          stashBgToSession(p as StoredPayload);
           setLocation('/checklist');
         } else {
           // Read-only mode: render the pack inline
@@ -215,6 +286,7 @@ export default function ShortLinkView() {
       meta:  payload.categoryMeta,
     };
     localStorage.setItem(INCOMING_SHARE_KEY, JSON.stringify(store));
+    stashBgToSession(payload);
     setLocation('/checklist');
   }
 

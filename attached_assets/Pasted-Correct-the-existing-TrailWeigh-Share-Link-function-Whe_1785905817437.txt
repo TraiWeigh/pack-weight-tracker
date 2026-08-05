@@ -1,0 +1,228 @@
+Correct the existing TrailWeigh “Share Link” function.
+
+When the user clicks Share Link, the shared checklist must be an exact snapshot of the pack list currently visible in that browser tab.
+
+This should work similarly to the corrected New function, except Share Link must preserve every item’s current checked or unchecked state.
+
+## Exact required behavior
+
+Share Link = create an exact shareable snapshot of the currently viewed file, including all checked boxes, and generate a link to that snapshot.
+
+The recipient must see the checklist exactly as it appeared when the link was copied.
+
+For example:
+
+- Items checked by the sender must appear checked to the recipient.
+- Items unchecked by the sender must appear unchecked.
+- The selected background and its display settings must remain the same.
+- All categories and items must remain present.
+
+Do not uncheck any boxes during sharing.
+
+## Use the current visible working file
+
+Use the complete working-list state currently displayed in the browser tab where Share Link was clicked.
+
+Include visible unsaved changes.
+
+Do not share:
+
+- A previously saved version
+- The last Locker file
+- The first Locker file
+- A default template
+- Empty category shells
+- A stale cached list
+- A list open in another browser tab
+
+The current visible checklist in the active tab is the source of truth.
+
+Use the same complete file serialization structure used by Save or Locker.
+
+## Preserve the entire checklist
+
+The shared snapshot must preserve exactly:
+
+- List title
+- Every category
+- Category names
+- Category order
+- Every item in every category
+- Item order
+- Type
+- Description
+- Weight
+- Quantity
+- Units
+- Notes and other existing item fields
+- Every item’s checked or unchecked state
+- Base Weight inclusion settings
+- Worn-weight settings
+- Consumable settings
+- Custom categories
+- Custom items
+- Selected built-in background
+- Selected user-uploaded background, when shareable
+- Fill Screen or Fit Image setting
+- Background positioning and other file-specific background settings
+- Any other list-specific data already stored with the pack list
+
+If the current file contains 12 categories and 69 items, the shared checklist must also contain exactly 12 categories and 69 items.
+
+No category may become empty unless it was already empty in the currently viewed file.
+
+## Preserve checkbox states exactly
+
+Do not apply the New-function checkbox reset.
+
+For every shared item:
+
+- Checked in the current list = checked in the shared checklist
+- Unchecked in the current list = unchecked in the shared checklist
+
+Use the application’s actual checkbox field, such as:
+
+- checked
+- selected
+- packed
+- included
+
+Do not convert every checkbox to true or false globally.
+
+Copy each item’s current individual value exactly.
+
+## Snapshot behavior
+
+The generated link should represent the checklist as it existed at the moment the user clicked Copy Link.
+
+Changes made to the sender’s checklist after the link is copied must not alter that existing shared snapshot unless TrailWeigh already intentionally supports live shared documents.
+
+Creating the shared snapshot must not:
+
+- Save the current working file
+- Modify the original Locker file
+- Create a duplicate Locker file
+- Change any checkbox
+- Change the selected background
+- Change the sender’s active file
+- Add an Undo or Redo entry
+
+## Background requirement
+
+The recipient should see the same background configuration as the sender’s current file.
+
+Preserve:
+
+- The selected built-in background
+- The selected custom background when it can be securely shared
+- Fill Screen or Fit Image
+- Background positioning
+- Theme-aware unused-space behavior
+
+For a user-uploaded background, do not use a temporary browser object URL or local-only reference that will fail on the recipient’s device.
+
+Use the application’s existing securely stored asset reference.
+
+If a custom image is not currently stored in a way that can be accessed through a shared link, do not create a broken background. Implement a secure shareable asset reference or use a clearly defined built-in fallback while preserving the checklist data.
+
+Do not expose unrelated custom photos from the sender’s Background gallery.
+
+## Recipient view
+
+When the recipient opens the link:
+
+- Show the complete shared checklist.
+- Show all item checkboxes in the same states selected by the sender.
+- Show the same totals calculated from those checked items.
+- Show the same background and image-sizing setting.
+- Do not require the recipient to have access to the sender’s Locker.
+- Do not expose the sender’s private Locker file ID, account information, login credentials, delete permissions, or unrelated saved files.
+
+Preserve the existing read-only or editable behavior of shared links.
+
+Do not add editing permissions unless they are already part of TrailWeigh’s sharing design.
+
+## Multi-tab behavior
+
+Each browser tab must share only the checklist currently visible in that tab.
+
+Example:
+
+- Tab A displays “JMT Pack List.”
+- Tab B displays “PCT Pack List.”
+- Sharing from Tab A must produce an exact snapshot of JMT Pack List.
+- Sharing from Tab B must produce an exact snapshot of PCT Pack List.
+
+Do not use a globally synchronized active-list reference that causes the wrong tab’s list to be shared.
+
+## Do not change
+
+Do not change:
+
+- The corrected New behavior
+- Save or Save As
+- Locker file contents
+- Locker synchronization
+- Importing
+- Preview
+- Print
+- Download PDF
+- Background selector
+- Gear calculations
+- Authentication
+- Original list data
+
+## Required testing
+
+Test through the rendered application:
+
+1. Open a saved pack list containing checked and unchecked items.
+
+2. Select a background and choose Fill Screen or Fit Image.
+
+3. Make several unsaved changes:
+   - Check additional items.
+   - Uncheck other items.
+   - Edit an item if needed.
+
+4. Click Share Link and copy the link.
+
+5. Open the link in a separate private browser window.
+
+Verify:
+
+- The correct current checklist was shared.
+- Every category remains.
+- Every item remains in its correct category.
+- Items checked by the sender appear checked.
+- Items unchecked by the sender appear unchecked.
+- Visible unsaved changes are included.
+- Type, Description, Weight, Quantity, Units, and Notes remain unchanged.
+- The totals match the sender’s checked-item totals.
+- The selected background is preserved.
+- Fill Screen or Fit Image is preserved.
+- The sender’s original file remains unchanged.
+
+6. Change the sender’s list after copying the link.
+   - Confirm the previously created shared snapshot does not silently change.
+
+7. Open different checklists in two tabs.
+   - Share each one separately.
+   - Confirm each link contains the checklist visible in the tab where it was copied.
+
+8. Share a new unsaved checklist.
+   - Confirm the recipient sees that complete current checklist and all current checkbox states.
+
+9. Confirm no category becomes empty and no item disappears.
+
+Do not report completion until the shared link has been opened in a separate browser session and visually verified.
+
+Report:
+
+- Why the previous sharing behavior did not preserve the current checklist correctly
+- Which complete working-file object is serialized
+- Which checkbox field is preserved
+- How unsaved changes are included
+- How the selected background is shared
+- Which files were changed
+- Whether every required test passed

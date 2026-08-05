@@ -19,6 +19,14 @@ export default function SharedPackView() {
           meta: payload.categoryMeta,
         };
         localStorage.setItem(GUEST_KEY, JSON.stringify(store));
+
+        // Carry background settings so ChecklistContent picks them up on mount.
+        try {
+          sessionStorage.setItem('tw-savedlist-bg',     JSON.stringify(payload.background ?? null));
+          sessionStorage.setItem('tw-savedlist-bgfade', String(payload.bgFade ?? 1));
+          sessionStorage.setItem('tw-savedlist-bgtone', payload.bgTone ?? 'light');
+          sessionStorage.setItem('tw-savedlist-bgsize', payload.bgSize ?? 'cover');
+        } catch { /* ignore */ }
       }
     }
     // Always redirect to checklist — with or without data

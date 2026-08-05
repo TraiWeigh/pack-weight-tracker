@@ -1,9 +1,15 @@
 import { PackState, CategoryMeta } from '../hooks/usePackData';
+import type { Background } from '../components/BackgroundPicker';
 
 export interface SharePayload {
   data: PackState;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;
+  // Background settings — captured at share time so recipients see the same view
+  background?: Background | null;
+  bgFade?: number;
+  bgTone?: 'light' | 'dark';
+  bgSize?: 'cover' | 'contain';
 }
 
 export function encodeSharePayload(payload: SharePayload): string {
