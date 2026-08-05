@@ -18,7 +18,7 @@ import {
   LOCKER_DELETE_VERIFIED_PARAM,
 } from '../components/LockerDeleteDialog';
 import { LockerIcon } from '../components/LockerIcon';
-import { LOCKER_KEY } from '../hooks/usePackData';
+import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
 import { buildShareURL } from '../lib/shareLink';
 import { useToast } from '../hooks/use-toast';
 import {
@@ -64,6 +64,20 @@ interface ChecklistContentProps {
 }
 
 function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistContentProps) {
+  // ── onRestoreBg: called by undo/redo to restore the background that was
+  // active at the time of the history entry.  Defined as a stable useCallback
+  // so the ref inside usePackData stays current without recreation.
+  // Note: this callback is defined before usePackData so the ref is available
+  // at hook call time, but it closes over background/bgSize setters which are
+  // defined later.  We use function refs to avoid stale closures.
+  const restoreBgCallbackRef = useRef<((bg: BgSnapshot) => void) | null>(null);
+  // Mirrors bgSize state as a ref so handleBackgroundChange can read the
+  // current size without a temporal dependency on bgSize's declaration order.
+  const bgSizeRef = useRef<'cover' | 'contain'>('cover');
+  const onRestoreBg = useCallback((bg: BgSnapshot) => {
+    restoreBgCallbackRef.current?.(bg);
+  }, []);
+
   const {
     data, categoryOrder, categoryMeta, store,
     updateItem, addItem, removeItem,
@@ -71,7 +85,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     renameCategory, loadStore,
     resetToDefaults,
     undo, redo, canUndo, canRedo,
-  } = usePackData(userId);
+    syncBg, pushBg,
+  } = usePackData(userId, { onRestoreBg });
 
   const { system } = useUnit();
   const { signOut } = useClerk();
@@ -138,7 +153,19 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     }
   });
 
+  /**
+   * Called when the user selects or uploads a background image.
+   * Pushes an undo entry BEFORE applying the new selection so Undo restores
+   * the previously displayed background (including its bgSize).
+   * NOTE: bgSize is referenced in the closure but declared later — this is
+   * safe because handleBackgroundChange is only ever called at event time,
+   * by which point all state is initialised.
+   */
   const handleBackgroundChange = (bg: Background | null) => {
+    // Capture state BEFORE the change — this is what Undo will restore.
+    // bgSize is used here; it is declared later in the function body but
+    // initialised before any event handler can fire.
+    pushBg({ background, bgSize: bgSizeRef.current });
     setBackground(bg);
     if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
     else localStorage.removeItem(BG_STORAGE_KEY);
@@ -218,10 +245,40 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     return (localStorage.getItem('trailweigh:bgSize') as 'cover' | 'contain') ?? 'cover';
   });
 
+  /**
+   * Called when the user toggles Fill Screen ↔ Fit Image.
+   * Pushes an undo entry so the size setting is reversible independently
+   * (or together with a background selection if both change in one action).
+   */
   const handleBgSizeChange = (v: 'cover' | 'contain') => {
+    if (v === bgSize) return; // no change — don't push empty history entry
+    pushBg({ background, bgSize });
     setBgSize(v);
     localStorage.setItem('trailweigh:bgSize', v);
   };
+
+  // ── Keep bgSizeRef current on every render so handleBackgroundChange can
+  // safely capture the correct bgSize in pushBg without a declaration-order
+  // dependency.
+  bgSizeRef.current = bgSize;
+
+  // ── Wire up the onRestoreBg callback now that ALL bg state setters are in
+  // scope.  Assigned inline on every render so the hook always calls the
+  // freshest version (ref-based stable callback pattern).
+  restoreBgCallbackRef.current = (snap: BgSnapshot) => {
+    setBackground(snap.background as Background | null);
+    setBgSize(snap.bgSize);
+    // Persist the restored state exactly as a normal selection would
+    if (snap.background) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(snap.background));
+    else localStorage.removeItem(BG_STORAGE_KEY);
+    localStorage.setItem('trailweigh:bgSize', snap.bgSize);
+  };
+
+  // ── Keep currentBgRef in usePackData in sync so every gear-change
+  // pushAndSet captures the correct background snapshot in its undo entry.
+  useEffect(() => {
+    syncBg({ background, bgSize });
+  }, [background, bgSize, syncBg]);
 
   const bgImageUrl = background
     ? background.type === 'preset'

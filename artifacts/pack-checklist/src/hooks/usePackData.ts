@@ -49,6 +49,31 @@ export type Store = {
   meta: Record<string, CategoryMeta>;
 };
 
+/**
+ * Snapshot of the background configuration stored in each history entry.
+ * Mirrors the Background union from BackgroundPicker without importing it, so
+ * there is no circular dependency between hook and UI layer.
+ *
+ * bgSize ('cover' | 'contain') is included because the spec requires "the
+ * associated Fill Screen or Fit Image setting must remain connected to the
+ * correct history state" — undoing a background selection restores its size.
+ *
+ * bgFade and bgTone are deliberate preferences, not selections — they are not
+ * included in history (the same way font-size is not undo-tracked separately).
+ */
+export type BgValue =
+  | { type: 'preset'; id: string }
+  | { type: 'custom'; dataUrl: string }
+  | null;
+
+export type BgSnapshot = {
+  background: BgValue;
+  bgSize: 'cover' | 'contain';
+};
+
+/** Each undo/redo entry captures both the gear state AND the background state. */
+type HistoryEntry = { store: Store; bg: BgSnapshot };
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function defaultMeta(cats: string[]): Record<string, CategoryMeta> {
@@ -159,13 +184,32 @@ function resolveStorageKey(userId?: string): { key: string; isFork: boolean } {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function usePackData(userId?: string) {
+export function usePackData(
+  userId?: string,
+  opts: {
+    /**
+     * Called after every undo or redo with the background snapshot that should
+     * be restored.  The caller (ChecklistContent) applies it to its own React
+     * state.  Using a callback rather than a return value lets React batch the
+     * store update and the bg update into a single render.
+     */
+    onRestoreBg?: (bg: BgSnapshot) => void;
+  } = {},
+) {
   // Resolved once at mount — fork tabs get an isolated storage key
   const [storageKey] = useState<string>(() => resolveStorageKey(userId).key);
 
+  // Keep onRestoreBg fresh without recreating undo/redo callbacks
+  const onRestoreBgRef = useRef(opts.onRestoreBg);
+  useEffect(() => { onRestoreBgRef.current = opts.onRestoreBg; }, [opts.onRestoreBg]);
+
+  // Tracks the current background state so gear-change pushAndSet can include
+  // it in the history entry.  Updated via syncBg() called by ChecklistContent.
+  const currentBgRef = useRef<BgSnapshot>({ background: null, bgSize: 'cover' });
+
   // Undo / redo stacks (refs — mutations don't need to trigger renders)
-  const undoStackRef = useRef<Store[]>([]);
-  const redoStackRef = useRef<Store[]>([]);
+  const undoStackRef = useRef<HistoryEntry[]>([]);
+  const redoStackRef = useRef<HistoryEntry[]>([]);
   // historyVersion just triggers canUndo/canRedo recalcs
   const [historyVersion, setHistoryVersion] = useState(0);
 
@@ -249,10 +293,45 @@ export function usePackData(userId?: string) {
 
   // ── History helpers ──────────────────────────────────────────────────────
 
-  /** Like setStore but pushes the previous state onto the undo stack. */
+  /**
+   * Tell the hook about the current background state without pushing history.
+   * ChecklistContent calls this via a useEffect([background, bgSize]) so that
+   * every gear-change pushAndSet captures the correct bg in its undo entry.
+   */
+  const syncBg = useCallback((s: BgSnapshot) => {
+    currentBgRef.current = s;
+  }, []);
+
+  /**
+   * Push a background-only change onto the undo stack.
+   * Called by ChecklistContent BEFORE applying the new background to its own
+   * React state.  `prevBg` is the state that must be restored on undo.
+   * The store is unchanged — returning `current` keeps gear data identical.
+   */
+  const pushBg = useCallback((prevBg: BgSnapshot) => {
+    setStore(current => {
+      undoStackRef.current = [
+        ...undoStackRef.current.slice(-(MAX_HISTORY - 1)),
+        { store: current, bg: prevBg },
+      ];
+      redoStackRef.current = [];
+      return current; // store not modified
+    });
+    setHistoryVersion(v => v + 1);
+  }, []);
+
+  /**
+   * Like setStore but pushes the previous state (store + current bg) onto the
+   * undo stack.  Gear changes do not modify bg, so consecutive entries for
+   * gear edits carry the same bg value — undoing them never visually changes
+   * the background (isolation is maintained).
+   */
   const pushAndSet = useCallback((fn: (prev: Store) => Store) => {
     setStore(prev => {
-      undoStackRef.current = [...undoStackRef.current.slice(-(MAX_HISTORY - 1)), prev];
+      undoStackRef.current = [
+        ...undoStackRef.current.slice(-(MAX_HISTORY - 1)),
+        { store: prev, bg: currentBgRef.current },
+      ];
       redoStackRef.current = [];
       return fn(prev);
     });
@@ -262,24 +341,37 @@ export function usePackData(userId?: string) {
   const undo = useCallback(() => {
     const stack = undoStackRef.current;
     if (stack.length === 0) return;
-    const prev = stack[stack.length - 1];
+    const entry = stack[stack.length - 1];
     undoStackRef.current = stack.slice(0, -1);
     setStore(current => {
-      redoStackRef.current = [current, ...redoStackRef.current.slice(0, MAX_HISTORY - 1)];
-      return prev;
+      // Save current state (store + bg) to redo stack, then restore entry
+      redoStackRef.current = [
+        { store: current, bg: currentBgRef.current },
+        ...redoStackRef.current.slice(0, MAX_HISTORY - 1),
+      ];
+      currentBgRef.current = entry.bg;
+      return entry.store;
     });
+    // Notify ChecklistContent to apply the restored bg to React state.
+    // Called after setStore so React can batch both updates into one render.
+    onRestoreBgRef.current?.(entry.bg);
     setHistoryVersion(v => v + 1);
   }, []);
 
   const redo = useCallback(() => {
     const stack = redoStackRef.current;
     if (stack.length === 0) return;
-    const next = stack[0];
+    const entry = stack[0];
     redoStackRef.current = stack.slice(1);
     setStore(current => {
-      undoStackRef.current = [...undoStackRef.current.slice(-(MAX_HISTORY - 1)), current];
-      return next;
+      undoStackRef.current = [
+        ...undoStackRef.current.slice(-(MAX_HISTORY - 1)),
+        { store: current, bg: currentBgRef.current },
+      ];
+      currentBgRef.current = entry.bg;
+      return entry.store;
     });
+    onRestoreBgRef.current?.(entry.bg);
     setHistoryVersion(v => v + 1);
   }, []);
 
@@ -461,5 +553,9 @@ export function usePackData(userId?: string) {
     redo,
     canUndo,
     canRedo,
+    /** Sync the current bg ref without pushing history (call in useEffect). */
+    syncBg,
+    /** Push a background-only undo entry before applying the new bg state. */
+    pushBg,
   };
 }

@@ -1,0 +1,249 @@
+Add personal-background image selection to TrailWeigh Undo and Redo.
+
+## Current problem
+
+When a personal background image is selected or uploaded, clicking Undo does not restore the previously displayed background image.
+
+Undo and Redo must treat background-image changes as normal reversible user actions.
+
+## Required behavior
+
+When the user changes the selected background:
+
+- Undo restores the exact previously selected background.
+- Redo restores the exact newer background.
+- The correct background appears immediately after Undo or Redo.
+- The associated Fill Screen or Fit Image setting must remain connected to the correct history state.
+- The correct Light, Dark, or System letterbox behavior must continue to work.
+
+This must work when switching between:
+
+- One personal image and another personal image
+- A built-in image and a personal image
+- A personal image and a built-in image
+- A background image and the default background
+- Fill Screen and Fit Image, when those settings are changed as part of the same user action
+
+## Store complete background history state
+
+Each background-related Undo entry must preserve the complete prior background configuration, including:
+
+- Background type
+- Built-in background identifier
+- Personal-image asset identifier
+- Secure stored image reference or URL
+- Fill Screen or Fit Image
+- Background position
+- Any other file-specific background setting
+- Resolved selection information needed to display the image again
+
+Do not store only the currently rendered temporary object URL.
+
+Do not depend on a browser blob URL that becomes invalid before Undo is used.
+
+Use the persistent personal-image asset reference already used by the Background gallery.
+
+## Upload behavior
+
+When the user uploads a new personal image:
+
+1. Capture the complete current background state before changing it.
+2. Save the uploaded image using the existing personal-background storage workflow.
+3. Select the newly uploaded image.
+4. Add one background-change action to Undo history.
+
+Pressing Undo once must restore the background that was visible immediately before the upload and selection.
+
+Pressing Redo once must restore the newly uploaded and selected image.
+
+Do not require multiple Undo clicks for one upload-and-select action.
+
+## Selection behavior
+
+When the user clicks an existing personal-image thumbnail:
+
+1. Capture the complete current background state.
+2. Apply the selected image.
+3. Add one Undo entry.
+
+Undo must restore the previous selection.
+
+Redo must restore the newer selection.
+
+## Do not delete images during Undo
+
+Undoing the selection of a newly uploaded image must not automatically delete that image from the personal Background gallery.
+
+The image may remain available as an uploaded asset even when it is no longer the selected background.
+
+Deleting a personal image remains a separate action requiring the existing delete confirmation.
+
+## Deleting an image
+
+If deletion is already included in Undo and Redo, preserve that behavior.
+
+If image deletion is not currently reversible, do not expand this task into rebuilding gallery deletion.
+
+At minimum:
+
+- Changing the selected image must be reversible.
+- Undo must never restore a broken or deleted image reference.
+- If the previously selected image was deliberately deleted, use the existing safe fallback instead of displaying a broken image.
+
+## History isolation
+
+A background Undo action must change only the background configuration.
+
+It must not alter:
+
+- Categories
+- Gear items
+- Item checkbox states
+- Weights
+- Quantities
+- Notes
+- List title
+- Locker file identity
+- Share Link state
+- Preview state
+
+Similarly, undoing a gear-list edit must not unexpectedly change the background unless the background and gear edit were intentionally recorded as one transaction.
+
+## Undo and Redo buttons
+
+Use the existing TrailWeigh Undo and Redo buttons and history system.
+
+Do not create separate background-only Undo controls.
+
+The buttons must update their enabled and disabled states correctly after background changes.
+
+Expected sequence:
+
+1. Background A is selected.
+2. User selects Background B.
+3. Undo becomes available.
+4. Clicking Undo restores Background A.
+5. Redo becomes available.
+6. Clicking Redo restores Background B.
+
+## Save and file behavior
+
+Background changes must continue to follow the existing file behavior:
+
+- A background change marks the current file as having unsaved changes.
+- Undoing back to the saved background should restore the correct dirty-state behavior.
+- Saving stores the currently selected background.
+- Undo must not change another browser tab.
+- Undo must not alter the saved Locker file until Save is deliberately clicked.
+
+Do not create duplicate Locker files.
+
+## New-file behavior
+
+Preserve the corrected New behavior:
+
+- New creates an exact copy of the current file.
+- The selected background is copied.
+- All gear-item checkboxes are unchecked.
+- The new file has its own independent Undo and Redo history.
+
+Background Undo actions in the new file must not affect the original file.
+
+## Share Link behavior
+
+Do not change the current Share Link implementation during this task.
+
+Background Undo and Redo must operate only on the active editable checklist or the recipient’s temporary local copy, according to the existing screen mode.
+
+## Required implementation approach
+
+Inspect the current Undo and Redo architecture before changing it.
+
+Use the existing history action or snapshot system rather than creating a conflicting second history stack.
+
+If the application stores full working-list snapshots:
+
+- Ensure complete background configuration is included in each relevant snapshot.
+
+If it stores action-based history:
+
+- Add a background-change action containing both the previous and next complete background states.
+
+Avoid storing large image binary data repeatedly in every history entry.
+
+Store stable asset identifiers or persistent references instead.
+
+## Required testing
+
+Test in the rendered application.
+
+### Personal image to personal image
+
+1. Select Personal Image A.
+2. Select Personal Image B.
+3. Click Undo.
+4. Confirm Image A returns.
+5. Click Redo.
+6. Confirm Image B returns.
+
+### Upload test
+
+1. Start with a built-in image selected.
+2. Upload and select a new personal image.
+3. Click Undo once.
+4. Confirm the built-in image returns.
+5. Click Redo once.
+6. Confirm the uploaded image returns.
+7. Confirm the uploaded image remains in the personal gallery after Undo.
+
+### Built-in and personal image test
+
+1. Select a personal image.
+2. Select a built-in image.
+3. Undo and Redo.
+4. Confirm both directions work correctly.
+
+### Fit setting test
+
+1. Select a portrait personal image using Fit Image.
+2. Change to another image or background configuration.
+3. Click Undo.
+4. Confirm the original portrait image and its correct Fit Image setting return.
+5. Confirm theme-aware borders remain correct in normal view and Showcase.
+
+### Gear isolation test
+
+1. Edit a gear item.
+2. Change the background.
+3. Undo once.
+4. Confirm only the background change is reversed.
+5. Undo again.
+6. Confirm the gear edit is then reversed.
+
+### Save-state test
+
+1. Save a file with Background A.
+2. Change to Background B.
+3. Confirm the file becomes unsaved or dirty.
+4. Undo to Background A.
+5. Confirm the saved-state indicator is correct.
+6. Redo to Background B.
+7. Confirm it becomes unsaved again.
+
+### Multi-tab test
+
+1. Open different files in two browser tabs.
+2. Change the background in one tab.
+3. Use Undo in that tab.
+4. Confirm the other tab is unchanged.
+
+Do not report completion until Undo and Redo visibly restore the correct personal background images in the rendered application.
+
+Report:
+
+- Why the previous image was not restored
+- Which complete background fields are now stored in history
+- Whether history uses snapshots or reversible actions
+- How uploaded-image references remain valid
+- Which files were changed
+- Whether every required test passed
