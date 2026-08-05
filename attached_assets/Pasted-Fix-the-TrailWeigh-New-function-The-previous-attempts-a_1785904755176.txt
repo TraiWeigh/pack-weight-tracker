@@ -1,0 +1,202 @@
+Fix the TrailWeigh “New” function.
+
+The previous attempts are still creating categories with no items. Do not use an empty-list template, default category template, or category-only cloning function.
+
+## Exact required behavior
+
+When the user clicks “New,” the new working file must be an exact copy of the pack list currently visible in that browser tab.
+
+The only intentional differences are:
+
+1. Every gear-item checkbox in the new file is unchecked.
+2. The new file is detached from the original saved file and begins as a separate unsaved file.
+
+Everything else must remain exactly the same.
+
+## Use the current file’s complete data
+
+Use the same complete current-working-list data object or serialized payload that would be used to save the currently open file.
+
+Deep-clone that entire object first.
+
+Do not create a new object by copying only category headings.
+
+Do not use:
+
+- An empty new-list template
+- Default categories
+- Category shells
+- A starter list
+- The original file as a mutable reference
+- A list from another browser tab
+- A previously saved or cached version
+
+The exact list currently displayed in the active tab is the source of truth, including any visible unsaved changes.
+
+## Preserve everything in the copy
+
+The new file must preserve exactly:
+
+- Every category
+- Every item in every category
+- Category names
+- Category order
+- Item order
+- Type
+- Description
+- Weight
+- Quantity
+- Units
+- Notes
+- Custom categories
+- Custom items
+- Base Weight inclusion settings
+- Worn-weight settings
+- Consumable settings
+- Category expansion or collapse state, if stored with the file
+- List title formatting
+- Selected background image
+- Built-in background selection
+- User-uploaded background selection or asset reference
+- Fill Screen or Fit Image setting
+- Background positioning or other background settings stored with the file
+- Any other file-specific setting or value stored in the currently open pack list
+
+If the current list has 12 categories and 69 items, the new file must also have exactly 12 categories and exactly 69 items.
+
+No category should become empty unless it was already empty in the original file.
+
+## Reset only item checkboxes
+
+After deep-cloning the complete current file, traverse every copied gear item and set only its checkbox state to false.
+
+Use the application’s actual checkbox field, such as:
+
+- checked
+- selected
+- packed
+- included
+
+Do not reset category-level settings that are unrelated to selecting individual gear items.
+
+Do not remove unchecked items.
+
+Do not clear or recreate the item arrays.
+
+Do not change any item value other than its checkbox state.
+
+## Detach the new copy from the original file
+
+After creating the complete copy:
+
+- Clear the saved Locker file ID from the copy.
+- Clear any shared-file ID or active-source ID.
+- Clear the original file name association.
+- Give it the normal temporary untitled name.
+- Mark it as a new unsaved file.
+- Initialize a fresh Undo and Redo history.
+- Do not overwrite or modify the original file.
+
+When the user first clicks Save on this new file:
+
+- Ask for a new file name.
+- Create a separate Locker file with a new unique ID.
+- Do not update the original Locker file.
+
+## Background requirement
+
+The currently selected background is part of the file copy.
+
+Examples:
+
+- If the original uses a mountain background, the new file must open with that same mountain background.
+- If the original uses a user-uploaded photo, the new file must reference and display that same saved photo.
+- If Fit Image is selected, the new file must retain Fit Image.
+- If Fill Screen is selected, the new file must retain Fill Screen.
+
+Do not switch the new file to the default background.
+
+Do not duplicate the uploaded image data unnecessarily; preserve the valid existing asset reference.
+
+## Prevent mutation of the original
+
+Use a true deep clone.
+
+Changing checkbox states in the new file must not change checkbox states in the original saved file or in another tab.
+
+Do not reuse nested category or item-array references from the original object.
+
+## Confirmation wording
+
+Keep the existing New confirmation workflow, but make the message clear:
+
+“Create a new pack list as an exact copy of the current file? All gear-item checkboxes in the new file will be unchecked. The original file will not be changed.”
+
+Buttons:
+
+- Create New List
+- Cancel
+
+## Required implementation approach
+
+Inspect the existing Save or Locker serialization code and use that complete file structure as the basis for the New copy.
+
+The correct sequence is:
+
+1. Read the complete current working-file state.
+2. Deep-clone the entire file object.
+3. Confirm the copied category and item arrays still contain all items.
+4. Set every copied gear-item checkbox to false.
+5. Preserve the copied background and all file-specific settings.
+6. Remove only the copied file’s identity and saved-file association.
+7. Open the result as a separate unsaved working file.
+
+Do not build the new file category by category unless every complete category object and its full item array are copied.
+
+## Required tests
+
+Test this in the rendered application:
+
+1. Open a saved pack list containing multiple categories and items.
+2. Select a specific background and choose Fit Image or Fill Screen.
+3. Check several gear items.
+4. Note the exact number of categories and items.
+5. Click New and confirm.
+
+Verify that:
+
+- The new file has the exact same number of categories.
+- The new file has the exact same number of items.
+- Every item remains in its original category.
+- All Type, Description, Weight, Quantity, Unit, and Notes values are unchanged.
+- All custom categories and custom items remain.
+- The selected background is identical.
+- The Fill Screen or Fit Image setting is identical.
+- Every gear-item checkbox is unchecked.
+- No category unexpectedly becomes empty.
+- The original saved file remains unchanged.
+- Saving the new file creates a separate Locker file with a new name and ID.
+
+Also compare the original and copied file objects programmatically.
+
+They should be equivalent except for:
+
+- Item checkbox states
+- File ID
+- Active saved-file association
+- File name or temporary untitled name
+- Created or modified timestamps
+- Undo and Redo history
+- Unsaved status
+
+Do not report completion until the rendered new file visibly contains all the same items as the previous file.
+
+Report:
+
+- Why the earlier implementation produced empty categories
+- Which complete current-file object is now being cloned
+- Which checkbox field is reset
+- How the background selection is preserved
+- Which file-identity fields are cleared
+- Which files were changed
+- Whether every required test passed

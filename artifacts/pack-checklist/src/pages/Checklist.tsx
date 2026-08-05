@@ -77,6 +77,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const { signOut } = useClerk();
   const { toast } = useToast();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showNewConfirm,   setShowNewConfirm]   = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !!userId && !hasSeenMailingPrompt(userId));
@@ -90,6 +91,26 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // ── Background state — also loaded from saved-list session key ────────────
 
   const [background, setBackground] = useState<Background | null>(() => {
+    // If this tab was opened via "New", restore background from the newseed bundle.
+    // resolveStorageKey() (called inside usePackData above) already wrote tw-fork-id
+    // to sessionStorage, so we can look up the matching bg key here.
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) {
+        const raw = localStorage.getItem(`tw-newseed-bg-${forkId}`);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && 'background' in parsed) {
+            // Stash the other three values for their own initializers, then clean up.
+            sessionStorage.setItem('tw-newbg-fade', String(parsed.bgFade ?? 1));
+            sessionStorage.setItem('tw-newbg-tone', parsed.bgTone ?? 'light');
+            sessionStorage.setItem('tw-newbg-size', parsed.bgSize ?? 'cover');
+            localStorage.removeItem(`tw-newseed-bg-${forkId}`);
+            return parsed.background ?? null;
+          }
+        }
+      }
+    } catch {}
     // If this tab was opened via "Load This List", use the saved background
     try {
       const raw = sessionStorage.getItem('tw-savedlist-bg');
@@ -125,6 +146,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const [bgFade, setBgFade] = useState<number>(() => {
     try {
+      // "New" tab — stashed by background initializer above
+      const newbg = sessionStorage.getItem('tw-newbg-fade');
+      if (newbg !== null) {
+        sessionStorage.removeItem('tw-newbg-fade');
+        const v = parseFloat(newbg);
+        return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
+      }
+    } catch {}
+    try {
       const raw = sessionStorage.getItem('tw-savedlist-bgfade');
       if (raw !== null) {
         sessionStorage.removeItem('tw-savedlist-bgfade');
@@ -144,6 +174,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const [bgTone, setBgTone] = useState<'light' | 'dark'>(() => {
     try {
+      // "New" tab — stashed by background initializer above
+      const newbg = sessionStorage.getItem('tw-newbg-tone');
+      if (newbg !== null) {
+        sessionStorage.removeItem('tw-newbg-tone');
+        return newbg as 'light' | 'dark';
+      }
+    } catch {}
+    try {
       const raw = sessionStorage.getItem('tw-savedlist-bgtone');
       if (raw !== null) {
         sessionStorage.removeItem('tw-savedlist-bgtone');
@@ -160,9 +198,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   // ── Background sizing — Fill Screen (cover) or Fit Image (contain) ─────────
   // Persisted to localStorage under 'trailweigh:bgSize'. Defaults to 'cover'.
-  const [bgSize, setBgSize] = useState<'cover' | 'contain'>(
-    () => (localStorage.getItem('trailweigh:bgSize') as 'cover' | 'contain') ?? 'cover'
-  );
+  const [bgSize, setBgSize] = useState<'cover' | 'contain'>(() => {
+    try {
+      // "New" tab — stashed by background initializer above
+      const newbg = sessionStorage.getItem('tw-newbg-size');
+      if (newbg !== null) {
+        sessionStorage.removeItem('tw-newbg-size');
+        return newbg as 'cover' | 'contain';
+      }
+    } catch {}
+    return (localStorage.getItem('trailweigh:bgSize') as 'cover' | 'contain') ?? 'cover';
+  });
 
   const handleBgSizeChange = (v: 'cover' | 'contain') => {
     setBgSize(v);
@@ -202,7 +248,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   }, []);
 
   // ── Inactivity timer → Showcase mode ─────────────────────────────────────
-  const isDialogOpen = showResetConfirm || showShareMenu || backgroundPickerOpen;
+  const isDialogOpen = showResetConfirm || showNewConfirm || showShareMenu || backgroundPickerOpen;
   const { showcaseActive, triggerShowcase, exitShowcase } = useInactivityTimer({
     isPreviewOpen: showPreview,
     hasInputFocus,
@@ -279,16 +325,36 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // ── New list in a new tab ─────────────────────────────────────────────────
   const handleNew = useCallback(() => {
     const uuid = crypto.randomUUID();
-    // Strip every item's checked state so the new list always starts clean.
-    const clearedItems: typeof data = {};
-    for (const cat of categoryOrder) {
-      clearedItems[cat] = (data[cat] ?? []).map(item => ({ ...item, checked: false }));
+
+    // 1. Deep-clone the complete store — same structure that Save writes to Locker.
+    //    JSON round-trip guarantees no shared object references with the original.
+    const clonedStore: typeof store = JSON.parse(JSON.stringify(store));
+
+    // 2. Traverse every copied item and set checked: false.
+    //    We iterate store.order (not a separate categoryOrder ref) so the loop
+    //    always uses the cloned object's own key list.
+    for (const cat of clonedStore.order) {
+      const items = clonedStore.items[cat];
+      if (Array.isArray(items)) {
+        clonedStore.items[cat] = items.map((item) => ({ ...item, checked: false }));
+      }
     }
-    const snapshot = { __v: 5, items: clearedItems, order: categoryOrder, meta: categoryMeta };
-    localStorage.setItem(`tw-newseed-${uuid}`, JSON.stringify(snapshot));
+
+    // 3. Write gear data newseed.
+    localStorage.setItem(`tw-newseed-${uuid}`, JSON.stringify({ __v: 5, ...clonedStore }));
+
+    // 4. Write background settings alongside so the new tab opens with the same
+    //    background, fill/fit mode, tone, and fade as the current tab.
+    localStorage.setItem(`tw-newseed-bg-${uuid}`, JSON.stringify({
+      background: background ?? null,
+      bgFade,
+      bgTone,
+      bgSize,
+    }));
+
     const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
     window.open(`${window.location.origin}${base}/checklist?newseed=${uuid}`, '_blank');
-  }, [data, categoryOrder, categoryMeta]);
+  }, [store, background, bgFade, bgTone, bgSize]);
 
   // ── Keyboard shortcuts (Ctrl/Cmd+Z, Ctrl/Cmd+Y, Ctrl/Cmd+Shift+Z) ────────
   useEffect(() => {
@@ -600,14 +666,39 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             <div className="flex items-center gap-1 min-w-0">
 
               {/* ── New ─────────────────────────────────────────── */}
-              <button
-                onClick={handleNew}
-                title="Open a copy of this list in a new tab"
-                className={toolBtn}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">New</span>
-              </button>
+              <div className="relative flex-shrink-0">
+                {showNewConfirm ? (
+                  <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
+                    <span
+                      className="text-xs text-muted-foreground hidden sm:inline max-w-[280px] truncate"
+                      title="Create a new pack list as an exact copy of the current file? All gear-item checkboxes in the new file will be unchecked. The original file will not be changed."
+                    >
+                      Exact copy — all boxes unchecked, original unchanged?
+                    </span>
+                    <button
+                      onClick={() => { handleNew(); setShowNewConfirm(false); }}
+                      className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 font-medium transition-colors whitespace-nowrap"
+                    >
+                      Create New List
+                    </button>
+                    <button
+                      onClick={() => setShowNewConfirm(false)}
+                      className="text-xs bg-muted text-muted-foreground px-3 py-1.5 rounded-md hover:bg-muted/80 font-medium transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowNewConfirm(true)}
+                    title="Create a new pack list as an exact copy of the current file? All gear-item checkboxes in the new file will be unchecked. The original file will not be changed."
+                    className={toolBtn}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline">New</span>
+                  </button>
+                )}
+              </div>
 
               {/* ── Undo ────────────────────────────────────────── */}
               <button
