@@ -1,0 +1,208 @@
+Correct the visual design of the Move control added in Task #34.
+
+The underlying moveItem operation, Undo/Redo behavior, state preservation, and automated tests are working. Do not rebuild that logic.
+
+The current rendered design is incorrect:
+
+- It shows a wide box labeled “Move ↗” inside the item row.
+- The wide box reduces the Description column.
+- The control appears only when hovering.
+- Touch-screen users cannot rely on hover.
+- The category panels have unnecessary empty space along the outside borders.
+
+## Required column layout
+
+Add a visible column heading:
+
+MOVE
+
+Place it between:
+
+DESCRIPTION
+
+and:
+
+WEIGHT
+
+The desktop heading order must be:
+
+1. TYPE
+2. DESCRIPTION
+3. MOVE
+4. WEIGHT
+5. QTY
+6. TOTAL
+
+Keep the existing checkbox and row-action positions.
+
+## Required row control
+
+Under the MOVE heading, show only a small dropdown-arrow or chevron icon on every gear-item row.
+
+Examples of acceptable controls:
+
+- A small downward chevron
+- A small up/down selector arrow
+- A compact icon-only dropdown trigger
+
+Do not show:
+
+- The word “Move” inside every item row
+- “Move ↗”
+- A wide select box
+- A wide bordered input field
+- A control that appears only on hover
+
+The arrow must always be visible on desktop, tablet, and touch devices.
+
+Clicking or tapping the arrow must open the existing destination-category list.
+
+Use the current checklist category names and order.
+
+Do not include the item’s current category in the destination list.
+
+## Accessible labeling
+
+The visible control may be icon-only, but give it an accessible name such as:
+
+`Move item to another category`
+
+Also include:
+
+- Keyboard access
+- Visible focus state
+- A useful tooltip
+- Disabled behavior when no other categories exist
+
+## Restore Description space
+
+Remove the wide Move field and return that width to the Description column.
+
+Description should remain the largest flexible text column.
+
+Long descriptions should have more visible space before truncation.
+
+Do not reduce the Type, Weight, Quantity, or Total columns more than necessary.
+
+## Make category panels wider
+
+The screenshots show unused space along the outside edges of the checklist area.
+
+Make the left category-list area slightly wider by reducing unnecessary outer horizontal margins or padding.
+
+Requirements:
+
+- Use more of the available page width.
+- Keep a clear gap between the category panels and Pack Summary.
+- Do not overlap Pack Summary.
+- Do not make the page touch the browser edges.
+- Preserve centered alignment.
+- Preserve the existing two-column desktop layout.
+- Do not widen Pack Summary unless necessary.
+
+Inspect the checklist’s outer container, grid columns, max-width, padding, and gap values before changing them.
+
+Use a modest width increase rather than a full redesign.
+
+## Responsive behavior
+
+### Desktop
+
+- MOVE heading aligns above the arrow controls.
+- Description receives the recovered space.
+- Category panels use more available horizontal width.
+- Weight, Qty, and Total remain aligned.
+
+### Tablet
+
+- The arrow remains visible.
+- The destination menu stays inside the viewport.
+- Description remains readable.
+- No overlap with Weight or Qty.
+
+### Mobile
+
+- Do not require hover.
+- The small arrow remains tappable.
+- A native select or compact menu may open as the device’s normal picker.
+- Do not create horizontal page overflow.
+- Long category names remain readable in the opened menu.
+
+## Preserve working Move behavior
+
+Do not change:
+
+- `moveItem(sourceCategory, destinationCategory, itemId)`
+- Item ID preservation
+- Description, weight, quantity, and checkbox-state preservation
+- Expendable, worn, Base Weight, or Dog Pack states
+- Undo
+- Redo
+- Save and Save As
+- Locker behavior
+- Active filename
+- Category order
+- Custom category names
+- Automated move tests
+
+Do not change PDF, Excel, Word, or Numbers importing.
+
+## Required rendered tests
+
+### Desktop test
+
+1. Open a category with several items.
+2. Confirm the heading shows:
+   - TYPE
+   - DESCRIPTION
+   - MOVE
+   - WEIGHT
+   - QTY
+   - TOTAL
+3. Confirm every item has a small visible dropdown arrow beneath MOVE.
+4. Confirm the word “Move” does not appear inside each row.
+5. Confirm Description is wider than in the previous implementation.
+6. Confirm the category panels use more of the available horizontal space.
+7. Confirm Pack Summary remains properly separated.
+
+### Move test
+
+1. Click the arrow for one Backpack item.
+2. Move it to Clothing Packed.
+3. Confirm exactly one copy appears in Clothing Packed.
+4. Confirm Undo and Redo still work.
+5. Confirm all item data remains unchanged.
+
+### Touch/mobile test
+
+1. Use a mobile-width viewport.
+2. Confirm the arrow is visible without hover.
+3. Tap it and choose a category.
+4. Confirm the menu is usable and no columns overlap.
+
+## Automated tests
+
+Run the existing command:
+
+`pnpm test:importer`
+
+Keep all moveItem tests passing.
+
+Add a focused component/layout test only if the project’s existing test tools support it without adding a large new framework.
+
+## Final report
+
+Report:
+
+- Files changed
+- How the wide Move box was removed
+- Which arrow or chevron control is now used
+- How the MOVE heading is aligned
+- How much space was restored to Description
+- Which outer container or grid values were adjusted
+- Desktop rendered-test result
+- Mobile rendered-test result
+- Move/Undo/Redo result
+- Complete automated-test result
+- Confirmation that Move is always visible without hover
+- Confirmation that no temporary logs remain

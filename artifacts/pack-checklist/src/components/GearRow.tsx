@@ -2,7 +2,7 @@ import React, { memo, useState } from 'react';
 import { GearItem } from '../hooks/usePackData';
 import { formatWeight, calcTotalOz, smallUnit, largeUnit, ozToGrams, gramsToOz } from '../lib/weightUtils';
 import { useUnit } from '../context/UnitContext';
-import { X, GripVertical } from 'lucide-react';
+import { X, GripVertical, ChevronDown } from 'lucide-react';
 
 interface GearRowProps {
   item: GearItem;
@@ -47,7 +47,7 @@ export const GearRow = memo(function GearRow({
   const otherCategories = order.filter(c => c !== category);
   const canMove = otherCategories.length > 0;
 
-  const rowClasses = `group grid grid-cols-[auto_auto_1fr_auto_90px_70px_88px_auto] gap-2 md:gap-4 py-2 border-b border-border/50 items-center transition-opacity hover:bg-black/5 dark:hover:bg-white/5 px-2 -mx-2 rounded-md ${
+  const rowClasses = `group grid grid-cols-[auto_auto_1fr_auto_90px_70px_88px_auto] gap-2 md:gap-3 py-2 border-b border-border/50 items-center transition-opacity hover:bg-black/5 dark:hover:bg-white/5 px-2 -mx-2 rounded-md ${
     !item.checked ? 'opacity-50 grayscale' : ''
   }`;
 
@@ -84,28 +84,33 @@ export const GearRow = memo(function GearRow({
         className="w-full bg-transparent text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate placeholder:text-muted-foreground/50 transition-colors hover:bg-black/5"
       />
 
-      {/* Move control */}
-      <div className="flex items-center">
-        <select
-          value=""
-          aria-label={canMove ? `Move item — currently in ${category}` : 'Move item — only one category exists'}
+      {/* Move control — icon-only, always visible; native select overlaid for device-native picker */}
+      <div className="flex items-center justify-center">
+        <div
+          className={`relative flex items-center justify-center w-6 h-7 rounded transition-colors
+            ${canMove ? 'hover:bg-primary/10 focus-within:ring-1 focus-within:ring-primary/30' : 'opacity-30 cursor-not-allowed'}`}
           title={canMove ? 'Move to another category' : 'No other categories to move to'}
-          disabled={!canMove}
-          onChange={e => {
-            const dest = e.target.value;
-            if (dest) moveItem(category, dest, item.id);
-          }}
-          className={`text-xs h-7 rounded px-1.5 border focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors appearance-none cursor-pointer
-            ${canMove
-              ? 'bg-transparent border-border/40 text-muted-foreground hover:border-primary/40 hover:text-foreground opacity-0 group-hover:opacity-100 focus:opacity-100'
-              : 'bg-transparent border-transparent text-muted-foreground/30 cursor-not-allowed opacity-0 group-hover:opacity-60'
-            }`}
         >
-          <option value="" disabled>Move ↗</option>
-          {otherCategories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+          <ChevronDown
+            className={`w-3.5 h-3.5 pointer-events-none ${canMove ? 'text-muted-foreground' : 'text-muted-foreground/40'}`}
+          />
+          {canMove && (
+            <select
+              value=""
+              aria-label={`Move item — currently in ${category}`}
+              onChange={e => {
+                const dest = e.target.value;
+                if (dest) moveItem(category, dest, item.id);
+              }}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+              <option value="" disabled>Move to…</option>
+              {otherCategories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
       {/* Weight input */}
