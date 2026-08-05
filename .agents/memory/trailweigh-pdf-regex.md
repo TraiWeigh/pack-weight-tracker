@@ -18,3 +18,18 @@ which is always the (Weight, Add) pair from the TrailWeigh spreadsheet format.
 TrailWeigh PDF text must use greedy capture for the name field. Also: trailing
 per-row summary columns ("Sleep 0.8125 lb") are absorbed by `(?:\s+[A-Za-z].*)?$`
 at the end of the regex so they don't corrupt the weight capture.
+
+## Forward-only category progression
+
+The right-side summary table in the PDF also emits `X Backpack Description Weight Add…`
+header lines (identical format to the main table headers). These appear mid-Kitchen
+section and reset `currentCategory` back to "Backpack" without the guard.
+
+**Fix:** Track `currentCategoryIndex` against `PDF_CATEGORY_ORDER`. Only update
+`currentCategory` when the new candidate's index ≥ the current index — this prevents
+any backwards movement through the canonical order (Backpack → Shelter → … → Miscellaneous).
+
+## Digit-leading types (FALSE1 Gal Freezer Bag)
+
+`PDF_CHECKBOX_RE` must allow digits after TRUE/FALSE: `(?=[\s\dA-Za-z])` not `(?=\s|[A-Z])`.
+Without this, "FALSE1 Gal Freezer Bag" never matches the checkbox pattern and is silently dropped.

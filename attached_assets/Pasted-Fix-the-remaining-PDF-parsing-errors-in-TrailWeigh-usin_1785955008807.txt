@@ -1,0 +1,126 @@
+Fix the remaining PDF parsing errors in TrailWeigh using the real PACK WEIGHT PDF.pdf.
+
+The dedicated PDF parser now finds 66 mostly correct gear items, but the rendered test reveals two specific problems.
+
+## Problem 1: Kitchen items are assigned to Backpack
+
+The following rows appear in the review table with Category = Backpack, but the PDF places them beneath the `X Kitchen Description Weight Add` header:
+
+- Pot/Mug — Fire-Maple Petrel G3 600ml HX Pot — 5.7 oz
+- Spoon — TOAKS Titanium Long Handle Spoon — 0.65 oz
+- Stove — MSR PocketRocket Deluxe — 3 oz
+- Fuel — 4 oz — 7.68 oz
+- Cold Soak Container — Peanut Butter Jar with plastic spoon — 2.5 oz
+- Bear Bag — Adotec Grzzly 20L — 8 oz
+- Food Bag — Plastic grocery bag — 0.5 oz
+- Bear Canister — Weekender Bearikade 20L — 31 oz
+
+These rows must be assigned to the existing Kitchen category.
+
+Trace why the PDF category header:
+
+`X Kitchen Description Weight Add`
+
+does not set or retain `currentCategory = Kitchen`.
+
+Possible causes to inspect:
+
+- Kitchen missing from the exact category-header map
+- Category normalization changing Kitchen to Backpack
+- A generic fallback category overriding the PDF-derived category
+- Page-two continuation logic retaining or resetting the wrong category
+- Kitchen not matching the application’s exact stored category name
+- The PDF category being overwritten after the row is parsed
+
+For structured TrailWeigh PDFs, the category stated in the PDF header must override semantic category guessing.
+
+Do not allow the generic classifier to change Kitchen rows to Backpack after the parser has assigned Kitchen.
+
+## Problem 2: Types beginning with numbers are missing
+
+The source PDF also contains:
+
+- 1 Gal Freezer Bag — Amazon — 0.5 oz
+- 1 Qrt Freezer Bag — Amazon — 0.22 oz
+
+Neither row appears in the 66-item review table.
+
+Update the PDF gear-row parser so a valid Type may begin with a number.
+
+Do not interpret the leading `1` in these Type names as the item weight.
+
+The parser must use the final Weight and Add number pair at the end of the row:
+
+- `FALSE1 Gal Freezer Bag Amazon 0.5 0`
+  - Type: `1 Gal Freezer Bag`
+  - Description: `Amazon`
+  - Weight: `0.5`
+  - Unit: `oz`
+  - Category: `Kitchen`
+
+- `FALSE1 Qrt Freezer Bag Amazon 0.22 0`
+  - Type: `1 Qrt Freezer Bag`
+  - Description: `Amazon`
+  - Weight: `0.22`
+  - Unit: `oz`
+  - Category: `Kitchen`
+
+Preserve the complete Type text, including its leading number.
+
+## Preserve current successful behavior
+
+Do not change:
+
+- The working PDFParse v2 class implementation
+- Page-by-page parsing
+- Backpack category parsing
+- Shelter category parsing
+- Sleep category parsing
+- Clothing Packed category parsing
+- Electronics category parsing
+- Hydration category parsing
+- Clothing Worn category parsing
+- Correct recognition of model numbers such as Wapta 30, 10F, and 600ml
+- Correct Weight-versus-Add handling
+- Summary-row filtering
+- Meal Planner filtering
+- Excel importing
+- Word importing
+- Numbers importing
+- Editable review rows
+- Add Row
+- Imported items remaining unchecked
+- Image scanning remaining removed
+
+Keep Clothing Packed and Clothing Worn as two separate categories. Do not combine them into a generic Clothing category.
+
+## Required real-file test
+
+Use the actual PACK WEIGHT PDF.pdf.
+
+Upload it through the rendered Scan Gear List interface.
+
+Confirm:
+
+1. All Kitchen rows are assigned to Kitchen, not Backpack.
+2. `1 Gal Freezer Bag` appears as a complete Type with weight 0.5 oz.
+3. `1 Qrt Freezer Bag` appears as a complete Type with weight 0.22 oz.
+4. Backpack items remain assigned to Backpack.
+5. Shelter, Sleep, Clothing Packed, Electronics, Hydration, and Clothing Worn remain correct.
+6. No Total, Base Weight, Expendables, Unit, Qty, or Meal Planner rows appear.
+7. The review-table count increases appropriately when the two missing freezer-bag rows are restored.
+8. Import at least:
+   - One Backpack item
+   - One Kitchen item
+   - One Shelter item
+9. Confirm each imported item appears in its matching category and remains unchecked.
+10. Confirm the Scan Gear List panel resets after import.
+
+Report:
+
+- Why the Kitchen header was not retained
+- Why Kitchen rows were changed to Backpack
+- Why numeric-leading Types were omitted
+- The corrected total item count
+- Which files were changed
+- Results from the real rendered PDF test

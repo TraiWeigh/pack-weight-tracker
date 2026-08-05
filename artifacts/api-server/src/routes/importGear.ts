@@ -180,6 +180,16 @@ const PDF_TYPE_PHRASES: string[] = [
   'gloves', 'mittens', 'gaiters', 'shelter', 'sleep',
 ];
 
+// Canonical category order as they appear in the TrailWeigh spreadsheet.
+// Used to enforce forward-only category progression so the right-side summary
+// table (which also has "X Backpack Description…" header rows) can't reset
+// currentCategory backwards once we've already advanced past that section.
+const PDF_CATEGORY_ORDER = [
+  'Backpack', 'Shelter', 'Sleep', 'Clothing Packed',
+  'Kitchen', 'Electronics', 'Toiletries + Med',
+  'Hydration', 'Clothing Worn', 'Miscellaneous',
+];
+
 // Category header: must start with "X" (the TrailWeigh checkbox placeholder in the header row)
 const PDF_CAT_HDR_RE = /^x\s+(backpack|shelter|sleep|clothing\s+packed|kitchen|electronics|toiletries(?:\s*\+\s*med)?|hydration|clothing\s+worn|miscellaneous|misc)\b/i;
 
@@ -189,8 +199,9 @@ const PDF_SKIP_RE = /^(?:total|grand\s+total|base\s+weight|expendables|trip\s+to
 // Category summary rows: "Backpack 0.875 lb", "Base Weight 4.6 lb" etc.
 const PDF_SUMMARY_ROW_RE = /^(?:backpack|shelter|sleep|clothing(?:\s+(?:packed|worn))?|kitchen|electronics|toiletries|hydration|miscellaneous|misc|worn|base\s+weight|expendables|total)\s+[\d.]+\s*(?:lb|oz|g|kg)\b/i;
 
-// Gear row: starts with TRUE or FALSE (possibly concatenated with type text)
-const PDF_CHECKBOX_RE = /^(?:true|false)(?=\s|[A-Z])/i;
+// Gear row: starts with TRUE or FALSE (possibly concatenated with type text,
+// including types that start with a digit e.g. "FALSE1 Gal Freezer Bag").
+const PDF_CHECKBOX_RE = /^(?:true|false)(?=[\s\dA-Za-z])/i;
 
 // Gear row parser: GREEDY name match so the regex engine backtracks to find
 // the RIGHTMOST Weight+Add number pair before the optional unit/qty/summary.
@@ -200,6 +211,11 @@ const PDF_ROW_RE = /^(.+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s*(?:oz|g(?:rams?)
 export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] {
   const results: ExtractedItem[] = [];
   let currentCategory = '';
+  // Track how far we've advanced through the canonical section order.
+  // This prevents the right-side summary table (which also has "X Backpack
+  // Description…" header rows) from resetting currentCategory backwards once
+  // we've already moved past that section (e.g. Kitchen → Backpack regression).
+  let currentCategoryIndex = -1;
   let reachedMealPlanner = false;
 
   for (const page of pages) {
@@ -221,7 +237,13 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
       const catMatch = PDF_CAT_HDR_RE.exec(line);
       if (catMatch) {
         const key = catMatch[1].toLowerCase().replace(/\s*\+\s*/g, ' + ').trim();
-        currentCategory = PDF_CATEGORY_NAMES[key] ?? '';
+        const candidate = PDF_CATEGORY_NAMES[key] ?? '';
+        const candidateIndex = PDF_CATEGORY_ORDER.indexOf(candidate);
+        // Only advance — never go backwards (guards against summary-table headers)
+        if (candidate && candidateIndex >= currentCategoryIndex) {
+          currentCategory = candidate;
+          currentCategoryIndex = candidateIndex;
+        }
         continue;
       }
 
