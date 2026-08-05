@@ -1,0 +1,220 @@
+Correct the existing New-list behavior in TrailWeigh.
+
+The previous change incorrectly created a new list with empty categories. That is not the intended behavior.
+
+## Correct meaning of New
+
+When the user is viewing a pack list and clicks “New,” create a separate new working list by duplicating the pack list currently visible in that browser tab.
+
+Preserve every category and every gear item.
+
+Then clear only the gear-item checkbox states so every item begins unchecked.
+
+In other words:
+
+New = duplicate the currently viewed pack list, uncheck every gear item, and detach the duplicate from the original saved file.
+
+## Source of the new list
+
+Use the current visible working list in the same browser tab as the source.
+
+This includes the list’s current:
+
+- Categories
+- Category names
+- Category order
+- Gear items
+- Item Type
+- Item Description
+- Weight
+- Quantity
+- Unit
+- Notes or other existing item fields
+- Base Weight category settings
+- Consumable or worn-weight settings
+- Custom categories
+- Custom items
+- Current visible edits already made to the working list
+
+Do not use:
+
+- An empty default template
+- Empty category shells
+- A hard-coded starter list
+- The first Locker file
+- The most recently saved list
+- A list open in another browser tab
+- Stale cached list data
+
+The list currently visible in the active browser tab is the source of truth.
+
+## Checkbox behavior
+
+In the newly created list, set every gear-item checkbox to unchecked.
+
+Use the application’s existing checkbox-state field and set it to false for every copied item.
+
+This applies to all items, including:
+
+- Checked items
+- Unchecked items
+- Imported items
+- Manually added items
+- Default items
+- Items inside custom categories
+- Consumables
+- Worn clothing
+- Dog gear
+- Items excluded from Base Weight
+
+Only the item checkbox state should be reset.
+
+Do not remove items merely because they were unchecked in the original list.
+
+Do not change category Base Weight inclusion settings unless they are themselves item checkboxes. Category configuration must remain the same.
+
+## Preserve all items
+
+After clicking New, every item from the currently viewed pack list must still appear in its same category.
+
+For example:
+
+- If Shelter contains five items, the new list must contain those same five items.
+- If Clothing contains twelve items, the new list must contain those same twelve items.
+- If the user added a custom category and custom items, they must also be copied.
+- All copied items must begin unchecked.
+
+Do not produce categories containing zero items unless those categories were already empty in the source list.
+
+Do not clear item descriptions, weights, quantities, or other information.
+
+## Create a separate unsaved file
+
+The new list must be independent from the original open file.
+
+After creating it:
+
+- Clear the active Locker file ID.
+- Clear the active shared-file ID, if applicable.
+- Do not associate the new list with the original saved file.
+- Mark the new list as unsaved.
+- Use the application’s normal untitled-list name, such as “Untitled Pack List,” until the user saves it.
+- Clicking Save for the first time must create a new Locker file and request a new file name.
+- Future saves should update that newly created file.
+
+The original open Locker file must remain unchanged.
+
+Do not overwrite, rename, delete, or modify the original file.
+
+## Unsaved changes in the current list
+
+Preserve the application’s existing unsaved-changes protection.
+
+When the currently open file contains unsaved changes and the user clicks New, continue showing the existing Save, Discard Changes, and Cancel choices if that workflow already exists.
+
+After the user resolves that dialog, create the new list from the correct current visible state according to the chosen action.
+
+Do not silently discard changes.
+
+## New-list confirmation
+
+Preserve the existing New confirmation dialog and button appearance.
+
+The confirmation should clearly explain:
+
+“Create a new pack list using the current items? All item checkboxes in the new list will be unchecked. The original file will not be changed.”
+
+Provide:
+
+- Create New List
+- Cancel
+
+Do not describe the result as a blank list.
+
+## Multi-tab behavior
+
+New must affect only the browser tab where it was clicked.
+
+Example:
+
+- Tab A is displaying JMT Gear.
+- Tab B is displaying PCT Gear.
+- Clicking New in Tab A must duplicate JMT Gear.
+- Tab B and PCT Gear must remain unchanged.
+
+Do not use a globally shared active-list object that causes one tab to copy another tab’s list.
+
+## Do not change
+
+Do not change:
+
+- The original Locker file
+- Saved Locker files
+- Lists open in other tabs
+- Category names
+- Category order
+- Gear-item information
+- Weights
+- Quantities
+- Units
+- Base Weight configuration
+- Consumable configuration
+- Worn-weight configuration
+- Importing
+- Share Link
+- Preview
+- Print
+- Download PDF
+- Background settings
+- Locker synchronization
+- Save As behavior
+- Undo or Redo behavior for normal editing
+
+Creating the new list should initialize a fresh Undo and Redo history for that new working list rather than retaining edit history tied to the original file.
+
+## Required tests
+
+Test through the rendered application:
+
+1. Open a saved Locker list containing multiple categories and items.
+
+2. Check several items in different categories.
+
+3. Click New and confirm.
+
+4. Verify:
+   - Every category remains present.
+   - Every item remains in its original category.
+   - Type, Description, Weight, Quantity, and other item information remain unchanged.
+   - Every gear-item checkbox is unchecked.
+   - The categories are not empty.
+
+5. Confirm the original Locker file remains unchanged.
+
+6. Click Save on the new list.
+   - Confirm TrailWeigh asks for a new file name.
+   - Confirm a separate Locker file is created.
+   - Confirm the original file is not overwritten.
+
+7. Add custom items and a custom category to a list, then click New.
+   - Confirm the custom category and all custom items are copied.
+   - Confirm their checkboxes are unchecked.
+
+8. Test a source list containing both checked and unchecked items.
+   - Confirm all copied items become unchecked.
+
+9. Open different lists in two browser tabs.
+   - Click New in one tab.
+   - Confirm only that tab’s currently viewed list is duplicated.
+
+10. Confirm no item disappears and no category unexpectedly becomes empty.
+
+Do not report this as fixed until you have visually confirmed that the new list contains all copied items with every item checkbox unchecked.
+
+Report:
+
+- Why the previous implementation created empty categories
+- Which files were changed
+- Which current-list state is used as the source
+- How the original file association is removed
+- Whether every required test passed
