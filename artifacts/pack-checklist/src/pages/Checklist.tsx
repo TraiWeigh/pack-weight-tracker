@@ -565,7 +565,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               <div className="relative flex-shrink-0">
                 {showResetConfirm ? (
                   <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
-                    <span className="text-sm font-medium text-destructive">Reset all data?</span>
+                    <span className="text-sm font-medium text-destructive">Clear All Items?</span>
                     <button onClick={handleReset} className="text-xs bg-destructive text-destructive-foreground px-3 py-1.5 rounded-md hover:bg-destructive/90 font-medium transition-colors">Confirm</button>
                     <button onClick={() => setShowResetConfirm(false)} className="text-xs bg-muted text-muted-foreground px-3 py-1.5 rounded-md hover:bg-muted/80 font-medium transition-colors">Cancel</button>
                   </div>
