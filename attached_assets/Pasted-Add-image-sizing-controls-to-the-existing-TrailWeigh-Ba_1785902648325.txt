@@ -1,0 +1,223 @@
+Add image-sizing controls to the existing TrailWeigh Background panel.
+
+Do not change or rebuild the working background selector, Background Showcase mode, five-minute inactivity timer, manual Showcase control, appearance settings, gear-list functions, Locker, Save, Preview, Print, PDF, or Scan Gear List.
+
+## Add two background display options
+
+Inside the Background panel, add a compact segmented pill control with these two options:
+
+- Fill Screen
+- Fit Image
+
+Place the control near the top of the Background panel, below or beside the Background heading and Showcase control, without covering the image thumbnails.
+
+The control must be visible and usable on desktop, tablet, and mobile.
+
+## Fill Screen behavior
+
+When “Fill Screen” is selected:
+
+- Use `background-size: cover`.
+- Fill the entire available viewport.
+- Preserve the image’s original aspect ratio.
+- Center the image.
+- Allow the image edges to be cropped when necessary.
+- Do not stretch or distort the image.
+- Do not repeat the image.
+
+This should remain the default behavior for users who have not chosen a different option.
+
+## Fit Image behavior
+
+When “Fit Image” is selected:
+
+- Use `background-size: contain`.
+- Display the entire image without cropping.
+- Preserve the image’s original aspect ratio.
+- Center the image horizontally and vertically.
+- Do not stretch or distort the image.
+- Do not repeat the image.
+
+Fit Image must work properly with:
+
+- Landscape images
+- Portrait images
+- Square images
+- Built-in backgrounds
+- User-uploaded backgrounds
+
+## Theme-aware unused space
+
+When Fit Image leaves unused space around the image, such as with a portrait image on a wide desktop screen, fill the remaining area with a solid color that matches the current appearance mode.
+
+Required behavior:
+
+- Light mode: use an appropriate light background color.
+- Dark mode: use an appropriate dark background color.
+- System mode: follow the operating system’s current light or dark appearance.
+
+Use existing TrailWeigh theme variables or design-system colors rather than introducing unrelated hard-coded colors.
+
+The unused-space color must update immediately when the user changes between:
+
+- Light
+- Dark
+- System
+
+Do not require a page reload.
+
+Changing the appearance mode must not:
+
+- Change the selected background image
+- Change Fill Screen or Fit Image selection
+- Reset the user-uploaded image
+- Change any gear-list data
+
+## Normal background and Showcase mode
+
+Apply the selected image-sizing option consistently to both:
+
+1. The normal TrailWeigh application background
+2. Manual Background Showcase mode
+3. Automatic Background Showcase mode after five minutes
+
+Examples:
+
+- Fill Screen selected:
+  - Normal background uses cover.
+  - Showcase uses cover.
+
+- Fit Image selected:
+  - Normal background uses contain.
+  - Showcase uses contain.
+  - Any unused space uses the current light or dark theme background color.
+
+Do not allow Showcase mode to override the user’s selected image-sizing preference.
+
+Use one shared background-display configuration so the normal application and Showcase cannot become inconsistent.
+
+## Persist the preference
+
+Remember the user’s selected image-sizing option.
+
+After refreshing the page or reopening TrailWeigh:
+
+- Restore the previously selected Fill Screen or Fit Image setting.
+- Restore the selected background.
+- Restore the correct theme-aware unused-space color.
+
+Store the preference using the same existing settings-storage system used for background and appearance preferences.
+
+Do not store duplicate or conflicting versions of the same preference.
+
+If settings synchronize across the user’s account or open tabs, include this preference in that existing synchronization behavior.
+
+## User interface state
+
+Clearly indicate which option is active.
+
+The selected option should use the same active-state styling as other TrailWeigh segmented pill controls.
+
+Include:
+
+- Hover state
+- Focus-visible state
+- Active state
+- Keyboard accessibility
+- Sufficient contrast in Light and Dark modes
+
+Use real buttons or an accessible radio-group pattern.
+
+Do not use a dropdown unless the existing Background panel does not have enough room for the segmented control.
+
+## Image loading
+
+Avoid a bright flash or incorrect background color while an image is loading.
+
+Requirements:
+
+- Apply the correct theme background color before the image finishes loading.
+- Preserve the previous background until the new one is ready when practical.
+- Do not display a stretched intermediate image.
+- Handle a failed uploaded image gracefully.
+- Do not change the selected sizing mode after an image-loading error.
+
+## Do not change
+
+Do not change:
+
+- Existing background thumbnails
+- Background categories
+- Your Photo upload behavior
+- Showcase activation or exit behavior
+- Five-minute inactivity timing
+- Existing Appearance setting
+- Gear-list Preview
+- Print
+- Download PDF
+- Save
+- Locker
+- Reset
+- Scan Gear List
+- Checked states
+- Categories
+- Weights
+- Base Weight calculations
+- Lists open in other tabs
+
+Changing the background image-sizing option must not create a gear-list Undo or Redo entry.
+
+## Required testing
+
+Test through the rendered application:
+
+1. Select a landscape background and choose Fill Screen.
+   - Confirm it fills the viewport without distortion.
+
+2. Choose Fit Image.
+   - Confirm the complete image is visible without cropping.
+
+3. Upload a portrait image and choose Fit Image.
+   - Confirm the full portrait image is visible.
+   - Confirm the remaining space is filled with the correct theme color.
+
+4. Switch to Light mode.
+   - Confirm the unused space becomes light.
+
+5. Switch to Dark mode.
+   - Confirm the unused space becomes dark.
+
+6. Select System mode and change the operating-system appearance.
+   - Confirm the unused-space color updates correctly.
+
+7. Click Showcase with Fit Image selected.
+   - Confirm the full image remains visible.
+   - Confirm unused space uses the current theme color.
+
+8. Wait for automatic Showcase mode.
+   - Confirm it uses the same Fit Image setting.
+
+9. Select Fill Screen and enter Showcase.
+   - Confirm the image fills the screen using cover.
+
+10. Refresh TrailWeigh.
+    - Confirm the selected sizing option remains active.
+
+11. Test built-in and user-uploaded backgrounds.
+
+12. Test desktop, tablet, and mobile layouts.
+
+13. Confirm no image is stretched, distorted, or repeated.
+
+14. Confirm all gear-list data and other TrailWeigh functions remain unchanged.
+
+Implement this directly in the existing application.
+
+Report:
+
+- Which files were changed
+- Where the Fill Screen and Fit Image control was added
+- How the selected mode is stored
+- Which theme variables are used for unused space
+- How the setting is shared with Showcase mode
+- Whether every required test passed

@@ -158,6 +158,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     localStorage.setItem('trailweigh:bgTone', t);
   };
 
+  // ── Background sizing — Fill Screen (cover) or Fit Image (contain) ─────────
+  // Persisted to localStorage under 'trailweigh:bgSize'. Defaults to 'cover'.
+  const [bgSize, setBgSize] = useState<'cover' | 'contain'>(
+    () => (localStorage.getItem('trailweigh:bgSize') as 'cover' | 'contain') ?? 'cover'
+  );
+
+  const handleBgSizeChange = (v: 'cover' | 'contain') => {
+    setBgSize(v);
+    localStorage.setItem('trailweigh:bgSize', v);
+  };
+
   const bgImageUrl = background
     ? background.type === 'preset'
       ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
@@ -544,6 +555,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         active={showcaseActive}
         bgImageUrl={bgImageUrl}
         onWake={exitShowcase}
+        bgSize={bgSize}
       />
 
       {/* ── Screen content ── */}
@@ -554,8 +566,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             backgroundImage: bgFade < 1
               ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade})),url(${bgImageUrl})`
               : `url(${bgImageUrl})`,
-            backgroundSize: 'cover',
+            // When gradient + image are layered, supply two size values.
+            // The gradient always fills the element; the image uses the selected sizing.
+            backgroundSize: bgFade < 1 ? `100% 100%, ${bgSize}` : bgSize,
             backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
           } : {}),
           // Fade out the app while Showcase is active
           opacity:       showcaseActive ? 0 : 1,
@@ -880,6 +895,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     onBgFadeChange={handleBgFadeChange}
                     bgTone={bgTone}
                     onBgToneChange={handleBgToneChange}
+                    bgSize={bgSize}
+                    onBgSizeChange={handleBgSizeChange}
                     containerRef={bgPickerContainerRef as React.RefObject<HTMLDivElement>}
                     onShowcase={background
                       ? () => { setBackgroundPickerOpen(false); triggerShowcase(); }

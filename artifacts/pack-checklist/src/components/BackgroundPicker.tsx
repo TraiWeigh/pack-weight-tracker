@@ -84,6 +84,9 @@ interface BackgroundPickerPanelProps {
   onBgFadeChange: (v: number) => void;
   bgTone: 'light' | 'dark';
   onBgToneChange: (t: 'light' | 'dark') => void;
+  /** 'cover' = Fill Screen (default); 'contain' = Fit Image */
+  bgSize: 'cover' | 'contain';
+  onBgSizeChange: (v: 'cover' | 'contain') => void;
   containerRef?: React.RefObject<HTMLDivElement>;
   /** Called when the user clicks the Showcase pill inside the panel header */
   onShowcase?: () => void;
@@ -100,6 +103,8 @@ export function BackgroundPickerPanel({
   onBgFadeChange,
   bgTone,
   onBgToneChange,
+  bgSize,
+  onBgSizeChange,
   containerRef,
   onShowcase,
   isShowcaseBlocked = false,
@@ -241,8 +246,40 @@ export function BackgroundPickerPanel({
             )}
           </div>
 
-          {/* Tone toggle + fade slider */}
+          {/* Image sizing + Tone toggle + fade slider */}
           <div className="px-4 pb-3 border-b border-border">
+            {/* Fill Screen / Fit Image segmented control */}
+            <div className="flex items-center justify-between mb-2.5">
+              <div
+                role="group"
+                aria-label="Image sizing"
+                className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold"
+              >
+                <button
+                  onClick={() => onBgSizeChange('cover')}
+                  aria-pressed={bgSize === 'cover'}
+                  className={`px-3 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset ${
+                    bgSize === 'cover'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Fill Screen
+                </button>
+                <button
+                  onClick={() => onBgSizeChange('contain')}
+                  aria-pressed={bgSize === 'contain'}
+                  className={`px-3 py-1 transition-colors border-l border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset ${
+                    bgSize === 'contain'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Fit Image
+                </button>
+              </div>
+            </div>
+
             <div className="flex items-center justify-end mb-2.5">
               <div className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold">
                 <button

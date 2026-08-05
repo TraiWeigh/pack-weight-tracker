@@ -17,12 +17,15 @@ interface BackgroundShowcaseProps {
   active: boolean;
   bgImageUrl: string | null;
   onWake: () => void;
+  /** 'cover' = Fill Screen (default); 'contain' = Fit Image with theme-aware unused-space fill */
+  bgSize?: 'cover' | 'contain';
 }
 
 export function BackgroundShowcase({
   active,
   bgImageUrl,
   onWake,
+  bgSize = 'cover',
 }: BackgroundShowcaseProps) {
   const prefersReducedMotion =
     typeof window !== 'undefined'
@@ -63,8 +66,11 @@ export function BackgroundShowcase({
           inset:              0,
           zIndex:             9990,
           backgroundImage:    bgImageUrl ? `url(${bgImageUrl})` : undefined,
-          backgroundColor:    bgImageUrl ? undefined : '#0d1117',
-          backgroundSize:     'cover',
+          // In Fit Image (contain) mode, unused space uses the current theme background
+          // color so it automatically updates when light/dark/system mode changes.
+          // In Fill Screen (cover) mode, the image fills the viewport entirely.
+          backgroundColor:    bgSize === 'contain' ? 'var(--background)' : (bgImageUrl ? undefined : '#0d1117'),
+          backgroundSize:     bgSize,
           backgroundPosition: 'center',
           backgroundRepeat:   'no-repeat',
           opacity:            active ? 1 : 0,
