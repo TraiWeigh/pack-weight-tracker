@@ -21,6 +21,8 @@ import {
   User, Shield, Plus, Check, X, ChevronsUpDown,
 } from 'lucide-react';
 import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
+import { useInactivityTimer } from '../hooks/useInactivityTimer';
+import { BackgroundShowcase } from '../components/BackgroundShowcase';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
@@ -78,6 +80,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const bgPickerContainerRef = useRef<HTMLDivElement>(null);
   const [dragCat, setDragCat] = useState<string | null>(null);
   const [overCat, setOverCat] = useState<string | null>(null);
+  const [hasInputFocus, setHasInputFocus] = useState(false);
 
   // ── Background state — also loaded from saved-list session key ────────────
 
@@ -162,6 +165,34 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const [allOpen, setAllOpen] = useState(true);
   const [openCloseSeq, setOpenCloseSeq] = useState(0);
+
+  // ── Input-focus tracking (used to block inactivity showcase timer) ────────
+  useEffect(() => {
+    const INPUT_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+    const onIn  = (e: FocusEvent) => {
+      const el = e.target as HTMLElement;
+      if (INPUT_TAGS.has(el.tagName) || el.isContentEditable) setHasInputFocus(true);
+    };
+    const onOut = (e: FocusEvent) => {
+      const el = e.target as HTMLElement;
+      if (INPUT_TAGS.has(el.tagName) || el.isContentEditable) setHasInputFocus(false);
+    };
+    document.addEventListener('focusin',  onIn);
+    document.addEventListener('focusout', onOut);
+    return () => {
+      document.removeEventListener('focusin',  onIn);
+      document.removeEventListener('focusout', onOut);
+    };
+  }, []);
+
+  // ── Inactivity timer → Showcase mode ─────────────────────────────────────
+  const isDialogOpen = showResetConfirm || showShareMenu || backgroundPickerOpen;
+  const { showcaseActive, triggerShowcase, exitShowcase } = useInactivityTimer({
+    isPreviewOpen: showPreview,
+    hasInputFocus,
+    isDragging:    dragCat !== null,
+    isDialogOpen,
+  });
 
   const [copied, setCopied] = useState(false);
   async function copyUrlToClipboard(url: string): Promise<boolean> {
@@ -433,16 +464,30 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         <MailingListModal userId={userId ?? ''} onDismiss={() => setShowMailingModal(false)} />
       )}
 
+      {/* ── Background Showcase overlay ───────────────────────────────────── */}
+      {/* Rendered outside the main app div so its z-index is unrestricted    */}
+      <BackgroundShowcase
+        active={showcaseActive}
+        bgImageUrl={bgImageUrl}
+        onWake={exitShowcase}
+      />
+
       {/* ── Screen content ── */}
       <div
         className={`screen-only h-[100dvh] overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
-        style={bgImageUrl ? {
-          backgroundImage: bgFade < 1
-            ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade})),url(${bgImageUrl})`
-            : `url(${bgImageUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        } : undefined}
+        style={{
+          ...(bgImageUrl ? {
+            backgroundImage: bgFade < 1
+              ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade})),url(${bgImageUrl})`
+              : `url(${bgImageUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          } : {}),
+          // Fade out the app while Showcase is active
+          opacity:       showcaseActive ? 0 : 1,
+          transition:    'opacity 800ms ease',
+          pointerEvents: showcaseActive ? 'none' : undefined,
+        }}
       >
         <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
           <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
@@ -762,6 +807,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     bgTone={bgTone}
                     onBgToneChange={handleBgToneChange}
                     containerRef={bgPickerContainerRef as React.RefObject<HTMLDivElement>}
+                    onShowcase={background
+                      ? () => { setBackgroundPickerOpen(false); triggerShowcase(); }
+                      : undefined}
+                    isShowcaseBlocked={
+                      // Exclude backgroundPickerOpen: the panel IS the picker, so it
+                      // is always open when this prop is evaluated. The onShowcase
+                      // callback already closes it before triggering showcase.
+                      !background || showResetConfirm || showShareMenu ||
+                      showPreview || dragCat !== null || hasInputFocus
+                    }
                   />
                 </div>
                 <button

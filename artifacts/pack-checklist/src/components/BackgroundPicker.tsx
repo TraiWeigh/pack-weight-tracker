@@ -85,6 +85,10 @@ interface BackgroundPickerPanelProps {
   bgTone: 'light' | 'dark';
   onBgToneChange: (t: 'light' | 'dark') => void;
   containerRef?: React.RefObject<HTMLDivElement>;
+  /** Called when the user clicks the Showcase pill inside the panel header */
+  onShowcase?: () => void;
+  /** True while Showcase cannot be activated (blocking conditions active) */
+  isShowcaseBlocked?: boolean;
 }
 
 export function BackgroundPickerPanel({
@@ -97,6 +101,8 @@ export function BackgroundPickerPanel({
   bgTone,
   onBgToneChange,
   containerRef,
+  onShowcase,
+  isShowcaseBlocked = false,
 }: BackgroundPickerPanelProps) {
   const panelRef       = useRef<HTMLDivElement>(null);
   const fileInput      = useRef<HTMLInputElement>(null);
@@ -213,8 +219,26 @@ export function BackgroundPickerPanel({
           className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-[22rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
         >
           {/* Header */}
-          <div className="px-4 pt-4 pb-2">
+          <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-foreground">Background</h3>
+            {onShowcase && (
+              <button
+                onClick={onShowcase}
+                disabled={isShowcaseBlocked}
+                title={
+                  isShowcaseBlocked
+                    ? 'Finish the current action first'
+                    : 'Fill the screen with this background'
+                }
+                className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors flex-shrink-0 ${
+                  isShowcaseBlocked
+                    ? 'bg-muted text-muted-foreground/40 cursor-not-allowed'
+                    : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                }`}
+              >
+                Showcase
+              </button>
+            )}
           </div>
 
           {/* Tone toggle + fade slider */}
