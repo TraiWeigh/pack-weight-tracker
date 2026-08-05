@@ -105,9 +105,44 @@ function sanitizeItems(raw: any[], _cat: string): GearItem[] {
   }));
 }
 
+/**
+ * Forward-migrate a stored order by inserting any DEFAULT_CATEGORY_ORDER entries
+ * that are missing (added to DEFAULT after this store was last saved).
+ * Each missing entry is inserted at its canonical position — after the rightmost
+ * DEFAULT predecessor already in the order, but before the leftmost DEFAULT
+ * successor already in the order.  Custom (non-DEFAULT) categories are unaffected.
+ */
+function mergeDefaultCategories(storedOrder: string[]): string[] {
+  let order = [...storedOrder];
+  for (let di = 0; di < DEFAULT_CATEGORY_ORDER.length; di++) {
+    const cat = DEFAULT_CATEGORY_ORDER[di];
+    if (order.includes(cat)) continue;
+
+    // Start by appending; then try to place it between its neighbours.
+    let insertAt = order.length;
+
+    // Move insertAt after the rightmost DEFAULT predecessor already in order.
+    for (let pi = di - 1; pi >= 0; pi--) {
+      const idx = order.indexOf(DEFAULT_CATEGORY_ORDER[pi]);
+      if (idx !== -1) { insertAt = idx + 1; break; }
+    }
+
+    // Don't overshoot: ensure we don't land after a DEFAULT successor.
+    for (let si = di + 1; si < DEFAULT_CATEGORY_ORDER.length; si++) {
+      const idx = order.indexOf(DEFAULT_CATEGORY_ORDER[si]);
+      if (idx !== -1 && idx < insertAt) { insertAt = idx; break; }
+    }
+
+    order = [...order.slice(0, insertAt), cat, ...order.slice(insertAt)];
+  }
+  return order;
+}
+
 function parseV5(p: any): Store | null {
   if (!p || p.__v !== 5 || !Array.isArray(p.order)) return null;
-  const order: string[] = p.order;
+  // Forward-migrate: add any DEFAULT categories added to the app after this
+  // store was saved (e.g. Kitchen added to DEFAULT after a user's first save).
+  const order: string[] = mergeDefaultCategories(p.order);
   const items: PackState = {};
   order.forEach(cat => { items[cat] = sanitizeItems(p.items?.[cat], cat); });
   const meta: Record<string, CategoryMeta> = {};

@@ -1326,7 +1326,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 />
                 <ImportGearPanel
                   categoryOrder={categoryOrder}
-                  onAddItem={(category, prefill) => addItem(category, prefill)}
+                  onAddItem={(category, prefill) => {
+                    // If the PDF assigned a destination that isn't in the user's
+                    // current category list (e.g. Kitchen missing from an older
+                    // stored pack), create the tab automatically before adding.
+                    if (!categoryOrder.includes(category)) {
+                      addCategory(category);
+                    }
+                    addItem(category, prefill);
+                  }}
                 />
                 <LockerPanel
                   entries={lockerEntries}
