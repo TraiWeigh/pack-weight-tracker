@@ -1,15 +1,17 @@
 /**
  * BackgroundShowcase — full-viewport overlay shown during Showcase mode.
  *
+ * Layer order (bottom → top):
+ *   9990  Background image (this overlay)
+ *   9991  HikerAnimation  (its own fixed layer — never inside opacity parent)
+ *   9992  Wake-event intercept (transparent; captures first click/touch/mousemove)
+ *
  * Behaviour:
- * - Fixed div covering the entire viewport (z-index 9990).
- * - Fades in/out via CSS opacity transition (800–1000 ms).
- * - Displays the selected background at cover/center with no darkening overlay.
- * - Renders the HikerAnimation silhouette near the viewport bottom.
- * - A transparent intercept div (z-index 9991) captures the FIRST click/tap
- *   and calls onWake without propagating — so the hidden control underneath
- *   is never activated.
- * - Mouse movement on the overlay calls onWake directly (no click interception).
+ * - Background fades in/out via opacity (1000 ms, 0 ms for reduced-motion).
+ * - HikerAnimation manages its own visibility and z-index internally.
+ * - The intercept captures the first click/touchstart (stopPropagation) so
+ *   hidden app controls beneath are never accidentally triggered.
+ * - Mouse movement on the intercept calls onWake without consuming the event.
  */
 import React, { useEffect, useRef } from 'react';
 import { HikerAnimation } from './HikerAnimation';
@@ -25,7 +27,6 @@ export function BackgroundShowcase({
   bgImageUrl,
   onWake,
 }: BackgroundShowcaseProps) {
-  // Check reduced-motion preference for transitions
   const prefersReducedMotion =
     typeof window !== 'undefined'
       ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -33,11 +34,11 @@ export function BackgroundShowcase({
 
   const transitionMs = prefersReducedMotion ? 0 : 1000;
 
-  // Keep a ref so the mousemove handler is always fresh
+  // Always-fresh ref so event handlers never capture a stale onWake
   const onWakeRef = useRef(onWake);
   onWakeRef.current = onWake;
 
-  // Keydown exits showcase (in addition to the window-level handler in the hook)
+  // Keydown exits showcase
   useEffect(() => {
     if (!active) return;
     const handler = (e: KeyboardEvent) => {
@@ -58,43 +59,40 @@ export function BackgroundShowcase({
 
   return (
     <>
-      {/* ── Showcase overlay ─────────────────────────────────────────────── */}
+      {/* ── Layer 1 (z-9990): Background image ───────────────────────────── */}
       <div
         style={{
-          position:         'fixed',
-          inset:            0,
-          zIndex:           9990,
-          // Background image (no darkening overlay — full clarity)
-          backgroundImage:  bgImageUrl ? `url(${bgImageUrl})` : undefined,
-          backgroundColor:  bgImageUrl ? undefined : '#0d1117',
-          backgroundSize:   'cover',
+          position:           'fixed',
+          inset:              0,
+          zIndex:             9990,
+          backgroundImage:    bgImageUrl ? `url(${bgImageUrl})` : undefined,
+          backgroundColor:    bgImageUrl ? undefined : '#0d1117',
+          backgroundSize:     'cover',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          // Fade
-          opacity:          active ? 1 : 0,
-          transition:       `opacity ${transitionMs}ms ease`,
-          pointerEvents:    active ? 'auto' : 'none',
+          backgroundRepeat:   'no-repeat',
+          opacity:            active ? 1 : 0,
+          transition:         `opacity ${transitionMs}ms ease`,
+          pointerEvents:      'none', // intercept layer handles all pointer events
         }}
-        // Pointer movement exits showcase without consuming the subsequent click
-        onMouseMove={active ? () => onWakeRef.current() : undefined}
-      >
-        {/* Hiker + dog silhouette */}
-        <HikerAnimation active={active} />
-      </div>
+      />
 
-      {/* ── Click / touch / mousemove intercept overlay ──────────────────── */}
-      {/* Sits above the showcase visuals at z-9991 so it receives ALL pointer  */}
-      {/* events before the overlay beneath does.                               */}
-      {/*   • mousemove → wake (no propagation block; next click lands normally  */}
-      {/*     if the interface has faded back in by then)                        */}
-      {/*   • click / touchstart → wake AND stop propagation so the hidden app  */}
-      {/*     control underneath is never accidentally triggered.                */}
+      {/* ── Layer 2 (z-9991): Hiker + dog silhouette ─────────────────────── */}
+      {/* HikerAnimation is position:fixed with its own zIndex — it is NOT    */}
+      {/* inside the background div, so the background's opacity transition   */}
+      {/* can never hide it.                                                   */}
+      <HikerAnimation active={active} />
+
+      {/* ── Layer 3 (z-9992): Wake-event intercept ───────────────────────── */}
+      {/* Transparent div that sits above the hiker. Captures the first       */}
+      {/* click/touchstart so hidden app controls beneath are never triggered. */}
+      {/* Mouse movement also routes through here so onMouseMove on the lower  */}
+      {/* background div is never needed.                                       */}
       {active && (
         <div
           style={{
             position:      'fixed',
             inset:         0,
-            zIndex:        9991,
+            zIndex:        9992,
             cursor:        'default',
             pointerEvents: 'auto',
           }}

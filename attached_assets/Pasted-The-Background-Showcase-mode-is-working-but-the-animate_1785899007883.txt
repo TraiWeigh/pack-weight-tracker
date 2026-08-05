@@ -1,0 +1,194 @@
+The Background Showcase mode is working, but the animated hiker-and-dog silhouette is not visible.
+
+Do not rebuild or remove the working Showcase background fade, five-minute timer, manual Showcase button, or exit behavior.
+
+Inspect the current implementation and fix the missing hiker-and-dog animation.
+
+## Required result
+
+Whenever Showcase mode is active—whether started automatically after five minutes or manually with the Showcase button—the screen must display:
+
+- The currently selected background
+- One visible gender-neutral thru-hiker silhouette
+- One visible hiking dog beside the hiker
+- The hiker and dog moving together across the lower portion of the screen
+
+## Inspect the current implementation
+
+Determine whether the silhouette is missing because:
+
+- The SVG component was never created
+- The SVG component is not mounted
+- Showcase state is not being passed to it
+- The element has `display: none`, `visibility: hidden`, or zero opacity
+- Its width or height is zero
+- It is positioned outside the viewport
+- It is behind the background because of an incorrect `z-index`
+- It is clipped by `overflow: hidden`
+- Its SVG paths have no visible fill or stroke
+- Its animation never starts
+- Reduced-motion logic is incorrectly disabling it for everyone
+- The component is removed before the interface finishes fading
+- The image is using an invalid asset path
+
+Fix the actual cause rather than adding unrelated duplicate code.
+
+## Create the silhouette if it is missing
+
+If no complete hiker-and-dog SVG currently exists, create an original local SVG component containing:
+
+- A gender-neutral adult hiker
+- A backpack
+- A natural walking pose
+- Optional trekking poles
+- A medium-to-large dog walking beside the hiker
+- An optional loose leash
+
+Use a solid silhouette design.
+
+Do not use an external image, GIF, video, stock animation, paid API, or runtime AI.
+
+## Visibility and layer order
+
+During Showcase mode, use a clear layer order:
+
+1. Selected background image
+2. Hiker-and-dog animation
+3. Wake-event capture layer, if one exists
+
+The hiker-and-dog animation must appear above the background.
+
+Use an appropriate structure such as:
+
+- Background layer: `z-index: 0`
+- Hiker-and-dog layer: `z-index: 2`
+- Wake-event layer: high enough to capture activity but visually transparent
+
+The hiker-and-dog layer must use:
+
+- `position: fixed`
+- A position near the bottom of the viewport
+- `pointer-events: none`
+- `aria-hidden="true"`
+- Visible opacity while Showcase mode is active
+
+Do not allow a parent element’s opacity transition to unintentionally hide the silhouette.
+
+The silhouette should not be placed inside the normal application interface container that fades to opacity zero.
+
+Mount it in the Showcase overlay or another separate top-level layer.
+
+## Size and placement
+
+On desktop:
+
+- Hiker height should be approximately 12–18% of the viewport height.
+- Dog should be naturally proportionate.
+- The complete group should remain fully visible.
+- Position the feet and paws slightly above the bottom edge.
+
+Use responsive sizing such as:
+
+`height: clamp(90px, 15vh, 190px);`
+
+Do not use a zero-sized container.
+
+The group must enter from beyond one side of the screen, cross the viewport, and exit beyond the opposite side.
+
+## Silhouette color
+
+Use a dark charcoal or black silhouette by default.
+
+Ensure all visible SVG parts have an explicit inherited color, such as:
+
+- `fill="currentColor"`
+- `stroke="currentColor"` where appropriate
+
+Do not leave the SVG paths with `fill="none"` unless they are intentionally stroke-only.
+
+Use full opacity.
+
+If the selected background is very dark, use either:
+
+- A light silhouette based on the background’s contrast setting, or
+- A subtle contrasting outline or shadow
+
+The hiker and dog must remain clearly visible.
+
+## Animation
+
+Animate the complete group across the viewport using CSS transforms.
+
+The group must:
+
+- Move smoothly across the screen in approximately 30–45 seconds
+- Exit completely
+- Pause 5–10 seconds
+- Return from the opposite side
+- Face the direction of travel
+- Alternate direction on each pass
+
+Use subtle internal walking motion for:
+
+- Hiker legs
+- Hiker arms
+- Backpack
+- Dog legs
+- Dog body
+- Dog tail
+
+The horizontal movement and internal walking motion must start whenever Showcase mode becomes active.
+
+Restart the animation cleanly each time Showcase mode opens.
+
+Stop and hide it when Showcase mode closes.
+
+## Reduced motion
+
+Only disable the moving animation when this media query is actually active:
+
+`@media (prefers-reduced-motion: reduce)`
+
+Do not accidentally apply reduced-motion styling to all users.
+
+In reduced-motion mode, either show a stationary hiker-and-dog silhouette or hide it.
+
+## Manual and automatic Showcase modes
+
+The silhouette must appear in both:
+
+- Manual Showcase mode started with the Showcase pill
+- Automatic Showcase mode started after five minutes
+
+Both must use the same shared Showcase overlay and animation component.
+
+Do not implement it for only one activation method.
+
+## Required testing
+
+Inspect the rendered application and test:
+
+1. Select a built-in background.
+2. Click Showcase.
+3. Confirm the hiker and dog are immediately visible.
+4. Confirm they move across the lower part of the screen.
+5. Confirm they are above the background and not behind it.
+6. Confirm the entire hiker and dog remain within the visible viewport.
+7. Exit Showcase and confirm the figures disappear.
+8. Open Showcase again and confirm the animation restarts.
+9. Wait for automatic Showcase mode and confirm the figures also appear there.
+10. Test a light background and a dark background.
+11. Test desktop and mobile layouts.
+12. Confirm pointer movement still exits Showcase normally.
+13. Confirm all gear-list data remains unchanged.
+
+Do not report completion until you have visually verified the hiker and dog in the running application.
+
+Report:
+
+- The cause of the missing silhouette
+- Which files were changed
+- Where the SVG component is mounted
+- Its layer and `z-index`
+- Whether it appears in both manual and automatic Showcase modes
+- Whether every test passed
