@@ -1,0 +1,94 @@
+Make the new heavier-stroke lock icon always use exactly the same color as its associated text.
+
+Do not change the icon’s current size, shape, stroke thickness, spacing, or alignment.
+
+## Required behavior
+
+1. The lock icon beside “Save” must always match the exact current color of the “Save” text.
+
+2. The lock icon beside “Locker” must always match the exact current color of the “Locker” heading text.
+
+3. The icon color must change automatically whenever the associated text color changes, including:
+
+- Normal state
+- Hover state
+- Focus state
+- Active or pressed state
+- Disabled state
+- Light and dark themes, if supported
+
+4. When the text turns white, the icon must turn white at the same time.
+
+Examples:
+
+- Dark text = dark icon
+- White text = white icon
+- Disabled text color = matching disabled icon color
+- Hover text color = matching hover icon color
+
+## Implementation
+
+Make the SVG inherit color from the same parent element as the associated text.
+
+Use:
+
+stroke="currentColor"
+
+For any portions of the icon that are intentionally filled, use:
+
+fill="currentColor"
+
+The icon and text must inherit the same CSS `color` property from the same parent control or heading container.
+
+Do not assign the icon a separate approximate color.
+
+Remove or override all hard-coded icon styling, including:
+
+- Hexadecimal color values
+- RGB or HSL color values
+- Gray or muted utility classes
+- Separate icon-color classes
+- CSS filters
+- Reduced opacity
+- stroke-opacity below 1
+- fill-opacity below 1
+- Inline styles that override `currentColor`
+
+Use full opacity:
+
+opacity: 1;
+stroke-opacity: 1;
+fill-opacity: 1;
+
+If the SVG contains nested paths, lines, rectangles, circles, or groups, verify that none of them has a hard-coded stroke or fill color that prevents inheritance.
+
+## Preserve the current appearance
+
+Keep the improved icon sizing that is already working.
+
+Do not change:
+
+- Icon dimensions
+- Icon design
+- Stroke thickness
+- Spacing
+- Alignment
+- Save functionality
+- Locker functionality
+- Toolbar layout
+- Locker panel layout
+- Other icons or controls
+
+## Verification
+
+Visually test every relevant state and confirm:
+
+1. The Save icon is exactly the same color and darkness as the word “Save.”
+2. The Locker icon is exactly the same color and darkness as the word “Locker.”
+3. When the Save text turns white, the Save icon also turns white.
+4. When the Locker text turns white, the Locker icon also turns white.
+5. When either text changes color during hover, focus, active, or disabled states, its icon changes to the identical color.
+6. The icons are not lighter, grayer, or more transparent than their associated text.
+7. The current icon size and heavier stroke remain unchanged.
+
+Make the correction directly in the existing application.

@@ -81,9 +81,9 @@ export function LockerPanel({ entries, onLoad, onDelete, onRename }: LockerPanel
           : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         }
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-foreground">
             <LockerIcon className="w-4 h-4 flex-shrink-0" />
-            <h2 className="font-semibold text-foreground text-base">Locker</h2>
+            <h2 className="font-semibold text-base">Locker</h2>
             {entries.length > 0 && (
               <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                 {entries.length}
