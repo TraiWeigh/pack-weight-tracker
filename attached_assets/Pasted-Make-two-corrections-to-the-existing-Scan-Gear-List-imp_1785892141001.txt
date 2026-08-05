@@ -1,0 +1,106 @@
+Make two corrections to the existing Scan Gear List import workflow.
+
+Do not change the working file parsing, category assignment, Type, Description, Weight, Locker, Reset, Preview, Print, or PDF functions.
+
+## 1. Clear the Scan Gear List panel after a successful import
+
+Currently, after clicking “Import Selected Items,” the imported rows become pale and remain visible with messages such as:
+
+- 0 items found
+- 69 added
+- All items added!
+
+This should not remain on the screen.
+
+After every selected item has been successfully added to its destination category, return the Scan Gear List panel to the exact initial upload state it showed before a file was selected.
+
+The restored panel must show:
+
+- The original drag-and-drop upload area
+- “Drop your packing list here”
+- “or click to browse”
+- The supported-file text
+
+Clear all temporary import state, including:
+
+- Uploaded filename
+- File-input value
+- Extracted rows
+- Selected-row state
+- Import count
+- Added count
+- Warnings
+- Validation messages
+- Success message
+- Review-table scroll position
+- Horizontal and vertical table scrolling
+- Any disabled or pale imported-row display
+
+Do not leave the completed review table visible.
+
+Do not require the user to click “Import another file.”
+
+The panel should automatically be ready for another upload immediately after a successful import.
+
+Keep the Scan Gear List panel expanded unless its normal initial behavior is collapsed.
+
+Only clear the import panel after the entire import succeeds.
+
+If importing fails, keep the review data visible and show the error so the user can correct or retry it.
+
+## 2. Imported gear items must be unchecked
+
+Currently, every newly imported gear item is checked after being added to its category.
+
+That is incorrect.
+
+Every newly imported item must be added with its gear-list checkbox unchecked.
+
+Set the imported item’s packed, selected, checked, or included state to false, using the application’s existing field name.
+
+This applies to every imported item regardless of:
+
+- The source spreadsheet checkbox value
+- TRUE or FALSE values in the uploaded file
+- Whether the row was selected on the import review screen
+- Its destination category
+- Whether it was imported from Excel, Word, or PDF
+
+The checkbox on the import review screen means only:
+
+“Include this row in the import.”
+
+It must not become the item’s packed or checked status after import.
+
+Required behavior:
+
+- A checked review-row checkbox means the row will be imported.
+- The newly created gear item is still unchecked in its category.
+- The user must manually check the item later when they decide to include or pack it.
+
+Do not change:
+
+- Type
+- Description
+- Weight
+- Quantity
+- Destination category
+- Existing items
+- Existing checked states of items already in the list
+
+## Required test
+
+Test this exact workflow:
+
+1. Upload a valid gear-list file.
+2. Leave multiple rows selected in the import review screen.
+3. Click “Import Selected Items.”
+4. Confirm every selected row is added to its proper category.
+5. Confirm every newly imported gear item is unchecked.
+6. Confirm existing gear items retain their previous checkbox states.
+7. Confirm the Scan Gear List panel immediately returns to the original empty upload interface.
+8. Confirm no pale review table, added count, or success state remains.
+9. Upload another file immediately and confirm the importer works again.
+10. Force an import failure and confirm the review screen remains available rather than being cleared.
+
+Make these corrections directly in the existing application and report which files were changed and whether all tests passed.

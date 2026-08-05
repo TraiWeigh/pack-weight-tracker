@@ -197,12 +197,21 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
       ? (it.destination || targetCategory || categoryOrder[0] || '')
       : (targetCategory || categoryOrder[0] || '');
     if (!cat) return;
-    onAddItem(cat, { sub: it.sub, desc: it.desc, weightOz: it.weightOz, checked: true });
+    onAddItem(cat, { sub: it.sub, desc: it.desc, weightOz: it.weightOz, checked: false });
     setItems(prev => prev.map((item, i) => i === idx ? { ...item, added: true, selected: false } : item));
   };
 
   const addSelected = () => {
-    items.forEach((_, idx) => { if (items[idx].selected && !items[idx].added) addOne(idx); });
+    const toAdd = items.filter(i => i.selected && !i.added);
+    if (toAdd.length === 0) return;
+    toAdd.forEach(it => {
+      const cat = hasDestinations
+        ? (it.destination || targetCategory || categoryOrder[0] || '')
+        : (targetCategory || categoryOrder[0] || '');
+      if (!cat) return;
+      onAddItem(cat, { sub: it.sub, desc: it.desc, weightOz: it.weightOz, checked: false });
+    });
+    reset();
   };
 
   const pending     = items.filter(i => !i.added);
