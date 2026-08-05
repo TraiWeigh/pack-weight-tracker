@@ -132,6 +132,154 @@ export function extractFromText(text: string): ExtractedItem[] {
   return results;
 }
 
+// ── TrailWeigh-specific PDF parser ────────────────────────────────────────────
+//
+// Understands the structured TrailWeigh PACK WEIGHT PDF format:
+//   Category header row: "X CategoryName Description Weight Add Unit Qty"
+//   Gear row:            "TRUE|FALSE Type Description... Weight Add [oz] [Qty]"
+//   Stop condition:      any page containing "Meal Planner"
+//
+// Key insight: we use a GREEDY name capture `(.+)` so the regex engine finds
+// the RIGHTMOST consecutive number pair — this is always (Weight, Add) even
+// when the gear name contains a number (e.g. "Durston Wapta 30").
+// We do NOT call applyGearClassification on PDF items because the PDF already
+// provides explicit category context via the section header.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PDF_CATEGORY_NAMES: Record<string, string> = {
+  'backpack':          'Backpack',
+  'shelter':           'Shelter',
+  'sleep':             'Sleep',
+  'clothing packed':   'Clothing Packed',
+  'kitchen':           'Kitchen',
+  'electronics':       'Electronics',
+  'toiletries + med':  'Toiletries + Med',
+  'toiletries':        'Toiletries + Med',
+  'hydration':         'Hydration',
+  'clothing worn':     'Clothing Worn',
+  'miscellaneous':     'Miscellaneous',
+  'misc':              'Miscellaneous',
+};
+
+// Known gear type phrases — sorted longest-first so multi-word types are
+// matched preferentially over single-word prefixes.
+const PDF_TYPE_PHRASES: string[] = [
+  'cold soak container', '1 gal freezer bag', '1 qrt freezer bag',
+  'sleeping bag liner', 'bear canister', 'inflatable pad', 'trekking poles',
+  'trekking pole', 'water bladder', 'water bottle', 'water filter',
+  'sleeping bag', 'sleeping pad', 'ground sheet', 'puffy jacket',
+  'down jacket', 'rain jacket', 'rain shell', 'wind jacket', 'wind shirt',
+  'wind pants', 'puffy pants', 'puffy vest', 'tent stakes', 'tent stake',
+  'stake bag', 'tent pole', 'down socks', 'down booties', 'down hood',
+  'foam pad', 'sleep socks', 'neck warmer', 'neck gaiter', 'base layer',
+  'mid layer', 'thermal pants', 'rain pants', 'pack liner', 'food bag',
+  'bear bag', 'power bank', 'sun hat', 'bug bivy', 'bug net', 'head net',
+  'repair kit', 'med kit', 'pot/mug', 'midlayer', 'windbreaker', 'poncho',
+  'backpack', 'hammock', 'bivy', 'bivvy', 'tarp', 'tent', 'quilt', 'pillow',
+  'stove', 'spoon', 'fuel', 'filter', 'headlamp', 'balaclava', 'beanie',
+  'gloves', 'mittens', 'gaiters', 'shelter', 'sleep',
+];
+
+// Category header: must start with "X" (the TrailWeigh checkbox placeholder in the header row)
+const PDF_CAT_HDR_RE = /^x\s+(backpack|shelter|sleep|clothing\s+packed|kitchen|electronics|toiletries(?:\s*\+\s*med)?|hydration|clothing\s+worn|miscellaneous|misc)\b/i;
+
+// Lines to skip: totals, summary labels, column headers, nutrition
+const PDF_SKIP_RE = /^(?:total|grand\s+total|base\s+weight|expendables|trip\s+total|sub\s+total|daily\s+average|calories|protein\b|fat\b|carbs?\b|description\b|weight\b|add\b|unit\b|qty\b|category\b|type\b|page\s*\d+|category\s+weight)/i;
+
+// Category summary rows: "Backpack 0.875 lb", "Base Weight 4.6 lb" etc.
+const PDF_SUMMARY_ROW_RE = /^(?:backpack|shelter|sleep|clothing(?:\s+(?:packed|worn))?|kitchen|electronics|toiletries|hydration|miscellaneous|misc|worn|base\s+weight|expendables|total)\s+[\d.]+\s*(?:lb|oz|g|kg)\b/i;
+
+// Gear row: starts with TRUE or FALSE (possibly concatenated with type text)
+const PDF_CHECKBOX_RE = /^(?:true|false)(?=\s|[A-Z])/i;
+
+// Gear row parser: GREEDY name match so the regex engine backtracks to find
+// the RIGHTMOST Weight+Add number pair before the optional unit/qty/summary.
+// Trailing summary columns like "Sleep 0.8125 lb" are absorbed by `(?:\s+[A-Za-z].*)?$`.
+const PDF_ROW_RE = /^(.+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s*(?:oz|g(?:rams?)?|lbs?|pounds?|kg(?:s|ilograms?)?)?(?:\s*\d+)?(?:\s+[A-Za-z].*)?$/i;
+
+export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] {
+  const results: ExtractedItem[] = [];
+  let currentCategory = '';
+  let reachedMealPlanner = false;
+
+  for (const page of pages) {
+    if (reachedMealPlanner) break;
+
+    // Mark meal-planner boundary but still process lines before the heading
+    if (/meal\s*planner/i.test(page.text)) reachedMealPlanner = true;
+
+    const lines = page.text
+      .split(/[\r\n]+/)
+      .map(l => l.trim())
+      .filter(l => l.length > 1);
+
+    for (const line of lines) {
+      // Hard stop at Meal Planner heading
+      if (/^meal\s*planner\b/i.test(line)) break;
+
+      // ── Category header detection (before checkbox check) ──────────────────
+      const catMatch = PDF_CAT_HDR_RE.exec(line);
+      if (catMatch) {
+        const key = catMatch[1].toLowerCase().replace(/\s*\+\s*/g, ' + ').trim();
+        currentCategory = PDF_CATEGORY_NAMES[key] ?? '';
+        continue;
+      }
+
+      // ── Skip non-gear lines ───────────────────────────────────────────────
+      if (PDF_SKIP_RE.test(line))        continue;
+      if (PDF_SUMMARY_ROW_RE.test(line)) continue;
+
+      // ── Only process checkbox rows ────────────────────────────────────────
+      if (!PDF_CHECKBOX_RE.test(line)) continue;
+
+      // Strip the TRUE/FALSE prefix; handle concatenation ("FALSEPack Liner")
+      const gearLine = line.replace(/^(?:true|false)\s*/i, '').trim();
+      if (gearLine.length < 2) continue;
+
+      // ── Parse name + weight ───────────────────────────────────────────────
+      const m = PDF_ROW_RE.exec(gearLine);
+      if (!m) continue;
+
+      const nameText  = m[1].trim().replace(/\s+/g, ' ');
+      const weightOz  = parseFloat(m[2]);
+
+      if (!nameText || weightOz <= 0 || weightOz > 500) continue;
+
+      // ── Split nameText into Type (sub) + Description (desc) ──────────────
+      let sub  = '';
+      let desc = '';
+      const nameLower = nameText.toLowerCase();
+
+      for (const phrase of PDF_TYPE_PHRASES) {
+        if (nameLower === phrase || nameLower.startsWith(phrase + ' ')) {
+          sub  = nameText.slice(0, phrase.length).trim();
+          // Normalise capitalisation (e.g. "pack liner" → "Pack Liner")
+          sub  = sub.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          desc = nameText.slice(phrase.length).trim();
+          break;
+        }
+      }
+
+      if (!sub) {
+        // Unknown type — take the first word as sub-type
+        const sp = nameText.search(/\s/);
+        if (sp > 0) { sub = nameText.slice(0, sp); desc = nameText.slice(sp + 1).trim(); }
+        else          desc = nameText;
+      }
+
+      results.push({
+        sub:         sub.slice(0, 60),
+        desc:        desc.slice(0, 200),
+        weightOz:    Math.round(weightOz * 100) / 100,
+        warning:     false,
+        destination: currentCategory || undefined,
+      });
+    }
+  }
+
+  return results;
+}
+
 // ── Gear-type → canonical destination routing ─────────────────────────────────
 //
 // These sets drive Priority 1 (Consumables) and Priority 2 (Shelter / Sleep)
@@ -624,17 +772,22 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
     let items: ExtractedItem[] = [];
 
     if (ext === 'pdf' || mimetype === 'application/pdf') {
-      let pdfText: string;
       try {
         const inst = new PDFParse({ data: buffer, verbosity: 0 });
         const result = await inst.getText();
-        pdfText = result.pages.map((p: { text: string }) => p.text).join('\n');
+        // Use the structured TrailWeigh PDF parser (page-aware, category-aware).
+        // Falls back to the generic text heuristic only if nothing was found,
+        // e.g. a plain-text PDF without the TrailWeigh checkbox row format.
+        items = extractFromPdfPages(result.pages);
+        if (items.length === 0) {
+          const flatText = result.pages.map((p: { text: string }) => p.text).join('\n');
+          items = extractFromText(flatText);
+        }
       } catch (pdfErr: any) {
         console.error('[import-gear] pdf-parse error:', pdfErr?.message);
         res.status(422).json({ error: 'Could not read this PDF. Make sure it is not password-protected and contains selectable text.' });
         return;
       }
-      items = extractFromText(pdfText);
 
     } else if (ext === 'docx' || ext === 'doc' || mimetype?.includes('wordprocessingml')) {
       const result = await mammoth.extractRawText({ buffer });

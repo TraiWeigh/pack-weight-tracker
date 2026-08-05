@@ -1,0 +1,291 @@
+Fix TrailWeigh’s PDF gear-list parser using the real uploaded PACK WEIGHT PDF.pdf.
+
+The PDF now uploads without the pdfParse error, but the resulting review table is incorrect.
+
+Current rendered result:
+
+- Only 10 items are found
+- Every item is assigned to Backpack
+- Rows such as these are incorrectly created:
+  - FALSEPack Liner Compa...
+  - FALSEFuel 7.68 0
+  - oz / 1 Backpack / 14.08 oz
+  - lb / Shelter / 10.4 oz
+  - Unit / Qty Sleep / 12.96 oz
+  - Base Weight
+  - Expendables
+  - Total
+- Actual gear rows such as ULA Ultra Circuit, Zpacks Nero Classic Backpack, Zpacks Free-Zip 2, and UGQ Bandit 10F are not being parsed correctly
+
+Do not change the working PDF library fix.
+
+## Understand the real PDF structure
+
+The real PDF contains:
+
+### Pages 1–4: actual gear checklist
+
+Category headers follow this pattern:
+
+- X Backpack Description Weight Add
+- X Shelter Description Weight Add
+- X Sleep Description Weight Add
+- X Clothing Packed Description Weight Add
+- X Kitchen Description Weight Add
+- X Electronics Description Weight Add
+- X Toiletries + Med Description Weight Add
+- X Hydration Description Weight Add
+- X Clothing Worn Description Weight Add
+- X Miscellaneous Description Weight Add
+
+Gear rows follow this general structure:
+
+`TRUE/FALSE + Type + Description + Weight + Add`
+
+Examples:
+
+- FALSE Backpack ULA Ultra Circuit 40.8 0
+- TRUE Backpack Zpacks Nero Classic Backpack 14 14
+- FALSE Tent Zpacks Free-Zip 2 with poles / repair kit 36.8 0
+- TRUE Ground Sheet Zpacks Nylo Pro Groundsheet 5' x 8' 4 4
+- FALSE Sleeping Bag UGQ Bandit 10F 26 0
+- TRUE Puffy Jacket Enlightened Torid Jacket 10.2 10.2
+
+The final two numbers are:
+
+1. Weight
+2. Add
+
+TrailWeigh must use the Weight value, not the Add value.
+
+### Pages 5–8: summary and auxiliary tables
+
+These pages include:
+
+- Unit / Qty columns
+- Category Weight Unit
+- Backpack, Shelter, Sleep summary totals
+- Base Weight
+- Expendables
+- Total
+- First Aid Kit
+- Repair Kit
+- Empty rows and unit-only values
+
+These are not normal gear-list rows and must not be imported.
+
+### Pages 9–10: Meal Planner
+
+These pages contain meal and nutrition information.
+
+Do not import any Meal Planner rows as gear.
+
+## Parse page-by-page
+
+Use the `pages` output returned by the current `PDFParse.getText()` call.
+
+Do not immediately flatten every PDF page into one unstructured text block.
+
+Parse each page separately so page boundaries and section context are preserved.
+
+## Category detection
+
+Maintain a `currentCategory` while reading the actual gear checklist.
+
+When a line contains a recognized category header, update `currentCategory`.
+
+Recognized headers:
+
+- Backpack
+- Shelter
+- Sleep
+- Clothing Packed
+- Kitchen
+- Electronics
+- Toiletries + Med
+- Hydration
+- Clothing Worn
+- Miscellaneous
+
+All following valid gear rows belong to that category until another category header is found.
+
+The category from the PDF header must override generic semantic category guessing.
+
+Do not default every PDF item to Backpack.
+
+## Gear-row parsing
+
+For each candidate gear row:
+
+1. Remove a leading TRUE or FALSE checkbox value.
+2. Extract Type.
+3. Extract Description.
+4. Extract Weight.
+5. Ignore the Add value.
+6. Assign the current category.
+7. Set the imported checkbox state to unchecked.
+
+The parser must support multi-word Types and Descriptions.
+
+Examples that must remain intact:
+
+- Pack Liner
+- Ground Sheet
+- Tent Stake
+- Sleeping Bag
+- Inflatable Pad
+- Puffy Jacket
+- Water Bottle
+- Water Bladder
+- Trekking Pole
+
+Do not merge TRUE/FALSE into the Type.
+
+For example:
+
+Incorrect:
+`FALSEPack Liner`
+
+Correct:
+Type: `Pack Liner`
+
+## Weight handling
+
+The PDF values in the gear tables are ounces unless a row explicitly includes another unit.
+
+Do not convert summary values expressed in pounds into fake gear-item ounces.
+
+Examples:
+
+- ULA Ultra Circuit = 40.8 oz
+- Zpacks Nero Classic Backpack = 14 oz
+- Zpacks Free-Zip 2 = 36.8 oz
+- UGQ Bandit 10F = 26 oz
+- Fire-Maple Petrel G3 Pot = 5.7 oz
+
+Do not use:
+
+- Add values
+- Category totals
+- Base Weight
+- Expendables
+- Total
+- Unit / Qty numbers
+
+## Ignore non-gear lines
+
+Reject lines and rows that are clearly:
+
+- Category headers
+- Column headers
+- Total rows
+- Category summary rows
+- Base Weight
+- Expendables
+- Trip totals
+- Daily average
+- Meal Planner
+- Calories
+- Protein
+- Fat
+- Carbs
+- First Aid Kit headings
+- Repair Kit headings
+- Unit-only rows
+- Qty-only rows
+- Empty rows
+- Page numbers
+- Chart labels
+- TRUE/FALSE with no Type or Description
+- Rows without a valid gear description and item weight
+
+Stop normal gear parsing when the document reaches the Meal Planner section.
+
+## Preserve current working features
+
+Do not change:
+
+- PDFParse v2 class implementation
+- Excel importing
+- Word importing
+- Numbers importing
+- Editable review table
+- Add Row
+- Per-row category editing
+- Type editing
+- Description editing
+- Weight and unit editing
+- Validation
+- Selected-item importing
+- Imported items remaining unchecked
+- Panel reset after import
+- Image scanning remaining removed
+
+## Required real PDF test
+
+Use the actual PACK WEIGHT PDF.pdf that produced the incorrect 10-item review table.
+
+Confirm these rows appear correctly:
+
+### Backpack
+- Backpack — ULA Ultra Circuit — 40.8 oz
+- Backpack — Zpacks Nero Classic Backpack — 14 oz
+- Backpack — Durston Wapta 30 — 18.3 oz
+- Pack Liner — 18G Compactor Bag — 1.7 oz
+
+### Shelter
+- Tent — Zpacks Free-Zip 2 with poles / repair kit — 36.8 oz
+- Ground Sheet — Zpacks Nylo Pro Groundsheet 5' x 8' — 4 oz
+- Tent Stake — Easton Nano — 0.6 oz
+- Tarp — Ounce Design Adobi DCF Tarp — 5.8 oz
+
+### Sleep
+- Sleeping Bag — UGQ Bandit 10F — 26 oz
+- Inflatable Pad — Paria Elevate S insulated sleeping pad — 10 oz
+
+### Clothing Packed
+- Puffy Jacket — Enlightened Torid Jacket — 10.2 oz
+- Midlayer — Zpacks Octa Fleece Hoody — 5.3 oz
+
+### Kitchen
+- Pot/Mug — Fire-Maple Petrel G3 600ml HX Pot — 5.7 oz
+
+### Hydration
+- Water Bottle — CNOC water bottle 1L — 3.2 oz
+- Filter — Platypus Quickdraw — 2.4 oz
+
+Confirm these are not imported:
+
+- Total
+- Base Weight
+- Expendables
+- Unit
+- Qty
+- Category Weight Unit
+- Backpack 0.88 lb
+- Shelter 0.65 lb
+- Sleep 0.81 lb
+- Meal Planner rows
+- Nutrition rows
+
+## Rendered application test
+
+1. Upload the real PDF through Scan Gear List.
+2. Confirm actual gear rows appear in their correct categories.
+3. Confirm Type, Description, Weight, and Unit are editable.
+4. Confirm summary and meal-planner rows are absent.
+5. Import several items from different categories.
+6. Confirm each item appears in the matching TrailWeigh category.
+7. Confirm all imported items are unchecked.
+8. Confirm the Scan Gear List panel resets.
+
+Report:
+
+- Why the parser returned only 10 incorrect rows
+- Why everything defaulted to Backpack
+- How PDF page and category context are now preserved
+- How Weight is distinguished from Add
+- How summary and Meal Planner pages are excluded
+- Total valid gear items found
+- Which files were changed
+- Results of the real rendered PDF test

@@ -1,2 +1,3 @@
 - [Locker Save — active file identity tracking](locker-save-active-file.md) — new-tab path never sets activeLockerFile; fix: stash entry id/name in sessionStorage during usePackData init, consume in mount effect.
 - [pdf-parse v2 API](pdf-parse-v2-api.md) — v2.4.5 exports a class not a default fn; use `new PDFParse({ data: buffer, verbosity: 0 })` then `await inst.getText()`.
+- [TrailWeigh PDF parser regex](trailweigh-pdf-regex.md) — greedy `(.+)` not lazy `(.+?)` in PDF_ROW_RE; lazy grabs model numbers (e.g. "Wapta 30") as the weight instead of the real value.
