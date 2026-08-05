@@ -147,6 +147,8 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
   const [editedRemainder,  setEditedRemainder]  = useState('');
   const [showRemainder,    setShowRemainder]    = useState(false);
   const [isAnalyzing,      setIsAnalyzing]      = useState(false);
+  // Feedback shown in the fallback phase after an Analyze Again attempt
+  const [fallbackMsg, setFallbackMsg] = useState<{ kind: 'warn' | 'error'; text: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -166,6 +168,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     setEditedRemainder('');
     setShowRemainder(false);
     setIsAnalyzing(false);
+    setFallbackMsg(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -295,6 +298,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
    */
   const analyzeAgain = async (text: string) => {
     if (!text.trim()) return;
+    setFallbackMsg(null);
     setIsAnalyzing(true);
     try {
       const resp = await fetch('/api/parse-text', {
@@ -302,33 +306,36 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ text }),
       });
+
+      if (!resp.ok) {
+        throw new Error(`Server returned ${resp.status}`);
+      }
+
       const data = await resp.json();
       const parsed: ParsedItem[] = data.items ?? [];
 
       if (parsed.length === 0) {
-        // Still nothing — stay in fallback, show a hint
-        setEditedOcrText(text);
-        setIsAnalyzing(false);
+        setFallbackMsg({
+          kind: 'warn',
+          text: 'No gear items were recognized. Format each item on its own line, such as: Tent — 18.5 oz',
+        });
         return;
       }
 
-      // Merge with any existing items (in case this is a re-analyze of the remainder)
+      // Merge with any existing items (supports re-analyzing the remainder from review phase)
       setItems(prev => {
         const fresh = parsed.map(item => parsedToEdited(item, categoryOrder));
         return [...prev, ...fresh];
       });
 
-      if (data.remainder) {
-        setUnrecognizedText(data.remainder);
-        setEditedRemainder(data.remainder);
-      } else {
-        setUnrecognizedText('');
-        setEditedRemainder('');
-      }
-
+      setUnrecognizedText(data.remainder ?? '');
+      setEditedRemainder(data.remainder ?? '');
       setPhase('review');
     } catch {
-      // silently stay in current phase
+      setFallbackMsg({
+        kind: 'error',
+        text: 'The text could not be analyzed. Please try again.',
+      });
     } finally {
       setIsAnalyzing(false);
     }
@@ -362,18 +369,51 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     }));
 
   const addSelected = () => {
-    const toAdd = items.filter(i => i.selected && !i.added);
-    if (toAdd.length === 0) return;
-    let anyInvalid = false;
-    setItems(prev => prev.map(it => {
-      if (!it.selected || it.added) return it;
-      const errs = validateRow(it, categoryOrder);
-      if (Object.keys(errs).length > 0) { anyInvalid = true; return { ...it, errors: errs }; }
+    // Collect pending (selected, not yet added) items with their original indices
+    const pending = items
+      .map((it, idx) => ({ ...it, idx }))
+      .filter(it => it.selected && !it.added);
+
+    if (pending.length === 0) return;
+
+    // Validate outside setItems — state updaters must be pure (no side effects)
+    const validated = pending.map(it => ({
+      ...it,
+      errors: validateRow(it, categoryOrder),
+    }));
+    const invalid = validated.filter(it => Object.keys(it.errors).length > 0);
+    const valid   = validated.filter(it => Object.keys(it.errors).length === 0);
+
+    if (invalid.length > 0) {
+      // Write validation errors back into the item list (pure update, no side effects)
+      setItems(prev =>
+        prev.map((it, i) => {
+          const v = validated.find(vi => vi.idx === i);
+          if (!v || !it.selected || it.added) return it;
+          return { ...it, errors: v.errors };
+        }),
+      );
+    }
+
+    // Call onAddItem for each valid item — outside the state updater
+    for (const it of valid) {
       const weightOz = displayToOz(it.displayWeight, it.weightUnit);
       onAddItem(it.destination, { sub: it.sub, desc: it.desc, weightOz, checked: false });
-      return { ...it, added: true, selected: false, errors: {} };
-    }));
-    if (!anyInvalid) reset();
+    }
+
+    if (invalid.length === 0) {
+      // All selected rows were valid — reset the whole panel
+      reset();
+    } else {
+      // Some rows were invalid — mark valid ones as added but keep the panel open
+      setItems(prev =>
+        prev.map((it, i) => {
+          const v = valid.find(vi => vi.idx === i);
+          if (!v) return it;
+          return { ...it, added: true, selected: false, errors: {} };
+        }),
+      );
+    }
   };
 
   // ── Derived ───────────────────────────────────────────────────────────────
@@ -537,10 +577,15 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                 </button>
               </div>
 
-              {!isAnalyzing && editedOcrText.trim() && items.length === 0 && phase === 'fallback' && (
-                <p className="text-[10px] text-muted-foreground">
-                  No items recognized yet. Try formatting each line as: <em>Item name — weight oz</em>
-                </p>
+              {fallbackMsg && (
+                <div className={`flex items-start gap-2 p-2.5 rounded-lg text-[11px] leading-snug ${
+                  fallbackMsg.kind === 'error'
+                    ? 'bg-destructive/5 border border-destructive/20 text-destructive'
+                    : 'bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-700/40 dark:text-amber-300'
+                }`}>
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
+                  <span>{fallbackMsg.text}</span>
+                </div>
               )}
             </div>
           )}

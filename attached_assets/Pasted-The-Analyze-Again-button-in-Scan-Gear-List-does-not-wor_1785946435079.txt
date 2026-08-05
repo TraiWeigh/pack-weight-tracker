@@ -1,0 +1,162 @@
+The “Analyze Again” button in Scan Gear List does not work.
+
+Current workflow:
+
+1. An image is uploaded and read with OCR.
+2. TrailWeigh opens “Review Extracted Text.”
+3. The user edits the OCR text into clearer item-and-weight lines.
+4. Clicking “Analyze Again” produces no visible result.
+
+Fix the actual Analyze Again workflow.
+
+## Relevant files
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+- `artifacts/api-server/src/routes/importGear.ts`
+- The existing `POST /api/parse-text` endpoint
+
+Do not create another parsing endpoint or another review component.
+
+## Required button behavior
+
+When the user clicks Analyze Again:
+
+1. Read the current edited text from the textarea.
+2. Confirm the text is not blank.
+3. Show a temporary button state:
+   `Analyzing…`
+4. Send the edited text to:
+   `POST /api/parse-text`
+5. Wait for the response.
+6. If one or more gear items are returned:
+   - Convert them into the existing editable review-row format.
+   - Preserve Type, Description, Weight, Unit, destination, and import-selection fields.
+   - Switch from “Review Extracted Text” to the normal editable review table.
+7. If no items are returned:
+   - Remain on “Review Extracted Text.”
+   - Preserve the user’s edited text.
+   - Show:
+     `No gear items were recognized. Format each item on its own line, such as: Tent — 18.5 oz`
+8. If the request fails:
+   - Preserve the edited text.
+   - Show:
+     `The text could not be analyzed. Please try again.`
+
+Do not silently do nothing.
+
+## Check the actual failure
+
+Trace the rendered button click and determine whether:
+
+- The button has no working `onClick`
+- The handler is receiving stale or empty text
+- The endpoint URL is incorrect
+- The request body field name does not match the backend
+- The backend expects JSON but the frontend sends another format
+- The response is not being parsed
+- The returned items are not being placed into review state
+- The phase is not being changed from fallback to review
+- An error is being swallowed
+
+Temporarily log:
+
+- Whether the button was clicked
+- Edited-text character count
+- Request body
+- HTTP response status
+- Number of returned items
+- Returned remainder text
+- Resulting interface phase
+
+Remove the temporary logs after the problem is fixed.
+
+## Request format
+
+Make the frontend and backend use the same JSON structure.
+
+For example:
+
+Frontend request:
+
+`{ "text": editedText }`
+
+Backend response:
+
+`{ "items": [...], "remainder": "..." }`
+
+Use the project’s actual field names, but they must match exactly.
+
+Make sure the API server has JSON body parsing enabled for this endpoint.
+
+## Manual-row behavior
+
+Keep “Add Item Manually” working.
+
+It must continue to:
+
+- Create one blank editable review row
+- Open the normal review table
+- Let the user enter Type, Description, Weight, Unit, and destination
+- Add nothing to the checklist until Import Selected Items is clicked
+
+## Do not change
+
+Do not change:
+
+- OCR image processing
+- Rotate or crop
+- Read Image
+- Raw OCR text
+- `/api/import-gear`
+- Editable review fields
+- Weight validation
+- Category routing
+- Imported items remaining unchecked
+- PDF, Word, Excel, or Numbers importing
+
+## Required rendered test
+
+Test this through the rendered application:
+
+1. Upload an image that opens Review Extracted Text.
+2. Replace the textarea contents with:
+
+Tent — 18.5 oz
+Sleeping Pad — 12 oz
+Rain Jacket — 7.2 oz
+Water — 2 lb
+
+3. Click Analyze Again.
+
+Confirm:
+
+- The button shows `Analyzing…` while processing.
+- The normal editable review table appears.
+- Four items appear with the correct weights.
+- Tent routes to Shelter.
+- Sleeping Pad routes to Sleep.
+- Rain Jacket routes to Clothing Packed.
+- Water routes to Consumables.
+
+4. Import the items.
+5. Confirm they appear unchecked.
+6. Confirm the Scan Gear List panel resets.
+
+Then test invalid text:
+
+1. Enter text with no recognizable gear or weight.
+2. Click Analyze Again.
+3. Confirm the edited text remains visible.
+4. Confirm a clear instructional message appears.
+5. Confirm the interface does not freeze or silently do nothing.
+
+Do not report completion based only on TypeScript.
+
+Report:
+
+- Why Analyze Again did nothing
+- Whether the failure was in the click handler, request, endpoint, response, or phase transition
+- Which files were changed
+- Whether the complete rendered Analyze Again test passed
