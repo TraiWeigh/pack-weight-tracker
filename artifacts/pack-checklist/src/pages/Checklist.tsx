@@ -416,6 +416,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   // ── New list in a new tab ─────────────────────────────────────────────────
   const handleNew = useCallback(() => {
+    // Opening a new tab creates a separate unsaved file — detach from the
+    // current Locker entry so this tab's Save button starts a fresh workflow.
+    setActiveLockerEntry(null);
     const uuid = crypto.randomUUID();
 
     // 1. Deep-clone the complete store — same structure that Save writes to Locker.
@@ -536,12 +539,24 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // the same Locker entry rather than creating a duplicate.
   const [activeLockerEntry, setActiveLockerEntry] = useState<LockerEntry | null>(null);
 
+  /**
+   * Primary Save action triggered by the toolbar Save button.
+   *
+   * • When a Locker file is currently active (opened in-place or previously
+   *   saved this session) → update that exact entry immediately, no dialog.
+   * • Otherwise → open the naming dialog so the user can create a new entry.
+   */
+  const handleSaveClick = () => {
+    if (activeLockerEntry) {
+      commitSaveReplace(activeLockerEntry.id, activeLockerEntry.name);
+      return;
+    }
+    openSaveDialog();
+  };
+
   const openSaveDialog = () => {
     setShowSaveDialog(true);
     setSaveConflictId(null);
-    // Pre-fill the name from the active Locker entry (in-place open path)
-    // so the user's first Save click routes to Replace on that file.
-    if (activeLockerEntry) setSaveName(activeLockerEntry.name);
     setTimeout(() => saveInputRef.current?.focus(), 50);
   };
 
@@ -565,7 +580,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = [entry, ...lockerEntries];
     setLockerEntries(updated);
     broadcastLocker(updated);
-    setActiveLockerEntry(null); // new file becomes the identity; clear in-place tracking
+    // Make this new entry the active save target so subsequent Save clicks
+    // update it in-place rather than asking for a name again.
+    setActiveLockerEntry(entry);
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -584,7 +601,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = lockerEntries.map(e => e.id === existingId ? entry : e);
     setLockerEntries(updated);
     broadcastLocker(updated);
-    setActiveLockerEntry(null); // file is now saved; clear in-place tracking
+    // Keep (and refresh) the active entry so subsequent Save clicks continue
+    // updating this same Locker file without reopening the naming dialog.
+    setActiveLockerEntry(entry);
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -708,6 +727,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const updated = lockerEntries.filter(e => e.id !== id);
       setLockerEntries(updated);
       broadcastLocker(updated);
+      // If the deleted entry is the active file, detach — it no longer exists.
+      setActiveLockerEntry(prev => (prev?.id === id ? null : prev));
       return;
     }
     setPendingDeleteIds([id]);
@@ -721,6 +742,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = lockerEntries.filter(e => !pendingDeleteIds.includes(e.id));
     setLockerEntries(updated);
     broadcastLocker(updated);
+    // If the active file was among those deleted, detach the save target.
+    setActiveLockerEntry(prev => (prev && pendingDeleteIds.includes(prev.id) ? null : prev));
     setShowDeleteDialog(false);
     setPendingDeleteIds([]);
     const msg = toDelete.length === 1
@@ -907,7 +930,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 )
               ) : (
                 <button
-                  onClick={openSaveDialog}
+                  onClick={handleSaveClick}
                   title="Save current list to Locker"
                   className={toolBtn}
                 >

@@ -1,0 +1,104 @@
+Correct the TrailWeigh Save behavior for files opened from Locker.
+
+## Current problem
+
+After a Locker file is opened in the current empty checklist window, clicking Save only opens a dialog asking for a file name.
+
+That is incorrect.
+
+The opened Locker file already has:
+
+- A file name
+- A Locker entry ID
+- An existing save target
+
+Clicking Save must update that same Locker file directly.
+
+The user should not have to enter its name again or choose Replace.
+
+## Required Save behavior
+
+### Existing Locker file
+
+When `activeLockerEntry` exists:
+
+- Save must update that exact Locker entry.
+- Use `activeLockerEntry.id` as the save target.
+- Keep its existing file name.
+- Do not open the naming dialog.
+- Do not show a duplicate-name conflict.
+- Do not require the user to click Replace.
+- Do not create a duplicate Locker file.
+
+The Save action should behave like a normal document Save.
+
+### New unsaved file
+
+When there is no `activeLockerEntry`:
+
+- Save may open the naming dialog.
+- Ask the user to name the file.
+- Create a new Locker entry.
+- After creation, make the new Locker entry the active save target.
+
+All later Save clicks must update that same new Locker entry directly.
+
+### Save As
+
+Only Save As should:
+
+- Ask for another file name
+- Create a separate Locker file
+- Assign a new Locker ID
+- Leave the original Locker file unchanged
+
+Do not use the normal Save button as Save As.
+
+## Correct `activeLockerEntry` lifecycle
+
+Inspect the recent changes in:
+
+- `src/pages/Checklist.tsx`
+- `src/hooks/usePackData.ts`
+- The Locker storage utilities
+
+The current implementation clears `activeLockerEntry` after successful saves. That removes the active save target and causes the next Save to act like a new file.
+
+Correct this behavior.
+
+### After replacing an existing file
+
+After `commitSaveReplace(entry.id, name)` succeeds:
+
+- Do not clear `activeLockerEntry`.
+- Keep it associated with the same Locker entry.
+- Update `activeLockerEntry` with the latest returned entry or updated metadata if necessary.
+
+### After saving a new file
+
+After `commitSaveNew` succeeds:
+
+- Do not clear `activeLockerEntry`.
+- Set `activeLockerEntry` to the newly created Locker entry.
+- Store its new ID and final name.
+
+### Clear the active file association only when appropriate
+
+Clear `activeLockerEntry` when:
+
+- New creates a separate unsaved file
+- The active file is deleted
+- The user explicitly uses a function that detaches the current working list from its Locker file
+- A different Locker file replaces the current working file
+
+Do not clear it after an ordinary Save.
+
+## Direct Save implementation
+
+Update the existing Save handler so its first decision is:
+
+```ts
+if (activeLockerEntry) {
+  save directly to activeLockerEntry.id;
+  return;
+}
