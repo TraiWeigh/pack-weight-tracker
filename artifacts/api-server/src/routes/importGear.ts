@@ -860,6 +860,12 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       return true;
     });
 
+    // Temporary trace — remove after Kitchen routing is confirmed
+    const traceKeys = new Set(['Pot/Mug', '1 Gal Freezer Bag', 'Bear Canister', 'Fuel']);
+    deduped.filter(it => traceKeys.has(it.sub)).forEach(it =>
+      console.log('[trace-backend]', JSON.stringify({ sub: it.sub, destination: it.destination }))
+    );
+
     res.json({ items: deduped.slice(0, 200) });
   } catch (err: any) {
     console.error('[import-gear]', err);

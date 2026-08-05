@@ -1,0 +1,222 @@
+The Kitchen category bug is still present in the real rendered TrailWeigh app.
+
+Confirmed current behavior with the real `PACK WEIGHT PDF.pdf`:
+
+- 68 items are found.
+- Fuel correctly appears as Expendables.
+- Backpack, Shelter, Sleep, Electronics, Hydration, and clothing categories appear correctly.
+- Every other Kitchen item still appears as Backpack:
+  - Pot/Mug
+  - Spoon
+  - Stove
+  - Cold Soak Container
+  - 1 Gal Freezer Bag
+  - 1 Qrt Freezer Bag
+  - Bear Bag
+  - Food Bag
+  - Bear Canister
+
+Previous tasks claimed the backend returned `destination: "Kitchen"` and changed frontend normalization, but the rendered result proves Kitchen is still converted to Backpack.
+
+Do not make another speculative regex or alias change.
+
+## Required goal
+
+Find the exact statement or component that changes Kitchen to Backpack in the real runtime path, then fix only that point.
+
+## Inspect these files
+
+- `artifacts/api-server/src/routes/importGear.ts`
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+- The category dropdown/select component used by the review table
+- Any category validation or option-building helpers
+- Any `EditedItem`, `ParsedItem`, or imported-row conversion types
+
+## Trace the real runtime values
+
+Temporarily trace these four rows:
+
+1. Pot/Mug
+2. 1 Gal Freezer Bag
+3. Bear Canister
+4. Fuel
+
+For each row, capture:
+
+### Backend
+
+- Raw extracted PDF line
+- Parsed `destination`
+- Complete item object immediately before the API response is sent
+
+### Frontend fetch boundary
+
+- Complete raw item received from the API
+- Whether the object contains:
+  - `destination`
+  - `category`
+  - both fields
+  - another field name
+
+### Review-row creation
+
+- Destination passed into `parsedToEdited`
+- Destination returned by `resolveDestination`
+- Complete `EditedItem` immediately after creation
+
+### React state
+
+- Destination stored in the `items` state after `setItems`
+- Destination used as the category-control value during render
+
+### Category control
+
+- Exact value supplied to the category dropdown/select
+- Exact category option values
+- Whether the control changes an unknown value to its first option
+- Whether any `defaultValue`, fallback, validation, or `onValueChange` runs automatically
+
+Remove all temporary logs after fixing the bug.
+
+## Check for field-name mismatch
+
+Confirm the backend and frontend use the same field.
+
+For example, determine whether the backend sends:
+
+`destination: "Kitchen"`
+
+while the frontend reads:
+
+`category`
+
+or whether the frontend later reconstructs the row and omits `destination`.
+
+Do not assume the field names match.
+
+Use one canonical field throughout the review workflow.
+
+## Check the category dropdown itself
+
+The category dropdown may be displaying Backpack even when the item state contains Kitchen.
+
+Inspect whether it uses any of these patterns:
+
+- `value={item.destination || categoryOrder[0]}`
+- `defaultValue={categoryOrder[0]}`
+- `value={validCategories.includes(item.destination) ? item.destination : categoryOrder[0]}`
+- Automatic first-option selection
+- A hidden `onValueChange` call during mount
+- A controlled/uncontrolled value conflict
+- Category labels as display text but category IDs as values
+
+Remove any behavior that silently substitutes `categoryOrder[0]`.
+
+If the supplied category cannot be matched, preserve the supplied value and show a validation warning. Do not display Backpack unless the item is genuinely assigned to Backpack.
+
+## Verify the actual category list
+
+Record the exact category option values used by the rendered review table.
+
+Confirm the existing checklist has canonical entries corresponding to:
+
+- Backpack
+- Shelter
+- Sleep
+- Clothing Packed
+- Kitchen
+- Electronics
+- Toiletries + Med
+- Hydration
+- Clothing Worn
+- Miscellaneous
+- Expendables
+
+If the checklist internally uses IDs, map the PDF display name to the correct existing ID.
+
+Do not create a duplicate Kitchen category.
+
+## Required mappings
+
+These must display and remain Kitchen in review state:
+
+- Pot/Mug
+- Spoon
+- Stove
+- Cold Soak Container
+- 1 Gal Freezer Bag
+- 1 Qrt Freezer Bag
+- Bear Bag
+- Food Bag
+- Bear Canister
+
+Fuel must remain:
+
+- Category: Expendables
+- Type: Fuel
+- Description: 4 oz
+- Weight: 7.68 oz
+
+## Preserve all working behavior
+
+Do not change:
+
+- The 68-item count
+- PDFParse v2
+- PDF page parsing
+- Header regexes unless runtime evidence proves they are involved
+- Numeric-leading Types
+- Weight-versus-Add parsing
+- Fuel → Expendables
+- Backpack, Shelter, Sleep, Electronics, Hydration, and clothing routing
+- Excel, Word, or Numbers importing
+- Editable review rows
+- Add Row
+- Imported items remaining unchecked
+- Image scanning remaining removed
+
+Meal Planner is not applicable.
+
+## Required testing
+
+Do not report completion based only on isolated unit assertions.
+
+Use the real rendered app with the real `PACK WEIGHT PDF.pdf`.
+
+Confirm:
+
+1. 68 items are found.
+2. All nine non-Fuel Kitchen rows display Kitchen.
+3. Fuel displays Expendables.
+4. The category dropdown shows the same category stored in React state.
+5. No automatic fallback to Backpack occurs.
+6. No warning triangle appears for valid Kitchen or Expendables rows.
+7. Other existing categories remain unchanged.
+
+Then select only:
+
+- One Backpack item
+- One Shelter item
+- One Kitchen item
+- Fuel
+
+Import those four items and confirm:
+
+- Each enters the correct checklist category.
+- All remain unchecked.
+- The Scan Gear List panel resets.
+
+## Final report
+
+Report:
+
+- Exact backend field and value for Pot/Mug
+- Exact raw frontend value received
+- Exact `EditedItem` destination
+- Exact category-control value
+- Exact Kitchen option value
+- The precise line or component that substituted Backpack
+- Why previous normalization changes did not solve it
+- Files changed
+- Real rendered test results
+- Confirmation that temporary logs were removed

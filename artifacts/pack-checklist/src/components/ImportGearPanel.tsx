@@ -112,6 +112,13 @@ function resolveDestination(destination: string, categoryOrder: string[]): strin
     }
   }
 
+  // Temporary trace — log when destination cannot be resolved
+  if (/kitchen|pot|spoon|stove|freezer|bear|food|canister|cold soak/i.test(norm)) {
+    console.log('[trace-resolve] UNRESOLVED destination:', JSON.stringify(norm),
+      '| charCodes:', [...norm].map(c => c.charCodeAt(0)),
+      '| categoryOrder:', JSON.stringify(categoryOrder));
+  }
+
   // No match — return the supplied value so the user can see and correct it.
   // Do NOT fall back to categoryOrder[0] (Backpack) for a non-empty destination.
   return norm;
@@ -221,6 +228,17 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
         setPhase('error');
         setErrorMsg('No gear items with weight values were found in this file. Try a different file or format.');
         return;
+      }
+
+      // Temporary trace — remove after Kitchen routing is confirmed
+      const traceKeys = new Set(['Pot/Mug', '1 Gal Freezer Bag', 'Bear Canister', 'Fuel']);
+      const traceItems = parsed.filter(it => traceKeys.has(it.sub));
+      if (traceItems.length > 0) {
+        console.log('[trace-fe] categoryOrder:', JSON.stringify(categoryOrder));
+        console.log('[trace-fe] "Kitchen" in categoryOrder:', categoryOrder.includes('Kitchen'));
+        traceItems.forEach(it =>
+          console.log('[trace-fe] raw API item:', JSON.stringify({ sub: it.sub, destination: it.destination, hasDestKey: 'destination' in it }))
+        );
       }
 
       setItems(parsed.map(item => parsedToEdited(item, categoryOrder)));
