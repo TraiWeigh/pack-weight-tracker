@@ -1,0 +1,126 @@
+Fix the theme-aware borders shown around background images in Showcase mode.
+
+## Current problem
+
+When a portrait or narrow personal image is displayed using Fit Image:
+
+- The normal TrailWeigh screen correctly shows dark unused-space borders in Dark mode.
+- When Showcase is activated, those borders incorrectly become white.
+
+Showcase must use the same theme-aware background and border behavior as the normal screen.
+
+## Required behavior
+
+For any built-in or personal background using Fit Image:
+
+- Dark mode: unused space around the image must be dark.
+- Light mode: unused space around the image must be light.
+- System mode: unused space must follow the operating system’s current Light or Dark appearance.
+
+This must work in:
+
+- The normal TrailWeigh screen
+- Manual Showcase mode
+- Automatic inactivity Showcase mode
+- Desktop
+- Tablet
+- Mobile
+- Portrait images
+- Landscape images
+- Narrow or unusually shaped images
+
+## Shared background logic
+
+Do not maintain separate border-color logic for the normal background and Showcase.
+
+Create or reuse one shared background-display configuration for:
+
+- Image URL
+- Fill Screen or Fit Image
+- Background size
+- Background position
+- Background repeat
+- Theme-aware unused-space color
+
+Normal view and Showcase must read from the same values.
+
+For Fit Image, use behavior equivalent to:
+
+- `background-size: contain`
+- `background-position: center`
+- `background-repeat: no-repeat`
+- Theme-aware background color behind the image
+
+For Fill Screen, preserve the current cover behavior.
+
+Do not stretch, crop, distort, tile, or change the aspect ratio of Fit Image backgrounds.
+
+## Theme changes while Showcase is active
+
+If the user changes between Light, Dark, or System while Showcase is active, update the unused-space color immediately.
+
+If System mode is selected and the operating system appearance changes, Showcase must update without requiring the page to reload.
+
+Do not hard-code white as the Showcase background color.
+
+Do not hard-code dark borders for every appearance.
+
+## Preserve existing behavior
+
+Do not change:
+
+- Background image selection
+- Personal image uploads
+- Fill Screen
+- Fit Image
+- Showcase activation
+- Automatic inactivity timing
+- Showcase wake behavior
+- Background persistence
+- Gear-list data
+- Share Link
+- New
+- Save
+- Locker
+- Preview
+- Print
+- PDF
+
+Only correct the theme-aware unused-space color and ensure normal view and Showcase share the same background-rendering logic.
+
+## Required testing
+
+Test in the rendered application with a portrait personal image using Fit Image.
+
+1. Select Light mode.
+   - Verify the normal screen has light borders.
+   - Open Showcase.
+   - Verify Showcase also has light borders.
+
+2. Select Dark mode.
+   - Verify the normal screen has dark borders.
+   - Open Showcase.
+   - Verify Showcase also has dark borders.
+
+3. Select System mode.
+   - Test while the operating system is in Light appearance.
+   - Verify both normal view and Showcase use light borders.
+   - Change the operating system to Dark appearance.
+   - Verify both normal view and Showcase update to dark borders.
+
+4. Repeat using:
+   - A built-in image
+   - A personal uploaded image
+   - Manual Showcase
+   - Automatic inactivity Showcase
+
+5. Confirm Fill Screen still fills the display correctly.
+
+Do not report completion until the same image visibly uses matching theme-aware borders in both the normal screen and Showcase.
+
+Report:
+
+- Why Showcase was using white borders
+- Which shared background-rendering logic now controls both views
+- Which files were changed
+- Whether every required test passed

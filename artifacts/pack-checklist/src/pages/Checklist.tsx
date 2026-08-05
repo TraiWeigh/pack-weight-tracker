@@ -662,6 +662,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         bgImageUrl={bgImageUrl}
         onWake={exitShowcase}
         bgSize={bgSize}
+        bgTone={bgTone}
       />
 
       {/* ── Screen content ── */}
