@@ -669,12 +669,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               <div className="relative flex-shrink-0">
                 {showNewConfirm ? (
                   <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
-                    <span
-                      className="text-xs text-muted-foreground hidden sm:inline max-w-[280px] truncate"
-                      title="Create a new pack list as an exact copy of the current file? All gear-item checkboxes in the new file will be unchecked. The original file will not be changed."
-                    >
-                      Exact copy — all boxes unchecked, original unchanged?
-                    </span>
                     <button
                       onClick={() => { handleNew(); setShowNewConfirm(false); }}
                       className="text-xs bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 font-medium transition-colors whitespace-nowrap"
