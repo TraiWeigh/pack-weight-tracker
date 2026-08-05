@@ -10,6 +10,7 @@ interface GearCategoryProps {
   items: GearItem[];
   meta: CategoryMeta;
   forceOpen?: boolean | null;
+  forceOpenSeq?: number;
   updateItem: (category: string, id: string, updates: Partial<GearItem>) => void;
   removeItem: (category: string, id: string) => void;
   addItem: (category: string) => void;
@@ -136,7 +137,7 @@ function EditableCategoryTitle({
 
 // ─────────────────────────────────────────────────────────────────────────────
 export function GearCategory({
-  name, items, meta, forceOpen,
+  name, items, meta, forceOpen, forceOpenSeq,
   updateItem, removeItem, addItem,
   onUpdateMeta, onDelete, onRename,
   isDragOver, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
@@ -147,7 +148,10 @@ export function GearCategory({
     if (forceOpen !== null && forceOpen !== undefined) {
       setIsOpen(forceOpen);
     }
-  }, [forceOpen]);
+  // forceOpenSeq increments on every Open/Close click so this fires even
+  // when forceOpen's boolean value hasn't changed (e.g. Close clicked twice).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forceOpen, forceOpenSeq]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { system } = useUnit();
 

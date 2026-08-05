@@ -161,6 +161,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const admin = isAdmin(userEmail);
 
   const [allOpen, setAllOpen] = useState(true);
+  const [openCloseSeq, setOpenCloseSeq] = useState(0);
 
   const [copied, setCopied] = useState(false);
   async function copyUrlToClipboard(url: string): Promise<boolean> {
@@ -642,7 +643,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
-                    onClick={() => setAllOpen(true)}
+                    onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
                     className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
                       allOpen === true
                         ? 'bg-card text-foreground shadow-sm'
@@ -652,7 +653,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     Open
                   </button>
                   <button
-                    onClick={() => setAllOpen(false)}
+                    onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
                     className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
                       allOpen === false
                         ? 'bg-card text-foreground shadow-sm'
@@ -682,6 +683,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   items={data[category] || []}
                   meta={categoryMeta[category] ?? { countsToBase: true }}
                   forceOpen={allOpen}
+                  forceOpenSeq={openCloseSeq}
                   updateItem={updateItem}
                   removeItem={removeItem}
                   addItem={addItem}
