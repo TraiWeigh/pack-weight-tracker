@@ -556,7 +556,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   title="Save current list to Locker"
                   className={toolBtn}
                 >
-                  <LockerIcon className="w-6 h-6 min-w-[24px] flex-shrink-0" />
+                  <LockerIcon className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="hidden md:inline">Save</span>
                 </button>
               )}
