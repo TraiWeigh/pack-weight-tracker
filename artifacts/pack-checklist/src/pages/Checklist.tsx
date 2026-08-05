@@ -279,7 +279,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // ── New list in a new tab ─────────────────────────────────────────────────
   const handleNew = useCallback(() => {
     const uuid = crypto.randomUUID();
-    const snapshot = { __v: 5, items: data, order: categoryOrder, meta: categoryMeta };
+    // Strip every item's checked state so the new list always starts clean.
+    const clearedItems: typeof data = {};
+    for (const cat of categoryOrder) {
+      clearedItems[cat] = (data[cat] ?? []).map(item => ({ ...item, checked: false }));
+    }
+    const snapshot = { __v: 5, items: clearedItems, order: categoryOrder, meta: categoryMeta };
     localStorage.setItem(`tw-newseed-${uuid}`, JSON.stringify(snapshot));
     const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
     window.open(`${window.location.origin}${base}/checklist?newseed=${uuid}`, '_blank');
