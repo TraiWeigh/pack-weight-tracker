@@ -1,0 +1,277 @@
+Protect deletion of Locker files by requiring the user to re-enter their existing TrailWeigh login password.
+
+Do not create a separate Locker passcode.
+
+Use the application’s existing account authentication system and existing login credentials.
+
+## Core behavior
+
+Whenever a user attempts to permanently delete a saved Locker file, require them to confirm the deletion by entering their current TrailWeigh login password.
+
+This protection must apply to:
+
+- Deleting one Locker file
+- Deleting multiple selected Locker files
+- Delete All
+- Clear Locker
+- Any trash icon
+- Any context-menu delete action
+- Swipe-to-delete
+- Keyboard-triggered deletion
+- Any other path that permanently removes saved Locker data
+
+Route every deletion path through one centralized protected-deletion function.
+
+## Delete confirmation dialog
+
+When deletion is requested, open a confirmation dialog showing the name of the file or files that will be deleted.
+
+For one file, use wording similar to:
+
+“Enter your TrailWeigh password to permanently delete ‘[file name]’.”
+
+For multiple files, clearly state how many files will be deleted and list their names when practical.
+
+The dialog must contain:
+
+- Password field
+- Show/Hide Password control
+- Permanently Delete button
+- Cancel button
+
+The password field must:
+
+- Use `type="password"` by default
+- Receive focus when the dialog opens
+- Allow Enter to submit
+- Never display the password in plain text unless the user deliberately selects Show Password
+- Never store the entered password after verification
+
+Pressing Escape or Cancel must close the dialog without deleting anything.
+
+## Verify through the existing authentication system
+
+Verify the password using the same secure authentication provider or backend used for TrailWeigh login.
+
+Do not:
+
+- Store the login password in Locker data
+- Store it in localStorage, sessionStorage, IndexedDB, cookies, application state, logs, analytics, or console output
+- Compare it against a password stored in the browser
+- Add a second password database
+- Add a separate Locker passcode
+- Send the password through an insecure custom endpoint
+- Include the password in a URL or query string
+- Attempt to retrieve the user’s existing password from the authentication provider
+
+Use the authentication provider’s supported reauthentication or credential-verification process.
+
+For email-and-password accounts, reauthenticate the currently signed-in user with their email and entered password.
+
+The server or authentication provider must determine whether the password is correct.
+
+Only perform the deletion after successful reauthentication.
+
+## Accounts using Google, Apple, or another provider
+
+Some users may have created their account through Google, Apple, Microsoft, or another passwordless or federated login provider and may not have a TrailWeigh password.
+
+For those accounts:
+
+- Do not ask for a password they do not have.
+- Use the authentication provider’s secure reauthentication method.
+- Label the action appropriately, such as:
+  - “Continue with Google”
+  - “Continue with Apple”
+  - “Verify Your Identity”
+- Complete the required provider reauthentication before allowing deletion.
+
+Do not create a fake local password for federated-login users.
+
+## No existing login system
+
+First inspect the project and confirm that real account authentication already exists.
+
+If TrailWeigh does not currently have authenticated user accounts:
+
+- Do not implement a password field that only checks a client-side value.
+- Do not pretend that a browser-stored password is the user’s login password.
+- Report that secure login-password verification requires an actual authentication system.
+- Preserve all existing Locker files and deletion behavior until proper authentication is implemented.
+
+## Successful verification
+
+After successful identity verification:
+
+1. Delete only the file or files named in that confirmation dialog.
+2. Synchronize the deletion through the existing Locker synchronization system.
+3. Close the dialog.
+4. Briefly show a non-blocking confirmation such as:
+
+“[file name] was permanently deleted.”
+
+For multiple files:
+
+“[number] Locker files were permanently deleted.”
+
+One successful verification authorizes only that specific deletion request.
+
+Require verification again for every future deletion request.
+
+Do not keep deletion permanently unlocked.
+
+## Incorrect password
+
+When password verification fails:
+
+- Do not delete anything.
+- Keep the dialog open.
+- Clear the password field.
+- Display an inline message:
+
+“Incorrect password. Nothing was deleted.”
+
+Do not reveal whether any individual part of the password was correct.
+
+Do not disclose account-security details in the error message.
+
+## Rate limiting
+
+Use the authentication provider’s existing rate limits where available.
+
+Also prevent rapid repeated submissions in the interface.
+
+After five consecutive failed verification attempts within the deletion dialog:
+
+- Temporarily disable further attempts for 30 seconds.
+- Display the remaining wait time.
+- Keep all Locker files unchanged.
+- Do not sign the user out unless the authentication provider requires it.
+
+Reset the local failed-attempt count after successful verification or when a new authenticated session begins.
+
+## Recently authenticated sessions
+
+Even when the user logged in recently, still require identity verification for permanent Locker deletion.
+
+Do not silently skip the password or provider verification merely because the session is active.
+
+Deleting a Locker file is a sensitive destructive action and must require fresh verification.
+
+## Session and account protection
+
+Before verification, confirm that:
+
+- A user is currently signed in.
+- The requested Locker file belongs to that authenticated user.
+- The deletion request is authorized for that account.
+
+The backend must enforce ownership.
+
+Do not rely only on hiding delete buttons in the interface.
+
+A user must not be able to delete another account’s Locker files by modifying a file ID or request.
+
+## Multi-tab behavior
+
+After a verified deletion:
+
+- Synchronize the removed file across all open TrailWeigh tabs.
+- If the deleted file is active in another tab, warn that it was deleted and prevent that tab from silently recreating it.
+- Do not transmit or broadcast the entered password between tabs.
+- Do not cache successful password verification for another tab.
+
+## Do not require password for normal Locker use
+
+Do not ask for password verification when:
+
+- Opening the Locker
+- Viewing saved files
+- Loading a list
+- Creating a new list
+- Saving changes
+- Updating the currently active file
+- Using Save As
+- Renaming a file
+- Previewing, printing, or downloading a list
+
+Require verification only for permanent destructive Locker deletion.
+
+## Do not change
+
+Do not change:
+
+- Existing login credentials
+- Authentication-provider configuration unless required for secure reauthentication
+- Locker file IDs
+- Locker file names
+- Existing saved Locker contents
+- Save behavior
+- Save As behavior
+- Active-file association
+- Gear-list checkboxes
+- Categories
+- Weights
+- Base Weight calculations
+- Preview
+- Print
+- Download PDF
+- Scan Gear List
+- Background Showcase
+- Undo or Redo behavior
+
+Password verification and Locker deletion must not create a gear-list Undo or Redo entry.
+
+## Accessibility
+
+The verification dialog must:
+
+- Have a clear title and instructions
+- Use a properly labeled password field
+- Be keyboard accessible
+- Keep keyboard focus within the open modal
+- Restore focus to the original delete control after cancellation
+- Provide screen-reader-accessible error messages
+- Never rely only on color to indicate failure
+- Make the destructive button visually distinct and clearly labeled
+
+## Required tests
+
+1. Sign in with an email-and-password account.
+2. Attempt to delete a Locker file.
+3. Enter an incorrect password.
+   - Confirm nothing is deleted.
+4. Enter the correct password.
+   - Confirm only the identified file is deleted.
+5. Attempt another deletion.
+   - Confirm verification is required again.
+6. Cancel the verification dialog.
+   - Confirm nothing changes.
+7. Test bulk deletion.
+   - Confirm verification applies only to the files named in that request.
+8. Test Delete All or Clear Locker.
+   - Confirm verification is required.
+9. Test every available Locker deletion path.
+   - Confirm none can bypass reauthentication.
+10. Test five failed attempts.
+    - Confirm the temporary delay works.
+11. Test in two browser tabs.
+    - Confirm the deletion synchronizes but the password is never shared.
+12. Attempt to delete a file belonging to another user by manipulating its ID.
+    - Confirm the backend rejects the request.
+13. Test an account created through Google, Apple, or another federated provider.
+    - Confirm the correct provider reauthentication flow is used instead of asking for a nonexistent password.
+14. Confirm opening, loading, saving, updating, renaming, and Save As still work without password verification.
+15. Confirm the password does not appear in browser storage, logs, analytics, network URLs, source constants, or console output.
+
+Implement this directly in the existing TrailWeigh application.
+
+Report:
+
+- Which authentication system TrailWeigh currently uses
+- Which reauthentication method was implemented
+- Which files were changed
+- Where the centralized protected-deletion function is located
+- Which Locker deletion paths are protected
+- How ownership is enforced on the backend
+- Whether every required test passed

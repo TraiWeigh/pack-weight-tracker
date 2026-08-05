@@ -26,7 +26,9 @@ export { LOCKER_KEY } from '../hooks/usePackData';
 interface LockerPanelProps {
   entries: LockerEntry[];
   onLoad: (entry: LockerEntry) => void;
-  onDelete: (id: string) => void;
+  /** Called when the user confirms they want to delete an entry.
+   *  The parent is responsible for identity verification before deletion. */
+  onRequestDelete: (id: string) => void;
   onRename: (id: string, newName: string) => void;
 }
 
@@ -35,7 +37,7 @@ function formatDate(ts: number) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function LockerPanel({ entries, onLoad, onDelete, onRename }: LockerPanelProps) {
+export function LockerPanel({ entries, onLoad, onRequestDelete, onRename }: LockerPanelProps) {
   const [open, setOpen] = useState(true);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -152,7 +154,7 @@ export function LockerPanel({ entries, onLoad, onDelete, onRename }: LockerPanel
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <span className="text-[10px] text-destructive font-medium hidden sm:inline">Delete?</span>
                         <button
-                          onClick={() => { onDelete(entry.id); setConfirmId(null); }}
+                          onClick={() => { onRequestDelete(entry.id); setConfirmId(null); }}
                           className="text-[10px] font-semibold bg-destructive text-destructive-foreground px-2 py-1 rounded"
                         >
                           Yes

@@ -1,0 +1,286 @@
+Add passcode protection to the existing TrailWeigh Locker so saved Locker files cannot be deleted without the correct passcode.
+
+Do not change the existing Locker loading, saving, updating, synchronization, naming, or active-file behavior.
+
+## Purpose
+
+The passcode must protect destructive Locker actions.
+
+Require the correct Locker passcode before allowing:
+
+- Deleting one saved Locker list
+- Deleting multiple selected Locker lists
+- Using any “Delete All,” “Clear Locker,” or equivalent action
+- Replacing an existing Locker file through a destructive overwrite confirmation, if that action currently deletes and recreates the file
+
+Do not require the passcode for:
+
+- Opening a saved list
+- Loading a list
+- Viewing Locker contents
+- Saving changes to the currently active list
+- Creating a new saved list
+- Renaming a saved list
+- Using Save As
+
+## Passcode setup
+
+Add a small control labeled:
+
+Passcode
+
+Place it in the Locker panel header without changing the existing Locker title, count, icon, or layout.
+
+When no passcode exists, clicking Passcode should open a setup dialog containing:
+
+- New passcode
+- Confirm passcode
+- Save Passcode
+- Cancel
+
+Requirements:
+
+- Accept a numeric passcode containing 4–8 digits.
+- Do not allow letters, spaces, or symbols.
+- Both entries must match.
+- Do not allow obvious invalid values such as an empty entry.
+- Do not display the passcode in plain text by default.
+- Provide a Show/Hide passcode control.
+- Do not save until validation succeeds.
+
+After successful setup, show a brief non-blocking confirmation:
+
+“Locker passcode enabled”
+
+## Secure storage
+
+Never store the passcode as readable plain text.
+
+If TrailWeigh has a backend and authenticated user accounts:
+
+- Store and verify a salted password hash on the server.
+- Never send the stored hash back to the browser.
+- Perform delete authorization on the server.
+
+If Locker is currently browser-only:
+
+- Store only a salted cryptographic hash using the Web Crypto API.
+- Use a unique random salt.
+- Use PBKDF2, scrypt, Argon2, or another appropriate password-derivation method available in the project.
+- Do not use Base64 encoding, simple SHA hashing, reversible encryption, or hard-coded keys as the only protection.
+- Keep the hash and salt in the same shared Locker storage system currently used across TrailWeigh tabs.
+
+Do not print the passcode in logs, console output, analytics, errors, or debugging messages.
+
+## Delete workflow
+
+Whenever the user attempts to delete a Locker file:
+
+1. Keep the existing delete confirmation.
+2. Clearly identify the file being deleted.
+3. Ask for the Locker passcode.
+4. Provide:
+   - Delete
+   - Cancel
+5. Do not delete anything until the passcode is verified.
+
+Suggested confirmation text:
+
+“Enter your Locker passcode to permanently delete ‘[file name]’.”
+
+The passcode field should receive focus when the dialog opens.
+
+Pressing Enter may submit the passcode.
+
+Pressing Escape or Cancel must close the dialog without deleting anything.
+
+## Incorrect passcode
+
+When the passcode is incorrect:
+
+- Do not delete the file.
+- Keep the dialog open.
+- Clear the passcode field.
+- Display a clear inline message:
+
+“Incorrect passcode. Nothing was deleted.”
+
+Do not reveal whether individual digits were correct.
+
+After five consecutive incorrect attempts:
+
+- Temporarily block additional attempts for 30 seconds.
+- Display the remaining wait time.
+- Do not delete, hide, rename, or alter any Locker files.
+
+Reset the failed-attempt count after a successful verification.
+
+## Every deletion requires verification
+
+Require the passcode for each separate delete action.
+
+Do not leave Locker deletion permanently unlocked after one successful entry.
+
+A single verified bulk-delete action may delete only the files specifically listed in that one confirmation dialog.
+
+It must not authorize future deletion attempts.
+
+## Change passcode
+
+When a passcode is already enabled, the Passcode control should offer:
+
+- Change Passcode
+- Remove Passcode
+- Cancel
+
+To change the passcode, require:
+
+- Current passcode
+- New passcode
+- Confirm new passcode
+
+Only update it after the current passcode is verified and the new entries match.
+
+Show:
+
+“Locker passcode changed”
+
+## Remove passcode
+
+Removing passcode protection must require the current passcode.
+
+Use a clear warning:
+
+“Removing the passcode will allow Locker files to be deleted without verification.”
+
+Provide:
+
+- Remove Passcode
+- Cancel
+
+Do not remove protection when the entered passcode is incorrect.
+
+## Forgotten passcode
+
+Because Locker files may be stored locally, do not provide an insecure “Forgot Passcode” bypass that simply reveals or removes the code.
+
+If authenticated account recovery already exists, use that verified account-recovery system.
+
+If no secure recovery system exists, explain in the interface that the passcode cannot be recovered.
+
+Do not allow resetting the passcode while retaining access to delete protected Locker files unless the user has been securely verified.
+
+## Multi-tab behavior
+
+Synchronize passcode status across all open TrailWeigh tabs using the existing Locker synchronization system.
+
+When the passcode is:
+
+- Enabled
+- Changed
+- Removed
+
+all open tabs must update promptly.
+
+A deletion approved in one tab should synchronize normally.
+
+Do not display or broadcast the actual passcode between tabs.
+
+Only synchronize the stored salted verification data and passcode-enabled status through the existing secure storage method.
+
+## Protect every deletion path
+
+Inspect the entire application for every path that can delete Locker data.
+
+Passcode protection must apply whether deletion is triggered through:
+
+- A trash icon
+- A Delete button
+- A context menu
+- Keyboard deletion
+- Swipe-to-delete on touch devices
+- Bulk selection
+- Clear Locker
+- Delete All
+- Replacement or cleanup code
+- Any future shared delete handler
+
+Route every destructive Locker action through one centralized protected deletion function.
+
+Do not protect only the visible trash button while leaving another deletion path unprotected.
+
+## Do not change
+
+Do not change:
+
+- Existing saved Locker files
+- File IDs
+- File names
+- Modified dates except after real file changes
+- Save behavior
+- Save As behavior
+- Active Locker file association
+- Locker synchronization
+- Gear-item checkboxes
+- Categories
+- Weights
+- Base Weight settings
+- Preview
+- Print
+- Download PDF
+- Scan Gear List
+- Background Showcase
+- Lists open in other tabs
+
+Adding or changing the passcode must not create an Undo or Redo entry in the gear list.
+
+## Accessibility
+
+The setup and verification dialogs must:
+
+- Have clear labels
+- Be keyboard accessible
+- Keep focus inside the open modal
+- Restore focus to the delete control after cancellation
+- Provide screen-reader-accessible error messages
+- Never rely only on color to communicate an incorrect passcode
+
+## Required tests
+
+1. Enable a valid 4-digit passcode.
+2. Attempt to delete a Locker file.
+3. Enter the wrong passcode.
+   - Confirm nothing is deleted.
+4. Enter the correct passcode.
+   - Confirm only the identified file is deleted.
+5. Attempt another deletion.
+   - Confirm the passcode is required again.
+6. Test Delete All or Clear Locker.
+   - Confirm the passcode is required.
+7. Cancel a deletion.
+   - Confirm nothing changes.
+8. Change the passcode.
+   - Confirm the old passcode no longer works.
+   - Confirm the new passcode works.
+9. Attempt to remove protection using an incorrect passcode.
+   - Confirm protection remains enabled.
+10. Remove protection using the correct passcode.
+    - Confirm deletion returns to the normal unprotected workflow.
+11. Enter five incorrect attempts.
+    - Confirm the 30-second delay activates.
+12. Open TrailWeigh in two tabs.
+    - Confirm passcode status synchronizes.
+13. Test every available Locker deletion path.
+    - Confirm none can bypass passcode verification.
+14. Confirm opening, loading, saving, updating, renaming, and Save As still work normally.
+15. Confirm no plain-text passcode appears in storage, logs, source constants, or console output.
+
+Implement the feature directly in the existing TrailWeigh application.
+
+Report:
+
+- Which files were changed
+- Where the protected deletion function is located
+- How the passcode is hashed and stored
+- Which Locker deletion paths were protected
+- Whether every required test passed

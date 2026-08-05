@@ -12,6 +12,11 @@ import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ImportGearPanel } from '../components/ImportGearPanel';
 import { LockerPanel, LockerEntry } from '../components/LockerPanel';
+import {
+  LockerDeleteDialog,
+  LOCKER_PENDING_DELETE_KEY,
+  LOCKER_DELETE_VERIFIED_PARAM,
+} from '../components/LockerDeleteDialog';
 import { LockerIcon } from '../components/LockerIcon';
 import { LOCKER_KEY } from '../hooks/usePackData';
 import { buildShareURL } from '../lib/shareLink';
@@ -436,13 +441,82 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     }
   };
 
-  // ── Delete from Locker ────────────────────────────────────────────────────
+  // ── Delete from Locker — identity-verified flow ───────────────────────────
 
-  const handleDeleteFromLocker = (id: string) => {
-    const updated = lockerEntries.filter(e => e.id !== id);
+  const [pendingDeleteIds,  setPendingDeleteIds]  = useState<string[]>([]);
+  const [showDeleteDialog,  setShowDeleteDialog]  = useState(false);
+  // Used only for the OAuth redirect round-trip path.
+  const [oauthDeleteIds,    setOauthDeleteIds]    = useState<string[]>([]);
+
+  // Detect OAuth redirect return on first render and schedule deletion.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get(LOCKER_DELETE_VERIFIED_PARAM) !== '1') return;
+
+    // Scrub the verification param from the URL without a page reload.
+    const cleaned = new URLSearchParams(window.location.search);
+    cleaned.delete(LOCKER_DELETE_VERIFIED_PARAM);
+    const newUrl =
+      window.location.pathname +
+      (cleaned.toString() ? `?${cleaned.toString()}` : '');
+    window.history.replaceState({}, '', newUrl);
+
+    // Retrieve and clear pending IDs stored before the redirect.
+    const raw = sessionStorage.getItem(LOCKER_PENDING_DELETE_KEY);
+    sessionStorage.removeItem(LOCKER_PENDING_DELETE_KEY);
+    if (!raw) return;
+    try {
+      const ids: string[] = JSON.parse(raw);
+      if (ids.length > 0) setOauthDeleteIds(ids);
+    } catch { /* malformed storage — ignore */ }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Execute pending OAuth-verified deletion once state is ready.
+  useEffect(() => {
+    if (!oauthDeleteIds.length) return;
+    const toDelete = lockerEntries.filter(e => oauthDeleteIds.includes(e.id));
+    if (!toDelete.length) { setOauthDeleteIds([]); return; }
+    const updated = lockerEntries.filter(e => !oauthDeleteIds.includes(e.id));
     setLockerEntries(updated);
     broadcastLocker(updated);
-  };
+    setOauthDeleteIds([]);
+    const msg = toDelete.length === 1
+      ? `"${toDelete[0].name}" was permanently deleted.`
+      : `${toDelete.length} Locker files were permanently deleted.`;
+    toast({ description: msg });
+  }, [oauthDeleteIds]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /**
+   * Called when the user clicks "Yes" on the LockerPanel inline confirm.
+   * Opens the identity-verification dialog before performing any deletion.
+   * For guests (no authentication), deletes directly.
+   */
+  const requestProtectedDelete = useCallback((id: string) => {
+    if (isGuest || !userId) {
+      // No auth system available — delete directly (preserve existing guest UX).
+      const updated = lockerEntries.filter(e => e.id !== id);
+      setLockerEntries(updated);
+      broadcastLocker(updated);
+      return;
+    }
+    setPendingDeleteIds([id]);
+    setShowDeleteDialog(true);
+  }, [isGuest, userId, lockerEntries, broadcastLocker]);
+
+  /** Called by the dialog after identity is verified. */
+  const handleConfirmedDelete = useCallback(() => {
+    const toDelete = lockerEntries.filter(e => pendingDeleteIds.includes(e.id));
+    if (!toDelete.length) { setShowDeleteDialog(false); setPendingDeleteIds([]); return; }
+    const updated = lockerEntries.filter(e => !pendingDeleteIds.includes(e.id));
+    setLockerEntries(updated);
+    broadcastLocker(updated);
+    setShowDeleteDialog(false);
+    setPendingDeleteIds([]);
+    const msg = toDelete.length === 1
+      ? `"${toDelete[0].name}" was permanently deleted.`
+      : `${toDelete.length} Locker files were permanently deleted.`;
+    toast({ description: msg });
+  }, [lockerEntries, pendingDeleteIds, broadcastLocker, toast]);
 
   // ── Rename in Locker ──────────────────────────────────────────────────────
 
@@ -878,7 +952,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 <LockerPanel
                   entries={lockerEntries}
                   onLoad={handleLoadFromLocker}
-                  onDelete={handleDeleteFromLocker}
+                  onRequestDelete={requestProtectedDelete}
                   onRename={handleRenameInLocker}
                 />
               </div>
@@ -887,6 +961,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           </div>
         </main>
       </div>
+
+      {/* ── Locker delete dialog ── */}
+      {showDeleteDialog && pendingDeleteIds.length > 0 && (
+        <LockerDeleteDialog
+          entries={lockerEntries.filter(e => pendingDeleteIds.includes(e.id))}
+          onConfirmed={handleConfirmedDelete}
+          onCancel={() => { setShowDeleteDialog(false); setPendingDeleteIds([]); }}
+          isGuest={isGuest}
+        />
+      )}
 
       {/* ── Preview modal ── */}
       {showPreview && (
