@@ -1,0 +1,92 @@
+Restore the TrailWeigh PDF importer after the regression introduced during Prompt 006.
+
+## Confirmed regression
+
+The same real file, `PACK WEIGHT PDF.pdf`, worked immediately before Prompt 006 and returned 68 gear items.
+
+After Prompt 006, the same PDF consistently fails with:
+
+`Could not read this PDF. Make sure it is not password-protected and contains selectable text.`
+
+The PDF is not password-protected, contains selectable text, and previously parsed successfully.
+
+Do not treat this as a bad user file.
+
+## Important context
+
+Prompt 006 was intended to change only frontend category resolution in:
+
+`artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+
+However, the workflow also edited and restarted:
+
+`artifacts/api-server/src/routes/importGear.ts`
+
+The PDF regression began immediately afterward.
+
+## First diagnose the actual backend error
+
+Reproduce the failure through the rendered TrailWeigh application using the real `PACK WEIGHT PDF.pdf`.
+
+Inspect the API Server logs and capture the complete exception, including:
+
+- Error name
+- Error message
+- Stack trace
+- Filename and line number
+- Whether the failure occurs during:
+  - File upload
+  - PDFParse construction
+  - `getText()`
+  - Page extraction
+  - `extractFromPdfPages`
+  - Response serialization
+
+Do not rely only on the generic frontend error message.
+
+Temporarily log:
+
+- Uploaded filename
+- File extension
+- MIME type
+- Buffer byte length
+- Whether the buffer begins with the `%PDF` signature
+- Installed `pdf-parse` version
+- Whether `PDFParse` is a constructor
+- Number of pages returned by `getText()`
+- Number of parsed gear items
+
+Remove temporary logs after the issue is fixed.
+
+## Compare Prompt 006 changes
+
+Review the checkpoint or diff created by Prompt 006.
+
+Determine exactly what changed in:
+
+- `artifacts/api-server/src/routes/importGear.ts`
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+
+Restore only the accidental backend change that broke PDF reading.
+
+Do not roll back the working frontend category-normalization fix from Prompt 006.
+
+Do not perform a full-project rollback.
+
+## Preserve the working PDFParse v2 implementation
+
+The installed package previously worked using the `pdf-parse` v2 class API.
+
+Verify the installed package version and use its actual API.
+
+The working pattern was equivalent to:
+
+```ts
+const { PDFParse } = require("pdf-parse");
+
+const parser = new PDFParse({
+  data: buffer,
+  verbosity: 0,
+});
+
+const result = await parser.getText();

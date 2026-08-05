@@ -258,11 +258,8 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
         const candidateIndex = PDF_CATEGORY_ORDER.indexOf(candidate);
         // Only advance — never go backwards (guards against summary-table headers)
         if (candidate && candidateIndex >= currentCategoryIndex) {
-          console.log(`[PDF-debug] CAT ACCEPTED | "${line.slice(0, 80)}" → ${candidate} (idx ${candidateIndex})`);
           currentCategory = candidate;
           currentCategoryIndex = candidateIndex;
-        } else {
-          console.log(`[PDF-debug] CAT SKIPPED  | "${line.slice(0, 80)}" → candidate=${candidate} (idx ${candidateIndex}) currentIdx=${currentCategoryIndex}`);
         }
         continue;
       }
@@ -322,11 +319,6 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
         warning:  false,
         destination,
       };
-
-      // ── Debug: log Kitchen-related items ──────────────────────────────────
-      if (PDF_DEBUG_SUBS.has(sub.toLowerCase())) {
-        console.log(`[PDF-debug] ITEM | sub="${item.sub}" desc="${item.desc.slice(0, 40)}" weight=${item.weightOz} currentCategory="${currentCategory}" destination="${destination}"`);
-      }
 
       results.push(item);
     }
