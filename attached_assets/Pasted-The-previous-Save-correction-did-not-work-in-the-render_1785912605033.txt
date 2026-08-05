@@ -1,0 +1,84 @@
+The previous Save correction did not work in the rendered TrailWeigh application.
+
+Current problem:
+
+After an existing Locker file is opened in the current empty checklist window, clicking Save still opens the “List name…” input.
+
+That naming input must appear only when saving a genuinely new, unnamed checklist.
+
+Fix the actual runtime cause in src/pages/Checklist.tsx.
+
+Trace the exact Save button visible in the rendered application and confirm which click handler it uses. Also trace the active Locker file state from the moment handleLoadFromLocker loads the file until the user clicks Save.
+
+When an existing Locker file is loaded into the current window:
+
+- Store its exact Locker entry ID and name as tab-local active-file state.
+- Keep that active-file identity after replaceStore runs.
+- Keep it after LockerPanel closes.
+- Keep it after Undo/Redo history is reset.
+- Keep it after background changes.
+- Keep it after a successful Save.
+
+The visible Save button must follow this behavior:
+
+- If an active Locker file ID exists, update that exact Locker file directly by ID.
+- Keep its existing name.
+- Do not open the “List name…” input.
+- Do not show a duplicate-name or Replace dialog.
+- Do not create another Locker file.
+
+Only when there is no active Locker file ID should Save open the naming input.
+
+After the first Save of a genuinely new checklist:
+
+- Set the newly created Locker entry’s ID and name as the active file.
+- Every later Save must update that same file directly without requesting its name again.
+
+Search for every place that clears activeLockerEntry or equivalent active-file state.
+
+It may be cleared only when:
+
+- New creates a genuinely new unsaved checklist.
+- The active Locker file is deleted.
+- Another Locker file replaces the current working file.
+- The user deliberately detaches the working list from its Locker file.
+
+It must not be cleared after an ordinary Save.
+
+Also verify that the actual desktop and mobile Save buttons both call the corrected Save handler rather than openSaveDialog directly.
+
+Do not change:
+
+- Empty-window Locker loading
+- Background preservation
+- Undo/Redo
+- Save As
+- New
+- Locker deletion
+- Preview
+- Print
+- Share Link
+- Gear calculations
+
+Test this in the rendered application:
+
+1. Begin with an empty checklist.
+2. Open an existing Locker file into the current window.
+3. Edit an item.
+4. Click Save.
+5. Confirm the “List name…” input does not appear and the existing Locker file is updated.
+6. Make another edit.
+7. Click Save again.
+8. Confirm it updates the same Locker file again without asking for a name or creating a duplicate.
+
+Then test a genuinely new checklist:
+
+1. Create a new checklist.
+2. Save and name it once.
+3. Make another edit.
+4. Save again.
+5. Confirm the second Save does not request the name again.
+
+Do not report completion based only on TypeScript checks.
+
+Report the exact runtime cause, which Save button or state path was wrong, which files were changed, and whether both consecutive Save tests passed.

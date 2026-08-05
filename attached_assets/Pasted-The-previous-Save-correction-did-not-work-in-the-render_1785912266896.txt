@@ -1,0 +1,75 @@
+The previous Save correction did not work in the rendered application.
+
+After opening an existing Locker file in the current empty window and clicking Save, TrailWeigh still displays the “List name…” input and Save button.
+
+Do not make another assumed state change and report TypeScript success. Trace the actual rendered Save button and active Locker file state at runtime, then fix the real cause.
+
+## Evidence
+
+The rendered application still shows:
+
+- “List name…” input
+- Save button
+- Close X
+
+That naming interface must appear only for a genuinely new unsaved checklist.
+
+It must never appear when the current checklist was loaded from an existing Locker entry.
+
+## 1. Trace the actual runtime path
+
+Inspect `src/pages/Checklist.tsx` and search the entire project for:
+
+- Every visible Save button
+- Every `onClick` connected to Save
+- Every call to `openSaveDialog`
+- Every call to `setActiveLockerEntry`
+- Every call that clears the active Locker file
+- Every `LockerPanel.onLoad`
+- Every `handleLoadFromLocker`
+- Any duplicated `ChecklistContent` or toolbar component
+- Any mobile and desktop versions of the Save control
+
+Temporarily add development logging for:
+
+### Locker load
+
+Log when `handleLoadFromLocker` runs:
+
+- Selected Locker entry ID
+- Selected Locker entry name
+- Current total item count
+- Whether the in-place or new-tab branch was used
+- The active Locker ID being assigned
+
+### Component render
+
+Log the current active Locker ID during the render that contains the visible Save button.
+
+### Save click
+
+Log:
+
+- Which Save button was clicked
+- Which handler it called
+- The active Locker ID visible inside that handler
+- Whether it called direct save or `openSaveDialog`
+
+Remove temporary logs after the issue is fixed.
+
+Do not report completion until the browser test proves the correct runtime branch executes.
+
+## 2. Use an explicit active file identity
+
+Do not rely only on a potentially stale Locker entry object.
+
+Use explicit tab-local state for the active save target, such as:
+
+```ts
+type ActiveLockerFile = {
+  id: string;
+  name: string;
+};
+
+const [activeLockerFile, setActiveLockerFile] =
+  useState<ActiveLockerFile | null>(null);

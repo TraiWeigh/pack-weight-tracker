@@ -63,6 +63,9 @@ interface ChecklistContentProps {
   isGuest?: boolean;
 }
 
+/** Identifies the Locker file that is the current Save target for this tab. */
+type ActiveLockerFile = { id: string; name: string };
+
 function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistContentProps) {
   // ── onRestoreBg: called by undo/redo to restore the background that was
   // active at the time of the history entry.  Defined as a stable useCallback
@@ -418,7 +421,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const handleNew = useCallback(() => {
     // Opening a new tab creates a separate unsaved file — detach from the
     // current Locker entry so this tab's Save button starts a fresh workflow.
-    setActiveLockerEntry(null);
+    setActiveLockerFile(null);
     const uuid = crypto.randomUUID();
 
     // 1. Deep-clone the complete store — same structure that Save writes to Locker.
@@ -534,21 +537,23 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [saveConflictId, setSaveConflictId] = useState<string | null>(null);
   const saveInputRef = useRef<HTMLInputElement>(null);
 
-  // Tracks the Locker entry that was opened in-place into an empty window.
-  // When set, openSaveDialog pre-fills the file name so Save routes back to
-  // the same Locker entry rather than creating a duplicate.
-  const [activeLockerEntry, setActiveLockerEntry] = useState<LockerEntry | null>(null);
+  // Tracks the active save target for this tab.  Only the id and name are
+  // stored — enough to call commitSaveReplace without holding a stale copy of
+  // the full LockerEntry (store, background, etc.).
+  const [activeLockerFile, setActiveLockerFile] = useState<ActiveLockerFile | null>(null);
 
   /**
    * Primary Save action triggered by the toolbar Save button.
    *
-   * • When a Locker file is currently active (opened in-place or previously
-   *   saved this session) → update that exact entry immediately, no dialog.
-   * • Otherwise → open the naming dialog so the user can create a new entry.
+   * • When a Locker file is currently active → update that exact entry
+   *   immediately, no dialog.
+   * • Otherwise → open the naming dialog to create a new entry.
    */
   const handleSaveClick = () => {
-    if (activeLockerEntry) {
-      commitSaveReplace(activeLockerEntry.id, activeLockerEntry.name);
+    // DEV_LOG
+    console.log('[TrailWeigh Save] handleSaveClick — activeLockerFile:', activeLockerFile);
+    if (activeLockerFile) {
+      commitSaveReplace(activeLockerFile.id, activeLockerFile.name);
       return;
     }
     openSaveDialog();
@@ -582,7 +587,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     broadcastLocker(updated);
     // Make this new entry the active save target so subsequent Save clicks
     // update it in-place rather than asking for a name again.
-    setActiveLockerEntry(entry);
+    setActiveLockerFile({ id: entry.id, name: entry.name });
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -601,9 +606,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = lockerEntries.map(e => e.id === existingId ? entry : e);
     setLockerEntries(updated);
     broadcastLocker(updated);
-    // Keep (and refresh) the active entry so subsequent Save clicks continue
-    // updating this same Locker file without reopening the naming dialog.
-    setActiveLockerEntry(entry);
+    // Keep (and refresh) the active file identity so subsequent Save clicks
+    // continue updating this same Locker file without reopening the dialog.
+    setActiveLockerFile({ id: existingId, name });
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -644,6 +649,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const totalItems = store.order.reduce(
       (sum, cat) => sum + (store.items[cat]?.length ?? 0), 0
     );
+    // DEV_LOG
+    console.log('[TrailWeigh Load] handleLoadFromLocker — entry:', entry.id, entry.name, '| totalItems:', totalItems, '| path:', totalItems === 0 ? 'IN-PLACE' : 'NEW-TAB');
 
     if (totalItems === 0) {
       // ── In-place open path ────────────────────────────────────────────────
@@ -651,9 +658,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       //    because replaceStore only touches the gear store, not bg state.
       // 2. Replace the store (clears undo/redo; does not push history entry).
       replaceStore(entry.store as import('../hooks/usePackData').Store);
-      // 3. Track the active file so Save pre-fills this entry's name and
-      //    routes to commitSaveReplace (updating this file, not creating a new one).
-      setActiveLockerEntry(entry);
+      // 3. Track the active file identity so Save routes to commitSaveReplace
+      //    (updating this file, not creating a new one).
+      // DEV_LOG
+      console.log('[TrailWeigh Load] in-place path — totalItems:', totalItems, 'entry:', entry.id, entry.name);
+      setActiveLockerFile({ id: entry.id, name: entry.name });
       // 4. Stay in the same tab — no window.open.
       return;
     }
@@ -728,7 +737,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       setLockerEntries(updated);
       broadcastLocker(updated);
       // If the deleted entry is the active file, detach — it no longer exists.
-      setActiveLockerEntry(prev => (prev?.id === id ? null : prev));
+      setActiveLockerFile(prev => (prev?.id === id ? null : prev));
       return;
     }
     setPendingDeleteIds([id]);
@@ -743,7 +752,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setLockerEntries(updated);
     broadcastLocker(updated);
     // If the active file was among those deleted, detach the save target.
-    setActiveLockerEntry(prev => (prev && pendingDeleteIds.includes(prev.id) ? null : prev));
+    setActiveLockerFile(prev => (prev && pendingDeleteIds.includes(prev.id) ? null : prev));
     setShowDeleteDialog(false);
     setPendingDeleteIds([]);
     const msg = toDelete.length === 1
