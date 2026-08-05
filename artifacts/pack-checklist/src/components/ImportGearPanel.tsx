@@ -1,10 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { GearItem } from '../hooks/usePackData';
 import {
-  FileUp, Loader2, CheckCircle2, AlertCircle, X, Plus, ChevronDown, ChevronRight, Check, AlertTriangle,
-  PenLine, RotateCcw as Retry, ChevronDown as ChevronDownSmall,
+  FileUp, Loader2, CheckCircle2, AlertCircle, X,
+  ChevronDown, ChevronRight, Check, AlertTriangle,
 } from 'lucide-react';
-import { ImageOcrPreview } from './ImageOcrPreview';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -43,9 +42,8 @@ interface ImportGearPanelProps {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const ACCEPTED     = '.pdf,.docx,.doc,.xlsx,.xls,.numbers,.png,.jpg,.jpeg,.webp';
-const ACCEPT_LABEL = 'PDF, Word, Excel, Numbers, or an image / screenshot';
-const IMAGE_EXTS   = new Set(['png', 'jpg', 'jpeg', 'webp']);
+const ACCEPTED     = '.pdf,.docx,.doc,.xlsx,.xls,.numbers';
+const ACCEPT_LABEL = 'PDF, Word, Excel, or Numbers';
 
 // ── Category alias map ────────────────────────────────────────────────────────
 
@@ -121,34 +119,18 @@ function blankEditedItem(categoryOrder: string[]): EditedItem {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-type Phase = 'idle' | 'prepare' | 'parsing' | 'review' | 'fallback' | 'error';
+type Phase = 'idle' | 'parsing' | 'review' | 'error';
 
 export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelProps) {
   const [open, setOpen]   = useState(true);
   const [phase, setPhase] = useState<Phase>('idle');
   const [isDragging, setIsDragging] = useState(false);
 
-  // Shared
-  const [fileName, setFileName]     = useState('');
-  const [errorMsg, setErrorMsg]     = useState('');
-  const [statusMsg, setStatusMsg]   = useState('');
-  const [isImageFile, setIsImageFile] = useState(false);
-
-  // Prepare phase — holds the original File for ImageOcrPreview
-  const [prepareFile, setPrepareFile] = useState<File | null>(null);
+  const [fileName, setFileName] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Review phase
   const [items, setItems] = useState<EditedItem[]>([]);
-
-  // Fallback / partial-parse
-  const [rawOcrText,       setRawOcrText]       = useState('');
-  const [editedOcrText,    setEditedOcrText]    = useState('');
-  const [unrecognizedText, setUnrecognizedText] = useState('');
-  const [editedRemainder,  setEditedRemainder]  = useState('');
-  const [showRemainder,    setShowRemainder]    = useState(false);
-  const [isAnalyzing,      setIsAnalyzing]      = useState(false);
-  // Feedback shown in the fallback phase after an Analyze Again attempt
-  const [fallbackMsg, setFallbackMsg] = useState<{ kind: 'warn' | 'error'; text: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -159,55 +141,23 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     setItems([]);
     setErrorMsg('');
     setFileName('');
-    setStatusMsg('');
-    setIsImageFile(false);
-    setPrepareFile(null);
-    setRawOcrText('');
-    setEditedOcrText('');
-    setUnrecognizedText('');
-    setEditedRemainder('');
-    setShowRemainder(false);
-    setIsAnalyzing(false);
-    setFallbackMsg(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   // ── File selection ────────────────────────────────────────────────────────
 
   const processFile = (file: File) => {
-    const ext   = (file.name.split('.').pop() ?? '').toLowerCase();
-    const isImg = IMAGE_EXTS.has(ext) || file.type.startsWith('image/');
-
-    setIsImageFile(isImg);
     setFileName(file.name);
     setErrorMsg('');
-
-    if (isImg) {
-      // Show prepare screen before OCR — do NOT call the API yet
-      setPrepareFile(file);
-      setPhase('prepare');
-    } else {
-      // Non-image: send straight to API
-      setPhase('parsing');
-      setStatusMsg('');
-      submitToApi(file);
-    }
+    setPhase('parsing');
+    submitToApi(file);
   };
 
-  // ── API calls ─────────────────────────────────────────────────────────────
+  // ── API call ──────────────────────────────────────────────────────────────
 
-  /**
-   * Submit a File or Blob to /api/import-gear.
-   * Called both by non-image processFile and by handleReadImage (prepare phase).
-   */
-  const submitToApi = async (fileOrBlob: File | Blob) => {
+  const submitToApi = async (file: File) => {
     const formData = new FormData();
-    if (fileOrBlob instanceof File) {
-      formData.append('file', fileOrBlob);
-    } else {
-      // Blob from canvas export — treat as PNG
-      formData.append('file', fileOrBlob, 'prepared-image.png');
-    }
+    formData.append('file', file);
 
     try {
       const resp = await fetch('/api/import-gear', { method: 'POST', body: formData });
@@ -224,127 +174,29 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
       const data = await resp.json();
 
       if (!resp.ok) {
-        if (isImageFile) {
-          if (data.error === 'DAMAGED_IMAGE') throw new Error('__damaged_image__');
-          throw new Error('__ocr_failed__');
-        }
         throw new Error(data.error ?? 'Import failed');
       }
 
       const parsed: ParsedItem[] = data.items ?? [];
 
-      // OCR ran but gear parser found nothing — show fallback editor
-      if (data.error === 'NO_GEAR_ITEMS' || (isImageFile && parsed.length === 0 && data.rawText)) {
-        setRawOcrText(data.rawText ?? '');
-        setEditedOcrText(data.rawText ?? '');
-        setStatusMsg('');
-        setPhase('fallback');
-        return;
-      }
-
       if (parsed.length === 0) {
         setPhase('error');
-        setStatusMsg('');
-        setErrorMsg(isImageFile
-          ? 'No readable gear-list text was found. Try a clearer image or crop the screenshot closer to the list.'
-          : 'No gear items with weight values were found in this file. Try a different file or format.');
+        setErrorMsg('No gear items with weight values were found in this file. Try a different file or format.');
         return;
-      }
-
-      // Items found — move to review
-      if (isImageFile) {
-        setStatusMsg('Analyzing gear list…');
-        await new Promise(r => setTimeout(r, 600));
       }
 
       setItems(parsed.map(item => parsedToEdited(item, categoryOrder)));
-
-      // Store partial-parse remainder for collapsible section
-      if (data.remainder) {
-        setUnrecognizedText(data.remainder);
-        setEditedRemainder(data.remainder);
-      } else {
-        setUnrecognizedText('');
-        setEditedRemainder('');
-      }
-
-      setStatusMsg('');
       setPhase('review');
     } catch (err: any) {
       setPhase('error');
-      setStatusMsg('');
-      if (err.message === '__damaged_image__') {
-        setErrorMsg('We could not open this image. Please try another file.');
-      } else if (isImageFile || err.message === '__ocr_failed__') {
-        setErrorMsg('We could not read this image. Please try another screenshot or a clearer photo.');
-      } else {
-        setErrorMsg(err.message ?? 'Something went wrong. Please try again.');
-      }
-    }
-  };
-
-  /**
-   * Called by ImageOcrPreview when the user clicks "Read Image".
-   * The blob is the rotated+cropped image ready for OCR.
-   */
-  const handleReadImage = async (blob: Blob) => {
-    setPhase('parsing');
-    setStatusMsg('Reading image…');
-    await submitToApi(blob);
-  };
-
-  /**
-   * Re-run the gear parser on user-edited OCR text (no Tesseract).
-   */
-  const analyzeAgain = async (text: string) => {
-    if (!text.trim()) return;
-    setFallbackMsg(null);
-    setIsAnalyzing(true);
-    try {
-      const resp = await fetch('/api/parse-text', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ text }),
-      });
-
-      if (!resp.ok) {
-        throw new Error(`Server returned ${resp.status}`);
-      }
-
-      const data = await resp.json();
-      const parsed: ParsedItem[] = data.items ?? [];
-
-      if (parsed.length === 0) {
-        setFallbackMsg({
-          kind: 'warn',
-          text: 'No gear items were recognized. Format each item on its own line, such as: Tent — 18.5 oz',
-        });
-        return;
-      }
-
-      // Merge with any existing items (supports re-analyzing the remainder from review phase)
-      setItems(prev => {
-        const fresh = parsed.map(item => parsedToEdited(item, categoryOrder));
-        return [...prev, ...fresh];
-      });
-
-      setUnrecognizedText(data.remainder ?? '');
-      setEditedRemainder(data.remainder ?? '');
-      setPhase('review');
-    } catch {
-      setFallbackMsg({
-        kind: 'error',
-        text: 'The text could not be analyzed. Please try again.',
-      });
-    } finally {
-      setIsAnalyzing(false);
+      setErrorMsg(err.message ?? 'Something went wrong. Please try again.');
     }
   };
 
   /** Add a blank row to the review table for manual entry. */
   const addManualItem = () => {
     setItems(prev => [...prev, blankEditedItem(categoryOrder)]);
-    setPhase('review');
+    if (phase !== 'review') setPhase('review');
   };
 
   // ── Item edit helpers ─────────────────────────────────────────────────────
@@ -385,7 +237,6 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     const valid   = validated.filter(it => Object.keys(it.errors).length === 0);
 
     if (invalid.length > 0) {
-      // Write validation errors back into the item list (pure update, no side effects)
       setItems(prev =>
         prev.map((it, i) => {
           const v = validated.find(vi => vi.idx === i);
@@ -402,10 +253,8 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     }
 
     if (invalid.length === 0) {
-      // All selected rows were valid — reset the whole panel
       reset();
     } else {
-      // Some rows were invalid — mark valid ones as added but keep the panel open
       setItems(prev =>
         prev.map((it, i) => {
           const v = valid.find(vi => vi.idx === i);
@@ -500,93 +349,14 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
             </>
           )}
 
-          {/* ── Prepare phase — image crop/rotate ── */}
-          {phase === 'prepare' && prepareFile && (
-            <ImageOcrPreview
-              file={prepareFile}
-              onConfirm={handleReadImage}
-              onCancel={reset}
-            />
-          )}
-
           {/* ── Parsing spinner ── */}
           {phase === 'parsing' && (
             <div className="flex flex-col items-center gap-3 py-6 text-center">
               <Loader2 className="w-7 h-7 text-primary animate-spin" />
               <div>
-                <p className="text-sm font-semibold text-foreground">{statusMsg || 'Reading your file…'}</p>
+                <p className="text-sm font-semibold text-foreground">Reading your file…</p>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]">{fileName}</p>
               </div>
-            </div>
-          )}
-
-          {/* ── Fallback: "Review Extracted Text" ── */}
-          {phase === 'fallback' && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <PenLine className="w-4 h-4 text-primary" />
-                  <span className="text-xs font-semibold text-foreground">Review Extracted Text</span>
-                </div>
-                <button onClick={reset} className="text-muted-foreground hover:text-foreground">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                OCR found text but couldn't identify gear items automatically. Edit the text below into
-                clear &ldquo;Item Name — weight unit&rdquo; lines, then click&nbsp;<strong>Analyze Again</strong>.
-              </p>
-
-              <textarea
-                value={editedOcrText}
-                onChange={e => setEditedOcrText(e.target.value)}
-                rows={8}
-                spellCheck={false}
-                className="w-full text-xs font-mono bg-muted/20 border border-border rounded-lg p-3 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-y"
-                placeholder={'Tent — 18.5 oz\nSleeping Pad — 12 oz\nRain Jacket — 7.2 oz'}
-              />
-
-              <div className="flex gap-2 flex-wrap">
-                <button
-                  onClick={() => analyzeAgain(editedOcrText)}
-                  disabled={isAnalyzing || !editedOcrText.trim()}
-                  className="flex items-center gap-1.5 text-xs font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isAnalyzing
-                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    : <Retry className="w-3.5 h-3.5" />
-                  }
-                  {isAnalyzing ? 'Analyzing…' : 'Analyze Again'}
-                </button>
-
-                <button
-                  onClick={addManualItem}
-                  className="flex items-center gap-1.5 text-xs font-medium border border-border px-3 py-2 rounded-lg hover:bg-muted/30 transition-colors text-foreground"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Add Item Manually
-                </button>
-
-                <button
-                  onClick={reset}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-auto"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  Cancel
-                </button>
-              </div>
-
-              {fallbackMsg && (
-                <div className={`flex items-start gap-2 p-2.5 rounded-lg text-[11px] leading-snug ${
-                  fallbackMsg.kind === 'error'
-                    ? 'bg-destructive/5 border border-destructive/20 text-destructive'
-                    : 'bg-amber-50 border border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-700/40 dark:text-amber-300'
-                }`}>
-                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
-                  <span>{fallbackMsg.text}</span>
-                </div>
-              )}
             </div>
           )}
 
@@ -778,73 +548,35 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                 </p>
               )}
 
-              {/* Unrecognized text collapsible (partial parse) */}
-              {unrecognizedText && (
-                <div className="border border-border rounded-lg overflow-hidden">
-                  <button
-                    onClick={() => setShowRemainder(v => !v)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors"
-                  >
-                    <span>Unrecognized extracted text</span>
-                    <ChevronDownSmall className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${showRemainder ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showRemainder && (
-                    <div className="border-t border-border p-3 space-y-2">
-                      <p className="text-[10px] text-muted-foreground">
-                        These lines weren't recognized as gear items. Edit them and click Analyze to add more rows.
-                      </p>
-                      <textarea
-                        value={editedRemainder}
-                        onChange={e => setEditedRemainder(e.target.value)}
-                        rows={4}
-                        spellCheck={false}
-                        className="w-full text-xs font-mono bg-muted/20 border border-border rounded-md p-2 text-foreground focus:outline-none focus:border-primary/50 resize-y"
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => analyzeAgain(editedRemainder)}
-                          disabled={isAnalyzing || !editedRemainder.trim()}
-                          className="flex items-center gap-1 text-[11px] font-semibold bg-primary text-primary-foreground px-2.5 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {isAnalyzing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Retry className="w-3 h-3" />}
-                          {isAnalyzing ? 'Analyzing…' : 'Analyze'}
-                        </button>
-                        <button
-                          onClick={addManualItem}
-                          className="flex items-center gap-1 text-[11px] border border-border px-2.5 py-1.5 rounded-md hover:bg-muted/30 transition-colors text-foreground"
-                        >
-                          <Plus className="w-3 h-3" />
-                          Add Manually
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Actions */}
-              {pending.length > 0 && (
+              {/* Action bar */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={addSelected}
                   disabled={selectedCnt === 0}
-                  className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-semibold bg-primary text-primary-foreground px-3 py-2 rounded-lg hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  Import {selectedCnt > 0 ? `${selectedCnt} selected` : 'selected'} item{selectedCnt !== 1 ? 's' : ''}
+                  <Check className="w-3.5 h-3.5" />
+                  Import {selectedCnt > 0 ? `${selectedCnt} item${selectedCnt !== 1 ? 's' : ''}` : 'Selected'}
                 </button>
-              )}
 
-              {pending.length === 0 && addedCnt > 0 && (
-                <div className="flex items-center justify-center gap-2 py-2 text-xs text-primary font-medium">
-                  <CheckCircle2 className="w-4 h-4" />
-                  All items added!
-                  <button onClick={reset} className="underline text-muted-foreground hover:text-foreground ml-1">
-                    Import another file
-                  </button>
-                </div>
-              )}
+                <button
+                  onClick={addManualItem}
+                  className="flex items-center gap-1.5 text-xs font-medium border border-border px-3 py-2 rounded-lg hover:bg-muted/30 transition-colors text-foreground"
+                >
+                  + Add Row
+                </button>
+
+                <button
+                  onClick={reset}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground ml-auto"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
+
         </div>
       )}
     </div>

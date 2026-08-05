@@ -1,0 +1,180 @@
+Fix the image sent from TrailWeigh’s rotate-and-crop screen to OCR.
+
+The latest rendered test proves the OCR request contains interface text that is not part of the uploaded image.
+
+The raw extracted text includes:
+
+- “Upload a file to import Type, Description, and Weight.”
+- The uploaded filename: “Screenshot 2026-08-05 at 2.15.10 AM.png”
+
+The original uploaded spreadsheet screenshot does not contain either of those lines.
+
+Therefore, Read Image is likely exporting the Scan Gear List interface, preview container, filename label, or another DOM/canvas area instead of exporting only the selected portion of the uploaded image.
+
+## Required result
+
+When Read Image is clicked, the OCR request must contain only:
+
+- The uploaded image
+- The selected crop from that image
+- The selected rotation
+
+It must never contain:
+
+- Scan Gear List headings
+- Upload instructions
+- Filename labels
+- Buttons
+- Borders around the preview
+- Background images
+- Other TrailWeigh interface elements
+
+## Diagnose the actual exported image
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/ImageOcrPreview.tsx`
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+- The request sent to `/api/import-gear`
+
+Temporarily record:
+
+- Original image natural width and height
+- Preview canvas width and height
+- Crop rectangle in preview coordinates
+- Crop rectangle in source-image coordinates
+- Rotation
+- Exported blob width and height
+- Exported blob byte size
+- MIME type sent to `/api/import-gear`
+
+During development, save or display one temporary copy of the exact exported OCR image so it can be visually inspected.
+
+Confirm that this exported image contains only the selected spreadsheet area.
+
+Remove the temporary debug image and excessive logs after the problem is fixed.
+
+## Export from the source image, not the interface
+
+Do not use:
+
+- A screenshot of the DOM
+- `html2canvas` on the preview component
+- The entire Scan Gear List panel
+- The visible preview wrapper
+- A canvas containing labels or controls
+
+Use the original uploaded image as the sole drawing source.
+
+Create an offscreen canvas and:
+
+1. Load the original uploaded image.
+2. Use its `naturalWidth` and `naturalHeight`.
+3. Apply the selected 90-degree rotation.
+4. Convert the visible crop coordinates into original-image coordinates.
+5. Draw only that source-image crop onto the offscreen canvas.
+6. Export the offscreen canvas as PNG.
+7. Send that PNG blob to the existing `/api/import-gear` endpoint.
+
+The on-screen preview may remain scaled down, but the OCR export must preserve the source image’s original crop resolution.
+
+## Coordinate mapping
+
+Correctly account for:
+
+- Preview scaling
+- Source-image dimensions
+- 0°, 90°, 180°, and 270° rotation
+- Portrait and landscape images
+- Crops that do not begin at the upper-left corner
+
+Do not use CSS pixel coordinates directly as source-image coordinates.
+
+Do not stretch or distort the crop.
+
+## Verify the request on the backend
+
+In `artifacts/api-server/src/routes/importGear.ts`, temporarily log:
+
+- Received file byte size
+- Detected format
+- Decoded image width and height
+
+Verify these match the crop exported by ImageOcrPreview.
+
+Do not permanently store the uploaded image.
+
+Keep the existing temporary-file deletion behavior.
+
+## OCR-quality improvement after the source is correct
+
+After confirming that only the actual image crop reaches the server, improve `ocr_service/image_ocr.py` for this small table text.
+
+Keep a limited set of preprocessing candidates:
+
+- Original RGB composited onto white
+- Grayscale with autocontrast
+- Grayscale with sharpening
+- High-contrast black-and-white when useful
+
+Upscale small text approximately 2× or 3× with a high-quality resize method while preserving aspect ratio.
+
+Test:
+
+- `--oem 3 --psm 6 -c preserve_interword_spaces=1`
+- `--oem 3 --psm 11 -c preserve_interword_spaces=1`
+
+Do not run an uncontrolled number of attempts.
+
+Preserve useful line breaks and spacing for the table parser.
+
+## Preserve working features
+
+Do not change:
+
+- Rotate Left
+- Rotate Right
+- Crop controls
+- Reset
+- Cancel
+- Review Extracted Text
+- Analyze Again
+- Add Item Manually
+- Editable review table
+- `/api/parse-text`
+- Category routing
+- Weight validation
+- Imported items remaining unchecked
+- PDF, Word, Excel, or Numbers imports
+
+## Required rendered test
+
+Use the same spreadsheet screenshot that produced the current garbled OCR.
+
+1. Upload it through Scan Gear List.
+2. Crop closely around the Backpack and Shelter table.
+3. Click Read Image.
+4. Inspect the exact PNG blob sent to OCR.
+5. Confirm it contains only the spreadsheet crop.
+6. Confirm the OCR text does not contain:
+   - “Upload a file to import”
+   - “Scan Gear List”
+   - The uploaded filename
+   - Button labels
+7. Confirm the raw OCR text now contains recognizable spreadsheet headers and rows.
+8. Confirm automatically recognized rows reach the editable review table.
+9. Confirm any remaining unrecognized text is retained in the existing fallback interface.
+10. Import recognized items and confirm they are unchecked.
+
+Do not report completion based only on TypeScript or a generated test image.
+
+Report:
+
+- What image or DOM element was previously being exported
+- Why interface text reached Tesseract
+- Original source dimensions
+- Exported crop dimensions
+- What the exact corrected OCR image contains
+- Before-and-after raw OCR text
+- Which files were changed
+- Whether the real spreadsheet screenshot reached the review table

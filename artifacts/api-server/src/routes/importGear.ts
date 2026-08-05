@@ -1,12 +1,8 @@
-import express, { Router } from 'express';
+import { Router } from 'express';
 import multer from 'multer';
-import { spawn } from 'child_process';
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
-const pdfParse: (buf: Buffer) => Promise<{ text: string }> = require('pdf-parse');
+const { PDFParse } = require('pdf-parse') as { PDFParse: new (opts: { data: Buffer; verbosity?: number }) => { getText(): Promise<{ pages: { text: string }[]; text: string }> } };
 const XLSX: typeof import('xlsx') = require('xlsx');
 const mammoth: typeof import('mammoth') = require('mammoth');
 
@@ -14,195 +10,6 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 
 const importGearRouter = Router();
 export default importGearRouter;
-
-// ── OCR image support ─────────────────────────────────────────────────────────
-
-/** Supported image extensions (and their expected magic bytes). */
-const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'webp']);
-
-/** Absolute path to the Python OCR script.
- *  The API server runs from artifacts/api-server, so ../../ is the workspace root. */
-const OCR_SCRIPT = path.resolve(process.cwd(), '..', '..', 'ocr_service', 'image_ocr.py');
-
-if (!fs.existsSync(OCR_SCRIPT)) {
-  console.warn('[import-gear] OCR script not found at', OCR_SCRIPT, '— image OCR will be unavailable');
-}
-
-/**
- * Validate that the buffer's magic bytes match the declared image extension.
- * Returns true when the file looks genuine; false when it appears spoofed or damaged.
- */
-function validateImageMagic(buffer: Buffer, ext: string): boolean {
-  if (buffer.length < 12) return false;
-  if (ext === 'png')  return buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
-  if (ext === 'jpg' || ext === 'jpeg') return buffer[0] === 0xFF && buffer[1] === 0xD8;
-  if (ext === 'webp') return buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
-                             buffer.subarray(8, 12).toString('ascii') === 'WEBP';
-  return false;
-}
-
-/**
- * Fix common Tesseract OCR misreads before the text reaches the gear parser.
- * Only corrects unit strings and layout noise — does not alter item names.
- */
-function normalizeOcrText(text: string): string {
-  return text
-    // Dot leaders (e.g. "Tent ........ 18.5 oz") → single space
-    .replace(/\.{3,}/g, ' ')
-    // Pipe separators around numbers/units: "Tent | 18.5 | oz" → "Tent 18.5 oz"
-    .replace(/\|(\s*)(\d)/g, ' $2')
-    .replace(/(\d)(\s*)\|/g, '$1 ')
-    // "18.5 0z" → "18.5 oz" (Tesseract reads 'o' as digit zero in some fonts)
-    .replace(/\b(\d+(?:\.\d+)?)\s*0z\b/gi, '$1 oz')
-    // "2 |b" or "2 |bs" → "2 lb/lbs" (pipe misread as lowercase L)
-    .replace(/\b(\d+(?:\.\d+)?)\s*\|b(s?)\b/gi, '$1 lb$2')
-    // "2 l b" → "2 lb" (space inserted into unit by Tesseract)
-    .replace(/\b(\d+(?:\.\d+)?)\s*l\s+b\b/gi, '$1 lb');
-}
-
-/**
- * Return any lines from the OCR text that did NOT produce a parsed item.
- * Used to surface "Unrecognized extracted text" to the user.
- */
-function computeRemainder(text: string, parsedItems: ExtractedItem[]): string {
-  if (parsedItems.length === 0) return '';
-  const lines = text.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 2);
-  const unmatched = lines.filter(l => !SKIP_LINE_RE.test(l) && !WEIGHT_RE.test(l));
-  return unmatched.join('\n').trim();
-}
-
-/**
- * Post-process OCR-extracted items to:
- *  1. Strip em-dash / pipe OCR noise from sub and desc fields.
- *  2. Reassign sub to the full multi-word type phrase when the combined
- *     name matches a known gear type (e.g. "Sleeping Pad" stays together).
- *
- * Without this, extractFromText splits "Sleeping Pad" at the first space
- * into sub="Sleeping", desc="Pad", preventing type-based category routing.
- */
-function ocrFixupItems(items: ExtractedItem[]): ExtractedItem[] {
-  // All known type phrases, sorted longest-first so "sleeping bag liner"
-  // is matched before "sleeping bag".
-  const allKnownTypes = [
-    ...CONSUMABLES_TYPES,
-    ...CLOTHING_TYPES,
-    ...SHELTER_TYPES,
-    ...SLEEP_TYPES,
-  ].sort((a, b) => b.length - a.length);
-
-  return items.map(item => {
-    // Strip OCR noise characters from sub and desc
-    const cleanSub  = item.sub.replace(/[—–|]/g, '').replace(/\s+/g, ' ').trim();
-    const cleanDesc = item.desc.replace(/[—–|]/g, '').replace(/\s+/g, ' ').trim();
-
-    // Reconstruct the full item name from both fields
-    const fullName = [cleanSub, cleanDesc].filter(Boolean).join(' ');
-    if (!fullName) return item;
-
-    const fullNorm = norm(fullName);
-
-    // Try to match a known type phrase at the start of the full name
-    for (const typeName of allKnownTypes) {
-      if (fullNorm === typeName || fullNorm.startsWith(typeName + ' ')) {
-        const subPretty = typeName
-          .split(' ')
-          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(' ');
-        // Slice the original-case fullName by the matched length
-        const descRemainder = fullName.slice(typeName.length).trim();
-        return { ...item, sub: subPretty, desc: descRemainder };
-      }
-    }
-
-    // No known type matched — return with noise stripped
-    return { ...item, sub: cleanSub, desc: cleanDesc };
-  });
-}
-
-/**
- * Write the image buffer to a temp file, spawn the Python OCR script with
- * the file path as an argument, parse the JSON result, and clean up the temp
- * file regardless of outcome.
- *
- * Using a temp file (rather than stdin piping) is more reliable for large
- * images under concurrent request load — no pipe-buffer or EOF-ordering issues.
- */
-async function runImageOcr(buffer: Buffer): Promise<string> {
-  const tmpPath = path.join(
-    os.tmpdir(),
-    `tw-ocr-${Date.now()}-${Math.random().toString(36).slice(2)}.img`,
-  );
-
-  console.log(`[import-gear/ocr] writing ${buffer.length} bytes to ${tmpPath}`);
-  await fs.promises.writeFile(tmpPath, buffer);
-
-  // Verify the write landed correctly
-  const { size } = await fs.promises.stat(tmpPath);
-  if (size === 0) {
-    await fs.promises.unlink(tmpPath).catch(() => {});
-    throw new Error('Temp image file is empty after write');
-  }
-  console.log(`[import-gear/ocr] temp file confirmed: ${size} bytes`);
-
-  try {
-    const text = await new Promise<string>((resolve, reject) => {
-      console.log(`[import-gear/ocr] spawning: python3 ${OCR_SCRIPT} ${tmpPath}`);
-      const proc = spawn('python3', [OCR_SCRIPT, tmpPath], { timeout: 120_000 });
-
-      let stdout = '';
-      let stderr = '';
-      proc.stdout.on('data', (d: Buffer) => { stdout += d.toString('utf8'); });
-      proc.stderr.on('data', (d: Buffer) => { stderr += d.toString('utf8'); });
-
-      proc.on('error', (err) => {
-        console.error('[import-gear/ocr] spawn error:', err.message);
-        reject(err);
-      });
-
-      proc.on('close', (code: number | null) => {
-        console.log(
-          `[import-gear/ocr] exit=${code} stdout_len=${stdout.length}` +
-          ` stderr=${stderr.slice(0, 300)}`,
-        );
-
-        if (code !== 0) {
-          reject(new Error(stderr.trim() || `OCR process exited with code ${code}`));
-          return;
-        }
-
-        // Parse structured JSON output from image_ocr.py
-        let parsed: { success: boolean; text?: string; error?: string; selected_psm?: number };
-        try {
-          parsed = JSON.parse(stdout.trim());
-        } catch {
-          // Unexpected output — treat non-empty raw text as the OCR result
-          console.warn('[import-gear/ocr] stdout is not JSON, using raw:', stdout.slice(0, 80));
-          resolve(stdout);
-          return;
-        }
-
-        if (parsed.success) {
-          console.log(
-            `[import-gear/ocr] OCR ok: ${parsed.text?.length ?? 0} chars, psm=${parsed.selected_psm}`,
-          );
-          if (parsed.text) {
-            console.log(`[import-gear/ocr] first 120: ${JSON.stringify(parsed.text.slice(0, 120))}`);
-          }
-          resolve(parsed.text ?? '');
-        } else {
-          reject(new Error(parsed.error || 'OCR script reported failure (no detail)'));
-        }
-      });
-    });
-
-    return text;
-  } finally {
-    // Always remove the temp file
-    fs.unlink(tmpPath, (err) => {
-      if (err) console.warn('[import-gear/ocr] failed to delete temp file:', err.message);
-    });
-  }
-}
 
 // ── Shared types ──────────────────────────────────────────────────────────────
 
@@ -815,12 +622,19 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
 
   try {
     let items: ExtractedItem[] = [];
-    let imageRawText = '';   // non-empty only for image OCR responses
-    let imageRemainder = ''; // lines that didn't parse (partial-parse UI)
 
     if (ext === 'pdf' || mimetype === 'application/pdf') {
-      const parsed = await pdfParse(buffer);
-      items = extractFromText(parsed.text);
+      let pdfText: string;
+      try {
+        const inst = new PDFParse({ data: buffer, verbosity: 0 });
+        const result = await inst.getText();
+        pdfText = result.pages.map((p: { text: string }) => p.text).join('\n');
+      } catch (pdfErr: any) {
+        console.error('[import-gear] pdf-parse error:', pdfErr?.message);
+        res.status(422).json({ error: 'Could not read this PDF. Make sure it is not password-protected and contains selectable text.' });
+        return;
+      }
+      items = extractFromText(pdfText);
 
     } else if (ext === 'docx' || ext === 'doc' || mimetype?.includes('wordprocessingml')) {
       const result = await mammoth.extractRawText({ buffer });
@@ -830,67 +644,9 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       const wb = XLSX.read(buffer, { type: 'buffer' });
       items = extractFromWorkbook(wb);
 
-    } else if (IMAGE_EXTS.has(ext) || mimetype?.startsWith('image/')) {
-      // ── Image OCR path ──────────────────────────────────────────────────────
-      console.log(
-        `[import-gear] image upload: name=${originalname} ext=${ext} mime=${mimetype} size=${buffer.length}`,
-      );
-
-      // Detect actual image format from magic bytes (don't trust extension alone)
-      const detectedExt = (() => {
-        if (buffer.length < 12) return null;
-        if (buffer[0] === 0x89 && buffer[1] === 0x50) return 'png';
-        if (buffer[0] === 0xFF && buffer[1] === 0xD8) return 'jpg';
-        if (buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
-            buffer.subarray(8, 12).toString('ascii') === 'WEBP') return 'webp';
-        return null;
-      })();
-
-      console.log(`[import-gear] detected image format: ${detectedExt ?? 'unknown'}`);
-
-      if (!detectedExt) {
-        res.status(400).json({
-          error: 'DAMAGED_IMAGE',
-          message: 'We could not open this image. Please try another file.',
-        });
-        return;
-      }
-
-      if (!fs.existsSync(OCR_SCRIPT)) {
-        console.error('[import-gear] OCR script missing at', OCR_SCRIPT);
-        res.status(500).json({ error: 'OCR_UNAVAILABLE' });
-        return;
-      }
-
-      let ocrText: string;
-      try {
-        ocrText = await runImageOcr(buffer);
-      } catch (ocrErr: any) {
-        console.error('[import-gear] OCR subprocess error:', ocrErr?.message);
-        res.status(500).json({ error: 'OCR_FAILED' });
-        return;
-      }
-
-      console.log(`[import-gear] raw OCR text length: ${ocrText.length}`);
-
-      const normalizedOcrText = normalizeOcrText(ocrText);
-      const rawItems = extractFromText(normalizedOcrText);
-      console.log(`[import-gear] raw items from parser: ${rawItems.length}`);
-
-      if (rawItems.length === 0 && ocrText.trim().length > 0) {
-        // OCR extracted text but the gear parser found nothing — return rawText
-        // so the client can show the "Review Extracted Text" fallback editor.
-        res.json({ items: [], error: 'NO_GEAR_ITEMS', rawText: ocrText });
-        return;
-      }
-
-      items = ocrFixupItems(rawItems).map(applyGearClassification);
-      imageRawText   = ocrText;
-      imageRemainder = computeRemainder(normalizedOcrText, rawItems);
-
     } else {
       res.status(400).json({
-        error: `Unsupported file type: .${ext}. Accepted: PDF, Word (.docx), Excel (.xlsx), Numbers, or an image (PNG, JPG, WebP).`,
+        error: `Unsupported file type: .${ext}. Accepted formats: PDF, Word (.docx), Excel (.xlsx), or Numbers.`,
       });
       return;
     }
@@ -904,31 +660,9 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       return true;
     });
 
-    res.json({
-      items: deduped.slice(0, 200),
-      ...(imageRawText   && { rawText:   imageRawText }),
-      ...(imageRemainder && { remainder: imageRemainder }),
-    });
+    res.json({ items: deduped.slice(0, 200) });
   } catch (err: any) {
     console.error('[import-gear]', err);
     res.status(500).json({ error: err?.message ?? 'Failed to parse file' });
   }
-});
-
-// ── /api/parse-text ───────────────────────────────────────────────────────────
-//
-// Runs the gear parser on caller-supplied text (no OCR).
-// Used by the "Analyze Again" fallback when the user edits extracted OCR text.
-
-importGearRouter.post('/parse-text', express.json(), (req, res) => {
-  const { text } = req.body as { text?: string };
-  if (typeof text !== 'string' || !text.trim()) {
-    res.status(400).json({ error: 'text field required' });
-    return;
-  }
-  const normalized = normalizeOcrText(text);
-  const rawItems   = extractFromText(normalized);
-  const items      = ocrFixupItems(rawItems).map(applyGearClassification);
-  const remainder  = computeRemainder(normalized, rawItems);
-  res.json({ items, remainder: remainder || undefined });
 });

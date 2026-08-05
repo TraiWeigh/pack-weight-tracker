@@ -9,7 +9,7 @@ Usage:
 
 Protocol:
   stdout — JSON: {"success": true,  "text": "...", "selected_psm": 6}
-              or  {"success": false, "error": "human-readable message"}
+               or  {"success": false, "error": "human-readable message"}
   stderr — development diagnostics (never shown to end users)
   exit 0 — always (caller inspects the JSON success flag)
 """
@@ -76,48 +76,57 @@ except Exception as e:
     sys.exit(0)
 
 print(f"[ocr] mode={img.mode} size={img.size}", file=sys.stderr)
+print(f"[ocr] decoded image dimensions: {img.size[0]}x{img.size[1]}", file=sys.stderr)
 
-# ── 5. Preprocess ─────────────────────────────────────────────────────────────
-
-# 5a. Correct EXIF orientation (handles rotated phone photos)
+# ── 5. Correct EXIF orientation (handles rotated phone photos) ────────────────
 try:
     img = ImageOps.exif_transpose(img)
 except Exception:
     pass
 
-# 5b. Composite transparent images onto a solid white background
+# ── 6. Composite onto white background ───────────────────────────────────────
 #     (transparent regions confuse Tesseract — it reads them as black blobs)
-if img.mode in ('RGBA', 'LA'):
-    bg = Image.new('RGB', img.size, (255, 255, 255))
-    if img.mode == 'RGBA':
-        bg.paste(img, mask=img.split()[3])   # alpha channel as mask
-    else:
-        bg.paste(img, mask=img.split()[1])   # LA: channel 1 is alpha
-    img = bg
-elif img.mode == 'P':
-    # Palette mode — check for transparency
-    img = img.convert('RGBA')
-    bg = Image.new('RGB', img.size, (255, 255, 255))
-    bg.paste(img, mask=img.split()[3])
-    img = bg
-elif img.mode != 'RGB':
-    img = img.convert('RGB')
+def to_white_rgb(src: Image.Image) -> Image.Image:
+    if src.mode in ('RGBA', 'LA'):
+        bg = Image.new('RGB', src.size, (255, 255, 255))
+        if src.mode == 'RGBA':
+            bg.paste(src, mask=src.split()[3])
+        else:
+            bg.paste(src, mask=src.split()[1])
+        return bg
+    elif src.mode == 'P':
+        src = src.convert('RGBA')
+        bg = Image.new('RGB', src.size, (255, 255, 255))
+        bg.paste(src, mask=src.split()[3])
+        return bg
+    elif src.mode != 'RGB':
+        return src.convert('RGB')
+    return src.copy()
 
-# 5c. Resize: upscale small images for better OCR; cap very large ones
-MIN_SHORT = 900
-MAX_LONG  = 4000
+img = to_white_rgb(img)
+
+# ── 7. Upscale for better OCR on small / cropped images ──────────────────────
+#     Use 2× for medium, 3× for very small; cap at MAX_LONG on the long side.
 w, h = img.size
 short_side = min(w, h)
 long_side  = max(w, h)
+MAX_LONG   = 4000
 
-if short_side < MIN_SHORT:
-    scale = MIN_SHORT / short_side
-    if long_side * scale > MAX_LONG:
-        scale = MAX_LONG / long_side
-    new_w = max(1, int(w * scale))
-    new_h = max(1, int(h * scale))
+if short_side < 400:
+    factor = 3
+elif short_side < 900:
+    factor = 2
+else:
+    factor = 1
+
+if factor > 1 and long_side * factor > MAX_LONG:
+    factor = max(1, MAX_LONG // long_side)
+
+if factor > 1:
+    new_w = w * factor
+    new_h = h * factor
     img = img.resize((new_w, new_h), Image.LANCZOS)
-    print(f"[ocr] upscaled to {new_w}x{new_h}", file=sys.stderr)
+    print(f"[ocr] upscaled {factor}× to {new_w}x{new_h}", file=sys.stderr)
 elif long_side > MAX_LONG:
     scale = MAX_LONG / long_side
     new_w = max(1, int(w * scale))
@@ -125,56 +134,92 @@ elif long_side > MAX_LONG:
     img = img.resize((new_w, new_h), Image.LANCZOS)
     print(f"[ocr] downscaled to {new_w}x{new_h}", file=sys.stderr)
 
-# 5d. Auto-contrast (stretches histogram — improves faint text)
-img = ImageOps.autocontrast(img, cutoff=2)
+# ── 8. Build preprocessing variants ──────────────────────────────────────────
+#     Limited set per spec: RGB autocontrast, grayscale sharpen, high-contrast B&W.
+#     All returned as RGB so pytesseract receives a consistent format.
 
-# 5e. Gentle sharpening (helps character edges without over-sharpening JPEG artifacts)
-img = img.filter(ImageFilter.UnsharpMask(radius=1, percent=120, threshold=3))
+def make_variants(base: Image.Image):
+    """Return up to 3 distinct preprocessed images + names."""
+    variants = []
 
-# ── 6. OCR ────────────────────────────────────────────────────────────────────
-CFG_MAIN     = "--oem 3 --psm 6"   # uniform block of text
-CFG_FALLBACK = "--oem 3 --psm 11"  # sparse text layout
+    # V1 — RGB with autocontrast (works well for colour screenshots)
+    v1 = ImageOps.autocontrast(base, cutoff=1)
+    variants.append(('rgb-ac', v1))
 
-def _usable(text: str) -> bool:
-    """Return True when text contains ≥20 non-whitespace chars and at least one digit."""
-    stripped = text.replace(" ", "").replace("\n", "").replace("\t", "")
-    return len(stripped) >= 20 and any(c.isdigit() for c in stripped)
+    # V2 — Grayscale with autocontrast + sharpening (improves faint table text)
+    gray = ImageOps.grayscale(base)
+    gray_ac = ImageOps.autocontrast(gray, cutoff=2)
+    gray_sharp = gray_ac.filter(ImageFilter.UnsharpMask(radius=1.5, percent=200, threshold=2))
+    variants.append(('gray-sharp', gray_sharp.convert('RGB')))
 
+    # V3 — High-contrast B&W (helpful when background/foreground contrast is low)
+    gray2_ac = ImageOps.autocontrast(ImageOps.grayscale(base), cutoff=0)
+    bw = gray2_ac.point(lambda p: 255 if p > 145 else 0, '1').convert('RGB')
+    variants.append(('bw', bw))
+
+    return variants
+
+variants = make_variants(img)
+
+# ── 9. OCR ────────────────────────────────────────────────────────────────────
+CFG_PSM6  = "--oem 3 --psm 6 -c preserve_interword_spaces=1"
+CFG_PSM11 = "--oem 3 --psm 11 -c preserve_interword_spaces=1"
+
+def _score(text: str) -> int:
+    """
+    Quality score for OCR output.
+    Gear lists have numbers (weights), item names, and unit words.
+    Digits are weighted more heavily since weight values are the key signal.
+    """
+    s = text.replace(' ', '').replace('\n', '').replace('\t', '')
+    if not s:
+        return 0
+    digits = sum(1 for c in s if c.isdigit())
+    alpha  = sum(1 for c in s if c.isalpha())
+    return alpha + digits * 3
+
+best_text    = ""
+best_score   = 0
 selected_psm = 6
-try:
-    text_main = pytesseract.image_to_string(img, config=CFG_MAIN).strip()
-    print(f"[ocr] psm6: {len(text_main)} chars", file=sys.stderr)
-except pytesseract.TesseractNotFoundError as e:
-    print(json.dumps({"success": False, "error": f"Tesseract not found: {e}"}))
-    sys.exit(0)
-except Exception as e:
-    print(json.dumps({"success": False, "error": f"Tesseract error: {e}"}))
-    sys.exit(0)
 
-if _usable(text_main):
-    text = text_main
-else:
+# psm6 on each variant (3 runs)
+for vname, variant in variants:
     try:
-        text_fb = pytesseract.image_to_string(img, config=CFG_FALLBACK).strip()
-        print(f"[ocr] psm11: {len(text_fb)} chars", file=sys.stderr)
+        t = pytesseract.image_to_string(variant, config=CFG_PSM6).strip()
+        sc = _score(t)
+        print(f"[ocr] {vname}/psm6: {len(t)} chars  score={sc}", file=sys.stderr)
+        if sc > best_score:
+            best_text  = t
+            best_score = sc
+            selected_psm = 6
+    except pytesseract.TesseractNotFoundError as e:
+        print(json.dumps({"success": False, "error": f"Tesseract not found: {e}"}))
+        sys.exit(0)
     except Exception as e:
-        print(f"[ocr] psm11 failed: {e}", file=sys.stderr)
-        text_fb = ""
-    if len(text_fb) > len(text_main):
-        text = text_fb
+        print(f"[ocr] {vname}/psm6 failed: {e}", file=sys.stderr)
+
+# psm11 on the primary variant only (1 additional run)
+try:
+    t11 = pytesseract.image_to_string(variants[0][1], config=CFG_PSM11).strip()
+    sc11 = _score(t11)
+    print(f"[ocr] rgb-ac/psm11: {len(t11)} chars  score={sc11}", file=sys.stderr)
+    if sc11 > best_score:
+        best_text    = t11
+        best_score   = sc11
         selected_psm = 11
-    else:
-        text = text_main
+except Exception as e:
+    print(f"[ocr] psm11 failed: {e}", file=sys.stderr)
 
-print(f"[ocr] final text: {len(text)} chars, psm={selected_psm}", file=sys.stderr)
+text = best_text
+print(f"[ocr] final text: {len(text)} chars, psm={selected_psm}  score={best_score}", file=sys.stderr)
 if text:
-    print(f"[ocr] first 120 chars: {repr(text[:120])}", file=sys.stderr)
+    print(f"[ocr] first 120: {repr(text[:120])}", file=sys.stderr)
 
-# ── 7. Light post-processing ──────────────────────────────────────────────────
+# ── 10. Light post-processing ──────────────────────────────────────────────────
 import re
 text = re.sub(r'[ \t]+', ' ', text)
 text = re.sub(r' +\n', '\n', text)
 text = re.sub(r'\n{3,}', '\n\n', text)
 
-# ── 8. Output JSON result ─────────────────────────────────────────────────────
+# ── 11. Output JSON result ────────────────────────────────────────────────────
 print(json.dumps({"success": True, "text": text, "selected_psm": selected_psm}))

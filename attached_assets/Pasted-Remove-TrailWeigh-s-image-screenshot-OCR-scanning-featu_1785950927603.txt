@@ -1,0 +1,211 @@
+Remove TrailWeigh’s image/screenshot OCR scanning feature and restore Scan Gear List to structured document imports only.
+
+The user no longer wants image scanning.
+
+Current confirmed problem:
+
+- Uploading a valid PDF fails with:
+  `pdfParse is not a function`
+- The tested PDF contains readable structured gear-list tables with Type, Description, Weight, and Add columns.
+- Image OCR, crop, rotate, Tesseract, Review Extracted Text, and Analyze Again are no longer needed.
+
+## Required supported formats
+
+Scan Gear List should support:
+
+- PDF
+- Word `.docx`
+- Excel `.xlsx`
+- Apple Numbers using the project’s existing Numbers import workflow
+- Any structured text or spreadsheet formats that were working before image OCR was added
+
+Do not support:
+
+- PNG
+- JPG or JPEG
+- WebP
+- Screenshots
+- Photographs
+
+## Remove image scanning from the interface
+
+Update:
+
+`artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+
+Remove image-specific behavior, including:
+
+- PNG, JPG, JPEG, and WebP from accepted file types
+- Image preview
+- Rotate Left
+- Rotate Right
+- Crop selection
+- Read Image
+- Image OCR processing states
+- Review Extracted Text
+- Analyze Again
+- OCR fallback messages
+- Image-specific error messages
+
+Change the upload-area text so it lists only the supported document formats.
+
+For example:
+
+`PDF, Word, Excel, or Numbers`
+
+Do not advertise images or screenshots.
+
+Keep the existing editable review table used after document parsing.
+
+## Remove image-only code safely
+
+Inspect actual usage before deleting anything.
+
+Image-specific files and code may include:
+
+- `artifacts/pack-checklist/src/components/ImageOcrPreview.tsx`
+- `ocr_service/image_ocr.py`
+- Image branches in `artifacts/api-server/src/routes/importGear.ts`
+- `/api/parse-text` if it exists only for OCR fallback
+- Tesseract calls
+- Temporary image-file handling
+- PNG/JPEG/WebP magic-byte validation
+- OCR-specific error codes
+- OCR-specific dependencies
+
+Remove image-only code only when it is not shared by PDF, Word, Excel, or Numbers importing.
+
+Do not delete shared parsing, normalization, category routing, weight parsing, or review-table logic.
+
+Remove unused imports, types, dependencies, state variables, and unreachable branches after image support is removed.
+
+## Fix the PDF error
+
+The current PDF upload fails with:
+
+`pdfParse is not a function`
+
+Inspect:
+
+- The installed `pdf-parse` package version
+- Its actual exports
+- The current import statement
+- The current PDF extraction call in `artifacts/api-server/src/routes/importGear.ts`
+- `package.json` and the lockfile
+
+Do not guess the library API.
+
+Determine whether the installed version requires:
+
+- A default import
+- A named export
+- A parser class
+- A different invocation pattern
+
+Use the API that matches the installed package version.
+
+Do not introduce another PDF package unless the current dependency is genuinely incompatible with the project.
+
+Add clear error handling so a PDF failure returns a useful message rather than a raw TypeError.
+
+## Preserve document parsing behavior
+
+Keep:
+
+- Structured extraction of Type, Description, and Weight
+- Category detection and routing
+- Weight-unit conversion
+- Editable review rows
+- Per-row destination category
+- Type editing
+- Description editing
+- Weight editing
+- Unit editing
+- Validation
+- Selection before import
+- Imported items remaining unchecked
+- Panel reset after successful import
+
+Ignore document rows that are clearly:
+
+- Headers
+- Totals
+- Empty rows
+- Chart labels
+- Unit-only rows
+- Summary tables
+- TRUE/FALSE checkbox values when they are not part of the gear name
+
+Do not treat the document’s `Add` column as the gear item’s actual weight.
+
+Use the `Weight` column for item weight.
+
+## Apple Numbers
+
+Preserve the project’s existing Numbers workflow.
+
+If Numbers files require conversion or special instructions, keep that behavior unchanged unless it is currently broken.
+
+Do not attempt to OCR Numbers files.
+
+## Required real-file tests
+
+Do not test only with generated samples.
+
+### PDF test
+
+Use the real uploaded gear-list PDF that previously produced:
+
+`pdfParse is not a function`
+
+Confirm:
+
+1. The PDF uploads without that error.
+2. Gear rows reach the editable review table.
+3. Examples such as these are recognized correctly:
+   - Backpack — ULA Ultra Circuit — 40.8 oz
+   - Backpack — Zpacks Nero Classic Backpack — 14 oz
+   - Tent — Zpacks Free-Zip 2 with poles / repair kit — 36.8 oz
+   - Ground Sheet — Zpacks Nylo Pro Groundsheet — 4 oz
+   - Sleeping Bag — UGQ Bandit 10F — 26 oz
+4. Header rows and Total rows are not imported as gear.
+5. The Add column is not mistaken for Weight.
+6. Imported items appear unchecked.
+7. The panel resets after import.
+
+### Excel test
+
+Test a real `.xlsx` gear-list file.
+
+Confirm:
+
+- Type, Description, and Weight reach the review table
+- Rows remain editable
+- At least one item imports unchecked
+
+### Word test
+
+Test a real `.docx` containing a simple gear table or gear lines.
+
+Confirm the parsed rows reach the review table.
+
+### Numbers workflow test
+
+Verify the existing Numbers instructions or conversion workflow still appears and still works as designed.
+
+## Required final report
+
+Report:
+
+- Why `pdfParse is not a function` occurred
+- The installed PDF-library version
+- The corrected import and invocation method
+- Which image-OCR files and branches were removed
+- Which files were changed
+- Whether any dependencies were removed
+- PDF rendered-test results
+- Excel rendered-test results
+- Word rendered-test results
+- Numbers workflow result
+- Confirmation that image and screenshot upload options no longer appear
+- Confirmation that imported gear items remain unchecked
