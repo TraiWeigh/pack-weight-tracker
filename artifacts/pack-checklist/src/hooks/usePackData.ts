@@ -230,6 +230,11 @@ export function usePackData(
           sessionStorage.setItem('tw-savedlist-bg',     JSON.stringify(entry.background ?? null));
           sessionStorage.setItem('tw-savedlist-bgfade', String(entry.bgFade ?? 1));
           sessionStorage.setItem('tw-savedlist-bgtone', entry.bgTone ?? 'light');
+          // Stash the Locker entry identity so ChecklistContent can set
+          // activeLockerFile on mount — this makes Save work without a dialog
+          // in tabs opened via the new-tab ("Load This List") path.
+          sessionStorage.setItem('tw-savedlist-entry-id',   savedListId);
+          sessionStorage.setItem('tw-savedlist-entry-name', entry.name ?? '');
           // Clean URL
           const url = new URL(window.location.href);
           url.searchParams.delete('savedListId');

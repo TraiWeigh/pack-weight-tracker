@@ -1,0 +1,81 @@
+The Save problem still exists in the rendered application.
+
+After I open an existing Locker file into the current empty checklist window and click Save, the “List name…” field still appears.
+
+You already added these diagnostic logs:
+
+- [TrailWeigh Load]
+- [TrailWeigh Save]
+
+Use the rendered browser yourself to reproduce the complete workflow and inspect those logs. Do not ask me to collect them.
+
+Test this exact sequence:
+
+1. Start with a checklist containing category headings but zero items.
+2. Open an existing file from Locker into that same window.
+3. Edit one item.
+4. Click the visible Save button.
+5. Observe the [TrailWeigh Load] and [TrailWeigh Save] logs.
+6. Determine why activeLockerFile is null or unavailable when Save is clicked.
+7. Fix the actual runtime cause.
+
+The required final behavior is:
+
+- Opening an existing Locker file into the current window must assign that file’s exact Locker ID and name as the active save target.
+- Clicking Save must update that exact Locker file directly by ID.
+- The “List name…” field must not appear.
+- No Replace dialog may appear.
+- No duplicate Locker file may be created.
+- A second edit followed by a second Save must update the same Locker file again without asking for its name.
+
+Inspect whether activeLockerFile is being lost because:
+
+- Checklist.tsx or ChecklistContent is remounting
+- replaceStore triggers initialization that resets active-file state
+- LockerPanel closes and clears active-file state
+- an effect restores null state
+- another setActiveLockerFile(null) call runs
+- the visible Save button still calls openSaveDialog
+- the file ID is set only in one Locker-opening branch
+- the active identity is stored in a child component that is destroyed
+
+Store the active Locker file identity in stable tab-local state owned by the same stable component that owns the working Store, handleLoadFromLocker, and handleSaveClick.
+
+If that component remounts during file loading, move the active ID and name to a stable parent or another tab-specific state location that survives the remount. Do not use global state shared between tabs.
+
+The Save handler must follow this rule:
+
+- Active Locker ID exists: update that file directly by ID.
+- No active Locker ID: open the naming field for a genuinely new file.
+
+After a successful direct Save, keep the same active Locker ID and name.
+
+After the first named Save of a genuinely new checklist, assign the newly created Locker entry as the active save target so later Saves do not ask for the name again.
+
+Do not change:
+
+- Empty-window Locker loading
+- Current-background preservation
+- Undo and Redo
+- New
+- Save As
+- Preview
+- Print
+- Share Link
+- Gear calculations
+
+Remove the temporary diagnostic logs after the cause is fixed.
+
+Do not report completion based only on TypeScript checks.
+
+You must personally perform and pass these rendered tests:
+
+1. Open an existing Locker file into an empty current window.
+2. Edit it and click Save.
+3. Confirm the naming field does not appear.
+4. Edit it again and click Save again.
+5. Confirm the naming field still does not appear.
+6. Confirm the same Locker ID was updated both times.
+7. Confirm no duplicate file was created.
+
+Report the exact runtime cause, where the active Locker identity is now stored, which files were changed, and whether both consecutive Save tests passed.

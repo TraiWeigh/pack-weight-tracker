@@ -576,6 +576,23 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     writeActiveLockerFileToSS(activeLockerFile);
   }, [activeLockerFile]);
 
+  // When this tab was opened via the new-tab path (window.open ?savedListId=),
+  // usePackData stashes the entry id/name in sessionStorage during its store
+  // initialiser. Read them here on mount and set activeLockerFile so Save works
+  // without the naming dialog — exactly the same end-state as the in-place path.
+  useEffect(() => {
+    const entryId   = sessionStorage.getItem('tw-savedlist-entry-id');
+    const entryName = sessionStorage.getItem('tw-savedlist-entry-name');
+    if (entryId) {
+      sessionStorage.removeItem('tw-savedlist-entry-id');
+      sessionStorage.removeItem('tw-savedlist-entry-name');
+      const active: ActiveLockerFile = { id: entryId, name: entryName ?? '' };
+      writeActiveLockerFileToSS(active);
+      setActiveLockerFile(active);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   /**
    * Primary Save action triggered by the toolbar Save button.
    *
@@ -584,11 +601,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
    * • Otherwise → open the naming dialog to create a new entry.
    */
   const handleSaveClick = () => {
-    // DEV_LOG — compare React state vs sessionStorage to detect remount loss
-    const ssVal = readActiveLockerFileFromSS();
-    console.log('[TrailWeigh Save] handleSaveClick — state:', activeLockerFile, '| sessionStorage:', ssVal);
     // Use state as primary source; fall back to sessionStorage if state was
     // lost in a remount (the most common cause of activeLockerFile being null).
+    const ssVal = readActiveLockerFileFromSS();
     const target = activeLockerFile ?? ssVal;
     if (target) {
       if (!activeLockerFile) {
@@ -695,9 +710,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const totalItems = store.order.reduce(
       (sum, cat) => sum + (store.items[cat]?.length ?? 0), 0
     );
-    // DEV_LOG
-    console.log('[TrailWeigh Load] handleLoadFromLocker — entry:', entry.id, entry.name, '| totalItems:', totalItems, '| path:', totalItems === 0 ? 'IN-PLACE' : 'NEW-TAB');
-
     if (totalItems === 0) {
       // ── In-place open path ────────────────────────────────────────────────
       // 1. Background is already in React state — nothing to capture/restore
@@ -709,8 +721,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       //    Write to sessionStorage immediately (before the React state update
       //    queues) so the value survives a remount that might occur before the
       //    useEffect sync fires.
-      // DEV_LOG
-      console.log('[TrailWeigh Load] in-place path — totalItems:', totalItems, 'entry:', entry.id, entry.name);
       const newActiveFile: ActiveLockerFile = { id: entry.id, name: entry.name };
       writeActiveLockerFileToSS(newActiveFile);
       setActiveLockerFile(newActiveFile);

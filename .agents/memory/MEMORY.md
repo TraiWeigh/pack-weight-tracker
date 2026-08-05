@@ -1,0 +1,1 @@
+- [Locker Save — active file identity tracking](locker-save-active-file.md) — new-tab path never sets activeLockerFile; fix: stash entry id/name in sessionStorage during usePackData init, consume in mount effect.
