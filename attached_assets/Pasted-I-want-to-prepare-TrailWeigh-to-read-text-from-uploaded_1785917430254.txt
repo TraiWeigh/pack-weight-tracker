@@ -1,0 +1,66 @@
+I want to prepare TrailWeigh to read text from uploaded images using the free Pillow and Tesseract OCR tools.
+
+For this step, only install and verify the OCR tools. Do not connect OCR to the TrailWeigh interface or change any existing importer behavior yet.
+
+Requirements:
+
+1. Inspect the existing project architecture before making changes.
+
+2. Do not convert the existing React/TypeScript application into a Python application.
+
+3. Create an isolated folder named:
+
+   ocr_service
+
+4. Add the Python dependencies needed for OCR:
+
+   * Pillow
+   * pytesseract
+
+5. Install the Tesseract OCR system program and its English-language recognition data using the dependency method currently supported by this Replit project.
+
+6. Do not rely on manually running an apt or sudo command that would disappear after the workspace restarts. Make the dependency part of the project configuration so it remains available after restarting or publishing the app.
+
+7. Inside the ocr_service folder, create a simple verification script named:
+
+   test_ocr.py
+
+8. The verification script must:
+
+   * Use Pillow to create a clear test image.
+
+   * Place this exact text in the image:
+
+     TrailWeigh OCR Test
+     Tent Weight 18.5 oz
+
+   * Save the test image inside the ocr_service folder.
+
+   * Use Pillow to open and prepare the image.
+
+   * Use pytesseract and the installed Tesseract program to extract the text.
+
+   * Print the extracted text clearly in the Console.
+
+   * Handle errors and print a useful explanation if Tesseract cannot be found.
+
+9. Run the verification script and confirm that the extracted result contains:
+
+   TrailWeigh OCR Test
+
+   and something reasonably close to:
+
+   Tent Weight 18.5 oz
+
+10. Do not modify the existing TrailWeigh pages, buttons, database, Locker, gear importer, uploaded-file workflow, or production deployment for this step.
+
+11. At the end, report:
+
+* Every file created or changed.
+* Every dependency installed.
+* The exact test command used.
+* The text Tesseract extracted.
+* Whether the OCR test passed.
+* Any limitation or error that still needs correction.
+
+Do not continue to screenshot uploading or gear-list parsing. Stop after the isolated OCR verification succeeds.
