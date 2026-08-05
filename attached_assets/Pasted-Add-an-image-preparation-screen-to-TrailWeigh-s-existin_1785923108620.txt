@@ -1,0 +1,178 @@
+Add an image preparation screen to TrailWeigh’s existing Scan Gear List workflow.
+
+This screen should appear only after the user uploads a PNG, JPG, JPEG, or WebP image and before OCR begins.
+
+Do not change PDF, Word, Excel, or Numbers imports.
+
+## Required workflow
+
+For an uploaded image:
+
+1. Load the image into a temporary preview.
+2. Show the user the image before OCR starts.
+3. Allow the user to rotate or crop the image.
+4. When the user clicks “Read Image,” send the edited image through the existing OCR workflow.
+5. Show the existing editable review table after OCR finishes.
+
+Do not run OCR immediately when the image is first selected.
+
+## Image preparation controls
+
+Provide these controls:
+
+- Rotate Left
+- Rotate Right
+- Reset
+- Read Image
+- Cancel
+
+### Rotate
+
+Each Rotate button must rotate the preview by exactly 90 degrees.
+
+Rotation must affect the image sent to OCR.
+
+Do not reduce image quality unnecessarily after repeated rotations.
+
+### Crop
+
+Allow the user to drag a rectangular crop area over the image.
+
+The crop area should:
+
+- Be easy to resize
+- Be easy to move
+- Stay within the image
+- Preserve the original image quality inside the selected area
+
+Only the selected crop area should be sent to OCR.
+
+The user must also be able to use the entire image without cropping.
+
+### Reset
+
+Reset must restore:
+
+- Original orientation
+- Original full-image crop
+- Original uploaded image
+
+Reset must not require uploading the image again.
+
+### Cancel
+
+Cancel must:
+
+- Discard the temporary image and edits
+- Return Scan Gear List to its original upload state
+- Not modify the checklist
+- Not create an Undo or Redo entry
+
+## Preview behavior
+
+The image preview must:
+
+- Preserve the image’s aspect ratio
+- Fit inside the Scan Gear List panel
+- Never stretch the image
+- Support portrait and landscape images
+- Work in Light and Dark mode
+- Work on desktop, tablet, and mobile
+
+For very large images, use an efficient preview size while preserving enough resolution for OCR.
+
+Do not permanently store the uploaded image.
+
+## OCR integration
+
+When “Read Image” is clicked:
+
+1. Apply the selected rotation.
+2. Apply the selected crop.
+3. Export the prepared image as a high-quality PNG or JPEG.
+4. Send it through the existing `/api/import-gear` image OCR workflow.
+5. Show:
+   - “Reading image…”
+   - Then “Analyzing gear list…”
+6. Display the existing editable review table.
+
+Reuse the current OCR system:
+
+- `ocr_service/image_ocr.py`
+- `artifacts/api-server/src/routes/importGear.ts`
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+
+Do not create a second OCR endpoint or second review table.
+
+## Preserve current importer behavior
+
+Keep working:
+
+- PNG, JPG, JPEG, and WebP uploads
+- Image magic-byte validation
+- Tesseract processing
+- Existing OCR corrections
+- Category routing
+- Editable review fields
+- Weight-unit selection
+- Per-row validation
+- Importing only selected items
+- Imported items remaining unchecked
+- Panel reset after successful import
+
+## Error behavior
+
+If the prepared crop is empty or too small, show:
+
+“Select a larger area of the image before continuing.”
+
+If image preparation fails, show:
+
+“We could not prepare this image. Please try another image.”
+
+Do not send an invalid or empty image to OCR.
+
+## Recommended implementation
+
+Use a reliable browser-side crop library already compatible with the project, or implement a lightweight crop overlay using the existing React architecture.
+
+Do not add a large image-editing package with unrelated features.
+
+Keep image preparation state temporary inside `ImportGearPanel.tsx` or a focused child component such as:
+
+`ImageOcrPreview.tsx`
+
+Do not store crop state in Locker, checklist data, Undo/Redo, or localStorage.
+
+## Required rendered test
+
+Test through the rendered TrailWeigh application:
+
+1. Upload a sideways phone screenshot of a gear list.
+2. Confirm the image-preparation preview appears before OCR.
+3. Rotate it into the correct orientation.
+4. Crop closely around the gear list.
+5. Click Read Image.
+6. Confirm the OCR review table appears.
+7. Confirm the detected items and weights are more accurate than processing the sideways full image.
+8. Edit one result in the review table.
+9. Import the selected items.
+10. Confirm the imported items are unchecked and the panel resets.
+
+Also test:
+
+- A portrait image without cropping
+- A landscape screenshot
+- Reset after rotation and cropping
+- Cancel before OCR
+- Mobile-width layout
+
+Do not report completion based only on TypeScript.
+
+Report:
+
+- Which image-preview component was added
+- How rotation and cropping are applied
+- What image data is sent to the existing OCR endpoint
+- Which files were changed
+- Whether the complete preview-to-import rendered test passed

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
 import multer from 'multer';
 import { spawn } from 'child_process';
 import path from 'path';
@@ -43,16 +43,32 @@ function validateImageMagic(buffer: Buffer, ext: string): boolean {
 
 /**
  * Fix common Tesseract OCR misreads before the text reaches the gear parser.
- * Only corrects unit strings — does not alter item names.
+ * Only corrects unit strings and layout noise — does not alter item names.
  */
 function normalizeOcrText(text: string): string {
   return text
+    // Dot leaders (e.g. "Tent ........ 18.5 oz") → single space
+    .replace(/\.{3,}/g, ' ')
+    // Pipe separators around numbers/units: "Tent | 18.5 | oz" → "Tent 18.5 oz"
+    .replace(/\|(\s*)(\d)/g, ' $2')
+    .replace(/(\d)(\s*)\|/g, '$1 ')
     // "18.5 0z" → "18.5 oz" (Tesseract reads 'o' as digit zero in some fonts)
     .replace(/\b(\d+(?:\.\d+)?)\s*0z\b/gi, '$1 oz')
     // "2 |b" or "2 |bs" → "2 lb/lbs" (pipe misread as lowercase L)
     .replace(/\b(\d+(?:\.\d+)?)\s*\|b(s?)\b/gi, '$1 lb$2')
     // "2 l b" → "2 lb" (space inserted into unit by Tesseract)
     .replace(/\b(\d+(?:\.\d+)?)\s*l\s+b\b/gi, '$1 lb');
+}
+
+/**
+ * Return any lines from the OCR text that did NOT produce a parsed item.
+ * Used to surface "Unrecognized extracted text" to the user.
+ */
+function computeRemainder(text: string, parsedItems: ExtractedItem[]): string {
+  if (parsedItems.length === 0) return '';
+  const lines = text.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 2);
+  const unmatched = lines.filter(l => !SKIP_LINE_RE.test(l) && !WEIGHT_RE.test(l));
+  return unmatched.join('\n').trim();
 }
 
 /**
@@ -234,7 +250,36 @@ const SKIP_LINE_RE = /^(total|grand\s*total|base\s*weight|sub\s*total|sum\b|clot
 
 export function extractFromText(text: string): ExtractedItem[] {
   const results: ExtractedItem[] = [];
-  const lines = text.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 3);
+
+  // Pre-process: normalise pipe separators that surround numbers/units
+  // "Tent | 18.5 | oz"  →  "Tent 18.5 oz"
+  const preprocessed = text
+    .replace(/\|(\s*)(\d)/g, ' $2')   // "| 18.5" → " 18.5"
+    .replace(/(\d)(\s*)\|/g, '$1 ');  // "18.5 |" → "18.5 "
+
+  const rawLines = preprocessed.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 2);
+
+  // Pre-pass: merge name-only lines with the weight-only line that follows
+  // Handles two-line format:  "Tent\n18.5 oz"  →  "Tent 18.5 oz"
+  const lines: string[] = [];
+  for (let i = 0; i < rawLines.length; i++) {
+    const line = rawLines[i];
+    const hasWeight = WEIGHT_RE.test(line);
+    if (!hasWeight && !SKIP_LINE_RE.test(line)) {
+      const next = rawLines[i + 1];
+      if (next) {
+        const nextHasWeight  = WEIGHT_RE.test(next);
+        // "weight-only" = after stripping the weight token, nothing non-punctuation remains
+        const nextRemainder  = next.replace(WEIGHT_RE, '').replace(/[^\w]/g, '').trim();
+        if (nextHasWeight && nextRemainder.length === 0) {
+          lines.push(`${line} ${next}`);
+          i++; // consume the weight line
+          continue;
+        }
+      }
+    }
+    lines.push(line);
+  }
 
   for (const line of lines) {
     if (SKIP_LINE_RE.test(line)) continue;
@@ -254,7 +299,7 @@ export function extractFromText(text: string): ExtractedItem[] {
     const rest = line
       .replace(wm[0], '')
       .replace(/\([^)]*\)/g, '')
-      .replace(/[|,]+/g, ' ')
+      .replace(/[|,—–]+/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
     if (!rest) continue;
@@ -770,6 +815,8 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
 
   try {
     let items: ExtractedItem[] = [];
+    let imageRawText = '';   // non-empty only for image OCR responses
+    let imageRemainder = ''; // lines that didn't parse (partial-parse UI)
 
     if (ext === 'pdf' || mimetype === 'application/pdf') {
       const parsed = await pdfParse(buffer);
@@ -831,12 +878,15 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       console.log(`[import-gear] raw items from parser: ${rawItems.length}`);
 
       if (rawItems.length === 0 && ocrText.trim().length > 0) {
-        // OCR extracted text but the gear parser found nothing — distinct error
-        res.json({ items: [], error: 'NO_GEAR_ITEMS' });
+        // OCR extracted text but the gear parser found nothing — return rawText
+        // so the client can show the "Review Extracted Text" fallback editor.
+        res.json({ items: [], error: 'NO_GEAR_ITEMS', rawText: ocrText });
         return;
       }
 
       items = ocrFixupItems(rawItems).map(applyGearClassification);
+      imageRawText   = ocrText;
+      imageRemainder = computeRemainder(normalizedOcrText, rawItems);
 
     } else {
       res.status(400).json({
@@ -854,9 +904,31 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       return true;
     });
 
-    res.json({ items: deduped.slice(0, 200) });
+    res.json({
+      items: deduped.slice(0, 200),
+      ...(imageRawText   && { rawText:   imageRawText }),
+      ...(imageRemainder && { remainder: imageRemainder }),
+    });
   } catch (err: any) {
     console.error('[import-gear]', err);
     res.status(500).json({ error: err?.message ?? 'Failed to parse file' });
   }
+});
+
+// ── /api/parse-text ───────────────────────────────────────────────────────────
+//
+// Runs the gear parser on caller-supplied text (no OCR).
+// Used by the "Analyze Again" fallback when the user edits extracted OCR text.
+
+importGearRouter.post('/parse-text', express.json(), (req, res) => {
+  const { text } = req.body as { text?: string };
+  if (typeof text !== 'string' || !text.trim()) {
+    res.status(400).json({ error: 'text field required' });
+    return;
+  }
+  const normalized = normalizeOcrText(text);
+  const rawItems   = extractFromText(normalized);
+  const items      = ocrFixupItems(rawItems).map(applyGearClassification);
+  const remainder  = computeRemainder(normalized, rawItems);
+  res.json({ items, remainder: remainder || undefined });
 });

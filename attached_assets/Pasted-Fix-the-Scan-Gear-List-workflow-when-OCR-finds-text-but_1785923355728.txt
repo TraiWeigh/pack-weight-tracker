@@ -1,0 +1,189 @@
+Fix the Scan Gear List workflow when OCR finds text but the parser finds zero recognizable gear items.
+
+Current rendered result:
+
+“Text was found, but no gear items with recognizable names and weights were detected.”
+
+This proves that Tesseract returned text, but TrailWeigh’s parser could not convert it into review rows.
+
+Do not show this as a final Import failed screen when readable OCR text exists.
+
+## First diagnose the real parsing failure
+
+Use the same image-upload path in the rendered Scan Gear List panel.
+
+Temporarily log:
+
+- The complete raw OCR text
+- Each OCR line after whitespace normalization
+- Which parsing pattern was attempted on each line
+- Which item name was detected, if any
+- Which weight was detected, if any
+- Why each rejected line was rejected
+
+Determine whether the uploaded image uses:
+
+- Item name and weight on separate lines
+- Multiple columns
+- Tabs or large spaces
+- Dashes, dots, or leader characters
+- Weight before item name
+- Quantity before weight
+- OCR mistakes in units
+- A table layout that Tesseract returned in the wrong reading order
+
+Remove excessive diagnostic logging after the cause is fixed.
+
+## Improve the OCR text parser
+
+Continue using the existing parser in:
+
+`artifacts/api-server/src/routes/importGear.ts`
+
+Do not create an unrelated second importer.
+
+Make the OCR normalization and parsing flexible enough to recognize common layouts such as:
+
+- `Tent — 18.5 oz`
+- `Tent 18.5 oz`
+- `Tent ........ 18.5 oz`
+- `18.5 oz Tent`
+- `Tent | 18.5 | oz`
+- Item name on one line followed by its weight on the next line
+- Column-based lists where names and weights are separated by tabs or repeated spaces
+
+Continue recognizing:
+
+- oz
+- lb
+- g
+- kg
+
+Preserve the current OCR corrections, including common unit errors such as:
+
+- `0z` → `oz`
+- `|b` → `lb`
+- `I b` or `l b` → `lb`
+
+Do not invent weights when none are present.
+
+## Add a fallback review screen
+
+When OCR returns readable text but automatic parsing produces zero items, do not show “Import failed.”
+
+Instead, show a fallback screen inside the existing Scan Gear List panel titled:
+
+“Review Extracted Text”
+
+Display the raw OCR text in an editable text area.
+
+Provide these actions:
+
+- Analyze Again
+- Add Item Manually
+- Cancel
+
+### Analyze Again
+
+When the user edits the extracted text and clicks Analyze Again:
+
+- Run the edited text through the existing gear parser.
+- Do not rerun Tesseract.
+- If items are found, show the existing editable review table.
+- Preserve Type, Description, Weight, Unit, and destination editing.
+
+### Add Item Manually
+
+Allow the user to create a review row with:
+
+- Type
+- Description
+- Weight
+- Unit
+- Destination category
+- Import checkbox
+
+The manual row must enter the same existing editable review table used by automatically parsed items.
+
+Do not add the item directly to the checklist before the user clicks Import Selected Items.
+
+### Cancel
+
+Cancel must discard the temporary OCR text and return to the original upload state.
+
+## Partial parsing behavior
+
+If some lines parse successfully and other readable lines do not:
+
+- Show the successfully parsed rows in the normal review table.
+- Also show a collapsible area labeled:
+  “Unrecognized extracted text”
+- Let the user edit that text and analyze it again or add items manually.
+
+Do not discard the unrecognized OCR text silently.
+
+## Error distinction
+
+Use these outcomes:
+
+- No OCR text at all:
+  “No readable gear-list text was found.”
+
+- OCR process failure:
+  “We could not read this image.”
+
+- OCR text exists but nothing parses:
+  Show the editable “Review Extracted Text” fallback, not an Import failed alert.
+
+- Some items parse:
+  Show the review table and preserve any remaining unrecognized text.
+
+## Preserve existing behavior
+
+Do not break:
+
+- PNG, JPG, JPEG, or WebP uploads
+- PDF, Word, Excel, or Numbers imports
+- Image magic-byte validation
+- Temporary-file OCR transport
+- Editable review table
+- Unit selection
+- Category destination selection
+- Validation
+- Imported items remaining unchecked
+- Panel reset after successful import
+
+## Required rendered test
+
+Use the same image that produced the current message.
+
+1. Upload it through the rendered Scan Gear List panel.
+2. Capture the raw OCR output.
+3. Fix the parsing rules for its actual format.
+4. Confirm recognizable gear rows appear when possible.
+
+If the parser still cannot automatically identify items:
+
+5. Confirm “Review Extracted Text” appears.
+6. Edit the extracted text into clear item-and-weight lines.
+7. Click Analyze Again.
+8. Confirm the normal editable review table appears.
+9. Import the items.
+10. Confirm they appear unchecked in the checklist.
+
+Also test:
+
+- Item and weight on the same line
+- Item and weight on separate lines
+- Column-separated text
+- A partially recognized list
+
+Do not report completion based only on a direct API request or TypeScript.
+
+Report:
+
+- The raw OCR format that caused the parser to fail
+- Which parsing patterns were added
+- Which fallback interface was added
+- Which files were changed
+- Whether the original failing image reached the review table or fallback editor successfully
