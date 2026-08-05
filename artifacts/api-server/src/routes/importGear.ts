@@ -359,8 +359,6 @@ export const SHELTER_TYPES = new Set([
   // Suspension / rigging
   'guylines', 'guy lines', 'guyline', 'guy line', 'ridgeline',
   'hammock straps', 'tree straps', 'shelter suspension',
-  // Bug protection
-  'bug net', 'mosquito net',
 ]);
 
 /** Sleep-system gear — must always land in the Sleep category. */
@@ -423,6 +421,8 @@ export const CLOTHING_TYPES = new Set([
   'sun hat', 'sun hoody', 'sun hoodie',
   // Footwear (trail)
   'trail runners', 'trail shoes', 'approach shoes', 'gaiters', 'camp sandals',
+  // Bug protection (worn/carried clothing, not shelter structure)
+  'bug net', 'head net', 'mosquito net', 'mosquito head net',
 ]);
 
 /**
@@ -537,8 +537,11 @@ export function applyGearClassification(item: ExtractedItem): ExtractedItem {
     !!(item.destination && destN !== norm(canonical));
 
   // Priority 1: Consumable Type always wins (even over explicit Clothing Worn section).
+  // No sectionConflict warning here: the type match is definitive (Fuel is always
+  // Consumables regardless of which section the spreadsheet placed it in), so a
+  // mismatch between the source section and "Consumables" is not actionable for the user.
   if (CONSUMABLES_TYPES.has(typeN)) {
-    return { ...item, destination: 'Consumables', warning: item.warning || sectionConflict('Consumables') };
+    return { ...item, destination: 'Consumables', warning: item.warning };
   }
 
   // Priority 2: Wearable sleep/camp clothing → "Clothing Packed".

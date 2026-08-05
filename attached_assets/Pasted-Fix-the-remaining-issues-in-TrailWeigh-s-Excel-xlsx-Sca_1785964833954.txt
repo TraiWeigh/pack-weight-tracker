@@ -1,0 +1,188 @@
+Fix the remaining issues in TrailWeigh’s Excel `.xlsx` Scan Gear List import.
+
+The real Excel checklist now produces 69 items and is mostly correct.
+
+Confirmed working behavior:
+
+- Backpack items → Backpack
+- Shelter items → Shelter
+- Sleep items → Sleep
+- Kitchen items → Kitchen
+- Electronics items → Electronics
+- Hydration items → Hydration
+- Clothing items generally remain Clothing Packed or Clothing Worn
+- Fuel → Expendables
+- PDF importing is working correctly and must not be changed
+
+## Issue 1: Bug Net is assigned to Shelter
+
+The Excel review table currently shows:
+
+- Type: Bug Net
+- Description: Mosquito Head Net
+- Weight: 2 oz
+- Incorrect category: Shelter
+
+It must be:
+
+- Category: Clothing Packed
+- Type: Bug Net
+- Description: Mosquito Head Net
+- Weight: 2 oz
+
+Add or correct the semantic routing rule so:
+
+- Bug Net
+- Mosquito Head Net
+- Head Net
+
+route to the existing `Clothing Packed` category unless the source file explicitly supplies another valid category.
+
+Do not classify Bug Net as Shelter merely because the word “net” can describe shelter mesh.
+
+Preserve `Clothing Worn` only when the source explicitly identifies the item as worn.
+
+## Issue 2: Warning triangles
+
+The rendered Excel review table shows warning triangles for:
+
+- Bug Net
+- Fuel
+
+Inspect the actual validation or warning logic before changing it.
+
+Determine exactly why each row is flagged.
+
+### Bug Net
+
+After correcting its category to Clothing Packed, confirm whether the warning disappears.
+
+If the warning is caused only by the incorrect category, remove it once the destination is valid.
+
+### Fuel
+
+Fuel currently appears correctly as:
+
+- Category: Expendables
+- Type: Fuel
+- Description: 4 oz
+- Weight: 7.68 oz
+- Unit: oz
+
+This is valid data.
+
+Do not change Fuel’s category, Type, Description, Weight, or Unit.
+
+If Fuel is flagged because:
+
+- The description contains a weight-like value
+- The Type is considered too generic
+- The weight is considered unusual
+- The validation compares the `4 oz` description with the actual `7.68 oz` item weight
+
+then update the warning logic so this valid Fuel row is not falsely flagged.
+
+The description `4 oz` refers to the nominal fuel-canister size. The actual packed weight is `7.68 oz`.
+
+Do not suppress legitimate warnings globally.
+
+Only remove false-positive warnings when the row is otherwise valid.
+
+## Preserve all working import behavior
+
+Do not change:
+
+- PDF importing
+- The PDF result of 68 items
+- Kitchen routing
+- Fuel → Expendables
+- Excel result of 69 items
+- Backpack, Shelter, Sleep, Kitchen, Electronics, Hydration, Clothing Packed, or Clothing Worn routing
+- Word importing
+- Numbers importing
+- Editable review rows
+- Category editing
+- Type editing
+- Description editing
+- Weight editing
+- Unit editing
+- Add Row
+- Selected-item importing
+- Imported items remaining unchecked
+- Panel reset after import
+- Image and screenshot importing remaining removed
+
+Meal Planner importing is not applicable.
+
+## Diagnose before editing
+
+Inspect:
+
+- `artifacts/api-server/src/routes/importGear.ts`
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+- Any classification maps or validation helpers used for Excel imports
+
+Trace:
+
+1. The Excel-derived Type and Description
+2. The initial category supplied by the spreadsheet parser
+3. Any semantic category override
+4. The final review-row destination
+5. The exact validation rule producing each warning triangle
+
+Do not apply PDF-specific parsing logic to Excel.
+
+Remove temporary diagnostic logs after the issue is fixed.
+
+## Required real rendered test
+
+Use the same real `.xlsx` checklist that produced 69 items.
+
+Confirm:
+
+1. The review table still shows 69 items.
+2. Bug Net shows:
+   - Category: Clothing Packed
+   - Type: Bug Net
+   - Description: Mosquito Head Net
+   - Weight: 2 oz
+3. Bug Net no longer has a false warning triangle.
+4. Fuel remains:
+   - Category: Expendables
+   - Type: Fuel
+   - Description: 4 oz
+   - Weight: 7.68 oz
+5. Fuel no longer has a false warning triangle.
+6. Legitimately incomplete or invalid rows still receive warnings.
+7. All previously correct Excel categories remain unchanged.
+8. The real PDF still uploads and returns 68 items with Kitchen and Fuel correct.
+
+Then select only:
+
+- Bug Net
+- Fuel
+- One Kitchen item
+
+Import those three items.
+
+Confirm:
+
+- Bug Net enters Clothing Packed.
+- Fuel enters Expendables.
+- The Kitchen item enters Kitchen.
+- All three imported items remain unchecked.
+- The Scan Gear List panel resets.
+
+## Final report
+
+Report:
+
+- Why Bug Net was classified as Shelter
+- The exact classification rule changed
+- Why Bug Net was flagged
+- Why Fuel was flagged
+- The exact validation change made
+- Which files changed
+- Results from the real Excel rendered test
+- Confirmation that the PDF regression test still passes
+- Confirmation that temporary logs were removed
