@@ -35,7 +35,7 @@ export function PrintLayout({ data, system, categoryOrder, categoryMeta }: Print
 
   const summaryCells: { label: string; oz: number }[] = [
     { label: 'Base Weight', oz: baseOz },
-    ...nonBaseTotals.filter(c => c.oz > 0).map(c => ({ label: c.name, oz: c.oz })),
+    ...nonBaseTotals.map(c => ({ label: c.name, oz: c.oz })),
     { label: 'Grand Total', oz: grandOz },
   ];
 

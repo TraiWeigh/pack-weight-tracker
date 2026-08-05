@@ -59,7 +59,7 @@ export function generatePackPDF(
   // ── Weight Summary Box ─────────────────────────────────────
   const summaryRows: { label: string; oz: number }[] = [
     { label: 'Base Weight', oz: baseOz },
-    ...nonBase.filter(c => c.oz > 0).map(c => ({ label: c.name, oz: c.oz })),
+    ...nonBase.map(c => ({ label: c.name, oz: c.oz })),
     { label: 'Grand Total', oz: grandOz },
   ];
   const col = CW / summaryRows.length;
