@@ -665,6 +665,36 @@ export function usePackData(
     });
   }, [pushAndSet]);
 
+  /**
+   * Move a gear item from one category to another, preserving every field.
+   * Records one undo/redo history step.  Returns without mutating state if:
+   *   - source or destination category does not exist in the order
+   *   - source === destination
+   *   - the item ID is not found in the source category
+   */
+  const moveItem = useCallback((
+    sourceCategory: string,
+    destinationCategory: string,
+    itemId: string,
+  ) => {
+    pushAndSet(prev => {
+      if (!prev.order.includes(sourceCategory))      return prev;
+      if (!prev.order.includes(destinationCategory)) return prev;
+      if (sourceCategory === destinationCategory)     return prev;
+      const sourceItems = prev.items[sourceCategory] ?? [];
+      const item = sourceItems.find(i => i.id === itemId);
+      if (!item) return prev;
+      return {
+        ...prev,
+        items: {
+          ...prev.items,
+          [sourceCategory]:      sourceItems.filter(i => i.id !== itemId),
+          [destinationCategory]: [...(prev.items[destinationCategory] ?? []), item],
+        },
+      };
+    });
+  }, [pushAndSet]);
+
   return {
     data: store.items,
     categoryOrder: store.order,
@@ -673,6 +703,7 @@ export function usePackData(
     updateItem,
     addItem,
     removeItem,
+    moveItem,
     addCategory,
     deleteCategory,
     renameCategory,

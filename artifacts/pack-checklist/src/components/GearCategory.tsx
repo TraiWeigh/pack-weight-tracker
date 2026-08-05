@@ -11,8 +11,10 @@ interface GearCategoryProps {
   meta: CategoryMeta;
   forceOpen?: boolean | null;
   forceOpenSeq?: number;
+  order: string[];
   updateItem: (category: string, id: string, updates: Partial<GearItem>) => void;
   removeItem: (category: string, id: string) => void;
+  moveItem: (sourceCategory: string, destinationCategory: string, itemId: string) => void;
   addItem: (category: string) => void;
   onUpdateMeta: (updates: Partial<CategoryMeta>) => void;
   onDelete: () => void;
@@ -138,7 +140,7 @@ function EditableCategoryTitle({
 // ─────────────────────────────────────────────────────────────────────────────
 export function GearCategory({
   name, items, meta, forceOpen, forceOpenSeq,
-  updateItem, removeItem, addItem,
+  order, updateItem, removeItem, moveItem, addItem,
   onUpdateMeta, onDelete, onRename,
   isDragOver, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
 }: GearCategoryProps) {
@@ -268,7 +270,7 @@ export function GearCategory({
       {/* ── Body ─────────────────────────────────────────────── */}
       {isOpen && (
         <div className="p-2 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="hidden sm:grid grid-cols-[auto_auto_1fr_80px_70px_80px_auto] gap-4 px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+          <div className="hidden sm:grid grid-cols-[auto_auto_1fr_auto_80px_70px_80px_auto] gap-4 px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
             <div className="w-[30px]" />
             <EditableColHeader
               value={meta.subLabel ?? ''}
@@ -281,6 +283,7 @@ export function GearCategory({
               placeholder="Description"
               onCommit={v => onUpdateMeta({ descLabel: v || undefined })}
             />
+            <div className="w-[52px]" />{/* Move column spacer */}
             <div className="text-right">Weight</div>
             <div className="text-center">Qty</div>
             <div className="text-right">Total</div>
@@ -295,8 +298,10 @@ export function GearCategory({
                 category={name}
                 subLabel={meta.subLabel}
                 descLabel={meta.descLabel}
+                order={order}
                 updateItem={updateItem}
                 removeItem={removeItem}
+                moveItem={moveItem}
               />
             ))}
           </div>

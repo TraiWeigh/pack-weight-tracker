@@ -112,7 +112,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const {
     data, categoryOrder, categoryMeta, store,
-    updateItem, addItem, removeItem,
+    updateItem, addItem, removeItem, moveItem,
     addCategory, deleteCategory, updateCategoryMeta, moveCategory, reorderCategory,
     renameCategory, loadStore, replaceStore,
     resetToDefaults,
@@ -1182,8 +1182,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   meta={categoryMeta[category] ?? { countsToBase: true }}
                   forceOpen={allOpen}
                   forceOpenSeq={openCloseSeq}
+                  order={categoryOrder}
                   updateItem={updateItem}
                   removeItem={removeItem}
+                  moveItem={moveItem}
                   addItem={addItem}
                   onUpdateMeta={updates => updateCategoryMeta(category, updates)}
                   onDelete={() => deleteCategory(category)}
