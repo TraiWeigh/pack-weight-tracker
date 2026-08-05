@@ -1,0 +1,149 @@
+Correct the TrailWeigh Save control so the user can choose either Save or Save As.
+
+## Required interface
+
+When the Save pill is clicked, open a small menu with exactly these choices:
+
+- Save
+- Save As
+
+Do not immediately open the “List name…” field just because the Save pill was clicked.
+
+## Save behavior
+
+When the user chooses Save:
+
+### Existing Locker file
+
+If the checklist is already associated with an existing Locker file:
+
+- Update that exact Locker file using its existing file ID.
+- Keep its current file name.
+- Do not ask for a name.
+- Do not create a duplicate.
+- Do not show a Replace dialog.
+- Show a brief “Saved” confirmation after the update succeeds.
+- Show a clear error if the save fails.
+
+### New unsaved checklist
+
+If the checklist has never been saved and has no active Locker file ID:
+
+- Ask for a file name.
+- Create one new Locker file.
+- Make that new file the active save target.
+- Later Save actions must update that same file without asking for its name again.
+
+## Save As behavior
+
+When the user chooses Save As:
+
+- Always ask for a file name.
+- Create a separate Locker file with a new unique ID.
+- Copy the complete current checklist into the new file.
+- Preserve categories, items, checked states, weights, quantities, settings, and background.
+- Do not overwrite the original Locker file.
+- After Save As succeeds, make the newly created copy the active file in the current tab.
+- Show a brief “Saved as [file name]” confirmation.
+
+If the chosen name already exists, use the existing duplicate-name warning and allow the user to choose another name. Do not silently overwrite another file.
+
+## Active file behavior
+
+Use the existing tab-local active file identity:
+
+`activeLockerFile = { id, name }`
+
+Save must use `activeLockerFile.id` to update an existing file directly.
+
+Save As must create a new ID and then update `activeLockerFile` to the newly created file.
+
+Do not clear the active file after an ordinary Save.
+
+Clear or replace it only when:
+
+- New creates a new unsaved checklist
+- The active Locker file is deleted
+- Another Locker file replaces the current file
+- Save As creates a new active copy
+
+## Fix the current no-action problem
+
+Currently, choosing Save for an existing Locker file produces no visible action.
+
+Trace the actual Save path and ensure that:
+
+- The complete current checklist is passed to the Locker update function.
+- The existing Locker record is updated by ID.
+- Errors are not swallowed.
+- A successful save displays “Saved.”
+- A failed save displays “Save failed. Your changes were not saved.”
+
+Do not use a dialog-dependent replacement function if it requires old naming or conflict-dialog state. Use or create a direct update-by-ID function for ordinary Save.
+
+## Menu behavior
+
+The Save menu should:
+
+- Open directly beside or below the Save pill.
+- Close after Save or Save As is selected.
+- Close when the user clicks outside it.
+- Support keyboard and touch use.
+- Match the existing TrailWeigh pill and menu styling.
+
+Do not create separate Save pills in multiple locations.
+
+## Preserve existing functionality
+
+Do not change:
+
+- Locker file opening
+- Empty-window loading
+- Background preservation
+- Undo and Redo
+- New
+- Preview
+- Print
+- Share Link
+- Importing
+- Gear calculations
+
+## Required rendered tests
+
+Test these actions in the rendered application:
+
+1. Open an existing Locker file.
+2. Edit one item.
+3. Click the Save pill.
+4. Choose Save.
+5. Confirm no naming field appears.
+6. Confirm “Saved” appears.
+7. Reopen the file and confirm the edit remains.
+
+Then:
+
+8. Make another edit.
+9. Choose Save again.
+10. Confirm the same Locker file is updated and no duplicate is created.
+
+Then:
+
+11. Open an existing Locker file.
+12. Choose Save As.
+13. Confirm the naming field appears.
+14. Enter a new name.
+15. Confirm a separate Locker file with a new ID is created.
+16. Confirm the original file remains unchanged.
+17. Confirm the new copy becomes the active file.
+
+Finally:
+
+18. Create a genuinely new unsaved checklist.
+19. Choose Save.
+20. Confirm it asks for a name once.
+21. Edit it again and choose Save.
+22. Confirm the second Save updates it directly without asking for the name again.
+
+Do not report completion based only on TypeScript checks.
+
+Report which files were changed, how ordinary Save updates by ID, how Save As creates a new file, and whether every rendered test passed.

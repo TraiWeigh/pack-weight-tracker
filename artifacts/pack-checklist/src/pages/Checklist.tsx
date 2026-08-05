@@ -23,8 +23,14 @@ import { buildShareURL } from '../lib/shareLink';
 import { useToast } from '../hooks/use-toast';
 import {
   RotateCcw, Tent, Share2, Link, FileDown, LogOut,
-  User, Shield, Plus, Check, X, ChevronsUpDown, Printer,
+  User, Shield, Plus, Check, X, ChevronsUpDown, Printer, ChevronDown,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
 import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
 import { BackgroundShowcase } from '../components/BackgroundShowcase';
@@ -594,13 +600,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   }, []);
 
   /**
-   * Primary Save action triggered by the toolbar Save button.
+   * "Save" chosen from the Save menu.
    *
-   * • When a Locker file is currently active → update that exact entry
-   *   immediately, no dialog.
-   * • Otherwise → open the naming dialog to create a new entry.
+   * • Active Locker file exists → update it directly by ID (no dialog).
+   * • No active file (genuinely new checklist) → open naming dialog.
    */
-  const handleSaveClick = () => {
+  const handleSaveMenuSave = () => {
     // Use state as primary source; fall back to sessionStorage if state was
     // lost in a remount (the most common cause of activeLockerFile being null).
     const ssVal = readActiveLockerFileFromSS();
@@ -613,6 +618,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       commitSaveReplace(target.id, target.name);
       return;
     }
+    openSaveDialog();
+  };
+
+  /**
+   * "Save As" chosen from the Save menu.
+   * Always prompts for a name and creates a separate Locker file with a new ID.
+   * The new file becomes the active save target.
+   */
+  const handleSaveMenuSaveAs = () => {
     openSaveDialog();
   };
 
@@ -648,31 +662,43 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     writeActiveLockerFileToSS(newFile);
     setActiveLockerFile(newFile);
     closeSaveDialog();
+    toast({ description: `Saved as "${name}"` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
+  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker, toast]);
 
   /** Save and replace an existing entry (same ID, updated content). */
   const commitSaveReplace = useCallback((existingId: string, name: string) => {
-    const entry: LockerEntry = {
-      id: existingId,
-      name,
-      savedAt: Date.now(),
-      store,
-      background,
-      bgFade,
-      bgTone,
-    };
-    const updated = lockerEntries.map(e => e.id === existingId ? entry : e);
-    setLockerEntries(updated);
-    broadcastLocker(updated);
-    // Keep (and refresh) the active file identity so subsequent Save clicks
-    // continue updating this same Locker file without reopening the dialog.
-    const refreshed: ActiveLockerFile = { id: existingId, name };
-    writeActiveLockerFileToSS(refreshed);
-    setActiveLockerFile(refreshed);
-    closeSaveDialog();
+    try {
+      const entry: LockerEntry = {
+        id: existingId,
+        name,
+        savedAt: Date.now(),
+        store,
+        background,
+        bgFade,
+        bgTone,
+      };
+      // Only update an entry that actually exists in the Locker.
+      const exists = lockerEntries.some(e => e.id === existingId);
+      if (!exists) {
+        toast({ description: 'Save failed. The file no longer exists in your Locker.', variant: 'destructive' });
+        return;
+      }
+      const updated = lockerEntries.map(e => e.id === existingId ? entry : e);
+      setLockerEntries(updated);
+      broadcastLocker(updated);
+      // Keep (and refresh) the active file identity so subsequent Save clicks
+      // continue updating this same Locker file without reopening the dialog.
+      const refreshed: ActiveLockerFile = { id: existingId, name };
+      writeActiveLockerFileToSS(refreshed);
+      setActiveLockerFile(refreshed);
+      closeSaveDialog();
+      toast({ description: 'Saved.' });
+    } catch {
+      toast({ description: 'Save failed. Your changes were not saved.', variant: 'destructive' });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
+  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker, toast]);
 
   const handleSaveToLocker = () => {
     const name = saveName.trim();
@@ -1005,14 +1031,32 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   </div>
                 )
               ) : (
-                <button
-                  onClick={handleSaveClick}
-                  title="Save current list to Locker"
-                  className={toolBtn}
-                >
-                  <LockerIcon className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="hidden md:inline">Save</span>
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      title="Save current list to Locker"
+                      className={`${toolBtn} gap-0.5`}
+                    >
+                      <LockerIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="hidden md:inline">Save</span>
+                      <ChevronDown className="w-3 h-3 flex-shrink-0 opacity-70" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[120px]">
+                    <DropdownMenuItem
+                      className="text-sm cursor-pointer"
+                      onSelect={handleSaveMenuSave}
+                    >
+                      Save
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-sm cursor-pointer"
+                      onSelect={handleSaveMenuSaveAs}
+                    >
+                      Save As
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
 
               {/* Divider */}
