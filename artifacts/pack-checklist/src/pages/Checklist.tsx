@@ -8,6 +8,7 @@ import { PreviewModal } from '../components/PreviewModal';
 import { MailingListModal, hasSeenMailingPrompt } from '../components/MailingListModal';
 import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
+import { resolveDestination } from '../lib/categoryAliases';
 import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ImportGearPanel } from '../components/ImportGearPanel';
@@ -1327,13 +1328,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 <ImportGearPanel
                   categoryOrder={categoryOrder}
                   onAddItem={(category, prefill) => {
-                    // If the PDF assigned a destination that isn't in the user's
-                    // current category list (e.g. Kitchen missing from an older
-                    // stored pack), create the tab automatically before adding.
-                    if (!categoryOrder.includes(category)) {
-                      addCategory(category);
+                    // Re-resolve against the live order so alias variants
+                    // (e.g. 'Shelter' → 'Shelter System') are honoured and
+                    // no duplicate category tab is created.
+                    const resolved = resolveDestination(category, categoryOrder);
+                    if (!categoryOrder.includes(resolved)) {
+                      addCategory(resolved);
                     }
-                    addItem(category, prefill);
+                    addItem(resolved, prefill);
                   }}
                 />
                 <LockerPanel

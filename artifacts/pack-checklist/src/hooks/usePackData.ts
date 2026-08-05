@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { INITIAL_DATA } from '../data/initialData';
+import { CATEGORY_ROLE_ALIASES, normCat } from '../lib/categoryAliases';
 
 export type GearItem = {
   id: string;
@@ -106,17 +107,86 @@ function sanitizeItems(raw: any[], _cat: string): GearItem[] {
 }
 
 /**
+ * Idempotent migration: when both a DEFAULT category name and one of its
+ * recognised aliases coexist in the stored order, merge items from the DEFAULT
+ * name into the alias and remove the DEFAULT name.
+ *
+ * Example: stored order contains both 'Shelter' and 'Shelter System'
+ *   → move all 'Shelter' items into 'Shelter System', remove 'Shelter'.
+ *
+ * The alias with the lowest index in the order is preferred as the target when
+ * no non-DEFAULT alias is available.  Non-DEFAULT aliases are always preferred
+ * (they represent the user's intentional name).
+ *
+ * Safe to run on every load: once the duplicates are gone, every alias group
+ * will have at most one member in the order and the function is a no-op.
+ */
+function deduplicateCategoryAliases(stored: {
+  items: Record<string, any[]>;
+  order: string[];
+  meta: Record<string, any>;
+}): { items: Record<string, any[]>; order: string[]; meta: Record<string, any> } {
+  let { items, order, meta } = stored;
+
+  for (const aliases of Object.values(CATEGORY_ROLE_ALIASES)) {
+    // All categories from this alias group currently in the order
+    const matches = order.filter(o => aliases.some(a => normCat(a) === normCat(o)));
+    if (matches.length < 2) continue;
+
+    // Prefer the non-DEFAULT category as the merge target (the user's name).
+    // Fall back to whichever appears first in the order.
+    const nonDefaults = matches.filter(m => !DEFAULT_CATEGORY_ORDER.includes(m));
+    const target  = nonDefaults.length > 0 ? nonDefaults[0] : matches[0];
+    const sources = matches.filter(m => m !== target);
+
+    // Merge items: target's existing items first, then source items appended.
+    const mergedItems = [
+      ...(items[target] || []),
+      ...sources.flatMap(src => items[src] || []),
+    ];
+
+    const newItems: Record<string, any[]> = {};
+    for (const [k, v] of Object.entries(items)) {
+      if (sources.includes(k)) continue;
+      newItems[k] = k === target ? mergedItems : (v as any[]);
+    }
+
+    const newMeta: Record<string, any> = {};
+    for (const [k, v] of Object.entries(meta)) {
+      if (!sources.includes(k)) newMeta[k] = v;
+    }
+
+    order = order.filter(o => !sources.includes(o));
+    items = newItems;
+    meta  = newMeta;
+  }
+
+  return { items, order, meta };
+}
+
+/**
  * Forward-migrate a stored order by inserting any DEFAULT_CATEGORY_ORDER entries
  * that are missing (added to DEFAULT after this store was last saved).
  * Each missing entry is inserted at its canonical position — after the rightmost
  * DEFAULT predecessor already in the order, but before the leftmost DEFAULT
  * successor already in the order.  Custom (non-DEFAULT) categories are unaffected.
+ *
+ * Alias-aware: if the user already has a recognised alias for a DEFAULT category
+ * (e.g. 'Shelter System' for 'Shelter'), we do NOT insert the DEFAULT name.
+ * This prevents duplicate category pairs such as 'Shelter' + 'Shelter System'.
  */
 function mergeDefaultCategories(storedOrder: string[]): string[] {
   let order = [...storedOrder];
   for (let di = 0; di < DEFAULT_CATEGORY_ORDER.length; di++) {
     const cat = DEFAULT_CATEGORY_ORDER[di];
     if (order.includes(cat)) continue;
+
+    // Skip if any alias of this DEFAULT category is already in the order.
+    const catNorm    = normCat(cat);
+    const aliasGroup = Object.values(CATEGORY_ROLE_ALIASES).find(aliases =>
+      aliases.some(a => normCat(a) === catNorm)
+    );
+    if (aliasGroup?.some(a => order.some(o => normCat(o) === normCat(a)))) continue;
 
     // Start by appending; then try to place it between its neighbours.
     let insertAt = order.length;
@@ -140,14 +210,23 @@ function mergeDefaultCategories(storedOrder: string[]): string[] {
 
 function parseV5(p: any): Store | null {
   if (!p || p.__v !== 5 || !Array.isArray(p.order)) return null;
-  // Forward-migrate: add any DEFAULT categories added to the app after this
-  // store was saved (e.g. Kitchen added to DEFAULT after a user's first save).
-  const order: string[] = mergeDefaultCategories(p.order);
+
+  // Step 1: Remove duplicate alias categories created by previous migrations
+  // (e.g. both 'Shelter' and 'Shelter System' → keep only 'Shelter System').
+  const deduped = deduplicateCategoryAliases({
+    items: p.items ?? {},
+    order: p.order,
+    meta:  p.meta  ?? {},
+  });
+
+  // Step 2: Forward-migrate — alias-aware, so 'Shelter' is not re-inserted
+  // when 'Shelter System' is already present.
+  const order: string[] = mergeDefaultCategories(deduped.order);
   const items: PackState = {};
-  order.forEach(cat => { items[cat] = sanitizeItems(p.items?.[cat], cat); });
+  order.forEach(cat => { items[cat] = sanitizeItems(deduped.items?.[cat], cat); });
   const meta: Record<string, CategoryMeta> = {};
   order.forEach(cat => {
-    const m = p.meta?.[cat];
+    const m = deduped.meta?.[cat];
     meta[cat] = {
       countsToBase: m?.countsToBase ?? !DEFAULT_EXCLUDES_BASE.has(cat),
       subLabel:  m?.subLabel  ?? undefined,

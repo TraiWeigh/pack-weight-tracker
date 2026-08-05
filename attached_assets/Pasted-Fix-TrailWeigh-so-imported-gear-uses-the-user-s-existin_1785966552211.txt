@@ -1,0 +1,228 @@
+Fix TrailWeigh so imported gear uses the user’s existing category names instead of creating duplicate categories.
+
+## Confirmed current problem
+
+PDF and Excel parsing are now correct, but imported items were placed into newly created categories:
+
+- Shelter
+- Sleep
+- Kitchen
+
+The checklist already had these intended categories:
+
+- Shelter System
+- Sleep System
+- Kitchen Gear
+
+The result is duplicate category pairs:
+
+- Shelter and Shelter System
+- Sleep and Sleep System
+- Kitchen and Kitchen Gear
+
+## Required import mappings
+
+Before adding imported items, map these source-category names to the existing checklist categories:
+
+- Shelter → Shelter System
+- Sleep → Sleep System
+- Kitchen → Kitchen Gear
+
+Also recognize capitalization and spacing variations, such as:
+
+- ` shelter `
+- `SHELTER`
+- `sleep`
+- `Kitchen`
+- `Kitchen System`
+
+Use the exact existing category name from the current checklist.
+
+Do not create Shelter, Sleep, or Kitchen when the corresponding preferred category already exists.
+
+## Preserve all other category behavior
+
+Keep these existing mappings and behaviors unchanged:
+
+- Backpack → Backpack
+- Clothing Packed → Clothing Packed
+- Clothing Worn → Clothing Worn
+- Electronics → Electronics
+- Hydration → Hydration
+- Toiletries + Med → Toiletries + Med
+- Miscellaneous → Miscellaneous
+- Fuel → Expendables
+- Bug Net → Clothing Packed
+
+Do not merge Clothing Packed and Clothing Worn.
+
+Do not silently route unknown categories to Backpack.
+
+## Fix the complete import path
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+- `artifacts/pack-checklist/src/hooks/usePackData.ts`
+- Any shared category-alias or destination-resolution helpers
+
+Apply category alias resolution before:
+
+1. The review-row destination is displayed
+2. Validation runs
+3. A new category is automatically created
+4. The imported item is added to the checklist
+
+The automatic category-creation logic must not create a new category when an equivalent existing category is available through an alias.
+
+Use one shared category-resolution function where practical so the review table and final import cannot disagree.
+
+## Repair the duplicate categories already created
+
+The current checklist already contains duplicate categories from previous imports.
+
+Create a safe, idempotent migration for these exact pairs:
+
+### Shelter
+
+If both `Shelter` and `Shelter System` exist:
+
+1. Move every item from Shelter into Shelter System.
+2. Preserve:
+   - Type
+   - Description
+   - Weight
+   - Unit
+   - Quantity
+   - Checkbox state
+   - Base Weight state
+   - Worn state
+   - Expendable state
+   - Dog Pack state
+   - Any other item metadata
+3. Preserve the existing items already in Shelter System.
+4. Remove only the now-empty Shelter category.
+
+### Sleep
+
+If both `Sleep` and `Sleep System` exist:
+
+1. Move every item from Sleep into Sleep System.
+2. Preserve all item information and checkbox/state data.
+3. Preserve existing Sleep System items.
+4. Remove only the now-empty Sleep category.
+
+### Kitchen
+
+If both `Kitchen` and `Kitchen Gear` exist:
+
+1. Move every item from Kitchen into Kitchen Gear.
+2. Preserve all item information and checkbox/state data.
+3. Preserve existing Kitchen Gear items.
+4. Remove only the now-empty Kitchen category.
+
+Do not delete any items.
+
+Do not delete unrelated custom categories.
+
+Do not run the migration repeatedly or duplicate moved items. It must be safe when the app reloads more than once.
+
+## Category order
+
+After merging:
+
+- Shelter System should remain in its existing position.
+- Sleep System should remain in its existing position.
+- Kitchen Gear should remain in its existing position.
+- Do not move the preferred categories to the bottom.
+- Remove the duplicate category names from the category order.
+
+## Preserve working importer behavior
+
+Do not change:
+
+- PDF result of 68 items
+- Excel result of 69 items
+- PDFParse v2
+- Excel parsing
+- Word parsing
+- Numbers workflow
+- Kitchen-item parsing
+- Fuel → Expendables
+- Bug Net → Clothing Packed
+- Weight-versus-Add handling
+- Numeric-leading Types
+- Editable review table
+- Category editing
+- Type editing
+- Description editing
+- Weight and Unit editing
+- Add Row
+- Imported items remaining unchecked
+- Panel reset after import
+- Image and screenshot scanning remaining removed
+
+Meal Planner importing is not applicable.
+
+## Required real rendered tests
+
+### Existing-category cleanup
+
+Use the current checklist that contains:
+
+- Shelter and Shelter System
+- Sleep and Sleep System
+- Kitchen and Kitchen Gear
+
+Confirm:
+
+1. Items from Shelter move into Shelter System.
+2. Items from Sleep move into Sleep System.
+3. Items from Kitchen move into Kitchen Gear.
+4. No item information or checkbox/state data is lost.
+5. Shelter, Sleep, and Kitchen are removed after becoming empty.
+6. Shelter System, Sleep System, and Kitchen Gear remain in their original positions.
+7. Reloading the page does not duplicate items or recreate categories.
+
+### PDF import
+
+Upload the real `PACK WEIGHT PDF.pdf`.
+
+Confirm:
+
+1. It still finds 68 items.
+2. Shelter review rows display Shelter System.
+3. Sleep review rows display Sleep System.
+4. Kitchen review rows display Kitchen Gear.
+5. Fuel displays Expendables.
+6. Import one item from each of those categories.
+7. No new Shelter, Sleep, or Kitchen category is created.
+8. All imported items remain unchecked.
+
+### Excel import
+
+Upload the real `.xlsx` checklist.
+
+Confirm:
+
+1. It still finds 69 items.
+2. Shelter, Sleep, and Kitchen source rows resolve to the existing System/Gear categories.
+3. Bug Net remains Clothing Packed.
+4. Fuel remains Expendables.
+5. No duplicate categories are recreated.
+
+## Final report
+
+Report:
+
+- Where the importer was creating the duplicate categories
+- The final alias mappings used
+- How automatic category creation was changed
+- How existing duplicate categories and items were migrated
+- Which files changed
+- PDF rendered-test results
+- Excel rendered-test results
+- Confirmation that item states were preserved
+- Confirmation that no duplicate categories were recreated
+- Confirmation that no temporary debug logs remain
