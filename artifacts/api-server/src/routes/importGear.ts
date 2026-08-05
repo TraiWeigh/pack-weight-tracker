@@ -190,8 +190,21 @@ const PDF_CATEGORY_ORDER = [
   'Hydration', 'Clothing Worn', 'Miscellaneous',
 ];
 
-// Category header: must start with "X" (the TrailWeigh checkbox placeholder in the header row)
-const PDF_CAT_HDR_RE = /^x\s+(backpack|shelter|sleep|clothing\s+packed|kitchen|electronics|toiletries(?:\s*\+\s*med)?|hydration|clothing\s+worn|miscellaneous|misc)\b/i;
+// Category header — two patterns, applied in order (first match wins):
+//
+// PRIMARY:  "X CategoryName Description …" or "CategoryName Description …"
+//   Requires a column-header keyword (description / unit / qty / add) so that
+//   summary rows ("Kitchen 0.2 lb") and standalone category words are ignored.
+//   The "X" checkbox placeholder is optional because some PDF renderers place
+//   it as a separate text element on its own line.
+//
+// FALLBACK: "X CategoryName" (no column keyword on same line)
+//   Used when the PDF splits the header across two lines and only the checkbox
+//   and category name appear together (column headers land on the next line).
+//   The forward-only index guard still prevents summary-table "X Backpack"
+//   lines from overriding a later section.
+const PDF_CAT_HDR_RE  = /^(?:x\s+)?(backpack|shelter|sleep|clothing\s+packed|kitchen|electronics|toiletries(?:\s*\+\s*med)?|hydration|clothing\s+worn|miscellaneous|misc)\s+(?:description|unit\b|qty\b|add\b)/i;
+const PDF_CAT_HDR_X_RE = /^x\s*(backpack|shelter|sleep|clothing\s+packed|kitchen|electronics|toiletries(?:\s*\+\s*med)?|hydration|clothing\s+worn|miscellaneous|misc)\b/i;
 
 // Lines to skip: totals, summary labels, column headers, nutrition
 const PDF_SKIP_RE = /^(?:total|grand\s+total|base\s+weight|expendables|trip\s+total|sub\s+total|daily\s+average|calories|protein\b|fat\b|carbs?\b|description\b|weight\b|add\b|unit\b|qty\b|category\b|type\b|page\s*\d+|category\s+weight)/i;
@@ -208,6 +221,16 @@ const PDF_CHECKBOX_RE = /^(?:true|false)(?=[\s\dA-Za-z])/i;
 // Trailing summary columns like "Sleep 0.8125 lb" are absorbed by `(?:\s+[A-Za-z].*)?$`.
 const PDF_ROW_RE = /^(.+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s*(?:oz|g(?:rams?)?|lbs?|pounds?|kg(?:s|ilograms?)?)?(?:\s*\d+)?(?:\s+[A-Za-z].*)?$/i;
 
+// Types that are always Expendables regardless of which PDF section they appear in.
+const PDF_EXPENDABLES_TYPES = new Set(['fuel', 'stove fuel', 'canister fuel', 'isobutane', 'alcohol fuel', 'denatured alcohol']);
+
+// Debug: sub-types to log during parsing (temporary — remove after Kitchen fix confirmed).
+const PDF_DEBUG_SUBS = new Set([
+  'pot/mug', 'spoon', 'stove', 'fuel',
+  'cold soak container', '1 gal freezer bag', '1 qrt freezer bag',
+  'bear bag', 'food bag', 'bear canister',
+]);
+
 export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] {
   const results: ExtractedItem[] = [];
   let currentCategory = '';
@@ -218,11 +241,18 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
   let currentCategoryIndex = -1;
   let reachedMealPlanner = false;
 
-  for (const page of pages) {
+  for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
     if (reachedMealPlanner) break;
+
+    const page = pages[pageIdx];
 
     // Mark meal-planner boundary but still process lines before the heading
     if (/meal\s*planner/i.test(page.text)) reachedMealPlanner = true;
+
+    // ── Debug: dump raw page text for pages that contain Kitchen keywords ──
+    if (/kitchen|pot\/mug|pot.mug|freezer bag/i.test(page.text)) {
+      console.log(`[PDF-debug] Page ${pageIdx} raw text (${page.text.length} chars):\n${page.text.slice(0, 2000)}`);
+    }
 
     const lines = page.text
       .split(/[\r\n]+/)
@@ -234,15 +264,18 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
       if (/^meal\s*planner\b/i.test(line)) break;
 
       // ── Category header detection (before checkbox check) ──────────────────
-      const catMatch = PDF_CAT_HDR_RE.exec(line);
+      const catMatch = PDF_CAT_HDR_RE.exec(line) ?? PDF_CAT_HDR_X_RE.exec(line);
       if (catMatch) {
         const key = catMatch[1].toLowerCase().replace(/\s*\+\s*/g, ' + ').trim();
         const candidate = PDF_CATEGORY_NAMES[key] ?? '';
         const candidateIndex = PDF_CATEGORY_ORDER.indexOf(candidate);
         // Only advance — never go backwards (guards against summary-table headers)
         if (candidate && candidateIndex >= currentCategoryIndex) {
+          console.log(`[PDF-debug] CAT ACCEPTED | "${line.slice(0, 80)}" → ${candidate} (idx ${candidateIndex})`);
           currentCategory = candidate;
           currentCategoryIndex = candidateIndex;
+        } else {
+          console.log(`[PDF-debug] CAT SKIPPED  | "${line.slice(0, 80)}" → candidate=${candidate} (idx ${candidateIndex}) currentIdx=${currentCategoryIndex}`);
         }
         continue;
       }
@@ -289,13 +322,26 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
         else          desc = nameText;
       }
 
-      results.push({
-        sub:         sub.slice(0, 60),
-        desc:        desc.slice(0, 200),
-        weightOz:    Math.round(weightOz * 100) / 100,
-        warning:     false,
-        destination: currentCategory || undefined,
-      });
+      // ── Explicit overrides (applied after PDF section category) ───────────
+      // Fuel is always Expendables regardless of which section it appears in.
+      const destination = PDF_EXPENDABLES_TYPES.has(sub.toLowerCase())
+        ? 'Expendables'
+        : (currentCategory || undefined);
+
+      const item: ExtractedItem = {
+        sub:      sub.slice(0, 60),
+        desc:     desc.slice(0, 200),
+        weightOz: Math.round(weightOz * 100) / 100,
+        warning:  false,
+        destination,
+      };
+
+      // ── Debug: log Kitchen-related items ──────────────────────────────────
+      if (PDF_DEBUG_SUBS.has(sub.toLowerCase())) {
+        console.log(`[PDF-debug] ITEM | sub="${item.sub}" desc="${item.desc.slice(0, 40)}" weight=${item.weightOz} currentCategory="${currentCategory}" destination="${destination}"`);
+      }
+
+      results.push(item);
     }
   }
 
