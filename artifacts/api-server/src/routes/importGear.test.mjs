@@ -137,24 +137,66 @@ const SLEEP_TYPES = new Set([
   'foam pad','closed-cell foam pad','ccf pad','air mattress',
   'pillow','inflatable pillow',
   'sleeping bag liner','sleep liner','sleeping liner',
-  'quilt straps','pad straps','pump sack','pump bag','pad pump',
-  'down hood','sleeping hood','sleep socks','sleeping clothes',
+  'quilt straps','pad strads','pump sack','pump bag','pad pump',
+  // NOTE: down hood, sleeping hood, sleep socks, sleeping clothes now in CLOTHING_TYPES
+]);
+
+const CLOTHING_TYPES = new Set([
+  'sleep socks','sleeping socks','camp socks','insulated socks','down socks','possum socks',
+  'down hood','sleeping hood','insulated hood',
+  'balaclava','down balaclava','fleece balaclava',
+  'beanie','warm hat',
+  'neck gaiter',
+  'gloves','mittens',
+  'sleep shirt','sleeping shirt','camp shirt',
+  'base layer','thermal top','long underwear',
+  'sleep pants','sleeping pants','camp pants','thermal bottom',
+  'sleep clothes','sleeping clothes',
+  'down booties','insulated booties','camp booties','camp shoes',
+]);
+
+const CLOTHING_WORN_SECTION_ALIASES = new Set([
+  'clothing worn','worn clothing','worn','worn weight','worn items','wearing',
 ]);
 
 function applyGearClassification(item) {
   const typeN = norm(item.sub);
+  const destN = item.destination ? norm(item.destination) : '';
   const sectionConflict = (canonical) =>
-    !!(item.destination && norm(item.destination) !== norm(canonical));
+    !!(item.destination && destN !== norm(canonical));
+
+  // P1: Consumable Type
   if (CONSUMABLES_TYPES.has(typeN))
     return { ...item, destination: 'Consumables', warning: item.warning || sectionConflict('Consumables') };
+
+  // P2: Wearable sleep/camp clothing → Clothing Packed
+  if (CLOTHING_TYPES.has(typeN)) {
+    const conflict = sectionConflict('Clothing Packed');
+    return {
+      ...item, destination: 'Clothing Packed',
+      warning: item.warning || conflict,
+      warningMsg: conflict ? 'Wearable sleep item assigned to Clothing.' : item.warningMsg,
+    };
+  }
+
+  // P3: Shelter Type
   if (SHELTER_TYPES.has(typeN))
-    return { ...item, destination: 'Shelter',     warning: item.warning || sectionConflict('Shelter') };
+    return { ...item, destination: 'Shelter', warning: item.warning || sectionConflict('Shelter') };
+
+  // P4: Sleep equipment Type
   if (SLEEP_TYPES.has(typeN))
-    return { ...item, destination: 'Sleep',        warning: item.warning || sectionConflict('Sleep') };
+    return { ...item, destination: 'Sleep', warning: item.warning || sectionConflict('Sleep') };
+
+  // P5: Explicit Clothing Worn section
+  if (item.destination && CLOTHING_WORN_SECTION_ALIASES.has(destN))
+    return { ...item, destination: 'Clothing Worn' };
+
+  // P6: Consumables section alias
   if (item.destination) {
-    const n = norm(item.destination);
+    const n = destN;
     if (CONSUMABLES_SECTION_ALIASES.has(n)) return { ...item, destination: 'Consumables' };
   }
+
   return item;
 }
 
@@ -690,7 +732,124 @@ console.log('\nC16: Type, Description, Weight aligned on same row after classifi
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// Shelter / Sleep-System type-routing tests
+// Wearable clothing routing tests
+// ═══════════════════════════════════════════════════════════════════════════════
+console.log('\n\n=== Wearable sleep clothing routing tests ===\n');
+
+// ── W1: Core CLOTHING_TYPES route to Clothing Packed ─────────────────────────
+console.log('W1: Wearable sleep/camp Types → Clothing Packed');
+for (const [type, desc, w] of [
+  ['Sleep Socks',    'Zpacks Brushtail Possum Socks',  2.7],
+  ['Down Hood',      'GooseFeet Balaclava',             2.4],
+  ['Balaclava',      'Outdoor Research Balaclava',      2.0],
+  ['Sleep Shirt',    'Patagonia Capilene Base Layer',   4.5],
+  ['Sleep Pants',    'Rab MeCo Pants',                  4.0],
+  ['Down Booties',   'Nunatak Booties',                 2.8],
+  ['Sleeping Clothes','Misc camp clothes',              6.0],
+]) {
+  const item = applyGearClassification({ sub: type, desc, weightOz: w, warning: false, destination: '' });
+  assertEqual(item.destination, 'Clothing Packed', `${type} → Clothing Packed`);
+  assertEqual(item.sub,         type,              `${type}: Type string unchanged`);
+}
+
+// ── W2: None of these must land in Clothing Worn without explicit section ─────
+console.log('\nW2: Wearable sleep items must NOT route to Clothing Worn by default');
+for (const type of ['Sleep Socks','Down Hood','Balaclava','Sleep Shirt','Sleep Pants','Down Booties']) {
+  const item = applyGearClassification({ sub: type, desc: 'test', weightOz: 2, warning: false, destination: '' });
+  assert(item.destination !== 'Clothing Worn', `${type}: must not be Clothing Worn when no explicit worn section`);
+}
+
+// ── W3: Sleep Socks under Sleep System → Clothing Packed (overrides section) ──
+console.log('\nW3: Sleep Socks under Sleep System → Clothing Packed');
+{
+  const wb = makeConsumablesWorkbook('Sleep System', 'Sleep Socks', 'Zpacks Possum Socks', 2.7);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Clothing Packed', 'Sleep Socks under Sleep System → Clothing Packed');
+  assertEqual(items[0]?.sub,         'Sleep Socks',     'Type "Sleep Socks" preserved');
+  assertEqual(items[0]?.weightOz,    2.7,               'Weight 2.7 oz preserved');
+  assert(items[0]?.warning === true,                    'warning=true when section conflict');
+  assertEqual(items[0]?.warningMsg, 'Wearable sleep item assigned to Clothing.', 'warningMsg set');
+}
+
+// ── W4: Down Hood under Sleep System → Clothing Packed ───────────────────────
+console.log('\nW4: Down Hood under Sleep System → Clothing Packed');
+{
+  const wb = makeConsumablesWorkbook('Sleep System', 'Down Hood', 'GooseFeet Balaclava', 2.4);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Clothing Packed', 'Down Hood under Sleep System → Clothing Packed');
+  assertEqual(items[0]?.warningMsg,  'Wearable sleep item assigned to Clothing.', 'warningMsg set');
+}
+
+// ── W5: Hiking Shirt under Clothing Worn section stays Clothing Worn ──────────
+console.log('\nW5: Hiking Shirt under Clothing Worn section → Clothing Worn');
+{
+  const wb = makeConsumablesWorkbook('Clothing Worn', 'Hiking Shirt', 'OR Echo Hoodie', 4.2);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.destination, 'Clothing Worn', 'Hiking Shirt under Clothing Worn → Clothing Worn (explicit section)');
+}
+
+// ── W6: Wearable sleep item with no section → Clothing Packed (no warning) ───
+console.log('\nW6: Sleep Socks with no section → Clothing Packed, no warning');
+{
+  const item = applyGearClassification({ sub: 'Sleep Socks', desc: 'test', weightOz: 2.7, warning: false, destination: '' });
+  assertEqual(item.destination, 'Clothing Packed', 'Sleep Socks (no section) → Clothing Packed');
+  assert(item.warning === false, 'No section conflict → warning=false');
+  assert(!item.warningMsg,       'No section conflict → no warningMsg');
+}
+
+// ── W7: Wearable sleep item already in Clothing Packed → no conflict ──────────
+console.log('\nW7: Sleep Socks in Clothing Packed section → no warning');
+{
+  const item = applyGearClassification({ sub: 'Sleep Socks', desc: 'test', weightOz: 2.7, warning: false, destination: 'Clothing Packed' });
+  assertEqual(item.destination, 'Clothing Packed', 'Sleep Socks already in Clothing Packed');
+  assert(item.warning === false, 'No conflict → warning=false');
+  assert(!item.warningMsg,       'No conflict → no warningMsg');
+}
+
+// ── W8: Clothing canonical role: rename "Clothing Packed" → "Clothing System" ─
+console.log('\nW8: Renaming Clothing Packed to Clothing System does not change canonical role');
+{
+  // API always returns 'Clothing Packed' for CLOTHING_TYPES.
+  // Client must resolve 'Clothing Packed' → 'Clothing System' via alias map.
+  const item = applyGearClassification({ sub: 'Sleep Socks', desc: 'test', weightOz: 2.7, warning: false, destination: 'Clothing System' });
+  // canonical destination is always 'Clothing Packed' regardless of user rename
+  assertEqual(item.destination, 'Clothing Packed', 'Canonical destination is always Clothing Packed');
+}
+
+// ── W9: Clothing Worn aliases normalised to "Clothing Worn" ───────────────────
+console.log('\nW9: Clothing Worn section aliases → "Clothing Worn"');
+for (const alias of ['Worn Clothing', 'Worn', 'Worn Weight', 'Worn Items', 'Wearing']) {
+  const item = applyGearClassification({ sub: 'Hiking Shirt', desc: 'test', weightOz: 4, warning: false, destination: alias });
+  assertEqual(item.destination, 'Clothing Worn', `Section "${alias}" → "Clothing Worn"`);
+}
+
+// ── W10: Sleep equipment (Quilt, Sleeping Pad) still routes to Sleep ──────────
+console.log('\nW10: Quilt and Sleeping Pad remain in Sleep System');
+{
+  const q = applyGearClassification({ sub: 'Quilt',       desc: 'EE Revelation', weightOz: 17, warning: false, destination: 'Sleep' });
+  assertEqual(q.destination, 'Sleep', 'Quilt → Sleep');
+  const p = applyGearClassification({ sub: 'Sleeping Pad', desc: 'NeoAir XLite', weightOz: 12, warning: false, destination: 'Sleep' });
+  assertEqual(p.destination, 'Sleep', 'Sleeping Pad → Sleep');
+}
+
+// ── W11: Fuel still routes to Consumables ─────────────────────────────────────
+console.log('\nW11: Fuel remains Consumables');
+{
+  const item = applyGearClassification({ sub: 'Fuel', desc: 'Isobutane', weightOz: 7.68, warning: false, destination: 'Kitchen' });
+  assertEqual(item.destination, 'Consumables', 'Fuel → Consumables (not affected by clothing routing)');
+}
+
+// ── W12: Type, Description, Weight unchanged after routing ────────────────────
+console.log('\nW12: Type, Description, Weight unchanged after clothing routing');
+{
+  const wb = makeConsumablesWorkbook('Sleep System', 'Down Hood', 'GooseFeet Balaclava', 2.4);
+  const items = extractFromWorkbook(wb);
+  assertEqual(items[0]?.sub,      'Down Hood',           'Type unchanged');
+  assertEqual(items[0]?.desc,     'GooseFeet Balaclava', 'Desc unchanged');
+  assertEqual(items[0]?.weightOz, 2.4,                   'Weight unchanged');
+}
+
+// ── Shelter / Sleep-System type-routing tests
 // ═══════════════════════════════════════════════════════════════════════════════
 console.log('\n\n=== Shelter / Sleep type-routing tests ===\n');
 

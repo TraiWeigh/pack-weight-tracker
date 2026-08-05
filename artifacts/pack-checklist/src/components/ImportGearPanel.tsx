@@ -9,6 +9,7 @@ interface ParsedItem {
   desc: string;
   weightOz: number;
   warning: boolean;
+  warningMsg?: string;  // human-readable reason for the warning flag
   destination?: string; // category from spreadsheet section header
 }
 
@@ -52,8 +53,8 @@ const CATEGORY_ROLE_ALIASES: Record<string, string[]> = {
   Kitchen:          ['Kitchen', 'Cooking', 'Cooking System', 'Cook System'],
   Hydration:        ['Hydration', 'Water', 'Water System'],
   Electronics:      ['Electronics', 'Electronics System', 'Electronic Gear'],
-  'Clothing Packed':['Clothing Packed', 'Clothing', 'Packed Clothing'],
-  'Clothing Worn':  ['Clothing Worn', 'Worn Clothing'],
+  'Clothing Packed':['Clothing Packed', 'Clothing', 'Clothing System', 'Packed Clothing'],
+  'Clothing Worn':  ['Clothing Worn', 'Worn Clothing', 'Worn Items', 'Worn Weight', 'Worn'],
   'Dog Pack':       ['Dog Pack', 'Dog Gear', 'Pet Gear'],
   'Med Kit':        ['Med Kit', 'First Aid', 'First Aid Kit', 'Medical Kit'],
   'Repair Kit':     ['Repair Kit', 'Repair', 'Repair and Tools'],
@@ -439,7 +440,10 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
                         {item.added ? (
                           <span className="text-[10px] text-primary font-semibold">✓</span>
                         ) : item.warning ? (
-                          <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" title="Review this item — weight or description may need correction" />
+                          <AlertTriangle
+                            className="w-3 h-3 text-amber-500 flex-shrink-0"
+                            title={item.warningMsg ?? 'Review this item — weight or description may need correction'}
+                          />
                         ) : (
                           <span className="w-3 h-3" />
                         )}

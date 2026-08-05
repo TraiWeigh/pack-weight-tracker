@@ -18,6 +18,7 @@ export interface ExtractedItem {
   desc: string;        // Description
   weightOz: number;
   warning: boolean;
+  warningMsg?: string;  // human-readable reason for the warning flag
   destination?: string; // category from section header (spreadsheets only)
 }
 
@@ -150,7 +151,47 @@ export const SLEEP_TYPES = new Set([
   // Liners and accessories
   'sleeping bag liner', 'sleep liner', 'sleeping liner',
   'quilt straps', 'pad straps', 'pump sack', 'pump bag', 'pad pump',
-  'down hood', 'sleeping hood', 'sleep socks', 'sleeping clothes',
+  // NOTE: wearable sleep clothing (sleep socks, down hood, etc.) lives in
+  // CLOTHING_TYPES below — it routes to Clothing, not Sleep System.
+]);
+
+/**
+ * Wearable sleep / camp clothing — routes to "Clothing Packed".
+ * These are packed items, not worn-while-hiking items.
+ * They must never land in "Clothing Worn" unless the source section
+ * explicitly identifies the row as worn clothing.
+ */
+export const CLOTHING_TYPES = new Set([
+  // Socks
+  'sleep socks', 'sleeping socks', 'camp socks', 'insulated socks',
+  'down socks', 'possum socks',
+  // Headwear
+  'down hood', 'sleeping hood', 'insulated hood',
+  'balaclava', 'down balaclava', 'fleece balaclava',
+  'beanie', 'warm hat',
+  // Neck
+  'neck gaiter',
+  // Hands
+  'gloves', 'mittens',
+  // Shirts / tops
+  'sleep shirt', 'sleeping shirt', 'camp shirt',
+  'base layer', 'thermal top', 'long underwear',
+  // Pants / bottoms
+  'sleep pants', 'sleeping pants', 'camp pants', 'thermal bottom',
+  // Full sleep clothes
+  'sleep clothes', 'sleeping clothes',
+  // Footwear
+  'down booties', 'insulated booties', 'camp booties', 'camp shoes',
+]);
+
+/**
+ * Section headings that explicitly designate rows as "Clothing Worn".
+ * When a source section matches these, the item keeps "Clothing Worn"
+ * as its destination (unless overridden by a Consumables Type — nothing
+ * else beats an explicit worn-clothing section).
+ */
+export const CLOTHING_WORN_SECTION_ALIASES = new Set([
+  'clothing worn', 'worn clothing', 'worn', 'worn weight', 'worn items', 'wearing',
 ]);
 
 // ── Consumables classification ────────────────────────────────────────────────
@@ -234,45 +275,65 @@ export function normalizeDestination(destination: string): string {
  * Assign the canonical destination based on gear Type, then section.
  *
  * Priority order (per spec):
- *   1. Known Consumable Type  → "Consumables"   (overrides any source section)
- *   2. Known Shelter Type     → "Shelter"        (overrides any source section)
- *   2. Known Sleep Type       → "Sleep"          (overrides any source section)
- *   3. Source section is a recognised Consumables alias → "Consumables"
- *   4. Source section kept as-is (user may change on review screen)
+ *   1. Known Consumable Type            → "Consumables"      (beats everything)
+ *   2. Known wearable sleep/camp Type   → "Clothing Packed"  (beats source section incl. Sleep System)
+ *   3. Known Shelter Type               → "Shelter"          (beats source section)
+ *   4. Known Sleep equipment Type       → "Sleep"            (beats source section)
+ *   5. Source section is Clothing Worn alias → "Clothing Worn" (kept as-is)
+ *   6. Source section is a Consumables alias → "Consumables"
+ *   7. Source section kept as-is (user may change on review screen)
  *
- * When a Type-based override conflicts with the source section the item's
- * `warning` flag is set so the review screen can surface it.
+ * `warning` is set when a Type-based override conflicts with the source section.
+ * `warningMsg` carries a human-readable reason for display in the review screen.
  * The specific Type string is never changed — only Destination.
  */
 export function applyGearClassification(item: ExtractedItem): ExtractedItem {
   const typeN = norm(item.sub);
+  const destN = item.destination ? norm(item.destination) : '';
 
-  /** Returns true when the source section differs from the canonical destination we're assigning. */
+  /** True when source section differs from the canonical destination we're assigning. */
   const sectionConflict = (canonical: string) =>
-    !!(item.destination && norm(item.destination) !== norm(canonical));
+    !!(item.destination && destN !== norm(canonical));
 
-  // Priority 1: Consumable Type always wins.
+  // Priority 1: Consumable Type always wins (even over explicit Clothing Worn section).
   if (CONSUMABLES_TYPES.has(typeN)) {
     return { ...item, destination: 'Consumables', warning: item.warning || sectionConflict('Consumables') };
   }
 
-  // Priority 2a: Shelter Type → "Shelter".
+  // Priority 2: Wearable sleep/camp clothing → "Clothing Packed".
+  // This overrides any source section, including Sleep System sections.
+  if (CLOTHING_TYPES.has(typeN)) {
+    const conflict = sectionConflict('Clothing Packed');
+    return {
+      ...item,
+      destination: 'Clothing Packed',
+      warning: item.warning || conflict,
+      warningMsg: conflict ? 'Wearable sleep item assigned to Clothing.' : item.warningMsg,
+    };
+  }
+
+  // Priority 3: Shelter Type → "Shelter".
   if (SHELTER_TYPES.has(typeN)) {
     return { ...item, destination: 'Shelter', warning: item.warning || sectionConflict('Shelter') };
   }
 
-  // Priority 2b: Sleep Type → "Sleep".
+  // Priority 4: Sleep equipment Type → "Sleep".
   if (SLEEP_TYPES.has(typeN)) {
     return { ...item, destination: 'Sleep', warning: item.warning || sectionConflict('Sleep') };
   }
 
-  // Priority 3: source section is a consumables alias → normalise.
+  // Priority 5: Explicit Clothing Worn section → normalise to canonical "Clothing Worn".
+  if (item.destination && CLOTHING_WORN_SECTION_ALIASES.has(destN)) {
+    return { ...item, destination: 'Clothing Worn' };
+  }
+
+  // Priority 6: source section is a consumables alias → normalise.
   if (item.destination) {
     const normalized = normalizeDestination(item.destination);
     if (normalized !== item.destination) return { ...item, destination: normalized };
   }
 
-  // Priority 4: keep source section or leave empty for manual selection.
+  // Priority 7: keep source section or leave empty for manual selection.
   return item;
 }
 

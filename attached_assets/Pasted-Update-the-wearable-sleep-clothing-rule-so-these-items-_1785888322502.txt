@@ -1,0 +1,209 @@
+Update the wearable sleep-clothing rule so these items are placed in the regular Clothing category, never in Clothing Worn.
+
+Do not change the working upload pipeline, spreadsheet parser, Consumables rules, or review screen.
+
+## Correct destination
+
+For wearable sleep or camp clothing, use this destination priority:
+
+1. Existing category named “Clothing”
+2. Existing category named “Clothing System”
+3. The application’s canonical regular-clothing category
+4. Manual review if no regular-clothing category exists
+
+Do not place these items in:
+
+- Clothing Worn
+- Worn Clothing
+- Worn Items
+- Worn Weight
+
+## Required distinction
+
+“Clothing” or “Clothing System” means clothing packed as part of the gear list.
+
+“Clothing Worn” means clothing specifically designated as being worn while hiking or already worn at the start of the trip.
+
+An item is not Clothing Worn merely because it is wearable.
+
+Sleep clothing is normally packed clothing and must go into Clothing or Clothing System.
+
+## Types that must use regular Clothing
+
+Route these Types to Clothing or Clothing System:
+
+- Sleep Socks
+- Sleeping Socks
+- Camp Socks
+- Insulated Socks
+- Down Socks
+- Possum Socks
+- Down Hood
+- Sleeping Hood
+- Insulated Hood
+- Balaclava
+- Down Balaclava
+- Fleece Balaclava
+- Sleep Shirt
+- Sleeping Shirt
+- Camp Shirt
+- Sleep Pants
+- Sleeping Pants
+- Camp Pants
+- Sleep Clothes
+- Sleeping Clothes
+- Base Layer
+- Thermal Top
+- Thermal Bottom
+- Long Underwear
+- Down Booties
+- Insulated Booties
+- Camp Booties
+- Camp Shoes
+- Beanie
+- Warm Hat
+- Neck Gaiter
+- Gloves
+- Mittens
+
+These Types must not map to Clothing Worn unless the uploaded file explicitly identifies the individual row as worn clothing.
+
+## Clothing Worn rule
+
+Use Clothing Worn only when one of these conditions is present:
+
+1. The individual row has an explicit category or status indicating:
+   - Clothing Worn
+   - Worn Clothing
+   - Worn
+   - Worn Weight
+   - Wearing
+
+2. The row appears under an explicit Clothing Worn section and there is no stronger rule identifying it as packed sleep or camp clothing.
+
+Do not infer Clothing Worn merely from:
+
+- The item being wearable
+- The word “sleep”
+- The word “camp”
+- The word “socks”
+- The word “hood”
+- The source item being checked
+- The item having a quantity of one
+
+## Stable category roles
+
+Keep separate canonical internal roles for:
+
+- clothing — regular packed clothing
+- clothing_worn — clothing explicitly designated as worn
+
+If the user renames Clothing to Clothing System, preserve the canonical role:
+
+clothing
+
+If the user renames Clothing Worn, preserve the canonical role:
+
+clothing_worn
+
+Do not select between these categories using loose name similarity.
+
+## Required examples
+
+Input:
+
+Source section: Sleep System
+Type: Sleep Socks
+Description: Zpacks Brushtail Possum Socks
+Weight: 2.7 oz
+
+Required result:
+
+Destination: Clothing or Clothing System
+Type: Sleep Socks
+Description: Zpacks Brushtail Possum Socks
+Weight: 2.7 oz
+
+It must not go to Clothing Worn.
+
+Input:
+
+Source section: Sleep System
+Type: Down Hood
+Description: GooseFeet Balaclava
+Weight: 2.4 oz
+
+Required result:
+
+Destination: Clothing or Clothing System
+Type: Down Hood
+Description: GooseFeet Balaclava
+Weight: 2.4 oz
+
+It must not go to Clothing Worn.
+
+Input:
+
+Source section: Clothing Worn
+Type: Hiking Shirt
+Description: Outdoor Research Echo Hoodie
+Weight: 4.2 oz
+
+Required result:
+
+Destination: Clothing Worn
+
+because the source explicitly identifies it as worn.
+
+## Destination priority
+
+Use this order:
+
+1. Known Consumables Type → Consumables
+2. Explicit individual-row worn status → Clothing Worn
+3. Known sleep, camp, or insulated wearable Type → Clothing or Clothing System
+4. Known Shelter Type → Shelter
+5. Known Sleep equipment Type → Sleep System
+6. Recognized source section
+7. Manual review
+
+A Sleep System section must not override a known wearable Type.
+
+A generic wearable-item match must not automatically route an item to Clothing Worn.
+
+## Review warning
+
+When a wearable sleep item is moved from Sleep System to regular Clothing, show:
+
+“Wearable sleep item assigned to Clothing.”
+
+Do not show that warning after the user manually changes the destination.
+
+## Tests
+
+Add tests confirming:
+
+- Sleep Socks map to Clothing or Clothing System.
+- Down Hood maps to Clothing or Clothing System.
+- Balaclava maps to Clothing or Clothing System.
+- Sleep Shirt maps to Clothing or Clothing System.
+- Sleep Pants map to Clothing or Clothing System.
+- Down Booties map to Clothing or Clothing System.
+- None of these map to Clothing Worn without explicit worn status.
+- A Hiking Shirt under an explicit Clothing Worn section remains in Clothing Worn.
+- Renaming Clothing to Clothing System does not change its canonical role.
+- Renaming Clothing Worn does not merge it with regular Clothing.
+- Quilt remains in Sleep System.
+- Sleeping Pad remains in Sleep System.
+- Fuel remains in Consumables.
+- Type, Description, and Weight remain unchanged.
+
+Retest my workbook and confirm:
+
+- Zpacks Brushtail Possum Socks appears in Clothing or Clothing System.
+- GooseFeet Balaclava appears in Clothing or Clothing System.
+- Neither item appears in Clothing Worn.
+- Items explicitly listed as Clothing Worn remain there.
+- The user-facing category titles remain unchanged.
+
+Make the correction directly in the existing application.
