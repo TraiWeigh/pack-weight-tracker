@@ -1,5 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { spawn } from 'child_process';
+import path from 'path';
+import fs from 'fs';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
 const pdfParse: (buf: Buffer) => Promise<{ text: string }> = require('pdf-parse');
@@ -10,6 +13,125 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 
 
 const importGearRouter = Router();
 export default importGearRouter;
+
+// ── OCR image support ─────────────────────────────────────────────────────────
+
+/** Supported image extensions (and their expected magic bytes). */
+const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'webp']);
+
+/** Absolute path to the Python OCR script.
+ *  The API server runs from artifacts/api-server, so ../../ is the workspace root. */
+const OCR_SCRIPT = path.resolve(process.cwd(), '..', '..', 'ocr_service', 'image_ocr.py');
+
+if (!fs.existsSync(OCR_SCRIPT)) {
+  console.warn('[import-gear] OCR script not found at', OCR_SCRIPT, '— image OCR will be unavailable');
+}
+
+/**
+ * Validate that the buffer's magic bytes match the declared image extension.
+ * Returns true when the file looks genuine; false when it appears spoofed or damaged.
+ */
+function validateImageMagic(buffer: Buffer, ext: string): boolean {
+  if (buffer.length < 12) return false;
+  if (ext === 'png')  return buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+  if (ext === 'jpg' || ext === 'jpeg') return buffer[0] === 0xFF && buffer[1] === 0xD8;
+  if (ext === 'webp') return buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+                             buffer.subarray(8, 12).toString('ascii') === 'WEBP';
+  return false;
+}
+
+/**
+ * Fix common Tesseract OCR misreads before the text reaches the gear parser.
+ * Only corrects unit strings — does not alter item names.
+ */
+function normalizeOcrText(text: string): string {
+  return text
+    // "18.5 0z" → "18.5 oz" (Tesseract reads 'o' as digit zero in some fonts)
+    .replace(/\b(\d+(?:\.\d+)?)\s*0z\b/gi, '$1 oz')
+    // "2 |b" or "2 |bs" → "2 lb/lbs" (pipe misread as lowercase L)
+    .replace(/\b(\d+(?:\.\d+)?)\s*\|b(s?)\b/gi, '$1 lb$2')
+    // "2 l b" → "2 lb" (space inserted into unit by Tesseract)
+    .replace(/\b(\d+(?:\.\d+)?)\s*l\s+b\b/gi, '$1 lb');
+}
+
+/**
+ * Post-process OCR-extracted items to:
+ *  1. Strip em-dash / pipe OCR noise from sub and desc fields.
+ *  2. Reassign sub to the full multi-word type phrase when the combined
+ *     name matches a known gear type (e.g. "Sleeping Pad" stays together).
+ *
+ * Without this, extractFromText splits "Sleeping Pad" at the first space
+ * into sub="Sleeping", desc="Pad", preventing type-based category routing.
+ */
+function ocrFixupItems(items: ExtractedItem[]): ExtractedItem[] {
+  // All known type phrases, sorted longest-first so "sleeping bag liner"
+  // is matched before "sleeping bag".
+  const allKnownTypes = [
+    ...CONSUMABLES_TYPES,
+    ...CLOTHING_TYPES,
+    ...SHELTER_TYPES,
+    ...SLEEP_TYPES,
+  ].sort((a, b) => b.length - a.length);
+
+  return items.map(item => {
+    // Strip OCR noise characters from sub and desc
+    const cleanSub  = item.sub.replace(/[—–|]/g, '').replace(/\s+/g, ' ').trim();
+    const cleanDesc = item.desc.replace(/[—–|]/g, '').replace(/\s+/g, ' ').trim();
+
+    // Reconstruct the full item name from both fields
+    const fullName = [cleanSub, cleanDesc].filter(Boolean).join(' ');
+    if (!fullName) return item;
+
+    const fullNorm = norm(fullName);
+
+    // Try to match a known type phrase at the start of the full name
+    for (const typeName of allKnownTypes) {
+      if (fullNorm === typeName || fullNorm.startsWith(typeName + ' ')) {
+        const subPretty = typeName
+          .split(' ')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ');
+        // Slice the original-case fullName by the matched length
+        const descRemainder = fullName.slice(typeName.length).trim();
+        return { ...item, sub: subPretty, desc: descRemainder };
+      }
+    }
+
+    // No known type matched — return with noise stripped
+    return { ...item, sub: cleanSub, desc: cleanDesc };
+  });
+}
+
+/**
+ * Spawn the Python OCR script, pipe the image buffer as base64 via stdin,
+ * and resolve with the extracted text string.
+ */
+function runImageOcr(buffer: Buffer): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('python3', [OCR_SCRIPT], {
+      timeout: 120_000, // 2-minute hard limit
+    });
+
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', (d: Buffer) => { stdout += d.toString('utf8'); });
+    proc.stderr.on('data', (d: Buffer) => { stderr += d.toString('utf8'); });
+
+    proc.on('error', reject);
+
+    proc.on('close', (code: number | null) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(stderr.trim() || `OCR process exited with code ${code}`));
+      }
+    });
+
+    // Send image bytes as base64 over stdin then close so Python reads EOF
+    proc.stdin.write(buffer.toString('base64'));
+    proc.stdin.end();
+  });
+}
 
 // ── Shared types ──────────────────────────────────────────────────────────────
 
@@ -589,9 +711,35 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       const wb = XLSX.read(buffer, { type: 'buffer' });
       items = extractFromWorkbook(wb);
 
+    } else if (IMAGE_EXTS.has(ext) || mimetype?.startsWith('image/')) {
+      // ── Image OCR path ──────────────────────────────────────────────────────
+      // Validate magic bytes before spawning Python
+      if (!validateImageMagic(buffer, ext)) {
+        res.status(400).json({
+          error: 'The file appears to be damaged or is not a valid image. Please try another file.',
+        });
+        return;
+      }
+      if (!fs.existsSync(OCR_SCRIPT)) {
+        res.status(500).json({ error: 'OCR service is unavailable. Please contact support.' });
+        return;
+      }
+      try {
+        const ocrText = await runImageOcr(buffer);
+        const normalizedOcrText = normalizeOcrText(ocrText);
+        items = ocrFixupItems(extractFromText(normalizedOcrText)).map(applyGearClassification);
+      } catch (ocrErr: any) {
+        console.error('[import-gear] OCR error:', ocrErr?.message);
+        // Distinguish between "no text" (empty output) and a hard crash
+        res.status(500).json({
+          error: 'OCR_FAILED',
+        });
+        return;
+      }
+
     } else {
       res.status(400).json({
-        error: `Unsupported file type: .${ext}. Accepted: PDF, Word (.docx), Excel (.xlsx), Numbers`,
+        error: `Unsupported file type: .${ext}. Accepted: PDF, Word (.docx), Excel (.xlsx), Numbers, or an image (PNG, JPG, WebP).`,
       });
       return;
     }

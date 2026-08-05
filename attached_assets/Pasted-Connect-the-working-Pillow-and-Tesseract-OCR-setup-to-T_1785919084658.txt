@@ -1,0 +1,267 @@
+Connect the working Pillow and Tesseract OCR setup to TrailWeigh’s existing “Scan Gear List” importer.
+
+The OCR foundation is already installed and verified:
+
+- Tesseract OCR 5.5.0
+- Pillow 12.3.0
+- pytesseract 0.3.13
+- Working verification script: ocr_service/test_ocr.py
+- TESSDATA_PREFIX is derived dynamically from the installed Tesseract binary
+
+Do not reinstall these dependencies.
+
+## Required result
+
+The existing Scan Gear List panel must accept an image or screenshot of a gear list, extract its text with Tesseract, and send that text through TrailWeigh’s existing gear-list parser and category-routing system.
+
+This is not a separate importer. Image OCR must feed into the same review-and-import workflow already used for PDF, Word, and Excel files.
+
+## Supported image files
+
+Add support for:
+
+- PNG
+- JPG
+- JPEG
+- WebP
+
+Update the file picker and drag-and-drop area so users can select these image types.
+
+The Scan Gear List panel should clearly indicate that it accepts:
+
+- PDF
+- Word
+- Excel
+- Images and screenshots
+
+Do not add HEIC support during this task unless the current Pillow installation already reads it reliably without another package.
+
+## OCR processing flow
+
+When an image is uploaded:
+
+1. Validate that it is a supported image.
+2. Open it with Pillow.
+3. Correct its orientation using EXIF information.
+4. Convert it to a Tesseract-compatible RGB or grayscale image.
+5. Improve readability before OCR.
+6. Run Tesseract on the server.
+7. Return the extracted text.
+8. Send the extracted text through the existing TrailWeigh parser.
+9. Display the parsed gear items in the existing review table.
+10. Let the user select which parsed items to import.
+11. Import selected items using the existing Import Selected Items function.
+
+Do not create a second review screen.
+
+## Image preparation
+
+Create a reusable OCR service, such as:
+
+`ocr_service/image_ocr.py`
+
+Use Pillow to prepare the image before sending it to Tesseract.
+
+The preparation should include:
+
+- `ImageOps.exif_transpose` to correct rotated phone images
+- Conversion to RGB or grayscale
+- Automatic contrast improvement
+- Enlargement of small screenshots when needed
+- Sharpening or thresholding only when it improves recognition
+- Preservation of the original aspect ratio
+
+Do not stretch or crop the uploaded image.
+
+Do not permanently overwrite the user’s original file.
+
+Use temporary files or in-memory processing and clean up temporary files after the request finishes.
+
+## Tesseract configuration
+
+Reuse the tested dynamic Tesseract and TESSDATA_PREFIX detection from:
+
+`ocr_service/test_ocr.py`
+
+Do not hard-code a Nix store hash.
+
+Use English OCR.
+
+Start with the verified configuration:
+
+`--oem 3 --psm 6`
+
+If that produces little or no usable text, retry once with a mode that works better for scattered screenshot text, such as:
+
+`--oem 3 --psm 11`
+
+Choose the result containing the most usable text.
+
+Do not run repeated uncontrolled OCR attempts.
+
+## Connect to the existing parser
+
+After OCR extraction, pass the resulting text into the same parsing function used by the current Scan Gear List workflow.
+
+Do not build a completely separate gear parser for images.
+
+The existing rules must continue to apply, including:
+
+- Detecting item Type
+- Detecting Description
+- Detecting Weight
+- Recognizing ounces, pounds, grams, and kilograms
+- Mapping items to the closest existing TrailWeigh category
+- Tent and tarp items routing to Shelter
+- Sleep clothing routing to Clothing rather than Sleep System
+- Clothing Worn only when the source explicitly identifies the item as worn
+- Consumable items routing according to the existing consumable rules
+- Reusable containers remaining separate when listed separately
+- Imported gear items entering the checklist unchecked
+
+If OCR produces minor spacing errors, normalize obvious whitespace before parsing.
+
+Do not silently invent missing item names or weights.
+
+## User interface behavior
+
+While OCR is running, show a clear status such as:
+
+“Reading image…”
+
+Then show:
+
+“Analyzing gear list…”
+
+Do not make the panel appear frozen.
+
+If OCR succeeds, show the existing item-review interface.
+
+If no useful text is found, display:
+
+“No readable gear-list text was found. Try a clearer image or crop the screenshot closer to the list.”
+
+If Tesseract fails, display:
+
+“We could not read this image. Please try another screenshot.”
+
+Do not show raw server errors or Python stack traces to the user.
+
+## Review behavior
+
+The OCR review results must use the existing Scan Gear List table and selection controls.
+
+The user must be able to review:
+
+- Detected category
+- Type
+- Description
+- Weight
+- Whether the item will be imported
+
+Do not automatically import everything immediately after OCR.
+
+After Import Selected Items succeeds:
+
+- Add the selected gear to the correct categories.
+- Keep all imported gear-item checkboxes unchecked.
+- Clear the Scan Gear List panel back to its original upload state.
+- Do not leave the uploaded image or OCR results visible in the panel.
+- Do not clear the main checklist.
+
+## File and request safety
+
+Validate the real file type rather than trusting only the file extension.
+
+Reject unsupported or damaged files with a clear message.
+
+Use a reasonable image-size limit so extremely large uploads do not freeze the application.
+
+Do not send images to an outside OCR or AI provider.
+
+OCR must run locally inside the Replit application using the installed Tesseract service.
+
+Do not store uploaded screenshots permanently unless TrailWeigh already has an explicit user-approved storage feature for importer files.
+
+## Preserve existing import behavior
+
+Do not break or change the current handling of:
+
+- PDF
+- DOCX
+- XLSX
+- Existing Numbers-file workflow
+- Import Selected Items
+- Category routing
+- Unchecked imported items
+- Panel clearing after a successful import
+- Existing error and retry behavior
+
+Image support must be added alongside the current formats.
+
+## Required testing
+
+Test through the rendered TrailWeigh application.
+
+### Basic screenshot test
+
+Create or use a clear screenshot containing:
+
+- Tent — 18.5 oz
+- Sleeping Pad — 12 oz
+- Rain Jacket — 7.2 oz
+- Water — 2 lb
+
+Upload it through Scan Gear List.
+
+Confirm:
+
+- The image is accepted.
+- “Reading image…” appears.
+- OCR extracts the item names and weights.
+- The existing review table appears.
+- Tent routes to Shelter.
+- Sleeping Pad routes to Sleep System.
+- Rain Jacket routes to Clothing.
+- Water follows the existing consumable rule.
+- Imported items are unchecked.
+
+### Rotation test
+
+Upload a phone image containing EXIF rotation data.
+
+Confirm it is automatically displayed and read in the correct orientation.
+
+### Small-text test
+
+Upload a screenshot with small but readable text.
+
+Confirm the preprocessing enlarges it enough for useful OCR without distorting it.
+
+### Failure test
+
+Upload:
+
+- A blank image
+- An image with no gear-list text
+- A damaged image
+- An unsupported file type
+
+Confirm TrailWeigh displays a clear error and does not create empty or incorrect gear items.
+
+### Existing-format regression test
+
+Upload one existing PDF, DOCX, and XLSX test file.
+
+Confirm all three still use the existing workflow correctly.
+
+Do not report completion until an image screenshot has been uploaded through the rendered Scan Gear List panel, reviewed, and successfully imported into the correct categories.
+
+Report:
+
+- Which existing Scan Gear List component and endpoint were changed
+- Where the new OCR service is located
+- Which preprocessing steps are used
+- Which existing parser receives the OCR text
+- Which files were changed
+- Whether every required test passed

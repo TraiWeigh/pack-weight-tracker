@@ -24,9 +24,10 @@ interface ImportGearPanelProps {
   onAddItem: (category: string, prefill: Partial<GearItem>) => void;
 }
 
-// Only accept the four deterministic formats (no CSV)
-const ACCEPTED      = '.pdf,.docx,.doc,.xlsx,.xls,.numbers';
-const ACCEPT_LABEL  = 'PDF, Word (.docx), Excel (.xlsx), or Numbers';
+// Accepted file formats: documents + images
+const ACCEPTED      = '.pdf,.docx,.doc,.xlsx,.xls,.numbers,.png,.jpg,.jpeg,.webp';
+const ACCEPT_LABEL  = 'PDF, Word, Excel, Numbers, or an image / screenshot';
+const IMAGE_EXTS    = new Set(['png', 'jpg', 'jpeg', 'webp']);
 
 /**
  * Maps canonical API destination strings → lists of display-name aliases.
@@ -104,6 +105,8 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
   const [fileName, setFileName]     = useState('');
   const [items, setItems]           = useState<EditedItem[]>([]);
   const [errorMsg, setErrorMsg]     = useState('');
+  const [statusMsg, setStatusMsg]   = useState('');   // image-specific progress messages
+  const [isImageFile, setIsImageFile] = useState(false);
   const [targetCategory, setTargetCategory] = useState<string>(''); // global fallback
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -112,13 +115,20 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
     setItems([]);
     setErrorMsg('');
     setFileName('');
+    setStatusMsg('');
+    setIsImageFile(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const processFile = async (file: File) => {
+    const ext = (file.name.split('.').pop() ?? '').toLowerCase();
+    const isImg = IMAGE_EXTS.has(ext) || file.type.startsWith('image/');
+
+    setIsImageFile(isImg);
     setFileName(file.name);
     setPhase('parsing');
     setErrorMsg('');
+    setStatusMsg(isImg ? 'Reading image…' : '');
 
     const formData = new FormData();
     formData.append('file', file);
@@ -138,13 +148,32 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
       }
 
       const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error ?? 'Import failed');
+
+      if (!resp.ok) {
+        // Surface image-specific errors as user-friendly messages
+        if (isImg) {
+          if (data.error === 'OCR_FAILED') {
+            throw new Error('__ocr_failed__');
+          }
+          throw new Error('__ocr_failed__');
+        }
+        throw new Error(data.error ?? 'Import failed');
+      }
 
       const parsed: ParsedItem[] = data.items ?? [];
       if (parsed.length === 0) {
         setPhase('error');
-        setErrorMsg('No gear items with weight values were found in this file. Try a different file or format.');
+        setStatusMsg('');
+        setErrorMsg(isImg
+          ? 'No readable gear-list text was found. Try a clearer image or crop the screenshot closer to the list.'
+          : 'No gear items with weight values were found in this file. Try a different file or format.');
         return;
+      }
+
+      // For images: briefly show "Analyzing gear list…" before switching to review
+      if (isImg) {
+        setStatusMsg('Analyzing gear list…');
+        await new Promise(r => setTimeout(r, 600));
       }
 
       const firstCat = categoryOrder[0] ?? '';
@@ -155,10 +184,16 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
         destination: resolveDestination(item.destination ?? '', categoryOrder) || firstCat,
       })));
       if (!targetCategory && firstCat) setTargetCategory(firstCat);
+      setStatusMsg('');
       setPhase('review');
     } catch (err: any) {
       setPhase('error');
-      setErrorMsg(err.message ?? 'Something went wrong. Please try again.');
+      setStatusMsg('');
+      if (isImg || err.message === '__ocr_failed__') {
+        setErrorMsg('We could not read this image. Please try another screenshot or a clearer photo.');
+      } else {
+        setErrorMsg(err.message ?? 'Something went wrong. Please try again.');
+      }
     }
   };
 
@@ -296,7 +331,9 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
             <div className="flex flex-col items-center gap-3 py-6 text-center">
               <Loader2 className="w-7 h-7 text-primary animate-spin" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Reading your file…</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {statusMsg || 'Reading your file…'}
+                </p>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[200px]">{fileName}</p>
               </div>
             </div>
