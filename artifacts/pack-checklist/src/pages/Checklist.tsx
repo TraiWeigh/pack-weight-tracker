@@ -82,7 +82,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     data, categoryOrder, categoryMeta, store,
     updateItem, addItem, removeItem,
     addCategory, deleteCategory, updateCategoryMeta, moveCategory, reorderCategory,
-    renameCategory, loadStore,
+    renameCategory, loadStore, replaceStore,
     resetToDefaults,
     undo, redo, canUndo, canRedo,
     syncBg, pushBg,
@@ -531,9 +531,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [saveConflictId, setSaveConflictId] = useState<string | null>(null);
   const saveInputRef = useRef<HTMLInputElement>(null);
 
+  // Tracks the Locker entry that was opened in-place into an empty window.
+  // When set, openSaveDialog pre-fills the file name so Save routes back to
+  // the same Locker entry rather than creating a duplicate.
+  const [activeLockerEntry, setActiveLockerEntry] = useState<LockerEntry | null>(null);
+
   const openSaveDialog = () => {
     setShowSaveDialog(true);
     setSaveConflictId(null);
+    // Pre-fill the name from the active Locker entry (in-place open path)
+    // so the user's first Save click routes to Replace on that file.
+    if (activeLockerEntry) setSaveName(activeLockerEntry.name);
     setTimeout(() => saveInputRef.current?.focus(), 50);
   };
 
@@ -557,6 +565,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = [entry, ...lockerEntries];
     setLockerEntries(updated);
     broadcastLocker(updated);
+    setActiveLockerEntry(null); // new file becomes the identity; clear in-place tracking
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -575,6 +584,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = lockerEntries.map(e => e.id === existingId ? entry : e);
     setLockerEntries(updated);
     broadcastLocker(updated);
+    setActiveLockerEntry(null); // file is now saved; clear in-place tracking
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -600,9 +610,36 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     commitSaveNew(saveName.trim());
   };
 
-  // ── Load from Locker — open in a new tab ─────────────────────────────────
+  // ── Load from Locker ──────────────────────────────────────────────────────
+  // When the current checklist has zero gear items across ALL categories, the
+  // selected file is loaded directly into this tab (no new window).  The
+  // current window's background is preserved — the file's stored background is
+  // deliberately not applied.  Undo/Redo history is wiped so the user cannot
+  // undo back to the empty state.
+  //
+  // When the current checklist has at least one item the existing new-tab
+  // behaviour is kept exactly as-is.
 
   const handleLoadFromLocker = (entry: LockerEntry) => {
+    // Count every gear item in every category (checked or not, any weight).
+    const totalItems = store.order.reduce(
+      (sum, cat) => sum + (store.items[cat]?.length ?? 0), 0
+    );
+
+    if (totalItems === 0) {
+      // ── In-place open path ────────────────────────────────────────────────
+      // 1. Background is already in React state — nothing to capture/restore
+      //    because replaceStore only touches the gear store, not bg state.
+      // 2. Replace the store (clears undo/redo; does not push history entry).
+      replaceStore(entry.store as import('../hooks/usePackData').Store);
+      // 3. Track the active file so Save pre-fills this entry's name and
+      //    routes to commitSaveReplace (updating this file, not creating a new one).
+      setActiveLockerEntry(entry);
+      // 4. Stay in the same tab — no window.open.
+      return;
+    }
+
+    // ── Non-empty path: existing new-tab behaviour (unchanged) ───────────────
     const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
     const url = `${window.location.origin}${base}/checklist?savedListId=${entry.id}`;
     const tab = window.open(url, '_blank');

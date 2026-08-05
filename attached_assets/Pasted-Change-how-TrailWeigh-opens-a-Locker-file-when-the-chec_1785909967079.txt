@@ -1,0 +1,325 @@
+Change how TrailWeigh opens a Locker file when the checklist currently displayed in the browser tab is completely empty.
+
+This task applies only to the special case where the current checklist contains category headings but contains zero gear items across all categories.
+
+## Required behavior
+
+When the user selects a file from Locker:
+
+### When the current checklist has zero items
+
+Open the selected Locker file in the current browser tab and current checklist window.
+
+Do not open another browser tab or window.
+
+Preserve the background currently displayed in the current window.
+
+Load the selected Locker file’s checklist data into that same window.
+
+### When the current checklist contains one or more items
+
+Keep the existing Locker-opening behavior unchanged.
+
+Do not alter the current multi-tab or new-window behavior for a checklist that contains any gear items.
+
+## Definition of an empty checklist
+
+A checklist is empty only when the combined item count across every category is exactly zero.
+
+Use logic equivalent to:
+
+`categories.reduce((total, category) => total + category.items.length, 0) === 0`
+
+Use the application’s actual canonical category and item fields.
+
+Do not determine emptiness from:
+
+- Number of checked items
+- Total weight
+- Base Weight
+- Visible or expanded categories
+- Default category count
+- Whether the file has a title
+- Whether the file has been saved
+- Whether the file has unsaved background changes
+
+Examples:
+
+- Ten category headings and zero items = empty
+- One unchecked item anywhere = not empty
+- One item with zero weight = not empty
+- One hidden or collapsed item = not empty
+- Custom categories with no items = empty
+
+## Preserve the current background
+
+For the empty-window replacement path, capture the current background configuration before loading the Locker file.
+
+Preserve:
+
+- Current background selection
+- Preset background ID, when applicable
+- Personal-image data URL or stored asset reference, when applicable
+- Fill Screen or Fit Image
+- Background position
+- Background fade setting
+- Background tone setting
+- Any other active background-display setting
+- Current Light, Dark, or System letterbox behavior
+
+The selected Locker file’s stored background must not replace the current window’s background in this special empty-list case.
+
+The result should be:
+
+- Checklist content from the selected Locker file
+- Background configuration from the current empty window
+
+Do not duplicate, re-upload, or damage a personal background image.
+
+## File identity after loading
+
+Although the selected file is loaded into the existing window, it must become the active Locker file in that window.
+
+Update the active working state to use:
+
+- The selected Locker file’s file ID
+- The selected Locker file’s name
+- Its categories
+- Its gear items
+- Its category settings
+- Its item data
+- Its saved-file association
+
+Do not retain the empty file’s old file ID or save target.
+
+Do not create a duplicate Locker file.
+
+Do not use Save As automatically.
+
+Do not write any changes to the selected Locker file merely because it was opened.
+
+The preserved background should become the active working background, but nothing should be saved until the user deliberately clicks Save.
+
+## Undo and Redo
+
+Opening a Locker file into an empty current window is a file-navigation action, not a normal edit.
+
+After loading:
+
+- Initialize the appropriate fresh Undo and Redo history for the opened working file.
+- Do not allow Undo to restore the previous empty checklist.
+- Do not mix the empty file’s history with the opened Locker file’s history.
+- Preserve the current background without creating a separate background Undo entry solely because the file was opened.
+
+Use the existing history architecture in:
+
+`src/hooks/usePackData.ts`
+
+The current history model uses:
+
+`HistoryEntry = { store: Store; bg: BgSnapshot }`
+
+Ensure the initial history state is synchronized with the loaded Locker data and preserved background.
+
+## Relevant architecture
+
+Inspect:
+
+- `src/pages/Checklist.tsx`
+- The Locker component or Locker file-selection component
+- The handler that currently opens a Locker file
+- The code that decides whether to open a new browser tab
+- `src/hooks/usePackData.ts`
+- Any current-file or active-file context used by Locker
+
+Do not create a second Locker-opening system.
+
+Modify the existing file-open decision at the point where TrailWeigh knows:
+
+1. Which Locker file was selected
+2. Which checklist is currently displayed
+3. Whether the current checklist contains any items
+4. Whether the selected file should open in the current tab or another tab
+
+## Correct sequence for an empty current checklist
+
+When the user opens a Locker file and the current item count is zero:
+
+1. Capture the current background configuration.
+2. Read the selected Locker file.
+3. Validate that its categories and items loaded correctly.
+4. Replace the current checklist store with the selected file’s store.
+5. Restore the captured current background configuration.
+6. Assign the selected Locker file’s identity and save target.
+7. Reset or initialize Undo and Redo for the newly opened working file.
+8. Close the Locker panel according to its existing behavior.
+9. Remain in the same browser tab.
+
+Do not briefly apply the Locker file’s background and then switch back if that creates flashing.
+
+Construct the final working state before rendering when practical.
+
+## Unsaved empty file
+
+If the current checklist has no gear items but has an unsaved background selection, do not display the normal unsaved-gear warning merely because a Locker file is being opened.
+
+The current background is being preserved, so it is not being discarded.
+
+Do not save the empty file automatically.
+
+Do not create an empty Locker file.
+
+## Existing non-empty behavior
+
+When the current checklist contains at least one item:
+
+- Keep the existing behavior exactly as it is.
+- Do not replace the current checklist.
+- Do not discard current data.
+- Continue opening the selected Locker file in the separate tab or window currently used by TrailWeigh.
+- Let that separately opened file use its normal stored background behavior.
+
+Do not apply the current window’s background to a Locker file opened in a separate tab.
+
+## Multi-tab isolation
+
+This change must remain tab-specific.
+
+- Count items only in the checklist visible in the tab where Locker was used.
+- Do not inspect another tab’s active list.
+- Do not replace another tab’s checklist.
+- Do not change another tab’s background.
+- Do not use a global active-file reference that could load the file into the wrong tab.
+
+## Preserve other behavior
+
+Do not change:
+
+- Locker file contents
+- Locker file deletion
+- Locker authentication
+- Save
+- Save As
+- New
+- Reset
+- Share Link
+- Preview
+- Print
+- PDF
+- Background uploads
+- Background Undo and Redo
+- Showcase
+- Importing
+- Category calculations
+- Gear checkbox behavior
+
+## Required testing
+
+Test through the rendered application.
+
+### Test 1: Default categories with no items
+
+1. Open a checklist containing all normal category headings but zero items.
+2. Select a personal or built-in background.
+3. Select Fit Image.
+4. Open Locker.
+5. Select a saved file containing multiple categories and items.
+
+Confirm:
+
+- The saved file opens in the same browser tab.
+- No additional tab or window opens.
+- All saved categories and items appear.
+- The selected Locker file becomes the active file.
+- The current background remains visible.
+- Fit Image remains selected.
+- The Locker file is not automatically modified or saved.
+
+### Test 2: Dark and Light appearance
+
+Repeat the empty-list test in:
+
+- Dark mode
+- Light mode
+- System mode
+
+Confirm the current background and theme-aware letterbox behavior remain correct.
+
+### Test 3: Personal background
+
+1. Use a personal image as the background in an empty checklist.
+2. Open a Locker file in the current window.
+3. Confirm the same personal image remains visible.
+4. Confirm its data URL or asset reference remains valid.
+5. Confirm the image is not duplicated in the gallery.
+
+### Test 4: One unchecked item
+
+1. Add one item to any category.
+2. Leave it unchecked.
+3. Open a Locker file.
+
+Confirm the existing separate-tab or separate-window behavior is used.
+
+The current tab must not be replaced.
+
+### Test 5: Zero-weight item
+
+1. Add one item with a weight of zero.
+2. Open a Locker file.
+
+Confirm the list is treated as non-empty because it contains an item.
+
+### Test 6: Custom empty categories
+
+1. Create custom categories but add no items.
+2. Open a Locker file.
+
+Confirm the current tab is reused because the total item count is zero.
+
+### Test 7: Undo and Redo
+
+After loading a Locker file into an empty current window:
+
+- Confirm Undo does not restore the empty checklist.
+- Confirm the previous file’s history is not present.
+- Make a new gear or background change.
+- Confirm Undo and Redo operate normally from that point forward.
+
+### Test 8: File identity and Save
+
+1. Load a Locker file into an empty current window.
+2. Make a gear edit.
+3. Click Save.
+
+Confirm:
+
+- The selected Locker file is updated.
+- No duplicate file is created.
+- The previous empty file is not saved.
+- The correct active file ID is used.
+
+### Test 9: Multi-tab isolation
+
+1. Open two TrailWeigh tabs.
+2. Keep one tab empty and place items in the other.
+3. Open a Locker file from the empty tab.
+
+Confirm:
+
+- The file loads into the empty tab.
+- The other tab remains unchanged.
+- The empty tab’s current background remains.
+- No third tab is created.
+
+Do not report completion until the empty-list and non-empty-list paths have both been visibly tested.
+
+Report:
+
+- Which existing Locker open handler was changed
+- How the total item count is calculated
+- How the current background is captured and restored
+- How the selected Locker file becomes the active save target
+- How Undo and Redo are reset
+- Which files were changed
+- Whether every required test passed

@@ -525,6 +525,19 @@ export function usePackData(
     pushAndSet(() => newStore);
   }, [pushAndSet]);
 
+  /**
+   * Replace the entire store as a file-navigation action (in-place Locker open).
+   * Unlike loadStore, this clears BOTH undo and redo stacks so Undo cannot
+   * restore the previous (empty) checklist.  currentBgRef is intentionally
+   * left untouched — the caller preserves the current window's background.
+   */
+  const replaceStore = useCallback((newStore: Store) => {
+    undoStackRef.current = [];
+    redoStackRef.current = [];
+    setStore(newStore);
+    setHistoryVersion(v => v + 1);
+  }, []);
+
   const resetToDefaults = useCallback(() => {
     pushAndSet(prev => {
       const clearedItems: PackState = {};
@@ -548,6 +561,7 @@ export function usePackData(
     moveCategory,
     reorderCategory,
     loadStore,
+    replaceStore,
     resetToDefaults,
     undo,
     redo,
