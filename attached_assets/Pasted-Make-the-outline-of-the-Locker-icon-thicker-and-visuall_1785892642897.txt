@@ -1,0 +1,65 @@
+Make the outline of the Locker icon thicker and visually balanced with the bold “Locker” heading.
+
+Do not change the Locker function, heading text, count, panel layout, colors, spacing, or click behavior.
+
+## Required icon appearance
+
+The current Locker icon has thin gray outline lines that look too light beside the bold Locker lettering.
+
+Update the Locker icon so:
+
+- Its outline is substantially thicker.
+- It remains recognizable as the same locker/storage icon.
+- It uses the same current gray-green color.
+- It remains clean and readable at 24px.
+- Its corners and line endings remain smooth and rounded.
+- It is vertically centered with the word “Locker.”
+
+The goal is for the icon to have a bold visual weight that complements the Locker heading.
+
+Do not interpret this as making every line literally as wide as the thickest part of the letters, which could make the icon unreadable. Instead, make it visually balanced with the bold heading.
+
+## Preferred implementation
+
+If the current locker.png is a thin raster PNG that cannot be thickened cleanly with CSS:
+
+1. Create a faithful SVG version of the same locker icon.
+2. Preserve the current locker shape and design.
+3. Use approximately:
+   - stroke-width: 3px to 3.5px
+   - stroke-linecap: round
+   - stroke-linejoin: round
+4. Use currentColor for the SVG stroke so it follows the existing interface color.
+5. Do not add a fill unless a small portion of the original icon is already filled.
+6. Do not stretch, blur, shadow, or artificially scale the PNG to imitate thicker lines.
+
+Use the heavier icon beside the Locker heading.
+
+If the same locker artwork is used beside Save, use the matching heavier version there as well so the two locker icons remain consistent.
+
+## Size and alignment
+
+Keep the icon display area at approximately:
+
+width: 24px;
+height: 24px;
+min-width: 24px;
+min-height: 24px;
+flex-shrink: 0;
+
+Use approximately an 8px gap between the icon and Locker text.
+
+Do not enlarge the Locker heading row or change the heading font.
+
+## Verification
+
+Visually verify that:
+
+- The Locker icon no longer looks faint or thin.
+- Its stroke visually complements the bold Locker lettering.
+- The icon remains clear at desktop and mobile sizes.
+- The icon is centered with the heading.
+- The Locker count remains correctly positioned.
+- Locker and Save functionality remain unchanged.
+
+Make the change directly in the existing application.

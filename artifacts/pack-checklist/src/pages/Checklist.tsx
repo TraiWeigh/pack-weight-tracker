@@ -12,6 +12,7 @@ import { useLocation } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ImportGearPanel } from '../components/ImportGearPanel';
 import { LockerPanel, LockerEntry } from '../components/LockerPanel';
+import { LockerIcon } from '../components/LockerIcon';
 import { LOCKER_KEY } from '../hooks/usePackData';
 import { buildShareURL } from '../lib/shareLink';
 import { useToast } from '../hooks/use-toast';
@@ -555,7 +556,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   title="Save current list to Locker"
                   className={toolBtn}
                 >
-                  <img src="/locker-icon.png" alt="Save" className="w-5 h-5 min-w-[20px] object-contain flex-shrink-0" />
+                  <LockerIcon className="w-6 h-6 min-w-[24px] flex-shrink-0" />
                   <span className="hidden md:inline">Save</span>
                 </button>
               )}
