@@ -65,19 +65,56 @@ const CATEGORY_ROLE_ALIASES: Record<string, string[]> = {
   Toiletries:       ['Toiletries', 'Hygiene', 'Personal Care', 'Toiletry Kit'],
 };
 
+/**
+ * Normalise a category name for comparison:
+ *   - trim leading/trailing whitespace
+ *   - collapse internal runs of whitespace to a single space
+ *   - lowercase for case-insensitive checks
+ */
+function normCat(s: string): string {
+  return s.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+/**
+ * Resolve an imported `destination` string to an actual category in the
+ * user's current list.
+ *
+ * Strategy (in order):
+ *   1. Exact match (after trimming both sides)
+ *   2. Case-insensitive + whitespace-normalised match against categoryOrder
+ *   3. Alias lookup: find which alias group the destination belongs to,
+ *      then scan those aliases (case-insensitively) against categoryOrder
+ *
+ * If no match is found we return the normalised destination as-is so the
+ * row gets a validation error ("Select a valid category") rather than
+ * silently landing in Backpack.  The user can then pick the right category
+ * from the dropdown.
+ */
 function resolveDestination(destination: string, categoryOrder: string[]): string {
-  if (!destination) return categoryOrder[0] ?? '';
-  if (categoryOrder.includes(destination)) return destination;
+  const norm = destination.trim().replace(/\s+/g, ' ');
+  if (!norm) return categoryOrder[0] ?? '';
+
+  // 1. Exact match
+  if (categoryOrder.includes(norm)) return norm;
+
+  // 2. Case-insensitive / whitespace-normalised match against the live list
+  const normLower = norm.toLowerCase();
+  const ci = categoryOrder.find(c => normCat(c) === normLower);
+  if (ci) return ci;
+
+  // 3. Alias lookup — compare everything case-insensitively
   for (const aliases of Object.values(CATEGORY_ROLE_ALIASES)) {
-    if (aliases.includes(destination)) {
+    if (aliases.some(a => normCat(a) === normLower)) {
       for (const alias of aliases) {
-        if (categoryOrder.includes(alias)) return alias;
+        const match = categoryOrder.find(c => normCat(c) === normCat(alias));
+        if (match) return match;
       }
     }
   }
-  const ci = categoryOrder.find(c => c.toLowerCase() === destination.toLowerCase());
-  if (ci) return ci;
-  return categoryOrder[0] ?? destination;
+
+  // No match — return the supplied value so the user can see and correct it.
+  // Do NOT fall back to categoryOrder[0] (Backpack) for a non-empty destination.
+  return norm;
 }
 
 // ── Validation ────────────────────────────────────────────────────────────────
@@ -95,11 +132,12 @@ function validateRow(item: EditedItem, categoryOrder: string[]): Record<string, 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function parsedToEdited(item: ParsedItem, categoryOrder: string[]): EditedItem {
+  const resolved = resolveDestination(item.destination ?? '', categoryOrder);
   return {
     ...item,
     selected:      true,
     added:         false,
-    destination:   resolveDestination(item.destination ?? '', categoryOrder) || (categoryOrder[0] ?? ''),
+    destination:   resolved || (categoryOrder[0] ?? ''),
     displayWeight: String(item.weightOz),
     weightUnit:    'oz',
     errors:        {},

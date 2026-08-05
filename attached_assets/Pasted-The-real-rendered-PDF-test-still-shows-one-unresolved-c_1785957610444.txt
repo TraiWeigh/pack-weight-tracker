@@ -1,0 +1,235 @@
+The real rendered PDF test still shows one unresolved category bug.
+
+Current confirmed behavior:
+
+- 68 items are found.
+- Fuel correctly routes to Expendables.
+- Backpack, Shelter, Sleep, Electronics, Hydration, and clothing categories are working.
+- All non-Fuel Kitchen items still appear as Backpack in the editable review table.
+
+Incorrect examples:
+
+- Pot/Mug → Backpack
+- Spoon → Backpack
+- Stove → Backpack
+- Cold Soak Container → Backpack
+- 1 Gal Freezer Bag → Backpack
+- 1 Qrt Freezer Bag → Backpack
+- Bear Bag → Backpack
+- Food Bag → Backpack
+- Bear Canister → Backpack
+
+These must route to the existing Kitchen category.
+
+Do not change the 68-item count.
+
+## Stop modifying backend header regexes until the data path is proven
+
+Previous tasks repeatedly changed the PDF header parser, but the rendered result did not improve.
+
+Do not make another speculative PDF-header regex change.
+
+First inspect the exact values reaching and leaving each layer.
+
+Relevant files:
+
+- `artifacts/api-server/src/routes/importGear.ts`
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+- Any shared category constants or category-resolution helpers used by the importer
+
+## Trace one Kitchen item through the real application
+
+Use this row:
+
+- Type: Pot/Mug
+- Description: Fire-Maple Petrel G3 600ml HX Pot
+- Weight: 5.7 oz
+
+Temporarily log:
+
+### Backend
+
+- Parsed item category before API serialization
+- Complete serialized item returned to the frontend
+
+### Frontend
+
+- Category received from the API
+- Current `categoryOrder`
+- Result of `resolveDestination`
+- Final review-row destination
+
+Also trace:
+
+- Fuel
+- 1 Gal Freezer Bag
+- Bear Canister
+
+Remove all temporary PDF and category-debug logs after the problem is fixed.
+
+## Inspect `resolveDestination`
+
+The earlier code review identified that `resolveDestination` may fall back to:
+
+`categoryOrder[0]`
+
+which is Backpack.
+
+Inspect whether Kitchen is being rejected because of:
+
+- Different capitalization
+- Leading or trailing spaces
+- A hidden newline
+- Different punctuation
+- An alias mismatch
+- Different stored category identifier
+- Frontend expecting a category ID while the API returns a display name
+- The user’s category list using a slightly different Kitchen label
+- The category being valid but not matched exactly
+
+Fix the actual mismatch.
+
+## Never silently convert a supplied category to Backpack
+
+When an imported item contains a supplied category:
+
+1. Trim it.
+2. Collapse repeated whitespace.
+3. Compare it case-insensitively with the current category list.
+4. Check the existing category-alias map.
+5. Return the exact existing category name or identifier from the checklist.
+
+For example, all of these should resolve to the existing Kitchen category:
+
+- `Kitchen`
+- ` kitchen `
+- `KITCHEN`
+- A valid Kitchen alias already used by the project
+
+Do not create a duplicate Kitchen category.
+
+Do not default a recognized or nearly matching category to Backpack.
+
+If no valid match exists, show the row as needing category review rather than silently assigning Backpack.
+
+Keep rows editable so the user can select a destination manually.
+
+## Canonical structured-PDF categories
+
+For the TrailWeigh PDF importer, preserve these canonical destinations:
+
+- Backpack
+- Shelter
+- Sleep
+- Clothing Packed
+- Kitchen
+- Electronics
+- Toiletries + Med
+- Hydration
+- Clothing Worn
+- Miscellaneous
+- Expendables when an explicit item rule requires it
+
+Map each canonical name to the exact existing category used by the current checklist.
+
+Keep Clothing Packed and Clothing Worn separate.
+
+## Explicit required mappings
+
+These rows must resolve to Kitchen:
+
+- Pot/Mug
+- Spoon
+- Stove
+- Cold Soak Container
+- 1 Gal Freezer Bag
+- 1 Qrt Freezer Bag
+- Bear Bag
+- Food Bag
+- Bear Canister
+
+Fuel must remain:
+
+- Category: Expendables
+- Type: Fuel
+- Description: 4 oz
+- Weight: 7.68 oz
+
+The Fuel exception must not be removed.
+
+## Preserve working behavior
+
+Do not change:
+
+- 68-item total
+- PDFParse v2 implementation
+- Numeric-leading Type support
+- Weight-versus-Add handling
+- Fuel → Expendables
+- Backpack parsing
+- Shelter parsing
+- Sleep parsing
+- Clothing Packed parsing
+- Electronics parsing
+- Hydration parsing
+- Clothing Worn parsing
+- Summary-row filtering
+- Excel importing
+- Word importing
+- Numbers importing
+- Editable review table
+- Add Row
+- Imported items remaining unchecked
+- Image scanning remaining removed
+
+Meal Planner is not applicable to this task.
+
+Do not add or test Meal Planner importing.
+
+## Required real rendered test
+
+Use the actual `PACK WEIGHT PDF.pdf` in the rendered TrailWeigh application.
+
+Confirm:
+
+1. The review table still reports 68 items.
+2. Pot/Mug shows Kitchen.
+3. Spoon shows Kitchen.
+4. Stove shows Kitchen.
+5. Cold Soak Container shows Kitchen.
+6. 1 Gal Freezer Bag shows Kitchen.
+7. 1 Qrt Freezer Bag shows Kitchen.
+8. Bear Bag shows Kitchen.
+9. Food Bag shows Kitchen.
+10. Bear Canister shows Kitchen.
+11. Fuel remains Expendables with 4 oz description and 7.68 oz weight.
+12. Backpack, Shelter, Sleep, Clothing Packed, Electronics, Hydration, and Clothing Worn remain correct.
+13. No valid imported category silently falls back to Backpack.
+
+Then select only:
+
+- One Backpack item
+- One Shelter item
+- One Kitchen item
+- Fuel
+
+Import those four items.
+
+Confirm:
+
+- Each enters the correct checklist category.
+- All four remain unchecked.
+- The Scan Gear List panel resets.
+
+Do not report completion based only on unit tests or simulated text.
+
+Report:
+
+- Exact backend category value for Pot/Mug
+- Exact frontend value received
+- Exact `categoryOrder` Kitchen entry
+- Why `resolveDestination` previously returned Backpack
+- The specific code change that fixed it
+- Which files changed
+- Results of the real rendered PDF test
+- Confirmation that temporary debug logs were removed

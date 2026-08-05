@@ -224,12 +224,6 @@ const PDF_ROW_RE = /^(.+)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s*(?:oz|g(?:rams?)
 // Types that are always Expendables regardless of which PDF section they appear in.
 const PDF_EXPENDABLES_TYPES = new Set(['fuel', 'stove fuel', 'canister fuel', 'isobutane', 'alcohol fuel', 'denatured alcohol']);
 
-// Debug: sub-types to log during parsing (temporary — remove after Kitchen fix confirmed).
-const PDF_DEBUG_SUBS = new Set([
-  'pot/mug', 'spoon', 'stove', 'fuel',
-  'cold soak container', '1 gal freezer bag', '1 qrt freezer bag',
-  'bear bag', 'food bag', 'bear canister',
-]);
 
 export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] {
   const results: ExtractedItem[] = [];
@@ -241,18 +235,11 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
   let currentCategoryIndex = -1;
   let reachedMealPlanner = false;
 
-  for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
+  for (const page of pages) {
     if (reachedMealPlanner) break;
-
-    const page = pages[pageIdx];
 
     // Mark meal-planner boundary but still process lines before the heading
     if (/meal\s*planner/i.test(page.text)) reachedMealPlanner = true;
-
-    // ── Debug: dump raw page text for pages that contain Kitchen keywords ──
-    if (/kitchen|pot\/mug|pot.mug|freezer bag/i.test(page.text)) {
-      console.log(`[PDF-debug] Page ${pageIdx} raw text (${page.text.length} chars):\n${page.text.slice(0, 2000)}`);
-    }
 
     const lines = page.text
       .split(/[\r\n]+/)
