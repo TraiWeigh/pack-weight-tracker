@@ -284,9 +284,24 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   }
 
   const handleCopyLink = async () => {
+    // Snapshot validation — fail fast if the list data is structurally empty
+    // even though the sender's screen has visible items (serialization guard).
+    const totalItems = store.order.reduce(
+      (s, cat) => s + (store.items[cat]?.length ?? 0), 0
+    );
+    if (store.order.length === 0 || totalItems === 0) {
+      toast({
+        title:       'Nothing to share',
+        description: 'Add some gear items before creating a share link.',
+        variant:     'destructive',
+      });
+      setShowShareMenu(false);
+      return;
+    }
+
     // Snapshot the complete current working file — same structure as Save.
     // Checkbox states are preserved as-is (unlike New which resets them).
-    const url = await buildShareURL({
+    const payload = {
       data:          store.items,
       categoryOrder: store.order,
       categoryMeta:  store.meta,
@@ -294,7 +309,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgFade,
       bgTone,
       bgSize,
-    });
+    };
+
+    const url = await buildShareURL(payload);
     const ok = await copyUrlToClipboard(url);
     if (!ok) window.prompt('Copy this link:', url);
     setCopied(true);

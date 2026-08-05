@@ -1,0 +1,586 @@
+Fix and redesign the TrailWeigh shared-link experience.
+
+The current shared page loads the background and summary area, but no categories or gear items appear, and Base Weight and Grand Total incorrectly show 0.00 lbs.
+
+The shared-link recipient must see the same complete TrailWeigh checklist screen that the sender was viewing when the link was copied.
+
+The recipient may interact with their displayed checklist, but all recipient changes must remain temporary and must never alter the sender’s file or the stored shared snapshot.
+
+Do not modify the corrected New function, the sender’s normal editor, Save, Locker, importing, Preview, Print, PDF, Background Showcase, or existing calculations.
+
+# 1. Fix the empty shared checklist
+
+The screenshot shows that:
+
+- The shared route opens.
+- The selected background appears.
+- The summary container appears.
+- No categories appear.
+- No items appear.
+- Base Weight is 0.00 lbs.
+- Grand Total is 0.00 lbs.
+
+Diagnose whether the complete list data is:
+
+- Not being included when the shared snapshot is created
+- Stored under the wrong fields
+- Removed or transformed by the server
+- Not returned by the public shared-list endpoint
+- Returned using a schema the shared page does not understand
+- Replaced by empty default state during hydration
+- Reset by a later initialization effect
+- Loaded from the wrong share ID
+- Filtered out by incorrect authentication or ownership logic
+
+Fix the actual cause rather than hiding the empty result.
+
+# 2. Exact sharing behavior
+
+When the sender clicks Share Link or Copy Link:
+
+1. Read the complete working pack-list state currently visible in that browser tab.
+2. Include visible unsaved changes.
+3. Create an immutable shared snapshot of that exact checklist.
+4. Preserve every item’s current checked or unchecked state.
+5. Save the complete snapshot before reporting that the link was copied.
+6. Generate a link to that stored snapshot.
+
+Do not share:
+
+- A previously saved version
+- A stale cached version
+- The first Locker file
+- The most recently opened Locker file
+- A list open in another browser tab
+- An empty template
+- Empty category shells
+- A default starter list
+
+The current visible working list in the tab where Share Link was clicked is the source of truth.
+
+# 3. Use the complete current-file serializer
+
+Use the same complete canonical file structure used by the working Save or Locker system.
+
+The shared snapshot must preserve:
+
+- List title
+- Every category
+- Category names
+- Category order
+- Every item inside every category
+- Item order
+- Type
+- Description
+- Weight
+- Quantity
+- Units
+- Notes
+- Other existing item fields
+- Every item’s current checked or unchecked state
+- Base Weight category settings
+- Worn-weight settings
+- Consumable settings
+- Custom categories
+- Custom items
+- Category expansion or collapse state, if stored with the file
+- Selected built-in background
+- Securely shareable selected custom background
+- Fill Screen or Fit Image
+- Background positioning
+- Theme or appearance information stored with the list
+- Any other file-specific setting required to reproduce the sender’s screen
+
+If the sender’s current list contains 12 categories and 69 items, the stored shared snapshot must contain exactly 12 categories and 69 items.
+
+No category may become empty unless it was already empty in the sender’s current list.
+
+# 4. Preserve checked boxes exactly
+
+Do not apply the New-function checkbox reset when sharing.
+
+For every gear item:
+
+- Checked for sender = initially checked for recipient
+- Unchecked for sender = initially unchecked for recipient
+
+Use the application’s actual checkbox-state field, such as:
+
+- checked
+- selected
+- packed
+- included
+
+Preserve each item’s individual current value exactly.
+
+The recipient’s initial totals must match the sender’s current totals.
+
+# 5. Validate the snapshot before copying the link
+
+Before displaying a successful “Link copied” message, verify that the stored snapshot contains the complete list.
+
+Validate:
+
+- Category count
+- Total item count
+- Item arrays
+- Required item fields
+- Individual checkbox states
+- Base Weight settings
+- Background configuration
+
+If the current list contains items but the created snapshot contains zero items:
+
+- Treat creation as failed.
+- Do not copy a broken link.
+- Show a clear error.
+- Keep the sender’s current list unchanged.
+
+# 6. Canonical schema
+
+Inspect the exact structures used by:
+
+1. The normal TrailWeigh editor
+2. Save
+3. Locker
+4. Shared-snapshot creation
+5. The public shared-snapshot API
+6. The shared-link renderer
+
+Make all of them compatible with one canonical pack-list schema.
+
+For example, if normal lists store items under:
+
+`categories[].items[]`
+
+then the shared endpoint and recipient renderer must use or correctly normalize that structure.
+
+Do not allow one component to expect `category.items` while another returns the items under an unrelated field.
+
+Create one shared normalization or deserialization utility when necessary.
+
+Do not maintain separate incompatible list formats for the normal and shared screens.
+
+# 7. Replace the simplified shared page
+
+Remove the current simplified Shared Pack List presentation that displays only:
+
+- A special shared header
+- A summary box
+- A background
+- A promotional message
+
+The recipient must instead see the normal TrailWeigh pack-list interface and checklist layout.
+
+Reuse the same primary components used by the normal TrailWeigh editor rather than maintaining a separate simplified checklist renderer.
+
+The recipient should initially see:
+
+- TrailWeigh header
+- Pack-list title
+- Every category
+- Every gear item
+- Category totals
+- Base Weight
+- Separate excluded-category totals
+- Grand Total
+- Type
+- Description
+- Weight
+- Quantity
+- Total weight
+- Item checkboxes
+- Open and Close category controls
+- Category expand and collapse controls
+- Imperial and Metric controls
+- Preview
+- Print
+- Download PDF
+- The sender’s selected background
+- The sender’s Fill Screen or Fit Image setting
+- The normal responsive desktop, tablet, and mobile layout
+
+The shared screen should look like the sender’s current TrailWeigh screen, not a reduced report page.
+
+# 8. Shared-page loading and hydration
+
+When a recipient opens a shared link:
+
+1. Read the share ID from the route.
+2. Fetch the correct immutable shared snapshot.
+3. Show a loading state while the request is in progress.
+4. Validate the returned snapshot.
+5. Normalize it into the canonical list schema.
+6. Deep-clone it into isolated temporary working state.
+7. Pass that temporary working state into the normal TrailWeigh checklist components.
+8. Render all categories and items.
+9. Calculate all totals using the normal calculation utilities.
+
+Do not calculate final totals before the snapshot has loaded.
+
+Do not display an empty completed screen with 0.00 totals during loading.
+
+Do not allow a later effect, authentication update, default-list initializer, background loader, or local-storage restore function to replace the fetched shared list with an empty list.
+
+# 9. Recipient receives an interactive temporary copy
+
+The recipient may interact with the checklist displayed from the shared link.
+
+Allow temporary actions such as:
+
+- Check items
+- Uncheck items
+- Change quantities
+- Edit normally editable item fields
+- Expand categories
+- Collapse categories
+- Use Open
+- Use Close
+- Switch between Imperial and Metric
+- Use Preview
+- Print
+- Download PDF
+- Temporarily select another background
+- Temporarily change Fill Screen or Fit Image
+
+These changes should update the recipient’s visible totals normally.
+
+However, every recipient change must affect only that recipient’s temporary in-memory copy.
+
+Recipient changes must not:
+
+- Update the sender’s current file
+- Update the sender’s Locker file
+- Modify the stored shared snapshot
+- Synchronize back to the sender
+- Synchronize to another recipient
+- Be written to the database
+- Be saved as changes to the shared record
+- Be written to the sender’s localStorage
+- Be written to the sender’s IndexedDB data
+- Be broadcast through Locker synchronization
+- Create an update request for the original file
+
+# 10. Temporary changes reset on refresh
+
+The stored shared snapshot must remain immutable.
+
+When a recipient:
+
+- Refreshes the page
+- Reopens the same shared link
+- Closes and later reopens the tab
+
+the original sender-created snapshot must load again.
+
+All temporary recipient changes must disappear.
+
+Examples:
+
+- If the recipient checks another item, refreshing restores the sender’s original checkbox states.
+- If the recipient changes a quantity, refreshing restores the sender’s original quantity.
+- If the recipient changes the background, refreshing restores the sender’s original background.
+
+# 11. Independent recipient sessions
+
+Each recipient browser must receive its own temporary deep clone.
+
+If two recipients open the same link:
+
+- Recipient A’s changes must not appear for Recipient B.
+- Recipient B’s changes must not appear for Recipient A.
+- Neither recipient’s changes may appear for the sender.
+
+Do not use a globally synchronized mutable shared-list object.
+
+# 12. Protect the sender’s file identity
+
+The recipient’s temporary working copy must not retain an active save target connected to the sender.
+
+Clear or omit:
+
+- Active Locker file ID
+- Sender save target
+- Sender database record ID
+- Owner update permissions
+- Owner delete permissions
+- Private sender account identifiers
+- Shared-record update permissions
+
+The public share ID should grant read access only to the immutable snapshot.
+
+It must not grant permission to update or delete the snapshot or the sender’s Locker file.
+
+Enforce this on the backend, not only by hiding buttons.
+
+# 13. Save Your Own Copy
+
+The recipient must never be able to overwrite the sender’s file.
+
+Replace or disable the normal owner Save function in shared mode.
+
+Use an action labeled:
+
+“Save Your Own Copy”
+
+For a recipient who is not signed in:
+
+- Ask them to sign in or create an account before saving.
+- Do not save anything automatically.
+
+For a signed-in recipient:
+
+1. Deep-clone the recipient’s current temporary version.
+2. Ask for a new file name.
+3. Create a new Locker file owned by the recipient.
+4. Assign it a new unique file ID.
+5. Do not retain the sender’s file ID.
+6. Do not modify the sender’s file.
+7. Do not modify the immutable shared snapshot.
+
+After the copy is created, it may become the recipient’s normal editable Locker file.
+
+# 14. Private owner controls
+
+The shared screen should visually reuse the normal TrailWeigh interface, but it must not expose private sender functions or information.
+
+The recipient must not receive access to:
+
+- Sender’s Locker
+- Sender’s other saved lists
+- Sender account information
+- Sender authentication information
+- Sender file deletion
+- Sender password verification
+- Sender’s complete private custom-photo gallery
+- Private file IDs
+- Private share-management tools
+
+Where an owner-only control would be unsafe:
+
+- Hide it, or
+- Disable it, or
+- Replace it with the recipient-safe equivalent
+
+Do not allow private controls merely because the normal editor component is being reused.
+
+# 15. Background behavior
+
+The recipient’s initial screen must preserve the sender’s shared background configuration.
+
+Preserve:
+
+- Selected built-in background
+- Selected custom background when it has a secure shareable asset URL
+- Fill Screen or Fit Image
+- Background positioning
+- Theme-aware unused-space color
+- Light or Dark appearance when stored with the list
+
+Do not use temporary browser object URLs that will fail on another device.
+
+Do not expose the sender’s entire custom-photo gallery.
+
+If the selected custom image cannot be securely shared:
+
+- Use a clearly defined built-in fallback.
+- Keep the checklist data intact.
+- Do not show a broken image.
+
+A recipient may temporarily change the background, but refreshing the shared link must restore the sender’s original shared background.
+
+# 16. Totals and calculations
+
+Use the same calculation utilities as the normal TrailWeigh editor, Preview, Print, and PDF.
+
+Initial recipient totals must match the sender’s snapshot.
+
+Calculate:
+
+- Category totals
+- Base Weight
+- Each category excluded from Base Weight
+- Grand Total
+- Imperial and Metric conversions
+
+When the recipient temporarily changes a checkbox or quantity:
+
+- Recalculate immediately.
+- Update only the recipient’s local temporary state.
+
+Do not display 0.00 unless the actual shared snapshot genuinely produces a zero total.
+
+# 17. Error states
+
+If the share ID is invalid or the snapshot cannot be loaded, display:
+
+“This shared pack list could not be loaded.”
+
+If the API response claims that the snapshot contains items but hydration produces zero items:
+
+- Treat it as a schema or loading error.
+- Do not silently show an empty checklist.
+- Log useful development details without exposing private information.
+
+Do not present a finished-looking page with no items and 0.00 totals.
+
+# 18. Immutable snapshot behavior
+
+The shared link represents the sender’s checklist at the moment the link was created.
+
+Changes the sender makes afterward must not silently change an existing shared snapshot unless TrailWeigh has a separate explicitly labeled live-sharing feature.
+
+Creating or viewing a shared snapshot must not:
+
+- Save the sender’s unsaved changes into their original file
+- Modify the sender’s Locker file
+- Change sender checkbox states
+- Change sender background settings
+- Create a duplicate Locker file
+- Add an Undo or Redo entry
+
+# 19. Do not change
+
+Do not change:
+
+- The corrected New function
+- The sender’s normal Save behavior
+- Save As
+- Locker behavior
+- Locker synchronization
+- Importing
+- Preview
+- Print
+- Download PDF
+- Background Showcase
+- Normal gear calculations
+- Existing saved Locker files
+- Normal owner authentication
+
+# 20. Required testing
+
+Test through the rendered application using separate browser sessions.
+
+## Sender test
+
+1. Open a saved pack list with multiple categories and items.
+2. Check some items and leave others unchecked.
+3. Make at least one unsaved visible change.
+4. Select a specific background.
+5. Select Fill Screen or Fit Image.
+6. Note:
+   - Category count
+   - Total item count
+   - Base Weight
+   - Excluded-category totals
+   - Grand Total
+7. Create a Share Link.
+
+## Snapshot validation
+
+8. Inspect the stored shared snapshot.
+9. Confirm:
+   - All categories are stored.
+   - All items are stored.
+   - Individual checkbox states are stored.
+   - The unsaved visible change is stored.
+   - Background settings are stored.
+   - Item count matches the sender’s visible list.
+
+## Recipient test
+
+10. Open the link in a private browser window.
+
+Confirm the recipient sees:
+
+- The complete normal TrailWeigh checklist interface
+- Every category
+- Every item
+- Correct category placement
+- The sender’s checked and unchecked states
+- The sender’s unsaved visible change
+- Correct Type, Description, Weight, Quantity, Units, and Notes
+- Correct category totals
+- Correct Base Weight
+- Correct excluded-category totals
+- Correct Grand Total
+- Correct background
+- Correct Fill Screen or Fit Image setting
+
+## Temporary-edit test
+
+11. In the recipient browser:
+   - Check and uncheck several items.
+   - Change a quantity.
+   - Expand and collapse categories.
+   - Change the background.
+   - Switch Imperial and Metric.
+
+12. Confirm all recipient totals update correctly.
+
+13. Refresh the shared link.
+
+Confirm:
+
+- Recipient changes disappear.
+- The original sender snapshot returns.
+- Original checkbox states return.
+- Original quantities return.
+- Original background returns.
+
+## Sender isolation test
+
+14. Return to the sender’s browser.
+
+Confirm:
+
+- None of the recipient’s changes appear.
+- The sender’s current list is unchanged.
+- The sender’s Locker file is unchanged.
+- The shared snapshot is unchanged.
+
+## Multiple-recipient test
+
+15. Open the same link in two separate recipient browsers.
+16. Make different changes in each.
+17. Confirm each recipient remains independent.
+
+## Save-copy test
+
+18. Sign in as a different recipient.
+19. Select Save Your Own Copy.
+20. Confirm:
+   - A new file name is requested.
+   - A new Locker file is created for the recipient.
+   - It has a new file ID.
+   - The sender’s file remains unchanged.
+   - The shared snapshot remains unchanged.
+
+## Security test
+
+21. Confirm the recipient cannot access:
+
+- Sender Locker
+- Sender saved files
+- Sender account details
+- Sender delete functions
+- Sender private photo gallery
+- Update or delete endpoints for the shared snapshot
+
+22. Refresh the shared page several times.
+23. Confirm the full checklist continues to load and never returns to the empty 0.00 screen.
+
+Do not report completion until the shared link has been opened in a separate browser session and visibly displays the complete TrailWeigh checklist.
+
+Report:
+
+- The exact cause of the empty shared checklist
+- Whether the stored snapshot was empty or the renderer failed to hydrate it
+- The canonical list schema now used
+- Which normal TrailWeigh components are reused
+- How recipient temporary state is isolated
+- How backend writes are blocked
+- How checked states and totals are preserved
+- How Save Your Own Copy works
+- Which files were changed
+- Whether every required test passed
