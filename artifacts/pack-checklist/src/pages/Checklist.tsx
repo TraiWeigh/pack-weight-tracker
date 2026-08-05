@@ -22,8 +22,8 @@ import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
 import { buildShareURL } from '../lib/shareLink';
 import { useToast } from '../hooks/use-toast';
 import {
-  RotateCcw, Tent, Printer, Share2, Link, FileDown, LogOut,
-  User, Shield, Plus, Check, X, ChevronsUpDown,
+  RotateCcw, Tent, Share2, Link, FileDown, LogOut,
+  User, Shield, Plus, Check, X, ChevronsUpDown, Printer,
 } from 'lucide-react';
 import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
@@ -1094,11 +1094,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   />
                 </div>
                 <button
-                  onClick={handlePrint}
+                  onClick={() => setShowPreview(true)}
                   className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
                 >
-                  <Printer className="w-3.5 h-3.5" />
-                  Print
+                  Preview
                 </button>
                 {/* Share pill + dropdown */}
                 <div className="relative">
@@ -1175,6 +1174,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       {/* ── Preview modal ── */}
       {showPreview && (
         <PreviewModal
+          onPrint={handlePrint}
           data={data}
           system={system}
           categoryOrder={categoryOrder}

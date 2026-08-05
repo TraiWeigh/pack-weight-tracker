@@ -1,0 +1,190 @@
+Update the TrailWeigh Print and Preview pill locations.
+
+This is a control-placement change only. Reuse the existing Preview and Print functions. Do not rebuild or duplicate either function.
+
+## Required final layout
+
+### Main checklist screen
+
+Above the Pack Summary:
+
+- Remove the existing Print pill.
+- Put the Preview pill in that same location.
+- The Preview pill must open the existing checklist Preview screen.
+
+There must be no standalone Print pill anywhere on the main checklist screen.
+
+### Preview screen
+
+In the upper-right corner of the Preview screen:
+
+- Keep the existing “X Close” pill.
+- Add a Print pill immediately to the left of “X Close.”
+- Keep both pills on the same row.
+- Match their height, spacing, font, border radius, and visual style.
+
+The order must be:
+
+`Print   X Close`
+
+The Print pill inside Preview must activate the existing print function for the currently displayed preview.
+
+## Printing availability
+
+Printing must only be available from inside Preview.
+
+Remove or hide any other Print pill or direct Print control in the normal checklist interface.
+
+Do not remove the underlying print function because the new Print pill inside Preview must continue to use it.
+
+## Reuse existing application logic
+
+Inspect `src/pages/Checklist.tsx` and the existing Preview component or modal.
+
+Use the existing handlers for:
+
+- Opening Preview
+- Closing Preview
+- Printing the checklist
+
+Do not create a second preview renderer.
+
+Do not create a second print layout.
+
+Do not create separate calculations for Preview and Print.
+
+Preview and Print must continue to use the same checklist data, checked-item states, totals, category rules, and unit selection already used by the application.
+
+## Button behavior
+
+### Preview pill
+
+The Preview pill above Pack Summary must:
+
+- Open the existing Preview screen
+- Show the current working checklist
+- Include visible unsaved changes
+- Preserve the current checked-item states
+- Preserve Imperial or Metric
+- Use the current Preview calculations and layout
+
+### Print pill inside Preview
+
+The Print pill must:
+
+- Print the checklist shown in Preview
+- Use the existing print stylesheet and print function
+- Include the same items and totals shown in Preview
+- Not close Preview before the print dialog opens
+- Not modify checklist data
+- Not create an Undo or Redo entry
+- Not save the file
+
+### X Close pill
+
+The existing X Close pill must continue to:
+
+- Close Preview
+- Return to the checklist
+- Leave all checklist data unchanged
+
+## Responsive layout
+
+The Print and X Close pills must remain visible and usable on:
+
+- Desktop
+- Tablet
+- Mobile
+
+On narrow screens:
+
+- Keep them together in the upper-right Preview control area when possible.
+- Do not allow them to overlap the Preview title or checklist content.
+- Do not place Print back on the main checklist screen as a mobile fallback.
+
+## Shared-link temporary view
+
+If the shared-link recipient uses the normal Preview interface:
+
+- Show the same Preview pill placement.
+- Allow Print only from inside Preview.
+- Printing must use the recipient’s current temporary checklist state.
+- Printing must not save or synchronize the recipient’s changes.
+
+Do not change any other Share Link behavior during this task.
+
+## Remove obsolete controls
+
+Search the active checklist interface for every visible Print pill or button.
+
+After this change:
+
+- Main checklist: Preview pill only
+- Preview screen: Print pill and X Close pill
+- No other standalone Print pill
+
+Do not remove browser printing support or the internal print handler.
+
+## Preserve existing behavior
+
+Do not change:
+
+- Preview content
+- Print formatting
+- Download PDF
+- Pack Summary calculations
+- Base Weight
+- Grand Total
+- Category totals
+- Imperial or Metric
+- Checkbox behavior
+- Undo or Redo
+- Backgrounds
+- Showcase
+- New
+- Save
+- Locker
+- Importing
+
+## Required testing
+
+Test in the rendered application.
+
+1. Open the normal checklist screen.
+   - Confirm the old Print pill above Pack Summary is gone.
+   - Confirm a Preview pill appears in its place.
+   - Confirm there is no Print pill elsewhere on the main checklist.
+
+2. Click Preview.
+   - Confirm the existing Preview screen opens.
+   - Confirm the upper-right controls show:
+     `Print   X Close`
+
+3. Click Print.
+   - Confirm the existing print dialog or print workflow opens.
+   - Confirm the printed content matches Preview.
+   - Confirm Preview remains stable.
+   - Confirm no checklist data changes.
+
+4. Close the print dialog and click X Close.
+   - Confirm Preview closes normally.
+
+5. Test with:
+   - Checked and unchecked items
+   - Unsaved checklist changes
+   - Imperial units
+   - Metric units
+   - Desktop
+   - Mobile-width layout
+
+6. Confirm Download PDF still works independently.
+
+Do not report completion until Print is available only inside Preview and the main checklist contains Preview in the former Print-pill location.
+
+Report:
+
+- Which component contained the old main-screen Print pill
+- Which existing Preview handler is now connected to that location
+- Which existing Print handler is connected inside Preview
+- Which files were changed
+- Whether every required test passed

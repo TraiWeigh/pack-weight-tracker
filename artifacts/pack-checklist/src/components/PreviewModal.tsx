@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Printer } from 'lucide-react';
 import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { UnitSystem, calcTotalOz, formatWeight, largeUnit, smallUnit } from '../lib/weightUtils';
 
@@ -9,9 +9,10 @@ interface PreviewModalProps {
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;
   onClose: () => void;
+  onPrint: () => void;
 }
 
-export function PreviewModal({ data, system, categoryOrder, categoryMeta, onClose }: PreviewModalProps) {
+export function PreviewModal({ data, system, categoryOrder, categoryMeta, onClose, onPrint }: PreviewModalProps) {
   const lu = largeUnit(system);
   const su = smallUnit(system);
 
@@ -53,13 +54,22 @@ export function PreviewModal({ data, system, categoryOrder, categoryMeta, onClos
         {/* Modal toolbar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <h2 className="text-sm font-semibold text-gray-900">Pack List Preview</h2>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
-          >
-            <X className="w-3.5 h-3.5" />
-            Close
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onPrint}
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              Print
+            </button>
+            <button
+              onClick={onClose}
+              className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              Close
+            </button>
+          </div>
         </div>
 
         {/* Content */}

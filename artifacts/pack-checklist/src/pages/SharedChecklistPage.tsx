@@ -829,6 +829,7 @@ function SharedChecklistContent({
           categoryOrder={store.order}
           categoryMeta={store.meta}
           onClose={() => setShowPreview(false)}
+          onPrint={() => window.print()}
         />
       )}
 
