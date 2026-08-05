@@ -66,6 +66,28 @@ interface ChecklistContentProps {
 /** Identifies the Locker file that is the current Save target for this tab. */
 type ActiveLockerFile = { id: string; name: string };
 
+/**
+ * sessionStorage key for the active Locker file.
+ * sessionStorage is tab-local and survives React remounts (e.g. Clerk token
+ * refresh) within the same browser tab, so the active save target is not
+ * lost when ChecklistContent briefly unmounts and remounts.
+ */
+const ACTIVE_LOCKER_FILE_SS_KEY = 'tw-active-locker-file';
+
+function readActiveLockerFileFromSS(): ActiveLockerFile | null {
+  try {
+    const raw = sessionStorage.getItem(ACTIVE_LOCKER_FILE_SS_KEY);
+    return raw ? (JSON.parse(raw) as ActiveLockerFile) : null;
+  } catch { return null; }
+}
+
+function writeActiveLockerFileToSS(value: ActiveLockerFile | null): void {
+  try {
+    if (value) sessionStorage.setItem(ACTIVE_LOCKER_FILE_SS_KEY, JSON.stringify(value));
+    else sessionStorage.removeItem(ACTIVE_LOCKER_FILE_SS_KEY);
+  } catch {}
+}
+
 function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistContentProps) {
   // ── onRestoreBg: called by undo/redo to restore the background that was
   // active at the time of the history entry.  Defined as a stable useCallback
@@ -421,6 +443,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const handleNew = useCallback(() => {
     // Opening a new tab creates a separate unsaved file — detach from the
     // current Locker entry so this tab's Save button starts a fresh workflow.
+    writeActiveLockerFileToSS(null);
     setActiveLockerFile(null);
     const uuid = crypto.randomUUID();
 
@@ -540,7 +563,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // Tracks the active save target for this tab.  Only the id and name are
   // stored — enough to call commitSaveReplace without holding a stale copy of
   // the full LockerEntry (store, background, etc.).
-  const [activeLockerFile, setActiveLockerFile] = useState<ActiveLockerFile | null>(null);
+  //
+  // Initialised from sessionStorage so the value survives any React remount
+  // (e.g. a Clerk token refresh that briefly cycles isLoaded → false → true
+  // and causes ChecklistContent to unmount/remount with fresh useState).
+  const [activeLockerFile, setActiveLockerFile] = useState<ActiveLockerFile | null>(
+    readActiveLockerFileFromSS
+  );
+
+  // Keep sessionStorage in sync with the React state.
+  useEffect(() => {
+    writeActiveLockerFileToSS(activeLockerFile);
+  }, [activeLockerFile]);
 
   /**
    * Primary Save action triggered by the toolbar Save button.
@@ -550,10 +584,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
    * • Otherwise → open the naming dialog to create a new entry.
    */
   const handleSaveClick = () => {
-    // DEV_LOG
-    console.log('[TrailWeigh Save] handleSaveClick — activeLockerFile:', activeLockerFile);
-    if (activeLockerFile) {
-      commitSaveReplace(activeLockerFile.id, activeLockerFile.name);
+    // DEV_LOG — compare React state vs sessionStorage to detect remount loss
+    const ssVal = readActiveLockerFileFromSS();
+    console.log('[TrailWeigh Save] handleSaveClick — state:', activeLockerFile, '| sessionStorage:', ssVal);
+    // Use state as primary source; fall back to sessionStorage if state was
+    // lost in a remount (the most common cause of activeLockerFile being null).
+    const target = activeLockerFile ?? ssVal;
+    if (target) {
+      if (!activeLockerFile) {
+        // Re-sync state from sessionStorage so subsequent renders are correct.
+        setActiveLockerFile(target);
+      }
+      commitSaveReplace(target.id, target.name);
       return;
     }
     openSaveDialog();
@@ -587,7 +629,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     broadcastLocker(updated);
     // Make this new entry the active save target so subsequent Save clicks
     // update it in-place rather than asking for a name again.
-    setActiveLockerFile({ id: entry.id, name: entry.name });
+    const newFile: ActiveLockerFile = { id: entry.id, name: entry.name };
+    writeActiveLockerFileToSS(newFile);
+    setActiveLockerFile(newFile);
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -608,7 +652,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     broadcastLocker(updated);
     // Keep (and refresh) the active file identity so subsequent Save clicks
     // continue updating this same Locker file without reopening the dialog.
-    setActiveLockerFile({ id: existingId, name });
+    const refreshed: ActiveLockerFile = { id: existingId, name };
+    writeActiveLockerFileToSS(refreshed);
+    setActiveLockerFile(refreshed);
     closeSaveDialog();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker]);
@@ -660,9 +706,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       replaceStore(entry.store as import('../hooks/usePackData').Store);
       // 3. Track the active file identity so Save routes to commitSaveReplace
       //    (updating this file, not creating a new one).
+      //    Write to sessionStorage immediately (before the React state update
+      //    queues) so the value survives a remount that might occur before the
+      //    useEffect sync fires.
       // DEV_LOG
       console.log('[TrailWeigh Load] in-place path — totalItems:', totalItems, 'entry:', entry.id, entry.name);
-      setActiveLockerFile({ id: entry.id, name: entry.name });
+      const newActiveFile: ActiveLockerFile = { id: entry.id, name: entry.name };
+      writeActiveLockerFileToSS(newActiveFile);
+      setActiveLockerFile(newActiveFile);
       // 4. Stay in the same tab — no window.open.
       return;
     }
@@ -737,7 +788,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       setLockerEntries(updated);
       broadcastLocker(updated);
       // If the deleted entry is the active file, detach — it no longer exists.
-      setActiveLockerFile(prev => (prev?.id === id ? null : prev));
+      const curA = readActiveLockerFileFromSS();
+      const nextA = curA?.id === id ? null : curA;
+      writeActiveLockerFileToSS(nextA);
+      setActiveLockerFile(nextA);
       return;
     }
     setPendingDeleteIds([id]);
@@ -752,7 +806,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setLockerEntries(updated);
     broadcastLocker(updated);
     // If the active file was among those deleted, detach the save target.
-    setActiveLockerFile(prev => (prev && pendingDeleteIds.includes(prev.id) ? null : prev));
+    const curB = readActiveLockerFileFromSS();
+    const nextB = curB && pendingDeleteIds.includes(curB.id) ? null : curB;
+    writeActiveLockerFileToSS(nextB);
+    setActiveLockerFile(nextB);
     setShowDeleteDialog(false);
     setPendingDeleteIds([]);
     const msg = toDelete.length === 1
