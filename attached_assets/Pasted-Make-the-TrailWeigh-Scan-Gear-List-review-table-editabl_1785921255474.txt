@@ -1,0 +1,147 @@
+Make the TrailWeigh “Scan Gear List” review table editable before items are imported.
+
+The image OCR and existing PDF, Word, and Excel import workflows are working. Keep those workflows unchanged.
+
+## Required behavior
+
+After a file or screenshot is analyzed and the review table appears, allow the user to correct each detected item before clicking Import Selected Items.
+
+Each review row must allow editing:
+
+- Type
+- Description
+- Weight
+- Weight unit
+- Destination category
+
+Keep the existing checkbox that controls whether the row will be imported.
+
+## Editing behavior
+
+The user must be able to click directly into a field and correct an OCR or parsing mistake.
+
+Examples:
+
+- Change “0z” to “oz”
+- Change an incorrect weight
+- Correct a misspelled item name
+- Change Rain Jacket to the correct clothing category
+- Move an incorrectly classified item to another existing category
+
+Use the existing TrailWeigh category list for the destination dropdown.
+
+Do not allow the user to create a new checklist category from this review table during this task.
+
+## Validation
+
+Before importing a selected row:
+
+- Type or Description must contain usable text.
+- Weight must be a valid number greater than or equal to zero.
+- Unit must be one of the units already supported by TrailWeigh.
+- Destination must be a valid existing category.
+
+If a selected row is invalid:
+
+- Clearly highlight the incorrect field.
+- Do not import that row until it is corrected.
+- Display a simple explanation next to or below the field.
+
+Do not block importing other valid selected rows unless the existing importer requires all selected rows to be valid.
+
+## Preserve source values safely
+
+Editing the review table must change only the temporary review result.
+
+It must not:
+
+- Modify the uploaded source file
+- Rerun OCR after every edit
+- Change items already present in the checklist
+- Create an Undo or Redo entry before import
+- Save anything to Locker
+
+Only the final corrected values should be passed to Import Selected Items.
+
+## Import behavior
+
+When Import Selected Items is clicked:
+
+- Import the corrected values currently visible in the review table.
+- Add each item to its selected destination category.
+- Keep every imported gear-item checkbox unchecked.
+- Preserve the corrected Type, Description, Weight, and unit.
+- Reset the Scan Gear List panel to its original upload state after a successful import.
+
+## Cancel and retry
+
+Keep the existing ability to dismiss or reset the import.
+
+If the user cancels:
+
+- Discard all temporary review edits.
+- Do not add anything to the checklist.
+
+Uploading another file must replace the previous temporary review results.
+
+## Relevant files
+
+Inspect and update the existing importer rather than creating a separate review system:
+
+- `artifacts/pack-checklist/src/components/ImportGearPanel.tsx`
+- Existing review-item types used by the importer
+- Existing Import Selected Items handler
+
+Do not change the working OCR transport in:
+
+- `ocr_service/image_ocr.py`
+- `artifacts/api-server/src/routes/importGear.ts`
+
+unless a small type adjustment is genuinely required to support editable review values.
+
+## Visual design
+
+Keep the current TrailWeigh review-table appearance.
+
+Editable controls must:
+
+- Match the existing Dark and Light modes
+- Remain readable over the selected background
+- Work with keyboard, mouse, and touch
+- Fit desktop, tablet, and mobile layouts
+- Not cause columns to overlap
+
+On narrow screens, rows may stack vertically if necessary.
+
+## Required rendered test
+
+Test through the rendered Scan Gear List panel:
+
+1. Upload the existing four-item OCR test image.
+2. Confirm the review table appears.
+3. Edit:
+   - One item name
+   - One weight
+   - One unit
+   - One destination category
+4. Import the selected items.
+5. Confirm the corrected values appear in the checklist.
+6. Confirm all imported items are unchecked.
+7. Confirm the import panel resets.
+
+Also test an invalid weight:
+
+1. Enter invalid text into a Weight field.
+2. Attempt to import that row.
+3. Confirm the field is highlighted and the invalid row is not imported.
+4. Correct the value and confirm it imports successfully.
+
+Do not report completion based only on TypeScript checks.
+
+Report:
+
+- Which review-item state was made editable
+- Which fields can now be corrected
+- How validation works
+- Which files were changed
+- Whether the rendered edit-and-import test passed
