@@ -1489,5 +1489,39 @@ Tests: 47  Passed: 47  Failed: 0  ✅
 
 ---
 
-*Master workflow last updated: 2026-08-06 (Prompt 014J)*
+---
+
+## Prompt 014K — Final QTY Heading Alignment Correction
+
+*Date: 2026-08-06*
+
+### Change applied
+
+**File:** `artifacts/pack-checklist/src/components/GearCategory.tsx`
+
+```diff
+- <div className={`${RG_QTY_W} text-right translate-x-1`}>Qty</div>
++ <div className={`${RG_QTY_W} text-right translate-x-3`}>Qty</div>
+```
+
+| Class | CSS | Rightward shift |
+|-------|-----|-----------------|
+| `translate-x-1` (014J) | `translateX(0.25rem)` | 4 px |
+| `translate-x-3` (014K) | `translateX(0.75rem)` | 12 px |
+
+Pure visual transform — no box-model, no layout, no column widths changed.
+
+**Prompt note:** Prompt was truncated before specifying the replacement value. Replacement class (`translate-x-3`) supplied by user via AskQuestion before the change was made.
+
+**Files not changed:** `GearRow.tsx`, `gearGrid.ts`, `Checklist.tsx`, all other files.
+
+**Automated tests:** Not applicable (pure CSS transform; no logic changed).
+
+**Documentation:** Per-prompt report created in Prompt 014L (`workflow-reports/PROMPT_014K_REPORT.md`).
+
+**User visual testing:** Required — confirm QTY heading appears centred over quantity values.
+
+---
+
+*Master workflow last updated: 2026-08-06 (Prompt 014K, documented in 014L)*
 *Next update due: After the next TrailWeigh prompt or task*
