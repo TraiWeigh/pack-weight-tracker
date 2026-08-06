@@ -876,18 +876,6 @@ export function BackgroundPickerPanel({
       {/* ── Header ── */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-foreground">Background</h3>
-        {onShowcase && (
-          <button
-            onClick={onShowcase}
-            disabled={isShowcaseBlocked}
-            title={isShowcaseBlocked ? 'Finish the current action first' : 'Fill the screen with this background'}
-            className={`text-xs font-semibold px-3 py-1 rounded-full transition-colors flex-shrink-0 ${
-              isShowcaseBlocked
-                ? 'bg-muted text-muted-foreground/40 cursor-not-allowed'
-                : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
-            }`}
-          >Showcase</button>
-        )}
       </div>
 
       {/* ── Fill/Fit + Light/Dark + Fade ── */}

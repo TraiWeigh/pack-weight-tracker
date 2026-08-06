@@ -2509,3 +2509,142 @@ Suite count 10 → 11. Test count 659 → 692. Three new PDF fixture entries.
 ---
 
 *Master workflow last updated: 2026-08-06 (Prompt 016C)*
+
+---
+
+### Prompt 017 — Replace Showcase with Hide and Reorganize Preview Controls (2026-08-06)
+
+---
+
+## Prompt 017 Report — Replace Showcase with Hide and Reorganize Preview Controls
+
+---
+
+### Identification
+
+| Field | Value |
+|-------|-------|
+| **Prompt ID** | 017 |
+| **Prompt title** | Replace Showcase with Hide and Reorganize Preview Controls |
+| **Start time** | 2026-08-06 23:20 UTC |
+| **Completion time** | 2026-08-06 23:50 UTC |
+| **Purpose** | Rename the Showcase pill to Hide, move it into the main control row, remove the duplicate Preview pill above Pack Summary, and establish Hide → Preview → Imperial order |
+| **Exact requested result** | One control row in the gear-list header: Hide → Preview → Imperial. No Showcase visible. No duplicate Preview above Pack Summary. |
+
+---
+
+### Starting State
+
+| Field | Value |
+|-------|-------|
+| **Showcase location** | `BackgroundPicker.tsx:879–890` — in BackgroundPickerPanel header |
+| **Showcase label** | `Showcase` |
+| **Showcase state** | `showcaseActive` from `useInactivityTimer` |
+| **Trigger function** | `triggerShowcase()` — unchanged |
+| **Exit method** | Any keydown or scroll on `BackgroundShowcase` overlay |
+| **Preview location 1** | `Checklist.tsx:1253–1258` — main gear-list row |
+| **Preview location 2** | `Checklist.tsx:1367–1372` — sidebar action bar (above Pack Summary) — **removed** |
+| **Preview location 3** | `SharedChecklistPage.tsx:711–717` — unchanged |
+| **Imperial location** | `<UnitToggle />` at `Checklist.tsx:1259` |
+| **Pre-017 desktop order** | `[Preview] [Imperial]` in gear-list row; `[Background] [Preview] [Share]` in sidebar |
+| **Post-017 desktop order** | `[Hide] [Preview] [Imperial]` in gear-list row; `[Background] [Share]` in sidebar |
+
+---
+
+### Files Changed
+
+#### 1. `artifacts/pack-checklist/src/components/BackgroundPicker.tsx`
+
+Removed Showcase button from BackgroundPickerPanel header. The `onShowcase` and `isShowcaseBlocked` props remain in the interface (no TS break) but are now unused inside the component.
+
+**Before:** Header div contained `{onShowcase && (<button>Showcase</button>)}`  
+**After:** Header div contains only `<h3>Background</h3>`
+
+#### 2. `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+**Change A:** Added Hide button before Preview in the main gear-list control group. Hide calls `() => { setBackgroundPickerOpen(false); triggerShowcase(); }` — identical to the original Showcase callback. Only shown when `background` is truthy. Disabled under same conditions as the old `isShowcaseBlocked`. Has `aria-label="Hide interface and show background view"`.
+
+**Change B:** Removed the sidebar Preview button (`flex-wrap` action bar). Share follows directly; no placeholder left.
+
+Added `aria-label="Open checked-items preview"` to the remaining Preview button.
+
+No new state variables. No data schema changes.
+
+#### 3. `artifacts/pack-checklist/src/hooks/controls017.test.mjs` *(NEW)*
+
+24-test static-analysis suite. Tests C1–C24 cover: Showcase removed, Hide present, Hide calls triggerShowcase, source order, one Preview only, sidebar removed, UnitToggle position, panel header, grid preserved, translate-x-3, chartPaletteKey, bgPhotoStore, PDF timeout, no isHide state, overlay wired, disabled conditions, aria-labels, shared page unchanged, PreviewModal present, onShowcase prop still passed, Share present, pdf.api in test:importer.
+
+#### 4. `package.json`
+
+Added `controls017.test.mjs` to `test:importer` (now 12 suites).
+
+#### 5. `TESTING.md`
+
+Suite count 11 → 12. Test count 692 → 716.
+
+---
+
+### Behavior Mapping
+
+| Feature | Handler | Confirmed same |
+|---------|---------|----------------|
+| Hide | `triggerShowcase()` from `useInactivityTimer` | Yes — identical to Showcase |
+| Hide exit | `exitShowcase` via `onWake` on BackgroundShowcase | Yes — unchanged |
+| Preview | `setShowPreview(true)` → `<PreviewModal>` | Yes — same modal |
+| Imperial | `<UnitToggle />` component | Yes — unchanged |
+| Showcase internal state | `showcaseActive` | Yes — preserved |
+
+---
+
+### Automated Results
+
+**Command:** `pnpm test:importer`
+
+| Suite | Tests | Result |
+|-------|-------|--------|
+| `importGear.test.mjs` | 219 | ✅ |
+| `importGear.pdf.test.mjs` | 54 | ✅ |
+| `importGear.pdf.api.test.mjs` | 53 | ✅ |
+| `scanGear.test.mjs` | 47 | ✅ |
+| `categoryAliases.test.mjs` | 77 | ✅ |
+| `usePackData.test.mjs` | 64 | ✅ |
+| `moveItem.test.mjs` | 47 | ✅ |
+| `pieColor.test.mjs` | 41 | ✅ |
+| `bgCollections.test.mjs` | 33 | ✅ |
+| `bgCollections016A.test.mjs` | 28 | ✅ |
+| `bgPhotoStore016B.test.mjs` | 29 | ✅ |
+| `controls017.test.mjs` *(new)* | 24 | ✅ |
+| **Total** | **716** | **0 failed** |
+
+---
+
+### Scope Preservation
+
+- `lg:grid-cols-[1fr_365px]`: preserved
+- `translate-x-3`: preserved (GearCategory.tsx)
+- PDF importer: working (53 tests)
+- Background theme storage: unchanged (29 tests)
+- Per-file palettes: working (41 tests)
+- Share Link: not modified
+- Saved-data schemas: not changed
+- SharedChecklistPage: not modified
+- `useInactivityTimer` / `showcaseActive` / `triggerShowcase` / `exitShowcase`: unchanged
+
+---
+
+### Current Toolbar State (post-017)
+
+**Main gear-list pinned row:**
+```
+[Open | Close]  ——————————  [Hide*] [Preview] [Imperial/Metric]
+* Hide only appears when a background is active
+```
+
+**Sidebar action bar:**
+```
+[Background Edit]  [Share]  ...
+```
+
+---
+
+*Master workflow last updated: 2026-08-06 (Prompt 017)*

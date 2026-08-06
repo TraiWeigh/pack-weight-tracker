@@ -1,0 +1,807 @@
+Prompt ID: 017
+Prompt title: Replace Showcase with Hide and Reorganize Preview Controls
+
+Reorganize TrailWeigh’s Hide, Preview, and Imperial controls without changing their existing functions.
+
+This is a focused interface-layout prompt.
+
+Prompt 016C has been user-tested and the PDF importer is working.
+
+Do not change the PDF importer, Background Edit system, custom Themes, photo storage, calculations, checklist layout, or saved-file behavior.
+
+# CONFIRMED REQUEST
+
+Make these visible changes:
+
+1. Remove the visible `Showcase` pill.
+2. Replace it with a pill labeled:
+   `Hide`
+3. Hide must perform exactly the same function that Showcase currently performs.
+4. Move the Preview pill into the same main control row.
+5. Arrange these pills in this exact left-to-right order:
+   `Hide → Preview → Imperial`
+6. Remove the separate Preview pill currently located above Pack Summary.
+7. There must be only one visible Preview pill in normal checklist view.
+
+Do not create a new Hide feature.
+
+Reuse the current Showcase behavior and code path.
+
+# PART 1 — READ THE CURRENT PROJECT STATE
+
+Before editing, read:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_016B_REPORT.md`
+- `workflow-reports/PROMPT_016C_REPORT.md`
+- Current main checklist toolbar or control-row component
+- Current Showcase button component
+- Current Showcase state and event handlers
+- Current Preview button above Pack Summary
+- Current Preview modal component
+- Current Imperial/Metric unit control
+- Current responsive toolbar styles
+- Current mobile layout
+- Current keyboard and accessibility behavior
+
+Treat the current application source as the source of truth.
+
+Trace exactly:
+
+- Where Showcase is rendered
+- What function Showcase calls
+- What state is changed
+- How the user exits Showcase
+- Where Preview is rendered
+- Whether more than one Preview trigger currently exists
+- How Imperial changes units
+- How the controls wrap at narrower widths
+
+Do not modify application code until this has been documented.
+
+# PART 2 — CREATE A CHECKPOINT AND BACKUP
+
+Create a Replit checkpoint before changing application code.
+
+Create:
+
+`workflow-reports/PRE_017_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Master line count
+- Master file size
+- Backup line count
+- Backup file size
+- Current Showcase component path
+- Current Showcase handler
+- Current Preview trigger locations
+- Current Imperial control location
+- Current control order
+- Current desktop layout
+- Current phone layout
+
+# PART 3 — REPLACE THE SHOWCASE LABEL WITH HIDE
+
+Remove the visible pill labeled:
+
+`Showcase`
+
+Replace it with:
+
+`Hide`
+
+Hide must use the same:
+
+- State
+- Handler
+- Display mode
+- Animation
+- Background behavior
+- Exit behavior
+- Keyboard behavior
+- Touch behavior
+
+as the current Showcase control.
+
+Do not duplicate the Showcase code.
+
+Do not create parallel states such as:
+
+- `isShowcase`
+- `isHideMode`
+
+when the current Showcase state can continue to be used internally.
+
+Internal variable names may remain unchanged if renaming them would create unnecessary risk.
+
+The visible user-facing label must be:
+
+`Hide`
+
+Do not show the word Showcase anywhere in the normal user interface after this prompt.
+
+It may remain in internal code or historical documentation where technically appropriate.
+
+# PART 4 — HIDE FUNCTION
+
+Hide must perform exactly the same function as the current Showcase pill.
+
+When the user clicks Hide:
+
+- Enter the existing Showcase-style view.
+- Hide the same checklist panels, controls, cards, or interface elements that Showcase currently hides.
+- Keep the selected background visible.
+- Preserve Fill Screen or Fit Image behavior.
+- Preserve Light or Dark background treatment.
+- Preserve the fade/darken setting.
+- Preserve the current background image.
+- Preserve current gear data.
+- Preserve current checked and unchecked states.
+- Preserve Pack Summary data.
+- Preserve Weight Distribution data.
+- Do not save or modify checklist data merely by entering Hide mode.
+
+Use the current method of leaving Showcase/Hide mode.
+
+If the current Showcase view displays an exit control:
+
+- Preserve it.
+- Do not remove it.
+- Do not make the user reload the app to return.
+
+If the current exit control visibly says Showcase, change only the necessary user-facing wording so it makes sense with Hide.
+
+Do not redesign the hidden-background view unless required to preserve existing behavior.
+
+# PART 5 — PLACE HIDE, PREVIEW, AND IMPERIAL TOGETHER
+
+Place the three pills in one control group in this exact order:
+
+`Hide → Preview → Imperial`
+
+Requirements:
+
+- Hide is immediately to the left of Preview.
+- Preview is immediately to the left of Imperial.
+- The three controls appear on the same horizontal level at normal desktop widths.
+- The spacing between them matches TrailWeigh’s existing pill spacing.
+- They are vertically centered.
+- They use consistent heights.
+- Their borders, corner radii, text sizes, and icon alignment remain visually consistent.
+- The group must not overlap nearby controls.
+- The group must not change the checklist’s column widths.
+
+Do not place another control between:
+
+- Hide and Preview
+- Preview and Imperial
+
+The final visible sequence must clearly read:
+
+`Hide   Preview   Imperial`
+
+# PART 6 — PREVIEW FUNCTION
+
+The relocated Preview pill must perform exactly the same function as the current Preview pill above Pack Summary.
+
+When clicked:
+
+- Open the existing Preview interface.
+- Show only the currently checked items according to current behavior.
+- Preserve the current Preview layout.
+- Preserve Pack Summary information shown in Preview.
+- Preserve Base Weight handling.
+- Preserve Dog Pack handling.
+- Preserve Expendables handling.
+- Preserve Print.
+- Preserve Download PDF.
+- Preserve closing the Preview.
+- Preserve background and theme behavior where currently supported.
+
+Do not create a second Preview modal.
+
+Do not duplicate Preview calculations.
+
+Reuse the current Preview handler and current Preview modal.
+
+# PART 7 — REMOVE THE DUPLICATE PREVIEW ABOVE PACK SUMMARY
+
+Remove the separate Preview pill currently displayed above Pack Summary.
+
+Requirements:
+
+- Do not leave an empty placeholder.
+- Do not leave unnecessary top margin or blank vertical space.
+- Do not leave an invisible clickable button.
+- Do not leave duplicate Preview controls in normal desktop view.
+- Do not remove Pack Summary.
+- Do not move or resize Pack Summary unnecessarily.
+- Do not alter Pack Summary calculations.
+- Do not change the 365-pixel Pack Summary column.
+
+After removal, the area above Pack Summary should close naturally without a visible gap caused by the deleted Preview control.
+
+There must be exactly one normal-view Preview pill:
+
+- The Preview pill between Hide and Imperial.
+
+A Preview control inside an already-open Preview modal may remain when it serves a separate internal purpose.
+
+# PART 8 — IMPERIAL CONTROL
+
+Preserve the existing Imperial control and all unit behavior.
+
+Do not change:
+
+- Imperial-to-Metric conversion
+- Metric-to-Imperial conversion
+- Weight values
+- Units
+- Saved unit preference
+- Per-file unit behavior
+- Print units
+- Preview units
+- PDF units
+- Imported item units
+
+Only reposition the existing Imperial pill as necessary to achieve:
+
+`Hide → Preview → Imperial`
+
+Do not rewrite the unit-conversion system.
+
+# PART 9 — BACKGROUND EDIT AND SHARE
+
+Preserve:
+
+- Background Edit
+- Share
+
+Do not remove or rename them.
+
+Do not alter the Background Edit panel.
+
+Do not alter:
+
+- Themes dropdown
+- Landscapes
+- Custom themes
+- Add Theme
+- Maximum of ten themes
+- Maximum of ten photos
+- IndexedDB photo storage
+- Photo upload
+- Photo drag-and-drop
+- Photo deletion
+- Delete Theme
+- Fill/Fit
+- Light/Dark
+- Fade slider
+
+Keep Background Edit and Share in their current approved locations unless a very small responsive adjustment is required to prevent overlap.
+
+Do not place either control between Hide, Preview, and Imperial.
+
+# PART 10 — DESKTOP LAYOUT
+
+At normal desktop widths:
+
+- Hide, Preview, and Imperial must appear in one horizontal row.
+- Hide must be leftmost.
+- Imperial must be rightmost.
+- All three pills must be fully visible.
+- Text must not be clipped.
+- Icons must not overlap text.
+- Buttons must not overlap Background Edit, Share, New, Save, Reset, Undo, Redo, or other controls.
+- Removing Preview above Pack Summary must not leave an empty row.
+- Pack Summary must remain aligned with the category area.
+- The main grid must remain:
+  `lg:grid-cols-[1fr_365px]`
+
+Do not change the approved 365-pixel sidebar width.
+
+# PART 11 — TABLET AND PHONE LAYOUT
+
+At narrower widths, allow the control group to wrap only when required.
+
+Preserve the logical order:
+
+1. Hide
+2. Preview
+3. Imperial
+
+Requirements:
+
+- Do not reverse the order.
+- Do not place Imperial before Preview.
+- Do not create horizontal page scrolling.
+- Do not allow button labels to clip.
+- Maintain usable touch targets.
+- Maintain visible focus rings.
+- Do not reduce the controls so much that the labels are difficult to read.
+- Keep Preview accessible without scrolling to Pack Summary.
+- Ensure Hide can still be exited on a phone.
+
+If the three controls cannot remain on one row at a small width:
+
+- Wrap them cleanly.
+- Preserve their reading order.
+- Keep spacing consistent.
+
+Do not create a separate mobile-only duplicate Preview control.
+
+# PART 12 — ACCESSIBILITY
+
+Ensure:
+
+- Hide is a real button.
+- Preview is a real button.
+- Imperial remains an accessible control.
+- Hide has an accessible label explaining that it hides the interface and shows the background view.
+- Preview has an accessible label explaining that it opens the checked-items preview.
+- Selected unit state remains exposed.
+- Keyboard focus is visible.
+- Tab order follows the visible order:
+  Hide → Preview → Imperial
+- Enter and Space activate buttons where appropriate.
+- Escape continues closing Preview according to current behavior.
+- Escape or the existing exit method returns from Hide mode where currently supported.
+
+Do not rely only on icons without accessible text.
+
+# PART 13 — DO NOT CHANGE THE CHECKLIST TABLE
+
+Do not change:
+
+- MOVE column
+- WEIGHT column
+- QTY column
+- TOTAL column
+- DESCRIPTION column
+- Category heading widths
+- Item row widths
+- Checkbox behavior
+- Add Item
+- Move Item
+- Category collapse behavior
+
+Preserve:
+
+- QTY heading `translate-x-3`
+- Existing QTY visual alignment
+- Existing DESCRIPTION width
+- Existing TOTAL spacing
+
+# PART 14 — DO NOT CHANGE SAVED DATA
+
+This prompt should be a presentation and control-placement change only.
+
+Do not create a saved-data migration.
+
+Do not change:
+
+- Locker schema
+- Checklist schema
+- Background schema
+- Theme schema
+- Photo schema
+- IndexedDB schema
+- Active file identity
+- Save
+- Save As
+- New
+- Reset
+- Cross-tab synchronization
+
+Clicking Hide or Preview must not mark the current file as modified unless that was already the established behavior.
+
+# PART 15 — AUTOMATED TESTS
+
+Add or update focused tests for the control reorganization.
+
+Test at minimum:
+
+1. The normal interface no longer renders a Showcase-labeled pill.
+2. A Hide pill is rendered.
+3. Hide uses the existing Showcase handler or state path.
+4. Clicking Hide enters the existing Showcase-style mode.
+5. The existing exit path returns to the checklist.
+6. Preview is rendered beside Hide.
+7. Imperial is rendered beside Preview.
+8. DOM order is Hide, Preview, Imperial.
+9. Only one normal-view Preview trigger is rendered.
+10. The Preview trigger above Pack Summary is removed.
+11. Clicking the relocated Preview opens the existing Preview modal.
+12. Preview calculations remain unchanged.
+13. Print remains available in Preview.
+14. Download PDF remains available in Preview.
+15. Imperial behavior remains unchanged.
+16. Background Edit remains available.
+17. Share remains available.
+18. Desktop grid remains 365px.
+19. QTY remains `translate-x-3`.
+20. Prompt 015 per-file palette tests remain passing.
+21. Prompt 016B theme/photo-storage tests remain passing.
+22. Prompt 016C PDF-import tests remain passing.
+23. Word, Excel, and Numbers import tests remain passing.
+24. Save, New, and Locker tests remain passing.
+
+Prefer testing behavior rather than fragile CSS text snapshots.
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Every suite
+- Suite count
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Warnings
+- Errors
+- Duration
+
+If a new test suite is added:
+
+- Add it to `pnpm test:importer`.
+- Update `TESTING.md`.
+- Document its purpose.
+- Update the exact suite count.
+
+Do not weaken unrelated tests to make this prompt pass.
+
+# PART 16 — REQUIRED RENDERED TESTS
+
+Use the signed-in Replit preview.
+
+Do not install Playwright.
+
+## Desktop control test
+
+At a normal desktop viewport:
+
+1. Confirm Showcase is no longer visible.
+2. Confirm Hide is visible.
+3. Confirm Preview is immediately to the right of Hide.
+4. Confirm Imperial is immediately to the right of Preview.
+5. Confirm all three are on the same horizontal level.
+6. Confirm no control overlaps another.
+7. Confirm the old Preview above Pack Summary is gone.
+8. Confirm no unnecessary blank area remains above Pack Summary.
+
+## Hide behavior test
+
+1. Select a visible custom or built-in background.
+2. Click Hide.
+3. Confirm it performs the exact previous Showcase function.
+4. Confirm the background remains correct.
+5. Confirm Fill/Fit remains correct.
+6. Confirm fade remains correct.
+7. Exit Hide mode.
+8. Confirm all checklist information remains unchanged.
+
+## Preview behavior test
+
+1. Check several gear items.
+2. Click the relocated Preview pill.
+3. Confirm only checked items appear according to current rules.
+4. Confirm Pack Summary information is correct.
+5. Confirm Base Weight information is correct.
+6. Confirm Print remains available.
+7. Confirm Download PDF remains available.
+8. Close Preview.
+9. Confirm the checklist returns unchanged.
+
+## Imperial behavior test
+
+1. Record a visible item weight.
+2. Switch Imperial/Metric according to current behavior.
+3. Confirm the value and unit convert correctly.
+4. Open Preview.
+5. Confirm Preview uses the selected unit system.
+6. Return to the original unit system.
+7. Confirm the original value returns correctly.
+
+## Responsive test
+
+Test at:
+
+- Desktop width
+- Tablet width
+- Phone width
+
+Confirm:
+
+- The order remains Hide, Preview, Imperial.
+- Controls do not clip.
+- Controls remain tappable.
+- No horizontal page overflow appears.
+- Hide can be entered and exited.
+- Preview opens and closes.
+- Imperial remains usable.
+- No duplicate Preview appears.
+
+Capture screenshots showing:
+
+- Desktop Hide–Preview–Imperial order
+- Pack Summary without the old Preview pill
+- Hide mode
+- Preview opened from the relocated pill
+- Phone-width control layout
+
+User visual testing remains required.
+
+# PART 17 — PRESERVE CURRENT WORKING FEATURES
+
+Confirm no regression to:
+
+- PDF import
+- Word import
+- Excel import
+- Numbers import
+- Background Edit
+- Theme dropdown label
+- Custom photo persistence
+- IndexedDB storage
+- Maximum theme limit
+- Maximum photo limit
+- Delete Theme
+- Remove Photo
+- Fill/Fit
+- Light/Dark
+- Fade
+- Background Undo/Redo
+- Save
+- Save As
+- Locker
+- New
+- Reset
+- Print
+- Download PDF
+- Share Link
+- Weight Distribution palettes
+- Pack Summary calculations
+
+# PART 18 — DOCUMENTATION
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_017_REPORT.md`
+
+The report must include:
+
+## Identification
+
+- Prompt ID
+- Prompt title
+- Start time
+- Completion time
+- Purpose
+- Exact requested result
+
+## Starting state
+
+- Showcase location
+- Showcase behavior
+- Preview locations
+- Imperial location
+- Existing desktop order
+- Existing phone order
+- Existing Pack Summary spacing
+
+## Implementation
+
+For every changed file:
+
+- Full path
+- What changed
+- Why
+- Important component or handler
+- Before-and-after excerpts
+- Saved-data impact
+
+## Behavior mapping
+
+Document:
+
+- Previous Showcase handler
+- New Hide control
+- Confirmation that Hide calls the same behavior
+- Previous Preview trigger
+- New Preview location
+- Confirmation that the same Preview modal is reused
+- Confirmation that Imperial behavior is unchanged
+
+## Visual matrix
+
+Include:
+
+- Desktop
+- Tablet
+- Phone
+- Hide mode
+- Preview modal
+- Imperial mode
+- Pack Summary area
+
+Mark each:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Automated tests
+
+Include:
+
+- Command
+- Suite names
+- Suite count
+- Execution order
+- Passed
+- Failed
+- Exit code
+- Warnings
+- Errors
+- Duration
+
+## Scope preservation
+
+Confirm:
+
+- Desktop grid remains 365px
+- QTY remains `translate-x-3`
+- PDF importer remains working
+- Background theme storage remains unchanged
+- Per-file palettes remain working
+- Share Link was not changed
+- Saved-data schemas were not changed
+
+## Acceptance checklist
+
+Repeat every requirement and mark:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+Explain every non-PASS result.
+
+# PART 19 — APPEND THE COMPLETE REPORT
+
+Append the complete Prompt 017 report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not overwrite the master.
+- Do not truncate earlier prompts.
+- Append the complete report, not a shortened summary.
+- Confirm Prompt 017 appears exactly once.
+- Confirm Prompt 016C remains present.
+- Confirm the master line count increased.
+
+Update:
+
+- Prompt Number Index
+- Current toolbar/control state
+- Preview location
+- Hide behavior
+- Latest-entry field
+
+Final trailer:
+
+`Master workflow last updated: 2026-08-06 (Prompt 017)`
+
+# PART 20 — CREATE A CLEAN REPORT ZIP
+
+Create:
+
+`trailweigh-017-report.zip`
+
+Include exactly these four files at the ZIP root:
+
+- `PROMPT_017_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+The source report remains stored at:
+
+`workflow-reports/PROMPT_017_REPORT.md`
+
+Do not include:
+
+- A containing folder
+- `workflow-reports/` as a ZIP folder
+- `__MACOSX`
+- `.DS_Store`
+- Backups
+- Source code
+- User data
+- Locker data
+- Uploaded photos
+- Test files
+- Credentials
+- Dependencies
+- Other ZIP files
+
+After creating the ZIP:
+
+- List its contents.
+- Confirm it contains exactly four root entries.
+- Confirm no folder wrapper exists.
+- Confirm no macOS metadata exists.
+
+# FINAL VERIFICATION
+
+Before completing, confirm:
+
+1. Showcase is no longer visible in the normal interface.
+2. Hide is visible.
+3. Hide performs the exact previous Showcase function.
+4. Hide can be exited safely.
+5. Preview is immediately to the right of Hide.
+6. Imperial is immediately to the right of Preview.
+7. The order is Hide → Preview → Imperial.
+8. All three align horizontally at desktop width.
+9. The separate Preview above Pack Summary is removed.
+10. Only one normal-view Preview pill exists.
+11. No unnecessary gap remains above Pack Summary.
+12. The relocated Preview opens the existing Preview modal.
+13. Preview calculations remain correct.
+14. Print remains working.
+15. Download PDF remains working.
+16. Imperial conversion remains working.
+17. Background Edit remains working.
+18. Share remains working.
+19. Desktop grid remains `lg:grid-cols-[1fr_365px]`.
+20. QTY remains `translate-x-3`.
+21. PDF import remains working.
+22. Word import remains working.
+23. Excel import remains working.
+24. Numbers import remains working where testable.
+25. Theme and photo storage remain working.
+26. Per-file Weight Distribution palettes remain working.
+27. Save, Save As, New, Locker, and Reset remain working.
+28. No saved-data schema changed.
+29. The complete Prompt 017 report was appended.
+30. Prompt 017 appears exactly once in the master.
+31. The master grew rather than shrank.
+32. `trailweigh-017-report.zip` contains exactly four root files.
+33. The ZIP contains no folder wrapper.
+34. The ZIP contains no `__MACOSX` or `.DS_Store` entries.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_017_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-017-report.zip`
+- Report exact paths, file sizes, and line counts
+- Report the exact automated-test result
+- State which rendered tests passed
+- State exactly what still requires user testing
+- Confirm the ZIP contains exactly four root files
+- Confirm no unrelated TrailWeigh feature was modified
+- Do not require the user to copy the workflow manually
