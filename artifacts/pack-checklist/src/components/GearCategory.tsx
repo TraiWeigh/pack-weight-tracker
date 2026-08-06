@@ -293,7 +293,7 @@ export function GearCategory({
               <div className="flex items-center gap-3">
                 <div className={`${RG_MOVE_W} flex justify-center`}>Move</div>
                 <div className={`${RG_WEIGHT_W} text-right`}>Weight</div>
-                <div className={`${RG_QTY_W} text-center`}>Qty</div>
+                <div className={`${RG_QTY_W} text-right`}>Qty</div>
               </div>
               {/* 6 px spacer — matches the row's QTY-to-TOTAL gap */}
               <div className="w-1.5 shrink-0" />

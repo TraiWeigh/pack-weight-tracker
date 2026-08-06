@@ -133,12 +133,13 @@ export const GearRow = memo(function GearRow({
             <span className="text-xs text-muted-foreground select-none w-4">{su}</span>
           </div>
 
-          {/* QTY — 56 px (w-14); comfortable for 1–20 with appearance-none center-aligned select */}
+          {/* QTY — 56 px (w-14); right-aligned so the number sits flush against the 6 px spacer,
+               making the visual QTY-to-TOTAL gap ~6 px instead of ~30 px */}
           <div className={`${RG_QTY_W} flex items-center`}>
             <select
               value={item.qty}
               onChange={(e) => updateItem(category, item.id, { qty: parseInt(e.target.value) })}
-              className="w-full bg-transparent text-sm text-center font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 h-7 transition-colors hover:bg-black/5 cursor-pointer appearance-none"
+              className="w-full bg-transparent text-sm text-right font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 h-7 transition-colors hover:bg-black/5 cursor-pointer appearance-none"
             >
               {QTY_OPTIONS.map(n => (
                 <option key={n} value={n}>{n}</option>
