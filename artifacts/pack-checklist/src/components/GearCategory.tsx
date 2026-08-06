@@ -287,7 +287,7 @@ export function GearCategory({
             <div />{/* group spacer */}
             <div className="pl-1">Move</div>
             <div className="text-right">Weight</div>
-            <div className="text-center translate-x-2">Qty</div>
+            <div className="text-center">Qty</div>
             <div className="text-right">Total</div>
             <div className="w-6" />
           </div>

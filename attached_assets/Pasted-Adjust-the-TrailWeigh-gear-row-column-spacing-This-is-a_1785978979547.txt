@@ -1,0 +1,183 @@
+Adjust the TrailWeigh gear-row column spacing.
+
+This is a layout-only correction. Do not change any calculations, item data, Move behavior, Undo, Redo, Save, or other features.
+
+## Current problem
+
+There is too much horizontal space between the QTY column and the TOTAL column.
+
+Reduce that visible space by approximately half.
+
+Use the recovered horizontal space to make DESCRIPTION wider.
+
+## Required movement
+
+Keep the TOTAL column in its current position.
+
+Shift these three complete columns to the right together by the same amount:
+
+- MOVE
+- WEIGHT
+- QTY
+
+For each column, move all related content together:
+
+- Heading
+- Input or control
+- Displayed values
+
+Do not move only the headings.
+
+Do not move individual values independently.
+
+## Preserve spacing within the group
+
+The spacing between these columns should remain unchanged:
+
+- MOVE to WEIGHT
+- WEIGHT to QTY
+
+Only reduce the excessive space between:
+
+- QTY and TOTAL
+
+The final effect should be:
+
+1. DESCRIPTION becomes wider.
+2. MOVE shifts right.
+3. WEIGHT shifts right by the same amount.
+4. QTY shifts right by the same amount.
+5. TOTAL stays where it is.
+6. The QTY-to-TOTAL space is approximately half its current size.
+
+## DESCRIPTION
+
+DESCRIPTION must receive all space recovered from reducing the QTY-to-TOTAL separation.
+
+Keep DESCRIPTION as the flexible `1fr` column.
+
+Do not move the beginning of DESCRIPTION.
+
+Extend its right side into the recovered space.
+
+Do not narrow TYPE.
+
+## Shared layout requirement
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/gearGrid.ts`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+
+The header and item rows must continue using matching geometry.
+
+Do not create one spacing rule for the header and another for the rows.
+
+Use one shared layout definition or shared spacing constants.
+
+## Recommended implementation
+
+Do not use separate arbitrary margins on MOVE, WEIGHT, and QTY.
+
+Prefer a shared, right-anchored layout for the numeric/action columns where:
+
+- TOTAL remains anchored in its current position.
+- The QTY-to-TOTAL separation can be reduced independently.
+- MOVE, WEIGHT, and QTY shift right together.
+- DESCRIPTION automatically expands by the recovered width.
+
+A shared nested grid or shared explicit spacer value is acceptable.
+
+Measure the current effective visual space between QTY and TOTAL in the rendered app and reduce it by approximately 50%.
+
+Do not assume that changing the global `gap-3` value alone will solve the problem, because the spacing between MOVE, WEIGHT, and QTY must remain unchanged.
+
+## Existing QTY heading correction
+
+Preserve the current requirement that the visible QTY heading is positioned correctly between WEIGHT and TOTAL.
+
+After changing the layout:
+
+- QTY must remain visually centered in its intended position.
+- Do not add a second unrelated heading-only offset unless required.
+- Remove or update an older translation if it conflicts with the new shared layout.
+
+## Theme-aware number colors
+
+Preserve the correction that WEIGHT and QTY numbers use the same theme-aware foreground color as other row text:
+
+- Normal dark foreground in Light mode
+- Normal light foreground in Dark mode
+- System mode follows the system appearance
+
+Do not reintroduce hard-coded black or white text.
+
+## Do not change
+
+Do not change:
+
+- TYPE position
+- Start of DESCRIPTION
+- TOTAL position
+- Delete control position
+- Move destination picker behavior
+- `moveItem`
+- Weight values
+- Quantity values
+- Total calculations
+- Units
+- Undo
+- Redo
+- Save
+- Save As
+- Locker
+- Importing
+- Category aliases
+- Backgrounds
+- Preview
+- Share
+
+## Required rendered test
+
+Use a category with several populated rows.
+
+Confirm:
+
+1. The QTY-to-TOTAL space is approximately half its previous size.
+2. TOTAL remains in its previous position.
+3. MOVE, WEIGHT, and QTY shifted right together.
+4. MOVE, WEIGHT, and QTY remain aligned with their row controls and values.
+5. The spacing from MOVE to WEIGHT did not change.
+6. The spacing from WEIGHT to QTY did not change.
+7. DESCRIPTION is visibly wider.
+8. TYPE and the beginning of DESCRIPTION did not move.
+9. The delete control remains fully visible.
+10. There is no horizontal overflow.
+11. WEIGHT and QTY text colors remain correct in Light and Dark modes.
+
+Test desktop and phone-sized layouts.
+
+Move one item and confirm Move, Undo, and Redo still work.
+
+Run:
+
+`pnpm test:importer`
+
+## Final report
+
+Report:
+
+- Files changed
+- Previous effective QTY-to-TOTAL spacing
+- New effective QTY-to-TOTAL spacing
+- Approximate number of pixels recovered
+- How TOTAL was kept fixed
+- How MOVE, WEIGHT, and QTY were shifted together
+- How DESCRIPTION received the recovered width
+- Desktop rendered-test result
+- Mobile rendered-test result
+- Light- and Dark-mode text-color result
+- Move, Undo, and Redo result
+- Automated-test result
+- Confirmation that no temporary logs remain
