@@ -1,0 +1,196 @@
+Make two small visual corrections to the TrailWeigh gear rows.
+
+Do not change the working Move feature, grid structure, quantity positions, weight positions, calculations, Undo, Redo, Save, or any unrelated behavior.
+
+## Correction 1 — Move only the QTY heading letters
+
+The visible heading text:
+
+QTY
+
+needs to be visually centered in the open space between:
+
+WEIGHT
+
+and:
+
+TOTAL
+
+Move only the QTY heading letters.
+
+Do not move:
+
+- The QTY input box
+- Ordinary QTY values
+- The QTY grid column
+- WEIGHT
+- WEIGHT values
+- TOTAL
+- TOTAL values
+- MOVE
+- The Move arrow
+- TYPE
+- DESCRIPTION
+- Any item-row controls
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+
+Prefer a small heading-only positioning adjustment on the QTY label or its wrapper.
+
+A controlled `translate-x`, relative positioning, or equivalent heading-only class is acceptable.
+
+Do not change the shared grid definition in:
+
+- `artifacts/pack-checklist/src/components/gearGrid.ts`
+
+unless there is no other reliable solution.
+
+Do not apply the QTY heading adjustment inside:
+
+- `GearRow.tsx`
+
+The quantity inputs and values must remain exactly where they are now.
+
+## Correction 2 — WEIGHT and QTY number colors
+
+The numbers under both WEIGHT and QTY currently do not consistently follow TrailWeigh’s normal foreground text color.
+
+Make all WEIGHT and QTY numeric text use the same existing theme-aware foreground color as the other normal row text.
+
+Required behavior:
+
+- Light mode: normal dark foreground text
+- Dark mode: normal light foreground text
+- System mode: follows the active system appearance
+
+Do not hard-code:
+
+- Black
+- White
+- Gray values that bypass the theme
+- Inline color styles
+
+Reuse the same existing text class, inherited foreground color, or CSS variable used by the other editable row text.
+
+Apply this correction to:
+
+### WEIGHT
+
+- Weight input text
+- Displayed weight values
+- Weight text while editing
+- Decimal weight values
+- Zero values
+
+### QTY
+
+- Quantity input text
+- Displayed quantity values
+- Quantity text while editing
+- Zero values
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+- Any shared input component or global style affecting numeric inputs
+
+Remove any hard-coded text-color class that causes WEIGHT or QTY values to remain dark in Dark mode.
+
+Keep the existing:
+
+- Input backgrounds
+- Input borders
+- Input sizes
+- Alignment
+- Numeric values
+- Unit labels
+- Calculations
+- Validation
+- Disabled behavior
+
+## Preserve all working behavior
+
+Do not change:
+
+- Move dropdown
+- Move alignment
+- WEIGHT heading position
+- TOTAL heading position
+- QTY input position
+- QTY value position
+- WEIGHT input position
+- WEIGHT value position
+- Shared row grid
+- Description width
+- `moveItem`
+- Undo
+- Redo
+- Save
+- Save As
+- Locker
+- Importing
+- Category aliases
+- Backgrounds
+- Preview
+- Share
+- Any weight or quantity calculations
+
+## Required rendered test
+
+Use a category containing several rows with visible WEIGHT and QTY values.
+
+### QTY heading test
+
+Confirm:
+
+1. Only the QTY heading letters moved.
+2. QTY is visually centered between WEIGHT and TOTAL.
+3. WEIGHT remains in its current position.
+4. TOTAL remains in its current position.
+5. The QTY input box did not move.
+6. Ordinary QTY values did not move.
+7. MOVE and its arrow did not move.
+
+### Light-mode color test
+
+Confirm:
+
+1. WEIGHT numbers match the normal row-text color.
+2. QTY numbers match the normal row-text color.
+3. Editable and non-editable values match.
+4. No numbers are forced to an unrelated color.
+
+### Dark-mode color test
+
+Confirm:
+
+1. WEIGHT numbers become the normal light foreground color.
+2. QTY numbers become the normal light foreground color.
+3. Editable and non-editable values remain readable.
+4. The colors match other normal row text.
+5. No input value remains black.
+
+### System-mode test
+
+Confirm that switching the operating-system appearance correctly updates both WEIGHT and QTY numeric text.
+
+Run:
+
+`pnpm test:importer`
+
+## Final report
+
+Report:
+
+- Files changed
+- Exact heading-only adjustment used for QTY
+- Confirmation that the QTY box and values did not move
+- Theme-aware class or variable used for WEIGHT numbers
+- Theme-aware class or variable used for QTY numbers
+- Light-mode rendered-test result
+- Dark-mode rendered-test result
+- System-mode rendered-test result
+- Automated-test result
+- Confirmation that no temporary logs remain
