@@ -1,0 +1,117 @@
+Prompt ID: 014J
+Prompt title: Restore the Master Workflow and Correct the QTY Heading
+
+Perform two small corrective tasks:
+
+1. Restore the complete TrailWeigh master workflow and append Prompt 014I correctly.
+2. Correct only the visible QTY heading alignment.
+
+Do not make any other TrailWeigh application changes.
+
+Do not change the current category width or Pack Summary width.
+
+# PART 1 — RESTORE THE COMPLETE MASTER WORKFLOW
+
+The root file:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+was accidentally replaced by a short Prompt 014I-only document.
+
+The complete Prompt 014H master workflow previously contained approximately 988 lines and is stored inside:
+
+`trailweigh-workflow-docs.zip`
+
+The current Prompt 014I report should exist at:
+
+`workflow-reports/PROMPT_014I_REPORT.md`
+
+## Preserve the current truncated file first
+
+Before replacing anything, copy the current truncated root master to:
+
+`workflow-reports/PROMPT_014I_TRUNCATED_MASTER_BACKUP.md`
+
+This backup is for recovery evidence only.
+
+Do not append this truncated backup to the restored master.
+
+## Restore the Prompt 014H master
+
+1. Inspect `trailweigh-workflow-docs.zip`.
+2. Extract only the earlier complete:
+   `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+3. Extract it to a temporary location first.
+4. Verify that the extracted file:
+   - Starts with `# TrailWeigh Complete Workflow History`
+   - Contains the History Availability Statement
+   - Contains Prompt 014G
+   - Contains Prompt 014H
+   - Contains the Protocol Appendix
+   - Contains substantially more than 900 lines
+5. Do not use the extracted version unless all of these checks pass.
+6. Replace the truncated root `TRAILWEIGH_COMPLETE_WORKFLOW.md` with this verified complete version.
+
+Do not replace or alter:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+## Append Prompt 014I correctly
+
+After restoring the complete Prompt 014H master:
+
+1. Read:
+   `workflow-reports/PROMPT_014I_REPORT.md`
+2. Check whether the restored master already contains a full Prompt 014I entry.
+3. If it does not, append the complete contents of the Prompt 014I report as the next chronological entry.
+4. Do not replace, shorten, or rewrite earlier history.
+5. Do not append Prompt 014I twice.
+6. Preserve the Prompt 014I statuses exactly, including its PARTIAL QTY-center result.
+7. Update the master’s final “last updated” line to Prompt 014I before beginning the Prompt 014J append.
+
+## Required documentation verification
+
+Before changing the application, verify and record:
+
+- Restored master line count
+- Restored master file size
+- Prompt 014I report line count
+- Prompt 014I report file size
+- Line count after Prompt 014I is appended
+- Confirmation that Prompt 014G remains present
+- Confirmation that Prompt 014H remains present
+- Confirmation that Prompt 014I appears exactly once
+- Confirmation that no previous history was removed
+
+If the ZIP does not contain the verified complete master, stop the documentation restoration and report the blocker. Do not construct a replacement history from memory.
+
+# PART 2 — CORRECT ONLY THE QTY HEADING
+
+The current Pack Summary width change is correct and must remain:
+
+`lg:grid-cols-[1fr_365px]`
+
+Do not change it.
+
+Do not change:
+
+- Category-panel width
+- Pack Summary width
+- Main page width
+- Outer page padding
+- Grid gap
+- DESCRIPTION width
+- MOVE
+- WEIGHT
+- QTY values
+- QTY select controls
+- TOTAL
+- Delete controls
+- Mobile layout
+
+## Current incorrect QTY heading class
+
+Prompt 014I changed the QTY heading to:
+
+```tsx
+<div className={`${RG_QTY_W} text-right pr-1`}>Qty</div>
