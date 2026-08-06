@@ -1,0 +1,174 @@
+Correct the column alignment in TrailWeigh gear-category rows.
+
+The Move dropdown works correctly. Do not change its behavior, Undo/Redo logic, item preservation, or saving behavior.
+
+## Current visual problem
+
+In the rendered checklist:
+
+- The MOVE heading is not centered directly above the dropdown arrow.
+- MOVE, WEIGHT, and QTY need to shift slightly to the right together.
+- TYPE and DESCRIPTION are already positioned correctly.
+- Description must keep the additional width gained when the old wide Move box was removed.
+
+## Required alignment
+
+The header and every gear-item row must use the exact same grid-column definition.
+
+The visible order remains:
+
+1. TYPE
+2. DESCRIPTION
+3. MOVE
+4. WEIGHT
+5. QTY
+6. TOTAL
+
+Also preserve the checkbox, drag handle, unit text, and delete control in their current appropriate positions.
+
+## MOVE column
+
+Create one fixed-width MOVE column shared by both:
+
+- The MOVE heading
+- The dropdown chevron in every row
+
+Requirements:
+
+- Center the MOVE heading horizontally in that column.
+- Center the chevron horizontally in the same column.
+- Do not position either with separate margins or arbitrary spacer elements.
+- Keep the chevron always visible.
+- Keep the transparent native select directly over the chevron.
+- Maintain a usable tap target even though the visible icon is small.
+
+## Shift the group right
+
+Shift these columns slightly to the right as a coordinated group:
+
+- MOVE
+- WEIGHT
+- QTY
+
+Do not shift TYPE or DESCRIPTION.
+
+Use grid-column sizing and column gaps rather than one-off margins on individual labels.
+
+A suitable structure may use fixed columns similar to:
+
+- MOVE: approximately 28–36 px
+- WEIGHT: preserve its current readable width
+- QTY: preserve its current readable width
+- TOTAL: preserve its current alignment
+
+Choose the final values by inspecting the rendered desktop layout.
+
+Do not allow the adjustment to push TOTAL or the delete control outside the row.
+
+## Preserve Description width
+
+Description must remain the largest flexible text column.
+
+Do not restore the former wide Move box.
+
+Do not significantly reduce the visible Description area.
+
+Long descriptions should continue showing more text than they did before the compact Move control was added.
+
+## Use matching grid definitions
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+
+The header grid and item-row grid must use identical column widths for:
+
+- Type
+- Description
+- Move
+- Weight
+- Qty
+- Total
+
+Prefer a shared grid-template constant or shared class if practical so they cannot drift apart again.
+
+Account for any checkbox, drag handle, unit, or action columns consistently.
+
+## Responsive behavior
+
+### Desktop
+
+Confirm:
+
+- MOVE is centered over the arrow.
+- WEIGHT values align beneath WEIGHT.
+- QTY values align beneath QTY.
+- TYPE and DESCRIPTION do not move unnecessarily.
+- Description retains its wider area.
+
+### Tablet and mobile
+
+Confirm:
+
+- MOVE remains centered over the arrow.
+- The arrow remains visible and tappable.
+- Weight and Qty do not overlap.
+- No horizontal page overflow is introduced.
+- The destination-category picker remains usable.
+
+## Preserve working behavior
+
+Do not change:
+
+- `moveItem`
+- Destination-category options
+- Item state preservation
+- Undo
+- Redo
+- Save
+- Save As
+- Locker
+- Category order
+- Category aliases
+- Importing
+- Backgrounds
+- Preview
+- Share
+- Any unrelated feature
+
+## Required rendered test
+
+Use a category containing several gear rows.
+
+Confirm:
+
+1. MOVE is centered directly above every dropdown arrow.
+2. MOVE, WEIGHT, and QTY have shifted slightly right together.
+3. WEIGHT values remain centered beneath WEIGHT.
+4. QTY values remain centered beneath QTY.
+5. TYPE and DESCRIPTION remain correctly positioned.
+6. Description remains wider than it was with the original “Move ↗” box.
+7. TOTAL and delete controls remain fully visible.
+8. Move an item and confirm Move, Undo, and Redo still work.
+
+Take close-up desktop and mobile screenshots showing the headings and at least two item rows.
+
+Run:
+
+`pnpm test:importer`
+
+## Final report
+
+Report:
+
+- Files changed
+- Final shared grid-column definition
+- How MOVE was centered over the arrow
+- How MOVE, WEIGHT, and QTY were shifted right together
+- Confirmation that Description width was preserved
+- Desktop rendered-test result
+- Mobile rendered-test result
+- Move/Undo/Redo result
+- Automated-test result
+- Confirmation that no temporary logs remain

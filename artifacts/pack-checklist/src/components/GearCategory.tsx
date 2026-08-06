@@ -4,6 +4,7 @@ import { GearRow } from './GearRow';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUtils';
 import { useUnit } from '../context/UnitContext';
 import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical } from 'lucide-react';
+import { GEAR_GRID_COLS, GEAR_GRID_GAP } from './gearGrid';
 
 interface GearCategoryProps {
   name: string;
@@ -270,7 +271,7 @@ export function GearCategory({
       {/* ── Body ─────────────────────────────────────────────── */}
       {isOpen && (
         <div className="p-2 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="hidden sm:grid grid-cols-[auto_auto_1fr_auto_80px_70px_80px_auto] gap-4 px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+          <div className={`hidden sm:grid ${GEAR_GRID_COLS} ${GEAR_GRID_GAP} px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1`}>
             <div className="w-[30px]" />
             <EditableColHeader
               value={meta.subLabel ?? ''}
@@ -283,7 +284,7 @@ export function GearCategory({
               placeholder="Description"
               onCommit={v => onUpdateMeta({ descLabel: v || undefined })}
             />
-            <div className="text-center">Move</div>{/* Move column heading */}
+            <div className="text-center">Move</div>
             <div className="text-right">Weight</div>
             <div className="text-center">Qty</div>
             <div className="text-right">Total</div>
