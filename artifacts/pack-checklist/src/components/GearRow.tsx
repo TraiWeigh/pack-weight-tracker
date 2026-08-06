@@ -85,6 +85,9 @@ export const GearRow = memo(function GearRow({
         className="w-full bg-transparent text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate placeholder:text-muted-foreground/50 transition-colors hover:bg-black/5"
       />
 
+      {/* Group spacer — shifts MOVE–WEIGHT–QTY right together */}
+      <div />
+
       {/* Move control — fills the shared 32px column; icon always visible; transparent select on top */}
       <div
         className={`relative flex items-center justify-center h-7 rounded transition-colors

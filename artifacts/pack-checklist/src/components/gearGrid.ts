@@ -9,14 +9,15 @@
  *  1. auto  — checkbox + drag-grip
  *  2. auto  — TYPE input  (w-20 sm:w-28; header uses w-28 spacer)
  *  3. 1fr   — DESCRIPTION (flexible, always the widest column)
- *  4. 32px  — MOVE        (fixed; header label + chevron icon both centered)
- *  5. 90px  — WEIGHT
- *  6. 70px  — QTY
- *  7. 88px  — TOTAL
- *  8. auto  — DELETE button / spacer
+ *  4. 12px  — spacer that shifts the MOVE–WEIGHT–QTY group right as a unit
+ *  5. 32px  — MOVE  (fixed; chevron centered; label uses pl-1 so O sits over center)
+ *  6. 90px  — WEIGHT
+ *  7. 70px  — QTY
+ *  8. 88px  — TOTAL
+ *  9. auto  — DELETE button / spacer
  */
 export const GEAR_GRID_COLS =
-  'grid-cols-[auto_auto_1fr_32px_90px_70px_88px_auto]';
+  'grid-cols-[auto_auto_1fr_12px_32px_90px_70px_88px_auto]';
 
 /** Use the same gap in both header and rows. */
 export const GEAR_GRID_GAP = 'gap-3';

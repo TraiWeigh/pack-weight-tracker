@@ -284,7 +284,8 @@ export function GearCategory({
               placeholder="Description"
               onCommit={v => onUpdateMeta({ descLabel: v || undefined })}
             />
-            <div className="text-center">Move</div>
+            <div />{/* group spacer */}
+            <div className="pl-1">Move</div>
             <div className="text-right">Weight</div>
             <div className="text-center">Qty</div>
             <div className="text-right">Total</div>

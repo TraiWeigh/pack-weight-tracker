@@ -1,0 +1,189 @@
+Correct the remaining alignment issue in the TrailWeigh gear-item grid.
+
+The Move dropdown works correctly. Do not change Move behavior, Undo, Redo, saving, item data, or destination options.
+
+## Exact visual requirement
+
+Shift these three columns to the right together by the same horizontal amount:
+
+- MOVE
+- WEIGHT
+- QTY
+
+Do not move:
+
+- TYPE
+- DESCRIPTION
+
+The dropdown arrow beneath MOVE must line up directly below the center of the letter:
+
+O
+
+in the word:
+
+MOVE
+
+Do not center the arrow beneath the entire MOVE word.
+
+The intended visual reference is:
+
+- The “O” in MOVE is directly above the dropdown arrow.
+- WEIGHT and QTY shift right by exactly the same amount as MOVE.
+- The spacing between MOVE, WEIGHT, and QTY remains unchanged relative to each other.
+
+## Treat the columns as one group
+
+Do not reposition only:
+
+- The arrow
+- The MOVE label
+- WEIGHT
+- QTY
+
+Move the entire MOVE–WEIGHT–QTY group together.
+
+Use one shared grid adjustment so the header and every item row stay aligned.
+
+Do not use separate arbitrary margins on each heading or row value.
+
+## Preserve the existing grid structure
+
+Current shared grid code is in:
+
+- `artifacts/pack-checklist/src/components/gearGrid.ts`
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+
+Inspect the shared grid definition before editing.
+
+Keep the header and row grids using the same shared constants.
+
+The previous shared definition was reported as:
+
+`grid-cols-[auto_auto_1fr_32px_90px_70px_88px_auto]`
+
+Do not create separate grid templates for the header and item rows.
+
+## Recommended implementation approach
+
+Adjust the boundary between DESCRIPTION and the MOVE–WEIGHT–QTY group.
+
+Use one of these clean approaches:
+
+- Add a small fixed spacer column immediately before MOVE in both the header and row grid, or
+- Add a shared left offset to one wrapper containing MOVE, WEIGHT, and QTY, or
+- Adjust the shared grid template so the three-column group begins slightly farther right
+
+Choose the approach that preserves identical header and row geometry.
+
+Do not:
+
+- Move the arrow independently with margin-left
+- Move only the MOVE heading
+- Add different offsets in GearRow and GearCategory
+- Shrink Description significantly
+- Change TOTAL or the delete control unless required to prevent overflow
+
+## Description width
+
+Keep Description as the largest flexible column.
+
+A slight reduction is acceptable only if required to move the three-column group right, but do not return to the narrow Description width caused by the original wide “Move ↗” control.
+
+Long descriptions must remain readable.
+
+## MOVE heading positioning
+
+The MOVE heading may require a small internal alignment adjustment because the arrow must sit under the letter O rather than under the center of the complete word.
+
+Apply that adjustment consistently through a shared heading-cell layout.
+
+Do not move the arrow away from the center of its dropdown column.
+
+Preferred result:
+
+- The dropdown arrow remains centered in its functional column and tap target.
+- The MOVE label is positioned so its O sits directly over that column center.
+
+This is more reliable than moving the interactive arrow away from the center of its control.
+
+## Preserve current behavior
+
+Do not change:
+
+- Move destination list
+- Item movement
+- Item IDs
+- Item state preservation
+- Undo
+- Redo
+- Save
+- Save As
+- Locker
+- Imports
+- Categories
+- Backgrounds
+- Preview
+- Share
+- Mobile picker behavior
+- Existing automated Move tests
+
+## Responsive requirements
+
+### Desktop
+
+Confirm:
+
+- The O in MOVE is directly above the arrow.
+- MOVE, WEIGHT, and QTY shifted right together.
+- WEIGHT data remains under WEIGHT.
+- QTY data remains under QTY.
+- TYPE and DESCRIPTION remain in their existing positions.
+- TOTAL and delete remain visible.
+
+### Mobile and tablet
+
+Confirm:
+
+- MOVE, WEIGHT, and QTY remain aligned.
+- The arrow remains tappable.
+- No overlap occurs.
+- No horizontal page overflow is introduced.
+
+## Required rendered test
+
+Use a close-up view containing:
+
+- Header row
+- At least two gear-item rows
+
+Verify visually:
+
+1. The O in MOVE is directly above each arrow.
+2. WEIGHT and QTY moved right by the same amount as MOVE.
+3. The three headings remain evenly spaced as a group.
+4. Weight and quantity values align with their headings.
+5. Description remains adequately wide.
+6. TOTAL and delete remain fully visible.
+
+Also move one item and test Undo and Redo to confirm functionality was not affected.
+
+Run:
+
+`pnpm test:importer`
+
+## Final report
+
+Report:
+
+- Files changed
+- Exact shared-grid or group-offset change
+- Horizontal shift amount used
+- How the O in MOVE was aligned over the arrow
+- Confirmation that MOVE, WEIGHT, and QTY moved together
+- Confirmation that Type and Description did not move
+- Desktop screenshot result
+- Mobile screenshot result
+- Move, Undo, and Redo result
+- Automated-test result
+- Confirmation that no temporary logs remain
