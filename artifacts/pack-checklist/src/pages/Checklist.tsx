@@ -1133,10 +1133,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         </header>
 
         <main className="max-w-full mx-auto px-3 sm:px-4 lg:px-6 flex-1 min-h-0 lg:overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-full">
 
             {/* Gear list */}
-            <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+            <div className="lg:col-span-9 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned pills row */}
               <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
@@ -1247,7 +1247,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
+            <div className="lg:col-span-3 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned action bar */}
               <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
