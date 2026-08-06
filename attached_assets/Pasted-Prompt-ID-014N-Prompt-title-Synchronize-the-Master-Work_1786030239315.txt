@@ -1,0 +1,496 @@
+Prompt ID: 014N
+Prompt title: Synchronize the Master Workflow Summary Sections
+
+Correct the stale summary and current-state sections in:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+This is a documentation-only task.
+
+Do not modify TrailWeigh application code, layout, behavior, calculations, tests, dependencies, saved data, or settings.
+
+Do not rewrite or remove the chronological history.
+
+Do not globally replace historical measurements. Earlier measurements must remain attached to the prompts where they occurred.
+
+# PART 1 — VERIFY AND BACK UP THE MASTER
+
+Before changing anything, inspect:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Confirm that it:
+
+- Begins with `# TrailWeigh Complete Workflow History`
+- Contains approximately 1,588 lines or more
+- Contains Prompt 014G
+- Contains Prompt 014H
+- Contains Prompt 014I
+- Contains Prompt 014J
+- Contains Prompt 014K
+- Contains Prompt 014L
+- Contains Prompt 014M
+- Ends with a last-updated reference to Prompt 014M
+
+If the master contains fewer than 1,500 lines, stop and report the blocker.
+
+Create a complete backup before making changes:
+
+`workflow-reports/PRE_014N_MASTER_BACKUP.md`
+
+Record:
+
+- Backup line count
+- Backup file size
+- Master line count before editing
+- Master file size before editing
+
+Do not overwrite an earlier backup.
+
+# PART 2 — UPDATE THE HISTORY AVAILABILITY STATEMENT
+
+At the beginning of the master, update the stale field:
+
+`Latest entry included`
+
+It currently identifies Prompt 014H.
+
+Before appending Prompt 014N, change it to accurately reflect that the master currently includes Prompt 014M.
+
+After Prompt 014N is appended, update it again so the final value identifies:
+
+`Prompt 014N — 2026-08-06`
+
+Do not change the statement that the earlier project history is incomplete.
+
+Do not claim that Prompts 001–014F became fully available.
+
+Preserve all existing uncertainty labels concerning inaccessible early history.
+
+# PART 3 — UPDATE THE PROMPT NUMBER INDEX
+
+Update the existing:
+
+`Prompt Number Index`
+
+Preserve the entries for unavailable Prompts 001–013 and 014A–014F.
+
+Keep Prompt 014G and Prompt 014H.
+
+Add accurate rows for:
+
+- Prompt 014I — Quick Category Width and QTY Heading Correction
+- Prompt 014J — Restore the Master Workflow and Correct the QTY Heading
+- Prompt 014K — Final QTY Heading Alignment Correction
+- Prompt 014L — Complete the Missing Prompt 014K Documentation
+- Prompt 014M — Finish Prompt 014L Documentation and Record Visual Approval
+- Prompt 014N — Synchronize the Master Workflow Summary Sections
+
+Use these status principles:
+
+## Prompt 014I
+
+Record:
+
+- Pack Summary changed from 341px to 365px
+- Category panel became approximately 24px narrower
+- Initial QTY alignment was PARTIAL
+- Report exists at `workflow-reports/PROMPT_014I_REPORT.md`
+
+## Prompt 014J
+
+Record:
+
+- Full master workflow restored
+- Prompt 014I appended correctly
+- QTY heading changed to `translate-x-1`
+- Later superseded by Prompt 014K
+- Report exists at `workflow-reports/PROMPT_014J_REPORT.md`
+
+## Prompt 014K
+
+Record:
+
+- QTY heading changed from `translate-x-1` to `translate-x-3`
+- User visual verification: PASS
+- Exact pixel-centre measurement: NOT TESTED
+- Report exists at `workflow-reports/PROMPT_014K_REPORT.md`
+
+## Prompt 014L
+
+Record:
+
+- Created the missing Prompt 014K report and appended Prompt 014K
+- Failed to create its own report during its original execution
+- Its missing report was completed by Prompt 014M
+- Report exists at `workflow-reports/PROMPT_014L_REPORT.md`
+
+## Prompt 014M
+
+Record:
+
+- Corrected Prompt 014K visual status to PASS
+- Created Prompt 014L and Prompt 014M reports
+- Appended both entries
+- No application code changed
+- Report exists at `workflow-reports/PROMPT_014M_REPORT.md`
+
+## Prompt 014N
+
+Record:
+
+- Documentation-summary synchronization
+- No application code changed
+- Report path:
+  `workflow-reports/PROMPT_014N_REPORT.md`
+
+Do not create false entries for prompts whose exact history remains unavailable.
+
+# PART 4 — UPDATE SCREENSHOT AND VISUAL-TESTING STATUS
+
+Update the summary section titled:
+
+`Screenshots and Visual Testing`
+
+Do not remove the historical Prompt 014G Replit screenshots.
+
+Add a subsection for the later user-supplied screenshots covering Prompts 014I through 014K.
+
+Record:
+
+- User supplied rendered screenshots after the layout changes.
+- Prompt 014I showed the category width change but QTY was still not properly aligned.
+- Prompt 014J moved the QTY heading using `translate-x-1`, but the screenshot still showed it left of the values.
+- Prompt 014K changed the heading to `translate-x-3`.
+- The user-supplied Prompt 014K screenshot showed Backpack and Shelter System expanded.
+- Multiple WEIGHT, QTY, and TOTAL values were visible.
+- QTY appeared visually aligned over the quantity values.
+- No clipping or horizontal overflow was visible.
+- User visual verification for Prompt 014K: PASS.
+- Exact independent pixel-centre measurement: NOT TESTED.
+
+Do not state that Prompt 014G itself received direct user approval before later prompts. State that its layout was subsequently modified and superseded by Prompts 014I–014K.
+
+# PART 5 — UPDATE THE CURRENT PROJECT-STATE SECTION
+
+Update only the section titled:
+
+`Current TrailWeigh Project State`
+
+Do not alter historical Prompt 014G measurements elsewhere.
+
+Base the current-state section on:
+
+- Current application source code
+- Prompt 014I through Prompt 014M reports
+- The latest user visual verification
+
+## Current desktop grid
+
+The current code should use:
+
+`lg:grid-cols-[1fr_365px]`
+
+Confirm this from:
+
+`artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+Update the current-state documentation to record:
+
+- Pack Summary fixed desktop width: 365px
+- Main remains `w-full`
+- Outer desktop padding remains equal
+- Desktop gap remains unchanged unless current source proves otherwise
+- Mobile remains a single-column layout
+
+## Current category width
+
+The earlier reported category width was:
+
+- 832px before Prompt 014I
+- Approximately 808px after changing the sidebar from 341px to 365px
+
+Inspect the current code and reports.
+
+If no new rendered measurement exists, document:
+
+`Approximately 808px at the previously used 1280×800 viewport; calculated from the 24px sidebar-width change and not independently remeasured during Prompt 014N.`
+
+Do not present an analytical estimate as a new browser measurement.
+
+## Current DESCRIPTION width
+
+The earlier DESCRIPTION width was 275px before Prompt 014I.
+
+If no reliable current rendered measurement exists, do not invent an exact current value.
+
+State that DESCRIPTION became approximately 24px narrower when the checklist area narrowed, but was not independently remeasured during Prompt 014N.
+
+## Current QTY heading
+
+Confirm from:
+
+`artifacts/pack-checklist/src/components/GearCategory.tsx`
+
+Document:
+
+- QTY heading uses `translate-x-3`
+- This is a 12px visual translation
+- It replaced `translate-x-1`
+- QTY values and controls were not moved
+- User visual verification: PASS
+- Exact pixel-centre measurement: NOT TESTED
+
+## Current QTY-to-TOTAL spacing
+
+Confirm the current structural spacer from source.
+
+If it remains:
+
+`w-[3px]`
+
+record:
+
+- Structural spacer: 3px
+- Earlier structural spacer: 6px
+- Structural gap was halved
+- Full text-level visible-gap halving was never independently confirmed
+
+## Current Pack Summary and Weight Distribution
+
+Document their actual current relationship based on current source.
+
+Do not describe them as independent panels unless the application currently implements that behavior.
+
+## Current save schema and pie colors
+
+Preserve the current v5 schema description only if confirmed in current code.
+
+Document that `pieColors` exists in the schema, but the full Locker save-and-restore round trip remains unverified unless current source and tests prove otherwise.
+
+# PART 6 — CORRECT STALE UNRESOLVED-ISSUE STATUSES
+
+Update:
+
+`Unresolved Issues and Waiting Requirements`
+
+Do not erase legitimate unresolved work.
+
+## Prompt 014G visual acceptance
+
+Remove or replace the stale statement that Prompt 014G is simply awaiting visual approval.
+
+Record instead:
+
+- Prompt 014G’s original layout was modified by Prompts 014I–014K.
+- The current QTY heading received user visual verification: PASS after Prompt 014K.
+- Prompt 014G’s original `341px` state is no longer the current layout.
+- Future broad desktop-layout polish may still recheck the entire grid after later panel changes.
+
+## QTY heading alignment
+
+Mark as:
+
+`RESOLVED — Prompt 014K, user visual verification PASS`
+
+Also state:
+
+`Exact pixel-centre measurement by Replit: NOT TESTED`
+
+## QTY-to-TOTAL visible text gap
+
+Keep this unresolved or deferred unless current evidence proves it.
+
+Record:
+
+- Structural spacer is confirmed at 3px.
+- Full visible text-level halving remains unconfirmed.
+- This may be revisited during final desktop-layout polish.
+
+## Pie-color persistence
+
+Keep as unresolved unless current source inspection and testing prove save-and-restore behavior works.
+
+## Share Link and other feature items
+
+Preserve legitimate unresolved Share Link, background, mobile, and other pending items.
+
+Do not mark a feature complete merely because implementation code exists.
+
+# PART 7 — CORRECT TEST-SUITE DOCUMENTATION
+
+Inspect:
+
+- Root `package.json`
+- The `test:importer` script
+- `TESTING.md`
+- Current test files
+
+Determine exactly which suites run when executing:
+
+`pnpm test:importer`
+
+Resolve the current documentation inconsistency about whether it runs five or six suites.
+
+Do not edit application tests.
+
+Do not run tests unless needed to identify the actual script behavior.
+
+If tests are not rerun, state:
+
+`Latest verified result: 47 passed / 0 failed during Prompt 014K; tests not rerun during documentation-only Prompt 014N.`
+
+List only suites actually included by the current script.
+
+Do not retain an `[UNCERTAIN]` suite-count statement when the package script makes the answer clear.
+
+# PART 8 — CORRECT CURRENT AI-SCAN DOCUMENTATION ONLY IF CONFIRMED
+
+Inspect the current source and tests concerning:
+
+- `/api/import-gear`
+- `/api/scan-gear`
+- Image file rejection
+- Any active AI scan workflow
+- Scan-credit UI
+
+The master currently contains potentially conflicting statements about image scanning and image rejection.
+
+Correct the current-state description only when confirmed by current code and tests.
+
+Clearly distinguish:
+
+- Image files rejected by the regular file-import endpoint
+- Any separate AI scan endpoint or feature
+- Any scan endpoint that currently rejects a particular request type
+- UI code that exists but is not currently functional
+
+Do not change application code.
+
+If behavior remains ambiguous, mark it `[UNCERTAIN]` and explain exactly why.
+
+# PART 9 — PRESERVE HISTORICAL ACCURACY
+
+Do not globally replace:
+
+- `341px` with `365px`
+- `832px` with `808px`
+- Earlier QTY classes with the current class
+- Earlier unresolved statuses inside historical reports
+
+Historical sections must continue documenting what was true at that time.
+
+Only update:
+
+- Opening availability summary
+- Prompt Number Index
+- Screenshot summary
+- Current Project State
+- Current unresolved-issues summary
+- Current automated-test summary
+- Current AI-scan summary when confirmed
+
+Do not rewrite the full historical Prompt 014G–014M entries.
+
+# PART 10 — CREATE THE PROMPT 014N REPORT
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_014N_REPORT.md`
+
+The report must include:
+
+- Prompt ID and title
+- Purpose
+- Date completed
+- Confirmation this was documentation-only
+- Master line count and size before editing
+- Backup path, line count, and size
+- Exact master sections updated
+- Exact stale statements corrected
+- Prompt Number Index rows added
+- Current layout values recorded
+- Which values are measured versus analytical estimates
+- Current QTY status
+- Current unresolved issues
+- Actual `test:importer` suite list
+- AI-scan documentation finding
+- Confirmation historical prompt entries were preserved
+- Confirmation no application source files changed
+- Confirmation no tests or dependencies changed
+- Acceptance checklist marked PASS, FAIL, PARTIAL, or NOT TESTED
+- Any remaining documentation inconsistency
+
+# PART 11 — APPEND PROMPT 014N
+
+Append the complete contents of:
+
+`workflow-reports/PROMPT_014N_REPORT.md`
+
+to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not replace the master.
+- Do not truncate previous content.
+- Do not append Prompt 014N twice.
+- Confirm Prompt 014N appears exactly once in the chronological report section.
+- Update the opening `Latest entry included` field to Prompt 014N.
+- Update the final trailer to:
+  `Master workflow last updated: 2026-08-06 (Prompt 014N)`
+
+# PART 12 — CREATE AN EASY DOWNLOAD ZIP
+
+Create this ZIP in the project root:
+
+`trailweigh-014N-report.zip`
+
+Include:
+
+- `workflow-reports/PROMPT_014N_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Do not include backups, source code, dependencies, credentials, or unrelated files.
+
+# FINAL VERIFICATION
+
+Before completing:
+
+1. Confirm `PRE_014N_MASTER_BACKUP.md` exists.
+2. Confirm `PROMPT_014N_REPORT.md` exists.
+3. Confirm `trailweigh-014N-report.zip` exists.
+4. Confirm the master begins with the complete history heading.
+5. Confirm the opening latest-entry field identifies Prompt 014N.
+6. Confirm the Prompt Number Index contains 014I through 014N.
+7. Confirm the Current Project State records the current 365px desktop sidebar.
+8. Confirm the current QTY heading is documented as `translate-x-3`.
+9. Confirm user visual verification is recorded as PASS.
+10. Confirm exact pixel-centre measurement remains NOT TESTED.
+11. Confirm Prompt 014G visual acceptance is no longer incorrectly listed as simply pending.
+12. Confirm the QTY-to-TOTAL text-level gap remains accurately marked unresolved or deferred.
+13. Confirm legitimate pie-color and Share Link issues remain unresolved.
+14. Confirm the actual `test:importer` suite list is documented.
+15. Confirm historical 341px and 832px values remain in their historical Prompt 014G sections.
+16. Confirm Prompt 014N appears exactly once.
+17. Confirm the master grew rather than shrank.
+18. Confirm no TrailWeigh application source file changed.
+19. Confirm no dependencies changed.
+20. Confirm `TRAILWEIGH_WORKFLOW_PROTOCOL.md` was not changed.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_014N_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `trailweigh-014N-report.zip`
+- Report the exact path, file size, and line count of the Markdown files
+- Confirm no TrailWeigh application code was modified
+- Confirm the master summary sections now match the documented current state
+- Do not require the user to copy the workflow manually
