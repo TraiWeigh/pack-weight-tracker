@@ -6,19 +6,20 @@
 pnpm test:importer
 ```
 
-This runs all **ten** test suites in sequence and exits non-zero on any failure.
+This runs all **eleven** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
 ```sh
-node artifacts/api-server/src/routes/importGear.test.mjs       # Excel extraction + classification
-node artifacts/api-server/src/routes/importGear.pdf.test.mjs   # PDF parser fixture
-node artifacts/api-server/src/routes/scanGear.test.mjs         # Image format rejection
-node artifacts/pack-checklist/src/lib/categoryAliases.test.mjs # Shared category resolver
-node artifacts/pack-checklist/src/hooks/usePackData.test.mjs   # Duplicate-category migration
-node artifacts/pack-checklist/src/hooks/moveItem.test.mjs      # Move-item Store transformation
-node artifacts/pack-checklist/src/hooks/pieColor.test.mjs      # Per-file palette persistence
-node artifacts/pack-checklist/src/hooks/bgCollections.test.mjs # Photo collections data layer (updated Prompt 016A)
+node artifacts/api-server/src/routes/importGear.test.mjs          # Excel extraction + classification
+node artifacts/api-server/src/routes/importGear.pdf.test.mjs      # PDF parser fixture (pure logic)
+node artifacts/api-server/src/routes/importGear.pdf.api.test.mjs  # PDF API integration (pdf-parse v2 + real fixtures)
+node artifacts/api-server/src/routes/scanGear.test.mjs            # Image format rejection
+node artifacts/pack-checklist/src/lib/categoryAliases.test.mjs    # Shared category resolver
+node artifacts/pack-checklist/src/hooks/usePackData.test.mjs      # Duplicate-category migration
+node artifacts/pack-checklist/src/hooks/moveItem.test.mjs         # Move-item Store transformation
+node artifacts/pack-checklist/src/hooks/pieColor.test.mjs         # Per-file palette persistence
+node artifacts/pack-checklist/src/hooks/bgCollections.test.mjs    # Photo collections data layer (updated Prompt 016A)
 node artifacts/pack-checklist/src/hooks/bgCollections016A.test.mjs # Theme dropdown 016A requirements
 node artifacts/pack-checklist/src/hooks/bgPhotoStore016B.test.mjs  # IndexedDB photo store (Prompt 016B)
 ```
@@ -26,7 +27,7 @@ node artifacts/pack-checklist/src/hooks/bgPhotoStore016B.test.mjs  # IndexedDB p
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 659 passed / 0 failed (confirmed Prompt 016B, 2026-08-06).
+**Current result:** 692 passed / 0 failed (confirmed Prompt 016C, 2026-08-06).
 
 ## What each suite protects
 
@@ -34,6 +35,7 @@ plain JS so tests can run against source changes immediately.
 |-------|---------------------|
 | `importGear.test.mjs` | Excel extraction (section headers, TRUE/FALSE rows, column detection, Meal Planner skip); consumables routing; wearable-clothing routing; shelter/sleep routing; Bug Net → Clothing Packed; Fuel → Consumables, no warning; real-file regression (69 items, bug net, fuel) |
 | `importGear.pdf.test.mjs` | TrailWeigh PDF parser: category headers, checkbox rows, greedy regex (model numbers not parsed as weights), numeric-leading types (1 Gal Freezer Bag), Fuel description vs. weight, Fuel → Expendables override, summary-row skipping, forward-only category guard, Meal Planner hard stop |
+| `importGear.pdf.api.test.mjs` | PDF API integration (Prompt 016C): pdf-parse v2 loads correctly, PDFParse class + getText() + destroy() all present; real fixture PDF parses to structured result; gear items extracted with correct destination (Backpack, Shelter, Sleep, Clothing Packed, Kitchen, Expendables); image-only PDF yields empty text; corrupt PDF throws fast (no server hang); multipage fixture processed; timeout+destroy wrapper verified; error classification (timeout/password/generic); frontend non-JSON response handler; empty response body safety |
 | `scanGear.test.mjs` | Image uploads (.png .jpg .jpeg .webp) rejected by /api/import-gear with a clear error; type="image" rejected by /api/scan-gear with code "unsupported_type" |
 | `categoryAliases.test.mjs` | resolveDestination: Shelter/SHELTER/" shelter " → Shelter System; Sleep → Sleep System; Kitchen/Kitchen System → Kitchen Gear; Consumables → Expendables; Clothing Packed ≠ Clothing Worn; unknown category returned as-is (never silently becomes Backpack) |
 | `usePackData.test.mjs` | deduplicateCategoryAliases: items merge into preferred (user-named) tab, existing items kept first, source tabs removed from order/items/meta, full item objects preserved (id/sub/desc/weightOz/qty/checked/expendable), idempotent on repeated runs; mergeDefaultCategories: skips DEFAULT names when an alias already exists |
@@ -50,6 +52,9 @@ plain JS so tests can run against source changes immediately.
 | Excel in-memory workbooks | Inline in `importGear.test.mjs` via `xlsx.utils.aoa_to_sheet` | No files on disk |
 | Real Excel workbook | `attached_assets/PACK_WEIGHT_&_MEAL_PLANNER_CHECKLIST_1785883024547.xlsx` | Read from disk; tests skip gracefully if missing |
 | PDF page-text fixture | Inline string in `importGear.pdf.test.mjs` | Simulates `pdf-parse` v2 output for a real TrailWeigh export |
+| **Real gear-list PDF fixture** | `attached_assets/trailweigh_gear_list_fixture.pdf` | **Added Prompt 016C** — valid PDF binary parsed by actual pdf-parse v2; 15 items across 7 categories |
+| **Image-only PDF fixture** | `attached_assets/trailweigh_image_only_fixture.pdf` | **Added Prompt 016C** — valid PDF with no text content; tests no-readable-text path |
+| **Corrupt PDF fixture** | `attached_assets/trailweigh_corrupt_fixture.pdf` | **Added Prompt 016C** — invalid PDF bytes; tests fast-fail error path |
 | Deduplication fixture | Inline JS object in `usePackData.test.mjs` | Mirrors a stored v5 checklist with all three duplicate pairs |
 | Move-item fixture | Inline JS object in `moveItem.test.mjs` | Four-category store (Backpack, Clothing Packed, Kitchen Gear, Cook Set) |
 | Pie-color fixture | Inline JS objects in `pieColor.test.mjs` | LockerEntry builders using inlined save/load helpers |

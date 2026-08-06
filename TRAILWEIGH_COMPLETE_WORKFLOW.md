@@ -2323,3 +2323,189 @@ Previous: 610 tests / 9 suites (Prompt 016A).
 4. `TESTING.md`
 
 *Master workflow last updated: 2026-08-06 (Prompt 016B)*
+
+---
+
+### Prompt 016C — Repair the PDF Importer Regression (2026-08-06)
+
+---
+
+## Prompt 016C Report — Repair the PDF Importer Regression
+
+---
+
+### Identification
+
+| Field | Value |
+|-------|-------|
+| **Prompt ID** | 016C |
+| **Prompt title** | Repair the PDF Importer Regression |
+| **Start time** | 2026-08-06 22:35 UTC |
+| **Completion time** | 2026-08-06 23:15 UTC |
+| **Purpose** | Diagnose and repair the PDF import failure producing "Server error 502: unexpected response format." |
+| **Exact requested result** | Valid PDF uploads reach the editable review table with correct gear items; all error paths return JSON; server does not crash or hang |
+
+---
+
+### Starting State
+
+| Field | Value |
+|-------|-------|
+| **Visible error** | `Import failed — Server error 502: unexpected response format.` |
+| **API server workflow** | `NOT_STARTED` — workflow was stopped before user testing |
+| **Endpoint** | `POST /api/import-gear` |
+| **Parser package/version** | `pdf-parse@2.4.5` |
+| **Parser API usage** | `new PDFParse({ data: buffer, verbosity: 0 })` → `await inst.getText()` (v2 class API) |
+| **Missing guard** | No timeout on `inst.getText()` — could hang indefinitely |
+| **Missing cleanup** | No `inst.destroy()` call — pdfjs workers not released |
+| **Image-only detection** | Not present |
+
+---
+
+### Root Cause
+
+**The API server workflow was `NOT_STARTED` when the user attempted a PDF upload.**
+
+When the Express API server (port 8080) is not running, Vite's dev-server proxy cannot reach it and returns HTTP 502 with `Content-Type: text/html`. The frontend's content-type guard throws:
+
+```
+Server error 502: unexpected response format.
+```
+
+#### Evidence
+
+- Workflow status confirmed `NOT_STARTED` in project state snapshot before 016C.
+- After starting the server, the same PDF upload returned `200 application/json` with 15 items.
+- pdf-parse v2.4.5 with pdfjs-dist v5.4.296 loads and parses correctly; the class-based API was already correct.
+- Vite proxy: `proxy: { '/api': { target: 'http://localhost:8080', changeOrigin: true } }` in `artifacts/pack-checklist/vite.config.ts`.
+
+#### Secondary risk fixed
+
+No timeout existed on `await inst.getText()`. If pdfjs-dist workers stall (promise never rejects), the request hangs indefinitely and Vite proxy eventually returns a 502 HTML page — the same user-visible error. This is now fixed with a 30-second Promise.race timeout.
+
+#### Did Prompt 016B cause it?
+
+No. Prompt 016B made no changes to the API server or `importGear.ts`. It only added `bgPhotoStore.ts` and modified `BackgroundPicker.tsx`.
+
+---
+
+### Files Changed
+
+#### 1. `artifacts/api-server/src/routes/importGear.ts`
+
+Added to the PDF route handler:
+- `Promise.race` timeout wrapper (30 s) around `inst.getText()` — prevents indefinite hang
+- `inst.destroy()` in `finally` block — releases pdfjs-dist worker resources
+- Image-only PDF detection: empty text → 422 JSON `code: image_only_pdf`
+- Password-protected detection from error message
+- `code` field on all PDF error responses
+
+#### 2. `artifacts/api-server/src/routes/importGear.pdf.api.test.mjs` *(NEW)*
+
+53-test integration suite calling the actual pdf-parse v2 library against real binary PDF fixtures. Tests A1–A13: load check, class methods, real fixture parsing, item extraction, image-only, corrupt PDF, multipage, timeout wrapper, error classification, destroy, frontend handler logic, empty body safety.
+
+#### 3. `attached_assets/trailweigh_gear_list_fixture.pdf` *(NEW)*
+
+Real binary PDF-1.4 fixture. 15 gear items, 7 sections in canonical order. Parses in 93ms.
+
+#### 4. `attached_assets/trailweigh_image_only_fixture.pdf` *(NEW)*
+
+Valid PDF with no text content stream. Tests image-only detection path.
+
+#### 5. `attached_assets/trailweigh_corrupt_fixture.pdf` *(NEW)*
+
+Invalid PDF bytes. Tests fast-fail error path.
+
+#### 6. `package.json`
+
+Added `importGear.pdf.api.test.mjs` to `test:importer` (now 11 suites).
+
+#### 7. `TESTING.md`
+
+Suite count 10 → 11. Test count 659 → 692. Three new PDF fixture entries.
+
+---
+
+### API Contract
+
+| Field | Value |
+|-------|-------|
+| **Request** | `POST /api/import-gear` multipart/form-data, field `file` |
+| **Max size** | 20 MB |
+| **PDF timeout** | 30 seconds |
+| **Success** | `200 { items: ExtractedItem[] }` (max 200) |
+| **Error** | `4xx { error: string, code: string }` |
+| **Error codes** | `image_only_pdf`, `pdf_timeout`, `pdf_password_protected`, `pdf_parse_error` |
+
+---
+
+### PDF Test Matrix
+
+| Scenario | Result |
+|----------|--------|
+| Real text PDF (fixture) | **PASS** — 200 JSON, 15 items |
+| Multipage PDF | **PASS** — simulated 3-page test |
+| Image-only PDF | **PASS** — 422 JSON `code: image_only_pdf` |
+| Empty/corrupt PDF | **PASS** — 422 JSON, fast fail |
+| Password-protected PDF | **PARTIAL** — classification tested, real encrypted fixture not in workspace |
+| Oversized PDF | **PASS** — multer rejects at 400 before route |
+| Failed → valid retry | **PASS** — server stable |
+
+### Other-Format Regression Matrix
+
+| Format | Result |
+|--------|--------|
+| Word (.docx) | **PASS** |
+| Excel (.xlsx) | **PASS** — 219 tests |
+| Numbers (.numbers) | **PASS** |
+
+---
+
+### Automated Results
+
+**Command:** `pnpm test:importer`
+
+| Suite | Tests | Result |
+|-------|-------|--------|
+| `importGear.test.mjs` | 219 | ✅ |
+| `importGear.pdf.test.mjs` | 54 | ✅ |
+| `importGear.pdf.api.test.mjs` *(new)* | 53 | ✅ |
+| `scanGear.test.mjs` | 47 | ✅ |
+| `categoryAliases.test.mjs` | 77 | ✅ |
+| `usePackData.test.mjs` | 64 | ✅ |
+| `moveItem.test.mjs` | 47 | ✅ |
+| `pieColor.test.mjs` | 41 | ✅ |
+| `bgCollections.test.mjs` | 33 | ✅ |
+| `bgCollections016A.test.mjs` | 28 | ✅ |
+| `bgPhotoStore016B.test.mjs` | 29 | ✅ |
+| **Total** | **692** | **0 failed** |
+
+---
+
+### Scope Preservation
+
+- Prompt 016B background/photo behavior: preserved
+- Desktop grid `lg:grid-cols-[1fr_365px]`: unchanged
+- QTY `translate-x-3`: unchanged
+- Palette persistence: 41 pieColor tests pass
+- Share Link: not modified
+- Prompt 017 control changes: not started
+- Category mapping: unchanged; all alias tests pass
+
+---
+
+### Current Scan Gear List State (post-016C)
+
+| Feature | Status |
+|---------|--------|
+| PDF import | Working — 15 items from fixture; timeout guard added |
+| Image-only PDF | Specific 422 message |
+| Corrupt PDF | JSON 422 error |
+| Word import | Working |
+| Excel import | Working |
+| Numbers import | Working |
+| Server stability | Confirmed — health check passes after all test requests |
+
+---
+
+*Master workflow last updated: 2026-08-06 (Prompt 016C)*

@@ -822,21 +822,62 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
     let items: ExtractedItem[] = [];
 
     if (ext === 'pdf' || mimetype === 'application/pdf') {
+      // Hard timeout prevents the request from hanging indefinitely if pdfjs-dist
+      // workers stall on a particular PDF structure (which would cause Vite's proxy
+      // to return a 502 with an HTML body rather than JSON).
+      const PDF_PARSE_TIMEOUT_MS = 30_000;
+
+      const inst = new PDFParse({ data: buffer, verbosity: 0 });
       try {
-        const inst = new PDFParse({ data: buffer, verbosity: 0 });
-        const result = await inst.getText();
+        const result = await Promise.race<{ pages: { text: string }[] }>([
+          inst.getText(),
+          new Promise<never>((_, rej) =>
+            setTimeout(
+              () => rej(Object.assign(new Error('PDF_TIMEOUT'), { code: 'PDF_TIMEOUT' })),
+              PDF_PARSE_TIMEOUT_MS,
+            ),
+          ),
+        ]);
+
+        // Detect image-only / scanned PDFs: pdfjs returns no text
+        const allText = result.pages.map((p) => p.text).join('\n').trim();
+        if (!allText) {
+          res.status(422).json({
+            error: 'No readable text was found in this PDF. Scanned-image PDFs are not currently supported.',
+            code: 'image_only_pdf',
+          });
+          return;
+        }
+
         // Use the structured TrailWeigh PDF parser (page-aware, category-aware).
         // Falls back to the generic text heuristic only if nothing was found,
         // e.g. a plain-text PDF without the TrailWeigh checkbox row format.
         items = extractFromPdfPages(result.pages);
         if (items.length === 0) {
-          const flatText = result.pages.map((p: { text: string }) => p.text).join('\n');
-          items = extractFromText(flatText);
+          items = extractFromText(allText);
         }
       } catch (pdfErr: any) {
         console.error('[import-gear] pdf-parse error:', pdfErr?.message);
-        res.status(422).json({ error: 'Could not read this PDF. Make sure it is not password-protected and contains selectable text.' });
+        if (pdfErr?.code === 'PDF_TIMEOUT') {
+          res.status(422).json({
+            error: 'PDF processing timed out. The file may be too complex or too large to process.',
+            code: 'pdf_timeout',
+          });
+        } else if (/password/i.test(pdfErr?.message ?? '')) {
+          res.status(422).json({
+            error: 'This PDF is password-protected. Please remove the password and try again.',
+            code: 'pdf_password_protected',
+          });
+        } else {
+          res.status(422).json({
+            error: 'Could not read this PDF. Make sure it is not password-protected and contains selectable text.',
+            code: 'pdf_parse_error',
+          });
+        }
         return;
+      } finally {
+        // Always release pdfjs-dist worker resources regardless of success/failure
+        try { inst.destroy(); } catch (_) { /* ignore cleanup errors */ }
       }
 
     } else if (ext === 'docx' || ext === 'doc' || mimetype?.includes('wordprocessingml')) {

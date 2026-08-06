@@ -1,0 +1,942 @@
+Prompt ID: 016C
+Prompt title: Repair the PDF Importer Regression
+
+Repair the current PDF-import failure in TrailWeigh’s Scan Gear List feature.
+
+This is a focused regression repair.
+
+The user has confirmed that the Prompt 016B background-theme and photo-storage features now appear to be working.
+
+Do not begin the planned Hide, Preview, and Imperial control reorganization.
+
+# CONFIRMED CURRENT FAILURE
+
+When the user selects a PDF in Scan Gear List:
+
+- The file picker accepts the PDF.
+- The upload area recognizes the file.
+- The import does not reach the editable review table.
+- TrailWeigh displays:
+
+  `Import failed`
+
+  `Server error 502: unexpected response format.`
+
+The failure occurs during the PDF upload, server request, PDF parsing, response creation, or frontend response handling.
+
+Do not assume the cause before tracing the complete request.
+
+# PART 1 — READ THE PROJECT HISTORY
+
+Before editing, read:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_016B_REPORT.md`
+- Previous PDF-importer reports and sections in the master workflow
+- Current Scan Gear List frontend code
+- Current file-upload request code
+- Current PDF API route or server handler
+- Current PDF parser wrapper
+- Current Word, Excel, and Numbers import paths
+- Current category-mapping and review-table code
+- `package.json`
+- Lockfile
+- Replit server configuration
+- Vite proxy configuration, if used
+
+Locate the last documented state in which real PDF importing passed.
+
+The previous working implementation reportedly used:
+
+- `pdf-parse` version 2.4.5
+- Its version-2 class API
+- A real PDF test that imported approximately 68 items
+
+Verify that history against the actual source and documentation.
+
+Do not blindly restore old code without confirming that it matches the current dependency version and server architecture.
+
+# PART 2 — CREATE A CHECKPOINT AND BACKUP
+
+Create a Replit checkpoint before modifying application code.
+
+Create:
+
+`workflow-reports/PRE_016C_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record before editing:
+
+- Master file line count
+- Master file size
+- Backup line count
+- Backup file size
+- Current PDF parser package and exact installed version
+- Current PDF parser import syntax
+- Current PDF parser invocation syntax
+- Current frontend upload endpoint
+- Current server route
+- Current request method
+- Current request body type
+- Current maximum upload size
+- Current timeout behavior
+- Current success-response schema
+- Current error-response schema
+- Current frontend response parser
+- Current Replit server and proxy path
+
+Do not change application code until this starting state is documented.
+
+# PART 3 — TRACE THE EXACT FAILURE
+
+Reproduce the PDF failure in the signed-in Replit preview.
+
+Inspect:
+
+## Browser request
+
+Record:
+
+- Request URL
+- Request method
+- Request headers relevant to the upload
+- Request content type
+- PDF filename
+- PDF MIME type
+- PDF file size
+- Response status
+- Response content type
+- Response body format
+- Request duration
+
+Do not put the user’s private PDF contents into the report.
+
+## Server logs
+
+Record:
+
+- Whether the request reaches the TrailWeigh server
+- Which route handles it
+- Whether file upload parsing succeeds
+- Whether a Buffer or ArrayBuffer is produced
+- Whether PDF parsing begins
+- Whether PDF parsing throws an exception
+- Whether item extraction begins
+- Whether the response is generated
+- Whether a proxy or hosting layer changes the response
+
+## 502 response
+
+Determine whether the 502 comes from:
+
+- TrailWeigh’s own server code
+- Replit’s reverse proxy
+- A timed-out request
+- A crashed server process
+- A memory-limit failure
+- An unhandled parser exception
+- An incorrect endpoint
+- An external service
+- A malformed response
+- Frontend code incorrectly interpreting a non-JSON response
+- Another confirmed cause
+
+The visible phrase:
+
+`unexpected response format`
+
+suggests that the frontend may expect JSON but receive HTML, plain text, an empty body, or another response type.
+
+That is only a hypothesis.
+
+Inspect the real status, content type, and response body before changing code.
+
+# PART 4 — VERIFY THE PDF-PARSE API
+
+Inspect the installed `pdf-parse` package and its version.
+
+If version 2.4.5 remains installed, verify the correct version-2 API from the actual installed package or its official type definitions.
+
+The previously working pattern may resemble:
+
+- Import the version-2 parser class
+- Construct it with the PDF data
+- Call the supported text-extraction method
+- Read the returned text result
+- Dispose of or destroy parser resources
+
+Do not use an old version-1 function call against a version-2 package.
+
+Do not mix:
+
+- CommonJS default-import syntax
+- Old callable `pdf(buffer)` syntax
+- New class-based syntax
+
+unless the installed package explicitly supports the chosen approach.
+
+Document:
+
+- Exact import
+- Exact constructor or function call
+- Exact returned object
+- Exact text field used
+- Cleanup or destroy method
+- Any warnings from the parser
+
+If the installed package version unexpectedly changed, identify:
+
+- When it changed
+- Which lockfile entry changed
+- Whether Prompt 016B changed dependencies
+- Whether restoring version 2.4.5 is appropriate
+
+Do not perform an unrelated dependency upgrade.
+
+# PART 5 — REPAIR THE SERVER PDF PATH
+
+Make the smallest reliable repair.
+
+The PDF route must:
+
+1. Receive the uploaded PDF.
+2. Confirm that a file was supplied.
+3. Confirm that it is within the supported size limit.
+4. Read it into the data structure expected by the installed parser.
+5. Parse text from the PDF.
+6. Confirm whether useful text was extracted.
+7. Pass the text to TrailWeigh’s existing gear-line extraction and mapping logic.
+8. Return the normal structured result expected by the review table.
+9. Clean up parser resources.
+10. Return structured JSON for every expected success or failure path.
+
+Do not add image OCR.
+
+Image-only or scanned PDFs remain outside this text-import repair unless OCR already exists in the current approved implementation.
+
+Do not send the PDF to an external AI or third-party document service.
+
+# PART 6 — STANDARDIZE THE API RESPONSE
+
+The frontend and server must agree on one response format.
+
+## Successful PDF import
+
+Return a JSON response containing the existing fields needed by Scan Gear List, such as:
+
+- Success state
+- Parsed items
+- Warnings, if any
+- File metadata needed by the current UI
+
+Do not invent a competing import schema if the Word and spreadsheet paths already use a shared schema.
+
+## Known user-facing failures
+
+Return JSON for:
+
+- No file supplied
+- Unsupported file type
+- File too large
+- Empty PDF
+- PDF containing no extractable text
+- Password-protected PDF
+- Corrupt or malformed PDF
+- Parsing timeout
+- Parser error
+- Server capacity or memory issue
+
+Use an appropriate HTTP status while still returning valid JSON.
+
+Example concept:
+
+- `success: false`
+- Stable error code
+- Clear user-facing message
+
+## Unexpected server error
+
+Catch the exception at the API boundary.
+
+Log the technical error on the server.
+
+Return a safe JSON response.
+
+Do not send:
+
+- An HTML error page
+- A stack trace
+- An empty response
+- A framework-generated error page
+
+The frontend must never need to parse an HTML 502 page as JSON.
+
+# PART 7 — FRONTEND RESPONSE HANDLING
+
+Repair the Scan Gear List request handling so it safely handles:
+
+- Valid JSON success
+- Valid JSON error
+- Non-JSON server response
+- Empty response
+- Timeout
+- Network interruption
+- HTTP 502
+- HTTP 500
+- HTTP 413
+- Aborted request
+
+Before calling `response.json()`, inspect the response content type or safely catch JSON parsing failure.
+
+If a non-JSON response is received:
+
+- Do not crash.
+- Do not show a Vite error overlay.
+- Do not leave the importer spinning forever.
+- Show a clear TrailWeigh message.
+
+Suggested generic message:
+
+`The PDF could not be processed because the server returned an invalid response. Please try again.`
+
+Where safe and useful, include the status:
+
+`PDF import failed with server error 502. Please try again.`
+
+Do not expose HTML, stack traces, proxy details, or private server information.
+
+Always restore the upload control so the user can retry.
+
+# PART 8 — PDF IMPORT RESULT
+
+A successful PDF import must continue into the existing editable review table.
+
+Preserve the current table fields:
+
+- Include checkbox
+- Type
+- Category
+- Description
+- Weight
+- Unit
+
+Preserve existing behavior:
+
+- Imported items are initially unchecked.
+- The user can edit imported values before importing.
+- Common backpacking items map to the closest existing category.
+- Clothing maps according to the current Clothing Packed/Clothing System rules.
+- Sleep System does not absorb clothing.
+- Consumable and reusable-container rules remain unchanged.
+- Import Selected Items adds only selected rows.
+- After successful import, the importer panel clears according to current requirements.
+
+Do not change gear mapping merely to fix PDF parsing.
+
+# PART 9 — PRESERVE OTHER FILE IMPORTS
+
+Confirm that these current import paths still work:
+
+- Word `.docx`
+- Excel `.xlsx`
+- Apple Numbers
+- Any other currently supported text-based format
+
+Do not route every file type through the PDF parser.
+
+Do not alter spreadsheet formulas or parsing unless a direct shared-code regression is found.
+
+Do not remove existing format support.
+
+# PART 10 — SPECIAL PDF CASES
+
+Test and handle these cases deliberately:
+
+## Normal text PDF
+
+Expected:
+
+- Text extracts.
+- Gear rows appear in the review table.
+
+## Multipage PDF
+
+Expected:
+
+- All relevant pages are parsed.
+- Item order remains reasonable.
+- Page breaks do not create malformed combined items.
+
+## Image-only or scanned PDF
+
+Expected:
+
+- No false claim that OCR occurred.
+- Display a message such as:
+
+  `No readable text was found in this PDF. Scanned-image PDFs are not currently supported.`
+
+Do not return a 502.
+
+## Password-protected PDF
+
+Expected:
+
+- Clear unsupported/protected-file message.
+- No server crash.
+
+## Corrupt PDF
+
+Expected:
+
+- Clear invalid-PDF message.
+- No server crash.
+
+## Empty PDF
+
+Expected:
+
+- Clear no-content message.
+- No server crash.
+
+## Large but supported PDF
+
+Expected:
+
+- Completes within the documented limits.
+- Does not crash the server.
+
+## File above size limit
+
+Expected:
+
+- Reject before expensive parsing.
+- Display the supported file-size limit.
+- Return structured JSON.
+
+# PART 11 — RESOURCE AND TIMEOUT SAFETY
+
+Inspect current Replit limits and application behavior.
+
+Ensure:
+
+- PDF parsing does not leave parser workers or resources running.
+- Temporary buffers are released after the request.
+- The server process does not crash after a failed PDF.
+- A single failed PDF does not break later imports.
+- The route has a reasonable timeout.
+- The frontend shows a timeout message if processing exceeds that limit.
+- A retry can succeed without reloading the entire app.
+
+Do not add an external queue, paid service, or cloud document processor.
+
+# PART 12 — AUTOMATED TESTS
+
+Repair and extend PDF tests.
+
+At minimum test:
+
+1. A valid text PDF returns structured JSON.
+2. A valid PDF reaches the existing review-item schema.
+3. A real representative gear-list PDF extracts expected rows.
+4. Multipage PDF text is included.
+5. Numeric-leading gear types remain preserved.
+6. Category aliases remain applied.
+7. Fuel maps to Expendables according to current rules.
+8. Bug Net maps according to the current verified Clothing Packed rule.
+9. Image-only PDF returns a no-readable-text error.
+10. Empty PDF returns a structured error.
+11. Corrupt PDF returns a structured error.
+12. Password-protected PDF returns a structured error.
+13. Missing file returns a structured error.
+14. Oversized file returns a structured error.
+15. Parser exception returns JSON rather than HTML.
+16. A simulated 502 or non-JSON response is handled safely by the frontend helper.
+17. An empty response does not crash the frontend.
+18. A failed PDF request leaves the importer ready for another upload.
+19. Word importing still passes.
+20. Excel importing still passes.
+21. Numbers importing still passes.
+22. Existing category-alias tests still pass.
+23. Existing move-item tests still pass.
+24. Prompt 015 palette tests still pass.
+25. Prompt 016B theme and photo-storage tests still pass.
+
+Use an actual PDF fixture for the core parsing test.
+
+Do not rely only on:
+
+- A plain-text file renamed `.pdf`
+- A mocked parser response
+- A one-line synthetic PDF
+
+A synthetic fixture may supplement the real fixture, but it may not replace it.
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Every suite
+- Suite count
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Warnings
+- Errors
+- Test duration
+
+Do not modify assertions merely to force a pass.
+
+If a new suite is added:
+
+- Include it in `pnpm test:importer`
+- Update `TESTING.md`
+- Document its purpose
+- Update the exact suite count
+
+# PART 13 — REQUIRED RENDERED TESTS
+
+Use the signed-in Replit preview.
+
+Do not install Playwright.
+
+## Test 1 — Same real PDF workflow
+
+Use the same real type of PDF that produced:
+
+`Server error 502: unexpected response format.`
+
+Where the exact user file is not present in the Replit workspace, use the existing real gear-list PDF fixture and clearly state that the user must retest their original file.
+
+Steps:
+
+1. Open Scan Gear List.
+2. Select the real PDF.
+3. Confirm no 502 message appears.
+4. Confirm parsing completes.
+5. Confirm the editable review table appears.
+6. Confirm Type, Description, Weight, Unit, and Category values are populated.
+7. Confirm imported rows begin unchecked.
+8. Select several rows.
+9. Choose Import Selected Items.
+10. Confirm only those rows are added.
+11. Confirm the importer clears afterward.
+
+## Test 2 — Retry after failure
+
+1. Upload a deliberately corrupt PDF.
+2. Confirm a clear TrailWeigh error appears.
+3. Dismiss or clear the error.
+4. Upload a valid PDF immediately afterward.
+5. Confirm the valid PDF succeeds without refreshing the application.
+
+## Test 3 — Image-only PDF
+
+1. Upload an image-only PDF.
+2. Confirm TrailWeigh explains that no readable text was found.
+3. Confirm no 502 appears.
+4. Confirm no Vite error screen appears.
+
+## Test 4 — Other formats
+
+Import one real file of each available type:
+
+- `.docx`
+- `.xlsx`
+- Apple Numbers, where the current rendered environment supports it
+
+Confirm each still reaches the review table.
+
+## Test 5 — Server stability
+
+After several successful and failed PDF attempts:
+
+- Confirm the app remains responsive.
+- Confirm Scan Gear List still opens.
+- Confirm a valid PDF can still be imported.
+- Confirm Background Edit and saved custom photos still work.
+
+Capture screenshots showing:
+
+- The original 502 failure before the repair, if available
+- Successful real PDF review table
+- Several extracted gear rows
+- Structured corrupt-PDF message
+- No-readable-text message
+- Successful retry after an error
+
+User testing with the original failing PDF remains required.
+
+# PART 14 — DO NOT CHANGE PROMPT 016B FEATURES
+
+Preserve all working Prompt 016B behavior:
+
+- Background Edit
+- Theme dropdown label
+- Landscapes
+- Custom themes
+- Maximum of ten custom themes
+- Maximum of ten photos per theme
+- IndexedDB photo storage
+- Photo persistence after refresh
+- Click-to-upload
+- Drag-and-drop
+- Photo removal
+- Theme deletion
+- Fill Screen
+- Fit Image
+- Light
+- Dark
+- Fade/darken
+- Background Undo and Redo
+- Current Showcase behavior
+
+Do not return custom photos to localStorage.
+
+Do not alter the photo database schema unless absolutely required by a confirmed shared failure.
+
+# PART 15 — DO NOT START PROMPT 017
+
+Do not perform these planned changes:
+
+- Do not replace Showcase with Hide.
+- Do not move Preview.
+- Do not remove the Preview pill above Pack Summary.
+- Do not reorder Hide, Preview, and Imperial.
+
+Those changes belong to Prompt 017 after the PDF importer passes user testing.
+
+# PART 16 — PRESERVE UNRELATED FEATURES
+
+Do not change:
+
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+- Category panel width
+- MOVE
+- WEIGHT
+- QTY
+- TOTAL
+- DESCRIPTION
+- Pack Summary calculations
+- Weight Distribution calculations
+- Per-file Weight Distribution palettes
+- Base Weight
+- Dog Pack
+- Expendables
+- Active filename behavior
+- Save confirmation wording
+- Locker behavior
+- New behavior
+- Reset behavior
+- Preview content
+- Print
+- PDF export
+- Share Link
+- Authentication
+- Retail or affiliate features
+- Meal Planner features
+- Separate Expo application
+
+# PART 17 — DOCUMENT THE ROOT CAUSE
+
+The report must state the actual confirmed cause.
+
+Examples of acceptable specificity:
+
+- The frontend called the wrong API URL and received an HTML Replit 502 page.
+- The PDF route crashed because version-1 `pdf-parse` syntax was used with version 2.4.5.
+- The server returned plain text while the frontend required JSON.
+- The request exceeded a server timeout.
+- The parser received an unsupported data type.
+- Another precisely evidenced cause.
+
+Do not write vague explanations such as:
+
+- “PDF bug fixed”
+- “Server issue”
+- “Parser problem”
+- “Unexpected format corrected”
+
+Include evidence:
+
+- Relevant log entry
+- Response status
+- Response content type
+- Relevant source location
+- Before-and-after behavior
+
+Redact private filenames or file contents where necessary.
+
+# PART 18 — CREATE THE PROMPT 016C REPORT
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_016C_REPORT.md`
+
+The report must include:
+
+## Identification
+
+- Prompt ID
+- Prompt title
+- Start time
+- Completion time
+- Purpose
+- Exact requested result
+
+## Starting state
+
+- Visible 502 error
+- Current endpoint
+- Current parser package/version
+- Current parser API usage
+- Current response handling
+- Previously documented working PDF state
+
+## Root cause
+
+- Exact confirmed failure
+- Evidence
+- Why it caused a 502 or unexpected response
+- Whether Prompt 016B caused it
+- Whether dependencies changed
+
+## Files changed
+
+For each file:
+
+- Full path
+- Exact change
+- Why
+- Relevant functions
+- Relevant before-and-after excerpts
+- Saved-data impact
+
+## API contract
+
+Document:
+
+- Request method
+- Request content type
+- Success schema
+- Error schema
+- Status codes
+- Timeout behavior
+- Maximum supported file size
+
+## PDF test matrix
+
+Include:
+
+- Real text PDF
+- Multipage PDF
+- Image-only PDF
+- Empty PDF
+- Corrupt PDF
+- Password-protected PDF
+- Oversized PDF
+- Failed request followed by valid retry
+
+Mark each:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Other-format regression matrix
+
+Include:
+
+- Word
+- Excel
+- Numbers
+
+Mark each:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Automated results
+
+Include:
+
+- Command
+- Suite names
+- Suite count
+- Execution order
+- Passed
+- Failed
+- Exit code
+- Warnings
+- Errors
+- Duration
+
+## Rendered results
+
+Include:
+
+- File type used
+- Approximate item count
+- Review-table result
+- Import Selected Items result
+- Screenshot names
+- Viewport
+- Anything requiring user testing
+
+## Scope preservation
+
+Confirm:
+
+- Prompt 016B background behavior remains working
+- Desktop grid remains 365px
+- QTY remains `translate-x-3`
+- Palette persistence remains working
+- Share Link was not changed
+- Prompt 017 control changes were not started
+
+## Acceptance checklist
+
+Repeat every requirement and mark:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+Explain every non-PASS result.
+
+Do not claim the user’s original PDF is fixed unless that exact file was tested.
+
+# PART 19 — APPEND THE COMPLETE REPORT TO THE MASTER
+
+Append the complete Prompt 016C report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not overwrite the master.
+- Do not truncate earlier prompts.
+- Append the complete report, not a shortened summary.
+- Confirm Prompt 016C appears exactly once.
+- Confirm Prompt 016B remains present.
+- Confirm the master line count increased.
+
+Update:
+
+- Prompt Number Index
+- Current Scan Gear List state
+- PDF-import architecture
+- Supported formats
+- Known PDF limitations
+- Latest-entry field
+
+Final trailer:
+
+`Master workflow last updated: 2026-08-06 (Prompt 016C)`
+
+# PART 20 — CREATE A CLEAN REPORT ZIP
+
+Create:
+
+`trailweigh-016C-report.zip`
+
+Include exactly these four files at the ZIP root:
+
+- `PROMPT_016C_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+The source report remains stored in:
+
+`workflow-reports/PROMPT_016C_REPORT.md`
+
+Do not include:
+
+- A containing folder
+- `__MACOSX`
+- `.DS_Store`
+- Backups
+- Source code
+- Test PDFs
+- User files
+- Locker data
+- Uploaded photos
+- Credentials
+- Dependencies
+- Other ZIP files
+
+After creating the ZIP, list its contents and confirm it contains exactly four entries.
+
+# FINAL VERIFICATION
+
+Before completing, confirm:
+
+1. The original PDF request path was traced.
+2. The actual 502 source was identified.
+3. The installed pdf-parse version was verified.
+4. The parser API matches the installed version.
+5. A valid real PDF returns structured JSON.
+6. A valid real PDF reaches the editable review table.
+7. Imported rows begin unchecked.
+8. Import Selected Items works.
+9. The importer clears after successful import.
+10. Corrupt PDFs return structured JSON errors.
+11. Image-only PDFs return a no-readable-text message.
+12. Password-protected PDFs do not crash the server.
+13. Oversized PDFs are rejected clearly.
+14. Non-JSON server responses are handled safely.
+15. No Vite error overlay appears.
+16. A valid PDF succeeds immediately after a failed one.
+17. Word importing still works.
+18. Excel importing still works.
+19. Numbers importing still works where testable.
+20. Category mapping remains unchanged.
+21. Prompt 016B themes and photo storage remain working.
+22. No Prompt 017 control changes were made.
+23. Desktop grid remains `lg:grid-cols-[1fr_365px]`.
+24. QTY remains `translate-x-3`.
+25. Per-file palette persistence remains working.
+26. Share Link was not modified.
+27. The complete Prompt 016C report was appended.
+28. Prompt 016C appears exactly once in the master.
+29. The master grew rather than shrank.
+30. `trailweigh-016C-report.zip` contains exactly four files.
+31. The ZIP contains no folder wrapper.
+32. The ZIP contains no `__MACOSX` or `.DS_Store` entries.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_016C_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-016C-report.zip`
+- Report exact paths, file sizes, and line counts
+- Report the exact root cause
+- Report the exact automated-test result
+- State which real PDF was tested without revealing private contents
+- State which rendered tests passed
+- State exactly what still requires user testing
+- Confirm the ZIP has exactly four root files
+- Confirm no unrelated TrailWeigh feature was modified
+- Do not require the user to copy the workflow manually
