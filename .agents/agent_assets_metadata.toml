@@ -14,3 +14,10 @@ uri = "file://trailweigh-014I-report.zip"
 type = "unspecified"
 title = "Prompt 014I Report + Updated Master Workflow"
 description = "PROMPT_014I_REPORT.md (12.6 KB, 210 lines) and the updated TRAILWEIGH_COMPLETE_WORKFLOW.md — both files in one zip (6.2 KB)"
+
+[[outputs]]
+id = "Cw90UcqfyX8og3jhH1uBw"
+uri = "file://trailweigh-014J-report.zip"
+type = "unspecified"
+title = "Prompt 014J Report + Restored Master Workflow"
+description = "PROMPT_014J_REPORT.md (9.2 KB) and the fully restored TRAILWEIGH_COMPLETE_WORKFLOW.md (1 493 lines, 65 KB) — zip is 24 KB"
