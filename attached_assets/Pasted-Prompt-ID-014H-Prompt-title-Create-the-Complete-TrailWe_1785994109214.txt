@@ -1,0 +1,780 @@
+Prompt ID: 014H
+Prompt title: Create the Complete TrailWeigh Workflow-Documentation System
+
+Create a complete TrailWeigh workflow-documentation system.
+
+This task has two connected purposes:
+
+1. Create one complete master workflow-history file covering the entire TrailWeigh project from the earliest accessible activity through the current project state.
+2. Establish a permanent requirement that every future TrailWeigh prompt automatically creates a separate detailed report file, appends that report to the master history, and surfaces the report file for the user.
+
+This is a documentation task only.
+
+Do not modify TrailWeigh application behavior, source code, layouts, saved-file behavior, calculations, dependencies, or settings.
+
+Do not continue or alter Prompt 014G.
+
+Prompt 014G must be documented as a separate completed or unresolved task based on its actual result.
+
+# PART 1 — CREATE THE DOCUMENTATION STRUCTURE
+
+Create this folder in the project root:
+
+`workflow-reports/`
+
+Create these files in the project root:
+
+1. `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+2. `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create this report for the current prompt:
+
+`workflow-reports/PROMPT_014H_REPORT.md`
+
+Do not use the older filename:
+
+`WORKFLOW_SYSTEM_SETUP_REPORT.md`
+
+The official report filename for this task is:
+
+`workflow-reports/PROMPT_014H_REPORT.md`
+
+Do not place these documentation files inside the production source bundle.
+
+Do not import them into the TrailWeigh application.
+
+# PART 2 — CREATE THE COMPLETE MASTER WORKFLOW HISTORY
+
+Build:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Begin with the earliest TrailWeigh project activity that you can actually access.
+
+Continue chronologically through the current date and current project state.
+
+This must cover the entire available TrailWeigh project history—not only the current session, recent layout work, Prompt 014G, or Prompt 014H.
+
+## History availability statement
+
+At the beginning of the master file, clearly state:
+
+- Earliest date and workflow entry available
+- Latest date and workflow entry included
+- Whether the accessible history appears complete
+- Any dates, sessions, prompts, workflow sections, or conversations that are unavailable
+- Why unavailable portions could not be included
+- Which information came from Replit workflow history
+- Which information came from current project files
+- Which information was inferred from current code
+- Which information remains uncertain
+
+Do not invent or reconstruct missing history as though it were confirmed.
+
+Clearly mark inferred information as:
+
+`Inference from current source code`
+
+Clearly mark unavailable information as:
+
+`Unavailable in accessible workflow history`
+
+# PART 3 — PRESERVE THE AVAILABLE WORKFLOW IN DETAIL
+
+Include every accessible item in chronological order:
+
+- User prompts
+- Numbered prompts
+- Corrective prompts
+- Follow-up instructions
+- Replit Agent responses
+- Replit reasoning and analysis that is visible in the workflow
+- Implementation plans
+- Files opened
+- Files searched
+- Files created
+- Files edited
+- Files deleted
+- Files restored
+- Cancelled edits
+- Failed edits
+- Retry attempts
+- Successful approaches
+- Failed approaches
+- Commands run
+- Dependencies added
+- Dependencies removed
+- Development-server restarts
+- Cache problems
+- Workflow restarts
+- Checkpoints
+- Rollbacks
+- Undo requests
+- Reverted changes
+- Screenshots taken
+- User screenshots reviewed
+- Rendered test findings
+- Automated tests
+- Test failures
+- Test results
+- User test results
+- Known regressions
+- Completed features
+- Incomplete features
+- Deferred features
+- Current unresolved issues
+
+Do not replace the detailed history with a short summary.
+
+Do not omit failed or superseded work.
+
+# PART 4 — PRESERVE EXACT PROMPTS AND RESPONSES
+
+Where the exact text is accessible, include the complete original text of:
+
+- User prompts
+- Submitted Replit prompts
+- Corrective prompts
+- Replit completion reports
+- Error messages
+- Test commands
+- Test results
+- Measurement reports
+
+For each entry, include when available:
+
+- Date
+- Time
+- Speaker or source
+- Prompt number
+- Prompt title
+- Workflow or session identifier
+- Whether the text is exact
+- Whether the entry was reconstructed from project evidence
+
+Do not silently paraphrase exact text when the original wording is available.
+
+Do not present reconstructed wording as an exact quote.
+
+# PART 5 — DOCUMENT FILE CHANGES
+
+For every accessible application or configuration change, record:
+
+- Full file path
+- What changed
+- Why it changed
+- Related prompt
+- Important code
+- Important functions
+- Important constants
+- Important classes
+- Important schemas
+- Important formulas
+- Whether the edit succeeded
+- Whether it was later modified
+- Whether it was reverted
+- What replaced it
+- Related automated-test result
+- Related rendered-test result
+- Whether user verification agreed with Replit’s report
+
+Where practical, include relevant before-and-after code excerpts.
+
+Do not include entire dependency folders, generated caches, or unrelated build output.
+
+# PART 6 — FEATURE-BY-FEATURE HISTORY
+
+Include dedicated chronological sections for every accessible TrailWeigh feature, including:
+
+- Gear categories
+- Gear items
+- Gear-item calculations
+- Weight units
+- Imperial and Metric modes
+- Base Weight
+- Dog Pack
+- Expendables
+- New
+- Reset
+- Undo
+- Redo
+- Save
+- Save As
+- Active saved-file identity
+- File naming
+- Save confirmation messages
+- Locker
+- Cross-tab behavior
+- Scan Gear List
+- PDF import
+- Word import
+- Excel import
+- Apple Numbers import
+- Category recognition
+- Category aliases
+- Category migration
+- Moving gear items between categories
+- MOVE column
+- WEIGHT column
+- QTY column
+- TOTAL column
+- Description-column width
+- Category-panel width
+- Pack Summary width
+- Light mode
+- Dark mode
+- System appearance
+- WEIGHT text color
+- QTY text color
+- Background images
+- Background Fill and Fit
+- Custom background gallery
+- Background Undo and Redo
+- Showcase
+- Preview
+- Print
+- PDF output
+- Share Link
+- Pack Summary
+- Weight Distribution pie chart
+- Weight Distribution pie-color choices
+- Mobile layout
+- Any other feature found in the accessible history
+
+For each feature, identify:
+
+- Original request
+- Later corrections
+- Failed attempts
+- Reverted attempts
+- Final known implementation
+- Current status
+- Remaining issue
+- Whether the user approved the rendered result
+
+# PART 7 — PROMPT NUMBER HISTORY
+
+Create a section titled:
+
+`Prompt Number Index`
+
+Include every accessible numbered prompt, including corrective letter suffixes.
+
+Examples include:
+
+- Prompt 001
+- Prompt 014
+- Prompt 014A
+- Prompt 014B
+- Prompt 014C
+- Prompt 014D
+- Prompt 014E
+- Prompt 014F
+- Prompt 014G
+- Prompt 014H
+
+For each accessible prompt, record:
+
+- Prompt ID
+- Prompt title
+- Date submitted
+- Purpose
+- Files changed
+- Result
+- Test status
+- User-verification status
+- Whether the prompt was completed, corrected, reverted, replaced, or remains unresolved
+- Path of its report file, when one exists
+
+Do not create false prompt numbers for older tasks that were never assigned one.
+
+# PART 8 — SCREENSHOTS AND VISUAL TESTING
+
+For every accessible screenshot, record:
+
+- Screenshot filename or reference
+- Date and time
+- Source of screenshot
+- Viewport dimensions, when known
+- What it was intended to test
+- What was visible
+- What issue was identified
+- What change followed
+- Whether it represented an approved final result
+
+Clearly distinguish:
+
+- Replit-generated screenshot
+- User-supplied screenshot
+- Visual claim without screenshot evidence
+- Result still awaiting user verification
+
+Do not claim visual success based only on code changes or automated tests.
+
+When Replit’s completion report said an issue was fixed but the user’s screenshot showed otherwise, record that discrepancy explicitly.
+
+# PART 9 — AUTOMATED TEST HISTORY
+
+Include every accessible test command and result, including:
+
+- Command used
+- Date or workflow entry
+- Test suites run
+- Passed count
+- Failed count
+- Exit code
+- Feature covered
+- Whether rendered testing was also required
+
+Include accessible results for test suites such as:
+
+- `importGear.test.mjs`
+- `importGear.pdf.test.mjs`
+- `scanGear.test.mjs`
+- `categoryAliases.test.mjs`
+- `usePackData.test.mjs`
+- `moveItem.test.mjs`
+
+Do not state that a visual feature works only because automated tests passed.
+
+# PART 10 — FAILED, REVERTED, OR SUPERSEDED APPROACHES
+
+Create a master section titled:
+
+`Failed, Reverted, or Superseded Approaches`
+
+Include every accessible failed or replaced attempt, including examples such as:
+
+- Layout changes that produced no visible movement
+- Spacer changes that were mathematically zero-sum
+- QTY narrowing that did not widen Description
+- Heading-only movement that did not move the actual column
+- Right-aligning text without moving the requested columns
+- Category-width changes that were too large
+- Changes later undone by the user
+- Stale Vite cache issues
+- File-write or import problems
+- Replit reports that did not match the user’s screenshot
+- Tasks declared complete before user testing showed they were incomplete
+
+For every failed or superseded approach, record:
+
+- What was attempted
+- Why it was attempted
+- Why it failed
+- How the failure was detected
+- Whether it was fully reverted
+- What replaced it
+- Current status
+
+Do not omit failed work from the documentation.
+
+# PART 11 — CURRENT PROJECT-STATE AUDIT
+
+At the end of the master workflow, inspect the files that exist now and create a section titled:
+
+`Current TrailWeigh Project State`
+
+This section must be based on current source code, not only earlier workflow reports.
+
+Document:
+
+- Current relevant source files
+- Current page-layout structure
+- Current page-container sizing
+- Current outer left and right page spacing
+- Current category-panel sizing
+- Current Pack Summary sizing
+- Current gear-row structure
+- Current MOVE/WEIGHT/QTY/TOTAL layout
+- Current QTY-to-TOTAL spacing
+- Current Description sizing
+- Current save-data schema
+- Current Locker-data schema
+- Current active-file identity behavior
+- Current New behavior
+- Current Reset behavior
+- Current Undo/Redo behavior
+- Current background-data structure
+- Current Weight Distribution pie-color state
+- Whether pie colors are saved with each file
+- Whether pie colors are restored when the file opens
+- Which settings are saved per file
+- Which settings are global
+- Which settings are session-only
+- Current importer support
+- Current category-alias behavior
+- Current Move implementation
+- Current mobile behavior
+- Current Dark-mode behavior
+- Current automated-test command
+- Current warnings
+- Current errors
+- Current unresolved problems
+
+Clearly identify discrepancies between:
+
+- Earlier Replit reports
+- Current source code
+- User screenshots
+- Current rendered behavior
+
+# PART 12 — CURRENT UNRESOLVED ISSUES
+
+Create a final section titled:
+
+`Unresolved Issues and Waiting Requirements`
+
+At minimum, investigate and document the current status of:
+
+- Weight Distribution pie-color choices not being saved
+- Pie-color choices not being restored when a Locker file opens
+- Current category-panel width
+- Requested moderate category-width increase
+- Whether equal outer page spacing is preserved
+- Current QTY-to-TOTAL spacing
+- Whether MOVE, WEIGHT, and QTY shifted together
+- Current Description width
+- Pack Summary balance
+- Share Link behavior
+- Active filename display
+- Save confirmation wording
+- Remaining mobile issues
+- Remaining Dark-mode issues
+- Any feature awaiting user testing
+- Final status of Prompt 014G
+
+Do not implement these fixes during Prompt 014H.
+
+Document them only.
+
+# PART 13 — CREATE THE PERMANENT WORKFLOW PROTOCOL
+
+Create:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+This file must contain the standing reporting requirements for every future TrailWeigh prompt.
+
+It must state that after every future prompt, correction, investigation, test, or documentation task, Replit must:
+
+1. Create a new detailed per-prompt report file.
+2. Append the verified report to `TRAILWEIGH_COMPLETE_WORKFLOW.md`.
+3. Surface or attach the per-prompt report file in the completion response.
+4. Surface or attach the updated master workflow when practical.
+5. Never require the user to manually copy and paste the workflow.
+6. Mark every acceptance requirement PASS, FAIL, PARTIAL, or NOT TESTED.
+7. Include failed attempts and reversions.
+8. State clearly when user testing is still required.
+9. Preserve the exact prompt ID and title.
+10. Keep application changes and documentation changes separate.
+
+# PART 14 — FUTURE PER-PROMPT REPORT FILENAMES
+
+Store every future report inside:
+
+`workflow-reports/`
+
+Use a sequential filename tied to the prompt number.
+
+Examples:
+
+- `workflow-reports/PROMPT_014G_REPORT.md`
+- `workflow-reports/PROMPT_014H_REPORT.md`
+- `workflow-reports/PROMPT_015_REPORT.md`
+- `workflow-reports/PROMPT_015A_REPORT.md`
+- `workflow-reports/PROMPT_016_REPORT.md`
+
+Do not overwrite an earlier report.
+
+If a future task has no prompt number, use:
+
+`workflow-reports/YYYY-MM-DD_HHMM_DESCRIPTIVE_TASK_REPORT.md`
+
+Use the user’s local date and time when available.
+
+# PART 15 — REQUIRED CONTENTS OF EVERY FUTURE REPORT
+
+Every future per-prompt report must include the following sections.
+
+## 1. Task identification
+
+- Prompt ID
+- Prompt title
+- Date and time started
+- Date and time completed
+- Purpose
+- Exact requested outcome
+
+## 2. Original instructions
+
+Include the complete submitted prompt text exactly when available.
+
+Do not replace it with a short summary.
+
+## 3. Starting state
+
+Record:
+
+- Relevant files before editing
+- Existing behavior
+- Existing layout or schema
+- Known issue
+- Before measurements
+- Assumptions
+
+Clearly label assumptions.
+
+## 4. Work performed
+
+Record every meaningful action:
+
+- Files opened
+- Files searched
+- Files created
+- Files edited
+- Files deleted
+- Files restored
+- Commands run
+- Dependencies changed
+- Server restarts
+- Cache clearing
+- Failed edits
+- Cancelled edits
+- Retry attempts
+- Checkpoints
+- Reversions
+- Undo operations
+
+## 5. Exact implementation
+
+For every changed file, include:
+
+- Full path
+- What changed
+- Why it changed
+- Important functions
+- Important constants
+- Important classes
+- Important schemas
+- Important formulas
+- Relevant before-and-after excerpts
+- Whether it replaced an earlier implementation
+
+## 6. Testing
+
+Record:
+
+- Automated-test command
+- Test suites
+- Passed count
+- Failed count
+- Exit code
+- Desktop viewport
+- Tablet viewport
+- Mobile viewport
+- Light-mode result
+- Dark-mode result
+- System-mode result
+- Functional actions tested
+- Console warnings
+- Console errors
+
+Do not claim a test was performed when it was not.
+
+## 7. Screenshots and measurements
+
+Record:
+
+- Screenshot filename
+- Screenshot source
+- Viewport
+- Purpose
+- Visible result
+- Before measurements
+- After measurements
+- Acceptance result
+
+Clearly distinguish Replit screenshots from user screenshots.
+
+## 8. Failures and reversions
+
+Document:
+
+- Failed approaches
+- Changes that had no visible effect
+- Changes that were too large
+- Changes that were too small
+- Changes later undone
+- Why they failed
+- How the failure was found
+- What replaced them
+
+## 9. Final current state
+
+Record:
+
+- Files changed
+- Final behavior
+- Final layout
+- Final data schema
+- Final measurements
+- Features preserved
+- Features untouched
+- Temporary code removed
+- Remaining work
+
+## 10. Acceptance checklist
+
+Repeat every requirement from the prompt and mark it:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+Explain every result that is not PASS.
+
+## 11. Unresolved issues
+
+List:
+
+- Remaining visual problems
+- Remaining functional problems
+- User testing still required
+- Conflicts between requested and rendered results
+- Suggested next corrective task
+
+Do not silently declare completion when a requirement failed.
+
+# PART 16 — AUTOMATIC MASTER WORKFLOW UPDATE
+
+After every future task:
+
+1. Create the per-prompt report.
+2. Append that report as a new chronological section to:
+   `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+3. Do not replace the master file.
+4. Do not shorten earlier entries.
+5. Do not remove failed attempts.
+6. Do not rewrite history to make unsuccessful work appear successful.
+7. Include the exact prompt ID, title, and completion date.
+8. Confirm the append operation succeeded.
+
+# PART 17 — COMPLETION RESPONSE REQUIREMENTS
+
+At the end of every future Replit task:
+
+1. Confirm the per-prompt report exists.
+2. Confirm the master workflow was updated.
+3. Report the exact path of both files.
+4. Report the file size of both files.
+5. Report the line count of both files.
+6. Attach or surface the per-prompt report file.
+7. Attach or surface the updated master workflow when practical.
+8. If attachment is unavailable, provide a direct clickable project-file link.
+9. State whether user testing is still required.
+10. Do not require the user to copy the workflow manually.
+
+# PART 18 — ACCURACY REQUIREMENTS
+
+For the current master export and every future report:
+
+- Do not invent actions.
+- Do not invent measurements.
+- Do not invent screenshots.
+- Do not invent test results.
+- Do not state that a requirement passed when it was not tested.
+- Do not treat automated tests as proof of visual alignment.
+- Do not hide unsuccessful attempts.
+- Preserve error messages accurately.
+- Preserve measurements accurately.
+- Distinguish confirmed facts from inferences.
+- Mark uncertain information as uncertain.
+- Mark unavailable information as unavailable.
+- Do not claim the project history is complete when older history is inaccessible.
+
+# PART 19 — SECURITY AND PRIVACY
+
+Do not include:
+
+- Passwords
+- Login credentials
+- API keys
+- Access tokens
+- Session tokens
+- Authentication cookies
+- Private authentication data
+- Secret environment-variable values
+
+Replace secret values with:
+
+`[REDACTED]`
+
+Environment-variable names may be documented, but their secret values must not be included.
+
+# PART 20 — PROMPT 014H REPORT
+
+Create:
+
+`workflow-reports/PROMPT_014H_REPORT.md`
+
+This report must document:
+
+- Prompt ID: 014H
+- Prompt title
+- Files created
+- Folder created
+- Earliest history found
+- Latest history included
+- Missing history
+- Master workflow line count
+- Master workflow file size
+- Workflow protocol line count
+- Workflow protocol file size
+- Prompt 014H report line count
+- Prompt 014H report file size
+- Whether current application source code was modified
+- Whether any secret values were found and redacted
+- Whether future report generation is now documented
+- Whether the protocol was appended to the master workflow
+- Any limitation preventing automatic compliance
+- Whether files can be attached or only surfaced as project links
+
+Append the contents of:
+
+`workflow-reports/PROMPT_014H_REPORT.md`
+
+to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+as the final chronological entry for Prompt 014H.
+
+# PART 21 — FINAL VERIFICATION
+
+Before completing Prompt 014H:
+
+1. Confirm `workflow-reports/` exists.
+2. Confirm `TRAILWEIGH_COMPLETE_WORKFLOW.md` exists.
+3. Confirm `TRAILWEIGH_WORKFLOW_PROTOCOL.md` exists.
+4. Confirm `workflow-reports/PROMPT_014H_REPORT.md` exists.
+5. Confirm the master file contains all accessible history.
+6. Confirm missing history is clearly identified.
+7. Confirm the protocol requires a new report after every future prompt.
+8. Confirm future reports must be appended to the master workflow.
+9. Confirm future reports must be attached or surfaced.
+10. Confirm no TrailWeigh application behavior was changed.
+11. Confirm no production source file was changed.
+12. Confirm no dependencies were changed.
+13. Confirm no secrets were included.
+14. Report the full path, file size, and line count for every created file.
+15. Attach or surface all three Markdown files so the user can access them.
+16. State any limitation that may prevent Replit from automatically following this protocol in a completely separate future session.
+17. State whether Replit could access the complete history from the beginning or only part of it.
+18. State whether any reported history was inferred from current code.
+19. State whether user review of the completed master workflow is still required.
+
+Do not finish with only a written summary.
+
+The documentation folder and all three Markdown files must be created, verified, and surfaced.
