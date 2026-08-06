@@ -34,7 +34,7 @@ _Describe the high-level user-facing capabilities of this app once they exist._
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Do not collapse any tool calls or actions — keep all steps fully visible in the UI.
 
 ## Gotchas
 
