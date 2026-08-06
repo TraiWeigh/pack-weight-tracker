@@ -1,0 +1,1036 @@
+Prompt ID: 016
+Prompt title: Background Edit, Themes, and Photo Collections
+
+Improve TrailWeigh’s Background controls and personal-photo organization.
+
+This prompt must preserve all current background behavior while reorganizing the interface and adding named personal photo collections.
+
+Before editing, read:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_015_REPORT.md`
+- Current Background, Showcase, saved-file, New, Locker, Undo, and Redo source files
+
+Treat the current application source as the source of truth.
+
+Do not modify the checklist column layout, QTY alignment, Pack Summary width, Weight Distribution palette persistence, Share Link, importers, or calculations.
+
+# PART 1 — CREATE A CHECKPOINT AND BACKUP
+
+Create a Replit checkpoint before modifying application code.
+
+Create:
+
+`workflow-reports/PRE_016_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Master line count and file size
+- Backup line count and file size
+- Current background-storage structure
+- Current custom-photo storage structure
+- Current active-background structure
+- Current Fill/Fit storage
+- Current Light/Dark tone storage
+- Current background Undo/Redo behavior
+- Current New and Locker background behavior
+
+Do not change code until the existing background data flow has been documented.
+
+# PART 2 — RENAME THE TOP BACKGROUND PILL
+
+In the main checklist control area, change the visible pill label from:
+
+`Background`
+
+to:
+
+`Background Edit`
+
+Preserve:
+
+- The current background icon
+- The current click behavior
+- The current pill size and visual style, except for any small width increase needed for the longer label
+- Light-mode styling
+- Dark-mode styling
+- System-mode styling
+- Keyboard focus behavior
+- Touch behavior
+
+Do not rename the internal Background feature or data fields merely because the visible pill label changes.
+
+Do not change the nearby Preview or Share controls during this prompt.
+
+Final visible order remains:
+
+- Background Edit
+- Preview
+- Share
+
+# PART 3 — BACKGROUND PANEL HEADING
+
+The panel’s main heading may remain:
+
+`Background`
+
+Do not automatically rename the panel heading to “Background Edit.”
+
+The requested label change applies to the top control pill.
+
+Preserve the current close behavior and panel structure.
+
+# PART 4 — ALIGN FILL/FIT WITH LIGHT/DARK
+
+The current controls are vertically separated.
+
+Move these controls onto one horizontal control row on normal desktop widths:
+
+Left side:
+
+- Fill Screen
+- Fit Image
+
+Right side:
+
+- Light
+- Dark
+
+Required desktop arrangement:
+
+`[ Fill Screen | Fit Image ]                  [ Light | Dark ]`
+
+Requirements:
+
+- Both segmented controls sit on the same horizontal level.
+- Both controls are vertically centered with each other.
+- Fill/Fit remains left-aligned.
+- Light/Dark remains right-aligned.
+- Maintain adequate space between the two control groups.
+- Do not reduce their tap targets.
+- Do not change their existing selected-state appearance.
+- Do not change what Fill, Fit, Light, or Dark does.
+- Do not place one group above the other at ordinary desktop widths.
+
+Responsive behavior:
+
+- At narrower widths, allow the two segmented controls to stack cleanly.
+- Fill/Fit should appear first.
+- Light/Dark should appear beneath it.
+- Do not permit horizontal page overflow.
+- Do not allow labels to overlap or clip.
+
+Preserve:
+
+## Fill Screen
+
+- Uses `cover`
+- Fills the available background
+- May crop outside edges
+- Does not stretch or distort the image
+- Preserves image aspect ratio
+
+## Fit Image
+
+- Uses `contain`
+- Displays the complete image
+- Centers the image
+- Preserves image aspect ratio
+- Uses the existing theme-aware surrounding treatment
+
+## Light and Dark
+
+- Continue controlling the surrounding background treatment used with Fit Image
+- Preserve current visual behavior
+- System appearance continues following the operating system where currently supported
+
+# PART 5 — REPLACE “LANDSCAPES” WITH A THEMES DROPDOWN
+
+The Background panel currently shows a section heading:
+
+`LANDSCAPES`
+
+Replace that static section heading with a dropdown labeled:
+
+`Themes`
+
+Do not label it:
+
+- Built-in Theme
+- Built-in Themes
+- Landscape
+- Landscapes as the main heading
+
+The visible control label must be:
+
+`Themes`
+
+## Dropdown behavior
+
+The dropdown selects which built-in background theme collection is displayed.
+
+Populate it from the existing built-in background groups found in the current source.
+
+If the current app contains only the Landscapes group:
+
+- The dropdown must contain `Landscapes` as its initial and only theme option.
+- The visible control is still labeled `Themes`.
+- Selecting Landscapes displays the existing landscape thumbnails.
+
+If additional built-in background groups already exist:
+
+- Include each actual group as a dropdown option.
+- Do not invent groups that do not exist.
+- Do not remove any current built-in image.
+
+The dropdown must:
+
+- Use the same visual language as TrailWeigh’s existing controls
+- Work in Light, Dark, and System modes
+- Be keyboard accessible
+- Be touch accessible
+- Display the selected theme clearly
+- Not close the entire Background panel when a theme is selected
+
+Built-in images must remain non-deletable.
+
+# PART 6 — BUILT-IN THEME THUMBNAILS
+
+Preserve every existing built-in TrailWeigh background.
+
+Requirements:
+
+- No existing built-in image may disappear.
+- Selecting a thumbnail applies that image immediately.
+- The selected thumbnail remains visibly identifiable.
+- Fill/Fit continues applying to the selected image.
+- Light/Dark continues applying when relevant.
+- Background Undo/Redo continues working.
+- Built-in images do not show delete controls.
+- Built-in images remain available after refresh.
+- Existing saved checklists using built-in images continue loading correctly.
+
+Do not change image URLs unnecessarily.
+
+Do not replace legal existing assets without a confirmed reason.
+
+# PART 7 — PERSONAL PHOTO COLLECTIONS
+
+Add named collections for user-uploaded background photos.
+
+This is local TrailWeigh organization only.
+
+Do not add:
+
+- Cloud photo storage
+- Account synchronization
+- Public galleries
+- Retail images
+- Affiliate content
+- Shared user collections
+
+## Add Collection
+
+Provide a clearly labeled control:
+
+`Add Collection`
+
+When selected:
+
+1. Ask the user for a collection name.
+2. Trim leading and trailing spaces.
+3. Reject a completely blank name.
+4. Create the collection.
+5. Display the collection in the Background panel.
+6. Show an Add Photo control inside it.
+
+Prevent accidental duplicate collection names when practical.
+
+If duplicate names are allowed by the current storage pattern, distinguish them safely rather than overwriting an existing collection.
+
+## Default collection migration
+
+Inspect how existing custom background photos are currently stored.
+
+If custom photos already exist without collection information:
+
+- Migrate them into a collection named:
+  `My Photos`
+- Preserve all existing photos.
+- Preserve the currently selected custom background.
+- Preserve photo order where practical.
+- Do not require the user to upload them again.
+
+If `My Photos` already exists, merge safely without deleting or duplicating existing photo references.
+
+Do not clear the custom gallery during migration.
+
+# PART 8 — ADDING PERSONAL PHOTOS
+
+Each collection supports up to:
+
+`10 photos`
+
+Inside each collection:
+
+- Show an Add Photo thumbnail or control.
+- After one image is added, another Add Photo control remains available.
+- Continue showing Add Photo until the collection reaches 10 images.
+- At 10 images, disable or hide Add Photo for that collection.
+- Clearly explain that the collection limit is 10.
+
+When a photo is added:
+
+- Preserve its original aspect ratio.
+- Generate or display a suitable thumbnail.
+- Add it to the selected collection.
+- Save the collection and photo reference using the current local storage design.
+- Do not automatically replace the current active background unless the current user action explicitly selects the new photo.
+
+Supported formats should follow the current working custom-background upload behavior.
+
+Do not add unsupported image formats without testing.
+
+# PART 9 — SELECTING PERSONAL PHOTOS
+
+Selecting a personal photo thumbnail must:
+
+- Apply it as the active checklist background immediately.
+- Preserve Fill/Fit behavior.
+- Preserve Light/Dark treatment.
+- Preserve background fade/darken behavior.
+- Participate in current background Undo/Redo.
+- Work in normal checklist view.
+- Work in Showcase.
+- Save and reopen according to current saved-file behavior.
+
+Clearly indicate the selected thumbnail.
+
+Do not confuse the selected collection with the selected active background.
+
+# PART 10 — DELETING A PERSONAL PHOTO
+
+Custom photos may be deleted.
+
+Built-in photos may not be deleted.
+
+For a custom photo:
+
+- Show a delete control on mouse hover.
+- Also provide a keyboard-accessible delete control.
+- Also provide a touch-accessible method that does not depend on hover.
+- Require confirmation before deleting.
+
+Confirmation must clearly identify that the photo will be removed from the personal background library.
+
+Cancel:
+
+- Leaves the photo unchanged.
+- Leaves the current active background unchanged.
+
+Confirm:
+
+- Removes only that photo.
+- Does not remove the collection.
+- Does not remove other photos.
+- Does not change unrelated saved checklist data.
+
+If the deleted photo is currently active:
+
+- Switch safely to the current default background or another documented fallback.
+- Do not leave a broken image URL.
+- Do not crash the Background panel.
+- Record the fallback behavior in the report.
+
+# PART 11 — RENAMING AND DELETING COLLECTIONS
+
+Allow personal collections to be renamed.
+
+Rename requirements:
+
+- Preserve all photos.
+- Preserve photo order.
+- Preserve the active photo.
+- Reject a blank name.
+- Do not overwrite another collection.
+
+Allow personal collections to be deleted.
+
+If a collection contains photos:
+
+- Require confirmation.
+- Clearly state that the collection and its contained photo references will be removed.
+
+Cancel:
+
+- Leaves the collection and all photos unchanged.
+
+Confirm:
+
+- Removes only the selected personal collection.
+- Does not affect built-in themes.
+- Does not affect unrelated personal collections.
+- Handles an active background from that collection safely.
+
+Do not allow deleting the built-in Themes dropdown or built-in theme groups.
+
+# PART 12 — COLLECTION DISPLAY
+
+Personal collections should appear below the built-in Themes area.
+
+Each collection should display:
+
+- Collection name
+- Photo count
+- Rename control
+- Delete control
+- Its photo thumbnails
+- Add Photo control when under the 10-photo limit
+
+Collections may be collapsible if that fits the current panel design.
+
+If collapsible:
+
+- Opening one collection should not unexpectedly delete or reset another.
+- Preserve collection open/closed state only if appropriate.
+- Do not add unnecessary global saved-file state merely for panel expansion.
+
+Long collection names:
+
+- Must not overlap controls.
+- May truncate visually with a tooltip or accessible full label.
+- Must remain editable.
+
+# PART 13 — STORAGE DESIGN
+
+Clearly separate:
+
+## Personal photo library
+
+Contains:
+
+- Collection names
+- Custom photo references
+- Photo order
+- Collection membership
+
+This library may be shared locally across TrailWeigh checklists according to the current background-library design.
+
+## Active checklist background
+
+Contains the active file’s selected background information, such as:
+
+- Selected background URL or reference
+- Fill or Fit
+- Fade or darken level
+- Light or Dark tone
+- Other existing active-background fields
+
+Do not convert the entire personal library into per-checklist duplicate data.
+
+Do not store large image data repeatedly inside every Locker file if the current design already avoids that.
+
+Do not create a second competing background-storage system.
+
+# PART 14 — SAVE, SAVE AS, LOCKER, NEW, AND REFRESH
+
+Preserve the current intended behavior.
+
+## Save
+
+Saving a checklist must preserve its active background settings.
+
+## Save As
+
+Save As must copy the active background settings into the new file without modifying the original file.
+
+## Open from Locker
+
+Opening a file must restore its active background.
+
+The personal photo library remains available.
+
+## Refresh
+
+Refreshing must preserve:
+
+- Collections
+- Custom photos
+- Active background
+- Fill/Fit
+- Fade/darken setting
+- Light/Dark setting
+
+## New
+
+New currently copies the visible checklist and visual settings while unchecking all gear items.
+
+New must preserve:
+
+- Active background
+- Fill/Fit
+- Fade/darken
+- Light/Dark
+- Access to personal collections
+
+New remains unsaved until named.
+
+## Reset
+
+Reset clears gear items according to current requirements.
+
+Reset must not unexpectedly delete:
+
+- Personal photo collections
+- Uploaded photos
+- Active background settings
+
+Do not alter Reset behavior outside background preservation.
+
+# PART 15 — BACKGROUND UNDO AND REDO
+
+Preserve current background Undo/Redo behavior.
+
+Test this sequence:
+
+1. Select Background A.
+2. Select Background B.
+3. Change Fill to Fit.
+4. Change Light to Dark.
+5. Press Undo repeatedly.
+6. Confirm each background-related state returns in the expected order.
+7. Press Redo repeatedly.
+8. Confirm each state reapplies correctly.
+
+Document exactly which background actions currently participate in history:
+
+- Background image selection
+- Fill/Fit
+- Light/Dark
+- Fade/darken
+- Collection creation
+- Photo upload
+- Photo deletion
+- Collection rename
+- Collection deletion
+
+Do not add collection-management actions to checklist Undo/Redo unless the existing architecture supports it safely.
+
+At minimum, existing background selection and Fill/Fit Undo/Redo must remain functional.
+
+# PART 16 — SHOWCASE
+
+Preserve the current Showcase behavior.
+
+Do not relocate the Showcase control during Prompt 016 unless required to prevent layout breakage.
+
+Requirements:
+
+- Showcase uses the selected background.
+- Fill/Fit remains correct.
+- Light/Dark treatment remains correct.
+- Custom collection photos work in Showcase.
+- Exiting Showcase returns to the checklist without losing the background choice.
+
+A later prompt may reorganize Showcase and Preview controls.
+
+Do not combine that future control reorganization into Prompt 016.
+
+# PART 17 — RESPONSIVE DESIGN
+
+Test at desktop, tablet, and phone widths.
+
+Desktop:
+
+- Background Edit pill fits without overlapping Preview or Share.
+- Fill/Fit and Light/Dark are on the same horizontal level.
+- Themes dropdown fits cleanly.
+- Collection controls are readable.
+- Thumbnail grid uses available width efficiently.
+
+Tablet:
+
+- Controls may wrap only when necessary.
+- No horizontal page overflow.
+- Collection names and controls remain accessible.
+
+Phone:
+
+- Fill/Fit and Light/Dark may stack.
+- Themes dropdown remains full-width or appropriately sized.
+- Collection thumbnails remain large enough to tap.
+- Delete controls remain usable without hover.
+- Add Photo remains visible.
+- Long names do not overlap.
+- No horizontal scrolling appears.
+
+# PART 18 — ACCESSIBILITY
+
+Ensure:
+
+- Background Edit pill has an accessible label.
+- Themes dropdown has an associated label.
+- Fill/Fit controls expose selected state.
+- Light/Dark controls expose selected state.
+- Add Collection is keyboard accessible.
+- Add Photo is keyboard accessible.
+- Custom-photo delete controls have specific accessible labels.
+- Rename controls have specific accessible labels.
+- Confirmation dialogs trap focus correctly according to the existing dialog system.
+- Escape or Cancel closes dialogs without applying changes.
+- Focus remains visible in Light and Dark modes.
+
+# PART 19 — PRESERVE UNRELATED FEATURES
+
+Do not change:
+
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+- Category-panel width
+- MOVE
+- WEIGHT
+- QTY values
+- TOTAL
+- DESCRIPTION
+- Per-file Weight Distribution palettes
+- Gear calculations
+- Base Weight calculations
+- Dog Pack calculations
+- Expendables calculations
+- Save confirmation wording
+- Active filename behavior
+- Preview behavior
+- Print
+- PDF export
+- Share Link
+- Importers
+- AI scanning
+- Authentication
+- Mobile companion-app data
+- Retailer or affiliate features
+- Meal Planner features
+
+# PART 20 — AUTOMATED TESTS
+
+Add focused automated tests for the new background collection data behavior.
+
+Test at minimum:
+
+1. Existing custom photos migrate into `My Photos`.
+2. Migration preserves photo references.
+3. Migration does not duplicate photos when repeated.
+4. Empty users do not receive invalid data.
+5. Collection creation works.
+6. Blank collection names are rejected.
+7. Collection rename preserves photos.
+8. Collection deletion removes only that collection.
+9. Adding a photo adds it to the selected collection.
+10. The 10-photo collection limit is enforced.
+11. Deleting one photo preserves other photos.
+12. Built-in backgrounds cannot be deleted.
+13. Active custom background survives migration.
+14. Older background-library data loads safely.
+15. New copies active background settings.
+16. Save/Save As preserve active background settings.
+17. Refresh initialization restores collections and active background.
+18. Existing per-file Weight Distribution palette behavior remains unaffected.
+
+Extend an appropriate existing test suite when practical.
+
+Create a new test suite only if needed.
+
+If the test-suite count changes:
+
+- Update `TESTING.md`
+- Document the new exact count
+- Document execution order
+- Document the new suite and behaviors protected
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Every suite
+- Suite count
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Warnings
+- Errors
+
+Do not change tests merely to force a pass.
+
+# PART 21 — REQUIRED RENDERED TESTS
+
+Use the signed-in Replit preview where the full Background and Locker workflow is available.
+
+Do not install Playwright.
+
+Test:
+
+## Label and layout
+
+- Top pill reads `Background Edit`.
+- Panel opens correctly.
+- Panel heading remains `Background`.
+- Fill/Fit and Light/Dark appear on one horizontal level at desktop width.
+- They stack safely at phone width.
+- LANDSCAPES is no longer used as the static section heading.
+- A dropdown labeled Themes is visible.
+- Landscapes remains available as a theme option.
+
+## Collections
+
+- Create a collection.
+- Rename it.
+- Add at least three photos.
+- Refresh and confirm collection and photos remain.
+- Delete one photo and cancel once.
+- Delete one photo and confirm once.
+- Delete a collection and cancel once.
+- Delete a collection and confirm once.
+- Verify built-in images do not offer delete controls.
+- Verify the 10-photo limit using a test fixture or controlled test data when uploading 10 real files is impractical.
+
+## Background behavior
+
+- Select built-in image.
+- Select custom image.
+- Test Fill.
+- Test Fit.
+- Test Light.
+- Test Dark.
+- Test fade/darken slider.
+- Test Undo.
+- Test Redo.
+- Test Showcase.
+- Test refresh.
+- Test Save and reopen.
+- Test Save As.
+- Test New.
+- Confirm Reset does not erase personal collections.
+
+## Themes
+
+- Open Themes dropdown.
+- Select Landscapes.
+- Confirm existing landscape thumbnails appear.
+- Confirm the active image remains selected where appropriate.
+
+## Screenshots
+
+Capture screenshots showing:
+
+- Background Edit pill
+- Desktop control row with Fill/Fit and Light/Dark aligned
+- Themes dropdown
+- Built-in landscape thumbnails
+- A named custom collection
+- Uploaded photo thumbnails
+- Phone-width stacked controls
+- Custom image in Showcase
+
+User visual testing remains required.
+
+# PART 22 — UPDATE PROJECT DOCUMENTATION
+
+Update the current-state sections in:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Background Edit pill label
+- Themes dropdown behavior
+- Built-in theme options
+- Personal collection schema
+- Migration from old custom-photo storage
+- 10-photo limit
+- Rename and delete behavior
+- Fill/Fit row layout
+- Mobile stacking behavior
+- Save/Save As/Open/New/Reset behavior
+- Undo/Redo behavior
+- Automated tests
+- Rendered-test results
+- Remaining limitations
+
+Update the Prompt Number Index with:
+
+- Prompt 016
+- Title: Background Edit, Themes, and Photo Collections
+- Actual completion status
+- Report path:
+  `workflow-reports/PROMPT_016_REPORT.md`
+
+Update the opening latest-entry field after appending to:
+
+`Prompt 016 — 2026-08-06`
+
+Preserve legitimate unresolved items such as Share Link and mobile/web synchronization.
+
+# PART 23 — CREATE THE PROMPT 016 REPORT
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_016_REPORT.md`
+
+The report must include:
+
+## Task identification
+
+- Prompt ID
+- Prompt title
+- Start and completion time
+- Purpose
+- Exact requested result
+- Protocol reference
+
+## Starting state
+
+- Existing Background pill label
+- Existing panel layout
+- Existing LANDSCAPES heading
+- Existing built-in background structure
+- Existing custom-photo structure
+- Existing storage keys and schemas
+- Existing Undo/Redo behavior
+
+## Root design findings
+
+Document:
+
+- How built-in themes are represented
+- How custom photos were stored
+- How active backgrounds are stored
+- How migration was implemented
+- Why the selected architecture avoids duplicated or competing state
+
+## Exact implementation
+
+For every changed file include:
+
+- Full path
+- What changed
+- Why
+- Important functions
+- Important schemas
+- Relevant before-and-after excerpts
+- Whether it affects saved data
+
+## Migration matrix
+
+Include:
+
+- No existing photos
+- One existing photo
+- Multiple existing photos
+- Existing My Photos collection
+- Existing active custom background
+- Repeated migration
+- Corrupt or partial old data
+
+Mark each:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Functional matrix
+
+Include:
+
+- Background Edit pill
+- Themes dropdown
+- Landscapes option
+- Built-in thumbnail selection
+- Create collection
+- Rename collection
+- Add photo
+- 10-photo limit
+- Delete photo
+- Delete collection
+- Fill
+- Fit
+- Light
+- Dark
+- Fade
+- Undo
+- Redo
+- Showcase
+- Save
+- Save As
+- Open
+- Refresh
+- New
+- Reset
+- Desktop
+- Tablet
+- Phone
+
+Mark each:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Automated tests
+
+Include:
+
+- Command
+- Suites
+- Suite count
+- Execution order
+- Passed
+- Failed
+- Exit code
+- Warnings
+- Errors
+
+## Rendered tests
+
+Include:
+
+- Screenshot names
+- Viewports
+- Visible result
+- User testing still required
+
+## Scope preservation
+
+Confirm:
+
+- Desktop grid remains `365px`
+- QTY remains `translate-x-3`
+- Weight Distribution per-file palettes remain working
+- Share Link was not changed
+- Importers were not changed
+- Calculations were not changed
+
+## Acceptance checklist
+
+Repeat every requirement and mark:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+Explain every non-PASS result.
+
+## Unresolved issues
+
+List any remaining background or collection problem.
+
+Do not claim completion if migration, persistence, or deletion behavior remains untested.
+
+# PART 24 — APPEND PROMPT 016
+
+Append the complete Prompt 016 report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not replace the master.
+- Do not truncate earlier history.
+- Do not append Prompt 016 twice.
+- Confirm Prompt 016 appears exactly once.
+- Confirm Prompt 015 remains present.
+- Update the final trailer to:
+  `Master workflow last updated: 2026-08-06 (Prompt 016)`
+
+# PART 25 — CREATE AN EASY DOWNLOAD ZIP
+
+Create in the project root:
+
+`trailweigh-016-report.zip`
+
+Include only:
+
+- `workflow-reports/PROMPT_016_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+Do not include:
+
+- Backups
+- Application source
+- User photos
+- User Locker data
+- Credentials
+- Dependencies
+- Other ZIP files
+
+# FINAL VERIFICATION
+
+Before completing:
+
+1. Confirm `PRE_016_MASTER_BACKUP.md` exists.
+2. Confirm `PROMPT_016_REPORT.md` exists.
+3. Confirm `trailweigh-016-report.zip` exists.
+4. Confirm top pill reads `Background Edit`.
+5. Confirm panel heading remains `Background`.
+6. Confirm Fill/Fit and Light/Dark align horizontally at desktop width.
+7. Confirm responsive stacking works.
+8. Confirm LANDSCAPES is no longer the static section heading.
+9. Confirm the control is labeled `Themes`.
+10. Confirm Landscapes remains available.
+11. Confirm all existing built-in images remain.
+12. Confirm existing custom photos migrate safely.
+13. Confirm named collections persist.
+14. Confirm the 10-photo limit works.
+15. Confirm custom photo deletion works.
+16. Confirm collection deletion works.
+17. Confirm built-in images cannot be deleted.
+18. Confirm Fill and Fit work.
+19. Confirm Light and Dark work.
+20. Confirm background fade works.
+21. Confirm Undo and Redo still work.
+22. Confirm Showcase still works.
+23. Confirm Save and Save As preserve backgrounds.
+24. Confirm Open and Refresh restore backgrounds.
+25. Confirm New copies background settings.
+26. Confirm Reset does not erase the personal library.
+27. Confirm QTY remains `translate-x-3`.
+28. Confirm desktop grid remains `lg:grid-cols-[1fr_365px]`.
+29. Confirm per-file Weight Distribution palettes remain working.
+30. Confirm Share Link was not modified.
+31. Confirm importers were not modified.
+32. Confirm no private photos or Locker data are included in the report ZIP.
+33. Confirm the actual automated-test result.
+34. Confirm Prompt 016 appears exactly once in the master.
+35. Confirm the master grew rather than shrank.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_016_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-016-report.zip`
+- Report the exact path, file size, and line count of every Markdown file
+- Report the exact automated-test result
+- State which rendered tests passed
+- State exactly what still requires user testing
+- Confirm no unrelated TrailWeigh feature was modified
+- Do not require the user to copy the workflow manually
