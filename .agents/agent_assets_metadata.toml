@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "BSEp-h2TC82h3YqnUOkUP"
+uri = "file://trailweigh-workflow-docs.zip"
+type = "unspecified"
+title = "TrailWeigh Workflow Docs"
+description = "TRAILWEIGH_COMPLETE_WORKFLOW.md, TRAILWEIGH_WORKFLOW_PROTOCOL.md, and PROMPT_014H_REPORT.md — all three documentation files in one zip (20 KB)"
