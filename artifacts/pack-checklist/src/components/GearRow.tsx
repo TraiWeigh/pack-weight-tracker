@@ -123,7 +123,7 @@ export const GearRow = memo(function GearRow({
           step={system === 'metric' ? '0.1' : '0.01'}
           value={weightInputValue}
           onChange={(e) => handleWeightChange(e.target.value)}
-          className="w-full bg-transparent text-sm text-right font-mono focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 h-7 transition-colors hover:bg-black/5"
+          className="w-full bg-transparent text-sm text-right font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 h-7 transition-colors hover:bg-black/5"
           placeholder="0"
         />
         <span className="text-xs text-muted-foreground select-none w-4">{su}</span>
@@ -134,7 +134,7 @@ export const GearRow = memo(function GearRow({
         <select
           value={item.qty}
           onChange={(e) => updateItem(category, item.id, { qty: parseInt(e.target.value) })}
-          className="w-full bg-transparent text-sm text-center font-mono focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 h-7 transition-colors hover:bg-black/5 cursor-pointer appearance-none"
+          className="w-full bg-transparent text-sm text-center font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 h-7 transition-colors hover:bg-black/5 cursor-pointer appearance-none"
         >
           {QTY_OPTIONS.map(n => (
             <option key={n} value={n}>{n}</option>
