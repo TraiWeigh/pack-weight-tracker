@@ -7,3 +7,10 @@ uri = "file://trailweigh-workflow-docs.zip"
 type = "unspecified"
 title = "TrailWeigh Workflow Docs"
 description = "TRAILWEIGH_COMPLETE_WORKFLOW.md, TRAILWEIGH_WORKFLOW_PROTOCOL.md, and PROMPT_014H_REPORT.md — all three documentation files in one zip (20 KB)"
+
+[[outputs]]
+id = "D-9bD2Xp7hPD9B5S2eCeF"
+uri = "file://trailweigh-014I-report.zip"
+type = "unspecified"
+title = "Prompt 014I Report + Updated Master Workflow"
+description = "PROMPT_014I_REPORT.md (12.6 KB, 210 lines) and the updated TRAILWEIGH_COMPLETE_WORKFLOW.md — both files in one zip (6.2 KB)"

@@ -1,0 +1,229 @@
+Prompt ID: 014I
+Prompt title: Quick Category Width and QTY Heading Correction
+
+Make two small, controlled visual corrections to TrailWeigh.
+
+Do not rebuild the gear-row layout.
+
+Do not change calculations, saved data, Move behavior, Undo, Redo, Pack Summary content, or any unrelated feature.
+
+## Correction 1 — Slightly reduce category width
+
+The category panels are currently slightly too wide.
+
+The current desktop layout in `Checklist.tsx` reportedly uses:
+
+`lg:grid-cols-[1fr_341px]`
+
+Change only the fixed Pack Summary width from:
+
+`341px`
+
+to:
+
+`365px`
+
+Expected result:
+
+- The checklist/category area becomes approximately 24px narrower.
+- The Pack Summary becomes approximately 24px wider.
+- The category panels should move from approximately 832px wide to approximately 808px wide at the same 1280px desktop viewport.
+- This should place the category width approximately halfway between the old narrow version and the current wider version.
+
+Preserve:
+
+- `w-full` on the main element
+- Equal left and right outer padding
+- `px-3 sm:px-4 lg:px-6`
+- The existing centered page structure
+- The existing gap between the checklist and Pack Summary
+- The single-column mobile layout
+
+Do not:
+
+- Restore the old 8/12 and 4/12 column layout
+- Change to 9/12 and 3/12 columns
+- Change global page padding
+- Move the checklist’s left edge
+- Change the browser-width calculations
+- Add arbitrary margins
+
+This must be a one-value desktop width adjustment only.
+
+## Correction 2 — Align only the QTY heading
+
+The QTY heading is not visually centered over the quantity values.
+
+Move only the visible heading text:
+
+`QTY`
+
+Do not move:
+
+- QTY values
+- QTY select controls
+- The 56px QTY column
+- MOVE
+- MOVE arrows
+- WEIGHT
+- Weight values
+- TOTAL
+- Total values
+- DESCRIPTION
+- TYPE
+- Delete controls
+
+### Required measurement
+
+At the same desktop viewport:
+
+1. Measure the horizontal center of the visible `QTY` heading text.
+2. Measure the horizontal center of a normal QTY value such as `1`.
+3. Calculate the exact pixel difference.
+4. Move only the QTY heading by that measured amount.
+
+Use a heading-only wrapper or heading-only positioning class in:
+
+`artifacts/pack-checklist/src/components/GearCategory.tsx`
+
+Do not apply the adjustment in:
+
+`GearRow.tsx`
+
+Do not change the shared right-group widths in:
+
+`gearGrid.ts`
+
+Do not estimate the movement visually.
+
+Do not use separate adjustments for different rows.
+
+## Preserve current right-side layout
+
+Keep the current right-side structure unchanged:
+
+- MOVE width
+- WEIGHT width
+- QTY width
+- QTY-to-TOTAL spacer
+- TOTAL width
+- Delete width
+
+Do not change the current QTY-to-TOTAL spacing during this prompt.
+
+Do not change the current theme-aware WEIGHT or QTY text colors.
+
+## Required desktop test
+
+Use the same 1280×800 viewport used for Prompt 014G.
+
+Measure before and after:
+
+- Category panel width
+- Pack Summary width
+- Left outer page padding
+- Right outer page padding
+- QTY heading center
+- QTY value center
+
+Acceptance requirements:
+
+1. Category panel becomes approximately 24px narrower.
+2. Acceptable category-width change: 20–28px narrower.
+3. Pack Summary becomes approximately 24px wider.
+4. Left and right outer page padding remain equal.
+5. The checklist’s left edge does not move.
+6. QTY heading center matches the QTY value center within 1px.
+7. QTY values do not move.
+8. MOVE, WEIGHT, TOTAL, and DESCRIPTION do not move internally relative to their row layout.
+9. No horizontal overflow appears.
+10. Pack Summary remains fully readable.
+
+## Required mobile test
+
+At a phone-sized viewport confirm:
+
+- The desktop width change does not affect the mobile layout.
+- No horizontal scrolling appears.
+- QTY, WEIGHT, and TOTAL do not overlap.
+- Move remains tappable.
+
+## Preserve all behavior
+
+Do not change:
+
+- `moveItem`
+- Destination category options
+- Weight calculations
+- Quantity calculations
+- Total calculations
+- Undo
+- Redo
+- Save
+- Save As
+- Locker
+- Imports
+- Backgrounds
+- Weight Distribution
+- Pie colors
+- Preview
+- Print
+- Share
+- Mobile data
+- Category aliases
+
+## Functional test
+
+Move one item to another category.
+
+Confirm:
+
+1. Move works.
+2. Undo restores it.
+3. Redo moves it again.
+4. Weight, QTY, and Total remain unchanged.
+
+Run:
+
+`pnpm test:importer`
+
+## Required report files
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_014I_REPORT.md`
+
+Append the completed report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+The report must include:
+
+- Exact files changed
+- Original and new Pack Summary width
+- Category width before and after
+- Outer left and right padding measurements
+- QTY heading center before and after
+- QTY value center before and after
+- Exact QTY heading shift used
+- Desktop screenshot result
+- Mobile screenshot result
+- Move, Undo, and Redo result
+- Automated-test result
+- Every acceptance requirement marked PASS, FAIL, PARTIAL, or NOT TESTED
+- Any failed or reverted attempt
+- Any remaining issue
+- Confirmation that no temporary measurement code or logs remain
+
+At completion:
+
+1. Confirm the per-prompt report exists.
+2. Confirm the master workflow was updated.
+3. Report the file path, file size, and line count of both files.
+4. Attach or surface `PROMPT_014I_REPORT.md`.
+5. Surface the updated master workflow when practical.
+6. State clearly that user visual testing is still required.
