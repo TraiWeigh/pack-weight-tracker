@@ -1,0 +1,480 @@
+Prompt ID: 014O
+Prompt title: Restore the Workflow Protocol and Finish Documentation Cleanup
+
+Complete the remaining documentation corrections identified after Prompt 014N.
+
+This is a documentation-only task.
+
+Do not modify TrailWeigh application source code, layout, behavior, calculations, saved data, dependencies, or user settings.
+
+Do not delete any ZIP files during this prompt.
+
+# PART 1 — VERIFY THE CURRENT DOCUMENTATION STATE
+
+Before changing anything, inspect:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_014N_REPORT.md`
+- The current root directory
+- The current `workflow-reports/` directory
+
+Confirm that:
+
+- The master workflow contains more than 1,700 lines.
+- The master includes Prompt 014N.
+- The opening latest-entry field identifies Prompt 014N.
+- The final trailer identifies Prompt 014N.
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md` is currently missing from the project root.
+- `trailweigh-workflow-docs.zip` is still available in the project root.
+
+If `TRAILWEIGH_COMPLETE_WORKFLOW.md` contains fewer than 1,650 lines, stop and report the blocker.
+
+# PART 2 — CREATE SAFETY BACKUPS
+
+Before editing documentation, create:
+
+- `workflow-reports/PRE_014O_MASTER_BACKUP.md`
+- `workflow-reports/PRE_014O_TESTING_BACKUP.md`
+
+The first backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+The second backup must contain the complete current:
+
+`TESTING.md`
+
+Record the line count and file size of:
+
+- The current master workflow
+- The master backup
+- The current TESTING.md
+- The TESTING.md backup
+
+Do not overwrite any earlier backup.
+
+# PART 3 — RESTORE THE WORKFLOW PROTOCOL FROM THE ARCHIVE
+
+The required root file is missing:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Restore it from:
+
+`trailweigh-workflow-docs.zip`
+
+Do not reconstruct it from memory.
+
+## Required restoration procedure
+
+1. Inspect `trailweigh-workflow-docs.zip`.
+2. Locate:
+   `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+3. Extract it to a temporary location first.
+4. Verify that the extracted file:
+   - Begins with `# TrailWeigh Workflow Protocol`
+   - States that it was established by Prompt 014H
+   - Contains the Standing Reporting Requirements
+   - Contains the per-prompt report filename rules
+   - Contains the required report sections
+   - Contains the Master Workflow Update Procedure
+   - Contains Completion Response Requirements
+   - Contains Accuracy Requirements
+   - Contains Security and Privacy requirements
+   - Contains approximately 190 lines or more
+5. Only after those checks pass, place the verified file in the project root as:
+   `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Do not modify the restored protocol text merely to modernize it.
+
+Do not append Prompt 014O instructions into the protocol file.
+
+If the archive does not contain a valid protocol file, stop and report the blocker. Do not create a replacement protocol from memory.
+
+# PART 4 — CORRECT THE CURRENT DESCRIPTION-WIDTH DOCUMENTATION
+
+In:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+locate the current-state description of the gear-row layout and DESCRIPTION width.
+
+Historical Prompt 014G and Prompt 014I measurements must remain unchanged in their historical sections.
+
+Update only the current-state summary.
+
+The current-state summary must accurately state:
+
+- DESCRIPTION is the flexible `1fr` column.
+- It was measured as 275px before Prompt 014I.
+- Prompt 014I widened the Pack Summary from 341px to 365px.
+- That reduced the available checklist/category area by approximately 24px.
+- Therefore, the current DESCRIPTION width is approximately 251px at the previously used 1280×800 viewport.
+- The approximately 251px value is an analytical estimate, not a new browser measurement.
+- DESCRIPTION was not independently remeasured during Prompt 014O.
+
+Remove or correct any current-state statement that inaccurately says:
+
+`275px at current panel width`
+
+Do not replace historical 275px references that correctly describe the earlier Prompt 014G state.
+
+# PART 5 — CORRECT THE IMPORTER AND AI-SCAN SUMMARY TABLE
+
+In the current-state importer-support table inside:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+inspect the actual current source and tests before editing the documentation.
+
+Inspect at least:
+
+- The route handling `/api/import-gear`
+- The route handling `/api/scan-gear`
+- `scanGear.test.mjs`
+- Any scan-related client UI
+- Any URL-based scanning logic
+- Any scan-credit logic
+
+Correct the table so it accurately distinguishes:
+
+1. Regular file importing
+2. Image-file rejection
+3. Any URL-based AI gear scanning
+4. Any currently unsupported image-scan request type
+5. UI or credit code that exists but does not prove the feature is functional
+
+At minimum, ensure the documentation does not simply state:
+
+`Image (scan) | /api/scan-gear | AI scan; credits required`
+
+when the current tests show that `type="image"` is rejected.
+
+Use exact current-code findings.
+
+Clearly state one of these for each behavior:
+
+- CONFIRMED WORKING
+- CONFIRMED REJECTED
+- PRESENT IN CODE BUT NOT FUNCTIONALLY VERIFIED
+- UNCERTAIN
+
+Do not change application code.
+
+Do not create or enable image OCR.
+
+Do not describe Pillow or Tesseract as part of the current implementation unless the current source actually contains them.
+
+# PART 6 — CORRECT TESTING.MD TO SIX SUITES
+
+Inspect:
+
+- Root `package.json`
+- The exact `test:importer` script
+- All test files called by that script
+
+Determine the exact order and filenames of every suite currently run by:
+
+`pnpm test:importer`
+
+The current script is expected to run six suites, including:
+
+- `importGear.test.mjs`
+- `importGear.pdf.test.mjs`
+- `scanGear.test.mjs`
+- `categoryAliases.test.mjs`
+- `usePackData.test.mjs`
+- `moveItem.test.mjs`
+
+Do not assume this list is correct without checking the actual package script.
+
+Update:
+
+`TESTING.md`
+
+so it accurately states:
+
+- The exact number of suites run
+- The exact suite filenames
+- What each suite protects
+- The correct location of each suite
+- That the command exits non-zero on a failure
+- The current relationship between the six suites and the 47-test result
+
+Add `moveItem.test.mjs` to the individual-suite list and behavior table if the package script includes it.
+
+For `moveItem.test.mjs`, document only behavior supported by the actual test file, such as:
+
+- Moving an item between categories
+- Preserving the complete item object
+- Preventing invalid or same-category moves, if tested
+- Undo/Redo behavior, only if actually tested
+- Destination ordering, only if actually tested
+
+Do not invent test coverage.
+
+# PART 7 — VERIFY THE TEST DOCUMENTATION
+
+Run:
+
+`pnpm test:importer`
+
+Record:
+
+- Exact suites that ran
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Any warning or error
+
+Expected prior result:
+
+`47 passed / 0 failed`
+
+Do not change application source code or tests to force the expected result.
+
+If the result differs, record the actual result and do not hide it.
+
+# PART 8 — UPDATE THE MASTER WORKFLOW SUMMARY
+
+Update the following current documentation in:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+## Latest-entry field
+
+Before appending Prompt 014O, it may identify Prompt 014N.
+
+After Prompt 014O is appended, update it to:
+
+`Prompt 014O — 2026-08-06`
+
+## Prompt Number Index
+
+Add:
+
+- Prompt 014O
+- Title: Restore the Workflow Protocol and Finish Documentation Cleanup
+- Status: Documentation completed, based on actual results
+- Report path:
+  `workflow-reports/PROMPT_014O_REPORT.md`
+
+## Current testing summary
+
+Record:
+
+- Exact current six-suite list, if confirmed
+- Actual latest pass/fail result
+- Date of the Prompt 014O test run
+- Removal of the earlier five-versus-six-suite inconsistency
+
+## Current protocol status
+
+Add or update a current-state statement confirming:
+
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md` exists in the project root
+- It was restored from the verified Prompt 014H archive
+- It remains the standing reporting protocol for future TrailWeigh work
+
+## Remaining unresolved issues
+
+Do not mark these complete unless proven:
+
+- Pie-color save and restore
+- Share Link behavior
+- QTY-to-TOTAL visible text-level gap
+- Background persistence
+- Mobile/web synchronization
+- Other legitimate pending items
+
+Do not reintroduce the already resolved QTY-heading issue.
+
+# PART 9 — PRESERVE HISTORICAL ACCURACY
+
+Do not globally replace older values.
+
+Preserve historical documentation showing:
+
+- Prompt 014G used a 341px Pack Summary
+- Prompt 014G measured DESCRIPTION at 275px
+- Prompt 014I changed the Pack Summary to 365px
+- Prompt 014K changed QTY to `translate-x-3`
+- Prompt 014K user visual verification passed
+- Earlier reports may contain statuses that were true at the time
+
+Only update current summaries and specifically identified stale statements.
+
+Do not rewrite Prompt 014G through Prompt 014N history.
+
+# PART 10 — CREATE THE PROMPT 014O REPORT
+
+Follow the restored:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_014O_REPORT.md`
+
+The report must include:
+
+## Task identification
+
+- Prompt ID: 014O
+- Prompt title
+- Date completed
+- Documentation-only status
+- Protocol reference
+
+## Starting state
+
+- Master line count and size
+- TESTING.md line count and size
+- Protocol file missing
+- Stale DESCRIPTION statement
+- Stale importer/AI-scan table
+- Five-versus-six-suite TESTING.md inconsistency
+
+## Backups
+
+- `PRE_014O_MASTER_BACKUP.md`
+- `PRE_014O_TESTING_BACKUP.md`
+- Line count and file size of both
+
+## Protocol restoration
+
+- Archive used
+- Internal archive path
+- Verification checks
+- Restored protocol line count and size
+- Confirmation the protocol was restored rather than reconstructed
+
+## Master corrections
+
+- Exact current-state DESCRIPTION wording
+- Exact current importer/AI-scan findings
+- Prompt Number Index update
+- Current protocol-status update
+- Current testing-summary update
+- Confirmation historical measurements were preserved
+
+## TESTING.md correction
+
+- Previous suite count
+- Correct suite count
+- Exact current suite list
+- Exact package script
+- `moveItem.test.mjs` coverage
+- Any documentation wording changed
+
+## Automated tests
+
+- Command
+- Suite order
+- Passed count
+- Failed count
+- Exit code
+- Warnings or errors
+
+## Acceptance checklist
+
+Mark every requirement:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Unresolved documentation issues
+
+List any remaining inconsistency.
+
+Do not say there are none unless all checks genuinely pass.
+
+# PART 11 — APPEND PROMPT 014O TO THE MASTER
+
+Append the complete contents of:
+
+`workflow-reports/PROMPT_014O_REPORT.md`
+
+to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not replace the master.
+- Do not truncate earlier content.
+- Do not append Prompt 014O twice.
+- Confirm Prompt 014O appears exactly once in the chronological history.
+- Update the opening latest-entry field to Prompt 014O.
+- Update the final trailer to:
+  `Master workflow last updated: 2026-08-06 (Prompt 014O)`
+
+# PART 12 — CREATE AN EASY DOWNLOAD ZIP
+
+Create in the project root:
+
+`trailweigh-014O-report.zip`
+
+Include only:
+
+- `workflow-reports/PROMPT_014O_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+Do not include:
+
+- Backups
+- Application source
+- Dependencies
+- Credentials
+- Other ZIP files
+- Unrelated documentation
+
+# FINAL VERIFICATION
+
+Before completing:
+
+1. Confirm `PRE_014O_MASTER_BACKUP.md` exists.
+2. Confirm `PRE_014O_TESTING_BACKUP.md` exists.
+3. Confirm `TRAILWEIGH_WORKFLOW_PROTOCOL.md` exists in the root.
+4. Confirm the protocol begins with the correct heading.
+5. Confirm the protocol was restored from the ZIP rather than reconstructed.
+6. Confirm `PROMPT_014O_REPORT.md` exists.
+7. Confirm `trailweigh-014O-report.zip` exists.
+8. Confirm the master still contains more than 1,700 lines.
+9. Confirm the opening latest-entry field identifies Prompt 014O.
+10. Confirm the Prompt Number Index contains Prompt 014O.
+11. Confirm the current DESCRIPTION statement no longer says 275px is the current measured width.
+12. Confirm approximately 251px is clearly labeled an analytical estimate.
+13. Confirm the importer table no longer inaccurately describes rejected image scans as working.
+14. Confirm TESTING.md states the exact current suite count.
+15. Confirm `moveItem.test.mjs` is documented when included by the package script.
+16. Confirm `pnpm test:importer` completed.
+17. Confirm Prompt 014O appears exactly once in the master.
+18. Confirm the master grew rather than shrank.
+19. Confirm historical 341px, 365px, 275px, and QTY entries remain accurate in their original prompt sections.
+20. Confirm no TrailWeigh application source file changed.
+21. Confirm no dependency changed.
+22. Confirm no test file changed.
+23. Confirm the restored protocol was not altered after restoration except for no changes at all.
+24. Confirm no ZIP file was deleted.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_014O_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-014O-report.zip`
+- Report the exact path, file size, and line count of every Markdown file
+- Report the actual automated-test result
+- Confirm no TrailWeigh application code was modified
+- Confirm the documentation system is complete and ready for the next feature prompt
+- Do not require the user to copy the workflow manually

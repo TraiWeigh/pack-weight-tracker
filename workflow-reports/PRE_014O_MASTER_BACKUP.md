@@ -7,7 +7,7 @@
 | Field | Value |
 |-------|-------|
 | **Earliest accessible entry** | Agent memory files — specific bug fixes from sessions prior to the current session (exact dates unavailable) |
-| **Latest entry included** | Prompt 014O — 2026-08-06 |
+| **Latest entry included** | Prompt 014N — 2026-08-06 |
 | **History complete?** | **No.** Only partial history is accessible. |
 
 ### What is accessible and why
@@ -434,7 +434,6 @@ See `workflow-reports/PROMPT_014H_REPORT.md` for full detail.
 | 014L | Complete the Missing Prompt 014K Documentation | 2026-08-06 | Completed — created 014K report and master entry; own self-report missing (completed by 014M) | `workflow-reports/PROMPT_014L_REPORT.md` |
 | 014M | Finish Prompt 014L Documentation and Record Visual Approval | 2026-08-06 | Completed — corrected 014K visual status to PASS; created 014L and 014M reports; no application code changed | `workflow-reports/PROMPT_014M_REPORT.md` |
 | 014N | Synchronize the Master Workflow Summary Sections | 2026-08-06 | Completed — documentation-only; no application code changed | `workflow-reports/PROMPT_014N_REPORT.md` |
-| 014O | Restore the Workflow Protocol and Finish Documentation Cleanup | 2026-08-06 | Completed — documentation-only; protocol restored; TESTING.md corrected; 47/47 tests confirmed | `workflow-reports/PROMPT_014O_REPORT.md` |
 
 ---
 
@@ -490,9 +489,9 @@ After the layout changes in Prompts 014G–014K, the user supplied rendered scre
 
 **Total across all suites:** 47 passed / 0 failed (confirmed during Prompt 014G; not rerun during documentation-only prompts 014H–014N)
 
-**Suite count:** The `pnpm test:importer` script (confirmed from root `package.json`) runs **six suites** in sequence: `importGear.test.mjs`, `importGear.pdf.test.mjs`, `scanGear.test.mjs`, `categoryAliases.test.mjs`, `usePackData.test.mjs`, `moveItem.test.mjs`. `TESTING.md` was corrected to six suites during Prompt 014O (previously said five).
+**Suite count:** The `pnpm test:importer` script (confirmed from root `package.json`) runs **six suites** in sequence: `importGear.test.mjs`, `importGear.pdf.test.mjs`, `scanGear.test.mjs`, `categoryAliases.test.mjs`, `usePackData.test.mjs`, `moveItem.test.mjs`. Note: `TESTING.md` describes "five suites" but `moveItem.test.mjs` was subsequently added to the script; the package.json is authoritative.
 
-**Latest verified result:** 47 passed / 0 failed — Prompt 014O, 2026-08-06. Exit code 0. No warnings.
+**Latest verified result:** 47 passed / 0 failed during Prompt 014K; tests not rerun during documentation-only Prompts 014L–014N.
 
 **Note:** Automated tests cover import, scan, category alias resolution, and data-layer logic. They do **not** cover visual layout, rendering, or UI interactions. Visual alignment must be separately verified by a user.
 
@@ -820,7 +819,7 @@ Equal spacing: Yes (both sides are 24 px from `px-6` class)
 grid-cols-[auto_auto_1fr_auto] gap-x-3
   col 1: checkbox + drag-grip        (auto)
   col 2: TYPE select  sm:w-28        (auto → 112 px)
-  col 3: DESCRIPTION  1fr            (~251 px est. — analytical; 24 px narrower since Pack Summary widened to 365 px by Prompt 014I; not independently remeasured during 014N)
+  col 3: DESCRIPTION  1fr            (275 px at current panel width)
   col 4: right group (flex row):
     MOVE   w-8        32 px
     gap-3              12 px
@@ -908,19 +907,8 @@ New tabs (via "New" button) get a new fork ID with no active locker entry.
 | PDF (TrailWeigh export) | `/api/import-gear` | Greedy regex; v2 pdf-parse class API |
 | Word (.docx) | `/api/import-gear` | `[UNCERTAIN — present in route; test coverage unclear]` |
 | Apple Numbers (.numbers) | `/api/import-gear` | `[UNCERTAIN — present in route; test coverage unclear]` |
-| URL-based AI scan | `/api/scan-gear` (type='url') | CONFIRMED WORKING — fetches product page, sends to GPT-4o-mini; requires OPENAI_API_KEY |
-| Image scan (type='image') | `/api/scan-gear` | CONFIRMED REJECTED — HTTP 400, code "unsupported_type"; image scanning was removed |
-| Image at import endpoint | `/api/import-gear` | CONFIRMED REJECTED — image files (.png/.jpg/.jpeg/.webp) rejected by upload handler; confirmed by `scanGear.test.mjs` |
-| Scan-credit enforcement | — | PRESENT IN CODE BUT NOT FUNCTIONALLY VERIFIED — `lib/scanCredits.ts` and UI exist; active enforcement of credits for URL scans not confirmed by tests |
-
-### Current workflow documentation status
-
-| Item | Status |
-|------|--------|
-| `TRAILWEIGH_WORKFLOW_PROTOCOL.md` | Present in project root — restored during Prompt 014O from `trailweigh-workflow-docs.zip` (Prompt 014H archive) |
-| Protocol source | Verified extraction — not reconstructed from memory |
-| Protocol applicability | Standing reporting protocol for all future TrailWeigh prompts |
-| `TRAILWEIGH_COMPLETE_WORKFLOW.md` | Current — includes Prompts 014G through 014O |
+| Image (scan) | `/api/scan-gear` | AI scan; credits required |
+| Image at import endpoint | `/api/import-gear` | Rejected with clear error |
 
 ### Automated test command
 
@@ -928,7 +916,7 @@ New tabs (via "New" button) get a new fork ID with no active locker entry.
 pnpm test:importer
 ```
 
-Six suites. Latest verified result: **47 passed / 0 failed** — Prompt 014O, 2026-08-06. Exit code 0.
+47 tests passing as of 2026-08-06.
 
 ### Current warnings and errors
 
@@ -1719,42 +1707,5 @@ Full report: `workflow-reports/PROMPT_014N_REPORT.md`
 
 ---
 
----
-
-## Prompt 014O — Restore the Workflow Protocol and Finish Documentation Cleanup
-
-*Date: 2026-08-06*
-
-**Purpose:** Four remaining documentation inconsistencies identified in Prompt 014N were corrected: missing `TRAILWEIGH_WORKFLOW_PROTOCOL.md`, stale DESCRIPTION "275 px at current panel width", inaccurate AI-scan table row, and TESTING.md saying "five suites" instead of six.
-
-**Application inspected (no changes):**
-- `scanGear.ts`: type='url' → GPT-4o-mini (CONFIRMED WORKING); type='image' → CONFIRMED REJECTED ✅
-- `importGear.ts`: image rejection via upload handler — CONFIRMED REJECTED ✅
-- Root `package.json`: `test:importer` runs six suites in confirmed order ✅
-
-**Protocol restoration:**
-- Extracted `TRAILWEIGH_WORKFLOW_PROTOCOL.md` from `trailweigh-workflow-docs.zip`
-- All 10 verification checks passed (198 lines, 6 818 bytes)
-- Placed verbatim in project root — not reconstructed from memory
-
-**Documentation changes:**
-
-| Section | Change |
-|---------|--------|
-| Master gear-row structure | DESCRIPTION: "275 px at current panel width" → "~251 px est. — analytical; not remeasured" |
-| Master importer table | AI-scan row corrected: CONFIRMED REJECTED (type='image'); CONFIRMED WORKING (type='url') |
-| Master Prompt Number Index | Prompt 014O row added |
-| Master testing summary | Updated to six suites confirmed; latest result Prompt 014O 47/47 |
-| Master protocol status | New subsection confirming protocol present and restored |
-| `TESTING.md` | Updated from five to six suites; `moveItem.test.mjs` added with M1–M9 coverage |
-
-**Automated tests:** `pnpm test:importer` — 47 passed / 0 failed — exit code 0 — no warnings.
-
-**Historical values preserved:** 275 px (014G/014I history), 341 px (014G history), 832 px (014G history), translate-x-3 (014K history) — all unchanged.
-
-Full report: `workflow-reports/PROMPT_014O_REPORT.md`
-
----
-
-*Master workflow last updated: 2026-08-06 (Prompt 014O)*
+*Master workflow last updated: 2026-08-06 (Prompt 014N)*
 *Next update due: After the next TrailWeigh prompt or task*
