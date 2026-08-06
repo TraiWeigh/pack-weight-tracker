@@ -1,5 +1,6 @@
 import { PackState, CategoryMeta } from '../hooks/usePackData';
 import type { Background } from '../components/BackgroundPicker';
+import type { UnitSystem } from './weightUtils';
 
 export interface SharePayload {
   data: PackState;
@@ -10,6 +11,10 @@ export interface SharePayload {
   bgFade?: number;
   bgTone?: 'light' | 'dark';
   bgSize?: 'cover' | 'contain';
+  /** Sender's active unit system — initialises the recipient's unit display. */
+  unit?: UnitSystem;
+  /** Sender's Locker file name — displayed in the shared-view banner. */
+  name?: string;
 }
 
 export function encodeSharePayload(payload: SharePayload): string {

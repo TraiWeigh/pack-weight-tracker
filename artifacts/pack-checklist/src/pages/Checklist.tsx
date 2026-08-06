@@ -429,6 +429,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgFade,
       bgTone,
       bgSize,
+      unit:          system,
+      name:          activeLockerFile?.name ?? undefined,
     };
 
     const url = await buildShareURL(payload);

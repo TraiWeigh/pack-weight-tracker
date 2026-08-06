@@ -618,7 +618,11 @@ function SharedChecklistContent({
               <div className="flex items-center gap-2 min-w-0">
                 <Info className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                 <p className="text-xs text-muted-foreground truncate">
-                  Viewing a shared list — your changes here are temporary and reset on refresh.
+                  {snapshot.name ? (
+                    <>Viewing <span className="font-semibold text-foreground">"{snapshot.name}"</span> — your changes are temporary and reset on refresh.</>
+                  ) : (
+                    'Viewing a shared list — your changes here are temporary and reset on refresh.'
+                  )}
                 </p>
               </div>
               {saveSuccess && (
@@ -968,7 +972,7 @@ function SharedChecklistInner({ snapshot }: { snapshot: SharePayload }) {
   }
 
   return (
-    <UnitProvider>
+    <UnitProvider initialSystem={snapshot.unit}>
       <SharedChecklistContent
         key={snapshot.categoryOrder.join(',')} // stable key for the snapshot
         snapshot={snapshot}
