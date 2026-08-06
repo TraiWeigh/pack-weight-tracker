@@ -4,7 +4,7 @@ import { GearRow } from './GearRow';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUtils';
 import { useUnit } from '../context/UnitContext';
 import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical } from 'lucide-react';
-import { GEAR_GRID_COLS, GEAR_GRID_GAP } from './gearGrid';
+import { GEAR_GRID_COLS, GEAR_GRID_GAP, RG_MOVE_W, RG_WEIGHT_W, RG_QTY_W, RG_TOTAL_W, RG_DELETE_W } from './gearGrid';
 
 interface GearCategoryProps {
   name: string;
@@ -271,25 +271,38 @@ export function GearCategory({
       {/* ── Body ─────────────────────────────────────────────── */}
       {isOpen && (
         <div className="p-2 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className={`hidden sm:grid ${GEAR_GRID_COLS} ${GEAR_GRID_GAP} px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1`}>
+          <div className={`hidden sm:grid ${GEAR_GRID_COLS} ${GEAR_GRID_GAP} px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 items-center`}>
+            {/* Col 1 — checkbox/grip spacer */}
             <div className="w-[30px]" />
+            {/* Col 2 — TYPE heading */}
             <EditableColHeader
               value={meta.subLabel ?? ''}
               placeholder="Type"
               onCommit={v => onUpdateMeta({ subLabel: v || undefined })}
               className="w-28"
             />
+            {/* Col 3 — DESCRIPTION heading (1fr) */}
             <EditableColHeader
               value={meta.descLabel ?? ''}
               placeholder="Description"
               onCommit={v => onUpdateMeta({ descLabel: v || undefined })}
             />
-            <div />{/* group spacer */}
-            <div className="pl-1">Move</div>
-            <div className="text-right">Weight</div>
-            <div className="text-center">Qty</div>
-            <div className="text-right">Total</div>
-            <div className="w-6" />
+            {/* Col 4 — Right-side group headings, mirroring GearRow right-group exactly */}
+            <div className="flex items-center">
+              {/* Sub-row A: MOVE · WEIGHT · QTY */}
+              <div className="flex items-center gap-3">
+                <div className={`${RG_MOVE_W} flex justify-center`}>Move</div>
+                <div className={`${RG_WEIGHT_W} text-right`}>Weight</div>
+                <div className={`${RG_QTY_W} text-center`}>Qty</div>
+              </div>
+              {/* 6 px spacer — matches the row's QTY-to-TOTAL gap */}
+              <div className="w-1.5 shrink-0" />
+              {/* Sub-row B: TOTAL · DELETE */}
+              <div className="flex items-center gap-3">
+                <div className={`${RG_TOTAL_W} text-right`}>Total</div>
+                <div className={`${RG_DELETE_W}`} />
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col">

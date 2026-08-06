@@ -1,25 +1,36 @@
 /**
- * Shared grid definition for GearCategory column headers and GearRow item rows.
+ * Shared layout definition for GearCategory column headers and GearRow item rows.
  *
- * Both must use GEAR_GRID_COLS and GEAR_GRID_GAP so columns stay perfectly
- * aligned regardless of content. Change here only — never in the individual
- * component files.
- *
- * Column order:
+ * ── Outer grid: 4 columns ────────────────────────────────────────────────────
  *  1. auto  — checkbox + drag-grip
- *  2. auto  — TYPE input  (w-20 sm:w-28; header uses w-28 spacer)
- *  3. 1fr   — DESCRIPTION (flexible, always the widest column)
- *  4. 52px  — spacer: shifts the MOVE–WEIGHT–QTY group right as a unit
- *             (increased from 12px by 40px; QTY decreased by matching 40px
- *              so total fixed-column sum is unchanged, keeping TOTAL anchored)
- *  5. 32px  — MOVE  (fixed; chevron centered; label uses pl-1 so O sits over center)
- *  6. 90px  — WEIGHT
- *  7. 30px  — QTY  (reduced from 70px; visual QTY-to-TOTAL gap ≈ 27px, ~43% less)
- *  8. 88px  — TOTAL
- *  9. auto  — DELETE button / spacer
+ *  2. auto  — TYPE input  (w-20 sm:w-28)
+ *  3. 1fr   — DESCRIPTION (flexible; receives all width the right group doesn't use)
+ *  4. auto  — right-side column group (a flex container with explicit widths)
+ *
+ * Reducing the total width of the right-side group makes DESCRIPTION genuinely
+ * wider, because 1fr absorbs the freed space.
+ *
+ * ── Right-side group ─────────────────────────────────────────────────────────
+ * The group is a flex row split into two sub-rows with different gaps:
+ *
+ *  Sub-row A  (gap-3 = 12 px between each):  MOVE · WEIGHT · QTY
+ *  6 px spacer                                                    ← only gap reduced
+ *  Sub-row B  (gap-3 = 12 px):               TOTAL · DELETE
+ *
+ * Previous QTY-to-TOTAL gap: 12 px (gap-3 in the old flat grid)
+ * New QTY-to-TOTAL gap:       6 px  (w-1.5 explicit spacer)
+ *
+ * Use every constant below in both GearCategory (header) and GearRow (row) —
+ * never hard-code sizes in the individual files.
  */
-export const GEAR_GRID_COLS =
-  'grid-cols-[auto_auto_1fr_52px_32px_90px_30px_88px_auto]';
 
-/** Use the same gap in both header and rows. */
-export const GEAR_GRID_GAP = 'gap-3';
+// ── Outer grid ───────────────────────────────────────────────────────────────
+export const GEAR_GRID_COLS = 'grid-cols-[auto_auto_1fr_auto]';
+export const GEAR_GRID_GAP  = 'gap-x-3';
+
+// ── Right-group column widths ─────────────────────────────────────────────────
+export const RG_MOVE_W   = 'w-8';        // 32 px — chevron tap target
+export const RG_WEIGHT_W = 'w-[90px]';   // 90 px — weight value + unit label
+export const RG_QTY_W    = 'w-14';       // 56 px — qty control (fits 1–20 comfortably)
+export const RG_TOTAL_W  = 'w-[88px]';   // 88 px — total value (two lines)
+export const RG_DELETE_W = 'w-6';        // 24 px — delete/spacer

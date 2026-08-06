@@ -1,0 +1,218 @@
+Correct the TrailWeigh desktop gear-row layout.
+
+The previous change did not work. The rendered screenshot shows that MOVE, WEIGHT, and QTY did not visibly shift, and DESCRIPTION did not gain usable width.
+
+This prompt must replace the previous spacer/narrow-QTY method with a layout that genuinely reduces the total width of the right-side column group.
+
+## Remove the previous failed adjustment
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/gearGrid.ts`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+
+The previous implementation reportedly changed:
+
+- Spacer before MOVE: `12px` → `52px`
+- QTY column: `70px` → `30px`
+
+Undo that approach.
+
+Requirements:
+
+- Restore the QTY column to a normal usable width.
+- Remove the artificially enlarged spacer before MOVE.
+- Do not keep a 30px QTY column.
+- Do not use equal-width additions and subtractions that leave DESCRIPTION unchanged.
+
+## Exact visual goal
+
+Keep the TOTAL column and delete control in their current right-side positions.
+
+Reduce the visible horizontal space between:
+
+- QTY
+- TOTAL
+
+by approximately half.
+
+As a result:
+
+- MOVE shifts right.
+- WEIGHT shifts right by the same amount.
+- QTY shifts right by the same amount.
+- TOTAL remains fixed.
+- DESCRIPTION genuinely gains the recovered width.
+
+The spacing between these columns should remain visually consistent:
+
+- MOVE to WEIGHT
+- WEIGHT to QTY
+
+Only the QTY-to-TOTAL separation should be reduced.
+
+## Required layout structure
+
+Create a compact, right-anchored group for:
+
+1. MOVE
+2. WEIGHT
+3. QTY
+4. TOTAL
+5. Delete control
+
+The right edge of this group must stay fixed.
+
+Reduce the total width of this group by reducing only unnecessary internal spacing, especially the excessive space between QTY and TOTAL.
+
+The group must not be made narrower by crushing the QTY control.
+
+DESCRIPTION must remain the flexible `1fr` column and must receive the width removed from the right-side group.
+
+## Preferred implementation
+
+Use one shared layout definition for both the header and every gear row.
+
+A suitable approach is:
+
+- Keep the main row grid for checkbox, TYPE, DESCRIPTION, and the right-side group.
+- Put MOVE, WEIGHT, QTY, TOTAL, and delete inside one nested grid.
+- Give that nested grid explicit shared columns and controlled gaps.
+- Right-align the nested grid.
+- Reduce only the gap between QTY and TOTAL.
+- Use the same nested-grid definition in the header and row.
+
+Another clean shared-grid method is acceptable, but the result must satisfy the rendered requirements.
+
+Do not use:
+
+- A large empty spacer before MOVE
+- A 30px QTY column
+- Separate header and row geometry
+- Individual `margin-left` values on MOVE, WEIGHT, and QTY
+- Independent transforms on row values
+- A visual-only claim that Description is wider when its actual width is unchanged
+
+## Suggested sizing principles
+
+Preserve enough width for:
+
+- MOVE dropdown tap target
+- Weight values such as `40.8 oz`
+- QTY values and editable quantity control
+- TOTAL values such as `625.60 oz`
+- Delete icon
+
+The QTY column should be wide enough that:
+
+- Single- and double-digit quantities fit comfortably
+- The editable control is not clipped
+- Mobile tapping remains practical
+
+Reduce the QTY-to-TOTAL separation through the gap or group structure, not by making QTY unusably narrow.
+
+## DESCRIPTION must actually widen
+
+Verify the computed or rendered width of DESCRIPTION before and after the change.
+
+The final Description column must be measurably wider than it is in the current screenshot.
+
+A long description such as:
+
+`Zpacks Nero Classic Backpack`
+
+must display more visible characters before truncation than it currently does.
+
+Do not merely shift a heading or empty spacer.
+
+## Preserve current heading alignment
+
+Keep:
+
+- MOVE heading aligned with the arrows
+- WEIGHT heading aligned with weight values
+- QTY heading in its currently approved visual position
+- TOTAL heading aligned with total values
+
+Do not reintroduce the previous QTY heading problem.
+
+## Preserve theme-aware text colors
+
+WEIGHT and QTY values must continue using the same theme-aware foreground color as the other row text:
+
+- Normal dark foreground in Light mode
+- Normal light foreground in Dark mode
+- System mode follows system appearance
+
+Do not hard-code black or white.
+
+## Preserve all working behavior
+
+Do not change:
+
+- Move destination options
+- `moveItem`
+- Item IDs or item data
+- Undo
+- Redo
+- Weight calculations
+- Quantity calculations
+- Total calculations
+- Save
+- Save As
+- Locker
+- Imports
+- Category aliases
+- Backgrounds
+- Preview
+- Share
+- Category order
+
+## Required rendered comparison
+
+Use the current screenshot as the “before” reference.
+
+Test a category with at least four populated rows and one long description.
+
+Confirm:
+
+1. DESCRIPTION displays more visible text than before.
+2. MOVE, WEIGHT, and QTY visibly shifted right together.
+3. TOTAL stayed in the same position.
+4. The QTY-to-TOTAL space is approximately half its previous visible size.
+5. The QTY control is not cramped or clipped.
+6. WEIGHT and QTY values align with their headings.
+7. TOTAL values align with TOTAL.
+8. Delete remains visible.
+9. No horizontal overflow is introduced.
+10. Light- and Dark-mode text colors remain correct.
+
+Test both desktop and phone-sized layouts.
+
+Move one item and test Undo and Redo.
+
+Run:
+
+`pnpm test:importer`
+
+## Final report
+
+Report:
+
+- Files changed
+- Previous right-side group structure
+- New right-side group structure
+- Restored QTY width
+- Previous QTY-to-TOTAL spacing
+- New QTY-to-TOTAL spacing
+- Measured DESCRIPTION width before and after
+- Number of additional visible description characters in the test row
+- Confirmation that MOVE, WEIGHT, and QTY shifted together
+- Confirmation that TOTAL remained fixed
+- Desktop rendered-test result
+- Mobile rendered-test result
+- Light- and Dark-mode color result
+- Move, Undo, and Redo result
+- Automated-test result
+- Confirmation that no temporary logs remain
