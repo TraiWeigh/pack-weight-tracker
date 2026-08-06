@@ -148,10 +148,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed && 'background' in parsed) {
-            // Stash the other three values for their own initializers, then clean up.
-            sessionStorage.setItem('tw-newbg-fade', String(parsed.bgFade ?? 1));
-            sessionStorage.setItem('tw-newbg-tone', parsed.bgTone ?? 'light');
-            sessionStorage.setItem('tw-newbg-size', parsed.bgSize ?? 'cover');
+            // Stash the other values for their own initializers, then clean up.
+            sessionStorage.setItem('tw-newbg-fade',       String(parsed.bgFade ?? 1));
+            sessionStorage.setItem('tw-newbg-tone',       parsed.bgTone ?? 'light');
+            sessionStorage.setItem('tw-newbg-size',       parsed.bgSize ?? 'cover');
+            sessionStorage.setItem('tw-newbg-palettekey', parsed.chartPaletteKey ?? '');
             localStorage.removeItem(`tw-newseed-bg-${forkId}`);
             return parsed.background ?? null;
           }
@@ -293,6 +294,36 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // safely capture the correct bgSize in pushBg without a declaration-order
   // dependency.
   bgSizeRef.current = bgSize;
+
+  // ── Chart palette key — per-file, saved in LockerEntry ─────────────────
+  // Initialised from (in priority order):
+  //   1. "New" tab newseed bundle  (tw-newbg-palettekey in sessionStorage)
+  //   2. "Load This List" stash    (tw-savedlist-palettekey in sessionStorage)
+  //   3. Global localStorage fallback (last-used palette for guest/unsaved lists)
+  const [chartPaletteKey, setChartPaletteKey] = useState<string>(() => {
+    try {
+      const newbg = sessionStorage.getItem('tw-newbg-palettekey');
+      if (newbg !== null) {
+        sessionStorage.removeItem('tw-newbg-palettekey');
+        return newbg || 'trail';
+      }
+    } catch {}
+    try {
+      const sl = sessionStorage.getItem('tw-savedlist-palettekey');
+      if (sl !== null) {
+        sessionStorage.removeItem('tw-savedlist-palettekey');
+        return sl || 'trail';
+      }
+    } catch {}
+    return localStorage.getItem('trailweigh:chartPalette') ?? 'trail';
+  });
+
+  const handlePaletteChange = useCallback((key: string) => {
+    setChartPaletteKey(key);
+    // Persist to localStorage so unsaved/guest lists remember the last choice
+    // across page refreshes.  Saved lists override this on load.
+    localStorage.setItem('trailweigh:chartPalette', key);
+  }, []);
 
   // ── Wire up the onRestoreBg callback now that ALL bg state setters are in
   // scope.  Assigned inline on every render so the hook always calls the
@@ -473,11 +504,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
     // 4. Write background settings alongside so the new tab opens with the same
     //    background, fill/fit mode, tone, and fade as the current tab.
+    //    chartPaletteKey is bundled here so the new tab inherits the same
+    //    Weight Distribution palette as the source file.
     localStorage.setItem(`tw-newseed-bg-${uuid}`, JSON.stringify({
       background: background ?? null,
       bgFade,
       bgTone,
       bgSize,
+      chartPaletteKey,
     }));
 
     const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
@@ -653,6 +687,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       background,
       bgFade,
       bgTone,
+      chartPaletteKey,
     };
     const updated = [entry, ...lockerEntries];
     setLockerEntries(updated);
@@ -665,7 +700,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     closeSaveDialog();
     toast({ description: `Saved as "${name}"` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
 
   /** Save and replace an existing entry (same ID, updated content). */
   const commitSaveReplace = useCallback((existingId: string, name: string) => {
@@ -678,6 +713,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         background,
         bgFade,
         bgTone,
+        chartPaletteKey,
       };
       // Only update an entry that actually exists in the Locker.
       const exists = lockerEntries.some(e => e.id === existingId);
@@ -699,7 +735,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       toast({ description: 'Save failed. Your changes were not saved.', variant: 'destructive' });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
 
   const handleSaveToLocker = () => {
     const name = saveName.trim();
@@ -741,9 +777,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       // ── In-place open path ────────────────────────────────────────────────
       // 1. Background is already in React state — nothing to capture/restore
       //    because replaceStore only touches the gear store, not bg state.
-      // 2. Replace the store (clears undo/redo; does not push history entry).
+      // 2. Restore the file's Weight Distribution palette key.
+      //    Older entries without chartPaletteKey fall back to 'trail' (default).
+      const restoredPalette = entry.chartPaletteKey ?? 'trail';
+      setChartPaletteKey(restoredPalette);
+      localStorage.setItem('trailweigh:chartPalette', restoredPalette);
+      // 3. Replace the store (clears undo/redo; does not push history entry).
       replaceStore(entry.store as import('../hooks/usePackData').Store);
-      // 3. Track the active file identity so Save routes to commitSaveReplace
+      // 4. Track the active file identity so Save routes to commitSaveReplace
       //    (updating this file, not creating a new one).
       //    Write to sessionStorage immediately (before the React state update
       //    queues) so the value survives a remount that might occur before the
@@ -1326,6 +1367,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   data={data}
                   categoryOrder={categoryOrder}
                   categoryMeta={categoryMeta}
+                  paletteKey={chartPaletteKey}
+                  onPaletteChange={handlePaletteChange}
                 />
                 <ImportGearPanel
                   categoryOrder={categoryOrder}

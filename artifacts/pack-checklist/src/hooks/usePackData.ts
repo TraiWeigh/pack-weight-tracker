@@ -341,9 +341,10 @@ export function usePackData(
           const v5Store = { __v: 5, ...entry.store };
           localStorage.setItem(storageKey, JSON.stringify(v5Store));
           // Stash background settings for ChecklistContent to pick up
-          sessionStorage.setItem('tw-savedlist-bg',     JSON.stringify(entry.background ?? null));
-          sessionStorage.setItem('tw-savedlist-bgfade', String(entry.bgFade ?? 1));
-          sessionStorage.setItem('tw-savedlist-bgtone', entry.bgTone ?? 'light');
+          sessionStorage.setItem('tw-savedlist-bg',         JSON.stringify(entry.background ?? null));
+          sessionStorage.setItem('tw-savedlist-bgfade',    String(entry.bgFade ?? 1));
+          sessionStorage.setItem('tw-savedlist-bgtone',    entry.bgTone ?? 'light');
+          sessionStorage.setItem('tw-savedlist-palettekey', entry.chartPaletteKey ?? '');
           // Stash the Locker entry identity so ChecklistContent can set
           // activeLockerFile on mount — this makes Save work without a dialog
           // in tabs opened via the new-tab ("Load This List") path.

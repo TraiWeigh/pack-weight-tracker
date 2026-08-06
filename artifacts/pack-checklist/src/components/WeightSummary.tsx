@@ -34,28 +34,26 @@ const PALETTES: Record<string, { label: string; colors: string[] }> = {
   },
 };
 
-const PALETTE_STORAGE_KEY = 'trailweigh:chartPalette';
-
 interface WeightSummaryProps {
   data: PackState;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;
+  /** Current palette key for this file. Controlled by the parent (Checklist). */
+  paletteKey: string;
+  /** Called when the user picks a different palette. Parent updates its state. */
+  onPaletteChange: (key: string) => void;
 }
 
-export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightSummaryProps) {
+export function WeightSummary({ data, categoryOrder, categoryMeta, paletteKey, onPaletteChange }: WeightSummaryProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
   const [chartOpen, setChartOpen] = useState(true);
   const [showPaletteMenu, setShowPaletteMenu] = useState(false);
-  const [paletteKey, setPaletteKey] = useState<string>(
-    () => localStorage.getItem(PALETTE_STORAGE_KEY) ?? 'trail'
-  );
 
   const palette = PALETTES[paletteKey] ?? PALETTES.trail;
 
   const handlePalette = (key: string) => {
-    setPaletteKey(key);
-    localStorage.setItem(PALETTE_STORAGE_KEY, key);
+    onPaletteChange(key);
   };
 
   // Tally base vs. non-base per category

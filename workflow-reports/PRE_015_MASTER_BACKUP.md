@@ -435,7 +435,6 @@ See `workflow-reports/PROMPT_014H_REPORT.md` for full detail.
 | 014M | Finish Prompt 014L Documentation and Record Visual Approval | 2026-08-06 | Completed — corrected 014K visual status to PASS; created 014L and 014M reports; no application code changed | `workflow-reports/PROMPT_014M_REPORT.md` |
 | 014N | Synchronize the Master Workflow Summary Sections | 2026-08-06 | Completed — documentation-only; no application code changed | `workflow-reports/PROMPT_014N_REPORT.md` |
 | 014O | Restore the Workflow Protocol and Finish Documentation Cleanup | 2026-08-06 | Completed — documentation-only; protocol restored; TESTING.md corrected; 47/47 tests confirmed | `workflow-reports/PROMPT_014O_REPORT.md` |
-| 015 | Save and Restore Weight Distribution Colors Per Locker File | 2026-08-06 | Completed — `chartPaletteKey` added to LockerEntry; palette saved/restored per file; 549/549 tests pass; visual user testing still required | `workflow-reports/PROMPT_015_REPORT.md` |
 
 ---
 
@@ -489,11 +488,11 @@ After the layout changes in Prompts 014G–014K, the user supplied rendered scre
 | `usePackData.test.mjs` | `artifacts/pack-checklist/src/hooks/usePackData.test.mjs` | deduplicateCategoryAliases; mergeDefaultCategories | PASS |
 | `moveItem.test.mjs` | `artifacts/pack-checklist/src/hooks/moveItem.test.mjs` | Move-item logic | PASS |
 
-**Total across all suites:** 549 passed / 0 failed (confirmed during Prompt 015, 2026-08-06)
+**Total across all suites:** 47 passed / 0 failed (confirmed during Prompt 014G; not rerun during documentation-only prompts 014H–014N)
 
-**Suite count:** The `pnpm test:importer` script (confirmed from root `package.json`) runs **seven suites** in sequence: `importGear.test.mjs`, `importGear.pdf.test.mjs`, `scanGear.test.mjs`, `categoryAliases.test.mjs`, `usePackData.test.mjs`, `moveItem.test.mjs`, `pieColor.test.mjs`. `TESTING.md` updated to seven suites during Prompt 015; `pieColor.test.mjs` (41 tests) added to cover per-file palette persistence.
+**Suite count:** The `pnpm test:importer` script (confirmed from root `package.json`) runs **six suites** in sequence: `importGear.test.mjs`, `importGear.pdf.test.mjs`, `scanGear.test.mjs`, `categoryAliases.test.mjs`, `usePackData.test.mjs`, `moveItem.test.mjs`. `TESTING.md` was corrected to six suites during Prompt 014O (previously said five).
 
-**Latest verified result:** 549 passed / 0 failed — Prompt 015, 2026-08-06. Exit code 0. No warnings.
+**Latest verified result:** 47 passed / 0 failed — Prompt 014O, 2026-08-06. Exit code 0. No warnings.
 
 **Note:** Automated tests cover import, scan, category alias resolution, and data-layer logic. They do **not** cover visual layout, rendering, or UI interactions. Visual alignment must be separately verified by a user.
 
@@ -909,43 +908,10 @@ New tabs (via "New" button) get a new fork ID with no active locker entry.
 | PDF (TrailWeigh export) | `/api/import-gear` | Greedy regex; v2 pdf-parse class API |
 | Word (.docx) | `/api/import-gear` | `[UNCERTAIN — present in route; test coverage unclear]` |
 | Apple Numbers (.numbers) | `/api/import-gear` | `[UNCERTAIN — present in route; test coverage unclear]` |
-| URL-based AI scan | `/api/scan-gear` (type='url') | PRESENT IN CODE BUT NOT FUNCTIONALLY VERIFIED — code path exists; no successful live OpenAI URL-scan test was performed; requires OPENAI_API_KEY |
+| URL-based AI scan | `/api/scan-gear` (type='url') | CONFIRMED WORKING — fetches product page, sends to GPT-4o-mini; requires OPENAI_API_KEY |
 | Image scan (type='image') | `/api/scan-gear` | CONFIRMED REJECTED — HTTP 400, code "unsupported_type"; image scanning was removed |
 | Image at import endpoint | `/api/import-gear` | CONFIRMED REJECTED — image files (.png/.jpg/.jpeg/.webp) rejected by upload handler; confirmed by `scanGear.test.mjs` |
 | Scan-credit enforcement | — | PRESENT IN CODE BUT NOT FUNCTIONALLY VERIFIED — `lib/scanCredits.ts` and UI exist; active enforcement of credits for URL scans not confirmed by tests |
-
-### Current Weight Distribution palette state
-
-**Prompt 015** implemented per-file palette persistence.
-
-| Component | Location |
-|-----------|----------|
-| Active palette key | `chartPaletteKey: string` in `ChecklistContent` React state |
-| Controlled prop | `paletteKey` and `onPaletteChange` passed to `WeightSummary` |
-| LockerEntry field | `chartPaletteKey?: string` added to `LockerEntry` (optional for backward compat) |
-| Global localStorage fallback | `localStorage['trailweigh:chartPalette']` — read only when no per-file value is available |
-
-**Palette options:** trail, ocean, sunset, forest, berry, desert (6 palettes; colors applied by category index within each palette).
-
-**Data flow:**
-
-| Operation | Effect on chartPaletteKey |
-|-----------|--------------------------|
-| User picks palette | `handlePaletteChange` updates `chartPaletteKey` state; also writes `localStorage['trailweigh:chartPalette']` as fallback for unsaved/guest lists |
-| Save (commitSaveNew) | `chartPaletteKey` included in new LockerEntry |
-| Save (commitSaveReplace) | `chartPaletteKey` included in updated LockerEntry |
-| Open (in-place) | `entry.chartPaletteKey ?? 'trail'` set into state; localStorage also updated |
-| Open (new-tab `?savedListId=`) | `usePackData` stashes `entry.chartPaletteKey` in `sessionStorage['tw-savedlist-palettekey']`; `ChecklistContent` reads it during state init |
-| New (fork tab) | `chartPaletteKey` bundled into `tw-newseed-bg-{uuid}` in localStorage; new tab reads it from `sessionStorage['tw-newbg-palettekey']` |
-| Refresh | Fork key's data is already in localStorage; palette restored via the savedlist or newseed stash path |
-| Reset | `resetToDefaults` only clears gear items — `chartPaletteKey` state is unaffected |
-| Older file (no field) | `loadPaletteKeyFromEntry` falls back to `'trail'`; no error thrown |
-
-**Undo/Redo:** Palette key changes do NOT participate in the gear-item undo/redo stack. Selecting a palette changes only `chartPaletteKey` React state; it does not call `pushAndSet`. This is the same design pattern as `bgFade`/`bgTone` preferences.
-
-**Test coverage:** `pieColor.test.mjs` — 13 test groups (P1–P13), 41 assertions, all passing as of Prompt 015.
-
-**Rendered test:** Requires user verification. The automated tests confirm data-layer correctness; browser-side color restoration (actual pie chart colors after opening a file) still requires visual user testing.
 
 ### Current workflow documentation status
 
@@ -962,11 +928,11 @@ New tabs (via "New" button) get a new fork ID with no active locker entry.
 pnpm test:importer
 ```
 
-Seven suites. Latest verified result: **549 passed / 0 failed** — Prompt 015, 2026-08-06. Exit code 0.
+Six suites. Latest verified result: **47 passed / 0 failed** — Prompt 014O, 2026-08-06. Exit code 0.
 
 ### Current warnings and errors
 
-**Prompt 015 browser console:** No errors. Only expected debug messages (Vite HMR) and the standard Clerk development-key notice. All four files modified by Prompt 015 (`LockerPanel.tsx`, `WeightSummary.tsx`, `usePackData.ts`, `Checklist.tsx`) hot-updated without error.
+`[UNCERTAIN — browser console logs were reported but not individually inspected for 014H. No critical errors reported during 014G testing.]`
 
 ---
 
@@ -974,27 +940,11 @@ Seven suites. Latest verified result: **549 passed / 0 failed** — Prompt 015, 
 
 ### 1. Weight Distribution pie-color choices — save and restore
 
-**Status: PARTIAL — Prompt 015**
+**Issue:** `[UNCERTAIN — based on current code, pieColors is present in the v5 schema. Whether pie colors are actually saved on every change and restored when a Locker file opens is not confirmed in accessible history.]`
 
-**Implementation completed (automated tests pass):**
-- `chartPaletteKey?: string` added to `LockerEntry`
-- `WeightSummary` is now controlled by `paletteKey`/`onPaletteChange` props — no longer self-manages global localStorage state
-- Save, Save As, Open (in-place), Open (new-tab), New, and Refresh all correctly thread the palette key through
-- Reset does not affect palette key
-- Older files without `chartPaletteKey` fall back to `'trail'` default without error
-- 41 automated tests (P1–P13) all pass
-- Note: `pieColors?: Record<string, string>` was listed in earlier schema documentation but does not exist in the source; the actual implementation uses `chartPaletteKey?: string` in `LockerEntry` (a palette name, not a per-category color map)
+From the v5 schema: `pieColors?: Record<string, string>` is defined. Whether the UI correctly writes this field on color selection and reads it on locker load has not been confirmed.
 
-**Still required (visual user testing — cannot be automated):**
-- Open File A with a custom palette → confirm chart colors restore
-- Refresh after opening → confirm colors persist
-- Open File A, then File B, then File A again → confirm each file's colors are correct
-- Save As and verify copy starts with source file's colors
-- New (fork tab) and verify copied colors + unchecked items
-- Older stored file (without chartPaletteKey) opens safely with default colors
-- Share Link pie-color behavior is explicitly deferred to a later prompt
-
-**Required action:** User visual verification of the rendered test cases in Part 8 of the Prompt 015 spec.
+**Required action:** User or developer verification of pie-color save/restore round-trip.
 
 ---
 
@@ -1806,96 +1756,5 @@ Full report: `workflow-reports/PROMPT_014O_REPORT.md`
 
 ---
 
-*Master workflow last updated: 2026-08-06 (Prompt 015)*
+*Master workflow last updated: 2026-08-06 (Prompt 014O)*
 *Next update due: After the next TrailWeigh prompt or task*
-
----
-
-## Prompt 015 — Save and Restore Weight Distribution Colors Per Locker File
-
-**Date:** 2026-08-06  
-**Type:** Feature implementation + test coverage  
-**Status:** COMPLETE — automated tests pass; visual user testing deferred
-
-### Root cause
-
-`WeightSummary.tsx` stored the palette selection in a single global `localStorage` key (`'trailweigh:chartPalette'`). It was never written to `LockerEntry` on Save nor read from it on Load. All files showed whichever palette was last selected by the user in any file in any tab.
-
-Preliminary finding: `pieColors?: Record<string, string>` (earlier documentation) does not exist in the codebase. The correct implementation target is `chartPaletteKey?: string` on `LockerEntry` (a named palette key, not a per-category color map).
-
-### Implementation
-
-| File | Change |
-|------|--------|
-| `LockerPanel.tsx` | Added `chartPaletteKey?: string` to `LockerEntry` interface (optional for backward compat) |
-| `WeightSummary.tsx` | Converted `paletteKey` from internal `useState` + localStorage to controlled props (`paletteKey: string`, `onPaletteChange: (key: string) => void`); removed `PALETTE_STORAGE_KEY` and direct localStorage write |
-| `usePackData.ts` | Added `sessionStorage.setItem('tw-savedlist-palettekey', entry.chartPaletteKey ?? '')` in the `?savedListId=` path |
-| `Checklist.tsx` | Added `chartPaletteKey` state (with 3-priority initializer: newseed stash → savedlist stash → localStorage fallback); added `handlePaletteChange` callback; newseed bundle includes `chartPaletteKey`; `commitSaveNew` / `commitSaveReplace` include `chartPaletteKey`; in-place open restores `chartPaletteKey` from entry; `WeightSummary` JSX receives `paletteKey` and `onPaletteChange` props |
-| `pieColor.test.mjs` | New — 13 test groups (P1–P13), 41 assertions |
-
-**Undo/redo:** Palette changes do not participate in the gear-item undo/redo stack (same design as `bgFade`/`bgTone`).
-
-### Test results
-
-| Suite | Tests | Result |
-|-------|-------|--------|
-| `importGear.test.mjs` | 219 | ✅ |
-| `importGear.pdf.test.mjs` | 54 | ✅ |
-| `scanGear.test.mjs` | 47 | ✅ |
-| `categoryAliases.test.mjs` | 77 | ✅ |
-| `usePackData.test.mjs` | 64 | ✅ |
-| `moveItem.test.mjs` | 47 | ✅ |
-| `pieColor.test.mjs` | 41 | ✅ |
-| **TOTAL** | **549** | **✅ 549/549 PASS** |
-
-Exit code: 0. No warnings.
-
-### Part 9 — URL-scan master correction
-
-Current-state importer table, URL-based AI scan row updated from `CONFIRMED WORKING` → `PRESENT IN CODE BUT NOT FUNCTIONALLY VERIFIED`. Historical 014O report entries (lines 1731, 1745) unchanged.
-
-### Documentation updates
-
-| File / Section | Change |
-|----------------|--------|
-| `TESTING.md` | 6 → 7 suites; added `pieColor.test.mjs`; updated verified result to 549/549 |
-| Master — Prompt Number Index | Added 015 row |
-| Master — testing summary | 47 → 549, six → seven suites, Prompt 014O → 015 |
-| Master — automated test command | Seven suites, updated result |
-| Master — Current Weight Distribution palette state | New subsection (data flow table, undo/redo note, test coverage) |
-| Master — Unresolved Issues §1 | Status updated to PARTIAL; visual test requirement listed |
-| Master — console warnings | Updated to reflect Prompt 015 clean-build result |
-
-### Requirements checklist
-
-| Requirement | Result |
-|-------------|--------|
-| chartPaletteKey in LockerEntry | ✅ PASS (automated) |
-| Save (new + replace) includes chartPaletteKey | ✅ PASS (automated) |
-| In-place open restores chartPaletteKey | ✅ PASS (automated) |
-| New-tab (?savedListId=) restores chartPaletteKey | ✅ PASS (automated) |
-| New (fork tab) propagates chartPaletteKey | ✅ PASS (automated) |
-| File A and File B independent | ✅ PASS (automated — P3) |
-| Save updates only active file | ✅ PASS (automated — P4) |
-| Save As creates independent copy | ✅ PASS (automated — P5/P6) |
-| Older file without chartPaletteKey safe | ✅ PASS (automated — P9) |
-| Unknown palette key does not crash | ✅ PASS (automated — P12) |
-| Gear data unchanged by palette persistence | ✅ PASS (automated — P13) |
-| Undo/redo unaffected | ✅ PASS (no undo/redo stack changes) |
-| Visual chart colors restore after open | ⬜ NOT TESTED (requires user) |
-| Visual chart colors restore after refresh | ⬜ NOT TESTED (requires user) |
-| Share Link palette behavior | ⬜ DEFERRED |
-| 41 new tests pass | ✅ PASS |
-| 549 total tests pass | ✅ PASS |
-| URL-scan master correction | ✅ PASS |
-| TESTING.md updated to 7 suites | ✅ PASS |
-| Master Prompt Number Index updated | ✅ PASS |
-
-### Browser verification
-
-Vite HMR accepted all changed files without error. Browser console: no errors; only expected debug and Clerk dev-key messages. App loads cleanly (landing page screenshot saved to `workflow-reports/prompt015-screenshot-01-app-overview.jpg`).
-
-### Report
-
-`workflow-reports/PROMPT_015_REPORT.md`  
-`workflow-reports/trailweigh-015-report.zip`

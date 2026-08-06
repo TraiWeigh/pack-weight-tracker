@@ -18,6 +18,9 @@ export interface LockerEntry {
   background: Background | null;
   bgFade: number;
   bgTone: 'light' | 'dark';
+  /** Weight-distribution palette key saved with this file ('trail', 'ocean', etc.).
+   *  Optional for backwards compatibility — older entries omit this field. */
+  chartPaletteKey?: string;
 }
 
 // Re-export for backwards-compat (canonical definition is in usePackData)

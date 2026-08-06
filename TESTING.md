@@ -6,7 +6,7 @@
 pnpm test:importer
 ```
 
-This runs all **six** test suites in sequence and exits non-zero on any failure.
+This runs all **seven** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
@@ -17,12 +17,13 @@ node artifacts/api-server/src/routes/scanGear.test.mjs         # Image format re
 node artifacts/pack-checklist/src/lib/categoryAliases.test.mjs # Shared category resolver
 node artifacts/pack-checklist/src/hooks/usePackData.test.mjs   # Duplicate-category migration
 node artifacts/pack-checklist/src/hooks/moveItem.test.mjs      # Move-item Store transformation
+node artifacts/pack-checklist/src/hooks/pieColor.test.mjs      # Per-file palette persistence
 ```
 
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 47 passed / 0 failed (confirmed Prompt 014O, 2026-08-06).
+**Current result:** 549 passed / 0 failed (confirmed Prompt 015, 2026-08-06).
 
 ## What each suite protects
 
@@ -34,6 +35,7 @@ plain JS so tests can run against source changes immediately.
 | `categoryAliases.test.mjs` | resolveDestination: Shelter/SHELTER/" shelter " → Shelter System; Sleep → Sleep System; Kitchen/Kitchen System → Kitchen Gear; Consumables → Expendables; Clothing Packed ≠ Clothing Worn; unknown category returned as-is (never silently becomes Backpack) |
 | `usePackData.test.mjs` | deduplicateCategoryAliases: items merge into preferred (user-named) tab, existing items kept first, source tabs removed from order/items/meta, full item objects preserved (id/sub/desc/weightOz/qty/checked/expendable), idempotent on repeated runs; mergeDefaultCategories: skips DEFAULT names when an alias already exists |
 | `moveItem.test.mjs` | applyMoveItem Store transformation: item removed from source and appended to destination (M1); all GearItem fields preserved across move — id, sub, desc, weightOz, qty, checked, expendable (M2); same-category move returns identical store reference — no mutation (M3); invalid inputs (unknown source, unknown destination, unknown item ID) leave store unchanged (M4); undo/redo via inverse operations — move+undo restores original state, no item duplication (M5); no duplicate item IDs after single or sequential moves (M6); custom category names preserved exactly (M7); store.order and store.meta untouched by item moves (M8); existing destination items not displaced — moved item appended; move into empty category works (M9) |
+| `pieColor.test.mjs` | Per-file Weight Distribution palette persistence: chartPaletteKey serialized in LockerEntry (P1); in-place open, new-tab stash, and newseed bundle each restore the correct palette key (P2); File A and File B retain independent palette keys across all save/load operations (P3); commitSaveReplace updates only the active file (P4); Save As copies palette key into a new entry and leaves the original unchanged (P5, P6); New/newseed bundle carries current palette key to the forked tab (P7); refresh/session-stash restores active file's palette key; empty or null stash falls back to default (P8); older files without chartPaletteKey load safely with default palette (P9); saving an older file adds chartPaletteKey (P10); restored palette key is not overwritten by default init (P11); unknown or missing chartPaletteKey values do not crash loading (P12); gear data is byte-identical through the save-and-load round trip (P13) |
 
 ## Where fixtures are stored
 
@@ -44,6 +46,7 @@ plain JS so tests can run against source changes immediately.
 | PDF page-text fixture | Inline string in `importGear.pdf.test.mjs` | Simulates `pdf-parse` v2 output for a real TrailWeigh export |
 | Deduplication fixture | Inline JS object in `usePackData.test.mjs` | Mirrors a stored v5 checklist with all three duplicate pairs |
 | Move-item fixture | Inline JS object in `moveItem.test.mjs` | Four-category store (Backpack, Clothing Packed, Kitchen Gear, Cook Set) |
+| Pie-color fixture | Inline JS objects in `pieColor.test.mjs` | LockerEntry builders using inlined save/load helpers |
 
 ## Framework
 

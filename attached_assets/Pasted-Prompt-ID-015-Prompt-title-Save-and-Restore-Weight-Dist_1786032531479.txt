@@ -1,0 +1,678 @@
+Prompt ID: 015
+Prompt title: Save and Restore Weight Distribution Colors Per Locker File
+
+Fix the Weight Distribution pie-color persistence problem in TrailWeigh.
+
+Each saved Locker file must remember and restore its own selected Weight Distribution colors.
+
+This is a focused saved-state feature.
+
+Do not change the checklist layout, category widths, QTY alignment, backgrounds, Share Link behavior, import behavior, or unrelated features.
+
+Before editing, read:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_014O_REPORT.md`
+- The current save, Save As, Locker, New, Reset, pie-color, and v5 schema source files
+
+Treat the current application source as the source of truth.
+
+# PART 1 — CREATE A CHECKPOINT AND DOCUMENT THE STARTING STATE
+
+Create a Replit checkpoint before changing application code.
+
+Create this documentation backup:
+
+`workflow-reports/PRE_015_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Master workflow line count
+- Master workflow file size
+- Backup line count
+- Backup file size
+- Current saved-data schema version
+- Current location of `pieColors`
+- Current pie-color update function
+- Current Locker serialization path
+- Current Locker loading path
+- Current Save path
+- Current Save As path
+- Current New behavior
+- Current Reset behavior
+
+Do not begin implementation until the current data flow has been traced.
+
+# PART 2 — INVESTIGATE THE ROOT CAUSE FIRST
+
+The v5 checklist schema reportedly already contains:
+
+`pieColors?: Record<string, string>`
+
+Do not create a second competing color-state system.
+
+Determine exactly why selected colors are not reliably restored.
+
+Inspect whether the problem is caused by one or more of these:
+
+1. The color selector updates component-only state instead of the working checklist store.
+2. The current working store contains `pieColors`, but Save omits it.
+3. Save As omits it.
+4. Locker serialization omits it.
+5. Locker loading drops it.
+6. `parseV5()` drops or replaces it.
+7. A default-color initializer overwrites restored colors after loading.
+8. A mount effect overwrites restored colors.
+9. New-file creation omits it.
+10. Cross-tab initialization overwrites it.
+11. Category renaming or alias migration disconnects saved colors from category names.
+12. The Weight Distribution component receives default colors instead of the restored file colors.
+
+Record the confirmed root cause before implementing the fix.
+
+Do not guess.
+
+# PART 3 — REQUIRED PER-FILE BEHAVIOR
+
+Each Locker file must have its own independent Weight Distribution colors.
+
+## File A and File B independence
+
+Required example:
+
+- File A uses a red color for Backpack.
+- File B uses a blue color for Backpack.
+- Saving File A must preserve red.
+- Saving File B must preserve blue.
+- Opening File A must restore red.
+- Opening File B must restore blue.
+- Changing File A must not alter File B.
+
+Do not store pie colors only as one global preference shared by every file.
+
+## Immediate working-state update
+
+When the user selects a new Weight Distribution color:
+
+- The chart updates immediately.
+- The current working checklist store updates immediately.
+- The correct category-color entry is updated.
+- Other category colors remain unchanged.
+- No saved Locker file changes until the user performs Save or Save As.
+
+Do not automatically overwrite a saved file merely because a color was selected.
+
+## Save
+
+When saving an existing active Locker file:
+
+- Include the current complete `pieColors` record.
+- Update only the active Locker file.
+- Preserve its existing ID and name.
+- Do not alter another saved file.
+- Preserve all gear items, categories, backgrounds, units, and other saved settings.
+
+## Save As
+
+When using Save As:
+
+- Create a new Locker entry with a new ID.
+- Copy the current `pieColors` into the new file.
+- Make the new file the active saved file.
+- Preserve the original saved file unchanged.
+
+## Open from Locker
+
+When opening a Locker file:
+
+- Restore that file’s exact `pieColors`.
+- Do not leave colors from the previously viewed file on screen.
+- Do not replace restored colors with defaults after rendering.
+- Restore colors whether the file opens in the current tab or a new tab.
+
+## Refresh
+
+After opening a saved file and refreshing the page:
+
+- Restore that same file’s colors.
+- Do not revert to default colors.
+- Do not use colors from another open tab.
+
+## New
+
+TrailWeigh’s intended New behavior copies the currently visible checklist but unchecks all gear items.
+
+New must also copy the current file’s `pieColors` into the new unsaved working copy.
+
+Requirements:
+
+- The original file remains unchanged.
+- The new working copy uses the same colors.
+- The new working copy has no active Locker-file identity.
+- Its first Save requires a filename.
+- Saving it creates a separate Locker file.
+
+## Reset
+
+Reset currently clears gear items from the current working list while preserving the list structure and unrelated visual settings.
+
+Reset must not unexpectedly erase the current file’s pie-color preferences.
+
+Preserve the current `pieColors` unless current verified Reset requirements explicitly state otherwise.
+
+## Older saved files
+
+Older Locker files may not contain `pieColors`.
+
+They must continue opening safely.
+
+For an older file without `pieColors`:
+
+- Use the current default color set.
+- Do not throw an error.
+- Do not reject the saved file.
+- Do not alter its gear data.
+- Add `pieColors` naturally the next time the user saves it.
+
+Do not require a manual migration.
+
+# PART 4 — CATEGORY CHANGES
+
+Inspect how pie colors are keyed.
+
+If colors are keyed by category name, verify behavior when a category is:
+
+- Renamed
+- Added
+- Deleted
+- Restored through Undo
+- Merged through alias migration
+- Loaded from an older saved file
+
+Required behavior:
+
+- Renaming a category must preserve its selected color when practical.
+- Adding a category must assign a valid default color.
+- Deleting a category must not corrupt the color map.
+- Loading a file with unknown or missing category-color entries must remain safe.
+- Alias migration must not cause unrelated categories to share or lose colors.
+
+Use the smallest safe correction.
+
+Do not redesign the category system during this prompt.
+
+# PART 5 — STATE AND HISTORY RULES
+
+Use the existing v5 checklist data model when practical.
+
+Do not create:
+
+- A second localStorage key solely for per-file pie colors
+- A global color record that overrides each file
+- A duplicate React state system that can become unsynchronized
+- A new database
+- Cloud storage
+- Account-level color synchronization
+
+Preserve the current Undo and Redo design.
+
+Do not add pie-color changes to gear-item Undo/Redo unless pie-color changes already participate in that history system.
+
+Document whether pie-color changes are currently undoable.
+
+Do not change that behavior merely for this prompt unless necessary to prevent data loss.
+
+# PART 6 — PRESERVE ALL UNRELATED FEATURES
+
+Do not change:
+
+- Category-panel width
+- Pack Summary width
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+- MOVE
+- WEIGHT
+- QTY values
+- TOTAL
+- DESCRIPTION
+- Save confirmation wording
+- Active filename display
+- Background images
+- Background Fill or Fit
+- Showcase
+- Preview
+- Print
+- PDF export
+- Share Link
+- Importers
+- AI scanning
+- Unit calculations
+- Base Weight calculations
+- Dog Pack calculations
+- Expendables calculations
+- Authentication
+- Mobile companion-app data model
+
+Do not modify retail, affiliate, product, monetization, or Meal Planner features.
+
+# PART 7 — AUTOMATED TESTS
+
+Add focused regression coverage using the most appropriate existing test file.
+
+Prefer extending an existing data-layer or save/Locker test file when it cleanly fits.
+
+Create a new test suite only when no appropriate existing suite exists.
+
+Test at minimum:
+
+1. A v5 store with `pieColors` serializes them.
+2. A saved Locker file restores its exact colors.
+3. File A and File B retain different colors.
+4. Save updates only the active file.
+5. Save As copies colors into a new file.
+6. Save As leaves the original file unchanged.
+7. New copies the current colors into an unsaved working copy.
+8. Refresh or initialization restores the active file’s colors.
+9. An old file without `pieColors` loads safely with defaults.
+10. Saving that older file adds a valid `pieColors` record.
+11. Default initialization does not overwrite restored colors.
+12. Unknown or removed category-color entries do not crash loading.
+13. Existing gear data remains unchanged through the save-and-load round trip.
+
+If category renaming is covered by the affected data layer, also test color preservation through rename.
+
+Do not invent assertions unrelated to the implementation.
+
+## Test command
+
+Run:
+
+`pnpm test:importer`
+
+If a new test suite is added to the package script:
+
+- Update `TESTING.md`
+- State the new exact suite count
+- List the new suite in execution order
+- Document what it protects
+
+If an existing suite is extended:
+
+- Keep the documented suite count unchanged
+- Update its protected-behavior description in `TESTING.md`
+
+Report:
+
+- Exact suites run
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Warnings
+- Errors
+
+Do not change tests merely to force a passing result.
+
+# PART 8 — REQUIRED RENDERED TEST
+
+Use the existing Replit TrailWeigh preview.
+
+Do not use a public landing page that does not expose the signed-in Locker workflow.
+
+Do not install Playwright or another browser dependency.
+
+Perform this manual rendered test using two saved files.
+
+## Test File A
+
+1. Open or create a saved file named clearly for testing.
+2. Set at least three category colors to visually distinctive choices.
+3. Record the selected colors.
+4. Save the file.
+5. Close or navigate away from it.
+6. Reopen it from Locker.
+7. Confirm all three colors restore.
+8. Refresh the page.
+9. Confirm all three colors remain restored.
+
+## Test File B
+
+1. Create or open a second saved file.
+2. Assign different colors to the same three categories.
+3. Save it.
+4. Reopen File A and confirm File A’s colors.
+5. Reopen File B and confirm File B’s different colors.
+
+## Save As test
+
+1. Open File A.
+2. Use Save As to create a new copy.
+3. Confirm the copy starts with File A’s colors.
+4. Change one color in the copy and save it.
+5. Reopen the original File A.
+6. Confirm the original color did not change.
+
+## New test
+
+1. Open a saved file with custom colors.
+2. Use New.
+3. Confirm all gear-item checkboxes are unchecked.
+4. Confirm the copied colors remain visible.
+5. Confirm the new list is unsaved until named.
+
+## Older-file test
+
+Use a test fixture or controlled stored object without `pieColors`.
+
+Confirm it opens with defaults and can subsequently be saved.
+
+## Screenshot evidence
+
+Capture screenshots showing:
+
+- File A with its colors
+- File B with different colors
+- File A reopened after File B
+- A Save As copy
+- The New unsaved copy with colors retained and items unchecked
+
+Record screenshot names and what each proves.
+
+Do not use or expose the user’s private real saved lists if temporary test files can be used instead.
+
+Delete temporary test Locker entries after testing only when doing so is safe and clearly documented.
+
+# PART 9 — SMALL DOCUMENTATION WORDING CORRECTION
+
+Prompt 014O documented URL-based AI scanning as:
+
+`CONFIRMED WORKING`
+
+The available evidence established that the URL-scan code path exists, but it did not include a successful live OpenAI URL-scan test.
+
+In the current-state summary of:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+change only the current URL-scan status to:
+
+`PRESENT IN CODE BUT NOT FUNCTIONALLY VERIFIED`
+
+Do not modify historical Prompt 014O report wording.
+
+Do not change AI-scan application code.
+
+Do not test or spend API credits on AI scanning during Prompt 015.
+
+# PART 10 — UPDATE CURRENT PROJECT DOCUMENTATION
+
+Update the current-state sections in:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Where `pieColors` lives in the current schema
+- How the color selector updates the working store
+- How Save serializes colors
+- How Save As copies colors
+- How Locker loading restores colors
+- How New handles colors
+- How Reset handles colors
+- How older files without colors are handled
+- Whether color changes participate in Undo/Redo
+- Automated-test coverage
+- Rendered-test results
+- Any remaining limitation
+
+Update the unresolved-issues section:
+
+- Mark pie-color save and restore as RESOLVED only if all required save/open/refresh/two-file tests pass.
+- If any portion fails, mark it PARTIAL and describe the exact failure.
+- Do not mark Share Link pie-color behavior resolved; Share Link will be handled in a later prompt.
+- Preserve unrelated unresolved issues.
+
+Update the Prompt Number Index with:
+
+- Prompt 015
+- Title: Save and Restore Weight Distribution Colors Per Locker File
+- Actual completion status
+- Report path:
+  `workflow-reports/PROMPT_015_REPORT.md`
+
+Update the opening latest-entry field after appending to:
+
+`Prompt 015 — 2026-08-06`
+
+# PART 11 — CREATE THE PROMPT 015 REPORT
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_015_REPORT.md`
+
+The report must include:
+
+## Task identification
+
+- Prompt ID
+- Prompt title
+- Start and completion time
+- Purpose
+- Exact requested behavior
+- Protocol reference
+
+## Starting state
+
+- Current schema
+- Current pie-color state location
+- Existing save behavior
+- Existing load behavior
+- Confirmed root cause
+- Relevant files before editing
+
+## Work performed
+
+Record every meaningful action:
+
+- Files inspected
+- Files changed
+- Functions changed
+- Schemas changed, if any
+- Serialization changes
+- Loading changes
+- Migration/default handling
+- Test changes
+- Server restarts
+- Failed attempts
+- Reverted attempts
+
+## Exact implementation
+
+For every changed file, include:
+
+- Full path
+- What changed
+- Why it changed
+- Relevant functions
+- Relevant before-and-after excerpts
+- Whether application behavior outside pie colors was affected
+
+## File-behavior matrix
+
+Include results for:
+
+- Existing Save
+- Save As
+- Open
+- Refresh
+- File A/File B independence
+- New
+- Reset
+- Older file without `pieColors`
+- Category rename
+- Category deletion
+- Cross-tab behavior
+
+Mark each:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Automated tests
+
+Include:
+
+- Command
+- Exact suites
+- Suite count
+- Execution order
+- Passed
+- Failed
+- Exit code
+- Warnings and errors
+
+## Rendered tests
+
+Include:
+
+- Temporary file names
+- Selected test colors
+- Screenshot filenames
+- Save/open/refresh results
+- File A/File B independence result
+- Save As result
+- New result
+- Older-file result
+- User testing still required
+
+## Scope preservation
+
+Confirm whether these remained unchanged:
+
+- Layout
+- QTY alignment
+- Backgrounds
+- Share Link
+- Imports
+- Calculations
+- Active filename
+- Save confirmation wording
+- Mobile application
+
+## Acceptance checklist
+
+Repeat every requirement and mark:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+Explain every result that is not PASS.
+
+## Unresolved issues
+
+List any remaining pie-color or saved-file issue.
+
+Do not state that there are none unless all required tests passed.
+
+# PART 12 — APPEND PROMPT 015 TO THE MASTER
+
+Append the complete Prompt 015 report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not replace the master.
+- Do not truncate earlier history.
+- Do not append Prompt 015 twice.
+- Confirm Prompt 015 appears exactly once.
+- Confirm Prompt 014O remains present.
+- Update the final trailer to:
+  `Master workflow last updated: 2026-08-06 (Prompt 015)`
+
+# PART 13 — CREATE AN EASY DOWNLOAD ZIP
+
+Create in the project root:
+
+`trailweigh-015-report.zip`
+
+Include only:
+
+- `workflow-reports/PROMPT_015_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+Do not include:
+
+- Source code
+- Backups
+- Credentials
+- Dependencies
+- User Locker data
+- Temporary test files
+- Other ZIP files
+
+# FINAL VERIFICATION
+
+Before completing:
+
+1. Confirm `PRE_015_MASTER_BACKUP.md` exists.
+2. Confirm `PROMPT_015_REPORT.md` exists.
+3. Confirm `trailweigh-015-report.zip` exists.
+4. Confirm the master still contains the complete earlier history.
+5. Confirm Prompt 015 appears exactly once.
+6. Confirm the opening latest-entry field identifies Prompt 015.
+7. Confirm the final trailer identifies Prompt 015.
+8. Confirm pie colors are stored per file.
+9. Confirm Save preserves colors.
+10. Confirm Save As copies colors.
+11. Confirm opening a file restores colors.
+12. Confirm refresh preserves colors.
+13. Confirm File A and File B retain different colors.
+14. Confirm New copies colors while unchecking items.
+15. Confirm Reset does not unexpectedly erase colors.
+16. Confirm an older file without `pieColors` opens safely.
+17. Confirm no restored color is overwritten by default initialization.
+18. Confirm QTY remains `translate-x-3`.
+19. Confirm the desktop grid remains `lg:grid-cols-[1fr_365px]`.
+20. Confirm no unrelated layout file changed.
+21. Confirm Share Link behavior was not modified.
+22. Confirm import behavior was not modified.
+23. Confirm calculations were not modified.
+24. Confirm the actual automated-test result.
+25. Confirm the URL-based AI-scan current status is documented as:
+    `PRESENT IN CODE BUT NOT FUNCTIONALLY VERIFIED`
+26. Confirm no AI-scan source code was changed.
+27. Confirm no dependency was added.
+28. Confirm no private Locker data is included in the ZIP.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_015_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-015-report.zip`
+- Report the exact path, file size, and line count of every Markdown file
+- Report the exact automated-test result
+- State whether every pie-color persistence test passed
+- State exactly what still requires user testing
+- Confirm no unrelated TrailWeigh feature was modified
+- Do not require the user to copy the workflow manually
