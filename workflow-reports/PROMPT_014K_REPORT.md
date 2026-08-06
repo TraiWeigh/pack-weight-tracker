@@ -101,18 +101,35 @@ The prompt file ended mid-sentence before specifying the replacement class value
 | Do not change Checklist.tsx | PASS | Not touched |
 | No feature, calculation, or behavior changes | PASS | Pure CSS transform only |
 | No secrets included | PASS | ✅ |
+| User visual verification | PASS | User-supplied rendered screenshot reviewed |
+| Visual QTY-heading alignment | PASS | Heading confirmed aligned over values in screenshot |
+| Exact independent pixel-centre measurement | NOT TESTED | No Playwright measurement performed |
 
 ---
 
-## 8. Unresolved Issues
+## 8. Visual Verification
 
-### QTY heading visual alignment — user confirmation pending
-`translate-x-3` (12 px) is the value the user requested. Whether this produces the desired visual alignment (heading text centred over quantity values) requires user visual inspection. No Playwright pixel measurement was performed.
+A user-supplied rendered screenshot was reviewed after Prompt 014K was applied.
+
+| Observation | Result |
+|-------------|--------|
+| Backpack category expanded | ✅ |
+| Shelter System category expanded | ✅ |
+| Multiple QTY values visible | ✅ |
+| QTY heading visually aligned over quantity values | ✅ |
+| No visible clipping | ✅ |
+| No horizontal page overflow | ✅ |
+| WEIGHT, TOTAL, DESCRIPTION, MOVE — unchanged | ✅ |
+| Exact pixel-centre measurement by Replit | NOT TESTED |
+
+**User visual verification: PASS**
+**Approval source:** User-supplied rendered screenshot after Prompt 014K.
 
 ---
 
-*Report created: 2026-08-06 (documentation created in Prompt 014L)*
+*Report created: 2026-08-06 (documentation created in Prompt 014L; visual-verification section added in Prompt 014M)*
 *Application modified: YES — GearCategory.tsx (translate-x-1 → translate-x-3)*
 *Documentation modified: NO*
 *Automated tests: Not applicable (pure CSS transform change)*
-*User visual testing: REQUIRED (QTY heading alignment confirmation)*
+*User visual verification: PASS*
+*Exact pixel-centre measurement: NOT TESTED*

@@ -1,0 +1,323 @@
+Prompt ID: 014M
+Prompt title: Finish Prompt 014L Documentation and Record Visual Approval
+
+Complete the missing documentation from Prompt 014L.
+
+This is a documentation-only task.
+
+Do not modify TrailWeigh application code, layout, behavior, calculations, dependencies, tests, or saved data.
+
+# CONFIRMED USER VISUAL RESULT
+
+After Prompt 014K changed the QTY heading from:
+
+`translate-x-1`
+
+to:
+
+`translate-x-3`
+
+the user supplied a rendered TrailWeigh screenshot.
+
+That screenshot showed:
+
+- Backpack category expanded
+- Shelter System category expanded
+- Multiple WEIGHT, QTY, and TOTAL row values visible
+- QTY heading visually aligned over the quantity values
+- QTY values unchanged
+- MOVE unchanged
+- WEIGHT unchanged
+- TOTAL unchanged
+- DESCRIPTION unchanged
+- No visible clipping
+- No horizontal page overflow
+
+Record:
+
+`User visual verification: PASS`
+
+Record:
+
+`User visual approval source: User-supplied rendered screenshot after Prompt 014K`
+
+Do not continue stating that visual confirmation is still required.
+
+Do not claim Replit independently measured exact one-pixel alignment.
+
+# PART 1 — VERIFY CURRENT APPLICATION STATE WITHOUT EDITING
+
+Inspect:
+
+`artifacts/pack-checklist/src/components/GearCategory.tsx`
+
+Confirm the QTY heading currently uses:
+
+`translate-x-3`
+
+Confirm it does not use:
+
+- `translate-x-1`
+- `pr-1`
+
+Inspect:
+
+`artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+Confirm the desktop grid remains:
+
+`lg:grid-cols-[1fr_365px]`
+
+Do not edit these files.
+
+Do not edit any application source file.
+
+# PART 2 — VERIFY THE COMPLETE MASTER WORKFLOW
+
+Inspect:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Before changing documentation, confirm that it:
+
+- Contains more than 1,500 lines
+- Starts with the complete TrailWeigh workflow-history heading
+- Contains Prompt 014G
+- Contains Prompt 014H
+- Contains Prompt 014I
+- Contains Prompt 014J
+- Contains Prompt 014K
+- Does not yet contain a complete Prompt 014L report
+- Does not yet contain Prompt 014M
+
+If the master contains fewer than 1,500 lines, stop and report the problem.
+
+Do not append to a truncated master.
+
+Create a complete safety backup:
+
+`workflow-reports/PRE_014M_MASTER_BACKUP.md`
+
+Record its line count and file size.
+
+# PART 3 — CORRECT THE PROMPT 014K REPORT
+
+Open:
+
+`workflow-reports/PROMPT_014K_REPORT.md`
+
+Find any statement saying:
+
+- User visual confirmation is outstanding
+- Visual verification is still required
+- QTY alignment remains awaiting user approval
+
+Correct those statements to reflect:
+
+`User visual verification: PASS`
+
+Add a short visual-verification section if one does not already exist.
+
+It must state:
+
+- A user-supplied rendered screenshot was reviewed.
+- Backpack and Shelter System were expanded.
+- Multiple QTY values were visible.
+- QTY appeared visually aligned over its values.
+- No clipping or horizontal overflow was visible.
+- Exact pixel-center measurement by Replit was not performed.
+
+Update the Prompt 014K acceptance checklist:
+
+- User visual verification: PASS
+- Visual QTY-heading alignment: PASS
+- Exact independent pixel-center measurement: NOT TESTED
+
+Do not alter Prompt 014K’s implementation history or test result.
+
+Do not create a second Prompt 014K report.
+
+# PART 4 — UPDATE THE EXISTING PROMPT 014K MASTER ENTRY
+
+Locate the existing Prompt 014K section inside:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Update only its visual-verification status so it matches the corrected Prompt 014K report.
+
+Do not append Prompt 014K a second time.
+
+Confirm Prompt 014K appears exactly once in the chronological report section.
+
+Do not remove or rewrite earlier history.
+
+# PART 5 — CREATE THE MISSING PROMPT 014L REPORT
+
+Create:
+
+`workflow-reports/PROMPT_014L_REPORT.md`
+
+The report must document what Prompt 014L actually did.
+
+Include:
+
+## Task identification
+
+- Prompt ID: 014L
+- Prompt title: Complete the Missing Prompt 014K Documentation
+- Date completed
+- Purpose
+- Explanation that Prompt 014K’s application change was already complete
+
+## Starting state
+
+- Prompt 014K report was missing
+- Prompt 014K application change already used `translate-x-3`
+- Master workflow contained history through Prompt 014J
+- User visual screenshot had already shown the QTY correction working
+
+## Work performed by Prompt 014L
+
+Record that Prompt 014L:
+
+- Created `workflow-reports/PROMPT_014K_REPORT.md`
+- Appended Prompt 014K to `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Increased the master to approximately 1,527 lines
+- Did not modify TrailWeigh application code
+- Did not change dependencies
+- Did not change tests
+
+Also record the Prompt 014L deficiency:
+
+- `workflow-reports/PROMPT_014L_REPORT.md` was not created during Prompt 014L
+- Prompt 014L was therefore only partially documented
+- Prompt 014M was required to complete the missing report
+
+## Testing
+
+Record the verified Prompt 014K/014L test result:
+
+`pnpm test:importer`
+
+- 47 passed
+- 0 failed
+
+Do not claim the tests were rerun during Prompt 014M unless they are actually rerun.
+
+## Visual verification
+
+Record:
+
+- User visual verification of Prompt 014K: PASS
+- Exact pixel measurement by Replit: NOT TESTED
+
+## Acceptance checklist
+
+Include:
+
+- Prompt 014K report created: PASS
+- Prompt 014K appended to master: PASS
+- Earlier workflow history preserved: PASS
+- Application code unchanged: PASS
+- Dependencies unchanged: PASS
+- Prompt 014L report created during original Prompt 014L execution: FAIL
+- Missing Prompt 014L report completed by Prompt 014M: PASS
+
+# PART 6 — APPEND PROMPT 014L TO THE MASTER
+
+Append the complete contents of:
+
+`workflow-reports/PROMPT_014L_REPORT.md`
+
+to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not replace the master.
+- Do not truncate earlier entries.
+- Do not append Prompt 014L twice.
+- Confirm Prompt 014L appears exactly once after appending.
+- Preserve Prompt 014G through Prompt 014K.
+- Update the master’s last-prompt reference to Prompt 014L temporarily.
+
+# PART 7 — CREATE THE PROMPT 014M REPORT
+
+Create:
+
+`workflow-reports/PROMPT_014M_REPORT.md`
+
+The report must include:
+
+- Prompt ID and title
+- Why Prompt 014M was required
+- Files inspected
+- Documentation files changed
+- Confirmation no application source files changed
+- Confirmation no dependencies changed
+- Backup path
+- Master line count before
+- Master line count after
+- Prompt 014K report correction
+- Prompt 014L report creation
+- Confirmation Prompt 014K appears exactly once
+- Confirmation Prompt 014L appears exactly once
+- User visual verification status: PASS
+- Exact pixel measurement status: NOT TESTED
+- Acceptance checklist marked PASS, FAIL, PARTIAL, or NOT TESTED
+- Any warnings or unresolved documentation problems
+
+# PART 8 — APPEND PROMPT 014M
+
+Append the complete contents of:
+
+`workflow-reports/PROMPT_014M_REPORT.md`
+
+to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not replace the master.
+- Do not truncate earlier entries.
+- Do not append Prompt 014M twice.
+- Confirm Prompt 014M appears exactly once.
+- Update the master’s final last-prompt reference to:
+
+`Prompt 014M`
+
+# FINAL VERIFICATION
+
+Before completing:
+
+1. Confirm `PRE_014M_MASTER_BACKUP.md` exists.
+2. Confirm `PROMPT_014K_REPORT.md` exists.
+3. Confirm `PROMPT_014L_REPORT.md` exists.
+4. Confirm `PROMPT_014M_REPORT.md` exists.
+5. Confirm Prompt 014K visual verification is recorded as PASS.
+6. Confirm Prompt 014K no longer says user visual approval is outstanding.
+7. Confirm Prompt 014L appears exactly once in the master.
+8. Confirm Prompt 014M appears exactly once in the master.
+9. Confirm Prompt 014G through Prompt 014K remain present.
+10. Confirm the master contains more lines than before this task.
+11. Confirm the master was appended rather than replaced.
+12. Confirm the QTY heading still uses `translate-x-3`.
+13. Confirm the desktop grid remains `lg:grid-cols-[1fr_365px]`.
+14. Confirm no application source file was modified.
+15. Confirm no dependency was changed.
+16. Confirm `TRAILWEIGH_WORKFLOW_PROTOCOL.md` was not changed.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_014L_REPORT.md`
+- Surface `workflow-reports/PROMPT_014M_REPORT.md`
+- Surface the corrected `workflow-reports/PROMPT_014K_REPORT.md`
+- Surface the updated `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Report the exact path, file size, and line count of each
+- Confirm no TrailWeigh application code was modified
+- Confirm QTY visual verification is now recorded as PASS
+- Do not require the user to copy the workflow manually

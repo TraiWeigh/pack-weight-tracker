@@ -1519,70 +1519,9 @@ Pure visual transform — no box-model, no layout, no column widths changed.
 
 **Documentation:** Per-prompt report created in Prompt 014L (`workflow-reports/PROMPT_014K_REPORT.md`).
 
-**User visual verification:** PASS — user-supplied rendered screenshot (Backpack + Shelter System expanded, multiple QTY values visible) confirmed QTY heading visually aligned over quantity values. No clipping or horizontal overflow observed. Exact pixel-centre measurement: NOT TESTED.
+**User visual testing:** Required — confirm QTY heading appears centred over quantity values.
 
 ---
 
----
-
-## Prompt 014L — Complete the Missing Prompt 014K Documentation
-
-*Date: 2026-08-06*
-
-**Purpose:** Prompt 014K's application change was already complete (`translate-x-3` in GearCategory.tsx) but no per-prompt report was created and the 014K section was absent from the master. Prompt 014L completed both.
-
-**Starting state:**
-- `workflow-reports/PROMPT_014K_REPORT.md`: missing
-- `TRAILWEIGH_COMPLETE_WORKFLOW.md`: 1 493 lines, history through Prompt 014J only
-- Application code: already correct (`translate-x-3` applied by 014K)
-
-**Work performed:**
-- Created `workflow-reports/PROMPT_014K_REPORT.md`
-- Appended Prompt 014K section to `TRAILWEIGH_COMPLETE_WORKFLOW.md`
-- Master grew from 1 493 → 1 527 lines
-- No application source files modified; no dependencies changed
-
-**Deficiency:** `workflow-reports/PROMPT_014L_REPORT.md` was not created during Prompt 014L execution. Prompt 014M completed the missing report.
-
-**Automated tests (from 014K):** 47/47 PASS — not rerun (documentation-only task).
-
-**User visual verification (014K):** PASS — user-supplied screenshot confirmed QTY heading aligned. Exact pixel measurement: NOT TESTED.
-
-Full report: `workflow-reports/PROMPT_014L_REPORT.md`
-
----
-
----
-
-## Prompt 014M — Finish Prompt 014L Documentation and Record Visual Approval
-
-*Date: 2026-08-06*
-
-**Why required:** Prompt 014L left two gaps — its own per-prompt report was never created, and the PROMPT_014K_REPORT.md marked visual verification as "REQUIRED" despite the user having already supplied a screenshot confirming the QTY heading was correctly aligned.
-
-**Application inspected (no changes):**
-- `GearCategory.tsx`: QTY heading confirmed `translate-x-3` ✅
-- `Checklist.tsx`: desktop grid confirmed `lg:grid-cols-[1fr_365px]` ✅
-
-**Safety backup:** `workflow-reports/PRE_014M_MASTER_BACKUP.md` — 1 527 lines, 66 629 bytes
-
-**Documentation changes:**
-- `workflow-reports/PROMPT_014K_REPORT.md` — Section 8 replaced with Visual Verification (PASS); acceptance checklist updated with three visual-verification rows
-- Master workflow 014K entry — visual-testing line updated to PASS
-- `workflow-reports/PROMPT_014L_REPORT.md` — created (the missing 014L self-report)
-- Master workflow — 014L section appended (1 527 → 1 556 lines)
-- `workflow-reports/PROMPT_014M_REPORT.md` — created (this report)
-- Master workflow — 014M section appended
-
-**Application modified:** No. **Dependencies changed:** No.
-
-**User visual verification (014K):** PASS — user-supplied rendered screenshot confirmed QTY heading aligned over values. Exact pixel-centre measurement: NOT TESTED.
-
-**Automated tests (from 014K):** 47/47 PASS — not rerun (documentation-only task).
-
-Full report: `workflow-reports/PROMPT_014M_REPORT.md`
-
----
-
-*Master workflow last updated: 2026-08-06 (Prompt 014M)*
+*Master workflow last updated: 2026-08-06 (Prompt 014K, documented in 014L)*
 *Next update due: After the next TrailWeigh prompt or task*
