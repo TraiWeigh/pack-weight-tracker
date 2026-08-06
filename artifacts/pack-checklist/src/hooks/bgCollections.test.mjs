@@ -1,11 +1,13 @@
 /**
- * bgCollections.test.mjs — 18 test scenarios for pure bgCollections.ts functions.
+ * bgCollections.test.mjs — unit tests for pure bgCollections.ts functions.
+ *
+ * Updated for Prompt 016A:
+ *   - createCollection now REJECTS duplicate names (Prompt 016A changed this).
+ *     The old "allows duplicate names" test has been replaced by "rejects duplicate names".
+ *   - MAX_COLLECTIONS constant added.
  *
  * Runs with: node --test bgCollections.test.mjs
  * All functions under test are pure: no DOM, no localStorage, no fetch.
- *
- * The TypeScript source is transpiled inline via tsx so we can import it
- * directly from the test runner.  All 18 scenarios must pass.
  */
 
 import { describe, it } from 'node:test';
@@ -13,15 +15,13 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// ── Dynamic import with tsx (same pattern as other test suites) ───────────────
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const libPath = path.resolve(__dirname, '../lib/bgCollections.ts');
 
-// tsx registers itself at the package level; we can import TS directly.
 const {
   PHOTO_COLLECTIONS_KEY,
   MAX_PHOTOS_PER_COLLECTION,
+  MAX_COLLECTIONS,
   runMigration,
   createCollection,
   renameCollection,
@@ -59,6 +59,10 @@ describe('P1 — Constants', () => {
 
   it('MAX_PHOTOS_PER_COLLECTION is 10', () => {
     assert.equal(MAX_PHOTOS_PER_COLLECTION, 10);
+  });
+
+  it('MAX_COLLECTIONS is 10', () => {
+    assert.equal(MAX_COLLECTIONS, 10);
   });
 });
 
@@ -145,15 +149,21 @@ describe('P3 — createCollection', () => {
     assert.equal(res, null);
   });
 
-  it('allows duplicate names (disambiguated by ID)', () => {
+  // Prompt 016A: duplicate names are now REJECTED (changed from Prompt 016 which allowed them)
+  it('returns null when a collection with the same name already exists', () => {
     const existing = [makeCollection({ id: FIXED_IDS.col1, name: 'Duplicate' })];
     const res = createCollection('Duplicate', existing, FIXED_IDS.newCol);
-    assert.ok(res !== null);
-    assert.equal(res.result.length, 2);
-    // Both exist; the one with newCol ID is the new one
-    const newOne = res.result.find(c => c.id === FIXED_IDS.newCol);
-    assert.ok(newOne);
-    assert.equal(newOne.name, 'Duplicate');
+    assert.equal(res, null, 'Duplicate name should be rejected');
+  });
+
+  it('duplicate check is case-sensitive and whitespace-trimmed', () => {
+    const existing = [makeCollection({ id: FIXED_IDS.col1, name: 'Sierra' })];
+    // Exact match after trim: rejected
+    const sameExact = createCollection('  Sierra  ', existing, FIXED_IDS.newCol);
+    assert.equal(sameExact, null, 'Trimmed duplicate should be rejected');
+    // Different case: allowed
+    const diffCase = createCollection('sierra', existing, FIXED_IDS.newCol);
+    assert.ok(diffCase !== null, 'Different case should be allowed');
   });
 
   it('appends new collection to the end of the list', () => {
@@ -209,6 +219,19 @@ describe('P4 — renameCollection', () => {
     assert.ok(result !== null);
     assert.equal(result[1].name, 'Beta');
   });
+
+  it('renaming preserves all photos in the collection', () => {
+    const photos = [
+      { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,p1' },
+      { id: FIXED_IDS.photo2, dataUrl: 'data:image/jpeg;base64,p2' },
+    ];
+    const cols = [{ id: FIXED_IDS.col1, name: 'Old', photos }];
+    const result = renameCollection(FIXED_IDS.col1, 'New', cols);
+    assert.ok(result !== null);
+    assert.equal(result[0].photos.length, 2);
+    assert.equal(result[0].photos[0].id, FIXED_IDS.photo1);
+    assert.equal(result[0].photos[1].id, FIXED_IDS.photo2);
+  });
 });
 
 // ── P5: deleteCollection ──────────────────────────────────────────────────────
@@ -234,6 +257,21 @@ describe('P5 — deleteCollection', () => {
     const cols = [makeCollection({ id: FIXED_IDS.col1, name: 'Last' })];
     const result = deleteCollection(FIXED_IDS.col1, cols);
     assert.deepEqual(result, []);
+  });
+
+  it('deleting one theme reduces count and makes room for another', () => {
+    // Build 10 collections (the max)
+    const cols = Array.from({ length: 10 }, (_, i) => ({
+      id: `col-${i}`, name: `Theme${i}`, photos: [],
+    }));
+    assert.equal(cols.length, MAX_COLLECTIONS);
+    // Delete one
+    const after = deleteCollection('col-0', cols);
+    assert.equal(after.length, 9);
+    // Now createCollection should succeed
+    const res = createCollection('NewTheme', after);
+    assert.ok(res !== null, 'Should be able to add a theme after deletion');
+    assert.equal(res.result.length, 10);
   });
 });
 

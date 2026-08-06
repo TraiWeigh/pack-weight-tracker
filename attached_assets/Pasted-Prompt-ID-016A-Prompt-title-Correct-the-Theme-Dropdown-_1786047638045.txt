@@ -1,0 +1,813 @@
+Prompt ID: 016A
+Prompt title: Correct the Theme Dropdown and Photo Upload Workflow
+
+Correct the custom Theme workflow created by Prompt 016.
+
+This is a focused correction to the Background Edit panel.
+
+Do not redesign unrelated Background controls or modify the checklist layout.
+
+Before editing, inspect:
+
+- The current Background Edit panel
+- The current Themes dropdown
+- The custom collection/theme storage created by Prompt 016
+- The existing custom photo upload code
+- The existing built-in Landscapes background data
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_016_REPORT.md`, if it exists
+
+Treat the current source code as the source of truth.
+
+# PART 1 — PRESERVE THE PARTS THAT ALREADY WORK
+
+Keep these existing results:
+
+- The top pill remains labeled `Background Edit`
+- The panel heading remains `Background`
+- Fill Screen and Fit Image continue working
+- Light and Dark continue working
+- Fill/Fit and Light/Dark remain level with each other at desktop widths
+- Built-in Landscape images remain available
+- Background selection remains functional
+- Background Undo and Redo remain functional
+- Showcase remains functional
+- Existing saved background choices remain functional
+
+Do not change:
+
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+- MOVE, WEIGHT, QTY, or TOTAL
+- Pack Summary
+- Weight Distribution palettes
+- Save confirmation wording
+- Share Link
+- Importers
+- Calculations
+- Authentication
+
+# PART 2 — THE THEMES CONTROL IS THE DROPDOWN
+
+The word shown in the Theme selector is the dropdown control itself.
+
+Do not place a separate static `THEMES` heading beside another dropdown.
+
+Use one dropdown-style control in the theme section.
+
+## Dropdown label behavior
+
+When the built-in default view is active, the visible dropdown label may initially read:
+
+`Themes`
+
+When the user selects the built-in Landscape theme, the selected state may display:
+
+`Landscapes`
+
+When the user selects a custom theme named `Test`, the visible dropdown label must display:
+
+`Theme Test`
+
+General format for a selected custom theme:
+
+`Theme [Collection Name]`
+
+Examples:
+
+- Collection name: `Sierra`
+- Visible selected dropdown label: `Theme Sierra`
+
+- Collection name: `Desert`
+- Visible selected dropdown label: `Theme Desert`
+
+The user clicks the currently visible dropdown label to see all available theme options.
+
+# PART 3 — REQUIRED DROPDOWN OPTIONS
+
+When the user opens the Theme dropdown, show:
+
+1. `Landscapes`
+2. Every saved custom theme
+3. `Add Theme`
+
+Example:
+
+- Landscapes
+- Theme Sierra
+- Theme Desert
+- Add Theme
+
+`Add Theme` must be the final option in the dropdown.
+
+Remove the separate:
+
+`Add Collection`
+
+button or card currently displayed below the Landscape thumbnails.
+
+Theme creation must happen only through:
+
+`Themes dropdown → Add Theme`
+
+Do not show custom themes below the Landscape images while Landscapes is selected.
+
+# PART 4 — ONLY THE SELECTED THEME IS DISPLAYED
+
+Only one theme panel may be visible at a time.
+
+## When Landscapes is selected
+
+Show:
+
+- The built-in Landscape thumbnails
+- No custom-theme thumbnails
+- No custom-theme name field
+- No Delete Theme control
+
+## When a custom theme is selected
+
+Show:
+
+- That custom theme’s collection name
+- Its edit-name control
+- Its ten photo positions
+- Its existing uploaded photo thumbnails
+- Empty Add Photo thumbnails for the remaining positions
+- Delete Theme at the bottom-left
+
+Do not continue displaying the Landscape thumbnails above a selected custom theme.
+
+Selecting another dropdown option must replace the visible theme panel rather than adding another panel underneath it.
+
+# PART 5 — ADD THEME WORKFLOW
+
+When the user selects:
+
+`Add Theme`
+
+from the dropdown:
+
+1. Hide the Landscape thumbnails.
+2. Display a new empty custom-theme panel in the same location.
+3. Show a collection-name field above the thumbnail area.
+4. Show ten Add Photo thumbnails beneath the name field.
+5. Do not display the old separate Add Collection form.
+6. Do not add the unnamed theme to the dropdown yet.
+
+## New-theme panel layout
+
+The panel must contain:
+
+- Collection name input
+- Save Name control
+- Cancel control
+- Ten Add Photo thumbnail positions
+
+The ten thumbnails should use the same two-column visual layout as the ten built-in Landscape thumbnails unless the current responsive layout requires fewer columns.
+
+## Saving the collection name
+
+When the user enters a valid name and selects Save:
+
+- Save the custom theme.
+- Keep the collection name visible above the thumbnails.
+- Replace the name input with the saved name.
+- Show an Edit Name control.
+- Add the new theme to the dropdown.
+- Make the new theme the currently selected theme.
+- Change the dropdown label to:
+  `Theme [Collection Name]`
+- Keep the ten photo positions visible.
+
+Example:
+
+The user enters:
+
+`Test`
+
+After Save:
+
+- The heading above the thumbnails shows `Test`
+- The dropdown contains `Theme Test`
+- The selected dropdown label reads `Theme Test`
+
+Reject a completely blank name.
+
+Trim unnecessary spaces at the beginning and end.
+
+Do not overwrite an existing custom theme with the same name.
+
+# PART 6 — MAXIMUM NUMBER OF THEMES
+
+Allow a maximum of:
+
+`10 custom themes`
+
+The built-in Landscapes theme does not count toward this limit.
+
+Therefore, the dropdown may contain:
+
+- Landscapes
+- Up to 10 custom themes
+- Add Theme, when fewer than 10 custom themes exist
+
+When 10 custom themes already exist:
+
+- Disable or hide Add Theme.
+- Display a clear message:
+  `Maximum of 10 custom themes reached.`
+- Do not create an eleventh custom theme.
+
+When one custom theme is deleted:
+
+- Add Theme becomes available again.
+
+Do not count incomplete or cancelled Add Theme forms as saved themes.
+
+# PART 7 — TEN PHOTOS PER CUSTOM THEME
+
+Each custom theme must contain between zero and ten photos.
+
+A newly created custom theme displays:
+
+`10 Add Photo thumbnails`
+
+As photos are added:
+
+- The uploaded photo replaces one Add Photo thumbnail.
+- Empty positions remain Add Photo thumbnails.
+- The user can continue adding photos until all ten positions are filled.
+- Display a photo count such as:
+  `3/10`
+
+At ten photos:
+
+- No additional photo can be added.
+- Display:
+  `10/10`
+- Disable any additional upload action.
+
+Removing one photo makes that position available again as Add Photo.
+
+Do not use one generic Add Photo tile followed by an empty area.
+
+The user specifically needs ten visible thumbnail positions.
+
+# PART 8 — FIX CLICK-TO-UPLOAD
+
+Selecting an Add Photo thumbnail must open the operating system’s image-file picker.
+
+After the user chooses a supported image:
+
+- Add it to the currently selected custom theme.
+- Replace that Add Photo position with the image thumbnail.
+- Increase the photo count.
+- Save it using the current custom-photo storage system.
+- Keep the user inside the Background Edit panel.
+- Do not open the image as a separate browser page.
+- Do not make the image temporarily cover the whole browser.
+- Do not lose the image after refresh.
+
+Preserve the currently supported image formats.
+
+Do not introduce unsupported image types without testing.
+
+# PART 9 — FIX DRAG-AND-DROP PHOTO UPLOAD
+
+The current defect is:
+
+- The user drags an image onto Add Photo.
+- Safari opens the image full-screen.
+- The image is not saved to the theme.
+
+Fix this completely.
+
+When an image file is dragged over an Add Photo thumbnail:
+
+- Show a visible drag-over state.
+- Accept the file when dropped.
+- Add it to the currently selected theme.
+- Replace the Add Photo thumbnail with the new image.
+- Increase the photo count.
+- Persist the image after refresh.
+- Keep the application on the TrailWeigh page.
+
+The drop handler must prevent Safari’s normal file-navigation behavior.
+
+Use the appropriate event handling, including:
+
+- `preventDefault()`
+- `stopPropagation()`
+
+for file drag-over and drop events.
+
+Add a safe browser-level file-drop guard when needed so dropping an image over the intended upload region cannot navigate away from TrailWeigh.
+
+Do not block normal clicking, scrolling, or non-file interactions.
+
+If more than one file is dropped onto one Add Photo position:
+
+- Add only as many as there are remaining empty positions.
+- Never exceed ten photos.
+- Clearly ignore or report excess files.
+
+# PART 10 — PHOTO SELECTION
+
+Clicking an uploaded photo thumbnail must select that photo as the active background.
+
+Requirements:
+
+- It applies immediately.
+- The selected thumbnail receives the current selected-photo indicator.
+- Fill Screen and Fit Image continue working.
+- Light and Dark continue working.
+- Background fade continues working.
+- Background Undo and Redo continue working.
+- Showcase uses the selected photo.
+- The selected background persists according to the current Save and Locker behavior.
+
+Adding a photo must not automatically force it to become the active background unless that is the current intended interaction.
+
+Document the implemented behavior.
+
+# PART 11 — REMOVE PHOTOS
+
+Each uploaded custom photo must have a remove control.
+
+Requirements:
+
+- Mouse users can access it.
+- Keyboard users can access it.
+- Touch users can access it without hover.
+- Built-in Landscape images do not have remove controls.
+
+Require confirmation before removal.
+
+Cancel:
+
+- Keeps the photo.
+- Keeps the active background unchanged.
+
+Confirm:
+
+- Removes only that photo from the custom theme.
+- Replaces the empty position with an Add Photo thumbnail.
+- Decreases the count.
+- Preserves all other photos.
+- Preserves the custom theme.
+
+If the removed photo is the current active background:
+
+- Switch safely to a documented fallback.
+- Prefer another photo in the same theme when available.
+- Otherwise switch to Landscapes or the default background.
+- Do not leave a broken image.
+
+# PART 12 — EDIT THE THEME NAME
+
+After a custom theme name is saved, keep the name displayed above its ten thumbnails.
+
+Place an Edit Name control beside or near the name.
+
+When the user edits the name:
+
+- Show the editable name field.
+- Preserve all photos.
+- Preserve photo order.
+- Preserve the active background.
+- Update the dropdown option.
+- Update the visible selected dropdown label.
+- Do not create a second theme.
+- Reject a blank name.
+- Prevent accidental replacement of another existing theme.
+
+Example:
+
+Before:
+
+`Theme Test`
+
+Renamed collection:
+
+`Sierra`
+
+After:
+
+- Dropdown option becomes `Theme Sierra`
+- Selected dropdown label becomes `Theme Sierra`
+- The same photos remain in the theme
+
+# PART 13 — DELETE THEME CONTROL
+
+Every custom theme must show:
+
+`Delete Theme`
+
+Place Delete Theme at the:
+
+`bottom-left below the ten photo thumbnails`
+
+Do not place Delete Theme above the photos.
+
+Do not show Delete Theme for the built-in Landscapes theme.
+
+Require confirmation before deletion.
+
+The confirmation must clearly state that:
+
+- The custom theme will be removed.
+- Its saved photo references will be removed from the custom theme library.
+- This action does not delete built-in Landscapes.
+
+Cancel:
+
+- Leaves the theme unchanged.
+- Leaves all photos unchanged.
+- Leaves the selected background unchanged.
+
+Confirm:
+
+- Deletes only the selected custom theme.
+- Removes it from the dropdown.
+- Removes its photos from the custom theme library.
+- Does not delete another custom theme.
+- Does not affect Landscapes.
+- Reduces the custom-theme count by one.
+- Makes Add Theme available again if the user was previously at the 10-theme limit.
+
+If the deleted theme is currently selected:
+
+- Switch immediately and safely to Landscapes.
+- Change the dropdown label to `Landscapes` or the documented default `Themes` state.
+- Display the Landscape thumbnails.
+- Do not leave a broken theme selection.
+
+# PART 14 — MIGRATE THE CURRENT PROMPT 016 DATA
+
+Prompt 016 may already have created custom collections using the incorrect separate Add Collection area.
+
+Do not delete those themes.
+
+Inspect the current stored collection data.
+
+Migrate existing Prompt 016 custom collections into the corrected Theme dropdown.
+
+For example, if a collection named:
+
+`Test Themes`
+
+already exists:
+
+- Add it to the corrected dropdown as:
+  `Theme Test Themes`
+- Preserve its photos, if any.
+- Preserve its name.
+- Do not duplicate it.
+- Remove the old separate display beneath the Landscape thumbnails.
+
+Migration must be safe and repeatable.
+
+Running migration more than once must not duplicate themes or photos.
+
+Older existing custom photos without a collection must still be preserved in a safe custom theme such as:
+
+`My Photos`
+
+Do not clear existing custom-photo storage.
+
+# PART 15 — STORAGE RULES
+
+Use the existing custom collection/theme storage from Prompt 016 when practical.
+
+Do not create a second competing theme library.
+
+Store:
+
+- Custom theme ID
+- Collection name
+- Photo references
+- Photo order
+- Created or updated information only if the current design uses it
+
+The selected UI theme must reference a stable theme ID when practical, not only the editable theme name.
+
+Renaming a theme must not break its photo associations.
+
+Keep the active checklist background separate from the custom theme library.
+
+Do not copy all custom themes and photos into every saved Locker file.
+
+Do not add cloud storage.
+
+# PART 16 — REFRESH AND PERSISTENCE
+
+Test and preserve:
+
+- Custom theme names after refresh
+- Dropdown entries after refresh
+- Uploaded photos after refresh
+- Photo order after refresh
+- Photo count after refresh
+- Selected theme after refresh where appropriate
+- Active background after refresh
+- Renamed theme after refresh
+- Deleted theme remains deleted after refresh
+
+The new Add Theme form should not create an empty saved theme if the user refreshes before saving the name.
+
+# PART 17 — RESPONSIVE LAYOUT
+
+Desktop:
+
+- The Theme dropdown fits cleanly.
+- Only the selected theme panel is visible.
+- Ten thumbnail positions use the available width.
+- Collection name and edit controls do not overlap.
+- Delete Theme remains bottom-left below the thumbnail grid.
+
+Phone:
+
+- Theme dropdown remains tappable.
+- Ten photo positions stack into an appropriate number of columns.
+- Add Photo remains usable.
+- Remove Photo remains touch accessible.
+- Edit Name remains usable.
+- Delete Theme remains visible below the photo grid.
+- No horizontal scrolling appears.
+
+Do not change the overall checklist width.
+
+# PART 18 — AUTOMATED TESTS
+
+Add focused tests for this corrected workflow.
+
+Test at minimum:
+
+1. Dropdown includes Landscapes.
+2. Dropdown includes Add Theme.
+3. Add Theme is the final dropdown option.
+4. Selecting Add Theme creates an unsaved editing panel.
+5. The panel contains ten empty photo slots.
+6. Saving a valid theme name adds it to the dropdown.
+7. Selected custom label uses `Theme [Collection Name]`.
+8. Blank names are rejected.
+9. Duplicate names do not overwrite another theme.
+10. Only the selected theme’s thumbnails are displayed.
+11. Landscapes does not display Delete Theme.
+12. Custom themes display Delete Theme below the grid.
+13. Maximum of ten custom themes is enforced.
+14. Landscapes does not count toward the limit.
+15. Deleting one theme makes Add Theme available again.
+16. Each theme supports a maximum of ten photos.
+17. Adding a photo replaces one empty photo slot.
+18. Removing a photo restores an Add Photo slot.
+19. Drag-and-drop prevents normal browser navigation.
+20. Dropped photos are stored in the selected theme.
+21. Existing Prompt 016 collections migrate into the dropdown.
+22. Migration is idempotent and does not duplicate collections.
+23. Renaming preserves photos.
+24. Deleting the selected theme falls back to Landscapes.
+25. Refresh restores themes and photos.
+26. Existing background selection behavior remains working.
+27. Prompt 015 per-file Weight Distribution palettes remain unaffected.
+
+Extend an appropriate current test suite or create one focused new suite.
+
+If a new suite is added:
+
+- Update `TESTING.md`
+- Update the test-suite count
+- Document the new suite
+- Include it in the existing `pnpm test:importer` command
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Exact suites
+- Suite count
+- Execution order
+- Passed
+- Failed
+- Exit code
+- Warnings
+- Errors
+
+# PART 19 — REQUIRED RENDERED TESTS
+
+Use the signed-in TrailWeigh preview.
+
+Do not install Playwright.
+
+## Dropdown test
+
+1. Open Background Edit.
+2. Open the Theme dropdown.
+3. Confirm it contains:
+   - Landscapes
+   - Existing custom themes
+   - Add Theme
+4. Confirm Add Theme is the final option.
+
+## Add Theme test
+
+1. Select Add Theme.
+2. Confirm Landscape images disappear.
+3. Confirm the collection-name field appears above the grid.
+4. Confirm ten Add Photo thumbnails appear.
+5. Enter `Test`.
+6. Save it.
+7. Confirm the name stays above the thumbnails.
+8. Confirm the dropdown now includes `Theme Test`.
+9. Confirm the dropdown label reads `Theme Test`.
+
+## Photo test
+
+1. Click one Add Photo thumbnail.
+2. Select a test image.
+3. Confirm it appears as a thumbnail.
+4. Confirm the browser does not navigate away.
+5. Drag a second image onto another Add Photo thumbnail.
+6. Confirm Safari does not open the image full-screen.
+7. Confirm the second thumbnail appears.
+8. Refresh.
+9. Confirm both photos remain.
+
+## Theme switching test
+
+1. Select Landscapes.
+2. Confirm only Landscape images appear.
+3. Select Theme Test.
+4. Confirm only Theme Test photos and remaining Add Photo slots appear.
+
+## Rename test
+
+1. Rename Test to Sierra.
+2. Confirm photos remain.
+3. Confirm dropdown changes to `Theme Sierra`.
+4. Refresh and confirm it remains renamed.
+
+## Delete photo test
+
+- Cancel once and confirm the photo remains.
+- Confirm once and verify only that photo is removed.
+
+## Delete theme test
+
+1. Confirm Delete Theme is at the bottom-left below the ten thumbnails.
+2. Cancel once and confirm the theme remains.
+3. Confirm once.
+4. Confirm the theme disappears from the dropdown.
+5. Confirm TrailWeigh switches to Landscapes.
+
+## Limit tests
+
+- Verify a theme cannot exceed ten photos.
+- Verify a user cannot create more than ten custom themes.
+- Verify Landscapes does not count toward the ten-theme limit.
+
+Capture screenshots showing:
+
+- Open dropdown
+- Add Theme option
+- Empty new-theme panel with ten Add Photo thumbnails
+- Saved custom theme
+- Uploaded photos
+- Theme switching
+- Delete Theme at bottom-left
+- Phone-width layout
+
+User visual testing remains required.
+
+# PART 20 — REPORTING
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_016A_REPORT.md`
+
+The report must include:
+
+- Prompt ID and title
+- Starting state
+- Confirmed Prompt 016 defects
+- Files inspected
+- Files changed
+- Existing data migration
+- Final dropdown behavior
+- Final theme-panel behavior
+- Ten-theme limit
+- Ten-photo-per-theme limit
+- Click-upload result
+- Drag-and-drop result
+- Safari navigation-prevention implementation
+- Rename result
+- Remove-photo result
+- Delete-theme result
+- Refresh result
+- Automated tests
+- Rendered tests
+- Screenshot names
+- Every requirement marked PASS, FAIL, PARTIAL, or NOT TESTED
+- Anything still requiring user testing
+
+Create a backup before appending:
+
+`workflow-reports/PRE_016A_MASTER_BACKUP.md`
+
+Append the complete report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Do not replace or truncate the master.
+
+Update:
+
+- Prompt Number Index
+- Current Background state
+- Latest-entry field
+- Final master trailer
+
+The final master trailer must identify:
+
+`Prompt 016A`
+
+# PART 21 — DOWNLOAD ZIP
+
+Create:
+
+`trailweigh-016A-report.zip`
+
+Include only:
+
+- `workflow-reports/PROMPT_016A_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+Do not include:
+
+- User-uploaded photos
+- Locker data
+- Backups
+- Source code
+- Dependencies
+- Credentials
+- Other ZIP files
+
+# FINAL VERIFICATION
+
+Before completing:
+
+1. Confirm the separate Add Collection control is removed.
+2. Confirm Theme creation occurs through the dropdown.
+3. Confirm Add Theme is the final dropdown option.
+4. Confirm only the selected theme panel is shown.
+5. Confirm Add Theme displays a name field above ten Add Photo thumbnails.
+6. Confirm a saved collection appears in the dropdown.
+7. Confirm selected custom label uses `Theme [Collection Name]`.
+8. Confirm a maximum of ten custom themes.
+9. Confirm a maximum of ten photos per custom theme.
+10. Confirm click-upload works.
+11. Confirm drag-and-drop works.
+12. Confirm Safari does not navigate to a dropped image.
+13. Confirm uploaded photos persist after refresh.
+14. Confirm existing Prompt 016 collections are preserved.
+15. Confirm rename preserves photos.
+16. Confirm Remove Photo works.
+17. Confirm Delete Theme is bottom-left below the thumbnails.
+18. Confirm Landscapes has no Delete Theme control.
+19. Confirm deleting the selected theme falls back to Landscapes.
+20. Confirm QTY remains `translate-x-3`.
+21. Confirm desktop grid remains `lg:grid-cols-[1fr_365px]`.
+22. Confirm Prompt 015 palette behavior remains working.
+23. Confirm no Share Link or importer behavior changed.
+24. Confirm the actual automated-test result.
+25. Confirm `PROMPT_016A_REPORT.md` exists.
+26. Confirm `trailweigh-016A-report.zip` exists.
+27. Confirm Prompt 016A appears exactly once in the master.
+28. Confirm the master grew rather than shrank.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_016A_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-016A-report.zip`
+- Report exact file paths, sizes, and line counts
+- Report the complete automated-test result
+- State which rendered tests passed
+- State exactly what still requires user testing
+- Confirm no unrelated TrailWeigh feature was modified
+- Do not require the user to copy the workflow manually

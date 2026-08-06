@@ -1,7 +1,7 @@
 /**
  * bgCollections.ts
  *
- * Pure data-layer functions for personal photo collections.
+ * Pure data-layer functions for personal photo collections / custom themes.
  * No browser APIs, no React — fully testable with Node.js built-in runner.
  *
  * Storage key: 'trailweigh:photoCollections' in localStorage.
@@ -28,8 +28,11 @@ export interface PhotoCollection {
 /** localStorage key for the global personal photo library. */
 export const PHOTO_COLLECTIONS_KEY = 'trailweigh:photoCollections';
 
-/** Maximum photos allowed per collection. */
+/** Maximum photos allowed per collection / custom theme. */
 export const MAX_PHOTOS_PER_COLLECTION = 10;
+
+/** Maximum number of custom themes (built-in Landscapes does NOT count). */
+export const MAX_COLLECTIONS = 10;
 
 // ── Pure functions ────────────────────────────────────────────────────────────
 
@@ -73,11 +76,14 @@ export function runMigration(
 
 /**
  * Create a named collection and append it to the end of the list.
- * Returns null when the name is blank after trimming.
  *
- * Duplicate names are NOT blocked — the spec says "distinguish them safely
- * rather than overwriting".  The caller may warn the user but must still
- * create the collection.  Collections are distinguished by their unique ID.
+ * Returns null when:
+ *   - the name is blank after trimming, OR
+ *   - another collection already has exactly the same trimmed name
+ *     (Prompt 016A: duplicate names are rejected, not silently allowed).
+ *
+ * Collections are distinguished by their unique ID; renaming is handled
+ * separately by renameCollection.
  */
 export function createCollection(
   name: string,
@@ -86,6 +92,8 @@ export function createCollection(
 ): { result: PhotoCollection[]; newId: string } | null {
   const trimmed = name.trim();
   if (!trimmed) return null;
+  // Prompt 016A: reject if a collection with the same name already exists
+  if (collections.some(c => c.name === trimmed)) return null;
   const id = newId ?? crypto.randomUUID();
   const entry: PhotoCollection = { id, name: trimmed, photos: [] };
   return { result: [...collections, entry], newId: id };
