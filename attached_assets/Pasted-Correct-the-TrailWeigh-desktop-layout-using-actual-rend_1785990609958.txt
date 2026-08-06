@@ -1,0 +1,293 @@
+Correct the TrailWeigh desktop layout using actual rendered pixel measurements.
+
+Do not estimate visually and do not declare the task complete unless the required before-and-after measurements pass.
+
+## Current rendered problems
+
+1. The category panels still need to be approximately ½ inch wider.
+2. The visible space between QTY and TOTAL is still too large.
+3. MOVE, WEIGHT, and QTY have not visibly shifted right together.
+4. DESCRIPTION needs more usable width.
+
+The earlier 9-column / 3-column page layout was too wide and was correctly undone.
+
+Do not restore that change.
+
+## Part 1 — Record the current measurements before editing
+
+Use the current desktop test viewport and keep the viewport width unchanged throughout the comparison.
+
+Use `getBoundingClientRect()` or an equivalent browser measurement method to record:
+
+- Category panel width
+- DESCRIPTION cell width
+- Left and right edges of the DESCRIPTION cell
+- Center position of the MOVE heading
+- Center position of the WEIGHT heading
+- Center position of the QTY heading
+- Center position of the TOTAL heading
+- Right edge of the QTY heading
+- Left edge of the TOTAL heading
+- Center positions of the corresponding Move, Weight, QTY, and Total row controls or values
+- Right edge of a visible QTY value
+- Left edge of the corresponding TOTAL value
+
+Use the same category and same populated row before and after.
+
+Record the measurements in the final report.
+
+Do not rely only on Tailwind class names or calculated grid-column totals.
+
+## Part 2 — Widen the category area by approximately ½ inch
+
+Increase the actual rendered category-panel width by:
+
+- Target: 48 px
+- Acceptable range: 44–52 px
+
+Do not change the desktop layout from 8/12 to 9/12.
+
+Do not make the category panel approximately 100–110 px wider again.
+
+Inspect the desktop layout in:
+
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+Use a controlled desktop-only adjustment, such as a custom grid-template width, calculated column width, or equivalent precise layout rule.
+
+The Pack Summary area may become approximately 48 px narrower, but it must remain readable and usable.
+
+Requirements:
+
+- Mobile layout must remain unchanged.
+- No horizontal page overflow.
+- Pack Summary text and controls must not clip.
+- Category panels must become measurably 44–52 px wider.
+
+## Part 3 — Measure and halve the QTY-to-TOTAL gap
+
+Measure the current visible gap:
+
+`G = left edge of TOTAL content − right edge of QTY content`
+
+Measure it in both:
+
+- The heading row
+- A populated item row
+
+The new visible gap must be approximately:
+
+`G ÷ 2`
+
+Acceptable result:
+
+- 45% to 55% of the original visible gap
+
+Do not claim success merely because a CSS `gap` value changed.
+
+The visible heading-to-heading and value-to-value spacing must both be reduced.
+
+## Part 4 — Shift MOVE, WEIGHT, and QTY right together
+
+Keep TOTAL fixed.
+
+Shift these complete columns right by the same measured amount:
+
+- MOVE
+- WEIGHT
+- QTY
+
+Move each column’s heading, control, and values together.
+
+The horizontal movement of MOVE, WEIGHT, and QTY must match within 2 px.
+
+For example, if MOVE shifts right by 24 px:
+
+- WEIGHT must shift right approximately 24 px.
+- QTY must shift right approximately 24 px.
+- TOTAL must remain in its original position within 2 px.
+
+Do not move only:
+
+- The headings
+- The QTY text
+- The dropdown arrow
+- Individual row values
+
+Do not use separate arbitrary margins or transforms for each column.
+
+## Required layout method
+
+Use one shared right-anchored layout definition for both:
+
+- `GearCategory.tsx`
+- `GearRow.tsx`
+
+Inspect:
+
+- `artifacts/pack-checklist/src/components/gearGrid.ts`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+
+A shared nested grid or shared nested flex/grid group is acceptable.
+
+The right-side group should contain:
+
+1. MOVE
+2. WEIGHT
+3. QTY
+4. TOTAL
+5. Delete control
+
+Requirements:
+
+- The right edge remains anchored.
+- TOTAL remains fixed.
+- MOVE, WEIGHT, and QTY shift right together.
+- The visible QTY-to-TOTAL gap is reduced by half.
+- QTY retains a practical usable width.
+- DESCRIPTION receives the recovered width.
+
+Do not solve this by:
+
+- Enlarging an empty spacer before MOVE
+- Crushing QTY to 30 px
+- Right-aligning only the QTY number while leaving the columns unmoved
+- Using different geometry for headers and rows
+- Changing global page padding
+- Restoring the 9/12 and 3/12 page split
+
+## Part 5 — DESCRIPTION must measurably widen
+
+DESCRIPTION must gain real rendered width from both improvements:
+
+1. Approximately 48 px from widening the category panel
+2. Additional width recovered by shifting the right-side columns right
+
+Measure DESCRIPTION before and after.
+
+The final DESCRIPTION width must increase by at least:
+
+`44 px + the measured internal column shift − 4 px tolerance`
+
+Use a long description such as:
+
+`Zpacks Nero Classic Backpack`
+
+Confirm it displays more usable text than before.
+
+Do not report that DESCRIPTION is wider based only on appearance.
+
+## Preserve approved styling
+
+Keep:
+
+- MOVE heading aligned with the dropdown arrows
+- WEIGHT heading aligned with weight values
+- QTY heading aligned with the QTY column
+- TOTAL heading aligned with total values
+- Normal usable QTY control width
+- Delete control fully visible
+
+WEIGHT and QTY numeric text must continue using TrailWeigh’s normal theme-aware foreground color:
+
+- Dark foreground in Light mode
+- Light foreground in Dark mode
+- System mode follows the operating-system appearance
+
+Do not hard-code black or white.
+
+## Preserve all working behavior
+
+Do not change:
+
+- `moveItem`
+- Destination category options
+- Item IDs or item data
+- Weight values
+- QTY values
+- Total calculations
+- Undo
+- Redo
+- Save
+- Save As
+- Locker
+- Imports
+- Category aliases
+- Backgrounds
+- Preview
+- Share
+- Category order
+
+## Required desktop acceptance measurements
+
+Do not declare completion unless all of these pass:
+
+1. Category panel width increased by 44–52 px.
+2. Pack Summary remains readable.
+3. TOTAL heading center changed by no more than 2 px.
+4. TOTAL row-value center changed by no more than 2 px.
+5. MOVE, WEIGHT, and QTY shifted right.
+6. Their three shift amounts match within 2 px.
+7. The visible QTY-to-TOTAL heading gap is 45%–55% of its previous value.
+8. The visible QTY-to-TOTAL row-value gap is 45%–55% of its previous value.
+9. DESCRIPTION gained real measured width.
+10. QTY control is not clipped or cramped.
+11. Delete remains visible.
+12. No horizontal overflow exists.
+
+## Mobile test
+
+At a phone-sized viewport confirm:
+
+- The page does not overflow horizontally.
+- MOVE remains tappable.
+- WEIGHT, QTY, and TOTAL do not overlap.
+- Category panels fit the screen.
+- The desktop-only 48 px width adjustment does not affect mobile layout.
+
+## Functional test
+
+Move one item to another category.
+
+Then confirm:
+
+1. Move works.
+2. Undo restores it.
+3. Redo moves it again.
+4. Weight, QTY, and Total values remain unchanged.
+
+Run:
+
+`pnpm test:importer`
+
+## Final report
+
+Provide a before-and-after measurement table containing:
+
+- Desktop viewport width
+- Category-panel width
+- DESCRIPTION width
+- MOVE center position
+- WEIGHT center position
+- QTY center position
+- TOTAL center position
+- Heading QTY-to-TOTAL visible gap
+- Row-value QTY-to-TOTAL visible gap
+
+Also report:
+
+- Files changed
+- Exact category-width adjustment used
+- Exact shared right-group structure
+- Actual shift amount for MOVE
+- Actual shift amount for WEIGHT
+- Actual shift amount for QTY
+- Actual movement of TOTAL
+- Actual DESCRIPTION width gained
+- Desktop screenshot result
+- Mobile screenshot result
+- Light- and Dark-mode text-color result
+- Move, Undo, and Redo result
+- Automated-test result
+- Confirmation that no temporary measurement code or logs remain

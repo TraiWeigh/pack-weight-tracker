@@ -17,8 +17,8 @@
  *  6 px spacer                                                    ← only gap reduced
  *  Sub-row B  (gap-3 = 12 px):               TOTAL · DELETE
  *
- * Previous QTY-to-TOTAL gap: 12 px (gap-3 in the old flat grid)
- * New QTY-to-TOTAL gap:       6 px  (w-1.5 explicit spacer)
+ * Previous QTY-to-TOTAL gap: 6 px  (w-1.5 explicit spacer)
+ * New QTY-to-TOTAL gap:      3 px  (w-[3px] explicit spacer — halved)
  *
  * Use every constant below in both GearCategory (header) and GearRow (row) —
  * never hard-code sizes in the individual files.

@@ -148,8 +148,8 @@ export const GearRow = memo(function GearRow({
           </div>
         </div>
 
-        {/* 6 px gap between QTY and TOTAL (half the standard gap-3 = 12 px) */}
-        <div className="w-1.5 shrink-0" />
+        {/* 3 px gap between QTY and TOTAL (half of the previous 6 px) */}
+        <div className="w-[3px] shrink-0" />
 
         {/* Sub-row B: TOTAL · DELETE */}
         <div className="flex items-center gap-3">
