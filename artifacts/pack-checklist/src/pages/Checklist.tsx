@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
+import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib/bgPhotoStore';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
 import { BackgroundShowcase } from '../components/BackgroundShowcase';
 
@@ -172,14 +173,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     try {
       const s = localStorage.getItem(BG_STORAGE_KEY);
       if (!s) return null;
-      const bg = JSON.parse(s) as Background;
-      if (bg.type === 'custom') {
-        if (!bg.dataUrl?.startsWith('data:image/') || bg.dataUrl.length > 12_000_000) {
+      const parsed = JSON.parse(s) as Background & { dataUrl?: string };
+      if (parsed.type === 'custom') {
+        // Old format had { type:'custom', dataUrl } — migration runs in BackgroundPicker.
+        if ('dataUrl' in parsed || !parsed.photoId) {
           localStorage.removeItem(BG_STORAGE_KEY);
           return null;
         }
       }
-      return bg;
+      return parsed as Background;
     } catch {
       localStorage.removeItem(BG_STORAGE_KEY);
       return null;
@@ -343,10 +345,53 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     syncBg({ background, bgSize });
   }, [background, bgSize, syncBg]);
 
+  // ── Custom background object URL (resolved async from IndexedDB) ────────────
+  const [customBgObjectUrl, setCustomBgObjectUrl] = useState<string | null>(null);
+  const customBgObjectUrlRef = useRef<string | null>(null);
+
+  const activePhotoId =
+    background?.type === 'custom'
+      ? (background as { type: 'custom'; photoId: string }).photoId
+      : null;
+
+  useEffect(() => {
+    if (!activePhotoId) {
+      if (customBgObjectUrlRef.current) {
+        revokePhotoObjectUrl(customBgObjectUrlRef.current);
+        customBgObjectUrlRef.current = null;
+      }
+      setCustomBgObjectUrl(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const prev = customBgObjectUrlRef.current;
+      customBgObjectUrlRef.current = null;
+      if (prev) revokePhotoObjectUrl(prev);
+      const blob = await getPhotoBlob(activePhotoId);
+      if (!cancelled) {
+        if (blob) {
+          const url = createPhotoObjectUrl(blob);
+          customBgObjectUrlRef.current = url;
+          setCustomBgObjectUrl(url);
+        } else {
+          setCustomBgObjectUrl(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (customBgObjectUrlRef.current) {
+        revokePhotoObjectUrl(customBgObjectUrlRef.current);
+        customBgObjectUrlRef.current = null;
+      }
+    };
+  }, [activePhotoId]);
+
   const bgImageUrl = background
     ? background.type === 'preset'
       ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
-      : background.dataUrl
+      : customBgObjectUrl
     : null;
 
   const [showShareMenu, setShowShareMenu] = useState(false);

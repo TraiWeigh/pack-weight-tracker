@@ -1,40 +1,51 @@
 /**
- * BackgroundPicker.tsx — Prompt 016A
+ * BackgroundPicker.tsx  —  Prompt 016B
  *
- * Unified Background Edit panel with a single Theme dropdown that controls
- * which panel is displayed (Landscapes, custom theme, or new-theme form).
- * All photo-collection state lives here so the dropdown can reflect it.
+ * Unified Background Edit panel.
  *
- * Key changes from Prompt 016:
- *  - Custom dropdown replaces the separate static label + native <select>
- *  - Landscape thumbnails and custom themes are mutually exclusive panels
- *  - Add Theme is the final dropdown option; creates via inline form
- *  - Exactly 10 fixed photo slots always shown for custom themes
- *  - Drag-and-drop with global Safari navigation prevention
- *  - Delete Theme at bottom-left below the ten photo slots
- *  - Max 10 custom themes enforced
- *  - PhotoCollections component no longer imported (logic inlined here)
+ * Key changes from Prompt 016A:
+ *  - Photo blobs stored in IndexedDB (bgPhotoStore.ts); no base64 in localStorage.
+ *  - Background references a stable photoId, not a data URL.
+ *  - Dropdown trigger button now has explicit text-foreground colour (blank-label fix).
+ *  - Save-first-then-show: thumbnail appears only after IndexedDB write succeeds.
+ *  - Storage failures produce TrailWeigh error messages, never the Vite overlay.
+ *  - Object URLs for thumbnails are created on demand and revoked when unused.
+ *  - Migration from old localStorage format runs on first panel open.
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { ImageIcon, X, Check, ChevronDown, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ImageIcon, X, Check, ChevronDown, Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import {
   PHOTO_COLLECTIONS_KEY,
   MAX_PHOTOS_PER_COLLECTION,
   MAX_COLLECTIONS,
-  runMigration,
   createCollection,
   renameCollection,
   deleteCollection,
   addPhotoToCollection,
   deletePhotoFromCollection,
 } from '../lib/bgCollections';
-import type { PhotoCollection, CollectionPhoto } from '../lib/bgCollections';
+import type { PhotoCollection } from '../lib/bgCollections';
+import {
+  validateImageFile,
+  compressPhotoFile,
+  storePhoto,
+  getPhotoBlob,
+  deletePhoto,
+  deletePhotos,
+  createPhotoObjectUrl,
+  revokePhotoObjectUrl,
+  migrateCollectionsToIndexedDb,
+  migrateLegacyActiveBackground,
+  isMigrationDone,
+  markMigrationDone,
+  dataUrlToBlob,
+} from '../lib/bgPhotoStore';
 
 // ── Types & constants ──────────────────────────────────────────────────────────
 
 export type Background =
   | { type: 'preset'; id: string }
-  | { type: 'custom'; dataUrl: string };
+  | { type: 'custom'; photoId: string };
 
 export const BG_STORAGE_KEY = 'trailweigh:background';
 
@@ -59,57 +70,37 @@ function getThumbUrl(photoId: string) {
   return `https://images.unsplash.com/photo-${photoId}?w=400&h=260&fit=crop&q=70`;
 }
 
-// ── Image helpers ─────────────────────────────────────────────────────────────
+// ── Storage helpers ───────────────────────────────────────────────────────────
 
-const SAFE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-const UNSAFE_EXT = /\.(tiff?|raw|cr2|cr3|nef|arw|dng|orf|rw2|pef|heic|heif|bmp|svg)$/i;
-
-function compressImage(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const maxW = 1920;
-        const scale = img.width > maxW ? maxW / img.width : 1;
-        const canvas = document.createElement('canvas');
-        canvas.width  = Math.round(img.width  * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx = canvas.getContext('2d')!;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.82));
-      };
-      img.onerror = reject;
-      img.src = e.target!.result as string;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// ── Collection storage ────────────────────────────────────────────────────────
-
+/** Load collections from localStorage, handling the old and new formats. */
 function loadCollections(): PhotoCollection[] {
   try {
     const raw = localStorage.getItem(PHOTO_COLLECTIONS_KEY);
     if (raw !== null) {
-      const cols = JSON.parse(raw) as PhotoCollection[];
-      return Array.isArray(cols) ? cols : [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
     }
-    // First run: migrate any legacy single custom-photo slot into "My Photos"
-    let cols: PhotoCollection[] = [];
-    const bgRaw = localStorage.getItem(BG_STORAGE_KEY);
-    if (bgRaw) {
-      try {
-        const bg = JSON.parse(bgRaw) as Background;
-        if (bg.type === 'custom' && bg.dataUrl) {
-          cols = runMigration(cols, bg.dataUrl);
-        }
-      } catch { /* ignore corrupt bg data */ }
-    }
-    localStorage.setItem(PHOTO_COLLECTIONS_KEY, JSON.stringify(cols));
-    return cols;
+    return [];
   } catch { return []; }
+}
+
+function saveCollections(cols: PhotoCollection[]): void {
+  try { localStorage.setItem(PHOTO_COLLECTIONS_KEY, JSON.stringify(cols)); } catch { /* ignore */ }
+}
+
+/** Load the active background reference from localStorage. */
+export function loadStoredBackground(): Background | null {
+  try {
+    const raw = localStorage.getItem(BG_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Background & { dataUrl?: string };
+    // Handle old format: { type: 'custom', dataUrl }
+    if (parsed.type === 'custom' && 'dataUrl' in parsed) {
+      // Old format detected — migration will be handled asynchronously
+      return null;
+    }
+    return parsed;
+  } catch { return null; }
 }
 
 // ── Button ────────────────────────────────────────────────────────────────────
@@ -143,7 +134,6 @@ interface BackgroundPickerPanelProps {
   onBgFadeChange: (v: number) => void;
   bgTone: 'light' | 'dark';
   onBgToneChange: (t: 'light' | 'dark') => void;
-  /** 'cover' = Fill Screen (default); 'contain' = Fit Image */
   bgSize: 'cover' | 'contain';
   onBgSizeChange: (v: 'cover' | 'contain') => void;
   containerRef?: React.RefObject<HTMLDivElement>;
@@ -166,46 +156,51 @@ export function BackgroundPickerPanel({
   onShowcase,
   isShowcaseBlocked = false,
 }: BackgroundPickerPanelProps) {
-  const panelRef    = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const panelRef        = useRef<HTMLDivElement>(null);
+  const dropdownRef     = useRef<HTMLDivElement>(null);
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const newNameInputRef = useRef<HTMLInputElement>(null);
   const renameInputRef  = useRef<HTMLInputElement>(null);
 
-  // ── Theme selection state ──────────────────────────────────────────────────
+  // ── Theme selection ──────────────────────────────────────────────────────
   const [activeThemeId, setActiveThemeId] = useState<string>('landscapes');
   const [dropdownOpen,  setDropdownOpen]  = useState(false);
 
-  // ── Collections state ──────────────────────────────────────────────────────
+  // ── Collections ──────────────────────────────────────────────────────────
   const [collections, setCollections] = useState<PhotoCollection[]>(loadCollections);
 
-  // ── Add-theme form state ───────────────────────────────────────────────────
+  // ── Add-theme form ───────────────────────────────────────────────────────
   const [isAddingTheme, setIsAddingTheme] = useState(false);
   const [prevThemeId,   setPrevThemeId]   = useState<string>('landscapes');
   const [newThemeName,  setNewThemeName]  = useState('');
   const [newThemeError, setNewThemeError] = useState<string | null>(null);
 
-  // ── Upload state ───────────────────────────────────────────────────────────
+  // ── Upload ───────────────────────────────────────────────────────────────
   const [uploadTargetId, setUploadTargetId] = useState<string | null>(null);
-  const [uploadError,    setUploadError]    = useState<string | null>(null);
+  const [savingSlotKey,  setSavingSlotKey]  = useState<string | null>(null);
+  const [storageError,   setStorageError]   = useState<string | null>(null);
 
-  // ── Photo delete confirmation ──────────────────────────────────────────────
+  // ── Photo deletion confirmation ──────────────────────────────────────────
   const [confirmDeletePhoto, setConfirmDeletePhoto] = useState<{ cid: string; pid: string } | null>(null);
 
-  // ── Theme delete confirmation ──────────────────────────────────────────────
+  // ── Theme deletion confirmation ──────────────────────────────────────────
   const [confirmDeleteTheme, setConfirmDeleteTheme] = useState<string | null>(null);
 
-  // ── Rename state ───────────────────────────────────────────────────────────
-  const [renamingId,   setRenamingId]   = useState<string | null>(null);
-  const [renameValue,  setRenameValue]  = useState('');
-  const [renameError,  setRenameError]  = useState<string | null>(null);
+  // ── Rename ───────────────────────────────────────────────────────────────
+  const [renamingId,  setRenamingId]  = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameError, setRenameError] = useState<string | null>(null);
 
-  // ── Drag-over state ────────────────────────────────────────────────────────
+  // ── Drag-over ────────────────────────────────────────────────────────────
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
-  // ── Derived ────────────────────────────────────────────────────────────────
-  const canAddTheme = collections.length < MAX_COLLECTIONS;
-  const activeCollection = collections.find(c => c.id === activeThemeId) ?? null;
+  // ── Thumbnail object URLs (photoId → objectUrl) ──────────────────────────
+  const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
+  const thumbnailUrlsRef = useRef<Record<string, string>>({});
+
+  // ── Derived ──────────────────────────────────────────────────────────────
+  const canAddTheme       = collections.length < MAX_COLLECTIONS;
+  const activeCollection  = collections.find(c => c.id === activeThemeId) ?? null;
 
   const dropdownLabel = (() => {
     if (isAddingTheme) return 'Add Theme';
@@ -215,7 +210,107 @@ export function BackgroundPickerPanel({
     return 'Themes';
   })();
 
-  // ── Global Safari drag prevention (active only while panel is open) ────────
+  // ── Migration: run once on first open ────────────────────────────────────
+  const migrationRanRef = useRef(false);
+  useEffect(() => {
+    if (!open || migrationRanRef.current) return;
+    if (isMigrationDone()) { migrationRanRef.current = true; return; }
+    migrationRanRef.current = true;
+
+    (async () => {
+      const raw = loadCollections();
+      // Check for old-format photos (with dataUrl field)
+      const hasOldPhotos = raw.some(col =>
+        col.photos.some((p: any) => typeof p.dataUrl === 'string'),
+      );
+
+      if (hasOldPhotos) {
+        const { collections: migrated } = await migrateCollectionsToIndexedDb(
+          raw as any,
+        );
+        setCollections(migrated);
+        saveCollections(migrated);
+      }
+
+      // Migrate old active-background { type:'custom', dataUrl }
+      try {
+        const rawBg = localStorage.getItem(BG_STORAGE_KEY);
+        if (rawBg) {
+          const parsed = JSON.parse(rawBg) as { type: string; dataUrl?: string; photoId?: string };
+          if (parsed.type === 'custom' && parsed.dataUrl && !parsed.photoId) {
+            const newPhotoId = crypto.randomUUID();
+            const ok = await migrateLegacyActiveBackground(parsed.dataUrl, newPhotoId);
+            if (ok) {
+              const newBg: Background = { type: 'custom', photoId: newPhotoId };
+              localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(newBg));
+              // Also add to My Photos if not already present
+              // (handled by runMigration in bgCollections — data-layer only)
+              onBackgroundChange(newBg);
+            } else {
+              localStorage.removeItem(BG_STORAGE_KEY);
+            }
+          }
+        }
+      } catch { /* ignore — old bg format, skip gracefully */ }
+
+      markMigrationDone();
+    })();
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Thumbnail loading: load for active theme ─────────────────────────────
+  useEffect(() => {
+    // Revoke all existing thumbnail object URLs first
+    Object.values(thumbnailUrlsRef.current).forEach(revokePhotoObjectUrl);
+    thumbnailUrlsRef.current = {};
+
+    if (!open || activeThemeId === 'landscapes' || isAddingTheme) {
+      setThumbnailUrls({});
+      return;
+    }
+
+    const col = collections.find(c => c.id === activeThemeId);
+    if (!col || !col.photos.length) {
+      setThumbnailUrls({});
+      return;
+    }
+
+    let cancelled = false;
+    const photoIds = col.photos.map(p => p.id);
+
+    (async () => {
+      const newUrls: Record<string, string> = {};
+      for (const id of photoIds) {
+        if (cancelled) {
+          Object.values(newUrls).forEach(revokePhotoObjectUrl);
+          return;
+        }
+        try {
+          const blob = await getPhotoBlob(id);
+          if (blob && !cancelled) {
+            newUrls[id] = createPhotoObjectUrl(blob);
+          }
+        } catch { /* skip — blob unavailable */ }
+      }
+      if (!cancelled) {
+        thumbnailUrlsRef.current = newUrls;
+        setThumbnailUrls({ ...newUrls });
+      } else {
+        Object.values(newUrls).forEach(revokePhotoObjectUrl);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [open, activeThemeId, collections]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup thumbnails when panel unmounts
+  useEffect(() => {
+    return () => {
+      Object.values(thumbnailUrlsRef.current).forEach(revokePhotoObjectUrl);
+      thumbnailUrlsRef.current = {};
+    };
+  }, []);
+
+  // ── Global Safari drag prevention ────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
     const preventNav = (e: DragEvent) => {
@@ -229,7 +324,7 @@ export function BackgroundPickerPanel({
     };
   }, [open]);
 
-  // ── Close panel on outside click ───────────────────────────────────────────
+  // ── Close panel on outside click ─────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -240,7 +335,7 @@ export function BackgroundPickerPanel({
     return () => document.removeEventListener('mousedown', handler);
   }, [open, onClose, containerRef]);
 
-  // ── Close dropdown on outside click ───────────────────────────────────────
+  // ── Close dropdown on outside click ──────────────────────────────────────
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = (e: MouseEvent) => {
@@ -252,18 +347,13 @@ export function BackgroundPickerPanel({
     return () => document.removeEventListener('mousedown', handler);
   }, [dropdownOpen]);
 
-  // ── Focus new-name input when add-theme form opens ────────────────────────
+  // ── Focus new-name input ──────────────────────────────────────────────────
   useEffect(() => {
-    if (isAddingTheme) {
-      setTimeout(() => newNameInputRef.current?.focus(), 50);
-    }
+    if (isAddingTheme) setTimeout(() => newNameInputRef.current?.focus(), 50);
   }, [isAddingTheme]);
 
-  // ── Focus rename input when rename starts ─────────────────────────────────
   useEffect(() => {
-    if (renamingId) {
-      setTimeout(() => renameInputRef.current?.focus(), 50);
-    }
+    if (renamingId) setTimeout(() => renameInputRef.current?.focus(), 50);
   }, [renamingId]);
 
   // ── Ensure activeThemeId references a valid collection ────────────────────
@@ -273,15 +363,16 @@ export function BackgroundPickerPanel({
     }
   }, [collections, activeThemeId]);
 
-  // ── Persist helper ─────────────────────────────────────────────────────────
+  // ── Persist helper ────────────────────────────────────────────────────────
   const persist = useCallback((cols: PhotoCollection[]) => {
     setCollections(cols);
-    try { localStorage.setItem(PHOTO_COLLECTIONS_KEY, JSON.stringify(cols)); } catch {}
+    saveCollections(cols);
   }, []);
 
-  // ── Dropdown actions ───────────────────────────────────────────────────────
+  // ── Dropdown actions ──────────────────────────────────────────────────────
   const handleThemeSelect = (id: string) => {
     setDropdownOpen(false);
+    setStorageError(null);
     if (id === '__add_theme__') {
       setPrevThemeId(activeThemeId);
       setIsAddingTheme(true);
@@ -296,15 +387,12 @@ export function BackgroundPickerPanel({
     }
   };
 
-  // ── Add-theme handlers ─────────────────────────────────────────────────────
+  // ── Add-theme ─────────────────────────────────────────────────────────────
   const commitNewTheme = () => {
     const name = newThemeName.trim();
     if (!name) { setNewThemeError('Theme name cannot be blank.'); return; }
     const res = createCollection(name, collections);
-    if (!res) {
-      setNewThemeError('A theme with that name already exists.');
-      return;
-    }
+    if (!res) { setNewThemeError('A theme with that name already exists.'); return; }
     persist(res.result);
     setIsAddingTheme(false);
     setActiveThemeId(res.newId);
@@ -319,7 +407,7 @@ export function BackgroundPickerPanel({
     setNewThemeError(null);
   };
 
-  // ── Rename handlers ────────────────────────────────────────────────────────
+  // ── Rename ────────────────────────────────────────────────────────────────
   const startRename = (col: PhotoCollection) => {
     setRenamingId(col.id);
     setRenameValue(col.name);
@@ -329,8 +417,8 @@ export function BackgroundPickerPanel({
   const commitRename = (id: string) => {
     const result = renameCollection(id, renameValue, collections);
     if (result === null) {
-      const trimmed = renameValue.trim();
-      setRenameError(!trimmed ? 'Name cannot be blank.' : 'Another theme already has that name.');
+      const t = renameValue.trim();
+      setRenameError(!t ? 'Name cannot be blank.' : 'Another theme already has that name.');
       return;
     }
     persist(result);
@@ -340,51 +428,79 @@ export function BackgroundPickerPanel({
 
   const cancelRename = () => { setRenamingId(null); setRenameError(null); };
 
-  // ── Upload handler ─────────────────────────────────────────────────────────
+  // ── Upload ────────────────────────────────────────────────────────────────
   const triggerUpload = (collectionId: string) => {
     setUploadTargetId(collectionId);
-    setUploadError(null);
+    setStorageError(null);
     setTimeout(() => fileInputRef.current?.click(), 0);
   };
 
+  /**
+   * Save-first-then-show:
+   * 1. Validate file.
+   * 2. Compress (resize + encode).
+   * 3. Write blob to IndexedDB.
+   * 4. Update collection metadata.
+   * 5. Load thumbnail object URL.
+   * 6. Show thumbnail — only on success.
+   */
   const processFiles = useCallback(async (files: File[], collectionId: string) => {
-    setUploadError(null);
-    // Work against the current snapshot from state
-    setCollections(prev => {
-      const col = prev.find(c => c.id === collectionId);
-      if (!col) return prev;
-      const remaining = MAX_PHOTOS_PER_COLLECTION - col.photos.length;
-      if (remaining <= 0) return prev;
-      const toProcess = files.slice(0, remaining);
+    setStorageError(null);
 
-      // We need async processing — kick off and re-persist after
-      (async () => {
-        let current = prev;
-        let added = 0;
-        for (const file of toProcess) {
-          if (!SAFE_TYPES.includes(file.type) || UNSAFE_EXT.test(file.name)) {
-            setUploadError('Only JPEG, PNG, WebP, and GIF are supported.');
-            continue;
-          }
-          if (file.size > 25 * 1024 * 1024) {
-            setUploadError('File is too large (max 25 MB).');
-            continue;
-          }
-          try {
-            const dataUrl = await compressImage(file);
-            const photo: CollectionPhoto = { id: crypto.randomUUID(), dataUrl };
-            const updated = addPhotoToCollection(collectionId, photo, current);
-            if (updated) { current = updated; added++; }
-          } catch {
-            setUploadError('Could not load that image. Try a different file.');
-          }
+    const currentCol = (col: PhotoCollection[]) => col.find(c => c.id === collectionId);
+
+    for (const file of files) {
+      // Validate
+      const validationError = validateImageFile(file);
+      if (validationError) { setStorageError(validationError); continue; }
+
+      // Check capacity (read latest state)
+      const col = currentCol(collections);
+      if (!col) continue;
+      if (col.photos.length >= MAX_PHOTOS_PER_COLLECTION) break;
+
+      const slotKey = `${collectionId}:saving-${Date.now()}`;
+      setSavingSlotKey(slotKey);
+
+      let photoId: string | null = null;
+
+      try {
+        // Compress
+        const { blob, mimeType, width, height } = await compressPhotoFile(file);
+
+        // Store in IndexedDB
+        photoId = crypto.randomUUID();
+        await storePhoto(photoId, blob, mimeType, width, height);
+
+        // Update metadata
+        const entry = { id: photoId };
+        setCollections(prev => {
+          const updated = addPhotoToCollection(collectionId, entry, prev);
+          if (!updated) return prev;
+          saveCollections(updated);
+          return updated;
+        });
+
+        // Create thumbnail object URL from the blob we already have in memory
+        const url = createPhotoObjectUrl(blob);
+        thumbnailUrlsRef.current = { ...thumbnailUrlsRef.current, [photoId]: url };
+        setThumbnailUrls(prev => ({ ...prev, [photoId!]: url }));
+
+      } catch (err: any) {
+        console.error('[TrailWeigh] Failed to save photo:', err);
+        // Roll back: delete the blob if it was stored
+        if (photoId) {
+          await deletePhoto(photoId).catch(() => { /* best-effort */ });
         }
-        if (added > 0) persist(current);
-      })();
-
-      return prev; // Synchronous return unchanged; async will update via persist
-    });
-  }, [persist]);
+        const msg = err?.message?.includes('quota') || err?.name === 'QuotaExceededError'
+          ? 'Photo storage is full. Remove unused theme photos before adding another.'
+          : 'This photo could not be saved. Try a smaller image or remove unused theme photos.';
+        setStorageError(msg);
+      } finally {
+        setSavingSlotKey(null);
+      }
+    }
+  }, [collections]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -393,92 +509,128 @@ export function BackgroundPickerPanel({
     await processFiles(files, uploadTargetId);
   };
 
-  // ── Drag-and-drop handlers ─────────────────────────────────────────────────
+  // ── Drag-and-drop ─────────────────────────────────────────────────────────
   const handleDragEnter = (e: React.DragEvent, key: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (e.dataTransfer.types.includes('Files')) setDragOverKey(key);
   };
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
   const handleDragLeave = (e: React.DragEvent, key: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     setDragOverKey(prev => (prev === key ? null : prev));
   };
   const handleDrop = async (e: React.DragEvent, collectionId: string, key: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     setDragOverKey(null);
     const files = Array.from(e.dataTransfer.files);
     if (files.length) await processFiles(files, collectionId);
   };
 
-  // ── Delete photo ───────────────────────────────────────────────────────────
-  const confirmAndDeletePhoto = (cid: string, pid: string) => {
-    const col = collections.find(c => c.id === cid);
-    const photo = col?.photos.find(p => p.id === pid);
-    // If deleted photo is active background, switch to another photo in same theme or clear
-    if (background?.type === 'custom' && photo && background.dataUrl === photo.dataUrl) {
+  // ── Delete photo ──────────────────────────────────────────────────────────
+  const confirmAndDeletePhoto = async (cid: string, pid: string) => {
+    // If deleted photo is the active background, switch away
+    if (background?.type === 'custom' && background.photoId === pid) {
+      const col = collections.find(c => c.id === cid);
       const other = col?.photos.find(p => p.id !== pid);
-      onBackgroundChange(other ? { type: 'custom', dataUrl: other.dataUrl } : null);
+      onBackgroundChange(other ? { type: 'custom', photoId: other.id } : null);
     }
-    persist(deletePhotoFromCollection(cid, pid, collections));
+
+    // Update metadata
+    const updated = deletePhotoFromCollection(cid, pid, collections);
+    persist(updated);
     setConfirmDeletePhoto(null);
+
+    // Remove thumbnail URL
+    if (thumbnailUrlsRef.current[pid]) {
+      revokePhotoObjectUrl(thumbnailUrlsRef.current[pid]);
+      const newUrls = { ...thumbnailUrlsRef.current };
+      delete newUrls[pid];
+      thumbnailUrlsRef.current = newUrls;
+      setThumbnailUrls({ ...newUrls });
+    }
+
+    // Delete blob — check no other theme references this photo
+    const stillUsed = updated.some(c => c.photos.some(p => p.id === pid));
+    if (!stillUsed) await deletePhoto(pid);
   };
 
-  // ── Delete theme ───────────────────────────────────────────────────────────
-  const confirmAndDeleteTheme = (id: string) => {
+  // ── Delete theme ──────────────────────────────────────────────────────────
+  const confirmAndDeleteTheme = async (id: string) => {
     const col = collections.find(c => c.id === id);
-    // If active background is from this collection, clear it
+
+    // If active background came from this theme, clear it
     if (background?.type === 'custom') {
-      const hasActive = col?.photos.some(p => p.dataUrl === (background as { type: 'custom'; dataUrl: string }).dataUrl);
-      if (hasActive) onBackgroundChange(null);
+      const usedByTheme = col?.photos.some(p => p.id === background.photoId);
+      if (usedByTheme) onBackgroundChange(null);
     }
-    persist(deleteCollection(id, collections));
+
+    const remaining = deleteCollection(id, collections);
+    persist(remaining);
     setConfirmDeleteTheme(null);
     if (activeThemeId === id) setActiveThemeId('landscapes');
     if (renamingId === id) setRenamingId(null);
+
+    // Delete all blobs for this theme that are not used elsewhere
+    if (col) {
+      const allOtherIds = new Set(
+        remaining.flatMap(c => c.photos.map(p => p.id)),
+      );
+      const idsToDelete = col.photos.map(p => p.id).filter(pid => !allOtherIds.has(pid));
+      await deletePhotos(idsToDelete);
+    }
   };
 
-  // ── Render helpers ─────────────────────────────────────────────────────────
+  // ── Render helpers ────────────────────────────────────────────────────────
   const activePresetId = background?.type === 'preset' ? background.id : null;
 
   const renderAddPhotoSlot = (col: PhotoCollection, slotIdx: number) => {
     const key = `${col.id}:${slotIdx}`;
     const isDragOver = dragOverKey === key;
-    const atLimit = col.photos.length >= MAX_PHOTOS_PER_COLLECTION;
-    if (atLimit) return null; // Don't render empty slot if collection is full
+    const isSaving   = savingSlotKey !== null && col.id === uploadTargetId;
+    const atLimit    = col.photos.length >= MAX_PHOTOS_PER_COLLECTION;
+    if (atLimit) return null;
 
     return (
       <div
         key={key}
-        role="button"
-        tabIndex={0}
-        aria-label={`Add photo to ${col.name}, slot ${slotIdx + 1}`}
-        onClick={() => triggerUpload(col.id)}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerUpload(col.id); }}}
+        role={isSaving ? undefined : 'button'}
+        tabIndex={isSaving ? undefined : 0}
+        aria-label={isSaving ? 'Saving photo…' : `Add photo to ${col.name}, slot ${slotIdx + 1}`}
+        onClick={isSaving ? undefined : () => triggerUpload(col.id)}
+        onKeyDown={isSaving ? undefined : e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerUpload(col.id); }
+        }}
         onDragEnter={e => handleDragEnter(e, key)}
         onDragOver={handleDragOver}
         onDragLeave={e => handleDragLeave(e, key)}
         onDrop={e => handleDrop(e, col.id, key)}
-        className={`relative overflow-hidden rounded-lg aspect-[3/2] transition-all cursor-pointer select-none
+        className={`relative overflow-hidden rounded-lg aspect-[3/2] transition-all select-none
+          ${isSaving ? 'cursor-default bg-muted/30' : 'cursor-pointer'}
           ${isDragOver
             ? 'ring-2 ring-primary ring-offset-1 bg-primary/10'
             : 'ring-1 ring-border hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
           }
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
       >
-        <div className={`absolute inset-0 m-1 rounded border-2 border-dashed transition-colors ${isDragOver ? 'border-primary' : 'border-border group-hover:border-foreground/30'}`} />
+        {!isSaving && (
+          <div className={`absolute inset-0 m-1 rounded border-2 border-dashed transition-colors ${isDragOver ? 'border-primary' : 'border-border'}`} />
+        )}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-          <div className="rounded-full p-1.5 bg-muted/60 text-muted-foreground transition-colors">
-            <Plus className="w-4 h-4" />
-          </div>
-          <span className="text-[10px] font-semibold text-muted-foreground leading-none">
-            {isDragOver ? 'Drop here' : 'Add Photo'}
-          </span>
+          {isSaving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <span className="text-[10px] font-semibold text-muted-foreground leading-none">Saving photo…</span>
+            </>
+          ) : (
+            <>
+              <div className="rounded-full p-1.5 bg-muted/60 text-muted-foreground transition-colors">
+                <Plus className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-semibold text-muted-foreground leading-none">
+                {isDragOver ? 'Drop here' : 'Add Photo'}
+              </span>
+            </>
+          )}
         </div>
       </div>
     );
@@ -488,7 +640,8 @@ export function BackgroundPickerPanel({
     const photo = col.photos[slotIdx];
     if (!photo) return renderAddPhotoSlot(col, slotIdx);
 
-    const isActive = background?.type === 'custom' && background.dataUrl === photo.dataUrl;
+    const thumbUrl = thumbnailUrls[photo.id] ?? null;
+    const isActive = background?.type === 'custom' && background.photoId === photo.id;
     const isConfirmingDelete = confirmDeletePhoto?.cid === col.id && confirmDeletePhoto.pid === photo.id;
 
     if (isConfirmingDelete) {
@@ -512,21 +665,26 @@ export function BackgroundPickerPanel({
     return (
       <div key={photo.id} className="relative group">
         <button
-          onClick={() => onBackgroundChange({ type: 'custom', dataUrl: photo.dataUrl })}
+          onClick={() => onBackgroundChange({ type: 'custom', photoId: photo.id })}
           aria-pressed={isActive}
           aria-label="Select this photo as background"
           className={`w-full relative overflow-hidden rounded-lg aspect-[3/2] transition-all ${
             isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
           }`}
         >
-          <img src={photo.dataUrl} alt="Custom background" className="w-full h-full object-cover" />
+          {thumbUrl ? (
+            <img src={thumbUrl} alt="Custom background" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted/30">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
           {isActive && (
             <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
               <Check className="w-2.5 h-2.5" />
             </div>
           )}
         </button>
-        {/* Delete button — always visible on touch, hover on desktop */}
         <button
           onClick={e => { e.stopPropagation(); setConfirmDeletePhoto({ cid: col.id, pid: photo.id }); }}
           className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-black/50 text-white flex items-center justify-center opacity-50 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
@@ -538,13 +696,11 @@ export function BackgroundPickerPanel({
     );
   };
 
-  // ── Custom theme panel ─────────────────────────────────────────────────────
+  // ── Custom theme panel ────────────────────────────────────────────────────
   const renderCustomThemePanel = (col: PhotoCollection) => {
     const isThisRenaming     = renamingId === col.id;
     const isConfirmingDelete = confirmDeleteTheme === col.id;
     const photoCount         = col.photos.length;
-
-    // Always render exactly MAX_PHOTOS_PER_COLLECTION slots
     const slots = Array.from({ length: MAX_PHOTOS_PER_COLLECTION }, (_, i) => i);
 
     return (
@@ -593,32 +749,30 @@ export function BackgroundPickerPanel({
           )}
         </div>
 
-        {/* Rename error */}
         {isThisRenaming && renameError && (
           <p className="text-[11px] text-destructive mb-1.5 px-0.5">{renameError}</p>
         )}
 
-        {/* Upload error */}
-        {uploadError && (
-          <p className="text-[11px] text-destructive mb-1.5 px-0.5">{uploadError}</p>
+        {storageError && (
+          <div className="mb-2 px-2 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20">
+            <p className="text-[11px] text-destructive leading-snug">{storageError}</p>
+          </div>
         )}
 
-        {/* 10 fixed photo slots */}
         <div className="grid grid-cols-2 gap-1.5">
           {slots.map(i => renderPhotoSlot(col, i))}
         </div>
 
-        {/* Formats hint */}
         <p className="text-[10px] text-muted-foreground mt-1 px-0.5">
           JPEG, PNG, WebP, GIF — max 25 MB · click or drag to add
         </p>
 
-        {/* Delete Theme — bottom-left, below the grid */}
+        {/* Delete Theme */}
         <div className="mt-3">
           {isConfirmingDelete ? (
             <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/30 text-[11px]">
               <p className="text-foreground mb-2 leading-snug">
-                Delete <strong>{col.name}</strong>? This removes the custom theme and its {photoCount} photo{photoCount !== 1 ? 's' : ''} from your library. Built-in Landscapes is not affected.
+                Delete <strong>{col.name}</strong>? This removes the custom theme and its {photoCount} photo{photoCount !== 1 ? 's' : ''} from your library.
               </p>
               <div className="flex gap-1.5">
                 <button
@@ -634,11 +788,8 @@ export function BackgroundPickerPanel({
           ) : (
             <button
               onClick={() => {
-                if (photoCount > 0) {
-                  setConfirmDeleteTheme(col.id);
-                } else {
-                  confirmAndDeleteTheme(col.id);
-                }
+                if (photoCount > 0) setConfirmDeleteTheme(col.id);
+                else confirmAndDeleteTheme(col.id);
               }}
               className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-destructive transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label={`Delete theme ${col.name}`}
@@ -652,12 +803,11 @@ export function BackgroundPickerPanel({
     );
   };
 
-  // ── Add-theme form (replaces landscape panel while active) ─────────────────
+  // ── Add-theme form ────────────────────────────────────────────────────────
   const renderAddThemeForm = () => {
     const slots = Array.from({ length: MAX_PHOTOS_PER_COLLECTION }, (_, i) => i);
     return (
       <div className="px-3 pb-3">
-        {/* Name input */}
         <div className="flex items-center gap-1.5 mb-2">
           <input
             ref={newNameInputRef}
@@ -687,7 +837,6 @@ export function BackgroundPickerPanel({
         {newThemeError && (
           <p className="text-[11px] text-destructive mb-2 px-0.5">{newThemeError}</p>
         )}
-        {/* 10 empty photo slots (not yet uploadable — theme must be saved first) */}
         <div className="grid grid-cols-2 gap-1.5 opacity-50 pointer-events-none" aria-hidden="true">
           {slots.map(i => (
             <div key={i} className="relative overflow-hidden rounded-lg aspect-[3/2] ring-1 ring-border">
@@ -706,14 +855,14 @@ export function BackgroundPickerPanel({
     );
   };
 
-  // ── Main render ────────────────────────────────────────────────────────────
+  // ── Main render ───────────────────────────────────────────────────────────
   return (
     <div
       ref={panelRef}
       className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-[24rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
       style={{ display: open ? undefined : 'none' }}
     >
-      {/* Hidden file input — shared for all upload actions */}
+      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -724,7 +873,7 @@ export function BackgroundPickerPanel({
         aria-hidden="true"
       />
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* ── Header ── */}
       <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-foreground">Background</h3>
         {onShowcase && (
@@ -741,10 +890,9 @@ export function BackgroundPickerPanel({
         )}
       </div>
 
-      {/* ── Fill/Fit + Light/Dark row ───────────────────────────────────────── */}
+      {/* ── Fill/Fit + Light/Dark + Fade ── */}
       <div className="px-4 pb-3 border-b border-border">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5" aria-label="Background display controls">
-          {/* Fill Screen / Fit Image */}
           <div role="group" aria-label="Image sizing" className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold">
             <button
               onClick={() => onBgSizeChange('cover')}
@@ -761,7 +909,6 @@ export function BackgroundPickerPanel({
               }`}
             >Fit Image</button>
           </div>
-          {/* Light / Dark */}
           <div role="group" aria-label="Background tone" className="flex rounded-lg overflow-hidden border border-border text-[11px] font-semibold">
             <button
               onClick={() => onBgToneChange('light')}
@@ -779,7 +926,6 @@ export function BackgroundPickerPanel({
             >🌙 Dark</button>
           </div>
         </div>
-        {/* Fade slider */}
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs text-muted-foreground">{bgTone === 'dark' ? 'Darken' : 'Lighten'}</span>
           <span className="text-xs text-muted-foreground tabular-nums">{Math.round(bgFade * 100)}%</span>
@@ -792,18 +938,23 @@ export function BackgroundPickerPanel({
         />
       </div>
 
-      {/* ── Theme dropdown + panel ─────────────────────────────────────────── */}
+      {/* ── Theme dropdown ── */}
       <div className="px-3 pt-3 pb-0">
-        {/* Custom dropdown */}
         <div ref={dropdownRef} className="relative mb-3">
+          {/*
+           * FIX (Prompt 016B): Added `text-foreground` so the closed-dropdown
+           * label is visible in all themes/modes.  The previous version lacked
+           * an explicit foreground colour, making the text invisible against the
+           * muted background in some colour-scheme configurations.
+           */}
           <button
             onClick={() => setDropdownOpen(v => !v)}
             aria-haspopup="listbox"
             aria-expanded={dropdownOpen}
-            className="w-full flex items-center justify-between gap-2 text-[11px] font-semibold bg-muted/40 hover:bg-muted/70 border border-border rounded-lg px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full flex items-center justify-between gap-2 text-[11px] font-semibold text-foreground bg-muted/40 hover:bg-muted/70 border border-border rounded-lg px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <span>{dropdownLabel}</span>
-            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform flex-shrink-0 ${dropdownOpen ? 'rotate-180' : ''}`} />
           </button>
 
           {dropdownOpen && (
@@ -812,7 +963,6 @@ export function BackgroundPickerPanel({
               aria-label="Select theme"
               className="absolute left-0 right-0 top-full mt-1 z-10 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
             >
-              {/* Landscapes */}
               <button
                 role="option"
                 aria-selected={!isAddingTheme && activeThemeId === 'landscapes'}
@@ -824,7 +974,6 @@ export function BackgroundPickerPanel({
                 }`}
               >Landscapes</button>
 
-              {/* Custom themes */}
               {collections.map(col => (
                 <button
                   key={col.id}
@@ -839,7 +988,6 @@ export function BackgroundPickerPanel({
                 >Theme {col.name}</button>
               ))}
 
-              {/* Add Theme — final option, only when under limit */}
               {canAddTheme ? (
                 <button
                   role="option"
@@ -859,11 +1007,10 @@ export function BackgroundPickerPanel({
         </div>
       </div>
 
-      {/* ── Theme panel ───────────────────────────────────────────────────── */}
+      {/* ── Theme panel ── */}
       {isAddingTheme ? (
         renderAddThemeForm()
       ) : activeThemeId === 'landscapes' ? (
-        /* Landscapes grid */
         <div className="px-3 pb-3">
           <div className="grid grid-cols-2 gap-1.5">
             {PRESETS.map(p => {
@@ -896,7 +1043,7 @@ export function BackgroundPickerPanel({
         renderCustomThemePanel(activeCollection)
       ) : null}
 
-      {/* ── Remove background ──────────────────────────────────────────────── */}
+      {/* ── Remove background ── */}
       {background && (
         <>
           <div className="border-t border-border mx-3" />

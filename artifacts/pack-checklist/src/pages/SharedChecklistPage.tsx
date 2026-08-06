@@ -28,6 +28,7 @@ import {
   BackgroundPickerButton, BackgroundPickerPanel,
   Background, PRESETS, getFullUrl,
 } from '../components/BackgroundPicker';
+import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib/bgPhotoStore';
 import type { SharePayload } from '../lib/shareLink';
 import {
   Tent, Printer, Share2, FileDown, Plus, Check, X,
@@ -294,10 +295,56 @@ function SharedChecklistContent({
   const [bgPickerOpen, setBgPickerOpen] = useState(false);
   const bgPickerRef = useRef<HTMLDivElement>(null);
 
+  // ── Custom background object URL (resolved async from recipient's IndexedDB)
+  const [customBgObjectUrl, setCustomBgObjectUrl] = useState<string | null>(null);
+  const customBgObjectUrlRef = useRef<string | null>(null);
+
+  const activePhotoId =
+    background?.type === 'custom'
+      ? (background as { type: 'custom'; photoId: string }).photoId
+      : null;
+
+  useEffect(() => {
+    if (!activePhotoId) {
+      if (customBgObjectUrlRef.current) {
+        revokePhotoObjectUrl(customBgObjectUrlRef.current);
+        customBgObjectUrlRef.current = null;
+      }
+      setCustomBgObjectUrl(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const prev = customBgObjectUrlRef.current;
+      customBgObjectUrlRef.current = null;
+      if (prev) revokePhotoObjectUrl(prev);
+      // Snapshot backgrounds with custom photoId are not available to the recipient;
+      // only photos in the recipient's own IndexedDB library can be displayed.
+      const blob = await getPhotoBlob(activePhotoId);
+      if (!cancelled) {
+        if (blob) {
+          const url = createPhotoObjectUrl(blob);
+          customBgObjectUrlRef.current = url;
+          setCustomBgObjectUrl(url);
+        } else {
+          // Photo not in recipient's library (sender's photo) — show no background.
+          setCustomBgObjectUrl(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (customBgObjectUrlRef.current) {
+        revokePhotoObjectUrl(customBgObjectUrlRef.current);
+        customBgObjectUrlRef.current = null;
+      }
+    };
+  }, [activePhotoId]);
+
   const bgImageUrl = background
     ? background.type === 'preset'
       ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
-      : background.dataUrl
+      : customBgObjectUrl
     : null;
 
   // ── Open / Close all categories ───────────────────────────────────────────

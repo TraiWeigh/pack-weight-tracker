@@ -28,8 +28,10 @@ function resolveBgUrl(bg: Background | null | undefined): string | null {
     const preset = PRESETS.find(p => p.id === bg.id);
     return preset ? getFullUrl(preset.photoId) : null;
   }
-  if (bg.type === 'custom' && bg.dataUrl?.startsWith('data:image/')) {
-    return bg.dataUrl;
+  if (bg.type === 'custom') {
+    // Custom photo blobs are stored in IndexedDB (per-device).
+    // ShortLinkView renders a static snapshot — no IndexedDB access here.
+    return null;
   }
   return null;
 }

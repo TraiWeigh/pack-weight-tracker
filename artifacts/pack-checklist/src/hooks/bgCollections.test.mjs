@@ -1,10 +1,11 @@
 /**
  * bgCollections.test.mjs — unit tests for pure bgCollections.ts functions.
  *
- * Updated for Prompt 016A:
- *   - createCollection now REJECTS duplicate names (Prompt 016A changed this).
- *     The old "allows duplicate names" test has been replaced by "rejects duplicate names".
- *   - MAX_COLLECTIONS constant added.
+ * Updated for Prompt 016B:
+ *   - CollectionPhoto no longer carries a `dataUrl` field.
+ *     makeCollection and makePhoto helpers now produce { id } only.
+ *   - runMigration signature changed to (collections, legacyPhotoId, newCollectionId?).
+ *     Tests updated: `dataUrl` argument removed; assertions on `.dataUrl` replaced by `.id`.
  *
  * Runs with: node --test bgCollections.test.mjs
  * All functions under test are pure: no DOM, no localStorage, no fetch.
@@ -33,21 +34,24 @@ const {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const FIXED_IDS = {
-  col1:   'aaaaaaaa-0000-0000-0000-000000000001',
-  col2:   'aaaaaaaa-0000-0000-0000-000000000002',
-  photo1: 'bbbbbbbb-0000-0000-0000-000000000001',
-  photo2: 'bbbbbbbb-0000-0000-0000-000000000002',
-  photo3: 'bbbbbbbb-0000-0000-0000-000000000003',
-  newCol: 'cccccccc-0000-0000-0000-000000000001',
+  col1:     'aaaaaaaa-0000-0000-0000-000000000001',
+  col2:     'aaaaaaaa-0000-0000-0000-000000000002',
+  photo1:   'bbbbbbbb-0000-0000-0000-000000000001',
+  photo2:   'bbbbbbbb-0000-0000-0000-000000000002',
+  photo3:   'bbbbbbbb-0000-0000-0000-000000000003',
+  newCol:   'cccccccc-0000-0000-0000-000000000001',
   newPhoto: 'dddddddd-0000-0000-0000-000000000001',
 };
 
+/** Make a collection whose photos carry only `{ id }` — no dataUrl. */
 function makeCollection({ id, name, photoCount = 0 } = {}) {
-  const photos = Array.from({ length: photoCount }, (_, i) => ({
-    id: `photo-${i}`,
-    dataUrl: `data:image/jpeg;base64,photo${i}`,
-  }));
+  const photos = Array.from({ length: photoCount }, (_, i) => ({ id: `photo-${i}` }));
   return { id: id ?? FIXED_IDS.col1, name: name ?? 'Test', photos };
+}
+
+/** Make a single photo — only `{ id }`, no dataUrl. */
+function makePhoto(id) {
+  return { id };
 }
 
 // ── P1: Constants ─────────────────────────────────────────────────────────────
@@ -69,64 +73,50 @@ describe('P1 — Constants', () => {
 // ── P2: runMigration ──────────────────────────────────────────────────────────
 
 describe('P2 — runMigration', () => {
-  it('null legacyDataUrl returns collections unchanged', () => {
+  it('null legacyPhotoId returns collections unchanged', () => {
     const cols = [makeCollection({ id: FIXED_IDS.col1, name: 'Existing' })];
     const result = runMigration(cols, null);
     assert.deepEqual(result, cols);
   });
 
-  it('empty-string legacyDataUrl returns collections unchanged', () => {
+  it('empty-string legacyPhotoId returns collections unchanged', () => {
     const cols = [makeCollection({ id: FIXED_IDS.col1, name: 'Existing' })];
     const result = runMigration(cols, '');
     assert.deepEqual(result, cols);
   });
 
   it('fresh migration with no existing collections creates My Photos', () => {
-    const dataUrl = 'data:image/jpeg;base64,testPhoto';
-    const result = runMigration(
-      [],
-      dataUrl,
-      FIXED_IDS.newPhoto,
-      FIXED_IDS.newCol,
-    );
+    const result = runMigration([], FIXED_IDS.newPhoto, FIXED_IDS.newCol);
     assert.equal(result.length, 1);
     assert.equal(result[0].name, 'My Photos');
     assert.equal(result[0].photos.length, 1);
-    assert.equal(result[0].photos[0].dataUrl, dataUrl);
     assert.equal(result[0].photos[0].id, FIXED_IDS.newPhoto);
     assert.equal(result[0].id, FIXED_IDS.newCol);
   });
 
   it('migration merges into an existing My Photos collection', () => {
-    const existingPhoto = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,existing' };
-    const myPhotos = {
-      id: FIXED_IDS.col1,
-      name: 'My Photos',
-      photos: [existingPhoto],
-    };
-    const dataUrl = 'data:image/jpeg;base64,newPhoto';
-    const result = runMigration([myPhotos], dataUrl, FIXED_IDS.newPhoto);
+    const existingPhoto = { id: FIXED_IDS.photo1 };
+    const myPhotos = { id: FIXED_IDS.col1, name: 'My Photos', photos: [existingPhoto] };
+    const result = runMigration([myPhotos], FIXED_IDS.newPhoto);
     assert.equal(result.length, 1);
     assert.equal(result[0].photos.length, 2);
     // New photo is prepended
-    assert.equal(result[0].photos[0].dataUrl, dataUrl);
-    assert.equal(result[0].photos[1].dataUrl, existingPhoto.dataUrl);
+    assert.equal(result[0].photos[0].id, FIXED_IDS.newPhoto);
+    assert.equal(result[0].photos[1].id, FIXED_IDS.photo1);
   });
 
-  it('migration is idempotent — same dataUrl is not added twice', () => {
-    const dataUrl = 'data:image/jpeg;base64,same';
+  it('migration is idempotent — same photoId is not added twice', () => {
     const myPhotos = {
       id: FIXED_IDS.col1,
       name: 'My Photos',
-      photos: [{ id: FIXED_IDS.photo1, dataUrl }],
+      photos: [{ id: FIXED_IDS.photo1 }],
     };
-    const result = runMigration([myPhotos], dataUrl, FIXED_IDS.newPhoto);
+    const result = runMigration([myPhotos], FIXED_IDS.photo1);
     assert.equal(result[0].photos.length, 1);
   });
 
   it('My Photos is placed first when no collections existed before', () => {
-    const dataUrl = 'data:image/jpeg;base64,test';
-    const result = runMigration([], dataUrl, FIXED_IDS.newPhoto, FIXED_IDS.newCol);
+    const result = runMigration([], FIXED_IDS.newPhoto, FIXED_IDS.newCol);
     assert.equal(result[0].name, 'My Photos');
   });
 });
@@ -149,7 +139,6 @@ describe('P3 — createCollection', () => {
     assert.equal(res, null);
   });
 
-  // Prompt 016A: duplicate names are now REJECTED (changed from Prompt 016 which allowed them)
   it('returns null when a collection with the same name already exists', () => {
     const existing = [makeCollection({ id: FIXED_IDS.col1, name: 'Duplicate' })];
     const res = createCollection('Duplicate', existing, FIXED_IDS.newCol);
@@ -158,10 +147,8 @@ describe('P3 — createCollection', () => {
 
   it('duplicate check is case-sensitive and whitespace-trimmed', () => {
     const existing = [makeCollection({ id: FIXED_IDS.col1, name: 'Sierra' })];
-    // Exact match after trim: rejected
     const sameExact = createCollection('  Sierra  ', existing, FIXED_IDS.newCol);
     assert.equal(sameExact, null, 'Trimmed duplicate should be rejected');
-    // Different case: allowed
     const diffCase = createCollection('sierra', existing, FIXED_IDS.newCol);
     assert.ok(diffCase !== null, 'Different case should be allowed');
   });
@@ -221,10 +208,7 @@ describe('P4 — renameCollection', () => {
   });
 
   it('renaming preserves all photos in the collection', () => {
-    const photos = [
-      { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,p1' },
-      { id: FIXED_IDS.photo2, dataUrl: 'data:image/jpeg;base64,p2' },
-    ];
+    const photos = [makePhoto(FIXED_IDS.photo1), makePhoto(FIXED_IDS.photo2)];
     const cols = [{ id: FIXED_IDS.col1, name: 'Old', photos }];
     const result = renameCollection(FIXED_IDS.col1, 'New', cols);
     assert.ok(result !== null);
@@ -260,15 +244,12 @@ describe('P5 — deleteCollection', () => {
   });
 
   it('deleting one theme reduces count and makes room for another', () => {
-    // Build 10 collections (the max)
     const cols = Array.from({ length: 10 }, (_, i) => ({
       id: `col-${i}`, name: `Theme${i}`, photos: [],
     }));
     assert.equal(cols.length, MAX_COLLECTIONS);
-    // Delete one
     const after = deleteCollection('col-0', cols);
     assert.equal(after.length, 9);
-    // Now createCollection should succeed
     const res = createCollection('NewTheme', after);
     assert.ok(res !== null, 'Should be able to add a theme after deletion');
     assert.equal(res.result.length, 10);
@@ -280,7 +261,7 @@ describe('P5 — deleteCollection', () => {
 describe('P6 — addPhotoToCollection', () => {
   it('adds a photo to an existing collection', () => {
     const cols = [makeCollection({ id: FIXED_IDS.col1 })];
-    const photo = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,abc' };
+    const photo = makePhoto(FIXED_IDS.photo1);
     const result = addPhotoToCollection(FIXED_IDS.col1, photo, cols);
     assert.ok(result !== null);
     assert.equal(result[0].photos.length, 1);
@@ -289,23 +270,20 @@ describe('P6 — addPhotoToCollection', () => {
 
   it('returns null when the collection ID does not exist', () => {
     const cols = [makeCollection({ id: FIXED_IDS.col1 })];
-    const photo = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,abc' };
-    const result = addPhotoToCollection('nonexistent-id', photo, cols);
+    const result = addPhotoToCollection('nonexistent-id', makePhoto(FIXED_IDS.photo1), cols);
     assert.equal(result, null);
   });
 
   it(`returns null when the collection already has ${MAX_PHOTOS_PER_COLLECTION} photos`, () => {
     const cols = [makeCollection({ id: FIXED_IDS.col1, photoCount: MAX_PHOTOS_PER_COLLECTION })];
-    const photo = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,extra' };
-    const result = addPhotoToCollection(FIXED_IDS.col1, photo, cols);
+    const result = addPhotoToCollection(FIXED_IDS.col1, makePhoto(FIXED_IDS.photo1), cols);
     assert.equal(result, null);
   });
 
   it('appends the photo to the END of the collection', () => {
-    const existing = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,first' };
+    const existing = makePhoto(FIXED_IDS.photo1);
     const cols = [{ id: FIXED_IDS.col1, name: 'Test', photos: [existing] }];
-    const newPhoto = { id: FIXED_IDS.photo2, dataUrl: 'data:image/jpeg;base64,second' };
-    const result = addPhotoToCollection(FIXED_IDS.col1, newPhoto, cols);
+    const result = addPhotoToCollection(FIXED_IDS.col1, makePhoto(FIXED_IDS.photo2), cols);
     assert.ok(result !== null);
     assert.equal(result[0].photos.length, 2);
     assert.equal(result[0].photos[1].id, FIXED_IDS.photo2);
@@ -316,8 +294,7 @@ describe('P6 — addPhotoToCollection', () => {
       makeCollection({ id: FIXED_IDS.col1 }),
       makeCollection({ id: FIXED_IDS.col2, name: 'Untouched' }),
     ];
-    const photo = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,abc' };
-    const result = addPhotoToCollection(FIXED_IDS.col1, photo, cols);
+    const result = addPhotoToCollection(FIXED_IDS.col1, makePhoto(FIXED_IDS.photo1), cols);
     assert.ok(result !== null);
     assert.equal(result[1].photos.length, 0);
   });
@@ -327,15 +304,15 @@ describe('P6 — addPhotoToCollection', () => {
 
 describe('P7 — deletePhotoFromCollection', () => {
   it('removes a photo from a collection by IDs', () => {
-    const photo = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,abc' };
+    const photo = makePhoto(FIXED_IDS.photo1);
     const cols = [{ id: FIXED_IDS.col1, name: 'Test', photos: [photo] }];
     const result = deletePhotoFromCollection(FIXED_IDS.col1, FIXED_IDS.photo1, cols);
     assert.equal(result[0].photos.length, 0);
   });
 
   it('other photos in the same collection are unaffected', () => {
-    const p1 = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,a1' };
-    const p2 = { id: FIXED_IDS.photo2, dataUrl: 'data:image/jpeg;base64,a2' };
+    const p1 = makePhoto(FIXED_IDS.photo1);
+    const p2 = makePhoto(FIXED_IDS.photo2);
     const cols = [{ id: FIXED_IDS.col1, name: 'Test', photos: [p1, p2] }];
     const result = deletePhotoFromCollection(FIXED_IDS.col1, FIXED_IDS.photo1, cols);
     assert.equal(result[0].photos.length, 1);
@@ -343,15 +320,15 @@ describe('P7 — deletePhotoFromCollection', () => {
   });
 
   it('has no effect when photo ID does not exist in the collection', () => {
-    const photo = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,abc' };
+    const photo = makePhoto(FIXED_IDS.photo1);
     const cols = [{ id: FIXED_IDS.col1, name: 'Test', photos: [photo] }];
     const result = deletePhotoFromCollection(FIXED_IDS.col1, 'nonexistent-photo', cols);
     assert.equal(result[0].photos.length, 1);
   });
 
   it('other collections are unaffected by the delete', () => {
-    const p1 = { id: FIXED_IDS.photo1, dataUrl: 'data:image/jpeg;base64,abc' };
-    const p2 = { id: FIXED_IDS.photo2, dataUrl: 'data:image/jpeg;base64,xyz' };
+    const p1 = makePhoto(FIXED_IDS.photo1);
+    const p2 = makePhoto(FIXED_IDS.photo2);
     const cols = [
       { id: FIXED_IDS.col1, name: 'Target', photos: [p1] },
       { id: FIXED_IDS.col2, name: 'Other',  photos: [p2] },

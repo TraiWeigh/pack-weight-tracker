@@ -6,7 +6,7 @@
 pnpm test:importer
 ```
 
-This runs all **nine** test suites in sequence and exits non-zero on any failure.
+This runs all **ten** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
@@ -20,12 +20,13 @@ node artifacts/pack-checklist/src/hooks/moveItem.test.mjs      # Move-item Store
 node artifacts/pack-checklist/src/hooks/pieColor.test.mjs      # Per-file palette persistence
 node artifacts/pack-checklist/src/hooks/bgCollections.test.mjs # Photo collections data layer (updated Prompt 016A)
 node artifacts/pack-checklist/src/hooks/bgCollections016A.test.mjs # Theme dropdown 016A requirements
+node artifacts/pack-checklist/src/hooks/bgPhotoStore016B.test.mjs  # IndexedDB photo store (Prompt 016B)
 ```
 
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 610 passed / 0 failed (confirmed Prompt 016A, 2026-08-06).
+**Current result:** 659 passed / 0 failed (confirmed Prompt 016B, 2026-08-06).
 
 ## What each suite protects
 
@@ -39,7 +40,8 @@ plain JS so tests can run against source changes immediately.
 | `moveItem.test.mjs` | applyMoveItem Store transformation: item removed from source and appended to destination (M1); all GearItem fields preserved across move — id, sub, desc, weightOz, qty, checked, expendable (M2); same-category move returns identical store reference — no mutation (M3); invalid inputs (unknown source, unknown destination, unknown item ID) leave store unchanged (M4); undo/redo via inverse operations — move+undo restores original state, no item duplication (M5); no duplicate item IDs after single or sequential moves (M6); custom category names preserved exactly (M7); store.order and store.meta untouched by item moves (M8); existing destination items not displaced — moved item appended; move into empty category works (M9) |
 | `pieColor.test.mjs` | Per-file Weight Distribution palette persistence: chartPaletteKey serialized in LockerEntry (P1); in-place open, new-tab stash, and newseed bundle each restore the correct palette key (P2); File A and File B retain independent palette keys across all save/load operations (P3); commitSaveReplace updates only the active file (P4); Save As copies palette key into a new entry and leaves the original unchanged (P5, P6); New/newseed bundle carries current palette key to the forked tab (P7); refresh/session-stash restores active file's palette key; empty or null stash falls back to default (P8); older files without chartPaletteKey load safely with default palette (P9); saving an older file adds chartPaletteKey (P10); restored palette key is not overwritten by default init (P11); unknown or missing chartPaletteKey values do not crash loading (P12); gear data is byte-identical through the save-and-load round trip (P13) |
 | `bgCollections.test.mjs` | Photo collections data layer (updated Prompt 016A): constants including MAX_COLLECTIONS=10 (P1); runMigration — null/empty no-op, fresh migration creates "My Photos", merges into existing, idempotent, My Photos first (P2); createCollection — trimmed name, blank blocked, **duplicate names now blocked** (Prompt 016A change), case-sensitive, appended last (P3); renameCollection — success, blank blocked, duplicate blocked, same-name allowed, others unaffected, **preserves photos** (P4); deleteCollection — by ID, nonexistent no-op, last → empty, **re-enables Add Theme** (P5); addPhotoToCollection — success, bad ID, MAX_PHOTOS_PER_COLLECTION enforced, appended, others unaffected (P6); deletePhotoFromCollection — success, others safe, nonexistent no-op, other collections safe (P7) |
-| `bgCollections016A.test.mjs` | Prompt 016A theme dropdown data requirements: dropdown structure — Landscapes separate from custom, Add Theme gated on count, MAX_COLLECTIONS enforced, Landscapes not counted (A1); theme name save — valid creates collection, label format "Theme [Name]", blank rejected, duplicate rejected (A2); theme count limits — MAX_COLLECTIONS=10, Landscapes excluded, delete re-enables Add Theme (A3); photos per theme — MAX=10 enforced, add increases count, remove decreases count, order preserved (A4); migration — existing 016 collections preserved, idempotent (A5); rename preserves photos and order (A6); delete removes only the target theme (A7); JSON round-trip preserves all data (A8) |
+| `bgCollections016A.test.mjs` | Prompt 016A theme dropdown data requirements: dropdown structure — Landscapes separate from custom, Add Theme gated on count, MAX_COLLECTIONS enforced, Landscapes not counted (A1); theme name save — valid creates collection, label format "Theme [Name]", blank rejected, duplicate rejected (A2); theme count limits — MAX_COLLECTIONS=10, Landscapes excluded, delete re-enables Add Theme (A3); photos per theme — MAX=10 enforced, add increases count, remove decreases count, order preserved (A4); migration — existing 016 collections preserved, idempotent (A5); rename preserves photos and order (A6); delete removes only the target theme (A7); JSON round-trip preserves all data — updated 016B: no dataUrl in photo records (A8) |
+| `bgPhotoStore016B.test.mjs` | IndexedDB photo store (Prompt 016B): validateImageFile — JPEG/PNG/WebP/GIF accepted, TIFF/SVG rejected, >25 MB rejected, 25 MB boundary accepted (S1); dataUrlToBlob — JPEG and PNG data URLs decoded to Blob, malformed → null, correct MIME extracted (S2); isMigrationDone/markMigrationDone — absent flag false, set flag true, writes "1" to localStorage (S3); storePhoto/getPhotoBlob — store-and-retrieve, miss returns null, overwrite, mimeType/width/height persisted alongside blob (S4); deletePhoto/deletePhotos — remove by ID, no-op for missing ID, multiple IDs, empty array no-op (S5); getAllStoredPhotoIds — returns all keys; empty store → [] (S6); createPhotoObjectUrl/revokePhotoObjectUrl — non-empty URL, unique per call, revoke no-op for unknown URL, URL removed from pool (S7); getPhotoBlob returns null on IndexedDB unavailable — no uncaught exception (S8) |
 
 ## Where fixtures are stored
 

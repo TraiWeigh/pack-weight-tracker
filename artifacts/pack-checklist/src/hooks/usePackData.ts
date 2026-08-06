@@ -64,7 +64,7 @@ export type Store = {
  */
 export type BgValue =
   | { type: 'preset'; id: string }
-  | { type: 'custom'; dataUrl: string }
+  | { type: 'custom'; photoId: string }
   | null;
 
 export type BgSnapshot = {

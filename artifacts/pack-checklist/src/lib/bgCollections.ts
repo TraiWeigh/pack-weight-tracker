@@ -1,20 +1,22 @@
 /**
- * bgCollections.ts
+ * bgCollections.ts  —  updated Prompt 016B
  *
  * Pure data-layer functions for personal photo collections / custom themes.
  * No browser APIs, no React — fully testable with Node.js built-in runner.
  *
  * Storage key: 'trailweigh:photoCollections' in localStorage.
- * Collections are a GLOBAL library (not per Locker file).  The active
- * checklist background is stored separately in LockerEntry.background.
+ * Collections are a GLOBAL library (not per Locker file).
+ *
+ * PHOTO STORAGE (Prompt 016B):
+ * CollectionPhoto no longer carries a `dataUrl`.  Binary blobs are stored
+ * in IndexedDB via bgPhotoStore.ts.  Each CollectionPhoto is just { id }.
  */
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface CollectionPhoto {
   id: string;
-  /** JPEG data URL (compressed to max 1920 px wide, 0.82 quality) */
-  dataUrl: string;
+  // No `dataUrl` — binary stored in IndexedDB (bgPhotoStore.ts).
 }
 
 export interface PhotoCollection {
@@ -37,20 +39,20 @@ export const MAX_COLLECTIONS = 10;
 // ── Pure functions ────────────────────────────────────────────────────────────
 
 /**
- * Migrate a legacy single custom-background photo (the old single-slot design)
- * into the "My Photos" collection.
+ * Migrate a legacy single custom-background photo into the "My Photos"
+ * collection.  Accepts a `legacyPhotoId` — the ID of a photo whose blob has
+ * already been stored in IndexedDB by the calling code.
  *
- * Idempotent: repeated calls with the same dataUrl do not add duplicate entries.
- * If legacyDataUrl is null or empty, returns existingCollections unchanged.
- * If My Photos already exists, the photo is merged in safely.
+ * Idempotent: if a photo with `legacyPhotoId` already exists in My Photos,
+ * it is not added again.  If legacyPhotoId is null or empty, returns
+ * existingCollections unchanged.
  */
 export function runMigration(
   existingCollections: PhotoCollection[],
-  legacyDataUrl: string | null,
-  newPhotoId?: string,
+  legacyPhotoId: string | null,
   newCollectionId?: string,
 ): PhotoCollection[] {
-  if (!legacyDataUrl) return existingCollections;
+  if (!legacyPhotoId) return existingCollections;
 
   const myPhotosIdx = existingCollections.findIndex(c => c.name === 'My Photos');
   const myPhotos: PhotoCollection =
@@ -58,14 +60,14 @@ export function runMigration(
       ? existingCollections[myPhotosIdx]
       : { id: newCollectionId ?? crypto.randomUUID(), name: 'My Photos', photos: [] };
 
-  // Idempotency: don't add if the same dataUrl is already present
-  if (myPhotos.photos.some(p => p.dataUrl === legacyDataUrl)) {
+  // Idempotency: don't add if the same photo ID is already present
+  if (myPhotos.photos.some(p => p.id === legacyPhotoId)) {
     return existingCollections;
   }
 
   const updatedMyPhotos: PhotoCollection = {
     ...myPhotos,
-    photos: [{ id: newPhotoId ?? crypto.randomUUID(), dataUrl: legacyDataUrl }, ...myPhotos.photos],
+    photos: [{ id: legacyPhotoId }, ...myPhotos.photos],
   };
 
   if (myPhotosIdx >= 0) {
@@ -79,11 +81,7 @@ export function runMigration(
  *
  * Returns null when:
  *   - the name is blank after trimming, OR
- *   - another collection already has exactly the same trimmed name
- *     (Prompt 016A: duplicate names are rejected, not silently allowed).
- *
- * Collections are distinguished by their unique ID; renaming is handled
- * separately by renameCollection.
+ *   - another collection already has exactly the same trimmed name.
  */
 export function createCollection(
   name: string,
@@ -92,7 +90,6 @@ export function createCollection(
 ): { result: PhotoCollection[]; newId: string } | null {
   const trimmed = name.trim();
   if (!trimmed) return null;
-  // Prompt 016A: reject if a collection with the same name already exists
   if (collections.some(c => c.name === trimmed)) return null;
   const id = newId ?? crypto.randomUUID();
   const entry: PhotoCollection = { id, name: trimmed, photos: [] };
@@ -105,8 +102,6 @@ export function createCollection(
  * Returns null when:
  *   - newName is blank after trimming, OR
  *   - another collection (different ID) already has exactly the same trimmed name.
- *
- * Returns the updated array on success; the caller should persist it.
  */
 export function renameCollection(
   id: string,

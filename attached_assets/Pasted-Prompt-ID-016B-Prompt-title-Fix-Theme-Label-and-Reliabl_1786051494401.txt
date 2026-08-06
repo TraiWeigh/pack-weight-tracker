@@ -1,0 +1,919 @@
+Prompt ID: 016B
+Prompt title: Fix Theme Label and Reliable Photo Storage
+
+Correct the remaining failures from Prompts 016 and 016A.
+
+This is a focused repair. Do not begin the planned Hide, Preview, and Imperial control reorganization.
+
+The confirmed defects are:
+
+1. The closed Theme dropdown is blank even though its open menu contains the correct options.
+2. Uploaded photos appear temporarily but disappear after refresh.
+3. Selecting a custom photo as the checklist background can produce:
+   “The quota has been exceeded.”
+4. Large image data appears to be stored directly or repeatedly in browser localStorage.
+5. A storage failure can reach the Vite error screen instead of producing a normal TrailWeigh message.
+
+Before modifying code, read and inspect:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_016_REPORT.md`
+- `workflow-reports/PROMPT_016A_REPORT.md`
+- Current Background Edit component
+- Current Theme dropdown component
+- Current custom-theme storage
+- Current uploaded-photo storage
+- Current active-background storage
+- Current Save, Save As, Locker, New, Refresh, Undo, and Redo paths
+
+Treat the current application source as the source of truth.
+
+# PART 1 — CREATE A CHECKPOINT AND BACKUP
+
+Create a Replit checkpoint before changing application code.
+
+Create:
+
+`workflow-reports/PRE_016B_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record before editing:
+
+- Master line count
+- Master file size
+- Backup line count
+- Backup file size
+- Current localStorage keys used by Background Edit
+- Current IndexedDB databases and stores, if any
+- Where image Base64 strings or data URLs are stored
+- Whether active backgrounds duplicate image data
+- Current theme metadata structure
+- Current selected-theme structure
+- Current photo-upload sequence
+- Current behavior when storage fails
+
+Do not guess. Trace the actual code.
+
+# PART 2 — FIX THE CLOSED THEME DROPDOWN LABEL
+
+The Theme dropdown menu already contains the correct theme options, but the closed dropdown trigger appears blank.
+
+Correct the visible selected label.
+
+Required behavior:
+
+## No saved selection or initial neutral state
+
+The dropdown may display:
+
+`Themes`
+
+## Built-in theme selected
+
+When Landscapes is selected, display:
+
+`Landscapes`
+
+## Custom theme selected
+
+Display:
+
+`Theme [Collection Name]`
+
+Examples:
+
+- Collection name `Test`
+  - Dropdown label: `Theme Test`
+
+- Collection name `Sierra`
+  - Dropdown label: `Theme Sierra`
+
+The visible label must update immediately when the user:
+
+- Selects Landscapes
+- Selects a custom theme
+- Creates a custom theme
+- Renames a custom theme
+- Deletes the selected custom theme
+- Reloads the page
+- Opens a saved file when the selected theme is restored
+
+Do not rely on an undefined theme object or a blank native select value.
+
+Use the stable selected-theme ID to derive an explicit visible label.
+
+Verify that the text is not hidden because of:
+
+- Transparent text
+- Incorrect foreground color
+- Zero width
+- Overflow clipping
+- An icon positioned over the text
+- An empty SelectValue placeholder
+- A mismatched selected value
+- A theme ID/name mismatch
+
+The dropdown arrow must remain visible.
+
+The label must work in:
+
+- Light mode
+- Dark mode
+- System mode
+- Desktop width
+- Phone width
+
+# PART 3 — DO NOT STORE FULL PHOTO DATA IN LOCALSTORAGE
+
+Do not continue storing full-resolution images, Base64 image strings, blobs converted to text, or large data URLs directly in localStorage.
+
+Use localStorage only for small metadata when appropriate, such as:
+
+- Theme IDs
+- Theme names
+- Photo IDs
+- Photo order
+- Selected theme ID
+- Selected photo ID
+- Fill/Fit setting
+- Light/Dark setting
+- Fade/darken setting
+- Migration version
+
+Store uploaded photo binary data in IndexedDB.
+
+Preferred structure:
+
+## IndexedDB database
+
+Use one clearly named TrailWeigh database or extend an existing suitable database.
+
+Create an image store containing records such as:
+
+- `photoId`
+- `blob`
+- `mimeType`
+- `width`
+- `height`
+- `createdAt`, only if useful
+
+## Theme metadata
+
+Theme records should reference photo IDs rather than containing full image data.
+
+Example concept:
+
+- Theme ID
+- Theme name
+- Ordered array of photo IDs
+
+## Active background
+
+Store only a stable reference such as:
+
+- Built-in background identifier or URL
+- Custom `photoId`
+
+Do not copy the full custom image into the active-background record.
+
+Do not duplicate the same image data when:
+
+- It is uploaded
+- It is selected
+- The checklist is saved
+- Save As is used
+- New is used
+- A Locker file is opened
+- Undo or Redo is used
+
+# PART 4 — RESIZE AND COMPRESS UPLOADED PHOTOS
+
+Before saving a user-uploaded photo, create a background-sized optimized version.
+
+Do not permanently store the original full-resolution image unless the existing application has a documented reason.
+
+Requirements:
+
+- Preserve aspect ratio.
+- Do not stretch or distort the image.
+- Preserve enough resolution for a desktop background.
+- Reduce extremely large phone or camera photos before saving.
+- Preserve orientation correctly.
+- Handle JPEG, PNG, WebP, and other formats already supported by TrailWeigh.
+- Preserve transparency where practical for formats that require it.
+- Do not unnecessarily convert a transparent PNG into a black background.
+
+Use a reasonable maximum long-edge dimension, such as approximately 1920–2048 pixels, unless current application measurements justify another value.
+
+Use a sensible compressed format and quality.
+
+Document in the report:
+
+- Maximum dimensions
+- Output format
+- Compression quality
+- Typical before-and-after file sizes
+- How PNG transparency is handled
+- What happens when image decoding fails
+
+Do not make thumbnails so low-quality that they look blurred as the checklist background.
+
+# PART 5 — SAVE FIRST, THEN SHOW SUCCESS
+
+The current interface can show a photo as added even when browser storage later fails.
+
+Correct the sequence.
+
+When a photo is uploaded or dropped:
+
+1. Validate the file.
+2. Decode the image.
+3. Resize/compress it.
+4. Save the optimized blob to IndexedDB.
+5. Save or update theme metadata.
+6. Confirm both storage operations succeeded.
+7. Only then show the photo as successfully added and increase the counter.
+
+Do not display a permanent photo thumbnail or increase `0/10` to `1/10` until persistence succeeds.
+
+A temporary loading state is allowed.
+
+Example loading text:
+
+`Saving photo…`
+
+After success:
+
+- Display the thumbnail.
+- Increase the count.
+- Keep the Background Edit panel open.
+- Make the photo available for selection.
+
+# PART 6 — HANDLE STORAGE FAILURES SAFELY
+
+Catch all relevant IndexedDB, image-processing, and browser-storage errors.
+
+Never allow a normal storage failure to reach:
+
+- The Vite error screen
+- An uncaught runtime overlay
+- A blank application
+- A browser navigation error
+
+If a photo cannot be saved:
+
+- Remove any partial image record.
+- Roll back incomplete theme metadata.
+- Keep the original Add Photo position available.
+- Do not increase the photo count.
+- Show a clear TrailWeigh message.
+
+Suggested message:
+
+`This photo could not be saved. Try a smaller image or remove unused theme photos.`
+
+When the cause is specifically storage capacity, a message may say:
+
+`Photo storage is full. Remove unused theme photos before adding another.`
+
+Do not expose technical stack traces to the user.
+
+Log enough technical detail for development without displaying it in the user interface.
+
+# PART 7 — MIGRATE EXISTING PHOTO DATA SAFELY
+
+Inspect all data created by Prompts 016 and 016A.
+
+Existing theme names must remain.
+
+Existing photo data must be migrated where possible.
+
+Migration must:
+
+- Detect old Base64 or data-URL photo records.
+- Convert valid old photos into optimized blobs.
+- Store those blobs in IndexedDB.
+- Replace old image data in theme metadata with stable photo IDs.
+- Preserve theme membership.
+- Preserve photo order.
+- Preserve the selected custom background.
+- Remove obsolete large image strings from localStorage only after successful migration.
+- Avoid creating duplicate images.
+- Be safe when run more than once.
+
+Migration must handle:
+
+- No custom themes
+- Themes with zero photos
+- One stored photo
+- Several stored photos
+- A partially saved theme
+- A photo displayed in memory but absent from persistent storage
+- Duplicate old records
+- Corrupt Base64 data
+- A selected photo that no longer exists
+- Existing `My Photos` migration data
+- Themes created by the incorrect Prompt 016 Add Collection workflow
+
+If an old photo cannot be recovered:
+
+- Preserve the theme.
+- Remove only the invalid photo reference.
+- Leave an Add Photo position available.
+- Do not crash the app.
+- Record the failure honestly in the report.
+
+# PART 8 — ACTIVE CUSTOM BACKGROUND MUST USE A PHOTO REFERENCE
+
+Selecting a custom theme photo as the checklist background must store only its stable photo ID or equivalent lightweight reference.
+
+Do not store another Base64 copy in:
+
+- Active background state
+- localStorage
+- Locker records
+- New-list records
+- History records
+
+When rendering the custom background:
+
+- Retrieve the blob from IndexedDB.
+- Create a temporary object URL.
+- Revoke obsolete object URLs when they are no longer needed.
+- Do not repeatedly create unreleased object URLs.
+- Do not leak memory when switching photos.
+
+If the active photo cannot be found:
+
+- Fall back safely to another photo in the selected theme when appropriate.
+- Otherwise fall back to Landscapes or the documented default background.
+- Do not show a broken image URL.
+
+# PART 9 — SAVE, SAVE AS, LOCKER, AND NEW
+
+Preserve existing file behavior while avoiding image duplication.
+
+## Save
+
+Store the active custom background using a photo ID reference.
+
+Do not embed the image blob or Base64 data inside the saved Locker file.
+
+## Save As
+
+Copy the selected photo reference and background settings.
+
+Do not duplicate the image itself.
+
+## Locker open
+
+Restore the correct photo using its photo ID from the shared local photo library.
+
+If the photo no longer exists, use a safe fallback.
+
+## New
+
+Copy:
+
+- Selected theme
+- Selected photo reference
+- Fill/Fit
+- Light/Dark
+- Fade/darken
+- Current visual settings
+
+Continue unchecking gear according to the existing New behavior.
+
+Do not duplicate image blobs.
+
+## Reset
+
+Do not delete:
+
+- Custom themes
+- IndexedDB images
+- Active background settings unless Reset currently resets that specific visual setting
+
+Do not change Reset behavior outside this repair.
+
+# PART 10 — PHOTO REMOVAL AND THEME DELETION
+
+When removing a photo:
+
+- Remove its ID from its theme.
+- Delete its IndexedDB blob when no remaining valid reference uses it.
+- Replace its position with Add Photo.
+- Update the count.
+- Preserve all other photos.
+
+If it is the active background:
+
+- Select another photo in the theme when appropriate.
+- Otherwise fall back to Landscapes.
+- Do not retain a large stale image string.
+
+When deleting a theme:
+
+- Remove the theme metadata.
+- Delete its IndexedDB photo blobs when they are not referenced elsewhere.
+- Remove the theme from the dropdown.
+- Switch to Landscapes when the deleted theme was selected.
+- Make Add Theme available again if fewer than ten custom themes remain.
+
+The built-in Landscapes theme must never be deleted.
+
+# PART 11 — PRESERVE THE EXISTING THEME WORKFLOW
+
+Do not redesign the corrected Prompt 016A workflow.
+
+Preserve:
+
+- Theme dropdown
+- Landscapes option
+- Custom theme options
+- Add Theme as the final option
+- Maximum of 10 custom themes
+- Ten photo positions per custom theme
+- Maximum of 10 photos per custom theme
+- Name field above the photo grid
+- Saved name above the grid
+- Edit Name control
+- Delete Theme at the bottom-left below the grid
+- Click-to-upload
+- Drag-and-drop upload
+- Photo removal
+- Selected-photo border/checkmark
+- Only one selected theme panel visible at a time
+
+Do not restore the old separate Add Collection area.
+
+# PART 12 — PRESERVE BACKGROUND CONTROLS
+
+Preserve:
+
+- `Background Edit` top pill
+- Background panel heading
+- Fill Screen
+- Fit Image
+- Light
+- Dark
+- Fade/darken slider
+- Background Undo
+- Background Redo
+- Current Showcase behavior
+- Preview
+- Imperial
+- Share
+
+Do not yet:
+
+- Rename Showcase to Hide
+- Move Preview
+- Remove the Preview pill above Pack Summary
+- Reorder Hide, Preview, and Imperial
+
+Those changes belong to the next prompt after Prompt 016B passes testing.
+
+# PART 13 — AUTOMATED TESTS
+
+Add focused tests for storage and dropdown behavior.
+
+Test at minimum:
+
+1. Landscapes produces a visible closed-dropdown label.
+2. A selected custom theme produces `Theme [Collection Name]`.
+3. Renaming updates the closed-dropdown label.
+4. Deleting the selected theme changes the label to Landscapes.
+5. Refresh restores the visible selected label.
+6. Theme metadata contains photo IDs rather than large image data.
+7. Uploaded photo blobs are stored in IndexedDB.
+8. localStorage does not contain the full uploaded image.
+9. Selecting a custom background does not duplicate the blob.
+10. Save does not duplicate image data.
+11. Save As does not duplicate image data.
+12. New does not duplicate image data.
+13. Migration converts a valid old data URL to IndexedDB.
+14. Migration is idempotent.
+15. Corrupt old image data does not crash the application.
+16. Failed storage rolls back the pending photo.
+17. Failed storage does not increase the photo counter.
+18. Failed storage does not show the photo as saved.
+19. Storage failure produces a user-friendly error.
+20. Storage failure does not create an uncaught exception.
+21. Removing a photo deletes the unreferenced blob.
+22. Deleting a theme deletes its unreferenced blobs.
+23. A missing active photo falls back safely.
+24. Maximum of ten photos remains enforced.
+25. Maximum of ten custom themes remains enforced.
+26. Prompt 015 per-file Weight Distribution palette behavior remains unaffected.
+
+Mock IndexedDB failures where necessary.
+
+Do not weaken tests to force a pass.
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Every suite
+- Suite count
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Warnings
+- Errors
+
+If a new test suite is added:
+
+- Add it to the existing test command.
+- Update `TESTING.md`.
+- Document exactly what it protects.
+- Update the total suite count.
+
+# PART 14 — REQUIRED RENDERED TESTS
+
+Use the signed-in Replit preview.
+
+Do not install Playwright.
+
+## Dropdown-label test
+
+1. Select Landscapes.
+2. Close the dropdown.
+3. Confirm the closed control reads `Landscapes`.
+4. Select a custom theme named Test.
+5. Confirm the closed control reads `Theme Test`.
+6. Rename it Sierra.
+7. Confirm the closed control reads `Theme Sierra`.
+8. Refresh.
+9. Confirm the correct label remains visible.
+
+## Large-photo persistence test
+
+Use ten different large test photos representative of phone or camera images.
+
+1. Create or select one custom theme.
+2. Add ten large photos.
+3. Confirm the counter reaches `10/10`.
+4. Confirm no quota error appears.
+5. Refresh the full page.
+6. Reopen the same theme.
+7. Confirm all ten photos remain.
+8. Confirm the counter still reads `10/10`.
+9. Close and reopen the browser preview if practical.
+10. Confirm all ten photos remain.
+
+Do not report PASS by repeatedly uploading one tiny test icon.
+
+## Active-background test
+
+1. Select one uploaded custom photo as the background.
+2. Confirm it displays.
+3. Switch Fill and Fit.
+4. Switch Light and Dark where applicable.
+5. Adjust fade/darken.
+6. Refresh.
+7. Confirm the same custom background returns.
+8. Confirm no quota message appears.
+9. Confirm no Vite error screen appears.
+
+## Save workflow test
+
+1. Save a checklist using a custom photo.
+2. Reopen it from Locker.
+3. Confirm the background returns.
+4. Use Save As.
+5. Confirm both files reference the same library photo without duplicating it.
+6. Use New.
+7. Confirm the visual background copies while gear is unchecked.
+8. Confirm no additional image blob is created for Save, Save As, or New.
+
+## Failure-handling test
+
+Cause or mock a failed photo-storage transaction.
+
+Confirm:
+
+- A normal TrailWeigh message appears.
+- The Add Photo slot remains available.
+- The counter does not increase.
+- No broken thumbnail appears.
+- No Vite runtime-error screen appears.
+- Existing saved photos remain intact.
+
+## Removal test
+
+1. Remove one photo.
+2. Refresh.
+3. Confirm it remains removed.
+4. Confirm the other nine photos remain.
+5. Add a replacement photo.
+6. Confirm the theme returns to `10/10`.
+
+Capture screenshots showing:
+
+- Landscapes visible in the closed dropdown
+- A custom theme visible in the closed dropdown
+- Ten uploaded photos at `10/10`
+- The same ten photos after refresh
+- A selected custom photo as the checklist background
+- Friendly storage-error message
+- No Vite quota-error screen
+
+User visual testing remains required.
+
+# PART 15 — PERFORMANCE AND CLEANUP
+
+Verify that:
+
+- Switching themes does not repeatedly load every full-resolution image into memory.
+- Thumbnail rendering uses suitable object URLs or thumbnails.
+- Old object URLs are revoked.
+- Deleting photos cleans up obsolete records.
+- Refresh does not rerun an expensive migration unnecessarily.
+- The application remains responsive with 10 themes containing up to 10 photos each.
+
+The architecture must support:
+
+`10 custom themes × 10 photos = 100 custom photos`
+
+This does not mean TrailWeigh must load all 100 full-size images into memory at the same time.
+
+Load only what is needed for the selected theme and active background.
+
+# PART 16 — PRESERVE UNRELATED FEATURES
+
+Do not change:
+
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+- Category panel width
+- MOVE
+- WEIGHT
+- QTY
+- TOTAL
+- DESCRIPTION
+- Pack Summary calculations
+- Weight Distribution calculations
+- Per-file chart palettes
+- Base Weight
+- Dog Pack
+- Expendables
+- Active file naming
+- Save confirmation wording
+- Share Link
+- Print
+- PDF export
+- Importers
+- AI scanning
+- Authentication
+- Retail or affiliate features
+- Mobile companion data
+- Separate Expo application
+
+# PART 17 — DOCUMENTATION
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_016B_REPORT.md`
+
+The report must include:
+
+## Identification
+
+- Prompt ID
+- Prompt title
+- Start time
+- Completion time
+- Purpose
+- Exact requested result
+
+## Confirmed starting failures
+
+Document:
+
+- Blank closed Theme dropdown
+- Photos disappearing after refresh
+- Quota error when selecting a custom background
+- Vite error screen
+- Existing storage architecture that caused the problem
+
+## Storage audit
+
+List:
+
+- Every relevant localStorage key
+- Every IndexedDB database and store
+- Where themes are stored
+- Where image data was stored before
+- Where image data is stored after
+- Where the active photo reference is stored
+- Whether saved Locker files contain image data
+
+## Migration
+
+Document:
+
+- Old schema
+- New schema
+- Migration version
+- Idempotency protection
+- Successful-photo count
+- Failed-photo count
+- Corrupt-data handling
+- Removal of old Base64 data
+
+## Compression
+
+Document:
+
+- Maximum dimensions
+- Output format
+- Quality
+- Orientation handling
+- Transparency handling
+- Example before-and-after sizes
+
+## Exact implementation
+
+For every changed file include:
+
+- Full path
+- What changed
+- Why
+- Important functions
+- Important schemas
+- Before-and-after excerpts
+- Saved-data impact
+
+## Test results
+
+Include:
+
+- Automated command
+- Suite names
+- Suite count
+- Execution order
+- Passed
+- Failed
+- Exit code
+- Warnings
+- Errors
+- Rendered tests
+- Screenshot names
+- Tested viewport sizes
+
+## Storage measurements
+
+Record before and after:
+
+- localStorage size
+- IndexedDB size
+- Number of themes
+- Number of photos
+- Number of image blobs
+- Whether selecting a background creates another blob
+- Whether Save As creates another blob
+- Whether New creates another blob
+
+## Acceptance matrix
+
+Mark every requirement:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+Explain every result that is not PASS.
+
+Do not claim that photo persistence works unless ten large photos were added, refreshed, and visibly remained.
+
+# PART 18 — APPEND THE COMPLETE REPORT TO THE MASTER
+
+Append the complete Prompt 016B report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Do not append only a shortened summary.
+
+Requirements:
+
+- Do not overwrite the master.
+- Do not truncate earlier prompts.
+- Include the complete report.
+- Confirm Prompt 016B appears exactly once.
+- Confirm Prompt 016A remains present.
+- Confirm the master line count increased.
+
+Update:
+
+- Prompt Number Index
+- Current Background Edit state
+- Storage architecture
+- Known limitations
+- Latest-entry field
+
+Final trailer:
+
+`Master workflow last updated: 2026-08-06 (Prompt 016B)`
+
+# PART 19 — CREATE A CLEAN REPORT ZIP
+
+Create:
+
+`trailweigh-016B-report.zip`
+
+Include only:
+
+- `workflow-reports/PROMPT_016B_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+Do not include:
+
+- `__MACOSX`
+- `.DS_Store`
+- Backups
+- Application source
+- Uploaded test photos
+- User photos
+- Locker data
+- Credentials
+- Dependencies
+- Other ZIP files
+
+Verify the ZIP contents after creation.
+
+# FINAL VERIFICATION
+
+Before completing, confirm:
+
+1. The closed dropdown displays Landscapes.
+2. The closed dropdown displays `Theme [Collection Name]`.
+3. The label survives refresh.
+4. Full image data is no longer stored in localStorage.
+5. Custom image blobs are stored in IndexedDB.
+6. Uploaded images are resized and compressed.
+7. Active backgrounds store only lightweight photo references.
+8. Save does not duplicate image data.
+9. Save As does not duplicate image data.
+10. New does not duplicate image data.
+11. Ten large photos can be added to one theme.
+12. All ten remain after refresh.
+13. The counter remains `10/10`.
+14. Selecting a custom background does not produce a quota error.
+15. No Vite error screen appears.
+16. Failed storage rolls back cleanly.
+17. Failed storage shows a friendly TrailWeigh message.
+18. Removing a photo cleans up its unreferenced blob.
+19. Deleting a theme cleans up its unreferenced blobs.
+20. Existing Prompt 016A themes are preserved.
+21. Migration does not duplicate photos.
+22. Theme and photo limits still work.
+23. Drag-and-drop still works.
+24. Click-to-upload still works.
+25. Fill/Fit still works.
+26. Light/Dark still works.
+27. Undo/Redo still works.
+28. Showcase still works.
+29. Desktop grid remains `lg:grid-cols-[1fr_365px]`.
+30. QTY remains `translate-x-3`.
+31. Prompt 015 palette persistence still works.
+32. Share Link was not changed.
+33. Importers were not changed.
+34. `PROMPT_016B_REPORT.md` exists.
+35. Prompt 016B appears exactly once in the master.
+36. The complete report, not merely a summary, was appended.
+37. `trailweigh-016B-report.zip` contains exactly four files.
+38. The ZIP contains no `__MACOSX` or `.DS_Store` files.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_016B_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-016B-report.zip`
+- Report exact paths, sizes, and line counts
+- Report the exact automated-test result
+- Report IndexedDB and localStorage measurements
+- State which rendered tests passed
+- State exactly what still requires user testing
+- Confirm no unrelated TrailWeigh feature was modified
+- Do not require the user to copy the workflow manually
