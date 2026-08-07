@@ -4076,3 +4076,43 @@ The Clerk auth gate (`if (!isLoaded) return <spinner>`) blocks rendering of `Che
 ### Prompt History
 
 019 = PASS | 020–020D = PARTIAL/FAIL | 020E = FAIL (user-tested) | 020F = NOT YET USER-VERIFIED
+
+---
+
+## Prompt 021 — Share Link Repair
+
+**Status:** COMPLETE — NOT USER-VERIFIED  
+**Date:** 2026-08-07
+
+### What Was Done
+
+Five interrelated fixes to the Share Link feature:
+
+1. **Crash fix** — `SharedChecklistPage` rendered `GearCategory` without the required `order` prop (and `moveItem`). `GearRow.tsx:48` crashed: `undefined.filter(...)` on every shared-view load.
+2. **normalizeSnapshot completeness** — `normalizeSnapshot` omitted `name` and `unit` from its returned `SharePayload`, causing the shared-view banner to always show the generic text and ignoring the sender's unit preference.
+3. **Empty-list Share UX** — replaced the "Nothing to share" destructive toast with a grayed-out `aria-disabled` button that shows an explanatory message on desktop hover/focus (CSS only) and mobile tap (state-driven).
+4. **Save-before-sharing warning** — "Copy Link" now sets `shareStep='warning'`, showing a reminder and requiring "Copy Link Anyway" before any link is generated.
+5. **TypeScript fix** — `BackgroundPickerButton` was missing the required `panelOpen` prop in `SharedChecklistPage`.
+
+### Root Cause — The Crash
+
+`GearCategory` at line 723 of `SharedChecklistContent` was called without `order={store.order}`. The TypeScript error was silent at runtime, and the first `GearRow` render called `undefined.filter(c => c !== category)`, crashing the page. `moveItem` was also absent; the move-to dropdown would have crashed if used.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `src/pages/SharedChecklistPage.tsx` | Added `order={store.order}`, `moveItem={moveItem}` to GearCategory; implemented `moveItem` useCallback; normalizeSnapshot returns `name` + `unit`; `BackgroundPickerButton` `panelOpen` fix |
+| `src/pages/Checklist.tsx` | Removed "Nothing to share" toast; added `totalItems`/`canShare`/`shareStep`/`showEmptyShareMsg`; replaced Share button section |
+| `src/hooks/shareLink021.test.mjs` | New — 27 structural tests |
+| `package.json` | Added `crossTabIsolation020E`, `inheritedSessionStorage020F`, `shareLink021` to `test:importer` script |
+
+### Automated Test Results
+
+```
+021:  27/27 ✅  020F: 28/28 ✅  020E: 24/24 ✅  Full regression: 30/30 ✅
+```
+
+### Prompt History
+
+017 = PASS | 017A–017F = PASS | 018–018C = PASS | 019 = PASS | 020–020F = PASS/NOT-VERIFIED | **021 = NOT USER-VERIFIED**

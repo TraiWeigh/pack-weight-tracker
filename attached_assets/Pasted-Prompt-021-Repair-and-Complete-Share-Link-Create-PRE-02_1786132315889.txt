@@ -1,0 +1,494 @@
+Prompt 021 — Repair and Complete Share Link
+
+Create PRE_021_MASTER_BACKUP.md before changing anything.
+
+STARTING STATUS:
+020F functional behavior = USER-TESTED PASS.
+Protect it completely.
+
+CONFIRMED SHARE BUG:
+A valid Share Link can open the shared page and then crash with:
+
+undefined is not an object (evaluating 'order.filter')
+
+This is confirmed to be a Share Link loading/hydration problem, NOT a New/newseed problem.
+
+GOAL:
+Repair Share Link end-to-end and implement the required Share user experience without changing unrelated TrailWeigh behavior.
+
+==================================================
+1. EMPTY-LIST SHARE LINK UX
+==================================================
+
+When the CURRENT working list contains zero gear items:
+
+- Share Link must LOOK unavailable/grayed out.
+- Do NOT use a native disabled button if that prevents hover/focus/tap events.
+- It may be visually disabled while still receiving the interaction needed to explain why.
+
+Desktop:
+Hovering over or keyboard-focusing Share Link shows a small message adjacent to the Share Link control:
+
+“Add some gear items before creating a share link.”
+
+Phone/tablet:
+Tapping unavailable Share Link shows the same message near the Share Link control.
+
+Remove the large bottom-right:
+“Nothing to share”
+toast for this empty-list condition.
+
+The explanatory message should disappear normally when pointer/focus/tap interaction ends.
+
+As soon as the current list contains at least one gear item:
+- Share Link automatically returns to normal active appearance.
+- Share works normally.
+
+Do not alter the position/size/layout of unrelated sidebar controls.
+
+==================================================
+2. SAVE-BEFORE-SHARING WARNING
+==================================================
+
+When Share Link is available and the user activates it:
+
+Before generating/copying the shared link, clearly remind the sender:
+
+“Save the currently open file first so the shared version is current.”
+
+Use the existing TrailWeigh visual style.
+
+Do not automatically overwrite/save a file without the user explicitly choosing Save.
+
+If the current file has unsaved changes, the warning must not silently imply those changes are already in the shared saved version.
+
+==================================================
+3. FIX CONFIRMED SHARED-LINK CRASH
+==================================================
+
+Investigate the COMPLETE Share data path before editing:
+
+- Share button handler
+- share serialization
+- share URL generation
+- encoded/shared payload
+- URL parsing
+- shared-page initialization
+- shared store hydration
+- Store/order/items/categories schema
+- saved-list identity
+- checked-item state
+- appearance restoration
+- backward compatibility with older shared links where practical
+
+Determine exactly why `order` is undefined when the shared page reaches `order.filter(...)`.
+
+Do NOT merely change:
+
+order.filter(...)
+
+to optional chaining or a fallback unless the shared store itself is first validated and correctly constructed.
+
+The shared page must hydrate a valid TrailWeigh Store with valid expected fields, including:
+- order
+- items
+- categories/data structures already required by current Store schema
+
+Malformed/incompatible shared data must fail gracefully with a readable TrailWeigh message instead of a runtime crash.
+
+Document the exact root cause.
+
+==================================================
+4. SHARED EXPERIENCE
+==================================================
+
+A recipient opening a valid Share Link must be able to view the saved TrailWeigh files made available through that shared experience.
+
+Each shared file must display its shared saved state correctly, including where supported:
+- categories
+- items
+- quantities
+- weights
+- checked/unchecked states
+- calculations
+- filename
+- saved appearance/background
+- Light/Dark
+- Fill/Fit
+- fade/darken
+- chart palette
+- other existing per-file saved appearance
+
+Do NOT leak the recipient’s own local active-file appearance into shared files.
+
+Do NOT leak one shared file’s appearance into another.
+
+Shared viewing must not modify the sender’s originals.
+
+==================================================
+5. DELETE PROTECTION
+==================================================
+
+A shared-view recipient must NOT be able to delete a shared file without the existing required deletion password/security mechanism.
+
+Do not weaken or bypass the current Locker deletion protection.
+
+Viewing a shared file must never count as ownership permission to delete the sender’s original.
+
+==================================================
+6. COPY / ADD TO MY TRAILWEIGH
+==================================================
+
+Provide an action that allows the recipient to add/copy a shared saved file into their own TrailWeigh.
+
+Required behavior:
+
+- Copy creates a NEW independent file belonging to the recipient.
+- It must have its own new file ID.
+- It must NOT remain linked to the sender’s file.
+- Recipient edits/saves must never overwrite or modify the sender’s file.
+- Sender changes later must never silently overwrite recipient’s copied file.
+- Preserve the copied file’s gear/content and supported saved appearance at the moment it is copied.
+
+If the recipient is not signed into/does not have the required TrailWeigh account:
+- offer the existing account creation/sign-in path before completing the copy.
+- do not discard the intended shared file during that process.
+
+Do not create duplicate copies accidentally from one click.
+
+==================================================
+7. STATE/DATA OWNERSHIP PROTECTION
+==================================================
+
+STRICT RULES:
+
+Sender saved file:
+- remains sender-owned
+- Share viewing cannot modify it
+- recipient copy cannot overwrite it
+
+Shared representation:
+- view/copy source only
+- must not become a writable reference to sender storage
+
+Recipient copy:
+- new independent ID
+- recipient-owned
+- separate persistence
+
+Never:
+- rewrite existing Locker files merely because they are shared
+- migrate/delete existing user files
+- replace existing file IDs
+- copy active appearance from unrelated tabs
+- use shared temporary state as permanent sender data
+- expose deletion privileges by sharing
+
+If a schema/storage migration appears necessary:
+STOP and explain why before implementing it.
+
+==================================================
+8. GLOBAL REGRESSION PROTECTION
+==================================================
+
+Treat ALL existing TrailWeigh behavior as protected unless Prompt 021 explicitly changes it.
+
+Smallest reliable change set only.
+
+NO unrelated:
+- cleanup
+- refactoring
+- renaming
+- file relocation
+- modernization
+- layout redesign
+
+Preserve:
+- all saved Locker files
+- localStorage
+- IndexedDB
+- cross-tab behavior
+- saved-file compatibility
+- custom themes/photos
+- background libraries
+- calculations
+- importer behavior
+- responsive/mobile behavior
+
+Specifically protect USER-TESTED 020F behavior:
+
+NEW:
+- zero categories/items
+- Clear/no background
+- Light mode
+- no filename
+- remains Clear/Light
+- cannot inherit another file’s appearance
+
+SAVED FILE:
+- restores only its own saved appearance
+- no cross-tab/background leakage
+
+Also protect:
+- Sierra/Dutch/0826 saved appearance
+- Ray Jardine’s saved appearance
+- Packlist 1 Light/no-background appearance
+- `Saved [File Name]` with NO quotation marks
+- automatic category creation during import
+- imported items unchecked
+- Scan Gear List
+- 019 independent Pack Summary / Weight Distribution
+- 018C filename pill
+- 017E background shaking fix
+- Background Edit
+- themes/custom themes/custom photos
+- IndexedDB photo persistence
+- Fill/Fit/Darken
+- background Undo/Redo
+- Save/Save As/Locker/Reset
+- Hide/Preview/Print
+- Imperial/Metric
+- Open/Close
+- MOVE
+- calculations
+- palette persistence
+- desktop/mobile layout
+- `lg:grid-cols-[1fr_365px]`
+- QTY `translate-x-3`
+
+Inspect final diff and revert unrelated changes.
+
+==================================================
+9. REQUIRED TESTS
+==================================================
+
+A. EMPTY SHARE
+
+1. Open New with zero items.
+2. Confirm Share Link looks unavailable/grayed.
+3. Hover/focus it on desktop.
+4. Confirm adjacent message:
+   “Add some gear items before creating a share link.”
+5. Confirm no bottom-right “Nothing to share” toast.
+6. Confirm clicking/tapping cannot generate an empty Share Link.
+7. Add one gear item.
+8. Confirm Share Link becomes active automatically.
+
+B. VALID SHARE
+
+Use a real saved file containing gear.
+
+1. Activate Share.
+2. Confirm save-first reminder appears.
+3. Generate/copy Share Link.
+4. Paste link into a fresh browser tab/private context where practical.
+5. Press Enter.
+6. Confirm NO `order.filter` crash.
+7. Confirm correct file content.
+8. Confirm checked states.
+9. Confirm calculations.
+10. Confirm saved appearance.
+11. Wait at least 5 seconds for delayed hydration/state changes.
+12. Confirm content/appearance remain correct.
+
+C. MULTIPLE SHARED FILES
+
+Verify shared experience can display the intended saved files.
+
+Switch among them repeatedly.
+
+Confirm:
+- correct filename
+- correct gear
+- correct checked states
+- correct appearance
+- no cross-file contamination
+- no changes to sender originals
+
+D. DELETE
+
+Attempt deletion from shared experience.
+
+Confirm existing password protection is required and sender file cannot be removed without authorization.
+
+E. COPY
+
+1. Open shared file.
+2. Choose Add/Copy to my TrailWeigh.
+3. Confirm new independent file is created.
+4. Confirm new unique ID.
+5. Modify recipient copy.
+6. Save recipient copy.
+7. Confirm sender original remains unchanged.
+8. Reopen sender/shared version.
+9. Confirm recipient changes did not propagate backward.
+
+Also test recipient without required account/sign-in:
+- account/sign-in option appears
+- intended file can still be copied afterward
+
+F. MALFORMED LINK
+
+Open intentionally invalid/incomplete shared payload.
+
+Confirm TrailWeigh shows a useful error instead of runtime exception.
+
+G. 020F REGRESSION
+
+After Share changes:
+
+Ray Jardine’s → correct psychedelic appearance
+New → Clear + Light, wait 5 seconds
+Sierra/Dutch/0826 → correct mountain appearance
+New → Clear + Light, wait 5 seconds
+Packlist 1 → Light + no background
+New → Clear + Light
+
+No leakage.
+
+H. IMPORTER REGRESSION
+
+From blank New:
+Scan Gear List.
+Confirm needed categories auto-create.
+Confirm imported items remain unchecked.
+Confirm mappings remain intact.
+
+==================================================
+10. AUTOMATED TESTS
+==================================================
+
+Add focused Prompt 021 tests covering:
+- empty-list Share unavailable state
+- Share availability when >=1 item
+- valid Share Store always contains valid `order`
+- invalid payload handled safely
+- Share hydration
+- checked-state preservation
+- appearance isolation
+- sender file remains read-only
+- recipient copy gets new independent ID
+- recipient copy cannot overwrite sender
+- deletion protection
+- 020F New isolation remains intact
+
+Then run the COMPLETE TrailWeigh automated regression suite.
+
+Report:
+- exact focused test commands
+- focused passed/failed/skipped
+- exact FULL-suite command
+- TOTAL passed/failed/skipped
+
+Do NOT describe a small targeted subset as the complete regression suite.
+
+==================================================
+11. USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Replit testing is not equivalent to user testing.
+
+Until the user personally tests Prompt 021:
+
+021 = NOT USER-VERIFIED
+
+==================================================
+12. REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021_REPORT.md
+
+Include:
+- exact prompt
+- starting state
+- exact `order.filter` root cause
+- Share architecture before/after
+- files inspected
+- files changed
+- data ownership model
+- sender protection
+- recipient-copy behavior
+- empty Share UX
+- tests
+- rendered browser evidence
+- failures/reversions
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user tests still required
+
+Append verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite/truncate prior history.
+
+Record:
+019 = USER-TESTED PASS
+020 = PARTIAL
+020A = PARTIAL
+020B = PARTIAL
+020C = PARTIAL/FAIL
+020D = FAIL/PARTIAL
+020E = PARTIAL/FAIL
+020F functional = USER-TESTED PASS
+021 = NOT USER-VERIFIED
+
+==================================================
+13. REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021-report.zip
+
+It must contain EXACTLY these four Markdown files at ZIP ROOT:
+
+PROMPT_021_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- backup files
+- test/source files
+- screenshots
+- user data
+- other ZIPs
+
+Before finishing, LIST archive contents.
+
+Exactly 4 root entries.
+
+Anything else = ZIP FAIL.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+1. exact Share `order.filter` root cause
+2. exact files changed
+3. empty Share Link unavailable behavior
+4. save-before-share behavior
+5. how valid shared state is reconstructed
+6. malformed-link handling
+7. sender data protections
+8. delete protection
+9. recipient copy architecture/new ID
+10. account/sign-in copy behavior
+11. focused test totals
+12. COMPLETE regression totals
+13. real-browser Share results
+14. 020F regression results
+15. importer regression results
+16. report path
+17. ZIP path
+18. exact four ZIP entries
+19. clearly state USER acceptance still required

@@ -482,6 +482,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     : null;
 
   const [showShareMenu, setShowShareMenu] = useState(false);
+  // Computed: how many gear items exist (checked or not) — drives Share button state
+  const totalItems = store.order.reduce(
+    (s, cat) => s + (store.items[cat]?.length ?? 0), 0
+  );
+  const canShare = totalItems > 0;
+  // Share flow: 'menu' = normal dropdown, 'warning' = save-before-share reminder step
+  const [shareStep, setShareStep] = useState<'menu' | 'warning'>('menu');
+  // Mobile-only: show "add items first" message when tapping the grayed Share button
+  const [showEmptyShareMsg, setShowEmptyShareMsg] = useState(false);
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
 
@@ -536,20 +545,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   }
 
   const handleCopyLink = async () => {
-    // Snapshot validation — fail fast if the list data is structurally empty
-    // even though the sender's screen has visible items (serialization guard).
-    const totalItems = store.order.reduce(
-      (s, cat) => s + (store.items[cat]?.length ?? 0), 0
-    );
-    if (store.order.length === 0 || totalItems === 0) {
-      toast({
-        title:       'Nothing to share',
-        description: 'Add some gear items before creating a share link.',
-        variant:     'destructive',
-      });
-      setShowShareMenu(false);
-      return;
-    }
+    // Empty-list case is handled by the UI (Share button grayed out when canShare=false).
+    // This guard is a defensive fallback only.
+    if (store.order.length === 0) return;
 
     // Snapshot the complete current working file — same structure as Save.
     // Checkbox states are preserved as-is (unlike New which resets them).
@@ -1538,36 +1536,94 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
                 {/* Share pill + dropdown */}
                 <div className="relative">
-                  <button
-                    onClick={() => setShowShareMenu(o => !o)}
-                    className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    <Share2 className="w-3.5 h-3.5" />
-                    Share
-                  </button>
-                  {showShareMenu && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
-                      <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
-                        <button
-                          onClick={() => { handleCopyLink(); setShowShareMenu(false); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
-                        >
-                          <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                          <div className="text-left">
-                            <div>{copied ? 'Copied!' : 'Copy Link'}</div>
-                          </div>
-                        </button>
-                        <div className="my-1 border-t border-border" />
-                        <button
-                          onClick={() => { handleShare(); setShowShareMenu(false); }}
-                          disabled={sharing}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors disabled:opacity-50"
-                        >
-                          <FileDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                          {sharing ? 'Preparing…' : 'Download PDF'}
-                        </button>
+                  {!canShare ? (
+                    /* Empty list — visually dimmed, explains on hover (desktop) or tap (mobile) */
+                    <div className="group relative">
+                      <button
+                        type="button"
+                        aria-disabled="true"
+                        onClick={() => setShowEmptyShareMsg(v => !v)}
+                        onBlur={() => setShowEmptyShareMsg(false)}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground/40 border border-border/40 bg-card px-3 py-1.5 rounded-lg cursor-not-allowed select-none"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        Share
+                      </button>
+                      {/* Desktop: CSS hover/focus tooltip */}
+                      <div className="pointer-events-none absolute right-0 top-full mt-1.5 bg-popover text-popover-foreground text-xs border border-border rounded-lg px-3 py-2 shadow-md whitespace-nowrap z-20 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity hidden md:block">
+                        Add some gear items before creating a share link.
                       </div>
+                      {/* Mobile: tap toggles message */}
+                      {showEmptyShareMsg && (
+                        <div className="absolute right-0 top-full mt-1.5 bg-popover text-popover-foreground text-xs border border-border rounded-lg px-3 py-2 shadow-md whitespace-nowrap z-20 md:hidden">
+                          Add some gear items before creating a share link.
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Active: normal Share button with dropdown */
+                    <>
+                      <button
+                        onClick={() => { setShowShareMenu(o => !o); setShareStep('menu'); }}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        Share
+                      </button>
+                      {showShareMenu && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => { setShowShareMenu(false); setShareStep('menu'); }} />
+                          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[200px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                            {shareStep === 'menu' ? (
+                              <>
+                                <button
+                                  onClick={() => setShareStep('warning')}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
+                                >
+                                  <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                                  <div className="text-left">
+                                    <div>{copied ? 'Copied!' : 'Copy Link'}</div>
+                                  </div>
+                                </button>
+                                <div className="my-1 border-t border-border" />
+                                <button
+                                  onClick={() => { handleShare(); setShowShareMenu(false); setShareStep('menu'); }}
+                                  disabled={sharing}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors disabled:opacity-50"
+                                >
+                                  <FileDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                                  {sharing ? 'Preparing…' : 'Download PDF'}
+                                </button>
+                              </>
+                            ) : (
+                              /* Save-before-sharing reminder */
+                              <div className="px-3 py-3 space-y-2.5">
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                  Save the currently open file first so the shared version is current.
+                                </p>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={async () => {
+                                      setShowShareMenu(false);
+                                      setShareStep('menu');
+                                      await handleCopyLink();
+                                    }}
+                                    className="flex-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors"
+                                  >
+                                    Copy Link Anyway
+                                  </button>
+                                  <button
+                                    onClick={() => setShareStep('menu')}
+                                    className="text-xs text-muted-foreground hover:text-foreground px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </>
                   )}
                 </div>

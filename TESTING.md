@@ -6,7 +6,7 @@
 pnpm test:importer
 ```
 
-This runs all **sixteen** test suites in sequence and exits non-zero on any failure.
+This runs all **twenty-nine** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
@@ -27,12 +27,25 @@ node artifacts/pack-checklist/src/hooks/landscapeHover017B.test.mjs # Landscape 
 node artifacts/pack-checklist/src/hooks/landscapeActiveBackground017C.test.mjs # Active-background shaking fix (Prompt 017C)
 node artifacts/pack-checklist/src/hooks/landscapeShake017D.test.mjs            # Landscape shaking root cause — compositing cascade fix (Prompt 017D)
 node artifacts/pack-checklist/src/hooks/landscapeShake017E.test.mjs            # Image geometry stability — permanent box-shadow root cause (Prompt 017E)
+node artifacts/pack-checklist/src/hooks/activeFileName018.test.mjs  # Active file name display (Prompt 018)
+node artifacts/pack-checklist/src/hooks/activeFileName018A.test.mjs # Active file name 018A
+node artifacts/pack-checklist/src/hooks/activeFileName018B.test.mjs # Active file name 018B
+node artifacts/pack-checklist/src/hooks/activeFileName018C.test.mjs # Active file name 018C
+node artifacts/pack-checklist/src/hooks/sidebar019.test.mjs         # Sidebar layout (Prompt 019)
+node artifacts/pack-checklist/src/hooks/newBlank020.test.mjs        # New blank list (Prompt 020)
+node artifacts/pack-checklist/src/hooks/newClearLight041.test.mjs   # New = Clear+Light appearance
+node artifacts/pack-checklist/src/hooks/lockerFirstOpen020B.test.mjs # Locker first-open path (Prompt 020B)
+node artifacts/pack-checklist/src/hooks/newAfterLocker020C.test.mjs  # New after Locker load (Prompt 020C)
+node artifacts/pack-checklist/src/hooks/savedListRestore020D.test.mjs # Saved list appearance restore (Prompt 020D)
+node artifacts/pack-checklist/src/hooks/crossTabIsolation020E.test.mjs       # Cross-tab bg isolation (Prompt 020E)
+node artifacts/pack-checklist/src/hooks/inheritedSessionStorage020F.test.mjs # Inherited-sessionStorage forkId fix (Prompt 020F)
+node artifacts/pack-checklist/src/hooks/shareLink021.test.mjs                # Share link repair (Prompt 021)
 ```
 
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 1101 passed / 0 failed (017E/017F/018C/019 USER-TESTED PASS; 020/020A/020B/020C/020D: New blank+Clear+Light + saved-file appearance restoration + fork/savedListId remount isolation implemented — 2026-08-07).
+**Current result:** 1128 passed / 0 failed (017E/017F/018C/019 USER-TESTED PASS; 020/020A/020B/020C/020D: New blank+Clear+Light + saved-file appearance restoration + fork/savedListId remount isolation implemented — 2026-08-07; 021: Share link crash fix + empty-list UX + save-before-sharing warning — NOT USER-VERIFIED).
 
 ## What each suite protects
 
@@ -54,6 +67,19 @@ plain JS so tests can run against source changes immediately.
 | `landscapeActiveBackground017C.test.mjs` | Active-background shaking fix (Prompt 017C): no box-shadow transition on tile button — root cause removed (C1); no transition-all (C2); ring geometry frozen — 017B preserved (C3); no hover:ring-2 (C4); no hover:ring-offset-1 (C5); no hover:scale-* (C6); ring-transparent in base state (C7); no onMouseEnter on tile buttons (C8); no onMouseLeave (C9); no onPointerEnter (C10); no onPointerLeave (C11); label overlay has pointer-events-none (C12); no onMouseEnter on main container (C13); bgImageUrl derived from state only — no hover leak (C14); object URL not recreated on hover (C15); background inline style from state only (C16); useInactivityTimer no React state on mousemove (C17); BackgroundShowcase always mounted (C18); panel has willChange:transform — GPU layer isolation (C19); willChange:transform only on panel not main container (C20); panel willChange value is "transform" (C21); panel has z-50 — stacking preserved (C22); 017E: ring-2+ring-offset-1 conditional (C23); 017A Hide unconditional (C24) |
 | `landscapeShake017D.test.mjs` | Compositing cascade fix (Prompt 017D): no transition-opacity inside overflow-hidden landscape button (D1–D6); structural comparison — group placement and overflow-hidden (D7–D10); image loading — remote URL, decoding attribute, blob vs remote (D11–D14); preserved UX — label still appears on hover (D15–D18); regression guards — 017A/017B/017C + 017E-updated ring guards (D19–D22); custom tile comparison — transition-opacity outside overflow-hidden (D23–D26) |
 | `landscapeShake017E.test.mjs` | Image geometry stability — permanent box-shadow root cause (Prompt 017E): no unconditional ring-2+ring-offset-1 at rest (E1–E6); conditional ring pattern in active and hover branches (E7–E10); image geometry setup unchanged — w-full h-full object-cover, getThumbUrl fixed dimensions, no JS inline style (E11–E14); custom tile structural comparison confirms fix matches no-shake pattern (E15–E18); visual UX preserved — ring on hover/active, label on hover, checkmark (E19–E22); prior fixes in place — decoding=async, no transition-opacity, no transition-all, willChange:transform (E23–E26); regression guards — no hover event handlers, pointer-events-none, Hide unconditional (E27–E30) |
+| `activeFileName018.test.mjs` | Active file name display (Prompt 018) |
+| `activeFileName018A.test.mjs` | Active file name 018A refinements |
+| `activeFileName018B.test.mjs` | Active file name 018B refinements |
+| `activeFileName018C.test.mjs` | Active file name 018C — filename pill centering |
+| `sidebar019.test.mjs` | Sidebar layout (Prompt 019) |
+| `newBlank020.test.mjs` | New blank list (Prompt 020) |
+| `newClearLight041.test.mjs` | New = Clear+Light appearance invariant |
+| `lockerFirstOpen020B.test.mjs` | Locker first-open path (Prompt 020B) |
+| `newAfterLocker020C.test.mjs` | New after Locker load (Prompt 020C) |
+| `savedListRestore020D.test.mjs` | Saved list appearance restore (Prompt 020D) |
+| `crossTabIsolation020E.test.mjs` | Cross-tab background isolation (Prompt 020E): no unscoped generic restore keys exist — all setItem/getItem for tw-fork-bg-restore, tw-fork-bgfade-restore, tw-fork-bgtone-restore use forkId-scoped template-literal keys (tests 1–9); background initializer reads tw-fork-id before constructing scoped key — forkId in scope at stash time (10); handleLoadFromLocker reads forkId and writes all three scoped keys (11–14); all three change handlers read tw-fork-id and write scoped keys (15–17); newseed remount still returns null/Clear as final fallback (18); savedListId path reads tw-savedlist-bg before scoped stash — correct order (19–20); no localStorage.clear or sessionStorage.clear added (21–22); resolveStorageKey still produces unique forkIds for newseed and savedListId tabs (23–24) |
+| `inheritedSessionStorage020F.test.mjs` | Inherited-sessionStorage forkId override (Prompt 020F): resolveStorageKey URL params precede sessionStorage check — newseed before sessionStorage (1–2), savedListId before sessionStorage (3–4), newseed sets correct tw-fork-id (5), savedListId creates fresh UUID (6), both branches return before sessionStorage fallback (7–8), sessionStorage fallback present for remounts (9), V5_KEY for primary tabs (10), fork-scoped keys returned (11–12), scenario: newseed tab with inherited forkId gets URL identity (13), scenario: savedListId tab with inherited forkId gets fresh identity (14); background initializer reads tw-fork-id correctly (15), newseed-bg key scoped to forkId (16), scoped restore key stashed on first load (17), remount path reads scoped key not generic (18), savedListId path stashes scoped key (19), returns null as default (20); save toast no quotes (21–23); 020E invariants intact — bgTone/bgFade scoped, no generic keys (24–28) |
+| `shareLink021.test.mjs` | Share link repair (Prompt 021): A. Crash fix — GearCategory gets order={store.order} and moveItem={moveItem}, moveItem useCallback defined, moveItem uses pushAndSet (1–5); B. normalizeSnapshot completeness — unit/name fields returned, validated, categoryOrder guard preserved, BackgroundPickerButton panelOpen fix (6–11); C. Empty-list UX — canShare from totalItems, "Nothing to share" toast removed, aria-disabled+cursor-not-allowed grayed button, desktop hover tooltip, showEmptyShareMsg mobile tap state (12–17); D. Save-before-sharing — shareStep state 'menu'/'warning', initialised 'menu', warning message, Copy Link Anyway button, shareStep='warning' on Copy Link click, shareStep reset on close (18–23); E. Data-ownership — commitSave uses crypto.randomUUID, writeLockerEntry with LOCKER_KEY, no DELETE /api/links (24–27) |
 
 ## Where fixtures are stored
 
@@ -69,11 +95,7 @@ plain JS so tests can run against source changes immediately.
 | Move-item fixture | Inline JS object in `moveItem.test.mjs` | Four-category store (Backpack, Clothing Packed, Kitchen Gear, Cook Set) |
 | Pie-color fixture | Inline JS objects in `pieColor.test.mjs` | LockerEntry builders using inlined save/load helpers |
 
-| `crossTabIsolation020E.test.mjs` | Cross-tab background isolation (Prompt 020E): no unscoped generic restore keys exist — all setItem/getItem for tw-fork-bg-restore, tw-fork-bgfade-restore, tw-fork-bgtone-restore use forkId-scoped template-literal keys (tests 1–9); background initializer reads tw-fork-id before constructing scoped key — forkId in scope at stash time (10); handleLoadFromLocker reads forkId and writes all three scoped keys (11–14); all three change handlers read tw-fork-id and write scoped keys (15–17); newseed remount still returns null/Clear as final fallback (18); savedListId path reads tw-savedlist-bg before scoped stash — correct order (19–20); no localStorage.clear or sessionStorage.clear added (21–22); resolveStorageKey still produces unique forkIds for newseed and savedListId tabs (23–24) |
-
 ## Framework
 
 Node.js built-in runner — no additional test dependencies.
 All suites use the same `assert` / `assertEqual` helpers and exit with code 1 on failure.
-
-| `inheritedSessionStorage020F.test.mjs` | Inherited-sessionStorage forkId override (Prompt 020F): resolveStorageKey URL params precede sessionStorage check — newseed before sessionStorage (1–2), savedListId before sessionStorage (3–4), newseed sets correct tw-fork-id (5), savedListId creates fresh UUID (6), both branches return before sessionStorage fallback (7–8), sessionStorage fallback present for remounts (9), V5_KEY for primary tabs (10), fork-scoped keys returned (11–12), scenario: newseed tab with inherited forkId gets URL identity (13), scenario: savedListId tab with inherited forkId gets fresh identity (14); background initializer reads tw-fork-id correctly (15), newseed-bg key scoped to forkId (16), scoped restore key stashed on first load (17), remount path reads scoped key not generic (18), savedListId path stashes scoped key (19), returns null as default (20); save toast no quotes (21–23); 020E invariants intact — bgTone/bgFade scoped, no generic keys (24–28) |

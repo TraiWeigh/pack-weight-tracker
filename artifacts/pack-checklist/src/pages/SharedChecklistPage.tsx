@@ -210,6 +210,21 @@ function SharedChecklistContent({
     }));
   }, [pushAndSet]);
 
+  const moveItem = useCallback((sourceCategory: string, destinationCategory: string, itemId: string) => {
+    pushAndSet(prev => {
+      const item = (prev.items[sourceCategory] || []).find((i: GearItem) => i.id === itemId);
+      if (!item) return prev;
+      return {
+        ...prev,
+        items: {
+          ...prev.items,
+          [sourceCategory]:      (prev.items[sourceCategory] || []).filter((i: GearItem) => i.id !== itemId),
+          [destinationCategory]: [...(prev.items[destinationCategory] || []), item],
+        },
+      };
+    });
+  }, [pushAndSet]);
+
   const addCategory = useCallback((name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -726,10 +741,12 @@ function SharedChecklistContent({
                     name={category}
                     items={store.items[category] || []}
                     meta={store.meta[category] ?? { countsToBase: true }}
+                    order={store.order}
                     forceOpen={allOpen}
                     forceOpenSeq={openCloseSeq}
                     updateItem={updateItem}
                     removeItem={removeItem}
+                    moveItem={moveItem}
                     addItem={addItem}
                     onUpdateMeta={updates => updateCategoryMeta(category, updates)}
                     onDelete={() => deleteCategory(category)}
@@ -798,7 +815,7 @@ function SharedChecklistContent({
               {/* Pinned action bar */}
               <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
                 <div ref={bgPickerRef}>
-                  <BackgroundPickerButton onClick={() => setBgPickerOpen(o => !o)} active={!!background} />
+                  <BackgroundPickerButton onClick={() => setBgPickerOpen(o => !o)} active={!!background} panelOpen={bgPickerOpen} />
                   <BackgroundPickerPanel
                     open={bgPickerOpen}
                     onClose={() => setBgPickerOpen(false)}
@@ -948,6 +965,9 @@ function normalizeSnapshot(raw: any): SharePayload | null {
     bgFade:     typeof raw.bgFade === 'number' ? raw.bgFade : 1,
     bgTone:     raw.bgTone === 'dark' ? 'dark' : 'light',
     bgSize:     raw.bgSize === 'contain' ? 'contain' : 'cover',
+    // Preserve sender's display name and unit system from the payload.
+    unit:       (raw.unit === 'metric' || raw.unit === 'imperial') ? raw.unit : undefined,
+    name:       typeof raw.name === 'string' ? raw.name : undefined,
   };
 }
 
