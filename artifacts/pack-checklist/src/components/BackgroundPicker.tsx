@@ -156,11 +156,13 @@ export function BackgroundPickerPanel({
   onShowcase,
   isShowcaseBlocked = false,
 }: BackgroundPickerPanelProps) {
-  const panelRef        = useRef<HTMLDivElement>(null);
-  const dropdownRef     = useRef<HTMLDivElement>(null);
-  const fileInputRef    = useRef<HTMLInputElement>(null);
-  const newNameInputRef = useRef<HTMLInputElement>(null);
-  const renameInputRef  = useRef<HTMLInputElement>(null);
+  const panelRef          = useRef<HTMLDivElement>(null);
+  const dropdownRef       = useRef<HTMLDivElement>(null);
+  const fileInputRef      = useRef<HTMLInputElement>(null);
+  const newNameInputRef   = useRef<HTMLInputElement>(null);
+  const renameInputRef    = useRef<HTMLInputElement>(null);
+  // 017E: ref for the landscape grid wrapper — used by the DEV measurement effect
+  const landscapeGridRef  = useRef<HTMLDivElement>(null);
 
   // ── Theme selection ──────────────────────────────────────────────────────
   const [activeThemeId, setActiveThemeId] = useState<string>('landscapes');
@@ -368,6 +370,53 @@ export function BackgroundPickerPanel({
     setCollections(cols);
     saveCollections(cols);
   }, []);
+
+  // ── 017E: DEV measurement — logs panel/grid geometry on bgFade slider change ──
+  // Fires on every bgFade tick when the landscapes grid is visible.  Compare
+  // logged tile.btn.h values frame-to-frame: stable values confirm the
+  // padding-top fix eliminated aspect-ratio height drift.
+  useEffect(() => {
+    if (!open || activeThemeId !== 'landscapes') return;
+    if (!import.meta.env.DEV) return;
+    const panel = panelRef.current;
+    const grid  = landscapeGridRef.current;
+    if (!panel || !grid) return;
+    const panelRect      = panel.getBoundingClientRect();
+    const gridRect       = grid.getBoundingClientRect();
+    const scrollbarWidth = panel.offsetWidth - panel.clientWidth;
+    const hasScrollbar   = panel.scrollHeight > panel.clientHeight;
+    const tiles = Array.from(grid.querySelectorAll('button[aria-pressed]')).slice(0, 2).map((btn, i) => {
+      const r   = btn.getBoundingClientRect();
+      const img = btn.querySelector('img');
+      const ir  = img?.getBoundingClientRect() ?? null;
+      const cs  = img ? window.getComputedStyle(img) : null;
+      return { i, btn: { x: r.x, y: r.y, w: r.width, h: r.height }, img: ir ? { x: ir.x, y: ir.y, w: ir.width, h: ir.height } : null, objectFit: cs?.objectFit, objectPosition: cs?.objectPosition };
+    });
+    console.log('[017E:slider] bgFade=' + bgFade.toFixed(3), { panel: { offW: panel.offsetWidth, cliW: panel.clientWidth, scrollH: panel.scrollHeight, cliH: panel.clientHeight, scrollTop: panel.scrollTop, scrollbarWidth, hasScrollbar, rect: { x: panelRect.x, y: panelRect.y, w: panelRect.width, h: panelRect.height } }, grid: { offW: grid.offsetWidth, cliW: grid.clientWidth, rect: { x: gridRect.x, y: gridRect.y, w: gridRect.width, h: gridRect.height } }, tiles });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bgFade]);
+
+  // ── 017E: DEV measurement — logs panel/grid geometry on grid hover ────────
+  // Provides console evidence that tile dimensions are stable across hover/slider
+  // triggers.  Gated on import.meta.env.DEV so it tree-shakes out of production.
+  const handleGridMeasure = useCallback(() => {
+    if (!import.meta.env.DEV) return;
+    const panel = panelRef.current;
+    const grid  = landscapeGridRef.current;
+    if (!panel || !grid) return;
+    const panelRect      = panel.getBoundingClientRect();
+    const gridRect       = grid.getBoundingClientRect();
+    const scrollbarWidth = panel.offsetWidth - panel.clientWidth;
+    const hasScrollbar   = panel.scrollHeight > panel.clientHeight;
+    const tiles = Array.from(grid.querySelectorAll('button[aria-pressed]')).slice(0, 2).map((btn, i) => {
+      const r   = btn.getBoundingClientRect();
+      const img = btn.querySelector('img');
+      const ir  = img?.getBoundingClientRect() ?? null;
+      const cs  = img ? window.getComputedStyle(img) : null;
+      return { i, btn: { x: r.x, y: r.y, w: r.width, h: r.height }, img: ir ? { x: ir.x, y: ir.y, w: ir.width, h: ir.height } : null, objectFit: cs?.objectFit, objectPosition: cs?.objectPosition };
+    });
+    console.log('[017E:hover] grid entered', { panel: { offW: panel.offsetWidth, cliW: panel.clientWidth, scrollH: panel.scrollHeight, cliH: panel.clientHeight, scrollbarWidth, hasScrollbar, rect: { x: panelRect.x, y: panelRect.y, w: panelRect.width, h: panelRect.height } }, grid: { offW: grid.offsetWidth, cliW: grid.clientWidth, rect: { x: gridRect.x, y: gridRect.y, w: gridRect.width, h: gridRect.height } }, tiles });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Dropdown actions ──────────────────────────────────────────────────────
   const handleThemeSelect = (id: string) => {
@@ -999,30 +1048,45 @@ export function BackgroundPickerPanel({
       {isAddingTheme ? (
         renderAddThemeForm()
       ) : activeThemeId === 'landscapes' ? (
-        <div className="px-3 pb-3">
+        // 017E fix: grid wrapper gets its own GPU compositing layer (willChange:transform)
+        // so re-compositing caused by parent background-image repaints cannot cascade
+        // into the tiles' rasterization context.  onMouseEnter fires the DEV measurement.
+        <div
+          ref={landscapeGridRef}
+          className="px-3 pb-3"
+          style={{ willChange: 'transform' }}
+          onMouseEnter={handleGridMeasure}
+        >
           <div className="grid grid-cols-2 gap-1.5">
             {PRESETS.map(p => {
               const isActive = activePresetId === p.id;
               return (
-                <button
-                  key={p.id}
-                  onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
-                  aria-pressed={isActive}
-                  aria-label={p.label}
-                  className={`relative overflow-hidden rounded-lg aspect-[3/2] group ring-2 ring-offset-1 ${
-                    isActive ? 'ring-primary' : 'ring-transparent hover:ring-foreground/30'
-                  }`}
-                >
-                  <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 pointer-events-none">
-                    <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
-                  </div>
-                  {isActive && (
-                    <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
-                      <Check className="w-2.5 h-2.5" />
+                // 017E fix: outer div establishes the aspect-ratio container via
+                // padding-top: 66.667% (a layout-phase value, not a GPU compositing
+                // rasterization-phase value).  Replaces the Tailwind aspect-ratio
+                // class on the button, which was re-evaluated at compositing time
+                // and could produce different subpixel heights on consecutive frames,
+                // shifting the object-cover crop visibly.
+                <div key={p.id} className="relative" style={{ paddingTop: '66.667%' }}>
+                  <button
+                    onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
+                    aria-pressed={isActive}
+                    aria-label={p.label}
+                    className={`absolute inset-0 overflow-hidden rounded-lg group ${
+                      isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
+                    }`}
+                  >
+                    <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 pointer-events-none">
+                      <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
                     </div>
-                  )}
-                </button>
+                    {isActive && (
+                      <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
+                        <Check className="w-2.5 h-2.5" />
+                      </div>
+                    )}
+                  </button>
+                </div>
               );
             })}
           </div>

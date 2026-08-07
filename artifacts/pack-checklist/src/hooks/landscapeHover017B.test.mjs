@@ -71,13 +71,21 @@ function test(name, fn) {
 
 console.log('\nPrompt 017B — Landscape Hover Stability Tests\n');
 
-// ── Test 1: ring-2 always present in landscape base state ──────────────────
-test('1. Landscape button always has ring-2 (ring space reserved)', () => {
-  // The button className should contain ring-2 unconditionally (not just on hover)
-  // "ring-2 ring-offset-1" should appear before the ternary expression
+// ── Test 1: ring-2 ring-offset-1 present in active branch (017E conditional pattern) ──
+test('1. Landscape button has ring-2 ring-offset-1 in active branch (017E: conditional, not unconditional)', () => {
+  // 017E fix: ring-2 ring-offset-1 is now CONDITIONAL — present only in the active branch
+  // of the ternary, not unconditionally applied to every tile.
+  // This matches the custom photo tile pattern which does not exhibit shaking.
+  // The fix removes the permanent box-shadow that was causing subpixel reflow of
+  // aspect-ratio + overflow-hidden elements during compositing re-evaluation.
   assert.ok(
-    presetsBlock.includes('ring-2 ring-offset-1'),
-    'ring-2 ring-offset-1 not found unconditionally in PRESETS block — ring space may not be reserved'
+    presetsBlock.includes('ring-2 ring-primary ring-offset-1'),
+    'ring-2 ring-primary ring-offset-1 not found in PRESETS block — active ring state missing'
+  );
+  // The base (unconditional) string must NOT be present — fix is correctly conditional
+  assert.ok(
+    !presetsBlock.includes('ring-2 ring-offset-1 ') && !/ ring-2 ring-offset-1[`]/.test(presetsBlock),
+    'ring-2 ring-offset-1 found unconditionally — 017E conditional pattern not applied'
   );
 });
 
@@ -93,14 +101,15 @@ test('2. Landscape hover does not apply a scale transform', () => {
   );
 });
 
-// ── Test 3: Hover only changes ring color, not ring-width ──────────────────
-test('3. Hover does not change ring-width (only ring color changes)', () => {
-  // With the fix, ring-2 is always present. Hover should only add ring color
-  // not hover:ring-2 (which would change width from 0 to 2 on hover)
-  // We allow hover:ring-foreground/30 (color only), not hover:ring-2 (width)
+// ── Test 3: hover:ring-2 IS present (017E conditional pattern) ────────────
+test('3. hover:ring-2 is present in inactive hover branch (017E conditional pattern)', () => {
+  // 017E fix: ring-2 is now conditional. It appears as hover:ring-2 in the
+  // inactive hover branch. This matches the custom photo tile which uses
+  // hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1 and does not shake.
+  // Prior 017B/017C assertions (no hover:ring-2) are superseded by 017E evidence.
   assert.ok(
-    !presetsBlock.includes('hover:ring-2'),
-    'hover:ring-2 still present in PRESETS block — ring-width still changing on hover'
+    presetsBlock.includes('hover:ring-2'),
+    'hover:ring-2 not found in PRESETS block — 017E inactive hover ring missing'
   );
 });
 
@@ -276,11 +285,15 @@ test('20. QTY translate-x-3 preserved in GearCategory.tsx', () => {
   );
 });
 
-// ── Test 21: ring-transparent in unselected base state ────────────────────
-test('21. Unselected landscape tiles use ring-transparent (stable base)', () => {
+// ── Test 21: ring-transparent NOT present (017E removes always-on box-shadow) ──
+test('21. ring-transparent is NOT present (017E: no permanent box-shadow at rest)', () => {
+  // 017E fix: the always-present ring-transparent (which generated a permanent
+  // box-shadow: 0 0 0 1px white, 0 0 0 3px transparent) has been removed.
+  // At rest, landscape tiles now have NO box-shadow — exactly like the custom
+  // photo tiles that are confirmed to not shake. ring-transparent is gone.
   assert.ok(
-    presetsBlock.includes('ring-transparent'),
-    'ring-transparent not found in PRESETS block — base ring color may not be reserved'
+    !presetsBlock.includes('ring-transparent'),
+    'ring-transparent still present in PRESETS block — permanent box-shadow not fully removed by 017E'
   );
 });
 

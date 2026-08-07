@@ -90,25 +90,33 @@ test('2. Landscape tile button has NO transition-all', () => {
   );
 });
 
-test('3. Landscape tile button ring geometry is frozen (017B preserved)', () => {
-  // ring-2 ring-offset-1 must be unconditional (not inside a ternary or hover:)
+test('3. Landscape tile button ring in active branch (017E: conditional pattern)', () => {
+  // 017E supersedes 017B: ring-2 ring-offset-1 is now CONDITIONAL (in active branch),
+  // not unconditional. The permanent box-shadow caused by always-on ring-2+ring-offset-1
+  // was identified via frame-by-frame video analysis as causing image geometry instability.
   assert.ok(
-    presetsBlock.includes('ring-2 ring-offset-1'),
-    'ring-2 ring-offset-1 not found unconditionally in PRESETS block'
+    presetsBlock.includes('ring-2 ring-primary ring-offset-1'),
+    'ring-2 ring-primary ring-offset-1 not found in PRESETS block active branch — 017E ring missing'
   );
 });
 
-test('4. No hover:ring-2 on landscape tile (no geometry change on hover)', () => {
+test('4. hover:ring-2 IS present (017E: conditional ring on inactive hover)', () => {
+  // 017E fix: hover:ring-2 is now intentionally present — ring appears only on hover
+  // for inactive tiles, matching the custom photo tile pattern (confirmed not to shake).
+  // Prior 017B/017C assertion (no hover:ring-2) is superseded by 017E video evidence.
   assert.ok(
-    !presetsBlock.includes('hover:ring-2'),
-    'hover:ring-2 present — ring-width changes on hover would cause layout shift'
+    presetsBlock.includes('hover:ring-2'),
+    'hover:ring-2 not found in PRESETS block — 017E conditional inactive hover ring missing'
   );
 });
 
-test('5. No hover:ring-offset-1 on landscape tile (no geometry change on hover)', () => {
+test('5. hover:ring-offset-1 IS present (017E: conditional ring-offset on inactive hover)', () => {
+  // 017E fix: hover:ring-offset-1 is intentionally present in the inactive hover branch.
+  // The ring-offset is now conditional — it appears only when the ring is visible,
+  // preventing the permanent box-shadow that caused compositing-layer subpixel drift.
   assert.ok(
-    !presetsBlock.includes('hover:ring-offset'),
-    'hover:ring-offset found in PRESETS block — ring-offset geometry changing on hover'
+    presetsBlock.includes('hover:ring-offset'),
+    'hover:ring-offset not found in PRESETS block — 017E conditional ring-offset missing'
   );
 });
 
@@ -119,10 +127,14 @@ test('6. No hover:scale-* on landscape tile (no transform on hover)', () => {
   );
 });
 
-test('7. ring-transparent used in unselected base state (stable box-shadow geometry)', () => {
+test('7. ring-transparent NOT present (017E: no permanent box-shadow at rest)', () => {
+  // 017E supersedes 017C: ring-transparent has been removed. The always-on
+  // box-shadow it created (0 0 0 1px white, 0 0 0 3px transparent) was causing
+  // subpixel rounding drift in aspect-ratio+overflow-hidden compositing.
+  // At rest, landscape tiles now have zero box-shadow — matching the custom photo tile.
   assert.ok(
-    presetsBlock.includes('ring-transparent'),
-    'ring-transparent not found in PRESETS block'
+    !presetsBlock.includes('ring-transparent'),
+    'ring-transparent still present in PRESETS block — 017E permanent box-shadow removal incomplete'
   );
 });
 
@@ -283,10 +295,17 @@ test('22. Panel still has z-50 for correct stacking order', () => {
 
 // ── Part 5: Regression guards for prior prompts ──────────────────────────────
 
-test('23. 017B: ring-2 ring-offset-1 unconditional (prior fix preserved)', () => {
+test('23. 017E supersedes 017B: ring-2 ring-offset-1 is conditional (in active branch)', () => {
+  // 017E proved via video frame analysis that the always-present ring-2+ring-offset-1
+  // was the actual root cause of image geometry instability. 017E makes ring conditional.
+  // "ring-2 ring-primary ring-offset-1" in the active branch is the correct state.
   assert.ok(
-    presetsBlock.includes('ring-2 ring-offset-1'),
-    'ring-2 ring-offset-1 not unconditional — 017B ring geometry freeze regressed'
+    presetsBlock.includes('ring-2 ring-primary ring-offset-1'),
+    'ring-2 ring-primary ring-offset-1 not found — 017E active-branch ring missing'
+  );
+  assert.ok(
+    !presetsBlock.includes('ring-transparent'),
+    'ring-transparent still present — 017E permanent-box-shadow removal not applied'
   );
 });
 

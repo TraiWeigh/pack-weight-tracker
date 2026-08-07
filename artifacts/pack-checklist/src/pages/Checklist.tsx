@@ -978,12 +978,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         className={`screen-only h-[100dvh] overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
         style={{
           ...(bgImageUrl ? {
-            backgroundImage: bgFade < 1
-              ? `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${1 - bgFade})),url(${bgImageUrl})`
-              : `url(${bgImageUrl})`,
-            // When gradient + image are layered, supply two size values.
+            // 017E fix: always use the 2-layer linear-gradient format regardless of
+            // bgFade value.  When bgFade=1 the gradient alpha is 0 (fully transparent),
+            // producing the same visual as the bare url() form but without a format
+            // switch that triggers a heavier GPU compositing re-evaluation.  Format
+            // switches between 1-layer and 2-layer backgroundImage values invalidate
+            // compositing layer caches more aggressively than simple alpha changes.
+            backgroundImage: `linear-gradient(rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${Math.max(0, 1 - bgFade)}),rgba(${bgTone === 'dark' ? '0,0,0' : '255,255,255'},${Math.max(0, 1 - bgFade)})),url(${bgImageUrl})`,
+            // Companion to the fixed format above: always supply two size values.
             // The gradient always fills the element; the image uses the selected sizing.
-            backgroundSize: bgFade < 1 ? `100% 100%, ${bgSize}` : bgSize,
+            backgroundSize: `100% 100%, ${bgSize}`,
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           } : {}),

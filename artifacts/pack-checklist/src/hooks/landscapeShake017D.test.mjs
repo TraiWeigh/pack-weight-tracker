@@ -183,9 +183,10 @@ test('6. loading="lazy" still present on landscape <img> (unchanged from prior)'
 test('7. Landscape button itself carries the `group` class (structural baseline)', () => {
   // The landscape <button> has `group` in its className, meaning hover on the
   // button triggers group-hover:* on children — including the label overlay.
-  // This is a known structural property; this test documents it.
-  const buttonClassIdx = presetsBlock.indexOf('className={`relative overflow-hidden');
-  assert.ok(buttonClassIdx > -1, 'Could not find landscape button className template literal');
+  // 017E extended: button moved from `relative overflow-hidden` to
+  // `absolute inset-0 overflow-hidden` inside a padding-top wrapper div.
+  const buttonClassIdx = presetsBlock.indexOf('className={`absolute inset-0 overflow-hidden');
+  assert.ok(buttonClassIdx > -1, 'Could not find landscape button className template literal (expected absolute inset-0 overflow-hidden)');
   const buttonClass = presetsBlock.slice(buttonClassIdx, buttonClassIdx + 200);
   assert.ok(
     buttonClass.includes('group'),
@@ -196,8 +197,9 @@ test('7. Landscape button itself carries the `group` class (structural baseline)
 test('8. Landscape button has overflow-hidden (creates clipping stacking context)', () => {
   // Documents that the button has overflow-hidden, which is WHY the compositing
   // cascade happens: clipping context forces parent promotion.
-  const buttonClassIdx = presetsBlock.indexOf('className={`relative overflow-hidden');
-  assert.ok(buttonClassIdx > -1, 'overflow-hidden not found in landscape button className');
+  // 017E extended: button className now starts with `absolute inset-0 overflow-hidden`.
+  const buttonClassIdx = presetsBlock.indexOf('className={`absolute inset-0 overflow-hidden');
+  assert.ok(buttonClassIdx > -1, 'overflow-hidden not found in landscape button className (expected absolute inset-0 overflow-hidden)');
 });
 
 test('9. Label overlay is direct child of landscape button (inside overflow-hidden)', () => {
@@ -339,17 +341,27 @@ test('19. 017A: Hide button renders unconditionally (no {background && wrapper})
   );
 });
 
-test('20. 017B: ring-2 ring-offset-1 unconditional on landscape button', () => {
+test('20. 017E supersedes 017B: ring-2 ring-offset-1 is now conditional (active branch only)', () => {
+  // 017E video frame analysis proved the always-present ring-2+ring-offset-1 was the
+  // actual root cause of image geometry instability, overriding the 017B theory.
+  // After 017E: ring-2 ring-primary ring-offset-1 is in the active branch only.
   assert.ok(
-    presetsBlock.includes('ring-2 ring-offset-1'),
-    'ring-2 ring-offset-1 not unconditional in PRESETS block — 017B regression'
+    presetsBlock.includes('ring-2 ring-primary ring-offset-1'),
+    'ring-2 ring-primary ring-offset-1 not found in active branch — 017E ring pattern missing'
+  );
+  assert.ok(
+    !presetsBlock.includes('ring-transparent'),
+    'ring-transparent still present — 017E permanent box-shadow not fully removed'
   );
 });
 
-test('21. 017B: No hover:ring-2 on landscape button (ring geometry stable)', () => {
+test('21. 017E: hover:ring-2 IS present (conditional ring on inactive hover)', () => {
+  // 017E fix: hover:ring-2 intentionally present — ring appears only on hover for
+  // inactive tiles, matching the custom photo tile (confirmed not to shake).
+  // Prior 017D/017B assertion (no hover:ring-2) superseded by 017E video evidence.
   assert.ok(
-    !presetsBlock.includes('hover:ring-2'),
-    'hover:ring-2 found in PRESETS block — ring geometry instability regressed'
+    presetsBlock.includes('hover:ring-2'),
+    'hover:ring-2 not found in PRESETS block — 017E conditional inactive hover ring missing'
   );
 });
 
