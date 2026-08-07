@@ -3632,3 +3632,71 @@ Test (signed in, with a saved file active):
 8. Mobile → readable, no overlap, no horizontal scroll
 
 **Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = PARTIAL (pill shape and same-line alignment correction required); 018B = PARTIAL (pill too high vertically); 018C = NOT USER-VERIFIED until user's post-completion test.
+
+---
+
+## Prompt 019 — Background Edit Pill + Separate Collapsible Summary Panels
+
+### Starting State
+
+018C = USER-TESTED PASS. Three UI goals:
+1. Background Edit pill inactive/open appearance
+2. Separate Weight Distribution from Pack Summary into independent cards
+3. Pack Summary collapsible using Weight Distribution's existing pattern
+
+### Goal 1 — Background Edit Pill
+
+**Problem:** `BackgroundPickerButton` used `active={!!background}` (background selected) to control styling, showing `bg-primary` even when the panel was closed. The open/closed state had no effect on appearance.
+
+**Fix:** Added `panelOpen: boolean` prop to `BackgroundPickerButton`. New logic:
+- `panelOpen=true` → `bg-white text-gray-900 border border-white/80` — explicit white with dark text for contrast
+- `panelOpen=false` → `bg-muted text-muted-foreground hover:text-foreground border border-transparent` — matches Hide/Preview
+
+Added `panelOpen={backgroundPickerOpen}` to `<BackgroundPickerButton />` call in Checklist.tsx.
+
+### Goal 2 — Separate Panels
+
+**Problem:** Pack Summary and Weight Distribution were both inside a single `WeightSummary` component and one shared card.
+
+**Fix:** Split `WeightSummary.tsx` into two independent exported components:
+- `WeightSummary` — Pack Summary card only. Props: `data`, `categoryOrder`, `categoryMeta`. Own `bg-card rounded-xl` card.
+- `WeightDistribution` — Chart card. Props: `data`, `categoryOrder`, `categoryMeta`, `paletteKey`, `onPaletteChange`. Own `bg-card rounded-xl` card. Heading changed: `text-muted-foreground` → `text-foreground` (white in dark mode).
+
+Private `calcWeights()` helper in the same file handles the shared weight calculation.
+
+Checklist.tsx updated: import both, render as separate `flex flex-col gap-4` siblings. `lg:grid-cols-[1fr_365px]` untouched.
+
+### Goal 3 — Pack Summary Collapsible
+
+Added `summaryOpen` state (default `true`) to `WeightSummary`. Header is now a chevron button matching Weight Distribution's pattern exactly — same `hover:bg-muted/30 transition-colors` button, `ChevronDown`/`ChevronRight` icons, `animate-in` body. Collapsing hides only the body; header stays visible. `summaryOpen` in `WeightSummary` and `chartOpen` in `WeightDistribution` are fully independent — collapsing one never affects the other.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/components/BackgroundPicker.tsx` | BackgroundPickerButton: added `panelOpen` prop + new className logic |
+| `artifacts/pack-checklist/src/components/WeightSummary.tsx` | Full rewrite: split into WeightSummary (collapsible PS) + WeightDistribution (independent card) |
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | 3 edits: import, button call, sidebar renders |
+| `artifacts/pack-checklist/src/hooks/sidebar019.test.mjs` | Created — 36 new tests |
+| `package.json` | Added sidebar019.test.mjs to test chain |
+
+### Automated Test Results
+
+**961 passed / 0 failed** (925 prior + 36 new 019 tests). All 36 pass.
+
+### Required User Live-Test
+
+**✅ Prompt 019 implementation is complete. App is ready for your fresh post-completion test.**
+
+Test (signed in, with gear items added):
+1. Background Edit closed → matches Hide/Preview appearance (muted, no bright color)
+2. Background Edit open → pill turns white with dark readable text/icon
+3. Closing panel → immediately returns to muted appearance
+4. Pack Summary and Weight Distribution are two visually separate cards
+5. Weight Distribution heading is white in dark mode
+6. Pack Summary collapses/expands with chevron; values correct after expand
+7. Collapsing Pack Summary doesn't affect Weight Distribution, and vice versa
+8. Chart, palette, legend all work as before; palette persistence intact
+9. Filename pill, Save confirmation, 017E shaking fix, 017F scanner all intact
+
+**Master history record:** 017B/017C/017D = failed; 017E = USER-TESTED PASS; 017F = USER-TESTED PASS; 018/018A/018B = PARTIAL; 018C = USER-TESTED PASS; 019 = NOT USER-VERIFIED until user's post-completion test.

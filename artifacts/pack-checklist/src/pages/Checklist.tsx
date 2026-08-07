@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useUser, useClerk } from '@clerk/react';
 import { usePackData } from '../hooks/usePackData';
 import { GearCategory } from '../components/GearCategory';
-import { WeightSummary } from '../components/WeightSummary';
+import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
 import { PreviewModal } from '../components/PreviewModal';
 import { MailingListModal, hasSeenMailingPrompt } from '../components/MailingListModal';
@@ -1372,7 +1372,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               {/* Pinned action bar */}
               <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
-                  <BackgroundPickerButton onClick={() => setBackgroundPickerOpen(o => !o)} active={!!background} />
+                  <BackgroundPickerButton
+                    onClick={() => setBackgroundPickerOpen(o => !o)}
+                    active={!!background}
+                    panelOpen={backgroundPickerOpen}
+                  />
                   <BackgroundPickerPanel
                     open={backgroundPickerOpen}
                     onClose={() => setBackgroundPickerOpen(false)}
@@ -1438,6 +1442,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:px-3 lg:[scrollbar-gutter:stable]">
               <div className="flex flex-col gap-4 py-2 pb-8">
                 <WeightSummary
+                  data={data}
+                  categoryOrder={categoryOrder}
+                  categoryMeta={categoryMeta}
+                />
+                <WeightDistribution
                   data={data}
                   categoryOrder={categoryOrder}
                   categoryMeta={categoryMeta}

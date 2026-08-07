@@ -1,3 +1,13 @@
+/**
+ * WeightSummary.tsx — Prompt 019
+ *
+ * Split into two independent exported components:
+ *   WeightSummary     — Pack Summary card (collapsible, chevron header)
+ *   WeightDistribution — Chart + palette card (collapsible, own card, text-foreground heading)
+ *
+ * Both are rendered as separate sidebar siblings in Checklist.tsx.
+ * Both collapse independently; neither affects the other's state.
+ */
 import React, { useState } from 'react';
 import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { useUnit } from '../context/UnitContext';
@@ -34,17 +44,122 @@ const PALETTES: Record<string, { label: string; colors: string[] }> = {
   },
 };
 
-interface WeightSummaryProps {
+// ── Shared prop types ─────────────────────────────────────────────────────────
+
+interface WeightBaseProps {
   data: PackState;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;
+}
+
+// ── Shared weight calculation ─────────────────────────────────────────────────
+
+function calcWeights(data: PackState, categoryOrder: string[], categoryMeta: Record<string, CategoryMeta>) {
+  let baseWeightOz = 0;
+  const nonBaseTotals: { name: string; oz: number }[] = [];
+  const grandTotalOz_parts: number[] = [];
+
+  for (const cat of categoryOrder) {
+    const items = (data[cat] || []).filter(i => i.checked);
+    const catTotalOz = items.reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
+    const countsToBase = categoryMeta[cat]?.countsToBase ?? true;
+    if (countsToBase) {
+      baseWeightOz += catTotalOz;
+    } else {
+      nonBaseTotals.push({ name: cat, oz: catTotalOz });
+    }
+    grandTotalOz_parts.push(catTotalOz);
+  }
+  const grandTotalOz = baseWeightOz + nonBaseTotals.reduce((s, c) => s + c.oz, 0);
+  return { baseWeightOz, nonBaseTotals, grandTotalOz };
+}
+
+// ── Pack Summary ──────────────────────────────────────────────────────────────
+
+/** Pack Summary card — collapsible, independent of Weight Distribution. */
+export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseProps) {
+  const { system } = useUnit();
+  const lu = largeUnit(system);
+  const [summaryOpen, setSummaryOpen] = useState(true);
+
+  const { baseWeightOz, nonBaseTotals, grandTotalOz } = calcWeights(data, categoryOrder, categoryMeta);
+
+  return (
+    <div className="bg-card border border-card-border rounded-xl shadow-sm">
+      {/* Collapsible header — same chevron pattern as Weight Distribution */}
+      <button
+        onClick={() => setSummaryOpen(o => !o)}
+        className="w-full flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors rounded-xl"
+        aria-expanded={summaryOpen}
+        aria-label={summaryOpen ? 'Collapse Pack Summary' : 'Expand Pack Summary'}
+      >
+        {summaryOpen
+          ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        }
+        <span className="text-sm font-semibold text-foreground uppercase tracking-wider">
+          Pack Summary
+        </span>
+      </button>
+
+      {/* Collapsible body */}
+      {summaryOpen && (
+        <div className="p-4 sm:p-5 border-t border-border animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="space-y-3">
+            {/* Base Weight */}
+            <div className="flex justify-between items-end">
+              <span className="text-sm font-medium text-muted-foreground">Base Weight</span>
+              <div className="font-mono text-2xl font-bold text-foreground tabular-nums leading-none">
+                {formatWeight(baseWeightOz, system, 'large')}
+                <span className="text-sm text-muted-foreground ml-1 font-sans">{lu}</span>
+              </div>
+            </div>
+
+            {/* Dynamic non-base categories */}
+            {nonBaseTotals.map(({ name, oz }) => (
+              <div key={name} className="flex justify-between items-end">
+                <span className="text-sm font-medium text-muted-foreground">{name}</span>
+                <div className="font-mono text-lg font-semibold text-foreground tabular-nums leading-none">
+                  {formatWeight(oz, system, 'large')}
+                  <span className="text-xs text-muted-foreground ml-1 font-sans">{lu}</span>
+                </div>
+              </div>
+            ))}
+
+            <div className="h-px w-full bg-border my-2" />
+
+            {/* Grand Total */}
+            <div className="flex justify-between items-end">
+              <span className="text-base font-bold text-foreground">Grand Total</span>
+              <div className="font-mono text-3xl font-black text-foreground tabular-nums leading-none">
+                {formatWeight(grandTotalOz, system, 'large')}
+                <span className="text-base text-muted-foreground ml-1 font-sans">{lu}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Weight Distribution ───────────────────────────────────────────────────────
+
+interface WeightDistributionProps extends WeightBaseProps {
   /** Current palette key for this file. Controlled by the parent (Checklist). */
   paletteKey: string;
   /** Called when the user picks a different palette. Parent updates its state. */
   onPaletteChange: (key: string) => void;
 }
 
-export function WeightSummary({ data, categoryOrder, categoryMeta, paletteKey, onPaletteChange }: WeightSummaryProps) {
+/** Weight Distribution card — its own independent sidebar panel. */
+export function WeightDistribution({
+  data,
+  categoryOrder,
+  categoryMeta,
+  paletteKey,
+  onPaletteChange,
+}: WeightDistributionProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
   const [chartOpen, setChartOpen] = useState(true);
@@ -52,33 +167,18 @@ export function WeightSummary({ data, categoryOrder, categoryMeta, paletteKey, o
 
   const palette = PALETTES[paletteKey] ?? PALETTES.trail;
 
-  const handlePalette = (key: string) => {
-    onPaletteChange(key);
-  };
-
-  // Tally base vs. non-base per category
-  let baseWeightOz = 0;
-  const nonBaseTotals: { name: string; oz: number }[] = [];
+  // Build category data for the pie chart
+  const { grandTotalOz } = calcWeights(data, categoryOrder, categoryMeta);
 
   const categoryData = categoryOrder.map((cat, index) => {
     const items = (data[cat] || []).filter(i => i.checked);
     const catTotalOz = items.reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
-    const countsToBase = categoryMeta[cat]?.countsToBase ?? true;
-
-    if (countsToBase) {
-      baseWeightOz += catTotalOz;
-    } else {
-      nonBaseTotals.push({ name: cat, oz: catTotalOz });
-    }
-
     return {
       name: cat,
       value: catTotalOz,
       fill: palette.colors[index % palette.colors.length],
     };
   }).filter(d => d.value > 0);
-
-  const grandTotalOz = baseWeightOz + nonBaseTotals.reduce((s, c) => s + c.oz, 0);
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -97,55 +197,20 @@ export function WeightSummary({ data, categoryOrder, categoryMeta, paletteKey, o
 
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm">
-      <div className="p-4 sm:p-5 border-b border-border bg-muted/20 rounded-t-xl">
-        <h2 className="font-semibold text-foreground text-lg mb-4">Pack Summary</h2>
-
-        <div className="space-y-3">
-          {/* Base Weight — always shown */}
-          <div className="flex justify-between items-end">
-            <span className="text-sm font-medium text-muted-foreground">Base Weight</span>
-            <div className="font-mono text-2xl font-bold text-foreground tabular-nums leading-none">
-              {formatWeight(baseWeightOz, system, 'large')}
-              <span className="text-sm text-muted-foreground ml-1 font-sans">{lu}</span>
-            </div>
-          </div>
-
-          {/* Dynamic non-base categories */}
-          {nonBaseTotals.map(({ name, oz }) => (
-            <div key={name} className="flex justify-between items-end">
-              <span className="text-sm font-medium text-muted-foreground">{name}</span>
-              <div className="font-mono text-lg font-semibold text-foreground tabular-nums leading-none">
-                {formatWeight(oz, system, 'large')}
-                <span className="text-xs text-muted-foreground ml-1 font-sans">{lu}</span>
-              </div>
-            </div>
-          ))}
-
-          <div className="h-px w-full bg-border my-2" />
-
-          {/* Grand Total */}
-          <div className="flex justify-between items-end">
-            <span className="text-base font-bold text-foreground">Grand Total</span>
-            <div className="font-mono text-3xl font-black text-foreground tabular-nums leading-none">
-              {formatWeight(grandTotalOz, system, 'large')}
-              <span className="text-base text-muted-foreground ml-1 font-sans">{lu}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Weight Distribution header row */}
-      <div className="flex items-center border-t border-border">
-        {/* Collapse toggle */}
+      {/* Header row: collapse toggle + palette pill */}
+      <div className="flex items-center">
         <button
           onClick={() => setChartOpen(o => !o)}
           className="flex-1 flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors"
+          aria-expanded={chartOpen}
+          aria-label={chartOpen ? 'Collapse Weight Distribution' : 'Expand Weight Distribution'}
         >
           {chartOpen
             ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           }
-          <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          {/* text-foreground → white in dark mode, black in light mode */}
+          <span className="text-sm font-semibold text-foreground uppercase tracking-wider">
             Weight Distribution
           </span>
         </button>
@@ -166,7 +231,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta, paletteKey, o
                 {Object.entries(PALETTES).map(([key, p]) => (
                   <button
                     key={key}
-                    onClick={() => { handlePalette(key); setShowPaletteMenu(false); }}
+                    onClick={() => { onPaletteChange(key); setShowPaletteMenu(false); }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-muted/60 ${
                       paletteKey === key ? 'text-foreground font-semibold' : 'text-foreground'
                     }`}
@@ -186,9 +251,9 @@ export function WeightSummary({ data, categoryOrder, categoryMeta, paletteKey, o
         </div>
       </div>
 
-
+      {/* Chart body */}
       {chartOpen && (
-        <div className="p-4 sm:p-5 pt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="p-4 sm:p-5 pt-2 border-t border-border animate-in fade-in slide-in-from-top-2 duration-200">
           {grandTotalOz > 0 ? (
             <>
               <div className="h-[200px] w-full">

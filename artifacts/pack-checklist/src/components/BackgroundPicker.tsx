@@ -105,16 +105,27 @@ export function loadStoredBackground(): Background | null {
 
 // ── Button ────────────────────────────────────────────────────────────────────
 
-export function BackgroundPickerButton({ onClick, active }: { onClick: () => void; active: boolean }) {
+export function BackgroundPickerButton({
+  onClick,
+  active,
+  panelOpen,
+}: {
+  onClick: () => void;
+  active: boolean;
+  /** Whether the Background Edit panel is currently open.
+   *  true  → pill turns white (active/open state).
+   *  false → normal inactive pill matching Hide/Preview. */
+  panelOpen: boolean;
+}) {
   return (
     <button
       onClick={onClick}
       title="Background Edit"
       aria-label="Background Edit"
-      className={`flex items-center gap-1.5 text-xs font-semibold border px-3 py-1.5 rounded-lg transition-colors ${
-        active
-          ? 'bg-primary text-primary-foreground border-primary'
-          : 'text-muted-foreground hover:text-foreground border-border hover:border-foreground/30 bg-card hover:bg-muted/50'
+      className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+        panelOpen
+          ? 'bg-white text-gray-900 border border-white/80'
+          : 'bg-muted text-muted-foreground hover:text-foreground border border-transparent'
       }`}
     >
       <ImageIcon className="w-3.5 h-3.5" />
