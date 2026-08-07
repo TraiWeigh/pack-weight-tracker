@@ -1,0 +1,563 @@
+Prompt 021C — Add View-Only Shared Locker + Preserve Viewer Isolation
+
+Create PRE_021C_MASTER_BACKUP.md before changing anything.
+
+CURRENT STATUS:
+- 020F functional = USER-TESTED PASS.
+- 021 core Share = USER-TESTED PASS.
+- 021A signed-out /checklist protection = USER-TESTED PASS.
+- 021B private-owner password requirement was removed as requested.
+- 021B report admits the shared Locker requirement is INCOMPLETE because SharedChecklistPage currently renders no LockerPanel.
+- 021C = NOT USER-VERIFIED.
+
+AUTHORITATIVE SHARE RULE:
+
+A shared-link viewer may:
+- see/browse the shared Locker
+- open shared files
+- make temporary session edits
+- save their current edited version ONLY as a separate independent copy in their own TrailWeigh account
+
+A shared-link viewer may NOT:
+- Rename shared/original files
+- Delete shared/original files
+- Save back to sender files
+- overwrite sender files
+- otherwise persist changes to sender/original data
+
+==================================================
+1. ROOT PROBLEM TO FIX
+==================================================
+
+The 021B report states SharedChecklistPage.tsx renders NO LockerPanel.
+
+Therefore previous tests showing “no Rename/Delete” do not satisfy the requirement because the shared Locker itself is missing.
+
+Implement a visible Shared Locker on:
+
+/s/:shareId
+
+Do not simply expose the private Locker component/data source without isolation.
+
+==================================================
+2. SHARED LOCKER BEHAVIOR
+==================================================
+
+The shared page must display a Locker-style list of the files included in that Share experience.
+
+Viewer can:
+- see file names
+- open/select files
+- browse between shared files
+
+Viewer must NOT see:
+- Rename/pencil control
+- Delete/trash control
+
+Do not merely disable Rename/Delete.
+Do not render those controls at all in shared mode.
+
+The shared Locker should visually fit the existing TrailWeigh Locker/sidebar design without redesigning unrelated UI.
+
+==================================================
+3. SHARE DATA MUST BE A SNAPSHOT, NOT LIVE OWNER STORAGE
+==================================================
+
+CRITICAL DATA-OWNERSHIP RULE:
+
+The Shared Locker must come from the SHARE SNAPSHOT/BUNDLE created for that Share Link.
+
+It must NOT directly read/write the sender's authenticated live private Locker.
+
+Investigate current Share serialization/storage first.
+
+If the current Share payload contains only one saved file, extend the Share snapshot architecture so the shared experience can contain the saved files intended for the shared Locker.
+
+Use the sender's SAVED file state at share-generation time.
+
+Do not silently include unsaved working changes. The existing:
+“Save the currently open file first so the shared version is current.”
+warning remains authoritative.
+
+The public Share payload may contain the data needed to render the shared experience, but it must not contain credentials, auth secrets, private account tokens, destructive endpoints, or ownership privileges.
+
+==================================================
+4. SHARED FILE CONTENT
+==================================================
+
+Each shared Locker file should restore its own shared saved state, including existing supported fields such as:
+
+- filename
+- categories/order
+- items
+- quantities
+- weights
+- checked/unchecked states
+- calculations
+- background
+- Light/Dark
+- Fill/Fit
+- fade/darken
+- chart palette
+- other already-supported saved appearance
+
+File A must never inherit File B's appearance or temporary edits.
+
+Switch repeatedly among shared files and confirm each remains isolated.
+
+==================================================
+5. TEMPORARY VIEWER EDITS
+==================================================
+
+Viewer may interact with the checklist.
+
+Any viewer changes are SESSION-ONLY unless they choose Save Your Own Copy.
+
+Temporary edits must NEVER write to:
+- sender Locker
+- sender saved-file records
+- sender localStorage
+- sender IndexedDB
+- sender server persistence
+- original share source
+
+It is acceptable for temporary edits to remain while the viewer switches among shared files during that browser session.
+
+Keep temporary state isolated PER shared-file ID.
+
+Refreshing/reopening the Share Link should restore the original shared snapshot rather than modifying sender data.
+
+==================================================
+6. SAVE YOUR OWN COPY — ONLY PERSISTENCE PATH
+==================================================
+
+In shared mode, the ONLY persistence action is:
+
+Save Your Own Copy
+
+Do not expose normal:
+- Save
+- Save As
+- Rename
+- Delete
+
+for shared/original files.
+
+When viewer selects Save Your Own Copy:
+
+If signed in:
+- save the CURRENT VIEWER-EDITED state
+- create a NEW independent file
+- assign a NEW unique file ID
+- save it to viewer's own private TrailWeigh Locker/account
+
+If signed out:
+- preserve selected shared file + current temporary viewer edits
+- send viewer through existing sign-in/account-creation flow
+- after successful authentication, resume Save Your Own Copy
+- create viewer-owned independent copy
+
+Do not lose the viewer's intended file/edits during sign-in where architecture supports preservation.
+
+After copy:
+- viewer may use normal private Rename/Delete/Save on THEIR OWN copy
+- sender original remains unchanged
+
+==================================================
+7. OWNER PRIVATE LOCKER — PROTECT 021B
+==================================================
+
+Do NOT undo the 021B private-owner delete change.
+
+Authenticated owner's private Locker:
+
+Rename:
+- remains available
+
+Delete:
+- simple confirmation only
+- NO password field
+- NO Clerk re-verification
+- Cancel leaves file intact
+- Permanently Delete deletes only selected owned file
+
+This behavior applies ONLY to the authenticated user's private Locker.
+
+Shared mode has NO Rename/Delete controls.
+
+==================================================
+8. AUTH ROUTES — PROTECT 021A
+==================================================
+
+Keep:
+
+SIGNED OUT + /checklist
+→ sign-in page
+→ no private checklist/Locker
+
+SIGNED IN + /checklist
+→ private checklist/Locker
+
+PUBLIC /s/:shareId
+→ viewable while signed out
+
+A public shared viewer may see the SHARED Locker from the Share snapshot.
+
+They must never gain access to the sender's authenticated/private live Locker merely by opening the Share Link.
+
+==================================================
+9. PROTECT WORKING PROMPT 021 SHARE UX
+==================================================
+
+Preserve:
+
+Empty current list:
+- Share Link gray/unavailable
+- hover/focus/tap message:
+  “Add some gear items before creating a share link.”
+- no old bottom-right Nothing to Share toast
+
+Valid list:
+- save-before-share reminder
+- Copy Link Anyway
+- Share URL opens
+- no order.filter crash
+- shared content renders correctly
+- temporary editing works
+- Save Your Own Copy works
+
+Do not regress any of these.
+
+==================================================
+10. PROTECT 020F
+==================================================
+
+Preserve:
+
+New:
+- zero categories/items
+- Clear/no background
+- Light mode
+- no filename
+- remains Clear/Light
+- no cross-tab appearance leakage
+
+Saved files:
+- Sierra/Dutch/0826 restores its own mountain appearance
+- Ray Jardine's restores its own psychedelic appearance
+- Packlist 1 restores Light/no background
+
+Save confirmation:
+Saved [File Name]
+
+No quotation marks.
+
+==================================================
+11. GLOBAL REGRESSION PROTECTION
+==================================================
+
+Treat ALL existing TrailWeigh functionality, data behavior, styling, layout, persistence, calculations, importer behavior, background behavior, Locker behavior, Share behavior, responsive behavior, and prior completed prompt work as protected unless 021C explicitly changes it.
+
+Use smallest reliable change set.
+
+NO unrelated:
+- cleanup
+- refactoring
+- renaming
+- relocation
+- modernization
+- redesign
+
+Preserve:
+- existing private Locker files
+- localStorage
+- IndexedDB
+- saved-file compatibility
+- themes/custom photos
+- cross-tab behavior
+- Scan Gear List
+- automatic category creation on import
+- imported items unchecked
+- calculations
+- desktop/mobile layout
+
+Create checkpoint first.
+Inspect final diff.
+Revert unrelated changes.
+
+If schema/storage migration appears necessary:
+STOP and report why before implementing.
+
+==================================================
+12. SHARE SECURITY / DATA ACCEPTANCE
+==================================================
+
+021C = FAIL if ANY occur:
+
+- Shared Locker is not visible.
+- Rename appears in shared Locker.
+- Delete appears in shared Locker.
+- Shared viewer can save directly to sender file.
+- Temporary edits modify sender originals.
+- Viewer copy reuses sender file ID.
+- Shared Locker directly exposes sender's private live Locker storage/privileges.
+- Switching shared files leaks appearance/content between files.
+- Save Your Own Copy loses viewer edits.
+- signed-out /checklist becomes accessible.
+- public /s/:shareId stops working.
+- private owner Rename breaks.
+- private owner is again asked for password to Delete.
+- any existing user data is erased/migrated.
+- 020F appearance behavior regresses.
+
+==================================================
+13. REQUIRED REAL-BROWSER TEST
+==================================================
+
+A. CREATE SHARE
+
+1. Sign in as owner.
+2. Ensure several saved files exist.
+3. Open a saved file.
+4. Share → save-first warning.
+5. Copy Link Anyway.
+
+B. SIGNED-OUT SHARED LOCKER
+
+Open Share Link signed out.
+
+Confirm:
+- public shared page opens
+- Shared Locker visible
+- expected shared filenames listed
+- files can be opened
+- NO Rename icon/control
+- NO Delete icon/control
+- NO normal Save/Save As to originals
+- Save Your Own Copy available
+
+C. MULTI-FILE ISOLATION
+
+Open Shared File A.
+Change several checkboxes/values.
+
+Open Shared File B.
+Change different values.
+
+Return to A.
+
+Confirm:
+- A temporary state is independent
+- B temporary state is independent
+- backgrounds/appearance remain correct per file
+
+Refresh Share Link.
+
+Confirm sender/original saved snapshot remains authoritative.
+
+D. ORIGINAL OWNER ISOLATION
+
+After viewer edits:
+
+Owner opens original File A and File B privately.
+
+PASS:
+Neither original contains viewer changes.
+
+E. SAVE YOUR OWN COPY — SIGNED IN
+
+Viewer edits a shared file.
+Save Your Own Copy.
+
+Confirm:
+- viewer-edited state is copied
+- new unique file ID
+- independent private file
+- sender unchanged
+
+F. SAVE YOUR OWN COPY — SIGNED OUT
+
+Signed-out viewer:
+- edits shared file
+- chooses Save Your Own Copy
+- signs in/creates account
+- completes copy
+
+Confirm intended file and viewer edits survive flow where supported.
+Confirm new independent copy.
+
+G. PRIVATE OWNER 021B REGRESSION
+
+Use disposable file.
+
+Private Rename:
+- works.
+
+Private Delete:
+- simple confirmation
+- NO password
+- Cancel preserves file
+- Permanently Delete removes disposable file only
+
+H. ROUTES
+
+Signed out:
+/checklist → sign-in
+/s/:shareId → public shared Locker
+
+I. 020F REGRESSION
+
+Ray → psychedelic
+New → Clear/Light
+Sierra → mountain
+New → Clear/Light
+Packlist 1 → Light/no background
+New → Clear/Light
+
+==================================================
+14. AUTOMATED TESTS
+==================================================
+
+Add focused tests proving:
+
+- shared Locker renders
+- multiple shared files can be selected/opened
+- shared Locker has no Rename control
+- shared Locker has no Delete control
+- shared page has no persistence path to sender original
+- temporary edits isolated per shared-file ID
+- switching files does not contaminate state
+- Save Your Own Copy uses current viewer-edited state
+- copy receives new unique ID
+- signed-out copy flow preserves intended file/state where supported
+- /checklist remains private
+- /s/:shareId remains public
+- private owner Rename remains
+- private owner Delete requires no password
+- 021 Share behavior remains intact
+- 020F New/appearance behavior remains intact
+
+Run:
+1. focused 021C tests
+2. COMPLETE TrailWeigh regression suite
+
+Report exact commands and exact:
+- passed
+- failed
+- skipped
+
+Do not call a targeted subset the full suite.
+
+==================================================
+15. USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Until user personally verifies:
+
+021C = NOT USER-VERIFIED.
+
+==================================================
+16. REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021C_REPORT.md
+
+Include:
+- exact Prompt 021C
+- starting state
+- why Shared Locker was missing in 021B
+- Share storage/payload architecture before/after
+- exact files inspected/changed
+- how shared Locker data is isolated from private Locker
+- shared file switching architecture
+- temporary edit state architecture
+- Save Your Own Copy behavior
+- private owner 021B regression
+- auth route regression
+- focused tests
+- COMPLETE regression results
+- rendered browser tests
+- failures/reversions
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user testing still required
+
+Append verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite/truncate prior history.
+
+Record:
+
+020F functional = USER-TESTED PASS
+021 core Share = USER-TESTED PASS
+021 overall = PARTIAL/FAIL
+021A /checklist protection = USER-TESTED PASS
+021A password requirement = SUPERSEDED
+021B private-owner delete change = NOT YET USER-VERIFIED
+021B Shared Locker = INCOMPLETE
+021C = NOT USER-VERIFIED
+
+==================================================
+17. REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021C-report.zip
+
+It must contain EXACTLY these four Markdown files at ZIP ROOT:
+
+PROMPT_021C_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- backups
+- source/test files
+- screenshots
+- user data
+- credentials
+- other ZIP files
+
+List archive contents before finishing.
+
+Exactly four root entries.
+
+Anything else = ZIP FAIL.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. why Shared Locker was missing
+2. exact files changed
+3. how shared Locker is populated
+4. confirmation it uses shared snapshot data, not sender live private Locker
+5. confirmation Rename/Delete are absent
+6. confirmation normal Save/Save As to originals are absent
+7. how temporary per-file edits are isolated
+8. how Save Your Own Copy saves viewer-edited state with new ID
+9. signed-out copy/account flow result
+10. private owner Rename/Delete regression result
+11. /checklist and /s/:shareId route results
+12. focused test totals
+13. COMPLETE regression totals
+14. rendered browser results
+15. 021 Share regression results
+16. 020F regression results
+17. report path
+18. ZIP path
+19. exact four ZIP entries
+20. clearly state USER acceptance still required

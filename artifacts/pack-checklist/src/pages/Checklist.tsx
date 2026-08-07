@@ -16,7 +16,7 @@ import { LockerPanel, LockerEntry } from '../components/LockerPanel';
 import { LockerDeleteDialog } from '../components/LockerDeleteDialog';
 import { LockerIcon } from '../components/LockerIcon';
 import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
-import { buildShareURL } from '../lib/shareLink';
+import { buildShareURL, type SharedLockerFile } from '../lib/shareLink';
 import { useToast } from '../hooks/use-toast';
 import {
   RotateCcw, Tent, Share2, Link, FileDown, LogOut,
@@ -545,6 +545,26 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     // This guard is a defensive fallback only.
     if (store.order.length === 0) return;
 
+    // Snapshot all saved Locker entries at share time (their saved state, not live state).
+    // This populates the view-only Shared Locker on /s/:shareId.
+    let lockerFiles: SharedLockerFile[] | undefined;
+    try {
+      const rawLocker = localStorage.getItem(LOCKER_KEY);
+      const entries: LockerEntry[] = rawLocker ? JSON.parse(rawLocker) as LockerEntry[] : [];
+      if (entries.length > 0) {
+        lockerFiles = entries.map(e => ({
+          id:              e.id,
+          name:            e.name,
+          store:           e.store,
+          background:      e.background ?? null,
+          bgFade:          e.bgFade ?? 1,
+          bgTone:          e.bgTone ?? 'light',
+          bgSize:          'cover' as const,
+          chartPaletteKey: e.chartPaletteKey,
+        }));
+      }
+    } catch { /* ignore — share works without locker snapshot */ }
+
     // Snapshot the complete current working file — same structure as Save.
     // Checkbox states are preserved as-is (unlike New which resets them).
     const payload = {
@@ -557,6 +577,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgSize,
       unit:          system,
       name:          activeLockerFile?.name ?? undefined,
+      lockerFiles,
     };
 
     const url = await buildShareURL(payload);

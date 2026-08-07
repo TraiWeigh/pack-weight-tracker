@@ -2,6 +2,26 @@ import { PackState, CategoryMeta } from '../hooks/usePackData';
 import type { Background } from '../components/BackgroundPicker';
 import type { UnitSystem } from './weightUtils';
 
+/**
+ * A snapshot of one saved Locker file, captured at share-generation time.
+ * Used to populate the view-only Shared Locker on /s/:shareId.
+ * Contains only the saved state — never credentials, auth tokens, or live storage refs.
+ */
+export interface SharedLockerFile {
+  id: string;
+  name: string;
+  store: {
+    items: PackState;
+    order: string[];
+    meta: Record<string, CategoryMeta>;
+  };
+  background?: Background | null;
+  bgFade?: number;
+  bgTone?: 'light' | 'dark';
+  bgSize?: 'cover' | 'contain';
+  chartPaletteKey?: string;
+}
+
 export interface SharePayload {
   data: PackState;
   categoryOrder: string[];
@@ -15,6 +35,12 @@ export interface SharePayload {
   unit?: UnitSystem;
   /** Sender's Locker file name — displayed in the shared-view banner. */
   name?: string;
+  /**
+   * Snapshot of all saved Locker files at share-generation time.
+   * Provides the Shared Locker on /s/:shareId — view-only, no rename/delete.
+   * Absent for shares created before 021C; those render single-file view only.
+   */
+  lockerFiles?: SharedLockerFile[];
 }
 
 export function encodeSharePayload(payload: SharePayload): string {

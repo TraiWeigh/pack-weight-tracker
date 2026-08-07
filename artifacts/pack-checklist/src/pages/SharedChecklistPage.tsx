@@ -29,10 +29,10 @@ import {
   Background, PRESETS, getFullUrl,
 } from '../components/BackgroundPicker';
 import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib/bgPhotoStore';
-import type { SharePayload } from '../lib/shareLink';
+import type { SharePayload, SharedLockerFile } from '../lib/shareLink';
 import {
   Tent, Printer, Share2, FileDown, Plus, Check, X,
-  User, UserPlus, LogOut, Info,
+  User, UserPlus, LogOut, Info, FolderOpen, ChevronDown, ChevronRight,
 } from 'lucide-react';
 
 // ── Types that mirror usePackData ─────────────────────────────────────────────
@@ -43,6 +43,18 @@ type Store = {
   meta: Record<string, CategoryMeta>;
 };
 
+/** Per-file temporary edit state — stored in a Map keyed by file ID. */
+type TempFileState = {
+  store: Store;
+  background: Background | null;
+  bgFade: number;
+  bgTone: 'light' | 'dark';
+  bgSize: 'cover' | 'contain';
+};
+
+/** Key used in the tempEdits Map for the primary (top-level) snapshot. */
+const PRIMARY_KEY = '__primary__';
+
 // ── Exclusive groups — mirrors usePackData ───────────────────────────────────
 
 const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
@@ -52,6 +64,79 @@ const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
 ];
 
 const MAX_HISTORY = 100;
+
+// ── Shared Locker panel (view-only — no Rename, no Delete) ───────────────────
+
+/**
+ * Renders the view-only list of shared files.
+ * Viewers can open/browse files but may NOT rename or delete them.
+ * Controls for Rename (Pencil) and Delete (Trash) are intentionally absent.
+ */
+function SharedLockerPanel({
+  files,
+  activeId,
+  onOpen,
+}: {
+  files: SharedLockerFile[];
+  activeId: string | null;
+  onOpen: (file: SharedLockerFile) => void;
+}) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
+      {/* Header */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
+      >
+        {open
+          ? <ChevronDown  className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+        }
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 text-foreground">
+            <h2 className="font-semibold text-base">Shared Files</h2>
+            {files.length > 0 && (
+              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                {files.length}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Browse shared gear lists. Changes are temporary.
+          </p>
+        </div>
+      </button>
+
+      {open && (
+        <div className="divide-y divide-border">
+          {files.map(file => (
+            <div
+              key={file.id}
+              className={`px-4 py-3 flex items-center gap-3 hover:bg-muted/20 transition-colors group${
+                activeId === file.id ? ' bg-primary/5' : ''
+              }`}
+            >
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm font-medium truncate${
+                  activeId === file.id ? ' text-primary' : ' text-foreground'
+                }`}>{file.name}</p>
+              </div>
+              {/* Open only — rename and delete controls are intentionally absent */}
+              <button
+                onClick={() => onOpen(file)}
+                title={`Open "${file.name}"`}
+                className="p-1.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors flex-shrink-0 opacity-60 group-hover:opacity-100"
+              >
+                <FolderOpen className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── Unit toggle ───────────────────────────────────────────────────────────────
 
@@ -112,6 +197,16 @@ function SharedChecklistContent({
   historyVersion; // referenced so linter doesn't complain
   const canUndo = undoStackRef.current.length > 0;
   const canRedo  = redoStackRef.current.length > 0;
+
+  // ── Multi-file: active shared file + per-file temp edit stash ─────────────
+
+  /** ID of the currently displayed shared file, or null = primary snapshot. */
+  const [activeFileId, setActiveFileId] = useState<string | null>(null);
+  /**
+   * Per-file in-memory state stash — keyed by SharedLockerFile.id or PRIMARY_KEY.
+   * Never written to localStorage; survives only for this browser session.
+   */
+  const tempEditsRef = useRef<Map<string, TempFileState>>(new Map());
 
   /** Push current store onto undo stack then apply fn. Never touches localStorage. */
   const pushAndSet = useCallback((fn: (prev: Store) => Store) => {
@@ -309,6 +404,62 @@ function SharedChecklistContent({
   const [bgSize,       setBgSize]       = useState<'cover' | 'contain'>(snapshot.bgSize ?? 'cover');
   const [bgPickerOpen, setBgPickerOpen] = useState(false);
   const bgPickerRef = useRef<HTMLDivElement>(null);
+
+  // ── Switch between shared files ───────────────────────────────────────────
+
+  /**
+   * Switch the viewer to a different shared file.
+   * - Stashes current temp state under the current file's key.
+   * - Loads the target file's stashed state (or original snapshot data).
+   * - Resets undo/redo (history is per-file conceptually; switching starts fresh).
+   * - NEVER touches sender Locker, localStorage, or IndexedDB.
+   */
+  const switchToFile = useCallback((fileId: string | null) => {
+    // Stash current temp state
+    const currentKey = activeFileId ?? PRIMARY_KEY;
+    tempEditsRef.current.set(currentKey, { store, background, bgFade, bgTone, bgSize });
+
+    // Load the target file's state from stash or from original snapshot
+    const newKey = fileId ?? PRIMARY_KEY;
+    const stashed = tempEditsRef.current.get(newKey);
+
+    let next: TempFileState;
+    if (stashed) {
+      next = stashed;
+    } else if (fileId === null) {
+      // Restore primary snapshot original
+      next = {
+        store:      { items: snapshot.data, order: snapshot.categoryOrder, meta: snapshot.categoryMeta },
+        background: snapshot.background ?? null,
+        bgFade:     snapshot.bgFade ?? 1,
+        bgTone:     snapshot.bgTone ?? 'light',
+        bgSize:     snapshot.bgSize ?? 'cover',
+      };
+    } else {
+      const file = snapshot.lockerFiles?.find(f => f.id === fileId);
+      if (!file) return; // unknown file — ignore
+      next = {
+        store:      file.store,
+        background: file.background ?? null,
+        bgFade:     file.bgFade ?? 1,
+        bgTone:     file.bgTone ?? 'light',
+        bgSize:     file.bgSize ?? 'cover',
+      };
+    }
+
+    // Apply new state directly — direct setStore, not the undo-pushing helper
+    setStore(next.store);
+    setBackground(next.background);
+    setBgFade(next.bgFade);
+    setBgTone(next.bgTone);
+    setBgSize(next.bgSize);
+    // Reset undo/redo for the incoming file context
+    undoStackRef.current = [];
+    redoStackRef.current = [];
+    setHistoryVersion(0);
+    setActiveFileId(fileId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFileId, store, background, bgFade, bgTone, bgSize, snapshot]);
 
   // ── Custom background object URL (resolved async from recipient's IndexedDB)
   const [customBgObjectUrl, setCustomBgObjectUrl] = useState<string | null>(null);
@@ -680,11 +831,16 @@ function SharedChecklistContent({
               <div className="flex items-center gap-2 min-w-0">
                 <Info className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                 <p className="text-xs text-muted-foreground truncate">
-                  {snapshot.name ? (
-                    <>Viewing <span className="font-semibold text-foreground">"{snapshot.name}"</span> — your changes are temporary and reset on refresh.</>
-                  ) : (
-                    'Viewing a shared list — your changes here are temporary and reset on refresh.'
-                  )}
+                  {(() => {
+                    const currentName = activeFileId
+                      ? (snapshot.lockerFiles?.find(f => f.id === activeFileId)?.name ?? snapshot.name)
+                      : snapshot.name;
+                    return currentName ? (
+                      <>Viewing <span className="font-semibold text-foreground">"{currentName}"</span> — your changes are temporary and reset on refresh.</>
+                    ) : (
+                      'Viewing a shared list — your changes here are temporary and reset on refresh.'
+                    );
+                  })()}
                 </p>
               </div>
               {saveSuccess && (
@@ -872,6 +1028,14 @@ function SharedChecklistContent({
               {/* Scrollable sidebar content */}
               <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:px-3 lg:[scrollbar-gutter:stable]">
                 <div className="flex flex-col gap-4 py-2 pb-8">
+                  {/* View-only Shared Locker — browse files, no Rename/Delete */}
+                  {snapshot.lockerFiles && snapshot.lockerFiles.length > 0 && (
+                    <SharedLockerPanel
+                      files={snapshot.lockerFiles}
+                      activeId={activeFileId}
+                      onOpen={f => switchToFile(f.id)}
+                    />
+                  )}
                   <WeightSummary
                     data={store.items}
                     categoryOrder={store.order}
@@ -927,6 +1091,39 @@ function sanitizeItems(raw: unknown[]): GearItem[] {
 }
 
 /**
+ * Normalize one raw lockerFile entry from the share payload.
+ * Returns null if the entry is malformed so it can be filtered out safely.
+ */
+function normalizeLockerFile(raw: any): SharedLockerFile | null {
+  if (!raw || typeof raw.id !== 'string' || !raw.id || typeof raw.name !== 'string' || !raw.name) return null;
+  if (!Array.isArray(raw.store?.order)) return null;
+  const order: string[] = raw.store.order;
+  const items: PackState = {};
+  order.forEach((cat: string) => {
+    items[cat] = sanitizeItems(raw.store.items?.[cat] ?? []);
+  });
+  const meta: Record<string, CategoryMeta> = {};
+  order.forEach((cat: string) => {
+    const m = raw.store.meta?.[cat];
+    meta[cat] = {
+      countsToBase: m?.countsToBase ?? true,
+      subLabel:     m?.subLabel  ?? undefined,
+      descLabel:    m?.descLabel ?? undefined,
+    };
+  });
+  return {
+    id:              raw.id,
+    name:            raw.name,
+    store:           { items, order, meta },
+    background:      raw.background ?? null,
+    bgFade:          typeof raw.bgFade === 'number' ? raw.bgFade : 1,
+    bgTone:          raw.bgTone === 'dark' ? 'dark' : 'light',
+    bgSize:          raw.bgSize === 'contain' ? 'contain' : 'cover',
+    chartPaletteKey: typeof raw.chartPaletteKey === 'string' ? raw.chartPaletteKey : undefined,
+  };
+}
+
+/**
  * Validate and normalize the raw API payload into a canonical SharePayload.
  * Returns null if the snapshot is structurally invalid.
  */
@@ -957,6 +1154,13 @@ function normalizeSnapshot(raw: any): SharePayload | null {
     console.warn('[TrailWeigh] Share snapshot has 0 items across', categoryOrder.length, 'categories — rendering empty list');
   }
 
+  // Normalize shared Locker files — absent for pre-021C shares (graceful degradation)
+  const lockerFiles = Array.isArray(raw.lockerFiles)
+    ? raw.lockerFiles
+        .map(normalizeLockerFile)
+        .filter((f): f is SharedLockerFile => f !== null)
+    : undefined;
+
   return {
     data,
     categoryOrder,
@@ -968,6 +1172,7 @@ function normalizeSnapshot(raw: any): SharePayload | null {
     // Preserve sender's display name and unit system from the payload.
     unit:       (raw.unit === 'metric' || raw.unit === 'imperial') ? raw.unit : undefined,
     name:       typeof raw.name === 'string' ? raw.name : undefined,
+    lockerFiles: lockerFiles && lockerFiles.length > 0 ? lockerFiles : undefined,
   };
 }
 

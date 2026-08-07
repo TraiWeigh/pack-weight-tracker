@@ -4284,3 +4284,48 @@ See `workflow-reports/PROMPT_021B_REPORT.md` for full detail.
 ### Status History
 
 019 = USER-TESTED PASS | 020–020E = PARTIAL/FAIL | 020F functional = USER-TESTED PASS | 021 core Share = USER-TESTED PASS | 021A /checklist = USER-TESTED PASS | 021A Cancel = USER-TESTED PASS | 021A password-verification = SUPERSEDED | **021B = NOT USER-VERIFIED**
+
+---
+
+## Prompt 021C — Add View-Only Shared Locker + Preserve Viewer Isolation
+
+**Date:** 2026-08-07  
+**Status:** NOT USER-VERIFIED
+
+### Why Shared Locker Was Missing
+
+021B verified the _absence_ of rename/delete controls in SharedChecklistPage — but that test passed vacuously because the `LockerPanel` was simply never rendered. The 021B report explicitly noted: "SharedChecklistPage renders NO LockerPanel." The `SharePayload` type had no array of Locker files, so there was nothing to show.
+
+### Changes Made
+
+| File | Change |
+|------|--------|
+| `src/lib/shareLink.ts` | Added `SharedLockerFile` interface; added `lockerFiles?: SharedLockerFile[]` to `SharePayload` |
+| `src/pages/Checklist.tsx` | `handleCopyLink` now reads all Locker entries and includes them as `lockerFiles` in the share payload (try/catch guarded) |
+| `src/pages/SharedChecklistPage.tsx` | Added `SharedLockerPanel` (view-only — no rename/delete); added `activeFileId` state + `tempEditsRef` Map for per-file temp stash; added `switchToFile` callback; updated banner to show active file name; added `normalizeLockerFile` + updated `normalizeSnapshot` to handle `lockerFiles` |
+| `src/hooks/sharedLocker021C.test.mjs` | New — 70 tests (groups A–K) |
+| `package.json` | test:importer now 32 suites |
+| `TESTING.md` | 31 → 32 suites; 1,197 → 1,267 tests; 021C row added |
+
+### Architecture
+
+- `lockerFiles` in the payload = snapshot of all saved Locker files at share time — never credentials or private storage refs
+- `SharedLockerPanel` reads only from `snapshot.lockerFiles` (normalized from API payload) — never from sender's `LOCKER_KEY`
+- Per-file temp edits stashed in `tempEditsRef: useRef<Map<string, TempFileState>>(new Map())` — session-only, no persistence
+- File switching via `switchToFile(fileId)`: stash current state → load target state → direct `setStore` (not `pushAndSet`) → reset undo/redo → `setActiveFileId`
+- `commitSave` always uses `crypto.randomUUID()` and writes only to recipient's own `LOCKER_KEY`
+- Pre-021C share links (no `lockerFiles`) continue to work — `SharedLockerPanel` is conditionally rendered only when `snapshot.lockerFiles` is present
+
+### Automated Test Results
+
+```
+021C:  70/70 ✅   Full regression: 32 suites, 1,267/1,267 ✅ (exit 0)
+```
+
+### Acceptance Status
+
+All nine browser acceptance tests (A–I in `PROMPT_021C_REPORT.md`) still required.
+
+### Status History
+
+019 = USER-TESTED PASS | 020–020E = PARTIAL/FAIL | 020F functional = USER-TESTED PASS | 021 core Share = USER-TESTED PASS | 021A /checklist = USER-TESTED PASS | 021A Cancel = USER-TESTED PASS | 021A password-verification = SUPERSEDED | 021B private-owner delete = NOT YET USER-VERIFIED | 021B Shared Locker = INCOMPLETE (fixed by 021C) | **021C = NOT USER-VERIFIED**
