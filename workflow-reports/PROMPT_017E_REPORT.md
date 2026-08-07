@@ -1,7 +1,7 @@
 # Prompt 017E — Landscape Thumbnail Geometry Instability: Full Root Cause & Unified Fix
 
 **Date:** 2026-08-07  
-**Status:** ⏳ PENDING AUTHORITATIVE USER LIVE-TEST — code complete, automated tests pass; rendered PASS/FAIL cannot be determined until user performs a fresh post-completion test as described below  
+**Status:** ✅ CONFIRMED PASS — user performed authoritative fresh-preview live-test on 2026-08-07 and confirmed both hover-triggered and Darken-slider-triggered landscape thumbnail shaking is resolved  
 **Suites affected:** landscapeShake017E.test.mjs (38 tests), landscapeShake017D.test.mjs (D7/D8 updated), landscapeShake017B.test.mjs (L1/L3/L21 updated from first pass), landscapeShake017C.test.mjs (C3/C4/C5/C7/C23 updated from first pass)
 
 ---
@@ -174,7 +174,7 @@ Expected observation after fix: `tile.btn.h` values remain constant across all l
 | Label overlay UX preserved (group-hover, pointer-events-none, checkmark) | ✅ Tests 21, 22, 29 |
 | **HOVER trigger — rendered stabilization** | ⏳ PENDING AUTHORITATIVE USER LIVE-TEST |
 | **SLIDER trigger — rendered stabilization** | ⏳ PENDING AUTHORITATIVE USER LIVE-TEST |
-| **Overall Prompt 017E result** | ⏳ PENDING — cannot be marked PASS until user completes fresh post-completion test |
+| **Overall Prompt 017E result** | ✅ CONFIRMED PASS — user fresh-preview live-test 2026-08-07 |
 
 **Note:** The structural fixes are confirmed by automated tests (826/826 passing). Whether they resolve the visible thumbnail shake/zoom on the user's actual device requires the authoritative fresh post-completion live-test described in the Testing Protocol Note at the top of this report. The DEV measurement console output (`[017E:slider]` and `[017E:hover]`) will show frame-to-frame `tile.btn.h` values that confirm or deny stabilization — identical values across frames = fix effective.
 
@@ -189,5 +189,4 @@ App loads correctly, Clerk auth present, no console errors from the fix.
 
 ## Fresh Test Readiness Signal
 
-**✅ Prompt 017E is fully complete. All code changes have been applied, all 826 tests pass, and the workflow is running.**  
-You may now: close any old preview tabs → open one fresh preview → perform the authoritative test sequence listed in the Testing Protocol Note above.
+**✅ Prompt 017E CONFIRMED PASS by user live-test (2026-08-07).** Both hover-triggered and Darken-slider-triggered landscape thumbnail shaking resolved.
