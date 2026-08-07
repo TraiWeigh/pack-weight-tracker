@@ -1260,7 +1260,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     <span
                       aria-label={`Active file: ${activeLockerFile.name}`}
                       title={activeLockerFile.name}
-                      className="text-xs font-medium text-foreground max-w-[10rem] truncate select-none block text-center"
+                      className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
                     >
                       {activeLockerFile.name}
                     </span>

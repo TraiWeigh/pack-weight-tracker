@@ -3510,5 +3510,63 @@ Test:
 7. Long name → pill truncates, does not overflow
 8. Mobile viewport → name visible, centered, no overlap
 
-**Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = NOT USER-VERIFIED until user's post-completion test.
+**Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = PARTIAL (pill shape and same-line alignment correction required); 018B = NOT USER-VERIFIED until user's post-completion test.
+
+---
+
+## Prompt 018B — Match Active File Name Pill to Hide (Visual Correction)
+
+### Starting State
+
+018A = PARTIAL. Filename visible and centered, but rendered as bare plain text with no pill shape. Missing `bg-muted`, `rounded-lg`, `px-3 py-1.5`. Without `py-1.5`, the element had no height, so `top-1/2 -translate-y-1/2` placed a tiny text sliver at a visually different vertical position than the padded Hide/Preview pills. Font weight was `font-medium` instead of Hide's `font-semibold`.
+
+### Investigation
+
+Hide pill uses exactly:
+`flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors`
+
+Preview uses the same base. Shared pattern: `flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold`.
+
+### Single Change Applied — Checklist.tsx filename `<span>` className
+
+**Before (018A):**
+```
+text-xs font-medium text-foreground max-w-[10rem] truncate select-none block text-center
+```
+**After (018B):**
+```
+flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none
+```
+
+Key decisions: `text-foreground` (not `text-muted-foreground`) → CSS variable: black in light mode, white in dark mode, updates live on theme switch. No `hover:*` or `transition-colors` — informational only. `py-1.5` is the fix for same-line alignment: gives the element the same bounding-box height as Hide/Preview so `top-1/2 -translate-y-1/2` centers objects of equal height.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | Filename span className — one line |
+| `artifacts/pack-checklist/src/hooks/activeFileName018B.test.mjs` | Created — 30 new tests |
+| `package.json` | Added `activeFileName018B.test.mjs` to test chain |
+
+### Automated Test Results
+
+**896 passed / 0 failed** (866 prior + 30 new 018B tests). All 30 018B tests pass.
+
+### Required User Live-Test
+
+**✅ Prompt 018B implementation is complete. App is ready for your fresh post-completion test.**
+
+Per testing protocol: app closed while Replit worked; one fresh preview tab opened only after completion.
+
+Test (signed in, with a saved file active):
+1. Pill shape — filename shows as a rounded chip with background, matching Hide's visual silhouette
+2. Same horizontal line — filename sits at the same vertical height as Hide, Preview, Imperial, Metric
+3. Centered — pill floats centered over the left checklist column
+4. Hide → Preview → Imperial → Metric unchanged; filename NOT between them
+5. Dark mode → white text; light mode → black text; switch updates live
+6. Save → `Saved "[name]"` toast; Save As → pill immediately updates
+7. Long filename → truncates with ellipsis, no overflow
+8. Mobile → readable, centered, no horizontal scroll, no overlap
+
+**Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = PARTIAL (pill shape and same-line alignment correction required); 018B = NOT USER-VERIFIED until user's post-completion test.
 
