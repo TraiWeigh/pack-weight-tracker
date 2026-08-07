@@ -6,7 +6,7 @@
 pnpm test:importer
 ```
 
-This runs all **fourteen** test suites in sequence and exits non-zero on any failure.
+This runs all **fifteen** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
@@ -25,12 +25,13 @@ node artifacts/pack-checklist/src/hooks/bgPhotoStore016B.test.mjs   # IndexedDB 
 node artifacts/pack-checklist/src/hooks/controls017.test.mjs        # Control reorganisation (Prompt 017)
 node artifacts/pack-checklist/src/hooks/landscapeHover017B.test.mjs # Landscape thumbnail hover stability (Prompt 017B)
 node artifacts/pack-checklist/src/hooks/landscapeActiveBackground017C.test.mjs # Active-background shaking fix (Prompt 017C)
+node artifacts/pack-checklist/src/hooks/landscapeShake017D.test.mjs            # Landscape shaking root cause — compositing cascade fix (Prompt 017D)
 ```
 
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 762 passed / 0 failed (confirmed Prompt 017C, 2026-08-07).
+**Current result:** 788 passed / 0 failed (confirmed Prompt 017D, 2026-08-07).
 
 ## What each suite protects
 

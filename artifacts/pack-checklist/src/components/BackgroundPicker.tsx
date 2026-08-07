@@ -1013,8 +1013,8 @@ export function BackgroundPickerPanel({
                     isActive ? 'ring-primary' : 'ring-transparent hover:ring-foreground/30'
                   }`}
                 >
-                  <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 pointer-events-none">
                     <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
                   </div>
                   {isActive && (
