@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { PDFParse } = require('pdf-parse') as { PDFParse: new (opts: { data: Buffer; verbosity?: number }) => { getText(): Promise<{ pages: { text: string }[]; text: string }> } };
+const { PDFParse } = require('pdf-parse') as { PDFParse: new (opts: { data: Buffer; verbosity?: number }) => { getText(): Promise<{ pages: { text: string }[]; text: string }>; destroy?(): void } };
 const XLSX: typeof import('xlsx') = require('xlsx');
 const mammoth: typeof import('mammoth') = require('mammoth');
 
@@ -877,7 +877,7 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
         return;
       } finally {
         // Always release pdfjs-dist worker resources regardless of success/failure
-        try { inst.destroy(); } catch (_) { /* ignore cleanup errors */ }
+        try { inst.destroy?.(); } catch (_) { /* ignore cleanup errors */ }
       }
 
     } else if (ext === 'docx' || ext === 'doc' || mimetype?.includes('wordprocessingml')) {

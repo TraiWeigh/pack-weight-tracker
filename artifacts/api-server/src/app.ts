@@ -9,6 +9,7 @@ import {
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
+import clerkWebhookRouter from "./routes/clerkWebhook";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -29,6 +30,14 @@ app.use(
 
 // Clerk proxy must come before body parsers (streams raw bytes)
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
+
+// Capture raw body for Svix webhook signature verification before express.json
+// consumes the stream. Only applies to the Clerk webhook path.
+app.use("/api/webhooks/clerk", express.raw({ type: "*/*" }), (req, _res, next) => {
+  (req as any).rawBody = req.body as Buffer;
+  next();
+});
+app.use("/api", clerkWebhookRouter);
 
 app.use(cors({ credentials: true, origin: true }));
 app.use(express.json({ limit: '12mb' }));

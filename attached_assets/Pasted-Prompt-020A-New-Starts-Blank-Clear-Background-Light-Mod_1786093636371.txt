@@ -1,0 +1,100 @@
+Prompt 020A — New Starts Blank + Clear Background + Light Mode
+
+Create PRE_020A_MASTER_BACKUP.md before changing anything.
+
+CURRENT STATE: Prompt 020 is PARTIAL. New correctly creates zero categories/items, but the user's fresh test showed it still inherits the previous file/window's active background and Dark mode.
+
+GOAL: New must create a true clean starting workspace:
+- zero categories
+- zero items
+- no active background image (Clear/blank)
+- Light mode active
+- no stale active filename
+
+GLOBAL REGRESSION PROTECTION: Protect ALL existing TrailWeigh functionality, data, styling, layout, persistence, calculations, importers, Background Edit, Save/Locker, Share, responsive behavior, and all prior prompt work unless explicitly changed here. Smallest possible change only; no unrelated cleanup/refactoring. Preserve localStorage, IndexedDB, Locker files, custom themes/photos, API/importer behavior, and cross-tab compatibility. Inspect final diff and revert unrelated changes.
+
+NEW BEHAVIOR:
+When the user clicks New:
+1. Create the existing unsaved blank working list.
+2. Categories = empty.
+3. Items = empty.
+4. Active background image = Clear/none.
+5. Interface appearance = Light mode.
+6. Active saved-file identity/name = none.
+7. Show the existing Add Category option so the user can build from scratch.
+
+Do NOT inherit the active background or Dark mode from the file that was open before New.
+
+IMPORTANT — DO NOT DELETE BACKGROUND OPTIONS:
+New clears only the ACTIVE background selection. It must NOT delete or modify:
+- built-in Landscapes
+- custom themes
+- uploaded custom photos
+- IndexedDB photo data
+- saved background libraries/options
+
+Those must remain available in Background Edit so the user can explore and select them.
+
+Do not alter the previously saved file. If File A uses a custom background and Dark mode, click New → new workspace is Clear + Light. Reopen File A → File A must still have its original background/theme state exactly as saved.
+
+IMPORTER BEHAVIOR — PROTECT THIS:
+The user discovered and likes the existing behavior where importing a gear list into a blank checklist automatically creates whatever categories are needed for the imported items. Preserve this.
+
+Required flow:
+New → zero categories → import supported gear-list file → importer may automatically create needed categories and place imported items into them.
+
+Do not make Prompt 020A dependent on default categories and do not break automatic category creation during import.
+
+PRESERVE:
+- Add Category
+- automatic category creation on import
+- Scan Gear List/PDF/Word/Excel/Numbers
+- Save/Save As/Locker
+- "Saved [File Name]"
+- filename pill
+- Reset behavior (Reset is NOT New)
+- Background Edit functions/libraries
+- Fill/Fit
+- Darken control
+- Themes/custom photos/IndexedDB
+- 017E background shaking fix
+- 017F importer fix
+- 019 separate/collapsible Pack Summary + Weight Distribution
+- 020 blank categories/items
+- Hide/Preview/Imperial/Metric/Open/Close
+- MOVE/calculations/palette persistence
+- lg:grid-cols-[1fr_365px]
+- QTY translate-x-3
+- saved user data and desktop/mobile layout
+
+INVESTIGATE FIRST: Inspect the current New handler and determine exactly which background/theme/appearance state is copied from the current workspace. Change only the New initialization needed to set active background=Clear and appearance=Light while keeping background libraries intact.
+
+REQUIRED TESTS:
+1. Open saved File A in Dark mode with an active background.
+2. Click New.
+3. Verify zero categories/items.
+4. Verify background is completely Clear/blank.
+5. Verify Light mode is active.
+6. Verify no stale File A filename.
+7. Verify custom themes/photos still exist in Background Edit.
+8. Add Category → works normally.
+9. Import into blank New list → needed categories are automatically created as before.
+10. Save as File B → active filename becomes File B and confirmation says "Saved File B".
+11. Reopen File A → its original categories, items, background and display state remain unchanged.
+12. Reset retains its existing behavior and is not converted into New.
+13. Check desktop and phone width for regressions.
+
+AUTOMATED TESTS: Add focused tests proving New initializes zero categories/items + no active background + Light mode, preserves background libraries, clears stale active identity, preserves previous saved file, preserves auto-category creation on import, and leaves Reset unchanged. Run full suite and report exact command/pass/fail totals. Automated tests do not replace rendered testing.
+
+USER ACCEPTANCE: Do not claim USER-TESTED PASS. User keeps TrailWeigh closed while Replit works and tests one fresh preview afterward. Until user confirmation, 020A = NOT USER-VERIFIED.
+
+REPORTING: Create workflow-reports/PROMPT_020A_REPORT.md with starting state (020=PARTIAL), files inspected/changed, root cause, exact change, before/after, automated/rendered results, acceptance checklist (PASS/FAIL/PARTIAL/NOT TESTED), unresolved issues, and required user tests. Append COMPLETE report to TRAILWEIGH_COMPLETE_WORKFLOW.md without overwriting/truncating. Record 019=USER-TESTED PASS, 020=PARTIAL, 020A=NOT USER-VERIFIED.
+
+ZIP: Create trailweigh-020A-report.zip containing exactly these four Markdown files at ZIP root:
+PROMPT_020A_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+No wrapper folder, __MACOSX, .DS_Store, backups, source code, screenshots, user data, or other zips. Inspect and list entries; exactly four.
+
+FINAL RESPONSE: report root cause; files changed; how New now forces Clear background + Light mode without deleting background libraries; confirmation zero categories/items remains; importer auto-category behavior remains; previous saved file remains unchanged; automated/rendered/mobile results; protected-feature checks; report/ZIP paths and exact ZIP entries; clearly state user acceptance still required.
