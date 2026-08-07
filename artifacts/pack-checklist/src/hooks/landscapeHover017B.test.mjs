@@ -284,16 +284,20 @@ test('21. Unselected landscape tiles use ring-transparent (stable base)', () => 
   );
 });
 
-// ── Test 22: Only specific transitions (not transition-all) ───────────────
-test('22. Landscape button uses targeted transition (not transition-all)', () => {
-  // Should contain transition-[box-shadow... or transition-shadow, not transition-all
-  assert.ok(
-    presetsBlock.includes('transition-[') || presetsBlock.includes('transition-shadow'),
-    'No targeted transition class found in PRESETS block — transition-all may still be active'
-  );
+// ── Test 22: No transition-all on landscape button ────────────────────────
+test('22. Landscape button has no transition-all (instant ring change is correct)', () => {
+  // 017C fix: box-shadow transitions cause CPU paint cycles against the active
+  // background image, producing visible jitter. The ring color now changes
+  // instantly (no CSS transition on the button). transition-all is forbidden;
+  // no transition on the button is the correct stable state.
   assert.ok(
     !presetsBlock.includes('transition-all'),
     'transition-all still present in PRESETS block'
+  );
+  // Confirm the forbidden box-shadow transition is NOT on the button
+  assert.ok(
+    !presetsBlock.includes('transition-[box-shadow'),
+    'transition-[box-shadow still on PRESETS button — will cause shaking with active background'
   );
 });
 

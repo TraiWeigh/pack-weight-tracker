@@ -2879,4 +2879,154 @@ Ring geometry is now **identical in all states**. Only color varies.
 
 ---
 
-*Master workflow last updated: 2026-08-06 (Prompt 017B)*
+*Master workflow last updated: 2026-08-07 (Prompt 017C)*
+
+---
+
+# Prompt 017C — Stop Landscape Shaking When an Active Background Is Displayed
+
+**Date:** 2026-08-07  
+**Status:** ✅ COMPLETE  
+**Test suites:** 14 (was 13)  
+**Tests:** 762 passed / 0 failed (was 738)  
+**New tests:** 24 (`landscapeActiveBackground017C.test.mjs`)  
+**Modified tests:** 1 (landscapeHover017B.test.mjs test 22 updated)
+
+---
+
+## Problem
+
+Prompt 017B fixed landscape tile shaking with a **Clear** background (no image). However, the user tested and reported:
+
+- **Clear background** → ✅ No shaking (017B fixed)
+- **Active built-in landscape background** → ❌ Still shaking
+- **Active custom photo background** → ❌ Still shaking
+
+017C was tasked with finding and eliminating the remaining root cause.
+
+---
+
+## Investigation
+
+### Ruled out
+
+All of the following were confirmed **not** to be the cause:
+
+- No `onMouseEnter`/`onMouseLeave`/`onPointerEnter`/`onPointerLeave` on landscape tile buttons
+- No hover-preview state (`hoveredPresetId`, `hoveredBackground`) anywhere in the codebase
+- `onBackgroundChange` not called on hover
+- `bgImageUrl` is stable during hover (never changes except on click)
+- Object URLs not recreated on hover (only when `activePhotoId` changes)
+- `useInactivityTimer` only resets a `setTimeout` ref on `mousemove` — no React state updates
+- `bg-card` panel background is fully opaque (`hsl(40,25%,100%)` light / `hsl(220,15%,14%)` dark) — background image does not show through the panel
+- `transition: 'opacity 800ms ease'` on the main container does NOT create a GPU layer when `opacity` is static (1); only activates compositing when a transition is actively running
+- Scrollbar oscillation: at common resolutions (1920×1080 → max-h 920 px; Active content 883 px < 920 px), both Clear and Active content fit without a scrollbar
+- `animate-in` panel animation completes in 150ms; hover occurs well after animation is done
+
+### Root cause confirmed
+
+**CSS `box-shadow` transitions are CPU paint operations.**
+
+The `transition-[box-shadow,opacity]` class left on the landscape tile button by 017B caused the browser to execute a **CPU paint cycle on every animation frame** of the ring-color hover transition (`ring-transparent → ring-foreground/30`).
+
+When the main page container has a CSS `backgroundImage` applied via inline style (active background), the browser treats the main container as a **complex paint area** that includes the background image. Any child element's paint-triggering operation propagates to the nearest paint layer — the main container. On each frame of the box-shadow color animation, the browser must repaint the background image (a 1920 px Unsplash photo). This per-frame background image repaint produces visible stuttering — the "shaking" the user reported.
+
+**Why Clear is stable:** Without `backgroundImage`, the paint area for each frame resolves to a flat solid color. This is instant and imperceptible.
+
+**Key distinction:**
+| Transition type | Paint mechanism | Impact with backgroundImage |
+|----------------|----------------|----------------------------|
+| `opacity` | GPU-composited; separate layer per element | No paint cycle; no impact |
+| `box-shadow` | CPU paint; no GPU layer promotion | Per-frame repaint propagates to parent (background image) |
+
+---
+
+## Code Changes
+
+### 1. Remove `transition-[box-shadow,opacity]` from landscape tile button
+
+**File:** `artifacts/pack-checklist/src/components/BackgroundPicker.tsx`
+
+**Before (017B):**
+```tsx
+className={`relative overflow-hidden rounded-lg aspect-[3/2] group ring-2 ring-offset-1 transition-[box-shadow,opacity] ${
+  isActive ? 'ring-primary' : 'ring-transparent hover:ring-foreground/30'
+}`}
+```
+
+**After (017C):**
+```tsx
+className={`relative overflow-hidden rounded-lg aspect-[3/2] group ring-2 ring-offset-1 ${
+  isActive ? 'ring-primary' : 'ring-transparent hover:ring-foreground/30'
+}`}
+```
+
+Ring color now changes instantly on hover (no CSS animation). Eliminates all CPU paint cycles during hover. Label overlay gradient fade (`group-hover:opacity-100 transition-opacity`) is unaffected — it is on the child element and is GPU-composited.
+
+**UX impact:** Ring appears/disappears instantly — standard UI behavior for selection indicators. No degradation.
+
+### 2. Add `willChange: 'transform'` to BackgroundPickerPanel root div
+
+**File:** `artifacts/pack-checklist/src/components/BackgroundPicker.tsx`
+
+**Before:**
+```tsx
+style={{ display: open ? undefined : 'none' }}
+```
+
+**After:**
+```tsx
+style={{ display: open ? undefined : 'none', willChange: 'transform' }}
+```
+
+Promotes the panel to its own GPU compositing layer. Any transitions within the panel (label opacity fades, future additions) are composited inside the panel's layer, separate from the main page background image compositing. Defense-in-depth: future CSS changes to tiles cannot cause background image repaints.
+
+`will-change: transform` GPU memory is freed when the panel is `display: none` (picker closed). Acceptable cost.
+
+---
+
+## New Test Suite
+
+**`landscapeActiveBackground017C.test.mjs`** — 24 tests
+
+| # | Category | What it checks |
+|---|----------|----------------|
+| 1–7 | Tile CSS | No box-shadow transition; no transition-all; ring geometry frozen (017B); no ring-width/offset/scale change on hover; ring-transparent in base state |
+| 8–12 | Hover handlers | No onMouseEnter/Leave/PointerEnter/Leave on tile buttons; label pointer-events-none |
+| 13–18 | Background stability | No hover handlers on main container; bgImageUrl from state only; object URL stable during hover; background inline style from state; useInactivityTimer no React state on mousemove; BackgroundShowcase always mounted |
+| 19–22 | GPU layer | Panel has willChange:transform; willChange only on panel (not main container); value is "transform"; panel z-50 preserved |
+| 23–24 | Regressions | 017B ring geometry preserved; 017A Hide unconditional preserved |
+
+---
+
+## Test Results
+
+```
+pnpm test:importer
+
+Prompt 017B — Landscape Hover Stability Tests
+  ✓ 1–22 (22 passed, 0 failed)
+
+Prompt 017C — Active Background Shaking Fix Tests
+  ✓ 1–24 (24 passed, 0 failed)
+
+Total across all 14 suites: 762 passed / 0 failed
+```
+
+---
+
+## Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/components/BackgroundPicker.tsx` | Removed `transition-[box-shadow,opacity]` from tile button; added `willChange:'transform'` to panel div |
+| `artifacts/pack-checklist/src/hooks/landscapeHover017B.test.mjs` | Test 22 updated: accepts instant ring change as correct |
+| `artifacts/pack-checklist/src/hooks/landscapeActiveBackground017C.test.mjs` | New — 24 tests |
+| `package.json` | Added 017C test to `test:importer` chain |
+| `TESTING.md` | Suite count 13→14; test count 738→762; new suite documented |
+
+---
+
+## Preserved Features (all 762 tests green)
+
+Background selection by click · Label gradient fade-in on hover (GPU-composited, unaffected) · Checkmark on selected tile · Hide unconditional (017A) · Preview wired · UnitToggle · Background Undo/Redo · PDF timeout guard (016C) · bgPhotoStore imports (016B) · Desktop grid 365px · translate-x-3

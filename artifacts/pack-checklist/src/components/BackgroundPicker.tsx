@@ -860,7 +860,7 @@ export function BackgroundPickerPanel({
     <div
       ref={panelRef}
       className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-[24rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
-      style={{ display: open ? undefined : 'none' }}
+      style={{ display: open ? undefined : 'none', willChange: 'transform' }}
     >
       {/* Hidden file input */}
       <input
@@ -1009,7 +1009,7 @@ export function BackgroundPickerPanel({
                   onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
                   aria-pressed={isActive}
                   aria-label={p.label}
-                  className={`relative overflow-hidden rounded-lg aspect-[3/2] group ring-2 ring-offset-1 transition-[box-shadow,opacity] ${
+                  className={`relative overflow-hidden rounded-lg aspect-[3/2] group ring-2 ring-offset-1 ${
                     isActive ? 'ring-primary' : 'ring-transparent hover:ring-foreground/30'
                   }`}
                 >

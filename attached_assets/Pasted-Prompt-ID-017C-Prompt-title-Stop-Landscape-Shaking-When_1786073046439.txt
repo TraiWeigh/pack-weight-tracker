@@ -1,0 +1,674 @@
+Prompt ID: 017C
+Prompt title: Stop Landscape Shaking When an Active Background Is Displayed
+
+Repair the remaining Landscape-thumbnail shaking defect.
+
+This is a focused correction to Prompt 017B.
+
+Do not start Prompt 018 or modify unrelated TrailWeigh features.
+
+# CONFIRMED USER TEST RESULT
+
+Prompt 017B did not fully fix the defect.
+
+The user confirmed this exact behavior:
+
+- When Background is Clear and no image background is active:
+  - Landscape thumbnails do not shake.
+
+- When a built-in or custom image background is active:
+  - Moving the cursor across the built-in Landscape thumbnails causes visible shaking or jitter.
+
+This means the defect is connected to the active full-screen background, background rendering, or a hover-triggered interaction between the Landscape thumbnails and the background layer.
+
+Do not assume the thumbnail CSS alone is the cause.
+
+# REQUIRED FINAL RESULT
+
+Landscape thumbnails must remain completely stationary when:
+
+- Background is Clear
+- A built-in Landscape background is active
+- A custom-theme photo is active
+- Fill Screen is selected
+- Fit Image is selected
+- Light is selected
+- Dark is selected
+- Fade/darken is adjusted
+- The selected thumbnail displays its border and checkmark
+
+Moving the cursor slowly or rapidly over the Landscape thumbnails must not:
+
+- Move the thumbnails
+- Resize the thumbnails
+- Shift neighboring thumbnails
+- Recreate or reload the active background
+- Change the active background
+- Cause background flashing
+- Cause the Background Edit panel to move
+- Cause a scrollbar to appear or disappear
+- Write background data to storage
+- Trigger unnecessary React state changes
+
+# PART 1 — REVIEW THE CURRENT PROJECT STATE
+
+Before changing code, read:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_017A_REPORT.md`
+- `workflow-reports/PROMPT_017B_REPORT.md`
+- Current Background Edit component
+- Current Landscape thumbnail component
+- Current custom-photo thumbnail component
+- Current full-page background-rendering component
+- Current background object-URL handling
+- Current background hover handlers
+- Current selected-background state
+- Current Fill/Fit implementation
+- Current Light/Dark implementation
+- Current fade/darken implementation
+- Current Undo/Redo background history
+- Current Hide-mode background component
+
+Treat the current application source as the source of truth.
+
+Do not rely only on the Prompt 017B report because the user’s rendered test proved the defect remains.
+
+# PART 2 — CREATE A CHECKPOINT AND BACKUP
+
+Create a Replit checkpoint before modifying application code.
+
+Create:
+
+`workflow-reports/PRE_017C_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Master line count
+- Master file size
+- Backup line count
+- Backup file size
+- Landscape thumbnail component path
+- Active-background component path
+- Current background-rendering method
+- Current object-URL lifecycle
+- Current hover event handlers
+- Current CSS transitions on the thumbnails
+- Current CSS transitions on the background layer
+- Current React state changed during Landscape hover
+- Current rendered behavior with Clear background
+- Current rendered behavior with an active background
+
+Do not change code until the actual interaction has been traced.
+
+# PART 3 — REPRODUCE BOTH CONDITIONS
+
+Use the signed-in Replit preview.
+
+Reproduce this exact comparison:
+
+## Condition A — Clear background
+
+1. Open Background Edit.
+2. Set the background to Clear.
+3. Select Landscapes in the Theme dropdown.
+4. Move the cursor slowly and rapidly across all Landscape thumbnails.
+5. Confirm the thumbnails remain stable.
+
+## Condition B — Active background
+
+1. Select one built-in Landscape image as the active background.
+2. Keep Background Edit open.
+3. Move the cursor across the same thumbnails.
+4. Confirm the shaking occurs.
+
+Also test:
+
+- A custom-theme photo as the active background
+- Fill Screen
+- Fit Image
+- Light
+- Dark
+- Different fade levels
+
+Record precisely which combinations produce the shaking.
+
+# PART 4 — TRACE RENDERS AND STATE CHANGES
+
+Determine what changes when the cursor enters and leaves a Landscape thumbnail.
+
+Inspect whether hover causes:
+
+- A React state update
+- A temporary preview-background update
+- A selected-background update
+- A background history entry
+- A component remount
+- A changing React `key`
+- A background URL change
+- A new object URL
+- An image reload
+- A CSS class change on the full-page background
+- A change to `background-size`
+- A change to `background-position`
+- A filter or opacity recalculation
+- A parent transform
+- A body width change
+- A scrollbar change
+- A panel-width change
+- A storage write
+- A save-state update
+
+Use temporary render counters or development logging if necessary.
+
+Remove temporary debugging logs before completion.
+
+The final report must state:
+
+- Which component rerendered
+- Which state or style changed
+- Why it happened only when an active background existed
+- Why the Clear-background condition did not shake
+
+# PART 5 — INSPECT LANDSCAPE HOVER PREVIEW LOGIC
+
+Specifically check whether built-in Landscape thumbnails have hover-preview behavior such as:
+
+- `onMouseEnter`
+- `onMouseLeave`
+- `onPointerEnter`
+- `onPointerLeave`
+- Temporary hovered-background state
+- Background preloading on hover
+- Background selection on hover
+- Updating the full-page background before click
+
+Hovering a Landscape thumbnail must not change the active background.
+
+The active background should change only when the user deliberately selects or clicks a thumbnail.
+
+If hover preview exists and causes the instability:
+
+- Remove or isolate the hover preview.
+- Preserve a nonmoving visual hover indication.
+- Do not write hover state into the saved background state.
+- Do not create Undo/Redo entries from hover.
+- Do not recreate the background image during hover.
+
+Custom-theme photo behavior must remain unchanged unless it uses the same confirmed faulty shared logic.
+
+# PART 6 — STABILIZE THE ACTIVE BACKGROUND LAYER
+
+The active full-page background must remain mounted and stable while the pointer moves over thumbnails.
+
+Requirements:
+
+- Do not replace the background DOM element during thumbnail hover.
+- Do not change its React `key` during hover.
+- Do not reload its image source during hover.
+- Do not recreate custom-photo object URLs during hover.
+- Do not revoke and recreate the same object URL repeatedly.
+- Do not toggle background classes unnecessarily.
+- Do not change background positioning during hover.
+- Do not change Fill/Fit during hover.
+- Do not change fade or filter during hover.
+- Do not trigger a transition merely because a thumbnail is hovered.
+
+A background transition is allowed when the user actually selects a different image.
+
+Hover alone must not trigger that transition.
+
+# PART 7 — OBJECT URL AND IMAGE REFERENCE SAFETY
+
+For custom photos stored in IndexedDB:
+
+- Resolve the active photo object URL only when the selected photo changes.
+- Memoize or retain the current usable URL appropriately.
+- Do not regenerate the URL because a Landscape thumbnail hovered.
+- Revoke an old URL only when it is no longer needed.
+- Do not revoke the active URL during unrelated renders.
+- Do not create multiple URLs for the same active photo during cursor movement.
+
+For built-in Landscape backgrounds:
+
+- Keep the same image URL while hover state changes.
+- Do not append changing cache-busting values.
+- Do not preload and replace the selected URL repeatedly.
+
+Document whether object-URL recreation contributed to the shaking.
+
+# PART 8 — REMOVE BACKGROUND-RELATED LAYOUT SHIFT
+
+Inspect whether the active background causes browser layout or compositing changes during hover.
+
+Check for:
+
+- `transition-all`
+- `transform`
+- `scale`
+- `translate`
+- `will-change`
+- `background-attachment: fixed`
+- Animated `filter`
+- Animated `backdrop-filter`
+- Blur changes
+- Opacity transitions
+- Changing `overflow`
+- Changing body scrollbar state
+- Changing viewport width
+- GPU compositing layers
+- Parent transforms applied to the entire page
+
+Do not remove necessary background functionality without evidence.
+
+Make the smallest change that stabilizes the interface.
+
+Prefer transitions limited to intentional properties.
+
+Do not use `transition-all` on:
+
+- The background layer
+- The Background Edit panel
+- The Landscape grid
+- Landscape thumbnail containers
+
+# PART 9 — THUMBNAIL GEOMETRY MUST REMAIN FIXED
+
+Preserve the Prompt 017B geometry improvements.
+
+For every Landscape tile, normal and hover states must have identical:
+
+- Width
+- Height
+- Bounding rectangle
+- Border width
+- Padding
+- Margin
+- Grid position
+- Aspect ratio
+
+Selected and unselected states must also remain the same size.
+
+The selected checkmark must remain absolutely positioned and must not affect layout.
+
+Do not reintroduce hover scaling.
+
+# PART 10 — AVOID UNNECESSARY PARENT RERENDERS
+
+Where practical:
+
+- Keep transient hover effects in CSS.
+- Do not store basic hover state in the main Checklist component.
+- Do not rerender the full Checklist merely to alter thumbnail appearance.
+- Memoize stable background values where appropriate.
+- Keep thumbnail hover separate from active-background state.
+- Do not update Undo/Redo history during hover.
+- Do not update localStorage or IndexedDB during hover.
+
+Do not add excessive memoization blindly.
+
+Use it only where the render trace shows it prevents the confirmed problem.
+
+# PART 11 — PRESERVE ALL BACKGROUND FUNCTIONS
+
+After the repair, preserve:
+
+- Clear background
+- Built-in Landscape selection
+- Custom-photo selection
+- Themes dropdown
+- Add Theme
+- Theme rename
+- Delete Theme
+- Maximum of ten themes
+- Maximum of ten photos per theme
+- IndexedDB photo storage
+- Photo persistence
+- Fill Screen
+- Fit Image
+- Light
+- Dark
+- Fade/darken
+- Background Undo
+- Background Redo
+- Hide mode
+- Refresh persistence
+- Save
+- Save As
+- Locker open
+- New
+- Reset behavior
+
+Do not change saved-data schemas.
+
+# PART 12 — PRESERVE PROMPT 017A CONTROLS
+
+Do not change:
+
+- Hide label
+- Hide behavior
+- Preview location
+- Preview behavior
+- Imperial/Metric location
+- Imperial/Metric behavior
+
+Keep the visible order:
+
+`Hide → Preview → Imperial → Metric`
+
+The separate Preview above Pack Summary must remain removed.
+
+# PART 13 — AUTOMATED TESTS
+
+Add or update focused tests for the actual active-background condition.
+
+Test at minimum:
+
+1. Hovering a Landscape thumbnail does not change the selected background.
+2. Hovering does not update background history.
+3. Hovering does not write to localStorage.
+4. Hovering does not write to IndexedDB.
+5. Hovering does not recreate a custom-photo object URL.
+6. Hovering does not change the active built-in URL.
+7. Hovering does not change Fill/Fit.
+8. Hovering does not change Light/Dark.
+9. Hovering does not change fade.
+10. Hovering does not remount the active-background element.
+11. Landscape tile geometry remains stable with Clear background.
+12. Landscape tile geometry remains stable with an active built-in background.
+13. Landscape tile geometry remains stable with an active custom background.
+14. Clicking still changes the active background.
+15. Clicking creates the appropriate history behavior.
+16. Undo and Redo still work.
+17. Hide remains working.
+18. Preview remains working.
+19. Imperial/Metric remains working.
+20. Prompt 016B storage tests remain passing.
+21. Prompt 016C PDF tests remain passing.
+22. Prompt 017A control tests remain passing.
+23. Desktop grid remains 365px.
+24. QTY remains `translate-x-3`.
+
+Do not use only a source-text search as proof.
+
+Test state behavior and component rendering where practical.
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Suite names
+- Suite count
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Warnings
+- Errors
+- Duration
+
+Update `TESTING.md` if tests or suites change.
+
+# PART 14 — REQUIRED RENDERED TESTS
+
+Do not claim PASS from automated tests alone.
+
+Use the signed-in Replit preview.
+
+## Test A — Clear background
+
+1. Clear the active background.
+2. Open Landscapes.
+3. Move the cursor across all thumbnails for at least ten seconds.
+4. Confirm no movement.
+
+## Test B — Active built-in background
+
+1. Select a built-in Landscape image.
+2. Keep Background Edit open.
+3. Move the cursor slowly across every thumbnail.
+4. Move rapidly across the entire grid for at least ten seconds.
+5. Confirm no thumbnail, neighboring tile, background, or panel shakes.
+
+## Test C — Active custom background
+
+1. Select a custom-theme photo as the active background.
+2. Return to Landscapes.
+3. Move the cursor across all Landscape thumbnails.
+4. Confirm no shaking.
+5. Confirm the custom background remains unchanged until a Landscape image is clicked.
+
+## Test D — Fill/Fit and Light/Dark
+
+Repeat active-background hover testing with:
+
+- Fill Screen
+- Fit Image
+- Light
+- Dark
+- Low fade
+- High fade
+
+Confirm all conditions remain stable.
+
+## Test E — Selection and history
+
+1. Click a new Landscape image.
+2. Confirm it becomes the active background.
+3. Confirm no shaking after selection.
+4. Use Undo.
+5. Use Redo.
+6. Confirm no shaking after either action.
+
+## Test F — Hide
+
+1. Enter Hide mode.
+2. Confirm the active background remains stable.
+3. Exit Hide.
+4. Reopen Background Edit.
+5. Confirm the Landscape thumbnails remain stable.
+
+Record a short screen video showing:
+
+- Clear-background hover
+- Active built-in-background hover
+- Active custom-background hover
+- Rapid cursor movement
+- Fill and Fit conditions
+
+A still screenshot is not sufficient to prove this repair.
+
+User testing remains required.
+
+# PART 15 — DOCUMENT THE TRUE ROOT CAUSE
+
+The Prompt 017B root-cause conclusion was incomplete because the problem remained when a background was active.
+
+The Prompt 017C report must identify the actual confirmed cause.
+
+Include:
+
+- Component and file path
+- State, event, or style responsible
+- Why the issue appeared only with an active background
+- Why Clear background did not show the defect
+- Why Prompt 017B did not fully solve it
+- Exact before-and-after logic
+- Evidence from rendered testing
+
+Do not describe the repair only as:
+
+- “More CSS changes”
+- “Jitter fixed”
+- “Background issue fixed”
+
+# PART 16 — PRESERVE UNRELATED FEATURES
+
+Do not modify:
+
+- Checklist columns
+- MOVE
+- WEIGHT
+- QTY
+- TOTAL
+- DESCRIPTION
+- Pack Summary
+- Weight Distribution
+- Palette persistence
+- PDF importer
+- Word importer
+- Excel importer
+- Numbers importer
+- Save confirmation wording
+- Active filename behavior
+- Share Link
+- Print
+- Download PDF
+- Locker schema
+- Theme schema
+- IndexedDB schema
+- Authentication
+- Retail or affiliate features
+
+Preserve:
+
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+
+# PART 17 — CREATE THE REPORT
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_017C_REPORT.md`
+
+Include:
+
+- Prompt ID and title
+- Start and completion times
+- Confirmed user test failure from Prompt 017B
+- Clear-background versus active-background comparison
+- Exact root cause
+- Files changed
+- Before-and-after code excerpts
+- Render counts or state-change evidence
+- Active background URL behavior
+- Object-URL behavior
+- Geometry measurements
+- Automated-test result
+- Rendered-test video path
+- Desktop, tablet, and phone results
+- Acceptance checklist using PASS, FAIL, PARTIAL, or NOT TESTED
+- Anything still requiring user testing
+
+Do not mark the repair PASS without active-background hover testing.
+
+# PART 18 — APPEND TO THE MASTER
+
+Append the complete Prompt 017C report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Do not overwrite or truncate the master.
+
+Requirements:
+
+- Prompt 017C appears exactly once.
+- Prompt 017B remains present as the prior incomplete repair.
+- Record that Prompt 017B failed the user’s active-background test.
+- Update the current Background Edit state.
+- Update the Prompt Number Index.
+- Confirm the master grew.
+
+Final trailer:
+
+`Master workflow last updated: 2026-08-06 (Prompt 017C)`
+
+# PART 19 — CREATE THE REPORT ZIP
+
+Create:
+
+`trailweigh-017C-report.zip`
+
+Include exactly these four files at the ZIP root:
+
+- `PROMPT_017C_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+The source report remains at:
+
+`workflow-reports/PROMPT_017C_REPORT.md`
+
+Do not include:
+
+- A folder wrapper
+- `workflow-reports/` as a ZIP folder
+- `__MACOSX`
+- `.DS_Store`
+- Backups
+- Source files
+- Screen recordings
+- User photos
+- Locker data
+- Other ZIP files
+
+List and verify the ZIP contents after creation.
+
+# FINAL VERIFICATION
+
+Before completion, confirm:
+
+1. Clear-background Landscape hover remains stable.
+2. Active built-in-background Landscape hover is stable.
+3. Active custom-background Landscape hover is stable.
+4. Slow cursor movement causes no shaking.
+5. Rapid cursor movement causes no shaking.
+6. Neighboring thumbnails remain stationary.
+7. The active background remains stationary.
+8. Hover does not change the active background.
+9. Hover does not recreate object URLs.
+10. Hover does not create history entries.
+11. Hover does not write to storage.
+12. Clicking a thumbnail still selects it.
+13. Fill and Fit remain working.
+14. Light and Dark remain working.
+15. Fade remains working.
+16. Undo and Redo remain working.
+17. Hide remains working.
+18. Preview remains working.
+19. Imperial/Metric remains working.
+20. PDF importing remains working.
+21. Custom-photo persistence remains working.
+22. Desktop grid remains 365px.
+23. QTY remains `translate-x-3`.
+24. No saved-data schema changed.
+25. Prompt 017C appears exactly once in the master.
+26. The ZIP contains exactly four root files.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_017C_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-017C-report.zip`
+- State the exact root cause
+- Report the exact automated-test result
+- Surface or identify the rendered hover-test video
+- State exactly what still requires user testing
+- Confirm no unrelated TrailWeigh feature was modified

@@ -6,7 +6,7 @@
 pnpm test:importer
 ```
 
-This runs all **thirteen** test suites in sequence and exits non-zero on any failure.
+This runs all **fourteen** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
@@ -24,12 +24,13 @@ node artifacts/pack-checklist/src/hooks/bgCollections016A.test.mjs  # Theme drop
 node artifacts/pack-checklist/src/hooks/bgPhotoStore016B.test.mjs   # IndexedDB photo store (Prompt 016B)
 node artifacts/pack-checklist/src/hooks/controls017.test.mjs        # Control reorganisation (Prompt 017)
 node artifacts/pack-checklist/src/hooks/landscapeHover017B.test.mjs # Landscape thumbnail hover stability (Prompt 017B)
+node artifacts/pack-checklist/src/hooks/landscapeActiveBackground017C.test.mjs # Active-background shaking fix (Prompt 017C)
 ```
 
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 738 passed / 0 failed (confirmed Prompt 017B, 2026-08-07).
+**Current result:** 762 passed / 0 failed (confirmed Prompt 017C, 2026-08-07).
 
 ## What each suite protects
 
@@ -47,7 +48,8 @@ plain JS so tests can run against source changes immediately.
 | `bgCollections016A.test.mjs` | Prompt 016A theme dropdown data requirements: dropdown structure — Landscapes separate from custom, Add Theme gated on count, MAX_COLLECTIONS enforced, Landscapes not counted (A1); theme name save — valid creates collection, label format "Theme [Name]", blank rejected, duplicate rejected (A2); theme count limits — MAX_COLLECTIONS=10, Landscapes excluded, delete re-enables Add Theme (A3); photos per theme — MAX=10 enforced, add increases count, remove decreases count, order preserved (A4); migration — existing 016 collections preserved, idempotent (A5); rename preserves photos and order (A6); delete removes only the target theme (A7); JSON round-trip preserves all data — updated 016B: no dataUrl in photo records (A8) |
 | `bgPhotoStore016B.test.mjs` | IndexedDB photo store (Prompt 016B): validateImageFile — JPEG/PNG/WebP/GIF accepted, TIFF/SVG rejected, >25 MB rejected, 25 MB boundary accepted (S1); dataUrlToBlob — JPEG and PNG data URLs decoded to Blob, malformed → null, correct MIME extracted (S2); isMigrationDone/markMigrationDone — absent flag false, set flag true, writes "1" to localStorage (S3); storePhoto/getPhotoBlob — store-and-retrieve, miss returns null, overwrite, mimeType/width/height persisted alongside blob (S4); deletePhoto/deletePhotos — remove by ID, no-op for missing ID, multiple IDs, empty array no-op (S5); getAllStoredPhotoIds — returns all keys; empty store → [] (S6); createPhotoObjectUrl/revokePhotoObjectUrl — non-empty URL, unique per call, revoke no-op for unknown URL, URL removed from pool (S7); getPhotoBlob returns null on IndexedDB unavailable — no uncaught exception (S8) |
 | `controls017.test.mjs` | Control reorganisation (Prompt 017 + 017A): Showcase pill removed from BackgroundPicker panel (C1); Hide pill rendered unconditionally — no {background &&} wrapper (C4); Hide calls triggerShowcase — existing handler, no new state (C3); exactly one setShowPreview(true) in Checklist (C5); sidebar Preview removed (C6); UnitToggle follows Preview (C7); lg:grid-cols-[1fr_365px] preserved (C9); translate-x-3 preserved (C10); aria-labels on Hide and Preview (C17, C18); source order Hide→Preview→UnitToggle (C19) |
-| `landscapeHover017B.test.mjs` | Landscape thumbnail hover stability (Prompt 017B): ring-2 always present in base state (L1); no hover:scale-* (L2); hover does not change ring-width — only color (L3); transition-all not used (L4); same ring-width for selected and unselected (L5); decorative label overlay has pointer-events-none (L6); selected checkmark has pointer-events-none (L7); onClick still selects background (L8); all built-in PRESETS present (L9); built-ins non-deletable (L10); custom thumbnails unchanged (L11); Hide unconditional — 017A preserved (L12); Preview wired (L13); UnitToggle present (L14); Undo/Redo wired (L15); bgPhotoStore imports preserved (L16); PDF timeout guard preserved (L17); grid 365px (L19); translate-x-3 (L20); ring-transparent in base state (L21); targeted transition only (L22) |
+| `landscapeHover017B.test.mjs` | Landscape thumbnail hover stability (Prompt 017B): ring-2 always present in base state (L1); no hover:scale-* (L2); hover does not change ring-width — only color (L3); transition-all not used (L4); same ring-width for selected and unselected (L5); decorative label overlay has pointer-events-none (L6); selected checkmark has pointer-events-none (L7); onClick still selects background (L8); all built-in PRESETS present (L9); built-ins non-deletable (L10); custom thumbnails unchanged (L11); Hide unconditional — 017A preserved (L12); Preview wired (L13); UnitToggle present (L14); Undo/Redo wired (L15); bgPhotoStore imports preserved (L16); PDF timeout guard preserved (L17); grid 365px (L19); translate-x-3 (L20); ring-transparent in base state (L21); no transition-all and no box-shadow transition (L22 updated 017C) |
+| `landscapeActiveBackground017C.test.mjs` | Active-background shaking fix (Prompt 017C): no box-shadow transition on tile button — root cause removed (C1); no transition-all (C2); ring geometry frozen — 017B preserved (C3); no hover:ring-2 (C4); no hover:ring-offset-1 (C5); no hover:scale-* (C6); ring-transparent in base state (C7); no onMouseEnter on tile buttons (C8); no onMouseLeave (C9); no onPointerEnter (C10); no onPointerLeave (C11); label overlay has pointer-events-none (C12); no onMouseEnter on main container (C13); bgImageUrl derived from state only — no hover leak (C14); object URL not recreated on hover (C15); background inline style from state only (C16); useInactivityTimer no React state on mousemove (C17); BackgroundShowcase always mounted (C18); panel has willChange:transform — GPU layer isolation (C19); willChange:transform only on panel not main container (C20); panel willChange value is "transform" (C21); panel has z-50 — stacking preserved (C22); 017B ring geometry preserved (C23); 017A Hide unconditional (C24) |
 
 ## Where fixtures are stored
 
