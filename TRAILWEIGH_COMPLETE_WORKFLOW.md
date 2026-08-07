@@ -4214,3 +4214,73 @@ See `workflow-reports/PROMPT_021A_REPORT.md` for full detail.
 ### Status History
 
 019 = USER-TESTED PASS | 020–020E = PARTIAL/FAIL | 020F functional = USER-TESTED PASS | 021 core Share = USER-TESTED PASS | 021 overall = PARTIAL/FAIL | **021A = NOT USER-VERIFIED**
+
+---
+
+## Prompt 021B — Simplify Private Delete + Make Shared Locker View/Copy Only
+
+**Status:** COMPLETE — NOT USER-VERIFIED  
+**Date:** 2026-08-07  
+**Prior status:** 020F = USER-TESTED PASS | 021 core Share = USER-TESTED PASS | 021A /checklist protection = USER-TESTED PASS | 021A Cancel = USER-TESTED PASS | 021A password-verification = SUPERSEDED
+
+### Summary of Changes
+
+**Section 1 & 2 — Simplify private delete (remove password)**
+
+`LockerDeleteDialog.tsx` replaced entirely (382 → 127 lines). All Clerk password/OAuth/rate-limiting code removed. Replaced with a simple two-button confirmation:
+- Dialog title: `Permanently delete "[File Name]"?`
+- Body: `This cannot be undone.`
+- Buttons: `Cancel` | `Permanently Delete`
+
+No password field. No `signIn.create()`. No OAuth redirect round-trip.
+
+`Checklist.tsx` — removed 3 items:
+1. `LOCKER_PENDING_DELETE_KEY`, `LOCKER_DELETE_VERIFIED_PARAM` imports
+2. `oauthDeleteIds` state + two OAuth round-trip `useEffect`s (42 lines)
+3. `isGuest={isGuest}` prop on `<LockerDeleteDialog>` (dialog is now authentication-agnostic — owners always see simple confirm)
+
+**Section 3 — Shared Locker allowed visible**
+
+No code change needed. `SharedChecklistPage` has no `LockerPanel` component and no hide logic. The Locker is allowed to be shown in the shared view; no code currently prevents it.
+
+**Section 4 — Shared viewer no Rename/Delete**
+
+No code change needed. `SharedChecklistPage` has no `LockerPanel`, no `LockerDeleteDialog`, no `onRequestDelete`. Structurally verified by 3 tests.
+
+**Sections 5, 6, 7 — Temporary edits, Save Your Own Copy, owner protection**
+
+No code change needed. All of this was already architecturally correct:
+- `pushAndSet` is pure React state — no localStorage writes
+- `commitSave` uses `crypto.randomUUID()` — never reuses sender file ID
+- File comment explicitly states "nothing is ever written to localStorage, IndexedDB, or the API"
+
+### Auth Regression (021A preserved)
+
+`requestProtectedDelete` auth guard (`if (isGuest || !userId) return`) intact. `/checklist → /sign-in` redirect intact. `/s/:shareId` public route intact.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `src/components/LockerDeleteDialog.tsx` | Complete rewrite — 382 lines → 127 lines, all Clerk re-verification removed |
+| `src/pages/Checklist.tsx` | 3 edits: remove 2 imports, remove OAuth state + effects, remove isGuest prop |
+| `src/hooks/authProtection021A.test.mjs` | Group C updated for 021B supersession |
+| `src/hooks/lockerSimpleDelete021B.test.mjs` | New — 41 tests |
+| `package.json` | Added `lockerSimpleDelete021B` to test:importer (now 31 suites) |
+| `TESTING.md` | Suite count 30 → 31; 021B suite entry added |
+
+### Automated Test Results
+
+```
+021B:  41/41 ✅  021A: 28/28 ✅  021: 27/27 ✅  Full regression: 31 suites, 1,197/1,197 ✅ (exit 0)
+```
+
+### Acceptance Status
+
+All eight browser acceptance tests (A–H) in `PROMPT_021B_REPORT.md` still required. Structural tests confirm the password field is absent and the simple confirmation is in place.
+
+See `workflow-reports/PROMPT_021B_REPORT.md` for full detail.
+
+### Status History
+
+019 = USER-TESTED PASS | 020–020E = PARTIAL/FAIL | 020F functional = USER-TESTED PASS | 021 core Share = USER-TESTED PASS | 021A /checklist = USER-TESTED PASS | 021A Cancel = USER-TESTED PASS | 021A password-verification = SUPERSEDED | **021B = NOT USER-VERIFIED**

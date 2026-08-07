@@ -121,9 +121,12 @@ test('requestProtectedDelete proceeds to dialog only after auth check', () => {
     'After the auth guard return, setPendingDeleteIds must be the next statement');
 });
 
-test('isGuest prop still plumbed to LockerDeleteDialog (for dialog internal gating)', () => {
-  assert.match(checklist, /isGuest=\{isGuest\}/,
-    'isGuest prop must still be passed to LockerDeleteDialog');
+test('021B: isGuest prop removed from LockerDeleteDialog (dialog only shown to authenticated owners)', () => {
+  // 021B supersedes this: the dialog no longer accepts isGuest because it is
+  // only rendered after the auth guard in requestProtectedDelete passes.
+  const dialogBlock = checklist.slice(checklist.indexOf('<LockerDeleteDialog'));
+  assert.doesNotMatch(dialogBlock.slice(0, 400), /isGuest=\{isGuest\}/,
+    'isGuest prop must NOT be passed to LockerDeleteDialog — 021B removes it');
 });
 
 test('No password or credential is written to localStorage in delete flow', () => {
@@ -142,57 +145,59 @@ test('No password or credential is written to sessionStorage in delete flow', ()
     'LockerDeleteDialog must not write password to sessionStorage');
 });
 
-// ── C. Password re-verification API — signIn.create() replaces signIn.password() ──
+// ── C. Clerk password re-verification superseded by 021B simple confirmation ──
+//
+// 021A originally required Clerk signIn.create() password re-verification.
+// Prompt 021B SUPERSEDES this: deletion now uses a simple confirmation dialog —
+// no password, no Clerk API call. These tests verify the transition is clean.
 
-console.log('\nC. Password re-verification API — signIn.create() instead of signIn.password()');
+console.log('\nC. 021B supersedes 021A password re-verification — clean removal verified');
 
-test('handlePasswordSubmit uses signIn.create() not signIn.password()', () => {
-  assert.doesNotMatch(lockDlg, /signIn\.password\s*\(/,
-    'signIn.password() must no longer be called — it is not a documented Clerk API');
-  assert.match(lockDlg, /signIn\.create\s*\(/,
-    'signIn.create() must be called for password verification');
-});
-
-test('signIn.create() receives strategy: "password"', () => {
-  assert.match(lockDlg, /strategy:\s*['"]password['"]/,
-    'create() call must specify strategy: "password"');
-});
-
-test('signIn.create() receives identifier field (not emailAddress field)', () => {
-  assert.match(lockDlg, /identifier:\s*emailAddress/,
-    'create() must use identifier field — not a custom emailAddress field');
-});
-
-test('signIn.create() receives password field', () => {
-  assert.match(lockDlg, /password,/,
-    'create() must receive the password shorthand field');
-});
-
-test('onConfirmed called when result.status === "complete"', () => {
-  assert.match(lockDlg, /result\.status\s*===\s*['"]complete['"]/,
-    'Must check result.status (from create()) not signIn.status');
-});
-
-test('setActive() is NOT called in code — existing session preserved', () => {
-  // Strip single-line comment lines and JSDoc lines before checking, so that
-  // the intentional "do NOT call setActive()" documentation doesn't false-positive.
+test('021B: LockerDeleteDialog has no signIn.create() call', () => {
   const codeLines = lockDlg.split('\n')
     .filter(l => !l.trim().startsWith('//') && !l.trim().startsWith('*'));
-  const codeOnly = codeLines.join('\n');
-  assert.doesNotMatch(codeOnly, /setActive\s*\(/,
-    'setActive() must not appear in executable code — calling it replaces the active session');
+  assert.doesNotMatch(codeLines.join('\n'), /signIn\.create\s*\(/,
+    'signIn.create() must be absent — 021B replaces it with a simple confirmation');
 });
 
-test('Wrong-password error identified by Clerk error code', () => {
-  assert.match(lockDlg, /form_password_incorrect/,
-    'Must check for Clerk error code "form_password_incorrect" for wrong-password classification');
+test('021B: LockerDeleteDialog has no signIn.password() call', () => {
+  assert.doesNotMatch(lockDlg, /signIn\.password\s*\(/,
+    'signIn.password() must remain absent — it was never a valid Clerk v6 API');
 });
 
-test('header comment updated to reflect signIn.create() (no signIn.password() documentation)', () => {
-  assert.doesNotMatch(lockDlg, /signIn\.password\(\{/,
-    'Header comment must no longer document signIn.password()');
-  assert.match(lockDlg, /signIn\.create\(\{/,
-    'Header comment must document signIn.create()');
+test('021B: LockerDeleteDialog has no password input field', () => {
+  assert.doesNotMatch(lockDlg, /type=['"]password['"]/,
+    'password input must be absent — 021B removes password requirement');
+});
+
+test('021B: LockerDeleteDialog has no Clerk rate-limiting code', () => {
+  assert.doesNotMatch(lockDlg, /MAX_ATTEMPTS|LOCKOUT_SECS|lockedUntil/,
+    'Rate-limiting code tied to password attempts must be absent');
+});
+
+test('021B: setActive() absent from LockerDeleteDialog executable code', () => {
+  const codeLines = lockDlg.split('\n')
+    .filter(l => !l.trim().startsWith('//') && !l.trim().startsWith('*'));
+  assert.doesNotMatch(codeLines.join('\n'), /setActive\s*\(/,
+    'setActive() must not appear in executable code');
+});
+
+test('021B: LockerDeleteDialog has Permanently Delete button (simple confirm)', () => {
+  assert.match(lockDlg, /Permanently Delete/,
+    '"Permanently Delete" button must be present in the simple confirmation dialog');
+});
+
+test('021B: LockerDeleteDialog has Cancel button', () => {
+  assert.match(lockDlg, /Cancel/,
+    'Cancel button must be present');
+});
+
+test('021B: LockerDeleteDialog has no isGuest prop (only shown to authenticated owners)', () => {
+  // Strip comments first so JSDoc mentions of auth don't false-positive
+  const codeLines = lockDlg.split('\n')
+    .filter(l => !l.trim().startsWith('//') && !l.trim().startsWith('*'));
+  assert.doesNotMatch(codeLines.join('\n'), /isGuest/,
+    'isGuest prop must be removed — 021B dialog is only rendered for authenticated owners');
 });
 
 // ── D. Public share route — /s/:id remains unauthenticated ───────────────────

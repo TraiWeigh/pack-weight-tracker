@@ -13,11 +13,7 @@ import { useLocation, Redirect } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ImportGearPanel } from '../components/ImportGearPanel';
 import { LockerPanel, LockerEntry } from '../components/LockerPanel';
-import {
-  LockerDeleteDialog,
-  LOCKER_PENDING_DELETE_KEY,
-  LOCKER_DELETE_VERIFIED_PARAM,
-} from '../components/LockerDeleteDialog';
+import { LockerDeleteDialog } from '../components/LockerDeleteDialog';
 import { LockerIcon } from '../components/LockerIcon';
 import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
 import { buildShareURL } from '../lib/shareLink';
@@ -993,46 +989,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const [pendingDeleteIds,  setPendingDeleteIds]  = useState<string[]>([]);
   const [showDeleteDialog,  setShowDeleteDialog]  = useState(false);
-  // Used only for the OAuth redirect round-trip path.
-  const [oauthDeleteIds,    setOauthDeleteIds]    = useState<string[]>([]);
-
-  // Detect OAuth redirect return on first render and schedule deletion.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get(LOCKER_DELETE_VERIFIED_PARAM) !== '1') return;
-
-    // Scrub the verification param from the URL without a page reload.
-    const cleaned = new URLSearchParams(window.location.search);
-    cleaned.delete(LOCKER_DELETE_VERIFIED_PARAM);
-    const newUrl =
-      window.location.pathname +
-      (cleaned.toString() ? `?${cleaned.toString()}` : '');
-    window.history.replaceState({}, '', newUrl);
-
-    // Retrieve and clear pending IDs stored before the redirect.
-    const raw = sessionStorage.getItem(LOCKER_PENDING_DELETE_KEY);
-    sessionStorage.removeItem(LOCKER_PENDING_DELETE_KEY);
-    if (!raw) return;
-    try {
-      const ids: string[] = JSON.parse(raw);
-      if (ids.length > 0) setOauthDeleteIds(ids);
-    } catch { /* malformed storage — ignore */ }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Execute pending OAuth-verified deletion once state is ready.
-  useEffect(() => {
-    if (!oauthDeleteIds.length) return;
-    const toDelete = lockerEntries.filter(e => oauthDeleteIds.includes(e.id));
-    if (!toDelete.length) { setOauthDeleteIds([]); return; }
-    const updated = lockerEntries.filter(e => !oauthDeleteIds.includes(e.id));
-    setLockerEntries(updated);
-    broadcastLocker(updated);
-    setOauthDeleteIds([]);
-    const msg = toDelete.length === 1
-      ? `"${toDelete[0].name}" was permanently deleted.`
-      : `${toDelete.length} Locker files were permanently deleted.`;
-    toast({ description: msg });
-  }, [oauthDeleteIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Called when the user clicks "Yes" on the LockerPanel inline confirm.
@@ -1667,7 +1623,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           entries={lockerEntries.filter(e => pendingDeleteIds.includes(e.id))}
           onConfirmed={handleConfirmedDelete}
           onCancel={() => { setShowDeleteDialog(false); setPendingDeleteIds([]); }}
-          isGuest={isGuest}
         />
       )}
 
