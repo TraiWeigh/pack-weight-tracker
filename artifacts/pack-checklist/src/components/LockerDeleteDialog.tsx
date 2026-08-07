@@ -3,8 +3,8 @@
  *
  * Identity verification strategy (Clerk v6):
  *  • Email+password accounts:
- *      signIn.password({ emailAddress, password }) → check signIn.status === 'complete'
- *      signIn.finalize() is deliberately NOT called — we only verify, not replace the session.
+ *      signIn.create({ strategy: 'password', identifier, password }) → check result.status === 'complete'
+ *      setActive() is deliberately NOT called — we only verify, not replace the session.
  *  • OAuth-only accounts:
  *      signIn.sso({ strategy, redirectUrl, redirectCallbackUrl }) triggers a redirect.
  *      Pending IDs are stored in sessionStorage before the redirect; the host page reads
@@ -137,20 +137,16 @@ export function LockerDeleteDialog({
     try {
       const emailAddress = user.primaryEmailAddress?.emailAddress ?? '';
 
-      // Clerk v6: signIn.password() verifies credentials against Clerk's server.
-      // We deliberately do NOT call signIn.finalize() — this is verification only,
-      // not a session replacement. The existing session remains unchanged.
-      const { error: clerkError } = await signIn.password({ emailAddress, password });
+      // Clerk v6: create() with strategy='password' verifies credentials against Clerk's
+      // server. We do NOT call setActive() — this is verification only; the existing
+      // session remains unchanged.
+      const result = await signIn.create({
+        strategy: 'password',
+        identifier: emailAddress,
+        password,
+      });
 
-      if (clerkError) {
-        // Wrong password or other credential error.
-        setError('Incorrect password. Nothing was deleted.');
-        recordFailure();
-        return;
-      }
-
-      // Check the reactive status property on the signIn resource.
-      if (signIn.status === 'complete') {
+      if (result.status === 'complete') {
         setPassword('');
         onConfirmed();
       } else {
@@ -158,9 +154,15 @@ export function LockerDeleteDialog({
         setError('Identity could not be fully verified. Nothing was deleted.');
         recordFailure();
       }
-    } catch {
-      // Unexpected network / Clerk exception.
-      setError('Verification failed. Please try again.');
+    } catch (err: unknown) {
+      // Wrong password → Clerk throws with err.errors[0].code === 'form_password_incorrect'
+      const clerkErr = err as { errors?: Array<{ code?: string }> };
+      const code = clerkErr?.errors?.[0]?.code ?? '';
+      if (code === 'form_password_incorrect' || code.includes('password')) {
+        setError('Incorrect password. Nothing was deleted.');
+      } else {
+        setError('Verification failed. Please try again.');
+      }
       recordFailure();
     } finally {
       setLoading(false);

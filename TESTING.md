@@ -6,7 +6,7 @@
 pnpm test:importer
 ```
 
-This runs all **twenty-nine** test suites in sequence and exits non-zero on any failure.
+This runs all **thirty** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
@@ -40,12 +40,13 @@ node artifacts/pack-checklist/src/hooks/savedListRestore020D.test.mjs # Saved li
 node artifacts/pack-checklist/src/hooks/crossTabIsolation020E.test.mjs       # Cross-tab bg isolation (Prompt 020E)
 node artifacts/pack-checklist/src/hooks/inheritedSessionStorage020F.test.mjs # Inherited-sessionStorage forkId fix (Prompt 020F)
 node artifacts/pack-checklist/src/hooks/shareLink021.test.mjs                # Share link repair (Prompt 021)
+node artifacts/pack-checklist/src/hooks/authProtection021A.test.mjs          # Auth route protection + delete repair (Prompt 021A)
 ```
 
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 1128 passed / 0 failed (017E/017F/018C/019 USER-TESTED PASS; 020/020A/020B/020C/020D: New blank+Clear+Light + saved-file appearance restoration + fork/savedListId remount isolation implemented — 2026-08-07; 021: Share link crash fix + empty-list UX + save-before-sharing warning — NOT USER-VERIFIED).
+**Current result:** 1156 passed / 0 failed (017E/017F/018C/019 USER-TESTED PASS; 020F functional = USER-TESTED PASS; 021 core Share = USER-TESTED PASS; 021A: auth route guard + delete repair + password re-verification — NOT USER-VERIFIED — 2026-08-07).
 
 ## What each suite protects
 
@@ -80,6 +81,7 @@ plain JS so tests can run against source changes immediately.
 | `crossTabIsolation020E.test.mjs` | Cross-tab background isolation (Prompt 020E): no unscoped generic restore keys exist — all setItem/getItem for tw-fork-bg-restore, tw-fork-bgfade-restore, tw-fork-bgtone-restore use forkId-scoped template-literal keys (tests 1–9); background initializer reads tw-fork-id before constructing scoped key — forkId in scope at stash time (10); handleLoadFromLocker reads forkId and writes all three scoped keys (11–14); all three change handlers read tw-fork-id and write scoped keys (15–17); newseed remount still returns null/Clear as final fallback (18); savedListId path reads tw-savedlist-bg before scoped stash — correct order (19–20); no localStorage.clear or sessionStorage.clear added (21–22); resolveStorageKey still produces unique forkIds for newseed and savedListId tabs (23–24) |
 | `inheritedSessionStorage020F.test.mjs` | Inherited-sessionStorage forkId override (Prompt 020F): resolveStorageKey URL params precede sessionStorage check — newseed before sessionStorage (1–2), savedListId before sessionStorage (3–4), newseed sets correct tw-fork-id (5), savedListId creates fresh UUID (6), both branches return before sessionStorage fallback (7–8), sessionStorage fallback present for remounts (9), V5_KEY for primary tabs (10), fork-scoped keys returned (11–12), scenario: newseed tab with inherited forkId gets URL identity (13), scenario: savedListId tab with inherited forkId gets fresh identity (14); background initializer reads tw-fork-id correctly (15), newseed-bg key scoped to forkId (16), scoped restore key stashed on first load (17), remount path reads scoped key not generic (18), savedListId path stashes scoped key (19), returns null as default (20); save toast no quotes (21–23); 020E invariants intact — bgTone/bgFade scoped, no generic keys (24–28) |
 | `shareLink021.test.mjs` | Share link repair (Prompt 021): A. Crash fix — GearCategory gets order={store.order} and moveItem={moveItem}, moveItem useCallback defined, moveItem uses pushAndSet (1–5); B. normalizeSnapshot completeness — unit/name fields returned, validated, categoryOrder guard preserved, BackgroundPickerButton panelOpen fix (6–11); C. Empty-list UX — canShare from totalItems, "Nothing to share" toast removed, aria-disabled+cursor-not-allowed grayed button, desktop hover tooltip, showEmptyShareMsg mobile tap state (12–17); D. Save-before-sharing — shareStep state 'menu'/'warning', initialised 'menu', warning message, Copy Link Anyway button, shareStep='warning' on Copy Link click, shareStep reset on close (18–23); E. Data-ownership — commitSave uses crypto.randomUUID, writeLockerEntry with LOCKER_KEY, no DELETE /api/links (24–27) |
+| `authProtection021A.test.mjs` | Auth route protection + delete repair (Prompt 021A): A. Route guard — Redirect imported from wouter, signed-out path redirects to /sign-in, no key="guest"/isGuest render, spinner while !isLoaded, signed-in path uses user.id key, /checklist in App.tsx delegates to Checklist (1–8); B. Delete guard — requestProtectedDelete returns early when isGuest\|\|!userId, no direct setLockerEntries in guard block, setPendingDeleteIds after guard, isGuest still plumbed to dialog, no password in localStorage/sessionStorage (9–15); C. Password API — signIn.create() not signIn.password(), strategy:'password', identifier field, password field, result.status==='complete', no setActive() in executable code, form_password_incorrect error code, header comment updated (16–23); D. Public share — /s/:id in App.tsx unwrapped, SharedChecklistPage no RedirectToSignIn, no /sign-in redirect for viewing (24–26); E. 021 regressions — order prop, moveItem prop, normalizeSnapshot name+unit (27–28) |
 
 ## Where fixtures are stored
 

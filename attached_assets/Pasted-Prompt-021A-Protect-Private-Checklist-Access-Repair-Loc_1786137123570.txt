@@ -1,0 +1,592 @@
+Prompt 021A — Protect Private Checklist Access + Repair Locker Delete Authentication
+
+Create PRE_021A_MASTER_BACKUP.md before changing anything.
+
+CURRENT STATUS:
+020F functional behavior = USER-TESTED PASS.
+021 core Share functionality = USER-TESTED PASS.
+021 overall = PARTIAL/FAIL because authentication/private-route and Locker deletion failed user testing.
+
+==================================================
+CONFIRMED USER-TESTED FAILURES
+==================================================
+
+FAILURE 1 — PRIVATE CHECKLIST ACCESS WHILE SIGNED OUT
+
+User signed out of TrailWeigh and reached the public/sign-in page.
+
+While still signed out, user manually opened:
+
+/checklist
+
+Instead of requiring sign-in, TrailWeigh loaded the user's private checklist, active file, backgrounds, and Locker.
+
+Required behavior:
+
+SIGNED OUT + /checklist
+→ TrailWeigh sign-in page
+→ NO private checklist
+→ NO Locker
+→ NO private filenames/items/backgrounds displayed
+
+Do not briefly render private data and then redirect.
+
+FAILURE 2 — SIGNED-OUT DELETE BYPASS
+
+While signed out, the private Locker was visible and user successfully deleted file "fdfd" WITHOUT entering a password.
+
+This must be impossible.
+
+FAILURE 3 — SIGNED-IN DELETE REJECTS CORRECT PASSWORD
+
+While properly signed in, deleting a Locker file displayed the password confirmation dialog.
+
+The user entered the correct account password, but TrailWeigh returned:
+
+“Incorrect password. Nothing was deleted.”
+
+Therefore the current delete-password verification path is broken.
+
+Do NOT record, preserve, reproduce, log, hard-code, or include any user password in source code, reports, tests, screenshots, console logs, or ZIP files.
+
+==================================================
+GOAL
+==================================================
+
+1. Make /checklist and all private Locker functionality authenticated/private.
+
+2. Keep TRUE public Share Links publicly viewable without requiring sign-in.
+
+3. Prevent all signed-out private-file deletion paths.
+
+4. Repair signed-in deletion verification using the existing authentication provider's supported secure re-authentication/re-verification flow.
+
+5. Preserve all working Prompt 021 Share functionality and Prompt 020F appearance/New behavior.
+
+==================================================
+1. AUTHENTICATION ROUTE OWNERSHIP
+==================================================
+
+Investigate the existing auth/router architecture BEFORE editing.
+
+Trace:
+- Clerk/auth initialization
+- auth loading state
+- signedIn/signedOut state
+- /checklist route
+- public landing/sign-in route
+- /s/:id Share route
+- localStorage/IndexedDB/Locker hydration
+- Checklist component mount
+- Locker component mount
+- saved-file loading
+- sign-out behavior
+- browser refresh/back/navigation behavior
+
+PRIVATE ROUTE RULE:
+
+/checklist is PRIVATE.
+
+If auth state is:
+- loading → do not hydrate/render private checklist data yet
+- signed out → render/redirect to TrailWeigh sign-in page
+- signed in → allow checklist/private Locker
+
+Do NOT render private checklist content before authentication is resolved.
+
+Do NOT rely only on hiding buttons.
+
+The private Checklist/Locker data layer should not initialize for a signed-out /checklist session where practical within the existing architecture.
+
+IMPORTANT:
+Do NOT delete the user's locally stored data on sign-out merely to solve this.
+
+Preserve existing user data.
+
+If true private-data security would require migrating existing client-side data to authenticated server storage, DO NOT perform that migration silently. Stop and report it as a separate architectural issue.
+
+==================================================
+2. PUBLIC SHARE LINK EXCEPTION
+==================================================
+
+TRUE Share Links must remain public:
+
+/s/:shareId
+
+A signed-out recipient must still be able to:
+- open a valid Share Link
+- view the shared pack
+- see shared gear/calculations/appearance
+- interact with the temporary shared view
+
+Do NOT redirect a valid /s/:shareId viewer to sign-in merely for viewing.
+
+Sign-in/account creation should only be required when an action genuinely requires ownership, such as:
+
+Save Your Own Copy
+
+Protect the working Prompt 021 repair:
+- no order.filter crash
+- valid shared hydration
+- correct appearance
+- temporary shared editing
+- Save Your Own Copy flow
+
+A shared viewer must NEVER gain access to the sender's private /checklist or Locker merely because they opened /s/:shareId.
+
+==================================================
+3. SIGN-OUT BEHAVIOR
+==================================================
+
+When a signed-in user signs out:
+
+- private /checklist must become inaccessible
+- private Locker must become inaccessible
+- private filenames/items must no longer render
+- navigating directly back to /checklist must require sign-in
+- refresh must still require sign-in
+- opening /checklist in a new tab must require sign-in
+- browser Back/Forward must not expose a usable cached private checklist
+
+Do NOT erase saved Locker data simply because the user signs out.
+
+==================================================
+4. LOCKER DELETE AUTHORIZATION
+==================================================
+
+Private Locker deletion is an authenticated owner-only action.
+
+SIGNED OUT:
+- cannot access private Locker through normal app routing
+- cannot delete a private Locker file
+- any existing direct client/server delete path must reject an unauthenticated attempt
+- do not rely solely on hiding the trash icon
+
+SIGNED IN:
+- clicking Delete retains the existing confirmation/re-verification experience
+- deletion occurs ONLY after successful secure account re-verification
+- wrong credentials → nothing deleted
+- cancel → nothing deleted
+- successful verification → only the selected user-owned file is deleted
+
+==================================================
+5. PASSWORD / RE-VERIFICATION SECURITY
+==================================================
+
+INVESTIGATE why the current dialog rejects the correct password.
+
+Determine exactly what the current code is comparing/verifying.
+
+DO NOT:
+- compare account passwords against locally stored strings
+- hard-code a password
+- store passwords in localStorage
+- store passwords in sessionStorage
+- store plaintext passwords in database records
+- send passwords to custom logging
+- include passwords in reports/tests
+- invent a second TrailWeigh password database
+
+Use the currently installed authentication provider's supported secure re-authentication/re-verification mechanism.
+
+If the installed auth SDK provides a supported user re-verification/re-authentication flow, use that rather than implementing password validation manually.
+
+Preserve compatibility with accounts that may use authentication methods other than password where practical.
+
+If the existing SDK/auth architecture cannot securely verify the account password in this dialog:
+STOP and document the limitation and supported secure alternative instead of creating insecure password handling.
+
+==================================================
+6. DELETE DATA OWNERSHIP
+==================================================
+
+Before deletion, verify:
+- user is authenticated
+- target file belongs to that authenticated user's private Locker
+- requested file ID is the intended target
+- successful re-verification occurred
+
+Never allow:
+- recipient of Share Link to delete sender original
+- File A deletion to delete File B
+- signed-out deletion
+- deletion based only on possession of a file ID
+- cross-account deletion
+- deletion through stale shared/session state
+
+Opening a shared file must never create ownership of the sender's original.
+
+==================================================
+7. PRESERVE WORKING PROMPT 021 SHARE UX
+==================================================
+
+DO NOT regress:
+
+EMPTY LIST:
+- Share pill grayed/unavailable
+- hover/focus/tap explanation:
+  “Add some gear items before creating a share link.”
+- no large bottom-right Nothing to Share toast
+
+ACTIVE SHARE:
+- save-before-share warning
+- Copy Link Anyway
+- valid public Share Link
+- shared page opens without order.filter crash
+- correct shared gear
+- calculations
+- checked states
+- backgrounds/appearance
+- temporary shared editing
+- Save Your Own Copy
+
+Recipient copy:
+- separate file
+- new independent ID
+- sender original unchanged
+
+Do not rewrite Share architecture unless directly required for auth route separation.
+
+==================================================
+8. PRESERVE 020F
+==================================================
+
+Protect USER-TESTED PASS behavior:
+
+NEW:
+- zero categories/items
+- Clear/no background
+- Light mode
+- no filename
+- remains Clear/Light after mount
+- no cross-tab appearance leakage
+
+SAVED FILES:
+- Sierra/Dutch/0826 restores its own mountain appearance
+- Ray Jardine's restores its own psychedelic appearance
+- Packlist 1 restores Light/no background
+- files do not inherit appearance from another file
+
+Save confirmation:
+Saved [File Name]
+
+NO quotation marks.
+
+==================================================
+9. GLOBAL REGRESSION PROTECTION
+==================================================
+
+Treat ALL existing TrailWeigh functionality/data/styling/layout/persistence/calculations/importer/background/Locker/Share/responsive behavior and all prior completed prompt work as protected unless 021A explicitly changes it.
+
+Smallest reliable change set only.
+
+NO unrelated:
+- refactoring
+- cleanup
+- renaming
+- relocation
+- modernization
+- UI redesign
+
+Preserve:
+- localStorage
+- IndexedDB
+- Locker files
+- user data
+- saved-file compatibility
+- themes/custom photos
+- background libraries
+- cross-tab behavior
+- importer behavior
+- calculations
+- desktop/mobile layouts
+
+Create checkpoint first.
+
+Inspect final diff.
+
+Revert unrelated changes.
+
+If storage/schema migration appears necessary:
+STOP and report before implementing.
+
+==================================================
+10. SECURITY ACCEPTANCE RULES
+==================================================
+
+021A = FAIL if ANY of these occur:
+
+- signed-out /checklist displays private list/Locker
+- private data visibly flashes before sign-in redirect
+- signed-out user can delete a private file
+- correct signed-in re-verification cannot delete selected file
+- wrong credentials delete a file
+- password is locally stored/logged/compared insecurely
+- public /s/:shareId links stop working signed out
+- shared viewer can access sender's private Locker
+- existing Locker files are erased/reset to solve auth
+- 020F appearance behavior regresses
+- working Prompt 021 Share behavior regresses
+
+==================================================
+11. REQUIRED REAL-BROWSER AUTH TEST MATRIX
+==================================================
+
+TEST A — SIGNED OUT DIRECT /checklist
+
+1. Sign out.
+2. Confirm public/sign-in page.
+3. Manually enter /checklist.
+4. Press Enter.
+
+PASS:
+- sign-in page shown
+- NO private checklist
+- NO Locker
+- NO private filename
+- NO background/private gear flash
+
+Repeat using:
+- hard refresh
+- new browser tab
+- Back/Forward navigation
+
+TEST B — SIGN OUT FROM PRIVATE CHECKLIST
+
+1. Sign in.
+2. Open private checklist/Locker.
+3. Sign out.
+
+PASS:
+Private checklist becomes inaccessible.
+
+Direct /checklist afterward still requires sign-in.
+
+TEST C — PUBLIC SHARE WHILE SIGNED OUT
+
+1. Remain signed out.
+2. Open valid /s/:shareId.
+
+PASS:
+- shared pack opens
+- no login required merely to view
+- no order.filter crash
+- sender's private Locker unavailable
+- /checklist still requires sign-in
+
+TEST D — SIGNED-OUT DELETE
+
+While signed out, attempt every available path that previously allowed private deletion.
+
+PASS:
+Deletion is impossible/rejected.
+
+No private file is removed.
+
+TEST E — SIGNED-IN CORRECT RE-VERIFICATION
+
+1. Sign in.
+2. Create/use a disposable test Locker file.
+3. Choose Delete.
+4. Complete secure re-verification using correct account credentials.
+
+PASS:
+Only disposable test file deletes.
+
+DO NOT use Sierra/Dutch/0826, Ray Jardine's, Packlist 1, or other important user files for destructive testing.
+
+TEST F — WRONG CREDENTIAL
+
+Use another disposable test file.
+
+Enter incorrect credentials.
+
+PASS:
+- clear failure message
+- file remains
+- no other data changes
+
+TEST G — CANCEL
+
+Begin deletion and Cancel.
+
+PASS:
+Nothing deleted.
+
+TEST H — SHARE RECIPIENT OWNERSHIP
+
+Signed-out shared viewer:
+- cannot see sender Locker
+- cannot delete sender original
+
+After sign-in and Save Your Own Copy:
+- recipient owns new independent copy only
+- sender original remains unchanged
+
+==================================================
+12. NON-DESTRUCTIVE TESTING PROTECTION
+==================================================
+
+Automated/rendered tests must NEVER delete important existing user files.
+
+Use generated/disposable fixtures only.
+
+Do NOT alter/delete:
+- Sierra/Dutch/0826
+- Ray Jardine's
+- Packlist 1
+- other existing user-owned production Locker files
+
+==================================================
+13. AUTOMATED TESTS
+==================================================
+
+Add focused tests for:
+
+- signed-out /checklist blocked
+- auth-loading state does not render private data
+- signed-in /checklist allowed
+- /s/:shareId remains public
+- signed-out private delete rejected
+- signed-in successful re-verification permits owner delete
+- failed verification rejects delete
+- cancel rejects delete
+- cross-account/non-owner delete rejected where architecture supports it
+- Share recipient cannot delete sender original
+- password/credential is not persisted in app storage
+- 021 Share behavior remains intact
+- 020F New/appearance isolation remains intact
+
+Run:
+
+1. focused 021A tests
+2. COMPLETE TrailWeigh automated regression suite
+
+Report exact commands and exact:
+- passed
+- failed
+- skipped
+
+Do NOT call a targeted subset the full suite.
+
+==================================================
+14. USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Replit testing is not user acceptance.
+
+After Replit finishes, user will test with fresh signed-in/signed-out browser sessions.
+
+Until user confirms:
+
+021A = NOT USER-VERIFIED
+
+==================================================
+15. REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021A_REPORT.md
+
+Include:
+- exact Prompt 021A
+- starting state
+- exact /checklist auth root cause
+- exact signed-out delete bypass root cause
+- exact correct-password rejection root cause
+- auth route architecture before/after
+- deletion verification architecture before/after
+- files inspected
+- files changed
+- exact code changes
+- security/data ownership review
+- confirmation no password was logged/stored
+- focused tests
+- FULL regression results
+- rendered auth test matrix
+- failures/reversions
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user testing required
+
+Append verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do NOT overwrite/truncate prior history.
+
+Status history:
+
+019 = USER-TESTED PASS
+020 = PARTIAL
+020A = PARTIAL
+020B = PARTIAL
+020C = PARTIAL/FAIL
+020D = FAIL/PARTIAL
+020E = PARTIAL/FAIL
+020F functional = USER-TESTED PASS
+021 core Share = USER-TESTED PASS
+021 overall = PARTIAL/FAIL
+021A = NOT USER-VERIFIED
+
+==================================================
+16. REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021A-report.zip
+
+It must contain EXACTLY these four Markdown files at ZIP ROOT:
+
+PROMPT_021A_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- backups
+- source/test files
+- screenshots
+- user data
+- credentials/passwords
+- other ZIP files
+
+Before finishing:
+LIST ZIP contents.
+
+Exactly 4 root entries.
+
+Anything else = ZIP FAIL.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. exact reason signed-out /checklist previously loaded private data
+2. exact route/auth fix
+3. confirmation private data does not render before auth resolves
+4. exact reason signed-out deletion bypassed verification
+5. exact reason correct signed-in password was rejected
+6. secure re-verification method now used
+7. confirmation no password is stored/logged
+8. confirmation public /s/:shareId still works signed out
+9. confirmation shared recipient cannot access private Locker
+10. exact files changed
+11. focused test totals
+12. COMPLETE regression totals
+13. rendered signed-in/signed-out test results
+14. 021 Share regression results
+15. 020F regression results
+16. report path
+17. ZIP path
+18. exact four ZIP entries
+19. clearly state USER acceptance still required

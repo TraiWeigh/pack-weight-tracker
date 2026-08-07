@@ -120,7 +120,7 @@ function HomeRedirect() {
 }
 
 function ChecklistRoute() {
-  // Allow access whether signed in or not — guests use the local guest key
+  // Auth guard lives in the Checklist default export — redirects to /sign-in when signed out.
   return <Checklist />;
 }
 

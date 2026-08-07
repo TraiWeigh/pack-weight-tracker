@@ -4147,3 +4147,70 @@ See `workflow-reports/PROMPT_021_REPORT.md` for full detail.
 ### Prompt History
 
 020F functional = USER-TESTED PASS | **021 = NOT USER-VERIFIED**
+
+---
+
+## Prompt 021A — Protect Private Checklist Access + Repair Locker Delete Authentication
+
+**Status:** COMPLETE — NOT USER-VERIFIED  
+**Date:** 2026-08-07  
+**Prior status:** 020F = USER-TESTED PASS | 021 core Share = USER-TESTED PASS | 021 overall = PARTIAL/FAIL
+
+### Three Confirmed Failures Fixed
+
+**FAILURE 1 — Root cause:** `Checklist.tsx` default export fell through to `<ChecklistContent key="guest" userId={undefined} isGuest />` when Clerk resolved with no signed-in user. Full private checklist, Locker, and backgrounds rendered for any signed-out visitor to `/checklist`.
+
+**FAILURE 2 — Root cause:** `requestProtectedDelete()` had an unauthenticated branch: when `isGuest=true`, it called `setLockerEntries`, `broadcastLocker`, and localStorage cleanup directly — deleting the file with no password or confirmation. Enabled by Failure 1 (route was reachable while signed out).
+
+**FAILURE 3 — Root cause:** `LockerDeleteDialog.tsx` called `signIn.password({ emailAddress, password })`. `signIn.password()` is not a documented Clerk v6 `SignInResource` method — the correct API is `signIn.create({ strategy: 'password', identifier, password })`. The non-standard call returned an error even for correct credentials.
+
+### Auth Route Architecture Fix
+
+Before:
+```
+/checklist → Checklist → isLoaded=false → spinner
+                       → user present   → ChecklistContent (auth) ✓
+                       → user absent    → ChecklistContent (isGuest) ✗ private data visible
+```
+
+After:
+```
+/checklist → Checklist → isLoaded=false → spinner (no private data)
+                       → user present   → ChecklistContent (auth) ✓
+                       → user absent    → <Redirect to="/sign-in" /> ✓
+```
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `src/pages/Checklist.tsx` | Add `Redirect` import; replace 8-line guest delete path with `if (isGuest \|\| !userId) return;`; replace guest ChecklistContent with `<Redirect to="/sign-in" />` |
+| `src/components/LockerDeleteDialog.tsx` | Replace `signIn.password()` with `signIn.create({ strategy: 'password', identifier, password })`; fix error handling to inspect `err.errors[0].code`; update header comment |
+| `src/App.tsx` | Remove misleading "guests use local guest key" comment from ChecklistRoute |
+| `src/hooks/authProtection021A.test.mjs` | New — 28 structural tests |
+| `package.json` | Added `authProtection021A` to `test:importer` (now 30 suites) |
+| `TESTING.md` | Suite count 29 → 30; 021A suite entry added |
+
+### Key Security Invariants
+
+- **No data deletion on sign-out** — localStorage and IndexedDB data preserved; route guard prevents display only
+- **Defense in depth** — route guard + `requestProtectedDelete` guard both block unauthenticated deletion
+- **No password stored** — `signIn.create()` sends credentials directly to Clerk server; password cleared after use
+- **setActive() never called** — existing session preserved after re-verification
+- **`/s/:shareId` unchanged** — public share links remain fully accessible without sign-in
+
+### Automated Test Results
+
+```
+021A:  28/28 ✅  021:  27/27 ✅  020F: 28/28 ✅  Full regression: 30 suites, 1,156/1,156 ✅ (exit 0)
+```
+
+### Acceptance Status
+
+All eight browser acceptance tests (A–H) in `PROMPT_021A_REPORT.md` still required. No rendered testing was performed.
+
+See `workflow-reports/PROMPT_021A_REPORT.md` for full detail.
+
+### Status History
+
+019 = USER-TESTED PASS | 020–020E = PARTIAL/FAIL | 020F functional = USER-TESTED PASS | 021 core Share = USER-TESTED PASS | 021 overall = PARTIAL/FAIL | **021A = NOT USER-VERIFIED**

@@ -9,7 +9,7 @@ import { MailingListModal, hasSeenMailingPrompt } from '../components/MailingLis
 import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
 import { resolveDestination } from '../lib/categoryAliases';
-import { useLocation } from 'wouter';
+import { useLocation, Redirect } from 'wouter';
 import { isAdmin } from './AdminPage';
 import { ImportGearPanel } from '../components/ImportGearPanel';
 import { LockerPanel, LockerEntry } from '../components/LockerPanel';
@@ -1037,24 +1037,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   /**
    * Called when the user clicks "Yes" on the LockerPanel inline confirm.
    * Opens the identity-verification dialog before performing any deletion.
-   * For guests (no authentication), deletes directly.
+   * Deletion requires authentication — signed-out sessions are redirected before
+   * reaching /checklist, but this guard ensures no unauthenticated deletion path exists.
    */
   const requestProtectedDelete = useCallback((id: string) => {
-    if (isGuest || !userId) {
-      // No auth system available — delete directly (preserve existing guest UX).
-      const updated = lockerEntries.filter(e => e.id !== id);
-      setLockerEntries(updated);
-      broadcastLocker(updated);
-      // If the deleted entry is the active file, detach — it no longer exists.
-      const curA = readActiveLockerFileFromSS();
-      const nextA = curA?.id === id ? null : curA;
-      writeActiveLockerFileToSS(nextA);
-      setActiveLockerFile(nextA);
-      return;
-    }
+    // Require authentication. This is a defensive check in addition to the route guard.
+    if (isGuest || !userId) return;
     setPendingDeleteIds([id]);
     setShowDeleteDialog(true);
-  }, [isGuest, userId, lockerEntries, broadcastLocker]);
+  }, [isGuest, userId]);
 
   /** Called by the dialog after identity is verified. */
   const handleConfirmedDelete = useCallback(() => {
@@ -1722,9 +1713,6 @@ export default function Checklist() {
     );
   }
 
-  return (
-    <UnitProvider>
-      <ChecklistContent key="guest" userId={undefined} isGuest />
-    </UnitProvider>
-  );
+  // Signed out — require sign-in; do NOT render private checklist data.
+  return <Redirect to="/sign-in" />;
 }
