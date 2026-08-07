@@ -89,10 +89,11 @@ test('2. "Hide" pill rendered in Checklist main control row', () => {
 
 // 3. Hide calls triggerShowcase
 test('3. Hide button calls triggerShowcase (existing handler)', () => {
-  // The Hide button onClick must reference triggerShowcase
-  const hideIdx = checklist.indexOf('Hide');
-  assert.ok(hideIdx > -1, 'No Hide text found in Checklist');
-  // Find the block containing Hide and check it has triggerShowcase nearby
+  // Locate by aria-label (unique to this button) rather than plain 'Hide' text,
+  // which may appear in comments or other elements before the actual button.
+  const hideIdx = checklist.indexOf('aria-label="Hide interface');
+  assert.ok(hideIdx > -1, 'Hide aria-label not found in Checklist');
+  // Check triggerShowcase appears in the surrounding block.
   const nearHide = checklist.slice(Math.max(0, hideIdx - 300), hideIdx + 600);
   assert.ok(
     nearHide.includes('triggerShowcase'),

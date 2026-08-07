@@ -219,41 +219,45 @@ test('13. Pill has truncate class (overflow text hidden with ellipsis)', () => {
   );
 });
 
-test('14. Pill has hidden sm:inline-flex (hidden on tiny viewports, visible ≥640px)', () => {
+test('14. [018A] Pill is absolutely centered — NOT hidden behind sm: breakpoint', () => {
+  // 018A correction: pill moved to absolute-center position; responsive hiding removed.
+  // The pill wrapper must have absolute left-1/2 centering, not hidden sm: classes.
   const condIdx = checklist.indexOf('{activeLockerFile && (');
   assert.ok(condIdx > -1, 'Conditional activeLockerFile render not found');
   const pillBlock = checklist.slice(condIdx, condIdx + 600);
   assert.ok(
-    pillBlock.includes('hidden sm:inline-flex') || pillBlock.includes('hidden sm:flex'),
-    'Pill is not hidden on small viewports — expected hidden sm:inline-flex'
+    pillBlock.includes('absolute') && pillBlock.includes('left-1/2'),
+    'Pill wrapper does not have absolute left-1/2 centering (018A correction not applied)'
+  );
+  assert.ok(
+    !pillBlock.includes('hidden sm:inline-flex') && !pillBlock.includes('hidden sm:flex'),
+    'Pill still has hidden sm: responsive class — should be absolutely centered, always visible'
   );
 });
 
 // ── TOOLBAR ORDER ─────────────────────────────────────────────────────────────
 
-test('15. Source order: Preview button → filename pill → UnitToggle', () => {
-  // Find the control-row section (after the Hide button).
-  const hideIdx = checklist.indexOf('aria-label="Hide interface');
-  assert.ok(hideIdx > -1, 'Hide aria-label not found');
+test('15. [018A] Pill NOT between Preview and UnitToggle; Hide→Preview→UnitToggle is contiguous', () => {
+  // 018A correction: pill must be outside the right control group.
+  // The right group (ml-auto div) must have Preview immediately followed by UnitToggle
+  // with no activeLockerFile conditional between them.
+  const mlAutoIdx = checklist.indexOf('ml-auto flex items-center gap-3');
+  assert.ok(mlAutoIdx > -1, 'ml-auto right control group not found (018A structure missing)');
 
-  const controlSection = checklist.slice(hideIdx, hideIdx + 2000);
+  // Hide button's disabled/title block is ~600 chars; use 1400 to safely cover all three buttons.
+  const rightGroup = checklist.slice(mlAutoIdx, mlAutoIdx + 1400);
 
-  // Preview button is identified by its unique aria-label (text is on a separate line).
-  const previewIdx  = controlSection.indexOf('aria-label="Open checked-items preview"');
-  const pillIdx     = controlSection.indexOf('{activeLockerFile && (');
-  const unitTogIdx  = controlSection.indexOf('<UnitToggle');
+  const previewInGroup  = rightGroup.indexOf('aria-label="Open checked-items preview"');
+  const pillInGroup     = rightGroup.indexOf('{activeLockerFile && (');
+  const unitTogInGroup  = rightGroup.indexOf('<UnitToggle');
 
-  assert.ok(previewIdx > -1,  'Preview aria-label not found after Hide in control section');
-  assert.ok(pillIdx > -1,     'Filename pill conditional not found after Hide in control section');
-  assert.ok(unitTogIdx > -1,  'UnitToggle not found after Hide in control section');
+  assert.ok(previewInGroup > -1, 'Preview not found in right control group');
+  assert.ok(unitTogInGroup > -1, 'UnitToggle not found in right control group');
 
+  // The pill must NOT appear between Preview and UnitToggle in the right group.
   assert.ok(
-    previewIdx < pillIdx,
-    `Filename pill (pos ${pillIdx}) appears before Preview button (pos ${previewIdx}) in source — order wrong`
-  );
-  assert.ok(
-    pillIdx < unitTogIdx,
-    `Filename pill (pos ${pillIdx}) appears after UnitToggle (pos ${unitTogIdx}) — should come before`
+    pillInGroup === -1 || pillInGroup > unitTogInGroup,
+    'activeLockerFile conditional still appears between Preview and UnitToggle — 018A position fix not applied'
   );
 });
 

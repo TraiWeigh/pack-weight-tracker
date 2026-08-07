@@ -3464,51 +3464,5 @@ Test:
 6. New → confirm pill disappears
 7. Long filename → confirm pill truncates with ellipsis, does not overflow toolbar
 
-**Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = NOT USER-VERIFIED until user's post-completion test.
-
----
-
-## Prompt 018A — Active File Name Position + Theme Text Color
-
-### Starting State
-
-018 = PARTIAL. The filename pill was visible but placed incorrectly (inside the Hide/Preview/Imperial/Metric control group between Preview and UnitToggle) and used `text-foreground/60` (dim gray) instead of the required full black/white.
-
-### Two Corrections
-
-**Fix 1 — Position:** Pill removed from the right control group. Pills row container changed from `flex items-center justify-between` to `flex items-center relative`. Right control group given `ml-auto`. Filename added as `absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none` sibling, floating geometrically centered over the full left-column bar — independent of flanking button widths. Hide → Preview → UnitToggle order restored with nothing between them.
-
-**Fix 2 — Color:** `text-foreground/60` → `text-foreground`. CSS variable: black in light mode, white in dark mode, updates live on mode switch. No hardcoded colors.
-
-### Files Changed
-
-| File | Change |
-|------|--------|
-| `artifacts/pack-checklist/src/pages/Checklist.tsx` | Pinned pills row restructured (1 block replacement) |
-| `artifacts/pack-checklist/src/hooks/controls017.test.mjs` | Test 3 fixed to use `aria-label` (not `indexOf('Hide')`) |
-| `artifacts/pack-checklist/src/hooks/activeFileName018.test.mjs` | Tests 14 and 15 updated for 018A structure |
-| `artifacts/pack-checklist/src/hooks/activeFileName018A.test.mjs` | Created — 20 new 018A tests |
-| `package.json` | Added `activeFileName018A.test.mjs` to test chain |
-
-### Automated Test Results
-
-**866 passed / 0 failed** (846 prior + 20 new 018A tests). All 20 018A tests pass: relative container, no justify-between, ml-auto right group, absolute centering classes, pointer-events-none wrapper, pill not in control group, Hide→Preview→UnitToggle order, text-foreground color, no text-foreground/60, no hardcoded colors, 018 save confirmations intact, all pill attributes preserved.
-
-### Required User Live-Test
-
-**✅ Prompt 018A implementation is complete. App is ready for your fresh post-completion test.**
-
-Per testing protocol: app closed while Replit worked; one fresh preview tab opened only after completion.
-
-Test:
-1. Sign in, open/save a file → filename appears centered over the category area (Backpack, Shelter, etc.)
-2. Hide → Preview → Imperial → Metric are adjacent — filename is NOT between them
-3. Dark mode → filename text is white
-4. Light mode → filename text is black
-5. Switch modes → color updates live
-6. Save → toast shows `Saved "[name]"`; Save As → pill immediately updates
-7. Long name → pill truncates, does not overflow
-8. Mobile viewport → name visible, centered, no overlap
-
-**Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = NOT USER-VERIFIED until user's post-completion test.
+**Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = NOT USER-VERIFIED until user's post-completion test.
 

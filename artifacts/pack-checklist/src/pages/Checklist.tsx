@@ -1230,7 +1230,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             {/* Gear list */}
             <div className="lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned pills row */}
-              <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
+              <div className="pt-8 pb-3 flex items-center lg:pr-3 flex-shrink-0 relative">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -1253,7 +1253,20 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     Close
                   </button>
                 </div>
-                <div className="flex items-center gap-3">
+                {/* Active file name — centered over the left checklist column.
+                    Absolutely positioned so it never pushes Open/Close or Hide/Preview/Imperial/Metric. */}
+                {activeLockerFile && (
+                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                    <span
+                      aria-label={`Active file: ${activeLockerFile.name}`}
+                      title={activeLockerFile.name}
+                      className="text-xs font-medium text-foreground max-w-[10rem] truncate select-none block text-center"
+                    >
+                      {activeLockerFile.name}
+                    </span>
+                  </div>
+                )}
+                <div className="ml-auto flex items-center gap-3">
                   <button
                     onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
                     disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
@@ -1274,15 +1287,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   >
                     Preview
                   </button>
-                  {activeLockerFile && (
-                    <span
-                      aria-label={`Active file: ${activeLockerFile.name}`}
-                      title={activeLockerFile.name}
-                      className="hidden sm:inline-flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-medium text-foreground/60 max-w-[10rem] truncate select-none pointer-events-none"
-                    >
-                      {activeLockerFile.name}
-                    </span>
-                  )}
                   <UnitToggle />
                 </div>
               </div>
