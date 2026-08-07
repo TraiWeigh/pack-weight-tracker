@@ -3777,3 +3777,75 @@ Test (signed in, File A open and saved):
 11. 019 Background Edit pill still works
 
 **Master history:** 017E/017F = USER-TESTED PASS; 018C = USER-TESTED PASS; 019 = USER-TESTED PASS; 020 = NOT USER-VERIFIED until user's post-completion test.
+
+---
+
+## Prompt 020B — Restore Saved Appearance on First Open After New
+
+### Starting State
+
+020A = PARTIAL. Confirmed working: New opens blank/Clear/Light. Confirmed bug: opening a saved Locker file after New failed to restore background + Dark mode on the first open; a second open was required.
+
+### Root Cause
+
+`handleLoadFromLocker` has two paths:
+
+**In-place path (totalItems===0):** Taken when the current list is blank (New). Only restored chartPaletteKey + gear store + active file identity. Left `background`, `bgTone`, `bgFade` at the New tab's null/light/1 values. A comment said "Background is already in React state" — true for a normal tab, wrong after 020A made New always start Clear+Light.
+
+**New-tab path (totalItems>0):** Opens `?savedListId=entry.id` in a new browser tab. That tab's useState initializers read sessionStorage keys and always restored everything correctly. This path never had the bug.
+
+After the first in-place open, the list becomes non-empty (Sierra's gear loads). The second open therefore takes the new-tab path — which is why it always worked.
+
+### Fix
+
+In the in-place path of `handleLoadFromLocker`, added restoration of `background`, `bgTone`, `bgFade` from the Locker entry — matching exactly what Save stores and what the new-tab path already restored:
+
+```typescript
+setBackground(entry.background as Background | null);
+if (entry.background) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(entry.background));
+else localStorage.removeItem(BG_STORAGE_KEY);
+
+const restoredTone = entry.bgTone ?? 'light';
+setBgTone(restoredTone);
+localStorage.setItem('trailweigh:bgTone', restoredTone);
+
+const restoredFade = entry.bgFade ?? 1;
+setBgFade(restoredFade);
+localStorage.setItem('trailweigh:bgFade', String(restoredFade));
+```
+
+`??` fallbacks handle older entries that may not have bgTone/bgFade. `bgSize` is not in LockerEntry (never persisted per-file) — unchanged. `handleNew()` not touched — 020A blank/Clear/Light behavior fully preserved.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | `handleLoadFromLocker` in-place path: added setBackground/setBgTone/setBgFade + localStorage writes |
+| `artifacts/pack-checklist/src/hooks/lockerFirstOpen020B.test.mjs` | Created — 24 new tests |
+| `package.json` | Added `lockerFirstOpen020B.test.mjs` to test chain |
+
+### Automated Test Results
+
+**1041 passed / 0 failed** (1017 prior + 24 new 020B tests). All 24 pass.
+
+### Required User Live-Test
+
+**✅ Prompt 020B implementation is complete. App is ready for your fresh post-completion test.**
+
+Test sequence (signed in, with File A = distinctive background + Dark mode):
+
+A. Open File A in Locker → confirm full appearance (background, Dark, fade, palette, filename)
+B. Click New → blank, Clear, Light mode, zero categories ✅
+C. Open File A from Locker **once** → verify on that **first** open:
+   - categories/items correct
+   - filename pill shows File A
+   - background correct (no second open required)
+   - Dark mode correct
+   - fade/darken correct
+   - palette correct
+D. Click New again → still blank/Clear/Light
+E. Open a different saved File B once → File B's appearance restores immediately
+F. Reopen File A → File A unchanged
+G. Background Edit → saved themes/custom photos still available
+
+**Master history:** 017E/017F = USER-TESTED PASS; 018C = USER-TESTED PASS; 019 = USER-TESTED PASS; 020/020A/020B = NOT USER-VERIFIED until user's post-completion test.

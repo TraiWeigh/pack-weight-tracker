@@ -819,16 +819,41 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     );
     if (totalItems === 0) {
       // ── In-place open path ────────────────────────────────────────────────
-      // 1. Background is already in React state — nothing to capture/restore
-      //    because replaceStore only touches the gear store, not bg state.
-      // 2. Restore the file's Weight Distribution palette key.
-      //    Older entries without chartPaletteKey fall back to 'trail' (default).
+      // Used when the current list is blank (New tab or empty list).
+      //
+      // 1. Restore ALL of the saved file's appearance state from the entry.
+      //    Previously only palette was restored; background/tone/fade were left
+      //    at the stale New-tab values (null/light/1).  A prior assumption that
+      //    "the bg was already correct" held for normal tabs but not for a New
+      //    tab whose state was forced to Clear+Light by 020A.  First-open now
+      //    restores everything the same way the new-tab (?savedListId) path has
+      //    always done.
       const restoredPalette = entry.chartPaletteKey ?? 'trail';
       setChartPaletteKey(restoredPalette);
       localStorage.setItem('trailweigh:chartPalette', restoredPalette);
-      // 3. Replace the store (clears undo/redo; does not push history entry).
+
+      // Restore background image (null = Clear).
+      setBackground(entry.background as Background | null);
+      if (entry.background) {
+        localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(entry.background));
+      } else {
+        localStorage.removeItem(BG_STORAGE_KEY);
+      }
+
+      // Restore tone (dark/light).  Older entries without bgTone fall back to light.
+      const restoredTone = entry.bgTone ?? 'light';
+      setBgTone(restoredTone);
+      localStorage.setItem('trailweigh:bgTone', restoredTone);
+
+      // Restore fade/darken.  Older entries without bgFade fall back to 1 (none).
+      const restoredFade = entry.bgFade ?? 1;
+      setBgFade(restoredFade);
+      localStorage.setItem('trailweigh:bgFade', String(restoredFade));
+
+      // 2. Replace the store (clears undo/redo; does not push history entry).
       replaceStore(entry.store as import('../hooks/usePackData').Store);
-      // 4. Track the active file identity so Save routes to commitSaveReplace
+
+      // 3. Track the active file identity so Save routes to commitSaveReplace
       //    (updating this file, not creating a new one).
       //    Write to sessionStorage immediately (before the React state update
       //    queues) so the value survives a remount that might occur before the
@@ -836,7 +861,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const newActiveFile: ActiveLockerFile = { id: entry.id, name: entry.name };
       writeActiveLockerFileToSS(newActiveFile);
       setActiveLockerFile(newActiveFile);
-      // 4. Stay in the same tab — no window.open.
+      // Stay in the same tab — no window.open.
       return;
     }
 
