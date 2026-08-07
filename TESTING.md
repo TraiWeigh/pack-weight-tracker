@@ -32,7 +32,7 @@ node artifacts/pack-checklist/src/hooks/landscapeShake017E.test.mjs            #
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 826 passed / 0 failed (017E CONFIRMED PASS; 017F CONFIRMED PASS by user — 2026-08-07).
+**Current result:** 846 passed / 0 failed (017E CONFIRMED PASS; 017F CONFIRMED PASS; 018 active file name + save confirmation implemented — 2026-08-07).
 
 ## What each suite protects
 

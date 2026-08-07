@@ -745,7 +745,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     writeActiveLockerFileToSS(newFile);
     setActiveLockerFile(newFile);
     closeSaveDialog();
-    toast({ description: `Saved as "${name}"` });
+    toast({ description: `Saved "${name}"` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
 
@@ -777,7 +777,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       writeActiveLockerFileToSS(refreshed);
       setActiveLockerFile(refreshed);
       closeSaveDialog();
-      toast({ description: 'Saved.' });
+      toast({ description: `Saved "${name}"` });
     } catch {
       toast({ description: 'Save failed. Your changes were not saved.', variant: 'destructive' });
     }
@@ -1274,6 +1274,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   >
                     Preview
                   </button>
+                  {activeLockerFile && (
+                    <span
+                      aria-label={`Active file: ${activeLockerFile.name}`}
+                      title={activeLockerFile.name}
+                      className="hidden sm:inline-flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-medium text-foreground/60 max-w-[10rem] truncate select-none pointer-events-none"
+                    >
+                      {activeLockerFile.name}
+                    </span>
+                  )}
                   <UnitToggle />
                 </div>
               </div>
