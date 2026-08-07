@@ -1009,16 +1009,16 @@ export function BackgroundPickerPanel({
                   onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
                   aria-pressed={isActive}
                   aria-label={p.label}
-                  className={`relative overflow-hidden rounded-lg aspect-[3/2] group transition-all ${
-                    isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
+                  className={`relative overflow-hidden rounded-lg aspect-[3/2] group ring-2 ring-offset-1 transition-[box-shadow,opacity] ${
+                    isActive ? 'ring-primary' : 'ring-transparent hover:ring-foreground/30'
                   }`}
                 >
                   <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                     <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
                   </div>
                   {isActive && (
-                    <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center">
+                    <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
                       <Check className="w-2.5 h-2.5" />
                     </div>
                   )}

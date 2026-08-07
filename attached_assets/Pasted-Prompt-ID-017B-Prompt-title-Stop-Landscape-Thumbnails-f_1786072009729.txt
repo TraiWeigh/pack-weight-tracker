@@ -1,0 +1,768 @@
+Prompt ID: 017B
+Prompt title: Stop Landscape Thumbnails from Shaking on Hover
+
+Fix the visible shaking or jitter that occurs when the mouse cursor moves over the built-in Landscape background thumbnails.
+
+This is a focused visual-stability repair.
+
+Prompt 017A has been user-tested and Hide is now working.
+
+Do not redesign Background Edit, Themes, custom photo collections, Hide, Preview, Imperial/Metric, or the checklist layout.
+
+# CONFIRMED USER-REPORTED DEFECT
+
+In Background Edit:
+
+- The user selects or views the built-in Landscapes theme.
+- Moving the cursor across Landscape thumbnails causes the images or tiles to shake, jump, resize, or shift.
+- The movement can repeat as the pointer crosses the image or its controls.
+- The problem occurs only with built-in Landscape thumbnails.
+- Custom-theme photo thumbnails do not show the same shaking.
+
+The final result must be:
+
+- Landscape thumbnails remain completely stationary during hover.
+- Hover feedback may still appear, but it must not change tile size, position, spacing, or image crop.
+- Custom-theme thumbnails must continue working as they do now.
+
+# PART 1 — INSPECT THE CURRENT IMPLEMENTATION
+
+Before changing code, read and inspect:
+
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+- `workflow-reports/PROMPT_017A_REPORT.md`
+- Current Background Edit component
+- Current built-in Landscape thumbnail component
+- Current custom-theme photo thumbnail component
+- Current selected-background indicator
+- Current hover styles
+- Current focus styles
+- Current image loading styles
+- Current tooltip implementation
+- Current responsive thumbnail-grid styles
+
+Compare the built-in Landscape thumbnail implementation with the custom-theme photo thumbnail implementation.
+
+Determine the exact source of the movement.
+
+Inspect for:
+
+- `hover:scale-*`
+- CSS `transform: scale(...)`
+- Translate or transform changes
+- Border width appearing only on hover
+- Outline replacing or adding to a border
+- Padding changes
+- Margin changes
+- Width or height changes
+- Image `object-fit` changes
+- Container aspect-ratio changes
+- Checkmark or action controls entering normal document flow
+- Tooltip content changing the tile’s layout
+- Scrollbar appearance or disappearance
+- Image decoding changing dimensions
+- Conditional wrappers that change tile structure
+- Transitioning `all`
+- Box-shadow that affects layout
+- Absolute-positioning differences
+- Selected and unselected tiles using different border-box sizing
+
+Do not assume the cause is a scale animation without verifying the actual source.
+
+# PART 2 — CREATE A CHECKPOINT AND BACKUP
+
+Create a Replit checkpoint before modifying application code.
+
+Create:
+
+`workflow-reports/PRE_017B_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Master line count
+- Master file size
+- Backup line count
+- Backup file size
+- Landscape thumbnail component path
+- Custom-photo thumbnail component path
+- Current Landscape hover classes
+- Current custom-photo hover classes
+- Current selected-state classes
+- Current thumbnail dimensions and aspect ratio
+- Exact confirmed reason for the shaking
+
+Do not change code until the cause has been documented.
+
+# PART 3 — KEEP THUMBNAIL GEOMETRY FIXED
+
+The built-in Landscape thumbnail’s outer dimensions must not change during:
+
+- Normal state
+- Mouse hover
+- Keyboard focus
+- Selected state
+- Unselected state
+- Checkmark appearance
+- Pointer down
+- Pointer up
+
+Use a stable outer tile container.
+
+Requirements:
+
+- Fixed aspect ratio
+- Stable width
+- Stable height
+- Stable border-box dimensions
+- `box-sizing: border-box`
+- No hover scaling
+- No hover translation
+- No padding or margin change
+- No border-width change
+- No image-size change
+- No grid-gap change
+- No neighboring-tile movement
+
+The image may use:
+
+- `width: 100%`
+- `height: 100%`
+- `object-fit: cover`
+
+provided those values remain unchanged across all interactive states.
+
+Do not solve the problem by disabling pointer interaction.
+
+# PART 4 — REMOVE LAYOUT-SHIFTING HOVER EFFECTS
+
+If the Landscape thumbnail currently uses a hover scale or transform, remove that movement.
+
+Examples that must not remain on the tile or image:
+
+- `hover:scale-105`
+- `hover:scale-[1.02]`
+- `transform: scale(...)`
+- Positive or negative translate values
+- Width/height enlargement
+- Changing aspect ratio
+- Changing image crop on hover
+
+A nonmoving hover treatment is allowed, such as:
+
+- Stable box shadow
+- Stable overlay
+- Slight brightness change
+- Slight opacity change
+- Border-color change using the same border width
+- Background-color change
+- Cursor change
+
+Do not use a hover treatment that makes the thumbnail appear to jump.
+
+Avoid `transition-all`.
+
+Transition only visual properties that cannot affect layout, such as:
+
+- `opacity`
+- `filter`
+- `box-shadow`
+- `border-color`
+- `background-color`
+
+# PART 5 — STABILIZE BORDERS AND SELECTED STATE
+
+The selected Landscape thumbnail currently uses a visible border and checkmark.
+
+Preserve that indication without changing the tile’s size.
+
+Requirements:
+
+- Reserve the selected-border space in every state.
+- Use the same border width for selected and unselected tiles.
+- Unselected tiles may use a transparent border.
+- Selected tiles may change only the border color.
+- Do not add a thicker border only after selection or hover.
+- Do not change padding when selected.
+- Do not change grid dimensions when the checkmark appears.
+
+The selected checkmark must:
+
+- Remain clearly visible
+- Be absolutely positioned over the thumbnail
+- Not occupy normal layout space
+- Not push or resize the image
+- Not intercept pointer movement in a way that repeatedly toggles hover state
+- Remain keyboard and screen-reader compatible where applicable
+
+# PART 6 — STABILIZE HOVER CONTROLS
+
+If a Landscape tile contains any hover overlay, label, tooltip, icon, or control:
+
+- Keep it inside the fixed tile boundary.
+- Position it absolutely.
+- Do not insert it into normal document flow during hover.
+- Do not change the tile’s dimensions.
+- Use `pointer-events` carefully so crossing the overlay does not repeatedly trigger mouse-enter and mouse-leave events.
+
+If an overlay is decorative:
+
+- Consider `pointer-events: none`.
+
+If it is interactive:
+
+- Keep it within a stable parent hover area.
+- Do not attach hover detection only to the underlying image if the overlay becomes a separate pointer target.
+- Prevent rapid parent/child hover toggling.
+
+Do not remove accessibility merely to stop movement.
+
+# PART 7 — MATCH THE STABLE CUSTOM-PHOTO PATTERN
+
+The user reports that custom-theme photos do not shake.
+
+Compare both implementations.
+
+Where appropriate, reuse the stable structure or styling pattern from custom-photo thumbnails for built-in Landscapes.
+
+Possible shared behavior includes:
+
+- Same fixed aspect-ratio wrapper
+- Same border-box sizing
+- Same image wrapper
+- Same selected-state border handling
+- Same checkmark positioning
+- Same non-layout hover effect
+
+Do not merge storage or deletion behavior.
+
+Built-in Landscapes must remain:
+
+- Non-deletable
+- Part of the built-in theme
+- Independent of IndexedDB custom-photo storage
+
+Only share safe visual structure or component logic.
+
+# PART 8 — PRESERVE LANDSCAPE FUNCTIONALITY
+
+After the repair, Landscape thumbnails must still:
+
+- Display all existing built-in images
+- Use the current two-column layout where appropriate
+- Select an image when clicked
+- Show the selected image’s checkmark
+- Apply the selected image to the checklist
+- Preserve Fill Screen
+- Preserve Fit Image
+- Preserve Light/Dark
+- Preserve fade/darken
+- Work with Hide
+- Work with Undo
+- Work with Redo
+- Work after refresh
+- Work in saved files according to current behavior
+
+Do not change built-in image URLs.
+
+Do not remove or replace any Landscape image.
+
+# PART 9 — PRESERVE CUSTOM THEMES
+
+Do not regress:
+
+- Custom-theme dropdown entries
+- Add Theme
+- Theme rename
+- Delete Theme
+- Maximum of ten custom themes
+- Ten photo positions
+- Maximum of ten photos per theme
+- Click-to-upload
+- Drag-and-drop
+- IndexedDB storage
+- Photo persistence after refresh
+- Photo removal
+- Custom-photo selection
+- Custom-photo checkmark
+- Custom-photo hover behavior
+
+Custom thumbnails must remain stable.
+
+Do not add Delete Photo controls to built-in Landscapes.
+
+# PART 10 — RESPONSIVE BEHAVIOR
+
+Test at desktop, tablet, and phone widths.
+
+Confirm:
+
+- No Landscape thumbnail shakes at any width.
+- The grid does not reflow when hovering.
+- Thumbnail dimensions remain consistent.
+- No horizontal page overflow appears.
+- Selected borders remain inside the tile.
+- Checkmarks remain correctly positioned.
+- Touch interaction remains functional.
+- Phone users do not receive a stuck hover style that obscures the image.
+
+Do not change the overall Background Edit panel width unnecessarily.
+
+# PART 11 — ACCESSIBILITY
+
+Preserve:
+
+- Keyboard selection
+- Visible focus indicators
+- Accessible labels for each background option
+- Selected-state semantics
+- Enter and Space activation where currently supported
+- Adequate contrast
+
+Keyboard focus must not cause the thumbnail to move.
+
+Use a focus ring or outline that does not alter layout.
+
+Prefer an outline, inset ring, or reserved border space rather than increasing border width on focus.
+
+# PART 12 — PERFORMANCE
+
+Ensure hover does not cause:
+
+- React state changes unrelated to selection
+- Repeated image reloads
+- Repeated object URL creation
+- Repeated thumbnail decoding
+- Repeated component mounting and unmounting
+- Full Background Edit panel rerenders
+- Theme storage writes
+- Checklist save-state changes
+
+Hovering a built-in image must be a visual-only interaction.
+
+Do not write to localStorage or IndexedDB on hover.
+
+# PART 13 — AUTOMATED TESTS
+
+Add or update focused tests.
+
+Test at minimum:
+
+1. Landscape tiles use a stable outer container.
+2. Landscape hover does not apply a scale transform.
+3. Landscape hover does not change width or height.
+4. Landscape hover does not change padding or margin.
+5. Selected and unselected tiles use the same border width.
+6. The selected checkmark is positioned outside normal layout flow.
+7. Hovering does not select a background.
+8. Hovering does not modify saved data.
+9. Clicking still selects a Landscape background.
+10. All built-in Landscape images remain rendered.
+11. Built-in images remain non-deletable.
+12. Custom-theme thumbnails remain unchanged.
+13. Hide still works.
+14. Preview still works.
+15. Imperial/Metric still works.
+16. Background Undo/Redo still works.
+17. Prompt 016B theme and storage tests remain passing.
+18. Prompt 016C PDF importer tests remain passing.
+19. Prompt 017A Hide tests remain passing.
+20. Desktop grid remains 365px.
+21. QTY remains `translate-x-3`.
+
+Avoid fragile tests that only search for one CSS class name.
+
+Test the final component behavior or computed style structure where practical.
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Suite names
+- Suite count
+- Execution order
+- Passed count
+- Failed count
+- Exit code
+- Warnings
+- Errors
+- Duration
+
+Update `TESTING.md` if the suite or test count changes.
+
+# PART 14 — REQUIRED RENDERED TESTS
+
+Use the signed-in Replit preview.
+
+Do not install Playwright.
+
+## Test A — Cursor movement over Landscapes
+
+1. Open Background Edit.
+2. Select Landscapes.
+3. Move the cursor slowly over each of the ten thumbnails.
+4. Move diagonally between adjacent thumbnails.
+5. Move over image edges and corners.
+6. Move over the selected checkmark.
+7. Confirm no thumbnail moves, resizes, shakes, or causes neighboring tiles to move.
+
+## Test B — Rapid cursor movement
+
+1. Move the cursor rapidly across the full Landscape grid.
+2. Repeat for at least ten seconds.
+3. Confirm no jitter or repeated layout movement occurs.
+
+## Test C — Selection
+
+1. Click several different Landscape thumbnails.
+2. Confirm each becomes selected.
+3. Confirm the border and checkmark appear without changing tile dimensions.
+4. Confirm neighboring tiles remain still.
+
+## Test D — Custom themes
+
+1. Select a custom theme.
+2. Move the cursor across its photo thumbnails.
+3. Confirm its current stable behavior remains unchanged.
+4. Select a custom photo.
+5. Confirm selection still works.
+
+## Test E — Responsive widths
+
+Repeat cursor and selection tests at:
+
+- Desktop width
+- Tablet width
+- Narrow phone width where pointer simulation is available
+
+## Test F — Feature regression
+
+Confirm:
+
+- Hide still appears and works.
+- Preview still opens.
+- Imperial/Metric still works.
+- Fill/Fit still works.
+- Light/Dark still works.
+- Undo/Redo still restores background selections.
+
+Capture:
+
+- Before-repair video or frame showing the shaking, when available
+- After-repair Landscape grid
+- Selected Landscape thumbnail
+- Landscape grid during hover
+- Custom-theme grid
+- Desktop and tablet layouts
+
+A still screenshot alone cannot prove that shaking stopped.
+
+Record a short rendered screen video demonstrating stable cursor movement across the Landscape images.
+
+User testing remains required.
+
+# PART 15 — PRESERVE UNRELATED FEATURES
+
+Do not change:
+
+- Hide placement or behavior
+- Preview placement or behavior
+- Imperial/Metric placement or behavior
+- Background Edit pill
+- Share
+- Pack Summary
+- Weight Distribution
+- Palette persistence
+- Checklist columns
+- MOVE
+- WEIGHT
+- QTY
+- TOTAL
+- DESCRIPTION
+- Save
+- Save As
+- Locker
+- New
+- Reset
+- Share Link
+- PDF importer
+- Word importer
+- Excel importer
+- Numbers importer
+- Print
+- PDF export
+- Active filename
+- Save confirmation wording
+- Saved-data schemas
+- IndexedDB schema
+- Authentication
+- Retail or affiliate features
+
+Preserve:
+
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+
+# PART 16 — DOCUMENT THE ROOT CAUSE
+
+The report must identify the exact reason the Landscape thumbnails shook.
+
+Examples of acceptable findings:
+
+- A hover scale transform repeatedly changed the tile’s visual bounds.
+- The selected border changed from 0px to 4px and altered the tile size.
+- A hover overlay entered normal layout flow.
+- Pointer events switched repeatedly between the image and checkmark.
+- A tooltip changed the parent container’s dimensions.
+- Another specifically evidenced cause.
+
+Do not write only:
+
+- “CSS issue”
+- “Hover bug”
+- “Image jitter fixed”
+
+Include:
+
+- Source file and component
+- Before styles or logic
+- Why it caused movement
+- After styles or logic
+- Why the new structure remains stable
+
+# PART 17 — REPORT
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_017B_REPORT.md`
+
+Include:
+
+## Identification
+
+- Prompt ID
+- Prompt title
+- Start time
+- Completion time
+- Purpose
+- Exact requested result
+
+## Starting state
+
+- User-reported shaking
+- Built-in Landscape implementation
+- Custom-photo implementation
+- Current hover styles
+- Current selected styles
+
+## Root cause
+
+- Exact cause
+- Evidence
+- Why only Landscapes were affected
+- Why custom photos remained stable
+
+## Files changed
+
+For every changed file:
+
+- Full path
+- Exact change
+- Why
+- Important component or style
+- Before-and-after excerpts
+- Saved-data impact
+
+## Geometry comparison
+
+Record Landscape tile dimensions for:
+
+- Normal
+- Hover
+- Focus
+- Selected
+
+Confirm whether each remained identical after the fix.
+
+## Rendered test matrix
+
+Include:
+
+- Slow hover
+- Rapid hover
+- Edge hover
+- Checkmark hover
+- Selection
+- Custom theme
+- Desktop
+- Tablet
+- Phone
+
+Mark each:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+## Automated tests
+
+Include:
+
+- Command
+- Suite names
+- Suite count
+- Execution order
+- Passed
+- Failed
+- Exit code
+- Warnings
+- Errors
+- Duration
+
+## Scope preservation
+
+Confirm:
+
+- Hide remains working
+- Preview remains working
+- Imperial/Metric remains working
+- Prompt 016B photo storage remains unchanged
+- Prompt 016C PDF importing remains working
+- Desktop grid remains 365px
+- QTY remains `translate-x-3`
+- No saved-data schema changed
+
+## Acceptance checklist
+
+Repeat every requirement and mark:
+
+- PASS
+- FAIL
+- PARTIAL
+- NOT TESTED
+
+Explain every non-PASS result.
+
+Do not claim the shaking is fixed without a rendered hover test.
+
+# PART 18 — APPEND TO THE MASTER
+
+Append the complete Prompt 017B report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not overwrite the master.
+- Do not truncate earlier prompts.
+- Append the complete report.
+- Confirm Prompt 017B appears exactly once.
+- Confirm Prompt 017A remains present.
+- Confirm the master line count increased.
+
+Update:
+
+- Prompt Number Index
+- Current Background Edit thumbnail behavior
+- Prompt 017 correction status
+- Latest-entry field
+
+Final trailer:
+
+`Master workflow last updated: 2026-08-06 (Prompt 017B)`
+
+# PART 19 — CREATE THE REPORT ZIP
+
+Create:
+
+`trailweigh-017B-report.zip`
+
+Include exactly these four files at the ZIP root:
+
+- `PROMPT_017B_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+The source report remains at:
+
+`workflow-reports/PROMPT_017B_REPORT.md`
+
+Do not include:
+
+- A containing folder
+- `workflow-reports/` as a ZIP folder
+- `__MACOSX`
+- `.DS_Store`
+- Backups
+- Source code
+- Screen recordings
+- Test images
+- User files
+- Locker data
+- Other ZIP files
+
+After creating the ZIP:
+
+- List its contents.
+- Confirm it contains exactly four root entries.
+- Confirm no folder wrapper exists.
+- Confirm no macOS metadata exists.
+
+# FINAL VERIFICATION
+
+Before completing, confirm:
+
+1. Landscape thumbnails do not shake during slow hover.
+2. Landscape thumbnails do not shake during rapid hover.
+3. Thumbnail dimensions remain identical during hover.
+4. Neighboring thumbnails do not move.
+5. Selected borders do not resize tiles.
+6. Checkmarks do not affect layout.
+7. Landscape selection still works.
+8. All built-in images remain present.
+9. Built-in images remain non-deletable.
+10. Custom-theme photos remain unchanged and stable.
+11. Fill/Fit still works.
+12. Light/Dark still works.
+13. Fade still works.
+14. Undo/Redo still works.
+15. Hide still works.
+16. Preview still works.
+17. Imperial/Metric still works.
+18. Prompt 016B storage remains working.
+19. Prompt 016C PDF import remains working.
+20. Desktop grid remains `lg:grid-cols-[1fr_365px]`.
+21. QTY remains `translate-x-3`.
+22. No saved-data migration was introduced.
+23. The complete Prompt 017B report was appended.
+24. Prompt 017B appears exactly once in the master.
+25. `trailweigh-017B-report.zip` contains exactly four root files.
+26. The ZIP contains no folder wrapper or macOS metadata.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_017B_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-017B-report.zip`
+- State the exact root cause
+- Report the exact automated-test result
+- Surface the rendered hover-test video or identify its project path
+- State exactly what still requires user testing
+- Confirm no unrelated feature was changed

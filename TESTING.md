@@ -6,29 +6,30 @@
 pnpm test:importer
 ```
 
-This runs all **twelve** test suites in sequence and exits non-zero on any failure.
+This runs all **thirteen** test suites in sequence and exits non-zero on any failure.
 
 Individual suites (in execution order):
 
 ```sh
-node artifacts/api-server/src/routes/importGear.test.mjs          # Excel extraction + classification
-node artifacts/api-server/src/routes/importGear.pdf.test.mjs      # PDF parser fixture (pure logic)
-node artifacts/api-server/src/routes/importGear.pdf.api.test.mjs  # PDF API integration (pdf-parse v2 + real fixtures)
-node artifacts/api-server/src/routes/scanGear.test.mjs            # Image format rejection
-node artifacts/pack-checklist/src/lib/categoryAliases.test.mjs    # Shared category resolver
-node artifacts/pack-checklist/src/hooks/usePackData.test.mjs      # Duplicate-category migration
-node artifacts/pack-checklist/src/hooks/moveItem.test.mjs         # Move-item Store transformation
-node artifacts/pack-checklist/src/hooks/pieColor.test.mjs         # Per-file palette persistence
-node artifacts/pack-checklist/src/hooks/bgCollections.test.mjs    # Photo collections data layer (updated Prompt 016A)
-node artifacts/pack-checklist/src/hooks/bgCollections016A.test.mjs # Theme dropdown 016A requirements
-node artifacts/pack-checklist/src/hooks/bgPhotoStore016B.test.mjs  # IndexedDB photo store (Prompt 016B)
-node artifacts/pack-checklist/src/hooks/controls017.test.mjs       # Control reorganisation (Prompt 017)
+node artifacts/api-server/src/routes/importGear.test.mjs            # Excel extraction + classification
+node artifacts/api-server/src/routes/importGear.pdf.test.mjs        # PDF parser fixture (pure logic)
+node artifacts/api-server/src/routes/importGear.pdf.api.test.mjs    # PDF API integration (pdf-parse v2 + real fixtures)
+node artifacts/api-server/src/routes/scanGear.test.mjs              # Image format rejection
+node artifacts/pack-checklist/src/lib/categoryAliases.test.mjs      # Shared category resolver
+node artifacts/pack-checklist/src/hooks/usePackData.test.mjs        # Duplicate-category migration
+node artifacts/pack-checklist/src/hooks/moveItem.test.mjs           # Move-item Store transformation
+node artifacts/pack-checklist/src/hooks/pieColor.test.mjs           # Per-file palette persistence
+node artifacts/pack-checklist/src/hooks/bgCollections.test.mjs      # Photo collections data layer (updated Prompt 016A)
+node artifacts/pack-checklist/src/hooks/bgCollections016A.test.mjs  # Theme dropdown 016A requirements
+node artifacts/pack-checklist/src/hooks/bgPhotoStore016B.test.mjs   # IndexedDB photo store (Prompt 016B)
+node artifacts/pack-checklist/src/hooks/controls017.test.mjs        # Control reorganisation (Prompt 017)
+node artifacts/pack-checklist/src/hooks/landscapeHover017B.test.mjs # Landscape thumbnail hover stability (Prompt 017B)
 ```
 
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 716 passed / 0 failed (confirmed Prompt 017, 2026-08-06).
+**Current result:** 738 passed / 0 failed (confirmed Prompt 017B, 2026-08-07).
 
 ## What each suite protects
 
@@ -45,7 +46,8 @@ plain JS so tests can run against source changes immediately.
 | `bgCollections.test.mjs` | Photo collections data layer (updated Prompt 016A): constants including MAX_COLLECTIONS=10 (P1); runMigration — null/empty no-op, fresh migration creates "My Photos", merges into existing, idempotent, My Photos first (P2); createCollection — trimmed name, blank blocked, **duplicate names now blocked** (Prompt 016A change), case-sensitive, appended last (P3); renameCollection — success, blank blocked, duplicate blocked, same-name allowed, others unaffected, **preserves photos** (P4); deleteCollection — by ID, nonexistent no-op, last → empty, **re-enables Add Theme** (P5); addPhotoToCollection — success, bad ID, MAX_PHOTOS_PER_COLLECTION enforced, appended, others unaffected (P6); deletePhotoFromCollection — success, others safe, nonexistent no-op, other collections safe (P7) |
 | `bgCollections016A.test.mjs` | Prompt 016A theme dropdown data requirements: dropdown structure — Landscapes separate from custom, Add Theme gated on count, MAX_COLLECTIONS enforced, Landscapes not counted (A1); theme name save — valid creates collection, label format "Theme [Name]", blank rejected, duplicate rejected (A2); theme count limits — MAX_COLLECTIONS=10, Landscapes excluded, delete re-enables Add Theme (A3); photos per theme — MAX=10 enforced, add increases count, remove decreases count, order preserved (A4); migration — existing 016 collections preserved, idempotent (A5); rename preserves photos and order (A6); delete removes only the target theme (A7); JSON round-trip preserves all data — updated 016B: no dataUrl in photo records (A8) |
 | `bgPhotoStore016B.test.mjs` | IndexedDB photo store (Prompt 016B): validateImageFile — JPEG/PNG/WebP/GIF accepted, TIFF/SVG rejected, >25 MB rejected, 25 MB boundary accepted (S1); dataUrlToBlob — JPEG and PNG data URLs decoded to Blob, malformed → null, correct MIME extracted (S2); isMigrationDone/markMigrationDone — absent flag false, set flag true, writes "1" to localStorage (S3); storePhoto/getPhotoBlob — store-and-retrieve, miss returns null, overwrite, mimeType/width/height persisted alongside blob (S4); deletePhoto/deletePhotos — remove by ID, no-op for missing ID, multiple IDs, empty array no-op (S5); getAllStoredPhotoIds — returns all keys; empty store → [] (S6); createPhotoObjectUrl/revokePhotoObjectUrl — non-empty URL, unique per call, revoke no-op for unknown URL, URL removed from pool (S7); getPhotoBlob returns null on IndexedDB unavailable — no uncaught exception (S8) |
-| `controls017.test.mjs` | Control reorganisation (Prompt 017): Showcase pill removed from BackgroundPicker panel (C1); Hide pill rendered in Checklist main row (C2); Hide calls triggerShowcase — existing handler, no new state (C3); Hide appears before Preview in source (C4); exactly one setShowPreview(true) in Checklist (C5); sidebar Preview removed — bg-card style gone (C6); UnitToggle follows Preview (C7); BackgroundPicker header has no Showcase button (C8); lg:grid-cols-[1fr_365px] preserved (C9); translate-x-3 preserved (C10); pieColor state preserved (C11); bgPhotoStore imports preserved (C12); PDF timeout guard preserved (C13); no new isHide* state (C14); BackgroundShowcase/onWake/exitShowcase wired (C15); Hide disabled conditions include showResetConfirm+showPreview (C16); Hide has aria-label (C17); Preview has aria-label (C18); source order Hide→Preview→UnitToggle (C19); SharedChecklistPage Preview unchanged (C20); PreviewModal still rendered (C21); onShowcase prop still passed (C22); Share still present (C23); pdf.api.test.mjs in test:importer (C24) |
+| `controls017.test.mjs` | Control reorganisation (Prompt 017 + 017A): Showcase pill removed from BackgroundPicker panel (C1); Hide pill rendered unconditionally — no {background &&} wrapper (C4); Hide calls triggerShowcase — existing handler, no new state (C3); exactly one setShowPreview(true) in Checklist (C5); sidebar Preview removed (C6); UnitToggle follows Preview (C7); lg:grid-cols-[1fr_365px] preserved (C9); translate-x-3 preserved (C10); aria-labels on Hide and Preview (C17, C18); source order Hide→Preview→UnitToggle (C19) |
+| `landscapeHover017B.test.mjs` | Landscape thumbnail hover stability (Prompt 017B): ring-2 always present in base state (L1); no hover:scale-* (L2); hover does not change ring-width — only color (L3); transition-all not used (L4); same ring-width for selected and unselected (L5); decorative label overlay has pointer-events-none (L6); selected checkmark has pointer-events-none (L7); onClick still selects background (L8); all built-in PRESETS present (L9); built-ins non-deletable (L10); custom thumbnails unchanged (L11); Hide unconditional — 017A preserved (L12); Preview wired (L13); UnitToggle present (L14); Undo/Redo wired (L15); bgPhotoStore imports preserved (L16); PDF timeout guard preserved (L17); grid 365px (L19); translate-x-3 (L20); ring-transparent in base state (L21); targeted transition only (L22) |
 
 ## Where fixtures are stored
 

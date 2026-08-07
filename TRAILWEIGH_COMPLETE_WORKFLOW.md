@@ -2741,3 +2741,142 @@ Hide renders unconditionally. No background required.
 ---
 
 *Master workflow last updated: 2026-08-06 (Prompt 017A)*
+
+---
+
+### Prompt 017B — Stop Landscape Thumbnails from Shaking on Hover (2026-08-07)
+
+---
+
+## Prompt 017B Report — Stop Landscape Thumbnails from Shaking on Hover
+
+---
+
+### Identification
+
+| Field | Value |
+|-------|-------|
+| **Prompt ID** | 017B |
+| **Prompt title** | Stop Landscape Thumbnails from Shaking on Hover |
+| **Start time** | 2026-08-07 00:40 UTC |
+| **Completion time** | 2026-08-07 01:10 UTC |
+| **Purpose** | Fix visible jitter when cursor moves over built-in Landscape background thumbnails |
+| **Exact requested result** | Landscape tiles stationary during hover; only color/opacity changes permitted |
+
+---
+
+### Root Cause (Four Compounding Causes)
+
+**Cause 1 — `transition-all` (PRIMARY)**
+The landscape button used `transition-all`. When the ring materialized from nothing (`none`) to `ring-2 + ring-offset-1` on hover, `transition-all` caused the browser to interpolate every CSS property, triggering a repaint of the `overflow:hidden` + `border-radius` stacking context on every animation frame. The `none → specific shadow` interpolation is not guaranteed smooth; browsers can snap rather than linearly interpolate, causing visible jitter on hover enter/exit.
+
+**Cause 2 — Ring geometry changing from 0 to ring-2+ring-offset-1**
+Base state had no ring; hover added ring-2 + ring-offset-1 (3px new paint area). This geometry change on each hover triggered a stacking-context recalculation. Selected state always had ring-2 + ring-offset-1, so it never experienced this transition.
+
+**Cause 3 — Decorative label overlay lacked `pointer-events-none`**
+The gradient label div's default `pointer-events: auto` caused the browser to process pointer events for it on every mousemove, adding an extra compositing layer.
+
+**Cause 4 — Checkmark lacked `pointer-events-none`**
+Custom photo checkmarks already had `pointer-events-none`. Landscape checkmarks did not.
+
+**Why custom photos were stable:** Custom photo thumbnails have an outer `<div className="relative group">` wrapper; the `group` class is on that div, not the inner button. Landscape buttons had `group` on the button itself, causing the button's own rendering events to feed back into group-hover state detection.
+
+---
+
+### Fix Applied
+
+**File:** `artifacts/pack-checklist/src/components/BackgroundPicker.tsx` (PRESETS.map block)
+
+Four changes:
+
+1. **`transition-all` → `transition-[box-shadow,opacity]`** — only transitions non-layout properties
+2. **Ring geometry frozen**: `ring-2 ring-offset-1` moved to unconditional base class; only ring COLOR changes on hover/selected
+   - Base: `ring-2 ring-offset-1 ring-transparent`
+   - Hover: `hover:ring-foreground/30` (color only)
+   - Selected: `ring-primary` (color only)
+3. **`pointer-events-none`** added to decorative label overlay
+4. **`pointer-events-none`** added to selected checkmark (matches custom photo pattern)
+
+**Geometry comparison:**
+
+| State | Ring width | Ring offset | Transition |
+|-------|-----------|-------------|------------|
+| All states (post-017B) | 2px (constant) | 1px (constant) | box-shadow color only |
+
+Ring geometry is now **identical in all states**. Only color varies.
+
+---
+
+### New Test Suite
+
+`landscapeHover017B.test.mjs` — 22 tests (L1–L22):
+- L1: ring-2 unconditionally present
+- L2: no hover:scale-*
+- L3: hover does not change ring-width
+- L4: transition-all absent
+- L5: same ring-width selected and unselected
+- L6: label overlay has pointer-events-none
+- L7: checkmark has pointer-events-none
+- L8–L22: functionality, feature preservation, prior-prompt regression checks
+
+---
+
+### Automated Results
+
+**Command:** `pnpm test:importer`
+
+| Suite | Tests | Result |
+|-------|-------|--------|
+| importGear.test.mjs | 219 | ✅ |
+| importGear.pdf.test.mjs | 54 | ✅ |
+| importGear.pdf.api.test.mjs | 53 | ✅ |
+| scanGear.test.mjs | 47 | ✅ |
+| categoryAliases.test.mjs | 77 | ✅ |
+| usePackData.test.mjs | 64 | ✅ |
+| moveItem.test.mjs | 47 | ✅ |
+| pieColor.test.mjs | 41 | ✅ |
+| bgCollections.test.mjs | 33 | ✅ |
+| bgCollections016A.test.mjs | 28 | ✅ |
+| bgPhotoStore016B.test.mjs | 29 | ✅ |
+| controls017.test.mjs | 24 | ✅ |
+| landscapeHover017B.test.mjs *(new)* | 22 | ✅ |
+| **Total** | **738** | **0 failed** |
+
+---
+
+### Scope Preservation
+
+- `lg:grid-cols-[1fr_365px]`: preserved
+- `translate-x-3`: preserved
+- Hide unconditional: preserved (017A)
+- Preview wired: preserved
+- UnitToggle: preserved
+- Undo/Redo: preserved
+- PDF import: 53 tests pass (016C)
+- IndexedDB storage: 29+28 tests pass (016B)
+- Custom thumbnails: renderPhotoSlot/renderCustomThemePanel unchanged
+- All PRESETS URLs: unchanged
+- Built-ins non-deletable: no delete handler in PRESETS block
+- No saved-data schema changed
+
+---
+
+### Current Landscape Tile State (post-017B)
+
+```jsx
+<button
+  className={`relative overflow-hidden rounded-lg aspect-[3/2] group ring-2 ring-offset-1 transition-[box-shadow,opacity] ${
+    isActive ? 'ring-primary' : 'ring-transparent hover:ring-foreground/30'
+  }`}
+>
+  <img ... loading="lazy" />
+  <div className="... group-hover:opacity-100 transition-opacity pointer-events-none">{label}</div>
+  {isActive && (
+    <div className="... pointer-events-none"><Check /></div>
+  )}
+</button>
+```
+
+---
+
+*Master workflow last updated: 2026-08-06 (Prompt 017B)*
