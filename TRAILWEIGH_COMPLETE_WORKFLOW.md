@@ -4038,3 +4038,41 @@ No IndexedDB operations, no localStorage.clear/sessionStorage.clear, no locker-f
 ### Prompt History
 
 019 = USER-TESTED PASS | 020 = PARTIAL | 020A = PARTIAL | 020B = PARTIAL | 020C = PARTIAL/FAIL | 020D = FAIL/PARTIAL | 020E = NOT USER-VERIFIED
+
+---
+
+## Prompt 020F — Inherited-sessionStorage forkId override + save toast quotes
+
+**Date:** 2026-08-07  
+**Status:** COMPLETE — all 24 test suites pass (020F: 28/28, full regression: 24/24 suites)
+
+### Root Cause Found
+
+`resolveStorageKey()` in `usePackData.ts` checked `sessionStorage.getItem('tw-fork-id')` **before** checking the URL params (`?newseed=` / `?savedListId=`). Because `window.open()` copies the opener's entire sessionStorage to new tabs, the inherited `tw-fork-id=openerForkId` was found first and the function returned early — completely ignoring the URL parameter that identifies the NEW tab.
+
+The Clerk auth gate (`if (!isLoaded) return <spinner>`) blocks rendering of `ChecklistContent` (and all of its `useState` hooks, including `usePackData`) until Clerk finishes loading — typically ~1 second. During that 1-second window, the inherited `tw-fork-id` was sitting in sessionStorage. When Clerk finally loaded and `resolveStorageKey()` ran for the first time, it found the wrong forkId. The background initializer then found the inherited scoped restore key `tw-fork-bg-restore-openerForkId=ray_psychedelic` and returned the opener's background. This is the exact "~1 second" delay the user observed.
+
+### Fix
+
+**`usePackData.ts` — `resolveStorageKey()`:** Check URL params **first**. The sessionStorage fallback is only reached for remounts (URL params already consumed) or non-fork primary tabs.
+
+**`Checklist.tsx`:** Both `commitSaveNew` and `commitSaveReplace` toast changed from `` `Saved "${name}"` `` → `` `Saved ${name}` `` (no extra quotes).
+
+**7 test files updated** (018, 018A, 018B, 018C, 020B, newBlank020, sidebar019) to expect new quote-free format. **1 new test file** added (inheritedSessionStorage020F.test.mjs — 28 tests).
+
+### Files Changed
+
+- `artifacts/pack-checklist/src/hooks/usePackData.ts` — URL params before sessionStorage in `resolveStorageKey()`
+- `artifacts/pack-checklist/src/pages/Checklist.tsx` — save toast quotes removed
+- `artifacts/pack-checklist/src/hooks/inheritedSessionStorage020F.test.mjs` — new (28 tests)
+- `activeFileName018.test.mjs`, `018A`, `018B`, `018C`, `lockerFirstOpen020B`, `newBlank020`, `sidebar019` — updated assertions for new toast format
+
+### Automated Test Results
+
+```
+020F: 28/28 ✅  Full regression: 24/24 suites ✅
+```
+
+### Prompt History
+
+019 = PASS | 020–020D = PARTIAL/FAIL | 020E = FAIL (user-tested) | 020F = NOT YET USER-VERIFIED

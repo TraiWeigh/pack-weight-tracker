@@ -237,12 +237,13 @@ test('28. Hide → Preview → UnitToggle order preserved in right group', () =>
 
 // ── SAVE CONFIRMATION ─────────────────────────────────────────────────────────
 
-test('29. Save toast uses `Saved "${name}"` (not bare "Saved." or "Saved as")', () => {
-  const toastStr = 'Saved "${name}"';
+test('29. Save toast uses `Saved ${name}` (no quotes, not bare "Saved." or "Saved as")', () => {
+  // 020F: quotes removed from save toast — "Saved Sierra" not 'Saved "Sierra"'.
+  const toastStr = '`Saved ${name}`';
   const first  = checklist.indexOf(toastStr);
   const second = checklist.indexOf(toastStr, first + 1);
-  assert.ok(first  > -1, `toast Saved "$\{name}" not found`);
-  assert.ok(second > -1, `toast Saved "$\{name}" should appear at least twice`);
+  assert.ok(first  > -1, `toast \`Saved \${name}\` not found`);
+  assert.ok(second > -1, `toast \`Saved \${name}\` should appear at least twice`);
   assert.ok(!checklist.includes("description: 'Saved.'"), 'Bare "Saved." must not exist');
 });
 

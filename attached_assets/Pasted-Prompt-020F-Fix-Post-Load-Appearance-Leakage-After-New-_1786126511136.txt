@@ -1,0 +1,349 @@
+Prompt 020F — Fix Post-Load Appearance Leakage After New
+
+Create PRE_020F_MASTER_BACKUP.md before changing anything.
+
+CURRENT STATUS:
+020E = PARTIAL/FAIL based on USER screen-recording evidence.
+
+AUTHORITATIVE USER-TESTED EXPECTED STATES:
+- Sierra/Dutch/0826 → its saved Sierra/mountain background + its own saved appearance.
+- Ray Jardine’s → its saved psychedelic background + its own saved appearance.
+- Packlist 1 → Light mode + no background.
+- New → zero categories/items + Clear/no background + Light mode + no filename.
+
+CONFIRMED 020E FAILURES:
+1. New can initially render correctly, then about a second later inherit the previously opened saved file’s background and Dark mode.
+2. Sierra can open with the wrong background instead of its own saved Sierra/mountain background.
+3. Therefore the remaining bug is NOT limited to initial sessionStorage restoration.
+4. A later React effect, localStorage/storage listener, hydration/synchronization path, remount, or other post-load write is still changing active appearance after initialization.
+
+Example from user recording:
+- New initially opened blank/Clear/Light.
+- Sierra was opened and manually restored/saved with its mountain background.
+- New then opened with zero categories but inherited Sierra’s mountain background + Dark mode.
+- Ray Jardine’s opened with its psychedelic background.
+- New initially appeared blank, then Ray’s psychedelic background appeared about one second later.
+
+GOAL:
+Make active appearance ownership deterministic for the entire lifetime of each tab/workspace, not only during first initialization.
+
+NEW MUST REMAIN:
+- zero categories
+- zero items
+- Clear/no active background
+- Light mode
+- no active filename
+
+Once a tab is identified as a true New/newseed workspace, unrelated saved-file/global/cross-tab appearance updates must NEVER overwrite its active background, tone, fade, palette, or other per-file appearance.
+
+SAVED FILE MUST REMAIN:
+A savedListId tab must use ONLY that file’s own saved appearance:
+- background
+- Light/Dark
+- fade/darken
+- palette
+- other already-supported per-file appearance
+
+It must restore correctly on FIRST open and remain associated with that file.
+
+DO NOT FIX THIS BY:
+- another scoped-key ordering change alone
+- timeouts
+- delayed retries
+- forced reload
+- repeated corrective setState calls
+- optional/null fallbacks that merely hide the bug
+- disabling background restoration
+- globally clearing background data
+- rewriting saved files
+- suppressing valid storage events without understanding ownership
+
+INVESTIGATE BEFORE EDITING:
+Trace EVERY code path that can WRITE active:
+- background
+- bg tone / Light-Dark
+- fade/darken
+- palette
+- related saved appearance
+
+Trace writes during:
+1. first mount
+2. after React effects run
+3. localStorage hydration
+4. sessionStorage hydration
+5. IndexedDB/background loading
+6. browser `storage` event listeners
+7. cross-tab synchronization
+8. Locker saved-file loading
+9. newseed handling
+10. active-file identity changes
+11. background/theme UI state restoration
+
+Instrument/log the source of these writes if necessary.
+
+Specifically determine what causes the delayed appearance change seen approximately one second after New mounts.
+
+Do not guess. Document the exact source.
+
+STATE OWNERSHIP RULE:
+The destination workspace identity must determine which appearance writes are allowed.
+
+For a true New/newseed workspace:
+- New owns Clear + Light.
+- Saved-file appearance events from another tab/file must be ignored for ACTIVE appearance.
+- This does NOT mean disabling shared theme/photo library synchronization.
+- Themes/custom photos may continue to sync/be available.
+- Only ACTIVE workspace appearance is isolated.
+
+For savedListId:
+- only appearance belonging to that savedListId may become authoritative.
+- another file/tab’s active appearance must never replace it.
+
+GLOBAL REGRESSION PROTECTION:
+Treat ALL existing TrailWeigh functionality, data behavior, styling, layout, persistence, calculations, importer behavior, background behavior, Locker behavior, sharing behavior, responsive behavior, and all prior completed prompt work as protected unless explicitly changed here.
+
+Smallest reliable change set only.
+No unrelated cleanup/refactoring/renaming/relocation/modernization.
+
+Preserve:
+- localStorage
+- IndexedDB
+- Locker
+- cross-tab functionality
+- saved-file compatibility
+- all existing user data
+
+Never reset/migrate/delete data unless explicitly required here.
+
+Create checkpoint before changes.
+Inspect final diff.
+Revert unrelated modifications.
+Use checkpoint as recovery point if needed.
+
+STATE/DATA ISOLATION PROTECTION:
+- Never overwrite, clear, migrate, or rewrite existing Locker files merely to fix restoration.
+- Never modify/delete saved themes, custom photos, IndexedDB photo libraries, or their IDs.
+- Never copy File A’s saved appearance into File B.
+- New may clear only its ACTIVE workspace appearance.
+- Opening a saved file must not rewrite that saved file merely because it was opened.
+- Temporary cross-tab/session state must never become permanent saved-file data.
+- Do not introduce a global appearance fallback.
+- Preserve backward compatibility with all current Locker files.
+- If a schema/storage migration appears necessary, STOP and report why before implementing it.
+- Inspect final diff specifically for new storage WRITE paths.
+
+DATA-SAFETY ACCEPTANCE:
+The fix is a FAIL if background leakage disappears only because saved backgrounds, tones, palettes, themes, or other existing appearance data were erased, reset, ignored, or permanently changed.
+
+MINOR CONFIRMED SAVE MESSAGE FIX:
+Successful save currently displays quotation marks, e.g.:
+Saved "Sierra/Dutch/0826"
+
+Required:
+Saved Sierra/Dutch/0826
+
+Remove only the unnecessary quotation marks.
+Preserve the existing rule:
+Every successful save displays:
+Saved [actual current file name]
+
+Do not alter Save/Save As behavior or identity logic.
+
+DO NOT INCLUDE SHARE LINK WORK:
+The separately confirmed Share Link `order.filter` crash is NOT part of 020F.
+Do not modify Share serialization, Share URL parsing, shared-view store hydration, or Share behavior in this prompt unless an unavoidable compile dependency is discovered and documented first.
+
+REQUIRED REAL-BROWSER TEST:
+Use fresh real browser tabs.
+
+Cycle:
+1. Open Ray Jardine’s → psychedelic background.
+2. Open New → Clear + Light + zero categories/items.
+   Wait at least 5 seconds. It must remain Clear + Light.
+3. Open Sierra/Dutch/0826 → Sierra/mountain background on FIRST open.
+   Wait at least 5 seconds. It must remain correct.
+4. Open New → Clear + Light.
+   Wait at least 5 seconds.
+5. Open Ray → psychedelic on FIRST open.
+6. Open New → Clear + Light.
+   Wait at least 5 seconds.
+7. Open Packlist 1 → Light + no background.
+8. Open Sierra → Sierra/mountain.
+9. Open New → Clear + Light.
+10. Repeat Ray → New → Sierra → New → Packlist 1 → New several times.
+
+At every step verify:
+- correct filename
+- correct categories/items
+- correct background
+- correct Light/Dark tone
+- no delayed change after mount
+- no refresh needed
+- no second open needed
+- no cross-file contamination
+
+Also test:
+- manually change Sierra background and Save
+- verify message is `Saved Sierra/Dutch/0826`
+- reopen Sierra and verify saved background restores
+- verify Ray remains unchanged
+- verify Packlist 1 remains unchanged
+- verify New remains Clear + Light
+- saved themes/custom photos all remain available
+- Fill/Fit/Darken still work
+- background Undo/Redo still works
+
+IMPORTER PROTECTION TEST:
+From a blank New workspace:
+- use Scan Gear List
+- confirm required categories are automatically created for imported items
+- imported items remain unchecked
+- existing importer mappings remain intact
+
+Do not change importer behavior.
+
+FULL REGRESSION SUITE REQUIRED:
+020E reported only 108/108 targeted tests.
+That is NOT acceptable as the full TrailWeigh regression suite.
+
+For 020F:
+1. Run focused 020F tests.
+2. Run the COMPLETE TrailWeigh automated regression suite, including all existing test files.
+3. Report the exact command(s).
+4. Report exact total passed/failed/skipped counts.
+
+Do not describe a targeted subset as the full suite.
+
+Add focused tests covering:
+- New stays Clear/Light after post-mount effects
+- unrelated storage event cannot change New active appearance
+- File A appearance cannot become File B appearance
+- savedListId accepts only its own appearance
+- theme/photo library updates do not change New active background
+- repeated New/saved-file cycles remain deterministic
+- save confirmation contains no quotes
+- no saved data is rewritten by opening New or another file
+
+PROTECTED WORK (NON-EXHAUSTIVE):
+- 020 blank New categories/items
+- 020A intended Clear+Light New
+- saved-file first-open restoration
+- 019 independent Pack Summary / Weight Distribution panels
+- 018C filename pill
+- 017E background shaking fix
+- 017F Scan Gear List
+- automatic category creation during import
+- Background Edit
+- Themes/custom themes/custom photos
+- IndexedDB photo persistence
+- Fit/Fill
+- Darken/Fade
+- Undo/Redo backgrounds
+- Delete Theme
+- Save/Save As
+- Locker
+- Reset
+- Hide
+- Preview/Print
+- Imperial/Metric
+- Open/Close
+- MOVE
+- calculations
+- palette persistence
+- `lg:grid-cols-[1fr_365px]`
+- QTY `translate-x-3`
+- desktop/mobile layout
+- all existing saved files
+
+USER ACCEPTANCE:
+Do NOT claim USER-TESTED PASS.
+
+Replit automated/rendered testing is not equivalent to user testing.
+
+After Replit finishes, user will:
+- keep old TrailWeigh preview tabs closed
+- open one fresh preview
+- perform the cycle personally
+
+Until user confirms:
+020F = NOT USER-VERIFIED.
+
+REPORTING:
+Create:
+workflow-reports/PROMPT_020F_REPORT.md
+
+Report must include:
+- exact Prompt 020F
+- starting state
+- root cause
+- exact delayed post-load writer/effect/listener found
+- state ownership before vs after
+- files inspected
+- files changed
+- exact code behavior changed
+- storage writes reviewed
+- data-safety verification
+- focused test commands/results
+- FULL regression command/results
+- rendered browser test sequence/results
+- failures/reversions
+- acceptance checklist with PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user tests still required
+
+Append verified report to:
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Never overwrite/truncate prior history.
+
+Status history:
+019 = USER-TESTED PASS
+020 = PARTIAL
+020A = PARTIAL
+020B = PARTIAL
+020C = PARTIAL/FAIL
+020D = FAIL/PARTIAL
+020E = PARTIAL/FAIL
+020F = NOT USER-VERIFIED
+
+REPORT ZIP:
+Create:
+trailweigh-020F-report.zip
+
+It must contain EXACTLY these four files at ZIP ROOT:
+PROMPT_020F_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- containing/wrapper folder
+- __MACOSX
+- .DS_Store
+- backup files
+- source code
+- screenshots
+- user data
+- other ZIPs
+
+Before finishing, LIST the archive contents and verify exactly 4 root entries.
+
+A ZIP with wrapper folder or __MACOSX = FAIL even if app code works.
+
+FINAL RESPONSE:
+Tell user:
+1. exact root cause of delayed appearance overwrite
+2. exact files changed
+3. how New is protected for its full tab lifetime
+4. how savedListId appearance ownership works
+5. why theme/photo library sharing still works without changing New active appearance
+6. confirmation existing saved appearance data was not erased/reset/migrated
+7. Save message quote correction result
+8. focused test results
+9. COMPLETE regression-suite results
+10. rendered repeated cross-tab results
+11. protected-feature results
+12. report path
+13. ZIP path
+14. exact four ZIP entries
+15. clearly state 020F still requires USER acceptance

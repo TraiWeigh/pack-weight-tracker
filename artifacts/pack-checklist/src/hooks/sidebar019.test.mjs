@@ -265,9 +265,10 @@ test('33. UnitToggle still present in right control group', () => {
 });
 
 // Save confirmation
-test('34. Save toast uses `Saved "${name}"` (active-file + save confirmation unchanged)', () => {
-  const toastStr = 'Saved "${name}"';
-  assert.ok(checklist.indexOf(toastStr) > -1, `Save toast Saved "$\{name}" not found`);
+test('34. Save toast uses `Saved ${name}` (no extra quotes — 020F)', () => {
+  // 020F: removed wrapping quotes so toast reads "Saved Sierra" not 'Saved "Sierra"'
+  const toastStr = '`Saved ${name}`';
+  assert.ok(checklist.indexOf(toastStr) > -1, `Save toast \`Saved \${name}\` not found`);
 });
 
 // WeightSummary.tsx still has PALETTES (no data loss)

@@ -239,25 +239,27 @@ function extractFunctionBody(src, fnName) {
 const replaceBody = extractFunctionBody(checklist, 'commitSaveReplace');
 const newBody     = extractFunctionBody(checklist, 'commitSaveNew');
 
-test('12. commitSaveReplace still shows `Saved "[name]"` (not bare Saved.)', () => {
+test('12. commitSaveReplace still shows Saved [name] (not bare Saved.)', () => {
+  // 020F: quote-free format — "Saved Sierra" not 'Saved "Sierra"'
   assert.ok(
     !replaceBody.includes("description: 'Saved.'"),
     "commitSaveReplace reverted to bare 'Saved.' — 018 save confirmation broken"
   );
   assert.ok(
-    replaceBody.includes('`Saved "${name}"`') || replaceBody.includes('Saved \\"${name}\\"'),
-    'commitSaveReplace no longer uses Saved "${name}" format'
+    replaceBody.includes('`Saved ${name}`'),
+    'commitSaveReplace must use `Saved ${name}` (020F: no extra quotes around name)'
   );
 });
 
-test('13. commitSaveNew still shows `Saved "[name]"` (not Saved as "...")', () => {
+test('13. commitSaveNew still shows Saved [name] (not Saved as "...")', () => {
+  // 020F: quote-free format — "Saved Sierra" not 'Saved "Sierra"'
   assert.ok(
     !newBody.includes('Saved as "'),
     'commitSaveNew reverted to "Saved as \\"${name}\\"" — 018 save confirmation broken'
   );
   assert.ok(
-    newBody.includes('`Saved "${name}"`') || newBody.includes('Saved \\"${name}\\"'),
-    'commitSaveNew no longer uses Saved "${name}" format'
+    newBody.includes('`Saved ${name}`'),
+    'commitSaveNew must use `Saved ${name}` (020F: no extra quotes around name)'
   );
 });
 

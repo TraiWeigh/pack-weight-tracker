@@ -102,10 +102,12 @@ test("1. commitSaveReplace no longer uses bare 'Saved.' description", () => {
   );
 });
 
-test('2. commitSaveReplace uses template-literal `Saved "${name}"` format', () => {
+test('2. commitSaveReplace uses template-literal `Saved ${name}` format (no extra quotes)', () => {
+  // 020F: removed the wrapping double-quotes from the toast message so it reads
+  // "Saved Sierra" instead of 'Saved "Sierra"'.
   assert.ok(
-    replaceBody.includes('`Saved "${name}"`') || replaceBody.includes("Saved \"${name}\""),
-    'commitSaveReplace does not contain Saved "${name}" template literal'
+    replaceBody.includes('`Saved ${name}`'),
+    'commitSaveReplace must use `Saved ${name}` (without extra quotes around name)'
   );
 });
 
@@ -116,10 +118,11 @@ test('3. commitSaveNew no longer uses `Saved as "${name}"` format', () => {
   );
 });
 
-test('4. commitSaveNew uses template-literal `Saved "${name}"` format', () => {
+test('4. commitSaveNew uses template-literal `Saved ${name}` format (no extra quotes)', () => {
+  // 020F: removed the wrapping double-quotes from the toast message.
   assert.ok(
-    newBody.includes('`Saved "${name}"`') || newBody.includes("Saved \"${name}\""),
-    'commitSaveNew does not contain Saved "${name}" template literal'
+    newBody.includes('`Saved ${name}`'),
+    'commitSaveNew must use `Saved ${name}` (without extra quotes around name)'
   );
 });
 

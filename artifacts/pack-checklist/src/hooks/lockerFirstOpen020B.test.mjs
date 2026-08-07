@@ -223,8 +223,9 @@ test('22. parseV5 __blank branch preserved (020 fix)', () => {
   assert.ok(packData.includes('p.__blank'), 'p.__blank missing from parseV5 — 020 zero-category fix broken');
 });
 
-test('23. Save toast wording unchanged (Saved "[name]")', () => {
-  assert.ok(checklist.includes('Saved "${name}"'), 'Save toast wording changed');
+test('23. Save toast wording correct (Saved [name], no extra quotes — 020F)', () => {
+  // 020F removed wrapping quotes: toast reads "Saved Sierra" not 'Saved "Sierra"'
+  assert.ok(checklist.includes('`Saved ${name}`'), 'Save toast must be `Saved ${name}` (no extra quotes)');
 });
 
 test('24. LOCKER_KEY still exported from usePackData', () => {

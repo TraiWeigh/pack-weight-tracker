@@ -254,10 +254,11 @@ test('25. Reset handler is separate from handleNew (no shared function)', () => 
   );
 });
 
-test('26. Save handler still has "Saved" toast wording (Saved [name] unchanged)', () => {
+test('26. Save handler has "Saved [name]" toast wording without extra quotes (020F)', () => {
+  // 020F: quotes removed from toast — `Saved ${name}` not `Saved "${name}"`
   assert.ok(
-    checklist.includes('Saved "${name}"') || checklist.includes("Saved \"${name}\""),
-    'Save toast wording not found — may have been changed'
+    checklist.includes('`Saved ${name}`'),
+    'Save toast must be `Saved ${name}` — quotes were removed in 020F'
   );
 });
 

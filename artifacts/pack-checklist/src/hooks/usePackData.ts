@@ -275,29 +275,37 @@ function loadFromStorage(uid?: string): Store | null {
 }
 
 /** Resolve the storage key for this browser session.
- *  Fork tabs (opened via "New" button or "Load This List") get an isolated key stored in sessionStorage. */
+ *  Fork tabs (opened via "New" button or "Load This List") get an isolated key stored in sessionStorage.
+ *
+ *  IMPORTANT: URL params are checked FIRST.  window.open() copies the opener's
+ *  entire sessionStorage to the new tab, so an inherited tw-fork-id must NOT take
+ *  priority over a ?newseed= or ?savedListId= URL parameter — those are specific
+ *  to THIS tab's identity, not the opener's.  The sessionStorage fallback is only
+ *  for remounts (after URL params have been consumed/cleaned up) or non-fork tabs. */
 function resolveStorageKey(userId?: string): { key: string; isFork: boolean } {
   try {
-    // Already in a forked session?
-    const forkId = sessionStorage.getItem('tw-fork-id');
-    if (forkId) return { key: `pack-checklist-v5-fork-${forkId}`, isFork: true };
-
     const params = new URLSearchParams(window.location.search);
 
-    // First load of a forked tab via "New" button?
+    // First load of a forked tab via "New" button — URL param is authoritative.
     const seedId = params.get('newseed');
     if (seedId) {
       sessionStorage.setItem('tw-fork-id', seedId);
       return { key: `pack-checklist-v5-fork-${seedId}`, isFork: true };
     }
 
-    // First load of a saved list via "Load This List"?
+    // First load of a saved list via "Load This List" — URL param is authoritative.
     const savedListId = params.get('savedListId');
     if (savedListId) {
       const newForkId = crypto.randomUUID();
       sessionStorage.setItem('tw-fork-id', newForkId);
       return { key: `pack-checklist-v5-fork-${newForkId}`, isFork: true };
     }
+
+    // Remount of an existing fork tab (URL params already consumed or never present):
+    // use the tw-fork-id already established for this tab's lifetime.
+    const forkId = sessionStorage.getItem('tw-fork-id');
+    if (forkId) return { key: `pack-checklist-v5-fork-${forkId}`, isFork: true };
+
   } catch { /* ignore */ }
   return { key: V5_KEY(userId), isFork: false };
 }

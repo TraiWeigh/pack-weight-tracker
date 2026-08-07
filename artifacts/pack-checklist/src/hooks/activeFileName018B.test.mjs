@@ -222,15 +222,16 @@ test('28. Pill conditional NOT between Preview and UnitToggle in right group', (
 
 // ── SAVE CONFIRMATIONS (018 behavior unchanged) ───────────────────────────────
 
-test('29. Save toast uses `Saved "${name}"` pattern — not bare "Saved." (global search)', () => {
+test('29. Save toast uses `Saved ${name}` pattern (no quotes) — not bare "Saved." (global search)', () => {
+  // 020F: quotes removed from save toast — "Saved Sierra" not 'Saved "Sierra"'.
   // Both commitSaveNew and commitSaveReplace emit the same toast; verify it appears
   // at least twice in the file (once per function). Function bodies can exceed 600
   // chars, so search globally rather than from the function name.
-  const toastStr = 'Saved "${name}"';
+  const toastStr = '`Saved ${name}`';
   const first = checklist.indexOf(toastStr);
-  assert.ok(first > -1, `toast Saved "$\{name}" not found in Checklist.tsx`);
+  assert.ok(first > -1, `toast \`Saved \${name}\` not found in Checklist.tsx`);
   const second = checklist.indexOf(toastStr, first + 1);
-  assert.ok(second > -1, `toast Saved "$\{name}" should appear at least twice (commitSaveNew + commitSaveReplace)`);
+  assert.ok(second > -1, `toast \`Saved \${name}\` should appear at least twice (commitSaveNew + commitSaveReplace)`);
 });
 
 test('30. Save toast never uses bare "Saved." or "Saved as" (global search)', () => {

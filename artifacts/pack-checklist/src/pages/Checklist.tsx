@@ -829,7 +829,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     writeActiveLockerFileToSS(newFile);
     setActiveLockerFile(newFile);
     closeSaveDialog();
-    toast({ description: `Saved "${name}"` });
+    toast({ description: `Saved ${name}` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, background, bgFade, bgTone, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
 
@@ -861,7 +861,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       writeActiveLockerFileToSS(refreshed);
       setActiveLockerFile(refreshed);
       closeSaveDialog();
-      toast({ description: `Saved "${name}"` });
+      toast({ description: `Saved ${name}` });
     } catch {
       toast({ description: 'Save failed. Your changes were not saved.', variant: 'destructive' });
     }
