@@ -104,37 +104,38 @@ console.log('\nPrompt 020C — Make New Deterministically Reset to Clear + Light
 
 // ── BACKGROUND INITIALIZER CHANGES ───────────────────────────────────────────
 
-test('1. bg initializer stashes tw-fork-bg-restore after consuming newseed-bg', () => {
+test('1. bg initializer stashes scoped tw-fork-bg-restore-${forkId} after consuming newseed-bg', () => {
+  // 020E: keys are now forkId-scoped to prevent inherited-sessionStorage leakage.
   assert.ok(
-    bgInitBlock.includes("sessionStorage.setItem('tw-fork-bg-restore'"),
-    "tw-fork-bg-restore not set in background initializer — remounts can't use fork-local snapshot"
+    bgInitBlock.includes("tw-fork-bg-restore-${forkId}"),
+    "scoped tw-fork-bg-restore-\${forkId} not set in background initializer — cross-tab leakage possible"
   );
 });
 
-test('2. bg initializer stashes tw-fork-bgtone-restore after consuming newseed-bg', () => {
+test('2. bg initializer stashes scoped tw-fork-bgtone-restore-${forkId} after consuming newseed-bg', () => {
   assert.ok(
-    bgInitBlock.includes("sessionStorage.setItem('tw-fork-bgtone-restore'"),
-    "tw-fork-bgtone-restore not set in background initializer"
+    bgInitBlock.includes("tw-fork-bgtone-restore-${forkId}"),
+    "scoped tw-fork-bgtone-restore-\${forkId} not set in background initializer"
   );
 });
 
-test('3. bg initializer stashes tw-fork-bgfade-restore after consuming newseed-bg', () => {
+test('3. bg initializer stashes scoped tw-fork-bgfade-restore-${forkId} after consuming newseed-bg', () => {
   assert.ok(
-    bgInitBlock.includes("sessionStorage.setItem('tw-fork-bgfade-restore'"),
-    "tw-fork-bgfade-restore not set in background initializer"
+    bgInitBlock.includes("tw-fork-bgfade-restore-${forkId}"),
+    "scoped tw-fork-bgfade-restore-\${forkId} not set in background initializer"
   );
 });
 
-test('4. bg initializer checks tw-fork-bg-restore on remount (before global BG_STORAGE_KEY)', () => {
-  const remountIdx = bgInitBlock.indexOf('tw-fork-bg-restore');
-  const storageIdx = bgInitBlock.indexOf('BG_STORAGE_KEY', remountIdx + 1);
-  // tw-fork-bg-restore check appears before (or instead of) BG_STORAGE_KEY fallback
-  // for fork tabs — the global key should only appear in the non-fork path
-  assert.ok(remountIdx > -1, "tw-fork-bg-restore get not found in bg initializer");
-  // Verify the fork path returns without reaching BG_STORAGE_KEY
+test('4. bg initializer checks scoped tw-fork-bg-restore-${forkId} on remount (before global BG_STORAGE_KEY)', () => {
+  // 020E: remount check now uses forkId-scoped key (not generic, which is inherited by new tabs).
   assert.ok(
-    bgInitBlock.includes("sessionStorage.getItem('tw-fork-bg-restore')"),
-    "sessionStorage.getItem('tw-fork-bg-restore') missing in bg initializer remount path"
+    bgInitBlock.includes("tw-fork-bg-restore-${forkId}"),
+    "scoped tw-fork-bg-restore-\${forkId} not found in bg initializer — remount read would use wrong tab's key"
+  );
+  // Also verify the getItem call uses the scoped key
+  assert.ok(
+    bgInitBlock.includes("getItem(`tw-fork-bg-restore-${forkId}`)"),
+    "sessionStorage.getItem(scoped key) missing in bg initializer remount path"
   );
 });
 
@@ -186,24 +187,25 @@ test('8. handleLoadFromLocker in-place path checks isForkTab before writing stor
   );
 });
 
-test('9. handleLoadFromLocker in-place path writes tw-fork-bg-restore for fork tabs', () => {
+test('9. handleLoadFromLocker in-place path writes scoped tw-fork-bg-restore-${forkId} for fork tabs', () => {
+  // 020E: scoped key prevents opener's key from polluting the new tab.
   assert.ok(
-    inPlaceBlock.includes("sessionStorage.setItem('tw-fork-bg-restore'"),
-    "tw-fork-bg-restore write missing from in-place path — fork tab remounts will show wrong background"
+    inPlaceBlock.includes("tw-fork-bg-restore-${forkId}"),
+    "scoped tw-fork-bg-restore-\${forkId} write missing from in-place path — cross-tab bg leakage possible"
   );
 });
 
-test('10. handleLoadFromLocker in-place path writes tw-fork-bgtone-restore for fork tabs', () => {
+test('10. handleLoadFromLocker in-place path writes scoped tw-fork-bgtone-restore-${forkId} for fork tabs', () => {
   assert.ok(
-    inPlaceBlock.includes("sessionStorage.setItem('tw-fork-bgtone-restore'"),
-    "tw-fork-bgtone-restore write missing from in-place path"
+    inPlaceBlock.includes("tw-fork-bgtone-restore-${forkId}"),
+    "scoped tw-fork-bgtone-restore-\${forkId} write missing from in-place path"
   );
 });
 
-test('11. handleLoadFromLocker in-place path writes tw-fork-bgfade-restore for fork tabs', () => {
+test('11. handleLoadFromLocker in-place path writes scoped tw-fork-bgfade-restore-${forkId} for fork tabs', () => {
   assert.ok(
-    inPlaceBlock.includes("sessionStorage.setItem('tw-fork-bgfade-restore'"),
-    "tw-fork-bgfade-restore write missing from in-place path"
+    inPlaceBlock.includes("tw-fork-bgfade-restore-${forkId}"),
+    "scoped tw-fork-bgfade-restore-\${forkId} write missing from in-place path"
   );
 });
 
@@ -243,24 +245,25 @@ test('18. handleLoadFromLocker in-place path still sets activeLockerFile (020B p
 
 // ── HANDLER UPDATES: explicit user choices keep sessionStorage restore keys current ───
 
-test('19. handleBackgroundChange updates tw-fork-bg-restore (manual bg change on fork tab)', () => {
+test('19. handleBackgroundChange updates scoped tw-fork-bg-restore-${forkId} (manual bg change on fork tab)', () => {
+  // 020E: handler must write scoped key, not generic.
   assert.ok(
-    bgChangeBlock.includes("sessionStorage.setItem('tw-fork-bg-restore'"),
-    "tw-fork-bg-restore not updated in handleBackgroundChange — manual bg changes won't survive remounts"
+    bgChangeBlock.includes("tw-fork-bg-restore-${forkId}"),
+    "scoped tw-fork-bg-restore-\${forkId} not updated in handleBackgroundChange — manual bg changes won't survive remounts"
   );
 });
 
-test('20. handleBgFadeChange updates tw-fork-bgfade-restore', () => {
+test('20. handleBgFadeChange updates scoped tw-fork-bgfade-restore-${forkId}', () => {
   assert.ok(
-    bgFadeChangeBlock.includes("sessionStorage.setItem('tw-fork-bgfade-restore'"),
-    "tw-fork-bgfade-restore not updated in handleBgFadeChange"
+    bgFadeChangeBlock.includes("tw-fork-bgfade-restore-${forkId}"),
+    "scoped tw-fork-bgfade-restore-\${forkId} not updated in handleBgFadeChange"
   );
 });
 
-test('21. handleBgToneChange updates tw-fork-bgtone-restore', () => {
+test('21. handleBgToneChange updates scoped tw-fork-bgtone-restore-${forkId}', () => {
   assert.ok(
-    bgToneChangeBlock.includes("sessionStorage.setItem('tw-fork-bgtone-restore'"),
-    "tw-fork-bgtone-restore not updated in handleBgToneChange"
+    bgToneChangeBlock.includes("tw-fork-bgtone-restore-${forkId}"),
+    "scoped tw-fork-bgtone-restore-\${forkId} not updated in handleBgToneChange"
   );
 });
 

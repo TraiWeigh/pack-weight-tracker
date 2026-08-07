@@ -3989,3 +3989,52 @@ Required test sequence (from prompt):
 ```
 
 **Master history:** 019 = USER-TESTED PASS; 020/020A/020B/020C/020D = NOT USER-VERIFIED until user's post-completion test.
+
+---
+
+## Prompt 020E — Stop Cross-Tab Background Leakage + Protect Saved Appearance Data
+
+**Status: NOT USER-VERIFIED** (awaiting user acceptance test)
+
+### Starting State
+
+020D = FAIL/PARTIAL. Background/tone leaks between files/tabs via inherited sessionStorage.
+
+### Root Cause (Confirmed)
+
+`window.open()` copies the opener's entire sessionStorage to the new tab. The generic (unscoped) keys `tw-fork-bg-restore`, `tw-fork-bgfade-restore`, and `tw-fork-bgtone-restore` written by 020C were inherited by every new tab opened from the opener. The new tab's background initializer found and consumed the opener's keys, showing the wrong file's background.
+
+Example: Sierra open (forkId=AAA) → `tw-fork-bg-restore` = sierra_mountain. User opens Ray → `window.open(?savedListId=ray)` → new tab inherits `tw-fork-bg-restore=sierra_mountain`. `resolveStorageKey()` assigns forkId=BBB. Background initializer reads `tw-fork-bg-restore` → sierra_mountain → **wrong**.
+
+### Fix
+
+Replaced ALL 15 read/write sites of the three generic restore keys with **forkId-scoped keys**:
+
+- `tw-fork-bg-restore` → `` `tw-fork-bg-restore-${forkId}` ``
+- `tw-fork-bgfade-restore` → `` `tw-fork-bgfade-restore-${forkId}` ``
+- `tw-fork-bgtone-restore` → `` `tw-fork-bgtone-restore-${forkId}` ``
+
+Since each tab gets a unique forkId from `resolveStorageKey()`, inherited keys from the opener have a different suffix and are never read by the new tab.
+
+### Files Changed
+
+- `artifacts/pack-checklist/src/pages/Checklist.tsx` — 11 targeted edits (15 key sites)
+- `artifacts/pack-checklist/src/hooks/newAfterLocker020C.test.mjs` — updated 9 assertions
+- `artifacts/pack-checklist/src/hooks/savedListRestore020D.test.mjs` — updated 7 assertions + slice size
+- `artifacts/pack-checklist/src/hooks/crossTabIsolation020E.test.mjs` — new (24 tests)
+
+### Automated Test Results
+
+```
+020B: 24/24 ✅  020C: 30/30 ✅  020D: 30/30 ✅  020E: 24/24 ✅  Total: 108/108 ✅
+```
+
+Command: `cd /home/runner/workspace && node artifacts/pack-checklist/src/hooks/lockerFirstOpen020B.test.mjs && node artifacts/pack-checklist/src/hooks/newAfterLocker020C.test.mjs && node artifacts/pack-checklist/src/hooks/crossTabIsolation020E.test.mjs && cd artifacts/pack-checklist && node src/hooks/savedListRestore020D.test.mjs`
+
+### Data-Safety Confirmation
+
+No IndexedDB operations, no localStorage.clear/sessionStorage.clear, no locker-file writes, no saved-file data erased. The only change is the name pattern of three temporary sessionStorage keys.
+
+### Prompt History
+
+019 = USER-TESTED PASS | 020 = PARTIAL | 020A = PARTIAL | 020B = PARTIAL | 020C = PARTIAL/FAIL | 020D = FAIL/PARTIAL | 020E = NOT USER-VERIFIED

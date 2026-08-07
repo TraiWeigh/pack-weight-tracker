@@ -154,25 +154,26 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             sessionStorage.setItem('tw-newbg-tone',       parsed.bgTone ?? 'light');
             sessionStorage.setItem('tw-newbg-size',       parsed.bgSize ?? 'cover');
             sessionStorage.setItem('tw-newbg-palettekey', parsed.chartPaletteKey ?? '');
-            // ── Stash fork-local restore keys ────────────────────────────────
+            // ── Stash fork-local restore keys (scoped to this tab's forkId) ──────
             // tw-newseed-bg-uuid is removed here and cannot be re-read on a React
-            // remount (e.g. Clerk token refresh).  These tab-local keys let every
-            // remount recover this tab's OWN appearance instead of falling through
-            // to the shared localStorage keys, which may have been written by a
-            // different tab's Locker-open (020B fix side-effect).
-            sessionStorage.setItem('tw-fork-bg-restore',     JSON.stringify(parsed.background ?? null));
-            sessionStorage.setItem('tw-fork-bgtone-restore', parsed.bgTone ?? 'light');
-            sessionStorage.setItem('tw-fork-bgfade-restore', String(parsed.bgFade ?? 1));
+            // remount (e.g. Clerk token refresh).  Scoped keys (suffix = forkId)
+            // let remounts recover this tab's OWN appearance without consuming a
+            // key inherited from the opener tab.  window.open() copies the opener's
+            // sessionStorage to the new tab; generic (unsuffixed) keys would be
+            // read by the wrong tab on its first render.
+            sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`,     JSON.stringify(parsed.background ?? null));
+            sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`, parsed.bgTone ?? 'light');
+            sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`, String(parsed.bgFade ?? 1));
             localStorage.removeItem(`tw-newseed-bg-${forkId}`);
             return parsed.background ?? null;
           }
         }
         // ── Remount path ──────────────────────────────────────────────────────
-        // tw-newseed-bg-uuid was consumed on the first render.  Use the tab-local
-        // snapshot written above (or updated by handleLoadFromLocker /
-        // handleBackgroundChange) rather than falling through to the global
-        // BG_STORAGE_KEY, which reflects another tab's last-opened file.
-        const restore = sessionStorage.getItem('tw-fork-bg-restore');
+        // tw-newseed-bg-uuid was consumed on the first render.  Use the scoped
+        // restore key (suffixed with forkId) rather than a generic key.  Generic
+        // keys are inherited by new tabs opened via window.open() and would be
+        // consumed by the wrong tab.
+        const restore = sessionStorage.getItem(`tw-fork-bg-restore-${forkId}`);
         if (restore !== null) {
           try { return JSON.parse(restore) ?? null; } catch {}
         }
@@ -181,13 +182,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         // for storage isolation), but they are NOT newseed/New tabs.  usePackData's
         // store initializer writes tw-savedlist-bg synchronously before any useState
         // initializer runs, so we can read it here on the tab's first render.
-        // Stash to tw-fork-bg-restore so React remounts also recover the correct bg.
+        // Stash to the SCOPED restore key so React remounts also recover the correct
+        // bg without interfering with other tabs.
         try {
           const savedBg = sessionStorage.getItem('tw-savedlist-bg');
           if (savedBg !== null) {
             sessionStorage.removeItem('tw-savedlist-bg');
             const parsed = JSON.parse(savedBg) ?? null;
-            sessionStorage.setItem('tw-fork-bg-restore', JSON.stringify(parsed));
+            sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`, JSON.stringify(parsed));
             return parsed;
           }
         } catch {}
@@ -239,9 +241,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setBackground(bg);
     if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
     else localStorage.removeItem(BG_STORAGE_KEY);
-    // Keep the fork-local restore key current so remounts reflect the user's
+    // Keep the scoped restore key current so remounts reflect the user's
     // latest explicit choice, not the stale Locker-load value.
-    try { sessionStorage.setItem('tw-fork-bg-restore', JSON.stringify(bg ?? null)); } catch {}
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`, JSON.stringify(bg ?? null));
+    } catch {}
   };
 
   const [bgFade, setBgFade] = useState<number>(() => {
@@ -260,19 +265,25 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         sessionStorage.removeItem('tw-savedlist-bgfade');
         const v = parseFloat(raw);
         const result = isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
-        // Stash for remount resilience (same pattern as newseed tabs).
-        try { sessionStorage.setItem('tw-fork-bgfade-restore', String(result)); } catch {}
+        // Stash to scoped restore key for remount resilience.
+        try {
+          const forkId = sessionStorage.getItem('tw-fork-id');
+          if (forkId) sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`, String(result));
+        } catch {}
         return result;
       }
     } catch {}
     // ── Remount path for fork tabs ────────────────────────────────────────────
-    // tw-newbg-fade was consumed on first render.  Use the tab-local restore key
-    // rather than the shared localStorage key (which reflects another tab's file).
+    // tw-newbg-fade was consumed on first render.  Use the SCOPED restore key
+    // (suffixed with forkId) to avoid reading a key inherited from the opener tab.
     try {
-      const restore = sessionStorage.getItem('tw-fork-bgfade-restore');
-      if (restore !== null) {
-        const v = parseFloat(restore);
-        return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) {
+        const restore = sessionStorage.getItem(`tw-fork-bgfade-restore-${forkId}`);
+        if (restore !== null) {
+          const v = parseFloat(restore);
+          return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
+        }
       }
     } catch {}
     const s = localStorage.getItem('trailweigh:bgFade');
@@ -283,8 +294,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const handleBgFadeChange = (v: number) => {
     setBgFade(v);
     localStorage.setItem('trailweigh:bgFade', String(v));
-    // Keep fork-local restore key current so remounts use the user's latest choice.
-    try { sessionStorage.setItem('tw-fork-bgfade-restore', String(v)); } catch {}
+    // Keep the scoped restore key current so remounts use the user's latest choice.
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`, String(v));
+    } catch {}
   };
 
   const [bgTone, setBgTone] = useState<'light' | 'dark'>(() => {
@@ -300,17 +314,23 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const raw = sessionStorage.getItem('tw-savedlist-bgtone');
       if (raw !== null) {
         sessionStorage.removeItem('tw-savedlist-bgtone');
-        // Stash for remount resilience (same pattern as newseed tabs).
-        try { sessionStorage.setItem('tw-fork-bgtone-restore', raw); } catch {}
+        // Stash to scoped restore key for remount resilience.
+        try {
+          const forkId = sessionStorage.getItem('tw-fork-id');
+          if (forkId) sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`, raw);
+        } catch {}
         return raw as 'light' | 'dark';
       }
     } catch {}
     // ── Remount path for fork tabs ────────────────────────────────────────────
-    // tw-newbg-tone was consumed on first render.  Use the tab-local restore key
-    // rather than the shared localStorage key (which reflects another tab's file).
+    // tw-newbg-tone was consumed on first render.  Use the SCOPED restore key
+    // (suffixed with forkId) to avoid reading a key inherited from the opener tab.
     try {
-      const restore = sessionStorage.getItem('tw-fork-bgtone-restore');
-      if (restore !== null) return restore as 'light' | 'dark';
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) {
+        const restore = sessionStorage.getItem(`tw-fork-bgtone-restore-${forkId}`);
+        if (restore !== null) return restore as 'light' | 'dark';
+      }
     } catch {}
     return (localStorage.getItem('trailweigh:bgTone') as 'light' | 'dark') ?? 'light';
   });
@@ -318,8 +338,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const handleBgToneChange = (t: 'light' | 'dark') => {
     setBgTone(t);
     localStorage.setItem('trailweigh:bgTone', t);
-    // Keep fork-local restore key current so remounts use the user's latest choice.
-    try { sessionStorage.setItem('tw-fork-bgtone-restore', t); } catch {}
+    // Keep the scoped restore key current so remounts use the user's latest choice.
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`, t);
+    } catch {}
   };
 
   // ── Background sizing — Fill Screen (cover) or Fit Image (contain) ─────────
@@ -925,11 +948,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       // Non-fork tabs (the primary checklist tab, which has no ?newseed= in
       // its URL) still write to localStorage so a full page reload restores
       // the correct appearance.
-      const isForkTab = !!sessionStorage.getItem('tw-fork-id');
-      if (isForkTab) {
-        sessionStorage.setItem('tw-fork-bg-restore',     JSON.stringify(entry.background ?? null));
-        sessionStorage.setItem('tw-fork-bgtone-restore', restoredTone);
-        sessionStorage.setItem('tw-fork-bgfade-restore', String(restoredFade));
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      const isForkTab = !!forkId;
+      if (isForkTab && forkId) {
+        // Scoped keys: suffixed with this tab's forkId so inherited generic keys
+        // from the opener are never confused with this tab's restoration data.
+        sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`,     JSON.stringify(entry.background ?? null));
+        sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`, restoredTone);
+        sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`, String(restoredFade));
       } else {
         if (entry.background) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(entry.background));
         else localStorage.removeItem(BG_STORAGE_KEY);

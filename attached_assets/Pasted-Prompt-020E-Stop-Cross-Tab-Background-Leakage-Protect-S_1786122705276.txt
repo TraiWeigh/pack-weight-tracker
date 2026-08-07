@@ -1,0 +1,212 @@
+Prompt 020E — Stop Cross-Tab Background Leakage + Protect Saved Appearance Data
+
+Create PRE_020E_MASTER_BACKUP.md before changing anything.
+
+CURRENT USER TEST:
+020D = FAIL/PARTIAL.
+
+Expected saved states confirmed by user:
+- Sierra/Dutch/0826 → saved Sierra/mountain background + saved appearance.
+- Ray Jardine’s → saved psychedelic background + saved appearance.
+- Packlist 1 → Light mode + no background.
+- New → zero categories/items + Clear background + Light mode + no filename.
+
+VIDEO-CONFIRMED BUG:
+Gear/file identity loads correctly, but background/tone leaks between files/tabs:
+- Sierra can open with another file’s desert or psychedelic background.
+- Ray Jardine’s can open with Sierra/desert background.
+- New can inherit a saved file’s background/Dark mode.
+- Reopening/changing tabs can cause backgrounds to change again.
+
+LIKELY CAUSE TO VERIFY:
+Generic sessionStorage restore keys such as:
+- tw-fork-bg-restore
+- tw-fork-bgfade-restore
+- tw-fork-bgtone-restore
+may be copied/inherited by newly opened tabs and consumed by the wrong destination.
+
+Do NOT make another simple ordering tweak around those generic keys without proving the root cause.
+
+GOAL:
+Make New and saved-file appearance restoration deterministic and destination-specific.
+
+RULES:
+
+NEW / newseed:
+- zero categories
+- zero items
+- Clear/no active background
+- Light mode
+- no active filename
+- must never consume another file/tab’s background restore data
+
+SAVED LOCKER FILE / savedListId:
+- restore ONLY that file’s own saved categories/items
+- restore ONLY that file’s own background
+- restore its saved Light/Dark tone
+- restore fade/darken
+- restore palette
+- restore other already-supported per-file appearance state
+- restore correctly on FIRST open
+- never use another tab/file’s appearance as authoritative
+
+Opening or changing one file must never alter another file’s appearance.
+
+GLOBAL REGRESSION + DATA PROTECTION:
+Protect ALL existing TrailWeigh functionality, saved data, styling, layout, persistence, importers, Background Edit, Save/Locker, Share, calculations, responsive behavior, themes/photos, and prior prompt work unless explicitly changed here.
+
+Use the smallest reliable fix only.
+No unrelated cleanup/refactoring.
+Preserve localStorage, IndexedDB, Locker files, APIs, cross-tab functionality, user data, and saved-file compatibility.
+Inspect final diff and revert unrelated changes.
+
+STATE/DATA ISOLATION PROTECTION:
+- Never overwrite, clear, migrate, or rewrite existing Locker files merely to fix restoration.
+- Never modify/delete saved themes, custom photos, IndexedDB photo libraries, or IDs.
+- Never copy one saved file’s background/tone into another saved file.
+- New may clear only the ACTIVE workspace appearance.
+- Opening a saved file must be read-only with respect to its stored appearance until the user explicitly changes and saves it.
+- Temporary cross-tab/session restore data must never become permanent saved-file data.
+- Do not introduce a new global background/tone fallback.
+- Do not change saved-file IDs or active-file identity architecture unless absolutely required and documented first.
+- If a storage/schema migration appears necessary, STOP and report why before implementing it.
+- Preserve backward compatibility with all existing Locker files.
+- Inspect final diff specifically for new writes to saved-file/background storage and revert any unnecessary write path.
+
+DATA-SAFETY ACCEPTANCE:
+A fix is a FAIL if it stops the visible background leak by erasing, resetting, suppressing, or permanently changing any saved file’s existing appearance data.
+
+INVESTIGATE FIRST:
+Trace:
+- ?newseed=
+- ?savedListId=
+- handleLoadFromLocker
+- background initialization/restoration effects
+- sessionStorage restore keys
+- opener/new-tab behavior
+- active-file identity timing
+- saved-file background lookup
+- storage/cross-tab listeners
+
+Determine exactly which state source wins during:
+Ray → Sierra
+Sierra → Ray
+Saved file → New
+New → Saved file
+
+If generic sessionStorage restore keys can leak between tabs, replace that design with destination-specific restoration.
+
+PREFERRED ARCHITECTURE:
+Do not use generic unscoped restore keys as authoritative saved-file state.
+
+Use either:
+- saved-file appearance loaded directly by savedListId, OR
+- temporary restore data keyed to the exact destination token/file ID/newseed and consumable only by that destination.
+
+New should never depend on inherited background restore values.
+
+Do not use:
+- timeouts
+- delayed retries
+- forced reloads
+- repeated setState hacks
+- global background fallback
+
+REQUIRED TEST SEQUENCE:
+A. Open Ray Jardine’s → psychedelic background.
+B. Open Sierra once → Sierra/mountain background.
+C. Open Ray once → psychedelic background.
+D. Click New → Clear + Light + zero categories/items.
+E. Open Sierra once → Sierra/mountain background.
+F. Click New → Clear + Light.
+G. Open Packlist 1 once → Light + no background.
+H. Open Ray once → psychedelic background.
+I. Repeat the sequence several times.
+
+At every step verify:
+- correct filename
+- correct gear
+- correct background/tone
+- no refresh
+- no second open
+- no cross-file background leakage
+
+Also verify:
+- all saved themes/photos remain intact
+- File A/File B/New cannot contaminate one another’s appearance
+- importing into blank New still auto-creates required categories
+- Saved [File Name] still works
+- Scan Gear List still works
+- prior saved files remain unchanged
+
+PROTECTED (non-exhaustive):
+020 blank New categories/items; 020A Clear+Light New; 020B first-open restore intent; 019 Pack Summary + Weight Distribution panels; 018C filename pill; 017E shaking fix; 017F importer; automatic category creation on import; Background Edit/Fill/Fit/Darken/Themes/custom photos/IndexedDB/Delete Theme/Undo-Redo; Save/Save As/Locker/Reset; Hide/Preview/Imperial-Metric/Open-Close; MOVE/calculations/palette persistence; lg:grid-cols-[1fr_365px]; QTY translate-x-3; desktop/mobile layout; all saved user data.
+
+AUTOMATED TESTS:
+Add focused tests proving:
+- newseed never consumes saved-file appearance
+- savedListId restores only its own appearance
+- restore data cannot be consumed by the wrong destination
+- repeated Ray/Sierra/New/Packlist cycles are deterministic
+- no saved-file/background data is erased or rewritten
+- saved themes/data remain intact
+
+Run full suite and report exact command + pass/fail totals.
+State automated tests do not prove real browser cross-tab behavior.
+
+RENDERED/CROSS-TAB TEST:
+Use real browser tabs and reproduce the exact user video sequence. Verify first-open behavior and repeated switching. Record screenshot/video evidence if available.
+
+USER ACCEPTANCE:
+Do not claim USER-TESTED PASS.
+User will keep TrailWeigh closed while Replit works and test one fresh session afterward.
+Until user confirms, 020E = NOT USER-VERIFIED.
+
+REPORTING:
+Create workflow-reports/PROMPT_020E_REPORT.md with:
+- starting state
+- exact root cause
+- files inspected/changed
+- state-flow explanation
+- before/after behavior
+- automated/rendered results
+- data-safety verification
+- acceptance checklist
+- unresolved issues
+- exact user tests required
+
+Append COMPLETE report to TRAILWEIGH_COMPLETE_WORKFLOW.md without overwriting/truncating.
+
+Record:
+019 = USER-TESTED PASS
+020 = PARTIAL
+020A = PARTIAL
+020B = PARTIAL
+020C = PARTIAL/FAIL
+020D = FAIL/PARTIAL
+020E = NOT USER-VERIFIED
+
+ZIP:
+Create trailweigh-020E-report.zip containing exactly these four Markdown files at ZIP root:
+PROMPT_020E_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+No wrapper folder, __MACOSX, .DS_Store, backups, source code, screenshots, user data, or other zips.
+Inspect/list archive entries; exactly four.
+
+FINAL RESPONSE:
+Report:
+- exact root cause
+- files changed
+- how destination-specific restoration works
+- why New cannot inherit another tab’s background
+- why saved files cannot inherit another file’s appearance
+- confirmation no saved appearance data was erased/reset
+- confirmation saved themes remain intact
+- full automated/rendered cross-tab results
+- protected-feature checks
+- report/ZIP paths
+- exact ZIP entries
+- clear statement that user acceptance is still required

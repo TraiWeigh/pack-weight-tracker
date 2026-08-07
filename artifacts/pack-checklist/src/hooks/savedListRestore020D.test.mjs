@@ -39,7 +39,7 @@ const usePackData = readFileSync(
 // ── Extract the background initializer ───────────────────────────────────────
 const bgInitStart = checklist.indexOf("const [background, setBackground] = useState<Background | null>(() => {");
 assert.ok(bgInitStart > -1, 'background useState not found');
-const bgInit = checklist.slice(bgInitStart, bgInitStart + 3500);
+const bgInit = checklist.slice(bgInitStart, bgInitStart + 5000);
 
 // ── Extract bgFade initializer ────────────────────────────────────────────────
 const bgFadeStart = checklist.indexOf("const [bgFade, setBgFade] = useState<number>(() => {");
@@ -78,12 +78,12 @@ test(1, "bg initializer checks tw-savedlist-bg inside if(forkId) block (before r
   "tw-savedlist-bg check not found before return null — savedListId bg will be lost"
 );
 
-// 2. After consuming tw-savedlist-bg, stash to tw-fork-bg-restore
-// The savedBg block must also set tw-fork-bg-restore
+// 2. After consuming tw-savedlist-bg, stash to scoped tw-fork-bg-restore-${forkId} (scoped in 020E)
+// The savedBg block must also set the scoped tw-fork-bg-restore-${forkId} key
 const savedBgBlock = bgInit.slice(savedBgIdx, bgInit.indexOf('return null;'));
-test(2, "bg initializer stashes tw-fork-bg-restore after consuming tw-savedlist-bg",
-  savedBgBlock.includes("'tw-fork-bg-restore'"),
-  "tw-fork-bg-restore stash missing — savedListId tab bg will be lost on Clerk remount"
+test(2, "bg initializer stashes scoped tw-fork-bg-restore-${forkId} after consuming tw-savedlist-bg",
+  savedBgBlock.includes("tw-fork-bg-restore-${forkId}"),
+  "scoped tw-fork-bg-restore stash missing — savedListId tab bg will be lost on Clerk remount or inherited by wrong tab"
 );
 
 // 3. tw-savedlist-bg is removed when found (removeItem)
@@ -92,18 +92,18 @@ test(3, "bg initializer removes tw-savedlist-bg after consuming it",
   "tw-savedlist-bg not removed — will be re-read on remount with stale value"
 );
 
-// 4. The existing tw-fork-bg-restore remount path is still present (020C preserved)
-test(4, "bg initializer still checks tw-fork-bg-restore on remount (020C preserved)",
-  bgInit.includes("'tw-fork-bg-restore'") &&
-  bgInit.indexOf("getItem('tw-fork-bg-restore')") < savedBgIdx,
-  "tw-fork-bg-restore remount check missing or wrong order"
+// 4. The scoped remount path is still present (020C preserved, scoped in 020E)
+test(4, "bg initializer still checks scoped tw-fork-bg-restore-${forkId} on remount (020C+E preserved)",
+  bgInit.includes("tw-fork-bg-restore-${forkId}") &&
+  bgInit.indexOf("tw-fork-bg-restore-${forkId}") < savedBgIdx,
+  "scoped tw-fork-bg-restore remount check missing or wrong order"
 );
 
-// 5. newseed path still stashes tw-fork-bg-restore (020C preserved)
+// 5. newseed path still stashes scoped tw-fork-bg-restore-${forkId} (020C preserved, scoped in 020E)
 const newseedBlock = bgInit.slice(0, bgInit.indexOf('// ── Remount path'));
-test(5, "bg initializer still stashes tw-fork-bg-restore from newseed bundle (020C preserved)",
-  newseedBlock.includes("'tw-fork-bg-restore'"),
-  "newseed stash of tw-fork-bg-restore missing — 020C regression"
+test(5, "bg initializer still stashes scoped tw-fork-bg-restore-${forkId} from newseed bundle (020C+E preserved)",
+  newseedBlock.includes("tw-fork-bg-restore-${forkId}"),
+  "newseed stash of scoped tw-fork-bg-restore missing — 020C regression"
 );
 
 // 6. newseed path still returns null when no newseed-bg key exists (020C Clear preserved)
@@ -121,20 +121,20 @@ test(7, "bgFade initializer still checks tw-savedlist-bgfade (first render path 
   "tw-savedlist-bgfade check missing — savedListId fade will not restore"
 );
 
-// 8. After consuming tw-savedlist-bgfade, stash to tw-fork-bgfade-restore (NEW in 020D)
+// 8. After consuming tw-savedlist-bgfade, stash to scoped tw-fork-bgfade-restore-${forkId} (020D new, scoped in 020E)
 const savedFadeBlock = bgFadeInit.slice(
   bgFadeInit.indexOf("'tw-savedlist-bgfade'"),
   bgFadeInit.indexOf("// ── Remount path for fork tabs")
 );
-test(8, "bgFade initializer stashes tw-fork-bgfade-restore after consuming tw-savedlist-bgfade (020D new)",
-  savedFadeBlock.includes("'tw-fork-bgfade-restore'"),
-  "tw-fork-bgfade-restore stash missing — savedListId fade lost on Clerk remount"
+test(8, "bgFade initializer stashes scoped tw-fork-bgfade-restore-${forkId} after consuming tw-savedlist-bgfade",
+  savedFadeBlock.includes("tw-fork-bgfade-restore-${forkId}"),
+  "scoped tw-fork-bgfade-restore stash missing — savedListId fade lost on Clerk remount or inherited by wrong tab"
 );
 
-// 9. tw-fork-bgfade-restore remount path still present (020C preserved)
-test(9, "bgFade initializer still checks tw-fork-bgfade-restore on remount (020C preserved)",
-  bgFadeInit.includes("getItem('tw-fork-bgfade-restore')"),
-  "tw-fork-bgfade-restore remount check missing"
+// 9. scoped tw-fork-bgfade-restore remount path still present (020C preserved, scoped in 020E)
+test(9, "bgFade initializer still checks scoped tw-fork-bgfade-restore-${forkId} on remount (020C+E preserved)",
+  bgFadeInit.includes("tw-fork-bgfade-restore-${forkId}"),
+  "scoped tw-fork-bgfade-restore remount check missing"
 );
 
 // ── bgTone initializer — savedListId path ────────────────────────────────────
@@ -145,20 +145,20 @@ test(10, "bgTone initializer still checks tw-savedlist-bgtone (first render path
   "tw-savedlist-bgtone check missing — savedListId tone will not restore"
 );
 
-// 11. After consuming tw-savedlist-bgtone, stash to tw-fork-bgtone-restore (NEW in 020D)
+// 11. After consuming tw-savedlist-bgtone, stash to scoped tw-fork-bgtone-restore-${forkId} (020D new, scoped in 020E)
 const savedToneBlock = bgToneInit.slice(
   bgToneInit.indexOf("'tw-savedlist-bgtone'"),
   bgToneInit.indexOf("// ── Remount path for fork tabs")
 );
-test(11, "bgTone initializer stashes tw-fork-bgtone-restore after consuming tw-savedlist-bgtone (020D new)",
-  savedToneBlock.includes("'tw-fork-bgtone-restore'"),
-  "tw-fork-bgtone-restore stash missing — savedListId tone lost on Clerk remount"
+test(11, "bgTone initializer stashes scoped tw-fork-bgtone-restore-${forkId} after consuming tw-savedlist-bgtone",
+  savedToneBlock.includes("tw-fork-bgtone-restore-${forkId}"),
+  "scoped tw-fork-bgtone-restore stash missing — savedListId tone lost on Clerk remount or inherited by wrong tab"
 );
 
-// 12. tw-fork-bgtone-restore remount path still present (020C preserved)
-test(12, "bgTone initializer still checks tw-fork-bgtone-restore on remount (020C preserved)",
-  bgToneInit.includes("getItem('tw-fork-bgtone-restore')"),
-  "tw-fork-bgtone-restore remount check missing"
+// 12. scoped tw-fork-bgtone-restore remount path still present (020C preserved, scoped in 020E)
+test(12, "bgTone initializer still checks scoped tw-fork-bgtone-restore-${forkId} on remount (020C+E preserved)",
+  bgToneInit.includes("tw-fork-bgtone-restore-${forkId}"),
+  "scoped tw-fork-bgtone-restore remount check missing"
 );
 
 // ── usePackData — savedListId stash confirmed ────────────────────────────────
@@ -281,12 +281,12 @@ test(29, "parseV5 __blank branch preserved (020 fix intact)",
   "__blank branch missing from parseV5"
 );
 
-// 30. handleBackgroundChange updates tw-fork-bg-restore (020C)
+// 30. handleBackgroundChange updates scoped tw-fork-bg-restore-${forkId} (020C preserved, scoped in 020E)
 const bgChangeStart = checklist.indexOf('const handleBackgroundChange = ');
 const bgChangeBody = checklist.slice(bgChangeStart, bgChangeStart + 900);
-test(30, "handleBackgroundChange updates tw-fork-bg-restore on explicit change (020C preserved)",
-  bgChangeBody.includes("'tw-fork-bg-restore'"),
-  "tw-fork-bg-restore update missing from handleBackgroundChange"
+test(30, "handleBackgroundChange updates scoped tw-fork-bg-restore-${forkId} on explicit change (020C+E preserved)",
+  bgChangeBody.includes("tw-fork-bg-restore-${forkId}"),
+  "scoped tw-fork-bg-restore update missing from handleBackgroundChange"
 );
 
 // ── Summary ──────────────────────────────────────────────────────────────────

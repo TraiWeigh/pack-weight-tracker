@@ -69,6 +69,8 @@ plain JS so tests can run against source changes immediately.
 | Move-item fixture | Inline JS object in `moveItem.test.mjs` | Four-category store (Backpack, Clothing Packed, Kitchen Gear, Cook Set) |
 | Pie-color fixture | Inline JS objects in `pieColor.test.mjs` | LockerEntry builders using inlined save/load helpers |
 
+| `crossTabIsolation020E.test.mjs` | Cross-tab background isolation (Prompt 020E): no unscoped generic restore keys exist — all setItem/getItem for tw-fork-bg-restore, tw-fork-bgfade-restore, tw-fork-bgtone-restore use forkId-scoped template-literal keys (tests 1–9); background initializer reads tw-fork-id before constructing scoped key — forkId in scope at stash time (10); handleLoadFromLocker reads forkId and writes all three scoped keys (11–14); all three change handlers read tw-fork-id and write scoped keys (15–17); newseed remount still returns null/Clear as final fallback (18); savedListId path reads tw-savedlist-bg before scoped stash — correct order (19–20); no localStorage.clear or sessionStorage.clear added (21–22); resolveStorageKey still produces unique forkIds for newseed and savedListId tabs (23–24) |
+
 ## Framework
 
 Node.js built-in runner — no additional test dependencies.

@@ -1,0 +1,161 @@
+Prompt 020E — Stop Cross-Tab Background Leakage
+
+Create PRE_020E_MASTER_BACKUP.md before changing anything.
+
+CURRENT USER TEST:
+020D = FAIL/PARTIAL.
+
+Video-confirmed expected states:
+- Sierra/Dutch/0826 → its saved Sierra/mountain background + saved appearance.
+- Ray Jardine’s → its saved psychedelic background + saved appearance.
+- Packlist 1 → Light mode + no background.
+- New → zero categories/items + Clear background + Light mode + no filename.
+
+VIDEO-CONFIRMED BUG:
+File identity/gear load correctly, but background/tone state leaks between tabs/files:
+- Sierra can open with another file’s desert or psychedelic background.
+- Ray Jardine’s can open with Sierra/desert background.
+- New can inherit a saved file’s background/Dark mode.
+- Reopening/changing tabs can cause backgrounds to switch again.
+
+LIKELY ARCHITECTURE ISSUE TO VERIFY:
+020D currently uses generic sessionStorage restore keys such as:
+- tw-fork-bg-restore
+- tw-fork-bgfade-restore
+- tw-fork-bgtone-restore
+
+A newly opened browser tab can inherit/copied opener sessionStorage state, so generic restore values may be applied to the wrong destination file/tab.
+
+Do NOT make another ordering tweak around those generic keys without proving the root cause.
+
+GOAL:
+Make background/appearance restoration deterministic and destination-specific.
+
+RULES:
+1. New/newseed:
+   - always Clear background
+   - always Light mode
+   - zero categories/items
+   - no active filename
+
+2. Saved Locker file/savedListId:
+   - restore ONLY that saved file’s own stored appearance on FIRST open
+   - background
+   - Light/Dark tone
+   - fade/darken
+   - palette
+   - other already-supported per-file appearance state
+   - never use another tab/file’s appearance as authoritative
+
+3. Opening/changing one file must never alter another file’s appearance.
+
+4. Saved themes/photos/libraries must never be deleted or modified by this fix.
+
+GLOBAL REGRESSION PROTECTION:
+Protect ALL existing TrailWeigh functionality, saved data, storage, importers, Background Edit, Save/Locker, Share, calculations, layouts, responsive behavior, themes/photos, and all prior prompt work unless explicitly changed here. Smallest reliable fix only. No unrelated cleanup/refactoring. Preserve localStorage, IndexedDB, Locker data, APIs, cross-tab functionality, and user data. Inspect final diff and revert unrelated changes.
+
+INVESTIGATE FIRST:
+Trace:
+- ?newseed=
+- ?savedListId=
+- handleLoadFromLocker
+- background initialization/restoration effects
+- sessionStorage fork restore keys
+- opener/new-tab behavior
+- active-file identity timing
+- saved-file background lookup
+- storage/cross-tab listeners
+
+Determine exactly which state source wins during:
+Ray → Sierra
+Sierra → Ray
+Saved file → New
+New → Saved file
+
+If generic sessionStorage keys can leak between tabs, replace that design with destination-specific restore state.
+
+PREFERRED ARCHITECTURE:
+Do not use generic unscoped restore keys as the authoritative source for a saved file.
+
+Use one of these only if consistent with the existing architecture:
+- saved-file appearance loaded directly by savedListId, OR
+- temporary restore data keyed to the exact destination token/file ID/newseed and consumed only by that destination.
+
+A destination must never consume restore data created for another file/tab.
+
+New should not depend on inherited background restore values at all.
+
+Do not use:
+- timeouts
+- delayed retries
+- forced reloads
+- repeated setState hacks
+- global background fallback
+
+REQUIRED TEST SEQUENCE:
+A. Open Ray Jardine’s → psychedelic background.
+B. Open Sierra once → Sierra/mountain background.
+C. Open Ray once → psychedelic background.
+D. Click New → Clear + Light + zero categories.
+E. Open Sierra once → Sierra/mountain.
+F. Click New → Clear + Light.
+G. Open Packlist 1 once → Light + no background.
+H. Open Ray once → psychedelic.
+I. Repeat this cycle several times.
+
+At every step:
+- correct filename
+- correct gear
+- correct background/tone
+- no refresh
+- no second open
+- no background leakage
+
+Also verify:
+- saved themes/photos still exist
+- each saved file remains unchanged
+- importing into blank New still auto-creates needed categories
+- Saved [File Name] still works
+- Scan Gear List still works
+
+PROTECTED (non-exhaustive):
+020 blank New categories; 020A Clear+Light New; 020B first-open restore intent; 019 sidebar panels; 018C filename pill; 017E shaking fix; 017F importer; automatic category creation on import; Background Edit/Fill/Fit/Darken/Themes/custom photos/IndexedDB/Delete Theme/Undo-Redo; Save/Save As/Locker/Reset; Hide/Preview/Imperial-Metric/Open-Close; MOVE/calculations/palette persistence; lg:grid-cols-[1fr_365px]; QTY translate-x-3; desktop/mobile layout; all saved files.
+
+AUTOMATED TESTS:
+Add focused tests for:
+- newseed never consumes saved-file appearance
+- savedListId restores only its own appearance
+- restore state cannot be consumed by the wrong destination
+- repeated Ray/Sierra/New/Packlist cycles remain deterministic
+- themes/data remain intact
+Run full suite; report exact command and pass/fail totals. Automated tests do not prove browser cross-tab behavior.
+
+RENDERED/CROSS-TAB TEST:
+Use real browser tabs and reproduce the exact user video sequence. Verify first-open behavior and repeated switching. Record screenshot/video evidence if available.
+
+USER ACCEPTANCE:
+Do not claim USER-TESTED PASS. User will keep TrailWeigh closed while Replit works and test one fresh session afterward. Until user confirmation, 020E = NOT USER-VERIFIED.
+
+REPORTING:
+Create workflow-reports/PROMPT_020E_REPORT.md with starting state, exact root cause, files inspected/changed, state-flow explanation, before/after behavior, automated/rendered results, acceptance checklist, unresolved issues, and exact user tests required. Append COMPLETE report to TRAILWEIGH_COMPLETE_WORKFLOW.md without overwriting/truncating.
+
+Record:
+019 = USER-TESTED PASS
+020 = PARTIAL
+020A = PARTIAL
+020B = PARTIAL
+020C = PARTIAL/FAIL
+020D = FAIL/PARTIAL
+020E = NOT USER-VERIFIED
+
+ZIP:
+Create trailweigh-020E-report.zip containing exactly these four Markdown files at ZIP root:
+PROMPT_020E_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+No wrapper folder, __MACOSX, .DS_Store, backups, source code, screenshots, user data, or other zips. Inspect/list entries; exactly four.
+
+FINAL RESPONSE:
+Report exact root cause; files changed; how destination-specific appearance restoration works; why New can no longer inherit another tab’s background; why saved files can no longer inherit another file’s appearance; confirmation saved themes remain intact; full automated/rendered cross-tab results; protected-feature checks; report/ZIP paths and exact ZIP entries; clearly state user acceptance still required.
