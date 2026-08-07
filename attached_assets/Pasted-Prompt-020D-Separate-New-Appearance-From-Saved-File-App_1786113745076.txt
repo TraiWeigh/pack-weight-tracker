@@ -1,0 +1,126 @@
+Prompt 020D — Separate New Appearance From Saved-File Appearance
+
+Create PRE_020D_MASTER_BACKUP.md before changing anything.
+
+CURRENT USER TEST:
+020C = PARTIAL/FAIL.
+
+PASS:
+- Random backgrounds after clicking New are gone.
+- New reliably opens with zero categories/items, Clear background, and Light mode.
+
+FAIL:
+- Saved Locker files no longer restore their saved backgrounds correctly.
+
+GOAL:
+New and saved-file opening must use two different deterministic rules:
+
+NEW:
+- zero categories/items
+- Clear/no active background
+- Light mode
+- no active filename
+
+SAVED LOCKER FILE:
+- restore that file’s own saved categories/items
+- restore its own saved background
+- restore its own Light/Dark mode
+- restore its saved fade/darken
+- restore its saved palette and other already-supported per-file appearance state
+- restore correctly on the FIRST open
+
+GLOBAL REGRESSION PROTECTION:
+Protect ALL existing TrailWeigh functionality, saved data, themes/photos, storage, importers, Save/Locker, Background Edit, calculations, Share, responsive layout, and all prior work unless explicitly changed here. Smallest possible fix only. No unrelated cleanup/refactoring. Preserve localStorage, IndexedDB, Locker files, custom themes/photos, cross-tab behavior, APIs, and user data. Inspect final diff and revert unrelated changes.
+
+ROOT ISSUE TO INVESTIGATE:
+020C appears to have fixed random backgrounds by making a fork/new tab without a restore snapshot fall back to null/Clear. That may now be clearing saved-file backgrounds too.
+
+Do not simply restore the old global-background fallback because that caused random backgrounds.
+
+Instead distinguish the intent of the tab/open path.
+
+Investigate current URL/state paths such as:
+- ?newseed=
+- ?savedListId=
+- Locker open/fork-tab path
+- background restore snapshot
+- active-file identity
+- background initialization effects
+
+EXPECTED RULE:
+If tab/request represents New:
+→ Clear background + Light mode.
+
+If tab/request represents a saved Locker file:
+→ restore that saved file’s own appearance.
+
+Do not treat both paths as the same generic fork tab.
+
+No timeouts, delayed retries, forced reloads, or duplicate setState calls as a workaround.
+
+SAVED THEMES MUST REMAIN:
+New clears only the ACTIVE background. Never delete/modify:
+- built-in Landscapes
+- custom themes
+- uploaded photos
+- IndexedDB photo data
+- saved theme libraries
+
+REQUIRED USER-FLOW TEST:
+1. Open Sierra with its saved background/Dark mode.
+2. Click New → blank/Clear/Light.
+3. Open Sierra ONCE → Sierra background/Dark mode restore immediately.
+4. Click New → blank/Clear/Light again.
+5. Open File B with a different background → File B restores immediately.
+6. Click New → blank/Clear/Light.
+7. Open Sierra again → Sierra restores immediately.
+8. Repeat cycle several times.
+9. No random background may ever appear on New.
+10. No saved-file background may ever be lost on open.
+11. All saved themes/photos remain present.
+12. Import into blank New still auto-creates needed categories.
+13. Original saved files remain unchanged.
+
+IMPORTANT:
+If a saved file does not actually store a specific appearance property per file, do not invent behavior. Document that separately. But background and Light/Dark restoration that already worked before 020C must be restored.
+
+PROTECTED (non-exhaustive):
+020C deterministic blank New behavior; 020B first-open saved-file restoration; automatic category creation on import; Scan Gear List/PDF/Word/Excel/Numbers; themes/custom photos/IndexedDB; Background Edit/Fill/Fit/Darken/Delete Theme/Undo-Redo; 019 separate/collapsible Pack Summary + Weight Distribution; 018C filename pill; Saved [File Name]; Save/Save As/Locker/Reset; Hide/Preview/Imperial-Metric/Open-Close; MOVE/calculations/palette persistence; lg:grid-cols-[1fr_365px]; QTY translate-x-3; desktop/mobile layout; all saved user data.
+
+AUTOMATED TESTS:
+Add focused tests proving:
+- newseed path initializes Clear + Light
+- savedListId/Locker path restores that saved file’s background/tone
+- repeated Saved → New → Saved cycles remain deterministic
+- no global background leaks into New
+- saved themes/data remain intact
+Run full suite and report exact command + pass/fail totals. Automated tests do not prove rendered appearance.
+
+RENDERED TEST:
+Run the exact Sierra → New → Sierra → New → File B → New → Sierra sequence in one fresh preview. Confirm every New is blank and every saved file restores its own appearance on first open.
+
+USER ACCEPTANCE:
+Do not claim USER-TESTED PASS. User keeps TrailWeigh closed while Replit works and tests one fresh preview afterward. Until confirmed, 020D = NOT USER-VERIFIED.
+
+REPORTING:
+Create workflow-reports/PROMPT_020D_REPORT.md with starting state, exact root cause, files inspected/changed, before/after behavior, automated/rendered results, acceptance checklist, unresolved issues, and exact user tests required. Append COMPLETE report to TRAILWEIGH_COMPLETE_WORKFLOW.md without overwriting/truncating.
+
+Record:
+019 = USER-TESTED PASS
+020 = PARTIAL
+020A = PARTIAL
+020B = PARTIAL
+020C = PARTIAL/FAIL
+020D = NOT USER-VERIFIED
+
+ZIP:
+Create trailweigh-020D-report.zip containing exactly these four Markdown files at ZIP root:
+PROMPT_020D_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+No wrapper folder, __MACOSX, .DS_Store, backups, source code, screenshots, user data, or other zips. Inspect and list all entries; exactly four.
+
+FINAL RESPONSE:
+Report root cause; files changed; how New and saved-file paths are now distinguished; confirmation every New stays Clear+Light; confirmation saved files restore their own background/tone on first open; confirmation saved themes remain intact; full automated/rendered results; protected-feature checks; report/ZIP paths and exact ZIP entries; clearly state user acceptance still required.

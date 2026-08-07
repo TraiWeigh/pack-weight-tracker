@@ -176,8 +176,22 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         if (restore !== null) {
           try { return JSON.parse(restore) ?? null; } catch {}
         }
-        // No snapshot (pre-fix fork tab, or browser crash-recovery).
-        // Return null — the safe, Clear default for any New/fork tab.
+        // ── savedListId path ──────────────────────────────────────────────────
+        // ?savedListId= tabs also set tw-fork-id (they share the fork mechanism
+        // for storage isolation), but they are NOT newseed/New tabs.  usePackData's
+        // store initializer writes tw-savedlist-bg synchronously before any useState
+        // initializer runs, so we can read it here on the tab's first render.
+        // Stash to tw-fork-bg-restore so React remounts also recover the correct bg.
+        try {
+          const savedBg = sessionStorage.getItem('tw-savedlist-bg');
+          if (savedBg !== null) {
+            sessionStorage.removeItem('tw-savedlist-bg');
+            const parsed = JSON.parse(savedBg) ?? null;
+            sessionStorage.setItem('tw-fork-bg-restore', JSON.stringify(parsed));
+            return parsed;
+          }
+        } catch {}
+        // No snapshot — default to Clear (correct for newseed/New tabs on remount).
         return null;
       }
     } catch {}
@@ -245,7 +259,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       if (raw !== null) {
         sessionStorage.removeItem('tw-savedlist-bgfade');
         const v = parseFloat(raw);
-        return isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
+        const result = isNaN(v) ? 1 : Math.min(1, Math.max(0, v));
+        // Stash for remount resilience (same pattern as newseed tabs).
+        try { sessionStorage.setItem('tw-fork-bgfade-restore', String(result)); } catch {}
+        return result;
       }
     } catch {}
     // ── Remount path for fork tabs ────────────────────────────────────────────
@@ -283,6 +300,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const raw = sessionStorage.getItem('tw-savedlist-bgtone');
       if (raw !== null) {
         sessionStorage.removeItem('tw-savedlist-bgtone');
+        // Stash for remount resilience (same pattern as newseed tabs).
+        try { sessionStorage.setItem('tw-fork-bgtone-restore', raw); } catch {}
         return raw as 'light' | 'dark';
       }
     } catch {}

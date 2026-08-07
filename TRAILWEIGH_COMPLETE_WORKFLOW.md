@@ -3922,3 +3922,70 @@ Required test sequence:
 ```
 
 **Master history:** 019 = USER-TESTED PASS; 020/020A/020B/020C = NOT USER-VERIFIED until user's post-completion test.
+
+---
+
+## Prompt 020D — Separate New Appearance From Saved-File Appearance
+
+### Starting State
+
+020C = PARTIAL/FAIL. Confirmed working: New reliably opens with zero categories/items, Clear background, Light mode — random backgrounds after clicking New are gone. Confirmed failing: Saved Locker files opened in a new tab (`?savedListId=`) no longer restore their own background.
+
+### Root Cause
+
+`resolveStorageKey()` in `usePackData.ts` sets `tw-fork-id` for **both** `?newseed=` (New) and `?savedListId=` tabs — both need isolated fork storage keys for data isolation. This is correct architecture, but it meant the 020C background initializer treated both paths identically.
+
+020C's `if (forkId)` block:
+1. Tries to read `tw-newseed-bg-{forkId}` → found for New tabs, not for savedListId
+2. Checks `tw-fork-bg-restore` → not set for savedListId first render
+3. **Returns `null`** → savedListId tab shows Clear instead of file's background ❌
+
+The existing `tw-savedlist-bg` check at the end of the background initializer was **dead code** — it was placed outside the `if (forkId)` block but all fork tabs returned null before reaching it.
+
+bgFade and bgTone initializers DID have `tw-savedlist-bgfade/bgtone` checks and read them correctly on first render, but never stashed the values to `tw-fork-bgfade/bgtone-restore` — so Clerk remounts fell through to global localStorage with wrong values.
+
+### The Fix — Three Targeted Changes
+
+**1. Background initializer**: Inside the `if (forkId)` block, between the `tw-fork-bg-restore` check and `return null`, add a `tw-savedlist-bg` check. When found: remove the key, stash value to `tw-fork-bg-restore` (remount resilience), return the background.
+
+**2. bgFade initializer**: After consuming `tw-savedlist-bgfade`, also stash to `tw-fork-bgfade-restore` so remounts find the file's fade value.
+
+**3. bgTone initializer**: After consuming `tw-savedlist-bgtone`, also stash to `tw-fork-bgtone-restore` so remounts find the file's tone.
+
+Result: `?newseed=` tabs get Clear/Light (no savedlist keys set, no fork-bg-restore → falls through to `return null`). `?savedListId=` tabs get the file's own background/tone/fade (both on first render and remounts).
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | Background initializer: tw-savedlist-bg check + fork-bg-restore stash inside if(forkId); bgFade: stash fork-bgfade-restore; bgTone: stash fork-bgtone-restore |
+| `artifacts/pack-checklist/src/hooks/savedListRestore020D.test.mjs` | Created — 30 new tests |
+| `artifacts/pack-checklist/src/hooks/newAfterLocker020C.test.mjs` | Test 5 assertion updated: use `localStorage.getItem(BG_STORAGE_KEY)` not bare `BG_STORAGE_KEY` (the bare string appears in comments inside the fork block) |
+| `package.json` | Added savedListRestore020D.test.mjs to test chain |
+
+### Automated Test Results
+
+**1101 passed / 0 failed** (1071 prior + 30 new 020D tests). All 30 pass.
+
+### Required User Live-Test
+
+**✅ Prompt 020D implementation is complete. App is ready for your fresh post-completion test.**
+
+```
+Required test sequence (from prompt):
+ 1. Open Sierra with its saved background/Dark mode
+ 2. Click New → blank/Clear/Light
+ 3. Open Sierra ONCE → Sierra background/Dark mode restore immediately
+ 4. Click New → blank/Clear/Light again
+ 5. Open File B with a different background → File B restores immediately
+ 6. Click New → blank/Clear/Light
+ 7. Open Sierra again → Sierra restores immediately
+ 8. Repeat cycle several times
+ 9. No random background may ever appear on New
+10. No saved-file background may ever be lost on open
+11. All saved themes/photos remain present
+12. Import into blank New still auto-creates needed categories
+13. Original saved files remain unchanged
+```
+
+**Master history:** 019 = USER-TESTED PASS; 020/020A/020B/020C/020D = NOT USER-VERIFIED until user's post-completion test.

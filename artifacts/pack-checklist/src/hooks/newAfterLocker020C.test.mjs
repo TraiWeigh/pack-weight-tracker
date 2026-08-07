@@ -139,12 +139,21 @@ test('4. bg initializer checks tw-fork-bg-restore on remount (before global BG_S
 });
 
 test('5. bg initializer returns null as safe default when no fork snapshot exists (not global BG_STORAGE_KEY)', () => {
-  // The fork path should end with "return null" rather than falling through to BG_STORAGE_KEY
-  const forkBlockEnd = bgInitBlock.indexOf('} catch {}', bgInitBlock.indexOf('tw-fork-id'));
-  const forkSection  = bgInitBlock.slice(0, forkBlockEnd + 200);
+  // The fork path must contain "return null" BEFORE the actual localStorage.getItem(BG_STORAGE_KEY)
+  // call in the non-fork path.  Note: BG_STORAGE_KEY also appears in inline comments inside the
+  // fork block (e.g. "// rather than falling through to the global BG_STORAGE_KEY") — we must
+  // search for the *call* not the bare string.  020D added a tw-savedlist-bg check between
+  // tw-fork-bg-restore and return null, so we look at the whole fork section.
+  const forkIdIdx       = bgInitBlock.indexOf('tw-fork-id');
+  const bgGetCallIdx    = bgInitBlock.indexOf('localStorage.getItem(BG_STORAGE_KEY)');
+  const returnNullIdx   = bgInitBlock.indexOf('return null;', forkIdIdx);
+  assert.ok(forkIdIdx > -1, 'tw-fork-id not found in bg initializer');
+  assert.ok(returnNullIdx > -1, 'return null not found after tw-fork-id in bg initializer');
+  // localStorage.getItem(BG_STORAGE_KEY) must not exist in the fork path (or must appear
+  // after return null — i.e. in the non-fork path).
   assert.ok(
-    forkSection.includes('return null;'),
-    'fork tab should return null when no snapshot available — not fall through to global BG_STORAGE_KEY'
+    bgGetCallIdx === -1 || returnNullIdx < bgGetCallIdx,
+    'fork tab should return null before reaching the global localStorage.getItem(BG_STORAGE_KEY) fallback'
   );
 });
 
