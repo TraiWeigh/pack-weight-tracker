@@ -545,21 +545,22 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       meta: {},
     }));
 
-    // 2. Write background settings alongside so the new tab opens with the same
-    //    background, fill/fit mode, tone, and fade as the current tab.
-    //    chartPaletteKey is bundled here so the new tab inherits the same
-    //    Weight Distribution palette as the source file.
+    // 2. Write background settings.  New always opens with a Clear background
+    //    (background: null) and Light mode (bgTone: 'light') regardless of what
+    //    the source tab has — a genuinely fresh workspace.  Background libraries
+    //    (IndexedDB photos, built-in landscapes, custom themes) are untouched.
+    //    chartPaletteKey is still inherited so chart colours feel consistent.
     localStorage.setItem(`tw-newseed-bg-${uuid}`, JSON.stringify({
-      background: background ?? null,
-      bgFade,
-      bgTone,
-      bgSize,
+      background: null,
+      bgFade: 1,
+      bgTone: 'light',
+      bgSize: 'cover',
       chartPaletteKey,
     }));
 
     const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
     window.open(`${window.location.origin}${base}/checklist?newseed=${uuid}`, '_blank');
-  }, [background, bgFade, bgTone, bgSize, chartPaletteKey]);
+  }, [chartPaletteKey]);
 
   // ── Keyboard shortcuts (Ctrl/Cmd+Z, Ctrl/Cmd+Y, Ctrl/Cmd+Shift+Z) ────────
   useEffect(() => {

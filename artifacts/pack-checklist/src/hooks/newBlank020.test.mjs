@@ -137,16 +137,16 @@ test('13. Background bundle has `background` key', () => {
   assert.ok(handleNewBody.includes('background:'), 'background key missing from bg bundle in handleNew');
 });
 
-test('14. Background bundle has `bgFade` key', () => {
-  assert.ok(handleNewBody.includes('bgFade,'), 'bgFade missing from bg bundle');
+test('14. Background bundle has `bgFade` key (literal 1 — Task #41: no longer inherited)', () => {
+  assert.ok(handleNewBody.includes('bgFade:') || handleNewBody.includes('bgFade,'), 'bgFade missing from bg bundle');
 });
 
-test('15. Background bundle has `bgTone` key', () => {
-  assert.ok(handleNewBody.includes('bgTone,'), 'bgTone missing from bg bundle');
+test('15. Background bundle has `bgTone` key (literal "light" — Task #41: no longer inherited)', () => {
+  assert.ok(handleNewBody.includes('bgTone:') || handleNewBody.includes('bgTone,'), 'bgTone missing from bg bundle');
 });
 
-test('16. Background bundle has `bgSize` key', () => {
-  assert.ok(handleNewBody.includes('bgSize,'), 'bgSize missing from bg bundle');
+test('16. Background bundle has `bgSize` key (literal "cover" — Task #41: no longer inherited)', () => {
+  assert.ok(handleNewBody.includes('bgSize:') || handleNewBody.includes('bgSize,'), 'bgSize missing from bg bundle');
 });
 
 // ── parseV5() — __blank BYPASSES mergeDefaultCategories ──────────────────────
