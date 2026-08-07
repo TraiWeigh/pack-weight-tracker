@@ -4082,37 +4082,68 @@ The Clerk auth gate (`if (!isLoaded) return <spinner>`) blocks rendering of `Che
 ## Prompt 021 — Share Link Repair
 
 **Status:** COMPLETE — NOT USER-VERIFIED  
-**Date:** 2026-08-07
-
-### What Was Done
-
-Five interrelated fixes to the Share Link feature:
-
-1. **Crash fix** — `SharedChecklistPage` rendered `GearCategory` without the required `order` prop (and `moveItem`). `GearRow.tsx:48` crashed: `undefined.filter(...)` on every shared-view load.
-2. **normalizeSnapshot completeness** — `normalizeSnapshot` omitted `name` and `unit` from its returned `SharePayload`, causing the shared-view banner to always show the generic text and ignoring the sender's unit preference.
-3. **Empty-list Share UX** — replaced the "Nothing to share" destructive toast with a grayed-out `aria-disabled` button that shows an explanatory message on desktop hover/focus (CSS only) and mobile tap (state-driven).
-4. **Save-before-sharing warning** — "Copy Link" now sets `shareStep='warning'`, showing a reminder and requiring "Copy Link Anyway" before any link is generated.
-5. **TypeScript fix** — `BackgroundPickerButton` was missing the required `panelOpen` prop in `SharedChecklistPage`.
+**Date:** 2026-08-07  
+**020F functional:** USER-TESTED PASS (preserved — not touched by 021)
 
 ### Root Cause — The Crash
 
-`GearCategory` at line 723 of `SharedChecklistContent` was called without `order={store.order}`. The TypeScript error was silent at runtime, and the first `GearRow` render called `undefined.filter(c => c !== category)`, crashing the page. `moveItem` was also absent; the move-to dropdown would have crashed if used.
+`GearRow.tsx:48`: `const otherCategories = order.filter(c => c !== category)`
+
+`SharedChecklistContent` called `GearCategory` at render line 723 **without passing `order={store.order}`**. `GearCategoryProps` declares `order: string[]` as required; TypeScript emitted a compile error but the Vite dev server still executed the code. At runtime, `order` was `undefined` inside every `GearRow`, crashing on `.filter()`. The same call also omitted `moveItem`, which would have crashed on any use of the "Move to" dropdown.
+
+Confirmed by browser console log (timestamps from workflow log before fix):
+```
+[RUNTIME_ERROR]{"message":"undefined is not an object (evaluating 'order.filter')"}
+```
+(×4 occurrences at 5:23 PM, none after HMR update applying the fix at 7:57–7:59 PM)
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/SharedChecklistPage.tsx` | Added `order={store.order}`, `moveItem={moveItem}` to GearCategory; implemented `moveItem` useCallback; normalizeSnapshot returns `name` + `unit`; `BackgroundPickerButton` `panelOpen` fix |
-| `src/pages/Checklist.tsx` | Removed "Nothing to share" toast; added `totalItems`/`canShare`/`shareStep`/`showEmptyShareMsg`; replaced Share button section |
+| `src/pages/SharedChecklistPage.tsx` | Added `order={store.order}`, `moveItem={moveItem}` to GearCategory; implemented `moveItem` useCallback; `normalizeSnapshot` returns `name` + `unit`; `BackgroundPickerButton` `panelOpen` TS fix |
+| `src/pages/Checklist.tsx` | Removed "Nothing to share" toast; added `totalItems`/`canShare`/`shareStep`/`showEmptyShareMsg`; replaced Share button section with grayed-empty + save-warning two-step |
 | `src/hooks/shareLink021.test.mjs` | New — 27 structural tests |
 | `package.json` | Added `crossTabIsolation020E`, `inheritedSessionStorage020F`, `shareLink021` to `test:importer` script |
+| `TESTING.md` | Suite count 16 → 29; added 018–021 suite entries |
+
+### Key Behaviors Implemented
+
+**Empty-list Share UX** — When `totalItems === 0`: `aria-disabled="true"` button with `cursor-not-allowed` (no native `disabled`, so hover events fire). Desktop: CSS `group-hover:opacity-100` tooltip. Mobile: tap-toggled `showEmptyShareMsg` state. Message: "Add some gear items before creating a share link." "Nothing to share" destructive toast removed.
+
+**Save-before-sharing warning** — Clicking "Copy Link" sets `shareStep='warning'` (dropdown stays open, content transforms). Warning: "Save the currently open file first so the shared version is current." User must click "Copy Link Anyway" to proceed, or "Cancel" to return to menu. No auto-save.
+
+**normalizeSnapshot fix** — Added `unit` (validated as 'metric'|'imperial') and `name` (validated as string) to returned `SharePayload` so the shared-view banner and `UnitProvider` receive correct sender values.
 
 ### Automated Test Results
 
 ```
-021:  27/27 ✅  020F: 28/28 ✅  020E: 24/24 ✅  Full regression: 30/30 ✅
+Focused:   shareLink021.test.mjs  →  27/27 ✅
+Regression:  pnpm run test:importer  →  29 suites, 1,128/1,128 ✅ (exit 0)
+TypeScript:  tsc --noEmit  →  0 new errors
 ```
+
+### Acceptance Status
+
+| Item | Status |
+|------|--------|
+| Crash fix structural | PASS (structural) |
+| Rendered shared-view renders without crash | NOT TESTED |
+| Empty Share button visual state | NOT TESTED |
+| Desktop hover tooltip | NOT TESTED |
+| Mobile tap message | NOT TESTED |
+| Save-warning step appears | NOT TESTED |
+| "Copy Link Anyway" copies link | NOT TESTED |
+| "Viewing [name]" banner | NOT TESTED |
+| Unit toggle defaults to sender's unit | NOT TESTED |
+| "Save Your Own Copy" creates new UUID | PASS (structural) |
+| Sender localStorage untouched | PASS (structural) |
+| Links immutable (no DELETE) | PASS (structural) |
+| 020F protections intact | PASS (28/28) |
+| Full regression suite | PASS (1,128/1,128) |
+
+See `workflow-reports/PROMPT_021_REPORT.md` for full detail.
 
 ### Prompt History
 
-017 = PASS | 017A–017F = PASS | 018–018C = PASS | 019 = PASS | 020–020F = PASS/NOT-VERIFIED | **021 = NOT USER-VERIFIED**
+020F functional = USER-TESTED PASS | **021 = NOT USER-VERIFIED**

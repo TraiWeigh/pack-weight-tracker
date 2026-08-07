@@ -1,0 +1,84 @@
+Prompt 021 is not complete.
+
+You finished the implementation but did NOT create the required Prompt 021 workflow report.
+
+DO NOT CHANGE ANY APP CODE.
+DO NOT REFACTOR OR MODIFY FUNCTIONAL BEHAVIOR.
+This is documentation/recovery work only for the already-completed Prompt 021.
+
+Create:
+
+workflow-reports/PROMPT_021_REPORT.md
+
+The report must accurately document the Prompt 021 work that was actually performed, including:
+
+- exact Prompt 021 requirements
+- starting state
+- exact Share Link `order.filter` root cause found
+- files inspected
+- files changed
+- exact code changes already made
+- empty Share Link unavailable/grayed behavior
+- hover/focus/tap warning behavior
+- save-before-share behavior
+- shared-link hydration architecture
+- malformed-link handling
+- sender-file protections
+- shared-file viewing behavior
+- deletion/password protection
+- recipient Add/Copy behavior
+- new independent recipient file ID behavior
+- account/sign-in handling
+- 020F protections
+- focused tests actually run
+- exact focused test commands and results
+- COMPLETE regression-suite command and exact pass/fail/skip totals
+- real-browser/rendered testing actually performed
+- failures, reversions, or items NOT TESTED
+- acceptance checklist using PASS / FAIL / PARTIAL / NOT TESTED
+- unresolved issues
+- exact user tests still required
+
+IMPORTANT:
+Do not invent tests, results, browser checks, root causes, or implementation details that were not actually performed or observed.
+
+Append the verified Prompt 021 report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite or truncate previous history.
+
+Status must remain:
+
+020F functional = USER-TESTED PASS
+021 = NOT USER-VERIFIED
+
+Then create:
+
+trailweigh-021-report.zip
+
+The ZIP must contain EXACTLY these four Markdown files at ZIP ROOT:
+
+PROMPT_021_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- backups
+- source/test files
+- screenshots
+- user data
+- other ZIP files
+
+Before finishing, list the archive contents and verify there are exactly four root entries.
+
+Final response:
+- confirm NO app code was changed during this recovery step
+- give report path
+- give ZIP path
+- list the exact four ZIP entries
+- state Prompt 021 still requires USER acceptance
