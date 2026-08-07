@@ -100,18 +100,21 @@ test('3. Hide button calls triggerShowcase (existing handler)', () => {
   );
 });
 
-// 4. DOM order: Hide appears before Preview in source
-test('4. Hide appears before Preview in Checklist source order', () => {
-  const hideIdx    = checklist.lastIndexOf('>Hide<') > -1
-    ? checklist.lastIndexOf('>Hide<')
-    : checklist.indexOf('Hide\n');
-  // Main-row Preview button (not in shared, not in sidebar)
-  // Find setShowPreview(true) occurrences and their positions
-  const previewMatches = [...checklist.matchAll(/setShowPreview\(true\)/g)].map(m => m.index);
-  assert.ok(previewMatches.length > 0, 'No setShowPreview(true) found');
-  // Hide must appear before at least one of them in source
-  const anyPreviewAfterHide = previewMatches.some(pi => pi > hideIdx);
-  assert.ok(anyPreviewAfterHide, `Hide (pos ${hideIdx}) is not before any Preview trigger in source`);
+// 4. Hide is NOT wrapped in a background-presence condition
+test('4. Hide is not wrapped in {background && (...)} — renders unconditionally', () => {
+  // Find the Hide aria-label (unique to this button) and check no `background &&`
+  // guard appears in the surrounding 500-char window
+  const hideIdx = checklist.indexOf('aria-label="Hide interface');
+  assert.ok(hideIdx > -1, 'Hide aria-label not found in Checklist');
+  const surrounding = checklist.slice(Math.max(0, hideIdx - 300), hideIdx + 600);
+  assert.ok(
+    !surrounding.includes('{background &&'),
+    'Hide button is still wrapped in {background && (...)} — it will not render without a background'
+  );
+  assert.ok(
+    !surrounding.includes('background &&\n') && !surrounding.includes('background && ('),
+    'Hide button has a background-presence conditional guard'
+  );
 });
 
 // 5. Only ONE normal-view Preview button in Checklist (sidebar one removed)

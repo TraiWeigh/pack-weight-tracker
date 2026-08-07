@@ -1,0 +1,501 @@
+Prompt ID: 017A
+Prompt title: Make the Hide Pill Always Visible
+
+Correct the missing Hide pill from Prompt 017.
+
+This is a focused correction. Do not redesign the toolbar or change unrelated features.
+
+# CONFIRMED USER TEST FAILURE
+
+In the signed-in TrailWeigh checklist, the visible control row currently shows:
+
+`Preview → Imperial → Metric`
+
+There is no visible Hide pill.
+
+Prompt 017 therefore did not satisfy the main requirement.
+
+The final required order is:
+
+`Hide → Preview → Imperial/Metric`
+
+Hide must be immediately to the left of Preview.
+
+Preview must be immediately to the left of the complete Imperial/Metric unit toggle.
+
+# PART 1 — INSPECT THE CURRENT IMPLEMENTATION
+
+Before changing code, inspect:
+
+- `workflow-reports/PROMPT_017_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Current `Checklist.tsx`
+- Current Hide button JSX
+- Current `triggerShowcase()` behavior
+- Current `BackgroundShowcase` component
+- Current active-background state
+- Current Preview control
+- Current `UnitToggle`
+
+Determine why Hide is absent in the user’s rendered checklist.
+
+Specifically inspect whether the Hide button is wrapped in a condition such as:
+
+`background && (...)`
+
+or any other condition that prevents it from rendering when:
+
+- No background photo is active
+- The default background is active
+- Background data is still loading
+- A built-in background has not been selected
+- A custom photo is not selected
+
+Document the actual cause before editing.
+
+# PART 2 — CREATE A CHECKPOINT AND BACKUP
+
+Create a Replit checkpoint.
+
+Create:
+
+`workflow-reports/PRE_017A_MASTER_BACKUP.md`
+
+The backup must contain the complete current:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Record:
+
+- Master line count
+- Master file size
+- Current Hide JSX
+- Current condition controlling Hide visibility
+- Current Preview JSX
+- Current UnitToggle JSX
+- Current rendered order
+
+# PART 3 — HIDE MUST ALWAYS BE VISIBLE
+
+Render the Hide pill in the normal checklist control row at all times.
+
+Do not require:
+
+- An active custom background
+- A built-in image selection
+- A saved file
+- A custom theme
+- A photo in the selected theme
+
+Remove any conditional rendering that causes Hide to disappear when no background image is selected.
+
+Required visible order:
+
+`Hide → Preview → Imperial → Metric`
+
+The Imperial and Metric controls may remain one segmented UnitToggle component.
+
+The required component order is:
+
+1. Hide
+2. Preview
+3. UnitToggle
+
+Do not place any other control between them.
+
+# PART 4 — HIDE BEHAVIOR WITH NO PHOTO BACKGROUND
+
+Hide must remain clickable when no photo background is selected.
+
+When clicked without an active photo:
+
+- Use the same existing Showcase/Hide mode.
+- Hide the same interface elements that the old Showcase function hid.
+- Display the current default page background, theme background, or background color.
+- Do not crash.
+- Do not display a broken-image symbol.
+- Do not require the user to select a photo first.
+- Allow the user to exit Hide mode using the existing exit behavior.
+
+Do not disable or conceal Hide merely because no photo is selected.
+
+# PART 5 — HIDE BEHAVIOR WITH A BACKGROUND
+
+When a built-in or custom background is selected:
+
+- Hide must call the existing `triggerShowcase()` path.
+- Preserve the selected image.
+- Preserve Fill Screen or Fit Image.
+- Preserve Light or Dark.
+- Preserve fade/darken.
+- Preserve the existing exit method.
+- Preserve all checklist data.
+
+Do not create a second Hide or Showcase state.
+
+Reuse:
+
+- `showcaseActive`
+- `triggerShowcase()`
+- `exitShowcase()`
+- `BackgroundShowcase`
+
+where those remain the current working implementation.
+
+Internal names may continue using “Showcase.”
+
+The visible user-facing control must say:
+
+`Hide`
+
+# PART 6 — PRESERVE PREVIEW AND UNIT CONTROLS
+
+Keep the existing relocated Preview pill.
+
+Preview must:
+
+- Remain immediately to the right of Hide
+- Open the existing Preview modal
+- Preserve Print
+- Preserve Download PDF
+- Preserve current calculations
+- Preserve checked-item behavior
+
+Keep the complete Imperial/Metric unit toggle immediately to the right of Preview.
+
+Do not remove Metric.
+
+Do not change conversion behavior.
+
+# PART 7 — PRESERVE THE REMOVED SIDEBAR PREVIEW
+
+The separate Preview pill above Pack Summary must remain removed.
+
+Do not restore it.
+
+There must still be exactly one normal-checklist Preview pill.
+
+Do not leave a blank placeholder above Pack Summary.
+
+# PART 8 — VISUAL STYLE
+
+Make Hide match the nearby Preview pill in:
+
+- Height
+- Padding
+- Border radius
+- Font size
+- Font weight
+- Text alignment
+- Light-mode appearance
+- Dark-mode appearance
+- Hover behavior
+- Focus behavior
+
+Hide must not appear transparent, clipped, zero-width, or hidden behind another element.
+
+The control row must not overflow or overlap.
+
+# PART 9 — RESPONSIVE BEHAVIOR
+
+Test at desktop, tablet, and phone widths.
+
+At ordinary desktop width:
+
+`Hide → Preview → Imperial → Metric`
+
+must appear on the same horizontal level.
+
+At narrower widths:
+
+- Controls may wrap only when necessary.
+- Preserve the reading order.
+- Hide must not disappear at any breakpoint.
+- Do not use a breakpoint class that hides Hide.
+- Do not create horizontal page scrolling.
+- Maintain usable touch targets.
+
+# PART 10 — AUTOMATED TESTS
+
+Correct the Prompt 017 tests so they protect the actual rendered requirement rather than merely finding the word “Hide” somewhere in source code.
+
+Test at minimum:
+
+1. Hide renders when no background is selected.
+2. Hide renders when a built-in background is selected.
+3. Hide renders when a custom background is selected.
+4. Hide is not wrapped in a background-presence condition.
+5. Hide calls the existing Showcase handler.
+6. DOM order is Hide, Preview, UnitToggle.
+7. Preview remains rendered exactly once in normal Checklist view.
+8. The sidebar Preview remains removed.
+9. Metric remains part of UnitToggle.
+10. Hide mode can be entered without a photo.
+11. Hide mode can be exited without a photo.
+12. Hide mode works with a selected photo.
+13. Desktop grid remains 365px.
+14. QTY remains `translate-x-3`.
+15. Prompt 016B theme and IndexedDB tests remain passing.
+16. Prompt 016C PDF tests remain passing.
+17. Existing Preview tests remain passing.
+18. Existing Imperial/Metric tests remain passing.
+
+Do not treat a source-code text search alone as proof that Hide is visibly rendered.
+
+Run:
+
+`pnpm test:importer`
+
+Report:
+
+- Suite names
+- Suite count
+- Passed
+- Failed
+- Exit code
+- Warnings
+- Errors
+- Duration
+
+Update `TESTING.md` if the test suite or test count changes.
+
+# PART 11 — REQUIRED RENDERED TESTS
+
+Use the same signed-in checklist state shown in the user’s screenshot.
+
+Do not claim PASS from source inspection alone.
+
+## Test A — No selected background
+
+1. Remove or clear the active background.
+2. Return to the normal checklist.
+3. Confirm the controls visibly show:
+   `Hide → Preview → Imperial → Metric`
+4. Capture a screenshot.
+5. Click Hide.
+6. Confirm the interface hides without crashing.
+7. Exit Hide mode.
+8. Confirm the checklist returns unchanged.
+
+## Test B — Built-in background
+
+1. Select a Landscape background.
+2. Confirm Hide remains visible.
+3. Click Hide.
+4. Confirm the selected image appears correctly.
+5. Exit Hide mode.
+
+## Test C — Custom background
+
+1. Select a custom-theme photo.
+2. Confirm Hide remains visible.
+3. Click Hide.
+4. Confirm the custom photo appears correctly.
+5. Exit Hide mode.
+
+## Test D — Preview
+
+1. Click Preview.
+2. Confirm the existing Preview opens.
+3. Close Preview.
+4. Confirm Hide is still visible.
+
+## Test E — Units
+
+1. Select Imperial.
+2. Confirm Hide remains visible.
+3. Select Metric.
+4. Confirm Hide remains visible.
+5. Confirm the order remains unchanged.
+
+## Test F — Responsive widths
+
+Test desktop, tablet, and phone widths.
+
+Confirm Hide remains visible at all three widths.
+
+Capture screenshots showing:
+
+- Hide with no selected background
+- Hide with a built-in background
+- Hide with a custom background
+- Desktop order
+- Phone order
+
+# PART 12 — CORRECT THE DOCUMENTATION RECORD
+
+Prompt 017’s report incorrectly marked Hide visibility and desktop layout as PASS even though the user’s screenshot showed no Hide pill.
+
+Do not erase or rewrite historical evidence.
+
+In the Prompt 017A report, record:
+
+- Prompt 017 was user-tested as FAIL for Hide visibility.
+- The prior rendered PASS claim was inaccurate.
+- The actual root cause.
+- The exact correction.
+- The new rendered proof.
+
+Update the current-state sections of:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Do not falsely state that Prompt 017 passed before this correction.
+
+# PART 13 — PRESERVE UNRELATED FEATURES
+
+Do not change:
+
+- Background Edit
+- Themes
+- Photo storage
+- IndexedDB
+- PDF import
+- Word import
+- Excel import
+- Numbers import
+- Pack Summary
+- Weight Distribution
+- Palette persistence
+- Save
+- Save As
+- Locker
+- New
+- Reset
+- Share
+- Print
+- Download PDF
+- Checklist calculations
+- Category layout
+- MOVE
+- WEIGHT
+- QTY
+- TOTAL
+- DESCRIPTION
+- Saved-data schemas
+
+Preserve:
+
+- `lg:grid-cols-[1fr_365px]`
+- QTY heading `translate-x-3`
+
+# PART 14 — REPORT
+
+Follow:
+
+`TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+
+Create:
+
+`workflow-reports/PROMPT_017A_REPORT.md`
+
+Include:
+
+- Prompt ID and title
+- Starting state
+- User screenshot result
+- Root cause
+- Exact files changed
+- Before-and-after Hide JSX
+- No-background behavior
+- Built-in-background behavior
+- Custom-background behavior
+- Preview result
+- Imperial/Metric result
+- Desktop result
+- Tablet result
+- Phone result
+- Automated-test result
+- Rendered screenshot names
+- Acceptance checklist using PASS, FAIL, PARTIAL, or NOT TESTED
+- Anything still requiring user testing
+
+Do not mark Hide visibility PASS without a screenshot showing it in the rendered signed-in application.
+
+# PART 15 — APPEND TO THE MASTER
+
+Append the complete Prompt 017A report to:
+
+`TRAILWEIGH_COMPLETE_WORKFLOW.md`
+
+Requirements:
+
+- Do not overwrite the master.
+- Do not truncate earlier prompts.
+- Append the complete report.
+- Confirm Prompt 017A appears exactly once.
+- Confirm Prompt 017 remains present.
+- Confirm the master grew.
+
+Update:
+
+- Prompt Number Index
+- Current control layout
+- Prompt 017 correction status
+- Latest-entry field
+
+Final trailer:
+
+`Master workflow last updated: 2026-08-06 (Prompt 017A)`
+
+# PART 16 — CREATE THE REPORT ZIP
+
+Create:
+
+`trailweigh-017A-report.zip`
+
+Include exactly these four files at the ZIP root:
+
+- `PROMPT_017A_REPORT.md`
+- `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- `TESTING.md`
+
+Do not include:
+
+- A containing folder
+- `__MACOSX`
+- `.DS_Store`
+- Backups
+- Source files
+- User files
+- Other ZIP files
+
+Verify the ZIP contents after creating it.
+
+# FINAL VERIFICATION
+
+Before completion, confirm:
+
+1. Hide is visible with no selected photo background.
+2. Hide is visible with a built-in background.
+3. Hide is visible with a custom background.
+4. The visible order is Hide → Preview → Imperial → Metric.
+5. Hide enters the existing Showcase-style mode.
+6. Hide can be exited.
+7. No broken image appears without a selected background.
+8. Preview opens from the relocated pill.
+9. Only one normal Preview pill exists.
+10. Imperial and Metric both remain available.
+11. The sidebar Preview remains removed.
+12. Desktop grid remains 365px.
+13. QTY remains `translate-x-3`.
+14. PDF import remains working.
+15. Background themes and photos remain working.
+16. Prompt 017A appears exactly once in the master.
+17. The report ZIP contains exactly four root files.
+
+# COMPLETION RESPONSE
+
+At completion:
+
+- Surface `workflow-reports/PROMPT_017A_REPORT.md`
+- Surface `TRAILWEIGH_COMPLETE_WORKFLOW.md`
+- Surface `TRAILWEIGH_WORKFLOW_PROTOCOL.md`
+- Surface `TESTING.md`
+- Surface `trailweigh-017A-report.zip`
+- Report the exact root cause
+- Report the exact automated-test result
+- Surface the rendered screenshot showing Hide
+- State exactly what still requires user testing
+- Confirm no unrelated feature was changed

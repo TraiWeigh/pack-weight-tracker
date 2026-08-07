@@ -1250,21 +1250,19 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   </button>
                 </div>
                 <div className="flex items-center gap-3">
-                  {background && (
-                    <button
-                      onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
-                      disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
-                      aria-label="Hide interface and show background view"
-                      title={
-                        showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
-                          ? 'Finish the current action first'
-                          : 'Fill the screen with your background'
-                      }
-                      className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      Hide
-                    </button>
-                  )}
+                  <button
+                    onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
+                    disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
+                    aria-label="Hide interface and show background view"
+                    title={
+                      showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
+                        ? 'Finish the current action first'
+                        : 'Hide the interface'
+                    }
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Hide
+                  </button>
                   <button
                     onClick={() => setShowPreview(true)}
                     aria-label="Open checked-items preview"

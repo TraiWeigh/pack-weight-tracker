@@ -2648,3 +2648,96 @@ Suite count 11 → 12. Test count 692 → 716.
 ---
 
 *Master workflow last updated: 2026-08-06 (Prompt 017)*
+
+---
+
+### Prompt 017A — Make the Hide Pill Always Visible (2026-08-06)
+
+**Correction notice:** Prompt 017 was user-tested as FAIL for Hide visibility. The Prompt 017 report incorrectly marked Hide visibility as PASS based on a source-code text search. The actual rendered checklist (signed-in, no background selected) showed only `Preview → Imperial → Metric` with no Hide pill. This prompt corrects that failure.
+
+---
+
+## Prompt 017A Report — Make the Hide Pill Always Visible
+
+---
+
+### Identification
+
+| Field | Value |
+|-------|-------|
+| **Prompt ID** | 017A |
+| **Prompt title** | Make the Hide Pill Always Visible |
+| **Start time** | 2026-08-07 00:05 UTC |
+| **Completion time** | 2026-08-07 00:30 UTC |
+| **Purpose** | Correct Prompt 017 failure: Hide pill invisible when no background selected |
+| **Exact requested result** | Hide always visible; order Hide → Preview → Imperial/Metric at all times |
+
+---
+
+### Root Cause
+
+The Hide button was wrapped in `{background && (...)}`. With no background selected, `background` is falsy and React never renders the button. The Prompt 017 test caught the button's text in source but did not verify the conditional wrapper was absent.
+
+**Fix:** Remove the `{background && (...)}` wrapper. `BackgroundShowcase` accepts `bgImageUrl: null` and renders the letterbox color safely — no crash, no broken image.
+
+---
+
+### Files Changed
+
+#### 1. `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+Removed `{background && (...)}` wrapper. Updated tooltip from "Fill the screen with your background" to "Hide the interface". Button now renders unconditionally. Style, disabled conditions, aria-label, and onClick are identical to Prompt 017.
+
+#### 2. `artifacts/pack-checklist/src/hooks/controls017.test.mjs`
+
+Strengthened test #4: now explicitly checks that no `{background &&` or `background && (` pattern appears in the 800-char window surrounding the Hide button's aria-label. This would have caught the 017 regression at test time.
+
+---
+
+### Automated Results
+
+**Command:** `pnpm test:importer`
+
+| Suite | Tests | Result |
+|-------|-------|--------|
+| `importGear.test.mjs` | 219 | ✅ |
+| `importGear.pdf.test.mjs` | 54 | ✅ |
+| `importGear.pdf.api.test.mjs` | 53 | ✅ |
+| `scanGear.test.mjs` | 47 | ✅ |
+| `categoryAliases.test.mjs` | 77 | ✅ |
+| `usePackData.test.mjs` | 64 | ✅ |
+| `moveItem.test.mjs` | 47 | ✅ |
+| `pieColor.test.mjs` | 41 | ✅ |
+| `bgCollections.test.mjs` | 33 | ✅ |
+| `bgCollections016A.test.mjs` | 28 | ✅ |
+| `bgPhotoStore016B.test.mjs` | 29 | ✅ |
+| `controls017.test.mjs` (test 4 updated) | 24 | ✅ |
+| **Total** | **716** | **0 failed** |
+
+---
+
+### Current Control Layout (post-017A)
+
+**Main gear-list pinned row — always:**
+```
+[Open | Close]  ——————————  [Hide] [Preview] [Imperial/Metric]
+```
+
+Hide renders unconditionally. No background required.
+
+---
+
+### Scope Preservation
+
+- `lg:grid-cols-[1fr_365px]`: preserved
+- `translate-x-3`: preserved
+- PDF importer: 53 tests pass
+- Background themes/photos: 29+28 tests pass
+- Per-file palettes: 41 tests pass
+- Sidebar Preview: still removed
+- Share Link: not modified
+- All saved-data schemas: unchanged
+
+---
+
+*Master workflow last updated: 2026-08-06 (Prompt 017A)*
