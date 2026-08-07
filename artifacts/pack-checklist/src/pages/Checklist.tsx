@@ -559,9 +559,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           background:      e.background ?? null,
           bgFade:          e.bgFade ?? 1,
           bgTone:          e.bgTone ?? 'light',
-          bgSize:          'cover' as const,
+          bgSize:          e.bgSize ?? 'cover',  // use saved bgSize; older entries without it default to cover
           chartPaletteKey: e.chartPaletteKey,
         }));
+        console.log(`[TrailWeigh] Share: included ${lockerFiles.length} Locker file(s) in shared snapshot`);
       }
     } catch { /* ignore — share works without locker snapshot */ }
 
@@ -833,6 +834,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       background,
       bgFade,
       bgTone,
+      bgSize,
       chartPaletteKey,
     };
     const updated = [entry, ...lockerEntries];
@@ -846,7 +848,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     closeSaveDialog();
     toast({ description: `Saved ${name}` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
 
   /** Save and replace an existing entry (same ID, updated content). */
   const commitSaveReplace = useCallback((existingId: string, name: string) => {
@@ -859,6 +861,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         background,
         bgFade,
         bgTone,
+        bgSize,
         chartPaletteKey,
       };
       // Only update an entry that actually exists in the Locker.
@@ -881,7 +884,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       toast({ description: 'Save failed. Your changes were not saved.', variant: 'destructive' });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
 
   const handleSaveToLocker = () => {
     const name = saveName.trim();
@@ -944,6 +947,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       // Restore fade/darken.  Older entries without bgFade fall back to 1 (none).
       const restoredFade = entry.bgFade ?? 1;
       setBgFade(restoredFade);
+
+      // Restore Fill/Fit (cover/contain).  Older entries without bgSize fall back to cover.
+      setBgSize(entry.bgSize ?? 'cover');
 
       // Persist appearance for React-remount resilience.
       //

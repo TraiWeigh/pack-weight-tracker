@@ -18,6 +18,9 @@ export interface LockerEntry {
   background: Background | null;
   bgFade: number;
   bgTone: 'light' | 'dark';
+  /** Fill (cover) vs Fit (contain) mode. Optional for backwards compatibility — older entries
+   *  default to 'cover' on load. Added in 021D to preserve the sender's bgSize in shared view. */
+  bgSize?: 'cover' | 'contain';
   /** Weight-distribution palette key saved with this file ('trail', 'ocean', etc.).
    *  Optional for backwards compatibility — older entries omit this field. */
   chartPaletteKey?: string;

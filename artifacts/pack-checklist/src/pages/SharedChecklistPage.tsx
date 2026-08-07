@@ -619,6 +619,7 @@ function SharedChecklistContent({
       background,
       bgFade,
       bgTone,
+      bgSize,         // preserve the viewed file's Fill/Fit setting in the saved copy
     };
     writeLockerEntry(entry);
     closeSaveDialog();
@@ -632,7 +633,7 @@ function SharedChecklistContent({
       // Pop-up blocked — silently saved; they can open from Locker
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone]);
+  }, [store, background, bgFade, bgTone, bgSize]);
 
   const handleSaveToLocker = () => {
     const name = saveName.trim();
@@ -1155,6 +1156,7 @@ function normalizeSnapshot(raw: any): SharePayload | null {
   }
 
   // Normalize shared Locker files — absent for pre-021C shares (graceful degradation)
+  console.log('[TrailWeigh] Share snapshot raw.lockerFiles count:', Array.isArray(raw.lockerFiles) ? raw.lockerFiles.length : 'absent');
   const lockerFiles = Array.isArray(raw.lockerFiles)
     ? raw.lockerFiles
         .map(normalizeLockerFile)
