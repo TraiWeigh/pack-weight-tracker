@@ -32,7 +32,7 @@ node artifacts/pack-checklist/src/hooks/landscapeShake017E.test.mjs            #
 **No build step required.** Each file inlines the relevant production functions in
 plain JS so tests can run against source changes immediately.
 
-**Current result:** 961 passed / 0 failed (017E CONFIRMED PASS; 017F CONFIRMED PASS; 018C filename pill USER-TESTED PASS; 019 Background Edit pill + separate collapsible panels implemented — 2026-08-07).
+**Current result:** 997 passed / 0 failed (017E/017F/018C/019 USER-TESTED PASS; 020 New starts with zero categories implemented — 2026-08-07).
 
 ## What each suite protects
 

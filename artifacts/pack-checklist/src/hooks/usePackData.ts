@@ -221,7 +221,13 @@ function parseV5(p: any): Store | null {
 
   // Step 2: Forward-migrate — alias-aware, so 'Shelter' is not re-inserted
   // when 'Shelter System' is already present.
-  const order: string[] = mergeDefaultCategories(deduped.order);
+  //
+  // Exception: __blank:true is set by handleNew() when the user clicks New.
+  // In that case we intentionally preserve an empty order so the new tab starts
+  // with zero categories.  The flag is only present in the one-shot newseed
+  // bundle and is never written to persistent localStorage, so it cannot affect
+  // any saved file or shared list.
+  const order: string[] = p.__blank ? deduped.order : mergeDefaultCategories(deduped.order);
   const items: PackState = {};
   order.forEach(cat => { items[cat] = sanitizeItems(deduped.items?.[cat], cat); });
   const meta: Record<string, CategoryMeta> = {};

@@ -3700,3 +3700,80 @@ Test (signed in, with gear items added):
 9. Filename pill, Save confirmation, 017E shaking fix, 017F scanner all intact
 
 **Master history record:** 017B/017C/017D = failed; 017E = USER-TESTED PASS; 017F = USER-TESTED PASS; 018/018A/018B = PARTIAL; 018C = USER-TESTED PASS; 019 = NOT USER-VERIFIED until user's post-completion test.
+
+---
+
+## Prompt 020 — New Starts With No Categories
+
+### Starting State
+
+019 = USER-TESTED PASS. Single goal: clicking New creates a working list with zero categories and zero gear items.
+
+### Root Cause — Two Layers
+
+**Layer 1 — `handleNew()` cloned the current store:** The old handler deep-cloned the entire store, set `checked:false` on all items, and wrote the clone to the newseed. The new tab opened with every category and item from the current file.
+
+**Layer 2 — `parseV5()` unconditionally inserts default categories:** Even if an empty `order:[]` was written to the newseed, `parseV5` called `mergeDefaultCategories(deduped.order)` which re-inserts all 13 default categories (Backpack, Shelter, Sleep…) automatically. An empty newseed alone would not have been enough — both layers required fixing.
+
+### Fix
+
+**`handleNew()` (Checklist.tsx):** Replaced the clone/uncheck block with a blank newseed:
+```typescript
+localStorage.setItem(`tw-newseed-${uuid}`, JSON.stringify({
+  __v: 5,
+  __blank: true,
+  items: {},
+  order: [],
+  meta: {},
+}));
+```
+Background bundle (`tw-newseed-bg-${uuid}`) unchanged — new tab still inherits background, tone, fade, fill/fit, chartPaletteKey from the source file.
+
+**`parseV5()` (usePackData.ts):** Added a one-line ternary:
+```typescript
+const order: string[] = p.__blank ? deduped.order : mergeDefaultCategories(deduped.order);
+```
+`__blank:true` preserves the empty order. The flag is only present in the one-shot newseed bundle. After the initial render, `useEffect` persists `{ __v:5, ...store }` — no `__blank` flag — so subsequent loads, refreshes, Locker saves, and shared lists are never affected.
+
+### What Is Preserved
+
+- Background inherited from source file ✅
+- Active file identity cleared (no stale filename pill) ✅
+- First Save of blank list opens naming dialog, establishes active file ✅
+- Add Category after New still works ✅
+- Reset behavior unchanged (separate `handleReset` handler, untouched) ✅
+- All Locker files untouched ✅
+- Shared list load path unaffected (no `__blank` in shared bundles) ✅
+- All prior prompts (019 sidebar, 018C pill, 017E shaking, 017F scanner) ✅
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | `handleNew()`: blank newseed; updated useCallback deps |
+| `artifacts/pack-checklist/src/hooks/usePackData.ts` | `parseV5()`: `p.__blank` ternary to skip `mergeDefaultCategories` |
+| `artifacts/pack-checklist/src/hooks/newBlank020.test.mjs` | Created — 36 new tests |
+| `package.json` | Added `newBlank020.test.mjs` to test chain |
+
+### Automated Test Results
+
+**997 passed / 0 failed** (961 prior + 36 new 020 tests). All 36 pass, including inline logic tests 20–24 that simulate `parseV5` with/without `__blank` flag.
+
+### Required User Live-Test
+
+**✅ Prompt 020 implementation is complete. App is ready for your fresh post-completion test.**
+
+Test (signed in, File A open and saved):
+1. Click New → checklist area contains **zero categories** (completely empty)
+2. File A in Locker unchanged
+3. No stale File A filename in pill
+4. Add one category → appears, functions normally
+5. Add item → weight calculations work
+6. Save as File B → pill shows "File B"; toast says `Saved "File B"`
+7. Reopen File A → all original categories/items intact
+8. Reset → unchanged behavior (not like New)
+9. Background/settings inherited by new tab from source
+10. 019 sidebar panels (Pack Summary, Weight Distribution) still separate and collapsible
+11. 019 Background Edit pill still works
+
+**Master history:** 017E/017F = USER-TESTED PASS; 018C = USER-TESTED PASS; 019 = USER-TESTED PASS; 020 = NOT USER-VERIFIED until user's post-completion test.

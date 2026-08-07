@@ -532,24 +532,20 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setActiveLockerFile(null);
     const uuid = crypto.randomUUID();
 
-    // 1. Deep-clone the complete store — same structure that Save writes to Locker.
-    //    JSON round-trip guarantees no shared object references with the original.
-    const clonedStore: typeof store = JSON.parse(JSON.stringify(store));
+    // 1. Write a genuinely empty gear newseed.
+    //    __blank: true tells parseV5 to skip mergeDefaultCategories so the empty
+    //    order is preserved — without it, parseV5 would re-insert all 13 default
+    //    categories automatically.  The flag is consumed on first parse and is
+    //    never written to persistent storage, so it has no side-effects on Save.
+    localStorage.setItem(`tw-newseed-${uuid}`, JSON.stringify({
+      __v: 5,
+      __blank: true,
+      items: {},
+      order: [],
+      meta: {},
+    }));
 
-    // 2. Traverse every copied item and set checked: false.
-    //    We iterate store.order (not a separate categoryOrder ref) so the loop
-    //    always uses the cloned object's own key list.
-    for (const cat of clonedStore.order) {
-      const items = clonedStore.items[cat];
-      if (Array.isArray(items)) {
-        clonedStore.items[cat] = items.map((item) => ({ ...item, checked: false }));
-      }
-    }
-
-    // 3. Write gear data newseed.
-    localStorage.setItem(`tw-newseed-${uuid}`, JSON.stringify({ __v: 5, ...clonedStore }));
-
-    // 4. Write background settings alongside so the new tab opens with the same
+    // 2. Write background settings alongside so the new tab opens with the same
     //    background, fill/fit mode, tone, and fade as the current tab.
     //    chartPaletteKey is bundled here so the new tab inherits the same
     //    Weight Distribution palette as the source file.
@@ -563,7 +559,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
     const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
     window.open(`${window.location.origin}${base}/checklist?newseed=${uuid}`, '_blank');
-  }, [store, background, bgFade, bgTone, bgSize]);
+  }, [background, bgFade, bgTone, bgSize, chartPaletteKey]);
 
   // ── Keyboard shortcuts (Ctrl/Cmd+Z, Ctrl/Cmd+Y, Ctrl/Cmd+Shift+Z) ────────
   useEffect(() => {

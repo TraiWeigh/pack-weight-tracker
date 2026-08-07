@@ -1,0 +1,69 @@
+Prompt 020 — New Starts With No Categories
+
+Create PRE_020_MASTER_BACKUP.md before changing anything.
+
+CURRENT STATE: Prompt 019 = USER-TESTED PASS. All prior working TrailWeigh features are protected.
+
+GOAL: Change only the New-list checklist behavior. When the user clicks New, the new working list must contain ZERO categories and ZERO gear items. The checklist/category area starts empty so the user can add only the categories they want.
+
+GLOBAL REGRESSION PROTECTION: Protect all existing TrailWeigh functionality, styling, layout, persistence, calculations, importers, Background Edit, Save/Locker, sharing, responsive behavior, user data, and all prior prompt work unless explicitly changed below. Smallest possible change set only. No unrelated cleanup/refactoring. Preserve localStorage/IndexedDB/Locker/cross-tab compatibility. Inspect final diff and revert unrelated changes.
+
+NEW BEHAVIOR:
+- Click New.
+- Create the new unsaved working list using the existing New workflow.
+- New list contains NO categories.
+- New list contains NO gear/items.
+- Do not create default categories such as Backpack, Shelter System, Sleep System, etc.
+- Do not copy categories from the current/open file.
+- Do not copy gear rows from the current/open file.
+- Checklist area should therefore be empty until the user adds a category.
+- Preserve the existing Add Category method/control so the user can build the list from scratch.
+- Adding the first category after New must work normally.
+
+PRESERVE OTHER NEW BEHAVIOR:
+- New remains an unsaved working list with no stale active saved-file identity/name.
+- Filename pill must not continue displaying the previous saved file as the active file.
+- New must not overwrite or modify the file that was open before New.
+- Existing Locker files remain untouched.
+- Preserve current background/theme/settings behavior used by New unless clearing categories requires otherwise. This prompt changes category/item initialization only.
+- Do not change Save, Save As, Locker, Reset, or duplicate-name behavior.
+- First Save of the new blank list must continue using the established Save workflow and then establish the saved file as active.
+- "Saved [File Name]" must remain unchanged.
+
+IMPORTANT DISTINCTION:
+New = blank checklist with zero categories.
+Reset = preserve its current behavior exactly.
+Do not make Reset behave like New.
+
+INVESTIGATE FIRST: Locate the current New handler and identify where it copies/initializes categories/items. Determine the smallest change that makes New initialize the checklist store with an empty category collection while preserving unrelated New state/settings.
+
+REQUIRED TESTS:
+1. Open populated File A → click New → zero categories and zero items appear.
+2. File A in Locker remains unchanged.
+3. No stale File A active filename appears on the new unsaved list.
+4. Add a new category → it appears and functions normally.
+5. Add an item to that category → normal checklist behavior/calculations work.
+6. Save the new list as File B → filename becomes File B and confirmation says "Saved File B".
+7. Reopen File A → all original categories/items are still intact.
+8. Reset behavior remains unchanged.
+9. Background/settings preserved according to existing New behavior.
+10. Prompt 019 sidebar/background UI remains unchanged.
+
+PROTECTED (non-exhaustive): 019 Background Edit pill + separate/collapsible Pack Summary/Weight Distribution panels; 018C filename pill; active-file identity; Saved [File Name]; 017E shaking fix; 017F Scan Gear List/importers; Background Edit/Fill/Fit/Darken/Themes/custom photos/IndexedDB/Delete Theme/Undo-Redo; Hide/Preview/Imperial-Metric/Open-Close; Save/Save As/Locker/Reset/Share; MOVE; calculations; palette persistence; lg:grid-cols-[1fr_365px]; QTY translate-x-3; desktop/mobile layout; all saved user data.
+
+AUTOMATED TESTS: Add focused tests proving New produces zero categories/items, previous saved file is untouched, active identity is cleared correctly, a category can be added afterward, first Save works, and Reset remains unchanged. Run full suite and report exact command + pass/fail totals. Automated tests do not replace rendered testing.
+
+RENDERED TEST: Start from a populated saved list, click New, verify the checklist area contains no categories, add one category, add one item, and verify normal behavior. Check desktop and phone width for obvious regression.
+
+USER ACCEPTANCE: Do not claim USER-TESTED PASS. User will keep TrailWeigh closed while Replit works and test one fresh preview afterward. Until user confirms, Prompt 020 = NOT USER-VERIFIED.
+
+REPORTING: Create workflow-reports/PROMPT_020_REPORT.md with starting state, root implementation, files inspected/changed, before/after, automated/rendered results, acceptance checklist (PASS/FAIL/PARTIAL/NOT TESTED), unresolved issues, and exact user tests still required. Append the COMPLETE report to TRAILWEIGH_COMPLETE_WORKFLOW.md without overwriting/truncating. Record 019=USER-TESTED PASS and 020=NOT USER-VERIFIED until user confirmation.
+
+ZIP: Create trailweigh-020-report.zip containing exactly these four Markdown files at ZIP root:
+PROMPT_020_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+No wrapper folder, __MACOSX, .DS_Store, backups, source code, screenshots, user data, or other zips. Inspect and list the archive entries; exactly four.
+
+FINAL RESPONSE: report exact files changed; how New now creates zero categories/items; what other New behavior was preserved; results of New→Add Category→Add Item→Save testing; confirmation original Locker file and Reset remain unchanged; full automated totals; rendered/mobile results; protected-feature regression results; report/ZIP paths and exact ZIP entries; clearly state user acceptance still required.
