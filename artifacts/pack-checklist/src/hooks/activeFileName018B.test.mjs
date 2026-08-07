@@ -140,14 +140,15 @@ test('17. Filename span has `truncate` (ellipsis on overflow)', () => {
 
 // ── CENTERING STRUCTURE PRESERVED FROM 018A ───────────────────────────────────
 
-test('18. Absolute centering wrapper preserved: left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2', () => {
+test('18. [018C] Centering wrapper uses inset-0 + matching padding (not left-1/2/top-1/2/translate)', () => {
+  // 018C replaced the translate approach with inset-0 + pt-8 pb-3 flex items-center justify-center
+  // so the pill's vertical center matches the outer container's flex content area.
+  assert.ok(pillBlock.includes('inset-0'), 'inset-0 not found on wrapper (018C fix not applied)');
   assert.ok(
-    pillBlock.includes('left-1/2') &&
-    pillBlock.includes('top-1/2') &&
-    pillBlock.includes('-translate-x-1/2') &&
-    pillBlock.includes('-translate-y-1/2'),
-    'Absolute centering classes missing from filename wrapper'
+    pillBlock.includes('flex items-center') && pillBlock.includes('justify-center'),
+    'flex items-center justify-center not found on wrapper (018C fix not applied)'
   );
+  assert.ok(!pillBlock.includes('top-1/2'), 'top-1/2 should be removed (old centering approach replaced in 018C)');
 });
 
 test('19. Pill wrapper appears as sibling before the right control group (not inside it)', () => {

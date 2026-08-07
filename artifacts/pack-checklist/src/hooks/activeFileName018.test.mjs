@@ -219,19 +219,19 @@ test('13. Pill has truncate class (overflow text hidden with ellipsis)', () => {
   );
 });
 
-test('14. [018A] Pill is absolutely centered — NOT hidden behind sm: breakpoint', () => {
-  // 018A correction: pill moved to absolute-center position; responsive hiding removed.
-  // The pill wrapper must have absolute left-1/2 centering, not hidden sm: classes.
+test('14. [018C] Pill uses absolute inset-0 centering — NOT hidden behind sm: breakpoint', () => {
+  // 018A correction: pill moved out of the control group, responsive hiding removed.
+  // 018C correction: left-1/2/top-1/2/translate replaced with inset-0 + padding approach.
   const condIdx = checklist.indexOf('{activeLockerFile && (');
   assert.ok(condIdx > -1, 'Conditional activeLockerFile render not found');
   const pillBlock = checklist.slice(condIdx, condIdx + 600);
   assert.ok(
-    pillBlock.includes('absolute') && pillBlock.includes('left-1/2'),
-    'Pill wrapper does not have absolute left-1/2 centering (018A correction not applied)'
+    pillBlock.includes('absolute') && pillBlock.includes('inset-0'),
+    'Pill wrapper does not have absolute inset-0 centering (018C correction not applied)'
   );
   assert.ok(
     !pillBlock.includes('hidden sm:inline-flex') && !pillBlock.includes('hidden sm:flex'),
-    'Pill still has hidden sm: responsive class — should be absolutely centered, always visible'
+    'Pill still has hidden sm: responsive class — should be always visible via inset-0 flex centering'
   );
 });
 

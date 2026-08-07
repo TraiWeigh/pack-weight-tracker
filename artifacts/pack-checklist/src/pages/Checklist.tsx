@@ -1254,9 +1254,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   </button>
                 </div>
                 {/* Active file name — centered over the left checklist column.
-                    Absolutely positioned so it never pushes Open/Close or Hide/Preview/Imperial/Metric. */}
+                    Uses inset-0 + matching pt-8 pb-3 so flex items-center references the same
+                    content area as the outer container, putting the pill on the exact same
+                    vertical centerline as Hide / Preview / Imperial / Metric. */}
                 {activeLockerFile && (
-                  <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                  <div className="absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none">
                     <span
                       aria-label={`Active file: ${activeLockerFile.name}`}
                       title={activeLockerFile.name}

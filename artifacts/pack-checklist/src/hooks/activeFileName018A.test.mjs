@@ -129,16 +129,18 @@ test('3. Right control group has `ml-auto` to push it right', () => {
   );
 });
 
-test('4. Absolute centering wrapper has left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2', () => {
+test('4. [018C] Absolute centering wrapper uses inset-0 + matching padding (vertical-align fix)', () => {
+  // 018C replaced left-1/2/top-1/2/translate with inset-0 + pt-8 pb-3 flex items-center justify-center
+  // so the wrapper's content-area reference matches the outer container exactly.
   assert.ok(pillCondInPillsRow > -1, 'activeLockerFile conditional not found in pills row area');
   const pillWrapper = pillsRowBlock.slice(pillCondInPillsRow, pillCondInPillsRow + 400);
   assert.ok(
-    pillWrapper.includes('left-1/2') && pillWrapper.includes('top-1/2'),
-    'Pill wrapper does not have left-1/2 top-1/2 — not absolutely centered'
+    pillWrapper.includes('inset-0'),
+    'Pill wrapper should have inset-0 (018C vertical-align fix)'
   );
   assert.ok(
-    pillWrapper.includes('-translate-x-1/2') && pillWrapper.includes('-translate-y-1/2'),
-    'Pill wrapper missing -translate-x-1/2 or -translate-y-1/2 — centering transform not applied'
+    pillWrapper.includes('flex items-center') && pillWrapper.includes('justify-center'),
+    'Pill wrapper should have flex items-center justify-center (018C vertical-align fix)'
   );
 });
 

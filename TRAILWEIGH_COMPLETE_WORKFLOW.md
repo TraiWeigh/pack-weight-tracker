@@ -3570,3 +3570,65 @@ Test (signed in, with a saved file active):
 
 **Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = PARTIAL (pill shape and same-line alignment correction required); 018B = NOT USER-VERIFIED until user's post-completion test.
 
+
+---
+
+## Prompt 018C — Align Active File Name Pill to Top Control Row
+
+### Starting State
+
+018B = PARTIAL. Pill appearance correct (bg-muted, rounded-lg, px-3 py-1.5, text-xs, font-semibold, text-foreground — matching Hide). Horizontal centering correct (over left checklist column). Vertical alignment wrong: pill sat ~10px above the Hide/Preview/UnitToggle centerline.
+
+### Root Cause
+
+The pills-row container has `pt-8 pb-3` (asymmetric padding: 2rem top, 0.75rem bottom). `top-1/2 -translate-y-1/2` anchors the pill's center to 50% of the container's full padded height (~36px). The flex buttons sit at 50% of the content area (after 32px top padding) — at ~46px. The 10px gap is exactly the padding asymmetry: `(pt-8 − pb-3) / 2 = (32 − 12) / 2 = 10px`.
+
+### Fix — One Line in Checklist.tsx
+
+**Before (018B):**
+```
+absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none
+```
+**After (018C):**
+```
+absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none
+```
+
+`inset-0` fills the container. `pt-8 pb-3` matches the outer container's padding exactly, making the overlay's content area identical to the outer flex content area. `flex items-center` centers the span in that content area → same Y coordinate as the flex buttons. `justify-center` centers horizontally over the full left-column width. Old translate approach entirely removed.
+
+### Span Unchanged
+
+The span className from 018B (`flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none`) is untouched.
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | Wrapper div className — one line |
+| `artifacts/pack-checklist/src/hooks/activeFileName018.test.mjs` | Test 14 updated |
+| `artifacts/pack-checklist/src/hooks/activeFileName018A.test.mjs` | Test 4 updated |
+| `artifacts/pack-checklist/src/hooks/activeFileName018B.test.mjs` | Test 18 updated |
+| `artifacts/pack-checklist/src/hooks/activeFileName018C.test.mjs` | Created — 29 new tests |
+| `package.json` | Added 018C test to chain |
+
+### Automated Test Results
+
+**925 passed / 0 failed** (896 prior + 29 new 018C tests). All 29 018C tests pass: inset-0 on wrapper, pt-8 pb-3 on wrapper, flex items-center + justify-center on wrapper, old translate classes absent, outer container unchanged, pointer-events-none, all 018B span classes preserved (bg-muted, rounded-lg, px-3, py-1.5, text-xs, font-semibold, text-foreground, select-none, max-w-[, truncate, no hover:), aria-label + title intact, activeLockerFile.name rendered, pill before right group + not inside it, Hide/Preview/UnitToggle order, save toast correct.
+
+### Required User Live-Test
+
+**✅ Prompt 018C implementation is complete. App is ready for your fresh post-completion test.**
+
+Per testing protocol: app closed while Replit worked; one fresh preview tab opened only after completion.
+
+Test (signed in, with a saved file active):
+1. Same horizontal line — filename pill's vertical center exactly matches Hide, Preview, Imperial, Metric
+2. Centered over left column — pill still floats centered over the checklist/category area
+3. Pill shape unchanged from 018B — rounded chip with background, matching Hide
+4. Hide → Preview → Imperial → Metric unchanged; filename not between them
+5. Dark mode → white text; light mode → black text; switch updates live
+6. Save → `Saved "[name]"` toast; Save As → pill immediately updates
+7. Long filename → truncates with ellipsis, no overflow
+8. Mobile → readable, no overlap, no horizontal scroll
+
+**Master history record:** 017B/017C/017D = failed user test; 017E = USER-TESTED PASS (background/shaking); 017F = USER-TESTED PASS (importer); 018 = PARTIAL (placement/color correction required); 018A = PARTIAL (pill shape and same-line alignment correction required); 018B = PARTIAL (pill too high vertically); 018C = NOT USER-VERIFIED until user's post-completion test.
