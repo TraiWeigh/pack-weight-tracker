@@ -3378,3 +3378,10 @@ Per testing protocol: fresh preview tab, app closed during repair.
 
 Test: open Scan Gear List → upload a real PDF → verify items appear (no 502). Optionally test Word/Excel/Numbers. Landscape hover and Darken slider should still be stable (nothing touched).
 
+## ✅ 017F USER ACCEPTANCE RESULT: CONFIRMED PASS
+
+**Date confirmed:** 2026-08-07  
+User performed authoritative clean fresh-preview live-test (app closed while Replit worked; fresh preview opened only after completion). Scan Gear List / document importer confirmed working — no 502 error. User quote: "scanner works now."
+
+Prompt 017E (background/Landscape shaking fix) remains fully intact and was not affected by the 017F importer repair. All 38 017E automated tests continue to pass, confirming every structural fix is untouched.
+

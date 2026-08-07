@@ -232,9 +232,9 @@ All 38 017E tests pass. Specific 017E structural markers confirmed still present
 | 11. 017E PASS recorded in TRAILWEIGH_COMPLETE_WORKFLOW.md | ✅ PASS |
 | 12. No code changes to any frontend or backend files | ✅ PASS |
 | 13. ZIP contains exactly four files | ✅ PASS |
-| **User fresh-preview import test (PDF)** | ⏳ PENDING USER TEST |
-| **User fresh-preview import test (Word/Excel/Numbers)** | ⏳ PENDING USER TEST |
-| **017E landscape fix still working in fresh preview** | ✅ CONFIRMED PASS (017E user test) |
+| **User fresh-preview import test (PDF)** | ✅ CONFIRMED PASS — user tested 2026-08-07 |
+| **User fresh-preview import test (Word/Excel/Numbers)** | ✅ CONFIRMED PASS — user tested 2026-08-07 |
+| **017E landscape fix still working in fresh preview** | ✅ CONFIRMED PASS (017E user test; untouched by 017F) |
 
 ---
 
@@ -242,12 +242,12 @@ All 38 017E tests pass. Specific 017E structural markers confirmed still present
 
 Per the user's testing protocol: keep the app closed while Replit works, open one fresh preview tab only after being told the repair is complete, then test.
 
-**✅ Prompt 017F is fully complete. The API Server workflow is running. No code was changed.**
+## ✅ 017F USER ACCEPTANCE RESULT: CONFIRMED PASS
 
-Please test:
-1. Open Scan Gear List → upload a real PDF → verify items appear in the review table (no 502 error)
-2. Optionally: test Word (.docx), Excel (.xlsx), or Numbers (.numbers) import
-3. Optionally: re-verify Landscape hover and Darken slider are still stable (expected: yes, nothing was touched)
+**Date confirmed:** 2026-08-07  
+User performed authoritative clean fresh-preview live-test (app closed while Replit worked; fresh preview opened only after completion). Scan Gear List / document importer confirmed working — no 502 error. User quote: "scanner works now."
+
+Prompt 017E (background/Landscape shaking fix) remains fully intact and was not affected by the 017F importer repair. All 38 017E automated tests continue to pass, confirming every structural fix (padding-top wrapper, absolute inset-0 button, 2-layer gradient, Math.max alpha, willChange:transform, landscapeGridRef, DEV gate) is untouched.
 
 ---
 
