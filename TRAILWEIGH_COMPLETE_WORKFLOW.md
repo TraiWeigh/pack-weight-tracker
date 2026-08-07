@@ -3849,3 +3849,76 @@ F. Reopen File A → File A unchanged
 G. Background Edit → saved themes/custom photos still available
 
 **Master history:** 017E/017F = USER-TESTED PASS; 018C = USER-TESTED PASS; 019 = USER-TESTED PASS; 020/020A/020B = NOT USER-VERIFIED until user's post-completion test.
+
+---
+
+## Prompt 020C — Make New Deterministically Reset to Clear + Light
+
+### Starting State
+
+020B = PARTIAL. Confirmed working: first Locker open after New correctly restores saved appearance. Confirmed bug: after opening a saved file, clicking New opens a tab that sometimes shows the file's background instead of Clear/Light.
+
+### Root Cause
+
+`handleNew()` always opens a **new browser tab** via `window.open('...?newseed=uuid', '_blank')`. Fork tabs (opened with `?newseed=`) initialise appearance in two phases:
+
+**Phase 1 — First render:** Reads `localStorage['tw-newseed-bg-uuid']` → `{background:null, bgTone:'light', bgFade:1}` → removes key → returns null ✅
+
+**Phase 2 — React remount** (Clerk token refresh cycles `isLoaded→false→true`): `tw-newseed-bg-uuid` is GONE (consumed on Phase 1). Falls through to `localStorage.getItem(BG_STORAGE_KEY)`. After 020B, `BG_STORAGE_KEY` = last opened file's background → New tab shows file's background ❌
+
+### Why only after 020B?
+
+020B added unconditional writes to `BG_STORAGE_KEY` + `trailweigh:bgTone` + `trailweigh:bgFade` in `handleLoadFromLocker` in-place path. These global keys are shared across all tabs. Before 020B those keys were only written by user's explicit background selections (often null) so Phase 2 fallback was harmless.
+
+### Fix — Three Parts
+
+**Part 1: Fork-local stash on first render**
+Background initializer: after consuming `tw-newseed-bg-uuid`, stash background/tone/fade in tab-local sessionStorage restore keys (`tw-fork-bg-restore`, `tw-fork-bgtone-restore`, `tw-fork-bgfade-restore`).
+
+**Part 2: Remount path checks fork-local keys first**
+Background, bgTone, bgFade initialisers: on remount (newseed-bg gone), check the fork-local restore keys before the global localStorage fallback. Fork tabs never reach `BG_STORAGE_KEY` on remount.
+
+**Part 3: handleLoadFromLocker in-place path — conditional**
+Fork tabs: write to sessionStorage restore keys (tab-local, not visible to other tabs).
+Non-fork tabs: write to global localStorage as before (for page-reload recovery).
+
+Also: `handleBackgroundChange`, `handleBgToneChange`, `handleBgFadeChange` now also update the sessionStorage restore keys so explicit user changes survive remounts.
+
+### 020B Preserved
+
+`setBackground(entry.background)`, `setBgTone`, `setBgFade` still called. First-open restoration still works. Only WHERE persistence happens changed (sessionStorage for fork tabs vs localStorage for primary tabs).
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | bg/bgTone/bgFade initialisers: fork-local restore key stash + remount check; handleLoadFromLocker in-place conditional fork/non-fork; handle* update restore keys |
+| `artifacts/pack-checklist/src/hooks/newAfterLocker020C.test.mjs` | Created — 30 new tests |
+| `artifacts/pack-checklist/src/hooks/lockerFirstOpen020B.test.mjs` | Updated fnBody slice size for post-020C function size |
+| `package.json` | Added `newAfterLocker020C.test.mjs` to test chain |
+
+### Automated Test Results
+
+**1071 passed / 0 failed** (1041 prior + 30 new 020C tests). All 30 pass.
+
+### Required User Live-Test
+
+**✅ Prompt 020C implementation is complete. App is ready for your fresh post-completion test.**
+
+```
+Required test sequence:
+ 1. Open File A (distinctive background + Dark mode) from Locker
+ 2. Click New → confirm blank, Clear, Light mode, zero categories
+ 3. Open File A once → full appearance restores on first open
+ 4. Click New again → Clear + Light again
+ 5. Open File B (different background/tone) → restores immediately
+ 6. Click New again → Clear + Light again
+ 7. Repeat New/open cycle several times → NEVER random background
+ 8. Verify all saved themes/photos still exist
+ 9. Verify original File A/File B remain unchanged
+10. Import into blank New → importer still auto-creates categories
+11. Save blank/newly built list → filename and "Saved [Name]" correct
+12. Reset behavior unchanged
+```
+
+**Master history:** 019 = USER-TESTED PASS; 020/020A/020B/020C = NOT USER-VERIFIED until user's post-completion test.

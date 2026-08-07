@@ -1,0 +1,109 @@
+Prompt 020C — Make New Deterministically Reset to Clear + Light
+
+Create PRE_020C_MASTER_BACKUP.md before changing anything.
+
+CURRENT USER TEST:
+020B = PARTIAL.
+
+PASS:
+- New initially opens with zero categories/items, Clear background, Light mode.
+- Sierra restores its saved appearance correctly on the FIRST Locker open.
+- Other saved files also restore correctly on first open.
+- Saved themes/photos remain intact.
+
+FAIL:
+After opening a saved file, clicking New again does NOT reliably return to Clear/blank. The new blank checklist sometimes shows changing/random backgrounds.
+
+GOAL:
+Every click of New must deterministically create:
+- zero categories
+- zero items
+- Clear/no active background
+- Light mode
+- no active filename
+
+This must work EVERY time, including:
+Saved File A → New → File B → New → File A → New.
+
+GLOBAL REGRESSION PROTECTION:
+Protect ALL existing TrailWeigh functionality, styling, data, storage, importers, Background Edit, Save/Locker, Share, calculations, responsive behavior, themes/photos, and all prior prompt work unless explicitly changed here. Smallest possible fix only. No unrelated cleanup/refactoring. Preserve localStorage, IndexedDB, Locker files, saved themes/photos, cross-tab behavior, API/importer behavior, and user data. Inspect final diff and revert unrelated changes.
+
+PRESERVE 020B FIX:
+Do NOT break the newly working first-open restoration of saved files. A Locker file opened after New must still immediately restore its own:
+- background
+- Light/Dark tone
+- fade/darken
+- Fill/Fit behavior currently used
+- palette
+- filename/active identity
+- categories/items
+
+PRESERVE SAVED THEMES:
+New clears only the ACTIVE workspace background. It must NEVER delete, reset, rename, overwrite, or modify built-in Landscapes, custom themes, uploaded photos, photoCollections, or IndexedDB background libraries.
+
+INVESTIGATE FIRST:
+Trace why background=null from New is later overwritten. Check:
+- handleNew
+- background restore/useEffect logic
+- active-file identity changes
+- newseed/tab-local background state
+- localStorage listeners
+- cross-tab/storage events
+- background history/Undo state
+- effects that run after New or after Locker open
+- stale async/state closures
+
+Identify the actual state/effect causing the random background before fixing it.
+
+Do NOT use timeouts, delays, forced reloads, random clearing, or repeated setState calls as a workaround.
+
+EXPECTED RULE:
+New is authoritative. Once New is clicked, no effect should reapply a prior saved-file background unless the user explicitly opens a saved file or selects a background.
+
+REQUIRED TEST SEQUENCE:
+1. Open File A with distinctive background + Dark mode.
+2. Click New → zero categories/items + Clear + Light.
+3. Open File A once → File A appearance restores immediately.
+4. Click New again → Clear + Light again.
+5. Open File B with a different background/tone → restores immediately.
+6. Click New again → Clear + Light again.
+7. Repeat New/open cycle several times → never random background.
+8. Verify all saved themes/photos still exist.
+9. Verify original File A/File B remain unchanged.
+10. Import into blank New → importer still auto-creates needed categories.
+11. Save blank/newly built list → filename and "Saved [File Name]" remain correct.
+12. Reset behavior remains unchanged.
+
+PROTECTED (non-exhaustive):
+020B first-open restoration; 020A blank New; automatic category creation on import; Scan Gear List/PDF/Word/Excel/Numbers; saved themes/photos/IndexedDB; Background Edit/Fill/Fit/Darken/Themes/Delete Theme/Undo-Redo; 019 Pack Summary + Weight Distribution separation/collapse; 018C filename pill; Save/Save As/Locker/Reset; Saved [File Name]; Hide/Preview/Imperial-Metric/Open-Close; MOVE/calculations/palette persistence; lg:grid-cols-[1fr_365px]; QTY translate-x-3; desktop/mobile layout; all saved user data.
+
+AUTOMATED TESTS:
+Add focused regression tests for repeated Saved File → New cycles, ensuring New always wins with background=null + Light, while first-open saved-file restoration still works. Run full suite and report exact command/pass/fail totals. Automated tests do not prove rendered behavior.
+
+RENDERED TEST:
+Reproduce the exact user sequence several times in one fresh preview. Verify no random background appears after any New action. Check desktop and phone width for regressions.
+
+USER ACCEPTANCE:
+Do not claim USER-TESTED PASS. User keeps TrailWeigh closed while Replit works and tests one fresh preview afterward. Until user confirms, 020C = NOT USER-VERIFIED.
+
+REPORTING:
+Create workflow-reports/PROMPT_020C_REPORT.md with starting state (020B=PARTIAL), exact root cause, files inspected/changed, before/after, automated/rendered results, acceptance checklist, unresolved issues, and exact remaining user tests. Append COMPLETE report to TRAILWEIGH_COMPLETE_WORKFLOW.md without overwriting/truncating.
+
+Record:
+019 = USER-TESTED PASS
+020 = PARTIAL
+020A = PARTIAL
+020B = PARTIAL
+020C = NOT USER-VERIFIED
+
+ZIP:
+Create trailweigh-020C-report.zip containing exactly these four Markdown files at ZIP root:
+PROMPT_020C_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+No wrapper folder, __MACOSX, .DS_Store, backups, source code, screenshots, user data, or other zips. Inspect and list entries; exactly four.
+
+FINAL RESPONSE:
+Report root cause; files changed; how New now always wins over stale background state; confirmation 020B first-open restoration remains; confirmation saved themes remain intact; full automated/rendered/mobile results; protected-feature checks; report/ZIP paths and exact ZIP entries; clearly state user acceptance still required.

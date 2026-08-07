@@ -46,8 +46,8 @@ const packData  = readFileSync(packDataPath,  'utf8');
 // Locate handleLoadFromLocker body
 const fnStart = checklist.indexOf('const handleLoadFromLocker = (entry: LockerEntry)');
 assert.ok(fnStart > -1, 'handleLoadFromLocker not found');
-// The function ends at the second closing brace after the non-empty path return
-const fnBody = checklist.slice(fnStart, fnStart + 3000);
+// Slice is generous: 020C added significant code to the in-place path
+const fnBody = checklist.slice(fnStart, fnStart + 6000);
 
 // Locate the in-place path block (between totalItems===0 check and the non-empty path)
 const inPlaceStart = fnBody.indexOf('if (totalItems === 0)');
@@ -55,7 +55,7 @@ assert.ok(inPlaceStart > -1, 'in-place path (if totalItems===0) not found');
 const inPlaceEnd   = fnBody.indexOf('// ── Non-empty path');
 const inPlaceBlock = inPlaceStart > -1 && inPlaceEnd > -1
   ? fnBody.slice(inPlaceStart, inPlaceEnd)
-  : fnBody.slice(inPlaceStart, inPlaceStart + 2000);
+  : fnBody.slice(inPlaceStart, inPlaceStart + 4000);
 
 // Locate handleNew body for 020A checks
 const handleNewStart = checklist.indexOf('const handleNew = useCallback(');
