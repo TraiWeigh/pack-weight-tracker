@@ -106,12 +106,12 @@ test('9. WeightSummary uses setSummaryOpen to toggle collapse', () => {
   assert.ok(wsBlock.includes('setSummaryOpen'), 'setSummaryOpen not found in WeightSummary');
 });
 
-test('10. WeightSummary has ChevronDown (expanded icon)', () => {
-  assert.ok(wsBlock.includes('ChevronDown'), 'ChevronDown not found in WeightSummary collapse control');
+test('10. WeightSummary has ChevronUp (expanded icon — 021J corrected direction)', () => {
+  assert.ok(wsBlock.includes('ChevronUp'), 'ChevronUp not found in WeightSummary collapse control (expanded state must show UP)');
 });
 
-test('11. WeightSummary has ChevronRight (collapsed icon)', () => {
-  assert.ok(wsBlock.includes('ChevronRight'), 'ChevronRight not found in WeightSummary collapse control');
+test('11. WeightSummary has ChevronDown (collapsed icon — 021J corrected direction)', () => {
+  assert.ok(wsBlock.includes('ChevronDown'), 'ChevronDown not found in WeightSummary collapse control (collapsed state must show DOWN)');
 });
 
 test('12. WeightSummary body is conditionally rendered ({summaryOpen && ...})', () => {

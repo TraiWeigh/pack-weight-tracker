@@ -285,10 +285,10 @@ test('E5. Scan Gear List toggle button still present', () => {
     'ImportGearPanel toggle button must still be present and call setOpen');
 });
 
-test('E6. SharedLockerPanel still uses ChevronDown/ChevronRight pattern (unchanged)', () => {
-  // SharedLockerPanel was not touched — it still uses both icons correctly
-  assert.match(panelFn, /ChevronDown[\s\S]{0,100}ChevronRight|ChevronRight[\s\S]{0,100}ChevronDown/,
-    'SharedLockerPanel must still have its own open/close chevron pattern (not changed by 021G)');
+test('E6. SharedLockerPanel uses ChevronDown/ChevronUp pattern (021J corrected direction)', () => {
+  // 021J corrected disclosure chevrons: expanded → ChevronUp, collapsed → ChevronDown
+  assert.match(panelFn, /ChevronUp[\s\S]{0,200}ChevronDown|ChevronDown[\s\S]{0,200}ChevronUp/,
+    'SharedLockerPanel must use ChevronUp (expanded) and ChevronDown (collapsed) after 021J chevron direction fix');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

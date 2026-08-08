@@ -1,0 +1,540 @@
+Prompt 021J — Exact Gutter Correction + Collapsible-Panel Chevron Direction
+
+Create a Replit checkpoint/recovery point and PRE_021J_MASTER_BACKUP.md BEFORE editing.
+
+021H = USER-TESTED FAIL.
+021I = PIXEL BASELINE DIAGNOSTIC — ZERO APP CHANGES.
+
+Use the measurements in PROMPT_021I_REPORT.md as the baseline.
+
+This prompt has ONLY TWO authorized UI changes:
+
+A. Correct the desktop gutter spacing using the measured 021I values.
+B. Correct disclosure-chevron direction on collapsible panels.
+
+Do not change anything else.
+
+==================================================
+A — EXACT DESKTOP GUTTER CORRECTION
+==================================================
+
+021I measured the canonical desktop geometry:
+
+Outer gutter = 32px
+Column gap = 16px
+Left scroll-area right padding = 12px
+Left scrollbar gutter = 15px
+
+Current middle content-to-content gutter:
+
+16 + 12 + 15 = 43px
+
+Target:
+
+approximately 32px
+
+AUTHORIZED CHANGE:
+
+In Checklist.tsx, remove ONLY the desktop:
+
+lg:pr-3
+
+from the LEFT checklist scrollable container that also contains:
+
+lg:[scrollbar-gutter:stable]
+
+This removes exactly 12px of unnecessary desktop right padding.
+
+Expected result:
+
+43px − 12px = approximately 31px
+
+Target comparison:
+
+Left/outer reference = approximately 32px
+Middle = approximately 31px
+
+Difference = approximately 1px.
+
+DO NOT:
+- remove scrollbar-gutter:stable
+- change lg:gap-4
+- change lg:px-8
+- change the 365px sidebar width
+- move the sidebar using transforms
+- use negative margins
+- change mobile padding
+- resize category cards by changing the grid
+- alter the sidebar's lg:px-3 unless measurement proves an unrelated defect
+
+The intended effect is that the checklist cards extend 12px farther toward the center scrollbar, removing the visibly oversized middle white strip.
+
+This should be an obvious visual improvement without changing the sidebar width or useful page width.
+
+==================================================
+VERIFY THE GUTTER CHANGE NUMERICALLY
+==================================================
+
+Use the SAME measurement method as 021I.
+
+At minimum test:
+- 1280px desktop
+- 1024px desktop
+- normal Replit desktop rendered view
+
+Record BEFORE and AFTER:
+
+G1 = left outer visual gutter
+G2 = checklist/card → sidebar visual middle gutter
+G3 = right outer/reference gutter
+
+Expected canonical result at 1280/1024:
+
+BEFORE:
+G2 ≈ 43px
+
+AFTER:
+G2 ≈ 31px
+
+G1/G3 reference ≈ 32px.
+
+Also verify:
+- column gap remains 16px
+- sidebar remains 365px on Checklist.tsx
+- outer desktop padding remains 32px
+- stable scrollbar remains enabled
+
+Do not claim PASS if the rendered page still appears essentially unchanged.
+
+==================================================
+B — COLLAPSIBLE-PANEL DISCLOSURE CHEVRONS
+==================================================
+
+Terminology:
+
+These are DISCLOSURE CHEVRONS on COLLAPSIBLE PANELS / ACCORDION SECTIONS.
+
+They are NOT ordinary dropdown/select arrows.
+
+The chevron should tell the user WHICH DIRECTION THE PANEL WILL MOVE IF CLICKED NEXT.
+
+REQUIRED BEHAVIOR:
+
+COLLAPSED / CLOSED panel:
+Chevron points DOWN.
+
+Meaning:
+Clicking it will expand/open the panel downward.
+
+EXPANDED / OPEN panel:
+Chevron points UP.
+
+Meaning:
+Clicking it will collapse/close the panel upward.
+
+Use this rule consistently everywhere a chevron controls a collapsible panel.
+
+==================================================
+APPLY TO ALL COLLAPSIBLE PANELS
+==================================================
+
+Audit the current TrailWeigh UI for disclosure chevrons attached to expandable/collapsible sections.
+
+This includes, where applicable:
+
+- checklist category panels:
+  Backpack
+  Shelter
+  Sleep System
+  Hydration
+  Kitchen Gear
+  Electronics
+  Clothing Worn
+  Dog Pack
+  Ditty Bag
+  Fanny Pack
+  and every other category
+
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- Shared Files
+- collapsible Background Edit sections
+- any other true accordion/collapsible section using the same behavior
+
+Do not hard-code category names.
+The behavior must work for dynamically created categories too.
+
+==================================================
+DO NOT CHANGE TRUE DROPDOWN/SELECT ARROWS
+==================================================
+
+Do NOT apply this rule to arrows whose purpose is to open a menu/select list.
+
+Protect examples such as:
+
+- MOVE selector
+- Save menu
+- Background Themes selector
+- account/user menu
+- Share menu
+- any select/input dropdown
+
+Those are true dropdown/menu controls and are OUT OF SCOPE.
+
+Only change disclosure chevrons that collapse/expand content.
+
+==================================================
+CHEVRON IMPLEMENTATION
+==================================================
+
+Use the existing open/collapsed state.
+
+Preferred behavior:
+
+collapsed:
+ChevronDown
+
+expanded:
+ChevronUp
+
+Equivalent existing icons may be used if they visually match TrailWeigh.
+
+Do not introduce a new icon library merely for this task.
+
+If the component currently rotates one chevron, it may continue doing so if the final rendered directions are exactly correct.
+
+Do not change:
+- icon size
+- icon weight
+- icon color
+- header spacing
+- click target
+- panel animation
+- panel contents
+
+unless absolutely necessary for the direction correction.
+
+Preserve or correct aria-expanded so:
+
+expanded panel:
+aria-expanded="true"
+
+collapsed panel:
+aria-expanded="false"
+
+==================================================
+MANDATORY CHEVRON TEST
+==================================================
+
+For representative panels verify BOTH states.
+
+Example:
+
+Pack Summary expanded:
+UP chevron
+
+Click it.
+
+Pack Summary collapsed:
+DOWN chevron
+
+Click again.
+
+Pack Summary expanded:
+UP chevron
+
+Repeat for:
+
+- one checklist category
+- Weight Distribution
+- Scan Gear List
+- Locker
+- Shared Files if rendered
+- one Background Edit collapsible section if applicable
+
+Also verify a dynamically created category follows the same rule if categories use a shared component.
+
+Confirm true dropdown/select arrows were NOT changed.
+
+==================================================
+GLOBAL REGRESSION PROTECTION
+==================================================
+
+ALL existing TrailWeigh work is protected.
+
+Smallest possible change set only.
+
+NO unrelated:
+- refactoring
+- cleanup
+- renaming
+- file movement
+- dependency updates
+- modernization
+- storage migration
+- redesign
+
+Before editing:
+- create checkpoint
+- create PRE_021J_MASTER_BACKUP.md
+- record expected files
+
+After editing:
+- inspect final diff
+- identify every changed application file
+- revert all unrelated changes
+
+The final implementation diff should contain ONLY:
+1. exact gutter-spacing correction
+2. disclosure-chevron-state correction
+
+==================================================
+DATA / STORAGE PROTECTION
+==================================================
+
+Do NOT change or reset:
+
+- localStorage
+- sessionStorage
+- IndexedDB
+- Locker files
+- file IDs
+- saved themes
+- custom photos
+- backgrounds
+- appearance settings
+- chart palettes
+- authentication data
+
+No schema migration is authorized.
+
+Never delete or rewrite user data for this prompt.
+
+==================================================
+PROTECT CURRENT FUNCTIONALITY
+==================================================
+
+Preserve:
+
+NEW
+- blank list
+- Clear background
+- Light mode
+- no filename
+- no appearance leakage
+
+SAVE / LOCKER
+- Save
+- Save As
+- Saved [File Name]
+- Open
+- Rename
+- owner's simple Delete confirmation
+- cross-tab behavior
+
+SHARE
+- Share Link
+- Share Pack List
+- Shared Files
+- shared file opening
+- Save Your Own Copy
+- no Rename/Delete for shared viewers
+- Download PDF
+
+IMPORTER
+- PDF
+- DOCX
+- XLSX
+- Numbers workflow
+- automatic category creation
+- imported items unchecked
+- existing mapping rules
+
+BACKGROUND
+- themes
+- custom photos
+- Fill/Fit
+- Darken
+- Undo/Redo
+- persistence
+
+CHECKLIST
+- quantities
+- weights
+- calculations
+- MOVE
+- Base Weight
+- Dog Pack
+- Pack Summary
+- Weight Distribution
+- chart palette
+- Open/Close
+- Hide
+- Imperial/Metric
+- Add Category
+
+PREVIEW / PRINT
+- Preview
+- Share Pack List
+- Print
+- Close
+- PDF behavior
+
+==================================================
+RESPONSIVE PROTECTION
+==================================================
+
+The 12px gutter correction is DESKTOP ONLY.
+
+Do not change phone/tablet horizontal spacing.
+
+Verify:
+- 1024 desktop breakpoint
+- 768 tablet
+- 430 phone
+- 390 phone
+
+No new:
+- horizontal overflow
+- clipping
+- panel overlap
+- control wrapping regression
+
+Chevron behavior must work at all screen sizes.
+
+==================================================
+TESTING
+==================================================
+
+Run:
+1. focused layout tests
+2. focused collapsible-panel tests
+3. COMPLETE TrailWeigh regression suite
+
+Report exact commands and:
+- passed
+- failed
+- skipped
+
+Rendered tests are mandatory because automated tests cannot prove visual gutter or chevron direction.
+
+Do NOT claim USER-TESTED PASS.
+
+==================================================
+USER ACCEPTANCE
+==================================================
+
+021J = NOT USER-VERIFIED
+
+until the user visually confirms BOTH:
+
+1. gutter spacing is visibly improved
+2. all collapsible-panel chevrons point:
+   DOWN when collapsed
+   UP when expanded
+
+==================================================
+REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021J_REPORT.md
+
+Include:
+
+- exact Prompt 021J
+- checkpoint created
+- files inspected
+- files changed
+- 021I measurement values used
+- gutter CSS before/after
+- G1/G2/G3 before/after
+- confirmation lg:pr-3 removal produced approximately 12px correction
+- sidebar width before/after
+- column gap before/after
+- outer padding before/after
+- list of collapsible components audited
+- chevron behavior before/after
+- representative expanded/collapsed tests
+- confirmation true dropdown/select arrows were untouched
+- Dark/Light rendered results
+- mobile/tablet regression
+- complete regression totals
+- final diff review
+- data/storage protection confirmation
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user tests still required
+
+Append to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Record:
+
+021H = USER-TESTED FAIL
+021I = PIXEL BASELINE DIAGNOSTIC — ZERO APP CHANGES
+021J = NOT USER-VERIFIED
+
+Do not overwrite prior history.
+
+==================================================
+REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021J-report.zip
+
+Exactly these four Markdown files at ZIP ROOT:
+
+PROMPT_021J_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- ../ paths
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- source files
+- test source files
+- screenshots
+- backups
+- user data
+- credentials
+- other ZIPs
+
+List ZIP contents before finishing.
+
+Exactly 4 root entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. checkpoint/recovery created
+2. exact gutter CSS changed
+3. G1/G2/G3 before and after
+4. confirmation middle gutter changed by approximately 12px
+5. sidebar width before/after
+6. list of collapsible components corrected
+7. confirmation collapsed = DOWN
+8. confirmation expanded = UP
+9. confirmation true dropdown/select arrows unchanged
+10. files changed
+11. final-diff result
+12. confirmation no user data/storage changed
+13. Dark/Light rendered results
+14. tablet/phone regression results
+15. COMPLETE regression totals
+16. report path
+17. ZIP path
+18. exact four ZIP entries
+19. clearly state USER visual verification is still required

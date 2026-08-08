@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { Background } from './BackgroundPicker';
-import { ChevronDown, ChevronRight, Trash2, FolderOpen, Pencil, Check, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2, FolderOpen, Pencil, Check, X } from 'lucide-react';
 import { LockerIcon } from './LockerIcon';
 
 export type Store = {
@@ -85,8 +85,8 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename }: Lock
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
       >
         {open
-          ? <ChevronDown  className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         }
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-foreground">

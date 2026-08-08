@@ -32,7 +32,7 @@ import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib
 import type { SharePayload, SharedLockerFile } from '../lib/shareLink';
 import {
   Tent, Printer, Share2, FileDown, Plus, Check, X,
-  User, UserPlus, LogOut, Info, FolderOpen, ChevronDown, ChevronRight,
+  User, UserPlus, LogOut, Info, FolderOpen, ChevronDown, ChevronUp,
 } from 'lucide-react';
 
 // ── Types that mirror usePackData ─────────────────────────────────────────────
@@ -90,8 +90,8 @@ function SharedLockerPanel({
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
       >
         {open
-          ? <ChevronDown  className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         }
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 text-foreground">

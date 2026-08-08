@@ -13,7 +13,7 @@ import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { useUnit } from '../context/UnitContext';
 import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
-import { ChevronDown, ChevronRight, Palette } from 'lucide-react';
+import { ChevronDown, ChevronUp, Palette } from 'lucide-react';
 
 // ── Chart palettes ────────────────────────────────────────────────────────────
 
@@ -94,8 +94,8 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseP
         aria-label={summaryOpen ? 'Collapse Pack Summary' : 'Expand Pack Summary'}
       >
         {summaryOpen
-          ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         }
         <span className="text-sm font-semibold text-foreground uppercase tracking-wider">
           Pack Summary
@@ -206,8 +206,8 @@ export function WeightDistribution({
           aria-label={chartOpen ? 'Collapse Weight Distribution' : 'Expand Weight Distribution'}
         >
           {chartOpen
-            ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
           }
           {/* text-foreground → white in dark mode, black in light mode */}
           <span className="text-sm font-semibold text-foreground uppercase tracking-wider">

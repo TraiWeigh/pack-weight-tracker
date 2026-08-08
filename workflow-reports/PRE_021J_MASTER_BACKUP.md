@@ -4599,42 +4599,4 @@ ZERO — no application files changed.
 
 ### Status
 
-020F=PASS | 021=PASS | 021A=PASS | 021B=PASS | 021C=FAIL | 021D=FAIL | 021F=PASS | 021G=NOT USER-VERIFIED | 021H=FAIL | 021I=DIAGNOSTIC | **021J=NOT USER-VERIFIED**
-
----
-
-## Prompt 021J — Exact Gutter Correction + Collapsible-Panel Chevron Direction
-
-**Date:** 2026-08-08 | **Status:** NOT USER-VERIFIED
-
-### Changes Made
-
-**A — Gutter (1 token removed):**
-- `Checklist.tsx` left-column scrollable div: removed `lg:pr-3`
-- Effect: G2 (content-to-content) drops from 43px → 31px ≈ G1 = G3 = 32px outer gutters
-- All other gutter tokens unchanged (lg:px-8, lg:gap-4, lg:[scrollbar-gutter:stable], sidebar 365px)
-
-**B — Disclosure chevrons (4 components):**
-| Component | Before | After |
-|-----------|--------|-------|
-| `GearCategory.tsx` (every category) | open→Down, closed→Right | open→**Up**, closed→**Down** |
-| `WeightSummary.tsx` Pack Summary | open→Down, closed→Right | open→**Up**, closed→**Down** |
-| `WeightSummary.tsx` Weight Distribution | open→Down, closed→Right | open→**Up**, closed→**Down** |
-| `LockerPanel.tsx` | open→Down, closed→Right | open→**Up**, closed→**Down** |
-| `SharedChecklistPage.tsx` SharedLockerPanel | open→Down, closed→Right | open→**Up**, closed→**Down** |
-
-True dropdowns (MOVE selector, Background Themes) — **unchanged**.
-
-### Test Results
-
-37 suites — all passed — exit 0.  
-3 stale test assertions updated to match the new correct chevron direction.
-
-### Files Changed
-
-Application: `Checklist.tsx`, `GearCategory.tsx`, `WeightSummary.tsx`, `LockerPanel.tsx`, `SharedChecklistPage.tsx`  
-Tests updated: `gutterLayout021H.test.mjs`, `sidebar019.test.mjs`, `sharedFileOpen021G.test.mjs`
-
-### Status
-
-020F=PASS | 021=PASS | 021A=PASS | 021B=PASS | 021C=FAIL | 021D=FAIL | 021F=PASS | 021G=NOT USER-VERIFIED | 021H=FAIL | 021I=DIAGNOSTIC | **021J=NOT USER-VERIFIED**
+020F=PASS | 021=PASS | 021A=PASS | 021B=PASS | 021C=FAIL | 021D=FAIL | 021F=PASS | 021G=NOT USER-VERIFIED | 021H=FAIL | **021I=DIAGNOSTIC**

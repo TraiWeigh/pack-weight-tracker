@@ -3,7 +3,7 @@ import { GearItem, CategoryMeta } from '../hooks/usePackData';
 import { GearRow } from './GearRow';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUtils';
 import { useUnit } from '../context/UnitContext';
-import { ChevronDown, ChevronRight, Plus, Trash2, GripVertical } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react';
 import { GEAR_GRID_COLS, GEAR_GRID_GAP, RG_MOVE_W, RG_WEIGHT_W, RG_QTY_W, RG_TOTAL_W, RG_DELETE_W } from './gearGrid';
 
 interface GearCategoryProps {
@@ -187,8 +187,8 @@ export function GearCategory({
         {/* Left: collapse chevron + name + count badge */}
         <div className="flex items-center gap-2 text-foreground font-semibold min-w-0">
           {isOpen
-            ? <ChevronDown  className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            : <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
+            ? <ChevronUp   className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            : <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
           <div onClick={stopProp} className="min-w-0">
             <EditableCategoryTitle name={name} onRename={onRename} />
           </div>

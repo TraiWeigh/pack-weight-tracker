@@ -1437,7 +1437,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               </div>
 
               {/* Scrollable categories */}
-              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
+              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:[scrollbar-gutter:stable]">
               {categoryOrder.map((category) => (
                 <GearCategory
                   key={category}
