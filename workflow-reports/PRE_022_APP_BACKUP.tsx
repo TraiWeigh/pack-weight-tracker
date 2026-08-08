@@ -11,16 +11,6 @@ import AdminPage from './pages/AdminPage';
 import SharedPackView from './pages/SharedPackView';
 import SharedChecklistPage from './pages/SharedChecklistPage';
 import NotFound from '@/pages/not-found';
-import AboutPage from './pages/info/AboutPage';
-import HowItWorksPage from './pages/info/HowItWorksPage';
-import HelpPage from './pages/info/HelpPage';
-import ReportProblemPage from './pages/info/ReportProblemPage';
-import ContactPage from './pages/info/ContactPage';
-import PrivacyPolicyPage from './pages/info/PrivacyPolicyPage';
-import TermsPage from './pages/info/TermsPage';
-import DeleteAccountPage from './pages/info/DeleteAccountPage';
-import AffiliatePage from './pages/info/AffiliatePage';
-import AccessibilityPage from './pages/info/AccessibilityPage';
 
 // REQUIRED — copy verbatim per Clerk skill
 const clerkPubKey = publishableKeyFromHost(
@@ -106,22 +96,12 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-8 flex-col gap-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
       <SignUp
         routing="path"
         path={`${basePath}/sign-up`}
         signInUrl={`${basePath}/sign-in`}
       />
-      <p className="text-xs text-muted-foreground text-center max-w-sm px-2">
-        By creating an account, you agree to TrailWeigh's{' '}
-        <a href={`${basePath}/terms`} className="underline underline-offset-2 hover:text-foreground transition-colors">
-          Terms of Use
-        </a>{' '}
-        and acknowledge the{' '}
-        <a href={`${basePath}/privacy`} className="underline underline-offset-2 hover:text-foreground transition-colors">
-          Privacy Policy
-        </a>.
-      </p>
     </div>
   );
 }
@@ -181,17 +161,6 @@ function ClerkProviderWithRoutes() {
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
           <Route path="/admin" component={AdminPage} />
-          {/* ── Info / Legal / Help routes ── */}
-          <Route path="/about" component={AboutPage} />
-          <Route path="/how-it-works" component={HowItWorksPage} />
-          <Route path="/help" component={HelpPage} />
-          <Route path="/report-problem" component={ReportProblemPage} />
-          <Route path="/contact" component={ContactPage} />
-          <Route path="/privacy" component={PrivacyPolicyPage} />
-          <Route path="/terms" component={TermsPage} />
-          <Route path="/delete-account" component={DeleteAccountPage} />
-          <Route path="/affiliate" component={AffiliatePage} />
-          <Route path="/accessibility" component={AccessibilityPage} />
           <Route component={NotFound} />
         </Switch>
         <Toaster />

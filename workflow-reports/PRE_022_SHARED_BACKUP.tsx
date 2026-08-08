@@ -30,7 +30,6 @@ import {
 } from '../components/BackgroundPicker';
 import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib/bgPhotoStore';
 import type { SharePayload, SharedLockerFile } from '../lib/shareLink';
-import Footer from '@/components/Footer';
 import {
   Tent, Printer, Share2, FileDown, Plus, Check, X,
   User, UserPlus, LogOut, Info, FolderOpen, ChevronDown, ChevronUp,
@@ -1062,9 +1061,6 @@ function SharedChecklistContent({
 
           </div>
         </main>
-
-        {/* ── Informational footer — public links only, no owner-account controls ── */}
-        <Footer informationalOnly />
       </div>
 
       {/* ── Preview modal ── */}
@@ -1320,9 +1316,6 @@ function SharedPackListContent({ snapshot }: { snapshot: SharePayload }) {
             </div>
           </div>
         </main>
-
-        {/* ── Informational footer — public links only, no owner-account controls ── */}
-        <Footer informationalOnly />
       </div>
 
       {/* Print-only layout — hidden on screen, rendered when window.print() fires */}

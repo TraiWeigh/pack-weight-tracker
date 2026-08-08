@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 import { Tent, CheckSquare, Scale, Share2, ArrowRight } from 'lucide-react';
-import Footer from '@/components/Footer';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -83,7 +82,9 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <Footer />
+      <footer className="text-center py-4 text-xs text-muted-foreground/60">
+        © {new Date().getFullYear()} TrailWeigh
+      </footer>
     </div>
   );
 }

@@ -4855,3 +4855,32 @@ Inner sidebar content wrapper had `py-2 pb-8`. The `py-2` = 8 px top padding cau
 ### Status
 
 **021P PACK SUMMARY ALIGNMENT = NOT USER-VERIFIED**
+
+---
+
+## Prompt 022 — Add TrailWeigh Footer, Legal, Help & Support Navigation
+
+**Date:** 2026-08-08
+
+### Goal
+Add a compact dark-charcoal footer with 10 links across 3 sections (TrailWeigh, Help, Account & Privacy), create 10 informational page stubs, add routes, and add sign-up legal consent text.
+
+### Components Created
+- `Footer.tsx` — always-dark `#1e2322`, `informationalOnly` prop for shared view, `print:hidden`
+
+### Pages Created (10)
+About, How It Works, Help & How-To, Report a Problem, Contact Us, Privacy Policy, Terms of Use, Delete Account / Data, Affiliate Disclosure, Accessibility — all in `src/pages/info/`
+
+### Routes Added (10)
+`/about`, `/how-it-works`, `/help`, `/report-problem`, `/contact`, `/privacy`, `/terms`, `/delete-account`, `/affiliate`, `/accessibility`
+
+### Key Decisions
+- Checklist page: no footer added (height-constrained 021P layout; would risk geometry changes)
+- Shared view: `<Footer informationalOnly />` — omits Delete Account / Data in both render paths
+- Sign-up: legal consent text + Terms/Privacy links added below Clerk card in App.tsx local function
+
+### Test Results
+43 suites — all passed — exit 0. 44 new footer022 tests.
+
+### Status
+**022 FOOTER & NAVIGATION = NOT USER-VERIFIED**

@@ -1,0 +1,629 @@
+# Prompt 022 — Add TrailWeigh Footer, Legal, Help & Support Navigation
+
+## Goal
+
+Add a clean, compact footer to TrailWeigh that gives users easy access to:
+
+* information about TrailWeigh
+* Help & How-To
+* support
+* privacy information
+* legal information
+* account/data information
+
+The footer should be appropriately sized for TrailWeigh.
+
+Do **not** create a large Amazon-style directory footer.
+
+The footer should remain visually simple and contain approximately **8–10 useful links**.
+
+---
+
+# 1. Footer Structure
+
+Create three compact footer sections:
+
+## TrailWeigh
+
+Include:
+
+* About TrailWeigh
+* How It Works
+
+## Help
+
+Include:
+
+* Help & How-To
+* Report a Problem
+* Contact Us
+
+## Account & Privacy
+
+Include:
+
+* Privacy Policy
+* Terms of Use
+* Delete Account / Data
+* Affiliate Disclosure
+* Accessibility
+
+At the bottom of the footer display:
+
+**© 2026 TrailWeigh · All rights reserved.**
+
+---
+
+# 2. Help & How-To
+
+Use the wording:
+
+**Help & How-To**
+
+Do not call this simply “FAQ.”
+
+This page will eventually contain:
+
+* Getting Started
+* How-To Videos
+* Step-by-Step Guides
+* Frequently Asked Questions
+* Troubleshooting
+
+The actual how-to videos do **not** need to be created in this prompt.
+
+Create the page/navigation structure so videos and guides can be added later.
+
+---
+
+# 3. How It Works
+
+Keep **How It Works** separate from **Help & How-To**.
+
+The distinction is:
+
+**How It Works**
+= an overview of what TrailWeigh does and how the overall workflow works.
+
+**Help & How-To**
+= detailed instructions showing users exactly how to perform individual tasks.
+
+Do not combine these two pages.
+
+---
+
+# 4. Report a Problem
+
+Make **Report a Problem** easy to find.
+
+It should appear directly in the Help section of the footer.
+
+For now, connect it to the existing problem-reporting location if one already exists.
+
+If a dedicated Report a Problem page or route is needed, create the route/page shell.
+
+Do **not** build the screen-recording system in this prompt.
+
+The built-in problem-reporting recorder will be handled in a later prompt.
+
+---
+
+# 5. Contact Us
+
+Create a Contact Us destination.
+
+The page should be structured so TrailWeigh can later use either:
+
+* an official TrailWeigh support email address
+* or a contact form
+
+Do **not** expose a developer's or owner's personal email address.
+
+If no official TrailWeigh support email has been configured yet, do not invent one.
+
+Use neutral temporary wording such as:
+
+**TrailWeigh support contact information will be available here.**
+
+Do not create fake contact information.
+
+---
+
+# 6. Privacy Policy
+
+Add a working:
+
+**Privacy Policy**
+
+link and page/route.
+
+For this prompt, create the page structure only.
+
+The complete Privacy Policy will be written and reviewed separately.
+
+The eventual policy will need to address topics such as:
+
+* account information
+* saved gear lists
+* uploaded/imported information
+* cookies/local browser storage
+* analytics, if used
+* service providers
+* data retention
+* account deletion
+* user privacy rights
+* how user information is protected
+
+Do not invent legal promises or privacy practices that have not been verified.
+
+---
+
+# 7. Terms of Use
+
+Add a working:
+
+**Terms of Use**
+
+link and page/route.
+
+For this prompt, create the page structure only.
+
+The complete Terms of Use will be written and reviewed separately.
+
+Do not generate extensive legal terms or make unverified legal claims in this prompt.
+
+---
+
+# 8. Delete Account / Data
+
+Add:
+
+**Delete Account / Data**
+
+to the Account & Privacy section.
+
+If TrailWeigh already has an account deletion/data deletion screen, route the footer link to that existing feature.
+
+Do not duplicate an existing deletion system.
+
+If the deletion feature does not yet exist, create only the appropriate page/route/navigation destination.
+
+Do **not** implement a new destructive account-deletion backend as part of this prompt.
+
+Do not change existing account-deletion behavior.
+
+---
+
+# 9. Affiliate Disclosure
+
+Add:
+
+**Affiliate Disclosure**
+
+to the footer.
+
+Create a simple disclosure page.
+
+For now, it may contain wording substantially similar to:
+
+**TrailWeigh may earn a commission from qualifying purchases made through retailer links at no additional cost to you.**
+
+Also make clear that the wording may need to be updated later to match the actual affiliate programs and retailer agreements TrailWeigh joins.
+
+Do not claim TrailWeigh currently participates in any specific affiliate program unless that is already verified in the application.
+
+Do not add retailer names that have not been confirmed.
+
+---
+
+# 10. Accessibility
+
+Add:
+
+**Accessibility**
+
+to the footer.
+
+Create a basic accessibility-information page/route.
+
+The page should explain that TrailWeigh intends to make its application usable by people with disabilities and provide a future location for:
+
+* accessibility information
+* keyboard-navigation information
+* screen-reader information
+* contrast/readability information
+* reporting an accessibility problem
+
+Do not claim formal accessibility certification or full compliance with a specific standard unless it has actually been verified.
+
+---
+
+# 11. Sign-Up / Account Creation Links
+
+Privacy Policy and Terms of Use must **not exist only in the footer**.
+
+On the TrailWeigh account-creation/sign-up screen, add visible links to:
+
+* Privacy Policy
+* Terms of Use
+
+Use concise wording such as:
+
+**By creating an account, you agree to TrailWeigh's Terms of Use and acknowledge the Privacy Policy.**
+
+Make:
+
+**Terms of Use**
+
+and:
+
+**Privacy Policy**
+
+clickable links to the same pages used by the footer.
+
+Do not create duplicate policy pages.
+
+---
+
+# 12. Footer Appearance
+
+The footer must have a **constant dark appearance**, regardless of whether TrailWeigh is in Light mode or Dark mode.
+
+Do not make the footer change between light and dark themes.
+
+Use:
+
+* a **very dark charcoal background**
+* white or very light-gray section headings
+* white or light-gray links
+* slightly muted light-gray copyright text
+
+The footer should be visually similar in concept to a traditional dark website footer, but much smaller and cleaner than Amazon's footer.
+
+Do **not** use pure black unless that better matches TrailWeigh's existing design system.
+
+The footer should remain dark in:
+
+* Light mode
+* Dark mode
+* System mode
+
+---
+
+# 13. Footer Font Sizes
+
+Keep footer typography slightly smaller than the main TrailWeigh interface.
+
+Use approximately:
+
+### Section headings
+
+**14 px**
+
+Use semibold or equivalent existing TrailWeigh font weight.
+
+### Footer links
+
+**14 px**
+
+Do not make links smaller than this simply to reduce footer height.
+
+### Copyright / legal line
+
+Use approximately:
+
+**12–13 px**
+
+### Link line height
+
+Use approximately:
+
+**20–22 px**
+
+This should keep the footer compact while still being easy to read.
+
+Do **not** use 10 px or 11 px text for normal footer links.
+
+The footer should look visually smaller than the main application without becoming difficult to read.
+
+---
+
+# 14. Footer Size
+
+Keep the footer intentionally compact.
+
+Do not:
+
+* create dozens of links
+* add large marketing blocks
+* add newsletter signup
+* add social-media sections
+* add retailer logos
+* add app-store badges
+* add promotional banners
+* add large graphics
+* add unnecessary navigation categories
+
+The current footer should contain only the links specified in this prompt.
+
+---
+
+# 15. Desktop Layout
+
+On desktop, use a compact multi-column layout.
+
+The three footer groups should normally appear side-by-side when sufficient width is available.
+
+Keep:
+
+* reasonable spacing between columns
+* modest vertical padding
+* compact link spacing
+
+Do not make the footer unusually tall.
+
+---
+
+# 16. Mobile Layout
+
+On mobile:
+
+* stack the three footer groups cleanly
+* keep all links easy to tap
+* preserve the same dark-charcoal background
+* preserve readable 14 px link text
+* do not introduce horizontal scrolling
+
+Do not shrink the text excessively on mobile.
+
+---
+
+# 17. Placement
+
+Place the footer at the bottom of the appropriate TrailWeigh application pages.
+
+It should not interfere with:
+
+* checklist scrolling
+* Pack Summary
+* toolbar positioning
+* sidebar scrolling
+* preview
+* shared-list view
+* Locker
+* modal dialogs
+
+Inspect TrailWeigh's current application layout before choosing the footer implementation.
+
+Do not simply place the footer inside a scroll container if doing so would break the existing checklist/sidebar layout.
+
+Use the existing application architecture appropriately.
+
+---
+
+# 18. Shared-Link Viewer
+
+Review whether the footer should appear in the shared-link viewer.
+
+If normal site navigation/footer elements already appear there, keep the experience consistent.
+
+However, do not expose owner-only account controls to a person viewing somebody else's shared list.
+
+In particular, a shared viewer must not gain access to another user's:
+
+* account settings
+* Delete Account / Data controls
+* private Locker controls
+* private saved files
+
+Public informational links such as:
+
+* About TrailWeigh
+* How It Works
+* Help & How-To
+* Privacy Policy
+* Terms of Use
+* Affiliate Disclosure
+* Accessibility
+
+may remain accessible.
+
+---
+
+# 19. Existing Layout Protection
+
+Do not change any previously approved Prompt 021 layout work.
+
+Preserve:
+
+* toolbar group positioning
+* toolbar top spacing
+* checklist/Pack Summary top-edge alignment
+* desktop gutters
+* sidebar width
+* toolbar grouping
+* filename positioning
+* Hide behavior
+* Preview behavior
+* Imperial/Metric behavior
+* Background Edit behavior
+* Share behavior
+
+Prompt 021P is visually approved.
+
+Do not use this footer work as an opportunity to modify the toolbar or checklist geometry.
+
+---
+
+# 20. Navigation Requirements
+
+Every footer link must:
+
+* be keyboard accessible
+* have a clear visible label
+* use the correct route
+* not lead to a 404
+* remain readable against the dark footer
+* work in Light mode
+* work in Dark mode
+* work on desktop
+* work on mobile
+
+Avoid unnecessary new-tab behavior for internal TrailWeigh pages.
+
+Internal TrailWeigh informational pages should normally open within the application/site.
+
+---
+
+# 21. Page Heading Requirements
+
+Each destination page should have a clear heading corresponding to its footer link.
+
+Examples:
+
+* About TrailWeigh
+* How It Works
+* Help & How-To
+* Report a Problem
+* Contact Us
+* Privacy Policy
+* Terms of Use
+* Delete Account / Data
+* Affiliate Disclosure
+* Accessibility
+
+Use the existing TrailWeigh page styling.
+
+Do not over-design these pages.
+
+---
+
+# 22. Do Not Write Final Legal Documents Yet
+
+This is important.
+
+Do not generate large, supposedly final:
+
+* Privacy Policies
+* Terms of Use
+* legal disclaimers
+* accessibility compliance statements
+
+without knowing TrailWeigh's final data practices and services.
+
+This prompt establishes:
+
+**navigation + page structure + basic safe placeholder/informational content.**
+
+The final legal text will be handled separately.
+
+---
+
+# 23. Testing
+
+Test all footer links.
+
+Verify:
+
+1. Footer appears correctly on appropriate TrailWeigh pages.
+2. Footer remains dark charcoal in Light mode.
+3. Footer remains dark charcoal in Dark mode.
+4. Footer remains dark charcoal in System mode.
+5. Footer section headings are approximately 14 px semibold.
+6. Footer links are approximately 14 px.
+7. Copyright/legal text is approximately 12–13 px.
+8. Footer link line-height is approximately 20–22 px.
+9. Text contrast remains easy to read.
+10. Desktop layout is compact.
+11. Mobile footer stacks correctly.
+12. No horizontal scrolling is introduced.
+13. About TrailWeigh opens correctly.
+14. How It Works opens correctly.
+15. Help & How-To opens correctly.
+16. Report a Problem opens correctly.
+17. Contact Us opens correctly.
+18. Privacy Policy opens correctly.
+19. Terms of Use opens correctly.
+20. Delete Account / Data opens the correct destination.
+21. Affiliate Disclosure opens correctly.
+22. Accessibility opens correctly.
+23. Sign-up Privacy Policy link works.
+24. Sign-up Terms of Use link works.
+25. No footer link produces a 404.
+26. Existing checklist scrolling remains correct.
+27. Pack Summary scrolling remains correct.
+28. Prompt 021P alignment remains unchanged.
+29. Toolbar remains unchanged.
+30. Shared-view users cannot access owner-only account controls.
+31. Existing automated tests still pass.
+
+---
+
+# 24. Add Regression Tests
+
+Add appropriate automated tests protecting:
+
+* required footer links
+* correct footer routes
+* Privacy Policy link on sign-up
+* Terms of Use link on sign-up
+* shared-view protection against owner-only controls
+* constant dark footer appearance
+* footer responsiveness where practical
+
+Do not write tests that only search arbitrary source-code text if a functional test can better protect the behavior.
+
+---
+
+# 25. Protection Requirement
+
+Before making changes:
+
+* create the normal checkpoint/backup
+* preserve all saved gear lists
+* preserve Locker contents
+* preserve user accounts
+* preserve shared links
+* preserve background selections
+* preserve Prompt 021P layout
+* make only the changes necessary for Prompt 022
+
+Do not refactor unrelated application code.
+
+---
+
+# Required Report
+
+When complete, create and attach:
+
+**PROMPT_022_REPORT.md**
+
+The report must include:
+
+* files changed
+* components created
+* routes created
+* footer component location
+* all footer links added
+* destination of every footer link
+* exact footer background color used
+* section-heading font size
+* footer-link font size
+* copyright font size
+* footer link line-height
+* sign-up screen changes
+* whether an existing account-deletion page was reused
+* how Report a Problem was connected
+* whether footer behavior differs in shared view
+* desktop testing performed
+* mobile testing performed
+* Light/Dark/System mode testing
+* accessibility/keyboard testing
+* automated test results
+* confirmation Prompt 021P layout remained unchanged
+* any issues discovered
+* anything requiring future content/legal review
+
+Also provide the standard backup/checkpoint ZIP for Prompt 022.
+
+Do not proceed to unrelated improvements after completing Prompt 022.
