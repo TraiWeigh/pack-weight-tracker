@@ -4476,39 +4476,3 @@ Full regression:   35 suites, all passing (exit 0)
 ### Status History
 
 020F = PASS | 021 = PASS | 021A = PASS | 021B = PASS | 021C = FAIL (old links) | 021D = FAIL (old links) | 021E = NOT VERIFIED | **021F = NOT USER-VERIFIED**
-
----
-
-## Prompt 021G — Fix Shared File Open + Scan Gear List Chevron
-
-**Date:** 2026-08-08 | **Status:** NOT USER-VERIFIED
-
-### Root Cause — Shared Files Not Opening
-
-`SharedLockerPanel` file rows had **no `onClick` handler** — only the tiny FolderOpen icon button (3.5×3.5px, `opacity-60`) responded to clicks. Users click the file NAME text expecting it to open the file, but the name area had no event handler. `switchToFile` (the state-switching logic) was already correct.
-
-**Fix:** Made the entire row div the click target (`role="button"`, `onClick`, `onKeyDown`, `cursor-pointer`). Demoted the FolderOpen `<button>` to a decorative `<span aria-hidden>`.
-
-### Root Cause — Scan Gear List Chevron Points Right
-
-`ImportGearPanel.tsx` used `ChevronRight` for the closed state. Visual-only fix: replaced the conditional `{open ? ChevronDown : ChevronRight}` with `<ChevronDown>` always. No behavior change.
-
-### Files Changed
-
-| File | Change |
-|------|--------|
-| `SharedChecklistPage.tsx` | SharedLockerPanel row: `<div role="button" onClick>` + `<span aria-hidden>` for icon |
-| `ImportGearPanel.tsx` | `ChevronRight` → `ChevronDown` (visual-only); removed ChevronRight import |
-| `sharedFileOpen021G.test.mjs` | New — 48 tests |
-| `package.json` | test:importer: 35 → 36 suites |
-
-### Automated Test Results
-
-```
-021G suite:        48/48 ✅
-Full regression:   36 suites, 1,387 checks, exit 0
-```
-
-### Status History
-
-020F=PASS | 021=PASS | 021A=PASS | 021B=PASS | 021C=FAIL | 021D=FAIL | 021F menu/labels=PASS | 021F file-open=FAIL | **021G=NOT USER-VERIFIED**

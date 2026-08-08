@@ -111,9 +111,19 @@ function SharedLockerPanel({
       {open && (
         <div className="divide-y divide-border">
           {files.map(file => (
+            /*
+             * The ENTIRE ROW is the click target so users can tap the file name
+             * text or anywhere in the row to open the file — not just the small
+             * folder icon.  Rename and Delete controls are intentionally absent.
+             */
             <div
               key={file.id}
-              className={`px-4 py-3 flex items-center gap-3 hover:bg-muted/20 transition-colors group${
+              role="button"
+              tabIndex={0}
+              onClick={() => onOpen(file)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(file); } }}
+              title={`Open "${file.name}"`}
+              className={`px-4 py-3 flex items-center gap-3 hover:bg-muted/20 transition-colors group cursor-pointer${
                 activeId === file.id ? ' bg-primary/5' : ''
               }`}
             >
@@ -122,14 +132,13 @@ function SharedLockerPanel({
                   activeId === file.id ? ' text-primary' : ' text-foreground'
                 }`}>{file.name}</p>
               </div>
-              {/* Open only — rename and delete controls are intentionally absent */}
-              <button
-                onClick={() => onOpen(file)}
-                title={`Open "${file.name}"`}
-                className="p-1.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors flex-shrink-0 opacity-60 group-hover:opacity-100"
+              {/* Folder icon — visual affordance only; the whole row is the click target */}
+              <span
+                aria-hidden="true"
+                className="p-1.5 rounded text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0 opacity-60 group-hover:opacity-100"
               >
                 <FolderOpen className="w-3.5 h-3.5" />
-              </button>
+              </span>
             </div>
           ))}
         </div>

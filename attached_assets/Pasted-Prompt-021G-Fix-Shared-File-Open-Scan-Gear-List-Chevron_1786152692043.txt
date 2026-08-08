@@ -1,0 +1,533 @@
+Prompt 021G — Fix Shared File Open + Scan Gear List Chevron
+
+Create PRE_021G_MASTER_BACKUP.md before changing anything.
+
+CURRENT STATUS:
+- 020F functional = USER-TESTED PASS.
+- 021A /checklist protection = USER-TESTED PASS.
+- 021B private Delete without password = USER-TESTED PASS.
+- 021F Share menu/labels/panel-placement changes appear USER-TESTED PASS.
+- 021F Shared Files panel is visible.
+- USER-TESTED FAILURE: files listed in Shared Files will NOT open when selected.
+- Small UI correction: Scan Gear List chevron points right; it must point down.
+- 021G = NOT USER-VERIFIED.
+
+==================================================
+1. PRIMARY BUG — SHARED FILES WILL NOT OPEN
+==================================================
+
+In a real Share Link, the Shared Files panel now appears and lists saved files.
+
+However, clicking/selecting the folder/Open control for another shared file does NOT load that file.
+
+This is a confirmed user-visible failure.
+
+DO NOT rebuild Share Link.
+DO NOT redesign Shared Files.
+DO NOT remove the now-working Shared Files panel.
+
+Investigate the actual file-open path before editing.
+
+Trace:
+
+- Shared Files row click/folder control
+- click handler
+- shared file ID passed by the row
+- selectedSharedFileId or equivalent state
+- snapshot lookup by file ID
+- temporary per-file state/cache
+- store replacement
+- category/order/items replacement
+- filename update
+- checked state
+- calculations
+- background
+- Light/Dark
+- Fill/Fit
+- fade/darken
+- chart palette
+- React effects after selection
+- whether the selected file state is immediately overwritten by another hydration/effect
+
+Determine the EXACT reason clicking another Shared File does not visibly load it.
+
+Do not simply add a refresh, timeout, retry, or second click.
+
+==================================================
+2. REQUIRED SHARED FILE OPEN BEHAVIOR
+==================================================
+
+In a valid Share Link:
+
+Shared Files panel lists the files contained in the share snapshot.
+
+When viewer selects File A:
+- File A becomes visibly active
+- filename changes to File A
+- File A categories/items load
+- File A checked states load
+- File A calculations load
+- File A saved shared appearance loads
+
+When viewer selects File B:
+- File B becomes visibly active
+- File B content replaces File A content
+- File B appearance loads
+- no refresh required
+- no second click required
+
+Repeat switching must work reliably.
+
+Test at minimum:
+- Sierra/Dutch/0826
+- Ray Jardine's
+- Packlist 1
+- another shared file if present
+
+Do not rename or modify these user files during testing.
+
+==================================================
+3. TEMPORARY PER-FILE STATE
+==================================================
+
+Shared-viewer edits remain temporary.
+
+If viewer:
+1. opens Sierra
+2. changes a checkbox/value
+3. opens Ray
+4. changes something different
+5. returns to Sierra
+
+Sierra may retain its own temporary session change.
+
+Ray must retain only Ray's temporary session change.
+
+File A temporary state must never contaminate File B.
+
+Refresh/reopen Share Link:
+- original shared snapshot restores
+- temporary viewer changes disappear
+- sender originals remain unchanged
+
+==================================================
+4. SHARED VIEWER PERMISSIONS — PROTECT
+==================================================
+
+Shared viewer may:
+- view Shared Files
+- open/browse files
+- make temporary edits
+- use Save Your Own Copy to save an independent copy to their own account
+
+Shared viewer may NOT:
+- Rename shared/original files
+- Delete shared/original files
+- Save to sender original
+- Save As over sender original
+- modify sender persistence
+
+Shared Files rows must continue to show NO Rename pencil and NO Delete trash.
+
+Do not restore those controls.
+
+==================================================
+5. SHARE MENU — PROTECT 021F
+==================================================
+
+For normal logged-in owner with a non-empty list, Share menu must remain:
+
+Share Link
+All your saved files
+
+Share Pack List
+Copy link, read-only
+
+Download PDF
+
+Do NOT change those labels.
+
+Share Link = multi-file Shared Files experience.
+
+Share Pack List = current single pack list, read-only Preview-style link.
+
+Download PDF remains unchanged.
+
+Keep Share menu consistent across logged-in owner tabs.
+
+==================================================
+6. RIGHT SIDEBAR ORDER — PROTECT 021F
+==================================================
+
+Keep the intended panel order:
+
+1. Pack Summary
+2. Weight Distribution
+3. Scan Gear List
+4. Locker / Shared Files
+
+Do not move Shared Files above Pack Summary again.
+
+==================================================
+7. SCAN GEAR LIST CHEVRON
+==================================================
+
+CONFIRMED VISUAL CORRECTION:
+
+The chevron/arrow displayed beside the Scan Gear List heading currently points RIGHT.
+
+Change it so it points DOWN.
+
+This is a VISUAL-ONLY change.
+
+Required:
+- Scan Gear List arrow points downward in its current displayed state.
+- Preserve its current size, position, spacing, style, and theme appearance as closely as possible.
+- Do NOT redesign the panel.
+- Do NOT change Scan Gear List open/close/import behavior.
+- Do NOT change importer logic.
+
+Protect:
+- PDF import
+- Word import
+- Excel import
+- Numbers workflow
+- automatic category creation during import
+- imported items unchecked
+- existing mappings
+
+==================================================
+8. SHARE PACK LIST / PREVIEW — PROTECT
+==================================================
+
+Preserve:
+- Share Pack List single-list sharing
+- read-only shared presentation
+- Preview-style layout
+- Share Pack List pill immediately left of Print in Preview
+- Print
+- Close
+- Download PDF
+- existing Preview calculations/layout
+
+Do not change these unless required by a compile dependency.
+
+==================================================
+9. PRIVATE OWNER BEHAVIOR — PROTECT
+==================================================
+
+Signed-in private owner:
+
+Rename:
+- available normally
+
+Delete:
+- simple confirmation
+- NO password
+- Cancel preserves file
+- Permanently Delete deletes only selected owned file
+
+Signed out:
+/checklist → sign-in
+
+Public:
+/s/:shareId → public Share Link view
+
+Do not regress authentication behavior.
+
+==================================================
+10. PROTECT 020F
+==================================================
+
+New:
+- zero categories/items
+- Clear/no background
+- Light mode
+- no filename
+- remains Clear/Light
+- no cross-tab appearance leakage
+
+Saved files:
+- Sierra/Dutch/0826 restores its own appearance
+- Ray Jardine's restores its own appearance
+- Packlist 1 restores its own appearance
+
+Save confirmation:
+Saved [File Name]
+
+No quotation marks.
+
+==================================================
+11. GLOBAL REGRESSION PROTECTION
+==================================================
+
+Treat ALL existing TrailWeigh functionality, data behavior, styling, layout, persistence, calculations, importer behavior, backgrounds, Locker, Share, auth, Preview/Print, responsive behavior, and prior completed work as protected unless explicitly changed by 021G.
+
+Use smallest possible change set.
+
+NO unrelated:
+- cleanup
+- refactoring
+- renaming
+- relocation
+- modernization
+- redesign
+
+Preserve:
+- all existing Locker files
+- file IDs
+- user data
+- localStorage
+- sessionStorage
+- IndexedDB
+- cross-tab behavior
+- saved-file compatibility
+- custom themes/photos
+- backgrounds
+- Fill/Fit/Darken
+- palette persistence
+- Save/Save As
+- New/Reset
+- Open/Close
+- Undo/Redo
+- Hide
+- Imperial/Metric
+- MOVE
+- calculations
+- Pack Summary
+- Weight Distribution
+- desktop/mobile layout
+
+Create checkpoint first.
+Inspect final diff.
+Revert unrelated changes.
+
+Never erase/migrate/rewrite user data merely to fix Shared File selection.
+
+If a schema/storage migration appears necessary:
+STOP and report why before implementing it.
+
+==================================================
+12. REQUIRED REAL-BROWSER TEST — FILE OPEN
+==================================================
+
+This is mandatory.
+
+Generate/open a NEW real Share Link containing multiple saved files.
+
+In the real shared page:
+
+1. Open Sierra/Dutch/0826 from Shared Files.
+   Verify Sierra becomes active.
+
+2. Open Ray Jardine's.
+   Verify:
+   - filename visibly changes
+   - gear visibly changes
+   - Ray appearance visibly loads
+
+3. Open Packlist 1.
+   Verify its own content/appearance loads.
+
+4. Return to Sierra.
+   Verify Sierra loads again.
+
+5. Repeat switching several times.
+
+PASS requires:
+- ONE click opens the selected file
+- no refresh
+- no second click
+- correct filename
+- correct gear
+- correct checked states
+- correct totals
+- correct appearance
+- no cross-file contamination
+
+Capture screenshot/video evidence if available.
+
+Do NOT mark PASS merely because the selected ID changed internally.
+
+The visible checklist must actually change.
+
+==================================================
+13. REQUIRED TEMPORARY-STATE TEST
+==================================================
+
+In shared view:
+
+1. Open Sierra.
+2. Change one checkbox.
+3. Open Ray.
+4. Change a different checkbox.
+5. Return to Sierra.
+
+Verify Sierra's temporary state is still Sierra-specific.
+
+Return to Ray.
+Verify Ray's temporary state is still Ray-specific.
+
+Refresh Share Link.
+
+Verify temporary changes disappear.
+
+Then open the owner's private files and verify sender originals were untouched.
+
+==================================================
+14. SCAN GEAR LIST VISUAL TEST
+==================================================
+
+Verify in real browser:
+
+- Scan Gear List chevron points DOWN.
+- panel layout did not shift.
+- clicking/using Scan Gear List still works.
+- importer behavior remains unchanged.
+
+==================================================
+15. AUTOMATED TESTS
+==================================================
+
+Add focused tests for:
+
+- Shared File row click calls correct file-selection path
+- correct shared file ID is selected
+- snapshot lookup returns selected file
+- selected file Store visibly replaces prior Store
+- filename changes with selection
+- checked states/calculations change with selection
+- appearance changes with selected file
+- temporary state isolated per file ID
+- repeated A → B → C → A switching
+- refresh restores original snapshot
+- sender persistence untouched
+- no Rename/Delete controls in shared view
+- Share menu labels remain correct
+- sidebar order remains correct
+- Scan Gear List chevron is downward
+- importer behavior remains intact
+
+Run:
+
+1. focused 021G tests
+2. COMPLETE TrailWeigh automated regression suite
+
+Report exact commands and exact:
+- passed
+- failed
+- skipped
+
+Do not describe targeted tests as the full suite.
+
+==================================================
+16. USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+021G = NOT USER-VERIFIED
+
+until user personally confirms Shared Files open correctly and the Scan Gear List arrow is correct.
+
+==================================================
+17. REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021G_REPORT.md
+
+Include:
+- exact Prompt 021G
+- starting state
+- exact root cause of Shared Files not opening
+- exact click/selection state flow before vs after
+- files inspected
+- files changed
+- exact code changes
+- temporary per-file state behavior
+- appearance restoration behavior
+- Scan Gear List chevron change
+- focused tests/results
+- COMPLETE regression command/results
+- real-browser file-opening test
+- protected-feature tests
+- failures/reversions
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user tests still required
+
+Append verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite/truncate prior history.
+
+Record:
+020F functional = USER-TESTED PASS
+021A /checklist protection = USER-TESTED PASS
+021B private Delete = USER-TESTED PASS
+021C Shared Locker = USER-TESTED FAIL
+021D Shared Locker = USER-TESTED FAIL
+021F menu/labels/layout = USER-TESTED PASS
+021F Shared File open = USER-TESTED FAIL
+021G = NOT USER-VERIFIED
+
+==================================================
+18. REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021G-report.zip
+
+It must contain EXACTLY these four Markdown files at ZIP ROOT:
+
+PROMPT_021G_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- ../ paths
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- backups
+- source/test files
+- screenshots
+- user data
+- credentials
+- other ZIP files
+
+Before finishing:
+LIST the ZIP entries.
+
+There must be exactly 4 root entries.
+
+Anything else = ZIP FAIL.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. exact reason Shared Files would not open
+2. exact files changed
+3. how one-click shared-file selection now works
+4. real-browser proof Sierra/Ray/Packlist switch correctly
+5. temporary per-file state isolation result
+6. confirmation sender originals remain unchanged
+7. confirmation shared Rename/Delete remain absent
+8. confirmation Share menu labels remain correct
+9. confirmation sidebar order remains correct
+10. confirmation Scan Gear List chevron now points down
+11. confirmation Scan Gear List/importers remain functional
+12. focused test totals
+13. COMPLETE regression totals
+14. report path
+15. ZIP path
+16. exact four ZIP entries
+17. clearly state USER acceptance is still required

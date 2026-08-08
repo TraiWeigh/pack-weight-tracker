@@ -3,7 +3,7 @@ import { GearItem } from '../hooks/usePackData';
 import { CATEGORY_ROLE_ALIASES, normCat, resolveDestination } from '../lib/categoryAliases';
 import {
   FileUp, Loader2, CheckCircle2, AlertCircle, X,
-  ChevronDown, ChevronRight, Check, AlertTriangle,
+  ChevronDown, Check, AlertTriangle,
 } from 'lucide-react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -270,8 +270,8 @@ export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelPro
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
       >
-        {open ? <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-               : <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />}
+        {/* Chevron always points down (visual-only; open/close behaviour unchanged) */}
+        <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <FileUp className="w-4 h-4 text-primary flex-shrink-0" />
