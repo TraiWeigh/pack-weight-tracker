@@ -1373,7 +1373,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             {/* Gear list */}
             <div className="lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned pills row */}
-              <div className="pt-8 pb-3 flex items-center lg:pr-3 flex-shrink-0 relative">
+              <div className="pt-8 pb-3 flex items-center lg:pr-7 flex-shrink-0 relative">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -1513,7 +1513,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             {/* Sidebar */}
             <div className="order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned action bar */}
-              <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
+              <div className="relative flex flex-wrap justify-center lg:justify-end gap-2 pt-8 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton
                     onClick={() => setBackgroundPickerOpen(o => !o)}

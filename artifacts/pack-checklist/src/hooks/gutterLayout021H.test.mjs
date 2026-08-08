@@ -143,9 +143,16 @@ test('E3. Sidebar scrollable uses lg:pl-1 lg:pr-5 (021L gutter rebalance: 4px le
     '021L: sidebar scrollable must use lg:pl-1 (4px) left and lg:pr-5 (20px) right padding');
 });
 
-test('E4. Sidebar button-row lg:px-3 preserved', () => {
-  const buttonRowLine = checklist.split('\n').find(l => l.includes('justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0'));
-  assert.ok(buttonRowLine, 'Sidebar button row with lg:px-3 must be unchanged');
+test('E4. Sidebar button-row uses lg:pl-3 lg:pr-9 lg:justify-end (021M toolbar alignment)', () => {
+  // 021M aligned Share button's right edge with sidebar-panel right edge.
+  // justify-center → justify-center lg:justify-end (desktop right-align)
+  // lg:px-3 → lg:pl-3 lg:pr-9 (left 12px, right 36px; total 48px vs old 24px;
+  //   extra 24px right = pr-5(20px) + scrollbar-gutter(≈15px) ≈ 35px — nearest standard token pr-9=36px)
+  const buttonRowLine = checklist.split('\n').find(l =>
+    l.includes('justify-center') && l.includes('lg:justify-end') &&
+    l.includes('pt-8 pb-3') && l.includes('lg:pl-3') && l.includes('lg:pr-9')
+  );
+  assert.ok(buttonRowLine, '021M: sidebar button row must have lg:justify-end, lg:pl-3, and lg:pr-9 for Share-to-panel right-edge alignment');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -156,9 +163,11 @@ test('F1. Left column outer wrapper classes unchanged', () => {
     'Left column (gear list) outer wrapper must be unchanged');
 });
 
-test('F2. Left column pills row lg:pr-3 preserved', () => {
-  const pillsLine = checklist.split('\n').find(l => l.includes('pt-8 pb-3 flex items-center lg:pr-3 flex-shrink-0'));
-  assert.ok(pillsLine, 'Pinned pills row with lg:pr-3 must be unchanged');
+test('F2. Left column pills row uses lg:pr-7 (021M toolbar alignment — Metric right edge to card right edge)', () => {
+  // 021M changed lg:pr-3 (12px) → lg:pr-7 (28px) on the checklist toolbar row.
+  // Extra 16px right ≈ scrollbar-gutter(≈15px) so Metric's right edge aligns with card right edges.
+  const pillsLine = checklist.split('\n').find(l => l.includes('pt-8 pb-3 flex items-center lg:pr-7 flex-shrink-0'));
+  assert.ok(pillsLine, '021M: Pinned pills row must use lg:pr-7 (28px right) for Metric-to-card-panel right-edge alignment');
 });
 
 test('F3. Header outer padding unchanged (separate from main)', () => {

@@ -1,0 +1,521 @@
+Prompt 021M — Align Toolbar Control Groups With Panel Edges
+
+Create a Replit checkpoint/recovery point and PRE_021M_MASTER_BACKUP.md BEFORE editing.
+
+CURRENT USER-VERIFIED STATE:
+
+- Horizontal gutter spacing from 021L = USER-TESTED PASS. PRESERVE IT EXACTLY.
+- Sidebar position/spacing = accepted. DO NOT change it.
+- Category-column position/spacing = accepted. DO NOT change it.
+- Disclosure chevrons already corrected = preserve.
+- Scan Gear List currently renders expanded with ChevronUp. Do not change its implementation unless a regression test finds a problem.
+
+This prompt changes ONLY the horizontal alignment of the toolbar control groups above the panels.
+
+==================================================
+TERMINOLOGY
+==================================================
+
+These are TOOLBAR CONTROL GROUPS.
+
+Some controls are individual pill buttons; Open/Close and Imperial/Metric are SEGMENTED CONTROLS.
+
+This task is TOOLBAR EDGE ALIGNMENT.
+
+Do NOT change:
+- button size
+- button labels
+- button order
+- button gaps
+- panel widths
+- gutters
+
+==================================================
+VISUAL ALIGNMENT TARGET
+==================================================
+
+Use the existing Open/Close alignment as the reference.
+
+CURRENT CORRECT EXAMPLE:
+
+The LEFT edge of the Open/Close segmented control aligns vertically with the LEFT edge of the Backpack/category panel below it.
+
+Preserve that.
+
+The remaining groups should follow the same edge-alignment principle.
+
+--------------------------------------------------
+LEFT CHECKLIST COLUMN
+--------------------------------------------------
+
+LEFT EDGE:
+
+Open/Close segmented control
+LEFT edge
+=
+category-panel LEFT edge
+
+This is already correct.
+DO NOT MOVE IT.
+
+RIGHT EDGE:
+
+The rightmost control in the checklist toolbar is the Metric side of the Imperial/Metric segmented control.
+
+The RIGHT edge of the Imperial/Metric segmented control must align exactly with the RIGHT edge of the category panels below it.
+
+Conceptually:
+
+| Open Close                     Hide Preview Imperial Metric |
+| Backpack....................................................|
+
+The outer edges should align:
+
+Open/Close LEFT edge
+=
+category panel LEFT edge
+
+Metric RIGHT edge
+=
+category panel RIGHT edge
+
+Do NOT stretch the controls across the entire row.
+
+Move/align the control group only.
+
+--------------------------------------------------
+RIGHT SIDEBAR COLUMN
+--------------------------------------------------
+
+The rightmost toolbar control is Share.
+
+The RIGHT edge of the Share pill must align exactly with the RIGHT edge of the sidebar panels below it.
+
+Reference panel:
+Pack Summary
+
+The same right edge should therefore also align with:
+- Weight Distribution
+- Scan Gear List
+- Locker / Shared Files
+
+Conceptually:
+
+                 | Background Edit   Share |
+                 | PACK SUMMARY.............|
+
+Share RIGHT edge
+=
+sidebar panel RIGHT edge
+
+Do NOT stretch Background Edit/Share to fill the sidebar width.
+
+Only align the group to the panel's right edge.
+
+==================================================
+IMPORTANT: DO NOT CHANGE THE GUTTERS
+==================================================
+
+The user is satisfied with the current horizontal gutter spacing.
+
+021M must NOT change:
+
+- left page gutter
+- center gutter
+- right sidebar gutter
+- sidebar internal left/right spacing
+- scrollbar locations
+- scrollbar-gutter settings
+- grid column gap
+- outer page padding
+- category scroll-container padding
+- sidebar scroll-container padding
+- 365px sidebar width
+- category-panel width
+
+DO NOT undo any 021K/021L spacing work.
+
+If aligning the toolbar controls changes any of these dimensions, STOP and use a different alignment method.
+
+==================================================
+IMPLEMENTATION METHOD
+==================================================
+
+Inspect the toolbar wrappers in Checklist.tsx before editing.
+
+Use normal flex/grid alignment tied to the SAME column geometry used by the panels below.
+
+Preferred techniques include:
+
+- justify-end
+- justify-self-end
+- ml-auto
+- matching grid-column/container alignment
+
+Use the smallest coherent change.
+
+DO NOT use:
+
+- transform: translateX(...)
+- absolute positioning
+- negative margins
+- hard-coded left/right pixel offsets
+- JavaScript positioning
+- viewport-specific magic numbers
+
+The toolbar should remain correctly aligned if the viewport width changes.
+
+==================================================
+DO NOT MOVE THE FILENAME PILL
+==================================================
+
+Preserve the current active filename pill positioning.
+
+It should remain centered over the checklist area as currently designed.
+
+Do not use the filename pill as part of this edge-alignment correction.
+
+==================================================
+BUTTON/CONTROL PROTECTION
+==================================================
+
+Preserve exactly:
+
+Open
+Close
+
+Hide
+
+Preview
+
+Imperial
+Metric
+
+Background Edit
+
+Share
+
+Do not change:
+
+- labels
+- colors
+- icons
+- heights
+- widths
+- border radii
+- selected states
+- hover states
+- spacing between controls
+- functionality
+
+Only change the positioning of their containing toolbar groups as required.
+
+==================================================
+REQUIRED ALIGNMENT VERIFICATION
+==================================================
+
+At the normal desktop layout verify these edge relationships using getBoundingClientRect() if authenticated rendered measurement is available:
+
+A:
+Open/Close LEFT edge
+=
+category panel LEFT edge
+
+B:
+Imperial/Metric RIGHT edge
+=
+category panel RIGHT edge
+
+C:
+Share RIGHT edge
+=
+Pack Summary RIGHT edge
+
+Preferred tolerance:
+
+<= 2 CSS px
+
+If direct authenticated measurement is unavailable, clearly label source-derived alignment separately and do NOT pretend it was DOM-measured.
+
+User screenshot verification remains authoritative.
+
+==================================================
+VISUAL TEST
+==================================================
+
+Render desktop Dark mode.
+
+Verify:
+
+1. Open/Close remains aligned with Backpack left edge.
+2. Metric right edge aligns with category-panel right edge.
+3. Share right edge aligns with Pack Summary right edge.
+4. Background Edit remains immediately left of Share with its existing gap.
+5. Hide and Preview retain their existing relationship to Imperial/Metric.
+6. filename pill remains centered.
+7. gutters are visually IDENTICAL to the accepted 021L layout.
+
+Repeat in Light mode.
+
+==================================================
+DISCLOSURE CHEVRON REGRESSION CHECK
+==================================================
+
+Do NOT redesign chevrons.
+
+Quickly verify:
+
+Category expanded = ChevronUp
+Category collapsed = ChevronDown
+
+Pack Summary expanded = ChevronUp
+collapsed = ChevronDown
+
+Scan Gear List expanded = ChevronUp
+collapsed = ChevronDown
+
+If Scan Gear List already works correctly in both states, make NO changes to ImportGearPanel.tsx.
+
+==================================================
+RESPONSIVE PROTECTION
+==================================================
+
+This is primarily a desktop toolbar-alignment correction.
+
+Verify:
+
+1024px+
+correct desktop edge alignment
+
+768px
+existing responsive behavior preserved
+
+430px
+no overflow
+
+390px
+no overflow
+
+Do not force desktop edge positioning onto stacked mobile layouts.
+
+==================================================
+GLOBAL REGRESSION PROTECTION
+==================================================
+
+ALL existing TrailWeigh functionality and data are protected.
+
+Smallest possible change set only.
+
+NO unrelated:
+
+- refactoring
+- cleanup
+- renaming
+- relocation
+- modernization
+- dependency changes
+- storage changes
+- formatting sweeps
+
+Before editing:
+- create checkpoint
+- create PRE_021M_MASTER_BACKUP.md
+- record expected files
+
+After editing:
+- inspect final diff
+- list every changed application file
+- revert every unrelated change
+
+A toolbar-alignment task should produce a very small diff.
+
+==================================================
+DATA / STORAGE PROTECTION
+==================================================
+
+DO NOT:
+
+- reset localStorage
+- reset sessionStorage
+- clear IndexedDB
+- modify Locker files
+- change file IDs
+- migrate schemas
+- alter backgrounds/themes/photos
+- alter saved appearance
+- alter chart palettes
+- alter authentication
+
+No user-data changes are authorized.
+
+==================================================
+PROTECT ALL CURRENT FEATURES
+==================================================
+
+Preserve:
+
+- New
+- Undo / Redo
+- Save / Save As
+- Reset
+- Locker
+- Rename / Delete
+- Open / Close
+- Hide
+- Imperial / Metric
+- MOVE
+- calculations
+- Pack Summary
+- Weight Distribution
+- chart palettes
+- Scan Gear List/importers
+- automatic category creation
+- imported items unchecked
+- Background Edit
+- themes/photos
+- Fill/Fit/Darken
+- Preview / Print
+- Share Link
+- Shared Files
+- Share Pack List
+- Save Your Own Copy
+- responsive layouts
+- current disclosure-chevron behavior
+
+==================================================
+AUTOMATED TESTING
+==================================================
+
+Run:
+
+1. focused layout/component tests
+2. disclosure-chevron regression test
+3. COMPLETE TrailWeigh regression suite
+
+Report exact commands and exact:
+
+- passed
+- failed
+- skipped
+
+Automated tests do not replace rendered alignment verification.
+
+==================================================
+USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Record:
+
+021L HORIZONTAL GUTTER SPACING = USER-TESTED PASS
+
+021M TOOLBAR EDGE ALIGNMENT = NOT USER-VERIFIED
+
+User must visually confirm the alignment.
+
+==================================================
+REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021M_REPORT.md
+
+Include:
+
+- exact Prompt 021M
+- checkpoint created
+- files inspected
+- files changed
+- toolbar wrapper structure before
+- toolbar wrapper structure after
+- Open/Close left-edge alignment
+- Imperial/Metric right-edge alignment
+- Share right-edge alignment
+- DOM measurements if genuinely available
+- confirmation gutter CSS was NOT changed
+- confirmation sidebar width/position was NOT changed
+- confirmation category-panel width/position was NOT changed
+- filename pill regression result
+- disclosure-chevron regression result
+- Dark/Light rendered results
+- responsive results
+- COMPLETE regression totals
+- final diff review
+- data/storage protection confirmation
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- user visual test still required
+
+Append to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Record:
+
+021L HORIZONTAL GUTTER SPACING = USER-TESTED PASS
+021M TOOLBAR EDGE ALIGNMENT = NOT USER-VERIFIED
+
+Do not truncate or rewrite previous workflow history.
+
+==================================================
+REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021M-report.zip
+
+Exactly these four Markdown files at ZIP ROOT:
+
+PROMPT_021M_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+
+- ../ paths
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- source files
+- test source files
+- screenshots
+- backup files
+- user data
+- credentials
+- other ZIPs
+
+List ZIP contents before finishing.
+
+Exactly 4 root entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. checkpoint/recovery created
+2. exact toolbar wrapper(s) changed
+3. Open/Close left-edge result
+4. Imperial/Metric right-edge result
+5. Share right-edge result
+6. measurements if genuinely available
+7. confirmation horizontal gutters are unchanged
+8. confirmation sidebar position/width is unchanged
+9. confirmation category-panel position/width is unchanged
+10. confirmation filename pill remains centered
+11. chevron regression result
+12. files changed
+13. final-diff result
+14. confirmation no user data/storage changed
+15. Dark/Light results
+16. responsive results
+17. COMPLETE regression totals
+18. report path
+19. ZIP path
+20. exact four ZIP entries
+21. clearly state USER visual verification is still required
