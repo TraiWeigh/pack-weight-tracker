@@ -4809,3 +4809,26 @@ Group both toolbar panels (left pills row + right action bar) inside a single pa
 ### Status
 
 **021N TOOLBAR GROUP CONTAINER = NOT USER-VERIFIED**
+
+---
+
+## Prompt 021O — Move Toolbar Group Up
+
+**Date:** 2026-08-08
+
+### Goal
+Move the entire toolbar group upward ~16 px by placing shared top spacing on the toolbar-group parent rather than duplicating `pt-8` on each child.
+
+### Changes
+- Toolbar-group parent: added `pt-4` (16 px)
+- Left toolbar panel: `pt-8` removed
+- Filename pill overlay: `pt-8` removed (must match panel to stay aligned)
+- Right toolbar panel: `pt-8` removed
+- Updated 11 test files whose locators or assertions hardcoded `pt-8`
+
+### Test Results
+41 suites — all passed — exit 0. New `toolbarSpacing021O.test.mjs` (25 tests).
+
+### Status
+
+**021O TOOLBAR GROUP UP = NOT USER-VERIFIED**

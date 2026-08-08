@@ -1,0 +1,201 @@
+# Prompt 021O — Move the Entire Toolbar Group Up
+
+## Goal
+
+Move the **entire TrailWeigh toolbar group upward approximately 16 px** while preserving the toolbar grouping created in Prompt 021N.
+
+Both the left toolbar section and right toolbar section must move upward together by exactly the same amount.
+
+## Current Structure
+
+Prompt 021N successfully created a common parent container for the toolbar.
+
+However, the Prompt 021N report shows that the two child toolbar sections still each contain their own:
+
+`pt-8`
+
+top padding.
+
+That means vertical toolbar spacing is still being controlled separately by the two child sections.
+
+Correct this so the **shared vertical position is controlled by the toolbar group's parent container**.
+
+## Required Change
+
+On desktop:
+
+1. Remove the duplicated `pt-8` top padding from:
+
+   * the left toolbar panel
+   * the right toolbar/action panel
+
+2. Put the shared top spacing on the **common toolbar-group parent container** instead.
+
+3. Use approximately:
+
+`pt-4`
+
+for the toolbar-group parent.
+
+This changes the top spacing from approximately 32 px to approximately 16 px and therefore moves the complete toolbar group upward approximately 16 px.
+
+## Important Grouping Requirement
+
+The left and right toolbar sections must move vertically as **one unit**.
+
+Do not independently adjust:
+
+* Hide
+* Preview
+* Imperial/Metric
+* Background Edit
+* Share
+* or either toolbar section
+
+to achieve the new position.
+
+There should be **one shared desktop vertical-position/top-spacing value** controlling the complete toolbar.
+
+Conceptually:
+
+Toolbar Group — shared `pt-4`
+→ Left Toolbar Section
+→ Right Toolbar Section
+
+Do not leave separate `pt-8`, margin-top, translateY, top, or other vertical-position corrections on the child toolbar sections.
+
+## Expand/Collapse Behavior Must Remain Independent
+
+Grouping is for **positioning only**.
+
+Do not connect the open/closed state of toolbar sections or toolbar controls.
+
+Opening or closing one toolbar menu/panel must not open or close another.
+
+Therefore:
+
+* Moving the toolbar → all toolbar sections move together.
+* Opening a toolbar section → only that section changes.
+
+## Preserve Horizontal Position
+
+This prompt changes **vertical position only**.
+
+Do not change:
+
+* left/right toolbar alignment
+* toolbar column widths
+* `lg:grid-cols-[1fr_365px]`
+* `lg:gap-4`
+* Hide position horizontally
+* Preview position horizontally
+* Imperial/Metric position horizontally
+* Background Edit position horizontally
+* Share position horizontally
+* spacing between toolbar controls
+
+## Preserve Existing Content Position Unless Necessary
+
+Do not move or redesign the category panels or Pack Summary simply to compensate for the toolbar change.
+
+The purpose is to reduce the unnecessary white space **above the toolbar**.
+
+Keep the existing spacing below the toolbar visually appropriate and do not allow the toolbar to overlap the content below it.
+
+## Preserve All 021N Invariants
+
+Keep the Prompt 021N grouped-toolbar structure.
+
+Do not revert:
+
+* `lg:flex lg:flex-col` on `<main>`
+* toolbar common parent
+* toolbar grid structure
+* content-area grid structure
+* existing scroll containers
+* existing sidebar width
+* existing gutters
+
+The toolbar must remain one grouped container.
+
+## Do Not
+
+Do not:
+
+* redesign the toolbar
+* resize toolbar buttons
+* resize toolbar pills
+* change fonts
+* change colors
+* change icons
+* change button order
+* change Hide behavior
+* change Preview behavior
+* change Imperial/Metric behavior
+* change Background Edit behavior
+* change Share behavior
+* change category widths
+* change Pack Summary width
+* change sidebar geometry
+* alter Locker data
+* alter saved files
+* refactor unrelated code
+
+## Visual Target
+
+Using the user's supplied screenshot as the reference:
+
+The toolbar controls currently begin approximately 32–34 px below the top of the application area.
+
+After this change, the toolbar controls should begin approximately **16–18 px from the top**.
+
+The entire toolbar row should move upward together.
+
+## Testing
+
+Verify on desktop that:
+
+1. Left toolbar section moved upward approximately 16 px.
+2. Right toolbar section moved upward approximately 16 px.
+3. Both sections remain horizontally aligned with their current intended positions.
+4. Both sections moved by the same vertical amount.
+5. There is one shared parent-level value controlling toolbar top spacing.
+6. Child toolbar sections no longer contain separate desktop `pt-8` positioning used for toolbar placement.
+7. Toolbar controls do not overlap the content below.
+8. Hide, Preview, Imperial/Metric, Background Edit, and Share continue working.
+9. Toolbar menus continue operating independently.
+10. Existing category and Pack Summary geometry is unchanged.
+11. All existing automated tests still pass.
+
+## Required Automated Test Update
+
+Update the Prompt 021N toolbar-group test or add a Prompt 021O test confirming that:
+
+* the toolbar group has the shared desktop top-spacing rule
+* the left toolbar section does not independently control its desktop top position
+* the right toolbar section does not independently control its desktop top position
+* both toolbar sections remain children of the same toolbar group
+
+## Required Report
+
+When complete, create and attach:
+
+**PROMPT_021O_REPORT.md**
+
+The report must state:
+
+* files changed
+* exact old toolbar top spacing
+* exact new toolbar top spacing
+* which parent element now controls vertical toolbar position
+* confirmation that duplicated child `pt-8` positioning was removed
+* measured before/after toolbar top position
+* confirmation that both sides moved by the same amount
+* confirmation that horizontal positions were unchanged
+* automated test results
+* visual test results
+* any issues found
+
+Also provide the required backup/checkpoint ZIP for Prompt 021O.
+
+Do not make unrelated improvements.

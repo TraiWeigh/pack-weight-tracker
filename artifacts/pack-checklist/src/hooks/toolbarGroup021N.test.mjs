@@ -59,22 +59,24 @@ const toolbarGroupLine = lines.find(l =>
   !l.includes('gap-8')          // distinguishes from content area
 );
 
-// Left toolbar panel (pills row)
+// Left toolbar panel (pills row) — 021O removed pt-8; now identified by pb-3 + lg:pr-7.
 const pillsRowLine = lines.find(l =>
-  l.includes('pt-8 pb-3') &&
+  l.includes('pb-3') &&
   l.includes('flex items-center') &&
   l.includes('lg:pr-7') &&
   l.includes('flex-shrink-0') &&
-  l.includes('relative')
+  l.includes('relative') &&
+  !l.includes('inset-0')
 );
 
-// Right toolbar panel (action bar)
+// Right toolbar panel (action bar) — 021O removed pt-8; now identified by pb-3 + lg:pl-3 lg:pr-9.
 const actionBarLine = lines.find(l =>
-  l.includes('pt-8 pb-3') &&
+  l.includes('pb-3') &&
   l.includes('justify-center') &&
   l.includes('lg:justify-end') &&
   l.includes('lg:pl-3') &&
-  l.includes('lg:pr-9')
+  l.includes('lg:pr-9') &&
+  !l.includes('inset-0')
 );
 
 // Content area grid
@@ -149,7 +151,7 @@ console.log('\nB. Left toolbar panel (pills row) — position within toolbar gro
 
 test('B1. Left toolbar panel (pills row) exists inside toolbar group', () => {
   assert.ok(pillsRowLine,
-    '021N: pills row must exist with pt-8 pb-3 flex items-center lg:pr-7');
+    '021N/021O: pills row must exist with pb-3 flex items-center lg:pr-7 (pt-8 moved to toolbar group parent)');
 });
 
 test('B2. Pills row retains lg:pr-7 alignment padding (021M preserved)', () => {
@@ -180,9 +182,10 @@ test('B5. Hide, Preview, UnitToggle still present', () => {
     'UnitToggle must still be present');
 });
 
-test('B6. Filename pill absolute positioning unchanged', () => {
-  assert.match(checklist, /absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none/,
-    'Filename pill absolute wrapper must be unchanged');
+test('B6. Filename pill absolute positioning — inset-0 pb-3 (021O removed pt-8 from overlay)', () => {
+  // 021O moved pt-8 from both toolbar child panels and the pill overlay to the toolbar group parent (pt-4).
+  assert.match(checklist, /absolute inset-0 pb-3 flex items-center justify-center pointer-events-none/,
+    '021O: filename pill overlay must use pb-3 (not pt-8 pb-3) — top spacing is on toolbar group parent');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,7 +193,7 @@ console.log('\nC. Right toolbar panel (action bar) — position within toolbar g
 
 test('C1. Right toolbar panel (action bar) exists inside toolbar group', () => {
   assert.ok(actionBarLine,
-    '021N: action bar must exist with pt-8 pb-3 justify-center lg:justify-end lg:pl-3 lg:pr-9');
+    '021N/021O: action bar must exist with pb-3 justify-center lg:justify-end lg:pl-3 lg:pr-9 (pt-8 moved to toolbar group parent)');
 });
 
 test('C2. Action bar uses order-first lg:order-last (mobile appears first, desktop right)', () => {

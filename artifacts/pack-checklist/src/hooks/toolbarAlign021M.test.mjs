@@ -38,12 +38,15 @@ const checklist = readFileSync(
 // Locate the two toolbar rows by their unique structural signatures
 const lines = checklist.split('\n');
 
+// 021O removed pt-8 from child panels; top spacing is now pt-4 on the toolbar group parent.
+// Pills row is now identified by pb-3 + flex items-center + lg:pr-7 + flex-shrink-0 + relative.
 const pillsRowLine = lines.find(l =>
-  l.includes('pt-8 pb-3') && l.includes('flex items-center') && l.includes('flex-shrink-0') && l.includes('relative') && !l.includes('inset-0')
+  l.includes('pb-3') && l.includes('flex items-center') && l.includes('lg:pr-7') && l.includes('flex-shrink-0') && l.includes('relative') && !l.includes('inset-0')
 );
 
+// Action bar (sidebar bar): pb-3 + justify-center + gap-2 + flex-shrink-0 (no pt-8 post-021O).
 const sidebarBarLine = lines.find(l =>
-  l.includes('pt-8 pb-3') && l.includes('justify-center') && l.includes('gap-2') && l.includes('flex-shrink-0') && !l.includes('items-center')
+  l.includes('pb-3') && l.includes('justify-center') && l.includes('gap-2') && l.includes('flex-shrink-0') && !l.includes('items-center') && !l.includes('inset-0')
 );
 
 let passed = 0;
@@ -57,7 +60,7 @@ function test(name, fn) {
 console.log('\nA. Left checklist toolbar — right edge alignment (021M)');
 
 test('A1. Pills row exists with expected structural classes', () => {
-  assert.ok(pillsRowLine, 'Pills row (pt-8 pb-3 flex items-center flex-shrink-0 relative) must exist');
+  assert.ok(pillsRowLine, 'Pills row (pb-3 flex items-center lg:pr-7 flex-shrink-0 relative) must exist — note: pt-8 moved to toolbar group parent in 021O');
 });
 
 test('A2. Pills row uses lg:pr-7 (28px) desktop right padding', () => {
@@ -96,10 +99,11 @@ test('A6. Hide, Preview and UnitToggle still present in pills row', () => {
     '<UnitToggle — unit toggle — must still be present in pills row');
 });
 
-test('A7. Filename pill absolute positioning unchanged', () => {
-  // absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none
-  assert.match(checklist, /absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none/,
-    'Filename pill absolute wrapper must be unchanged (centered over left column)');
+test('A7. Filename pill absolute positioning preserved (021O: pt-8 removed from overlay)', () => {
+  // 021O moved pt-8 from child panels to the toolbar-group parent (pt-4).
+  // Overlay now uses pb-3 only; inset-0 + flex items-center still centres correctly.
+  assert.match(checklist, /absolute inset-0 pb-3 flex items-center justify-center pointer-events-none/,
+    '021O: filename pill overlay must use pb-3 (pt-8 moved to toolbar group parent)');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

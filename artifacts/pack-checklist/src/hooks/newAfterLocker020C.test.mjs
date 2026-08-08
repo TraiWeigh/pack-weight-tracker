@@ -298,10 +298,11 @@ test('27. 019 WeightDistribution still present', () => {
   assert.ok(checklist.includes('WeightDistribution'), 'WeightDistribution missing — 019 panel separation broken');
 });
 
-test('28. 018C filename pill centering preserved (inset-0 pt-8 pb-3)', () => {
+test('28. 018C filename pill centering preserved (inset-0 pb-3 — 021O removed pt-8)', () => {
+  // 021O moved pt-8 from child panels to the toolbar-group parent (as pt-4).
   assert.ok(
-    checklist.includes('absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none'),
-    '018C filename pill centering classes not found'
+    checklist.includes('absolute inset-0 pb-3 flex items-center justify-center pointer-events-none'),
+    '018C filename pill centering classes not found — 021O: pt-8 removed from overlay'
   );
 });
 

@@ -42,9 +42,9 @@ const pillsRowIdx = checklist.indexOf('Pinned pills row');
 assert.ok(pillsRowIdx > -1, 'Pinned pills row marker not found');
 const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 4000);
 
-// Outer container className
-const containerDivIdx = pillsRowBlock.indexOf('pt-8 pb-3 flex items-center');
-assert.ok(containerDivIdx > -1, 'Outer container (pt-8 pb-3 flex items-center) not found');
+// Outer container className — 021O moved pt-8 to the toolbar-group parent; panel now has pb-3 only.
+const containerDivIdx = pillsRowBlock.indexOf('pb-3 flex items-center');
+assert.ok(containerDivIdx > -1, 'Outer container (pb-3 flex items-center) not found — 021O: pt-8 moved to toolbar group parent');
 const containerDecl = pillsRowBlock.slice(containerDivIdx, containerDivIdx + 200);
 
 // Filename pill conditional
@@ -75,12 +75,17 @@ test('1. Wrapper has `absolute inset-0` (fills container dimensions for correct 
   );
 });
 
-test('2. Wrapper has `pt-8 pb-3` (matches outer container padding — establishes same content area)', () => {
-  // This is the key: the overlay's content area (after padding) is identical to
-  // the outer flex container's content area, so items-center centers at the same Y.
+test('2. Wrapper has `pb-3` (matches outer container bottom padding — establishes same content area)', () => {
+  // 021O moved pt-8 to the toolbar-group parent. Both the outer panel and this overlay
+  // now have pb-3 only; items-center references the same (padded) content area for alignment.
   assert.ok(
-    pillBlock.includes('pt-8') && pillBlock.includes('pb-3'),
-    'pt-8 pb-3 not found on wrapper — vertical alignment reference mismatch'
+    pillBlock.includes('pb-3'),
+    'pb-3 not found on wrapper — vertical alignment reference mismatch'
+  );
+  // pt-8 must NOT be on the overlay (it moved to the toolbar group parent in 021O).
+  assert.ok(
+    !pillBlock.slice(0, pillBlock.indexOf('pointer-events-none') + 30).includes('pt-8'),
+    '021O: pt-8 must be removed from the overlay div — top spacing is on the toolbar-group parent'
   );
 });
 
@@ -123,10 +128,16 @@ test('8. Old `-translate-x-1/2` removed from wrapper (justify-center handles hor
 
 // ── OUTER CONTAINER UNCHANGED ─────────────────────────────────────────────────
 
-test('9. Outer container still has `pt-8 pb-3` (reference padding — must not change)', () => {
+test('9. Outer container has `pb-3` bottom padding (021O moved pt-8 to toolbar-group parent)', () => {
+  // 021O: pt-8 was removed from this container and placed on the toolbar-group parent as pt-4.
+  // pb-3 remains to provide bottom breathing room within the toolbar row.
   assert.ok(
-    containerDecl.includes('pt-8') && containerDecl.includes('pb-3'),
-    'Outer container pt-8 pb-3 should be unchanged'
+    containerDecl.includes('pb-3'),
+    'Outer container must still have pb-3 bottom padding'
+  );
+  assert.ok(
+    !containerDecl.includes('pt-8'),
+    '021O: outer container must NOT have pt-8 — top spacing moved to toolbar-group parent'
   );
 });
 

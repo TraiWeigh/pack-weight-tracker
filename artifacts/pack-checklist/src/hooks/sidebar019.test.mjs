@@ -236,8 +236,9 @@ test('28. Both WeightSummary and WeightDistribution are siblings in the sidebar 
 // ── PROTECTED FEATURES UNCHANGED ─────────────────────────────────────────────
 
 // 018C filename pill
-test('29. Filename pill: inset-0 centering preserved (018C fix)', () => {
-  assert.ok(checklist.includes('absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none'), '018C inset-0 filename centering not found');
+test('29. Filename pill: inset-0 centering preserved (018C fix, 021O updated padding)', () => {
+  // 021O removed pt-8 from the overlay (moved to toolbar-group parent as pt-4).
+  assert.ok(checklist.includes('absolute inset-0 pb-3 flex items-center justify-center pointer-events-none'), '018C inset-0 filename centering not found — 021O: pt-8 removed from overlay, now on toolbar group parent');
 });
 
 test('30. Filename pill: text-foreground preserved on span', () => {

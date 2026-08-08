@@ -212,10 +212,11 @@ test('18. 019 panelOpen prop present', () => {
   assert.ok(checklist.includes('panelOpen={backgroundPickerOpen}'), '019 panelOpen prop missing');
 });
 
-test('21. 018C filename pill centering preserved (inset-0 pt-8 pb-3)', () => {
+test('21. 018C filename pill centering preserved (inset-0 pb-3 — 021O removed pt-8)', () => {
+  // 021O moved pt-8 from child panels to the toolbar-group parent (as pt-4).
   assert.ok(
-    checklist.includes('absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none'),
-    '018C filename pill centering classes not found'
+    checklist.includes('absolute inset-0 pb-3 flex items-center justify-center pointer-events-none'),
+    '018C filename pill centering classes not found — 021O: pt-8 removed from overlay'
   );
 });
 

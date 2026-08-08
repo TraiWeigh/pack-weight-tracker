@@ -1370,11 +1370,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:flex lg:flex-col">
 
           {/* ── Toolbar group — all toolbar controls share this single parent.
-               To reposition the entire toolbar, change pt-4 on this element only. ── */}
-          <div className="pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
+               To reposition the entire toolbar, change classes on this element only. ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
             {/* Left toolbar panel — Pinned pills row */}
-            <div className="pb-3 flex items-center lg:pr-7 flex-shrink-0 relative">
+            <div className="pt-8 pb-3 flex items-center lg:pr-7 flex-shrink-0 relative">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -1398,12 +1398,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   </button>
                 </div>
                 {/* Active file name — centered over the left checklist column.
-                    Uses inset-0 + matching pb-3 so flex items-center references the same
+                    Uses inset-0 + matching pt-8 pb-3 so flex items-center references the same
                     content area as the outer container, putting the pill on the exact same
-                    vertical centerline as Hide / Preview / Imperial / Metric.
-                    Note: top padding is now on the toolbar-group parent (pt-4), not here. */}
+                    vertical centerline as Hide / Preview / Imperial / Metric. */}
                 {activeLockerFile && (
-                  <div className="absolute inset-0 pb-3 flex items-center justify-center pointer-events-none">
+                  <div className="absolute inset-0 pt-8 pb-3 flex items-center justify-center pointer-events-none">
                     <span
                       aria-label={`Active file: ${activeLockerFile.name}`}
                       title={activeLockerFile.name}
@@ -1439,7 +1438,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               </div>
 
             {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ── */}
-            <div className="order-first lg:order-last relative flex flex-wrap justify-center lg:justify-end gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
+            <div className="order-first lg:order-last relative flex flex-wrap justify-center lg:justify-end gap-2 pt-8 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton
                     onClick={() => setBackgroundPickerOpen(o => !o)}

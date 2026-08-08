@@ -257,10 +257,10 @@ test(25, "019 WeightDistribution still present",
   "WeightDistribution removed — 019 regression"
 );
 
-// 26. 018C filename pill
-test(26, "018C filename pill centering preserved (inset-0 pt-8 pb-3)",
-  checklist.includes('inset-0') && checklist.includes('pt-8') && checklist.includes('pb-3'),
-  "filename pill centering broken"
+// 26. 018C filename pill — 021O removed pt-8 from overlay (moved to toolbar-group parent as pt-4)
+test(26, "018C filename pill centering preserved (inset-0 pb-3 — 021O moved pt-8 to parent)",
+  checklist.includes('absolute inset-0 pb-3 flex items-center justify-center pointer-events-none'),
+  "filename pill centering broken — 021O: pt-8 removed from overlay, now on toolbar group parent"
 );
 
 // 27. LOCKER_KEY exported

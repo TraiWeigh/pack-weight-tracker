@@ -153,9 +153,10 @@ test('E4. Sidebar button-row uses lg:pl-3 lg:pr-9 lg:justify-end (021M toolbar a
   // justify-center → justify-center lg:justify-end (desktop right-align)
   // lg:px-3 → lg:pl-3 lg:pr-9 (left 12px, right 36px; total 48px vs old 24px;
   //   extra 24px right = pr-5(20px) + scrollbar-gutter(≈15px) ≈ 35px — nearest standard token pr-9=36px)
+  // 021O removed pt-8 from child panels; action bar now identified by pb-3 + lg:pl-3 lg:pr-9 lg:justify-end.
   const buttonRowLine = checklist.split('\n').find(l =>
     l.includes('justify-center') && l.includes('lg:justify-end') &&
-    l.includes('pt-8 pb-3') && l.includes('lg:pl-3') && l.includes('lg:pr-9')
+    l.includes('pb-3') && l.includes('lg:pl-3') && l.includes('lg:pr-9') && !l.includes('inset-0')
   );
   assert.ok(buttonRowLine, '021M: sidebar button row must have lg:justify-end, lg:pl-3, and lg:pr-9 for Share-to-panel right-edge alignment');
 });
@@ -177,7 +178,8 @@ test('F1. Categories scroll uses lg:h-full (021N: left column wrapper removed)',
 test('F2. Left column pills row uses lg:pr-7 (021M toolbar alignment — Metric right edge to card right edge)', () => {
   // 021M changed lg:pr-3 (12px) → lg:pr-7 (28px) on the checklist toolbar row.
   // Extra 16px right ≈ scrollbar-gutter(≈15px) so Metric's right edge aligns with card right edges.
-  const pillsLine = checklist.split('\n').find(l => l.includes('pt-8 pb-3 flex items-center lg:pr-7 flex-shrink-0'));
+  // 021O removed pt-8 from the pills row; now identified by pb-3 + lg:pr-7.
+  const pillsLine = checklist.split('\n').find(l => l.includes('pb-3 flex items-center lg:pr-7 flex-shrink-0'));
   assert.ok(pillsLine, '021M: Pinned pills row must use lg:pr-7 (28px right) for Metric-to-card-panel right-edge alignment');
 });
 
