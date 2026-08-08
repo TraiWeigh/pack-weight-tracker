@@ -145,8 +145,7 @@ export function GearCategory({
   onUpdateMeta, onDelete, onRename,
   isDragOver, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
 }: GearCategoryProps) {
-  // 022G: start collapsed — each category is closed on every fresh open/refresh
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   useEffect(() => {
     if (forceOpen !== null && forceOpen !== undefined) {

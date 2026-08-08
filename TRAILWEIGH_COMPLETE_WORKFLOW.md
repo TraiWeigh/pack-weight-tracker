@@ -5030,3 +5030,30 @@ Replace the old flat 6-card How It Works page with a short, clear 3-section acco
 **Files changed:** `SharedChecklistPage.tsx` (9 edits), `sharedFooter022F.test.mjs` (NEW, 32 tests), `package.json` (chain)  
 **Report:** `workflow-reports/PROMPT_022F_REPORT.md`  
 **ZIP:** `workflow-reports/trailweigh-022F-report.zip`
+
+---
+
+## Prompt 022G — Restore Last Workspace With All Panels Closed
+
+**Date:** 2026-08-08 | **Status:** COMPLETE ✅ | **Tests:** 56 passed, 0 failed
+
+**Goal:** When a signed-in user reopens TrailWeigh, automatically restore the same saved Locker file they were using — same file name, same background, same saved checkbox states — with all collapsible panels collapsed.
+
+**Architecture discovered:**
+- `activeLockerFile` was sessionStorage-only (tab-local, lost on browser close)
+- `pack-checklist-v5-${userId}` auto-saves every change (crash recovery, not Save)
+- `trailweigh:locker` holds all saved Locker entries with per-file background settings
+
+**New localStorage key:** `trailweigh:last-active-file-${userId}` — scoped by Clerk user ID for account isolation. Stores `{id, name}`.
+
+**Written when:** commitSaveNew, commitSaveReplace, handleLoadFromLocker in-place path, fork-tab mount effect (all four save/open paths).
+
+**Startup restoration useEffect:** Checks preconditions (authenticated user, not a fork tab, no existing sessionStorage active file), finds the Locker entry by ID, calls `replaceStore(entry.store)` + restores all background settings, sets activeLockerFile. If entry not found (deleted), clears stale key and falls back to normal startup.
+
+**Panels closed:** `allOpen` init `true→false` (Checklist.tsx), `isOpen` init `true→false` (GearCategory.tsx), `summaryOpen`+`chartOpen` init `true→false` (WeightSummary.tsx). All temporary menus already started `false`.
+
+**Unsaved changes:** On reopen, loads the last SAVED state from the Locker entry. Unsaved changes made after the last explicit Save are not restored (exactly as specified by the prompt).
+
+**Files changed:** `Checklist.tsx`, `WeightSummary.tsx`, `GearCategory.tsx`, `workspace022G.test.mjs` (NEW, 56 tests), `package.json`  
+**Report:** `workflow-reports/PROMPT_022G_REPORT.md`  
+**ZIP:** `workflow-reports/trailweigh-022G-report.zip`

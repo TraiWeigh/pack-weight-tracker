@@ -1,0 +1,620 @@
+PROMPT 022G — RESTORE LAST WORKSPACE WITH ALL PANELS CLOSED
+
+GOAL
+
+Change TrailWeigh's startup/reopen behavior so a returning signed-in user comes back to the same workspace they were using.
+
+When TrailWeigh is closed and later reopened:
+
+RESTORE:
+- The same active saved gear file/list.
+- The correct current file name.
+- The saved contents of that file.
+- The same background associated with that workspace.
+- Existing saved checked/selected gear state.
+
+BUT:
+
+START WITH ALL COLLAPSIBLE PANELS CLOSED.
+
+The user should return to the same list and background, but with a clean, collapsed interface.
+
+==================================================
+1. REQUIRED USER EXPERIENCE
+==================================================
+
+Example:
+
+The user is working on a saved file named:
+
+"PCT Sierra 2026"
+
+They have:
+
+- Several gear categories expanded.
+- Pack Summary expanded.
+- Weight Distribution expanded.
+- A specific background selected.
+- Some gear items checked.
+
+They close TrailWeigh.
+
+Later they reopen TrailWeigh.
+
+Expected:
+
+- "PCT Sierra 2026" automatically reopens.
+- The correct saved contents appear.
+- The same background appears.
+- Saved checked gear remains checked.
+- ALL gear-category panels are collapsed.
+- Pack Summary is collapsed.
+- Weight Distribution is collapsed.
+- No temporary menu, popover, or background picker is left open.
+
+The user should NOT have to reopen the Locker and manually find the file they were just using.
+
+==================================================
+2. REMEMBER THE LAST ACTIVE SAVED FILE
+==================================================
+
+Before coding, inspect TrailWeigh's existing:
+
+- Save system
+- Save As system
+- Locker
+- Active-file state
+- File IDs
+- Checklist initialization
+- Existing persistence/local storage behavior
+
+Use the existing architecture wherever possible.
+
+When the signed-in user opens or begins working in a SAVED file, TrailWeigh should remember that file as the user's:
+
+LAST ACTIVE FILE
+
+Whenever practical, remember the file by its stable internal file ID, NOT merely its display name.
+
+The last-active-file reference should update when the user:
+
+- Opens a saved file from Locker.
+- Successfully saves a brand-new file.
+- Opens another saved file.
+- Uses Save As and begins working in the newly created saved file.
+
+On the user's next normal TrailWeigh startup:
+
+1. Determine whether a valid last-active saved file exists.
+2. Confirm it belongs to the currently signed-in user.
+3. Load that saved file.
+4. Display its current correct file name.
+5. Load its saved checklist data.
+6. Restore the appropriate background.
+7. Initialize all collapsible panels as CLOSED.
+
+==================================================
+3. PRESERVE EXISTING SAVE BEHAVIOR
+==================================================
+
+IMPORTANT:
+
+Do NOT turn this feature into hidden automatic saving.
+
+Save and Save As must retain their current meaning.
+
+If the user modifies gear but does NOT save those modifications before closing TrailWeigh, do not silently save them merely because this prompt remembers the last active file.
+
+On reopen:
+
+- Return to the same SAVED FILE.
+- Load that file according to TrailWeigh's existing saved-data rules.
+
+If TrailWeigh already has an intentional recovery mechanism for unsaved working changes, inspect and preserve that existing behavior unless it conflicts with this prompt.
+
+Document exactly what currently happens with unsaved changes in the Prompt 022G report.
+
+Do not create a second competing copy of complete gear-list data in browser storage if the existing Locker/database system already owns that data.
+
+==================================================
+4. RESTORE THE SAME BACKGROUND
+==================================================
+
+The reopened workspace should display the same background the user was using for that file/workspace.
+
+Before changing anything, inspect how backgrounds are currently persisted.
+
+Reuse that mechanism.
+
+Where already supported, preserve:
+
+- Selected built-in background
+- Selected custom background
+- Background theme
+- Fit / Fill setting
+- Other background-specific settings already intentionally persisted
+
+If background information belongs to the saved file, restore it from the saved file.
+
+If some background preferences are intentionally stored at the user/browser level, preserve that architecture.
+
+Do not create unnecessary duplicate background persistence.
+
+VISIBLE RESULT:
+
+SAME FILE
++
+SAME BACKGROUND
++
+ALL PANELS CLOSED
+
+==================================================
+5. ALL GEAR CATEGORY PANELS CLOSED
+==================================================
+
+Do NOT restore which gear-category panels happened to be open when TrailWeigh was closed.
+
+Whenever the main Checklist workspace is newly initialized/reopened, every gear category should start in its COLLAPSED/CLOSED state.
+
+This applies even if several categories were open during the previous session.
+
+IMPORTANT:
+
+Collapsing a category must NOT:
+
+- Delete gear.
+- Uncheck gear.
+- Change weights.
+- Change quantities.
+- Change categories.
+- Modify the saved file.
+
+This is a VISUAL UI-state reset only.
+
+==================================================
+6. PACK SUMMARY CLOSED
+==================================================
+
+When TrailWeigh is reopened:
+
+Pack Summary must start COLLAPSED.
+
+Do not restore its previous expanded state.
+
+After startup, the user can open and close Pack Summary normally.
+
+==================================================
+7. WEIGHT DISTRIBUTION CLOSED
+==================================================
+
+When TrailWeigh is reopened:
+
+Weight Distribution must start COLLAPSED.
+
+Do not restore its previous expanded state.
+
+After startup, the user can open and close Weight Distribution normally.
+
+==================================================
+8. OTHER TEMPORARY PANELS / MENUS
+==================================================
+
+Do not restore temporary interface-open states from the previous session.
+
+On startup, close any temporary UI elements that should normally begin closed, including where applicable:
+
+- Background selection panel
+- Temporary dropdown/menu popovers
+- Save menu
+- Other toolbar menus
+- Preview modal
+- Dialogs/modals
+- Temporary import panels
+
+Do not forcibly close permanent page sections that are not designed as collapsible UI.
+
+Inspect the actual interface before deciding which elements qualify.
+
+==================================================
+9. PRESERVE SAVED CHECKBOX STATE
+==================================================
+
+This is especially important.
+
+"All panels closed" does NOT mean "all items unchecked."
+
+If a saved file contains checked/selected gear, those saved checkbox states must remain exactly as the saved file specifies.
+
+Example:
+
+"PCT Sierra 2026" contains:
+
+- Tent — checked
+- Quilt — checked
+- Rain jacket — checked
+- Camp chair — unchecked
+
+After reopening TrailWeigh:
+
+Those exact saved checked/unchecked states remain.
+
+Only the category panels themselves start collapsed.
+
+==================================================
+10. OPEN / CLOSE CONTROLS MUST STILL WORK
+==================================================
+
+After startup:
+
+The existing category Open / Close behavior must continue to function normally.
+
+If the user opens several categories during the current session, do NOT continually force them closed.
+
+The automatic collapse happens only when the Checklist workspace is newly initialized/reopened.
+
+Preserve the existing Close control behavior.
+
+==================================================
+11. INVALID OR DELETED LAST FILE
+==================================================
+
+Handle this gracefully.
+
+If the remembered last-active file:
+
+- Was deleted
+- No longer exists
+- Cannot be loaded
+- Does not belong to the currently signed-in user
+- Has become inaccessible
+
+TrailWeigh must NOT:
+
+- Enter an error loop.
+- Show a permanently broken loading screen.
+- Recreate the deleted file.
+- Open another user's file.
+
+Instead:
+
+- Clear the invalid last-active reference where appropriate.
+- Fall back to TrailWeigh's normal safe/default starting behavior.
+
+Document the exact fallback behavior in the report.
+
+==================================================
+12. ACCOUNT ISOLATION
+==================================================
+
+Last-active-file restoration must be scoped to the correct signed-in user.
+
+Example:
+
+User A works on "PCT 2026" and signs out.
+
+User B signs in on the same computer.
+
+User B must NOT automatically see User A's file.
+
+Requirements:
+
+- Never restore another user's private Locker file.
+- Do not expose private file names/data across accounts.
+- Follow the current authentication system.
+- Clear or safely scope browser persistence by user identity where needed.
+
+==================================================
+13. SHARED LINKS MUST NOT BECOME THE LAST PRIVATE FILE
+==================================================
+
+A Shared Pack List / shared-link view is NOT the same as the signed-in owner's private active Locker file.
+
+Opening a shared link must NOT replace the user's remembered private last-active file.
+
+Example:
+
+The user normally works on:
+
+"PCT Sierra 2026"
+
+They then open someone else's shared TrailWeigh link.
+
+Later they return to their normal private TrailWeigh workspace.
+
+Expected:
+
+"PCT Sierra 2026" remains their remembered active private file.
+
+Do not let temporary shared-list browsing overwrite the private workspace restoration state.
+
+Preserve the Shared Link behavior corrected in Prompt 022F.
+
+==================================================
+14. BROWSER REFRESH
+==================================================
+
+Test ordinary browser refresh as part of this behavior.
+
+When a signed-in user refreshes the main TrailWeigh Checklist:
+
+Expected:
+
+- Same active saved file.
+- Same appropriate background.
+- Saved gear selection preserved.
+- All collapsible category panels closed.
+- Pack Summary closed.
+- Weight Distribution closed.
+
+If there is a technical reason that refresh and full browser reopen use different initialization paths, handle both safely.
+
+==================================================
+15. DO NOT CHANGE INFORMATIONAL PAGES
+==================================================
+
+Do not modify:
+
+- About TrailWeigh from Prompt 022D
+- Help & How-To from Prompt 022C
+- How It Works from Prompt 022E
+
+This prompt concerns Checklist workspace restoration only.
+
+==================================================
+16. DO NOT REGRESS PROMPT 022F
+==================================================
+
+Prompt 022F fixed the Shared Link footer overlay.
+
+That fix has been USER VERIFIED and must remain intact.
+
+Do not alter the corrected footer/page-flow behavior on Shared Pack List pages.
+
+==================================================
+17. OTHER REGRESSION PROTECTION
+==================================================
+
+Do not change unrelated behavior involving:
+
+- Gear calculations
+- Base Weight
+- Expendables
+- Checkbox calculations
+- Move
+- Undo
+- Redo
+- Save
+- Save As
+- Locker
+- Rename
+- Delete
+- Scan Gear List
+- Preview
+- Print
+- Share
+- Shared Pack List
+- Shared Files
+- Background selection
+- Fit / Fill
+- Showcase
+- Authentication
+- Footer design
+- Existing saved lists
+
+Make the smallest reasonable change set necessary.
+
+Inspect the final diff.
+
+Revert unrelated changes.
+
+==================================================
+18. REQUIRED TEST — NORMAL REOPEN
+==================================================
+
+Use a real SAVED gear list.
+
+1. Open a saved file.
+2. Confirm its file name.
+3. Select/use a recognizable background.
+4. Check several gear items and SAVE if necessary so those checked states belong to the saved file.
+5. Expand several gear categories.
+6. Expand Pack Summary.
+7. Expand Weight Distribution.
+8. Close TrailWeigh.
+9. Reopen TrailWeigh.
+
+Expected:
+
+[ ] Same saved file automatically opens.
+
+[ ] Correct file name is displayed.
+
+[ ] Same appropriate background is displayed.
+
+[ ] Saved checked gear remains checked.
+
+[ ] All gear categories start collapsed.
+
+[ ] Pack Summary starts collapsed.
+
+[ ] Weight Distribution starts collapsed.
+
+[ ] No temporary toolbar menu is open.
+
+[ ] No modal is unexpectedly open.
+
+==================================================
+19. REQUIRED TEST — SWITCH FILES
+==================================================
+
+1. Open Saved File A.
+2. Open Saved File B from Locker.
+3. Confirm File B is now the active file.
+4. Close TrailWeigh.
+5. Reopen.
+
+Expected:
+
+[ ] File B reopens.
+
+[ ] File A does not incorrectly replace it.
+
+==================================================
+20. REQUIRED TEST — SAVE AS
+==================================================
+
+1. Open an existing saved file.
+2. Use Save As to create a new file.
+3. Continue working in the new saved file.
+4. Close TrailWeigh.
+5. Reopen.
+
+Expected:
+
+[ ] The new Save As file is restored as the active file.
+
+==================================================
+21. REQUIRED TEST — DELETED FILE
+==================================================
+
+1. Open a saved file.
+2. Ensure it is the last-active file.
+3. Delete it using the normal Locker deletion process.
+4. Close/reopen TrailWeigh.
+
+Expected:
+
+[ ] Deleted file is NOT recreated.
+
+[ ] No loading/error loop occurs.
+
+[ ] TrailWeigh falls back safely.
+
+[ ] Invalid last-active reference is handled safely.
+
+==================================================
+22. REQUIRED TEST — ACCOUNT ISOLATION
+==================================================
+
+Where practical:
+
+1. Use User A and establish a last-active file.
+2. Sign out.
+3. Sign in as User B on the same browser/device.
+
+Expected:
+
+[ ] User A's private file does not appear for User B.
+
+[ ] User A's private filename/data is not exposed.
+
+==================================================
+23. REQUIRED TEST — SHARED LINK ISOLATION
+==================================================
+
+1. Establish a private saved file as the user's last-active workspace.
+2. Open a Shared Pack List link.
+3. Leave the shared view.
+4. Return to/reopen the user's private TrailWeigh workspace.
+
+Expected:
+
+[ ] The original private saved file remains the remembered active file.
+
+[ ] The shared file did not replace it.
+
+[ ] Prompt 022F footer behavior remains correct.
+
+==================================================
+24. REQUIRED TEST — NO HIDDEN AUTOSAVE
+==================================================
+
+Verify that implementing this feature did NOT silently change Save semantics.
+
+Expected:
+
+[ ] Save still behaves as before.
+
+[ ] Save As still behaves as before.
+
+[ ] Unsaved gear changes are not silently written to the saved file merely because TrailWeigh remembers the file to reopen.
+
+Document the observed behavior clearly.
+
+==================================================
+25. AUTOMATED TESTING
+==================================================
+
+Add focused automated tests where practical for:
+
+- Last-active-file ID persistence.
+- Restoration of a valid active file.
+- Switching active files.
+- Save As becoming the new active file.
+- Deleted/missing active-file fallback.
+- User/account isolation.
+- Shared-link isolation.
+- Initial collapsed category state.
+- Initial collapsed Pack Summary state.
+- Initial collapsed Weight Distribution state.
+- Preservation of saved checkbox data.
+- Background restoration.
+
+Do not claim actual browser close/reopen behavior is PASS based only on static code inspection.
+
+If full browser lifecycle testing is unavailable, mark that portion:
+
+PARTIAL
+or
+NOT TESTED
+
+and identify what the user needs to verify manually.
+
+==================================================
+26. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022G_REPORT.md
+
+The report must include:
+
+- Exact prompt ID/title:
+  Prompt 022G — Restore Last Workspace With All Panels Closed
+
+- Files changed
+- Existing startup behavior discovered
+- Existing file-persistence architecture discovered
+- Existing background-persistence behavior discovered
+- How last-active-file identity is stored
+- How account isolation is enforced
+- How shared-link isolation is enforced
+- How invalid/deleted files are handled
+- Exact panels initialized closed
+- Confirmation saved checkbox state is preserved
+- Unsaved-change behavior
+- Automated tests added/updated
+- Manual/runtime tests completed
+- PASS / FAIL / PARTIAL / NOT TESTED for each verification requirement
+- Failed attempts
+- Anything reverted
+- Anything requiring user verification
+- Confirmation Prompt 022F remains intact
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified Prompt 022G report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite any previous workflow report.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022G_REPORT.md
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short explanation of the implementation
+6. Exact behavior of unsaved changes
+7. Anything still requiring user verification

@@ -80,8 +80,7 @@ function calcWeights(data: PackState, categoryOrder: string[], categoryMeta: Rec
 export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
-  // 022G: start collapsed — Pack Summary is closed on every fresh open/refresh
-  const [summaryOpen, setSummaryOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(true);
 
   const { baseWeightOz, nonBaseTotals, grandTotalOz } = calcWeights(data, categoryOrder, categoryMeta);
 
@@ -163,8 +162,7 @@ export function WeightDistribution({
 }: WeightDistributionProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
-  // 022G: start collapsed — Weight Distribution is closed on every fresh open/refresh
-  const [chartOpen, setChartOpen] = useState(false);
+  const [chartOpen, setChartOpen] = useState(true);
   const [showPaletteMenu, setShowPaletteMenu] = useState(false);
 
   const palette = PALETTES[paletteKey] ?? PALETTES.trail;

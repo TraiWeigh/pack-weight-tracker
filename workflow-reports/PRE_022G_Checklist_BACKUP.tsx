@@ -93,31 +93,6 @@ function writeActiveLockerFileToSS(value: ActiveLockerFile | null): void {
   } catch {}
 }
 
-/**
- * 022G — Last-active-file persistence.
- *
- * Stores the last Locker file the user actively opened or saved, scoped to
- * their Clerk user ID so User A's file is never shown to User B.
- * Only written by the primary (non-fork) Checklist tab — SharedChecklistPage
- * never writes here, enforcing shared-link isolation.
- */
-const LAST_ACTIVE_FILE_LS_PREFIX = 'trailweigh:last-active-file-';
-
-function readLastActiveFileFromLS(uid: string): ActiveLockerFile | null {
-  try {
-    const raw = localStorage.getItem(LAST_ACTIVE_FILE_LS_PREFIX + uid);
-    return raw ? (JSON.parse(raw) as ActiveLockerFile) : null;
-  } catch { return null; }
-}
-
-function writeLastActiveFileToLS(uid: string, value: ActiveLockerFile | null): void {
-  try {
-    const key = LAST_ACTIVE_FILE_LS_PREFIX + uid;
-    if (value) localStorage.setItem(key, JSON.stringify(value));
-    else localStorage.removeItem(key);
-  } catch {}
-}
-
 function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistContentProps) {
   // ── onRestoreBg: called by undo/redo to restore the background that was
   // active at the time of the history entry.  Defined as a stable useCallback
@@ -516,10 +491,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const [, setLocation] = useLocation();
   const admin = isAdmin(userEmail);
 
-  // 022G: start collapsed — categories, Pack Summary, and Weight Distribution all
-  // begin closed on every fresh open/refresh.  The Open/Close control still works
-  // normally after startup.
-  const [allOpen, setAllOpen] = useState(false);
+  const [allOpen, setAllOpen] = useState(true);
   const [openCloseSeq, setOpenCloseSeq] = useState(0);
 
   // ── Input-focus tracking (used to block inactivity showcase timer) ────────
@@ -842,75 +814,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const active: ActiveLockerFile = { id: entryId, name: entryName ?? '' };
       writeActiveLockerFileToSS(active);
       setActiveLockerFile(active);
-      // 022G: fork tab opened an existing Locker file — update last-active so
-      // the next fresh open returns to this file rather than the opener's file.
-      if (userId) writeLastActiveFileToLS(userId, active);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // ── 022G: Startup last-active-file restoration ────────────────────────────
-  // On a genuine fresh open of the primary (non-fork) tab, automatically load
-  // the user's last saved Locker file.  This reunites the user with the same
-  // file, same background, and same saved checkbox states, while all collapsible
-  // panels start closed (allOpen=false + GearCategory init=false handles that).
-  //
-  // Preconditions (all must hold):
-  //   1. Authenticated user (userId defined)
-  //   2. Not a fork/newseed tab (no tw-fork-id in sessionStorage)
-  //   3. No active file already in sessionStorage (tab remount → skip)
-  //   4. No tw-savedlist-entry-id pending (that mount effect runs just above)
-  useEffect(() => {
-    if (!userId) return;
-    // Fork tabs manage their own restoration via ?savedListId= / ?newseed=
-    const forkId = sessionStorage.getItem('tw-fork-id');
-    if (forkId) return;
-    // Tab remount (e.g. Clerk token refresh) — active file already loaded
-    if (sessionStorage.getItem(ACTIVE_LOCKER_FILE_SS_KEY)) return;
-    // The savedlist-entry mount effect above will handle this case
-    if (sessionStorage.getItem('tw-savedlist-entry-id')) return;
-
-    const lastActive = readLastActiveFileFromLS(userId);
-    if (!lastActive) return;
-
-    // Verify the entry still exists in the user's Locker
-    const entry = lockerEntries.find(e => e.id === lastActive.id);
-    if (!entry) {
-      // File was deleted — clear the stale reference and fall back to normal startup
-      writeLastActiveFileToLS(userId, null);
-      return;
-    }
-
-    // ── Restore appearance (mirrors the in-place Locker-load non-fork path) ──────
-    const restoredPalette = entry.chartPaletteKey ?? 'trail';
-    setChartPaletteKey(restoredPalette);
-    localStorage.setItem('trailweigh:chartPalette', restoredPalette);
-
-    setBackground(entry.background as Background | null);
-    if (entry.background) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(entry.background));
-    else localStorage.removeItem(BG_STORAGE_KEY);
-
-    const restoredTone = entry.bgTone ?? 'light';
-    setBgTone(restoredTone);
-    localStorage.setItem('trailweigh:bgTone', restoredTone);
-
-    const restoredFade = entry.bgFade ?? 1;
-    setBgFade(restoredFade);
-    localStorage.setItem('trailweigh:bgFade', String(restoredFade));
-
-    const restoredSize = entry.bgSize ?? 'cover';
-    setBgSize(restoredSize);
-    localStorage.setItem('trailweigh:bgSize', restoredSize);
-
-    // Replace the gear store (clears undo/redo; does not write to the saved entry)
-    replaceStore(entry.store as import('../hooks/usePackData').Store);
-
-    // Track active file so Save routes to commitSaveReplace for this file
-    const activeFile: ActiveLockerFile = { id: entry.id, name: entry.name };
-    writeActiveLockerFileToSS(activeFile);
-    setActiveLockerFile(activeFile);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount only
 
   /**
    * "Save" chosen from the Save menu.
@@ -976,8 +882,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const newFile: ActiveLockerFile = { id: entry.id, name: entry.name };
     writeActiveLockerFileToSS(newFile);
     setActiveLockerFile(newFile);
-    // 022G: persist as last-active so the next fresh open restores this file.
-    if (userId) writeLastActiveFileToLS(userId, newFile);
     closeSaveDialog();
     toast({ description: `Saved ${name}` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1011,8 +915,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const refreshed: ActiveLockerFile = { id: existingId, name };
       writeActiveLockerFileToSS(refreshed);
       setActiveLockerFile(refreshed);
-      // 022G: persist as last-active so the next fresh open restores this file.
-      if (userId) writeLastActiveFileToLS(userId, refreshed);
       closeSaveDialog();
       toast({ description: `Saved ${name}` });
     } catch {
@@ -1130,8 +1032,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       const newActiveFile: ActiveLockerFile = { id: entry.id, name: entry.name };
       writeActiveLockerFileToSS(newActiveFile);
       setActiveLockerFile(newActiveFile);
-      // 022G: in-place open (primary tab) — update last-active.
-      if (userId) writeLastActiveFileToLS(userId, newActiveFile);
       // Stay in the same tab — no window.open.
       return;
     }
@@ -1179,14 +1079,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const nextB = curB && pendingDeleteIds.includes(curB.id) ? null : curB;
     writeActiveLockerFileToSS(nextB);
     setActiveLockerFile(nextB);
-    // 022G: also clear the last-active localStorage reference if it was deleted,
-    // so the next fresh open doesn't attempt to load a non-existent file.
-    if (userId) {
-      const lastActive = readLastActiveFileFromLS(userId);
-      if (lastActive && pendingDeleteIds.includes(lastActive.id)) {
-        writeLastActiveFileToLS(userId, null);
-      }
-    }
     setShowDeleteDialog(false);
     setPendingDeleteIds([]);
     const msg = toDelete.length === 1
