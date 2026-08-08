@@ -1367,8 +1367,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           </div>
         </header>
 
-        <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-6 flex-1 min-h-0 lg:overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:h-full">
+        <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:gap-4 lg:h-full">
 
             {/* Gear list */}
             <div className="lg:h-full lg:flex lg:flex-col lg:overflow-hidden">

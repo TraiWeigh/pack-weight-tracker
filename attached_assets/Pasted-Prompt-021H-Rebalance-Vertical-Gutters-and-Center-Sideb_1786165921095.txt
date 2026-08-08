@@ -1,0 +1,624 @@
+Prompt 021H — Rebalance Vertical Gutters and Center Sidebar
+
+IMPORTANT:
+This is a VISUAL LAYOUT-SPACING correction only.
+
+Do not change TrailWeigh functionality to accomplish this task.
+
+==================================================
+PRE-CHANGE WORK PRESERVATION / RECOVERY
+==================================================
+
+BEFORE changing any code:
+
+1. Create a Replit checkpoint/recovery point representing the exact current working app.
+2. Create:
+   PRE_021H_MASTER_BACKUP.md
+3. Record the current files you expect to modify.
+4. Do not modify saved user files or persistent user data.
+5. Do not perform a storage/schema migration.
+6. Do not delete, reset, regenerate, or replace existing application data to solve this visual issue.
+
+The current working TrailWeigh implementation is the recovery baseline.
+
+If the requested spacing correction unexpectedly requires:
+- storage migration
+- major architecture changes
+- component restructuring
+- replacement of the existing grid system
+- changes to saved-file data
+- changes to Share architecture
+- changes to authentication
+
+STOP and report why instead of proceeding.
+
+==================================================
+CURRENT STATUS
+==================================================
+
+TrailWeigh's current functionality must be preserved.
+
+Prompt 021H changes ONLY desktop horizontal spacing/gutter balance.
+
+USER VISUAL OBSERVATION:
+
+There are three important vertical gutter spaces:
+
+1. LEFT GUTTER
+Space between the far-left content/scroll area and the left edge of the category/checklist cards.
+
+2. MIDDLE GUTTER
+Space between the main category/checklist column and the right sidebar.
+
+3. RIGHT GUTTER
+Space between the right edge of the sidebar and the far-right vertical scroll area.
+
+Current appearance:
+- Left gutter is too narrow.
+- Middle gutter is too wide.
+- Right gutter is too narrow.
+- The right sidebar therefore does not look centered between the two vertical scroll gutters.
+
+==================================================
+PRIMARY VISUAL GOAL
+==================================================
+
+CENTER THE RIGHT SIDEBAR MORE EVENLY BETWEEN THE TWO VERTICAL SCROLL GUTTERS.
+
+Specifically:
+
+- reduce the oversized MIDDLE gutter on the LEFT side of the sidebar
+- increase/rebalance the narrow RIGHT gutter
+- make the sidebar appear visually centered between those two vertical scroll gutters
+- slightly increase/rebalance the LEFT outer gutter so the overall page composition also feels symmetrical
+
+The target is VISUAL symmetry.
+
+Do not blindly make all three gaps mathematically identical because browser scrollbar mechanics may create small differences.
+
+The finished desktop screen should look intentionally centered and balanced.
+
+==================================================
+IMPLEMENTATION — INVESTIGATE FIRST
+==================================================
+
+Before editing, inspect:
+
+- primary desktop container
+- current grid/flex structure
+- outer left/right horizontal padding
+- main checklist-column sizing
+- right sidebar width
+- grid gap / column gap
+- scrollbar gutters
+- sidebar margin/padding
+- nested wrappers that may create extra middle space
+
+Identify the exact CSS/layout property responsible for the oversized middle gutter and narrow outside gutters.
+
+Use the SMALLEST possible adjustment.
+
+Prefer changes to:
+- grid gap
+- container horizontal padding
+- sidebar margin
+- column spacing
+
+Avoid changing card widths unless genuinely required.
+
+Preserve the existing desktop structure, including:
+
+lg:grid-cols-[1fr_365px]
+
+unless changing it is absolutely necessary.
+
+If it is necessary, document why before changing it.
+
+==================================================
+DO NOT USE LAYOUT HACKS
+==================================================
+
+Do NOT solve this with:
+
+- arbitrary transform: translateX(...)
+- absolute positioning
+- negative margins used only to disguise the problem
+- JavaScript viewport calculations
+- timeout-based layout corrections
+- duplicate desktop layouts
+- hard-coded positioning that breaks other screen sizes
+
+Fix the actual layout spacing.
+
+==================================================
+WORK-PRESERVATION / GLOBAL REGRESSION PROTECTION
+==================================================
+
+ALL existing TrailWeigh work is protected unless Prompt 021H explicitly changes it.
+
+This includes functionality, layout, storage, data, authentication, sharing, backgrounds, importer behavior, calculations, and prior prompt work.
+
+Use the SMALLEST POSSIBLE CHANGE SET.
+
+DO NOT perform unrelated:
+
+- cleanup
+- refactoring
+- code modernization
+- component renaming
+- file relocation
+- architecture changes
+- dependency upgrades
+- formatting sweeps
+- storage changes
+
+Do not modify code merely because it could be written differently.
+
+==================================================
+USER DATA / STORAGE PROTECTION
+==================================================
+
+Preserve 100% compatibility with all existing:
+
+- Locker files
+- saved file IDs
+- active file identities
+- localStorage data
+- sessionStorage behavior
+- IndexedDB data
+- saved themes
+- custom background photos
+- saved backgrounds
+- saved Light/Dark appearance
+- Fit/Fill settings
+- fade/darken settings
+- chart palettes
+- cross-tab behavior
+
+NEVER:
+
+- erase user data
+- reset storage
+- recreate saved files
+- migrate storage schemas
+- change existing file IDs
+- rewrite saved files
+- clear IndexedDB
+- clear localStorage
+- clear Locker contents
+
+as part of this spacing correction.
+
+No migration is authorized by Prompt 021H.
+
+==================================================
+PROTECT NEW / SAVED-FILE BEHAVIOR
+==================================================
+
+Protect the completed New/background fixes.
+
+NEW must remain:
+
+- zero categories
+- zero items
+- Clear/no background
+- Light mode
+- no filename
+- no delayed appearance leakage
+
+Saved files must continue restoring their own:
+- content
+- filename
+- background
+- Light/Dark
+- Fill/Fit
+- fade/darken
+- palette
+
+No cross-file appearance leakage may return.
+
+==================================================
+PROTECT SAVE / LOCKER
+==================================================
+
+Preserve:
+
+- Save
+- Save As
+- active filename identity
+- Saved [File Name] confirmation
+- no quotation marks around filename
+- Locker Open
+- private Rename
+- private Delete with simple confirmation
+- no password requirement for owner's Delete
+- Cancel behavior
+- independent file IDs
+- cross-tab behavior
+
+Do not modify these systems.
+
+==================================================
+PROTECT SHARE SYSTEM
+==================================================
+
+Preserve the current Share menu and functionality.
+
+Owner Share menu remains:
+
+Share Link
+All your saved files
+
+Share Pack List
+Copy link, read-only
+
+Download PDF
+
+Preserve:
+
+- Share Link
+- Shared Files
+- shared-file browsing/open behavior already implemented
+- temporary viewer edits
+- viewer edits never affecting originals
+- no Rename for shared viewers
+- no Delete for shared viewers
+- no Save/Save As to sender originals
+- Save Your Own Copy
+- independent viewer-owned copies
+- Share Pack List
+- read-only single-pack-list sharing
+- Download PDF
+
+Do not modify Share logic for this spacing task.
+
+==================================================
+PROTECT PREVIEW / PRINT
+==================================================
+
+Preserve:
+
+- Preview layout
+- Share Pack List control
+- Print
+- Close
+- Preview calculations
+- PDF/print behavior
+
+Do not change Preview merely because desktop checklist spacing changes.
+
+==================================================
+PROTECT IMPORTER
+==================================================
+
+Preserve Scan Gear List completely.
+
+Protect:
+
+- PDF import
+- Word DOCX import
+- Excel XLSX import
+- Apple Numbers workflow
+- current mapping rules
+- automatic category creation when importing into a blank New list
+- imported items unchecked
+- current item/category routing
+
+Do not modify importer code.
+
+Preserve the current Scan Gear List chevron behavior established by prior work.
+
+==================================================
+PROTECT CALCULATIONS / CHECKLIST
+==================================================
+
+Do not change:
+
+- category behavior
+- items
+- quantities
+- weights
+- MOVE
+- Base Weight
+- Dog Pack
+- Grand Total
+- Pack Summary
+- Weight Distribution
+- chart palette
+- Imperial/Metric
+- Hide
+- Open/Close
+- Undo/Redo
+- Add Category
+- checkbox calculations
+
+No calculation code should need modification for Prompt 021H.
+
+==================================================
+PROTECT BACKGROUNDS
+==================================================
+
+Do not change:
+
+- Background Edit
+- built-in themes
+- custom themes
+- custom photos
+- IndexedDB photo storage
+- Fill/Fit
+- Darken/Fade
+- background Undo/Redo
+- Light/Dark behavior
+
+==================================================
+RESPONSIVE PROTECTION
+==================================================
+
+021H is primarily a DESKTOP spacing correction.
+
+Do not force desktop gutter values onto smaller screens.
+
+Phone/tablet must retain:
+
+- proper stacking
+- no new horizontal overflow
+- no clipped controls
+- no crushed cards
+- no overlapping panels
+- usable scrolling
+- existing responsive behavior
+
+==================================================
+REQUIRED DESKTOP RESULT
+==================================================
+
+At the user's normal desktop width:
+
+LEFT GUTTER:
+- should no longer appear noticeably cramped
+
+MIDDLE GUTTER:
+- should be reduced from its current oversized appearance
+
+RIGHT GUTTER:
+- should have more breathing room than it currently has
+
+SIDEBAR:
+- must appear more centered between the two vertical scroll gutters
+- should have visually comparable breathing room on its left and right
+
+Overall:
+- category/checklist area and sidebar should look balanced across the screen
+- do not significantly reduce useful checklist/sidebar space unnecessarily
+
+==================================================
+REQUIRED RENDERED TESTS
+==================================================
+
+A. DESKTOP DARK MODE
+
+Verify visually:
+- left gutter improved
+- middle gutter reduced
+- right gutter improved
+- sidebar centered more evenly between the two vertical scroll gutters
+
+B. DESKTOP LIGHT MODE
+
+Verify the same spacing.
+
+C. SIDEBAR
+
+Verify:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker / Shared Files
+
+remain correctly positioned and functional.
+
+D. CATEGORY AREA
+
+Verify:
+- category cards aligned
+- no clipping
+- no unexpected width changes
+- no text/content overlap
+
+E. TOP CONTROLS
+
+Verify no regression in:
+- filename pill
+- New
+- Undo
+- Redo
+- Save
+- Reset
+- Open/Close
+- Hide
+- Preview
+- Imperial/Metric
+
+F. PHONE / TABLET
+
+Quick rendered regression:
+- no new overflow
+- no broken stacking
+- no overlap
+
+==================================================
+FULL REGRESSION SAFETY CHECK
+==================================================
+
+After making the spacing change:
+
+1. Inspect the FINAL DIFF.
+2. Identify every file changed.
+3. Confirm every change is necessary for Prompt 021H.
+4. Revert unrelated changes.
+5. Compare against the pre-021H checkpoint.
+
+If unexpected files or functional code changed, investigate and revert them before completion.
+
+The final diff should be extremely small for this task.
+
+==================================================
+AUTOMATED TESTS
+==================================================
+
+Run:
+
+1. relevant layout/component tests
+2. COMPLETE TrailWeigh automated regression suite
+
+Report the exact commands and exact totals:
+
+- passed
+- failed
+- skipped
+
+Do not describe a targeted subset as the complete suite.
+
+Automated tests cannot prove visual gutter symmetry.
+
+Rendered visual inspection remains mandatory.
+
+==================================================
+DATA-SAFETY ACCEPTANCE
+==================================================
+
+021H = FAIL if this visual adjustment causes ANY of the following:
+
+- saved data loss
+- storage reset/migration
+- Locker-file changes
+- background/theme loss
+- Share regression
+- importer regression
+- calculation regression
+- New regression
+- Save/Save As regression
+- Preview/Print regression
+- responsive/mobile regression
+- panel functionality change
+- changed user file IDs
+- unexpected unrelated code changes
+
+A visually improved layout is NOT an acceptable fix if existing functionality or data is damaged.
+
+==================================================
+USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Even if automated and rendered Replit tests pass:
+
+021H = NOT USER-VERIFIED
+
+until the user visually confirms the gutter spacing.
+
+==================================================
+REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021H_REPORT.md
+
+Include:
+
+- exact Prompt 021H
+- starting state
+- checkpoint/recovery point created
+- root cause of uneven gutter spacing
+- files inspected
+- files changed
+- exact CSS/layout values before
+- exact CSS/layout values after
+- how left gutter changed
+- how middle gutter changed
+- how right gutter changed
+- how sidebar was centered between the vertical scroll gutters
+- confirmation no saved-data/storage changes occurred
+- final-diff review
+- unrelated changes found/reverted, if any
+- desktop Dark rendered result
+- desktop Light rendered result
+- mobile regression result
+- automated test commands
+- complete regression totals
+- protected-feature results
+- failures/reversions
+- acceptance checklist:
+  PASS / FAIL / PARTIAL / NOT TESTED
+- unresolved issues
+- exact user visual test still required
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do NOT overwrite or truncate prior history.
+
+Record:
+
+021H = NOT USER-VERIFIED
+
+==================================================
+REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021H-report.zip
+
+It must contain EXACTLY these four Markdown files at ZIP ROOT:
+
+PROMPT_021H_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+
+- ../ paths
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- backup files
+- source files
+- test source files
+- screenshots
+- user data
+- credentials
+- other ZIP files
+
+Before finishing, LIST the ZIP contents.
+
+Exactly 4 root entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. checkpoint/recovery protection created
+2. exact root cause of uneven gutter spacing
+3. exact files changed
+4. exact CSS/layout values before and after
+5. how left gutter was rebalanced
+6. how middle gutter was reduced
+7. how right gutter was increased/rebalanced
+8. how sidebar is now centered between the two vertical scroll gutters
+9. confirmation no saved user data/storage/schema was changed
+10. confirmation final diff contained only necessary 021H changes
+11. desktop Dark/Light rendered results
+12. mobile regression result
+13. complete regression-suite totals
+14. protected-feature regression results
+15. report path
+16. ZIP path
+17. exact four ZIP entries
+18. clearly state USER visual acceptance is still required

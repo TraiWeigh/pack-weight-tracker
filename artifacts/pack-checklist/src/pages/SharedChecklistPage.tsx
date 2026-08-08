@@ -864,7 +864,7 @@ function SharedChecklistContent({
 
         {/* ── Main layout (mirrors ChecklistContent) ── */}
         <main className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0 lg:overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 lg:h-full">
 
             {/* ── Gear list ── */}
             <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
