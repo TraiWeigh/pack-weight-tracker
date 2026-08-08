@@ -1,0 +1,361 @@
+Prompt 021F — Fix Share Menu Consistency + Panel Order + Share Labels
+
+Create PRE_021F_MASTER_BACKUP.md before changing anything.
+
+CURRENT USER-OBSERVED ISSUES:
+1. Shared Files/Locker appears ABOVE Pack Summary. It belongs in the normal lower Locker position.
+2. Two logged-in TrailWeigh tabs show different Share menus:
+   - one shows only Download PDF
+   - another shows all Share options
+3. Rename the user-facing “Share Locker” option to “Share Link”.
+4. Under Share Pack List change:
+   “Current list, read-only”
+   to:
+   “Copy link, read-only”
+
+Do all four fixes together. Do not redesign or rebuild the working Share architecture.
+
+==================================================
+REQUIRED SHARE MENU
+==================================================
+
+For a logged-in owner with a non-empty pack list, the Share pill must consistently show exactly:
+
+1. Share Link
+   All your saved files
+
+2. Share Pack List
+   Copy link, read-only
+
+3. Download PDF
+
+IMPORTANT:
+“Share Link” is the new USER-FACING NAME for the existing multi-file Locker-sharing feature.
+
+Do NOT remove or change its underlying functionality:
+- shares the saved-file/Locker experience
+- shared viewer can browse the shared files
+- viewer cannot Rename/Delete originals
+- viewer changes cannot affect owner files
+- viewer persistence is only through Save Your Own Copy to their own account
+
+Replace “Share Locker” with “Share Link” anywhere the user sees that Share-menu option.
+
+Internal code/component names do NOT need to be renamed unless necessary. Avoid unrelated renaming/refactoring.
+
+==================================================
+FIX SHARE MENU INCONSISTENCY
+==================================================
+
+USER TEST:
+Two simultaneously logged-in owner tabs currently show different Share menus.
+
+One shows:
+Download PDF only
+
+Another shows:
+Share Link / Share Pack List / Download PDF
+
+This is a FAIL.
+
+Investigate BEFORE editing:
+- where Share menu options are constructed
+- auth state
+- owner/shared-view state
+- route state
+- hydration
+- localStorage/sessionStorage
+- cross-tab synchronization
+- stale component state
+- capability flags
+- whether shared-view flags leak into normal owner tabs
+
+Find and document the exact root cause.
+
+For every NORMAL LOGGED-IN OWNER /checklist tab with a non-empty list, Share must consistently show:
+
+Share Link
+Share Pack List
+Download PDF
+
+Opening another owner tab, loading a different saved file, refreshing, or cross-tab updates must not make options disappear.
+
+Do not fix this with timeout/reload hacks.
+
+==================================================
+RIGHT SIDEBAR ORDER
+==================================================
+
+Restore the right-side panel order to:
+
+1. Pack Summary
+2. Weight Distribution
+3. Scan Gear List
+4. Locker / Shared Files
+
+Shared Files must NOT appear above Pack Summary.
+
+In normal owner mode use the existing Locker.
+
+In shared mode, if the panel is named Shared Files, it occupies the same lower Locker position.
+
+Do not move/redesign the other panels.
+
+==================================================
+SHARE PACK LIST TEXT
+==================================================
+
+Change only the subtitle:
+
+FROM:
+Current list, read-only
+
+TO:
+Copy link, read-only
+
+Final visible Share menu:
+
+Share Link
+All your saved files
+
+Share Pack List
+Copy link, read-only
+
+Download PDF
+
+==================================================
+PROTECT SHARE PACK LIST / PREVIEW
+==================================================
+
+Preserve the existing Share Pack List feature:
+
+- shares only the currently open pack list
+- read-only Preview-style shared presentation
+- publicly viewable
+- does not expose Locker
+- cannot modify owner's file
+- Print remains available
+
+Preserve the Share Pack List pill immediately LEFT of Print inside Pack List Preview if already implemented.
+
+Do not create a second sharing implementation.
+
+==================================================
+PROTECT SHARE LINK FUNCTIONALITY
+==================================================
+
+Changing “Share Locker” → “Share Link” is a LABEL change only.
+
+Preserve its intended multi-file functionality:
+- shared Locker/files
+- temporary viewer interaction
+- viewer cannot Rename originals
+- viewer cannot Delete originals
+- viewer cannot Save/Save As over originals
+- Save Your Own Copy creates an independent viewer-owned copy
+- sender originals remain unchanged
+
+Do not change share payload/storage behavior merely to rename the UI.
+
+==================================================
+GLOBAL REGRESSION PROTECTION
+==================================================
+
+Treat ALL existing TrailWeigh functionality/data/styling/layout/persistence/calculations/importer/background/Locker/Share/auth/mobile behavior and all prior completed work as protected unless explicitly changed above.
+
+Smallest possible change set only.
+
+NO unrelated:
+- refactoring
+- cleanup
+- renaming
+- relocation
+- modernization
+- redesign
+
+Preserve:
+- 020F New/background isolation
+- signed-out /checklist protection
+- private owner Rename
+- private Delete with simple confirmation/no password
+- Share Link public viewing
+- Share Pack List
+- Download PDF
+- Save Your Own Copy
+- no Rename/Delete for shared viewers
+- Save / Save As / Locker
+- Scan Gear List
+- automatic category creation during import
+- imported items unchecked
+- Background Edit/themes/custom photos
+- Fit/Fill/Darken
+- Undo/Redo
+- Preview/Print
+- Pack Summary
+- Weight Distribution/palette
+- MOVE/calculations
+- Imperial/Metric
+- desktop/mobile layout
+- all existing saved user files
+
+Create checkpoint first.
+Inspect final diff.
+Revert unrelated changes.
+Never erase/migrate saved user data for this fix.
+
+==================================================
+REQUIRED REAL-BROWSER TESTS
+==================================================
+
+TEST A — OWNER TAB 1
+Open normal logged-in /checklist with gear.
+
+Share menu must show:
+
+Share Link
+All your saved files
+
+Share Pack List
+Copy link, read-only
+
+Download PDF
+
+TEST B — OWNER TAB 2
+While Tab 1 remains open, open another logged-in TrailWeigh owner tab.
+
+Load a different saved file.
+
+Share must show the SAME three options.
+
+Refresh both tabs and verify consistency.
+
+TEST C — PANEL ORDER
+Verify:
+
+Pack Summary
+Weight Distribution
+Scan Gear List
+Locker / Shared Files
+
+Shared Files/Locker must not appear above Pack Summary.
+
+TEST D — SHARE LINK
+Click Share Link.
+
+Confirm existing multi-file Share behavior still works.
+
+TEST E — SHARE PACK LIST
+Click Share Pack List.
+
+Confirm existing one-pack read-only link still works.
+
+TEST F — PREVIEW
+Open Preview.
+
+Confirm Share Pack List remains immediately left of Print.
+
+TEST G — SHARED VIEW
+Confirm shared viewer still cannot Rename/Delete/save over original files.
+
+==================================================
+AUTOMATED TESTS
+==================================================
+
+Add/update focused tests for:
+- owner Share menu has all 3 entries
+- second logged-in owner tab has identical entries
+- displayed label is exactly “Share Link”
+- “Share Locker” no longer appears as this menu label
+- Share Link subtitle = “All your saved files”
+- Share Pack List subtitle = “Copy link, read-only”
+- right-sidebar panel order
+- shared viewer protections remain intact
+- Share Pack List/Preview behavior remains intact
+
+Run:
+1. focused 021F tests
+2. COMPLETE TrailWeigh regression suite
+
+Report exact commands and exact passed/failed/skipped totals.
+
+Do not call a targeted subset the full suite.
+
+==================================================
+USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+021F = NOT USER-VERIFIED until the user tests it.
+
+==================================================
+REPORTING
+==================================================
+
+Create:
+workflow-reports/PROMPT_021F_REPORT.md
+
+Include:
+- exact prompt
+- starting state
+- root cause of inconsistent Share menus
+- root cause of wrong Shared Files panel position
+- files inspected/changed
+- exact code changes
+- Share Link label change
+- Share Pack List subtitle change
+- focused tests/results
+- COMPLETE regression results
+- real-browser two-tab results
+- protected-feature checks
+- unresolved issues
+- user acceptance still required
+
+Append verified report to:
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite/truncate history.
+
+==================================================
+ZIP
+==================================================
+
+Create:
+trailweigh-021F-report.zip
+
+Exactly these four Markdown files at ZIP root:
+
+PROMPT_021F_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+No wrapper folder.
+No __MACOSX.
+No .DS_Store.
+No backups/source/tests/screenshots/user data/other ZIPs.
+
+List archive entries before finishing.
+Exactly four entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+1. root cause of Share-menu inconsistency
+2. root cause of panel-order problem
+3. files changed
+4. confirmation menu now says Share Link
+5. confirmation Share Link retains multi-file behavior
+6. confirmation Share Pack List says “Copy link, read-only”
+7. confirmation both owner tabs show all 3 options
+8. confirmation sidebar order is correct
+9. focused test totals
+10. COMPLETE regression totals
+11. rendered/browser tests
+12. protected-feature results
+13. report path
+14. ZIP path
+15. exact four ZIP entries
+16. USER acceptance still required

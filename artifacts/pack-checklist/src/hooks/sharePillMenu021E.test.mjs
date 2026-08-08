@@ -65,8 +65,9 @@ function test(name, fn) {
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nA–E. Share Locker — Checklist.tsx');
 
-test('A. Share Locker menu item text present', () => {
-  assert.match(checklist, /Share Locker/, 'Share menu must contain "Share Locker" text');
+test('A. Share Link menu item text present (renamed from Share Locker in 021F)', () => {
+  // 021F renamed the user-visible label "Share Locker" → "Share Link"
+  assert.match(checklist, /['"]Share Link['"]/, 'Share menu must contain "Share Link" user-visible text');
 });
 
 test('B. Share Locker triggers locker-warning step', () => {

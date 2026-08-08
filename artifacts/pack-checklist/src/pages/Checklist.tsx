@@ -1586,14 +1586,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                           <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[220px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
                             {shareStep === 'menu' ? (
                               <>
-                                {/* ── Share Locker ── */}
+                                {/* ── Share Link ── */}
                                 <button
                                   onClick={() => setShareStep('locker-warning')}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
                                 >
                                   <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                                   <div className="text-left">
-                                    <div className="font-medium">{copied ? 'Copied!' : 'Share Locker'}</div>
+                                    <div className="font-medium">{copied ? 'Copied!' : 'Share Link'}</div>
                                     <div className="text-[11px] text-muted-foreground">All your saved files</div>
                                   </div>
                                 </button>
@@ -1616,7 +1616,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                                   <div className="text-left">
                                     <div className="font-medium">{copiedPackList ? 'Copied!' : 'Share Pack List'}</div>
                                     <div className="text-[11px] text-muted-foreground">
-                                      {canShare ? 'Current list, read-only' : 'Add gear items first'}
+                                      {canShare ? 'Copy link, read-only' : 'Add gear items first'}
                                     </div>
                                   </div>
                                 </button>
@@ -1634,7 +1634,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                                 </button>
                               </>
                             ) : (
-                              /* Share Locker — save-before-share reminder */
+                              /* Share Link — save-before-share reminder */
                               <div className="px-3 py-3 space-y-2.5">
                                 <p className="text-xs text-muted-foreground leading-relaxed">
                                   Save the currently open file first so its latest changes appear in the shared Locker snapshot.
@@ -1648,7 +1648,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                                     }}
                                     className="flex-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors"
                                   >
-                                    Share Locker Anyway
+                                    Share Link Anyway
                                   </button>
                                   <button
                                     onClick={() => setShareStep('menu')}

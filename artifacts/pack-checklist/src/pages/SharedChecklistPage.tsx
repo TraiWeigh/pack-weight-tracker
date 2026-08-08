@@ -1029,14 +1029,6 @@ function SharedChecklistContent({
               {/* Scrollable sidebar content */}
               <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:px-3 lg:[scrollbar-gutter:stable]">
                 <div className="flex flex-col gap-4 py-2 pb-8">
-                  {/* View-only Shared Locker — browse files, no Rename/Delete */}
-                  {snapshot.lockerFiles && snapshot.lockerFiles.length > 0 && (
-                    <SharedLockerPanel
-                      files={snapshot.lockerFiles}
-                      activeId={activeFileId}
-                      onOpen={f => switchToFile(f.id)}
-                    />
-                  )}
                   <WeightSummary
                     data={store.items}
                     categoryOrder={store.order}
@@ -1046,6 +1038,14 @@ function SharedChecklistContent({
                     categoryOrder={store.order}
                     onAddItem={(category, prefill) => addItem(category, prefill)}
                   />
+                  {/* View-only Shared Locker — browse files, no Rename/Delete (lower panel, same position as owner Locker) */}
+                  {snapshot.lockerFiles && snapshot.lockerFiles.length > 0 && (
+                    <SharedLockerPanel
+                      files={snapshot.lockerFiles}
+                      activeId={activeFileId}
+                      onOpen={f => switchToFile(f.id)}
+                    />
+                  )}
                 </div>
               </div>
             </div>

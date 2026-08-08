@@ -175,10 +175,10 @@ assert(
   'Save-before-sharing warning message present in Checklist'
 );
 
-// Confirm button must exist (021E renamed "Copy Link Anyway" → "Share Locker Anyway")
+// Confirm button must exist (021E: "Copy Link Anyway" → "Share Locker Anyway"; 021F: → "Share Link Anyway")
 assert(
-  /Share Locker Anyway/.test(checklist),
-  '"Share Locker Anyway" button present in save-warning step (renamed from Copy Link Anyway in 021E)'
+  /Share Link Anyway/.test(checklist),
+  '"Share Link Anyway" button present in save-warning step (renamed from Share Locker Anyway in 021F)'
 );
 
 // Share Locker must set shareStep to 'locker-warning' (021E: renamed from 'warning')
