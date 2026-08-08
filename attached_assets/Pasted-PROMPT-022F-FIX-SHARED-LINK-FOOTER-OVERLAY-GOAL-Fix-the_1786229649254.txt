@@ -1,0 +1,362 @@
+PROMPT 022F — FIX SHARED-LINK FOOTER OVERLAY
+
+GOAL
+
+Fix the TrailWeigh footer behavior on Shared Link / Shared Pack List pages.
+
+CURRENT PROBLEM
+
+When a shared TrailWeigh link is opened, the footer remains visible at the bottom of the browser viewport while the shared checklist continues behind it.
+
+The footer is covering part of the shared-page content.
+
+This creates the appearance of a fixed or sticky footer overlay.
+
+The footer itself should NOT be removed.
+
+Its existing visual design and links should remain.
+
+Only its layout/positioning behavior on the shared-list experience needs to be corrected.
+
+==================================================
+1. REQUIRED BEHAVIOR
+==================================================
+
+On a Shared Link / Shared Pack List page:
+
+- The footer must be part of the NORMAL DOCUMENT FLOW.
+- The footer must NOT remain pinned to the bottom of the viewport.
+- The footer must NOT overlay the checklist.
+- The footer must NOT cover sidebar content.
+- The footer must appear naturally AFTER all shared-page content.
+- The user should see the footer only after scrolling to the actual bottom of the page.
+
+If the shared gear list becomes longer:
+
+- The page becomes longer.
+- The footer is pushed farther down naturally.
+- The footer does not stay floating over the list.
+
+==================================================
+2. CONTENT THAT MUST NEVER BE COVERED
+==================================================
+
+The footer must never obscure any shared-page content, including where present:
+
+- Gear categories
+- Gear rows
+- Add Item areas
+- Pack Summary
+- Scan Gear List
+- Shared Files
+- Preview controls
+- Imperial / Metric controls
+- Background controls
+- Print
+- Share
+- Any other sidebar or checklist content
+
+The user must be able to scroll through and interact with the entire shared page without the footer blocking anything.
+
+==================================================
+3. INSPECT THE CURRENT LAYOUT FIRST
+==================================================
+
+Before making changes, inspect the actual Shared Link / Shared Pack List page implementation.
+
+Determine why the footer is remaining visible over the page.
+
+Check for layout causes such as:
+
+- position: fixed
+- position: sticky
+- bottom: 0
+- viewport-height containers
+- nested scrolling containers
+- overflow: hidden
+- overflow: auto
+- absolute positioning
+- footer mounted outside the actual scrolling document container
+- a main/content area with an incorrect fixed height
+- flex/grid layout that forces the footer into the viewport instead of below the content
+
+Do NOT assume which one is causing the problem.
+
+Inspect the current implementation first.
+
+==================================================
+4. NORMAL PAGE FLOW
+==================================================
+
+The preferred resulting page structure should behave conceptually like:
+
+Shared Page Header
+↓
+Shared Checklist / Main Content
+↓
+Sidebar Content
+↓
+Any remaining page content
+↓
+TrailWeigh Footer
+
+The footer should occupy its own space below the page content.
+
+It must not visually overlap the content above it.
+
+If the layout uses flexbox, grid, or another structure, ensure the page can grow vertically with its content.
+
+Do not use a fixed-height content area that causes the footer to float over a separately scrolling inner container.
+
+Prefer normal browser/page scrolling.
+
+==================================================
+5. DO NOT CHANGE THE FOOTER DESIGN
+==================================================
+
+Preserve the existing footer appearance established in the previous footer work.
+
+Do NOT redesign:
+
+- Footer background
+- Footer typography
+- Footer headings
+- Footer links
+- Copyright line
+- Column arrangement
+- Footer colors
+- Existing footer content
+
+This prompt is about POSITIONING/LAYOUT only.
+
+==================================================
+6. DESKTOP AND MOBILE
+==================================================
+
+Verify the correction on:
+
+- Desktop/wide screens
+- Narrow browser windows
+- Mobile layouts
+
+At every width:
+
+- Footer appears after page content.
+- Footer never overlays the shared checklist.
+- Page can scroll normally.
+- No horizontal overflow is introduced.
+- Footer content remains readable.
+
+==================================================
+7. VERY SHORT SHARED LISTS
+==================================================
+
+Also test a shared list with very little content.
+
+It is acceptable for the footer to appear near the bottom of the viewport when the page content is shorter than the screen.
+
+However:
+
+- It must still be in normal document flow.
+- It must not use fixed/sticky overlay behavior.
+- It must not overlap the content above it.
+
+==================================================
+8. VERY LONG SHARED LISTS
+==================================================
+
+Test a shared list long enough to require substantial scrolling.
+
+Expected behavior:
+
+- Footer is NOT visible while browsing the middle of the list.
+- User scrolls naturally through all checklist content.
+- Footer appears only after reaching the bottom of the document.
+- Nothing is hidden behind the footer.
+
+==================================================
+9. PRESERVE SHARED-LINK BEHAVIOR
+==================================================
+
+Do not alter the intended Shared Pack List behavior.
+
+Preserve:
+
+- Shared-list read/browse behavior
+- Temporary checkbox/session changes
+- "Save Your Own Copy" behavior
+- Preview
+- Print
+- Share
+- Background behavior
+- Imperial / Metric
+- Pack Summary
+- Scan Gear List where currently exposed
+- Shared Files
+- Authentication behavior
+
+Do not change ownership permissions.
+
+Do not add Rename or Delete controls to shared viewers.
+
+==================================================
+10. PRESERVE NORMAL PRIVATE CHECKLIST
+==================================================
+
+Verify that fixing the Shared Link layout does not create a footer regression on the signed-in owner's normal Checklist page.
+
+The normal private Checklist footer must also remain in proper document flow and must not cover application content.
+
+Do not make unrelated layout changes to the main Checklist unless a shared layout component absolutely requires the same safe correction.
+
+==================================================
+11. REGRESSION PROTECTION
+==================================================
+
+Do not change:
+
+- Help & How-To
+- About TrailWeigh
+- How It Works
+- Save / Save As
+- Locker
+- Scan Gear List behavior
+- Gear calculations
+- Base Weight
+- Undo / Redo
+- Preview
+- Print
+- Share
+- Shared-list temporary-edit behavior
+- Background selection
+- Showcase
+- Authentication
+- Existing saved files
+
+Make the smallest reasonable layout change necessary.
+
+Inspect the final diff and revert unrelated modifications.
+
+==================================================
+12. VERIFICATION TESTS
+==================================================
+
+TEST A — LONG SHARED LIST
+
+1. Open a shared TrailWeigh link containing enough content to require scrolling.
+2. Start at the top.
+3. Scroll through the middle of the gear list.
+
+Expected:
+
+[ ] Footer is not floating at the bottom of the viewport.
+[ ] Footer does not cover any gear rows.
+[ ] Footer does not cover Pack Summary.
+[ ] Footer does not cover Scan Gear List.
+[ ] Footer does not cover Shared Files.
+[ ] Page scrolls normally.
+
+Continue scrolling to the actual bottom.
+
+Expected:
+
+[ ] Footer appears naturally after all page content.
+[ ] All checklist content remains visible above it.
+
+------------------------------------------
+TEST B — SHORT SHARED LIST
+------------------------------------------
+
+Open a shared list with very little content.
+
+Expected:
+
+[ ] Footer remains in document flow.
+[ ] Footer does not overlap the list.
+[ ] No unnecessary inner scrolling area appears.
+
+------------------------------------------
+TEST C — NARROW / MOBILE
+------------------------------------------
+
+Test at mobile/narrow width.
+
+Expected:
+
+[ ] Footer appears below all content.
+[ ] No footer overlay occurs.
+[ ] No important controls are hidden.
+[ ] No horizontal overflow is introduced.
+
+------------------------------------------
+TEST D — NORMAL PRIVATE CHECKLIST
+------------------------------------------
+
+Open the owner's normal TrailWeigh Checklist.
+
+Expected:
+
+[ ] Footer still behaves correctly.
+[ ] Footer does not overlay the private checklist.
+[ ] Existing checklist layout remains intact.
+
+==================================================
+13. AUTOMATED TESTING
+==================================================
+
+Add or update focused layout/regression tests where practical.
+
+If browser/runtime verification is required to confirm actual scrolling/overlay behavior, do not mark it PASS based only on source inspection.
+
+Use:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+==================================================
+14. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022F_REPORT.md
+
+Include:
+
+- Prompt ID/title:
+  Prompt 022F — Fix Shared-Link Footer Overlay
+- Files changed
+- Root cause of the footer overlay
+- Exact layout change made
+- Whether fixed/sticky positioning was involved
+- Whether a nested scrolling container was involved
+- Desktop verification results
+- Mobile/narrow verification results
+- Long-list verification results
+- Short-list verification results
+- Private Checklist regression results
+- Automated tests added or updated
+- Failed attempts
+- Anything reverted
+- Anything still requiring user verification
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022F_REPORT.md
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short explanation of the root cause
+6. Short summary of the fix
+7. Anything still requiring user verification

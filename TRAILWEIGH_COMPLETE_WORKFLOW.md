@@ -5010,3 +5010,23 @@ Replace the old flat 6-card How It Works page with a short, clear 3-section acco
 
 ### Status
 **022E HOW IT WORKS = NOT USER-VERIFIED (visual/interactive verification pending)**
+
+---
+
+## Prompt 022F — Shared-Link Footer Overlay Fix
+
+**Date:** 2026-08-08 | **Status:** COMPLETE ✅ | **Tests:** 32 passed, 0 failed
+
+**Problem:** Footer pinned permanently to the viewport bottom while gear-list content scrolled independently behind it on shared-link pages.
+
+**Root cause:** `SharedChecklistPage.tsx` outer wrapper used `h-[100dvh] overflow-hidden flex flex-col` — the app-shell pattern. The `<Footer informationalOnly>` was a `flex-shrink-0` sibling inside the fixed-height box, so it never moved.
+
+**Fix:** Switched from app-shell to page-level scrolling:
+- Outer wrapper: `h-[100dvh] overflow-hidden` → `min-h-[100dvh]` (page grows with content)
+- Added `backgroundAttachment: 'fixed'` to inline background style (background stays viewport-covering during scroll)
+- Header: added `sticky top-0` (controls stay accessible while scrolling)
+- Removed `lg:overflow-hidden` from `<main>`; removed `lg:h-full`, `lg:overflow-y-auto`, `lg:min-h-0` from inner grid columns and scrollable divs
+
+**Files changed:** `SharedChecklistPage.tsx` (9 edits), `sharedFooter022F.test.mjs` (NEW, 32 tests), `package.json` (chain)  
+**Report:** `workflow-reports/PROMPT_022F_REPORT.md`  
+**ZIP:** `workflow-reports/trailweigh-022F-report.zip`

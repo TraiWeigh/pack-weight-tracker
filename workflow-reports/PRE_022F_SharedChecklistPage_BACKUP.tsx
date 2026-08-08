@@ -676,7 +676,7 @@ function SharedChecklistContent({
     <>
       {/* ── Full-page wrapper with background ── */}
       <div
-        className={`screen-only min-h-[100dvh] flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
+        className={`screen-only h-[100dvh] overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
         style={{
           ...(bgImageUrl ? {
             backgroundImage: bgFade < 1
@@ -685,12 +685,11 @@ function SharedChecklistContent({
             backgroundSize: bgFade < 1 ? `100% 100%, ${bgSize}` : bgSize,
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed',
           } : {}),
         }}
       >
         {/* ── Header ── */}
-        <header className="bg-card border-b border-border flex-shrink-0 sticky top-0 z-10 shadow-sm">
+        <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
           <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
             {/* Logo */}
             <div className="flex items-center gap-3 flex-shrink-0">
@@ -865,11 +864,11 @@ function SharedChecklistContent({
         </header>
 
         {/* ── Main layout (mirrors ChecklistContent) ── */}
-        <main className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4">
+        <main className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0 lg:overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 lg:h-full">
 
             {/* ── Gear list ── */}
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned pills row */}
               <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
@@ -901,8 +900,8 @@ function SharedChecklistContent({
                 </div>
               </div>
 
-              {/* Categories */}
-              <div className="space-y-2 pb-8 lg:pr-3">
+              {/* Scrollable categories */}
+              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
                 {store.order.map(category => (
                   <GearCategory
                     key={category}
@@ -979,7 +978,7 @@ function SharedChecklistContent({
             </div>
 
             {/* ── Sidebar ── */}
-            <div className="lg:col-span-4 order-first lg:order-last">
+            <div className="lg:col-span-4 order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
               {/* Pinned action bar */}
               <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
                 <div ref={bgPickerRef}>
@@ -1038,7 +1037,7 @@ function SharedChecklistContent({
               </div>
 
               {/* Scrollable sidebar content */}
-              <div className="lg:px-3">
+              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:px-3 lg:[scrollbar-gutter:stable]">
                 <div className="flex flex-col gap-4 py-2 pb-8">
                   <WeightSummary
                     data={store.items}
