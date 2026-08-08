@@ -1,0 +1,710 @@
+PROMPT 022D — BUILD ABOUT TRAILWEIGH ACCORDION CONTENT
+
+GOAL
+
+Update the existing TrailWeigh "About TrailWeigh" page so it explains:
+
+1. What TrailWeigh is for.
+2. The usefulness of a gear list as both a weight-management tool and a packing checklist.
+3. The philosophy behind lightweight and ultralight backpacking.
+4. Ray Jardine's important contribution to modern ultralight backpacking.
+5. Minimalism, multi-use gear, systems thinking, knowledge/experience, HYOH, respect for nature, and respect for different hiking styles.
+
+This prompt is for the ABOUT TRAILWEIGH page only.
+
+Do NOT reorganize the Help & How-To page completed in Prompt 022C.
+
+==================================================
+1. ABOUT PAGE DESIGN
+==================================================
+
+Do NOT display all of this material as one long page.
+
+Use progressive disclosure.
+
+Keep a short introduction permanently visible at the top.
+
+Below it, display the educational/philosophical topics as CLICKABLE COLLAPSIBLE ACCORDION SECTIONS.
+
+The entire title row of each accordion must be clickable.
+
+Requirements:
+
+- Collapsed by default.
+- Entire title row clickable.
+- Disclosure chevron/caret shows collapsed/expanded state.
+- Clicking the row again collapses it.
+- Multiple sections may remain open simultaneously.
+- Keyboard accessible with Enter and Space.
+- Appropriate aria-expanded / accessibility semantics.
+- Clear hover and keyboard-focus states.
+- Do not add an Expand All button.
+
+These are accordion/collapsible sections, NOT dropdown/select menus.
+
+==================================================
+2. VISIBLE ABOUT TRAILWEIGH INTRODUCTION
+==================================================
+
+Keep this introduction visible above the accordion sections.
+
+Use polished wording based closely on the following:
+
+ABOUT TRAILWEIGH
+
+TrailWeigh helps you plan, organize, and understand what you're carrying.
+
+Build your gear list, organize equipment by category, track individual and total weights, and see where your pack weight comes from. TrailWeigh gives you the information to decide what belongs in your pack and what might not.
+
+But a gear list isn't useful only for calculating weight.
+
+Your TrailWeigh list is also a checklist.
+
+Before a trip, use it to make sure everything you planned to bring actually makes it into your pack. Check items off as you gather and pack your gear, or print your completed checklist and use a paper copy while preparing at home or performing a final equipment check before leaving for the trail.
+
+A checklist can help prevent something far more frustrating than carrying an extra ounce: arriving at the trailhead and realizing an important piece of gear is still at home.
+
+TrailWeigh isn't here to tell you what to carry.
+
+We help you see what you're carrying, understand why you're carrying it, and make informed decisions for yourself.
+
+Display this philosophy prominently:
+
+"Carry what you need.
+Understand why you carry it.
+Make each item earn its place."
+
+Do not make TrailWeigh sound like it requires users to be ultralight.
+
+TrailWeigh is useful for backpackers with many different packing styles.
+
+==================================================
+3. REQUIRED ACCORDION TOPICS
+==================================================
+
+Use these accordion titles in this order:
+
+1. What Is Ultralight?
+2. Ray-Way
+3. The Minimalist Mindset
+4. One Tool, Many Uses
+5. Think in Systems
+6. Knowledge Weighs Nothing
+7. Do You Hike for the Trail or the Camp?
+8. Hike Your Own Hike — HYOH
+9. Ultralight Is a Tool, Not a Contest
+10. Remember Why We're Here
+11. Respect the Trail—and Each Other
+12. Where TrailWeigh Fits In
+
+==================================================
+4. WHAT IS ULTRALIGHT?
+==================================================
+
+Explain that ultralight backpacking is an approach to thoughtfully reducing carried weight so hiking can be more comfortable, efficient, and enjoyable.
+
+Do NOT present one base-weight number as an official universal definition.
+
+Explain that commonly used base-weight categories exist, but ultralight is also a mindset.
+
+Include questions such as:
+
+- Do I need this?
+- Will I actually use it?
+- Does something I already carry do the same job?
+- Is there a simpler way to accomplish the same thing?
+
+Explain that ultralight is not merely about buying lighter gear.
+
+The goal is a thoughtful, efficient backpacking system suited to the individual hiker and trip.
+
+==================================================
+5. RAY-WAY
+==================================================
+
+Title this accordion exactly:
+
+Ray-Way
+
+This section should contain some brief ultralight history while focusing primarily on Ray Jardine's contribution.
+
+FACTUAL GUARDRAILS:
+
+- Do NOT claim Ray Jardine invented traveling light.
+- Do NOT claim he single-handedly invented ultralight backpacking.
+- Describe him as one of the most influential pioneers and popularizers of modern lightweight/ultralight backpacking.
+
+Include a SHORT paragraph about his climbing background:
+
+Before becoming known for lightweight backpacking, Ray Jardine was an engineer, inventor, and accomplished rock climber.
+
+In the 1970s he developed the Friend, the practical spring-loaded camming device that helped revolutionize crack-climbing protection and became an important predecessor/foundation of modern climbing cams.
+
+Keep the Friend discussion brief.
+
+The majority of this section must focus on ultralight backpacking.
+
+Explain:
+
+- Traveling light existed long before Jardine.
+- Ray and Jenny Jardine completed thousands of miles of long-distance hiking while experimenting with lighter homemade gear and simpler systems.
+- From 1987 through 1994 they logged more than 15,000 miles of long-distance hiking.
+- By their 1993 Appalachian Trail thru-hike, they were using base packs below 10 pounds, excluding food and water.
+- Jardine documented his developing ideas in The PCT Hiker's Handbook.
+- Its early publication history began in 1991/1992.
+- His writing later developed through The Pacific Crest Trail Hiker's Handbook, Beyond Backpacking, and Trail Life.
+- His approach became widely known as the Ray-Way.
+
+The main point should be his way of THINKING.
+
+Explain that Jardine encouraged hikers to question the conventional backpacking system:
+
+- Why am I carrying this?
+- What job does it perform?
+- Do I need it?
+- Can something else perform the same job?
+- Can several pieces work together as a system?
+- Is there a simpler effective solution?
+
+Discuss his influence on ideas associated with modern ultralight backpacking, including:
+
+- Lightweight shelters
+- Quilts
+- Lightweight backpacks
+- Homemade gear
+- Multi-use equipment
+- Simpler systems
+- Skills and experience
+- Viewing the pack as an interconnected system
+
+End with the idea that Jardine did not invent traveling light, but his experimentation, long-distance hiking, gear design, and writing played a major role in shaping modern ultralight backpacking.
+
+Do not make unsupported claims that he "created the cottage gear industry."
+
+==================================================
+6. THE MINIMALIST MINDSET
+==================================================
+
+Explain minimalism as intentionality rather than deprivation.
+
+Include ideas such as:
+
+Gear lists tend to grow:
+
+- Something because "I might need it."
+- Something for extra comfort.
+- Another backup.
+- Another item because it has always been carried.
+
+Individually those items may seem insignificant; together they can add substantial weight.
+
+Explain:
+
+- Start with what is actually needed for the trip and expected conditions.
+- Choose equipment deliberately.
+- Look for unnecessary duplication.
+- Question things carried only from habit.
+- Favor simple solutions when they work.
+- Keep equipment that genuinely contributes to safety, comfort, or enjoyment.
+
+Include:
+
+"The goal isn't deprivation. The goal is simplicity with purpose."
+
+End with:
+
+"Carry what you need. Understand why you carry it. Make each item earn its place."
+
+==================================================
+7. ONE TOOL, MANY USES
+==================================================
+
+Explain the ultralight idea of multi-use equipment.
+
+Use the question:
+
+"Can something I already carry do this job too?"
+
+Use examples such as:
+
+- A trekking pole used for hiking and supporting some shelters.
+- A stuff sack filled with clothing serving as a pillow.
+- A bandana serving several functions.
+- Clothing layers working together instead of carrying a separate garment for every temperature.
+- A smartphone replacing several separate electronics for some hikers.
+
+Clarify:
+
+Not every piece of equipment must have multiple uses.
+
+Some safety-critical gear should perform one important job very well.
+
+The principle is to think of gear as a system and avoid unnecessary duplication.
+
+Include this line:
+
+"Carry less by asking more of the things you choose to carry—not by giving up what you truly need."
+
+==================================================
+8. THINK IN SYSTEMS
+==================================================
+
+Explain that ultralight backpacking works best when equipment is evaluated together rather than one item at a time.
+
+Examples:
+
+- Shelter affects stakes/poles.
+- Sleeping gear works with shelter and clothing.
+- Clothing layers work together.
+- Water capacity depends on route and conditions.
+- A smaller/lighter gear system may allow use of a smaller/lighter backpack.
+
+Explain that reducing weight is not always about replacing an item with a lighter version of the same thing.
+
+Sometimes the better question is:
+
+"Do I need this item at all, or can the rest of my system already perform its job?"
+
+==================================================
+9. KNOWLEDGE WEIGHS NOTHING
+==================================================
+
+Explain that experience and skills can influence what equipment a hiker needs.
+
+Discuss knowledge of:
+
+- Weather
+- Campsite selection
+- Layering
+- Water management
+- Navigation
+- Food
+- Terrain
+- Equipment
+- Personal abilities and limitations
+
+Do NOT imply that expertise eliminates reasonable safety equipment.
+
+Include:
+
+- Weather changes.
+- Equipment fails.
+- Water sources can change or disappear.
+- Trips and seasons differ.
+- Hikers have different physical needs and levels of experience.
+
+Sometimes the right choice is to leave something behind.
+
+Sometimes the right choice is to carry more.
+
+End with:
+
+"Good judgment matters more than a number on a scale."
+
+==================================================
+10. DO YOU HIKE FOR THE TRAIL OR THE CAMP?
+==================================================
+
+Explain the concept without judging either approach.
+
+Some hikers "hike for the trail":
+
+- Spend much of the day moving.
+- Cover miles.
+- Climb passes.
+- Explore.
+- Want lighter weight to make walking more enjoyable.
+
+Other hikers place greater importance on camp:
+
+- Arrive earlier.
+- Cook.
+- Sit in a chair.
+- Fish.
+- Read.
+- Take photographs.
+- Relax in a beautiful location.
+
+They may willingly carry more equipment because camp comfort is part of why they backpack.
+
+Explain that many hikers fall somewhere between the two and may hike differently on different trips.
+
+Include:
+
+"Neither approach is wrong."
+
+Then:
+
+"The important question isn't:
+'What should a backpacker carry?'
+
+It is:
+'What makes this trip enjoyable for me?'"
+
+==================================================
+11. HIKE YOUR OWN HIKE — HYOH
+==================================================
+
+Explain HYOH as a familiar long-distance-hiking idea.
+
+Explain there is no single correct way to experience a trail.
+
+Gear should reflect:
+
+- The particular trip
+- Experience
+- Abilities
+- Expected conditions
+- Personal needs
+- What makes the trip enjoyable
+
+Use examples:
+
+- Foam pad vs heavier inflatable mattress
+- No-cook meals vs hot meals
+- High-mileage day vs shorter day beside a lake
+
+Explain:
+
+Neither person is automatically doing it wrong.
+
+There is no single perfect gear list.
+
+Include:
+
+"There is the gear that works for you, on this trip, under these conditions."
+
+Important:
+
+HYOH does NOT mean ignoring:
+
+- Safety
+- Regulations
+- Wildlife
+- Environmental impact
+- Other trail users
+
+Use this line prominently:
+
+"Your hike is your own. The trail is shared."
+
+==================================================
+12. ULTRALIGHT IS A TOOL, NOT A CONTEST
+==================================================
+
+Explain that reducing pack weight can:
+
+- Reduce physical burden
+- Improve comfort
+- Make movement easier or more efficient
+- Allow some hikers to travel farther
+- Simply make hiking more enjoyable
+
+But weight should not become the purpose of backpacking.
+
+Include prominently:
+
+"Ultralight is a tool, not a contest."
+
+Explain:
+
+- Another person's base weight does not determine whether your list is right or wrong.
+- Carrying less should not become an excuse to criticize others.
+- Lighter does not automatically mean better.
+- The best choice is the equipment that safely and reliably performs the job the hiker needs.
+
+Sometimes lighter is appropriate.
+
+Sometimes carrying more is appropriate.
+
+==================================================
+13. REMEMBER WHY WE'RE HERE
+==================================================
+
+Make this more reflective and less technical.
+
+Explain that ounces, grams, spreadsheets, gear lists, base weights, and gear can be useful, but they are not the ultimate reason people go outdoors.
+
+Include imagery such as:
+
+- Sunrise over a ridge
+- Water moving through a canyon
+- Walking beneath old trees
+- Crossing a mountain pass
+- Sleeping beneath the stars
+- Solitude
+- Sharing a trail with friends, family, strangers, or a four-legged hiking partner
+- Discovering what is around the next bend
+
+Include:
+
+"We go outside to be outside."
+
+End with the idea that gear should help make those experiences possible rather than becoming more important than the experience itself.
+
+==================================================
+14. RESPECT THE TRAIL—AND EACH OTHER
+==================================================
+
+Explain that outdoor spaces are shared by people with different:
+
+- Backgrounds
+- Abilities
+- Equipment
+- Experience levels
+- Hiking speeds
+- Goals
+- Reasons for being there
+
+Encourage:
+
+- Respect for the land
+- Respect for wildlife
+- Following rules and regulations
+- Proper waste disposal
+- Leaving what you find
+- Minimizing impact
+- Consideration for other visitors
+
+Do not make the wording preachy.
+
+Use:
+
+"We don't all need to hike the same way to appreciate the same trail."
+
+And:
+
+"Hike your own hike—and respect everyone else's opportunity to hike theirs."
+
+==================================================
+15. WHERE TRAILWEIGH FITS IN
+==================================================
+
+Tie the philosophy back to the application.
+
+Explain that TrailWeigh is not here to decide what belongs in someone's backpack.
+
+It provides information that helps the user decide.
+
+Explain that organizing gear and seeing weights by category can reveal:
+
+- Something no longer needed
+- Unnecessary duplication
+- Two items that could potentially be replaced by one
+- A system change that allows another item to be simplified
+- A heavier item that the hiker deliberately decides is worth carrying
+
+Include:
+
+"Maybe a heavier piece of equipment is important enough that, after seeing exactly what it weighs, you decide:
+
+It's worth it."
+
+Explain that this is the user's decision.
+
+End with:
+
+"Because the goal isn't the lightest possible pack.
+
+The goal is a pack that works for you and helps you enjoy whatever brought you to the trail."
+
+Then display:
+
+"Carry what you need.
+Understand why you carry it.
+Make each item earn its place."
+
+Final line:
+
+"Then go outside."
+
+==================================================
+16. FACT-CHECKING / HISTORICAL ACCURACY
+==================================================
+
+Historical content must remain conservative and factual.
+
+Do not embellish Ray Jardine's history.
+
+Specifically:
+
+- Do not say he invented traveling light.
+- Do not say he was the first person ever to backpack ultralight.
+- Do not say he single-handedly created ultralight backpacking.
+- Do not claim he created the cottage gear industry.
+- Do not oversimplify the Friend by claiming no camming concepts existed before him.
+
+Describe his climbing contribution accurately as development of the practical Friend spring-loaded camming device that became highly influential in modern climbing protection.
+
+Describe him as a major pioneer/popularizer of modern lightweight and ultralight backpacking.
+
+Keep historical dates consistent with the verified publication timeline.
+
+If the project contains external citations/links on informational pages, use reputable sources and keep them unobtrusive.
+
+Do not copy substantial copyrighted passages from Jardine's books.
+
+Everything should be original explanatory prose.
+
+==================================================
+17. VISUAL STYLE
+==================================================
+
+Match the visual language of the existing TrailWeigh informational pages and the Help accordion created in Prompt 022C.
+
+Keep the page clean and readable.
+
+Do not make the About page feel like a textbook.
+
+The collapsed view should be inviting and easy to scan.
+
+The titles should carry most of the discovery:
+
+What Is Ultralight?
+Ray-Way
+The Minimalist Mindset
+One Tool, Many Uses
+Think in Systems
+Knowledge Weighs Nothing
+Do You Hike for the Trail or the Camp?
+Hike Your Own Hike — HYOH
+Ultralight Is a Tool, Not a Contest
+Remember Why We're Here
+Respect the Trail—and Each Other
+Where TrailWeigh Fits In
+
+Do not add video or animation.
+
+==================================================
+18. REGRESSION PROTECTION
+==================================================
+
+Do not change:
+
+- Help & How-To structure from Prompt 022C
+- Checklist functionality
+- Weight calculations
+- Undo / Redo
+- Save / Save As
+- Locker
+- Scan Gear List/import
+- Preview
+- Print
+- Share
+- Shared Pack List behavior
+- Backgrounds
+- Showcase
+- Authentication
+- Footer behavior
+- Saved user data
+
+Make the smallest reasonable change set needed to update the About TrailWeigh page.
+
+Inspect the final diff and revert unrelated changes.
+
+==================================================
+19. VERIFICATION
+==================================================
+
+Verify:
+
+[ ] About TrailWeigh introduction is visible without opening an accordion.
+
+[ ] Packing-checklist usefulness is explained.
+
+[ ] Printing the list as a packing checklist is mentioned.
+
+[ ] The three-line TrailWeigh philosophy is visible.
+
+[ ] All 12 required accordion topics exist.
+
+[ ] Topics appear in the required order.
+
+[ ] "Ray-Way" is the title, not "Ray Jardine" or "A Brief History of Ultralight."
+
+[ ] Ray-Way contains a short Friend/cam paragraph.
+
+[ ] Most of Ray-Way focuses on ultralight contributions.
+
+[ ] Ray Jardine is not falsely described as inventing traveling light.
+
+[ ] Minimalist philosophy is included.
+
+[ ] One Tool, Many Uses is included.
+
+[ ] Systems thinking is included.
+
+[ ] Knowledge/experience is included without suggesting unsafe gear removal.
+
+[ ] Trail vs Camp is presented without judgment.
+
+[ ] HYOH includes "Your hike is your own. The trail is shared."
+
+[ ] Ultralight is described as a tool rather than a contest.
+
+[ ] Nature/outdoor-experience philosophy is included.
+
+[ ] Respect for the trail, wildlife, rules, and other hikers is included.
+
+[ ] Where TrailWeigh Fits In connects the philosophy back to the app.
+
+[ ] Final line is "Then go outside."
+
+[ ] Entire accordion title rows are clickable.
+
+[ ] All accordion topics are collapsed by default.
+
+[ ] Multiple sections may remain open.
+
+[ ] Enter / Space keyboard behavior works.
+
+[ ] Light and Dark modes remain readable.
+
+[ ] Mobile/narrow layout remains readable.
+
+[ ] Help & How-To from Prompt 022C remains unchanged.
+
+Mark each item:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+==================================================
+20. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022D_REPORT.md
+
+Include:
+
+- Prompt ID and title
+- Files changed
+- About page structure before and after
+- All accordion topics added
+- Historical/fact-checking decisions
+- Automated tests added or updated
+- Verification results
+- Failed attempts
+- Anything reverted
+- Items still requiring user verification
+- Confirmation Prompt 022C Help & How-To was preserved
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier reports.
+
+At completion provide:
+
+1. Path to PROMPT_022D_REPORT.md
+2. File size
+3. Line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short summary of what changed
+6. Items requiring user verification

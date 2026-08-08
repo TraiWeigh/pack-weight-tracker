@@ -4961,3 +4961,26 @@ All suites — exit 0. 68 new 022C tests. 022B tests updated to reflect reorgani
 
 ### Status
 **022C HELP REORGANIZATION = NOT USER-VERIFIED (visual/interactive verification pending)**
+
+---
+
+## Prompt 022D — Build About TrailWeigh Accordion Content
+
+**Date:** 2026-08-08
+
+### Goal
+Replace the flat feature-card About page with a polished accordion page that explains TrailWeigh's purpose, the gear-list-as-checklist concept, and the philosophy behind lightweight and ultralight backpacking.
+
+### Key changes
+- **AboutPage.tsx**: Complete rewrite — always-visible introduction + philosophy callout + 12 collapsible accordion sections. Same accordion implementation pattern as 022C HelpPage (empty-Set initial state, full-row button, aria-expanded/controls/labelledby, ChevronDown/Up, hover/focus states).
+- **Always-visible intro**: What TrailWeigh does, gear list is also a checklist, printing as packing checklist, trailhead scenario, TrailWeigh doesn't tell you what to carry.
+- **Philosophy callout**: "Carry what you need. / Understand why you carry it. / Make each item earn its place." — displayed prominently in intro and repeated at end of §12.
+- **12 accordion sections in required order**: What Is Ultralight? → Ray-Way → The Minimalist Mindset → One Tool, Many Uses → Think in Systems → Knowledge Weighs Nothing → Do You Hike for the Trail or the Camp? → Hike Your Own Hike (HYOH) → Ultralight Is a Tool, Not a Contest → Remember Why We're Here → Respect the Trail—and Each Other → Where TrailWeigh Fits In.
+- **Historical accuracy**: Ray Jardine described as major pioneer/popularizer; traveling light acknowledged to predate him; no false claims about inventing ultralight or creating the cottage gear industry; Friend described accurately as highly influential in modern climbing protection.
+- **Final line**: "Then go outside."
+
+### Test Results
+106 new 022D tests — all passing. Full suite exit 0.
+
+### Status
+**022D ABOUT PAGE = NOT USER-VERIFIED (visual/interactive verification pending)**
