@@ -4832,3 +4832,26 @@ Move the entire toolbar group upward ~16 px by placing shared top spacing on the
 ### Status
 
 **021O TOOLBAR GROUP UP = NOT USER-VERIFIED**
+
+---
+
+## Prompt 021P — Align Pack Summary Top Edge With Checklist Panel
+
+**Date:** 2026-08-08
+
+### Goal
+Remove the ~8 px vertical offset between the left checklist panel and the right Pack Summary (WeightSummary) top edges at desktop widths.
+
+### Root Cause
+Inner sidebar content wrapper had `py-2 pb-8`. The `py-2` = 8 px top padding caused WeightSummary to start 8 px lower than the first GearCategory. Removed `py-2` → now `pb-8` only.
+
+### Changes
+- `Checklist.tsx`: 1-line change — inner sidebar content div `py-2 pb-8` → `pb-8`
+- New `contentAlignment021P.test.mjs` (22 tests) added to chain
+
+### Test Results
+42 suites — all passed — exit 0.
+
+### Status
+
+**021P PACK SUMMARY ALIGNMENT = NOT USER-VERIFIED**

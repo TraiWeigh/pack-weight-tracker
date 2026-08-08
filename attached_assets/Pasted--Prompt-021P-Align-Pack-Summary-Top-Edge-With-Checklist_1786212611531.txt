@@ -1,0 +1,314 @@
+# Prompt 021P — Align Pack Summary Top Edge With Checklist Panel
+
+## Goal
+
+Correct the remaining desktop vertical alignment issue shown in the user's latest screenshot.
+
+The **top edge of the Pack Summary panel on the right must line up exactly with the top edge of the checklist/category panel on the left**.
+
+Currently:
+
+* Left checklist/category panel begins at approximately **Y = 104 px**
+* Pack Summary begins at approximately **Y = 120 px**
+
+The Pack Summary is therefore approximately **16 px too low**.
+
+Move the Pack Summary/right sidebar content upward approximately **16 px** so the two content panels share the same top edge.
+
+---
+
+## Important: Do NOT Move the Toolbar Again
+
+Prompt 021O correctly established the toolbar position.
+
+Keep:
+
+`pt-4`
+
+on the common toolbar-group parent.
+
+Do not change the vertical position of:
+
+* Imperial
+* Metric
+* Hide
+* Preview
+* filename pill
+* Background Edit
+* Share
+
+The toolbar is now correctly positioned.
+
+This prompt concerns the **content area below the toolbar only**.
+
+---
+
+## Diagnose the Cause Before Changing It
+
+The Prompt 021N structure places the left and right content areas in the same content grid:
+
+```text
+Content Area
+→ Left checklist/category scroll column
+→ Right sidebar scroll column
+```
+
+Because both columns already share the same parent grid, their top edges should naturally align.
+
+Inspect the right sidebar and Pack Summary markup/CSS for an extra approximately **16 px vertical offset**, such as:
+
+* `pt-4`
+* `mt-4`
+* top padding
+* top margin
+* spacer element
+* unnecessary wrapper spacing
+
+Also compare it directly with the first checklist/category panel on the left.
+
+### Preferred Fix
+
+Remove or correct the **actual extra spacing causing the Pack Summary to sit 16 px lower**.
+
+Do not hide the problem with a positioning hack.
+
+Avoid using:
+
+* negative margin
+* `translateY`
+* `top: -16px`
+* absolute positioning
+* transforms
+
+unless there is an existing architectural reason that makes one of those necessary.
+
+The preferred result is that both content columns begin naturally at the same vertical position because their spacing rules match.
+
+---
+
+## Desktop Alignment Requirement
+
+At desktop widths:
+
+```text
+TOP OF CHECKLIST PANEL  ─────────────────────────
+                         same horizontal line
+TOP OF PACK SUMMARY     ─────────────────────────
+```
+
+The top border of Pack Summary should align with the top border of the first checklist/category panel to within approximately **1–2 px**.
+
+There should no longer be the visible 16 px step-down on the right side.
+
+---
+
+## Preserve the Toolbar Group Structure
+
+Do not undo Prompt 021N or Prompt 021O.
+
+Keep:
+
+* `<main>` using `lg:flex lg:flex-col`
+* common toolbar-group parent
+* common toolbar parent `pt-4`
+* `lg:grid-cols-[1fr_365px]`
+* `lg:gap-4`
+* toolbar left/right sections grouped together
+* toolbar child sections without independent desktop `pt-*` placement
+* filename overlay without independent top padding
+
+The toolbar must continue to move as one grouped unit.
+
+---
+
+## Preserve Content-Grid Structure
+
+Keep the current content-area structure:
+
+```text
+grid
+grid-cols-1
+lg:grid-cols-[1fr_365px]
+gap-8
+lg:gap-4
+lg:flex-1
+lg:min-h-0
+lg:overflow-hidden
+```
+
+Do not change the 365 px sidebar width.
+
+Do not change the established desktop gutter geometry.
+
+Do not change:
+
+* `lg:pr-3 lg:[scrollbar-gutter:stable]` on the checklist/category scroll area
+* `lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]` on the sidebar scroll area
+
+unless inspection proves one of those exact values is responsible for the **vertical** offset. They were created for horizontal gutter alignment and should normally remain untouched.
+
+---
+
+## Important Scope Rule
+
+This is a **vertical top-edge alignment correction only**.
+
+Do not change:
+
+* panel widths
+* panel heights
+* horizontal placement
+* sidebar width
+* scrollbar width
+* column gap
+* category gutter
+* Pack Summary width
+* typography
+* icons
+* colors
+* borders
+* border radius
+* toolbar layout
+* toolbar position
+* button positions
+* Pack Summary contents
+* category contents
+
+---
+
+## Pack Summary Behavior
+
+Preserve all existing Pack Summary functionality.
+
+Its collapsible behavior must remain independent.
+
+Do not connect Pack Summary expansion/collapse to:
+
+* Weight Distribution
+* categories
+* toolbar controls
+* any other collapsible panel
+
+Only its **vertical starting position** is being corrected.
+
+---
+
+## Weight Distribution
+
+If Weight Distribution and Pack Summary share a common right-sidebar wrapper, inspect that wrapper before changing the Pack Summary itself.
+
+If the approximately 16 px offset is coming from the **right-sidebar parent/wrapper**, correct the parent so that all right-sidebar panels align properly with the left content column.
+
+Do not individually offset Pack Summary if the true cause is a shared wrapper.
+
+This is important because future sidebar panels should inherit the correct top alignment automatically.
+
+---
+
+## Mobile Protection
+
+Do not unintentionally change the accepted mobile layout.
+
+If the spacing causing the problem is intentionally needed on mobile, make the correction desktop-specific using the existing responsive breakpoint structure.
+
+Desktop alignment is the issue shown in the screenshot.
+
+---
+
+## Visual Reference
+
+Use the user's latest screenshot as the visual reference.
+
+### Current incorrect appearance
+
+The Pack Summary top border sits approximately 16 px below the checklist panel top border.
+
+### Required appearance
+
+The two top borders should form one clean horizontal visual line across the page.
+
+---
+
+## Testing
+
+After making the change, verify at several desktop widths.
+
+Confirm:
+
+1. Checklist/category panel top edge and Pack Summary top edge align within 1–2 px.
+2. Pack Summary moved upward approximately 16 px from its previous position.
+3. Left checklist/category panel did not move.
+4. Toolbar did not move.
+5. `pt-4` remains on the toolbar-group parent.
+6. Imperial/Metric and Background Edit/Share remain aligned.
+7. Sidebar width remains 365 px.
+8. Horizontal gutters remain unchanged.
+9. Scrollbars still operate normally.
+10. Pack Summary expands and collapses normally.
+11. Weight Distribution expands and collapses normally.
+12. Category panels behave normally.
+13. Mobile layout remains unchanged.
+14. No content overlaps the toolbar.
+15. All existing automated tests pass.
+
+---
+
+## Add an Automated Regression Test
+
+Add or update a test for Prompt 021P.
+
+The test should protect the structural cause of this alignment so the 16 px offset cannot accidentally return.
+
+The test should verify, where practical, that:
+
+* the left and right content columns share the same content-grid starting position
+* the right sidebar does not contain an unintended desktop top margin/padding that shifts it below the left content
+* no negative-margin or transform hack was introduced
+* the toolbar parent still owns `pt-4`
+* the 021N/021O grouped-toolbar structure remains intact
+
+Do not write a test that merely checks for arbitrary text if it does not actually protect the layout rule.
+
+---
+
+## Protection Requirement
+
+Before making changes:
+
+* Create the normal checkpoint/backup.
+* Preserve all current saved lists and user data.
+* Do not modify Locker contents.
+* Do not change unrelated code.
+* Make the smallest correction necessary.
+
+---
+
+## Required Report
+
+When finished, create and attach:
+
+**PROMPT_021P_REPORT.md**
+
+The report must include:
+
+* exact cause of the 16 px Pack Summary offset
+* file(s) changed
+* component/wrapper responsible
+* CSS/class before
+* CSS/class after
+* whether the correction was made on Pack Summary itself or its parent sidebar wrapper
+* measured checklist top position after change
+* measured Pack Summary top position after change
+* measured difference between the two
+* confirmation that toolbar position was unchanged
+* confirmation that `pt-4` remains on the common toolbar parent
+* confirmation that no negative margin/translate positioning hack was used
+* desktop widths tested
+* mobile test result
+* automated test results
+* visual test result
+* any issues discovered
+
+Also provide the standard backup/checkpoint ZIP for Prompt 021P.
+
+Do not proceed to unrelated improvements after completing this prompt.

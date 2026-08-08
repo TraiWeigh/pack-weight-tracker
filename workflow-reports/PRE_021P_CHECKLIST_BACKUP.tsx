@@ -1673,7 +1673,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
             {/* Scrollable sidebar content */}
             <div className="order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
-              <div className="flex flex-col gap-4 pb-8">
+              <div className="flex flex-col gap-4 py-2 pb-8">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}
