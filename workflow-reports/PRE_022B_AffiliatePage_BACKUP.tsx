@@ -29,17 +29,18 @@ export default function AffiliatePage() {
 
         <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4 text-foreground/80 leading-relaxed">
           <p>
-            TrailWeigh may earn a commission from qualifying purchases made through retailer
-            links at no additional cost to you.
+            TrailWeigh may earn a commission from qualifying purchases made through
+            retailer links at no additional cost to you.
           </p>
           <p className="text-sm text-muted-foreground">
-            Affiliate relationships, if any, will be disclosed specifically here once those
-            arrangements are established. This disclosure will be updated to identify the
-            programmes and retailers involved.
+            This disclosure will be updated to reflect the specific affiliate programmes
+            and retailer agreements that TrailWeigh joins. No specific retailer names or
+            programme terms are confirmed at this time.
           </p>
           <p className="text-sm text-muted-foreground">
-            Any affiliate relationships that may exist do not influence TrailWeigh's
-            gear-tracking features, weight data, or application behavior.
+            Affiliate relationships do not influence TrailWeigh's gear recommendations,
+            weight data, or application features. TrailWeigh's goal is always to provide
+            accurate, useful gear-tracking tools for backpackers.
           </p>
         </div>
 

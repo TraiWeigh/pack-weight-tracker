@@ -1,0 +1,986 @@
+# Prompt 022B — Complete Footer Page Content and Detailed Help & How-To Instructions
+
+## Goal
+
+Complete the actual information on the TrailWeigh footer destination pages created in Prompt 022.
+
+Prompt 022A successfully added the existing footer to the main Checklist page and the user has now visually approved the footer.
+
+**Do not redesign or reposition the footer.**
+
+This prompt is about completing the **content behind the footer links**, especially a detailed written **Help & How-To** system.
+
+---
+
+# 1. Important New Decision — No How-To Videos or Animations
+
+Do **not** create:
+
+* how-to videos
+* instructional animations
+* animated tutorials
+* animated click demonstrations
+* autoplay walkthroughs
+
+TrailWeigh will use **clear written instructions** instead.
+
+Remove any existing placeholder references such as:
+
+* “How-To Videos”
+* “Video Tutorials”
+* “Watch this video”
+* similar video/animation language
+
+if Prompt 022 added them to Help & How-To.
+
+The Help system should assume users are capable of reading and following clear instructions.
+
+---
+
+# 2. Preserve the Approved Footer
+
+The footer is visually approved after Prompt 022A.
+
+Do not change:
+
+* footer location
+* dark-charcoal background
+* footer width
+* footer height unnecessarily
+* desktop columns
+* mobile stacking
+* 14 px headings
+* 14 px links
+* 12 px copyright text
+* 21 px link line-height
+* copyright wording
+* Checklist/footer scrolling behavior
+* Prompt 021P alignment
+* Prompt 022A page-scroll architecture
+
+Do not change the footer's appearance during this prompt.
+
+---
+
+# 3. Complete These Existing Pages
+
+Complete the actual useful content for:
+
+1. About TrailWeigh
+2. How It Works
+3. Help & How-To
+4. Report a Problem
+5. Contact Us
+6. Privacy Policy
+7. Terms of Use
+8. Delete Account / Data
+9. Affiliate Disclosure
+10. Accessibility
+
+Use the routes and components already created by Prompt 022.
+
+Do not create duplicate pages.
+
+---
+
+# 4. About TrailWeigh
+
+Replace placeholder content with a concise explanation of TrailWeigh.
+
+Explain that TrailWeigh is a gear-list and pack-weight planning application for hikers and backpackers.
+
+Explain that it helps users:
+
+* organize gear by category
+* enter quantities and weights
+* see how gear contributes to overall pack weight
+* identify Base Weight and other weight classifications
+* save gear lists
+* open saved lists
+* import gear information where supported
+* preview lists
+* share gear lists with others
+
+Keep this page concise.
+
+Do not turn About TrailWeigh into a complete operating manual.
+
+Do not claim features that do not currently exist.
+
+Do not mention planned retailer or affiliate-search functionality as if it is already available.
+
+---
+
+# 5. How It Works
+
+Make this a short overview of the overall TrailWeigh workflow.
+
+This page is **not** the detailed Help manual.
+
+Organize it approximately around:
+
+### 1. Create or Open a Gear List
+
+Explain how a user begins with a gear list or opens a saved one.
+
+### 2. Add and Organize Gear
+
+Explain categories, descriptions, quantities, weights and organization.
+
+### 3. Select the Gear Being Used
+
+Explain the role of item checkboxes/selections using the actual current TrailWeigh behavior.
+
+### 4. Review Pack Weight
+
+Explain:
+
+* Base Weight
+* Pack Summary
+* Weight Distribution
+
+using only classifications that currently exist in the app.
+
+### 5. Save, Preview or Share
+
+Explain the general purpose of:
+
+* Save / Locker
+* Preview
+* Share
+
+Do not duplicate the detailed instructions from Help & How-To.
+
+Add a visible link/button:
+
+**View Help & How-To**
+
+that routes to `/help`.
+
+---
+
+# 6. Help & How-To — Main Requirement
+
+Turn `/help` into TrailWeigh's detailed written instruction center.
+
+Use **progressive disclosure**.
+
+That means the page should initially remain clean and readable, with individual Help topics that the user can expand when needed.
+
+The standard UI term is a:
+
+**collapsible panel / accordion section**
+
+Use independent collapsible Help sections.
+
+Opening one Help topic should not require opening every other topic.
+
+Do not use a select/dropdown menu for this.
+
+---
+
+# 7. Inventory the Current Application Before Writing Instructions
+
+Before creating the instructions, inspect the current TrailWeigh UI and code.
+
+Create an inventory of the **current user-facing controls and features**.
+
+Use the exact names currently displayed in TrailWeigh.
+
+Do not rely on old prompt terminology if the interface has since changed.
+
+Do not document:
+
+* removed controls
+* old button names
+* abandoned features
+* developer-only controls
+* test controls
+* functionality that is not currently available
+
+This is especially important because TrailWeigh has changed significantly through Prompts 014–022A.
+
+---
+
+# 8. Standard Format for Every Help Topic
+
+For each user-facing TrailWeigh tool or feature, provide:
+
+### What It Does
+
+One short explanation of the purpose of the feature.
+
+### How to Use It
+
+Clear numbered steps.
+
+### What to Expect
+
+Explain what happens after the user performs the action.
+
+### Important Notes
+
+Only include this section when there is something the user should understand, such as:
+
+* whether an action changes the current file
+* whether changes are temporary
+* whether something is saved
+* whether an action affects shared viewers
+* whether an action can be undone
+* restrictions or limitations
+
+Use plain language.
+
+Avoid developer/programming terminology unless absolutely necessary.
+
+---
+
+# 9. Help Topics to Cover
+
+After verifying that each feature still exists, provide detailed instructions for the applicable items below.
+
+Do not include an item if it is no longer part of the current TrailWeigh interface.
+
+## Getting Started
+
+Explain the basic first-use workflow.
+
+---
+
+## New / Starting a New List
+
+If the current UI includes New or an equivalent control:
+
+* what it does
+* how to start another list
+* what happens to the current working list
+* what happens to checkboxes
+* when the user should save first
+
+Use the current actual behavior.
+
+---
+
+## Adding Gear
+
+Explain:
+
+* entering an item
+* description
+* quantity
+* weight
+* appropriate category
+* any other current editable item fields
+
+---
+
+## Item Checkboxes / Selecting Gear
+
+Explain:
+
+* what checking an item means
+* how checked items affect calculations
+* whether unchecked items remain in the list
+
+---
+
+## Quantity
+
+Explain how QTY works and how quantity affects calculated weight.
+
+Use actual current behavior.
+
+---
+
+## Categories
+
+Explain:
+
+* category purpose
+* expanding a category
+* collapsing a category
+* adding/editing items as appropriate
+
+Use the terms:
+
+**expanded**
+and
+**collapsed**
+
+Refer to the arrow control as a:
+
+**disclosure chevron/caret**
+
+rather than incorrectly calling it a dropdown menu.
+
+---
+
+## MOVE
+
+Explain the current MOVE control.
+
+Explain:
+
+* how to move an item to another category
+* selecting the destination category
+* that the item is removed from its previous category after the move
+* what item information is preserved
+
+Use actual behavior.
+
+---
+
+## Undo
+
+Explain what Undo can currently restore.
+
+Do not promise Undo behavior that is not implemented.
+
+---
+
+## Redo
+
+Explain what Redo does after an Undo.
+
+---
+
+## Save
+
+Explain the current Save behavior.
+
+Include the actual confirmation behavior:
+
+**Saved [File Name]**
+
+if that remains the current implementation.
+
+---
+
+## Save As
+
+If still present, explain the difference between:
+
+* Save
+* Save As
+
+---
+
+## Locker
+
+Explain:
+
+* what Locker is
+* opening saved lists
+* renaming if available
+* deleting if available
+* what confirmation occurs before deletion
+* that Locker is private to the signed-in owner
+
+Use current behavior only.
+
+---
+
+## Hide
+
+Explain exactly what Hide currently does.
+
+Do not call it Close if the current control is labeled Hide.
+
+---
+
+## Preview
+
+Explain:
+
+* opening Preview
+* what Preview shows
+* Print if Print is available inside Preview
+* closing Preview
+
+---
+
+## Imperial / Metric
+
+Explain:
+
+* switching units
+* what display values change
+* whether underlying gear information is preserved
+
+Use current implementation.
+
+---
+
+## Background Edit
+
+Explain the current background system.
+
+### Important recent change
+
+TrailWeigh is **not using custom user photo uploads for now**.
+
+Do not instruct users to upload custom background photos.
+
+Document only the currently available **TrailWeigh-provided built-in photos/images** and the actual current Background Edit controls.
+
+---
+
+## Share
+
+Explain:
+
+* creating a Share Link
+* what another person receives
+* what information is preserved in the shared view
+* what shared viewers may change temporarily
+* what shared viewers cannot modify in the owner's saved file
+* owner-only Locker/delete protections
+
+Use the actual implementation following the completed Prompt 021 series.
+
+Do not make assumptions about behavior that is not verified.
+
+---
+
+## Scan Gear List / Import
+
+If currently available, explain:
+
+* what Scan Gear List does
+* supported file/image types based on the current implementation
+* selecting a file
+* reviewing detected/imported items
+* selecting items to import
+* importing selected items
+* what happens after importing
+
+Do not claim unsupported file formats.
+
+---
+
+## Pack Summary
+
+Explain:
+
+* what Pack Summary represents
+* the current weight categories shown
+* how checked/selected gear contributes
+
+Use the exact current terminology.
+
+---
+
+## Weight Distribution
+
+Explain:
+
+* what the Weight Distribution display shows
+* what the colors/categories represent
+* how it relates to the selected gear
+
+Do not over-explain chart mathematics.
+
+---
+
+## File Name
+
+Explain where the current file name is displayed and its relationship to saving.
+
+Only include this if useful based on the current interface.
+
+---
+
+## Reset
+
+If Reset still exists, clearly explain:
+
+* what it clears
+* the confirmation warning
+* what it does **not** delete
+
+Do not include this topic if Reset is no longer available.
+
+---
+
+# 10. Help Page Organization
+
+Organize Help & How-To into logical groups.
+
+A recommended structure is:
+
+## Getting Started
+
+## Building Your Gear List
+
+## Organizing Gear
+
+## Saving & Locker
+
+## Preview & Display
+
+## Background
+
+## Sharing
+
+## Importing / Scan Gear List
+
+## Pack Weight & Summaries
+
+## Troubleshooting
+
+Do not create dozens of top-level navigation links.
+
+Use expandable topics inside these logical groups.
+
+---
+
+# 11. Add a Help Search Only If Already Easy to Support
+
+Do **not** build a complicated Help search system in this prompt.
+
+If the current application already has a reusable simple search/filter component that can be safely applied to Help topics, it may be used.
+
+Otherwise, do not add one.
+
+Clear organization and collapsible written sections are sufficient.
+
+---
+
+# 12. Frequently Asked Questions
+
+Add a concise FAQ section below the detailed instructions.
+
+Include useful questions based on actual TrailWeigh behavior, such as:
+
+* Do unchecked items stay in my gear list?
+* What is Base Weight?
+* What is the difference between Save and Save As?
+* Where are my saved lists?
+* Can another person change my original gear list through a Share Link?
+* Can I switch between Imperial and Metric?
+* Can I undo a change?
+* What file types can I import?
+
+Only include questions whose answers can be verified from the current implementation.
+
+Do not invent answers.
+
+---
+
+# 13. Troubleshooting
+
+Add a basic Troubleshooting section.
+
+Include common safe steps such as:
+
+* confirm you are signed into the correct account
+* refresh the page when appropriate
+* check that the correct file is open
+* confirm a file type is supported before importing
+* verify required browser permissions when relevant
+* use Report a Problem if the issue continues
+
+Do not instruct users to:
+
+* clear all browser data
+* delete local storage
+* reset databases
+* run developer commands
+
+unless there is a very specific safe reason.
+
+TrailWeigh users should not need programming knowledge.
+
+---
+
+# 14. Report a Problem Page
+
+Complete the written information on `/report-problem`.
+
+Explain:
+
+* use this page when TrailWeigh is not behaving as expected
+* describe what the user was doing
+* describe what happened
+* describe what they expected to happen
+* include relevant device/browser information when useful
+
+The advanced built-in recording tool is a future prompt.
+
+Do **not** build that recorder here.
+
+Do not mention camera recording.
+
+Do not create instructions for a feature that does not yet exist.
+
+---
+
+# 15. Contact Us
+
+Complete the Contact Us information as far as currently possible.
+
+Do not invent:
+
+* support email addresses
+* phone numbers
+* mailing addresses
+
+If TrailWeigh does not yet have an official support address, retain clear neutral wording explaining that official support contact information will be provided.
+
+If an actual configured support/contact mechanism already exists in code, document and use it.
+
+---
+
+# 16. Privacy Policy — Replace Placeholder With Accurate Draft
+
+Inspect the actual TrailWeigh implementation before writing the Privacy Policy.
+
+Review, as applicable:
+
+* authentication/account information
+* database storage
+* saved gear lists
+* Locker
+* shared links
+* imported files
+* uploaded/scanned content
+* localStorage
+* IndexedDB
+* cookies
+* analytics
+* error logging
+* Replit services
+* external APIs/services
+* email services
+* data deletion behavior
+
+Write a clear, plain-language Privacy Policy based only on **verified current behavior**.
+
+Cover applicable subjects such as:
+
+* information users provide
+* information TrailWeigh stores
+* why information is used
+* local browser storage
+* shared-list behavior
+* service providers
+* retention
+* deletion
+* security practices stated conservatively
+* user choices and rights
+* policy changes
+* contact information when available
+
+Do not claim TrailWeigh:
+
+* sells data
+* does not sell data
+* encrypts something in a specific manner
+* follows a particular law
+* has a certification
+* meets a formal compliance program
+
+unless that statement can actually be verified.
+
+If owner/business/legal information is required but unavailable, identify it in the Prompt 022B report rather than inventing it.
+
+---
+
+# 17. Terms of Use — Replace Placeholder With Practical Draft
+
+Create useful plain-language Terms of Use appropriate to the current TrailWeigh service.
+
+Include applicable sections such as:
+
+* using TrailWeigh
+* account responsibility
+* acceptable use
+* user-provided gear-list content
+* TrailWeigh intellectual property
+* shared links
+* availability of the service
+* changes to features
+* termination/account restrictions
+* disclaimers
+* limitation-of-liability concepts
+* changes to Terms
+
+Do not invent:
+
+* a corporation/legal entity name
+* business address
+* governing-law jurisdiction
+* arbitration requirements
+* specific legal remedies
+
+unless verified.
+
+List anything that still requires owner/legal confirmation in the report.
+
+---
+
+# 18. Delete Account / Data
+
+Complete the explanatory content using the **existing actual deletion system**.
+
+Explain:
+
+* what Delete Account / Data does
+* what information is deleted
+* whether deletion is permanent
+* what confirmation is required
+* any information that is not deleted, if applicable and verified
+* what happens to shared links if verified
+
+Do not alter the deletion backend in this prompt.
+
+Do not add password verification unless it already exists as part of current account behavior.
+
+---
+
+# 19. Affiliate Disclosure
+
+Use a concise disclosure explaining:
+
+**TrailWeigh may earn a commission from qualifying purchases made through retailer links at no additional cost to the user.**
+
+Also explain that:
+
+* affiliate relationships may exist in the future/currently as applicable
+* the disclosure will be updated to identify specific affiliate programs once those relationships are established
+
+Do not claim participation in:
+
+* Amazon Associates
+* REI
+* Garage Grown Gear
+* any other program
+
+unless actually verified.
+
+---
+
+# 20. Accessibility
+
+Complete the Accessibility page.
+
+Use practical language explaining TrailWeigh's goal of providing a usable application.
+
+Describe current accessibility features only where verified, such as:
+
+* keyboard-accessible controls
+* readable text
+* color contrast
+* labels
+* responsive layouts
+
+Explain how an accessibility problem can be reported.
+
+Do not claim:
+
+* WCAG certification
+* ADA certification
+* full WCAG compliance
+* formal third-party accessibility audit
+
+unless actually completed.
+
+---
+
+# 21. Tone and Writing Style
+
+All information should be:
+
+* clear
+* direct
+* adult
+* concise where possible
+* detailed where instructions require detail
+* respectful of experienced users
+* understandable to new users
+
+Avoid a patronizing tone.
+
+Do not write things such as:
+
+* “Don't worry!”
+* “It's super easy!”
+* “Just click...”
+* excessive hand-holding language
+
+Give the user the information and let them use it.
+
+---
+
+# 22. No Instructional Animation
+
+Confirm there are no:
+
+* how-to video placeholders
+* animated tutorial placeholders
+* animation-based instructions
+* autoplay instructions
+
+in Help & How-To after this prompt.
+
+Ordinary existing interface transitions/animations elsewhere in TrailWeigh are outside the scope of this prompt and should not be removed.
+
+---
+
+# 23. Link Between Help and Tools
+
+Do not add Help icons next to every Checklist control in this prompt.
+
+Keep the primary Checklist interface clean.
+
+Detailed instructions belong on:
+
+**Help & How-To**
+
+The user should be able to reach Help from the footer.
+
+Contextual tooltips can be considered separately later if needed.
+
+---
+
+# 24. Mobile Help Layout
+
+Help & How-To must be readable on mobile.
+
+Collapsible instruction sections should:
+
+* fit the screen width
+* have usable tap targets
+* not create horizontal scrolling
+* retain readable text size
+* remain independently expandable/collapsible
+
+Do not reduce instruction text to unusually small font sizes.
+
+---
+
+# 25. Accessibility of Help Sections
+
+Accordion/collapsible Help sections must be keyboard accessible.
+
+Use appropriate semantic controls and ARIA behavior where required by the existing component system.
+
+A keyboard user should be able to:
+
+* focus a Help topic
+* expand it
+* collapse it
+* move through links normally
+
+---
+
+# 26. Testing
+
+Test:
+
+1. About TrailWeigh contains substantive information.
+2. How It Works contains a concise workflow overview.
+3. Help & How-To contains detailed written instructions.
+4. No How-To Videos section remains.
+5. No instructional animation section remains.
+6. Help topics use current TrailWeigh labels.
+7. Removed/nonexistent controls are not documented.
+8. Built-in backgrounds are documented correctly.
+9. Custom photo upload instructions are absent.
+10. Save instructions match current Save behavior.
+11. Locker instructions match current behavior.
+12. Share instructions match current behavior.
+13. Scan Gear List instructions match current supported file types.
+14. MOVE instructions match current behavior.
+15. Pack Summary terminology matches the app.
+16. Weight Distribution terminology matches the app.
+17. Report a Problem page contains usable written instructions.
+18. Contact Us does not contain fake contact information.
+19. Privacy Policy contains substantive verified information.
+20. Terms contain substantive appropriate information.
+21. Affiliate Disclosure does not claim unverified programs.
+22. Accessibility page does not claim unverified certification.
+23. Delete Account information matches the current system.
+24. Footer appearance is unchanged.
+25. Prompt 022A scrolling behavior is unchanged.
+26. Prompt 021P layout remains unchanged.
+27. Desktop works.
+28. Mobile works.
+29. Light/Dark/System modes work.
+30. All existing automated tests pass.
+
+---
+
+# 27. Regression Tests
+
+Add appropriate tests protecting:
+
+* removal of How-To Video references
+* existence of Help & How-To instruction groups
+* key Help categories
+* current route integrity
+* no custom-photo-upload Help instructions
+* footer styling remaining unchanged
+* Prompt 022A footer presence on Checklist
+* shared-view footer protections
+
+Avoid brittle tests that require exact paragraphs of prose.
+
+Test important headings, structure and behavior rather than every word.
+
+---
+
+# 28. Protection Requirement
+
+Before making changes:
+
+* create the normal checkpoint/backup
+* preserve saved gear lists
+* preserve Locker contents
+* preserve user accounts
+* preserve shared links
+* preserve background selections
+* preserve the approved Prompt 021P layout
+* preserve the approved Prompt 022/022A footer appearance and architecture
+
+This is primarily a **content/documentation prompt**.
+
+Do not refactor unrelated application code.
+
+---
+
+# Required Report
+
+When complete, create and attach:
+
+**PROMPT_022B_REPORT.md**
+
+The report must include:
+
+* files changed
+* pages updated
+* Help topics created
+* complete inventory of current TrailWeigh tools/features documented
+* controls intentionally excluded because they no longer exist
+* confirmation How-To Videos were removed/not added
+* confirmation instructional animations were removed/not added
+* confirmation custom-photo upload is not documented
+* Privacy Policy implementation/data practices inspected
+* Terms sections added
+* any legal/business details that could not be verified
+* Contact Us information status
+* Delete Account behavior documented
+* Affiliate Disclosure wording used
+* Accessibility claims used
+* desktop testing
+* mobile testing
+* keyboard/accessibility testing
+* automated test results
+* confirmation footer appearance did not change
+* confirmation Prompt 022A scrolling did not change
+* confirmation Prompt 021P alignment did not change
+* any issues discovered
+
+Also provide the standard backup/checkpoint ZIP for Prompt 022B.
+
+Do not proceed to unrelated improvements after completing Prompt 022B.

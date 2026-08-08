@@ -4909,3 +4909,30 @@ All suites — exit 0. 20 new 022A tests.
 
 ### Status
 **022A CHECKLIST FOOTER = NOT USER-VERIFIED**
+
+---
+
+## Prompt 022B — Complete Footer Page Content and Detailed Help & How-To Instructions
+
+**Date:** 2026-08-08
+
+### Goal
+Replace all placeholder content in the 10 footer pages with substantive verified information. Deliver a full accordion-based Help & How-To system.
+
+### Key deliverables
+- **HelpPage.tsx**: Full progressive-disclosure accordion (12 sections, 28 topics, 8 FAQs, Troubleshooting). All topics based on verified current UI labels. No video or animation placeholders. No custom photo-upload instructions.
+- **PrivacyPolicyPage.tsx**: Plain-language draft covering verified data practices: Clerk auth, localStorage, IndexedDB, share-link DB, external services (OpenAI, Unsplash), no analytics trackers. Marked as draft pending legal review.
+- **TermsPage.tsx**: 13-section plain-language draft. Marked as draft pending legal review.
+- All other pages: complete content (About, How It Works, Report a Problem, Contact, Delete Account, Affiliate, Accessibility).
+
+### Items still requiring legal/owner resolution
+- Legal entity name and jurisdiction (for Terms/Privacy)
+- Official support contact email
+- Self-service deletion backend
+- Final legal review of Privacy Policy and Terms
+
+### Test Results
+All suites — exit 0. 70 new 022B tests.
+
+### Status
+**022B FOOTER CONTENT = NOT USER-VERIFIED**

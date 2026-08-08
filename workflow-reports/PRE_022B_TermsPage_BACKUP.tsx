@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'wouter';
-import { Tent, ArrowLeft, Tag } from 'lucide-react';
+import { Tent, ArrowLeft, FileText } from 'lucide-react';
 import Footer from '@/components/Footer';
 
-export default function AffiliatePage() {
+export default function TermsPage() {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
       <header className="px-6 py-4 border-b border-border">
@@ -22,29 +22,35 @@ export default function AffiliatePage() {
 
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary flex-shrink-0">
-            <Tag className="w-5 h-5" />
+            <FileText className="w-5 h-5" />
           </div>
-          <h1 className="text-3xl font-black text-foreground">Affiliate Disclosure</h1>
+          <h1 className="text-3xl font-black text-foreground">Terms of Use</h1>
         </div>
 
-        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4 text-foreground/80 leading-relaxed">
+        <div className="bg-amber-50 border border-amber-200/60 rounded-xl px-5 py-4 mb-8 text-sm text-amber-700/80 leading-relaxed">
+          <strong className="font-semibold">Notice:</strong> The complete TrailWeigh
+          Terms of Use are being prepared and will be published here. The final terms
+          will be reviewed before publication and will not contain unverified legal
+          claims.
+        </div>
+
+        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm text-foreground/80 leading-relaxed">
           <p>
-            TrailWeigh may earn a commission from qualifying purchases made through retailer
-            links at no additional cost to you.
+            By using TrailWeigh you agree to use the application lawfully and in
+            accordance with these Terms of Use once they are published.
           </p>
-          <p className="text-sm text-muted-foreground">
-            Affiliate relationships, if any, will be disclosed specifically here once those
-            arrangements are established. This disclosure will be updated to identify the
-            programmes and retailers involved.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Any affiliate relationships that may exist do not influence TrailWeigh's
-            gear-tracking features, weight data, or application behavior.
+          <p className="mt-4 text-sm text-muted-foreground">
+            Full terms covering account responsibilities, acceptable use, intellectual
+            property, disclaimers, and governing law will be available here.
           </p>
         </div>
 
         <p className="mt-8 text-sm text-muted-foreground">
-          Questions?{' '}
+          See also:{' '}
+          <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">
+            Privacy Policy
+          </Link>
+          {' '}·{' '}
           <Link to="/contact" className="underline underline-offset-2 hover:text-foreground">
             Contact Us
           </Link>

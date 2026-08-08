@@ -3,14 +3,6 @@ import { Link } from 'wouter';
 import { Tent, ArrowLeft, Eye } from 'lucide-react';
 import Footer from '@/components/Footer';
 
-const planned = [
-  { label: 'Keyboard navigation', desc: 'All features operable without a mouse.' },
-  { label: 'Screen-reader support', desc: 'Semantic HTML and ARIA labels for assistive technology.' },
-  { label: 'Colour contrast', desc: 'Text and interactive elements meeting readability standards.' },
-  { label: 'Text size', desc: 'Support for browser-level font-size preferences.' },
-  { label: 'Reporting an accessibility problem', desc: 'A clear route to report barriers you encounter.' },
-];
-
 export default function AccessibilityPage() {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
@@ -35,45 +27,55 @@ export default function AccessibilityPage() {
           <h1 className="text-3xl font-black text-foreground">Accessibility</h1>
         </div>
 
-        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4 text-foreground/80 leading-relaxed">
+        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4 text-foreground/80 leading-relaxed mb-6">
           <p>
-            TrailWeigh is committed to making its application usable by people with
-            disabilities. We are actively working to improve accessibility across the
-            application.
+            TrailWeigh is committed to making its application usable by as many people as
+            possible, including people with disabilities. We are continually working to
+            improve the accessibility of the application.
           </p>
           <p className="text-sm text-muted-foreground">
             We do not claim formal accessibility certification or full compliance with
-            a specific standard at this time. Our goal is continual improvement.
+            a specific accessibility standard at this time.
           </p>
         </div>
 
-        <h2 className="font-semibold text-foreground mt-8 mb-4">
-          Accessibility information coming to this page:
-        </h2>
-        <div className="space-y-3">
-          {planned.map(({ label, desc }) => (
+        <h2 className="font-bold text-foreground mb-4">Current accessibility features</h2>
+        <div className="space-y-3 mb-8">
+          {[
+            { label: 'Keyboard-accessible controls', desc: 'Core application controls — including toolbar buttons, category expand/collapse, gear-item fields, save dialogs, and the Locker panel — are operable using a keyboard.' },
+            { label: 'Readable text sizes', desc: 'TrailWeigh uses text sizes intended to be readable at standard screen resolutions. Browser-level text-size adjustments are respected.' },
+            { label: 'Colour contrast', desc: 'Text and interactive elements use colour combinations intended to maintain readability. The dark-mode and light-mode options allow users to choose the display that works best for them.' },
+            { label: 'Labels and titles', desc: 'Icon-only controls include descriptive title attributes that surface in browser tooltips and are available to assistive technology.' },
+            { label: 'Responsive layout', desc: 'The TrailWeigh interface adapts to different screen sizes, including tablet and mobile widths.' },
+          ].map(({ label, desc }) => (
             <div key={label} className="flex gap-4 bg-card border border-card-border rounded-xl p-4 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary/50 flex-shrink-0 mt-2" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
               <div>
                 <p className="font-medium text-foreground text-sm">{label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="mt-8 bg-card border border-card-border rounded-xl p-5 shadow-sm">
+        <h2 className="font-bold text-foreground mb-4">Planned improvements</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+          TrailWeigh is actively improving keyboard navigation, screen-reader support,
+          and contrast across all parts of the application. Specific improvement details
+          will be documented here as they are completed.
+        </p>
+
+        <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
           <h2 className="font-semibold text-foreground mb-1">Encountered an accessibility barrier?</h2>
-          <p className="text-sm text-muted-foreground">
-            Please{' '}
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            If something in TrailWeigh is preventing you from using it effectively, please{' '}
             <Link to="/contact" className="underline underline-offset-2 hover:text-foreground">
               Contact Us
-            </Link>
-            {' '}or{' '}
+            </Link>{' '}
+            or{' '}
             <Link to="/report-problem" className="underline underline-offset-2 hover:text-foreground">
               Report a Problem
-            </Link>
-            {' '}and we will prioritise a fix.
+            </Link>. Accessibility barriers are treated as bugs and addressed as a priority.
           </p>
         </div>
       </main>

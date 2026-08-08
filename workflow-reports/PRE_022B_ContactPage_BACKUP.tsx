@@ -27,26 +27,17 @@ export default function ContactPage() {
           <h1 className="text-3xl font-black text-foreground">Contact Us</h1>
         </div>
 
-        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4">
+        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm">
           <p className="text-foreground/80 leading-relaxed">
             TrailWeigh support contact information will be available here.
           </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            If you have encountered a bug or something isn't working as expected, the{' '}
+          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+            In the meantime, if you've found a bug or have a feature suggestion,
+            please use the{' '}
             <Link to="/report-problem" className="underline underline-offset-2 hover:text-foreground">
               Report a Problem
             </Link>{' '}
-            page describes what to include in your report.
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            For questions about your account or data, see{' '}
-            <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground">
-              Privacy Policy
-            </Link>{' '}
-            or{' '}
-            <Link to="/delete-account" className="underline underline-offset-2 hover:text-foreground">
-              Delete Account / Data
-            </Link>.
+            page for technical issues.
           </p>
         </div>
       </main>

@@ -27,25 +27,35 @@ export default function ReportProblemPage() {
           <h1 className="text-3xl font-black text-foreground">Report a Problem</h1>
         </div>
 
-        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4 text-foreground/80 leading-relaxed">
-          <p>
-            Found a bug, unexpected behaviour, or something that doesn't look right?
-            We want to hear about it.
-          </p>
-          <p>
-            A built-in problem-reporting tool is coming to TrailWeigh. In the meantime,
-            please use the <Link to="/contact" className="underline underline-offset-2 hover:text-foreground font-medium">Contact Us</Link> page
-            to describe the issue.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            When you get in touch, it helps to include:
-          </p>
-          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 ml-1">
-            <li>What you were trying to do</li>
-            <li>What happened instead</li>
-            <li>The device and browser you were using</li>
-            <li>Any error message you saw</li>
-          </ul>
+        <p className="text-foreground/80 leading-relaxed mb-8">
+          Use this page when TrailWeigh is not behaving as expected — something isn't
+          working, a result looks wrong, or you've encountered an error.
+        </p>
+
+        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-5">
+          <div>
+            <h2 className="font-semibold text-foreground mb-2">What to include in your report</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              A clear description helps us identify and fix the problem quickly. When you
+              contact us, please include:
+            </p>
+            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside ml-1">
+              <li><strong className="text-foreground">What you were doing</strong> — which part of TrailWeigh you were using and what action you took.</li>
+              <li><strong className="text-foreground">What happened</strong> — the exact result, error message, or unexpected behavior you observed.</li>
+              <li><strong className="text-foreground">What you expected to happen</strong> — what the correct behavior should have been.</li>
+              <li><strong className="text-foreground">Your device and browser</strong> — for example, "iPhone 15, Safari" or "Windows 11, Chrome 125."</li>
+              <li><strong className="text-foreground">Whether the problem is repeatable</strong> — does it happen every time or only occasionally?</li>
+            </ol>
+          </div>
+
+          <div className="border-t border-border pt-5">
+            <h2 className="font-semibold text-foreground mb-2">How to report</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Use the <Link to="/contact" className="underline underline-offset-2 hover:text-foreground font-medium">Contact Us</Link> page
+              to send your report. A built-in problem-reporting tool will be available in a future
+              TrailWeigh update.
+            </p>
+          </div>
         </div>
 
         <div className="mt-6 text-center">
@@ -53,7 +63,7 @@ export default function ReportProblemPage() {
             to="/contact"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors text-sm"
           >
-            Contact Us to Report a Problem
+            Go to Contact Us
           </Link>
         </div>
       </main>
