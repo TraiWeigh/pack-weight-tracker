@@ -73,10 +73,12 @@ const checklist = read('artifacts/pack-checklist/src/pages/Checklist.tsx');
 
 // ── Locate key regions ────────────────────────────────────────────────────────
 
-// The pills row: find it by its unique flex-shrink-0 context after the gear-list div.
-const gearListDiv  = checklist.indexOf('{/* Gear list */}');
+// The pills row: find it by its unique comment after the left toolbar panel div.
+// 021N renamed {/* Gear list */} → {/* Left toolbar panel */}; search from file start.
+// 021N merged these into one comment: "{/* Left toolbar panel — Pinned pills row */}"
+const gearListDiv  = checklist.indexOf('Left toolbar panel');
 const pillsRowIdx  = checklist.indexOf('Pinned pills row', gearListDiv);
-assert.ok(gearListDiv > -1 && pillsRowIdx > -1, 'Gear list / Pinned pills row markers not found');
+assert.ok(gearListDiv > -1 && pillsRowIdx > -1, 'Left toolbar panel / Pinned pills row markers not found');
 
 // Slice from the pills row comment through the scrollable categories comment.
 // Use a generous 4000 chars so the ml-auto right group is fully inside the block.

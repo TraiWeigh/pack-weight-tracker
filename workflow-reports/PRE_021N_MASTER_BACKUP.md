@@ -4786,26 +4786,3 @@ All gutter CSS from 021K/021L intact: `lg:pr-3 lg:[scrollbar-gutter:stable]` on 
 ### Status
 
 021L HORIZONTAL GUTTER SPACING = USER-TESTED PASS | **021M TOOLBAR EDGE ALIGNMENT = NOT USER-VERIFIED**
-
----
-
-## Prompt 021N — Toolbar Group Container
-
-**Date:** 2026-08-08
-
-### Goal
-Group both toolbar panels (left pills row + right action bar) inside a single parent container so the entire toolbar can be repositioned by editing one element.
-
-### Structural Change
-- `<main>` changed from `lg:overflow-hidden` → `lg:flex lg:flex-col`
-- New **toolbar group** div: `grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4` wrapping left pills panel + right action bar
-- Individual column wrapper divs removed; scroll divs now use `lg:h-full` directly
-- New **content area** div: `grid … gap-8 lg:gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden`
-- Both scroll divs carry `order-first lg:order-last` for correct mobile stacking
-
-### Test Results
-40 suites — all passed — exit 0. New `toolbarGroup021N.test.mjs` (36 tests).
-
-### Status
-
-**021N TOOLBAR GROUP CONTAINER = NOT USER-VERIFIED**

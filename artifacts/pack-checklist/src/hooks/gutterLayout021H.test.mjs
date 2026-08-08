@@ -30,7 +30,8 @@ function test(name, fn) {
 
 // Extract the <main> line and grid line from Checklist.tsx for targeted assertions
 const checklistMainLine  = checklist.split('\n').find(l => l.includes('max-w-full mx-auto') && l.includes('flex-1 min-h-0'));
-const checklistGridLine  = checklist.split('\n').find(l => l.includes('lg:grid-cols-[1fr_365px]'));
+// 021N: two grids now share lg:grid-cols-[1fr_365px] — find the content area (has gap-8)
+const checklistGridLine  = checklist.split('\n').find(l => l.includes('lg:grid-cols-[1fr_365px]') && l.includes('gap-8'));
 
 // Extract from SharedChecklistPage
 const sharedMainLine     = sharedPage.split('\n').find(l => l.includes('max-w-full mx-auto') && l.includes('flex-1 min-h-0'));
@@ -84,10 +85,12 @@ test('B3. Grid preserves lg:grid-cols-[1fr_365px] (sidebar width unchanged)', ()
     'Grid column definition must be unchanged — sidebar still 365px, content still 1fr');
 });
 
-test('B4. Grid retains lg:h-full (height behavior unchanged)', () => {
-  assert.ok(checklistGridLine, 'Grid line must exist');
-  assert.match(checklistGridLine, /lg:h-full/,
-    'lg:h-full must still be present — full-height layout behavior unchanged');
+test('B4. Content area uses lg:flex-1 for full-height layout (021N: main is flex-col)', () => {
+  // 021N refactored main into toolbar-group + content-area. main uses lg:flex lg:flex-col;
+  // content area uses lg:flex-1 lg:min-h-0 instead of lg:h-full on the outer grid.
+  assert.ok(checklistGridLine, 'Content area grid (with gap-8) must exist');
+  assert.match(checklistGridLine, /lg:flex-1/,
+    '021N: content area grid must use lg:flex-1 for height fill on desktop');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -123,9 +126,11 @@ test('D3. Shared grid preserves lg:grid-cols-12 (column structure unchanged)', (
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nE. Sidebar structure preserved (no sidebar width / content changes)');
 
-test('E1. Sidebar outer wrapper classes unchanged', () => {
-  assert.match(checklist, /order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden/,
-    'Sidebar outer wrapper classes must be unchanged');
+test('E1. Sidebar scroll div has order-first lg:order-last lg:h-full (021N: wrapper removed)', () => {
+  // 021N removed the sidebar column-wrapper div. The sidebar scroll div now carries
+  // order-first lg:order-last and lg:h-full directly for correct column placement and height.
+  assert.match(checklist, /order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5/,
+    '021N: sidebar scroll must carry order-first lg:order-last lg:h-full (column wrapper removed)');
 });
 
 test('E2. Left column scrollable lg:pr-3 RESTORED (021K — user-tested 021J gutter worse)', () => {
@@ -158,9 +163,15 @@ test('E4. Sidebar button-row uses lg:pl-3 lg:pr-9 lg:justify-end (021M toolbar a
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nF. No unrelated Checklist.tsx layout changes');
 
-test('F1. Left column outer wrapper classes unchanged', () => {
-  assert.match(checklist, /lg:h-full lg:flex lg:flex-col lg:overflow-hidden/,
-    'Left column (gear list) outer wrapper must be unchanged');
+test('F1. Categories scroll uses lg:h-full (021N: left column wrapper removed)', () => {
+  // 021N removed the gear-list column-wrapper div. The categories scroll div now
+  // directly uses lg:h-full for height constraint (previously from the wrapper).
+  const categoriesScrollLine = checklist.split('\n').find(l =>
+    l.includes('lg:h-full') && l.includes('lg:overflow-y-auto') &&
+    l.includes('lg:pr-3') && l.includes('lg:[scrollbar-gutter:stable]')
+  );
+  assert.ok(categoriesScrollLine, '021N: categories scroll div must have lg:h-full lg:overflow-y-auto lg:pr-3');
+  assert.match(categoriesScrollLine, /lg:h-full/, 'Categories scroll must use lg:h-full for height');
 });
 
 test('F2. Left column pills row uses lg:pr-7 (021M toolbar alignment — Metric right edge to card right edge)', () => {

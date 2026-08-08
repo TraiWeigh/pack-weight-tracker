@@ -1367,13 +1367,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           </div>
         </header>
 
-        <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:gap-4 lg:h-full">
+        <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:flex lg:flex-col">
 
-            {/* Gear list */}
-            <div className="lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-              {/* Pinned pills row */}
-              <div className="pt-8 pb-3 flex items-center lg:pr-7 flex-shrink-0 relative">
+          {/* ── Toolbar group — all toolbar controls share this single parent.
+               To reposition the entire toolbar, change classes on this element only. ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
+
+            {/* Left toolbar panel — Pinned pills row */}
+            <div className="pt-8 pb-3 flex items-center lg:pr-7 flex-shrink-0 relative">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -1436,84 +1437,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
               </div>
 
-              {/* Scrollable categories */}
-              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              {categoryOrder.map((category) => (
-                <GearCategory
-                  key={category}
-                  name={category}
-                  items={data[category] || []}
-                  meta={categoryMeta[category] ?? { countsToBase: true }}
-                  forceOpen={allOpen}
-                  forceOpenSeq={openCloseSeq}
-                  order={categoryOrder}
-                  updateItem={updateItem}
-                  removeItem={removeItem}
-                  moveItem={moveItem}
-                  addItem={addItem}
-                  onUpdateMeta={updates => updateCategoryMeta(category, updates)}
-                  onDelete={() => deleteCategory(category)}
-                  onRename={newName => renameCategory(category, newName)}
-                  isDragOver={overCat === category && dragCat !== category}
-                  onDragStart={() => setDragCat(category)}
-                  onDragEnd={() => { setDragCat(null); setOverCat(null); }}
-                  onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
-                  onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
-                  onDrop={e => {
-                    e.preventDefault();
-                    if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
-                    setDragCat(null);
-                    setOverCat(null);
-                  }}
-                />
-              ))}
-
-              {/* ── Add Category ── */}
-              <div className="mt-2">
-                {addingCat ? (
-                  <div className="flex items-center gap-2 p-3 bg-card border border-primary/40 rounded-lg shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
-                    <input
-                      ref={newCatInputRef}
-                      type="text"
-                      value={newCatName}
-                      onChange={e => setNewCatName(e.target.value)}
-                      onKeyDown={handleAddCatKeyDown}
-                      placeholder="Category name…"
-                      maxLength={40}
-                      className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-                    />
-                    <button
-                      onClick={handleAddCategory}
-                      disabled={!newCatName.trim()}
-                      className="flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      Add
-                    </button>
-                    <button
-                      onClick={() => { setAddingCat(false); setNewCatName(''); }}
-                      className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={openAddCat}
-                    className="w-full flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 px-4 py-3 rounded-lg transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Category
-                  </button>
-                )}
-              </div>
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <div className="order-first lg:order-last lg:h-full lg:flex lg:flex-col lg:overflow-hidden">
-              {/* Pinned action bar */}
-              <div className="relative flex flex-wrap justify-center lg:justify-end gap-2 pt-8 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
+            {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ── */}
+            <div className="order-first lg:order-last relative flex flex-wrap justify-center lg:justify-end gap-2 pt-8 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton
                     onClick={() => setBackgroundPickerOpen(o => !o)}
@@ -1665,10 +1590,88 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     </>
                   )}
                 </div>
-              </div>
+            </div>
 
-              {/* Scrollable sidebar content */}
-              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
+          </div>{/* end toolbar group */}
+
+          {/* ── Content area ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+
+            {/* Scrollable categories */}
+            <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
+              {categoryOrder.map((category) => (
+                <GearCategory
+                  key={category}
+                  name={category}
+                  items={data[category] || []}
+                  meta={categoryMeta[category] ?? { countsToBase: true }}
+                  forceOpen={allOpen}
+                  forceOpenSeq={openCloseSeq}
+                  order={categoryOrder}
+                  updateItem={updateItem}
+                  removeItem={removeItem}
+                  moveItem={moveItem}
+                  addItem={addItem}
+                  onUpdateMeta={updates => updateCategoryMeta(category, updates)}
+                  onDelete={() => deleteCategory(category)}
+                  onRename={newName => renameCategory(category, newName)}
+                  isDragOver={overCat === category && dragCat !== category}
+                  onDragStart={() => setDragCat(category)}
+                  onDragEnd={() => { setDragCat(null); setOverCat(null); }}
+                  onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
+                  onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
+                    setDragCat(null);
+                    setOverCat(null);
+                  }}
+                />
+              ))}
+
+              {/* ── Add Category ── */}
+              <div className="mt-2">
+                {addingCat ? (
+                  <div className="flex items-center gap-2 p-3 bg-card border border-primary/40 rounded-lg shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                    <input
+                      ref={newCatInputRef}
+                      type="text"
+                      value={newCatName}
+                      onChange={e => setNewCatName(e.target.value)}
+                      onKeyDown={handleAddCatKeyDown}
+                      placeholder="Category name…"
+                      maxLength={40}
+                      className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                    />
+                    <button
+                      onClick={handleAddCategory}
+                      disabled={!newCatName.trim()}
+                      className="flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Add
+                    </button>
+                    <button
+                      onClick={() => { setAddingCat(false); setNewCatName(''); }}
+                      className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={openAddCat}
+                    className="w-full flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 px-4 py-3 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Category
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Scrollable sidebar content */}
+            <div className="order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
               <div className="flex flex-col gap-4 py-2 pb-8">
                 <WeightSummary
                   data={data}
@@ -1702,9 +1705,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onRename={handleRenameInLocker}
                 />
               </div>
-              </div>
             </div>
-          </div>
+
+          </div>{/* end content area */}
         </main>
       </div>
 

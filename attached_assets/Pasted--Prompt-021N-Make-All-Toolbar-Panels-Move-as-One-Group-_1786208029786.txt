@@ -1,0 +1,155 @@
+# Prompt 021N — Make All Toolbar Panels Move as One Group
+
+## Goal
+
+Make sure the **entire TrailWeigh toolbar moves and is positioned as one grouped container**.
+
+All toolbar panels, buttons, pills, menus, and other toolbar controls must remain together when the toolbar is repositioned or aligned.
+
+## Required Change
+
+Treat the complete toolbar as **one parent/grouped container**.
+
+When the toolbar position changes:
+
+* Move the **entire toolbar group**.
+* Every toolbar panel must move by the **same horizontal and vertical amount**.
+* Every toolbar control inside those panels must remain in its current position relative to the other toolbar controls.
+* No toolbar panel may remain behind.
+* No individual toolbar panel may move independently.
+* No panel may become detached from the toolbar group.
+* Do not reposition toolbar panels individually to achieve overall toolbar alignment.
+
+The intended structure should conceptually behave like:
+
+**Toolbar Group**
+→ Panel 1
+→ Panel 2
+→ Panel 3
+→ all remaining toolbar panels/controls
+
+The exact existing component structure may be different. Use the existing code architecture where practical, but make sure there is a common parent/grouping mechanism that controls the position of the complete toolbar.
+
+## Important Positioning Rule
+
+If the toolbar needs to move left, right, up, or down in the future, its position should be changed at the **toolbar-group level**, not by adjusting the position of each individual panel.
+
+For example:
+
+If the toolbar group moves 10 px to the right, **every toolbar panel must move exactly 10 px to the right together** while maintaining the same spacing and alignment between the panels.
+
+## Preserve Existing Toolbar Layout
+
+Do **not** redesign the toolbar.
+
+Preserve the currently accepted:
+
+* toolbar appearance
+* toolbar panel sizes
+* spacing between toolbar panels
+* button sizes
+* pill sizes
+* button order
+* panel order
+* internal panel alignment
+* icons
+* typography
+* colors
+* borders
+* menus
+* dropdown behavior
+* disclosure controls
+* file-name pill
+* Hide control behavior
+* Share menu behavior
+
+Also preserve the previously accepted:
+
+* gutters
+* sidebar/category geometry
+* category disclosure chevrons
+* filename pill positioning and styling
+
+This prompt is specifically about making the toolbar behave as **one movable group**.
+
+## Do Not
+
+Do not:
+
+* individually reposition toolbar panels unless required internally to create the grouped structure
+* change accepted toolbar spacing
+* change the toolbar's visual design
+* change unrelated layout
+* change category widths or positions
+* change sidebar geometry
+* change the filename pill
+* alter Hide or Share behavior
+* modify saved user data
+* modify Locker files
+* remove existing functionality
+* refactor unrelated code
+
+## Responsive Behavior
+
+Verify that the toolbar remains one group at all supported viewport sizes.
+
+If responsive CSS changes the toolbar's position, the **complete toolbar group must respond together**.
+
+No toolbar panel should break away from the group because of:
+
+* viewport width
+* browser resizing
+* responsive breakpoints
+* menu opening
+* dropdown opening
+* light/dark mode
+* Showcase mode
+
+## Testing
+
+Test the toolbar at multiple desktop/browser widths.
+
+Confirm:
+
+1. The toolbar panels maintain their existing relative spacing.
+2. Moving/alignment of the toolbar affects the whole toolbar group.
+3. No individual panel stays behind.
+4. No panel shifts independently.
+5. Opening toolbar menus does not alter the position of neighboring toolbar panels.
+6. Opening Share does not detach or reposition another toolbar control.
+7. Hide retains its correct independent visual state.
+8. Light and Dark modes do not change toolbar grouping.
+9. Existing gutters, sidebar/category geometry, disclosure chevrons, and filename pill remain unchanged.
+10. No existing TrailWeigh functionality or saved data is affected.
+
+## Protection Requirement
+
+Before making changes:
+
+* Create a checkpoint/backup of the current working version.
+* Protect all existing TrailWeigh files, saved lists, user data, and previously completed work.
+* Make only the minimum code/CSS changes necessary for this prompt.
+
+## Required Report
+
+When finished, create and attach:
+
+**Prompt-021N-Report.md**
+
+The report must include:
+
+* files changed
+* components/CSS rules changed
+* how the toolbar is now grouped
+* which element/component acts as the toolbar's common parent container
+* how toolbar positioning is now controlled
+* confirmation that individual panels no longer require separate positioning to move the toolbar
+* desktop/browser widths tested
+* confirmation that all toolbar panels moved together during testing
+* confirmation that the previously accepted layout was preserved
+* any issues discovered
+* test results
+
+Also provide the requested backup/checkpoint ZIP for this prompt.
+
+Do not proceed to unrelated improvements after completing Prompt 021N.
