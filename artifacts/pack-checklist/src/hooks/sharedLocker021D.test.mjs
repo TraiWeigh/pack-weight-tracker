@@ -104,23 +104,25 @@ test('handleCopyLink reads e.bgSize with fallback', () => {
     'handleCopyLink must use e.bgSize ?? \'cover\' for backward-compatible bgSize');
 });
 
-test('handleCopyLink lockerFiles map still includes id, name, store fields', () => {
+test('handleShareLocker lockerFiles map still includes id, name, store fields', () => {
+  // 021E renamed handleCopyLink → handleShareLocker
   const copyLinkBlock = checklist.slice(
-    checklist.indexOf('handleCopyLink = async'),
-    checklist.indexOf('handleCopyLink = async') + 1200
+    checklist.indexOf('handleShareLocker = async'),
+    checklist.indexOf('handleShareLocker = async') + 1800
   );
-  assert.match(copyLinkBlock, /id:\s*e\.id/, 'handleCopyLink must map e.id');
-  assert.match(copyLinkBlock, /name:\s*e\.name/, 'handleCopyLink must map e.name');
-  assert.match(copyLinkBlock, /store:\s*e\.store/, 'handleCopyLink must map e.store');
+  assert.match(copyLinkBlock, /id:\s*e\.id/, 'handleShareLocker must map e.id');
+  assert.match(copyLinkBlock, /name:\s*e\.name/, 'handleShareLocker must map e.name');
+  assert.match(copyLinkBlock, /store:\s*e\.store/, 'handleShareLocker must map e.store');
 });
 
-test('handleCopyLink lockerFiles still includes bgFade and bgTone', () => {
+test('handleShareLocker lockerFiles still includes bgFade and bgTone', () => {
+  // 021E renamed handleCopyLink → handleShareLocker
   const copyLinkBlock = checklist.slice(
-    checklist.indexOf('handleCopyLink = async'),
-    checklist.indexOf('handleCopyLink = async') + 1200
+    checklist.indexOf('handleShareLocker = async'),
+    checklist.indexOf('handleShareLocker = async') + 1800
   );
-  assert.match(copyLinkBlock, /bgFade:\s*e\.bgFade\s*\?\?/, 'handleCopyLink must read e.bgFade');
-  assert.match(copyLinkBlock, /bgTone:\s*e\.bgTone\s*\?\?/, 'handleCopyLink must read e.bgTone');
+  assert.match(copyLinkBlock, /bgFade:\s*e\.bgFade\s*\?\?/, 'handleShareLocker must read e.bgFade');
+  assert.match(copyLinkBlock, /bgTone:\s*e\.bgTone\s*\?\?/, 'handleShareLocker must read e.bgTone');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

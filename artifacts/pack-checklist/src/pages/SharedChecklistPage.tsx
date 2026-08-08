@@ -17,7 +17,7 @@ import { useParams, useLocation } from 'wouter';
 import { GearCategory } from '../components/GearCategory';
 import { WeightSummary } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
-import { PreviewModal } from '../components/PreviewModal';
+import { PreviewModal, PreviewBody } from '../components/PreviewModal';
 import { ImportGearPanel } from '../components/ImportGearPanel';
 import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
@@ -1160,10 +1160,13 @@ function normalizeSnapshot(raw: any): SharePayload | null {
   const lockerFiles = Array.isArray(raw.lockerFiles)
     ? raw.lockerFiles
         .map(normalizeLockerFile)
-        .filter((f): f is SharedLockerFile => f !== null)
+        .filter((f: SharedLockerFile | null): f is SharedLockerFile => f !== null)
     : undefined;
 
   return {
+    // Discriminate between Locker share and Pack List share.
+    // Pre-021E links have no type; default to 'locker' for backward compatibility.
+    type:       raw.type === 'pack-list' ? 'pack-list' : 'locker',
     data,
     categoryOrder,
     categoryMeta,
@@ -1230,7 +1233,110 @@ function SharedChecklistLoader() {
     );
   }
 
+  // Route to Pack List or Locker experience based on share type.
+  // Pre-021E links have no type field and default to 'locker'.
+  if (snapshot.type === 'pack-list') {
+    return <SharedPackListInner snapshot={snapshot} />;
+  }
   return <SharedChecklistInner snapshot={snapshot} />;
+}
+
+// ── Shared Pack List — Preview-style read-only page ───────────────────────────
+
+/**
+ * Full-page read-only display of a single shared pack list.
+ * Matches the PreviewModal presentation using the shared PreviewBody component.
+ * No editing, no Locker panel, no Save — Print only.
+ */
+function SharedPackListContent({ snapshot }: { snapshot: SharePayload }) {
+  const { system } = useUnit();
+
+  return (
+    <>
+      {/* Screen-only page */}
+      <div className="min-h-[100dvh] bg-background screen-only">
+
+        {/* Header */}
+        <header className="bg-card border-b border-border shadow-sm sticky top-0 z-10">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg text-primary flex-shrink-0">
+              <Tent className="w-6 h-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="font-bold text-foreground text-xl leading-tight">TrailWeigh</h1>
+              <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                Gear Tracker
+              </p>
+            </div>
+            {/* Print — only action available to pack-list share recipients */}
+            <button
+              onClick={() => window.print()}
+              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              Print
+            </button>
+          </div>
+
+          {/* View-only banner */}
+          <div className="border-t border-border bg-primary/5">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-2">
+              <div className="flex items-center gap-2">
+                <Info className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  {snapshot.name
+                    ? <>Viewing <span className="font-semibold text-foreground">"{snapshot.name}"</span> — read-only shared pack list.</>
+                    : 'This is a read-only shared pack list.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Pack list body — reuses the same PreviewBody as the Preview modal */}
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+          <div className="bg-white rounded-xl shadow-sm border border-border overflow-hidden">
+            <div className="p-6 overflow-x-auto">
+              <PreviewBody
+                data={snapshot.data}
+                system={system}
+                categoryOrder={snapshot.categoryOrder}
+                categoryMeta={snapshot.categoryMeta}
+              />
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* Print-only layout — hidden on screen, rendered when window.print() fires */}
+      <PrintLayout
+        data={snapshot.data}
+        system={system}
+        categoryOrder={snapshot.categoryOrder}
+        categoryMeta={snapshot.categoryMeta}
+      />
+    </>
+  );
+}
+
+/** Clerk-aware wrapper for the pack-list share experience. */
+function SharedPackListInner({ snapshot }: { snapshot: SharePayload }) {
+  const { user, isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-background">
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <UnitProvider initialSystem={snapshot.unit}>
+      <SharedPackListContent snapshot={snapshot} />
+    </UnitProvider>
+  );
 }
 
 /** Thin Clerk-aware wrapper — waits for auth to load, then renders content. */

@@ -23,6 +23,12 @@ export interface SharedLockerFile {
 }
 
 export interface SharePayload {
+  /**
+   * Discriminates between a full Locker share (multi-file shared locker) and a
+   * single Pack List share (Preview-style read-only view).
+   * Absent on pre-021E links — treated as 'locker' for backward compatibility.
+   */
+  type?: 'locker' | 'pack-list';
   data: PackState;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;

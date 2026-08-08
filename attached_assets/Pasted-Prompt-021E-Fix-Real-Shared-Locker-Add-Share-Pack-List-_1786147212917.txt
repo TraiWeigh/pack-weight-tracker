@@ -1,0 +1,553 @@
+Prompt 021E — Fix Real Shared Locker + Add Share Pack List
+
+Create PRE_021E_MASTER_BACKUP.md before changing anything.
+
+CURRENT STATUS:
+- 020F functional = USER-TESTED PASS.
+- 021 core Share = USER-TESTED PASS.
+- 021A signed-out /checklist protection = USER-TESTED PASS.
+- 021B private Delete without password = USER-TESTED PASS.
+- 021C Shared Locker = USER-TESTED FAIL.
+- 021D Shared Locker = USER-TESTED FAIL.
+- Real user test still shows NO Shared Locker on the actual Share Link.
+- 021E = NOT USER-VERIFIED.
+
+NEW REQUIREMENT ADDED AFTER 021D:
+Add a separate “Share Pack List” feature for sharing ONLY the currently open pack list in the same clean presentation format shown by Pack List Preview.
+
+Do this in the SAME Prompt 021E.
+
+==================================================
+A. FIX THE REAL SHARED LOCKER
+==================================================
+
+The current real /s/:shareId page still does NOT visibly show the Shared Locker.
+
+Do not trust previous mocked/unit/render claims.
+
+Trace a NEW real Share Link end-to-end:
+
+1. owner Share action
+2. actual share snapshot written
+3. actual API/database payload
+4. actual /s/:shareId fetch
+5. sharedFiles received by browser
+6. SharedChecklistPage state
+7. real component render
+8. responsive/sidebar/CSS visibility
+
+Find the exact reason the Shared Locker is absent in the user's actual page.
+
+PASS requires a NEW real Share Link opened in a real signed-out browser to visibly display the Shared Locker.
+
+==================================================
+B. SHARED LOCKER RULES
+==================================================
+
+The full Shared Locker experience may show/browse the files intentionally contained in the share snapshot.
+
+Viewer may:
+- see Shared Locker
+- see filenames
+- open files
+- temporarily interact with shared files
+- Save Your Own Copy to viewer's own account
+
+Viewer may NOT:
+- Rename originals
+- Delete originals
+- Save to originals
+- Save As over originals
+- otherwise persist changes to sender files
+
+Do not render Rename/pencil or Delete/trash in shared mode.
+
+Shared data must come from the immutable Share snapshot, NOT by connecting the public viewer to the sender's live authenticated Locker.
+
+Viewer temporary edits must never modify sender originals.
+
+==================================================
+C. NEW SHARE PILL MENU
+==================================================
+
+Update the existing Share pill so the user can choose between:
+
+1. Share Locker
+2. Share Pack List
+
+Do NOT remove existing Share Locker functionality.
+
+“Share Locker” uses the multi-file shared experience above.
+
+“Share Pack List” shares ONLY the currently open pack list.
+
+Keep styling consistent with existing TrailWeigh pills/menus.
+
+==================================================
+D. SHARE PACK LIST — EXACT PURPOSE
+==================================================
+
+Share Pack List creates a shareable link to a clean, read-only presentation of the CURRENT OPEN PACK LIST.
+
+The result should match the existing Pack List Preview as closely as practical.
+
+Use the current Preview design as the visual/source-of-truth, including:
+- TrailWeigh heading
+- Pack Checklist heading
+- date
+- summary values
+- Base Weight
+- Dog Pack where applicable
+- Grand Total
+- category headings
+- listed gear rows
+- Type
+- Description
+- Weight
+- checked/unchecked visual state where Preview currently represents it
+- current unit formatting
+- current Preview calculations
+
+Do not create a second unrelated design.
+
+Reuse/shared-render the same underlying Preview presentation components/data where practical so Preview and Share Pack List stay consistent.
+
+==================================================
+E. SHARE PACK LIST LINK BEHAVIOR
+==================================================
+
+The generated Pack List link must:
+
+- represent ONE pack list only
+- contain/render the currently open pack list snapshot
+- be publicly viewable without TrailWeigh sign-in
+- be read-only
+- never connect to or expose the owner's Locker
+- never expose other saved files
+- never provide Rename
+- never provide Delete
+- never provide Save
+- never provide Save As
+- never provide Background Edit
+- never allow edits to sender data
+
+The recipient may:
+- view the shared Pack List
+- Print it
+
+The recipient must NOT be able to modify the owner's saved file through this link.
+
+If the sender changes the original later, the existing shared Pack List link should remain a snapshot unless the current Share architecture explicitly supports safe replacement/versioning. Do not silently create live write access.
+
+==================================================
+F. CURRENT OPEN PACK LIST
+==================================================
+
+“Share Pack List” means the pack list currently open on screen.
+
+The shared result should correspond to what the sender sees in Preview at the time the share is generated.
+
+Use the same current list state used by Preview, including:
+- currently displayed items
+- quantities
+- weights
+- checked states
+- current calculations
+- current units
+- current filename where Preview supports it
+
+Do not accidentally share every Locker file when Share Pack List is selected.
+
+==================================================
+G. PREVIEW WINDOW CONTROL
+==================================================
+
+In the existing Pack List Preview modal/window:
+
+Current top-right controls include:
+Print | Close
+
+Add:
+
+Share Pack List | Print | Close
+
+Place the new Share Pack List pill immediately to the LEFT of Print.
+
+Match the existing Print/Close pill styling, spacing, sizing, theme behavior, and alignment.
+
+Do not move/redesign unrelated Preview content.
+
+Clicking Share Pack List here must invoke the SAME Share Pack List behavior as selecting Share Pack List from the main Share pill.
+
+One implementation path only; do not maintain two conflicting sharing systems.
+
+==================================================
+H. EMPTY LIST BEHAVIOR
+==================================================
+
+If the currently open list has no gear/items:
+
+Share Pack List must not generate an empty link.
+
+Use the existing unavailable Share UX:
+- visually unavailable
+- nearby explanation:
+  “Add some gear items before creating a share link.”
+
+Do not restore the old large bottom-right toast.
+
+==================================================
+I. SHARE LOCKER VS SHARE PACK LIST MUST BE DISTINCT
+==================================================
+
+Share Locker:
+- multi-file shared Locker
+- viewers can browse shared files
+- temporary interactions
+- Save Your Own Copy permitted
+- no Rename/Delete of originals
+
+Share Pack List:
+- ONE pack list
+- Preview-style presentation
+- no Locker
+- read-only
+- Print allowed
+- no editing
+- no Save Your Own Copy unless explicitly added in a future prompt
+
+Do not mix these two modes.
+
+Use explicit route/payload type or equivalent so the receiving page knows which shared experience it is rendering.
+
+==================================================
+J. URL / PAYLOAD SAFETY
+==================================================
+
+Both share modes must validate their payloads.
+
+Malformed/expired/invalid link:
+- show readable TrailWeigh error
+- do not runtime crash
+
+Do NOT expose:
+- auth tokens
+- credentials
+- private account data
+- destructive privileges
+- private live Locker APIs
+
+==================================================
+K. PRIVATE OWNER BEHAVIOR — PROTECT
+==================================================
+
+Authenticated private owner:
+
+Rename:
+- works normally
+
+Delete:
+- simple confirmation only
+- NO password field
+- Cancel preserves file
+- Permanently Delete deletes only selected owned file
+
+Signed out:
+/checklist → sign-in
+
+Public:
+Full Share Locker link → public
+Share Pack List link → public
+
+Do not alter private authentication architecture except where strictly necessary.
+
+==================================================
+L. PROTECT 020F
+==================================================
+
+Preserve USER-TESTED behavior:
+
+New:
+- zero categories/items
+- Clear/no background
+- Light mode
+- no filename
+- remains Clear/Light
+- no appearance leakage
+
+Saved:
+- Sierra/Dutch/0826 → own mountain appearance
+- Ray Jardine's → own psychedelic appearance
+- Packlist 1 → Light/no background
+
+Save confirmation:
+Saved [File Name]
+No quotation marks.
+
+==================================================
+M. GLOBAL REGRESSION PROTECTION
+==================================================
+
+Treat ALL existing TrailWeigh functionality, data, styling, layout, persistence, calculations, importer behavior, background behavior, Locker behavior, Share behavior, Preview/Print, responsive behavior, authentication, and prior completed work as protected unless explicitly changed here.
+
+Smallest reliable change set only.
+
+NO unrelated:
+- cleanup
+- refactoring
+- renaming
+- relocation
+- modernization
+- redesign
+
+Preserve:
+- existing Locker files
+- file IDs
+- localStorage
+- IndexedDB
+- saved-file compatibility
+- custom themes/photos
+- backgrounds
+- Scan Gear List
+- automatic category creation on import
+- imported items unchecked
+- calculations
+- Pack Summary
+- Weight Distribution/palette
+- desktop/mobile layout
+- Preview/Print behavior
+
+Create checkpoint first.
+Inspect final diff.
+Revert unrelated changes.
+
+No schema/data migration unless unavoidable; STOP and report first if required.
+
+==================================================
+N. REQUIRED REAL-BROWSER TEST — SHARED LOCKER
+==================================================
+
+1. Owner signs in.
+2. Generate a BRAND-NEW Share Locker link.
+3. Open it signed out in a fresh browser/private session.
+
+PASS:
+- Shared Locker visibly appears
+- multiple filenames visibly listed
+- files can actually be opened
+- no Rename
+- no Delete
+- no Save/Save As to originals
+- sender originals remain unchanged
+
+Capture real screenshot evidence.
+
+Do not mark PASS from mocks/components alone.
+
+==================================================
+O. REQUIRED REAL-BROWSER TEST — SHARE PACK LIST
+==================================================
+
+Use a non-empty current pack list.
+
+TEST 1 — MAIN SHARE PILL
+1. Open pack list.
+2. Click Share.
+3. Confirm choices:
+   Share Locker
+   Share Pack List
+4. Choose Share Pack List.
+5. Generate/copy link.
+6. Open link signed out.
+
+PASS:
+- exactly ONE pack list shown
+- no Shared Locker
+- presentation matches Preview
+- correct totals/categories/items
+- read-only
+- Print available
+- no Rename/Delete/Save/Save As
+- no runtime error
+
+TEST 2 — PREVIEW
+1. Open Preview.
+2. Confirm top-right:
+   Share Pack List | Print | Close
+3. Click Share Pack List.
+4. Open generated link.
+
+PASS:
+Same Share Pack List result as main Share menu.
+
+TEST 3 — ISOLATION
+Change original file after sharing.
+
+Confirm shared Pack List does not write changes back and viewer cannot alter owner data.
+
+==================================================
+P. PRINT PROTECTION
+==================================================
+
+Existing Preview Print must continue working.
+
+Shared Pack List page should provide Print using the same print-oriented presentation where practical.
+
+Do not change existing printed layout unless necessary for the shared view.
+
+==================================================
+Q. AUTOMATED TESTS
+==================================================
+
+Add focused tests for:
+
+SHARE LOCKER:
+- real payload contains shared files
+- receiving page receives them
+- visible Shared Locker renders
+- filenames render
+- Open works
+- Rename absent
+- Delete absent
+- sender persistence untouched
+
+SHARE PACK LIST:
+- Share menu contains Share Locker + Share Pack List
+- one-list snapshot generation
+- public read-only route
+- Preview-based content
+- no Locker in Pack List share
+- no editing/persistence controls
+- Print available
+- Preview Share Pack List pill rendered left of Print
+- both entry points use same sharing implementation
+- empty list cannot generate share
+- malformed link handled safely
+
+REGRESSION:
+- /checklist private
+- owner Rename/Delete preserved
+- 021 core Share preserved
+- 020F preserved
+- Preview/Print preserved
+- importer preserved
+
+Run:
+1. focused 021E tests
+2. COMPLETE TrailWeigh automated regression suite
+
+Report exact commands and exact:
+passed / failed / skipped
+
+Do not label targeted tests as complete suite.
+
+==================================================
+R. USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Even with rendered tests:
+
+021E = NOT USER-VERIFIED
+
+until user personally confirms.
+
+==================================================
+S. REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021E_REPORT.md
+
+Include:
+- exact Prompt 021E
+- starting state
+- exact reason 021D Shared Locker still failed in real user test
+- real Share Locker data/render path
+- files inspected
+- files changed
+- exact Shared Locker fix
+- Share menu architecture
+- Share Pack List snapshot architecture
+- Preview code reuse
+- route/payload distinction
+- data isolation/security
+- Print behavior
+- focused tests
+- COMPLETE regression totals
+- REAL browser tests
+- screenshot evidence descriptions
+- failures/reversions
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user tests still required
+
+Append to:
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite/truncate history.
+
+Record:
+020F functional = USER-TESTED PASS
+021 core Share = USER-TESTED PASS
+021A /checklist protection = USER-TESTED PASS
+021B private Delete = USER-TESTED PASS
+021C Shared Locker = USER-TESTED FAIL
+021D Shared Locker = USER-TESTED FAIL
+021E = NOT USER-VERIFIED
+
+==================================================
+T. REPORT ZIP
+==================================================
+
+Create:
+trailweigh-021E-report.zip
+
+Exactly four Markdown files at ZIP ROOT:
+
+PROMPT_021E_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+wrapper folder
+__MACOSX
+.DS_Store
+backups
+source/test files
+screenshots
+user data
+credentials
+other ZIPs
+
+List ZIP contents before finishing.
+Exactly 4 entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+1. exact reason Shared Locker was still absent
+2. exact files changed
+3. real-browser proof Shared Locker now appears
+4. confirmation no Rename/Delete in Shared Locker
+5. Share menu choices
+6. Share Pack List architecture
+7. confirmation Pack List share shows only one list
+8. confirmation shared Pack List matches Preview
+9. confirmation Preview now shows Share Pack List | Print | Close
+10. confirmation Pack List share is read-only
+11. Print result
+12. sender-data isolation result
+13. focused test totals
+14. COMPLETE regression totals
+15. /checklist/auth regression
+16. 020F regression
+17. report path
+18. ZIP path
+19. exact four ZIP entries
+20. clearly state USER acceptance still required

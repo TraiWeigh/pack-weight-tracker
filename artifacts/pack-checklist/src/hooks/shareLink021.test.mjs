@@ -163,27 +163,28 @@ assert(
 );
 
 // Initial value must be 'menu'
+// (021E renamed 'warning' → 'locker-warning' to distinguish from pack-list share)
 assert(
-  /useState<'menu' \| 'warning'>\('menu'\)/.test(checklist),
-  "shareStep initialised to 'menu'"
+  /useState<'menu' \| 'locker-warning'>\('menu'\)/.test(checklist),
+  "shareStep initialised to 'menu' (type: 'menu' | 'locker-warning' since 021E)"
 );
 
-// Warning message text must be present
+// Warning message text must be present (021E: wording updated for Share Locker context)
 assert(
-  /Save the currently open file first so the shared version is current/.test(checklist),
+  /Save the currently open file first/.test(checklist),
   'Save-before-sharing warning message present in Checklist'
 );
 
-// "Copy Link Anyway" confirm button must exist
+// Confirm button must exist (021E renamed "Copy Link Anyway" → "Share Locker Anyway")
 assert(
-  /Copy Link Anyway/.test(checklist),
-  '"Copy Link Anyway" button present in save-warning step'
+  /Share Locker Anyway/.test(checklist),
+  '"Share Locker Anyway" button present in save-warning step (renamed from Copy Link Anyway in 021E)'
 );
 
-// Clicking Copy Link must set shareStep to 'warning' (not immediately copy)
+// Share Locker must set shareStep to 'locker-warning' (021E: renamed from 'warning')
 assert(
-  /setShareStep\('warning'\)/.test(checklist),
-  "Clicking Copy Link sets shareStep to 'warning' before proceeding"
+  /setShareStep\('locker-warning'\)/.test(checklist),
+  "Clicking Share Locker sets shareStep to 'locker-warning' before proceeding (renamed in 021E)"
 );
 
 // shareStep must reset to 'menu' on menu close

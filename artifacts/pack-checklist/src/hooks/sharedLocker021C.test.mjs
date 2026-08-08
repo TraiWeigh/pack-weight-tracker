@@ -99,46 +99,48 @@ test('Checklist.tsx imports SharedLockerFile from shareLink', () => {
     'Checklist.tsx must import SharedLockerFile from shareLink');
 });
 
-// Helper: extract handleCopyLink body from Checklist.tsx
+// Helper: extract handleShareLocker body from Checklist.tsx
+// (021E renamed handleCopyLink → handleShareLocker; tests updated accordingly)
 // Slices from the function start to just past buildShareURL(payload) call
 function getHandleCopyLinkSection() {
-  const start = checklist.indexOf('const handleCopyLink');
+  // 021E rename: function is now called handleShareLocker
+  const start = checklist.indexOf('const handleShareLocker');
   const end   = checklist.indexOf('buildShareURL(payload)', start);
   return start >= 0 && end > start ? checklist.slice(start, end + 80) : '';
 }
 
-test('handleCopyLink reads LOCKER_KEY from localStorage', () => {
+test('handleShareLocker reads LOCKER_KEY from localStorage', () => {
   const section = getHandleCopyLinkSection();
   assert.match(section, /localStorage\.getItem\(LOCKER_KEY\)/,
-    'handleCopyLink must read LOCKER_KEY from localStorage to snapshot Locker files');
+    'handleShareLocker must read LOCKER_KEY from localStorage to snapshot Locker files');
 });
 
-test('handleCopyLink builds lockerFiles array from Locker entries', () => {
+test('handleShareLocker builds lockerFiles array from Locker entries', () => {
   const section = getHandleCopyLinkSection();
   assert.match(section, /lockerFiles/,
-    'handleCopyLink must build lockerFiles array');
+    'handleShareLocker must build lockerFiles array');
 });
 
-test('handleCopyLink maps entries to SharedLockerFile shape (id, name, store)', () => {
+test('handleShareLocker maps entries to SharedLockerFile shape (id, name, store)', () => {
   const section = getHandleCopyLinkSection();
   assert.match(section, /id:.*e\.id/,
-    'handleCopyLink must map e.id to SharedLockerFile.id');
+    'handleShareLocker must map e.id to SharedLockerFile.id');
   assert.match(section, /name:.*e\.name/,
-    'handleCopyLink must map e.name to SharedLockerFile.name');
+    'handleShareLocker must map e.name to SharedLockerFile.name');
   assert.match(section, /store:.*e\.store/,
-    'handleCopyLink must map e.store to SharedLockerFile.store');
+    'handleShareLocker must map e.store to SharedLockerFile.store');
 });
 
-test('handleCopyLink includes lockerFiles in payload', () => {
+test('handleShareLocker includes lockerFiles in payload', () => {
   const section = getHandleCopyLinkSection();
   assert.match(section, /lockerFiles/,
-    'handleCopyLink payload must include lockerFiles');
+    'handleShareLocker payload must include lockerFiles');
 });
 
-test('handleCopyLink wraps Locker read in try/catch (graceful failure)', () => {
+test('handleShareLocker wraps Locker read in try/catch (graceful failure)', () => {
   const section = getHandleCopyLinkSection();
   assert.match(section, /try[\s\S]*?catch/,
-    'handleCopyLink Locker read must be wrapped in try/catch');
+    'handleShareLocker Locker read must be wrapped in try/catch');
 });
 
 // ── C. SharedLockerPanel — rendered, view-only ────────────────────────────────

@@ -483,8 +483,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     (s, cat) => s + (store.items[cat]?.length ?? 0), 0
   );
   const canShare = totalItems > 0;
-  // Share flow: 'menu' = normal dropdown, 'warning' = save-before-share reminder step
-  const [shareStep, setShareStep] = useState<'menu' | 'warning'>('menu');
+  // Share flow: 'menu' = normal dropdown, 'locker-warning' = save-before-Share-Locker reminder
+  const [shareStep, setShareStep] = useState<'menu' | 'locker-warning'>('menu');
   // Mobile-only: show "add items first" message when tapping the grayed Share button
   const [showEmptyShareMsg, setShowEmptyShareMsg] = useState(false);
   const [, setLocation] = useLocation();
@@ -521,7 +521,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     isDialogOpen,
   });
 
-  const [copied, setCopied] = useState(false);
+  const [copied,         setCopied]         = useState(false);
+  const [copiedPackList, setCopiedPackList] = useState(false);
   async function copyUrlToClipboard(url: string): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(url);
@@ -540,7 +541,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     }
   }
 
-  const handleCopyLink = async () => {
+  /**
+   * Share Locker — generates a multi-file shared experience.
+   * Snapshots ALL saved Locker files at generation time so the recipient sees
+   * the full Shared Locker panel.  The current open file is the primary view.
+   */
+  const handleShareLocker = async () => {
     // Empty-list case is handled by the UI (Share button grayed out when canShare=false).
     // This guard is a defensive fallback only.
     if (store.order.length === 0) return;
@@ -562,13 +568,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           bgSize:          e.bgSize ?? 'cover',  // use saved bgSize; older entries without it default to cover
           chartPaletteKey: e.chartPaletteKey,
         }));
-        console.log(`[TrailWeigh] Share: included ${lockerFiles.length} Locker file(s) in shared snapshot`);
+        console.log(`[TrailWeigh] Share Locker: included ${lockerFiles.length} Locker file(s) in shared snapshot`);
+      } else {
+        console.log('[TrailWeigh] Share Locker: no saved Locker files found — sharing without Shared Locker panel');
       }
     } catch { /* ignore — share works without locker snapshot */ }
 
     // Snapshot the complete current working file — same structure as Save.
     // Checkbox states are preserved as-is (unlike New which resets them).
     const payload = {
+      type:          'locker' as const,
       data:          store.items,
       categoryOrder: store.order,
       categoryMeta:  store.meta,
@@ -586,6 +595,33 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     if (!ok) window.prompt('Copy this link:', url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  /**
+   * Share Pack List — generates a single read-only Preview-style link for the
+   * CURRENT open list only.  No Locker panel, no editing, Print only.
+   */
+  const handleSharePackList = async () => {
+    if (store.order.length === 0) return; // defensive — button is already grayed when !canShare
+    const payload = {
+      type:          'pack-list' as const,
+      data:          store.items,
+      categoryOrder: store.order,
+      categoryMeta:  store.meta,
+      background:    background ?? null,
+      bgFade,
+      bgTone,
+      bgSize,
+      unit:          system,
+      name:          activeLockerFile?.name ?? undefined,
+      // No lockerFiles — Pack List share intentionally exposes no Locker
+    };
+    console.log('[TrailWeigh] Share Pack List: generating read-only single-list link (no Locker snapshot)');
+    const url = await buildShareURL(payload);
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this link:', url);
+    setCopiedPackList(true);
+    setTimeout(() => setCopiedPackList(false), 2000);
   };
 
   // ── Add Category ──────────────────────────────────────────────────────────
@@ -1547,19 +1583,47 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                       {showShareMenu && (
                         <>
                           <div className="fixed inset-0 z-10" onClick={() => { setShowShareMenu(false); setShareStep('menu'); }} />
-                          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[200px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[220px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
                             {shareStep === 'menu' ? (
                               <>
+                                {/* ── Share Locker ── */}
                                 <button
-                                  onClick={() => setShareStep('warning')}
+                                  onClick={() => setShareStep('locker-warning')}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
                                 >
                                   <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                                   <div className="text-left">
-                                    <div>{copied ? 'Copied!' : 'Copy Link'}</div>
+                                    <div className="font-medium">{copied ? 'Copied!' : 'Share Locker'}</div>
+                                    <div className="text-[11px] text-muted-foreground">All your saved files</div>
                                   </div>
                                 </button>
+
+                                {/* ── Share Pack List ── */}
+                                <button
+                                  onClick={async () => {
+                                    setShowShareMenu(false);
+                                    setShareStep('menu');
+                                    await handleSharePackList();
+                                  }}
+                                  disabled={!canShare}
+                                  className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
+                                    canShare
+                                      ? 'text-foreground hover:bg-muted/60'
+                                      : 'text-muted-foreground/50 cursor-not-allowed'
+                                  }`}
+                                >
+                                  <Share2 className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                                  <div className="text-left">
+                                    <div className="font-medium">{copiedPackList ? 'Copied!' : 'Share Pack List'}</div>
+                                    <div className="text-[11px] text-muted-foreground">
+                                      {canShare ? 'Current list, read-only' : 'Add gear items first'}
+                                    </div>
+                                  </div>
+                                </button>
+
                                 <div className="my-1 border-t border-border" />
+
+                                {/* ── Download PDF ── */}
                                 <button
                                   onClick={() => { handleShare(); setShowShareMenu(false); setShareStep('menu'); }}
                                   disabled={sharing}
@@ -1570,21 +1634,21 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                                 </button>
                               </>
                             ) : (
-                              /* Save-before-sharing reminder */
+                              /* Share Locker — save-before-share reminder */
                               <div className="px-3 py-3 space-y-2.5">
                                 <p className="text-xs text-muted-foreground leading-relaxed">
-                                  Save the currently open file first so the shared version is current.
+                                  Save the currently open file first so its latest changes appear in the shared Locker snapshot.
                                 </p>
                                 <div className="flex gap-2">
                                   <button
                                     onClick={async () => {
                                       setShowShareMenu(false);
                                       setShareStep('menu');
-                                      await handleCopyLink();
+                                      await handleShareLocker();
                                     }}
                                     className="flex-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors"
                                   >
-                                    Copy Link Anyway
+                                    Share Locker Anyway
                                   </button>
                                   <button
                                     onClick={() => setShareStep('menu')}
@@ -1662,6 +1726,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           categoryOrder={categoryOrder}
           categoryMeta={categoryMeta}
           onClose={() => setShowPreview(false)}
+          onSharePackList={canShare ? async () => {
+            setShowPreview(false);
+            await handleSharePackList();
+          } : undefined}
         />
       )}
 
