@@ -525,7 +525,7 @@ function SharedChecklistContent({
 
   // ── Open / Close all categories ───────────────────────────────────────────
 
-  const [allOpen,       setAllOpen]       = useState(false);
+  const [allOpen,       setAllOpen]       = useState(true);
   const [openCloseSeq,  setOpenCloseSeq]  = useState(0);
 
   // ── Add Category ──────────────────────────────────────────────────────────

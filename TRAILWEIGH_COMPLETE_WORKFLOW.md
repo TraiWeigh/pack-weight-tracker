@@ -5057,3 +5057,23 @@ Replace the old flat 6-card How It Works page with a short, clear 3-section acco
 **Files changed:** `Checklist.tsx`, `WeightSummary.tsx`, `GearCategory.tsx`, `workspace022G.test.mjs` (NEW, 56 tests), `package.json`  
 **Report:** `workflow-reports/PROMPT_022G_REPORT.md`  
 **ZIP:** `workflow-reports/trailweigh-022G-report.zip`
+
+---
+
+## Prompt 022H — Start Shared Links With All Panels Closed
+
+**Date:** 2026-08-08 | **Status:** COMPLETE ✅ | **Tests:** 37 passed, 0 failed
+
+**Goal:** When a recipient opens or refreshes a shared TrailWeigh link, all collapsible panels (gear categories, Pack Summary, Weight Distribution) start collapsed — matching the clean-start behavior from 022G — while preserving the shared gear, checked items, and background exactly.
+
+**Root cause:** `SharedChecklistPage.tsx` had `allOpen = useState(true)`. This was passed as `forceOpen={allOpen}` to every `GearCategory`, whose `useEffect` immediately fired and set `isOpen=true` — overriding the `false` init added in 022G.
+
+**Fix (1 line):** `useState(true)` → `useState(false)` for `allOpen` in `SharedChecklistPage.tsx`.
+
+**WeightSummary** (`summaryOpen`, `chartOpen`) already initialised to `false` from 022G. All temporary menus already started `false`. Open/Close control is fully functional — recipients can still expand/collapse categories during their session. On refresh, panels reset to collapsed.
+
+**Isolation preserved:** SharedChecklistPage never writes to the private last-active-file key (022G), never writes to `tw-active-locker-file`, and never mutates the owner's Locker entry. 022F footer layout unchanged.
+
+**Files changed:** `SharedChecklistPage.tsx` (1 line), `sharedPanels022H.test.mjs` (NEW, 37 tests), `package.json`  
+**Report:** `workflow-reports/PROMPT_022H_REPORT.md`  
+**ZIP:** `workflow-reports/trailweigh-022H-report.zip`

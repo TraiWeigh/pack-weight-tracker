@@ -1,0 +1,517 @@
+PROMPT 022H — START SHARED LINKS WITH ALL PANELS CLOSED
+
+GOAL
+
+Update the Shared Link / Shared Pack List startup behavior.
+
+Whenever a shared TrailWeigh link is opened or refreshed:
+
+PRESERVE:
+- The shared file.
+- The shared file's gear and weights.
+- The shared file's saved checked/unchecked item state.
+- The shared file's background.
+- Existing Shared Link permissions and temporary-session behavior.
+
+BUT:
+
+START ALL COLLAPSIBLE PANELS CLOSED.
+
+This should match the clean-start behavior implemented for the private Checklist workspace in Prompt 022G.
+
+==================================================
+1. REQUIRED SHARED-LINK STARTUP STATE
+==================================================
+
+When a recipient opens a Shared Pack List link:
+
+[ ] All gear-category panels start collapsed.
+
+[ ] Pack Summary starts collapsed.
+
+[ ] Weight Distribution starts collapsed.
+
+[ ] Any other checklist-level collapsible panels that normally begin closed should start collapsed.
+
+[ ] Temporary toolbar menus or popovers are closed.
+
+[ ] Background-selection panels are closed.
+
+[ ] Preview/modal/dialog UI is not unexpectedly open.
+
+Only the visual open/closed state should reset.
+
+Do NOT alter the actual shared gear data.
+
+==================================================
+2. PRESERVE SHARED CHECKED / UNCHECKED ITEMS
+==================================================
+
+"All panels closed" does NOT mean "all items unchecked."
+
+The shared list must preserve exactly what the owner shared.
+
+Example:
+
+Owner's shared list contains:
+
+- Tent — checked
+- Quilt — checked
+- Rain jacket — checked
+- Camp chair — unchecked
+
+When the recipient opens the link:
+
+- Those saved checked/unchecked states remain exactly as shared.
+- The gear categories containing them simply begin collapsed.
+
+Do not reset item selection.
+
+==================================================
+3. PRESERVE THE SHARED BACKGROUND
+==================================================
+
+The shared list must continue to display the same background associated with the shared file/view.
+
+Preserve the current Shared Link behavior for:
+
+- Built-in backgrounds
+- Custom backgrounds, where supported
+- Theme/background selection
+- Fit / Fill state, where applicable
+
+Do not replace the owner's background with a default background merely because the panels are initialized closed.
+
+Required result:
+
+SAME SHARED FILE
++
+SAME BACKGROUND
++
+SAME SAVED CHECKED ITEMS
++
+ALL PANELS CLOSED
+
+==================================================
+4. REFRESH BEHAVIOR
+==================================================
+
+The rule must also apply when the recipient refreshes the Shared Link page.
+
+Example:
+
+1. Recipient opens a shared link.
+2. All panels begin closed.
+3. Recipient opens several categories.
+4. Recipient expands Pack Summary.
+5. Recipient refreshes the browser.
+
+Expected:
+
+- Same shared list reloads.
+- Same shared background remains.
+- Saved shared checkbox state remains.
+- All category panels return to closed.
+- Pack Summary returns to closed.
+- Weight Distribution returns to closed.
+
+Do not persist expanded/collapsed UI state across Shared Link reloads.
+
+==================================================
+5. CURRENT SESSION BEHAVIOR
+==================================================
+
+After the Shared Link loads, the recipient must still be able to use the interface normally.
+
+If the recipient:
+
+- Opens a category
+- Opens Pack Summary
+- Opens Weight Distribution
+
+those panels should remain open during the current session according to the existing UI behavior.
+
+Do NOT continually force panels closed while the user is interacting with the page.
+
+The automatic reset happens only on:
+
+- Initial Shared Link load
+- Browser refresh
+- Reopening the Shared Link
+
+==================================================
+6. DO NOT MODIFY THE OWNER'S SAVED FILE
+==================================================
+
+Resetting panel state is a viewer-side UI behavior only.
+
+It must NOT:
+
+- Save anything back to the owner's file.
+- Change the owner's category states.
+- Change checked items.
+- Change weights.
+- Change quantities.
+- Change categories.
+- Change the background.
+- Change the shared file.
+
+The owner should never see changes merely because another person opened or expanded panels in a Shared Link.
+
+==================================================
+7. PRESERVE TEMPORARY SHARED-LINK INTERACTION
+==================================================
+
+Preserve the current Shared Pack List temporary-session behavior.
+
+Where currently supported, recipients may:
+
+- Browse the list.
+- Expand/collapse categories.
+- Temporarily check/uncheck items.
+- Make allowed temporary session changes.
+- Print.
+- Preview.
+- Save their own copy where supported.
+
+Those temporary viewer interactions must still not alter the owner's saved original.
+
+Do not change permissions.
+
+==================================================
+8. SHARED LINK MUST NOT REPLACE PRIVATE LAST-ACTIVE FILE
+==================================================
+
+Prompt 022G established that opening a Shared Link must NOT replace the signed-in user's remembered private active file.
+
+Preserve that behavior.
+
+Example:
+
+User's private last-active file:
+
+"PCT Sierra 2026"
+
+User opens someone else's Shared Pack List link.
+
+Later they return to their private TrailWeigh workspace.
+
+Expected:
+
+"PCT Sierra 2026" remains their remembered private active file.
+
+Do not let Prompt 022H change that behavior.
+
+==================================================
+9. PRESERVE PROMPT 022F FOOTER FIX
+==================================================
+
+Prompt 022F fixed the Shared Link footer overlay and has been user verified.
+
+Do NOT regress it.
+
+The footer must continue to:
+
+- Remain in normal document flow.
+- Appear after all shared-page content.
+- Never float over the checklist.
+- Never cover Pack Summary, Shared Files, Scan Gear List, or other content.
+- Work correctly on long and short shared pages.
+
+Do not modify footer positioning unless absolutely necessary.
+
+==================================================
+10. INSPECT SHARED-LINK INITIALIZATION FIRST
+==================================================
+
+Before coding, inspect the current Shared Pack List implementation.
+
+Determine:
+
+- How category open/closed state is initialized.
+- How Pack Summary open/closed state is initialized.
+- How Weight Distribution state is initialized.
+- Whether any panel state is currently inherited from the owner.
+- Whether any panel state is stored in localStorage/sessionStorage.
+- Whether Shared Link UI state and private Checklist UI state share hooks/components.
+
+Reuse the clean initialization logic from Prompt 022G where practical.
+
+Do not duplicate large blocks of state-management code unnecessarily.
+
+However, do not couple Shared Link viewer behavior to private saved-file persistence.
+
+==================================================
+11. SHARED-LINK PRIVACY / PERMISSIONS
+==================================================
+
+Do not add private-owner controls to Shared Links.
+
+Shared viewers must still NOT gain access to:
+
+- Rename
+- Delete
+- Owner-only Locker controls
+- Private file-management controls
+
+Preserve current sharing permissions exactly.
+
+==================================================
+12. DO NOT CHANGE OTHER FEATURES
+==================================================
+
+Do not change:
+
+- About TrailWeigh
+- Help & How-To
+- How It Works
+- Private Checklist startup behavior from 022G
+- Gear calculations
+- Base Weight
+- Weight calculations
+- Quantity behavior
+- Move
+- Undo / Redo
+- Save
+- Save As
+- Locker
+- Rename
+- Delete
+- Scan Gear List
+- Preview
+- Print
+- Share
+- Shared Files
+- Save Your Own Copy
+- Background selection
+- Fit / Fill
+- Showcase
+- Authentication
+- Footer design
+- Existing saved user files
+
+This should be a focused Shared Link initialization change.
+
+==================================================
+13. TEST A — INITIAL SHARED LINK LOAD
+==================================================
+
+Use a shared list containing:
+
+- Several categories
+- Checked and unchecked gear
+- A recognizable background
+
+Before sharing, ensure some categories were open in the owner's view.
+
+Open the Shared Link in a recipient view.
+
+Expected:
+
+[ ] Correct shared file loads.
+
+[ ] Same shared background appears.
+
+[ ] Saved shared checked/unchecked items remain correct.
+
+[ ] All gear-category panels start collapsed.
+
+[ ] Pack Summary starts collapsed.
+
+[ ] Weight Distribution starts collapsed.
+
+[ ] No temporary menu/panel is unexpectedly open.
+
+==================================================
+14. TEST B — REFRESH
+==================================================
+
+1. Open a Shared Link.
+2. Expand several categories.
+3. Expand Pack Summary.
+4. Expand Weight Distribution.
+5. Refresh the browser.
+
+Expected:
+
+[ ] Shared file reloads correctly.
+
+[ ] Background is unchanged.
+
+[ ] Saved shared checkbox state is unchanged.
+
+[ ] All categories return to collapsed.
+
+[ ] Pack Summary returns to collapsed.
+
+[ ] Weight Distribution returns to collapsed.
+
+==================================================
+15. TEST C — CURRENT SESSION
+==================================================
+
+1. Open the Shared Link.
+2. Open several categories.
+
+Expected:
+
+[ ] Categories remain open while the recipient is using the page.
+
+[ ] TrailWeigh does not immediately force them closed.
+
+[ ] Existing Open / Close controls continue to work.
+
+==================================================
+16. TEST D — OWNER FILE PROTECTION
+==================================================
+
+In the Shared Link:
+
+1. Open/close panels.
+2. Temporarily check/uncheck allowed items.
+3. Leave the shared view.
+
+Then inspect the owner's saved original.
+
+Expected:
+
+[ ] Owner's saved list is unchanged.
+
+[ ] Owner's saved checkbox state is unchanged.
+
+[ ] Owner's background is unchanged.
+
+[ ] Owner's file contents are unchanged.
+
+==================================================
+17. TEST E — PRIVATE WORKSPACE ISOLATION
+==================================================
+
+1. Establish a private last-active file.
+2. Open a Shared Link.
+3. Return to the private TrailWeigh workspace.
+
+Expected:
+
+[ ] Original private last-active file is still restored.
+
+[ ] Shared link did not replace private active-file memory.
+
+[ ] Private 022G behavior remains correct:
+    - same private file
+    - same background
+    - all panels closed
+
+==================================================
+18. TEST F — FOOTER REGRESSION
+==================================================
+
+Use a long Shared Link page.
+
+Expected:
+
+[ ] Prompt 022F footer behavior remains correct.
+
+[ ] Footer does not stay pinned to the viewport.
+
+[ ] Footer does not overlay shared content.
+
+[ ] Footer appears naturally at the bottom of the page.
+
+==================================================
+19. DESKTOP / MOBILE
+==================================================
+
+Verify Shared Link startup behavior at:
+
+- Desktop/wide width
+- Narrow browser width
+- Mobile layout
+
+Expected at all widths:
+
+[ ] All panels initially closed.
+
+[ ] Background displays correctly.
+
+[ ] Shared file data remains intact.
+
+[ ] No overlapping controls.
+
+[ ] Footer remains correct.
+
+[ ] No horizontal overflow introduced.
+
+==================================================
+20. AUTOMATED TESTING
+==================================================
+
+Add or update focused tests where practical for:
+
+- Shared category initial collapsed state.
+- Pack Summary initial collapsed state.
+- Weight Distribution initial collapsed state.
+- Shared checkbox-state preservation.
+- Shared background preservation.
+- Refresh/reinitialization behavior.
+- Private last-active-file isolation.
+- Prompt 022F footer regression protection.
+
+Do not mark actual browser reload behavior PASS solely from source inspection if runtime testing is required.
+
+Use:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+==================================================
+21. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022H_REPORT.md
+
+Include:
+
+- Exact prompt ID/title:
+  Prompt 022H — Start Shared Links With All Panels Closed
+
+- Files changed
+- Existing Shared Link panel initialization discovered
+- Exact change made
+- How category state is initialized
+- How Pack Summary state is initialized
+- How Weight Distribution state is initialized
+- Confirmation saved shared checkbox state is preserved
+- Confirmation shared background is preserved
+- Confirmation temporary viewer interactions remain temporary
+- Confirmation owner's saved original is not changed
+- Confirmation private Prompt 022G behavior remains intact
+- Confirmation Prompt 022F footer behavior remains intact
+- Automated tests added/updated
+- Runtime/manual verification performed
+- PASS / FAIL / PARTIAL / NOT TESTED results
+- Failed attempts
+- Anything reverted
+- Anything still requiring user verification
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified Prompt 022H report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier workflow reports.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022H_REPORT.md
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short summary of the implementation
+6. Anything still requiring user verification
