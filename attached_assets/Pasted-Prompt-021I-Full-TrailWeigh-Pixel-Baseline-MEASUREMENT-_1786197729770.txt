@@ -1,0 +1,742 @@
+Prompt 021I — Full TrailWeigh Pixel Baseline — MEASUREMENT ONLY
+
+IMPORTANT:
+This prompt is DIAGNOSTIC ONLY.
+
+DO NOT CHANGE:
+- code
+- CSS
+- layout
+- components
+- data
+- storage
+- dependencies
+- configuration
+- user files
+
+The purpose is to create a comprehensive pixel-measurement baseline of the CURRENT working TrailWeigh interface so ChatGPT can calculate exact future adjustments.
+
+021H = USER-TESTED FAIL because its gutter adjustment produced no meaningful visible change.
+
+Do NOT attempt to fix 021H in this prompt.
+
+==================================================
+1. ZERO-CHANGE PROTECTION
+==================================================
+
+Before measuring:
+
+1. Create PRE_021I_MASTER_BACKUP.md.
+2. Record the current git/worktree state.
+3. Record all currently modified files, if any.
+4. Do NOT edit application files.
+5. Do NOT run formatters or auto-fixers.
+6. Do NOT update dependencies.
+7. Do NOT change saved user data.
+8. Do NOT reset localStorage, sessionStorage, IndexedDB, or Locker files.
+
+After measuring:
+
+- inspect final diff
+- application/source/CSS diff must be ZERO
+- if any application file changed, revert it before finishing
+
+021I FAILS if application code or styling changes.
+
+==================================================
+2. MEASUREMENT STANDARD
+==================================================
+
+Measure using the REAL rendered TrailWeigh DOM in the browser.
+
+Use:
+getBoundingClientRect()
+computed styles
+or equivalent browser inspection.
+
+Use CSS PIXELS as the primary unit.
+
+Also record:
+
+- browser name/version
+- viewport width
+- viewport height
+- browser zoom
+- window.devicePixelRatio
+- desktop breakpoint currently active
+- page URL/route
+- Light or Dark mode
+- signed-in/signed-out state
+
+Do NOT estimate dimensions from screenshots.
+
+When possible record:
+- x
+- y
+- width
+- height
+- left
+- right
+- top
+- bottom
+
+for each measured component.
+
+Also record relevant:
+- margin
+- padding
+- gap
+- column-gap
+- row-gap
+- border width
+- scrollbar width/gutter
+
+==================================================
+3. CREATE A COMPLETE DESKTOP PIXEL MAP
+==================================================
+
+Use the normal signed-in OWNER /checklist desktop view with a populated saved file.
+
+Measure the complete page structure.
+
+A. BROWSER / VIEWPORT
+Record:
+- viewport width/height
+- devicePixelRatio
+- browser zoom
+- document width/height
+- visible page width
+- scrollbar widths
+
+B. APP SHELL
+Measure:
+- full app container
+- header
+- header height
+- content area
+- content top offset
+- outer left padding
+- outer right padding
+- outer top padding
+- main content width
+
+C. HEADER
+Measure:
+- TrailWeigh logo/icon
+- TrailWeigh text block
+- New
+- Undo
+- Redo
+- Save
+- Reset
+- account/user control
+- horizontal spacing between each control
+- header inner padding
+
+D. TOP CHECKLIST CONTROL ROW
+Measure:
+- Open
+- Close
+- active filename pill
+- Hide
+- Preview
+- Imperial
+- Metric
+- Background Edit
+- Share
+
+For EACH control record:
+- x/y
+- width/height
+- horizontal gap to previous/next control
+- border radius
+- horizontal/vertical padding
+- font size
+- line height
+
+Also record:
+- centerline of each pill
+- overall row bounds
+
+==================================================
+4. MAIN TWO-COLUMN LAYOUT
+==================================================
+
+Record the complete grid geometry.
+
+Measure:
+
+- main grid wrapper
+- left checklist column
+- right sidebar column
+- sidebar width
+- actual grid-template-columns
+- column-gap
+- left/right wrapper padding
+
+Record exact location and dimensions of BOTH vertical scroll areas.
+
+==================================================
+5. THREE IMPORTANT VERTICAL GUTTERS
+==================================================
+
+These are especially important.
+
+Measure:
+
+G1 LEFT GUTTER:
+from the left content/scroll boundary to the left edge of the checklist/category cards.
+
+G2 MIDDLE GUTTER:
+from the right edge/scroll boundary of the checklist column to the left edge of the sidebar.
+
+G3 RIGHT GUTTER:
+from the right edge of the sidebar to the far-right scroll boundary.
+
+For each give exact CSS px.
+
+Also calculate:
+
+G2 - G3
+G1 - G2
+G1 - G3
+
+Record enough component coordinates that ChatGPT can independently verify these calculations.
+
+==================================================
+6. CHECKLIST / CATEGORY COLUMN
+==================================================
+
+Measure representative category cards and all unique internal geometry.
+
+For a populated category measure:
+
+- category card outer bounds
+- width
+- header height
+- header left/right padding
+- category chevron
+- category title
+- packed count
+- drag handle
+- Base control
+- Delete/category control
+- category total
+- header control gaps
+
+TABLE:
+Measure:
+- table left/right padding
+- TYPE column start/end/width
+- DESCRIPTION column start/end/width
+- MOVE column start/end/width
+- WEIGHT column start/end/width
+- QTY column start/end/width
+- TOTAL column start/end/width
+
+Measure:
+- checkbox size
+- item row height
+- item-row vertical padding
+- line separators
+- text indentation
+- Add Item row height/padding
+
+Measure:
+- vertical space between category cards
+- Add Category control bounds
+
+For repeated identical category cards, one representative measurement is sufficient ONLY if computed dimensions are identical.
+Document any category with different dimensions separately.
+
+==================================================
+7. CHECKLIST SCROLL AREA
+==================================================
+
+Measure:
+- checklist scroll container x/y/width/height
+- scrollbar/track position
+- scrollbar width
+- distance from category-card right edge to scrollbar
+- distance from scrollbar to sidebar
+- any wrapper padding around the scroll area
+
+This is critical for future gutter adjustments.
+
+==================================================
+8. RIGHT SIDEBAR — COMPLETE BASELINE
+==================================================
+
+Measure sidebar wrapper:
+- x/y
+- width/height
+- left/right available whitespace
+- distance from center scrollbar
+- distance from far-right scrollbar
+
+Then measure each panel:
+
+PACK SUMMARY
+- outer bounds
+- header height
+- internal padding
+- rows
+- row spacing
+- total section
+
+WEIGHT DISTRIBUTION
+- outer bounds
+- header height
+- chart bounds
+- legend bounds
+- Trail palette pill
+- internal padding
+
+SCAN GEAR LIST
+- outer bounds
+- heading/icon
+- DOWN chevron
+- description
+- upload/drop zone
+- internal padding
+- header/content divider
+- collapsed/expanded height if applicable
+
+LOCKER
+- outer bounds
+- header
+- count
+- subtitle
+- row height
+- filename position
+- date position
+- Open icon
+- Rename icon
+- Delete icon
+- icon spacing
+- internal padding
+
+Measure the vertical gap between:
+- Pack Summary → Weight Distribution
+- Weight Distribution → Scan Gear List
+- Scan Gear List → Locker
+
+==================================================
+9. SIDEBAR SCROLL AREA
+==================================================
+
+Measure:
+- sidebar scroll container
+- far-right scrollbar x-position
+- scrollbar width
+- sidebar right edge
+- exact clear distance from sidebar right edge to scrollbar
+- sidebar left edge
+- exact clear distance from center scrollbar to sidebar left edge
+
+This measurement must allow ChatGPT to calculate exactly how much the sidebar would need to move for equal left/right spacing.
+
+==================================================
+10. SHARE MENU
+==================================================
+
+Open Share.
+
+Measure:
+- menu outer bounds
+- menu width
+- distance from Share pill
+- each menu-row height
+- menu padding
+- icon-to-text gap
+
+Measure:
+
+Share Link
+“All your saved files”
+
+Share Pack List
+“Copy link, read-only”
+
+Download PDF
+
+Record font sizes/line heights for title/subtitle.
+
+Do NOT trigger actual sharing unless necessary to inspect the menu.
+
+==================================================
+11. BACKGROUND EDIT PANEL
+==================================================
+
+Open Background Edit without changing selections.
+
+Measure:
+- panel bounds
+- controls
+- theme selector
+- Fit/Fill
+- Darken/Fade controls
+- thumbnails
+- thumbnail size
+- gaps
+- Add controls
+- panel padding
+
+Do not alter saved background selections.
+
+==================================================
+12. PREVIEW MODAL
+==================================================
+
+Open Preview.
+
+Measure:
+- modal/window x/y/width/height
+- modal margins from viewport
+- header height
+- content padding
+
+Measure controls:
+- Share Pack List
+- Print
+- Close
+- widths/heights
+- gaps
+
+Measure Preview content:
+- TrailWeigh title
+- Pack Checklist title
+- date
+- summary box
+- Base Weight
+- Dog Pack
+- Grand Total
+- category header
+- TYPE
+- DESCRIPTION
+- WEIGHT columns
+- item rows
+- footer
+
+Close Preview afterward without changing data.
+
+==================================================
+13. NEW / EMPTY WORKSPACE
+==================================================
+
+Open a true New workspace only if it can be done without affecting saved files.
+
+Measure:
+- left column bounds
+- Add Category
+- sidebar
+- G1/G2/G3
+- top controls
+
+Confirm:
+- zero categories/items
+- Clear background
+- Light mode
+
+Do not save the New workspace.
+
+==================================================
+14. SHARED LINK VIEW
+==================================================
+
+Use a valid existing/current Share Link if available without altering owner data.
+
+Measure:
+- shared page overall layout
+- Shared Files panel
+- shared-file row dimensions
+- sidebar positioning
+- Save Your Own Copy
+- shared top controls
+- G1/G2/G3 equivalent
+- Shared Files/Open icon placement
+
+Do not make persistent changes.
+
+==================================================
+15. SHARE PACK LIST VIEW
+==================================================
+
+If an existing Pack List share is available, measure:
+
+- overall page
+- preview-style content
+- Print
+- margins
+- summary block
+- category/table widths
+
+Do not create or persist new data just for measurement if unnecessary.
+
+==================================================
+16. RESPONSIVE BASELINES
+==================================================
+
+Create measurement baselines at several viewport widths WITHOUT changing code.
+
+At minimum:
+
+DESKTOP:
+- current user's normal desktop viewport
+- 1440px wide if different
+
+TABLET:
+- 1024px
+- 768px
+
+PHONE:
+- 430px
+- 390px
+
+For each record:
+- viewport dimensions
+- breakpoint/state
+- main container width
+- outer padding
+- column/stack behavior
+- major panel widths
+- horizontal overflow yes/no
+- major control wrapping
+- major gaps
+
+Do not need every internal table measurement at every mobile width.
+Focus on major layout geometry.
+
+==================================================
+17. TYPOGRAPHY BASELINE
+==================================================
+
+Record computed:
+- font family
+- font size
+- font weight
+- line height
+
+for these representative elements:
+
+- header TrailWeigh
+- category title
+- item Type
+- item Description
+- item Weight
+- Qty
+- Total
+- sidebar panel heading
+- sidebar body text
+- pill text
+- Share-menu title
+- Share-menu subtitle
+- Preview title
+
+==================================================
+18. COLOR / BORDER / RADIUS BASELINE
+==================================================
+
+For future visual adjustments, record computed values for major component types:
+
+- category card background
+- sidebar panel background
+- border color
+- border width
+- border radius
+- pill radius
+- row divider
+- scrollbar track/thumb where accessible
+
+Do this for representative Dark and Light modes.
+
+Do not change themes.
+
+==================================================
+19. CREATE A PIXEL BASELINE SECTION
+==================================================
+
+Inside:
+
+workflow-reports/PROMPT_021I_REPORT.md
+
+create a major section titled:
+
+TRAILWEIGH PIXEL BASELINE
+
+Organize measurements into tables.
+
+Include at minimum:
+
+COMPONENT
+X
+Y
+WIDTH
+HEIGHT
+LEFT
+RIGHT
+TOP
+BOTTOM
+MARGIN
+PADDING
+GAP
+NOTES
+
+For gutters provide a dedicated table.
+
+For responsive views provide separate tables.
+
+The report must be detailed enough that ChatGPT can later answer questions such as:
+
+- “Move the sidebar exactly how many pixels?”
+- “How much should the grid gap change?”
+- “How wide is the Locker?”
+- “How far is Preview from the viewport edge?”
+- “How much space is between these two pills?”
+- “What should be adjusted to make two gutters equal?”
+
+==================================================
+20. CSS SOURCE MAPPING
+==================================================
+
+For every major measured region, identify the CSS/Tailwind/layout source responsible for the measurement.
+
+Examples:
+- component/file name
+- relevant className
+- Tailwind spacing class
+- CSS rule
+- grid definition
+
+DO NOT MODIFY IT.
+
+The purpose is to let a future prompt say exactly:
+“change X from Y to Z.”
+
+==================================================
+21. ZERO-DIFF VERIFICATION
+==================================================
+
+At completion:
+
+- run git diff / equivalent
+- prove no application source/CSS/config changes remain
+
+Allowed new/changed documentation files:
+- PRE_021I_MASTER_BACKUP.md
+- workflow-reports/PROMPT_021I_REPORT.md
+- TRAILWEIGH_COMPLETE_WORKFLOW.md as required for workflow documentation
+
+No application implementation files may remain modified because of 021I.
+
+==================================================
+22. TESTING
+==================================================
+
+This prompt does not require changing application behavior.
+
+Do NOT run destructive tests.
+
+Perform only non-destructive rendered inspection required for measurements.
+
+You may run existing non-destructive tests if useful, but do not modify test code merely for 021I.
+
+Most important acceptance requirement:
+ZERO app-code diff.
+
+==================================================
+23. REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021I_REPORT.md
+
+Include:
+
+- exact Prompt 021I
+- purpose
+- browser/environment information
+- viewport/zoom/devicePixelRatio
+- complete TRAILWEIGH PIXEL BASELINE
+- G1/G2/G3 measurements
+- all major component measurements
+- responsive measurements
+- typography
+- colors/borders/radii
+- CSS/Tailwind source mapping
+- measurement method used
+- measurement precision/limitations
+- zero-code-change verification
+- final diff result
+- any measurements that could not be obtained and why
+
+Append the diagnostic entry to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Record:
+
+021H = USER-TESTED FAIL
+021I = PIXEL BASELINE / DIAGNOSTIC — NO APP CHANGES
+
+Do not rewrite/truncate previous history.
+
+==================================================
+24. REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021I-report.zip
+
+Exactly these four Markdown files at ZIP ROOT:
+
+PROMPT_021I_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- ../ paths
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- source files
+- CSS files
+- screenshots
+- user data
+- credentials
+- backups
+- other ZIPs
+
+List ZIP entries before finishing.
+
+Exactly four root entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. confirmation NO application code/CSS was changed
+2. browser/viewport/zoom/devicePixelRatio used
+3. G1 left gutter
+4. G2 middle gutter
+5. G3 right gutter
+6. sidebar width and exact x-position
+7. center scrollbar position/width
+8. far-right scrollbar position/width
+9. major grid/container dimensions
+10. where the relevant dimensions originate in CSS/Tailwind
+11. confirmation complete pixel baseline is in PROMPT_021I_REPORT.md
+12. responsive viewport baselines captured
+13. final app-code diff = ZERO
+14. report path
+15. ZIP path
+16. exact four ZIP entries
+
+DO NOT recommend or implement the spacing correction yet.
+
+ChatGPT will review the measurement report and calculate the exact adjustment in the NEXT prompt.
