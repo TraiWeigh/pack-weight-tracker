@@ -1668,7 +1668,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               </div>
 
               {/* Scrollable sidebar content */}
-              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:px-3 lg:[scrollbar-gutter:stable]">
+              <div className="lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
               <div className="flex flex-col gap-4 py-2 pb-8">
                 <WeightSummary
                   data={data}

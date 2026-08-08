@@ -265,19 +265,27 @@ test('E1. ImportGearPanel no longer uses ChevronRight', () => {
     'ImportGearPanel must not use ChevronRight after 021G visual fix');
 });
 
-test('E2. ImportGearPanel uses ChevronDown for the toggle chevron', () => {
+test('E2. ImportGearPanel uses both ChevronDown and ChevronUp (021L: chevron now state-driven)', () => {
+  // 021L fixed the static chevron: expanded → ChevronUp, collapsed → ChevronDown
   assert.match(importPanel, /ChevronDown/,
-    'ImportGearPanel must use ChevronDown for the Scan Gear List toggle chevron');
+    'ImportGearPanel must use ChevronDown (collapsed state)');
+  assert.match(importPanel, /ChevronUp/,
+    'ImportGearPanel must use ChevronUp (expanded state) after 021L disclosure fix');
 });
 
-test('E3. ChevronDown is imported from lucide-react in ImportGearPanel', () => {
+test('E3. Both ChevronDown and ChevronUp are imported from lucide-react in ImportGearPanel', () => {
   assert.match(importPanel, /import\s*\{[^}]*ChevronDown[^}]*\}\s*from\s*['"]lucide-react['"]/,
     'ChevronDown must be imported from lucide-react in ImportGearPanel');
+  assert.match(importPanel, /import\s*\{[^}]*ChevronUp[^}]*\}\s*from\s*['"]lucide-react['"]/,
+    'ChevronUp must be imported from lucide-react in ImportGearPanel after 021L fix');
 });
 
-test('E4. Scan Gear List open/close state still present (behaviour unchanged)', () => {
+test('E4. Scan Gear List open/close state drives chevron (021L: same state as visibility)', () => {
   assert.match(importPanel, /const\s+\[open,\s*setOpen\]\s*=\s*useState/,
-    'ImportGearPanel open/close state must still exist (chevron is visual-only fix)');
+    'ImportGearPanel open/close state must still exist');
+  // Chevron must be conditional on the open state
+  assert.match(importPanel, /open\s*\?\s*<ChevronUp|open\s*\?\s*<ChevronDown/,
+    '021L: chevron must be conditional on the open state (not static)');
 });
 
 test('E5. Scan Gear List toggle button still present', () => {

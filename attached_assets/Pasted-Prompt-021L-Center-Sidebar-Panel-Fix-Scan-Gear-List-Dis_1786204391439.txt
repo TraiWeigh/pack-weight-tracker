@@ -1,0 +1,704 @@
+Prompt 021L — Center Sidebar Panel + Fix Scan Gear List Disclosure Chevron
+
+Create a Replit checkpoint/recovery point and PRE_021L_MASTER_BACKUP.md BEFORE changing anything.
+
+CURRENT USER-TESTED STATUS:
+
+021K MAIN SPACING:
+Improved. Preserve it.
+
+Remaining layout problem:
+The sidebar panel still sits too close to its RIGHT scrollbar.
+The visible RIGHT internal gutter is too narrow compared with the visible gutter on the LEFT side of the sidebar panel.
+
+SCAN GEAR LIST:
+Panel expands/collapses, but its disclosure chevron is incorrect.
+It is visually frozen pointing DOWN while the panel is expanded.
+
+This prompt has ONLY TWO authorized changes:
+
+1. Rebalance the sidebar panel's internal left/right gutters.
+2. Connect the Scan Gear List disclosure chevron to its actual expanded/collapsed state.
+
+Do not change anything else.
+
+==================================================
+TERMINOLOGY
+==================================================
+
+SIDEBAR PANEL:
+The dark panel containing Pack Summary, Weight Distribution, Scan Gear List, Locker/Shared Files.
+
+SIDEBAR SCROLLBAR:
+The far-right vertical scrollbar controlling the sidebar.
+
+LEFT INTERNAL GUTTER:
+Visible horizontal space between the sidebar panel's LEFT edge and the layout/scroll boundary immediately to its left.
+
+RIGHT INTERNAL GUTTER:
+Visible horizontal space between the sidebar panel's RIGHT edge and the sidebar scrollbar.
+
+DISCLOSURE CHEVRON:
+The small up/down icon indicating whether a collapsible panel will open or close.
+
+==================================================
+PART A — SIDEBAR INTERNAL GUTTER CORRECTION
+==================================================
+
+IMPORTANT:
+
+Preserve the improved main layout from 021K.
+
+DO NOT undo:
+- restored lg:pr-3
+- current category-column position
+- current outer-page spacing
+- current 365px sidebar column
+- current grid structure
+
+Do NOT make another category-column spacing correction.
+
+This change is specifically INSIDE the sidebar scrollable wrapper.
+
+==================================================
+CURRENT SIDEBAR STRUCTURE
+==================================================
+
+Inspect the actual current source before editing.
+
+021I identified the sidebar scrollable wrapper as using approximately:
+
+lg:px-3
+
+which creates:
+
+12px left padding
+12px right padding
+
+and the sidebar also uses:
+
+scrollbar-gutter: stable
+
+The scrollbar occupies reserved space on the RIGHT side.
+
+Because of the grid gap on the left and scrollbar reservation on the right, equal 12px internal padding does NOT produce visually equal gutters around the sidebar panel.
+
+The user's rendered screenshot confirms:
+- too much visible space on the LEFT side of the sidebar panel
+- too little visible space between the panel and RIGHT scrollbar
+
+==================================================
+AUTHORIZED SIDEBAR ADJUSTMENT
+==================================================
+
+First inspect and confirm that the current desktop sidebar wrapper still uses:
+
+lg:px-3
+
+or equivalent 12px left + 12px right horizontal padding.
+
+If confirmed, replace the DESKTOP horizontal padding with:
+
+LEFT = 4px
+RIGHT = 20px
+
+Equivalent Tailwind/custom CSS is acceptable.
+
+This transfers exactly 8px:
+
+OLD:
+left 12px
+right 12px
+
+NEW:
+left 4px
+right 20px
+
+TOTAL HORIZONTAL PADDING REMAINS:
+
+24px
+
+Therefore:
+- sidebar column width remains unchanged
+- panel usable width remains unchanged
+- the sidebar panel moves approximately 8px LEFT
+- right-side breathing room increases approximately 8px
+- left-side breathing room decreases approximately 8px
+
+This is intentional.
+
+==================================================
+WHY THIS CHANGE
+==================================================
+
+Do NOT enlarge the total sidebar gutter area.
+
+Redistribute the existing space.
+
+Conceptually:
+
+BEFORE:
+
+center scrollbar | larger space | SIDEBAR PANEL | small space | right scrollbar
+
+AFTER:
+
+center scrollbar | balanced space | SIDEBAR PANEL | balanced space | right scrollbar
+
+The goal is to center the visible sidebar PANEL between its surrounding scroll boundaries.
+
+==================================================
+IMPORTANT CONDITION
+==================================================
+
+Do not blindly apply the 4px/20px values if source inspection shows that:
+
+- lg:px-3 is no longer present
+- another wrapper now controls the panel position
+- 021K changed this structure
+
+If the structure differs, calculate the equivalent change that:
+
+1. transfers approximately 8px from the sidebar panel's LEFT side to its RIGHT side
+2. keeps TOTAL sidebar horizontal padding unchanged
+3. keeps sidebar width unchanged
+4. keeps panel usable width unchanged
+
+Document the actual values.
+
+==================================================
+DO NOT CHANGE
+==================================================
+
+Do NOT change:
+
+- lg:grid-cols-[1fr_365px]
+- 365px sidebar width
+- category-column width rules
+- lg:pr-3 on category scroll container
+- main outer padding
+- grid column gap
+- scrollbar-gutter: stable
+- panel widths
+- Pack Summary dimensions
+- Weight Distribution dimensions
+- Scan Gear List width
+- Locker width
+
+Do NOT use:
+
+- transform: translateX()
+- absolute positioning
+- negative margins
+- JavaScript positioning
+- viewport-specific hacks
+
+Use real padding/layout properties only.
+
+==================================================
+PART B — SCAN GEAR LIST DISCLOSURE CHEVRON
+==================================================
+
+CURRENT USER-TESTED FAILURE:
+
+Scan Gear List is EXPANDED but the disclosure chevron points DOWN.
+
+It appears frozen in the DOWN state.
+
+Correct behavior:
+
+COLLAPSED / CLOSED:
+ChevronDown
+
+EXPANDED / OPEN:
+ChevronUp
+
+The icon must always represent what will happen when the user clicks next:
+
+DOWN = panel can expand downward
+UP = panel can collapse upward
+
+==================================================
+TRACE THE REAL PANEL STATE
+==================================================
+
+Inspect ImportGearPanel.tsx and any parent component controlling its open/closed state.
+
+Find the EXISTING boolean/state/value that determines whether Scan Gear List content is currently:
+
+expanded
+or
+collapsed
+
+Do NOT create a second independent state just for the icon.
+
+The disclosure chevron MUST use the SAME state that controls visibility of the panel contents.
+
+Conceptually:
+
+if expanded:
+    ChevronUp
+else:
+    ChevronDown
+
+Use the project's existing React/state pattern.
+
+==================================================
+CHEVRON CLICK TEST
+==================================================
+
+Starting expanded:
+
+Scan Gear List content visible
+Chevron = UP
+
+Click panel header.
+
+Result:
+
+Scan Gear List content hidden
+Chevron = DOWN
+
+Click again.
+
+Result:
+
+Scan Gear List content visible
+Chevron = UP
+
+Repeat this cycle at least 3 times.
+
+The chevron must never become out of sync with the panel.
+
+==================================================
+PRESERVE OTHER WORKING CHEVRONS
+==================================================
+
+Do NOT modify working disclosure-chevron behavior in:
+
+- Gear categories
+- Pack Summary
+- Weight Distribution
+- Locker
+- Shared Files
+- other working accordion/collapsible panels
+
+Those already follow:
+
+expanded = UP
+collapsed = DOWN
+
+Do not refactor their implementation merely to make Scan Gear List match.
+
+==================================================
+DO NOT CHANGE TRUE DROPDOWN INDICATORS
+==================================================
+
+Do NOT modify arrows/chevrons belonging to true menus or selects such as:
+
+- MOVE
+- Save menu
+- Background Themes selector
+- Share menu
+- account menu
+- other select/dropdown controls
+
+They are not disclosure chevrons.
+
+==================================================
+ACCESSIBILITY
+==================================================
+
+The Scan Gear List collapsible control must accurately expose:
+
+expanded:
+aria-expanded="true"
+
+collapsed:
+aria-expanded="false"
+
+Use the existing clickable header/control.
+
+Do not change its click target or visual layout unnecessarily.
+
+==================================================
+GLOBAL REGRESSION PROTECTION
+==================================================
+
+ALL existing TrailWeigh work is protected.
+
+Smallest possible change set only.
+
+Before editing:
+
+1. Create Replit checkpoint/recovery point.
+2. Create PRE_021L_MASTER_BACKUP.md.
+3. Record expected application files to change.
+
+Expected application changes should be limited to approximately:
+
+- Checklist.tsx or the actual sidebar wrapper source
+- ImportGearPanel.tsx
+
+Only modify additional application files if absolutely required and document why.
+
+NO unrelated:
+
+- cleanup
+- refactoring
+- modernization
+- renaming
+- relocation
+- dependency changes
+- formatting sweeps
+- storage migrations
+
+==================================================
+DATA / STORAGE SECURITY
+==================================================
+
+Do NOT:
+
+- reset localStorage
+- reset sessionStorage
+- clear IndexedDB
+- migrate schemas
+- modify saved file IDs
+- rewrite Locker files
+- delete saved files
+- alter saved themes
+- alter custom photos
+- alter saved backgrounds
+- alter appearance persistence
+- alter chart palettes
+
+All existing user data must remain intact.
+
+==================================================
+PROTECT CURRENT FEATURES
+==================================================
+
+Preserve completely:
+
+NEW
+- blank list
+- Clear background
+- Light mode
+- no filename
+- no appearance leakage
+
+SAVE / LOCKER
+- Save
+- Save As
+- Saved [File Name]
+- Open
+- Rename
+- owner Delete confirmation without password
+- cross-tab behavior
+
+SHARE
+- Share Link
+- Share Pack List
+- Shared Files
+- shared-file opening
+- temporary viewer edits
+- Save Your Own Copy
+- no shared-viewer Rename/Delete
+- Download PDF
+
+IMPORTER
+- Scan Gear List upload
+- PDF
+- DOCX
+- XLSX
+- Numbers workflow
+- review/import behavior
+- automatic category creation
+- imported items unchecked
+- current mapping rules
+
+IMPORTANT:
+Changing the Scan Gear List disclosure chevron must NOT change importer functionality.
+
+BACKGROUND
+- themes
+- photos
+- Fill/Fit
+- Darken
+- Undo/Redo
+- persistence
+
+CHECKLIST
+- categories
+- items
+- MOVE
+- QTY
+- weights
+- calculations
+- Base Weight
+- Dog Pack
+- Pack Summary
+- Weight Distribution
+- palettes
+- Open/Close
+- Hide
+- Imperial/Metric
+- Add Category
+
+PREVIEW / PRINT
+- Preview
+- Share Pack List
+- Print
+- Close
+- PDF
+
+==================================================
+RESPONSIVE PROTECTION
+==================================================
+
+Sidebar gutter redistribution is DESKTOP ONLY unless the same imbalance is specifically confirmed at another breakpoint.
+
+Do not force:
+
+4px left / 20px right
+
+onto stacked mobile layouts.
+
+Verify:
+
+1024px+
+desktop correction active
+
+768px
+existing tablet behavior preserved
+
+430px
+existing phone behavior preserved
+
+390px
+existing phone behavior preserved
+
+No new:
+- horizontal overflow
+- clipping
+- panel compression
+- control overlap
+
+==================================================
+MANDATORY VISUAL VERIFICATION
+==================================================
+
+Render the sidebar after the correction.
+
+Confirm:
+
+1. Sidebar panel visibly has MORE space between its RIGHT edge and scrollbar.
+2. Sidebar panel visibly moves slightly LEFT.
+3. Left/right surrounding spaces look substantially more balanced.
+4. Sidebar width did not change.
+5. Panel width did not change.
+6. Main category layout from 021K did not move.
+
+For Scan Gear List verify screenshots/rendered state for BOTH:
+
+EXPANDED:
+ChevronUp
+
+COLLAPSED:
+ChevronDown
+
+==================================================
+MEASUREMENT / SOURCE VERIFICATION
+==================================================
+
+Because Replit cannot reliably access the authenticated owner DOM in automated Chromium, do NOT invent owner-page pixel measurements.
+
+For this prompt report:
+
+SOURCE VALUES before/after:
+- sidebar left padding
+- sidebar right padding
+- total horizontal padding
+- sidebar width
+- grid gap
+- category lg:pr-3 status
+
+Clearly label source-derived values as SOURCE VALUES.
+
+Do not label them as measured DOM pixels unless they were genuinely measured from the rendered authenticated page.
+
+The user's screenshot is the final authority for visual centering.
+
+==================================================
+AUTOMATED TESTING
+==================================================
+
+Run:
+
+1. focused sidebar/layout tests
+2. focused Scan Gear List panel tests
+3. importer tests
+4. COMPLETE TrailWeigh regression suite
+
+Add/update a focused test proving:
+
+Scan Gear List expanded:
+ChevronUp
+
+Scan Gear List collapsed:
+ChevronDown
+
+and proving the icon follows the same state as panel visibility.
+
+Report exact:
+- commands
+- passed
+- failed
+- skipped
+
+==================================================
+FAIL CONDITIONS
+==================================================
+
+021L FAILS if:
+
+- sidebar right gutter does not visibly increase
+- sidebar panel width changes unexpectedly
+- category-column spacing from 021K changes
+- sidebar column width changes
+- scrollbar behavior changes
+- Scan Gear List chevron remains static
+- chevron state differs from panel state
+- importer behavior changes
+- another working disclosure chevron breaks
+- true dropdown indicators are changed
+- saved user data changes
+- unrelated code changes remain
+
+==================================================
+USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Record:
+
+021K spacing = USER-TESTED PARTIAL
+021J/021K other disclosure chevrons = USER-TESTED PASS
+Scan Gear List disclosure chevron = USER-TESTED FAIL
+021L = NOT USER-VERIFIED
+
+User must visually verify:
+
+1. increased right gutter
+2. sidebar centering
+3. expanded Scan Gear List = UP
+4. collapsed Scan Gear List = DOWN
+
+==================================================
+REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021L_REPORT.md
+
+Include:
+
+- exact Prompt 021L
+- checkpoint created
+- starting source values
+- sidebar left padding before/after
+- sidebar right padding before/after
+- total sidebar padding before/after
+- sidebar width before/after
+- exact source file/class changed
+- confirmation 021K category spacing preserved
+- Scan Gear List state source identified
+- chevron implementation before
+- chevron implementation after
+- expanded test
+- collapsed test
+- importer regression
+- responsive regression
+- COMPLETE regression totals
+- files changed
+- final diff inspection
+- unrelated changes reverted
+- data/storage protection confirmation
+- acceptance checklist PASS/FAIL/PARTIAL/NOT TESTED
+- unresolved issues
+- exact user visual tests required
+
+Append to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Record:
+
+021K SPACING = USER-TESTED PARTIAL
+021K MAIN SPACING IMPROVEMENT = PRESERVED
+OTHER DISCLOSURE CHEVRONS = USER-TESTED PASS
+SCAN GEAR LIST DISCLOSURE CHEVRON = USER-TESTED FAIL
+021L = NOT USER-VERIFIED
+
+Do not truncate prior workflow history.
+
+==================================================
+REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021L-report.zip
+
+Exactly these four Markdown files at ZIP ROOT:
+
+PROMPT_021L_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- ../ paths
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- source files
+- tests
+- screenshots
+- backup files
+- user data
+- credentials
+- other ZIPs
+
+List ZIP contents before finishing.
+
+Exactly four root entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. checkpoint/recovery created
+2. sidebar padding source identified
+3. sidebar left padding before/after
+4. sidebar right padding before/after
+5. total horizontal padding before/after
+6. confirmation sidebar width unchanged
+7. confirmation category layout from 021K unchanged
+8. Scan Gear List state variable/control identified
+9. confirmation expanded = ChevronUp
+10. confirmation collapsed = ChevronDown
+11. confirmation importer unchanged
+12. files changed
+13. final diff result
+14. no user data/storage changed
+15. responsive results
+16. COMPLETE regression totals
+17. report path
+18. ZIP path
+19. exact four ZIP entries
+20. clearly state USER visual verification is still required

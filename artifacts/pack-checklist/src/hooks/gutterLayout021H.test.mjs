@@ -136,9 +136,11 @@ test('E2. Left column scrollable lg:pr-3 RESTORED (021K — user-tested 021J gut
     '021K: lg:pr-3 must be restored on left column scrollable div (021J removal made layout worse)');
 });
 
-test('E3. Sidebar scrollable lg:px-3 preserved', () => {
-  assert.match(checklist, /lg:flex-1 lg:overflow-y-auto lg:min-h-0 lg:px-3 lg:\[scrollbar-gutter:stable\]/,
-    'Sidebar scrollable content internal padding (lg:px-3) must be preserved');
+test('E3. Sidebar scrollable uses lg:pl-1 lg:pr-5 (021L gutter rebalance: 4px left, 20px right)', () => {
+  // 021L authorized change: sidebar internal padding redistributed from equal 12px/12px
+  // to asymmetric 4px left / 20px right to compensate for scrollbar-gutter reserve on right.
+  assert.match(checklist, /lg:pl-1 lg:pr-5 lg:\[scrollbar-gutter:stable\]/,
+    '021L: sidebar scrollable must use lg:pl-1 (4px) left and lg:pr-5 (20px) right padding');
 });
 
 test('E4. Sidebar button-row lg:px-3 preserved', () => {
