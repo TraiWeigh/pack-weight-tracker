@@ -28,7 +28,7 @@ export interface SharePayload {
    * single Pack List share (Preview-style read-only view).
    * Absent on pre-021E links — treated as 'locker' for backward compatibility.
    */
-  type?: 'locker' | 'pack-list' | 'checkable';
+  type?: 'locker' | 'pack-list';
   data: PackState;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;

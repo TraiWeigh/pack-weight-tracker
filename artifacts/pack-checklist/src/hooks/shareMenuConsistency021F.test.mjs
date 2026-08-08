@@ -217,26 +217,33 @@ test('O. Normal owner sidebar order: WeightSummary → WeightDistribution → Im
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nP–R. Shared view isolation (root cause documentation)');
 
-test('P. SharedChecklistPage Share button shows only Download PDF (read-only)', () => {
-  // SharedChecklistPage comment says "PDF download only"
-  assert.match(sharedPage, /PDF download only/,
-    'SharedChecklistPage Share button comment must say "PDF download only"');
+test('P. SharedChecklistPage Share menu has recipient-appropriate actions (updated by 022I)', () => {
   // handleSharePdf function must exist in SharedChecklistPage
   assert.match(sharedPage, /handleSharePdf/,
     'SharedChecklistPage must define handleSharePdf for its Download PDF button');
-  // SharedChecklistPage Share dropdown must NOT include Share Link or Share Pack List options
-  // (those are owner-only; shared-view offers only PDF)
-  const sharedDropdown = sharedPage.slice(
-    sharedPage.indexOf('handleSharePdf'),
-    sharedPage.indexOf('handleSharePdf') + 300
+  // SharedChecklistPage must NOT use owner-only share handlers (handleShareLocker is private-checklist-only)
+  assert.ok(
+    !sharedPage.includes('handleShareLocker'),
+    'SharedChecklistPage must not have handleShareLocker — that is private-checklist-only'
   );
-  assert.doesNotMatch(sharedDropdown, /handleShareLocker|handleSharePackList/,
-    'SharedChecklistPage Share dropdown must not include owner Share Link or Share Pack List handlers');
+  // 022I: recipient share menu must now contain multiple share options
+  assert.match(sharedPage, /Share TrailWeigh List/,
+    'SharedChecklistPage Share menu must contain Share TrailWeigh List (022I)');
+  assert.match(sharedPage, /Share Checkable Packing List/,
+    'SharedChecklistPage Share menu must contain Share Checkable Packing List (022I)');
 });
 
-test('Q. SharedChecklistPage Share comment documents read-only intent', () => {
-  assert.match(sharedPage, /PDF download only.*recipients can.t re-share/s,
-    'SharedChecklistPage Share button comment must document read-only intent');
+test('Q. SharedChecklistPage Share button is for recipients only (no owner-only controls)', () => {
+  // Must not expose owner handlers
+  assert.ok(
+    !sharedPage.includes('handleShareLocker'),
+    'SharedChecklistPage must not include handleShareLocker (owner-only)'
+  );
+  // handleSharePdf, handleShareTrailWeighList, handleShareCheckableList are all recipient-safe
+  assert.match(sharedPage, /handleShareTrailWeighList/,
+    'SharedChecklistPage must have handleShareTrailWeighList for re-sharing current link');
+  assert.match(sharedPage, /handleShareCheckableList/,
+    'SharedChecklistPage must have handleShareCheckableList for packing-list view');
 });
 
 test('R. Owner /checklist Share is a separate code path (different component)', () => {

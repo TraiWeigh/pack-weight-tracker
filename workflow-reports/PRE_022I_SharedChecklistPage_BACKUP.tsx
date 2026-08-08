@@ -29,11 +29,10 @@ import {
   Background, PRESETS, getFullUrl,
 } from '../components/BackgroundPicker';
 import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib/bgPhotoStore';
-import { buildShareURL } from '../lib/shareLink';
 import type { SharePayload, SharedLockerFile } from '../lib/shareLink';
 import Footer from '@/components/Footer';
 import {
-  Tent, Printer, Share2, FileDown, Link, Plus, Check, X,
+  Tent, Printer, Share2, FileDown, Plus, Check, X,
   User, UserPlus, LogOut, Info, FolderOpen, ChevronDown, ChevronUp,
 } from 'lucide-react';
 
@@ -83,7 +82,7 @@ function SharedLockerPanel({
   activeId: string | null;
   onOpen: (file: SharedLockerFile) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
@@ -557,31 +556,10 @@ function SharedChecklistContent({
 
   const [showPreview, setShowPreview] = useState(false);
 
-  // ── Share ─────────────────────────────────────────────────────────────────
+  // ── Share PDF ─────────────────────────────────────────────────────────────
 
-  const [sharing,          setSharing]          = useState(false);
-  const [showShareMenu,    setShowShareMenu]     = useState(false);
-  const [copiedLink,       setCopiedLink]        = useState(false);
-  const [copiedCheckable,  setCopiedCheckable]   = useState(false);
-
-  /** Copy text to clipboard with textarea fallback for older browsers. */
-  async function copyUrlToClipboard(url: string): Promise<boolean> {
-    try {
-      await navigator.clipboard.writeText(url);
-      return true;
-    } catch {
-      try {
-        const el = document.createElement('textarea');
-        el.value = url;
-        el.style.cssText = 'position:fixed;pointer-events:none;opacity:0';
-        document.body.appendChild(el);
-        el.focus(); el.select();
-        const ok = document.execCommand('copy');
-        document.body.removeChild(el);
-        return ok;
-      } catch { return false; }
-    }
-  }
+  const [sharing, setSharing] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const handleSharePdf = () => {
     setSharing(true);
@@ -590,54 +568,6 @@ function SharedChecklistContent({
     } finally {
       setSharing(false);
     }
-  };
-
-  /**
-   * Share TrailWeigh List — passes along the current shared-link URL so
-   * another person can open the same full shared-list experience.
-   * Uses the browser Web Share API when available; falls back to clipboard copy.
-   * Does NOT create a new owner record or escalate permissions.
-   */
-  const handleShareTrailWeighList = async () => {
-    const url = window.location.href;
-    const title = snapshot.name ? `${snapshot.name} — TrailWeigh` : 'TrailWeigh Pack List';
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url });
-      } else {
-        await copyUrlToClipboard(url);
-        setCopiedLink(true);
-        setTimeout(() => setCopiedLink(false), 2000);
-      }
-    } catch {
-      // User dismissed the share sheet or clipboard failed — silently ignore
-    }
-  };
-
-  /**
-   * Share Checkable Packing List — generates a simple, focused link that opens
-   * a clean gear checklist without Scan Gear List or background controls.
-   * The owner's saved original is never modified.
-   */
-  const handleShareCheckableList = async () => {
-    const payload: SharePayload = {
-      type:          'checkable',
-      data:          store.items,
-      categoryOrder: store.order,
-      categoryMeta:  store.meta,
-      background:    background ?? null,
-      bgFade,
-      bgTone,
-      bgSize,
-      unit:          system,
-      name:          snapshot.name ?? undefined,
-      // No lockerFiles — checkable list is single-file, focused view
-    };
-    const url = await buildShareURL(payload);
-    const ok = await copyUrlToClipboard(url);
-    if (!ok) window.prompt('Copy this link:', url);
-    setCopiedCheckable(true);
-    setTimeout(() => setCopiedCheckable(false), 2000);
   };
 
   // ── Save Your Own Copy ────────────────────────────────────────────────────
@@ -1052,30 +982,27 @@ function SharedChecklistContent({
             <div className="lg:col-span-4 order-first lg:order-last">
               {/* Pinned action bar */}
               <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
-                {/* Background picker — hidden in checkable-packing-list mode (simplified view) */}
-                {snapshot.type !== 'checkable' && (
-                  <div ref={bgPickerRef}>
-                    <BackgroundPickerButton onClick={() => setBgPickerOpen(o => !o)} active={!!background} panelOpen={bgPickerOpen} />
-                    <BackgroundPickerPanel
-                      open={bgPickerOpen}
-                      onClose={() => setBgPickerOpen(false)}
-                      background={background}
-                      onBackgroundChange={bg => {
-                        setBackground(bg);
-                        // In shared mode: do NOT write to localStorage
-                      }}
-                      bgFade={bgFade}
-                      onBgFadeChange={setBgFade}
-                      bgTone={bgTone}
-                      onBgToneChange={setBgTone}
-                      bgSize={bgSize}
-                      onBgSizeChange={setBgSize}
-                      containerRef={bgPickerRef as React.RefObject<HTMLDivElement>}
-                      onShowcase={undefined}
-                      isShowcaseBlocked={true}
-                    />
-                  </div>
-                )}
+                <div ref={bgPickerRef}>
+                  <BackgroundPickerButton onClick={() => setBgPickerOpen(o => !o)} active={!!background} panelOpen={bgPickerOpen} />
+                  <BackgroundPickerPanel
+                    open={bgPickerOpen}
+                    onClose={() => setBgPickerOpen(false)}
+                    background={background}
+                    onBackgroundChange={bg => {
+                      setBackground(bg);
+                      // In shared mode: do NOT write to localStorage
+                    }}
+                    bgFade={bgFade}
+                    onBgFadeChange={setBgFade}
+                    bgTone={bgTone}
+                    onBgToneChange={setBgTone}
+                    bgSize={bgSize}
+                    onBgSizeChange={setBgSize}
+                    containerRef={bgPickerRef as React.RefObject<HTMLDivElement>}
+                    onShowcase={undefined}
+                    isShowcaseBlocked={true}
+                  />
+                </div>
                 <button
                   onClick={() => window.print()}
                   className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
@@ -1083,7 +1010,7 @@ function SharedChecklistContent({
                   <Printer className="w-3.5 h-3.5" />
                   Print
                 </button>
-                {/* Share pill — full sharing menu for recipients */}
+                {/* Share pill — PDF download only; recipients can't re-share via Copy Link here */}
                 <div className="relative">
                   <button
                     onClick={() => setShowShareMenu(o => !o)}
@@ -1095,35 +1022,7 @@ function SharedChecklistContent({
                   {showShareMenu && (
                     <>
                       <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />
-                      <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[200px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
-
-                        {/* Share TrailWeigh List — re-shares the current URL (same snapshot, no new permissions) */}
-                        <button
-                          onClick={async () => { await handleShareTrailWeighList(); setShowShareMenu(false); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
-                        >
-                          <Share2 className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                          <div className="text-left">
-                            <div className="font-medium">{copiedLink ? 'Copied!' : 'Share TrailWeigh List'}</div>
-                            <div className="text-[11px] text-muted-foreground">Full shared-list experience</div>
-                          </div>
-                        </button>
-
-                        {/* Share Checkable Packing List — focused, simple checklist link */}
-                        <button
-                          onClick={async () => { await handleShareCheckableList(); setShowShareMenu(false); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
-                        >
-                          <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-                          <div className="text-left">
-                            <div className="font-medium">{copiedCheckable ? 'Copied!' : 'Share Checkable Packing List'}</div>
-                            <div className="text-[11px] text-muted-foreground">Simple checklist, copy link</div>
-                          </div>
-                        </button>
-
-                        <div className="my-1 border-t border-border" />
-
-                        {/* Download PDF */}
+                      <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
                         <button
                           onClick={() => { handleSharePdf(); setShowShareMenu(false); }}
                           disabled={sharing}
@@ -1132,7 +1031,6 @@ function SharedChecklistContent({
                           <FileDown className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                           {sharing ? 'Preparing…' : 'Download PDF'}
                         </button>
-
                       </div>
                     </>
                   )}
@@ -1147,14 +1045,10 @@ function SharedChecklistContent({
                     categoryOrder={store.order}
                     categoryMeta={store.meta}
                   />
-                  {/* Scan Gear List — hidden in checkable-packing-list mode (simplified view) */}
-                  {snapshot.type !== 'checkable' && (
-                    <ImportGearPanel
-                      categoryOrder={store.order}
-                      onAddItem={(category, prefill) => addItem(category, prefill)}
-                      defaultOpen={false}
-                    />
-                  )}
+                  <ImportGearPanel
+                    categoryOrder={store.order}
+                    onAddItem={(category, prefill) => addItem(category, prefill)}
+                  />
                   {/* View-only Shared Locker — browse files, no Rename/Delete (lower panel, same position as owner Locker) */}
                   {snapshot.lockerFiles && snapshot.lockerFiles.length > 0 && (
                     <SharedLockerPanel

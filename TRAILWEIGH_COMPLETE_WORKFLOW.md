@@ -5077,3 +5077,30 @@ Replace the old flat 6-card How It Works page with a short, clear 3-section acco
 **Files changed:** `SharedChecklistPage.tsx` (1 line), `sharedPanels022H.test.mjs` (NEW, 37 tests), `package.json`  
 **Report:** `workflow-reports/PROMPT_022H_REPORT.md`  
 **ZIP:** `workflow-reports/trailweigh-022H-report.zip`
+
+---
+
+## Prompt 022I — Complete Shared-Link Collapse & Share Behavior
+
+**Date:** 2026-08-08 | **Status:** COMPLETE ✅ | **Tests:** 41 passed, 0 failed
+
+**Goal:** Fix two failures found during 022H user testing: Scan Gear List and Shared Files remained expanded on shared-link load, and the Share button showed only "Download PDF".
+
+**Why 022H missed them:** `ImportGearPanel` and `SharedLockerPanel` manage their own independent `open` state — neither is controlled by the `allOpen / forceOpen` mechanism that 022H fixed for gear categories.
+
+**Panel fixes:**
+- `SharedLockerPanel.open`: `useState(true)` → `useState(false)` (Shared Files now starts collapsed)
+- `ImportGearPanel`: added `defaultOpen?: boolean` prop (defaults to `true` — private Checklist unchanged); `SharedChecklistPage` passes `defaultOpen={false}` so Scan Gear List starts collapsed in shared-link context
+
+**Share menu (was PDF-only, now three actions):**
+1. **Share TrailWeigh List** — shares `window.location.href` via Web Share API or clipboard copy; no new snapshot created
+2. **Share Checkable Packing List** — generates a `type: 'checkable'` URL; simplified view hides Scan Gear List and background picker button; gear data, checked items, and background preserved
+3. **Download PDF** — existing behavior unchanged
+
+**Checkable mode (`type: 'checkable'` in SharePayload):** added to `shareLink.ts` type union; SharedChecklistPage hides ImportGearPanel and BackgroundPickerButton when this type is detected.
+
+**Stale tests updated:** `shareMenuConsistency021F.test.mjs` (P, Q — PDF-only assertions), `sidebarGutter021L.test.mjs` (C9 — hard-coded `useState(true)` assertion).
+
+**Files changed:** `SharedChecklistPage.tsx`, `ImportGearPanel.tsx`, `shareLink.ts`, `sharedCollapse022I.test.mjs` (NEW, 41 tests), `shareMenuConsistency021F.test.mjs`, `sidebarGutter021L.test.mjs`, `package.json`  
+**Report:** `workflow-reports/PROMPT_022I_REPORT.md`  
+**ZIP:** `workflow-reports/trailweigh-022I-report.zip`

@@ -1,0 +1,683 @@
+PROMPT 022I — COMPLETE SHARED-LINK COLLAPSE & SHARE BEHAVIOR
+
+GOAL
+
+Correct two problems found during USER TESTING of Prompt 022H on the Shared Link / Shared Pack List page.
+
+PROBLEM 1:
+Not every collapsible panel starts closed.
+
+Gear-category panels now start closed, but at least these panels were still visibly expanded:
+
+- Scan Gear List
+- Shared Files
+
+PROBLEM 2:
+The Shared Link page's Share button currently opens a menu containing only:
+
+"Download PDF"
+
+That is incomplete Share behavior.
+
+A PDF download is an export action. It must not be the only action presented under Share.
+
+This prompt must:
+
+1. Make EVERY applicable collapsible panel on the Shared Link page start closed.
+2. Correct the Shared Link Share menu so actual sharing options are available.
+3. Preserve the working behavior from Prompts 022F, 022G, and the parts of 022H that already passed.
+
+==================================================
+1. USER-VERIFIED 022H FAILURE
+==================================================
+
+The user tested Prompt 022H in the browser.
+
+Observed result:
+
+WORKING:
+- Gear-category panels start collapsed.
+- Pack Summary starts collapsed.
+
+NOT WORKING:
+- Scan Gear List remained expanded.
+- Shared Files remained expanded.
+- Share displayed only "Download PDF."
+
+Treat the browser recording/user test as authoritative.
+
+Do not mark 022I complete merely because the existing 022H source-level tests pass.
+
+==================================================
+2. INSPECT EVERY COLLAPSIBLE PANEL
+==================================================
+
+Before making changes, inventory EVERY collapsible/disclosure panel rendered on:
+
+SharedChecklistPage
+
+Do not assume that the top-level "allOpen" state controls every panel.
+
+Inspect child components for their own independent state, including at minimum:
+
+- Gear categories
+- Pack Summary
+- Weight Distribution
+- Scan Gear List / ImportGearPanel
+- Shared Files / SharedLockerPanel
+- Any other sidebar accordion/collapsible panel
+- Any other visible disclosure panel rendered on SharedChecklistPage
+
+For each panel, document:
+
+- Component name
+- State variable controlling open/closed state
+- Current initial value
+- Required initial value on Shared Link load
+
+==================================================
+3. REQUIRED SHARED-LINK INITIAL STATE
+==================================================
+
+Whenever a Shared Link is first opened or refreshed:
+
+ALL applicable collapsible panels must start CLOSED.
+
+This includes:
+
+[ ] All gear categories
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Shared Files
+[ ] Any other collapsible checklist/sidebar panel found during inspection
+
+Also begin with temporary UI closed:
+
+[ ] Share menu
+[ ] Background panel/picker
+[ ] Save Your Own Copy dialog
+[ ] Preview
+[ ] User menu
+[ ] Temporary dropdown/popover menus
+[ ] Other temporary dialogs
+
+The purpose is a clean Shared Link starting view.
+
+==================================================
+4. SCAN GEAR LIST
+==================================================
+
+The Scan Gear List panel currently appears expanded when the shared link opens.
+
+Inspect ImportGearPanel or whatever component currently renders Scan Gear List.
+
+On Shared Link load:
+
+Scan Gear List must be COLLAPSED.
+
+Requirements:
+
+- Header remains visible.
+- User can click the entire Scan Gear List header/title row to expand it.
+- User can collapse it again.
+- After the user expands it, it stays open normally during that active session.
+- Refreshing/reopening the shared link returns it to collapsed.
+
+IMPORTANT:
+
+Do not remove Scan Gear List merely to satisfy this requirement.
+
+Do not change its import behavior or supported file formats.
+
+If ImportGearPanel is also used by the private Checklist, avoid unintentionally changing private behavior unless the private workspace already requires the same collapsed startup behavior from Prompt 022G.
+
+Prefer a clean prop/default mechanism if the component needs different initialization in different contexts.
+
+==================================================
+5. SHARED FILES
+==================================================
+
+The current SharedLockerPanel in SharedChecklistPage has its own open state.
+
+The 022H report/source shows behavior equivalent to:
+
+const [open, setOpen] = useState(true);
+
+That causes Shared Files to start expanded even though gear categories are closed.
+
+Correct it so:
+
+- Shared Files starts COLLAPSED.
+- Its title/header remains visible.
+- Clicking its header expands it.
+- Clicking again collapses it.
+- It works normally during the active session.
+- Refresh/reopen returns it to collapsed.
+
+Do not remove:
+
+- Shared file count
+- Browse functionality
+- File switching
+- Existing view-only permissions
+
+Shared viewers must still NOT receive Rename or Delete controls.
+
+==================================================
+6. DO NOT CONFUSE COLLAPSE WITH DATA RESET
+==================================================
+
+Collapsing panels must not change:
+
+- Gear items
+- Checked/unchecked item state supplied by the shared snapshot
+- Weights
+- Quantities
+- Categories
+- Background
+- Active shared file
+- Shared Files contents
+- Owner data
+
+This is UI state only.
+
+Required result:
+
+SAME SHARED FILE
++
+SAME BACKGROUND
++
+SAME SAVED GEAR STATE
++
+EVERY PANEL CLOSED
+
+==================================================
+7. CORRECT THE SHARE BUTTON
+==================================================
+
+The Shared Link page currently has a Share button whose menu contains only:
+
+Download PDF
+
+This is not sufficient.
+
+Inspect:
+
+- The private Checklist Share behavior.
+- Existing share-link generation utilities.
+- Existing Web Share / clipboard utilities, if any.
+- Existing shared snapshot/link architecture.
+- Current PDF export behavior.
+
+Reuse established TrailWeigh sharing infrastructure where practical.
+
+Do not create a redundant second sharing architecture if an existing one can be reused safely.
+
+==================================================
+8. REQUIRED SHARE MENU
+==================================================
+
+On a Shared Link page, clicking Share should present clear actions for actual sharing.
+
+The menu should include these concepts:
+
+A. SHARE TRAILWEIGH LIST
+B. SHARE CHECKABLE PACKING LIST
+C. DOWNLOAD PDF
+
+Use concise user-facing labels appropriate to the current TrailWeigh UI.
+
+For example:
+
+Share TrailWeigh List
+Share Checkable Packing List
+Download PDF
+
+If a more consistent existing label is already used elsewhere in TrailWeigh, use the established wording.
+
+==================================================
+9. SHARE TRAILWEIGH LIST
+==================================================
+
+"Share TrailWeigh List" should allow the recipient to pass along the current Shared Link so another person can open the same TrailWeigh shared-list experience.
+
+Preferred behavior:
+
+- Use the existing current shared URL/token.
+- Do NOT create a new owner record merely because a recipient re-shares an existing shared link.
+- Preserve the immutable/shared-snapshot ownership model.
+- Do not grant additional permissions.
+
+Use the best supported browser sharing behavior already available in TrailWeigh.
+
+Where appropriate:
+
+1. Use the browser-native Web Share API when available.
+2. Otherwise provide a Copy Link fallback.
+
+Provide clear success feedback such as:
+
+"Link copied"
+
+or the existing TrailWeigh equivalent.
+
+Do not expose internal IDs/tokens in visible explanatory text beyond the normal URL.
+
+==================================================
+10. SHARE CHECKABLE PACKING LIST
+==================================================
+
+Provide a distinct sharing option for users who want to share JUST A SIMPLE CHECKABLE PACKING LIST rather than the full TrailWeigh application view.
+
+This is an intended TrailWeigh feature and must not be represented merely as a PDF.
+
+The shared checkable packing list should:
+
+- Show the relevant gear-list item descriptions.
+- Preserve the owner's/shared snapshot's initial checked/selected items as appropriate to the packing list.
+- Allow the recipient to check/uncheck items locally while packing.
+- Keep those recipient changes temporary.
+- Never modify the owner's saved original.
+- Be usable without exposing owner-only file-management controls.
+- Be printable.
+- Reset temporary recipient checkbox changes according to the current shared-session model on refresh/reopen unless an existing intentional viewer persistence mechanism says otherwise.
+
+The purpose is a straightforward packing checklist.
+
+Do not make the recipient navigate through the full gear-management interface merely to check off packed items.
+
+==================================================
+11. CHECKABLE PACKING LIST — KEEP IT SIMPLE
+==================================================
+
+The "just the checkable packing list" view should focus on packing.
+
+Do not expose unnecessary editing/management controls such as:
+
+- Rename
+- Delete
+- Owner Locker management
+- Gear-category editing controls
+- Move
+- Weight-editing fields
+- Add Item
+- Scan Gear List
+- Background editing controls
+
+Unless an existing approved design already requires a specific control.
+
+The checkable packing list may show useful organizational information such as:
+
+- File/list name
+- Categories
+- Item descriptions
+- Quantities where useful
+- Checkbox for packing status
+
+Keep it simple and easy to use on a phone.
+
+This is a packing checklist, not a second full editor.
+
+==================================================
+12. PRESERVE PRINT / PDF
+==================================================
+
+Download PDF may remain available.
+
+Do not remove working PDF export.
+
+But:
+
+Download PDF must not be the only item under Share.
+
+If Download PDF is more logically duplicated under Preview / Print as well, preserve existing behavior; do not unnecessarily redesign those controls in this prompt.
+
+==================================================
+13. SHARE MENU INTERACTION
+==================================================
+
+The Share menu should:
+
+- Start closed.
+- Open when Share is clicked.
+- Display the sharing choices clearly.
+- Close after a share/download action where appropriate.
+- Close when the user clicks outside if that is consistent with current TrailWeigh menus.
+- Be keyboard accessible.
+- Work in Light and Dark modes.
+- Work at narrow/mobile widths.
+- Not overflow off-screen.
+
+Do not turn Share into a full-screen dialog unless necessary.
+
+Prefer the existing compact menu pattern.
+
+==================================================
+14. SHARED-LINK OWNERSHIP AND PRIVACY
+==================================================
+
+Do not change ownership semantics.
+
+A person viewing a Shared Link:
+
+- Does not become the owner.
+- Cannot Rename the owner's file.
+- Cannot Delete the owner's file.
+- Cannot modify the owner's saved original.
+- Cannot change the owner's background.
+- Cannot alter the sender's Locker.
+
+Re-sharing the link must not elevate permissions.
+
+The Checkable Packing List must likewise be view/session based.
+
+==================================================
+15. SAVE YOUR OWN COPY
+==================================================
+
+Preserve the existing:
+
+Save Your Own Copy
+
+feature.
+
+Do not merge it into Share.
+
+The distinction should remain:
+
+SHARE:
+Pass this list/checklist to another person.
+
+SAVE YOUR OWN COPY:
+Create an independent copy in the recipient's own account/Locker where currently supported.
+
+Do not change existing sign-in requirements for Save Your Own Copy.
+
+==================================================
+16. PRESERVE PRIVATE LAST-ACTIVE FILE
+==================================================
+
+Prompts 022G/022H established that opening a shared link must not replace the signed-in user's private last-active file.
+
+Preserve that behavior.
+
+Sharing/re-sharing a Shared Link or opening the checkable packing-list view must not overwrite:
+
+trailweigh:last-active-file-...
+
+or any equivalent private-workspace persistence.
+
+==================================================
+17. PRESERVE 022F FOOTER FIX
+==================================================
+
+Prompt 022F is USER VERIFIED.
+
+Shared Link footer behavior must remain:
+
+- In normal document flow.
+- Not fixed/sticky over the checklist.
+- Below all page content.
+- Correct on long pages.
+- Correct on short pages.
+
+Do not regress this while changing panel heights or introducing the checkable packing-list view.
+
+==================================================
+18. PRESERVE WORKING 022H CATEGORY FIX
+==================================================
+
+Do not undo the working part of 022H.
+
+Gear categories must continue to initialize collapsed.
+
+Pack Summary and Weight Distribution must continue to initialize collapsed.
+
+022I extends the rule to the panels that 022H missed.
+
+==================================================
+19. PRIVATE CHECKLIST REGRESSION PROTECTION
+==================================================
+
+Do not unintentionally change the owner's normal private Checklist.
+
+Preserve:
+
+- Prompt 022G reopen behavior
+- Same saved file restoration
+- Same background restoration
+- Saved checkbox state
+- Private startup panel behavior
+- Save / Save As
+- Locker
+
+If a shared component also serves the private page, verify both contexts after the fix.
+
+==================================================
+20. DO NOT CHANGE INFORMATIONAL PAGES
+==================================================
+
+Do not modify:
+
+- About TrailWeigh
+- Help & How-To
+- How It Works
+
+unless a tiny wording update is strictly necessary to accurately name a newly completed sharing option.
+
+If no wording change is necessary, leave them untouched.
+
+==================================================
+21. TEST A — EVERY PANEL CLOSED
+==================================================
+
+Open a Shared Link containing:
+
+- Multiple gear categories
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Shared Files
+
+Expected immediately after load:
+
+[ ] Gear categories collapsed
+[ ] Pack Summary collapsed
+[ ] Weight Distribution collapsed
+[ ] Scan Gear List collapsed
+[ ] Shared Files collapsed
+[ ] Any other discovered collapsible panel collapsed
+
+Take care to verify actual visible browser state.
+
+Do not infer PASS solely from state initialization code.
+
+==================================================
+22. TEST B — PANEL INTERACTION
+==================================================
+
+During the same shared session:
+
+1. Open Scan Gear List.
+2. Open Shared Files.
+3. Open a gear category.
+4. Open Pack Summary.
+5. Open Weight Distribution.
+
+Expected:
+
+[ ] Each opens normally.
+[ ] They are not immediately forced closed.
+[ ] Each can be manually closed.
+
+Then refresh.
+
+Expected:
+
+[ ] All return to collapsed.
+
+==================================================
+23. TEST C — SHARE MENU
+==================================================
+
+Click Share on the Shared Link page.
+
+Expected:
+
+[ ] Menu contains an actual TrailWeigh-list sharing action.
+[ ] Menu contains a Checkable Packing List sharing action.
+[ ] Menu contains Download PDF.
+[ ] Download PDF is no longer the only action.
+
+Verify actual actions, not merely labels.
+
+==================================================
+24. TEST D — SHARE TRAILWEIGH LIST
+==================================================
+
+Use Share TrailWeigh List.
+
+Expected:
+
+[ ] Current Shared Link can be shared/copied.
+[ ] Opening the resulting link shows the same shared snapshot.
+[ ] No new owner permissions are granted.
+[ ] Owner's saved original remains unchanged.
+
+Where browser-native Share cannot be automated, verify Copy Link fallback.
+
+==================================================
+25. TEST E — CHECKABLE PACKING LIST
+==================================================
+
+Use Share Checkable Packing List.
+
+Open the resulting checklist as a recipient.
+
+Expected:
+
+[ ] Correct list/file identity is shown.
+[ ] Intended gear items are shown.
+[ ] Items can be checked/unchecked for packing.
+[ ] Recipient changes are temporary/session-only.
+[ ] Owner's saved original is unchanged.
+[ ] Checklist is printable.
+[ ] Owner-only controls are absent.
+[ ] Layout is practical on mobile/narrow screens.
+
+==================================================
+26. TEST F — PDF
+==================================================
+
+Use Download PDF.
+
+Expected:
+
+[ ] Existing PDF behavior still works.
+[ ] Share menu closes appropriately.
+[ ] No regression to Preview/Print.
+
+==================================================
+27. TEST G — FOOTER
+==================================================
+
+On a long Shared Link:
+
+[ ] Footer remains below content.
+[ ] Footer does not overlay panels.
+
+On the checkable packing-list view:
+
+[ ] If the normal TrailWeigh footer is shown, it must also remain in normal page flow.
+[ ] No footer overlay is introduced.
+
+==================================================
+28. TEST H — PRIVATE WORKSPACE
+==================================================
+
+Return to the signed-in user's private TrailWeigh workspace.
+
+Expected:
+
+[ ] Prompt 022G same-file restoration still works.
+[ ] Same background still restores.
+[ ] Private last-active file was not replaced by shared/re-shared/checklist views.
+
+==================================================
+29. AUTOMATED TESTING
+==================================================
+
+Add/update focused tests for:
+
+- SharedLockerPanel starts collapsed.
+- Scan Gear List starts collapsed in Shared Link context.
+- Existing gear categories remain collapsed.
+- Pack Summary remains collapsed.
+- Weight Distribution remains collapsed.
+- Share menu contains all required actions.
+- Share TrailWeigh List uses current shared-link identity safely.
+- Checkable Packing List route/view permissions.
+- Temporary checklist edits do not write owner data.
+- PDF export remains available.
+- 022F footer regression.
+- 022G private workspace isolation.
+- Mobile-safe share menu where practical.
+
+Do not use source-string assertions as the sole evidence for behavior that can be tested functionally.
+
+==================================================
+30. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022I_REPORT.md
+
+Report must include:
+
+- Exact prompt ID/title:
+  Prompt 022I — Complete Shared-Link Collapse & Share Behavior
+
+- Files changed
+- Complete inventory of collapsible Shared Link panels
+- State variable/component controlling each panel
+- Previous default state
+- New default state
+- Root cause of Scan Gear List remaining open
+- Root cause of Shared Files remaining open
+- Root cause of Share containing only Download PDF
+- Exact Share menu actions after correction
+- How Share TrailWeigh List works
+- How Share Checkable Packing List works
+- Exact permissions available in checkable-list view
+- How temporary recipient changes are isolated
+- Confirmation owner file cannot be modified
+- Confirmation Save Your Own Copy remains separate
+- Confirmation 022F footer behavior remains intact
+- Confirmation 022G private restoration remains intact
+- Confirmation working 022H category behavior remains intact
+- Automated test results
+- Browser/runtime tests completed
+- PASS / FAIL / PARTIAL / NOT TESTED for every required test
+- Failed attempts
+- Reverted changes
+- Anything requiring user verification
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier reports.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022I_REPORT.md
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short explanation of why 022H missed Scan Gear List and Shared Files
+6. Short explanation of the corrected Share behavior
+7. Exact URL/view behavior for Share Checkable Packing List
+8. Anything still requiring user verification

@@ -39,8 +39,6 @@ interface EditedItem extends ParsedItem {
 interface ImportGearPanelProps {
   categoryOrder: string[];
   onAddItem: (category: string, prefill: Partial<GearItem>) => void;
-  /** Whether the panel starts expanded. Defaults to true (private Checklist behavior). */
-  defaultOpen?: boolean;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -96,8 +94,8 @@ function blankEditedItem(categoryOrder: string[]): EditedItem {
 
 type Phase = 'idle' | 'parsing' | 'review' | 'error';
 
-export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true }: ImportGearPanelProps) {
-  const [open, setOpen]   = useState(defaultOpen);
+export function ImportGearPanel({ categoryOrder, onAddItem }: ImportGearPanelProps) {
+  const [open, setOpen]   = useState(true);
   const [phase, setPhase] = useState<Phase>('idle');
   const [isDragging, setIsDragging] = useState(false);
 

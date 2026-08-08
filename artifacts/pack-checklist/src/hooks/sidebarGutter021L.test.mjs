@@ -149,8 +149,12 @@ test('C8. Toggle button still calls setOpen on click', () => {
 });
 
 test('C9. Importer open state defaults to true (panel open by default)', () => {
-  assert.match(importPanel, /const\s+\[open,\s*setOpen\]\s*=\s*useState\(true\)/,
-    'Panel must default to open (useState(true)) — behaviour unchanged');
+  // 022I: ImportGearPanel uses a defaultOpen prop (defaults to true) so SharedChecklistPage
+  // can pass defaultOpen={false}. Private Checklist gets the unchanged default-open behaviour.
+  assert.match(importPanel, /defaultOpen\s*=\s*true/,
+    'ImportGearPanel defaultOpen prop must default to true — private Checklist behaviour unchanged');
+  assert.match(importPanel, /useState\s*\(\s*defaultOpen\s*\)/,
+    'ImportGearPanel must initialise open from the defaultOpen prop');
 });
 
 test('C10. No ChevronRight used in ImportGearPanel', () => {
