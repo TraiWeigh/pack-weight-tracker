@@ -1,0 +1,560 @@
+PROMPT 022C — REORGANIZE AND SIMPLIFY HELP & HOW-TO
+
+GOAL
+
+Reorganize the existing TrailWeigh Help & How-To page so the instructions follow the order in which a user would normally use TrailWeigh.
+
+This is primarily a HELP CONTENT AND HELP-PAGE ORGANIZATION change.
+
+Do NOT redesign or alter the underlying TrailWeigh checklist functionality merely to match the Help text.
+
+Before changing anything, inspect the current TrailWeigh interface and the existing Help & How-To content so all instructions accurately describe the controls and features that currently exist.
+
+==================================================
+1. REQUIRED HELP & HOW-TO ORDER
+==================================================
+
+Organize the Help & How-To page into these six main topics, in this exact order:
+
+1. Building Your Gear List
+2. Understanding Your Pack Weight
+3. Editing Your Gear List
+4. Save / Locker
+5. Preview / Print / Share
+6. Backgrounds & Display
+
+The organization should follow the user's normal workflow:
+
+BUILD → UNDERSTAND → EDIT → SAVE → PREVIEW/PRINT/SHARE → CUSTOMIZE
+
+==================================================
+2. CLICKABLE COLLAPSIBLE SECTIONS
+==================================================
+
+Use collapsible panels / accordion sections.
+
+IMPORTANT TERMINOLOGY:
+These are accordion/collapsible sections, NOT dropdown/select menus.
+
+For all Help topics:
+
+- Make the ENTIRE title row clickable.
+- Do not require the user to click only the small disclosure chevron.
+- Show a disclosure chevron/caret indicating collapsed versus expanded state.
+- All major Help sections should be collapsed by default.
+- Clicking the title again should collapse the section.
+- More than one section may remain expanded at the same time.
+- Provide a visible hover/focus state.
+- Keyboard users must be able to expand/collapse sections using Enter or Space.
+- Preserve normal accessibility semantics and ARIA state.
+
+Do not add an "Expand All" control.
+
+==================================================
+3. BUILDING YOUR GEAR LIST
+==================================================
+
+This should be the first major Help section.
+
+Inside it, organize the instructions under:
+
+A. Create / Upload
+B. Add / Organize
+
+------------------------------------------
+A. CREATE / UPLOAD
+------------------------------------------
+
+Explain the different ways a user can begin building a TrailWeigh gear list.
+
+Include:
+
+- Creating a new gear list directly in TrailWeigh.
+- Uploading/importing an existing supported gear list using Scan Gear List.
+- Reviewing the items TrailWeigh detects before importing them.
+- Selecting only the detected items the user actually wants to import.
+- Importing those selected items into the TrailWeigh checklist.
+
+MOVE the existing "Scan Gear List" Help information into this section.
+
+REMOVE the separate Help section currently shown as:
+
+"Importing / Scan Gear List"
+    "Scan Gear List"
+
+Scanning/importing is not a separate Help category. It is simply another way to BUILD a gear list.
+
+Do not duplicate the Scan Gear List instructions elsewhere.
+
+Use the actual supported upload formats and current Scan Gear List behavior found in the existing TrailWeigh interface/code. Do not invent supported file types.
+
+------------------------------------------
+B. ADD / ORGANIZE
+------------------------------------------
+
+Explain how to:
+
+- Add gear manually.
+- Enter the information TrailWeigh currently accepts for each item.
+- Enter quantity and weight.
+- Put gear into appropriate categories.
+- Move an item from one category to another using the current Move control, if it is present in the live interface.
+- Check/select the items the user intends to carry for the current trip.
+- Leave other items unchecked when they are not being carried.
+
+MOVE the existing Help information titled:
+
+"Select the gear you are using"
+
+into Add / Organize.
+
+REMOVE "Select the gear you are using" as a separate major Help topic.
+
+Explain that a user can keep gear available in a list while selecting only the gear being used for a particular trip, as supported by the current application behavior.
+
+------------------------------------------
+TRIP-, TRAIL-, AND SEASON-SPECIFIC LISTS
+------------------------------------------
+
+Include a subsection within Building Your Gear List explaining that one gear setup does not necessarily fit every hike.
+
+Explain that users can create and save lists for:
+
+- Different trails
+- Different sections of a trail
+- Different trips
+- Different seasons
+- Different expected conditions
+
+Use examples such as:
+
+PCT — Desert
+PCT — Sierra
+AT — Summer
+AT — Cold Weather
+CDT — Colorado
+Weekend — Summer
+Weekend — Winter
+
+Explain in plain language that a PCT gear list may differ from an AT or CDT gear list, and warmer-season gear may differ from gear needed for colder spring, fall, winter, high-elevation, wet, or other conditions.
+
+Examples of gear needs that may change can include, where appropriate:
+
+- Clothing
+- Insulation
+- Shelter
+- Rain protection
+- Water capacity
+- Traction
+- Other condition-specific equipment
+
+Do not tell users what they personally must carry.
+
+The point is to explain that TrailWeigh allows users to maintain different gear/checklist configurations for different trips.
+
+If the current Save As function is the appropriate way to make another version of a list without replacing the original, explain that here and cross-reference the detailed Save / Save As instructions in the Save / Locker section.
+
+==================================================
+4. UNDERSTANDING YOUR PACK WEIGHT
+==================================================
+
+Make this the second major Help section.
+
+Explain the current TrailWeigh weight information in plain language.
+
+Include only metrics and controls that actually exist in the current application.
+
+Cover, where currently applicable:
+
+A. Weight Totals
+- Total pack weight
+- Base Weight
+- Quantity and weight calculations
+- Consumables / Expendables
+- Worn or other items excluded from Base Weight
+
+B. Weight Distribution
+- What the Weight Distribution section shows
+- How it helps users see which categories contribute to their overall weight
+
+C. Pack Summary
+- What Pack Summary shows
+- Explain any items displayed as not included in Base Weight
+
+Do not assume a new user already understands backpacking weight terminology.
+
+Briefly explain terms where needed.
+
+Do not create new weight classifications or calculations.
+
+==================================================
+5. EDITING YOUR GEAR LIST
+==================================================
+
+Make this the third major Help section.
+
+Group normal list-editing controls together.
+
+Document the CURRENT behavior of:
+
+A. Undo / Redo
+- Undo the most recent supported change.
+- Redo an undone change.
+
+B. Open / Close Categories
+- Explain expanding/collapsing checklist category sections using the current controls.
+
+C. Imperial / Metric
+- Explain changing the displayed measurement system.
+- Describe the actual current behavior of existing weights when units are changed.
+
+D. Reset
+- Explain exactly what Reset currently clears.
+- Make clear that Reset affects the current working list according to the application's actual behavior.
+
+Place Reset last in this group.
+
+Do not document controls that no longer exist.
+
+==================================================
+6. SAVE / LOCKER
+==================================================
+
+Make this the fourth major Help section.
+
+Organize it around:
+
+A. Save / Save As
+B. Locker
+
+------------------------------------------
+A. SAVE / SAVE AS
+------------------------------------------
+
+Explain:
+
+- How to save the current gear list.
+- Naming the list.
+- What Save does.
+- What Save As does.
+- The difference between Save and Save As.
+
+Where applicable to the current app, explain that Save As can be useful for making another version of an existing gear list for a different trip, trail, section, or season without replacing the original.
+
+Document the current successful-save confirmation behavior accurately.
+
+------------------------------------------
+B. LOCKER
+------------------------------------------
+
+Explain the current Locker functions, including only those actually available:
+
+- Opening/loading saved lists
+- Keeping multiple named gear lists
+- Renaming
+- Deleting
+
+Explain that the Locker is associated with the signed-in user's saved lists/private account storage where applicable.
+
+Do NOT say a password is required to delete a Locker file.
+
+Current intended deletion behavior is a simple permanent-deletion confirmation for the signed-in owner.
+
+Do not expose Rename or Delete controls in documentation for a shared-link viewer if those controls are not available to shared viewers.
+
+==================================================
+7. PREVIEW / PRINT / SHARE
+==================================================
+
+Make this the fifth major Help section.
+
+Organize this section under:
+
+A. Preview
+B. Print
+C. Share
+
+------------------------------------------
+A. PREVIEW
+------------------------------------------
+
+Explain:
+
+- How to open Preview using the current control.
+- That Preview displays a formatted view of the current gear list.
+- That it can be reviewed before printing.
+
+Use the actual current location/name of Preview.
+
+------------------------------------------
+B. PRINT
+------------------------------------------
+
+Explain the practical value of the TrailWeigh gear list as a PACKING CHECKLIST.
+
+Include that users can:
+
+- Print their completed gear list.
+- Use the printed copy as a physical packing checklist.
+- Check equipment while gathering and packing it.
+- Use it for a final equipment check before leaving home or reaching the trailhead.
+
+Explain the current way Print is accessed.
+
+If Print currently exists inside Preview, document it that way.
+
+Do not tell users to use a standalone Print button if one no longer exists.
+
+------------------------------------------
+C. SHARE
+------------------------------------------
+
+Keep ALL sharing instructions together under Share.
+
+Explain the current Share function and current share-link behavior.
+
+Include that users can share:
+
+- The applicable TrailWeigh gear-list experience/view.
+- JUST THE CHECKABLE PACKING LIST when the recipient only needs a simple checklist, if this option currently exists.
+
+Explain the checkable packing list in plain language:
+
+- The recipient can check items off while gathering/packing gear.
+- Their checking or temporary session interaction must not modify the owner's saved original.
+- Shared lists/checklists can be viewed and printed where currently supported.
+
+This can be useful for:
+
+- Sharing with a hiking partner
+- Helping another person prepare for a trip
+- Giving someone a packing checklist to work from
+
+DO NOT create a separate Help topic titled:
+
+"Share a Checkable Packing List"
+
+That information belongs inside Share.
+
+IMPORTANT:
+Inventory the actual current Share UI before writing the instructions.
+
+Do not claim that a sharing choice exists unless the current interface actually provides it.
+
+If the intended checkable-list sharing functionality exists but the Help text is simply missing it, document it.
+
+Do not implement a new sharing system as part of this Help-content prompt.
+
+==================================================
+8. BACKGROUNDS & DISPLAY
+==================================================
+
+Make this the sixth and final major Help section because these are customization/display features rather than steps required to build a gear list.
+
+Document the CURRENT controls that actually exist, which may include:
+
+A. Background Themes
+B. Custom/Add Photo backgrounds
+C. Fit / Fill
+D. Showcase
+E. Light / Dark / System appearance controls
+
+For Fit / Fill, explain in simple language:
+
+- Fit shows the entire image and may leave unused space.
+- Fill fills the available area and may crop part of the image.
+
+Only document features that are actually present and user-facing.
+
+Do not recreate removed controls merely because older Help text mentions them.
+
+==================================================
+9. REMOVE DUPLICATE / OUTDATED HELP CONTENT
+==================================================
+
+After reorganizing:
+
+- Remove the standalone "Importing / Scan Gear List" Help section.
+- Remove the standalone "Select the gear you are using" Help section.
+- Remove duplicate explanations that are now contained within the new grouped sections.
+- Remove documentation for controls/features that no longer exist.
+- Do not leave old copies farther down the Help page.
+
+Do NOT remove useful information merely because it is being reorganized.
+
+Move it to the correct section.
+
+==================================================
+10. WRITING STYLE
+==================================================
+
+The Help & How-To content is for ordinary TrailWeigh users, not programmers.
+
+Use:
+
+- Clear everyday language
+- Detailed written instructions
+- Short paragraphs
+- Step-by-step directions where useful
+- The exact names shown on TrailWeigh controls
+- Bold control names where that improves readability
+
+Do NOT:
+
+- Add programming terminology
+- Add developer implementation details
+- Add videos
+- Add animations
+- Use unexplained technical jargon
+- Document removed/nonexistent controls
+
+Assume users are capable of reading and following clear instructions.
+
+Use progressive disclosure through the accordion sections so the page remains visually clean.
+
+==================================================
+11. DO NOT CHANGE ABOUT CONTENT
+==================================================
+
+This prompt is for HELP & HOW-TO only.
+
+Do not modify the separate About TrailWeigh content or add the planned ultralight philosophy sections such as:
+
+- What Is Ultralight?
+- Ray-Way
+- Minimalist Mindset
+- One Tool, Many Uses
+- HYOH
+
+Those will be handled separately.
+
+==================================================
+12. GLOBAL REGRESSION PROTECTION
+==================================================
+
+Before making changes:
+
+1. Create the normal project backup/checkpoint required by the TrailWeigh workflow.
+2. Inspect the current Help components and current user-facing checklist controls.
+3. Make the smallest reasonable change set needed for this prompt.
+4. Do not refactor unrelated application code.
+5. Preserve existing saved user data and application behavior.
+6. After implementation, inspect the complete diff.
+7. Revert any unrelated changes.
+
+This Help-page change must not break:
+
+- Checklist editing
+- Weight calculations
+- Undo/Redo
+- Save/Save As
+- Locker
+- Preview
+- Print
+- Share
+- Backgrounds
+- Showcase
+- Themes
+- File import/Scan Gear List
+- Authentication
+- Existing saved lists
+
+==================================================
+13. VERIFICATION
+==================================================
+
+Test the completed Help & How-To page.
+
+Verify:
+
+[ ] Main Help sections appear in the required order.
+
+[ ] Building Your Gear List contains Create / Upload and Add / Organize.
+
+[ ] Scan Gear List instructions are under Create / Upload.
+
+[ ] The old standalone Importing / Scan Gear List section is gone.
+
+[ ] Selecting/checking gear instructions are under Add / Organize.
+
+[ ] The old standalone Select the gear you are using topic is gone.
+
+[ ] Trip/trail/season-specific checklist guidance is present.
+
+[ ] Understanding Your Pack Weight accurately describes current calculations.
+
+[ ] Editing Your Gear List accurately describes current controls.
+
+[ ] Save / Locker accurately describes current Save, Save As, and Locker behavior.
+
+[ ] Preview / Print / Share accurately describes current controls.
+
+[ ] Print explains using the list as a physical packing checklist.
+
+[ ] Share includes the appropriate checkable packing-list information and does not duplicate it as a separate Help topic.
+
+[ ] Backgrounds & Display appears last.
+
+[ ] The entire accordion title row is clickable.
+
+[ ] Accordion sections are collapsed by default.
+
+[ ] Multiple accordion sections can remain open.
+
+[ ] Keyboard operation works with Enter/Space.
+
+[ ] Help content works in the currently supported Light/Dark appearance.
+
+[ ] Mobile/narrow layouts remain readable.
+
+[ ] No obsolete Help sections remain elsewhere on the page.
+
+[ ] No application functionality unrelated to Help was changed.
+
+Mark every verification item:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not mark something PASS unless it was actually verified.
+
+==================================================
+14. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022C_REPORT.md
+
+The report must include:
+
+- Exact prompt ID and title:
+  Prompt 022C — Reorganize and Simplify Help & How-To
+- Files changed
+- Application-code changes, if any
+- Help/documentation changes
+- Old Help sections removed or moved
+- New Help structure
+- Verification results for every requirement
+- PASS / FAIL / PARTIAL / NOT TESTED status
+- Any failed attempts
+- Anything reverted
+- Any behavior that still requires user testing
+- Confirmation that unrelated TrailWeigh functionality was preserved
+
+Append the verified Prompt 022C report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite any previous workflow report.
+
+At completion, clearly provide:
+
+1. Full path to workflow-reports/PROMPT_022C_REPORT.md
+2. Report file size
+3. Report line count
+4. Confirmation that TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. A short summary of what changed
+6. Any items that still need user verification

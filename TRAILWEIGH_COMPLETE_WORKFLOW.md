@@ -4936,3 +4936,28 @@ All suites — exit 0. 70 new 022B tests.
 
 ### Status
 **022B FOOTER CONTENT = NOT USER-VERIFIED**
+
+---
+
+## Prompt 022C — Reorganize and Simplify Help & How-To
+
+**Date:** 2026-08-08
+
+### Goal
+Reorganize the Help & How-To page from 12 standalone topics into 6 workflow-order sections: Build → Understand → Edit → Save → Preview/Print/Share → Customize.
+
+### Key changes
+- **HelpPage.tsx**: Complete rewrite — 6 main collapsible sections in workflow order; full title row clickable; collapsed by default; multiple sections can be open simultaneously; keyboard accessible; aria-expanded / aria-controls / role=region.
+- **Scan Gear List** moved from standalone "Importing / Scan Gear List" section into §1 Building → Create / Upload.
+- **Selecting/checkbox gear** moved from standalone topic into §1 Building → Add / Organize.
+- **Trip/trail/season-specific lists** added as new subsection with PCT/AT/CDT/seasonal examples.
+- **Print** expanded with physical packing checklist use case (gathering gear, final check).
+- **Share** now documents Share Link (all Locker files), Share Pack List (single, checkable, temporary), and Download PDF — all in one section.
+- **Background & Display** expanded to document custom photo upload (Add Photo), which was excluded in 022B but explicitly requested in 022C.
+- **FAQ and Troubleshooting** removed as standalone sections; content merged into relevant sections; cross-link to Report a Problem added at bottom.
+
+### Test Results
+All suites — exit 0. 68 new 022C tests. 022B tests updated to reflect reorganization (70 still pass).
+
+### Status
+**022C HELP REORGANIZATION = NOT USER-VERIFIED (visual/interactive verification pending)**
