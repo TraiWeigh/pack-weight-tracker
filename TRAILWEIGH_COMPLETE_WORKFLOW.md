@@ -4884,3 +4884,28 @@ About, How It Works, Help & How-To, Report a Problem, Contact Us, Privacy Policy
 
 ### Status
 **022 FOOTER & NAVIGATION = NOT USER-VERIFIED**
+
+---
+
+## Prompt 022A — Add the Existing Footer to the Main Checklist Page
+
+**Date:** 2026-08-08
+
+### Goal
+Add the existing `<Footer />` component to the main Checklist page so users can scroll down to reach it.
+
+### Root cause of previous omission
+The Checklist used `h-[100dvh] overflow-hidden flex flex-col` on its outer div — no page-level scroll was possible. Adding the footer inside would have shrunk the workspace.
+
+### Solution (minimum change)
+Wrapped the screen-content div + `<Footer />` in a new `h-[100dvh] overflow-y-auto` scroll container. The existing screen div, `<main>`, toolbar, sidebar, and all column scroll behavior are byte-for-byte identical.
+
+### Changes
+- `Checklist.tsx`: +1 import, +scroll wrapper div, +`<Footer />`
+- New `footer022A.test.mjs` (20 tests)
+
+### Test Results
+All suites — exit 0. 20 new 022A tests.
+
+### Status
+**022A CHECKLIST FOOTER = NOT USER-VERIFIED**

@@ -1,0 +1,378 @@
+# Prompt 022A — Add the Existing Footer to the Main Checklist Page
+
+## Goal
+
+Add the already-created Prompt 022 footer to the **main TrailWeigh Checklist page**.
+
+Prompt 022 successfully created the footer component and information/legal routes, but the report shows:
+
+**Checklist (main app) | Footer not added**
+
+That means the primary TrailWeigh gear-list screen currently has no footer.
+
+This prompt must correct that.
+
+---
+
+# 1. Use the Existing Footer Component
+
+Do **not** create another footer.
+
+Reuse:
+
+`src/components/Footer.tsx`
+
+The main Checklist page should use the **full footer**, not the `informationalOnly` shared-view version.
+
+The main signed-in Checklist footer should therefore include:
+
+* About TrailWeigh
+* How It Works
+* Help & How-To
+* Report a Problem
+* Contact Us
+* Privacy Policy
+* Terms of Use
+* Delete Account / Data
+* Affiliate Disclosure
+* Accessibility
+
+and:
+
+**© 2026 TrailWeigh · All rights reserved.**
+
+---
+
+# 2. Important Footer Behavior
+
+The footer must be located **after the main Checklist content**.
+
+It must **not** be:
+
+* fixed
+* sticky
+* floating
+* permanently visible over the Checklist
+* overlaid on Pack Summary
+* overlaid on category panels
+
+The user should reach the footer by scrolling to the bottom of the page/content.
+
+The footer should behave like a normal website footer.
+
+---
+
+# 3. Main Checklist Layout
+
+Prompt 022 avoided adding the footer because the Checklist currently uses a height-constrained layout involving:
+
+`h-[100dvh]`
+
+and:
+
+`overflow-hidden`
+
+Do not simply force the footer into the existing height-constrained container if doing so causes the working Checklist area to shrink or breaks existing scrolling.
+
+Inspect the current Checklist layout and make the **smallest architectural adjustment necessary** so that:
+
+1. the Checklist remains usable exactly as it is now
+2. category scrolling continues working
+3. Pack Summary scrolling continues working
+4. the user can scroll far enough to reach the footer below the application content
+
+---
+
+# 4. Preferred Layout Concept
+
+The preferred behavior is conceptually:
+
+```text
+PAGE
+│
+├── Main TrailWeigh Checklist application area
+│   ├── Toolbar
+│   ├── Checklist/categories
+│   └── Pack Summary
+│
+└── Footer
+```
+
+The footer should exist **below** the application area.
+
+Do not treat the footer as another toolbar/sidebar element.
+
+---
+
+# 5. Preserve the Approved Checklist Height
+
+Do not make the visible Checklist workspace noticeably shorter just to fit the footer into the viewport.
+
+The main Checklist should still occupy approximately the same full-screen working area users currently have.
+
+The footer can exist **below that area** and become visible when the user scrolls downward.
+
+This is preferable to permanently sacrificing Checklist working space.
+
+---
+
+# 6. Preserve Prompt 021P Layout
+
+Prompt 021P is visually approved.
+
+Do not alter the established desktop alignment.
+
+Preserve:
+
+* toolbar vertical position
+* common toolbar-group `pt-4`
+* toolbar grouping
+* left/right toolbar alignment
+* checklist/Pack Summary top-edge alignment
+* sidebar width
+* category width
+* desktop gutters
+* scrollbar gutter behavior
+* filename position
+* Hide
+* Preview
+* Imperial/Metric
+* Background Edit
+* Share
+
+Do not move these elements to make room for the footer.
+
+---
+
+# 7. Do Not Rebuild Prompt 022
+
+The following Prompt 022 work is already complete and should be preserved:
+
+* `Footer.tsx`
+* dark charcoal `#1e2322` footer
+* 14 px section headings
+* 14 px footer links
+* 12 px copyright text
+* 21 px link line-height
+* all 10 information/legal routes
+* sign-up Terms and Privacy links
+* shared-view informational footer behavior
+* existing info pages
+
+Do not duplicate or rewrite those features unless absolutely necessary to mount the footer on the Checklist page.
+
+---
+
+# 8. Constant Dark Appearance
+
+The Checklist footer must use the same existing Prompt 022 styling.
+
+It must remain:
+
+* dark charcoal in Light mode
+* dark charcoal in Dark mode
+* dark charcoal in System mode
+
+Do not create a Checklist-specific footer theme.
+
+Reuse the same component.
+
+---
+
+# 9. Scrolling Requirement
+
+The user must have a clear way to reach the footer.
+
+Verify actual browser behavior.
+
+The following must be possible:
+
+1. Open the main Checklist.
+2. Use the gear-list interface normally.
+3. Scroll downward.
+4. Reach the footer below the main application area.
+
+Do not create nested-scroll behavior that makes the footer effectively unreachable.
+
+---
+
+# 10. Category and Pack Summary Scrolling
+
+Existing internal scrolling must continue to work.
+
+Do not break:
+
+* category-list scrolling
+* right-sidebar scrolling
+* Pack Summary scrolling
+
+If the Checklist currently relies on internal scroll containers, preserve those behaviors while also allowing the overall page to reach the footer.
+
+Be especially careful with combinations of:
+
+* `100dvh`
+* `overflow-hidden`
+* `overflow-auto`
+* `min-h-0`
+* flex containers
+
+Diagnose the layout structure rather than applying random CSS changes.
+
+---
+
+# 11. Mobile Behavior
+
+The footer must also be reachable on the main Checklist page on mobile.
+
+Do not:
+
+* create horizontal scrolling
+* cover controls
+* shrink tap targets
+* interfere with mobile Checklist scrolling
+
+Use the same responsive Footer component created in Prompt 022.
+
+---
+
+# 12. Footer Must Not Be Sticky
+
+Explicitly verify that the footer does not remain visible while the user is working near the top of the Checklist.
+
+It should only appear when the user reaches the bottom.
+
+Do not use:
+
+* `position: fixed`
+* `position: sticky`
+* bottom overlay positioning
+
+for the footer.
+
+---
+
+# 13. Preserve Shared-View Behavior
+
+Do not modify Prompt 022 shared-view footer behavior.
+
+Shared viewers should continue to receive:
+
+`<Footer informationalOnly />`
+
+and must not see:
+
+**Delete Account / Data**
+
+This prompt is specifically for the signed-in/main Checklist page.
+
+---
+
+# 14. Test Footer Links From Checklist
+
+From the main Checklist footer, confirm every link works:
+
+* About TrailWeigh
+* How It Works
+* Help & How-To
+* Report a Problem
+* Contact Us
+* Privacy Policy
+* Terms of Use
+* Delete Account / Data
+* Affiliate Disclosure
+* Accessibility
+
+No link should produce a 404.
+
+---
+
+# 15. Automated Regression Tests
+
+Add/update tests for Prompt 022A confirming:
+
+* the main Checklist renders the existing Footer component
+* the main Checklist uses the full footer
+* the Checklist does not use `informationalOnly`
+* the existing footer component remains shared rather than duplicated
+* the footer is not fixed/sticky
+* the Prompt 021P structural layout rules remain intact
+* shared-view footer still uses `informationalOnly`
+
+Where practical, use functional/render tests rather than only searching source text.
+
+---
+
+# 16. Visual Testing
+
+Test at several desktop widths and at mobile width.
+
+Verify:
+
+1. Main Checklist now has a footer.
+2. Footer is reachable by scrolling.
+3. Footer is not permanently visible.
+4. Toolbar did not move.
+5. Checklist top position did not move.
+6. Pack Summary top position did not move.
+7. Checklist workspace was not unnecessarily reduced.
+8. Category scrolling works.
+9. Pack Summary/sidebar scrolling works.
+10. Footer remains dark charcoal.
+11. Desktop footer remains compact.
+12. Mobile footer stacks correctly.
+13. No overlap occurs.
+14. No horizontal scrolling appears.
+15. All footer links work.
+
+---
+
+# 17. Protection Requirement
+
+Before making changes:
+
+* create the normal backup/checkpoint
+* preserve saved gear lists
+* preserve Locker contents
+* preserve accounts
+* preserve shared links
+* preserve background selections
+* preserve Prompt 021P layout
+* preserve Prompt 022 routes/content
+
+Make the **minimum changes necessary** to add the footer to the main Checklist page.
+
+Do not refactor unrelated code.
+
+---
+
+# Required Report
+
+When complete, create and attach:
+
+**PROMPT_022A_REPORT.md**
+
+The report must include:
+
+* exact reason the main Checklist footer was previously omitted
+* files changed
+* exact Checklist layout change made
+* where `<Footer />` is now rendered
+* confirmation that the existing Footer component was reused
+* confirmation the Checklist uses the full footer, not `informationalOnly`
+* whether `h-[100dvh]` changed
+* whether `overflow-hidden` changed
+* how page-level footer scrolling was enabled
+* confirmation category scrolling still works
+* confirmation Pack Summary/sidebar scrolling still works
+* confirmation Prompt 021P alignment did not change
+* confirmation toolbar position did not change
+* confirmation footer is not fixed or sticky
+* desktop visual test results
+* mobile visual test results
+* Light/Dark/System test results
+* automated test results
+* any issues discovered
+
+Also provide the standard backup/checkpoint ZIP for Prompt 022A.
+
+Do not proceed to unrelated improvements after completing Prompt 022A.

@@ -5,7 +5,6 @@ import { GearCategory } from '../components/GearCategory';
 import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
 import { PreviewModal } from '../components/PreviewModal';
-import Footer from '@/components/Footer';
 import { MailingListModal, hasSeenMailingPrompt } from '../components/MailingListModal';
 import { UnitProvider, useUnit } from '../context/UnitContext';
 import { sharePackList } from '../lib/exportPDF';
@@ -1117,13 +1116,6 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         letterboxColor={bgTone === 'dark' ? 'hsl(220, 20%, 8%)' : 'hsl(40, 20%, 97%)'}
       />
 
-      {/* ── Page scroll container ────────────────────────────────────────────
-           h-[100dvh] + overflow-y-auto: fills the viewport, allows the user
-           to scroll downward to reach the footer below the app area.
-           The inner screen-content div keeps its own h-[100dvh] overflow-hidden
-           so the checklist workspace is unchanged. ── */}
-      <div className="h-[100dvh] overflow-y-auto">
-
       {/* ── Screen content ── */}
       <div
         className={`screen-only h-[100dvh] overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
@@ -1718,12 +1710,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
           </div>{/* end content area */}
         </main>
-      </div>{/* end screen content */}
-
-      {/* ── Site footer — below the app area, reachable by scrolling ── */}
-      <Footer />
-
-      </div>{/* end page scroll container */}
+      </div>
 
       {/* ── Locker delete dialog ── */}
       {showDeleteDialog && pendingDeleteIds.length > 0 && (
