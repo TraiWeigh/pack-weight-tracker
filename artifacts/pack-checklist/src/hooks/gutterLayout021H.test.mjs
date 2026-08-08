@@ -128,16 +128,12 @@ test('E1. Sidebar outer wrapper classes unchanged', () => {
     'Sidebar outer wrapper classes must be unchanged');
 });
 
-test('E2. Left column scrollable lg:pr-3 REMOVED (021J gutter correction)', () => {
-  // 021J authorized change: removed lg:pr-3 from left column scrollable div
-  // so G2 drops from 43px → 31px (≈ G1/G3 = 32px).
-  // The scrollable div now has ONLY lg:[scrollbar-gutter:stable] (no lg:pr-3).
-  const leftScrollLine = checklist.split('\n').find(l =>
-    l.includes('lg:overflow-y-auto') && l.includes('scrollbar-gutter:stable') && !l.includes('lg:px-3')
-  );
-  assert.ok(leftScrollLine, 'Left column scrollable div must exist with scrollbar-gutter:stable');
-  assert.doesNotMatch(leftScrollLine, /lg:pr-3/,
-    '021J: lg:pr-3 must be removed from left column scrollable — it was adding unnecessary 12px middle gutter');
+test('E2. Left column scrollable lg:pr-3 RESTORED (021K — user-tested 021J gutter worse)', () => {
+  // 021J removed lg:pr-3 from the left column scrollable div.
+  // User-tested 021J gutter result as FAIL / visibly worse.
+  // 021K restores lg:pr-3 exactly as it was before 021J.
+  assert.match(checklist, /lg:pr-3 lg:\[scrollbar-gutter:stable\]/,
+    '021K: lg:pr-3 must be restored on left column scrollable div (021J removal made layout worse)');
 });
 
 test('E3. Sidebar scrollable lg:px-3 preserved', () => {

@@ -1,0 +1,682 @@
+Prompt 021K — Restore Category Padding and Equalize the Three Main Gutters
+
+Create a Replit checkpoint/recovery point and PRE_021K_MASTER_BACKUP.md BEFORE changing anything.
+
+CURRENT VERIFIED STATUS:
+
+021H:
+Gutter adjustment = USER-TESTED FAIL.
+
+021I:
+Pixel-baseline diagnostic = completed with ZERO application changes.
+
+021J:
+Disclosure chevrons = USER-TESTED PASS.
+Gutter/sidebar spacing = USER-TESTED FAIL / visibly worse.
+
+IMPORTANT:
+Preserve the disclosure-chevron correction from 021J exactly.
+
+This prompt changes ONLY the horizontal layout spacing.
+
+==================================================
+TERMINOLOGY / VISUAL TARGET
+==================================================
+
+There are THREE visible vertical gutter strips created by the page's horizontal/column spacing.
+
+Call them:
+
+G1 — LEFT GUTTER
+Visible horizontal distance from the left content boundary to the LEFT edge of the category/checklist cards.
+
+G2 — CENTER GUTTER
+Visible horizontal distance between the category/checklist scroll boundary and the LEFT edge of the right sidebar.
+
+G3 — RIGHT GUTTER
+Visible horizontal distance between the RIGHT edge of the right sidebar and the far-right scroll boundary.
+
+USER'S REQUIRED RESULT:
+
+G1 = G2 = G3
+
+as closely as browser scrollbar mechanics permit.
+
+Visually:
+
+| G1 | CATEGORY COLUMN | G2 | SIDEBAR | G3 |
+
+The sidebar must therefore be centered between its two surrounding scroll boundaries.
+
+The left side of the category column must use the SAME visible gutter width.
+
+==================================================
+STEP 1 — RESTORE THE 021J CATEGORY PADDING
+==================================================
+
+021J removed:
+
+lg:pr-3
+
+from the LEFT checklist scrollable container.
+
+The user's rendered test shows this made the layout worse.
+
+RESTORE the exact:
+
+lg:pr-3
+
+that 021J removed.
+
+Do not alter any other 021J changes.
+
+Specifically preserve:
+- collapsed panel = DOWN disclosure chevron
+- expanded panel = UP disclosure chevron
+- aria-expanded behavior
+- all corrected accordion/collapsible-panel behavior
+
+The spacing correction must NOT undo the chevron fix.
+
+==================================================
+STEP 2 — MEASURE THE REAL OWNER PAGE
+==================================================
+
+DO NOT GUESS.
+
+DO NOT use the public Share page as a substitute.
+
+DO NOT calculate the result only from CSS source.
+
+The spacing problem exists on the signed-in OWNER:
+
+/checklist
+
+page.
+
+Use the actual rendered owner page at the user's normal desktop layout.
+
+Measure with:
+- getBoundingClientRect()
+- computed styles
+- browser DOM inspection
+or equivalent real rendered measurement.
+
+Record:
+
+G1
+G2
+G3
+
+in CSS pixels.
+
+Also measure:
+
+- viewport width
+- outer content wrapper left/right bounds
+- category-card left edge
+- category-card right edge
+- checklist scroll-container bounds
+- checklist scrollbar position and width
+- sidebar wrapper left/right bounds
+- sidebar panel left/right bounds
+- sidebar width
+- far-right scrollbar position and width
+- grid column gap
+- outer left/right page padding
+- sidebar wrapper padding/margins
+- checklist wrapper padding/margins
+
+==================================================
+AUTHENTICATION SAFETY RULE
+==================================================
+
+The measurements MUST come from the real signed-in owner /checklist layout.
+
+If Replit's browser/testing environment CANNOT access the authenticated owner page:
+
+STOP.
+
+DO NOT MAKE THE NEW GUTTER ADJUSTMENT.
+
+Report:
+
+"Owner /checklist DOM could not be measured directly. No gutter correction was attempted."
+
+Restoring the known 021J lg:pr-3 regression is still allowed.
+
+Do NOT substitute:
+- /s/:shareId
+- Share Pack List
+- screenshots
+- CSS-derived estimates
+- mathematical projections from another route
+
+for actual owner-page measurements.
+
+==================================================
+STEP 3 — IDENTIFY THE REAL SPACING SOURCES
+==================================================
+
+For each gutter identify exactly which CSS/Tailwind properties create it.
+
+For G1 determine contributions from:
+- outer wrapper padding
+- checklist wrapper padding
+- scroll gutter
+- card positioning
+
+For G2 determine contributions from:
+- checklist scrollbar gutter
+- checklist wrapper padding
+- grid/column gap
+- sidebar wrapper padding/margin
+
+For G3 determine contributions from:
+- sidebar wrapper padding/margin
+- far-right scrollbar gutter
+- outer wrapper padding
+
+Create a measurement breakdown like:
+
+G1:
+outer padding = __ px
+wrapper padding = __ px
+other = __ px
+TOTAL = __ px
+
+G2:
+scroll gutter = __ px
+grid gap = __ px
+sidebar spacing = __ px
+other = __ px
+TOTAL = __ px
+
+G3:
+sidebar spacing = __ px
+right scroll gutter = __ px
+outer spacing = __ px
+other = __ px
+TOTAL = __ px
+
+This is required before editing.
+
+==================================================
+STEP 4 — CALCULATE ONE COMMON TARGET
+==================================================
+
+After measuring G1/G2/G3, calculate one common target gutter T.
+
+The goal is:
+
+G1 ≈ T
+G2 ≈ T
+G3 ≈ T
+
+Do NOT simply make the largest gutter smaller while leaving the others unequal.
+
+Do NOT simply shift the sidebar.
+
+Rebalance the overall layout so all three visible gutter widths match.
+
+Preferred acceptance tolerance:
+
+max(G1,G2,G3) - min(G1,G2,G3) <= 3 CSS px
+
+Ideal:
+
+G1 = G2 = G3
+
+If browser scrollbar rendering prevents exact equality, achieve the closest possible result and document the reason.
+
+==================================================
+IMPORTANT LAYOUT PRINCIPLE
+==================================================
+
+The user does NOT want:
+
+| small | Categories | large | Sidebar | small |
+
+The user wants:
+
+| equal | Categories | equal | Sidebar | equal |
+
+The sidebar must look centered.
+
+The category column must also begin the same distance from the left boundary.
+
+This is an overall layout-gutter correction, NOT an internal card-padding correction.
+
+==================================================
+IMPLEMENTATION RULES
+==================================================
+
+Change the actual properties controlling the main layout gutters.
+
+Likely candidates may include:
+- outer horizontal padding
+- grid column-gap
+- checklist wrapper spacing
+- sidebar wrapper spacing
+
+But inspect first.
+
+Use the smallest coherent change.
+
+KEEP unless measurement proves absolutely necessary:
+
+lg:grid-cols-[1fr_365px]
+
+Keep sidebar width:
+
+365px
+
+Do NOT change useful sidebar width just to fake centering.
+
+Do NOT unnecessarily shrink the category column.
+
+==================================================
+DO NOT USE HACKS
+==================================================
+
+Do NOT use:
+
+- transform: translateX(...)
+- absolute positioning
+- relative-position offsets
+- negative margins used as visual hacks
+- JavaScript resizing
+- viewport-specific magic numbers
+- timeout corrections
+- duplicated layout structures
+
+Fix the real grid/wrapper spacing.
+
+==================================================
+TOP CONTROL ALIGNMENT
+==================================================
+
+After changing the main gutters, verify the top controls still align correctly with their corresponding columns.
+
+Verify:
+- Open / Close
+- filename pill
+- Hide
+- Preview
+- Imperial / Metric
+- Background Edit
+- Share
+
+Do not redesign or reposition them independently unless required to remain aligned with the corrected column geometry.
+
+==================================================
+PROTECT DISCLOSURE CHEVRONS
+==================================================
+
+021J disclosure-chevron behavior is USER-TESTED PASS.
+
+DO NOT CHANGE IT.
+
+Correct behavior remains:
+
+COLLAPSED/CLOSED:
+ChevronDown
+
+EXPANDED/OPEN:
+ChevronUp
+
+This applies to true collapsible/accordion panels.
+
+Do NOT alter true dropdown/select menu indicators such as:
+- MOVE
+- Save menu
+- Background Themes
+- account menu
+- Share menu
+
+==================================================
+GLOBAL REGRESSION PROTECTION
+==================================================
+
+Treat ALL existing TrailWeigh functionality, data behavior, styling, persistence, calculations, importer behavior, backgrounds, Locker, sharing, responsive behavior, and prior completed work as PROTECTED.
+
+Smallest possible change set only.
+
+NO unrelated:
+- refactoring
+- cleanup
+- renaming
+- relocation
+- modernization
+- dependency upgrades
+- formatting sweeps
+
+Create checkpoint before editing.
+
+Inspect final diff after editing.
+
+Revert all unrelated changes.
+
+==================================================
+DATA / STORAGE PROTECTION
+==================================================
+
+Do NOT:
+
+- reset localStorage
+- clear sessionStorage
+- clear IndexedDB
+- migrate schemas
+- alter saved-file IDs
+- rewrite Locker files
+- delete saved files
+- alter saved backgrounds
+- alter themes/custom photos
+- alter appearance persistence
+- alter chart-palette persistence
+
+Preserve existing saved-file compatibility.
+
+==================================================
+PROTECT CURRENT FUNCTIONALITY
+==================================================
+
+Preserve:
+
+NEW
+- blank list
+- no categories/items
+- Clear background
+- Light mode
+- no filename
+- no cross-file appearance leakage
+
+SAVE / LOCKER
+- Save
+- Save As
+- Saved [File Name]
+- Open
+- Rename
+- owner's Delete confirmation without password
+- cross-tab behavior
+
+SHARE
+- Share Link
+- Share Pack List
+- Shared Files
+- shared-file opening/switching
+- temporary viewer state
+- Save Your Own Copy
+- originals protected
+- no shared-viewer Rename/Delete
+- Download PDF
+
+IMPORTER
+- PDF
+- DOCX
+- XLSX
+- Numbers workflow
+- mapping
+- automatic category creation
+- imported items unchecked
+
+BACKGROUND
+- built-in themes
+- custom themes/photos
+- Fill/Fit
+- Darken
+- Undo/Redo
+- IndexedDB persistence
+
+CHECKLIST
+- category behavior
+- quantities
+- weights
+- calculations
+- MOVE
+- Base Weight
+- Dog Pack
+- Pack Summary
+- Weight Distribution
+- chart palettes
+- Open/Close
+- Hide
+- Imperial/Metric
+- Add Category
+
+PREVIEW / PRINT
+- Preview
+- Share Pack List
+- Print
+- Close
+- PDF behavior
+
+==================================================
+RESPONSIVE PROTECTION
+==================================================
+
+The equal-gutter correction is for desktop/two-column layout.
+
+Do not force desktop gutter dimensions onto stacked mobile layouts.
+
+Verify at:
+
+- user's normal desktop viewport
+- 1440px desktop if different
+- 1280px
+- 1024px
+- 768px
+- 430px
+- 390px
+
+Desktop two-column layouts should maintain the equal-gutter principle where applicable.
+
+Tablet/mobile must retain:
+- no horizontal overflow
+- no clipping
+- no overlapping controls
+- correct stacking
+- usable scrolling
+
+==================================================
+MANDATORY BEFORE/AFTER TABLE
+==================================================
+
+Report ACTUAL rendered owner-page measurements:
+
+                    BEFORE      AFTER
+G1 Left             __ px       __ px
+G2 Center           __ px       __ px
+G3 Right            __ px       __ px
+
+Largest-smallest:
+                    __ px       __ px
+
+Also report:
+
+Viewport width      __          __
+Sidebar width       __ px       __ px
+Grid gap            __ px       __ px
+Outer left padding  __ px       __ px
+Outer right padding __ px       __ px
+
+The AFTER values must be real DOM measurements.
+
+Do not use "source-derived" or calculated-only values as substitutes.
+
+==================================================
+VISUAL TEST
+==================================================
+
+Render the corrected OWNER /checklist page.
+
+In both Dark and Light modes verify visually:
+
+1. left gutter looks equal to center gutter
+2. center gutter looks equal to right gutter
+3. sidebar appears centered
+4. category column begins with matching left-side space
+5. useful content widths remain appropriate
+6. no new empty/oversized white strips appear
+
+The visible difference from 021J should be obvious.
+
+==================================================
+AUTOMATED REGRESSION
+==================================================
+
+Run:
+1. focused layout tests
+2. collapsible-panel/chevron tests
+3. COMPLETE TrailWeigh regression suite
+
+Report exact commands and exact:
+- passed
+- failed
+- skipped
+
+Automated tests do not prove visual equality.
+
+==================================================
+FAIL CONDITIONS
+==================================================
+
+021K layout = FAIL if:
+
+- G1/G2/G3 are not actually measured on owner /checklist
+- public Share measurements are substituted
+- source-derived estimates are presented as real measurements
+- sidebar remains visibly off-center
+- G1/G2/G3 remain materially unequal
+- internal category padding is changed instead of actual layout gutters
+- chevron fix regresses
+- useful sidebar width changes unnecessarily
+- saved data/storage changes
+- mobile breaks
+- unrelated source changes remain
+
+==================================================
+USER ACCEPTANCE
+==================================================
+
+Do NOT claim USER-TESTED PASS.
+
+Record:
+
+Disclosure chevrons = previously USER-TESTED PASS and must remain protected.
+
+021K gutter layout = NOT USER-VERIFIED
+
+until the user visually reviews the rendered result.
+
+==================================================
+REPORTING
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_021K_REPORT.md
+
+Include:
+
+- exact Prompt 021K
+- checkpoint/recovery point
+- confirmation lg:pr-3 was restored
+- 021J chevron behavior preserved
+- authenticated owner-page measurement method
+- exact G1/G2/G3 edge definitions
+- BEFORE G1/G2/G3
+- gutter source breakdown
+- chosen target T
+- exact CSS/Tailwind changes
+- AFTER G1/G2/G3
+- largest-to-smallest gutter difference
+- sidebar width before/after
+- grid gap before/after
+- outer padding before/after
+- Dark/Light rendered results
+- responsive results
+- complete regression results
+- final diff review
+- data/storage protection confirmation
+- acceptance checklist:
+  PASS / FAIL / PARTIAL / NOT TESTED
+- unresolved issues
+- exact user visual test still required
+
+Append to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Record:
+
+021H = USER-TESTED FAIL
+021I = PIXEL BASELINE DIAGNOSTIC — ZERO APP CHANGES
+021J CHEVRONS = USER-TESTED PASS
+021J GUTTER LAYOUT = USER-TESTED FAIL
+021K GUTTER LAYOUT = NOT USER-VERIFIED
+
+Do not truncate or rewrite prior history.
+
+==================================================
+REPORT ZIP
+==================================================
+
+Create:
+
+trailweigh-021K-report.zip
+
+Exactly these four Markdown files at ZIP ROOT:
+
+PROMPT_021K_REPORT.md
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+TRAILWEIGH_WORKFLOW_PROTOCOL.md
+TESTING.md
+
+NO:
+- ../ paths
+- wrapper folder
+- __MACOSX
+- .DS_Store
+- source files
+- test source files
+- screenshots
+- backups
+- user data
+- credentials
+- other ZIP files
+
+List ZIP contents before finishing.
+
+Exactly 4 root entries.
+
+==================================================
+FINAL RESPONSE
+==================================================
+
+Report:
+
+1. checkpoint/recovery created
+2. confirmation 021J lg:pr-3 spacing change was restored
+3. confirmation disclosure chevrons remain correct
+4. exact owner-page G1/G2/G3 BEFORE measurements
+5. exact common gutter target T
+6. exact CSS/Tailwind properties changed
+7. exact G1/G2/G3 AFTER measurements
+8. largest-smallest AFTER difference
+9. confirmation sidebar is centered between its surrounding gutters
+10. confirmation category column has same left gutter
+11. sidebar width before/after
+12. grid gap and outer padding before/after
+13. files changed
+14. final-diff result
+15. confirmation no saved data/storage changed
+16. Dark/Light results
+17. responsive results
+18. COMPLETE regression totals
+19. report path
+20. ZIP path
+21. exact four ZIP entries
+22. clearly state USER visual verification is still required
+
+If authenticated owner /checklist measurements cannot be obtained, DO NOT perform the new equal-gutter adjustment. Restore the known 021J lg:pr-3 regression only, preserve the chevrons, document the limitation, and stop.
