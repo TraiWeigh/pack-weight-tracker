@@ -1,0 +1,389 @@
+PROMPT 022E — UPDATE HOW IT WORKS
+
+GOAL
+
+Update the existing TrailWeigh "How It Works" page.
+
+This page should be a SHORT, SIMPLE overview showing a new user the normal TrailWeigh workflow.
+
+Do NOT turn How It Works into another detailed Help & How-To page.
+
+Help & How-To already contains the detailed instructions from Prompt 022C.
+
+About TrailWeigh already contains the philosophy/history content from Prompt 022D.
+
+This prompt changes HOW IT WORKS only.
+
+==================================================
+1. FIRST INSPECT THE CURRENT PAGE
+==================================================
+
+Before editing:
+
+- Locate the current How It Works page/component.
+- Inspect its current content and layout.
+- Inspect the current TrailWeigh checklist interface so the wording accurately reflects existing features.
+- Preserve the existing TrailWeigh informational-page visual style.
+
+Do not modify HelpPage.tsx or AboutPage.tsx.
+
+==================================================
+2. USE THREE MAIN WORKFLOW SECTIONS
+==================================================
+
+Organize How It Works into these three main topics, in this exact order:
+
+1. Create / Upload
+2. Add / Organize
+3. Save / Preview / Print / Share
+
+These represent the normal TrailWeigh workflow:
+
+CREATE → ORGANIZE → USE
+
+Make each topic a clickable collapsible panel / accordion section.
+
+IMPORTANT:
+This is an accordion/collapsible panel, NOT a dropdown/select menu.
+
+Requirements:
+
+- Entire title row is clickable.
+- Show a disclosure chevron/caret.
+- Collapsed by default.
+- Clicking again collapses it.
+- Multiple sections may remain open at the same time.
+- Provide hover/focus feedback.
+- Keyboard accessible with Enter and Space.
+- Preserve proper accessibility semantics.
+
+==================================================
+3. CREATE / UPLOAD
+==================================================
+
+Keep this concise.
+
+Explain that users can begin in either of two ways:
+
+CREATE
+- Start directly in TrailWeigh and build a gear list manually.
+
+UPLOAD
+- If the user already has a gear list, use Scan Gear List to upload/import a supported file.
+- TrailWeigh detects items from the uploaded list.
+- The user reviews the detected items before importing them.
+- The user chooses which detected items to add.
+
+IMPORTANT:
+
+Scanning belongs here.
+
+Do NOT create a separate "Scan Gear List" or "Importing" section on How It Works.
+
+Use only file types actually supported by the current application.
+
+Do not invent formats.
+
+==================================================
+4. ADD / ORGANIZE
+==================================================
+
+Explain that once gear is in TrailWeigh, the user can:
+
+- Add additional gear manually.
+- Enter or edit item information.
+- Enter quantity and weight.
+- Organize items into appropriate categories.
+- Move items between categories using the current Move control if present.
+- Check/select the gear being used for the current trip.
+- Leave other gear unchecked when it is not being carried.
+
+Also explain the usefulness of creating DIFFERENT GEAR LISTS for different hikes and conditions.
+
+Include examples such as:
+
+- PCT
+- AT
+- CDT
+- PCT Desert
+- PCT Sierra
+- Summer
+- Cold Weather
+- Winter
+- Weekend trips
+
+Explain briefly:
+
+A gear list that works for one trail or season may not be appropriate for another.
+
+Different routes, elevations, climates, and seasons may require changes to:
+
+- Clothing
+- Insulation
+- Shelter
+- Rain protection
+- Water capacity
+- Traction
+- Other condition-specific equipment
+
+Do NOT prescribe what a user must carry.
+
+The purpose is to show that TrailWeigh can be used to build separate checklists for different trips and conditions.
+
+If Save As is the current method for creating a separate version of an existing saved list, mention that briefly, but leave detailed Save As instructions to Help & How-To.
+
+==================================================
+5. SAVE / PREVIEW / PRINT / SHARE
+==================================================
+
+Keep these related end-of-workflow actions together.
+
+------------------------------------------
+SAVE
+------------------------------------------
+
+Explain briefly that users can save named gear lists to their Locker so they can return to them later.
+
+Mention that separate saved lists can be useful for:
+
+- Different trails
+- Different seasons
+- Different gear configurations
+- Different trips
+
+Do not provide the full Save / Save As / Locker tutorial here.
+
+That belongs in Help & How-To.
+
+------------------------------------------
+PREVIEW
+------------------------------------------
+
+Explain that Preview provides a clean formatted view of the current gear list before printing or sharing.
+
+Use the actual current Preview behavior.
+
+------------------------------------------
+PRINT
+------------------------------------------
+
+Make the CHECKLIST usefulness clear.
+
+Explain that TrailWeigh is not only for calculating weight.
+
+The completed gear list can also be printed and used as a physical packing checklist.
+
+Users can check items while:
+
+- Gathering equipment
+- Packing at home
+- Preparing with another hiker
+- Performing a final gear check before leaving for the trailhead
+
+Use a concise idea similar to:
+
+"A checklist can help prevent arriving at the trailhead only to discover an important piece of gear was left at home."
+
+------------------------------------------
+SHARE
+------------------------------------------
+
+Keep all sharing information here.
+
+Explain that users can share their gear list using the current Share function.
+
+Also explain, if supported by the current interface, that the user can share JUST THE CHECKABLE PACKING LIST.
+
+The shared checkable list can allow the recipient to:
+
+- View the packing list.
+- Check items off while gathering or packing gear.
+- Print the list.
+
+The recipient's temporary checkbox changes must not modify the owner's saved original.
+
+This can be useful for:
+
+- Hiking partners
+- Trip planning
+- Helping another hiker prepare
+- Giving someone a packing checklist to work from
+
+Do NOT create a separate:
+
+"Share a Checkable Packing List"
+
+topic.
+
+It belongs inside Share.
+
+==================================================
+6. KEEP HOW IT WORKS SHORT
+==================================================
+
+How It Works is an overview.
+
+Do not copy all of the detailed instructions from Help & How-To.
+
+A user should be able to open How It Works and understand TrailWeigh in approximately one or two minutes.
+
+Use:
+
+- Short paragraphs
+- Plain language
+- Small examples where useful
+- Bold control names where appropriate
+
+Avoid:
+
+- Long tutorials
+- Developer terminology
+- Technical implementation details
+- Large walls of text
+
+For detailed instructions, the existing Help & How-To page remains the appropriate destination.
+
+If useful, include a small link at the bottom such as:
+
+"Need detailed instructions? Visit Help & How-To."
+
+Use the existing internal route/link.
+
+==================================================
+7. DO NOT ADD ULTRALIGHT HISTORY HERE
+==================================================
+
+Do NOT add:
+
+- Ray-Way
+- Ray Jardine history
+- What Is Ultralight?
+- Minimalist Mindset
+- HYOH
+- Trail vs Camp
+- Ultralight philosophy
+
+Those belong on About TrailWeigh from Prompt 022D.
+
+How It Works should explain HOW TO USE TRAILWEIGH, not the history or philosophy behind ultralight backpacking.
+
+==================================================
+8. REGRESSION PROTECTION
+==================================================
+
+Do not modify or regress:
+
+- About TrailWeigh / Prompt 022D
+- Help & How-To / Prompt 022C
+- Checklist behavior
+- Weight calculations
+- Scan Gear List functionality
+- Undo / Redo
+- Save / Save As
+- Locker
+- Preview
+- Print
+- Share
+- Shared Pack List
+- Backgrounds
+- Showcase
+- Authentication
+- Footer
+- Existing saved user data
+
+Make the smallest reasonable change set.
+
+Inspect the final diff and revert unrelated changes.
+
+==================================================
+9. VERIFICATION
+==================================================
+
+Verify:
+
+[ ] How It Works page was actually modified.
+
+[ ] Create / Upload is the first topic.
+
+[ ] Scan Gear List information is contained inside Create / Upload.
+
+[ ] No separate Scan Gear List/Import topic exists on How It Works.
+
+[ ] Add / Organize is the second topic.
+
+[ ] Selecting/checking the gear being used is included under Add / Organize.
+
+[ ] Different trail/season gear lists are explained.
+
+[ ] Examples include PCT, AT, CDT and seasonal/condition-specific lists.
+
+[ ] Save / Preview / Print / Share is the third topic.
+
+[ ] Print clearly explains using the gear list as a physical packing checklist.
+
+[ ] Share includes the checkable packing-list sharing information if supported.
+
+[ ] There is no separate Share a Checkable Packing List topic.
+
+[ ] The entire title row of each section is clickable.
+
+[ ] Sections are collapsed by default.
+
+[ ] Multiple sections can remain expanded.
+
+[ ] Keyboard accessibility works with Enter/Space.
+
+[ ] Page remains readable in Light and Dark modes.
+
+[ ] Page remains readable on narrow/mobile screens.
+
+[ ] Help & How-To from 022C is unchanged.
+
+[ ] About TrailWeigh from 022D is unchanged.
+
+[ ] No unrelated application functionality changed.
+
+Mark every item:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+==================================================
+10. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022E_REPORT.md
+
+Include:
+
+- Prompt ID/title
+- Exact How It Works file changed
+- Previous How It Works structure
+- New How It Works structure
+- Files changed
+- Verification results
+- Failed attempts
+- Anything reverted
+- Items requiring user testing
+- Confirmation Help 022C was preserved
+- Confirmation About 022D was preserved
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier reports.
+
+At completion provide:
+
+1. Full report path
+2. File size
+3. Line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short summary of the How It Works changes
+6. Anything still requiring user verification

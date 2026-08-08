@@ -4984,3 +4984,29 @@ Replace the flat feature-card About page with a polished accordion page that exp
 
 ### Status
 **022D ABOUT PAGE = NOT USER-VERIFIED (visual/interactive verification pending)**
+
+---
+
+## Prompt 022E — Update How It Works
+
+**Date:** 2026-08-08
+
+### Goal
+Replace the old flat 6-card How It Works page with a short, clear 3-section accordion overview that reflects the actual TrailWeigh workflow.
+
+### Key changes
+- **HowItWorksPage.tsx**: Complete rewrite — same accordion pattern as 022C/022D (collapsed by default, full-row button, aria semantics, multiple sections open).
+- **3 sections in workflow order**: Create / Upload → Add / Organize → Save / Preview / Print / Share.
+- **Scan Gear List** moved from its old standalone final card into Create / Upload (supports PDF, Word, Excel, Numbers; user reviews before importing).
+- **Checkbox / selecting gear** merged from its old standalone card into Add / Organize.
+- **Different trail/season lists** added: PCT, AT, CDT, winter, summer, cold-weather examples; Save As mentioned briefly.
+- **Print as physical packing checklist** explicitly explained with trailhead / forgot-gear scenario.
+- **Checkable shared packing list** documented inside Share (recipient views/checks/prints; temporary state; doesn't affect owner's original).
+- **No ultralight philosophy** — all philosophy/history stays in About TrailWeigh (022D).
+- **Help link** at bottom: "Need detailed instructions? Visit Help & How-To."
+
+### Test Results
+48 new 022E tests — all passing. Full suite exit 0.
+
+### Status
+**022E HOW IT WORKS = NOT USER-VERIFIED (visual/interactive verification pending)**
