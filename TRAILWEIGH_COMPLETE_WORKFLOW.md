@@ -5745,3 +5745,44 @@ Added a small trash-can icon button immediately to the right of the existing pen
 - Delete active theme: falls back to Landscapes default, no broken image
 - Built-in themes: no trash icon in landscape grid
 - Mobile: icons do not overlap name/count at narrow widths
+
+---
+
+## Prompt 022S — Fix Failed iPhone Locker Synchronization
+
+**Status:** COMPLETE ✅ — Runtime tested; real-iPhone verification pending  
+**Report:** [workflow-reports/PROMPT_022S_REPORT.md](workflow-reports/PROMPT_022S_REPORT.md)  
+**Tests:** 55 new (lockerFix022S) — 0 failures; 022R updated (50/50)
+
+### USER-VERIFIED 022R Result
+FAIL — iPhone still not syncing after 022R.
+
+### Six Root Causes Found and Fixed
+
+1. **`serverSyncRanRef` permanently blocked retries** — guard set to `true` BEFORE fetch completed; any failure on first fetch disabled all future syncs for the session. Fixed: replaced with `isSyncingRef` (concurrency-only, cleared in `finally`) + `lastSyncedUserIdRef` (userId-keyed success tracking).
+
+2. **Silent `.catch(() => {})` hid all errors** — 401, 500, network failures, JSON parse errors all swallowed with no log, no toast, no retry. Fixed: `safeFetch()` helper logs errors; failures schedule a 30-second retry; save-sync failures show user toast "Saved on this device — cloud sync failed."
+
+3. **Replace-or-migrate flaw dropped local-only entries** — if server had ANY entries, local-only entries were silently discarded. Fixed: `mergeLockerEntries()` exported pure function performs deterministic bidirectional merge by stable ID (server-only kept, local-only uploaded, same-ID → newer savedAt wins).
+
+4. **Migration was fire-and-forget** — `migrateLockerToServer` returned `void`; partial/total failure was indistinguishable from success. Fixed: returns `{ uploaded, failed }` — caller logs and handles partial failures.
+
+5. **No page-visibility refresh** — Safari iOS suspends tabs; mount-only fetch never re-runs. Fixed: `visibilitychange` listener (debounced 1 s) re-syncs when user returns to the app.
+
+6. **`credentials: 'include'` missing** — explicit credential forwarding added to all fetch calls in `lockerApi.ts`.
+
+### Runtime Verification
+- `GET /api/locker` → 401 JSON on port 8080, port 20351 (Vite proxy), and port 80 (Replit shared proxy / iPhone path) — routing confirmed correct
+- Authenticated `GET /api/locker` → 200 (server logs confirmed)
+- Authenticated `POST /api/locker` → 200 (server logs confirmed)
+- DB CRUD (INSERT / UPDATE / DELETE): all confirmed via psql
+
+### Files Changed
+- `artifacts/pack-checklist/src/lib/lockerApi.ts` — rewritten (safeFetch, mergeLockerEntries, MigrationResult)
+- `artifacts/pack-checklist/src/pages/Checklist.tsx` — sync section rewritten (isSyncingRef, lastSyncedUserIdRef, performLockerSync, visibilitychange listener, retry timer, error toasts)
+- `artifacts/pack-checklist/src/hooks/lockerFix022S.test.mjs` — new (55 assertions)
+- `artifacts/pack-checklist/src/hooks/lockerSync022R.test.mjs` — 2 assertions updated
+- `package.json` — 022S test added to chain
+
+### Requires User Verification
+Real-iPhone sync still requires user to test on actual device with same Clerk account. See §19 in report for exact steps.

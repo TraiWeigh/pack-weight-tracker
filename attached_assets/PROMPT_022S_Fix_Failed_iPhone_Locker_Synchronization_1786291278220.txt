@@ -1,0 +1,891 @@
+PROMPT 022S — FIX FAILED IPHONE LOCKER SYNCHRONIZATION
+
+STATUS FROM USER TESTING
+
+Prompt 022R did NOT solve the real-device problem.
+
+USER-VERIFIED RESULT:
+FAIL — TrailWeigh on the user's iPhone is still not synchronizing the saved Locker files from the same signed-in account.
+
+The 022R workflow report claimed the Locker sync issue was fixed, but its own report also states:
+
+- GET /api/locker: NOT TESTED at runtime
+- Save propagation to server: NOT TESTED at runtime
+- Migration localStorage → server: NOT TESTED at runtime
+- Desktop → iPhone: NOT TESTED on a real device
+- iPhone → Desktop: NOT TESTED on a real device
+
+Therefore, treat Prompt 022R's cross-device sync result as FAILED until the actual end-to-end server path is proven.
+
+THIS PROMPT IS FOCUSED.
+
+Do NOT perform another broad mobile UI audit.
+Do NOT redesign unrelated TrailWeigh features.
+
+The objective is to find and fix the actual end-to-end Locker synchronization failure.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the complete 022R implementation before changing anything:
+   - locker_entries database table
+   - /api/locker routes
+   - lockerApi.ts
+   - Checklist.tsx synchronization effect
+   - localStorage migration logic
+   - authentication middleware
+   - frontend-to-API routing/proxy configuration
+   - actual database connection used by the running TrailWeigh environment
+
+3. Make the smallest reasonable correction.
+
+4. Do NOT perform unrelated refactors.
+
+5. Preserve:
+   - Existing saved Locker files
+   - Stable file IDs
+   - Save / Save As
+   - Rename
+   - Delete
+   - Last-active-file behavior
+   - Authentication
+   - Account isolation
+   - Shared Links
+   - Checkable Packing Lists
+   - Backgrounds
+   - Custom Themes
+   - Scan Gear List
+   - Prior verified TrailWeigh fixes
+
+6. Inspect the COMPLETE final diff.
+
+7. Revert unrelated changes.
+
+8. Run the full regression suite plus new 022S tests.
+
+9. Do not claim completion if real runtime API behavior has not been tested.
+
+==================================================
+1. FIRST PROVE THE ACTUAL RUNTIME PATH
+==================================================
+
+Before changing code, test the CURRENT 022R implementation end-to-end in the
+same running Replit environment TrailWeigh uses.
+
+Do not rely only on source inspection or mocked unit tests.
+
+Verify each step separately:
+
+A. FRONTEND → API
+
+From the running TrailWeigh frontend, verify that:
+
+GET /api/locker
+
+actually reaches the new Locker API route.
+
+Record:
+- HTTP status
+- Content-Type
+- whether response is JSON
+- sanitized response shape
+
+It must NOT:
+- return the frontend HTML document
+- return 404
+- return 500
+- silently fail
+- be routed to the wrong server
+
+B. AUTHENTICATION
+
+Verify the request reaches the API with a valid Clerk-authenticated session.
+
+On the server, verify getAuth(req) resolves an authenticated userId.
+
+Do NOT expose:
+- JWTs
+- cookies
+- tokens
+- passwords
+- session secrets
+
+The server userId should correspond to the same signed-in account used by the
+frontend.
+
+C. DATABASE
+
+Verify the running API is connected to the SAME PostgreSQL/database environment
+where the locker_entries table was created.
+
+Confirm:
+- locker_entries exists
+- the running API can SELECT from it
+- the running API can INSERT/UPSERT into it
+- the running API can UPDATE it
+- the running API can DELETE from it
+
+Do not assume that running a schema push in one environment means the actual
+preview/deployment runtime uses the same database.
+
+D. ACTUAL CRUD
+
+Using a SAFE test account/test record:
+
+1. POST a disposable Locker entry.
+2. Confirm a successful non-2xx/2xx status correctly.
+3. GET /api/locker.
+4. Verify the exact entry comes back.
+5. PUT/update it.
+6. GET and verify update.
+7. PATCH rename it.
+8. GET and verify rename.
+9. DELETE it.
+10. GET and verify it is gone.
+
+Document actual runtime results.
+
+==================================================
+2. DO NOT SWALLOW SYNC FAILURES
+==================================================
+
+The 022R report says server synchronization calls use patterns like:
+
+serverSaveNew(entry).catch(() => {})
+
+and other empty catches.
+
+This hides the exact error that is preventing cross-device synchronization.
+
+Fix this.
+
+Requirements:
+
+- lockerApi helpers must treat every non-success HTTP status as an error.
+- Parse useful non-sensitive error responses where possible.
+- Do not silently discard failures.
+- Log a sanitized development diagnostic.
+- Preserve local saved data if the network/server call fails.
+- Provide the application enough state to retry synchronization.
+
+Do NOT log:
+- auth tokens
+- cookies
+- passwords
+- private file contents
+- private user information
+
+==================================================
+3. VERIFY API HELPER RESPONSE HANDLING
+==================================================
+
+Inspect lockerApi.ts.
+
+For every method:
+- GET
+- POST
+- PUT
+- PATCH
+- DELETE
+
+Verify:
+- correct URL
+- correct HTTP method
+- correct headers
+- correct credentials/session behavior
+- correct JSON body
+- correct Content-Type
+- response.ok is checked
+- malformed/non-JSON responses are handled
+- returned data is mapped into the exact LockerEntry shape expected by the UI
+
+Do not assume a request succeeded merely because fetch() resolved.
+
+fetch() can resolve normally for HTTP 401, 404, 500, etc.
+
+Those must be treated as failures.
+
+==================================================
+4. VERIFY CLERK AUTH ON THE LOCKER ROUTES
+==================================================
+
+Inspect the server middleware order.
+
+Confirm the Locker router is registered AFTER/within the required Clerk
+authentication middleware so that:
+
+getAuth(req)
+
+is actually populated.
+
+Test an authenticated request at runtime.
+
+Expected:
+- authenticated same-account request → 200
+- unauthenticated request → 401
+- another account cannot read or modify the first account's entries
+
+Do not weaken authentication to make synchronization work.
+
+==================================================
+5. VERIFY THE DATABASE MIGRATION IN THE ACTIVE ENVIRONMENT
+==================================================
+
+022R says:
+
+pnpm --filter @workspace/db push
+
+was run.
+
+Do not assume that alone proves production/preview runtime correctness.
+
+Verify the actual running TrailWeigh API's database connection contains:
+
+locker_entries
+
+with the expected columns.
+
+If the table is absent in the active environment:
+- apply the migration using the project's correct existing database workflow
+- do not create a second unrelated database
+- do not delete existing data
+
+Document which environment was corrected.
+
+==================================================
+6. FIX THE 022R ONE-SHOT SYNC GUARD
+==================================================
+
+Inspect:
+
+serverSyncRanRef
+
+or any equivalent one-time guard.
+
+Current 022R logic reportedly does approximately:
+
+if (!userId || serverSyncRanRef.current) return;
+serverSyncRanRef.current = true;
+fetchLockerEntries()...
+
+This is dangerous because if the first server request fails, the guard can
+prevent another synchronization attempt for the remainder of that mounted
+session.
+
+Correct this.
+
+Requirements:
+
+- A failed first fetch must NOT permanently disable synchronization.
+- The sync guard must be associated with the authenticated user ID, not merely
+  one boolean forever.
+- Account changes/sign-out/sign-in must not reuse another user's sync state.
+- A later successful retry must be possible.
+- Avoid infinite fetch loops.
+
+==================================================
+7. ADD SAFE RETRY / REFRESH BEHAVIOR
+==================================================
+
+TrailWeigh should retrieve current account Locker data:
+
+- after authentication is ready
+- when the private checklist/Locker initializes
+- after a failed synchronization when a reasonable retry occurs
+- when the page becomes active again after being backgrounded, if appropriate
+- when the user returns to TrailWeigh after saving from another device
+
+Do NOT add aggressive polling.
+
+A reasonable model is:
+- fetch on authenticated startup
+- fetch when page becomes visible/focused again, with debounce/throttle
+- fetch after successful local/server mutations as needed
+
+This is especially important on phones, where Safari may keep a page suspended
+for a long time.
+
+==================================================
+8. FIX THE 022R MIGRATION MERGE FLAW
+==================================================
+
+The 022R report says:
+
+IF SERVER HAS ENTRIES:
+    replace local Locker with server entries
+
+ELSE:
+    migrate local entries to server
+
+This can lose or hide older local-only Locker entries.
+
+Example:
+
+Desktop localStorage contains:
+A
+B
+C
+
+Server contains only:
+A
+
+The 022R logic may replace the desktop cache with only A instead of migrating
+B and C.
+
+That is NOT safe.
+
+Implement a deterministic merge/migration strategy by STABLE FILE ID.
+
+For authenticated account-owned Locker entries:
+
+SERVER-ONLY ID:
+- keep it
+- add it to local cache
+
+LOCAL-ONLY ID:
+- preserve it
+- upload/migrate it to server
+- do not discard it just because the server already contains some other files
+
+SAME ID ON BOTH:
+- compare valid savedAt/update timestamps where available
+- preserve the newest legitimate saved state
+- do not generate a new ID
+- do not duplicate the file
+
+If timestamps are equal or ambiguous:
+- use the safest deterministic rule
+- document it
+
+Do not overwrite a newer server version with an older stale local cache.
+
+Do not erase a valid local-only saved file.
+
+==================================================
+9. MIGRATION MUST BE CONFIRMED, NOT FIRE-AND-FORGET
+==================================================
+
+Existing desktop Locker files are important.
+
+When migrating localStorage entries to the server:
+
+1. Keep the local entries intact.
+2. Upload each missing local-only entry.
+3. Await/confirm the server result.
+4. Re-fetch the server Locker.
+5. Confirm all expected stable IDs exist on the server.
+6. Only then treat migration as synchronized.
+
+If one item fails:
+- preserve it locally
+- mark/retry that item
+- do not declare the entire Locker synchronized
+
+==================================================
+10. SYNCHRONIZATION STATE
+==================================================
+
+Add internal synchronization state sufficient to distinguish:
+
+SYNCED
+SYNCING
+SYNC FAILED / RETRY NEEDED
+
+Do not build a large new user interface.
+
+However, a failed server synchronization must not be completely invisible.
+
+Preserve the existing successful save confirmation:
+
+Saved [File Name]
+
+If the local save succeeds but the account/server sync fails, provide a clear
+secondary message such as:
+
+Saved on this device — sync failed. Will retry.
+
+or equivalent concise wording consistent with TrailWeigh.
+
+Do not tell the user the file is synchronized when it is not.
+
+==================================================
+11. DO NOT LOSE DATA DURING ERROR RECOVERY
+==================================================
+
+Never fix synchronization by:
+- clearing localStorage
+- clearing the Locker
+- deleting database rows
+- changing all file IDs
+- forcing the user to recreate saved lists
+
+Preserve all valid existing user files.
+
+If duplicate/conflicting test data is found, inspect before removing anything.
+
+==================================================
+12. DESKTOP EXISTING-FILE MIGRATION TEST
+==================================================
+
+Create a controlled test matching the user's actual history:
+
+Desktop localStorage has THREE saved files:
+- SYNC TEST A
+- SYNC TEST B
+- SYNC TEST C
+
+Server initially has:
+- none
+
+Load authenticated TrailWeigh.
+
+Expected:
+[ ] all three remain locally
+[ ] all three are uploaded to server
+[ ] GET /api/locker returns all three stable IDs
+[ ] no duplicates
+
+Then test partial server state:
+
+Desktop localStorage:
+A, B, C
+
+Server:
+A only
+
+Expected:
+[ ] A remains one record
+[ ] B is migrated
+[ ] C is migrated
+[ ] server ends with A, B, C
+[ ] local cache ends with A, B, C
+[ ] no IDs change
+
+==================================================
+13. NEW DEVICE TEST WITHOUT REAL IPHONE
+==================================================
+
+Simulate a true new device/browser profile:
+
+- authenticated same test account
+- EMPTY TrailWeigh localStorage Locker
+- no prior sessionStorage state
+
+Load TrailWeigh.
+
+Expected:
+[ ] GET /api/locker succeeds
+[ ] server entries populate Locker
+[ ] local cache is created from account-backed entries
+[ ] stable IDs match server
+[ ] no Save As/duplicate is triggered
+
+This test MUST run at runtime, not source inspection only.
+
+This is the closest reproducible test for the user's iPhone symptom.
+
+==================================================
+14. SECOND-BROWSER / INCOGNITO CROSS-DEVICE SIMULATION
+==================================================
+
+Use two independent browser storage contexts if available:
+
+BROWSER CONTEXT A:
+- same authenticated test account
+- save SYNC CROSS DEVICE TEST
+
+BROWSER CONTEXT B:
+- same authenticated test account
+- empty localStorage
+- load/reload TrailWeigh
+
+Expected:
+[ ] same saved file appears in B
+[ ] same stable ID
+[ ] same contents
+
+Then modify and Save in B.
+
+Return/focus/reload A.
+
+Expected:
+[ ] A retrieves the latest saved version
+[ ] no duplicate
+
+If Replit cannot run two authenticated contexts, mark that specific portion
+PARTIAL, but runtime-test the API and new-device empty-storage case.
+
+==================================================
+15. IPHONE-SPECIFIC STALE PAGE BEHAVIOR
+==================================================
+
+Safari on iPhone can leave a page suspended and later restore it.
+
+Ensure TrailWeigh does not rely only on a one-time mount fetch.
+
+When the page returns to visible/active state after being backgrounded:
+- safely refresh account Locker metadata/data when appropriate
+- do not discard unsaved local edits
+- do not cause continuous requests
+- do not reset the active working list unexpectedly
+
+If there are unsaved working changes, refreshing the Locker list must not
+silently overwrite the currently edited working list.
+
+==================================================
+16. SAVE / RENAME / DELETE MUST SYNC RELIABLY
+==================================================
+
+After the core visibility bug is fixed, runtime-test:
+
+SAVE NEW:
+- local save succeeds
+- server POST/upsert succeeds
+- another fresh browser context can GET it
+
+SAVE EXISTING:
+- same stable ID
+- server updated
+- another context sees update
+
+RENAME:
+- server row name updates
+- another context sees new name
+
+DELETE:
+- server row deleted
+- another context no longer sees file
+
+If a network failure occurs:
+- local data remains safe
+- operation is retried/reconciled
+- no permanent silent divergence
+
+==================================================
+17. ACCOUNT ISOLATION
+==================================================
+
+Runtime verify with safe test accounts where possible:
+
+- Account A cannot GET Account B entries.
+- Account A cannot PUT/PATCH/DELETE Account B entry IDs.
+- Requests must be scoped by authenticated userId on the server.
+- Never trust a client-supplied userId for authorization.
+
+Do not weaken privacy/security for sync.
+
+==================================================
+18. OUT OF SCOPE
+==================================================
+
+Do NOT expand this prompt into:
+- broad mobile layout redesign
+- custom photo/blob cross-device synchronization
+- custom theme server migration
+- new sharing features
+- Weight Distribution redesign
+- authentication redesign
+- PDF redesign
+
+Those may be separate prompts.
+
+022S is specifically:
+REAL, WORKING, ACCOUNT-BACKED LOCKER SYNCHRONIZATION.
+
+==================================================
+19. USER-VERIFIED ACCEPTANCE TEST
+==================================================
+
+The final acceptance test will be performed by the user on a real iPhone.
+
+After Replit finishes, instruct the user to do:
+
+DESKTOP:
+1. Sign into TrailWeigh.
+2. Confirm normal saved Locker files are visible.
+3. Save a small safe change to one existing file OR create a disposable
+   "IPHONE SYNC TEST" file.
+4. Wait for successful sync confirmation.
+
+IPHONE:
+5. Use the SAME TrailWeigh account.
+6. Fully reload TrailWeigh.
+7. Open Locker.
+
+PASS only if:
+[ ] existing desktop Locker files appear on iPhone
+[ ] IPHONE SYNC TEST appears
+[ ] file contents match
+[ ] stable file is not duplicated
+
+Then:
+
+IPHONE:
+8. Make a safe change and Save.
+
+DESKTOP:
+9. Reload/refocus TrailWeigh.
+
+PASS only if:
+[ ] desktop sees the iPhone-saved change
+[ ] same stable file ID remains
+[ ] no duplicate is created
+
+Until the user completes this test:
+REAL IPHONE SYNC = NOT TESTED
+
+Do not label it PASS.
+
+==================================================
+20. NEW AUTOMATED TESTS
+==================================================
+
+Add tests for at least:
+
+[ ] API helper rejects 401
+[ ] API helper rejects 404
+[ ] API helper rejects 500
+[ ] API helper rejects malformed/non-JSON response where JSON is required
+[ ] authenticated GET success
+[ ] stable-ID POST/upsert
+[ ] local-only migration when server empty
+[ ] local-only migration when server is partially populated
+[ ] server-only entry appears in local cache
+[ ] same-ID newer server version wins where appropriate
+[ ] same-ID newer local version is safely synchronized where appropriate
+[ ] failed initial GET can retry
+[ ] userId change resets sync identity safely
+[ ] empty fresh browser storage populates from server
+[ ] no duplicate file from ordinary synchronization
+[ ] local data survives server failure
+
+Tests must exercise behavior, not just search source text for function names.
+
+==================================================
+21. RUNTIME TESTS ARE MANDATORY
+==================================================
+
+Prompt 022S cannot be marked COMPLETE based only on source inspection.
+
+At minimum, runtime-test:
+
+[ ] GET /api/locker
+[ ] POST /api/locker
+[ ] PUT /api/locker/:id
+[ ] PATCH /api/locker/:id
+[ ] DELETE /api/locker/:id
+[ ] database write/read
+[ ] empty localStorage/new-device server fetch
+[ ] partial local/server merge migration
+
+If authentication prevents a particular automated runtime test:
+- explain exactly why
+- use the safest available authenticated test method
+- mark any genuinely untested item NOT TESTED
+
+Do not write "FIXED" beside something that was not runtime-tested.
+
+==================================================
+22. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022S_REPORT.md
+
+The report must include:
+
+- Exact title:
+  Prompt 022S — Fix Failed iPhone Locker Synchronization
+
+- USER-VERIFIED 022R result:
+  FAIL — iPhone still not syncing
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Actual 022R failure/root cause found in 022S
+
+- Runtime GET /api/locker result
+  - sanitized status
+  - content type
+  - response shape
+
+- Runtime POST result
+
+- Runtime PUT result
+
+- Runtime PATCH result
+
+- Runtime DELETE result
+
+- Authentication middleware verification
+
+- Active database/environment verification
+
+- locker_entries table verification
+
+- Frontend/API routing verification
+
+- Any 401/404/500 errors found
+
+- Whether silent .catch(() => {}) behavior contributed
+
+- serverSyncRanRef / one-shot guard findings
+
+- Retry behavior implemented
+
+- Local/server merge strategy
+
+- Existing-file migration test results
+
+- Partial-server migration test results
+
+- Empty-new-device runtime test
+
+- Stable-ID verification
+
+- Duplicate prevention
+
+- Save / Rename / Delete synchronization results
+
+- Account-isolation results
+
+- Automated test results
+
+- Runtime test results
+
+- Full regression results
+
+- Complete final-diff review
+
+- Anything reverted
+
+- Exact items requiring USER iPhone verification
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Do NOT mark real iPhone testing PASS unless the user has performed it.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+23. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022S-report.zip
+
+Prompt 022S is NOT complete until BOTH files exist:
+
+1.
+workflow-reports/PROMPT_022S_REPORT.md
+
+2.
+workflow-reports/trailweigh-022S-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022S_REPORT.md
+
+It may also contain non-sensitive:
+- runtime test logs
+- sanitized HTTP verification output
+- automated test output
+- migration test results
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- JWTs
+- API keys
+- .env files
+- private user data
+- real user Locker contents
+- private database dumps
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022S_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave it in workflow-reports/.
+7. Attach/provide it if Replit supports this.
+
+Do not mark Prompt 022S complete if the ZIP is missing or invalid.
+
+==================================================
+24. COMPLETION RESPONSE
+==================================================
+
+At completion provide:
+
+1. Full path:
+   workflow-reports/PROMPT_022S_REPORT.md
+
+2. Markdown report file size
+
+3. Markdown line count
+
+4. Full path:
+   workflow-reports/trailweigh-022S-report.zip
+
+5. ZIP file size
+
+6. ZIP contents
+
+7. Confirmation ZIP opened and verified
+
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+
+9. Exact reason 022R still failed on the user's iPhone
+
+10. Exact runtime HTTP/API problem found, if any
+
+11. Exact database/environment problem found, if any
+
+12. Exact sync/migration logic problem found, if any
+
+13. What changed in 022S
+
+14. Proof from runtime testing that a fresh/empty browser context can retrieve
+    another context's saved Locker entries
+
+15. Confirmation stable IDs are preserved
+
+16. Confirmation local-only pre-022R files are safely migrated
+
+17. Confirmation sync failures are no longer silently swallowed
+
+18. Exact real-iPhone USER verification steps
+
+FINAL STATUS RULE:
+
+Do not report:
+"iPhone sync PASS"
+
+until the user verifies it on the real iPhone.
+
+Report instead:
+"Runtime cross-browser/server sync PASS; real iPhone verification pending"
+if that is the truthful result.

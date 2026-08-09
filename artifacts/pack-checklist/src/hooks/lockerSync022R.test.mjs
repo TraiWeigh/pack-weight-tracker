@@ -224,10 +224,13 @@ test('migrateLockerToServer function is exported', () => {
   );
 });
 
-test('fetchLockerEntries fetches GET /api/locker', () => {
+test('fetchLockerEntries fetches GET /api/locker (via safeFetch or direct fetch)', () => {
+  // 022S replaced fetch(BASE) with safeFetch(BASE) — still targets /api/locker
   assert.ok(
-    lockerApiSrc.includes("fetch(BASE)") || lockerApiSrc.includes("fetch('/api/locker')"),
-    'fetchLockerEntries must fetch from /api/locker',
+    lockerApiSrc.includes("safeFetch(BASE)") ||
+    lockerApiSrc.includes("fetch(BASE)") ||
+    lockerApiSrc.includes("fetch('/api/locker')"),
+    'fetchLockerEntries must call /api/locker via fetch or safeFetch',
   );
 });
 
@@ -277,10 +280,13 @@ test('fetchLockerEntries is imported', () => {
   );
 });
 
-test('serverSyncRanRef guard prevents double-fetching', () => {
+test('concurrency guard prevents duplicate server fetches on remount', () => {
+  // 022S replaced the single-boolean serverSyncRanRef (which permanently blocked
+  // retries after failure) with isSyncingRef (concurrency-only) + lastSyncedUserIdRef
+  // (userId-keyed success tracking). Either pattern satisfies the requirement.
   assert.ok(
-    checklistSrc.includes('serverSyncRanRef'),
-    'serverSyncRanRef must be used to prevent duplicate server fetches on remount',
+    checklistSrc.includes('isSyncingRef') || checklistSrc.includes('serverSyncRanRef'),
+    'A concurrency guard must prevent duplicate server fetches on remount',
   );
 });
 

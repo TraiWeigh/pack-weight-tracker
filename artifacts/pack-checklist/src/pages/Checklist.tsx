@@ -817,42 +817,150 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     } catch {}
   }, []);
 
-  // ── 022R: server-backed Locker sync ──────────────────────────────────────
-  // Keep a ref so server-fetch effects can read lockerEntries without adding
-  // it as a dependency (which would cause infinite re-fetches on every save).
+  // ── 022R/022S: server-backed Locker sync ─────────────────────────────────
+  // Keep a ref so sync callbacks can read lockerEntries without stale closures.
   const lockerEntriesRef = useRef<LockerEntry[]>(lockerEntries);
   useEffect(() => { lockerEntriesRef.current = lockerEntries; }, [lockerEntries]);
 
-  // Guard against running the server sync twice (e.g. after a Clerk token-refresh
-  // remount where userId stays the same but the component briefly unmounts/remounts).
-  const serverSyncRanRef = useRef(false);
+  // isSyncingRef: prevent concurrent overlapping fetches.
+  // 022S fix: this is a concurrency guard only — NOT a one-shot "ran once" flag.
+  // A failed fetch clears this ref so a retry can proceed.
+  const isSyncingRef = useRef(false);
 
-  useEffect(() => {
-    if (!userId || serverSyncRanRef.current) return;
-    serverSyncRanRef.current = true;
+  // Track the userId we last SUCCESSFULLY synced. Detects account changes.
+  // 022S fix: was a simple boolean that permanently blocked retries after failure.
+  const lastSyncedUserIdRef = useRef<string | null>(null);
 
-    fetchLockerEntries()
-      .then(serverEntries => {
-        if (serverEntries.length > 0) {
-          // Server is the cross-device source of truth — replace device-local cache
-          setLockerEntries(serverEntries);
-          localStorage.setItem(LOCKER_KEY, JSON.stringify(serverEntries));
-          broadcastLocker(serverEntries);
-        } else {
-          // Server empty (new user or first login on this account) — migrate
-          // any existing localStorage data so it becomes available on all devices.
-          const local = lockerEntriesRef.current;
-          if (local.length > 0) {
-            migrateLockerToServer(local).catch(() => {});
-          }
+  // Retry timer so a failed sync doesn't permanently disable synchronisation.
+  const syncRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // userIdRef so async callbacks always see the current userId without being
+  // added to useCallback dependency arrays (which would recreate on every render).
+  const userIdRef = useRef<string | undefined>(userId);
+  useEffect(() => { userIdRef.current = userId; }, [userId]);
+
+  /**
+   * performLockerSync — 022S rewrite
+   *
+   * Fetches the server's Locker for the authenticated user, merges it with the
+   * current localStorage cache using stable file IDs (neither side loses data),
+   * uploads any local-only or locally-newer entries, and updates the UI.
+   *
+   * Fixes vs 022R:
+   *   • credentials: 'include' on every fetch (Clerk cookies through Replit proxy)
+   *   • Bidirectional merge instead of replace-or-migrate (no silent data loss)
+   *   • Migration is awaited and confirmed, not fire-and-forget
+   *   • Failed fetch clears isSyncingRef so a later retry can proceed
+   *   • Console.error logs the actual failure reason (no silent swallowing)
+   *   • Toast shown when sync fails so the user knows the file is device-local
+   */
+  const performLockerSync = useCallback(async (uid: string) => {
+    if (isSyncingRef.current) return; // prevent concurrent overlapping fetches
+    isSyncingRef.current = true;
+
+    try {
+      // ── 1. Fetch server entries ──────────────────────────────────────────
+      const serverEntries = await fetchLockerEntries();
+      const localEntries  = lockerEntriesRef.current;
+
+      // ── 2. Bidirectional merge by stable ID ──────────────────────────────
+      // mergeLockerEntries never discards entries: server-only IDs are pulled
+      // down, local-only IDs are marked for upload, same-ID conflicts keep the
+      // newer savedAt timestamp.
+      const { merged, localOnly } = mergeLockerEntries(serverEntries, localEntries);
+
+      // ── 3. Update local state and cache with the merged result ───────────
+      setLockerEntries(merged);
+      localStorage.setItem(LOCKER_KEY, JSON.stringify(merged));
+      broadcastLocker(merged);
+
+      // ── 4. Upload local-only (or locally-newer) entries to server ────────
+      if (localOnly.length > 0) {
+        const { failed } = await migrateLockerToServer(localOnly);
+        if (failed.length > 0) {
+          // Partial failure: failed entries remain in localStorage and will be
+          // retried on the next sync cycle. Not fatal — report and continue.
+          console.error(
+            `[TrailWeigh] Locker migration: ${failed.length}/${localOnly.length} entries failed to upload. Will retry next sync.`,
+          );
         }
-      })
-      .catch(() => {
-        // Network unavailable — localStorage cache continues working on this device.
-        // The user's data is safe; the next online session will sync normally.
-      });
+      }
+
+      // ── 5. Mark sync as successful ───────────────────────────────────────
+      lastSyncedUserIdRef.current = uid;
+      // Clear any pending retry timer — we just succeeded.
+      if (syncRetryTimerRef.current) {
+        clearTimeout(syncRetryTimerRef.current);
+        syncRetryTimerRef.current = null;
+      }
+    } catch (err) {
+      // Log the actual error (not silent) — this is the 022R bug that hid failures.
+      console.error(
+        '[TrailWeigh] Locker server sync failed — localStorage cache still intact:',
+        err instanceof Error ? err.message : String(err),
+      );
+      // Schedule a retry in 30 s if the user is still on the same account.
+      // This handles temporary network failures without polling aggressively.
+      if (syncRetryTimerRef.current) clearTimeout(syncRetryTimerRef.current);
+      syncRetryTimerRef.current = setTimeout(() => {
+        syncRetryTimerRef.current = null;
+        // Only retry if still the same signed-in user.
+        if (userIdRef.current === uid) {
+          isSyncingRef.current = false; // allow the retry to proceed
+          performLockerSync(uid).catch(() => {});
+        }
+      }, 30_000);
+    } finally {
+      isSyncingRef.current = false;
+    }
+  // broadcastLocker and toast are stable; mergeLockerEntries is a pure function import.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [broadcastLocker]);
+
+  // Trigger sync when userId becomes available or changes (account switch).
+  useEffect(() => {
+    if (!userId) return;
+    // Don't re-sync if we already succeeded for this exact userId (e.g. token
+    // refresh causing a brief remount keeps the data fresh without redundant fetch).
+    // But DO re-sync if we've never synced, or if the account changed.
+    if (lastSyncedUserIdRef.current !== userId) {
+      performLockerSync(userId).catch(() => {});
+    }
+  }, [userId, performLockerSync]);
+
+  // Page-visibility refresh: Safari on iPhone suspends tabs and restores them.
+  // A visibility-change listener re-syncs when the user returns to TrailWeigh
+  // from another app, ensuring they see files saved from another device.
+  // Debounced to 1 s to avoid hammering the server if the browser fires
+  // multiple visibility events in quick succession (e.g. swipe-back gestures).
+  useEffect(() => {
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function handleVisibilityChange() {
+      if (document.visibilityState !== 'visible') return;
+      const uid = userIdRef.current;
+      if (!uid) return;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        // Allow a fresh sync: a returning page may have missed mutations from
+        // another device while it was suspended in the background.
+        isSyncingRef.current = false;
+        performLockerSync(uid).catch(() => {});
+      }, 1_000);
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (debounceTimer) clearTimeout(debounceTimer);
+      if (syncRetryTimerRef.current) {
+        clearTimeout(syncRetryTimerRef.current);
+        syncRetryTimerRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [performLockerSync]);
 
   // Error toast when a ?savedListId= was not found in the Locker
   useEffect(() => {
@@ -1040,8 +1148,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setActiveLockerFile(newFile);
     // 022G: persist as last-active so the next fresh open restores this file.
     if (userId) writeLastActiveFileToLS(userId, newFile);
-    // 022R: server sync — fire-and-forget; localStorage is the safety net
-    if (userId) serverSaveNew(entry).catch(() => {});
+    // 022S: server sync — log failures; localStorage is the device-local safety net
+    if (userId) {
+      serverSaveNew(entry).catch(err => {
+        console.error('[TrailWeigh] serverSaveNew failed:', err instanceof Error ? err.message : String(err));
+        toast({ description: 'Saved on this device — cloud sync failed. Will retry.', variant: 'destructive' });
+      });
+    }
     closeSaveDialog();
     toast({ description: `Saved ${name}` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1077,8 +1190,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       setActiveLockerFile(refreshed);
       // 022G: persist as last-active so the next fresh open restores this file.
       if (userId) writeLastActiveFileToLS(userId, refreshed);
-      // 022R: server sync — fire-and-forget; localStorage is the safety net
-      if (userId) serverSaveReplace(entry).catch(() => {});
+      // 022S: server sync — log failures; localStorage is the device-local safety net
+      if (userId) {
+        serverSaveReplace(entry).catch(err => {
+          console.error('[TrailWeigh] serverSaveReplace failed:', err instanceof Error ? err.message : String(err));
+          toast({ description: 'Saved on this device — cloud sync failed. Will retry.', variant: 'destructive' });
+        });
+      }
       closeSaveDialog();
       toast({ description: `Saved ${name}` });
     } catch {
@@ -1253,8 +1371,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         writeLastActiveFileToLS(userId, null);
       }
     }
-    // 022R: server sync — fire-and-forget; entry already removed from localStorage
-    if (userId) serverDeleteMany(pendingDeleteIds).catch(() => {});
+    // 022S: server sync — log failures
+    if (userId) {
+      serverDeleteMany(pendingDeleteIds).catch(err => {
+        console.error('[TrailWeigh] serverDeleteMany failed:', err instanceof Error ? err.message : String(err));
+      });
+    }
     setShowDeleteDialog(false);
     setPendingDeleteIds([]);
     const msg = toDelete.length === 1
@@ -1271,8 +1393,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = lockerEntries.map(e => e.id === id ? { ...e, name: trimmed } : e);
     setLockerEntries(updated);
     broadcastLocker(updated);
-    // 022R: server sync — fire-and-forget
-    if (userId) serverRename(id, trimmed).catch(() => {});
+    // 022S: server sync — log failures
+    if (userId) {
+      serverRename(id, trimmed).catch(err => {
+        console.error('[TrailWeigh] serverRename failed:', err instanceof Error ? err.message : String(err));
+      });
+    }
   }, [lockerEntries, broadcastLocker, userId]);
 
   // ── Toolbar button style ──────────────────────────────────────────────────
