@@ -14,6 +14,7 @@
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ImageIcon, X, Check, ChevronDown, Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
 import {
   PHOTO_COLLECTIONS_KEY,
   MAX_PHOTOS_PER_COLLECTION,
@@ -806,12 +807,36 @@ export function BackgroundPickerPanel({
                 aria-label={`Edit theme name: ${col.name}`}
                 title={`Rename theme "${col.name}"`}
               ><Pencil className="w-3 h-3" /></button>
-              <button
-                onClick={() => setConfirmDeleteTheme(col.id)}
-                className="p-1 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
-                aria-label={`Delete theme "${col.name}"`}
-                title={`Delete theme "${col.name}"`}
-              ><Trash2 className="w-3 h-3" /></button>
+              <Popover
+                open={isConfirmingDelete}
+                onOpenChange={(open) => { if (!open) setConfirmDeleteTheme(null); }}
+              >
+                <PopoverTrigger asChild>
+                  <button
+                    onClick={() => setConfirmDeleteTheme(col.id)}
+                    className="p-1 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                    aria-label={`Delete theme "${col.name}"`}
+                    title={`Delete theme "${col.name}"`}
+                  ><Trash2 className="w-3 h-3" /></button>
+                </PopoverTrigger>
+                <PopoverContent side="top" align="end" className="w-56 p-3">
+                  <p className="text-sm font-semibold mb-1 leading-snug">Delete Custom Theme?</p>
+                  <p className="text-sm mb-1 leading-snug">
+                    Delete <strong>"{col.name}"</strong> and its custom background photos?
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-3">This action cannot be undone.</p>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => setConfirmDeleteTheme(null)}
+                      className="font-semibold bg-muted text-muted-foreground px-2.5 py-1 rounded-md text-xs hover:bg-muted/80 transition-colors"
+                    >Cancel</button>
+                    <button
+                      onClick={() => confirmAndDeleteTheme(col.id)}
+                      className="font-semibold bg-destructive text-destructive-foreground px-2.5 py-1 rounded-md text-xs hover:bg-destructive/90 transition-colors"
+                    >Delete Theme</button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </>
           )}
         </div>
@@ -834,26 +859,6 @@ export function BackgroundPickerPanel({
           JPEG, PNG, WebP, GIF — max 25 MB · click or drag to add
         </p>
 
-        {/* Delete Theme confirmation dialog */}
-        {isConfirmingDelete && (
-          <div className="mt-3 p-2.5 rounded-lg bg-destructive/10 border border-destructive/30 text-[11px]">
-            <p className="text-foreground font-semibold mb-1 leading-snug">Delete Custom Theme?</p>
-            <p className="text-foreground mb-1 leading-snug">
-              Delete <strong>"{col.name}"</strong> and its custom background photos?
-            </p>
-            <p className="text-muted-foreground mb-2 text-[10px]">This action cannot be undone.</p>
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setConfirmDeleteTheme(null)}
-                className="font-semibold bg-muted text-muted-foreground px-2.5 py-1 rounded-md text-[11px] hover:bg-muted/80 transition-colors"
-              >Cancel</button>
-              <button
-                onClick={() => confirmAndDeleteTheme(col.id)}
-                className="font-semibold bg-destructive text-destructive-foreground px-2.5 py-1 rounded-md text-[11px] hover:bg-destructive/90 transition-colors"
-              >Delete Theme</button>
-            </div>
-          </div>
-        )}
       </div>
     );
   };

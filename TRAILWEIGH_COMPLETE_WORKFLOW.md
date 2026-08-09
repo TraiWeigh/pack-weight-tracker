@@ -6005,3 +6005,46 @@ Desktop: unchanged from 022W (pill lg:absolute, right group ml-auto)
 
 ### Real-iPhone Verification
 Report PASS only after user verifies on physical device.
+
+---
+
+## Prompt 022Y — Fix Custom-Theme Delete Warning Position
+
+**Date:** 2026-08-09  
+**Status:** Anchored delete-popover browser tests PASS; real-iPhone verification pending.
+
+### User-Verified Issue
+Custom-theme delete warning still appeared at the bottom of the Themes panel (prior fix FAILED). Required: confirmation opens as a small anchored popover directly next to the trash icon.
+
+### Root Cause
+`renderCustomThemePanel()` in `BackgroundPicker.tsx` rendered `{isConfirmingDelete && <div className="mt-3 ...">}` as a conditional block in normal document flow after the photo grid. This caused the warning to appear at the bottom of the expanded panel, far from the trash trigger. No portal — confirmation was rendered inline inside the `overflow-y-auto` panel container.
+
+### Solution
+Replaced the inline bottom-appended block with a **Radix `<Popover>`** wrapping the trash button. `PopoverContent` is wrapped in `PopoverPrimitive.Portal` (already implemented in `components/ui/popover.tsx`), so it renders into `document.body` — escaping all parent overflow containers including `overflow-y-auto` and `lg:overflow-hidden`. Radix collision detection (`side="top" align="end"`) flips the popover above/below/left/right as needed to stay in viewport.
+
+### Files Changed
+- `artifacts/pack-checklist/src/components/BackgroundPicker.tsx` — Popover import + trash button wrapped in Popover/PopoverTrigger/PopoverContent; old bottom `mt-3` block removed
+- `package.json` — 022Y test added to chain
+- **New:** `artifacts/pack-checklist/src/hooks/deleteWarningPosition022Y.test.mjs` (27 tests)
+- **Updated:** `artifacts/pack-checklist/src/hooks/deleteCustomTheme022P.test.mjs` — threshold 600→900 chars (Popover wrapper adds ~280 chars between Pencil and Trash2 icons)
+
+### Test Results
+- `deleteWarningPosition022Y.test.mjs`: 27/27 passed
+- `deleteCustomTheme022P.test.mjs`: 38/38 passed
+- Full `pnpm test:importer`: 0 failures
+
+### Widths Verified (responsive browser)
+320px, 360px (Android), 375px, 390px, 430px portrait · 1280px desktop
+
+### Invariants Preserved
+- 022U mobile scrolling (no body scroll lock from Popover) ✓
+- 022X toolbar zones ✓
+- confirmAndDeleteTheme logic unchanged ✓
+- setConfirmDeleteTheme(null) closes the popover via onOpenChange ✓
+- One popover at a time (single confirmDeleteTheme state) ✓
+- Category-bar delete (GearCategory.tsx) unchanged ✓
+- Built-in theme protection (PRESETS path has no trash icon) ✓
+- All button actions (rename, photo upload) unchanged ✓
+
+### Real-iPhone Verification
+Report PASS only after user verifies on physical device (signed-in session, custom theme, trash icon tap, popover appears beside trash — not at panel bottom).

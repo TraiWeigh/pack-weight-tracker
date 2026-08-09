@@ -1,0 +1,533 @@
+PROMPT 022Y — FIX CUSTOM-THEME DELETE WARNING POSITION
+
+USER-VERIFIED STATUS
+
+The custom-theme delete warning is STILL appearing at the bottom of the Themes
+panel/page.
+
+That is NOT the requested behavior.
+
+The user wants the delete warning to appear directly NEXT TO the custom-theme
+trash icon, matching the same local/anchored delete-confirmation pattern used
+on the category bar.
+
+Treat the prior delete-warning positioning work as FAILED for this requirement.
+
+THIS PROMPT IS FOCUSED ONLY ON THE CUSTOM-THEME DELETE CONFIRMATION POSITION.
+
+Do NOT redesign the Background Themes system.
+Do NOT change the underlying delete logic unless required to preserve the
+existing delete action.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current implementation of:
+   - custom-theme trash icon
+   - custom-theme delete confirmation
+   - category-bar delete confirmation
+   - any reusable Popover / ConfirmPopover / anchored confirmation component
+   - parent containers that may have overflow:hidden or clipping
+   - any portal behavior already used elsewhere
+
+3. Identify EXACTLY why the custom-theme warning is being rendered at the
+   bottom instead of beside the trash icon.
+
+4. Make the smallest reasonable correction.
+
+5. Preserve:
+   - custom-theme delete behavior
+   - custom-theme rename/pencil behavior
+   - built-in theme protection
+   - custom photos
+   - active-theme fallback behavior
+   - saved-list protection
+   - shared-link protection
+   - 10-photo limit
+   - Fit / Fill
+   - Showcase
+   - sync
+   - mobile scrolling
+   - current toolbar behavior
+   - all unrelated TrailWeigh features
+
+6. Inspect the COMPLETE final diff.
+
+7. Revert unrelated changes.
+
+8. Run the full regression suite plus new 022Y tests.
+
+==================================================
+1. REQUIRED RESULT
+==================================================
+
+When the user taps/clicks the trash icon for a CUSTOM THEME:
+
+The delete confirmation must open as a SMALL ANCHORED CONFIRMATION POPOVER
+directly next to the trash icon.
+
+It must NOT appear:
+- at the bottom of the Themes panel
+- at the bottom of the page
+- as a detached document-flow warning
+- far away from the trash icon
+- behind other content
+
+The trash icon is the trigger and the warning must remain visually associated
+with that trigger.
+
+==================================================
+2. MATCH THE CATEGORY-BAR DELETE PATTERN
+==================================================
+
+Inspect the existing category-bar delete confirmation.
+
+Use the SAME general interaction pattern where practical.
+
+Preferred:
+- reuse the same component
+OR
+- reuse the same positioning logic
+OR
+- use the same Popover primitive
+
+Do not invent a second unrelated confirmation system if the category-bar
+pattern already works.
+
+The custom-theme delete warning should feel like the same product behavior.
+
+==================================================
+3. ANCHORED POSITIONING
+==================================================
+
+Anchor the popover to the custom-theme trash button.
+
+Preferred placement:
+
+- beside the trash icon
+- or slightly below/above it if necessary for available space
+
+Use collision-aware positioning.
+
+The popover should:
+- stay close to the trash icon
+- remain fully inside the viewport
+- flip above/below/left/right when necessary
+- not be clipped by parent containers
+- not create horizontal page overflow
+
+If the Themes panel has overflow clipping, use an appropriate portal-based
+popover approach so the confirmation can escape the clipping container while
+remaining anchored to the trash icon.
+
+==================================================
+4. DO NOT RENDER THE WARNING IN NORMAL DOCUMENT FLOW
+==================================================
+
+The delete warning must NOT occupy a permanent block at the bottom of the
+Themes panel.
+
+Do NOT solve this with:
+- conditional JSX appended after the theme list
+- a bottom warning section
+- extra bottom margin
+- scroll-to-warning behavior
+
+This confirmation belongs to the TRIGGER, not to the bottom of the panel.
+
+==================================================
+5. CONFIRMATION COPY
+==================================================
+
+Keep concise wording substantially like:
+
+Delete Custom Theme?
+
+Delete "Test 9" and its custom background photos?
+
+This action cannot be undone.
+
+Buttons:
+Cancel
+Delete Theme
+
+Use the actual current custom-theme name.
+
+Do not ask for the account password.
+
+==================================================
+6. CANCEL
+==================================================
+
+Cancel must:
+
+- close the anchored popover
+- leave the theme unchanged
+- leave photos unchanged
+- leave the current background unchanged
+- return focus appropriately to the trash trigger where practical
+
+==================================================
+7. DELETE
+==================================================
+
+Delete Theme must:
+
+- call the EXISTING correct custom-theme delete action
+- delete only the selected custom theme
+- preserve all existing safety/fallback behavior
+- close the popover after successful deletion
+- not leave a ghost warning at the bottom of the panel
+
+Do not rewrite deletion architecture unless needed for a bug found during
+inspection.
+
+==================================================
+8. ONE POPOVER AT A TIME
+==================================================
+
+If multiple custom themes can be shown:
+
+Only one delete confirmation may be open at a time.
+
+Opening another theme's trash confirmation should close the previous one.
+
+Do not render multiple detached warnings.
+
+==================================================
+9. OUTSIDE CLICK / ESCAPE
+==================================================
+
+Use behavior consistent with the category-bar confirmation.
+
+Preferred:
+- outside click closes popover
+- Escape closes popover
+- no deletion occurs
+
+Do not accidentally trigger deletion from outside-click behavior.
+
+==================================================
+10. ACCESSIBILITY
+==================================================
+
+The popover must be accessible.
+
+Verify:
+- trash icon is a real button
+- accessible label includes theme name where practical
+- popover receives sensible focus behavior
+- Cancel and Delete Theme are keyboard reachable
+- Escape closes if consistent with component behavior
+- visible focus states
+- screen readers can associate the confirmation with the delete action
+
+Do not rely on icon position alone.
+
+==================================================
+11. DESKTOP TEST
+==================================================
+
+At normal desktop width:
+
+1. Open Background Themes.
+2. Find a disposable custom theme.
+3. Click its trash icon.
+
+Expected:
+
+[ ] warning appears immediately beside/near the trash icon
+[ ] warning is not at panel bottom
+[ ] warning is fully visible
+[ ] Cancel works
+[ ] Delete Theme works
+
+==================================================
+12. IPHONE PORTRAIT TEST
+==================================================
+
+At approximately 390 px width:
+
+1. Open Background Themes.
+2. Tap custom-theme trash icon.
+
+Expected:
+
+[ ] warning appears beside/near the trash icon
+[ ] warning stays inside viewport
+[ ] warning is not at panel bottom
+[ ] warning is not hidden under Safari chrome
+[ ] buttons are reachable
+[ ] page remains scrollable after closing
+[ ] no body scroll lock remains behind
+
+If there is not enough room on the right:
+- place it left, above, or below as needed
+- keep it visually anchored to the trash icon
+
+==================================================
+13. ANDROID PORTRAIT TEST
+==================================================
+
+Repeat at representative Android phone width.
+
+Expected:
+[ ] same anchored behavior
+[ ] no clipping
+[ ] no offscreen buttons
+[ ] no bottom warning block
+
+==================================================
+14. CATEGORY-BAR REGRESSION
+==================================================
+
+Do not break the existing category-bar delete confirmation.
+
+Verify:
+[ ] category delete still appears in its expected local position
+[ ] category delete action still works
+[ ] custom-theme confirmation now follows the same UX pattern
+
+==================================================
+15. BUILT-IN THEME PROTECTION
+==================================================
+
+Built-in themes must remain undeletable.
+
+Verify:
+[ ] no custom-theme delete popover appears for protected built-in themes
+[ ] no delete action becomes available through this change
+
+==================================================
+16. NO SCROLL REGRESSION
+==================================================
+
+Prompt 022U mobile scrolling is user-verified working.
+
+Verify:
+[ ] opening custom-theme delete popover does not permanently disable page scroll
+[ ] closing it restores normal page scroll
+[ ] Themes panel remains scrollable
+[ ] Locker/page scrolling remains unchanged
+
+==================================================
+17. REQUIRED AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for:
+
+[ ] trash trigger opens confirmation associated with that theme
+[ ] confirmation is rendered as popover/overlay rather than bottom document-flow block
+[ ] only one delete confirmation open at a time
+[ ] Cancel closes without deletion
+[ ] Delete calls existing custom-theme delete handler
+[ ] Escape/outside click closes without deletion where supported
+[ ] built-in themes do not get delete trigger
+[ ] category-bar delete behavior does not regress
+
+Where practical, test rendered positioning/role behavior instead of merely
+searching for class names.
+
+==================================================
+18. RUNTIME VISUAL TESTS
+==================================================
+
+Render and visually inspect at:
+
+- desktop
+- 430 px
+- 390 px
+- 375 px
+- 320 px
+- representative Android width
+
+For each:
+
+[ ] click/tap trash icon
+[ ] confirmation appears next to trigger
+[ ] confirmation is fully visible
+[ ] confirmation is not at bottom of panel
+[ ] no overlap with unrelated controls
+[ ] no horizontal page overflow
+
+Take non-sensitive screenshots if supported.
+
+==================================================
+19. USER-VERIFICATION RULE
+==================================================
+
+Real iPhone behavior must remain:
+
+NOT TESTED
+
+unless tested on actual iPhone hardware.
+
+If responsive browser tests pass, report:
+
+"Anchored delete-popover browser tests PASS; real-iPhone verification pending."
+
+==================================================
+20. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022Y_REPORT.md
+
+Include:
+
+- Exact title:
+  Prompt 022Y — Fix Custom-Theme Delete Warning Position
+
+- User-verified issue:
+  custom-theme delete warning still appears at bottom
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Exact prior implementation causing bottom placement
+
+- Whether the warning was rendered in document flow
+
+- Whether category-bar component/logic was reused
+
+- Popover primitive/positioning approach used
+
+- Portal/clipping findings
+
+- Collision/flip behavior
+
+- Desktop result
+
+- 430 px result
+
+- 390 px result
+
+- 375 px result
+
+- 320 px result
+
+- Android-width result
+
+- category-bar regression result
+
+- built-in theme protection result
+
+- mobile scroll regression result
+
+- automated tests
+
+- runtime/visual tests
+
+- full regression results
+
+- complete final-diff review
+
+- anything reverted
+
+- exact real-iPhone verification steps
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior reports.
+
+==================================================
+21. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022Y-report.zip
+
+Prompt 022Y is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_022Y_REPORT.md
+
+2.
+workflow-reports/trailweigh-022Y-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022Y_REPORT.md
+
+It may additionally contain NON-SENSITIVE:
+- responsive screenshots
+- test logs
+- runtime output
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private user data
+- private Locker contents
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022Y_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+Do not mark Prompt 022Y complete without a valid ZIP.
+
+==================================================
+22. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown size
+3. Markdown line count
+4. ZIP full path
+5. ZIP size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Exact reason the warning was still appearing at the bottom
+
+10. Exact component/positioning method now used
+
+11. Confirmation the warning is anchored to the trash icon
+
+12. Confirmation it can flip/reposition to remain onscreen
+
+13. Confirmation there is no bottom document-flow warning anymore
+
+14. Confirmation category-bar delete behavior did not regress
+
+15. Confirmation mobile scrolling did not regress
+
+16. Exact real-iPhone user verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+"Real iPhone delete-popover PASS"
+
+until the user verifies it on the physical iPhone.

@@ -84,9 +84,10 @@ test('Pencil and Trash2 icons are in the same row (within a few hundred chars)',
   const trashIdx  = bgPickerSrc.indexOf('<Trash2 className="w-3 h-3" />');
   assert.ok(pencilIdx > -1, 'Pencil icon must be present');
   assert.ok(trashIdx > -1,  'Trash2 icon must be present');
-  // Both icons must be within ~600 chars of each other in the source
+  // Both icons must be within ~900 chars of each other in the source
+  // (022Y wrapped Trash2 in a Popover, adding ~300 chars of portal boilerplate)
   assert.ok(
-    Math.abs(pencilIdx - trashIdx) < 600,
+    Math.abs(pencilIdx - trashIdx) < 900,
     `Pencil (${pencilIdx}) and Trash2 (${trashIdx}) must be adjacent in the header row`,
   );
 });
