@@ -1,5 +1,5 @@
 /**
- * lockerApi.ts — Prompt 022R (revised 022S)
+ * lockerApi.ts — Prompt 022R (revised 022S, 022T)
  *
  * Client-side helpers for the server-backed Locker API.
  *
@@ -10,13 +10,68 @@
  *  - mergeLockerEntries() is a pure, exported function (testable without a browser)
  *  - migrateLockerToServer() returns { uploaded, failed } so callers can
  *    react to partial migration failures instead of silently discarding them
+ *
+ * 022T changes:
+ *  - fetchLockerStatus() — GET /api/locker/status for safe diagnostics
+ *  - normalizeSavedAt() — coerces DB date strings or numbers to epoch ms
+ *  - mergeLockerEntries() uses normalizeSavedAt so stale string timestamps
+ *    from old localStorage entries cannot cause silent merge failures
  */
 
 import type { LockerEntry } from '../components/LockerPanel';
 
 const BASE = '/api/locker';
 
-// ── Internal helpers ──────────────────────────────────────────────────────────
+// ── Diagnostic types ──────────────────────────────────────────────────────────
+
+export interface LockerStatus {
+  authenticated: boolean;
+  /** 8-char fingerprint of Clerk userId (e.g. "A7C4-91F2"). Raw userId never exposed. */
+  accountFingerprint: string;
+  lockerCount: number;
+  environment: string;
+  serverBuild: string;
+  serverTime: string;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/**
+ * Normalize a savedAt value to epoch milliseconds.
+ *
+ * The server stores savedAt as a PostgreSQL timestamptz.  JSON serialization
+ * converts it to a number (via .getTime()).  However, old localStorage entries
+ * may have been written as ISO date strings by an earlier version of the code.
+ * Comparing a string with `>` against a number silently returns false and drops
+ * locally-newer entries from the upload list.
+ *
+ * This function coerces either form to a reliable number, returning 0 for any
+ * value that cannot be parsed (so invalid entries sort to the bottom rather
+ * than causing a merge failure).
+ */
+export function normalizeSavedAt(ts: unknown): number {
+  if (typeof ts === 'number' && !Number.isNaN(ts)) return ts;
+  if (typeof ts === 'string') {
+    const n = Date.parse(ts);
+    return Number.isNaN(n) ? 0 : n;
+  }
+  return 0;
+}
+
+/**
+ * Deterministic 8-char fingerprint of a Clerk userId (djb2 hash).
+ * Must produce the SAME value as the server-side userFingerprint() in locker.ts.
+ * Raw userId is NEVER shown in the UI — only this fingerprint.
+ */
+export function accountSyncId(userId: string): string {
+  let h = 5381;
+  for (let i = 0; i < userId.length; i++) {
+    h = ((h << 5) + h) ^ userId.charCodeAt(i);
+    h = h >>> 0;
+  }
+  const hex = h.toString(16).toUpperCase().padStart(8, '0');
+  return `${hex.slice(0, 4)}-${hex.slice(4)}`;
+}
 
 /**
  * Wraps fetch() with:
@@ -69,11 +124,21 @@ export function mergeLockerEntries(
   serverEntries: LockerEntry[],
   localEntries:  LockerEntry[],
 ): { merged: LockerEntry[]; localOnly: LockerEntry[] } {
-  const serverMap = new Map(serverEntries.map(e => [e.id, e]));
+  // Normalize all savedAt values upfront so comparisons are always number vs number.
+  // This guards against old localStorage entries that stored savedAt as a Date string.
+  const normalizeEntry = (e: LockerEntry): LockerEntry => ({
+    ...e,
+    savedAt: normalizeSavedAt(e.savedAt),
+  });
+
+  const normalizedServer = serverEntries.map(normalizeEntry);
+  const normalizedLocal  = localEntries.map(normalizeEntry);
+
+  const serverMap = new Map(normalizedServer.map(e => [e.id, e]));
   const mergedMap = new Map<string, LockerEntry>(serverMap);
   const localOnly: LockerEntry[] = [];
 
-  for (const localEntry of localEntries) {
+  for (const localEntry of normalizedLocal) {
     const serverEntry = serverMap.get(localEntry.id);
     if (!serverEntry) {
       // Local-only: add to merged and mark for upload
@@ -101,6 +166,16 @@ export async function fetchLockerEntries(): Promise<LockerEntry[]> {
   const resp = await safeFetch(BASE);
   const data = (await resp.json()) as { entries?: LockerEntry[] };
   return Array.isArray(data.entries) ? data.entries : [];
+}
+
+/**
+ * Fetch safe diagnostic status for the Sync Status panel.
+ * Returns accountFingerprint (not raw userId), lockerCount, environment, build info.
+ * Requires authentication — throws on 401/network failure.
+ */
+export async function fetchLockerStatus(): Promise<LockerStatus> {
+  const resp = await safeFetch(`${BASE}/status`);
+  return (await resp.json()) as LockerStatus;
 }
 
 /**

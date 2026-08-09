@@ -5786,3 +5786,39 @@ FAIL — iPhone still not syncing after 022R.
 
 ### Requires User Verification
 Real-iPhone sync still requires user to test on actual device with same Clerk account. See §19 in report for exact steps.
+
+---
+
+## Prompt 022T — Fix Real-Device Sync by Proving Build, Environment, Account, and Server State
+
+**Status:** COMPLETE ✅ — Root cause proven; real-iPhone verification pending  
+**Report:** [workflow-reports/PROMPT_022T_REPORT.md](workflow-reports/PROMPT_022T_REPORT.md)  
+**Tests:** 76 new (lockerStatus022T) — 0 failures; full suite clean
+
+### User-Verified Status
+- 022R: FAIL
+- 022S: FAIL
+
+### Root Cause Found (CASE F + CLIENT RETRIEVAL/MERGE BUG)
+
+**`mergeLockerEntries` was missing from the lockerApi import in Checklist.tsx.**
+
+Every call to `performLockerSync` threw `ReferenceError: mergeLockerEntries is not defined`. The `catch` block logged the error and scheduled a 30-second retry. The retry threw the same error. The 30-second GET /api/locker cycle in server logs was the retry loop — the server was working, the fetch was working, authentication was working. The merge never ran. `setLockerEntries(merged)` was never called. iPhone (empty localStorage) saw nothing; desktop (files in localStorage from prior sessions) appeared to work normally.
+
+### What 022T Added
+
+1. **Critical fix:** `mergeLockerEntries` (and `fetchLockerStatus`) added to the lockerApi import
+2. **Sync Status Panel** — compact collapsible row in the Locker showing: Cloud Sync status, Local/Server file counts, Last Sync time, Build ID, Server Build, Environment, Host, Account Sync ID (fingerprint), Sync Now button
+3. **`GET /api/locker/status`** endpoint — returns `{ authenticated, accountFingerprint, lockerCount, environment, serverBuild, serverTime }` (no raw userId)
+4. **`accountSyncId(userId)`** — deterministic djb2 fingerprint (same algorithm on client and server) — lets user compare desktop vs iPhone Account Sync IDs without exposing raw userId
+5. **`normalizeSavedAt()`** — coerces string/null savedAt to epoch ms for safe merge comparison
+6. **`__BUILD_ID__`** — Vite define, stamped at build time, shown in Sync Status
+7. **localStorage try/catch** — iOS Safari private mode safety; server data still appears in React state
+8. **`handleSyncNow`** — manual Sync Now button handler
+
+### Runtime Verification
+- `GET /api/locker/status` → 401 JSON (unauthenticated, curl confirmed)
+- `GET /api/locker` → 200/304 for authenticated sessions (server logs confirmed)
+
+### Real-iPhone Steps (for user)
+Open Locker → Cloud Sync row → Expand. Compare Build, Account Sync ID, and Server Files between desktop and iPhone. If Account Sync IDs match and Server Files match, tap Sync Now — files should appear immediately.

@@ -23,6 +23,54 @@ import { eq, and } from 'drizzle-orm';
 
 const router = Router();
 
+/**
+ * A short build identifier stamped at server startup.
+ * Changes on every restart so desktop and iPhone can verify they are
+ * running the same deployed code version.
+ */
+const SERVER_BUILD_ID = `022T-${Date.now().toString(36).slice(-6)}`;
+
+/**
+ * Deterministic 8-char fingerprint of a Clerk userId (djb2 hash).
+ * Same userId → same fingerprint; different userId → different fingerprint.
+ * Raw userId is never exposed.
+ */
+function userFingerprint(userId: string): string {
+  let h = 5381;
+  for (let i = 0; i < userId.length; i++) {
+    h = ((h << 5) + h) ^ userId.charCodeAt(i);
+    h = h >>> 0; // keep unsigned 32-bit
+  }
+  const hex = h.toString(16).toUpperCase().padStart(8, '0');
+  return `${hex.slice(0, 4)}-${hex.slice(4)}`;
+}
+
+// ── GET /api/locker/status ────────────────────────────────────────────────────
+
+router.get('/locker/status', async (req, res) => {
+  const { userId } = getAuth(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  try {
+    const rows = await db
+      .select({ id: lockerEntriesTable.id })
+      .from(lockerEntriesTable)
+      .where(eq(lockerEntriesTable.userId, userId));
+
+    return res.json({
+      authenticated: true,
+      accountFingerprint: userFingerprint(userId),
+      lockerCount: rows.length,
+      environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+      serverBuild: SERVER_BUILD_ID,
+      serverTime: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[locker status]', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // ── GET /api/locker ───────────────────────────────────────────────────────────
 
 router.get('/locker', async (req, res) => {

@@ -27,8 +27,16 @@ if (!basePath) {
   );
 }
 
+// Build identifier: unique per build/dev-server restart.
+// Format: 022T-<base36 timestamp suffix>
+// Purpose: lets desktop and iPhone compare whether they're running the same bundle.
+const BUILD_ID = `022T-${Date.now().toString(36).slice(-6)}`;
+
 export default defineConfig({
   base: basePath,
+  define: {
+    __BUILD_ID__: JSON.stringify(BUILD_ID),
+  },
   plugins: [
     react(),
     tailwindcss({ optimize: false }),

@@ -20,6 +20,8 @@ import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
 import { buildShareURL, type SharedLockerFile } from '../lib/shareLink';
 import {
   fetchLockerEntries,
+  fetchLockerStatus,
+  mergeLockerEntries,
   serverSaveNew,
   serverSaveReplace,
   serverRename,
@@ -779,6 +781,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     } catch { return []; }
   });
 
+  // 022T: Sync Status state — drives the SyncStatusPanel diagnostic UI
+  const [syncState, setSyncState] = useState<{
+    status: 'idle' | 'syncing' | 'error';
+    serverCount: number | null;
+    lastSyncTime: number | null;
+    syncError: string | null;
+  }>({ status: 'idle', serverCount: null, lastSyncTime: null, syncError: null });
+
   // Persist whenever lockerEntries changes (does NOT broadcast — broadcasts happen
   // explicitly in mutating handlers to avoid cross-tab echo loops)
   useEffect(() => {
@@ -857,6 +867,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const performLockerSync = useCallback(async (uid: string) => {
     if (isSyncingRef.current) return; // prevent concurrent overlapping fetches
     isSyncingRef.current = true;
+    setSyncState(s => ({ ...s, status: 'syncing' }));
 
     try {
       // ── 1. Fetch server entries ──────────────────────────────────────────
@@ -866,12 +877,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       // ── 2. Bidirectional merge by stable ID ──────────────────────────────
       // mergeLockerEntries never discards entries: server-only IDs are pulled
       // down, local-only IDs are marked for upload, same-ID conflicts keep the
-      // newer savedAt timestamp.
+      // newer savedAt timestamp. savedAt values are normalized (string or number).
       const { merged, localOnly } = mergeLockerEntries(serverEntries, localEntries);
 
       // ── 3. Update local state and cache with the merged result ───────────
       setLockerEntries(merged);
-      localStorage.setItem(LOCKER_KEY, JSON.stringify(merged));
+      // Wrap in try/catch: iOS Safari in private mode throws QuotaExceededError.
+      // React state (setLockerEntries) already fired above — UI still updates.
+      try {
+        localStorage.setItem(LOCKER_KEY, JSON.stringify(merged));
+      } catch (storageErr) {
+        console.error('[TrailWeigh] localStorage write failed (iOS private mode?):', storageErr);
+      }
       broadcastLocker(merged);
 
       // ── 4. Upload local-only (or locally-newer) entries to server ────────
@@ -888,17 +905,29 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
       // ── 5. Mark sync as successful ───────────────────────────────────────
       lastSyncedUserIdRef.current = uid;
+      setSyncState({
+        status: 'idle',
+        serverCount: serverEntries.length,
+        lastSyncTime: Date.now(),
+        syncError: null,
+      });
       // Clear any pending retry timer — we just succeeded.
       if (syncRetryTimerRef.current) {
         clearTimeout(syncRetryTimerRef.current);
         syncRetryTimerRef.current = null;
       }
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       // Log the actual error (not silent) — this is the 022R bug that hid failures.
       console.error(
         '[TrailWeigh] Locker server sync failed — localStorage cache still intact:',
-        err instanceof Error ? err.message : String(err),
+        message,
       );
+      setSyncState(s => ({
+        ...s,
+        status: 'error',
+        syncError: message,
+      }));
       // Schedule a retry in 30 s if the user is still on the same account.
       // This handles temporary network failures without polling aggressively.
       if (syncRetryTimerRef.current) clearTimeout(syncRetryTimerRef.current);
@@ -913,9 +942,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     } finally {
       isSyncingRef.current = false;
     }
-  // broadcastLocker and toast are stable; mergeLockerEntries is a pure function import.
+  // broadcastLocker and setSyncState are stable; mergeLockerEntries is a pure import.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [broadcastLocker]);
+
+  // 022T: Manual "Sync Now" handler — triggered by the SyncStatusPanel button.
+  const handleSyncNow = useCallback(() => {
+    if (!userId) return;
+    // Force re-sync even if lastSyncedUserIdRef matches (explicit user action).
+    isSyncingRef.current = false;
+    performLockerSync(userId).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, performLockerSync]);
 
   // Trigger sync when userId becomes available or changes (account switch).
   useEffect(() => {
@@ -2016,6 +2054,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onLoad={handleLoadFromLocker}
                   onRequestDelete={requestProtectedDelete}
                   onRename={handleRenameInLocker}
+                  syncProps={userId ? {
+                    userId,
+                    syncStatus: syncState.status,
+                    serverCount: syncState.serverCount,
+                    lastSyncTime: syncState.lastSyncTime,
+                    syncError: syncState.syncError,
+                    onSyncNow: handleSyncNow,
+                  } : undefined}
                 />
               </div>
             </div>

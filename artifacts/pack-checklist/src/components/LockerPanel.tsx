@@ -3,6 +3,7 @@ import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { Background } from './BackgroundPicker';
 import { ChevronDown, ChevronUp, Trash2, FolderOpen, Pencil, Check, X } from 'lucide-react';
 import { LockerIcon } from './LockerIcon';
+import { SyncStatusPanel, type SyncProps } from './SyncStatusPanel';
 
 export type Store = {
   items: PackState;
@@ -36,6 +37,8 @@ interface LockerPanelProps {
    *  The parent is responsible for identity verification before deletion. */
   onRequestDelete: (id: string) => void;
   onRename: (id: string, newName: string) => void;
+  /** Optional 022T sync diagnostic props. When provided, a SyncStatusPanel is rendered. */
+  syncProps?: SyncProps;
 }
 
 function formatDate(ts: number) {
@@ -43,7 +46,7 @@ function formatDate(ts: number) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function LockerPanel({ entries, onLoad, onRequestDelete, onRename }: LockerPanelProps) {
+export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncProps }: LockerPanelProps) {
   const [open, setOpen] = useState(true);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -106,6 +109,10 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename }: Lock
 
       {open && (
         <div>
+          {/* 022T: Sync Status diagnostic panel — shown when signed in */}
+          {syncProps && (
+            <SyncStatusPanel {...syncProps} localCount={entries.length} />
+          )}
           {entries.length === 0 ? (
             <p className="px-5 py-6 text-xs text-muted-foreground text-center">
               No saved lists yet. Click the <strong>Save</strong> button in the toolbar to save the current list.
