@@ -1,0 +1,639 @@
+PROMPT 022Z — FIX CUSTOM-THEME DELETE CONFIRMATION JUMP AND DOUBLE-CLICK
+
+USER-VERIFIED VIDEO RESULT
+
+The prior custom-theme delete confirmation positioning change is only PARTIAL.
+
+The video shows this exact sequence:
+
+1. The user opens Background Edit.
+2. The user clicks the custom-theme trash icon.
+3. The delete confirmation correctly appears next to the trash icon.
+4. The user clicks "Delete Theme" ONCE.
+5. Instead of immediately completing the deletion, the Background panel closes.
+6. The same delete confirmation then jumps to the UPPER-LEFT corner of the page.
+7. The user must click "Delete Theme" a SECOND time to actually finish the deletion.
+
+THIS IS A BUG.
+
+The requested behavior is:
+
+ONE click on the trash icon opens the anchored confirmation.
+ONE click on "Delete Theme" confirms and completes the deletion.
+The confirmation must NEVER jump to the upper-left corner.
+
+This prompt is focused ONLY on fixing that interaction.
+
+Do NOT redesign Background Themes.
+Do NOT change unrelated toolbar/mobile work.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit project checkpoint/backup.
+
+2. Inspect the current implementation from the prior custom-theme delete work.
+
+3. Inspect:
+   - custom-theme trash trigger
+   - anchored delete popover
+   - "Delete Theme" confirmation button handler
+   - Background Edit panel open/close state
+   - selected custom-theme state
+   - pending-delete state
+   - any portal/popover anchor/reference element
+   - any onOpenChange/onInteractOutside/onClick handlers
+   - any state update that unmounts the trash trigger before deletion completes
+   - any fallback positioning that places an unanchored popover at top-left
+
+4. Reproduce the exact video behavior before changing code.
+
+5. Make the smallest reasonable correction.
+
+6. Preserve:
+   - custom-theme deletion
+   - custom-theme trash icon placement
+   - anchored warning position
+   - pencil/rename behavior
+   - built-in theme protection
+   - photo management
+   - active-theme fallback behavior
+   - saved-list protection
+   - shared-link protection
+   - sync
+   - mobile scrolling
+   - all unrelated TrailWeigh behavior
+
+7. Inspect the COMPLETE final diff.
+
+8. Revert unrelated changes.
+
+9. Run the full regression suite plus new 022Z tests.
+
+==================================================
+1. EXACT BUG TO FIX
+==================================================
+
+Current incorrect behavior:
+
+TRASH CLICK
+→ confirmation appears correctly beside trash
+
+FIRST "DELETE THEME" CLICK
+→ Background panel closes
+→ confirmation remains mounted
+→ anchor/trigger disappears
+→ confirmation jumps to top-left
+→ deletion not fully completed
+
+SECOND "DELETE THEME" CLICK
+→ deletion completes
+
+The final implementation must eliminate this sequence.
+
+==================================================
+2. REQUIRED FINAL BEHAVIOR
+==================================================
+
+Correct sequence:
+
+A. Click trash icon.
+
+Expected:
+- delete confirmation opens beside that trash icon
+- Background Edit panel stays open
+
+B. Click "Delete Theme" ONCE.
+
+Expected:
+- selected custom theme is deleted immediately
+- confirmation closes
+- deleted theme disappears
+- Background panel may remain open unless the existing product behavior
+  intentionally closes it AFTER deletion
+- no second confirmation appears
+- no second click is required
+- nothing jumps to the upper-left corner
+
+ONE CONFIRMATION CLICK = ONE COMPLETED DELETION.
+
+==================================================
+3. DO NOT UNMOUNT THE ANCHOR BEFORE CONFIRMATION COMPLETES
+==================================================
+
+The video strongly suggests that the trash trigger or its containing
+Background panel is being unmounted before the delete action finishes.
+
+Inspect this carefully.
+
+Do NOT close/unmount:
+- Background Edit panel
+- selected custom-theme row
+- trash trigger
+- popover anchor/reference
+
+BEFORE the confirmation handler has completed the deletion and closed the
+popover.
+
+Safe sequence should be conceptually:
+
+1. user confirms deletion
+2. capture/retain target theme ID
+3. execute delete action
+4. confirm state update succeeds
+5. close delete popover
+6. update/remove deleted theme row
+7. only then perform any optional panel-state change
+
+Do not rely on a DOM anchor that has already been destroyed.
+
+==================================================
+4. PENDING DELETE TARGET MUST BE STABLE
+==================================================
+
+When the trash button is clicked, retain the target custom-theme ID in stable
+state.
+
+Example concept:
+
+pendingDeleteThemeId
+
+or equivalent.
+
+The Delete Theme button must delete that stored ID.
+
+It must NOT depend on:
+- whatever theme happens to remain selected after the panel closes
+- a DOM element still existing
+- current hover state
+- a second click
+- recalculating the target after the first confirmation click
+
+Clear the pending-delete target only AFTER:
+- deletion completes, OR
+- user cancels.
+
+==================================================
+5. POPOVER MUST CLOSE, NOT RE-ANCHOR TO 0,0
+==================================================
+
+If the anchor/trigger becomes unavailable for any reason:
+
+The popover must CLOSE.
+
+It must NEVER remain visible at a fallback coordinate such as:
+- top: 0
+- left: 0
+- upper-left page corner
+
+There should be no visual state where the confirmation floats detached from
+its trash icon.
+
+If the popover library loses its reference element:
+- close the popover
+- do not render it at a default/fallback page coordinate
+
+==================================================
+6. CONFIRM BUTTON EVENT HANDLING
+==================================================
+
+Inspect the "Delete Theme" button event.
+
+Verify it does not accidentally:
+
+- trigger the parent Background Edit button
+- bubble into a panel close handler
+- trigger an outside-click handler before deletion
+- fire onPointerDown that closes the panel before onClick
+- submit an unrelated form
+- activate a second click target underneath after unmount
+- call close first and delete later in a way that destroys required state
+
+Use appropriate:
+- event ordering
+- propagation control
+- popover event handling
+
+only where needed.
+
+Do not blanket stopPropagation everywhere.
+
+==================================================
+7. ASYNC DELETE ORDER
+==================================================
+
+If deleteTheme() is asynchronous:
+
+Use an explicit sequence.
+
+Expected concept:
+
+await deleteTheme(targetThemeId)
+
+then:
+- close confirmation
+- clear pending delete target
+- update UI
+
+If the existing delete function is synchronous:
+- still preserve the same logical order.
+
+Do not close/unmount the anchor before the delete call has the stable theme ID.
+
+==================================================
+8. BACKGROUND PANEL BEHAVIOR
+==================================================
+
+The preferred behavior is:
+
+After successful custom-theme deletion:
+- keep Background Edit open
+- show the remaining theme list
+- allow the user to continue editing backgrounds
+
+This is less disruptive and avoids destroying the popover hierarchy during the
+delete action.
+
+If there is a strong existing product reason that the Background panel must
+close after deletion:
+
+It may close ONLY AFTER:
+- deletion is complete
+- confirmation is closed
+- no unanchored popover remains
+
+Document the final behavior.
+
+==================================================
+9. ACTIVE CUSTOM THEME
+==================================================
+
+If the deleted custom theme is the currently active theme:
+
+Preserve the existing safe fallback behavior.
+
+The theme may switch to the established default/built-in fallback.
+
+That fallback must NOT:
+- require a second delete click
+- close/reopen the confirmation
+- cause the popover to jump
+- recreate the deleted theme
+
+==================================================
+10. CANCEL BEHAVIOR
+==================================================
+
+Click trash:
+→ confirmation opens beside icon.
+
+Click Cancel ONCE.
+
+Expected:
+- confirmation closes
+- Background panel remains usable
+- theme remains
+- photos remain
+- no jump to upper-left
+- no leftover pending-delete state
+
+==================================================
+11. OUTSIDE CLICK / ESCAPE
+==================================================
+
+Where supported:
+
+Outside click:
+- closes confirmation
+- no deletion
+
+Escape:
+- closes confirmation
+- no deletion
+
+Neither action may:
+- move confirmation to upper-left
+- leave stale pending-delete state
+- require another click to finish cleanup
+
+==================================================
+12. RAPID / DOUBLE CLICK PROTECTION
+==================================================
+
+The user should not need to double click.
+
+Also protect against accidental rapid double activation.
+
+While the delete action is in progress:
+- disable the Delete Theme button OR otherwise prevent duplicate execution
+- avoid two delete requests for the same theme
+
+Do not create duplicate error states.
+
+==================================================
+13. DESKTOP RUNTIME TEST — EXACT VIDEO SEQUENCE
+==================================================
+
+Reproduce exactly:
+
+1. Open Background Edit.
+2. Find a disposable custom theme.
+3. Click trash.
+4. Verify confirmation is beside trash.
+5. Click Delete Theme ONCE.
+
+PASS only if:
+
+[ ] theme deletes on that first confirmation click
+[ ] confirmation closes
+[ ] no confirmation appears upper-left
+[ ] no second click is needed
+[ ] no JavaScript error
+[ ] remaining Background UI is usable
+
+==================================================
+14. SLOW ASYNC TEST
+==================================================
+
+If practical, simulate a delayed delete request/state update.
+
+Purpose:
+Ensure the popover/target remains stable while deletion is pending.
+
+Expected:
+
+[ ] confirmation stays anchored while action is pending
+OR
+[ ] button shows pending state appropriately
+
+Then:
+
+[ ] deletion completes
+[ ] confirmation closes
+[ ] no 0,0/top-left jump
+[ ] no duplicate delete
+
+==================================================
+15. IPHONE / MOBILE TEST
+==================================================
+
+At representative phone portrait width:
+
+1. Open Background Edit.
+2. Tap trash icon.
+3. Tap Delete Theme ONCE.
+
+Expected:
+
+[ ] confirmation starts beside trash
+[ ] one tap deletes
+[ ] confirmation disappears
+[ ] no upper-left jump
+[ ] no second tap required
+[ ] page scrolling still works
+[ ] Background panel remains usable
+
+Real iPhone hardware must remain NOT TESTED until the user verifies it.
+
+==================================================
+16. BUILT-IN THEME PROTECTION
+==================================================
+
+Do not regress protected themes.
+
+Verify:
+[ ] built-in themes remain undeletable
+[ ] no trash confirmation is exposed for protected built-ins
+[ ] direct delete logic still protects them
+
+==================================================
+17. REGRESSION TESTS
+==================================================
+
+Verify no regressions to:
+
+- custom-theme rename
+- add photo
+- remove photo
+- 10-photo maximum
+- Fit / Fill
+- Showcase
+- active-theme fallback
+- Background Themes selector
+- custom-theme delete trigger position
+- category-bar delete behavior
+- mobile scrolling
+- account sync
+- saved lists
+- shared links
+
+==================================================
+18. REQUIRED AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for:
+
+[ ] trash click opens exactly one confirmation
+[ ] pending delete stores stable theme ID
+[ ] first Delete Theme click calls delete exactly once
+[ ] first Delete Theme click closes confirmation
+[ ] no second click required
+[ ] no confirmation remains after trigger/theme row unmounts
+[ ] missing anchor closes popover instead of rendering at 0,0
+[ ] Cancel clears pending delete state
+[ ] Escape/outside click clears pending delete state where supported
+[ ] rapid double click cannot execute duplicate deletion
+[ ] active-theme deletion retains safe fallback
+[ ] built-in themes remain protected
+
+==================================================
+19. RUNTIME VISUAL VERIFICATION — MANDATORY
+==================================================
+
+Do not mark this fixed from source inspection alone.
+
+Use the actual running application.
+
+Capture the sequence if possible:
+
+FRAME A:
+confirmation anchored beside trash
+
+FRAME B:
+immediately after ONE Delete Theme click
+
+FRAME B must show:
+- deleted theme gone
+- confirmation gone
+- no top-left confirmation
+
+If the confirmation jumps to upper-left even briefly:
+
+FAIL.
+
+Correct it before completion.
+
+==================================================
+20. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022Z_REPORT.md
+
+The report must include:
+
+- Exact title:
+  Prompt 022Z — Fix Custom-Theme Delete Confirmation Jump and Double-Click
+
+- User video findings:
+  confirmation opens correctly beside trash
+  first Delete Theme click closes Background panel
+  confirmation jumps to upper-left
+  second Delete Theme click required
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Exact root cause
+
+- Whether trigger/anchor was unmounted before deletion completed
+
+- Whether event bubbling/outside-click ordering contributed
+
+- Whether async sequencing contributed
+
+- Pending-delete state before/after fix
+
+- Popover anchor-loss behavior before/after fix
+
+- Background panel behavior after successful deletion
+
+- One-click delete test result
+
+- Cancel result
+
+- Mobile-width result
+
+- Built-in theme protection result
+
+- Regression results
+
+- Automated test results
+
+- Runtime/visual verification
+
+- Complete final-diff review
+
+- Anything reverted
+
+- Exact real-iPhone verification steps
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior reports.
+
+==================================================
+21. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022Z-report.zip
+
+Prompt 022Z is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_022Z_REPORT.md
+
+2.
+workflow-reports/trailweigh-022Z-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022Z_REPORT.md
+
+It may additionally contain NON-SENSITIVE:
+- runtime screenshots
+- test logs
+- automated test output
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env files
+- private user data
+- private Locker contents
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022Z_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+Do not mark Prompt 022Z complete without a valid ZIP.
+
+==================================================
+22. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Exact reason the confirmation jumped to the upper-left
+
+10. Exact reason a second Delete Theme click was required
+
+11. Exact event/state sequencing fix
+
+12. Confirmation the pending theme ID is stable through deletion
+
+13. Confirmation ONE Delete Theme click now completes deletion
+
+14. Confirmation no unanchored confirmation can render at 0,0/top-left
+
+15. Confirmation custom-theme delete still appears next to the trash icon
+
+16. Confirmation no regression to category-bar delete behavior
+
+17. Exact real-iPhone USER verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+"Real iPhone delete interaction PASS"
+
+until the user verifies it on the physical iPhone.
+
+If runtime browser testing passes, report:
+
+"Runtime one-click delete PASS; real-iPhone verification pending."

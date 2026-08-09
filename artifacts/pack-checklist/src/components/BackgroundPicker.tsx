@@ -168,13 +168,17 @@ export function BackgroundPickerPanel({
   onShowcase,
   isShowcaseBlocked = false,
 }: BackgroundPickerPanelProps) {
-  const panelRef          = useRef<HTMLDivElement>(null);
-  const dropdownRef       = useRef<HTMLDivElement>(null);
-  const fileInputRef      = useRef<HTMLInputElement>(null);
-  const newNameInputRef   = useRef<HTMLInputElement>(null);
-  const renameInputRef    = useRef<HTMLInputElement>(null);
+  const panelRef                = useRef<HTMLDivElement>(null);
+  const dropdownRef             = useRef<HTMLDivElement>(null);
+  const fileInputRef            = useRef<HTMLInputElement>(null);
+  const newNameInputRef         = useRef<HTMLInputElement>(null);
+  const renameInputRef          = useRef<HTMLInputElement>(null);
   // 017E: ref for the landscape grid wrapper — used by the DEV measurement effect
-  const landscapeGridRef  = useRef<HTMLDivElement>(null);
+  const landscapeGridRef        = useRef<HTMLDivElement>(null);
+  // 022Z: ref for delete-confirmation popover portal content.
+  // The portal renders in document.body, outside containerRef, so the
+  // mousedown-outside handler must explicitly exclude clicks inside it.
+  const deletePopoverContentRef = useRef<HTMLDivElement | null>(null);
 
   // ── Theme selection ──────────────────────────────────────────────────────
   const [activeThemeId, setActiveThemeId] = useState<string>('landscapes');
@@ -343,7 +347,14 @@ export function BackgroundPickerPanel({
     if (!open) return;
     const handler = (e: MouseEvent) => {
       const root = containerRef?.current ?? panelRef.current;
-      if (root && !root.contains(e.target as Node)) onClose();
+      if (root && !root.contains(e.target as Node)) {
+        // 022Z: The delete-confirmation popover renders in a Radix portal at
+        // document.body — outside `root`. Exclude those clicks so the panel
+        // does not close (and destroy the anchor) before the confirmation
+        // onClick handler can execute deletion.
+        if (deletePopoverContentRef.current?.contains(e.target as Node)) return;
+        onClose();
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -819,7 +830,19 @@ export function BackgroundPickerPanel({
                     title={`Delete theme "${col.name}"`}
                   ><Trash2 className="w-3 h-3" /></button>
                 </PopoverTrigger>
-                <PopoverContent side="top" align="end" className="w-56 p-3">
+                <PopoverContent
+                  ref={deletePopoverContentRef}
+                  side="top"
+                  align="end"
+                  className="w-56 p-3"
+                  onInteractOutside={(e) => {
+                    // 022Z: prevent Radix from treating a click inside the
+                    // parent panel (or its portal siblings) as "outside" and
+                    // closing the confirmation prematurely.
+                    const root = containerRef?.current ?? panelRef.current;
+                    if (root?.contains(e.target as Node)) e.preventDefault();
+                  }}
+                >
                   <p className="text-sm font-semibold mb-1 leading-snug">Delete Custom Theme?</p>
                   <p className="text-sm mb-1 leading-snug">
                     Delete <strong>"{col.name}"</strong> and its custom background photos?

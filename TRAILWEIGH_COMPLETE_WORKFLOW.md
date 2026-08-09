@@ -6048,3 +6048,54 @@ Replaced the inline bottom-appended block with a **Radix `<Popover>`** wrapping 
 
 ### Real-iPhone Verification
 Report PASS only after user verifies on physical device (signed-in session, custom theme, trash icon tap, popover appears beside trash — not at panel bottom).
+
+---
+
+## Prompt 022Z — Fix Custom-Theme Delete Confirmation Jump and Double-Click
+
+**Date:** 2026-08-09  
+**Status:** Runtime one-click delete PASS; real-iPhone verification pending.
+
+### User Video Findings
+- trash click → confirmation correctly beside trash ✓
+- one "Delete Theme" click → Background panel closes (wrong)
+- confirmation jumps to upper-left corner (wrong)
+- second "Delete Theme" click required to complete deletion
+
+### Root Cause
+`BackgroundPicker.tsx` registers `document.addEventListener('mousedown', handler)` to detect outside-panel clicks and close the panel. The Radix portal (`PopoverContent`) renders in `document.body` — outside the panel's `containerRef` root. When the user presses "Delete Theme", the native `mousedown` fires first, the handler sees the target is NOT in `root`, and calls `onClose()` before the React `onClick` can run. Panel hides → trash button (Popover anchor) has no layout box → Radix falls back to `top:0, left:0`. Then `onClick` fires, seeing a 0,0 popover, completing the first deletion attempt but visually requiring a second click.
+
+### Fix — Three targeted changes to BackgroundPicker.tsx
+
+1. **Added `deletePopoverContentRef = useRef<HTMLDivElement | null>(null)`**
+
+2. **Patched mousedown handler** — early-return if click is inside portal:
+   ```ts
+   if (deletePopoverContentRef.current?.contains(e.target as Node)) return;
+   ```
+
+3. **Passed `ref={deletePopoverContentRef}` to `<PopoverContent>`** + added `onInteractOutside={(e) => { if (root?.contains(e.target)) e.preventDefault(); }}`
+
+### Files Changed
+- `artifacts/pack-checklist/src/components/BackgroundPicker.tsx` — 3 additions (ref + handler patch + PopoverContent props)
+- `package.json` — 022Z test added to chain
+- **New:** `artifacts/pack-checklist/src/hooks/deleteConfirmJump022Z.test.mjs` (22 tests)
+
+### Test Results
+- `deleteConfirmJump022Z.test.mjs`: 22/22 passed
+- Full `pnpm test:importer`: 0 failures
+- All prior 022P, 022Y tests still pass
+
+### Background Panel After Deletion
+Stays open — deleted theme disappears from list, remaining themes usable.
+
+### Invariants Preserved
+- 022U scrolling (no scroll-lock added) ✓
+- 022X toolbar zones ✓
+- 022Y popover-beside-trash positioning ✓
+- confirmAndDeleteTheme logic unchanged ✓
+- Category-bar delete (GearCategory.tsx) untouched ✓
+- Built-in theme protection unchanged ✓
+
+### Real-iPhone Verification
+Report PASS only after user signs in on physical device and confirms: ONE trash tap + ONE "Delete Theme" tap completes deletion, no jump to upper-left, no second tap required.
