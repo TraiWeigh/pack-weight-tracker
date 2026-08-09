@@ -37,7 +37,9 @@ function test(name, fn) {
 
 const pillsRowIdx  = checklist.indexOf('Pinned pills row');
 assert.ok(pillsRowIdx > -1, 'Pinned pills row marker not found');
-const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 4000);
+// 022W: the left panel is more verbose (explicit mobile rows + desktop group) so we need
+// a larger slice to cover all content including the desktop right group at the end.
+const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 8000);
 
 const pillCondIdx = pillsRowBlock.indexOf('{activeLockerFile && (');
 assert.ok(pillCondIdx > -1, 'activeLockerFile conditional not found in pills row');
@@ -52,9 +54,9 @@ const spanBlock = pillBlock.slice(spanIdx, spanIdx + 400);
 
 // ── Locate right control group ────────────────────────────────────────────────
 
-// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'
-const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0', pillsRowIdx);
-assert.ok(mlAutoChecklistIdx > -1, 'lg:ml-auto right control group not found');
+// 022W: desktop right group class is now 'hidden lg:flex items-center gap-3 ml-auto flex-shrink-0'
+const mlAutoChecklistIdx = checklist.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0', pillsRowIdx);
+assert.ok(mlAutoChecklistIdx > -1, '022W: desktop right group (hidden lg:flex ... ml-auto) not found');
 // Use 1400 chars from checklist to safely cover the verbose Hide disabled block + Preview + UnitToggle
 const rightGroup = checklist.slice(mlAutoChecklistIdx, mlAutoChecklistIdx + 1400);
 
@@ -142,22 +144,23 @@ test('17. Filename span has `truncate` (ellipsis on overflow)', () => {
 // ── CENTERING STRUCTURE PRESERVED FROM 018A ───────────────────────────────────
 
 test('18. [018C] Centering wrapper uses inset-0 + matching padding (not left-1/2/top-1/2/translate)', () => {
-  // 018C replaced the translate approach with inset-0 + pt-8 pb-3 flex items-center justify-center
-  // so the pill's vertical center matches the outer container's flex content area.
-  assert.ok(pillBlock.includes('inset-0'), 'inset-0 not found on wrapper (018C fix not applied)');
+  // 018C replaced the translate approach with inset-0 + flex items-center justify-center.
+  // 022W: uses lg:absolute lg:inset-0 (responsive prefix — still centering on desktop).
+  // Substrings 'inset-0', 'items-center', 'justify-center' all exist in the lg:-prefixed classes.
+  assert.ok(pillBlock.includes('inset-0'), '022W: inset-0 must be present (lg:inset-0 counts)');
   assert.ok(
-    pillBlock.includes('flex items-center') && pillBlock.includes('justify-center'),
-    'flex items-center justify-center not found on wrapper (018C fix not applied)'
+    pillBlock.includes('items-center') && pillBlock.includes('justify-center'),
+    '022W: items-center + justify-center must be present (lg:-prefixed variants count)'
   );
   assert.ok(!pillBlock.includes('top-1/2'), 'top-1/2 should be removed (old centering approach replaced in 018C)');
 });
 
 test('19. Pill wrapper appears as sibling before the right control group (not inside it)', () => {
   const pillCondInPillsRow = pillsRowBlock.indexOf('{activeLockerFile && (');
-  // 022V: updated class pattern
-  const mlAutoInPillsRow   = pillsRowBlock.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0');
+  // 022W: updated to new desktop right group pattern
+  const mlAutoInPillsRow   = pillsRowBlock.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0');
   assert.ok(pillCondInPillsRow > -1, 'Pill conditional not found in pills row block');
-  assert.ok(mlAutoInPillsRow > -1, 'lg:ml-auto group not found in pills row block');
+  assert.ok(mlAutoInPillsRow > -1, '022W: desktop right group (hidden lg:flex) not found in pills row block');
   assert.ok(
     pillCondInPillsRow < mlAutoInPillsRow,
     'Pill conditional should appear before the ml-auto right group (sibling, not child)'

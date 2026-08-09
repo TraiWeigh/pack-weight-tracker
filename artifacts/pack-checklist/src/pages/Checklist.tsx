@@ -1495,20 +1495,71 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         }}
       >
         <header className="bg-card border-b border-border flex-shrink-0 z-10 shadow-sm">
-          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
-            {/* Logo */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="bg-primary/10 p-2 rounded-lg text-primary">
-                <Tent className="w-6 h-6" />
+          {/* 022W: portrait = flex-col (logo+account row 1, action-icons row 2); sm+ = single flex row */}
+          <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8
+                          flex flex-col sm:flex-row sm:h-16 sm:items-center sm:justify-between
+                          py-2 sm:py-0 gap-y-1.5">
+
+            {/* ── Logo row: logo on left + portrait-only Account on right ──────── */}
+            <div className="flex items-center justify-between gap-2 sm:flex-shrink-0">
+              {/* Logo */}
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                  <Tent className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="font-bold text-foreground text-xl leading-tight">TrailWeigh</h1>
+                  <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest">Gear Tracker</p>
+                </div>
               </div>
-              <div>
-                <h1 className="font-bold text-foreground text-xl leading-tight">TrailWeigh</h1>
-                <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-widest">Gear Tracker</p>
+              {/* Portrait-only Account/Guest — hidden at sm+ (shown below in actions row) */}
+              <div className="sm:hidden flex-shrink-0">
+                {isGuest ? (
+                  <button
+                    onClick={() => setLocation('/sign-up')}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    Sign in
+                  </button>
+                ) : (
+                  <div className="relative">
+                    <button onClick={() => setShowUserMenu(v => !v)} className={toolBtn}>
+                      <User className="w-3.5 h-3.5" />
+                    </button>
+                    {showUserMenu && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                        <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                          <div className="px-3 py-2 border-b border-border">
+                            <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                          </div>
+                          {admin && (
+                            <button
+                              onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                            >
+                              <Shield className="w-3.5 h-3.5" />
+                              Admin Panel
+                            </button>
+                          )}
+                          <button
+                            onClick={handleSignOut}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-colors"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            Sign Out
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Right controls */}
-            <div className="flex items-center gap-1 min-w-0">
+            {/* ── Actions row: portrait centered, sm+ right-aligned ─────────── */}
+            <div className="flex items-center justify-center sm:justify-end gap-1 flex-wrap sm:flex-nowrap min-w-0">
 
               {/* ── New ─────────────────────────────────────────── */}
               <div className="relative flex-shrink-0">
@@ -1649,8 +1700,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </DropdownMenu>
               )}
 
-              {/* Divider */}
-              <div className="w-px h-5 bg-border mx-1 flex-shrink-0" />
+              {/* Divider — hidden on portrait to save horizontal space */}
+              <div className="hidden sm:block w-px h-5 bg-border mx-1 flex-shrink-0" />
 
               {/* ── Reset ───────────────────────────────────────── */}
               <div className="relative flex-shrink-0">
@@ -1671,55 +1722,56 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 )}
               </div>
 
-              {/* ── User menu / guest CTA ────────────────────────── */}
-              {isGuest ? (
-                <button
-                  onClick={() => setLocation('/sign-up')}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  {/* 022V: "to save" hidden below sm: so narrow phones show just "Sign in" */}
-                  Sign in<span className="hidden sm:inline"> to save</span>
-                </button>
-              ) : (
-                <div className="relative flex-shrink-0">
+              {/* ── User menu / guest CTA — sm+ only (portrait version is in logo row) ── */}
+              <div className="hidden sm:flex items-center flex-shrink-0">
+                {isGuest ? (
                   <button
-                    onClick={() => setShowUserMenu(v => !v)}
-                    className={toolBtn}
+                    onClick={() => setLocation('/sign-up')}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     <User className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline max-w-[100px] truncate">{userEmail || 'Account'}</span>
+                    Sign in<span className="hidden sm:inline"> to save</span>
                   </button>
-                  {showUserMenu && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
-                        <div className="px-3 py-2 border-b border-border">
-                          <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
-                        </div>
-                        {admin && (
+                ) : (
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setShowUserMenu(v => !v)}
+                      className={toolBtn}
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline max-w-[100px] truncate">{userEmail || 'Account'}</span>
+                    </button>
+                    {showUserMenu && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setShowUserMenu(false)} />
+                        <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                          <div className="px-3 py-2 border-b border-border">
+                            <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                          </div>
+                          {admin && (
+                            <button
+                              onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                            >
+                              <Shield className="w-3.5 h-3.5" />
+                              Admin Panel
+                            </button>
+                          )}
                           <button
-                            onClick={() => { setShowUserMenu(false); setLocation('/admin'); }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-primary/5 transition-colors"
+                            onClick={handleSignOut}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-colors"
                           >
-                            <Shield className="w-3.5 h-3.5" />
-                            Admin Panel
+                            <LogOut className="w-3.5 h-3.5" />
+                            Sign Out
                           </button>
-                        )}
-                        <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/5 transition-colors"
-                        >
-                          <LogOut className="w-3.5 h-3.5" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>{/* end actions row */}
+          </div>{/* end header inner */}
         </header>
 
         <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:flex lg:flex-col">
@@ -1729,10 +1781,38 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           <div className="pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
             {/* Left toolbar panel — Pinned pills row
-                022V: flex-wrap + gap-y-2 so controls can spill onto a second row on
-                narrow portrait phones instead of overflowing the viewport. flex-shrink-0
-                removed — the grid column gives us full-width already. */}
-            <div className="pb-3 flex flex-wrap items-center gap-x-3 gap-y-2 lg:pr-7 relative">
+                022W: explicit flex-col rows on portrait so the file-name pill is in
+                normal flow (not absolute-floating), then lg: switches to the single
+                flex-row desktop layout with the pill absolutely centered.
+                ─ Mobile rows (portrait):
+                    1. File-name pill (justified-center, normal flow — no overlap)
+                    2. [Open|Close]  [Imperial|Metric]  (centered)
+                    3. [Hide]  [Preview]  (centered)
+                ─ Desktop (lg+):
+                    [Open|Close] ··· [File-name pill absolute-centered] ··· [Hide][Preview][UnitToggle] */}
+            <div className="pb-3 flex flex-col items-center gap-2 lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative">
+
+              {/* ── Row 1 (mobile): File-name pill — in normal flow, centered ─────
+                  Desktop: absolute over entire row (lg:absolute lg:inset-0) so it does
+                  NOT participate in flex-row layout while still appearing centred. */}
+              {activeLockerFile && (
+                <div className="w-full flex justify-center pointer-events-none
+                                lg:absolute lg:inset-0 lg:pb-3 lg:flex lg:items-center lg:justify-center lg:w-auto">
+                  <span
+                    aria-label={`Active file: ${activeLockerFile.name}`}
+                    title={activeLockerFile.name}
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
+                  >
+                    {activeLockerFile.name}
+                  </span>
+                </div>
+              )}
+
+              {/* ── Row 2 (mobile): [Open|Close] + [Imperial|Metric] centered ─────
+                  Desktop: Open|Close is the left item in the flex-row; UnitToggle
+                  is hidden here and shown in the desktop-only right group below. */}
+              <div className="flex items-center gap-3 lg:flex-shrink-0">
+                {/* Open/Close segmented control — always together */}
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -1755,48 +1835,63 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     Close
                   </button>
                 </div>
-                {/* Active file name — centered over the left checklist column.
-                    Uses inset-0 + matching pb-3 so flex items-center references the same
-                    content area as the outer container, putting the pill on the exact same
-                    vertical centerline as Hide / Preview / Imperial / Metric.
-                    Note: top padding is now on the toolbar-group parent (pt-4), not here. */}
-                {activeLockerFile && (
-                  <div className="absolute inset-0 pb-3 flex items-center justify-center pointer-events-none">
-                    <span
-                      aria-label={`Active file: ${activeLockerFile.name}`}
-                      title={activeLockerFile.name}
-                      className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
-                    >
-                      {activeLockerFile.name}
-                    </span>
-                  </div>
-                )}
-                {/* 022V: lg:ml-auto so Hide/Preview/UnitToggle push right only on desktop;
-                    on mobile they follow Open/Close with normal gap and can wrap. */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0">
-                  <button
-                    onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
-                    disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
-                    aria-label="Hide interface and show background view"
-                    title={
-                      showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
-                        ? 'Finish the current action first'
-                        : 'Hide the interface'
-                    }
-                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    Hide
-                  </button>
-                  <button
-                    onClick={() => setShowPreview(true)}
-                    aria-label="Open checked-items preview"
-                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Preview
-                  </button>
+                {/* Imperial/Metric beside Open/Close on mobile; hidden on desktop (shown in right group) */}
+                <div className="lg:hidden">
                   <UnitToggle />
                 </div>
               </div>
+
+              {/* ── Row 3 (mobile): [Hide] + [Preview] centered ─────────────────
+                  Hidden on desktop — these appear in the desktop-only right group. */}
+              <div className="flex items-center gap-3 lg:hidden">
+                <button
+                  onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
+                  disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
+                  aria-label="Hide interface and show background view"
+                  title={
+                    showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
+                      ? 'Finish the current action first'
+                      : 'Hide the interface'
+                  }
+                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Hide
+                </button>
+                <button
+                  onClick={() => setShowPreview(true)}
+                  aria-label="Open checked-items preview"
+                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Preview
+                </button>
+              </div>
+
+              {/* ── Desktop-only right group: ml-auto → [Hide][Preview][UnitToggle] ──
+                  Hidden on mobile (handled by rows above). */}
+              <div className="hidden lg:flex items-center gap-3 ml-auto flex-shrink-0">
+                <button
+                  onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
+                  disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
+                  aria-label="Hide interface and show background view"
+                  title={
+                    showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
+                      ? 'Finish the current action first'
+                      : 'Hide the interface'
+                  }
+                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Hide
+                </button>
+                <button
+                  onClick={() => setShowPreview(true)}
+                  aria-label="Open checked-items preview"
+                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Preview
+                </button>
+                <UnitToggle />
+              </div>
+            </div>
 
             {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ── */}
             <div className="order-first lg:order-last relative flex flex-wrap justify-center lg:justify-end gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">

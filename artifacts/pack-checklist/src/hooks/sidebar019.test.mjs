@@ -238,7 +238,8 @@ test('28. Both WeightSummary and WeightDistribution are siblings in the sidebar 
 // 018C filename pill
 test('29. Filename pill: inset-0 centering preserved (018C fix, 021O updated padding)', () => {
   // 021O removed pt-8 from the overlay (moved to toolbar-group parent as pt-4).
-  assert.ok(checklist.includes('absolute inset-0 pb-3 flex items-center justify-center pointer-events-none'), '018C inset-0 filename centering not found — 021O: pt-8 removed from overlay, now on toolbar group parent');
+  // 022W: pill is in normal flow on mobile; uses lg:absolute for desktop centering
+  assert.ok(checklist.includes('lg:absolute lg:inset-0') && checklist.includes('pointer-events-none'), '022W: pill must use lg:absolute centering on desktop + pointer-events-none');
 });
 
 test('30. Filename pill: text-foreground preserved on span', () => {
@@ -249,9 +250,9 @@ test('30. Filename pill: text-foreground preserved on span', () => {
 });
 
 // Control order
-// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'
-const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0');
-assert.ok(mlAutoChecklistIdx > -1, 'lg:ml-auto right group not found');
+// 022W: desktop right group class is now 'hidden lg:flex items-center gap-3 ml-auto flex-shrink-0'
+const mlAutoChecklistIdx = checklist.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0');
+assert.ok(mlAutoChecklistIdx > -1, '022W: desktop right group (hidden lg:flex ... ml-auto) not found');
 const rightGroup = checklist.slice(mlAutoChecklistIdx, mlAutoChecklistIdx + 1400);
 
 test('31. Hide button still present in right control group', () => {

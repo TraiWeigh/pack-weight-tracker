@@ -85,9 +85,9 @@ assert.ok(gearListDiv > -1 && pillsRowIdx > -1, 'Left toolbar panel / Pinned pil
 const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 4000);
 
 // Right control group: the flex-wrap div containing Hide/Preview/UnitToggle.
-// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'.
+// 022W: desktop right group class is now 'hidden lg:flex items-center gap-3 ml-auto flex-shrink-0'
 // Search from the pillsRowIdx in the full checklist so the slice is never bounded by pillsRowBlock.
-const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0', pillsRowIdx);
+const mlAutoChecklistIdx = checklist.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0', pillsRowIdx);
 const mlAutoIdx  = mlAutoChecklistIdx > -1 ? mlAutoChecklistIdx - pillsRowIdx : -1;
 // Hide button's disabled/title block is ~600 chars; use 1400 to cover all three buttons.
 const rightGroup = mlAutoChecklistIdx > -1
@@ -125,26 +125,28 @@ test('2. Pills row container no longer has `justify-between`', () => {
   );
 });
 
-test('3. Right control group has `lg:ml-auto` to push it right on desktop', () => {
-  // 022V: changed from bare 'ml-auto' to 'lg:ml-auto' so mobile uses natural flex-wrap flow.
+test('3. Right control group uses desktop-only class (hidden lg:flex ... ml-auto)', () => {
+  // 022W: desktop right group is 'hidden lg:flex items-center gap-3 ml-auto flex-shrink-0'
+  // so the group only renders at lg+ (hidden on mobile — mobile has explicit rows).
   assert.ok(
     mlAutoIdx > -1,
-    'Right control group with `lg:ml-auto` not found — group is missing or class changed again',
+    '022W: desktop right group (hidden lg:flex ... ml-auto) not found',
   );
 });
 
 test('4. [018C] Absolute centering wrapper uses inset-0 + matching padding (vertical-align fix)', () => {
-  // 018C replaced left-1/2/top-1/2/translate with inset-0 + pt-8 pb-3 flex items-center justify-center
-  // so the wrapper's content-area reference matches the outer container exactly.
+  // 018C replaced left-1/2/top-1/2/translate with inset-0 + flex items-center justify-center.
+  // 022W: on desktop the wrapper uses lg:absolute lg:inset-0 (responsive prefix — still centering).
+  // 'items-center' and 'justify-center' both present (lg: prefixed); inset-0 substring in lg:inset-0.
   assert.ok(pillCondInPillsRow > -1, 'activeLockerFile conditional not found in pills row area');
-  const pillWrapper = pillsRowBlock.slice(pillCondInPillsRow, pillCondInPillsRow + 400);
+  const pillWrapper = pillsRowBlock.slice(pillCondInPillsRow, pillCondInPillsRow + 500);
   assert.ok(
     pillWrapper.includes('inset-0'),
-    'Pill wrapper should have inset-0 (018C vertical-align fix)'
+    '022W: Pill wrapper must have inset-0 (lg:inset-0 counts)'
   );
   assert.ok(
-    pillWrapper.includes('flex items-center') && pillWrapper.includes('justify-center'),
-    'Pill wrapper should have flex items-center justify-center (018C vertical-align fix)'
+    pillWrapper.includes('items-center') && pillWrapper.includes('justify-center'),
+    '022W: Pill wrapper must have items-center + justify-center (lg:-prefixed variants count)'
   );
 });
 

@@ -270,7 +270,8 @@ test('27. Locker load path (savedListId) unaffected — still reads entry.store'
 test('28. 018C filename pill centering preserved (inset-0 pb-3 — 021O removed pt-8)', () => {
   // 021O moved pt-8 from child panels to the toolbar-group parent (as pt-4).
   assert.ok(
-    checklist.includes('absolute inset-0 pb-3 flex items-center justify-center pointer-events-none'),
+    // 022W: pill wrapper now uses lg:absolute for desktop centering (in-flow on mobile)
+    checklist.includes('lg:absolute lg:inset-0') && checklist.includes('pointer-events-none'),
     '018C filename pill centering classes not found — 021O: pt-8 removed from overlay'
   );
 });

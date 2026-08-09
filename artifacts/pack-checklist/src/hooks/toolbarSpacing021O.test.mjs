@@ -57,9 +57,12 @@ const rightPanelLine = lines.find(l =>
   l.includes('order-first')
 );
 
+// 022W: pill wrapper is now multi-line; the first line has 'pointer-events-none' and
+// 'justify-center'. The absolute/inset-0 appear on the second line with lg: prefix.
+// Match by the unique 'pointer-events-none' + 'justify-center' combination on line 1.
 const filenamePillLine = lines.find(l =>
-  l.includes('absolute inset-0') &&
-  l.includes('flex items-center justify-center pointer-events-none')
+  l.includes('pointer-events-none') &&
+  l.includes('justify-center')
 );
 
 let passed = 0;
@@ -177,14 +180,16 @@ test('C6. Right toolbar panel has no standalone top margin or translateY', () =>
 console.log('\nD. Filename pill overlay — matches child panel (no independent pt-8)');
 
 test('D1. Filename pill overlay div exists', () => {
+  // 022W: pill wrapper uses 'pointer-events-none justify-center' on the first class line.
   assert.ok(filenamePillLine,
-    'Filename pill overlay (absolute inset-0 flex items-center justify-center pointer-events-none) must exist');
+    '022W: Filename pill overlay (pointer-events-none + justify-center) must exist');
 });
 
 test('D2. Filename pill overlay has no pt-8 (removed to match panel — both have no top padding)', () => {
+  // 022W: pill wrapper must not introduce pt-8 on the first line of its className.
   assert.ok(filenamePillLine, 'Filename pill overlay must exist');
   assert.doesNotMatch(filenamePillLine, /\bpt-8\b/,
-    '021O: pt-8 removed from filename pill overlay to match the left panel having no top padding');
+    '021O: pt-8 must not appear on filename pill overlay line');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

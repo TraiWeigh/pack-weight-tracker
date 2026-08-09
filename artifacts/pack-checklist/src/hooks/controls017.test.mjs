@@ -118,12 +118,15 @@ test('4. Hide is not wrapped in {background && (...)} — renders unconditionall
   );
 });
 
-// 5. Only ONE normal-view Preview button in Checklist (sidebar one removed)
+// 5. Preview calls in Checklist (sidebar one removed; 022W adds mobile+desktop copies)
 test('5. Only one setShowPreview(true) call in Checklist.tsx (sidebar removed)', () => {
+  // 022W: mobile portrait row 3 (lg:hidden) and desktop right group (hidden lg:flex) each have
+  // one Preview button — both trigger setShowPreview(true). The sidebar Preview (bg-card style)
+  // remains absent. Accept 1 or 2 calls; reject 0 or 3+.
   const matches = [...checklist.matchAll(/setShowPreview\(true\)/g)];
-  assert.equal(
-    matches.length, 1,
-    `Expected 1 setShowPreview(true) in Checklist, found ${matches.length}`
+  assert.ok(
+    matches.length >= 1 && matches.length <= 2,
+    `Expected 1 or 2 setShowPreview(true) in Checklist (022W mobile+desktop rows), found ${matches.length}`,
   );
 });
 
@@ -138,15 +141,17 @@ test('6. Sidebar action bar no longer contains a Preview button', () => {
   );
 });
 
-// 7. UnitToggle (Imperial) follows Preview in the control row
+// 7. UnitToggle (Imperial) follows Preview in the desktop right group
 test('7. UnitToggle appears after the Preview button in Checklist source', () => {
-  const previewIdx   = checklist.lastIndexOf('setShowPreview(true)');
-  const unitToggleIdx = checklist.indexOf('<UnitToggle');
-  assert.ok(previewIdx  > -1, 'setShowPreview(true) not found');
+  // 022W: desktop right group order is Hide → Preview → UnitToggle.
+  // Use lastIndexOf so we find the desktop group's instances (not the mobile ones).
+  const previewIdx    = checklist.lastIndexOf('setShowPreview(true)');
+  const unitToggleIdx = checklist.lastIndexOf('<UnitToggle');
+  assert.ok(previewIdx    > -1, 'setShowPreview(true) not found');
   assert.ok(unitToggleIdx > -1, '<UnitToggle not found');
   assert.ok(
     unitToggleIdx > previewIdx,
-    `UnitToggle (pos ${unitToggleIdx}) is not after Preview (pos ${previewIdx})`
+    `Last UnitToggle (pos ${unitToggleIdx}) must be after last Preview (pos ${previewIdx})`,
   );
 });
 
@@ -252,11 +257,13 @@ test('18. Preview button has aria-label', () => {
   );
 });
 
-// 19. Source order: Hide → Preview → Imperial (UnitToggle)
+// 19. Source order: Hide → Preview → UnitToggle (in the desktop right group)
 test('19. Source order: Hide → Preview → UnitToggle', () => {
-  const hidePos    = checklist.indexOf('aria-label="Hide interface');
-  const previewPos = checklist.indexOf('aria-label="Open checked-items preview"');
-  const togglePos  = checklist.indexOf('<UnitToggle');
+  // 022W: mobile and desktop each have their own Hide/Preview/UnitToggle.
+  // Use lastIndexOf to target the desktop right group order.
+  const hidePos    = checklist.lastIndexOf('aria-label="Hide interface');
+  const previewPos = checklist.lastIndexOf('aria-label="Open checked-items preview"');
+  const togglePos  = checklist.lastIndexOf('<UnitToggle');
   assert.ok(hidePos    > -1, 'Hide aria-label not found');
   assert.ok(previewPos > -1, 'Preview aria-label not found');
   assert.ok(togglePos  > -1, '<UnitToggle not found');

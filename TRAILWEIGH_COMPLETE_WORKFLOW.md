@@ -5899,3 +5899,47 @@ TrailWeigh unusable in iPhone portrait orientation. Toolbar pill controls (Open/
 - Desktop two-column grid `lg:grid-cols-[1fr_365px]` ✓
 - `lg:pr-7` alignment on left toolbar panel ✓
 - All button actions, icons, and touch targets unchanged ✓
+
+---
+
+## Prompt 022W — Correct Mobile Portrait Toolbar Layout with Explicit Rows
+
+**Date:** 2026-08-09  
+**Status:** ✅ COMPLETE
+
+### Problem
+022V's `flex-wrap` approach caused the `absolute inset-0` file-name pill to float over the wrapped rows on real iPhones. `inset-0` expands to fill the entire multi-row container, overlapping all controls on portrait.
+
+### Solution
+Replaced `flex-wrap` with explicit `flex-col` rows on portrait (then `lg:flex-row` on desktop):
+- **Header**: Two portrait rows — Row 1: Logo + portrait-only Account; Row 2: New/Undo/Redo/Save/Reset (centered). `sm+`: single row reverts.
+- **Left panel**: Three explicit rows — Row 1: pill in normal flow (`w-full flex justify-center`); Row 2: [Open|Close]+[UnitToggle]; Row 3: [Hide]+[Preview] (`lg:hidden`). Desktop: `hidden lg:flex ml-auto` right group.
+- **Pill**: Mobile = in-flow `w-full flex justify-center pointer-events-none`. Desktop = `lg:absolute lg:inset-0` centering. No more bare `absolute inset-0` floating.
+
+### Files Changed
+- `artifacts/pack-checklist/src/pages/Checklist.tsx` — header + left panel restructured
+- `package.json` — `mobilePortrait022W.test.mjs` added to chain
+- **New:** `artifacts/pack-checklist/src/hooks/mobilePortrait022W.test.mjs` (35 tests)
+- **Updated (15 existing test files):** `controls017`, `activeFileName018/A/B/C`, `sidebar019`, `newBlank020`, `lockerFirstOpen020B`, `newAfterLocker020C`, `savedListRestore020D`, `newClearLight041`, `gutterLayout021H`, `toolbarAlign021M`, `toolbarGroup021N`, `toolbarSpacing021O`, `mobileToolbar022V`
+
+### Test Results
+- `mobilePortrait022W.test.mjs`: 35/35 passed
+- `mobileToolbar022V.test.mjs`: 26/26 passed (updated for 022W patterns)
+- Full `pnpm test:importer`: 0 failures
+
+### Widths Verified (responsive browser)
+320px, 375px, 390px, 430px portrait · 812px landscape · 1280px desktop
+
+### Artefacts
+- `workflow-reports/PROMPT_022W_REPORT.md`
+- `workflow-reports/trailweigh-022W-report.zip`
+- Screenshots: `screenshot-022W-{320,375,390,430}px.jpg`, `screenshot-022W-landscape.jpg`, `screenshot-022W-desktop.jpg`
+
+### Invariants Preserved
+- 022U `min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden` mobile scroll ✓
+- 022T `mergeLockerEntries` import ✓
+- Open/Close stays together (segmented control) ✓
+- Imperial/Metric stays together (segmented control) ✓
+- Desktop two-column grid `lg:grid-cols-[1fr_365px]` ✓
+- `lg:pr-7` alignment on left toolbar panel ✓
+- All button actions, icons, and touch targets unchanged ✓

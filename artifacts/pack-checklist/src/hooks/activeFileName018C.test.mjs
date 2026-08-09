@@ -40,12 +40,14 @@ function test(name, fn) {
 
 const pillsRowIdx = checklist.indexOf('Pinned pills row');
 assert.ok(pillsRowIdx > -1, 'Pinned pills row marker not found');
-const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 4000);
+// 022W: the left panel is more verbose (explicit mobile rows + desktop group) so we need
+// a larger slice to cover all content including the desktop right group at the end.
+const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 8000);
 
-// Outer container className — 021O moved pt-8 to toolbar-group parent; 022V added flex-wrap.
-// Old: 'pb-3 flex items-center'; New: 'pb-3 flex flex-wrap items-center'
-const containerDivIdx = pillsRowBlock.indexOf('pb-3 flex flex-wrap items-center');
-assert.ok(containerDivIdx > -1, 'Outer container (pb-3 flex flex-wrap items-center) not found — 022V: flex-wrap added');
+// Outer container className — 022W: flex-col on mobile; lg:flex-row on desktop.
+// Pattern: 'pb-3 flex flex-col items-center'
+const containerDivIdx = pillsRowBlock.indexOf('pb-3 flex flex-col items-center');
+assert.ok(containerDivIdx > -1, '022W: Outer container (pb-3 flex flex-col items-center) not found');
 const containerDecl = pillsRowBlock.slice(containerDivIdx, containerDivIdx + 200);
 
 // Filename pill conditional
@@ -59,9 +61,9 @@ assert.ok(spanIdx > -1, 'filename <span> not found in pill block');
 const spanBlock = pillBlock.slice(spanIdx, spanIdx + 400);
 
 // Right control group (1400 chars for verbose Hide button)
-// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'
-const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0', pillsRowIdx);
-assert.ok(mlAutoChecklistIdx > -1, 'lg:ml-auto right control group not found');
+// 022W: desktop right group class is now 'hidden lg:flex items-center gap-3 ml-auto flex-shrink-0'
+const mlAutoChecklistIdx = checklist.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0', pillsRowIdx);
+assert.ok(mlAutoChecklistIdx > -1, '022W: desktop right group (hidden lg:flex ... ml-auto) not found');
 const rightGroup = checklist.slice(mlAutoChecklistIdx, mlAutoChecklistIdx + 1400);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -71,9 +73,11 @@ console.log('\nPrompt 018C — Filename Pill Vertical Alignment Fix\n');
 // ── ROOT CAUSE ELIMINATED — new wrapper structure ─────────────────────────────
 
 test('1. Wrapper has `absolute inset-0` (fills container dimensions for correct reference frame)', () => {
+  // 022W: on desktop the pill uses lg:absolute lg:inset-0 (responsive prefix).
+  // Both 'absolute' and 'inset-0' are present as substrings of the lg:-prefixed classes.
   assert.ok(
-    pillBlock.includes('absolute inset-0'),
-    'absolute inset-0 not found — old top-1/2 approach may still be in place'
+    pillBlock.includes('absolute') && pillBlock.includes('inset-0'),
+    '022W: absolute and inset-0 must be present (lg:absolute lg:inset-0 accepted)'
   );
 });
 
@@ -91,12 +95,12 @@ test('2. Wrapper has `pb-3` (matches outer container bottom padding — establis
   );
 });
 
-test('3. Wrapper has `flex items-center` (vertically centers within the padded content area)', () => {
-  // With matching pt-8 pb-3, items-center references the same content area as the
-  // outer container's flex items-center, placing the pill on the same centerline.
+test('3. Wrapper has `items-center` (vertically centers within the padded content area)', () => {
+  // 022W: wrapper div uses lg:flex lg:items-center (responsive prefix on desktop).
+  // 'items-center' is a substring of 'lg:items-center'; check it appears before <span.
   assert.ok(
-    pillBlock.indexOf('flex items-center') < pillBlock.indexOf('<span'),
-    'flex items-center not found on wrapper div (before the span)'
+    pillBlock.indexOf('items-center') < pillBlock.indexOf('<span'),
+    '022W: items-center must appear on wrapper div (before <span) — lg:items-center accepted'
   );
 });
 
@@ -143,8 +147,10 @@ test('9. Outer container has `pb-3` bottom padding (021O moved pt-8 to toolbar-g
   );
 });
 
-test('10. Outer container still has `flex items-center` (buttons centered in content area)', () => {
-  assert.ok(containerDecl.includes('flex items-center'), 'flex items-center missing from outer container');
+test('10. Outer container still has `items-center` (buttons centered in content area)', () => {
+  // 022W: outer container uses 'flex flex-col items-center gap-2 lg:flex lg:flex-row lg:items-center ...'
+  // so items-center is present (both mobile and desktop), but not as 'flex items-center' (flex-col intervenes).
+  assert.ok(containerDecl.includes('items-center'), '022W: items-center missing from outer container');
 });
 
 test('11. Outer container still has `relative` (positions the absolute overlay correctly)', () => {
@@ -225,11 +231,11 @@ test('25. Span renders `{activeLockerFile.name}` as text content', () => {
 
 test('26. Pill conditional appears in pills row before the right control group', () => {
   const pillCondInPillsRow = pillsRowBlock.indexOf('{activeLockerFile && (');
-  // 022V: updated class pattern
-  const mlAutoInPillsRow   = pillsRowBlock.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0');
+  // 022W: updated to new desktop right group pattern
+  const mlAutoInPillsRow   = pillsRowBlock.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0');
   assert.ok(pillCondInPillsRow > -1, 'Pill conditional not found in pills row block');
-  assert.ok(mlAutoInPillsRow   > -1, 'lg:ml-auto group not found in pills row block');
-  assert.ok(pillCondInPillsRow < mlAutoInPillsRow, 'Pill conditional should appear before lg:ml-auto group');
+  assert.ok(mlAutoInPillsRow   > -1, '022W: desktop right group (hidden lg:flex) not found in pills row block');
+  assert.ok(pillCondInPillsRow < mlAutoInPillsRow, 'Pill conditional should appear before desktop right group');
 });
 
 test('27. Pill conditional NOT inside the right control group', () => {

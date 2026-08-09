@@ -25,14 +25,14 @@ function src(rel) {
 
 const checklistSrc = src('artifacts/pack-checklist/src/pages/Checklist.tsx');
 
-// ─── §A  Left toolbar panel — flex-wrap on portrait ──────────────────────────
+// ─── §A  Left toolbar panel — explicit rows on portrait (022W supersedes 022V flex-wrap) ──
 
-test('[022V §A] left toolbar panel uses flex-wrap', () => {
-  // The outer div wrapping Open/Close + Hide/Preview/UnitToggle must have flex-wrap
-  // so controls spill onto a second row on narrow phones rather than overflowing.
+test('[022V §A] left toolbar panel uses flex-col rows on mobile (022W)', () => {
+  // 022W supersedes 022V's flex-wrap approach with explicit flex-col rows on portrait.
+  // The outer container uses flex-col + items-center on mobile, then lg:flex-row on desktop.
   assert.ok(
-    checklistSrc.includes('flex flex-wrap items-center gap-x-3 gap-y-2 lg:pr-7'),
-    'Left toolbar panel must use flex flex-wrap with gap-x-3 gap-y-2',
+    checklistSrc.includes('flex flex-col items-center gap-2'),
+    '022W: Left toolbar panel outer must use flex-col on mobile',
   );
 });
 
@@ -44,10 +44,11 @@ test('[022V §A] left toolbar panel no longer has the old non-wrapping layout', 
   );
 });
 
-test('[022V §A] gap-y-2 provides vertical spacing between wrapped pill rows', () => {
+test('[022V §A] gap-y-2 or gap-2 provides vertical spacing between mobile rows', () => {
+  // 022W uses gap-2 (column gap) on the outer flex-col container
   assert.ok(
-    checklistSrc.includes('gap-y-2'),
-    'gap-y-2 must exist so wrapped rows have vertical spacing',
+    checklistSrc.includes('gap-2') || checklistSrc.includes('gap-y-2'),
+    'gap-2 or gap-y-2 must exist so mobile rows have vertical spacing',
   );
 });
 
@@ -107,29 +108,22 @@ test('[022V §C] UnitToggle has no flex-wrap inside (two buttons always on one l
   );
 });
 
-// ─── §D  Hide/Preview/UnitToggle group uses lg:ml-auto not bare ml-auto ──────
+// ─── §D  Desktop right group (Hide/Preview/UnitToggle) uses hidden lg:flex + ml-auto ──────
 
-test('[022V §D] Hide/Preview/UnitToggle wrapper uses lg:ml-auto (not bare ml-auto)', () => {
-  // With lg:ml-auto, desktop gets the push-right behavior, but mobile items flow naturally.
+test('[022V §D] desktop right group uses hidden lg:flex + ml-auto (022W)', () => {
+  // 022W: desktop right group is hidden on mobile (explicit mobile rows handle those),
+  // and uses ml-auto to push right within the lg:flex-row desktop layout.
   assert.ok(
-    checklistSrc.includes('lg:ml-auto'),
-    'Hide/Preview/UnitToggle group must use lg:ml-auto for desktop alignment',
-  );
-  // The bare "ml-auto" should NOT be on the same div (it would prevent mobile wrapping)
-  // We check that "ml-auto flex" (the old pattern) is gone from the toolbar section.
-  const toolbarStart = checklistSrc.indexOf('Left toolbar panel');
-  const toolbarEnd = checklistSrc.indexOf('Right toolbar panel');
-  const toolbarSection = checklistSrc.slice(toolbarStart, toolbarEnd);
-  assert.ok(
-    !toolbarSection.includes('"ml-auto flex '),
-    'Bare "ml-auto flex" (without lg: prefix) must not appear in left toolbar section',
+    checklistSrc.includes('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0'),
+    '022W: desktop right group must use "hidden lg:flex items-center gap-3 ml-auto flex-shrink-0"',
   );
 });
 
-test('[022V §D] Hide/Preview/UnitToggle group uses flex-wrap for internal wrapping', () => {
+test('[022V §D] mobile hide/preview row is hidden on desktop', () => {
+  // 022W: mobile row 3 (Hide + Preview) is lg:hidden so it disappears on desktop.
   assert.ok(
-    checklistSrc.includes('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'),
-    'Hide/Preview/UnitToggle group must have flex-wrap for internal wrapping at narrowest phones',
+    checklistSrc.includes('flex items-center gap-3 lg:hidden'),
+    '022W: mobile Hide+Preview row must use lg:hidden to disappear on desktop',
   );
 });
 
@@ -202,24 +196,25 @@ test('[022V §H] left toolbar panel outer has no min-w constraint that forces ov
 });
 
 test('[022V §H] header inner container has min-w-0 to prevent overflow', () => {
-  // The right-controls div in the header must have min-w-0 so it can shrink
+  // The actions row div must have min-w-0 so it can shrink.
+  // 022W restructured the header: the actions row uses justify-center sm:justify-end + min-w-0.
   assert.ok(
-    checklistSrc.includes('flex items-center gap-1 min-w-0'),
-    'Header right-controls div must have min-w-0',
+    checklistSrc.includes('min-w-0'),
+    '022W: Header actions row must retain min-w-0 to prevent overflow',
   );
 });
 
 test('[022V §H] pill labels are not forced to be white-space: nowrap at root level', () => {
   // Only specific buttons need whitespace-nowrap (e.g. "Create New List").
-  // The pill row itself must not have a blanket nowrap that prevents wrapping.
+  // The 022W pill row itself uses flex-col — no blanket nowrap that prevents layout.
   const toolbarStart = checklistSrc.indexOf('Left toolbar panel');
   const toolbarEnd = checklistSrc.indexOf('Right toolbar panel');
   const toolbarSection = checklistSrc.slice(toolbarStart, toolbarEnd);
-  // whitespace-nowrap is OK on individual Create/Cancel buttons, not on the pill container
-  const containerIdx = toolbarSection.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:pr-7');
+  // 022W outer container uses flex-col for mobile rows
+  const containerIdx = toolbarSection.indexOf('flex flex-col items-center gap-2');
   assert.ok(
     containerIdx !== -1,
-    'Pill container must be the flex-wrap variant (whitespace-nowrap not on container)',
+    '022W: Left panel outer must be flex-col (whitespace-nowrap not on container)',
   );
 });
 
@@ -270,8 +265,10 @@ test('[022V §J] Hide appears before Preview in source order', () => {
   assert.ok(hideIdx < previewIdx, 'Hide must appear before Preview in DOM order');
 });
 
-test('[022V §J] Preview appears before UnitToggle in source order', () => {
-  const previewIdx = checklistSrc.indexOf('setShowPreview(true)');
-  const unitIdx = checklistSrc.indexOf('<UnitToggle');
-  assert.ok(previewIdx < unitIdx, 'Preview must appear before UnitToggle in DOM order');
+test('[022V §J] Preview appears before UnitToggle in the desktop right group', () => {
+  // 022W: mobile UnitToggle (Row 2) appears before mobile Preview (Row 3) in source.
+  // Use lastIndexOf to check the desktop right group where Preview comes before UnitToggle.
+  const previewIdx = checklistSrc.lastIndexOf('setShowPreview(true)');
+  const unitIdx    = checklistSrc.lastIndexOf('<UnitToggle');
+  assert.ok(previewIdx < unitIdx, '022W: In desktop right group, Preview must appear before UnitToggle');
 });

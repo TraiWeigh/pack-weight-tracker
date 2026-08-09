@@ -185,8 +185,16 @@ test('F2. Left column pills row uses lg:pr-7 (021M toolbar alignment — Metric 
 });
 
 test('F3. Header outer padding unchanged (separate from main)', () => {
-  const headerLine = checklist.split('\n').find(l => l.includes('px-4 sm:px-6 lg:px-8 h-16 flex items-center'));
-  assert.ok(headerLine, 'Header should still have its own lg:px-8 padding (unchanged)');
+  // 022W: header inner container is two-row on portrait so classes span multiple lines.
+  // Verify px-4 sm:px-6 lg:px-8 remains in the header region (search the header block).
+  const headerStart = checklist.indexOf('<header ');
+  const headerEnd   = checklist.indexOf('</header>');
+  assert.ok(headerStart > -1 && headerEnd > -1, 'Header element not found');
+  const headerBlock = checklist.slice(headerStart, headerEnd);
+  assert.ok(
+    headerBlock.includes('px-4') && headerBlock.includes('sm:px-6') && headerBlock.includes('lg:px-8'),
+    '022W: Header must still have px-4 sm:px-6 lg:px-8 padding chain (unchanged)',
+  );
 });
 
 test('F4. grid-cols-1 (mobile single-column) still present', () => {

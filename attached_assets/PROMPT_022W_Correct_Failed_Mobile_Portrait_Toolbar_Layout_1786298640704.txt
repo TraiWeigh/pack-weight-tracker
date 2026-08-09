@@ -1,0 +1,752 @@
+PROMPT 022W — CORRECT FAILED MOBILE PORTRAIT TOOLBAR LAYOUT WITH EXPLICIT ROWS
+
+USER-VERIFIED STATUS
+
+Prompt 022T:
+PASS — real-iPhone Locker synchronization works.
+
+Prompt 022U:
+PASS — real-iPhone scrolling works.
+
+Prompt 022V:
+FAIL — real-iPhone portrait toolbar/pill alignment is WORSE.
+
+The real-iPhone screenshot after 022V shows:
+
+- The file-name pill ("Seirra/Dutch/0826") overlaps/floats over the other controls.
+- Open/Close is separated awkwardly from the rest of the controls.
+- Hide and Preview are offset to the left.
+- Imperial/Metric is offset to the right and partially competes with the file-name pill.
+- The control rows do not share a consistent center/alignment.
+- The top header toolbar still extends toward/off the right edge.
+- The overall portrait layout looks accidental rather than intentionally arranged.
+
+022V used nested flex-wrap as the main solution. That is not producing a stable
+real-iPhone layout.
+
+THIS PROMPT MUST REPLACE THE MOBILE PORTRAIT WRAPPING BEHAVIOR WITH A
+DETERMINISTIC, EXPLICIT ROW LAYOUT.
+
+Do NOT change the underlying functions of any control.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit project checkpoint/backup.
+
+2. Inspect the complete 022V implementation and final diff.
+
+3. Inspect the live DOM/CSS for:
+   - TrailWeigh header
+   - logo/title
+   - top action icons
+   - account/user control
+   - Background Edit
+   - Share
+   - file-name pill
+   - Open/Close
+   - Hide
+   - Preview
+   - Imperial/Metric
+
+4. Specifically locate any:
+   - position:absolute
+   - left:50%
+   - translateX
+   - absolute-centered file-name positioning
+   - nested flex-wrap
+   - ml-auto / auto margins
+   - fixed widths
+   - nowrap
+   - min-width
+   - overflow rules
+
+5. Make the smallest reasonable corrective change.
+
+6. Preserve:
+   - 022T sync
+   - 022U scrolling
+   - Save / Save As
+   - Locker
+   - Scan Gear List
+   - Pack Summary
+   - Weight Distribution
+   - Background Edit
+   - Share
+   - Open / Close
+   - Hide
+   - Preview
+   - Imperial / Metric
+   - New
+   - Undo
+   - Redo
+   - Save/Locker toolbar action
+   - Reset
+   - account controls
+   - desktop behavior
+   - landscape behavior
+   - footer normal document flow
+
+7. Inspect the COMPLETE final diff.
+
+8. Revert unrelated changes.
+
+9. Run the full regression suite plus new 022W tests.
+
+==================================================
+1. ROOT CAUSE TO VERIFY
+==================================================
+
+The real-iPhone screenshot strongly suggests the mobile wrapping introduced by
+022V is interacting with an independently centered/positioned file-name pill.
+
+Verify whether the file-name pill is still:
+
+- absolutely positioned
+- translated to center
+- positioned independently of the flex-wrapped controls
+
+If so, this is a primary cause of overlap.
+
+Do not merely add more gaps or margins around it.
+
+On PHONE PORTRAIT, the file-name pill must participate in normal document/grid
+flow.
+
+Absolute positioning may remain at larger desktop widths if needed and proven
+safe.
+
+Document the actual root cause.
+
+==================================================
+2. DO NOT USE FREE-FORM FLEX WRAPPING FOR THE MAIN PORTRAIT CONTROL AREA
+==================================================
+
+For phone portrait, do NOT rely on one large flex-wrap container that decides
+row breaks automatically.
+
+Use an explicit responsive layout.
+
+Preferred implementation:
+- CSS grid
+OR
+- separate explicit flex rows
+
+The mobile layout should be deterministic and visually balanced.
+
+==================================================
+3. REQUIRED PHONE-PORTRAIT CONTROL LAYOUT
+==================================================
+
+At phone portrait widths, use this intentional arrangement:
+
+ROW 1 — PRIMARY DISPLAY ACTIONS
+
+        [ Background Edit ]   [ Share ]
+
+Centered as a group.
+
+If an extremely narrow width cannot fit both:
+- wrap them as complete buttons
+- center each
+- do not clip them
+
+--------------------------------------------------
+
+ROW 2 — CURRENT FILE NAME
+
+              [ Seirra/Dutch/0826 ]
+
+The current file-name pill must be:
+- centered
+- on its OWN row
+- in normal layout flow
+- not absolutely floating over other controls
+- not overlapping anything above or below
+
+If the file name is long:
+- constrain width to available viewport
+- use safe ellipsis/truncation
+- preserve the full name through an accessible title/label/tooltip where
+  appropriate
+- do not expand the page horizontally
+
+--------------------------------------------------
+
+ROW 3 — SEGMENTED CONTROLS
+
+      [ Open | Close ]     [ Imperial | Metric ]
+
+Keep each segmented control together as one unit.
+
+Requirements:
+- Open and Close NEVER split apart.
+- Imperial and Metric NEVER split apart.
+- Center the pair of segmented controls as a group.
+- Use a consistent horizontal gap.
+
+At very narrow widths where both segmented controls cannot comfortably fit on
+one row:
+- place Open/Close on one centered row
+- place Imperial/Metric on the next centered row
+
+Do NOT compress their text or make touch targets too small.
+
+--------------------------------------------------
+
+ROW 4 — ACTION PILLS
+
+             [ Hide ]   [ Preview ]
+
+Center these two buttons as a group.
+
+Use the same visual spacing and vertical alignment.
+
+--------------------------------------------------
+
+Then continue naturally with:
+
+PACK SUMMARY
+WEIGHT DISTRIBUTION
+SCAN GEAR LIST
+LOCKER
+etc.
+
+==================================================
+4. TOP HEADER — EXPLICIT PHONE PORTRAIT LAYOUT
+==================================================
+
+The top header is also still too wide in the real-iPhone screenshot.
+
+On phone portrait, use an intentional TWO-ROW header if needed.
+
+Preferred:
+
+HEADER ROW 1:
+[ TrailWeigh logo/title ]               [ Account ]
+
+HEADER ROW 2:
+[ New ] [ Undo ] [ Redo ] [ Save/Locker ] [ Reset ]
+
+Requirements:
+
+- All essential action icons must be visible.
+- No action icon may extend off the right edge.
+- Do not make icons tiny to force one row.
+- The account control must remain reachable.
+- Long account text must not consume toolbar width.
+- On portrait, account may be icon-only if that is already the established
+  responsive pattern.
+- Separators/dividers may be hidden on portrait if they waste space and are not
+  functionally necessary.
+- The header may become slightly taller on portrait.
+
+At wider landscape/tablet/desktop widths:
+- return to the existing more compact single-row arrangement where it fits.
+
+Prefer width-based responsive behavior rather than device-name hacks.
+
+==================================================
+5. MOBILE FILE-NAME PILL
+==================================================
+
+The file-name pill is especially important in this correction.
+
+On portrait:
+
+DO:
+- position: static/relative in normal flow
+- centered row
+- max-width based on viewport/container
+- ellipsis for long names
+- clear spacing above and below
+
+DO NOT:
+- absolutely position it over the other controls
+- use negative margins
+- translate it over another row
+- allow it to cover Imperial/Metric
+- allow it to cover Hide/Preview
+
+Desktop can preserve its prior centered-toolbar location if safe.
+
+==================================================
+6. CONSISTENT WIDTH / HEIGHT / SPACING
+==================================================
+
+All mobile control rows should share the same parent content width.
+
+Use consistent:
+- left/right page inset
+- row gap
+- button gap
+- vertical spacing
+- pill height
+- text alignment
+
+The result should look intentionally aligned.
+
+Avoid:
+- one row starting at x=24 while another starts at x=150 for no reason
+- random auto margins
+- floating controls
+- uneven row widths
+- visual collisions
+
+==================================================
+7. CENTERING RULE
+==================================================
+
+For PHONE PORTRAIT:
+
+The control groups should be visually centered within the available TrailWeigh
+content width.
+
+This does not mean every individual button must have equal width.
+
+It means each ROW should look balanced around the page center.
+
+Examples:
+
+[ Background Edit ] [ Share ]
+          centered group
+
+[ Open | Close ] [ Imperial | Metric ]
+          centered group
+
+[ Hide ] [ Preview ]
+          centered group
+
+[ File Name ]
+          centered
+
+==================================================
+8. NO HORIZONTAL PAGE OVERFLOW
+==================================================
+
+At portrait widths:
+
+[ ] no toolbar creates horizontal page scrolling
+
+[ ] no file-name pill expands viewport width
+
+[ ] no top-header action is offscreen
+
+[ ] no control is clipped
+
+Do not hide overflow as a substitute for proper layout.
+
+==================================================
+9. RESPONSIVE BREAKPOINTS
+==================================================
+
+Test at approximately:
+
+320 px
+375 px
+390 px
+430 px
+
+The user screenshot is a REAL iPhone portrait failure, so 390-ish mobile width
+must receive special scrutiny.
+
+Use a clean breakpoint strategy.
+
+Suggested conceptual behavior:
+
+PHONE PORTRAIT:
+explicit rows as specified above
+
+PHONE LANDSCAPE / TABLET:
+combine rows where there is enough width
+
+DESKTOP:
+preserve current desktop layout
+
+Do not force the 4-row portrait arrangement onto desktop.
+
+==================================================
+10. LANDSCAPE PRESERVATION
+==================================================
+
+The user previously found landscape usable.
+
+Do not make landscape worse.
+
+At landscape width:
+- groups may collapse into fewer rows
+- file name may return to the established centered position if safe
+- all controls remain visible
+- no unnecessary vertical bulk
+
+==================================================
+11. DESKTOP PRESERVATION
+==================================================
+
+Desktop must not regress.
+
+Verify:
+- top header remains aligned
+- toolbar remains compact
+- file name remains correctly located
+- no unnecessary extra mobile rows
+- no overlap
+- no clipped controls
+
+==================================================
+12. TOUCH TARGETS
+==================================================
+
+Do not solve the layout by shrinking controls below practical phone touch
+sizes.
+
+Maintain usable touch targets for:
+- Background Edit
+- Share
+- Open
+- Close
+- Imperial
+- Metric
+- Hide
+- Preview
+- New
+- Undo
+- Redo
+- Save/Locker
+- Reset
+- Account
+
+==================================================
+13. DO NOT CHANGE CONTROL FUNCTION
+==================================================
+
+LAYOUT ONLY.
+
+Do NOT change:
+- Open behavior
+- Close behavior
+- Hide behavior
+- Preview behavior
+- Imperial/Metric conversion
+- Background Edit
+- Share
+- Save
+- Locker
+- account actions
+- sync
+- scrolling
+
+==================================================
+14. REAL-IPHONE SCREENSHOT ACCEPTANCE TARGET
+==================================================
+
+The current real-iPhone screenshot is the FAILED baseline.
+
+A successful result must no longer show:
+
+- file name overlapping the Metric/Imperial row
+- floating file name between rows
+- Hide/Preview stranded left while unit toggle is stranded right
+- toolbar controls running off the right edge
+- irregular wrap positions
+
+Instead the portrait screen must read visually as:
+
+Background Edit      Share
+
+        File Name
+
+Open | Close      Imperial | Metric
+
+        Hide      Preview
+
+Pack Summary
+
+Weight Distribution
+
+...
+
+The exact pixel spacing may vary, but the visual row structure must be clear.
+
+==================================================
+15. AUTOMATED TESTS
+==================================================
+
+Add tests for at least:
+
+[ ] mobile file-name pill is in normal flow
+[ ] mobile file-name pill is not absolute
+[ ] mobile file-name row is independent of segmented-control row
+[ ] Open/Close remains one segmented unit
+[ ] Imperial/Metric remains one segmented unit
+[ ] Hide/Preview share an intentional action row
+[ ] top mobile header uses a safe second row when needed
+[ ] account text cannot push actions offscreen
+[ ] desktop layout remains desktop-style
+[ ] landscape remains compact
+[ ] no regression to 022T sync
+[ ] no regression to 022U scrolling
+
+Do not write tests that simply look for a class string if a real layout/runtime
+assertion is practical.
+
+==================================================
+16. RUNTIME VISUAL TESTS — MANDATORY
+==================================================
+
+Render the actual application at:
+
+320 px
+375 px
+390 px
+430 px
+representative phone landscape
+tablet
+desktop
+
+Use an actual saved file with a visible file-name pill.
+
+At every portrait width verify:
+
+[ ] file name does not overlap another control
+[ ] Background Edit/Share aligned
+[ ] Open/Close aligned
+[ ] Imperial/Metric aligned
+[ ] Hide/Preview aligned
+[ ] top header actions visible
+[ ] no horizontal overflow
+[ ] page vertical scrolling works
+
+Capture screenshots.
+
+IMPORTANT:
+
+Do not mark the portrait layout PASS based only on DOM/source inspection.
+
+Visually inspect the rendered screenshots.
+
+==================================================
+17. SCREENSHOT COMPARISON REQUIREMENT
+==================================================
+
+For the 390 px portrait runtime result:
+
+Before completing, inspect the screenshot as a human would.
+
+Ask:
+
+- Is every row visibly centered?
+- Is the file-name pill clearly separated?
+- Are any controls touching or overlapping?
+- Does anything look accidentally wrapped?
+- Is every label fully readable?
+- Is the top toolbar fully visible?
+
+If the screenshot still resembles the failed user screenshot:
+
+DO NOT MARK COMPLETE.
+
+Correct it first.
+
+==================================================
+18. REAL DEVICE STATUS
+==================================================
+
+Replit does not have the user's physical iPhone.
+
+Therefore:
+
+Real iPhone portrait must remain:
+
+NOT TESTED
+
+until the user verifies the result.
+
+Do not write:
+“Real iPhone portrait PASS”
+
+based on browser emulation.
+
+==================================================
+19. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022W_REPORT.md
+
+The report must include:
+
+- Exact title:
+  Prompt 022W — Correct Failed Mobile Portrait Toolbar Layout With Explicit Rows
+
+- User-verified statuses:
+  022T sync PASS
+  022U scroll PASS
+  022V portrait alignment FAIL
+
+- Description of the failed 022V screenshot
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Exact cause of file-name overlap
+
+- Whether file-name was absolute/translated on mobile
+
+- 022V flex-wrap findings
+
+- New phone portrait row structure
+
+- New top-header portrait structure
+
+- File-name mobile positioning
+
+- 320 px screenshot result
+
+- 375 px screenshot result
+
+- 390 px screenshot result
+
+- 430 px screenshot result
+
+- landscape result
+
+- tablet result
+
+- desktop result
+
+- horizontal overflow verification
+
+- touch-target verification
+
+- automated tests
+
+- runtime/visual tests
+
+- full regression results
+
+- complete final-diff review
+
+- anything reverted
+
+- exact real-iPhone verification steps
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior reports.
+
+==================================================
+20. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022W-report.zip
+
+Prompt 022W is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_022W_REPORT.md
+
+2.
+workflow-reports/trailweigh-022W-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022W_REPORT.md
+
+It SHOULD also include the NON-SENSITIVE responsive screenshots for:
+- 320px
+- 375px
+- 390px
+- 430px
+- landscape
+- desktop
+
+It may include non-sensitive test logs.
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private user data
+- private Locker payloads
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0.
+3. Programmatically open/list ZIP.
+4. Confirm PROMPT_022W_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Confirm responsive screenshots are included if captured.
+7. Leave ZIP in workflow-reports/.
+8. Attach/provide it if supported.
+
+Do not mark Prompt 022W complete without the verified ZIP.
+
+==================================================
+21. COMPLETION RESPONSE
+==================================================
+
+At completion provide:
+
+1. Markdown report full path
+2. Markdown size
+3. Markdown line count
+4. ZIP full path
+5. ZIP size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Exact reason 022V looked worse on the real iPhone
+
+10. Exact cause of the file-name overlap
+
+11. Exact phone-portrait row structure now used
+
+12. Exact phone-portrait header structure now used
+
+13. Confirmation the file-name pill is in normal flow on mobile
+
+14. Confirmation Open/Close remains together
+
+15. Confirmation Imperial/Metric remains together
+
+16. Confirmation Hide/Preview are centered together
+
+17. Confirmation all header action icons are reachable
+
+18. Confirmation desktop and landscape did not regress
+
+19. Exact real-iPhone USER verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+“Real iPhone portrait PASS”
+
+until the user verifies it on the actual iPhone.
+
+If responsive screenshots pass, state:
+
+“Responsive portrait visual tests PASS; real-iPhone portrait verification pending.”

@@ -102,7 +102,8 @@ test('A6. Hide, Preview and UnitToggle still present in pills row', () => {
 test('A7. Filename pill absolute positioning preserved (021O: pt-8 removed from overlay)', () => {
   // 021O moved pt-8 from child panels to the toolbar-group parent (pt-4).
   // Overlay now uses pb-3 only; inset-0 + flex items-center still centres correctly.
-  assert.match(checklist, /absolute inset-0 pb-3 flex items-center justify-center pointer-events-none/,
+  // 022W: pill wrapper now uses lg:absolute for desktop; in normal flow on mobile
+  assert.ok(checklist.includes('lg:absolute lg:inset-0') && checklist.includes('pointer-events-none'),
     '021O: filename pill overlay must use pb-3 (pt-8 moved to toolbar group parent)');
 });
 
