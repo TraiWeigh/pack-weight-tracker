@@ -34,9 +34,19 @@ const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 function stripBase(path: string): string {
-  return basePath && path.startsWith(basePath)
-    ? path.slice(basePath.length) || '/'
-    : path;
+  // Clerk's OAuth callbacks may pass an absolute URL (e.g. after Google sign-in).
+  // Extract the pathname+search+hash so the path comparison below works correctly.
+  // Without this, routerPush receives "https://..." which wouter cannot use.
+  let p = path;
+  try {
+    const url = new URL(path);
+    p = url.pathname + url.search + url.hash;
+  } catch {
+    // Not an absolute URL — already a relative path, proceed as-is.
+  }
+  return basePath && p.startsWith(basePath)
+    ? p.slice(basePath.length) || '/'
+    : p;
 }
 
 if (!clerkPubKey) {
@@ -110,6 +120,9 @@ function SignInPage() {
         routing="path"
         path={`${basePath}/sign-in`}
         signUpUrl={`${basePath}/sign-up`}
+        // Explicit fallback so Clerk always has a destination after sign-in,
+        // regardless of Clerk dashboard default-redirect configuration.
+        fallbackRedirectUrl={`${basePath}/`}
       />
     </div>
   );
@@ -122,6 +135,7 @@ function SignUpPage() {
         routing="path"
         path={`${basePath}/sign-up`}
         signInUrl={`${basePath}/sign-in`}
+        fallbackRedirectUrl={`${basePath}/`}
       />
       <p className="text-xs text-muted-foreground text-center max-w-sm px-2">
         By creating an account, you agree to TrailWeigh's{' '}
@@ -165,6 +179,10 @@ function ClerkProviderWithRoutes() {
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
+      // Belt-and-suspenders fallback redirect so Clerk always knows where to
+      // land after auth completes, regardless of dashboard default configuration.
+      signInFallbackRedirectUrl={`${basePath}/`}
+      signUpFallbackRedirectUrl={`${basePath}/`}
       localization={{
         signIn: {
           start: {

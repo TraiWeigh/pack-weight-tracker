@@ -1,0 +1,564 @@
+PROMPT 022O — DIAGNOSE & FIX REPLIT AUTH SIGN-IN FAILURE
+
+GOAL
+
+Diagnose and fix a TrailWeigh authentication problem involving Replit Auth.
+
+USER-TESTED PROBLEM
+
+The user can successfully sign in to Replit.com with the same account.
+
+However, TrailWeigh does not successfully recognize/complete the same login.
+
+Therefore:
+
+- Do NOT assume the user's password is wrong.
+- Do NOT reset the user's Replit account.
+- Do NOT build a separate TrailWeigh password system.
+- Do NOT store or validate Replit passwords inside TrailWeigh.
+
+This prompt is specifically about the existing Replit Auth integration.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before changing anything:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current authentication architecture.
+
+3. Identify:
+   - Which Replit Auth package/service is being used
+   - Which routes/components start authentication
+   - Which callback/redirect route completes authentication
+   - Where session/user state is stored
+   - How auth cookies/tokens are handled
+   - How the app determines whether the user is signed in
+
+4. Review the final diff before completion.
+
+5. Revert unrelated changes.
+
+6. Do NOT refactor unrelated application code.
+
+7. Preserve:
+   - Saved TrailWeigh files
+   - Locker data
+   - Shared links
+   - Shared snapshots
+   - Backgrounds
+   - Checklist state
+   - Weight calculations
+   - All recent UI fixes
+
+==================================================
+1. DO NOT IMPLEMENT PASSWORD VALIDATION
+==================================================
+
+TrailWeigh should not validate the user's Replit password itself.
+
+Do NOT:
+
+- Add a TrailWeigh password database
+- Hash/store Replit passwords
+- Compare user passwords inside TrailWeigh
+- Create a custom password workaround
+- Add hardcoded credentials
+- Bypass Replit Auth security
+
+The authentication provider remains Replit Auth.
+
+==================================================
+2. TRACE THE ENTIRE AUTH FLOW
+==================================================
+
+Inspect the full sign-in path from beginning to end.
+
+Trace:
+
+1. User opens TrailWeigh Sign In.
+2. User chooses the applicable Replit-supported authentication method.
+3. TrailWeigh invokes Replit Auth.
+4. Replit authenticates the user.
+5. Replit returns/callbacks to TrailWeigh.
+6. TrailWeigh receives the authenticated identity.
+7. TrailWeigh creates/restores the application session.
+8. User is recognized as signed in.
+9. User is redirected to the correct TrailWeigh page.
+
+Document the exact point where the current flow fails.
+
+==================================================
+3. CHECK REPLIT AUTH CONFIGURATION
+==================================================
+
+Inspect all current Replit Auth configuration.
+
+Verify:
+
+- Client/application configuration
+- Callback URL
+- Redirect URL
+- Allowed origins
+- Replit development URL
+- Deployment/public URL if configured
+- Environment variables/secrets required by Replit Auth
+- Session secret/configuration
+- Any expected issuer/audience values
+- Any auth middleware configuration
+
+Do not expose secret values in the workflow report.
+
+It is acceptable to report:
+
+"AUTH_SECRET present"
+
+Do NOT print the actual secret.
+
+==================================================
+4. DEVELOPMENT VS DEPLOYMENT URLS
+==================================================
+
+TrailWeigh is currently being tested through Replit.
+
+Verify that authentication is not failing because the callback is configured
+for one URL while the user is accessing another.
+
+Examples to inspect:
+
+- replit.dev preview/development URL
+- deployed TrailWeigh domain
+- alternate development hostname
+- http vs https
+- trailing slash differences where relevant
+
+The callback must return to the actual current TrailWeigh origin accepted by
+the auth configuration.
+
+Do NOT simply hardcode the user's current temporary URL if the existing
+architecture supports environment-aware callback URLs.
+
+==================================================
+5. SIGN-IN METHOD
+==================================================
+
+Inspect how Replit Auth represents the user's sign-in method.
+
+The TrailWeigh screen currently offers authentication choices such as:
+
+- Continue with Google
+- Email-based sign-in
+
+Determine whether TrailWeigh is incorrectly assuming that every Replit
+account has a separate email/password credential.
+
+If the user originally authenticates with Google or another Replit-supported
+identity provider, TrailWeigh must allow the appropriate Replit Auth method
+instead of trying to interpret that as a TrailWeigh password.
+
+Do not change account-provider relationships.
+
+==================================================
+6. CALLBACK HANDLING
+==================================================
+
+Inspect the auth callback route carefully.
+
+Verify:
+
+- Callback route is reachable.
+- Callback parameters are read correctly.
+- Authentication result is validated correctly.
+- Errors are not swallowed.
+- User identity is extracted correctly.
+- Session establishment occurs before redirect.
+- Redirect happens only after authentication completes.
+
+Look for:
+- stale callback code
+- wrong callback path
+- malformed redirect URL
+- race condition
+- callback running twice
+- missing await
+- session not committed before redirect
+- callback errors hidden by generic "invalid password" UI
+
+==================================================
+7. SESSION / COOKIE HANDLING
+==================================================
+
+Inspect the TrailWeigh authentication session.
+
+Verify:
+
+- Session cookie is actually created.
+- Cookie domain/path are appropriate.
+- Secure flag is appropriate.
+- SameSite configuration does not block the Replit Auth callback.
+- HttpOnly configuration remains secure.
+- Session survives redirect.
+- Session survives normal page navigation.
+- Browser refresh keeps user signed in when intended.
+
+Safari must be tested because the user is using Safari.
+
+Do not weaken cookie security unnecessarily.
+
+==================================================
+8. SAFARI-SPECIFIC CHECK
+==================================================
+
+Because the user is testing in Safari, inspect whether the issue could involve:
+
+- SameSite cookie handling
+- third-party/cross-site cookie restrictions
+- redirect handling
+- storage access
+- popup flow
+- origin mismatch
+
+Prefer a standards-compliant first-party callback/session architecture.
+
+Do not add browser hacks unless the root cause specifically requires a
+standards-compliant Safari adjustment.
+
+==================================================
+9. ERROR MESSAGE ACCURACY
+==================================================
+
+Inspect the current error shown when sign-in fails.
+
+If TrailWeigh displays wording such as:
+
+- Incorrect password
+- Password not recognized
+
+but TrailWeigh is not actually validating a password, change the wording.
+
+Use an accurate general auth error such as:
+
+"Sign-in could not be completed. Please try again."
+
+or, where the actual provider error is safely available:
+
+"Replit sign-in could not be completed."
+
+Do not expose internal stack traces or security-sensitive details.
+
+The UI must not falsely tell users their password is wrong when the failure
+occurred later in the Replit Auth/session flow.
+
+==================================================
+10. PRESERVE THE 022N VISUAL FIX
+==================================================
+
+Do not regress the improved sign-in styling from Prompt 022N.
+
+Preserve:
+
+- Visible input borders
+- Readable placeholders
+- Google button contrast
+- Enabled Continue green with white text
+- Disabled Continue visual distinction
+- Focus treatment
+- Light/Dark appearance
+
+022O is an auth-function fix, not another visual redesign.
+
+==================================================
+11. DO NOT DELETE USERS OR DATA
+==================================================
+
+Do NOT:
+
+- delete the user's account
+- create a replacement account
+- clear the database
+- clear Locker data
+- migrate ownership
+- reset all sessions globally unless technically necessary and explicitly
+  documented
+
+Existing user-to-file ownership relationships must remain intact.
+
+==================================================
+12. USER IDENTITY MAPPING
+==================================================
+
+Inspect how authenticated Replit identity maps to TrailWeigh user records.
+
+Verify:
+
+- Stable provider user ID is used appropriately
+- Existing user record is found rather than duplicated
+- Email changes do not unnecessarily create a new owner
+- Sign-in provider differences do not create duplicate TrailWeigh accounts
+  for the same authenticated Replit identity
+
+Do not merge accounts automatically unless the existing architecture already
+has a safe verified mechanism.
+
+==================================================
+13. AUTHENTICATED REDIRECT
+==================================================
+
+After successful sign-in:
+
+The user should return to the intended TrailWeigh experience.
+
+Preserve the existing intended behavior for:
+
+- last active saved file
+- restored background
+- Locker access
+- account-specific state
+
+Do not redirect successful users to a blank/default account if their existing
+user record is valid.
+
+==================================================
+14. SIGN-OUT REGRESSION
+==================================================
+
+Verify sign-out still works.
+
+Expected:
+
+[ ] Sign-out clears the TrailWeigh auth session appropriately.
+[ ] Private Locker data becomes inaccessible while signed out.
+[ ] Public/shared links remain available where intended.
+[ ] Signing back in restores the correct account.
+
+==================================================
+15. TEST A — REPLIT CONTROL TEST
+==================================================
+
+Document this user fact in the report:
+
+The user has confirmed that the same account successfully signs in directly
+at Replit.com.
+
+Therefore the investigation should focus on TrailWeigh's Replit Auth
+integration rather than assuming credential failure.
+
+Do not record or request the user's actual password.
+
+==================================================
+16. TEST B — TRAILWEIGH LOGIN
+==================================================
+
+Using the current Replit development environment:
+
+Test a valid Replit-authenticated user.
+
+Expected:
+
+[ ] Auth provider completes successfully.
+[ ] Callback returns to TrailWeigh.
+[ ] Session is established.
+[ ] TrailWeigh recognizes the signed-in user.
+[ ] Correct account/Locker loads.
+[ ] No false password error appears.
+
+==================================================
+17. TEST C — GOOGLE / PROVIDER FLOW
+==================================================
+
+If Continue with Google is part of the current Replit Auth setup:
+
+Expected:
+
+[ ] Google authentication opens through the intended Replit Auth flow.
+[ ] Authentication completes.
+[ ] Callback succeeds.
+[ ] TrailWeigh session is established.
+[ ] Existing TrailWeigh account is recognized appropriately.
+
+Do not claim PASS if this cannot actually be tested in runtime.
+
+==================================================
+18. TEST D — EMAIL FLOW
+==================================================
+
+If email-based Replit Auth is supported:
+
+Expected:
+
+[ ] Email authentication initiates correctly.
+[ ] Provider response is handled correctly.
+[ ] TrailWeigh does not incorrectly require a separate local password.
+[ ] Session is established after provider success.
+
+==================================================
+19. TEST E — SAFARI
+==================================================
+
+Test in Safari if runtime/browser tooling permits.
+
+Expected:
+
+[ ] Login starts.
+[ ] Auth redirect works.
+[ ] Callback works.
+[ ] Session cookie survives callback.
+[ ] User remains signed in after landing back in TrailWeigh.
+[ ] Refresh does not immediately sign user out.
+
+If Safari cannot be directly tested, mark:
+
+NOT TESTED
+
+and explain what the user needs to verify manually.
+
+==================================================
+20. TEST F — EXISTING ACCOUNT DATA
+==================================================
+
+After successful sign-in:
+
+Expected:
+
+[ ] Existing Locker files are present.
+[ ] Existing saved gear data is present.
+[ ] Correct account owns the files.
+[ ] No duplicate account is created.
+[ ] Last-active-file restoration still works where applicable.
+
+==================================================
+21. TEST G — INVALID / FAILED AUTH
+==================================================
+
+Test a failed/cancelled auth flow safely.
+
+Expected:
+
+[ ] No session is created.
+[ ] No account corruption occurs.
+[ ] Error message is accurate.
+[ ] Error does not falsely claim a password is incorrect unless the auth
+    provider specifically returned that condition.
+[ ] User can retry.
+
+==================================================
+22. LOGGING FOR DIAGNOSIS
+==================================================
+
+Add only minimal safe diagnostic logging if necessary.
+
+Logs may include:
+
+- auth flow started
+- callback reached
+- provider success/failure category
+- session created/not created
+- redirect target
+
+Do NOT log:
+
+- passwords
+- auth tokens
+- cookies
+- OAuth authorization codes
+- session secrets
+- full sensitive provider payloads
+
+Remove temporary overly verbose debugging before completion.
+
+==================================================
+23. ROOT-CAUSE REQUIREMENT
+==================================================
+
+Do not simply make random auth changes until login appears to work.
+
+The report must identify the actual root cause where possible.
+
+Examples:
+
+- callback URL mismatch
+- session cookie SameSite issue
+- auth-provider mismatch
+- incorrect callback handler
+- session not committed
+- stale environment variable
+- invalid user mapping
+- misleading UI error only
+
+If root cause cannot be fully determined, say so and report exactly what was
+tested.
+
+==================================================
+24. AUTOMATED TESTING
+==================================================
+
+Add/update tests where practical for:
+
+- auth callback handling
+- session creation
+- authenticated-user lookup
+- failed auth
+- user-record mapping
+- redirect behavior
+- auth route protection
+
+Do not use tests that expose real secrets or credentials.
+
+==================================================
+25. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022O_REPORT.md
+
+Include:
+
+- Exact prompt:
+  Prompt 022O — Diagnose & Fix Replit Auth Sign-In Failure
+
+- Checkpoint confirmation
+- Files changed
+- Current auth architecture
+- Replit Auth package/service identified
+- Sign-in routes
+- Callback route
+- Session architecture
+- Cookie settings
+- Development/deployment URL findings
+- Sign-in-provider findings
+- Root cause
+- Exact fix
+- Error-message changes if any
+- Safari-specific findings
+- User identity mapping findings
+- Confirmation no passwords are stored or validated by TrailWeigh
+- Confirmation no secret values were exposed
+- Confirmation existing user data was preserved
+- Automated test results
+- Runtime test results
+- Safari result or NOT TESTED
+- PASS / FAIL / PARTIAL / NOT TESTED for each test
+- Anything reverted
+- Anything requiring user verification
+- Complete final-diff review
+
+Append the report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier reports.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022O_REPORT.md
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Root cause of the login failure
+6. Exact fix made
+7. Confirmation TrailWeigh does not store/validate Replit passwords
+8. Confirmation existing Locker/user data was preserved
+9. Anything the user must manually verify in Safari

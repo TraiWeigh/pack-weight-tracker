@@ -5676,3 +5676,26 @@ Root cause of remaining 022M problems: `colorInput`/`colorNeutral` Clerk variabl
 - Live button-state transition test (empty → valid email → empty) requires browser interaction
 - OTP screen updated but needs live email-code flow to verify
 - Dark-mode sign-in form remains static light-mode (pre-existing architectural limitation)
+
+---
+
+## Prompt 022O — Diagnose & Fix Replit Auth Sign-In Failure
+
+**Status:** COMPLETE ✅  
+**Report:** [workflow-reports/PROMPT_022O_REPORT.md](workflow-reports/PROMPT_022O_REPORT.md)  
+**Tests:** 22 new (authFlow022O) — 0 failures
+
+### Summary
+TrailWeigh uses Clerk (Replit-managed) as its auth provider — NOT traditional Replit Auth. Two root causes found and fixed: (1) `stripBase()` in App.tsx didn't handle absolute URLs, so Clerk's OAuth callbacks (Google sign-in returns an absolute URL) were passed unchanged to wouter's `setLocation()`, breaking navigation and making it appear auth had failed. (2) No `fallbackRedirectUrl` was set on `<SignIn>`, `<SignUp>`, or `<ClerkProvider>`, so Clerk had no explicit post-auth destination and fell back to dashboard defaults which may be misconfigured for the dev domain. Fixed by adding absolute URL extraction (`new URL()`) to `stripBase` and adding `signInFallbackRedirectUrl`/`signUpFallbackRedirectUrl`/`fallbackRedirectUrl` throughout.
+
+### Files Changed
+- `artifacts/pack-checklist/src/App.tsx` — `stripBase()` fix + 4 redirect URL props
+- `artifacts/pack-checklist/src/pages/SignInPage.tsx` — `fallbackRedirectUrl` added (dead file, in sync)
+- `artifacts/pack-checklist/src/pages/SignUpPage.tsx` — `fallbackRedirectUrl` added (dead file, in sync)
+- `artifacts/pack-checklist/src/hooks/authFlow022O.test.mjs` — new (22 assertions)
+- `package.json` — test added to chain
+
+### Requiring User Verification
+- Live Google sign-in test in Safari — should now land on Checklist instead of blank/404
+- Email sign-in test if applicable
+- If sign-in still fails: user may need to create a TrailWeigh Clerk account via Sign Up (Replit.com credentials ≠ TrailWeigh Clerk account)
