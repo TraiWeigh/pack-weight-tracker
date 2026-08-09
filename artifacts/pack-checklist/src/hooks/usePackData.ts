@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { INITIAL_DATA } from '../data/initialData';
 import { CATEGORY_ROLE_ALIASES, normCat } from '../lib/categoryAliases';
+import type { PhotoCollection } from '../lib/bgCollections';
 
 export type GearItem = {
   id: string;
@@ -70,6 +71,12 @@ export type BgValue =
 export type BgSnapshot = {
   background: BgValue;
   bgSize: 'cover' | 'contain';
+  /** 023A: Full collections array captured BEFORE a custom-theme deletion.
+   *  Only present in history entries created by confirmAndDeleteTheme.
+   *  Undefined for all other history entries (gear edits, bg selection). */
+  collections?: PhotoCollection[];
+  /** 023A: Active custom-theme ID at the moment of the snapshot. */
+  activeThemeId?: string;
 };
 
 /** Each undo/redo entry captures both the gear state AND the background state. */

@@ -15,6 +15,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ImageIcon, X, Check, ChevronDown, Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
+import { cleanupOrphanedPhotos } from '../lib/bgPhotoStore';
 import {
   PHOTO_COLLECTIONS_KEY,
   MAX_PHOTOS_PER_COLLECTION,
@@ -151,6 +152,20 @@ interface BackgroundPickerPanelProps {
   containerRef?: React.RefObject<HTMLDivElement>;
   onShowcase?: () => void;
   isShowcaseBlocked?: boolean;
+  /**
+   * 023A — Called immediately BEFORE a custom-theme is deleted, with a
+   * complete snapshot of current collections and the active theme ID.
+   * Checklist uses this to push an undo history entry that can restore the
+   * deleted theme (metadata + photos still in IndexedDB).
+   */
+  onBeforeDeleteTheme?: (snapshot: { collections: PhotoCollection[]; activeThemeId: string }) => void;
+  /**
+   * 023A — Mutable ref that BackgroundPicker populates with a setter function.
+   * Checklist calls it during undo/redo to restore collections state.
+   */
+  restoreCollectionsRef?: React.MutableRefObject<
+    ((collections: PhotoCollection[], activeThemeId: string) => void) | null
+  >;
 }
 
 export function BackgroundPickerPanel({
@@ -167,6 +182,8 @@ export function BackgroundPickerPanel({
   containerRef,
   onShowcase,
   isShowcaseBlocked = false,
+  onBeforeDeleteTheme,
+  restoreCollectionsRef,
 }: BackgroundPickerPanelProps) {
   const panelRef                = useRef<HTMLDivElement>(null);
   const dropdownRef             = useRef<HTMLDivElement>(null);
@@ -393,6 +410,31 @@ export function BackgroundPickerPanel({
     setCollections(cols);
     saveCollections(cols);
   }, []);
+
+  // ── 023A: Register restore setter so Checklist can call it from undo/redo ──
+  // Declared AFTER `persist` so the effect dependency array is satisfied.
+  // Checklist calls restoreCollectionsRef.current(cols, themeId) when an
+  // undo/redo entry includes a collections snapshot.
+  useEffect(() => {
+    if (!restoreCollectionsRef) return;
+    restoreCollectionsRef.current = (cols: PhotoCollection[], themeId: string) => {
+      persist(cols);
+      setActiveThemeId(themeId);
+    };
+    return () => { if (restoreCollectionsRef) restoreCollectionsRef.current = null; };
+  }, [restoreCollectionsRef, persist]);
+
+  // ── 023A: Orphaned-blob cleanup on first mount ─────────────────────────────
+  // Blobs from themes deleted in previous sessions (or from redo after undo)
+  // are not immediately removed so that Undo can restore them within the
+  // same session.  This effect cleans up truly orphaned blobs on mount.
+  useEffect(() => {
+    const referencedIds = new Set(
+      loadCollections().flatMap(c => c.photos.map(p => p.id)),
+    );
+    cleanupOrphanedPhotos(referencedIds).catch(() => {}); // best-effort
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally run once on mount only
 
   // ── 017E: DEV measurement — logs panel/grid geometry on bgFade slider change ──
   // Fires on every bgFade tick when the landscapes grid is visible.  Compare
@@ -630,6 +672,12 @@ export function BackgroundPickerPanel({
   const confirmAndDeleteTheme = async (id: string) => {
     const col = collections.find(c => c.id === id);
 
+    // 023A: Push undo snapshot BEFORE making any state changes.
+    // The snapshot includes the full collections array and active theme so
+    // that Undo can restore the deleted theme (blobs remain in IndexedDB
+    // for the duration of the session; orphans are cleaned on next mount).
+    onBeforeDeleteTheme?.({ collections, activeThemeId });
+
     // If active background came from this theme, clear it
     if (background?.type === 'custom') {
       const usedByTheme = col?.photos.some(p => p.id === background.photoId);
@@ -642,14 +690,12 @@ export function BackgroundPickerPanel({
     if (activeThemeId === id) setActiveThemeId('landscapes');
     if (renamingId === id) setRenamingId(null);
 
-    // Delete all blobs for this theme that are not used elsewhere
-    if (col) {
-      const allOtherIds = new Set(
-        remaining.flatMap(c => c.photos.map(p => p.id)),
-      );
-      const idsToDelete = col.photos.map(p => p.id).filter(pid => !allOtherIds.has(pid));
-      await deletePhotos(idsToDelete);
-    }
+    // 023A: Photo blobs are intentionally NOT deleted immediately.
+    // They remain in IndexedDB so Undo can restore the theme within the
+    // current session.  Orphaned blobs are cleaned up on the next mount
+    // via the cleanupOrphanedPhotos effect above.
+    //
+    // (Blob deletion deferred — blobs stay in IndexedDB until next mount cleanup)
   };
 
   // ── Render helpers ────────────────────────────────────────────────────────
@@ -847,7 +893,7 @@ export function BackgroundPickerPanel({
                   <p className="text-sm mb-1 leading-snug">
                     Delete <strong>"{col.name}"</strong> and its custom background photos?
                   </p>
-                  <p className="text-xs text-muted-foreground mb-3">This action cannot be undone.</p>
+                  <p className="text-xs text-muted-foreground mb-3">You can undo this action.</p>
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setConfirmDeleteTheme(null)}

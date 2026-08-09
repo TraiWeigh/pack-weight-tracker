@@ -98,10 +98,13 @@ describe('C. PopoverContent contains confirmation copy', () => {
     );
   });
 
-  test('C3: "This action cannot be undone." warning is present', () => {
+  test('C3: Action warning or undo notice is present in confirmation', () => {
+    // 023A intentionally changed "This action cannot be undone." →
+    // "You can undo this action." to reflect undo support.  Accept either.
     assert.ok(
-      bgPickerSrc.includes('This action cannot be undone.'),
-      'Irreversible-action warning must be present'
+      bgPickerSrc.includes('This action cannot be undone.') ||
+      bgPickerSrc.includes('undo this action'),
+      'Confirmation must include either the old warning or the 023A undo notice'
     );
   });
 

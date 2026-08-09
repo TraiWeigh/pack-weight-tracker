@@ -17,6 +17,7 @@ import { LockerPanel, LockerEntry } from '../components/LockerPanel';
 import { LockerDeleteDialog } from '../components/LockerDeleteDialog';
 import { LockerIcon } from '../components/LockerIcon';
 import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
+import type { PhotoCollection } from '../lib/bgCollections';
 import { buildShareURL, type SharedLockerFile } from '../lib/shareLink';
 import {
   fetchLockerEntries,
@@ -136,6 +137,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // at hook call time, but it closes over background/bgSize setters which are
   // defined later.  We use function refs to avoid stale closures.
   const restoreBgCallbackRef = useRef<((bg: BgSnapshot) => void) | null>(null);
+  // 023A: Populated by BackgroundPickerPanel; called here on undo/redo to
+  // restore custom-theme collections when the history entry includes them.
+  const restoreCollectionsRef = useRef<
+    ((collections: PhotoCollection[], activeThemeId: string) => void) | null
+  >(null);
   // Mirrors bgSize state as a ref so handleBackgroundChange can read the
   // current size without a temporal dependency on bgSize's declaration order.
   const bgSizeRef = useRef<'cover' | 'contain'>('cover');
@@ -456,6 +462,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     if (snap.background) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(snap.background));
     else localStorage.removeItem(BG_STORAGE_KEY);
     localStorage.setItem('trailweigh:bgSize', snap.bgSize);
+    // 023A: Restore custom-theme collections when the snapshot includes them
+    // (present only in entries created by custom-theme deletion).
+    if (snap.collections !== undefined) {
+      restoreCollectionsRef.current?.(snap.collections, snap.activeThemeId ?? 'landscapes');
+    }
   };
 
   // ── Keep currentBgRef in usePackData in sync so every gear-change
@@ -1924,6 +1935,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                       !background || showResetConfirm || showShareMenu ||
                       showPreview || dragCat !== null || hasInputFocus
                     }
+                    onBeforeDeleteTheme={(snap) => {
+                      // 023A: push undo entry with full collections snapshot before
+                      // the theme is removed.  background/bgSizeRef capture current
+                      // values at call time (always inside an event handler).
+                      pushBg({
+                        background,
+                        bgSize: bgSizeRef.current,
+                        collections: snap.collections,
+                        activeThemeId: snap.activeThemeId,
+                      });
+                    }}
+                    restoreCollectionsRef={restoreCollectionsRef}
                   />
                 </div>
                 {/* Share pill + dropdown */}

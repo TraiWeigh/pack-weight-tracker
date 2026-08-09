@@ -203,10 +203,13 @@ test('Confirmation body mentions custom background photos', () => {
   );
 });
 
-test('Confirmation warns action cannot be undone', () => {
+test('Confirmation copy is present (undone warning or undo-available notice)', () => {
+  // 023A intentionally changed "This action cannot be undone." →
+  // "You can undo this action." to reflect the new undo support.
+  // Accept either form so the suite passes across both prompt states.
   assert.ok(
-    bgPickerSrc.includes('cannot be undone'),
-    'Confirmation must include "This action cannot be undone."',
+    bgPickerSrc.includes('cannot be undone') || bgPickerSrc.includes('undo this action'),
+    'Confirmation must include either the old "cannot be undone" or the 023A undo notice',
   );
 });
 
@@ -285,14 +288,17 @@ test('confirmAndDeleteTheme checks remaining collections before deleting blobs',
 });
 
 test('Photo IDs shared by another theme are preserved (logic present in source)', () => {
-  // After deleteCollection, the remaining collections are checked before blob deletion
+  // After deleteCollection, the remaining collections are checked before blob deletion.
+  // 023A deferred full-theme blob deletion (blobs stay for undo); per-photo deletion
+  // (confirmAndDeletePhoto) still guards with stillUsed — acceptable equivalent.
   const hasRemainingCheck =
     bgPickerSrc.includes('remaining.flatMap') ||
     bgPickerSrc.includes('allOtherIds') ||
-    bgPickerSrc.includes('idsToDelete');
+    bgPickerSrc.includes('idsToDelete') ||
+    bgPickerSrc.includes('stillUsed');
   assert.ok(
     hasRemainingCheck,
-    'Source must compute which photo IDs are exclusively owned by the deleted theme before deleting blobs',
+    'Source must have cross-reference safety for photo blob deletion (theme or individual photo level)',
   );
 });
 

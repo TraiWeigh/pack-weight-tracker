@@ -121,6 +121,20 @@ export async function getAllStoredPhotoIds(): Promise<string[]> {
   } catch { return []; }
 }
 
+/**
+ * 023A — Delete all blobs whose photoId is NOT in `referencedIds`.
+ * Call on BackgroundPickerPanel mount to clean up orphaned blobs left behind
+ * by sessions where custom-theme deletion was deferred for undo support.
+ * Best-effort: errors are swallowed so a cleanup failure never blocks the UI.
+ */
+export async function cleanupOrphanedPhotos(referencedIds: Set<string>): Promise<void> {
+  try {
+    const allIds = await getAllStoredPhotoIds();
+    const orphaned = allIds.filter(id => !referencedIds.has(id));
+    if (orphaned.length > 0) await deletePhotos(orphaned);
+  } catch { /* best-effort */ }
+}
+
 // ── Object URL helpers ─────────────────────────────────────────────────────────
 
 export function createPhotoObjectUrl(blob: Blob): string {

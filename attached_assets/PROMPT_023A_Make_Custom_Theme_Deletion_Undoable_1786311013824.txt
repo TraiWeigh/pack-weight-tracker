@@ -1,0 +1,758 @@
+PROMPT 023A — MAKE CUSTOM-THEME DELETION UNDOABLE
+
+USER-VERIFIED STATUS
+
+Prompt 022Z:
+PASS — custom-theme delete confirmation is now correctly positioned and one click on "Delete Theme" completes the deletion.
+
+NEW USER-VERIFIED FAILURE
+
+After deleting a custom theme, the user pressed TrailWeigh's existing global Undo control.
+
+The deleted custom theme DID NOT come back.
+
+That is not the intended behavior.
+
+The user expects custom-theme deletion to participate in TrailWeigh's existing
+Undo / Redo system.
+
+THIS PROMPT IS FOCUSED ONLY ON MAKING CUSTOM-THEME DELETION UNDOABLE AND REDOABLE.
+
+Do NOT redesign Background Themes.
+Do NOT change unrelated mobile layout work.
+Do NOT change Locker synchronization.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current architecture for:
+   - global Undo / Redo
+   - usePackData history
+   - background history snapshots
+   - custom-theme storage
+   - custom-theme metadata
+   - custom-theme photo storage
+   - custom-theme deletion
+   - active-theme selection
+   - per-device custom-theme sync behavior
+   - any account-backed custom-theme storage
+
+3. Determine exactly WHY deleting a custom theme is currently outside the
+   Undo history.
+
+4. Make the smallest reasonable change.
+
+5. Preserve:
+   - Prompt 022Z one-click delete behavior
+   - anchored delete confirmation beside the trash icon
+   - custom-theme rename
+   - add/remove photo
+   - 10-photo maximum
+   - one-user-created-Custom-Theme account limit
+   - built-in theme protection
+   - Landscape and Topo built-in themes
+   - Fit / Fill
+   - Showcase
+   - current background selection behavior
+   - Locker sync
+   - mobile scrolling
+   - all unrelated TrailWeigh behavior
+
+6. Inspect the COMPLETE final diff.
+
+7. Revert unrelated changes.
+
+8. Run the full regression suite plus new 023A tests.
+
+==================================================
+1. REQUIRED USER BEHAVIOR
+==================================================
+
+Correct sequence:
+
+1. User opens Background Edit.
+2. User clicks the trash icon for a custom theme.
+3. User confirms "Delete Theme" once.
+4. Theme disappears.
+5. User clicks TrailWeigh's existing global Undo button ONCE.
+
+Expected:
+
+- Deleted custom theme returns.
+- Same theme name returns.
+- Same theme ID returns where architecture allows and is safest.
+- Same custom photos return.
+- Same photo order returns.
+- Same photo count returns.
+- Same Fit / Fill behavior remains.
+- If that deleted theme had been active before deletion, Undo restores the
+  prior active-theme/background state.
+- No duplicate theme is created.
+
+Then:
+
+6. User clicks Redo ONCE.
+
+Expected:
+
+- The same custom theme is deleted again.
+- No duplicate delete occurs.
+- No broken photo references.
+- No second confirmation dialog is required for Redo.
+
+==================================================
+2. USE THE EXISTING GLOBAL UNDO / REDO SYSTEM
+==================================================
+
+Do NOT build a separate custom-theme-only Undo button.
+
+Integrate the deletion action into TrailWeigh's EXISTING global Undo / Redo
+history.
+
+Inspect the current history entry structure and extend it only as much as
+needed.
+
+Earlier TrailWeigh background work already uses history snapshots for
+background changes.
+
+Prefer extending that architecture rather than creating a second independent
+history stack.
+
+==================================================
+3. SNAPSHOT BEFORE DELETION
+==================================================
+
+Immediately BEFORE a confirmed custom-theme deletion:
+
+Capture a complete undo snapshot sufficient to restore the theme.
+
+The snapshot must include all data needed to reconstruct the custom theme,
+including where applicable:
+
+- theme stable ID
+- theme name
+- theme ordering/index
+- photo IDs
+- photo metadata
+- photo order
+- photo storage references
+- actual image/blob records if references would otherwise be destroyed
+- Fit / Fill state if theme-specific
+- currently selected/active theme
+- currently displayed photo/background
+- account/device sync metadata needed to restore safely
+
+Do not assume theme metadata alone is enough if deleteTheme also destroys photo
+records.
+
+==================================================
+4. DO NOT DESTROY THE ONLY COPY NEEDED FOR UNDO
+==================================================
+
+The current delete path may physically remove custom photo records/assets.
+
+If those assets are permanently destroyed immediately, Undo cannot restore the
+theme.
+
+Change the deletion lifecycle safely.
+
+Acceptable approaches include:
+
+A. Store a complete restorable snapshot in the existing history entry before
+   deletion.
+
+OR
+
+B. Move deleted theme/photo data into a temporary undo cache/tombstone until
+   the history entry is no longer recoverable.
+
+OR
+
+C. Use another existing reversible data mechanism already present in the app.
+
+Choose the smallest safe solution that fits the existing architecture.
+
+DO NOT:
+- permanently delete the only copy and then pretend Undo can restore it
+- recreate empty photo placeholders
+- restore only the theme name without the images
+- generate new unrelated photo IDs unless absolutely required
+
+==================================================
+5. PRESERVE STABLE IDS
+==================================================
+
+Undo should restore the original custom-theme identity wherever safely
+possible.
+
+Preferred:
+
+Theme ID before delete:
+abc123
+
+Undo:
+abc123 returns
+
+Redo:
+abc123 is deleted again
+
+This avoids:
+- duplicate themes
+- broken references
+- saved-list/background reference mismatch
+- share/background mismatch
+
+If the current storage architecture makes exact ID restoration impossible,
+document why and preserve all higher-level references safely.
+
+==================================================
+6. ACTIVE THEME DELETE → UNDO
+==================================================
+
+Test when the deleted custom theme is currently active.
+
+Current delete behavior may safely fall back to a built-in/default theme.
+
+That fallback is correct during the deleted state.
+
+But if the user presses Undo:
+
+Expected:
+
+- custom theme returns
+- its photos return
+- the prior active custom theme becomes active again
+- the previously displayed custom background is restored where possible
+- no broken image
+- no missing theme ID
+- no fallback theme remains selected incorrectly
+
+==================================================
+7. INACTIVE THEME DELETE → UNDO
+==================================================
+
+Test when the deleted custom theme is NOT currently active.
+
+Expected:
+
+- theme returns
+- photos return
+- original active theme remains active
+- Undo does not unexpectedly switch backgrounds merely because the deleted
+  theme was restored
+
+==================================================
+8. REDO
+==================================================
+
+After Undo restores the custom theme:
+
+Click Redo.
+
+Expected:
+
+- same theme is deleted again
+- same safe active-theme fallback occurs if appropriate
+- no confirmation popover is shown for Redo
+- no duplicate deletion request
+- no orphaned photo records
+- no history corruption
+
+Then click Undo again.
+
+Expected:
+
+- theme restores again
+
+Test at least:
+DELETE → UNDO → REDO → UNDO
+
+==================================================
+9. CONFIRMATION COPY MUST NO LONGER SAY "CANNOT BE UNDONE"
+==================================================
+
+The current custom-theme delete confirmation previously said:
+
+"This action cannot be undone."
+
+That statement becomes false once 023A is implemented.
+
+Remove or replace that line.
+
+Preferred concise wording:
+
+Delete Custom Theme?
+
+Delete "[Theme Name]" and its custom background photos?
+
+You can undo this action.
+
+Buttons:
+Cancel
+Delete Theme
+
+If TrailWeigh's existing Undo history is session-only, do not imply the delete
+can be undone forever.
+
+Alternative acceptable wording:
+
+You can undo this action during this session.
+
+Use wording consistent with the actual implemented behavior.
+
+==================================================
+10. SESSION / RELOAD BEHAVIOR
+==================================================
+
+Inspect the current global Undo/Redo history lifecycle.
+
+If TrailWeigh Undo history is intentionally session-only:
+
+Preserve that rule.
+
+Do NOT create a new persistent cross-reload history system solely for theme
+deletion.
+
+Document clearly:
+
+- Undo works while the current history entry exists.
+- Refreshing/reloading may clear Undo history if that is the existing app rule.
+
+Do not claim persistent Undo if it is not implemented.
+
+==================================================
+11. CUSTOM-THEME ACCOUNT / DEVICE SYNC SAFETY
+==================================================
+
+TrailWeigh custom themes may have account-backed and/or per-device synced data.
+
+Inspect the actual current architecture.
+
+Undo must restore consistently without creating:
+- two copies of the custom theme
+- account/device divergence
+- duplicate photo records
+- another user's theme
+- invalid sync metadata
+
+If deletion is account-wide:
+- Undo must restore the account-owned theme safely.
+
+If deletion is device-local:
+- Undo must restore the local theme safely.
+
+If hybrid:
+- restore according to the existing source-of-truth rules.
+
+Document the actual behavior.
+
+==================================================
+12. BUILT-IN THEMES
+==================================================
+
+Do not change built-in theme protection.
+
+Landscape and Topo must remain non-deletable.
+
+Undo/Redo theme deletion applies only to user-created custom themes.
+
+==================================================
+13. DELETE CONFIRMATION REGRESSION
+==================================================
+
+Prompt 022Z is user-verified working.
+
+Preserve all of it.
+
+Verify:
+
+[ ] trash click opens confirmation beside trash icon
+[ ] confirmation never jumps to upper-left
+[ ] one Delete Theme click completes delete
+[ ] Background panel remains usable
+[ ] no second click required
+
+023A must not reintroduce any 022Z bug.
+
+==================================================
+14. PHOTO RESTORATION TEST
+==================================================
+
+Create/use a disposable custom theme with multiple photos, preferably at least 3.
+
+Record:
+
+- theme name
+- theme ID
+- photo count
+- photo IDs if available
+- photo order
+
+Delete the theme.
+
+Undo.
+
+Expected:
+
+[ ] all photos return
+[ ] correct photo count
+[ ] correct photo order
+[ ] images actually render
+[ ] no broken image placeholders
+[ ] no duplicate images
+[ ] theme ID preserved where intended
+
+==================================================
+15. MAXIMUM 10-PHOTO REGRESSION
+==================================================
+
+If a deleted theme had 10 photos:
+
+Delete → Undo.
+
+Expected:
+
+[ ] all 10 return
+[ ] no 11th/duplicate photo
+[ ] 10-photo maximum logic remains correct
+
+==================================================
+16. HISTORY ORDER
+==================================================
+
+Test theme deletion alongside other Undo-able TrailWeigh actions.
+
+Example:
+
+1. Change background.
+2. Delete custom theme.
+3. Undo.
+
+Expected:
+- first Undo reverses THE MOST RECENT action: theme deletion.
+
+4. Undo again.
+
+Expected:
+- previous background action reverses.
+
+Redo should replay in correct order.
+
+Do not corrupt or reset unrelated history entries merely because a theme was
+deleted.
+
+==================================================
+17. SAVE / LOCKER SAFETY
+==================================================
+
+Deleting and undoing a custom theme must not change gear-list data.
+
+Verify no changes to:
+- gear items
+- quantities
+- weights
+- categories
+- checked states
+- saved file ID
+- file name
+- Locker contents
+
+This is background/theme history only.
+
+==================================================
+18. SHARED LINK SAFETY
+==================================================
+
+Do not redesign sharing.
+
+Verify delete/undo operations do not crash existing shared snapshots or saved
+background references.
+
+If a share snapshot is immutable, preserve that established behavior.
+
+==================================================
+19. MOBILE
+==================================================
+
+Verify the same Undo behavior at phone-width responsive layout.
+
+On mobile:
+
+1. Delete disposable custom theme.
+2. Close Background Edit if necessary.
+3. Tap global Undo.
+
+Expected:
+- custom theme returns
+- photos return
+- page remains scrollable
+- no layout jump
+- no delete confirmation reopens
+
+Real iPhone remains NOT TESTED until user verifies it.
+
+==================================================
+20. FAILURE HANDLING
+==================================================
+
+If restoring a deleted theme fails:
+
+Do not silently claim success.
+
+Preserve the restorable snapshot/history state where safe.
+
+Provide a concise non-sensitive error rather than:
+- creating a partial empty theme
+- discarding the snapshot
+- corrupting the history stack
+
+==================================================
+21. AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for at least:
+
+[ ] confirmed custom-theme delete creates an Undo history entry
+[ ] Undo restores theme metadata
+[ ] Undo restores photo records
+[ ] Undo restores photo order
+[ ] Undo preserves theme ID where intended
+[ ] active-theme delete/Undo restores active theme
+[ ] inactive-theme delete/Undo does not change unrelated active theme
+[ ] Redo deletes restored theme
+[ ] DELETE → UNDO → REDO → UNDO works
+[ ] history order remains correct with adjacent background actions
+[ ] 10-photo theme restores exactly 10
+[ ] confirmation text no longer says "cannot be undone"
+[ ] 022Z one-click delete does not regress
+[ ] built-in themes remain protected
+[ ] gear-list data is untouched
+
+Tests must exercise behavior, not merely search source text.
+
+==================================================
+22. RUNTIME TESTS — MANDATORY
+==================================================
+
+Using a disposable custom theme:
+
+TEST A:
+Theme with 3 photos
+Delete → Undo
+
+PASS only if theme and all 3 real images return.
+
+TEST B:
+Delete → Undo → Redo → Undo
+
+PASS only if state transitions correctly every time.
+
+TEST C:
+Active custom theme
+Delete → fallback → Undo
+
+PASS only if prior active custom theme/background returns.
+
+TEST D:
+Inactive custom theme
+Delete → Undo
+
+PASS only if active background does not change unexpectedly.
+
+TEST E:
+Verify 022Z interaction remains:
+one confirmation click deletes; no upper-left jump.
+
+Do not mark complete from source inspection alone.
+
+==================================================
+23. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023A_REPORT.md
+
+The report must include:
+
+- Exact title:
+  Prompt 023A — Make Custom-Theme Deletion Undoable
+
+- User-verified issue:
+  delete works, but global Undo does not restore deleted custom theme
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Existing Undo/Redo architecture discovered
+
+- Existing custom-theme storage architecture
+
+- Exact reason custom-theme delete was outside history
+
+- Snapshot/tombstone strategy used
+
+- Theme-ID restoration behavior
+
+- Photo asset restoration behavior
+
+- Active-theme delete/Undo behavior
+
+- Inactive-theme delete/Undo behavior
+
+- Redo behavior
+
+- DELETE → UNDO → REDO → UNDO result
+
+- History-order result
+
+- 3-photo restoration result
+
+- 10-photo restoration result if tested
+
+- Confirmation-copy change
+
+- Session/reload Undo behavior
+
+- Account/device sync implications
+
+- Built-in theme protection result
+
+- 022Z regression result
+
+- Gear-list/Locker regression result
+
+- Shared-link regression result
+
+- Mobile-width result
+
+- Automated tests
+
+- Runtime tests
+
+- Full regression results
+
+- Complete final-diff review
+
+- Anything reverted
+
+- Exact real-iPhone verification steps
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior reports.
+
+==================================================
+24. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023A-report.zip
+
+Prompt 023A is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023A_REPORT.md
+
+2.
+workflow-reports/trailweigh-023A-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_023A_REPORT.md
+
+It may additionally contain NON-SENSITIVE:
+- test logs
+- runtime screenshots
+- automated test output
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env files
+- private user data
+- private Locker contents
+- private uploaded photos from real users
+
+Use only disposable/non-sensitive test assets if screenshots or fixtures are included.
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_023A_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+Do not mark Prompt 023A complete without a valid ZIP.
+
+==================================================
+25. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Exact reason deleted custom themes previously could not be undone
+
+10. Exact Undo snapshot/restoration approach now used
+
+11. Confirmation deleted theme name restores
+
+12. Confirmation deleted photos restore
+
+13. Confirmation photo order restores
+
+14. Confirmation stable theme ID is preserved where intended
+
+15. Confirmation active custom theme restores after Undo
+
+16. Confirmation Redo deletes it again
+
+17. Confirmation delete warning no longer says "cannot be undone"
+
+18. Confirmation 022Z one-click delete did not regress
+
+19. Exact session/reload limitations of Undo
+
+20. Exact real-iPhone USER verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+"Real iPhone custom-theme Undo PASS"
+
+until the user verifies it on the physical iPhone.
+
+If runtime browser testing passes, report:
+
+"Custom-theme delete/Undo/Redo runtime tests PASS; real-iPhone verification pending."

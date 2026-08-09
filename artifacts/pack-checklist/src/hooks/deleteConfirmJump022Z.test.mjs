@@ -112,20 +112,18 @@ describe('D. onInteractOutside guard on PopoverContent', () => {
 
 // ── §E: confirmAndDeleteTheme synchronous close before await ─────────────────
 
-describe('E. confirmAndDeleteTheme — setConfirmDeleteTheme(null) before await', () => {
-  test('E1: setConfirmDeleteTheme(null) appears before deletePhotos (the await)', () => {
-    // Extract the confirmAndDeleteTheme function body
+describe('E. confirmAndDeleteTheme — setConfirmDeleteTheme(null) called synchronously', () => {
+  test('E1: setConfirmDeleteTheme(null) is called inside confirmAndDeleteTheme', () => {
+    // 023A deferred blob deletion (await deletePhotos removed from theme deletion),
+    // so the original ordering check is replaced by a presence check.
+    // The requirement is simply that the popover closes (null state) on delete.
     const fnStart = bgPickerSrc.indexOf('const confirmAndDeleteTheme');
     assert.ok(fnStart > -1, 'confirmAndDeleteTheme must exist');
-    // Find the end of the function (next blank line after closing brace pattern)
-    const fnBody = bgPickerSrc.slice(fnStart, fnStart + 1500);
-    const nullIdx     = fnBody.indexOf('setConfirmDeleteTheme(null)');
-    const awaitIdx    = fnBody.indexOf('await deletePhotos');
-    assert.ok(nullIdx > -1,  'setConfirmDeleteTheme(null) must be called inside confirmAndDeleteTheme');
-    assert.ok(awaitIdx > -1, 'await deletePhotos must be called inside confirmAndDeleteTheme');
+    const fnBody  = bgPickerSrc.slice(fnStart, fnStart + 1500);
+    const nullIdx = fnBody.indexOf('setConfirmDeleteTheme(null)');
     assert.ok(
-      nullIdx < awaitIdx,
-      `setConfirmDeleteTheme(null) (pos ${nullIdx}) must come BEFORE await deletePhotos (pos ${awaitIdx}) so the popover closes before the async wait`
+      nullIdx > -1,
+      'setConfirmDeleteTheme(null) must be called inside confirmAndDeleteTheme to close the popover'
     );
   });
 });

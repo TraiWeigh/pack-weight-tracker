@@ -6099,3 +6099,64 @@ Stays open — deleted theme disappears from list, remaining themes usable.
 
 ### Real-iPhone Verification
 Report PASS only after user signs in on physical device and confirms: ONE trash tap + ONE "Delete Theme" tap completes deletion, no jump to upper-left, no second tap required.
+
+---
+
+## Prompt 023A — Make Custom-Theme Deletion Undoable
+
+### Problem
+After deleting a custom theme, pressing TrailWeigh's global Undo did not restore it. Deletion was immediate and permanent: metadata dropped from localStorage and photo blobs destroyed in IndexedDB with no undo entry pushed.
+
+### Root Cause
+Two compounding gaps:
+1. `confirmAndDeleteTheme` never called `pushBg()`, so no history entry existed.
+2. `deletePhotos()` was called immediately, destroying IndexedDB blobs before any restore could use them.
+Additionally, `collections` state lived only inside `BackgroundPickerPanel` — never reaching `BgSnapshot`/`HistoryEntry`.
+
+### Fix
+
+**`usePackData.ts`** — Extended `BgSnapshot` with `collections?: PhotoCollection[]` and `activeThemeId?: string`.
+
+**`bgPhotoStore.ts`** — Added `cleanupOrphanedPhotos(referencedIds)`: enumerates all stored blob IDs, deletes any not in the referenced set. Called on BackgroundPicker mount to clean up blobs left from previous sessions.
+
+**`BackgroundPicker.tsx`** — Four coordinated changes:
+1. New `onBeforeDeleteTheme?` prop — called with full `{collections, activeThemeId}` snapshot before any state change.
+2. `confirmAndDeleteTheme` now calls `onBeforeDeleteTheme` first, then skips `deletePhotos()` (deferred to next mount cleanup).
+3. New `restoreCollectionsRef?` prop — BackgroundPicker registers `(cols, themeId) => { persist(cols); setActiveThemeId(themeId); }` so Checklist can invoke it from undo/redo.
+4. Orphaned-blob cleanup effect on mount using `cleanupOrphanedPhotos`.
+5. Dialog copy: "This action cannot be undone." → **"You can undo this action."**
+
+**`Checklist.tsx`** — Three wiring changes:
+1. `restoreCollectionsRef` ref declared.
+2. `restoreBgCallbackRef.current` extended: when `snap.collections !== undefined`, calls `restoreCollectionsRef.current(cols, themeId)`.
+3. `onBeforeDeleteTheme` and `restoreCollectionsRef` passed to `<BackgroundPickerPanel>`.
+
+### Undo/Redo Lifecycle
+- **Delete:** `onBeforeDeleteTheme` → `pushBg({background, bgSize, collections, activeThemeId})` → metadata removed → **blobs stay in IndexedDB**
+- **Undo:** `undo()` → `onRestoreBg` → background/bgSize restored → `restoreCollectionsRef.current(cols, themeId)` → panel restored
+- **Redo/Undo again:** blobs still present, cycle repeats cleanly
+- **Next session mount:** `cleanupOrphanedPhotos` removes truly orphaned blobs
+
+### Files Changed
+- `artifacts/pack-checklist/src/hooks/usePackData.ts` — BgSnapshot extended
+- `artifacts/pack-checklist/src/lib/bgPhotoStore.ts` — `cleanupOrphanedPhotos()` added
+- `artifacts/pack-checklist/src/components/BackgroundPicker.tsx` — props, effects, `confirmAndDeleteTheme`, copy
+- `artifacts/pack-checklist/src/pages/Checklist.tsx` — ref, restore callback, prop wiring
+- `package.json` — 023A test added to chain
+- **New:** `artifacts/pack-checklist/src/hooks/deleteThemeUndo023A.test.mjs` (41 tests)
+- **Updated:** `deleteCustomTheme022P.test.mjs`, `deleteWarningPosition022Y.test.mjs`, `deleteConfirmJump022Z.test.mjs` (3 tests relaxed for 023A intentional changes)
+
+### Test Results
+- `deleteThemeUndo023A.test.mjs`: 41/41 passed
+- Full `pnpm test:importer`: 0 failures
+- All prior 022P, 022Y, 022Z tests still pass
+
+### Invariants Preserved
+- 022Z `deletePopoverContentRef` portal exclusion ✓
+- 022Y Popover-beside-trash positioning ✓
+- 022X toolbar zones ✓
+- Per-photo deletion still guards with `stillUsed` cross-reference check ✓
+- History remains session-only (no persistence claimed) ✓
+
+### Real-iPhone Verification
+NOT TESTED — no physical device available in this environment.
