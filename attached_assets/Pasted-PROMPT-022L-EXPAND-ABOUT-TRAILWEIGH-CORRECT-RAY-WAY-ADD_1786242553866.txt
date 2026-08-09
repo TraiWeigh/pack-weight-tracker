@@ -1,0 +1,448 @@
+PROMPT 022L — EXPAND ABOUT TRAILWEIGH + CORRECT RAY-WAY + ADD SOURCES & REFERENCES
+
+GOAL
+
+Improve the About TrailWeigh page in three related ways:
+
+1. Correct and strengthen the existing Ray-Way / Ray Jardine historical content.
+
+2. Add three new evidence-based About accordions:
+
+   - Mind — Mental & Emotional Benefits
+   - Body — Physical Benefits
+   - Spirit — Awe, Connection & Meaning
+
+3. Add a reusable Sources & References modal that is available:
+
+   - From the About TrailWeigh page
+   - From the normal signed-in TrailWeigh experience
+   - From FULL Shared TrailWeigh Links
+   - From Shared Checkable Packing Lists
+
+This is an educational/content and reference-system change.
+
+Do NOT modify TrailWeigh gear calculations, saving, sharing architecture,
+Locker behavior, backgrounds, OCR/import logic, or weight calculations.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before making ANY change:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the existing About TrailWeigh implementation.
+
+3. Inventory the existing About accordion titles and their order.
+
+4. Inspect the existing footer component(s), including:
+   - Signed-in pages
+   - Public/informational pages
+   - Full Shared TrailWeigh Link
+   - Checkable Packing List
+
+5. Reuse existing accordion and modal components wherever practical.
+
+6. Make the smallest reasonable changes.
+
+7. Do NOT redesign unrelated pages.
+
+8. Do NOT refactor unrelated architecture.
+
+9. Inspect the COMPLETE final diff.
+
+10. Revert unrelated changes.
+
+11. Run the full existing regression test suite.
+
+Document the checkpoint and final-diff review in the required report.
+
+==================================================
+1. KEEP THE EXISTING ABOUT DESIGN
+==================================================
+
+Preserve the existing About TrailWeigh visual design shown in the current app.
+
+The existing large white accordion cards should remain.
+
+Preserve:
+
+- Rounded cards
+- Current typography
+- Current spacing
+- Existing disclosure chevrons
+- Light/Dark behavior
+- Entire header row clickable
+- Keyboard Enter/Space behavior
+- More than one accordion may remain open
+- All About accordions collapsed by default
+
+Do NOT replace the About page with tabs or a long permanently expanded article.
+
+==================================================
+2. ADD A SMALL SECTION LABEL
+==================================================
+
+After:
+
+Ultralight Is a Tool, Not a Contest
+
+and before:
+
+Remember Why We're Here
+
+add a small non-accordion section heading:
+
+WHY WE GO OUTSIDE — MIND, BODY & SPIRIT
+
+This is only a visual/topic divider.
+
+Do NOT make it another collapsible accordion containing three nested accordions.
+
+Immediately below it add three normal About accordions:
+
+Mind — Mental & Emotional Benefits
+
+Body — Physical Benefits
+
+Spirit — Awe, Connection & Meaning
+
+They should look and behave exactly like the existing About accordions.
+
+==================================================
+3. MIND — MENTAL & EMOTIONAL BENEFITS
+==================================================
+
+Create an accordion titled:
+
+Mind — Mental & Emotional Benefits
+
+Use careful, evidence-based language.
+
+The section should explain that time outdoors—especially when combined with
+physical activity—can support mental and emotional well-being.
+
+Discuss research-supported areas including:
+
+- Stress recovery
+- Positive mood / positive affect
+- Reduced negative affect
+- Anxiety and depressive symptom improvement in studied populations
+- Attention restoration
+- Working memory
+- Cognitive flexibility
+- Mental fatigue
+- Opportunities for reflection
+- Perspective
+- Solitude
+- Accomplishment
+- Self-confidence developed through solving real-world problems
+- Social connection when hiking with others
+
+IMPORTANT:
+
+Distinguish between:
+
+A. Findings directly supported by nature-exposure / green-exercise research
+
+and
+
+B. Practical experiences that hiking may create, such as accomplishment,
+reflection, confidence, solitude, or perspective.
+
+Do not represent every hiking experience as a proven clinical outcome.
+
+Include wording substantially similar to:
+
+"Research increasingly suggests that spending time in natural environments,
+especially when combined with physical activity, can support several aspects
+of mental well-being. Studies have reported benefits involving mood, stress,
+attention and some areas of cognitive performance. The size and consistency
+of these effects vary among studies, and researchers continue to investigate
+why and when they occur."
+
+Explain attention-restoration research carefully:
+
+"Controlled studies and systematic reviews have found improvements in areas
+such as working memory and cognitive flexibility after exposure to natural
+environments, with somewhat less consistent evidence for attentional control."
+
+Do NOT say:
+
+- Nature cures depression
+- Hiking cures anxiety
+- The outdoors replaces therapy
+- Nature exposure guarantees cognitive improvement
+
+End this section with a small note:
+
+"Time outdoors can be one valuable part of a healthy life, but it is not a
+substitute for professional medical or mental-health care when that care is
+needed."
+
+Use unobtrusive numbered source markers linked to the Sources & References
+modal.
+
+==================================================
+4. BODY — PHYSICAL BENEFITS
+==================================================
+
+Create an accordion titled:
+
+Body — Physical Benefits
+
+Explain first that many physical benefits of hiking come from the exercise
+itself.
+
+Hiking commonly involves:
+
+- Sustained walking
+- Climbing
+- Descending
+- Repeated muscular effort
+- Uneven terrain
+- Balance adjustments
+- Carrying a load
+- Extended physical activity
+
+Discuss practical physical benefits such as:
+
+- Cardiovascular endurance
+- Muscular endurance
+- Lower-body and core involvement
+- Balance and coordination
+- Functional fitness
+- Weight-bearing movement
+- Energy expenditure
+- Physical conditioning
+
+Be careful not to claim that exercising outdoors is automatically physically
+superior to equivalent indoor exercise.
+
+Then explain that research on green-space and forest exposure has separately
+found associations or short-term effects involving:
+
+- Cardiovascular health
+- Blood pressure
+- Stress biomarkers such as cortisol
+- Sleep
+- Possible immune-system pathways
+
+Use cautious wording because study types and evidence quality differ.
+
+For example:
+
+"Large observational studies and meta-analyses have found associations
+between greater green-space exposure and some measures of cardiovascular
+health. Experimental forest-exposure studies have also reported short-term
+reductions in blood pressure and cortisol. These findings do not mean that
+nature exposure replaces exercise, medical care, medication, or other
+evidence-based treatment."
+
+==================================================
+5. NATURE, MICROBIOMES & IMMUNE RESEARCH
+==================================================
+
+Include a short subsection within BODY discussing emerging research on
+environmental biodiversity and human microbiomes.
+
+Explain in plain language:
+
+Humans coexist with enormous communities of microorganisms.
+
+The human microbiome contributes to normal physiology and immune regulation.
+
+Researchers are studying whether contact with biologically diverse
+environments can affect human microbial communities and related immune
+pathways.
+
+A 2024 systematic review examined greenspace exposure and human microbiota.
+
+A separate biodiversity-and-health review judged evidence for an
+environmental-microbiota-human-health pathway to be promising/moderate rather
+than fully established.
+
+Therefore use wording such as:
+
+"One emerging area of research examines whether contact with biologically
+diverse environments can influence the microorganisms associated with the
+human body and, through them or related pathways, aspects of immune
+regulation. The evidence is developing, and researchers are still working out
+how large and clinically important these effects are."
+
+Do NOT claim:
+
+- Dirt boosts immunity
+- Forest microbes prevent disease
+- Hiking strengthens the immune system in every person
+- Nature exposure cures immune conditions
+
+==================================================
+6. SPIRIT — AWE, CONNECTION & MEANING
+==================================================
+
+Create an accordion titled:
+
+Spirit — Awe, Connection & Meaning
+
+This section MUST remain welcoming to:
+
+- Religious readers
+- Spiritual but nonreligious readers
+- Agnostic readers
+- Atheist readers
+- Scientific-naturalist readers
+- People from different religious and philosophical traditions
+
+TrailWeigh must NOT endorse one religion.
+
+Begin by defining the intended meaning of "Spirit."
+
+Use wording substantially similar to:
+
+"Here, spirit does not mean adherence to a particular religion. It refers to
+the part of human experience concerned with wonder, meaning, humility,
+gratitude, belonging, connection and the feeling that we are part of
+something larger than ourselves."
+
+Continue with the idea that different people may understand the same
+experience differently.
+
+For example:
+
+"One person may understand that feeling through faith. Another may describe
+it as spirituality, consciousness, ecology, awe, interconnectedness, or
+simply a deep love of the natural world. TrailWeigh does not choose among
+those interpretations."
+
+==================================================
+7. THE SCIENCE OF AWE
+==================================================
+
+Within SPIRIT explain that awe is also studied scientifically.
+
+Describe it carefully as an emotional response commonly associated with
+experiences of vastness that challenge an individual's ordinary frame of
+reference.
+
+Explain the "small self" concept:
+
+Awe can temporarily make personal concerns feel smaller relative to a larger
+world.
+
+Clarify:
+
+"Small self" does NOT mean worthlessness or low self-esteem.
+
+Research has associated experimentally induced awe with:
+
+- Greater generosity
+- Prosocial behavior
+- Reduced entitlement
+- Greater sense of being part of something larger
+
+Mention that one well-known experiment induced awe by having participants
+stand among very tall trees.
+
+Do not claim that awe automatically makes people morally better.
+
+==================================================
+8. NATURE CONNECTEDNESS
+==================================================
+
+Explain the psychological concept:
+
+nature connectedness
+
+Define it in plain language as the degree to which a person experiences
+themselves as related to, or part of, the natural world.
+
+Discuss evidence showing associations between stronger nature connectedness
+and:
+
+- Positive affect
+- Vitality
+- Life satisfaction
+- Pro-environmental behavior
+- Greater concern for the natural world
+
+Explain that these are associations and experimental findings at the group
+level, not guarantees for every individual.
+
+Connect this naturally to TrailWeigh's existing HYOH idea:
+
+"Your hike is your own. The trail is shared."
+
+Then explain that feeling connected to nature can encourage stewardship
+without making stewardship dependent upon any particular belief system.
+
+==================================================
+9. HUMANS ARE PART OF NATURE — SCIENCE VS SPIRITUAL INTERPRETATION
+==================================================
+
+This distinction is especially important.
+
+TrailWeigh MAY say:
+
+"We are not merely surrounded by nature. Biologically and ecologically, we
+are part of it."
+
+Explain factual examples:
+
+- Humans depend on ecosystems for food, water and breathable air.
+- Carbon, oxygen, nitrogen and minerals continuously cycle through living and
+  nonliving systems.
+- Human biology contains and interacts with microbial ecosystems.
+- Circadian biology responds to environmental light and darkness.
+- Human health is affected by environmental conditions.
+- Modern human-ecology research increasingly challenges the idea that humans
+  exist entirely outside or apart from nature.
+
+THEN clearly distinguish science from metaphysical interpretation.
+
+Include wording substantially similar to:
+
+"Science can describe many of the physical, biological and psychological
+connections between people and the natural world. It cannot establish that
+those connections prove a universal spirit, divine consciousness or other
+metaphysical belief. What those connections mean at a spiritual level is a
+personal question."
+
+This distinction must remain.
+
+Do NOT write:
+
+- Science proves we are spiritually one.
+- Quantum physics proves universal consciousness.
+- Trees communicate spiritually with humans.
+- The microbiome proves a shared soul.
+- Any similar pseudoscientific claim.
+
+==================================================
+10. SHORT QUOTATIONS FROM DIFFERENT TRADITIONS
+==================================================
+
+Within SPIRIT, include a small visually restrained group of SHORT quotations.
+
+Do NOT turn the section into a religious quotation wall.
+
+Use public-domain translations where practical.
+
+Preferred examples:
+
+A. JOHN MUIR
+
+"When we try to pick out anything by itself, we find it hitched to everything
+else in the Universe."
+
+Attribution:
+John Muir
+My First Summer in the Sierra
+1911, p. 110
+
+B. TAOIST TRADITION
+
+Use a SHORT excerpt from:
+
+Dao De Jing /
