@@ -1,0 +1,707 @@
+PROMPT 022J — RESTORE WEIGHT DISTRIBUTION TO SHARED TRAILWEIGH LINKS
+
+GOAL
+
+Restore the Weight Distribution panel to the FULL Shared TrailWeigh Link experience.
+
+USER-TESTED PROBLEM:
+
+The Shared TrailWeigh Link currently includes the shared gear list and other shared-list features, but the Weight Distribution panel is missing.
+
+Weight Distribution should be available on the full Shared TrailWeigh Link just as it is on the normal TrailWeigh checklist, using the data contained in the shared snapshot.
+
+IMPORTANT:
+
+Do NOT add Weight Distribution to the simplified "Checkable Packing List" view.
+
+That view should remain focused on packing only.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before making ANY changes:
+
+1. Create the normal Replit project checkpoint/backup.
+
+2. Inspect the current implementation before editing.
+
+3. Make the smallest reasonable change required to restore Weight Distribution to the full Shared TrailWeigh Link.
+
+4. Do NOT refactor unrelated components or application architecture.
+
+5. Preserve:
+   - Existing saved user files
+   - Shared snapshots
+   - Authentication
+   - Permissions
+   - All previously user-verified fixes
+
+6. After implementation, inspect the COMPLETE final diff.
+
+7. Revert any unrelated changes before completing the prompt.
+
+8. Run the existing TrailWeigh regression test suite.
+
+9. Do not report completion if a previously working feature has regressed.
+
+10. Document the checkpoint and final-diff review in:
+
+workflow-reports/PROMPT_022J_REPORT.md
+
+==================================================
+1. FULL SHARED LINK VS CHECKABLE PACKING LIST
+==================================================
+
+TrailWeigh now has two distinct shared experiences.
+
+A. FULL SHARED TRAILWEIGH LINK
+
+This should include the useful TrailWeigh analysis/viewing features available to a shared viewer, including:
+
+- Shared gear categories
+- Pack Summary
+- Weight Distribution
+- Existing allowed shared-list controls
+- Existing background
+- Existing shared-list viewing/temporary interaction
+
+B. CHECKABLE PACKING LIST
+
+This is intentionally simpler.
+
+It should remain focused on:
+
+- Gear categories/items
+- Item descriptions
+- Quantities where useful
+- Packing checkboxes
+- Printing
+
+DO NOT add Weight Distribution to the Checkable Packing List.
+
+Do not make the simple packing checklist into another full TrailWeigh interface.
+
+==================================================
+2. INSPECT THE PRIVATE WEIGHT DISTRIBUTION IMPLEMENTATION
+==================================================
+
+Before implementing the shared version, inspect the normal/private Checklist implementation of Weight Distribution.
+
+Determine:
+
+- Which component renders Weight Distribution.
+- What data it receives.
+- How category totals are calculated.
+- How checked gear affects the calculation.
+- How Base Weight / Expendables / worn or excluded classifications affect it, if applicable.
+- How Imperial / Metric affects displayed values.
+- How its collapsed/expanded state is controlled.
+- Where it is positioned relative to Pack Summary.
+
+Reuse the existing Weight Distribution component and calculation logic wherever practical.
+
+Do NOT create a second independent weight-distribution calculation system unless technically unavoidable.
+
+There should be one consistent source of truth for the calculations.
+
+==================================================
+3. USE THE SHARED SNAPSHOT DATA
+==================================================
+
+Weight Distribution on the Shared Link must be calculated from the SAME SHARED SNAPSHOT that supplies the shared gear list.
+
+Do NOT query or modify the owner's live private file simply to render Weight Distribution.
+
+If a Shared Link represents a snapshot of the list at the time it was shared, Weight Distribution must represent that snapshot as well.
+
+Example:
+
+At the time a list was shared:
+
+Shelter = 2.1 lb
+Sleep System = 2.4 lb
+Clothing = 1.8 lb
+Kitchen = 0.8 lb
+
+The Shared Link Weight Distribution should reflect those shared values.
+
+If the owner later changes their private list, do not silently alter an existing shared snapshot unless that is already the intentional TrailWeigh sharing architecture.
+
+Preserve the current shared-snapshot model.
+
+==================================================
+4. MATCH THE NORMAL TRAILWEIGH CALCULATIONS
+==================================================
+
+For the same gear snapshot, the Shared Link Weight Distribution should produce the same category distribution as the normal TrailWeigh checklist.
+
+Do not simplify or approximate the calculations.
+
+Preserve existing rules involving:
+
+- Checked/selected gear
+- Quantity
+- Item weight
+- Category assignment
+- Base Weight classifications
+- Consumables / Expendables
+- Worn or excluded items
+- Any other current weight-distribution rules
+
+Use only calculations that already exist in TrailWeigh.
+
+Do not invent new classifications.
+
+==================================================
+5. PANEL PLACEMENT
+==================================================
+
+Add Weight Distribution to the full Shared TrailWeigh Link in the same logical location used by the normal Checklist.
+
+Inspect the private Checklist before deciding the exact order.
+
+Where practical, mirror the relationship between:
+
+- Weight Distribution
+- Pack Summary
+
+Do not place Weight Distribution somewhere unrelated merely because there is available space.
+
+The Shared Link should feel like a read-only/shared version of TrailWeigh, not a separately designed application.
+
+==================================================
+6. START COLLAPSED
+==================================================
+
+Prompt 022I established the clean-start rule for Shared Links.
+
+Weight Distribution must follow that rule.
+
+Whenever a Shared TrailWeigh Link is:
+
+- Opened
+- Reopened
+- Refreshed
+
+Weight Distribution must start:
+
+COLLAPSED
+
+Its header/title remains visible.
+
+The recipient may click the title/header row to expand it.
+
+After expansion:
+
+- It stays open normally during the current session.
+- It can be collapsed again.
+- It must not be continually forced closed.
+
+On refresh/reopen:
+
+- It returns to collapsed.
+
+==================================================
+7. ENTIRE HEADER ROW CLICKABLE
+==================================================
+
+Use the same accordion/disclosure behavior established elsewhere in TrailWeigh.
+
+For Weight Distribution:
+
+- Entire title/header row is clickable.
+- Do not require clicking only the small chevron.
+- Show a disclosure chevron/caret.
+- Provide hover/focus feedback.
+- Support Enter and Space for keyboard users.
+- Use appropriate aria-expanded semantics.
+
+This is a collapsible panel/accordion section, not a dropdown menu.
+
+==================================================
+8. PRESERVE SHARED CHECKED GEAR STATE
+==================================================
+
+Weight Distribution must reflect the gear state contained in the shared snapshot.
+
+Do not reset gear checkboxes merely because the Weight Distribution panel is added.
+
+Example:
+
+If the shared snapshot contains:
+
+Tent — checked
+Quilt — checked
+Rain Jacket — checked
+Camp Chair — unchecked
+
+Weight Distribution must use the appropriate checked/shared state according to the same rules as the private Checklist.
+
+Adding or opening Weight Distribution must not modify these items.
+
+==================================================
+9. TEMPORARY RECIPIENT CHANGES
+==================================================
+
+Preserve the existing Shared Link temporary-interaction model from Prompt 022I.
+
+If the full Shared Link currently allows a recipient to make temporary session checkbox changes, Weight Distribution should update consistently with those temporary viewer-side changes where the normal current TrailWeigh behavior supports live recalculation.
+
+However:
+
+- Those temporary changes must remain viewer/session-only.
+- They must not write back to the owner's saved original.
+- They must not change the shared snapshot stored for the owner.
+- They must not change the owner's Locker.
+
+If the current shared architecture intentionally does NOT recalculate analysis from temporary viewer changes, preserve that behavior instead.
+
+Inspect the existing shared calculation flow and document the result.
+
+Do not invent new persistence behavior.
+
+==================================================
+10. IMPERIAL / METRIC
+==================================================
+
+If the full Shared Link currently allows the viewer to switch between Imperial and Metric:
+
+Weight Distribution must display consistently with that selected unit system.
+
+Use the existing conversion/display logic.
+
+Do not create separate conversion formulas just for the shared page.
+
+Changing units must not modify the owner's saved data.
+
+==================================================
+11. READ-ONLY / PERMISSION PROTECTION
+==================================================
+
+Weight Distribution is an ANALYSIS / DISPLAY feature.
+
+It must not give a Shared Link viewer any additional ownership permissions.
+
+The recipient must still NOT gain access to:
+
+- Rename
+- Delete
+- Owner-only Locker controls
+- Private file management
+- Permanent owner-data modification
+
+Opening or interacting with Weight Distribution must never modify the owner's original file.
+
+==================================================
+12. DO NOT ADD TO CHECKABLE PACKING LIST
+==================================================
+
+This requirement is explicit.
+
+The simplified:
+
+Share Checkable Packing List
+
+view should NOT display:
+
+- Weight Distribution
+- Pack Summary, unless already intentionally part of that simplified view
+- Gear-analysis tools
+- Owner management controls
+- Scan Gear List
+- Shared Files
+- Editing controls unnecessary for packing
+
+Keep that view simple.
+
+Weight Distribution belongs only on the FULL Shared TrailWeigh Link.
+
+==================================================
+13. PRESERVE PROMPT 022I SHARE BEHAVIOR
+==================================================
+
+Prompt 022I corrected the Shared Link Share menu.
+
+Preserve:
+
+- Share TrailWeigh List
+- Share Checkable Packing List
+- Download PDF
+
+Do not regress those options.
+
+Do not return Share to showing only Download PDF.
+
+Do not change the sharing architecture unless required for this Weight Distribution fix.
+
+==================================================
+14. PRESERVE ALL SHARED-LINK COLLAPSE FIXES
+==================================================
+
+Prompt 022I corrected the Shared Link startup state.
+
+Continue to start these panels collapsed:
+
+- Gear categories
+- Pack Summary
+- Scan Gear List
+- Shared Files
+- Weight Distribution
+- Any other applicable collapsible panel already covered by 022I
+
+Adding Weight Distribution must not cause another panel to start expanded.
+
+==================================================
+15. PRESERVE PROMPT 022F FOOTER FIX
+==================================================
+
+Prompt 022F is USER VERIFIED.
+
+The Shared Link footer must continue to:
+
+- Stay in normal document flow.
+- Remain below page content.
+- Never float over the checklist.
+- Never cover Weight Distribution.
+- Never cover Pack Summary.
+- Never cover Scan Gear List.
+- Never cover Shared Files.
+- Work correctly on long pages.
+- Work correctly on short pages.
+
+Adding Weight Distribution will make some shared pages longer.
+
+The footer must simply move farther down naturally.
+
+==================================================
+16. PRESERVE PROMPT 022G PRIVATE WORKSPACE
+==================================================
+
+Do not change the private Checklist startup/reopen behavior established in Prompt 022G.
+
+The private workspace should continue to restore:
+
+- Same saved file
+- Same background
+- Saved checked state
+
+according to its current verified behavior.
+
+Opening a Shared Link must still NOT replace the user's remembered private last-active file.
+
+==================================================
+17. PRESERVE PRIVATE CHECKLIST
+==================================================
+
+The existing private Weight Distribution panel already works.
+
+Do not redesign or regress it.
+
+If a shared component change touches code also used by the private Checklist, verify that the private version remains visually and functionally unchanged unless a shared-safe reusable improvement is required.
+
+==================================================
+18. DO NOT CHANGE INFORMATIONAL PAGES
+==================================================
+
+Do not modify:
+
+- About TrailWeigh
+- Help & How-To
+- How It Works
+
+No informational-page changes are required for this fix.
+
+==================================================
+19. TEST A — PANEL EXISTS
+==================================================
+
+Open a FULL Shared TrailWeigh Link.
+
+Expected:
+
+[ ] Weight Distribution header is present.
+
+[ ] Weight Distribution is not missing.
+
+[ ] Weight Distribution starts collapsed.
+
+[ ] Pack Summary remains present.
+
+[ ] Scan Gear List remains present where currently intended.
+
+[ ] Shared Files remains present where currently intended.
+
+==================================================
+20. TEST B — EXPAND WEIGHT DISTRIBUTION
+==================================================
+
+Click the Weight Distribution title/header.
+
+Expected:
+
+[ ] Panel expands.
+
+[ ] Distribution visualization/data appears.
+
+[ ] Data corresponds to the shared gear snapshot.
+
+[ ] No owner-only editing controls appear.
+
+[ ] Clicking the header again collapses the panel.
+
+==================================================
+21. TEST C — CALCULATION PARITY
+==================================================
+
+Use a saved/private list with known category weights.
+
+Share that list.
+
+Compare:
+
+PRIVATE CHECKLIST WEIGHT DISTRIBUTION
+
+versus
+
+FULL SHARED LINK WEIGHT DISTRIBUTION
+
+for the same shared gear state.
+
+Expected:
+
+[ ] Category totals match.
+
+[ ] Overall distribution matches.
+
+[ ] Checked-item rules match.
+
+[ ] Quantity calculations match.
+
+[ ] Base Weight/exclusion rules match.
+
+Allow only expected display-format differences caused by the shared view layout.
+
+==================================================
+22. TEST D — REFRESH
+==================================================
+
+1. Open the full Shared Link.
+2. Expand Weight Distribution.
+3. Expand several other panels.
+4. Refresh.
+
+Expected:
+
+[ ] Weight Distribution returns to collapsed.
+
+[ ] Gear categories return to collapsed.
+
+[ ] Pack Summary returns to collapsed.
+
+[ ] Scan Gear List returns to collapsed.
+
+[ ] Shared Files returns to collapsed.
+
+[ ] Shared file data remains unchanged.
+
+[ ] Background remains correct.
+
+==================================================
+23. TEST E — TEMPORARY VIEWER CHECKBOXES
+==================================================
+
+If the full Shared Link supports temporary checkbox changes:
+
+1. Expand Weight Distribution.
+2. Temporarily check/uncheck an item.
+3. Observe the current intended shared-view calculation behavior.
+
+Expected:
+
+[ ] Weight Distribution behaves consistently with TrailWeigh's current viewer-side calculation model.
+
+[ ] Owner's original file remains unchanged.
+
+[ ] Refresh restores the shared snapshot/session state according to the existing sharing rules.
+
+Document exact behavior.
+
+==================================================
+24. TEST F — IMPERIAL / METRIC
+==================================================
+
+If unit switching is available on the Shared Link:
+
+[ ] Weight Distribution works in Imperial.
+
+[ ] Weight Distribution works in Metric.
+
+[ ] Conversion matches the private Checklist.
+
+[ ] Unit switching does not alter owner data.
+
+==================================================
+25. TEST G — CHECKABLE PACKING LIST
+==================================================
+
+Open:
+
+Share Checkable Packing List
+
+Expected:
+
+[ ] Weight Distribution is NOT displayed.
+
+[ ] Checkable packing list remains simple.
+
+[ ] Packing checkboxes still work.
+
+[ ] Mobile/narrow layout remains practical.
+
+==================================================
+26. TEST H — SHARE MENU REGRESSION
+==================================================
+
+On the FULL Shared Link, click Share.
+
+Expected:
+
+[ ] Share TrailWeigh List remains available.
+
+[ ] Share Checkable Packing List remains available.
+
+[ ] Download PDF remains available.
+
+[ ] Download PDF is not the only option.
+
+==================================================
+27. TEST I — FOOTER REGRESSION
+==================================================
+
+Use a long shared list and expand Weight Distribution.
+
+Expected:
+
+[ ] Footer remains below all content.
+
+[ ] Footer does not overlay Weight Distribution.
+
+[ ] Footer does not become fixed/sticky.
+
+==================================================
+28. TEST J — MOBILE / NARROW SCREEN
+==================================================
+
+Open the full Shared Link at a narrow/mobile width.
+
+Expected:
+
+[ ] Weight Distribution header is readable.
+
+[ ] Panel expands without horizontal overflow.
+
+[ ] Visualization/content fits the available width.
+
+[ ] Other panels remain usable.
+
+[ ] Footer remains correct.
+
+==================================================
+29. TEST K — PRIVATE CHECKLIST REGRESSION
+==================================================
+
+Open the normal private Checklist.
+
+Expected:
+
+[ ] Existing Weight Distribution still works.
+
+[ ] Existing Pack Summary still works.
+
+[ ] Private startup behavior remains correct.
+
+[ ] Save / Save As / Locker remain unchanged.
+
+==================================================
+30. AUTOMATED TESTING
+==================================================
+
+Add or update focused automated tests where practical for:
+
+- Weight Distribution rendered on full SharedChecklistPage.
+- Weight Distribution omitted from Checkable Packing List.
+- Shared Weight Distribution starts collapsed.
+- Shared panel expands/collapses.
+- Shared calculation parity with the normal calculation source.
+- Shared snapshot data used instead of owner-private mutation.
+- Unit switching where applicable.
+- 022I Share menu regression.
+- 022I panel-collapse regression.
+- 022F footer regression.
+- 022G private-last-active-file isolation.
+
+Do not rely solely on source-string tests for behavior that can be tested functionally.
+
+Use:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+==================================================
+31. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022J_REPORT.md
+
+The report must include:
+
+- Exact prompt ID/title:
+  Prompt 022J — Restore Weight Distribution to Shared TrailWeigh Links
+
+- Files changed
+- Root cause of Weight Distribution being absent from the Shared Link
+- Existing private Weight Distribution component/calculation architecture discovered
+- Whether existing components were reused
+- Where Shared Weight Distribution is rendered
+- Data source used for shared calculations
+- Confirmation shared snapshot data is used appropriately
+- Confirmation owner-private data is not modified
+- Initial collapsed-state implementation
+- Temporary viewer-checkbox calculation behavior
+- Imperial/Metric behavior
+- Confirmation Weight Distribution is NOT added to Checkable Packing List
+- Confirmation 022I Share menu remains intact
+- Confirmation 022I panel-collapse behavior remains intact
+- Confirmation 022F footer behavior remains intact
+- Confirmation 022G private workspace remains intact
+- Automated test results
+- Runtime/browser verification results
+- PASS / FAIL / PARTIAL / NOT TESTED for each required test
+- Failed attempts
+- Anything reverted
+- Anything requiring user verification
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022J_REPORT.md
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short explanation of why Weight Distribution was missing
+6. Short explanation of how it was restored
+7. Confirmation it is present only on the FULL Shared TrailWeigh Link
+8. Anything still requiring user verification

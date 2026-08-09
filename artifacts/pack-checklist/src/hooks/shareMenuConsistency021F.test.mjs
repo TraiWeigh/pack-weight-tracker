@@ -163,7 +163,7 @@ console.log('\nL–O. Right sidebar panel order');
 test('L. WeightSummary appears before SharedLockerPanel in SharedChecklistPage sidebar', () => {
   const sidebarBlock = sharedPage.slice(
     sharedPage.indexOf('Scrollable sidebar content'),
-    sharedPage.indexOf('Scrollable sidebar content') + 1200
+    sharedPage.indexOf('Scrollable sidebar content') + 1800
   );
   const weightPos  = sidebarBlock.indexOf('WeightSummary');
   const lockerPos  = sidebarBlock.indexOf('SharedLockerPanel');
@@ -176,7 +176,7 @@ test('L. WeightSummary appears before SharedLockerPanel in SharedChecklistPage s
 test('M. ImportGearPanel appears before SharedLockerPanel in SharedChecklistPage sidebar', () => {
   const sidebarBlock = sharedPage.slice(
     sharedPage.indexOf('Scrollable sidebar content'),
-    sharedPage.indexOf('Scrollable sidebar content') + 1200
+    sharedPage.indexOf('Scrollable sidebar content') + 1800
   );
   const importPos  = sidebarBlock.indexOf('ImportGearPanel');
   const lockerPos  = sidebarBlock.indexOf('SharedLockerPanel');
@@ -189,7 +189,7 @@ test('M. ImportGearPanel appears before SharedLockerPanel in SharedChecklistPage
 test('N. SharedLockerPanel is the LAST panel in the SharedChecklistPage sidebar', () => {
   const sidebarBlock = sharedPage.slice(
     sharedPage.indexOf('Scrollable sidebar content'),
-    sharedPage.indexOf('Scrollable sidebar content') + 1200
+    sharedPage.indexOf('Scrollable sidebar content') + 1800
   );
   const lockerPos    = sidebarBlock.lastIndexOf('SharedLockerPanel');
   const weightPos    = sidebarBlock.indexOf('WeightSummary');

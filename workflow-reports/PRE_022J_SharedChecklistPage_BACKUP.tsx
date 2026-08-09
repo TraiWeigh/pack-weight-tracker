@@ -15,7 +15,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useUser, useClerk } from '@clerk/react';
 import { useParams, useLocation } from 'wouter';
 import { GearCategory } from '../components/GearCategory';
-import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
+import { WeightSummary } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
 import { PreviewModal, PreviewBody } from '../components/PreviewModal';
 import { ImportGearPanel } from '../components/ImportGearPanel';
@@ -201,9 +201,6 @@ function SharedChecklistContent({
     order: snapshot.categoryOrder,
     meta:  snapshot.categoryMeta,
   }));
-
-  // ── Chart palette for Weight Distribution (session-only, not persisted) ───
-  const [chartPaletteKey, setChartPaletteKey] = useState('trail');
 
   const undoStackRef = useRef<Store[]>([]);
   const redoStackRef = useRef<Store[]>([]);
@@ -1150,16 +1147,6 @@ function SharedChecklistContent({
                     categoryOrder={store.order}
                     categoryMeta={store.meta}
                   />
-                  {/* Weight Distribution — full shared view only; NOT shown on checkable packing list */}
-                  {snapshot.type !== 'checkable' && (
-                    <WeightDistribution
-                      data={store.items}
-                      categoryOrder={store.order}
-                      categoryMeta={store.meta}
-                      paletteKey={chartPaletteKey}
-                      onPaletteChange={setChartPaletteKey}
-                    />
-                  )}
                   {/* Scan Gear List — hidden in checkable-packing-list mode (simplified view) */}
                   {snapshot.type !== 'checkable' && (
                     <ImportGearPanel

@@ -328,7 +328,7 @@ console.log('\nG. Panel order — 021F regression');
 test('G1. WeightSummary before SharedLockerPanel in SharedChecklistPage', () => {
   const sidebarBlock = sharedPage.slice(
     sharedPage.indexOf('Scrollable sidebar content'),
-    sharedPage.indexOf('Scrollable sidebar content') + 1200
+    sharedPage.indexOf('Scrollable sidebar content') + 1800
   );
   const weightPos = sidebarBlock.indexOf('WeightSummary');
   const lockerPos = sidebarBlock.indexOf('SharedLockerPanel');
@@ -339,7 +339,7 @@ test('G1. WeightSummary before SharedLockerPanel in SharedChecklistPage', () => 
 test('G2. ImportGearPanel before SharedLockerPanel in SharedChecklistPage', () => {
   const sidebarBlock = sharedPage.slice(
     sharedPage.indexOf('Scrollable sidebar content'),
-    sharedPage.indexOf('Scrollable sidebar content') + 1200
+    sharedPage.indexOf('Scrollable sidebar content') + 1800
   );
   const importPos = sidebarBlock.indexOf('ImportGearPanel');
   const lockerPos = sidebarBlock.indexOf('SharedLockerPanel');
