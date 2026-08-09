@@ -5699,3 +5699,25 @@ TrailWeigh uses Clerk (Replit-managed) as its auth provider — NOT traditional 
 - Live Google sign-in test in Safari — should now land on Checklist instead of blank/404
 - Email sign-in test if applicable
 - If sign-in still fails: user may need to create a TrailWeigh Clerk account via Sign Up (Replit.com credentials ≠ TrailWeigh Clerk account)
+
+---
+
+## Prompt 022O (combined) — Fix Password Recovery + Password Visibility + Auth Contrast
+
+**Status:** COMPLETE ✅  
+**Report:** [workflow-reports/PROMPT_022O_REPORT.md](workflow-reports/PROMPT_022O_REPORT.md)  
+**Tests:** 21 new (passwordVisibility022O) — 0 failures
+
+### Summary
+Combined prompt replacing unused separate password-recovery and password-visibility drafts. Root causes: (1) `formButtonPrimary: ''` was empty pre-022N — near-black text on green buttons including "Reset your password" and "Reset Password"; fixed in 022N with `!text-white`. (2) `formFieldInputShowPasswordButton` was completely absent from `clerkAppearance.elements` — Clerk eye button rendered with unstyled icon against `#F5F6F5` background, producing inconsistent appearance; fixed by adding explicit icon color, `!bg-transparent`, `!border-0`, and accessible focus ring. Password recovery failure explained: Clerk's prebuilt flow handles everything; most likely account is Google-created (no password credential); "Continue with Google" is the correct sign-in method. "2 remaining attempts" = Clerk's own rate limit; decremented only by failed password attempts; recovery actions/visibility toggle/Google sign-in do NOT consume it.
+
+### Files Changed
+- `artifacts/pack-checklist/src/App.tsx` — `formFieldInputShowPasswordButton` element added
+- `artifacts/pack-checklist/src/hooks/passwordVisibility022O.test.mjs` — new (21 assertions)
+- `package.json` — test added to chain
+
+### Requiring User Verification
+- Live visual: "Reset your password" + "Reset Password" buttons show white text in browser
+- Eye toggle: icon clearly visible and responsive in Set New Password screen
+- Google account: use "Continue with Google" if account was Google-created
+- 2 remaining attempts: protected — no authentication attempts made during this session

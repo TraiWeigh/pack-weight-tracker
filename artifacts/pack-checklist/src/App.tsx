@@ -103,6 +103,12 @@ const clerkAppearance = {
     // Explicit light-gray surface + medium-gray border so the field is
     // immediately visible against the white card without requiring focus.
     formFieldInput: '!bg-[#F5F6F5] !border !border-[#9CA6A0] placeholder:!text-[hsl(150,8%,38%)] focus:!border-[hsl(140,15%,35%)] !shadow-none !outline-none',
+    // Password visibility toggle (eye icon) — applies to the show/hide button on
+    // all password fields: sign-up, set new password, confirm password.
+    // Without this override the button inherits an icon color that renders poorly
+    // against the #F5F6F5 input background set above.
+    // type="button" is enforced by Clerk internally so it does not submit forms.
+    formFieldInputShowPasswordButton: '!text-[hsl(150,15%,35%)] hover:!text-[hsl(140,15%,20%)] !bg-transparent !border-0 !shadow-none focus-visible:!ring-2 focus-visible:!ring-[hsl(140,15%,35%)]/40 !rounded !p-1 !transition-colors',
     footerAction: '',
     dividerLine: '',
     alert: '',
