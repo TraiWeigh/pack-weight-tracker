@@ -27,12 +27,12 @@ const checklistSrc = src('artifacts/pack-checklist/src/pages/Checklist.tsx');
 
 // ─── §A  Left toolbar panel — explicit rows on portrait (022W supersedes 022V flex-wrap) ──
 
-test('[022V §A] left toolbar panel uses flex-col rows on mobile (022W)', () => {
-  // 022W supersedes 022V's flex-wrap approach with explicit flex-col rows on portrait.
-  // The outer container uses flex-col + items-center on mobile, then lg:flex-row on desktop.
+test('[022V §A] left toolbar panel uses flex-col rows on mobile (022X)', () => {
+  // 022X supersedes 022W: outer container uses flex-col gap-2 (no items-center on portrait
+  // so children stretch full-width, enabling justify-between on Row A).
   assert.ok(
-    checklistSrc.includes('flex flex-col items-center gap-2'),
-    '022W: Left toolbar panel outer must use flex-col on mobile',
+    checklistSrc.includes('flex flex-col gap-2'),
+    '022X: Left toolbar panel outer must use flex-col gap-2 on mobile',
   );
 });
 
@@ -120,10 +120,11 @@ test('[022V §D] desktop right group uses hidden lg:flex + ml-auto (022W)', () =
 });
 
 test('[022V §D] mobile hide/preview row is hidden on desktop', () => {
-  // 022W: mobile row 3 (Hide + Preview) is lg:hidden so it disappears on desktop.
+  // 022X: Row C uses justify-center + lg:hidden so it disappears on desktop.
+  // The class is now "flex items-center justify-center gap-3 lg:hidden".
   assert.ok(
-    checklistSrc.includes('flex items-center gap-3 lg:hidden'),
-    '022W: mobile Hide+Preview row must use lg:hidden to disappear on desktop',
+    checklistSrc.includes('justify-center gap-3 lg:hidden'),
+    '022X: mobile Hide+Preview row must use justify-center + gap-3 + lg:hidden',
   );
 });
 
@@ -210,11 +211,11 @@ test('[022V §H] pill labels are not forced to be white-space: nowrap at root le
   const toolbarStart = checklistSrc.indexOf('Left toolbar panel');
   const toolbarEnd = checklistSrc.indexOf('Right toolbar panel');
   const toolbarSection = checklistSrc.slice(toolbarStart, toolbarEnd);
-  // 022W outer container uses flex-col for mobile rows
-  const containerIdx = toolbarSection.indexOf('flex flex-col items-center gap-2');
+  // 022X outer container uses flex-col gap-2 (no items-center on portrait)
+  const containerIdx = toolbarSection.indexOf('flex flex-col gap-2');
   assert.ok(
     containerIdx !== -1,
-    '022W: Left panel outer must be flex-col (whitespace-nowrap not on container)',
+    '022X: Left panel outer must be flex-col gap-2 (whitespace-nowrap not on container)',
   );
 });
 

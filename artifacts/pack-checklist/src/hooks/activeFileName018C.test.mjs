@@ -44,10 +44,10 @@ assert.ok(pillsRowIdx > -1, 'Pinned pills row marker not found');
 // a larger slice to cover all content including the desktop right group at the end.
 const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 8000);
 
-// Outer container className — 022W: flex-col on mobile; lg:flex-row on desktop.
-// Pattern: 'pb-3 flex flex-col items-center'
-const containerDivIdx = pillsRowBlock.indexOf('pb-3 flex flex-col items-center');
-assert.ok(containerDivIdx > -1, '022W: Outer container (pb-3 flex flex-col items-center) not found');
+// Outer container className — 022X: flex-col gap-2 on mobile (no items-center); lg:flex-row on desktop.
+// Pattern: 'pb-3 flex flex-col gap-2'
+const containerDivIdx = pillsRowBlock.indexOf('pb-3 flex flex-col gap-2');
+assert.ok(containerDivIdx > -1, '022X: Outer container (pb-3 flex flex-col gap-2) not found');
 const containerDecl = pillsRowBlock.slice(containerDivIdx, containerDivIdx + 200);
 
 // Filename pill conditional

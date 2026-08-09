@@ -114,14 +114,17 @@ test('1. Pills row container has `relative` class (enables absolute centering)',
   );
 });
 
-test('2. Pills row container no longer has `justify-between`', () => {
-  // justify-between was the mechanism that separated Open/Close from Hide/Preview;
-  // it is replaced by `relative` (absolute center) + `ml-auto` on the right group.
-  const containerEnd = pillsRowBlock.indexOf('>');
-  const containerDecl = pillsRowBlock.slice(0, Math.min(300, containerEnd + 100));
+test('2. Pills row outer div className does not use justify-between on the container', () => {
+  // In 018A, justify-between on the outer container was replaced by ml-auto on the right group.
+  // In 022X, justify-between was re-introduced on Row A (the inner child), not the outer container.
+  // We verify the OUTER div's className specifically (not the comment or child divs).
+  const divStart = pillsRowBlock.indexOf('<div className=');
+  assert.ok(divStart > -1, 'Outer container <div className= not found');
+  const divEnd   = pillsRowBlock.indexOf('>', divStart);
+  const divDecl  = pillsRowBlock.slice(divStart, divEnd);
   assert.ok(
-    !containerDecl.includes('justify-between'),
-    'Pills row container still has `justify-between` — 018A layout fix not applied'
+    !divDecl.includes('justify-between'),
+    '022X: outer container div must not have justify-between (it is on Row A child, not the outer div)'
   );
 });
 

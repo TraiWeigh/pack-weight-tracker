@@ -1781,20 +1781,20 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           <div className="pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
             {/* Left toolbar panel — Pinned pills row
-                022W: explicit flex-col rows on portrait so the file-name pill is in
-                normal flow (not absolute-floating), then lg: switches to the single
-                flex-row desktop layout with the pill absolutely centered.
-                ─ Mobile rows (portrait):
-                    1. File-name pill (justified-center, normal flow — no overlap)
-                    2. [Open|Close]  [Imperial|Metric]  (centered)
-                    3. [Hide]  [Preview]  (centered)
-                ─ Desktop (lg+):
-                    [Open|Close] ··· [File-name pill absolute-centered] ··· [Hide][Preview][UnitToggle] */}
-            <div className="pb-3 flex flex-col items-center gap-2 lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative">
+                022X: restore LEFT / CENTER / RIGHT toolbar zones with explicit
+                portrait rows. No items-center on the flex-col (children stretch
+                full-width so Row A can anchor controls to opposite panel edges).
+                ─ Portrait (flex-col):
+                    Row A: [Open|Close] anchored LEFT · [Imperial|Metric] anchored RIGHT
+                    Row B: [File-name pill — centered in normal flow]
+                    Row C: [Hide]  [Preview]  (centered, lg:hidden)
+                ─ Desktop (lg: flex-row):
+                    [Open|Close] ··· [pill: lg:absolute centered] ··· [Hide][Preview][UnitToggle] */}
+            <div className="pb-3 flex flex-col gap-2 lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative">
 
-              {/* ── Row 1 (mobile): File-name pill — in normal flow, centered ─────
-                  Desktop: absolute over entire row (lg:absolute lg:inset-0) so it does
-                  NOT participate in flex-row layout while still appearing centred. */}
+              {/* ── Row B (mobile): File-name pill — centered in normal flow ──────
+                  Desktop: lg:absolute lg:inset-0 removes it from flex-row flow while
+                  centering it visually over the left panel. */}
               {activeLockerFile && (
                 <div className="w-full flex justify-center pointer-events-none
                                 lg:absolute lg:inset-0 lg:pb-3 lg:flex lg:items-center lg:justify-center lg:w-auto">
@@ -1808,10 +1808,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
               )}
 
-              {/* ── Row 2 (mobile): [Open|Close] + [Imperial|Metric] centered ─────
-                  Desktop: Open|Close is the left item in the flex-row; UnitToggle
-                  is hidden here and shown in the desktop-only right group below. */}
-              <div className="flex items-center gap-3 lg:flex-shrink-0">
+              {/* ── Row A (mobile): [Open|Close] LEFT · [Imperial|Metric] RIGHT ───
+                  justify-between anchors each control to its panel edge.
+                  Desktop: UnitToggle is hidden here; lg:justify-start prevents
+                  stray spacing when only Open/Close remains as a child. */}
+              <div className="flex items-center justify-between lg:justify-start lg:flex-shrink-0">
                 {/* Open/Close segmented control — always together */}
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
@@ -1841,9 +1842,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
               </div>
 
-              {/* ── Row 3 (mobile): [Hide] + [Preview] centered ─────────────────
+              {/* ── Row C (mobile): [Hide] + [Preview] centered, lg:hidden ──────
                   Hidden on desktop — these appear in the desktop-only right group. */}
-              <div className="flex items-center gap-3 lg:hidden">
+              <div className="flex items-center justify-center gap-3 lg:hidden">
                 <button
                   onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
                   disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}

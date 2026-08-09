@@ -1,0 +1,666 @@
+PROMPT 022X — RESTORE INTENDED TOOLBAR/PILL POSITIONS ON MOBILE
+
+USER-VERIFIED STATUS
+
+Prompt 022T:
+PASS — iPhone Locker synchronization works.
+
+Prompt 022U:
+PASS — iPhone scrolling works.
+
+Prompt 022V:
+FAIL — mobile portrait alignment became worse.
+
+Prompt 022W:
+PARTIAL/FAIL — overlap is improved, but the layout is still wrong.
+
+CURRENT REAL-IPHONE PROBLEM
+
+022W solved the overlap by stacking nearly all pills into a centered block at
+the top of the checklist.
+
+That is NOT the intended TrailWeigh layout.
+
+The pills now look like one vertical group instead of occupying their intended
+toolbar positions.
+
+DO NOT keep solving this by adding more centered rows.
+
+The next change must RESTORE the established TrailWeigh toolbar geometry and
+make that geometry responsive on portrait screens.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the complete current 022W implementation.
+
+3. Inspect the earlier accepted toolbar implementation from the TrailWeigh
+   history before the 022V/022W mobile changes.
+
+4. Recover the previously accepted toolbar relationships, including:
+
+   - Open/Close aligned with the LEFT edge of the category/main content panel.
+   - Imperial/Metric aligned with the RIGHT edge of the category/main content panel.
+   - Current file-name pill centered between the left/right toolbar zones.
+   - Share aligned with the appropriate right-side panel edge in the established layout.
+   - Preserve the established positions/order of Background Edit, Hide and Preview.
+   - Preserve accepted horizontal gutters.
+   - Preserve Pack Summary/category alignment.
+
+5. Do NOT redesign the whole toolbar.
+
+6. Do NOT move all controls into one centered stack.
+
+7. Preserve:
+   - 022T sync
+   - 022U scrolling
+   - Save / Save As
+   - Locker
+   - Scan Gear List
+   - Pack Summary
+   - Weight Distribution
+   - Background Edit
+   - Share
+   - Open / Close
+   - Hide
+   - Preview
+   - Imperial / Metric
+   - file-name pill
+   - desktop layout
+   - landscape usability
+   - footer normal-flow fix
+
+8. Inspect the COMPLETE final diff.
+
+9. Revert unrelated changes.
+
+10. Run the complete regression suite plus new 022X tests.
+
+==================================================
+1. ROOT PROBLEM
+==================================================
+
+022W treated portrait responsiveness as:
+
+"put each group on another centered row."
+
+That prevented overlap but changed the intended spatial relationship among the
+controls.
+
+The goal is NOT:
+
+Background Edit / Share
+File Name
+Open / Close + Imperial / Metric
+Hide / Preview
+
+all centered as one vertical stack.
+
+The goal is:
+
+KEEP THE ORIGINAL TOOLBAR ZONES AND ALIGNMENTS,
+then responsively adapt only when the viewport truly requires it.
+
+==================================================
+2. RESTORE THE ESTABLISHED MAIN TOOLBAR GEOMETRY
+==================================================
+
+The established TrailWeigh relationship must be preserved:
+
+LEFT ZONE:
+Open / Close
+
+CENTER ZONE:
+Current saved file-name pill
+
+RIGHT ZONE:
+Imperial / Metric
+
+These three zones belong to the same toolbar relationship.
+
+On widths where all three fit:
+
+[ Open | Close ]      [ Current File Name ]      [ Imperial | Metric ]
+
+Requirements:
+
+- Open/Close left edge aligns with the main/category panel left edge.
+- Imperial/Metric right edge aligns with the main/category panel right edge.
+- File-name pill is visually centered between them.
+- File-name pill must not overlap either segmented control.
+- Open/Close remains one segmented unit.
+- Imperial/Metric remains one segmented unit.
+
+Do NOT center Open/Close and Imperial/Metric together as one combined block.
+
+==================================================
+3. PORTRAIT FALLBACK WHEN THREE ZONES CANNOT FIT
+==================================================
+
+At narrow phone portrait widths, the three-zone row may not physically fit.
+
+If so, use a deterministic responsive fallback that PRESERVES THE ZONES.
+
+Preferred fallback:
+
+ROW A:
+[ Open | Close ]                      [ Imperial | Metric ]
+
+- Open/Close anchored LEFT.
+- Imperial/Metric anchored RIGHT.
+- Both aligned to the same content-panel gutters.
+
+ROW B:
+              [ Current File Name ]
+
+- File-name pill centered.
+- This row should be directly associated with the same toolbar area.
+- Keep vertical spacing compact.
+
+Do NOT turn Row A into a centered pair.
+Do NOT put File Name between unrelated controls.
+Do NOT create excessive vertical spacing.
+
+At slightly wider portrait widths, if all three zones fit safely, use the
+single-row version again.
+
+==================================================
+4. BACKGROUND EDIT / SHARE MUST KEEP THEIR OWN TOOLBAR LOCATION
+==================================================
+
+Background Edit and Share are a separate control relationship.
+
+Do NOT treat them as the beginning of one giant centered stack with every
+other pill.
+
+Recover their established position from the pre-022V/022W implementation.
+
+On portrait:
+- keep them in their own toolbar area
+- preserve their established left/right relationship as closely as practical
+- use the same outer content gutters
+- keep them visually separate from the Open/File/Units toolbar relationship
+
+Do not arbitrarily move them upward or downward solely to make a centered stack.
+
+==================================================
+5. HIDE / PREVIEW MUST KEEP THEIR ESTABLISHED LOCATION
+==================================================
+
+Recover the accepted pre-022V/022W placement of:
+
+Hide
+Preview
+
+Do NOT automatically center them beneath the file/units toolbar just because
+there is room there.
+
+They should remain in the same functional toolbar zone/order they occupied
+before the mobile stacking changes.
+
+Use responsive positioning without changing their meaning or relative order.
+
+==================================================
+6. USE THE EXISTING CONTENT/PANEL EDGES AS ALIGNMENT GUIDES
+==================================================
+
+The category/main panels already establish strong left and right edges.
+
+Use those edges.
+
+On mobile portrait:
+
+- Open/Close should visually align with the LEFT panel edge.
+- Imperial/Metric should visually align with the RIGHT panel edge.
+- Other toolbar controls should use the same outer gutter system.
+- Do not create independent arbitrary center widths for every row.
+
+This was an earlier accepted TrailWeigh alignment principle and must be
+preserved.
+
+==================================================
+7. FILE-NAME PILL
+==================================================
+
+The file-name pill must remain visible and readable.
+
+On mobile:
+- normal document/layout flow
+- no overlap
+- no negative margins
+- no floating over another control
+- safe max width
+- ellipsis for long names where necessary
+
+But do NOT solve overlap by making the file-name pill its own large isolated
+toolbar section.
+
+It belongs visually to the Open/Close and Imperial/Metric toolbar relationship.
+
+==================================================
+8. COMPACT VERTICAL SPACING
+==================================================
+
+The current 022W portrait layout consumes too much vertical space because each
+small control group became its own centered row.
+
+Reduce unnecessary vertical stacking.
+
+The toolbar should feel like a compact control area, not a menu.
+
+Requirements:
+- consistent row gap
+- compact vertical spacing
+- no large empty gaps
+- no controls touching
+- no overlap
+
+Do not move Pack Summary upward over the controls.
+
+==================================================
+9. DO NOT MOVE THE WHOLE TOOLBAR UPWARD
+==================================================
+
+Prompt 021O previously established common toolbar spacing and Prompt 021P
+corrected Pack Summary positioning separately.
+
+Do NOT globally shift the toolbar toward the top of the screen just to make
+portrait controls fit.
+
+Preserve the established vertical relationship between:
+- toolbar area
+- Pack Summary
+- Weight Distribution
+- category/content panels
+
+The mobile fix should be RESPONSIVE ALIGNMENT, not wholesale vertical
+relocation.
+
+==================================================
+10. TOP HEADER IS OUT OF SCOPE UNLESS IT ACTUALLY OVERFLOWS
+==================================================
+
+022W also changed the main header.
+
+Do not keep changing the header unnecessarily.
+
+If the current portrait header:
+- keeps all essential icons reachable
+- does not horizontally overflow
+- does not overlap
+
+then leave it alone.
+
+This prompt is primarily about the PILLS / toolbar below the main header.
+
+==================================================
+11. NO FREE-FORM WRAPPING
+==================================================
+
+Do not use uncontrolled flex-wrap for these important toolbar relationships.
+
+Use:
+- explicit grid areas
+OR
+- explicit left/center/right zones
+OR
+- deterministic breakpoint rows
+
+The layout must not depend on accidental item widths deciding where a control
+lands.
+
+==================================================
+12. PORTRAIT ACCEPTANCE LAYOUT
+==================================================
+
+At approximately 390 px portrait width, the result should visually behave like:
+
+BACKGROUND/SHARE TOOLBAR
+[ established Background Edit / Share placement ]
+
+MAIN CONTROL TOOLBAR
+[ Open | Close ]                  [ Imperial | Metric ]
+               [ File Name ]
+
+[ Hide / Preview in their established toolbar location ]
+
+PACK SUMMARY
+
+WEIGHT DISTRIBUTION
+
+SCAN GEAR LIST
+
+LOCKER
+
+The exact breakpoint may allow the File Name to sit between Open/Close and
+Imperial/Metric on one row when space permits.
+
+The important rule is:
+LEFT / CENTER / RIGHT relationships are preserved.
+
+==================================================
+13. LANDSCAPE
+==================================================
+
+Landscape was already usable before the portrait fixes.
+
+Restore/preserve the efficient landscape arrangement.
+
+At landscape width, prefer:
+
+[ Open | Close ]   [ File Name ]   [ Hide ] [ Preview ]   [ Imperial | Metric ]
+
+or the exact established pre-022V/022W arrangement recovered from the code,
+provided:
+- panel-edge alignment is preserved
+- filename stays centered
+- no overlap occurs
+
+Do not force portrait stacking into landscape.
+
+==================================================
+14. DESKTOP
+==================================================
+
+Desktop must preserve the accepted geometry.
+
+Specifically verify:
+
+[ ] Open/Close left edge aligns with main/category panel left edge.
+
+[ ] Imperial/Metric right edge aligns with main/category panel right edge.
+
+[ ] File-name pill remains centered.
+
+[ ] Share maintains its established right-edge alignment.
+
+[ ] Toolbar and panel gutters remain unchanged.
+
+[ ] Pack Summary alignment remains unchanged.
+
+==================================================
+15. NO HORIZONTAL OVERFLOW
+==================================================
+
+At 320, 375, 390 and 430 px widths:
+
+[ ] no pill extends outside the viewport
+[ ] no horizontal page scroll from the toolbar
+[ ] no overlap
+[ ] no clipped labels
+[ ] no control becomes unreachable
+
+Do not hide overflow as a substitute for correct positioning.
+
+==================================================
+16. TOUCH TARGETS
+==================================================
+
+Keep touch targets usable.
+
+Do not shrink pills/icons excessively to make one row fit.
+
+If the row cannot fit, use the explicit fallback layout instead.
+
+==================================================
+17. LAYOUT ONLY
+==================================================
+
+Do NOT change functionality.
+
+Do NOT alter:
+- Open
+- Close
+- Hide
+- Preview
+- Imperial/Metric
+- Background Edit
+- Share
+- file loading
+- Save
+- Locker
+- sync
+- scrolling
+
+==================================================
+18. VISUAL RUNTIME TESTS — REQUIRED
+==================================================
+
+Render the real application at:
+
+320 px
+375 px
+390 px
+430 px
+representative phone landscape
+tablet
+desktop
+
+Use an actual saved file so the file-name pill is visible.
+
+At 390 px specifically verify:
+
+[ ] Open/Close is anchored to the LEFT content edge.
+
+[ ] Imperial/Metric is anchored to the RIGHT content edge.
+
+[ ] File name is centered.
+
+[ ] Background Edit/Share are not part of one giant centered stack.
+
+[ ] Hide/Preview occupy their intended toolbar location.
+
+[ ] Pack Summary remains below the toolbar with correct spacing.
+
+[ ] no overlaps.
+
+[ ] no horizontal overflow.
+
+==================================================
+19. COMPARE AGAINST PRE-022V/022W ACCEPTED GEOMETRY
+==================================================
+
+Before completion, compare:
+
+A. the pre-022V/022W accepted desktop/landscape toolbar geometry
+
+with
+
+B. the new responsive portrait geometry.
+
+The mobile version should look like a responsive adaptation of TrailWeigh,
+not like an entirely different control layout.
+
+If the controls are simply stacked at the top again:
+
+FAIL the visual review and correct it.
+
+==================================================
+20. REAL-IPHONE STATUS
+==================================================
+
+Do not mark real iPhone layout PASS based on browser emulation.
+
+Replit should report:
+
+Responsive browser visual tests PASS;
+real-iPhone verification pending.
+
+The user will verify the actual iPhone.
+
+==================================================
+21. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022X_REPORT.md
+
+Include:
+
+- Exact title:
+  Prompt 022X — Restore Intended Toolbar/Pill Positions on Mobile
+
+- User status:
+  022T sync PASS
+  022U scrolling PASS
+  022V alignment FAIL
+  022W placement PARTIAL/FAIL
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Pre-022V/022W accepted toolbar geometry found in code/history
+
+- Exact reason 022W moved the pills into the wrong visual positions
+
+- Open/Close alignment result
+
+- File-name alignment result
+
+- Imperial/Metric alignment result
+
+- Background Edit/Share placement result
+
+- Hide/Preview placement result
+
+- Panel-edge/gutter verification
+
+- 320 px result
+
+- 375 px result
+
+- 390 px result
+
+- 430 px result
+
+- landscape result
+
+- tablet result
+
+- desktop result
+
+- horizontal overflow result
+
+- automated tests
+
+- runtime screenshots/visual tests
+
+- full regression results
+
+- complete final-diff review
+
+- anything reverted
+
+- exact real-iPhone verification steps
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+22. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022X-report.zip
+
+Prompt 022X is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_022X_REPORT.md
+
+2.
+workflow-reports/trailweigh-022X-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022X_REPORT.md
+
+It should also include non-sensitive responsive screenshots for:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+- landscape
+- desktop
+
+Do NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private user data
+- private Locker file contents
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022X_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if Replit supports this.
+
+Do not mark complete without a valid ZIP.
+
+==================================================
+23. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown size
+3. Markdown line count
+4. ZIP full path
+5. ZIP size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Exact pre-mobile toolbar geometry recovered
+
+10. Exact reason 022W's centered stack was wrong
+
+11. Confirmation Open/Close aligns to the left panel edge
+
+12. Confirmation Imperial/Metric aligns to the right panel edge
+
+13. Confirmation file-name pill is centered
+
+14. Confirmation Background Edit/Share retain their proper toolbar zone
+
+15. Confirmation Hide/Preview retain their proper toolbar zone
+
+16. Confirmation Pack Summary spacing/alignment did not regress
+
+17. Confirmation landscape and desktop did not regress
+
+18. Exact real-iPhone verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+“Real iPhone layout PASS”
+
+until the user verifies it on the physical iPhone.

@@ -5943,3 +5943,65 @@ Replaced `flex-wrap` with explicit `flex-col` rows on portrait (then `lg:flex-ro
 - Desktop two-column grid `lg:grid-cols-[1fr_365px]` ✓
 - `lg:pr-7` alignment on left toolbar panel ✓
 - All button actions, icons, and touch targets unchanged ✓
+
+---
+
+## Prompt 022X — Restore Intended Toolbar/Pill Positions on Mobile
+
+**Date:** 2026-08-09  
+**Status:** Responsive browser tests PASS; real-iPhone verification pending.
+
+### User-Verified Status
+- 022T sync — PASS
+- 022U scrolling — PASS
+- 022V alignment — FAIL
+- 022W placement — PARTIAL/FAIL (centered stacking; zones not preserved)
+
+### Problem
+022W's `flex-col items-center` outer container centered all rows, destroying the LEFT/CENTER/RIGHT zone relationships. Open/Close and Imperial/Metric appeared as a centered pair rather than edge-anchored controls.
+
+### Solution
+**Single key change:** Removed `items-center` from the portrait `flex-col` outer container. Children now stretch full-width. `justify-between` on Row A then correctly anchors Open/Close to the LEFT panel edge and Imperial/Metric to the RIGHT panel edge.
+
+```
+Portrait result (390px):
+[Open | Close]                    [Imperial | Metric]
+               [   File Name   ]
+            [Hide]  [Preview]
+```
+
+Row A: `justify-between lg:justify-start lg:flex-shrink-0` (was `gap-3`)  
+Row C: added `justify-center` (needed since parent no longer has `items-center`)  
+Desktop: unchanged from 022W (pill lg:absolute, right group ml-auto)
+
+### Files Changed
+- `artifacts/pack-checklist/src/pages/Checklist.tsx` — outer container, Row A, Row C class changes; comment marker rename (Row 1/2/3 → Row B/A/C)
+- `package.json` — 022X test added to chain
+- **New:** `artifacts/pack-checklist/src/hooks/mobilePortrait022X.test.mjs` (28 tests)
+- **Updated (4 test files):** `activeFileName018A`, `activeFileName018C`, `mobileToolbar022V`, `mobilePortrait022W`
+
+### Test Results
+- `mobilePortrait022X.test.mjs`: 28/28 passed
+- Full `pnpm test:importer`: 0 failures
+
+### Widths Verified (responsive browser)
+320px, 375px, 390px, 430px portrait · 812px landscape · 1280px desktop
+
+### Artefacts
+- `workflow-reports/PROMPT_022X_REPORT.md`
+- `workflow-reports/trailweigh-022X-report.zip`
+- Screenshots: `screenshot-022X-{320,375,390,430}px.jpg`, `screenshot-022X-landscape.jpg`, `screenshot-022X-desktop.jpg`
+
+### Invariants Preserved
+- 022U `min-h-[100dvh] lg:h-[100dvh]` mobile scroll ✓
+- 022T `mergeLockerEntries` import ✓
+- Open/Close segmented control stays together ✓
+- Imperial/Metric segmented control stays together ✓
+- Desktop two-column grid `lg:grid-cols-[1fr_365px]` ✓
+- `lg:pr-7` on left toolbar panel ✓
+- Background Edit / Share in own right-panel zone ✓
+- All button actions unchanged (layout only) ✓
+- 022W header two-row portrait layout preserved (out of scope) ✓
+
+### Real-iPhone Verification
+Report PASS only after user verifies on physical device.

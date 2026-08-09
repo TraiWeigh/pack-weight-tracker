@@ -52,10 +52,12 @@ console.log('\n022W — Mobile Portrait Toolbar: Explicit Rows\n');
 
 console.log('A. Left toolbar panel outer container');
 
-test('A1. Left panel outer uses flex-col items-center on mobile', () => {
+test('A1. Left panel outer uses flex-col on mobile (022X: no items-center so children stretch full-width)', () => {
+  // 022X removes items-center from the portrait flex-col so children take full width
+  // (enabling justify-between on Row A to work correctly).
   assert.ok(
-    checklistSrc.includes('pb-3 flex flex-col items-center gap-2'),
-    '022W: outer container must be "pb-3 flex flex-col items-center gap-2"',
+    checklistSrc.includes('pb-3 flex flex-col gap-2'),
+    '022X: outer container must be "pb-3 flex flex-col gap-2" (no items-center on portrait)',
   );
 });
 
@@ -117,7 +119,7 @@ test('B3. Pill wrapper has pointer-events-none (clicks pass through)', () => {
   assert.ok(pillBlock.includes('pointer-events-none'), 'pointer-events-none must be on pill wrapper');
 });
 
-test('B4. Pill appears before Open/Close in source order (Row 1 before Row 2)', () => {
+test('B4. Pill appears before Open/Close in source order (Row B before Row A)', () => {
   // Search within the left panel block to avoid the UnitToggle function definition which
   // uses the same container class and appears earlier in the file.
   const panelStart = checklistSrc.indexOf('Pinned pills row');
@@ -127,16 +129,16 @@ test('B4. Pill appears before Open/Close in source order (Row 1 before Row 2)', 
   const openPos  = panelBlock.indexOf('setAllOpen(true)'); // unique to Open/Close segmented control
   assert.ok(pillPos  > -1, 'Pill wrapper not found in panel block');
   assert.ok(openPos  > -1, 'Open/Close setAllOpen(true) not found in panel block');
-  assert.ok(pillPos < openPos, '022W: Pill (Row 1) must appear before Open/Close (Row 2) in source');
+  assert.ok(pillPos < openPos, '022X: Pill (Row B) must appear before Open/Close (Row A) in source');
 });
 
 // ─── §C  Row 2 — [Open|Close] + [Imperial|Metric] ────────────────────────────
 
 console.log('\nC. Row 2 — Open/Close + UnitToggle (mobile)');
 
-test('C1. Open/Close segmented control is in Row 2', () => {
-  const row2Start = checklistSrc.indexOf('Row 2 (mobile)');
-  assert.ok(row2Start > -1, 'Row 2 comment marker not found');
+test('C1. Open/Close segmented control is in Row A', () => {
+  const row2Start = checklistSrc.indexOf('Row A (mobile)');
+  assert.ok(row2Start > -1, '022X: Row A comment marker not found (renamed from Row 2)');
   const row2Block = checklistSrc.slice(row2Start, row2Start + 1200);
   // setAllOpen(true) triggers Open, setAllOpen(false) triggers Close — both unique to this segmented control
   assert.ok(
@@ -167,9 +169,9 @@ test('C3. Open/Close container has no flex-wrap (segmented control stays on one 
 
 console.log('\nD. Row 3 — Hide + Preview (mobile-only, lg:hidden)');
 
-test('D1. Row 3 mobile Hide+Preview div is lg:hidden', () => {
-  const row3Start = checklistSrc.indexOf('Row 3 (mobile)');
-  assert.ok(row3Start > -1, 'Row 3 comment marker not found');
+test('D1. Row C mobile Hide+Preview div is lg:hidden', () => {
+  const row3Start = checklistSrc.indexOf('Row C (mobile)');
+  assert.ok(row3Start > -1, '022X: Row C comment marker not found (renamed from Row 3)');
   // Need 300 chars to cover the multiline comment + div opening tag
   const row3Block = checklistSrc.slice(row3Start, row3Start + 300);
   assert.ok(
@@ -178,8 +180,8 @@ test('D1. Row 3 mobile Hide+Preview div is lg:hidden', () => {
   );
 });
 
-test('D2. Mobile Row 3 contains Hide button', () => {
-  const row3Start = checklistSrc.indexOf('Row 3 (mobile)');
+test('D2. Mobile Row C contains Hide button', () => {
+  const row3Start = checklistSrc.indexOf('Row C (mobile)');
   const row3Block = checklistSrc.slice(row3Start, row3Start + 700);
   assert.ok(
     row3Block.includes('aria-label="Hide interface'),
@@ -187,8 +189,8 @@ test('D2. Mobile Row 3 contains Hide button', () => {
   );
 });
 
-test('D3. Mobile Row 3 contains Preview button', () => {
-  const row3Start = checklistSrc.indexOf('Row 3 (mobile)');
+test('D3. Mobile Row C contains Preview button', () => {
+  const row3Start = checklistSrc.indexOf('Row C (mobile)');
   // Need 1200 chars to cover comment + Hide button (with disabled/title logic) + Preview button
   const row3Block = checklistSrc.slice(row3Start, row3Start + 1200);
   assert.ok(
