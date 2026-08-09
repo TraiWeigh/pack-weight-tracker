@@ -1467,8 +1467,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       <div className="h-[100dvh] overflow-y-auto">
 
       {/* ── Screen content ── */}
+      {/* 022U fix: mobile must NOT be clipped to h-[100dvh] overflow-hidden —
+           that clips the Locker list (and any content below the fold) on narrow
+           screens where everything stacks in a single column.
+           On desktop (lg+) we restore the two-column viewport-height layout. */}
       <div
-        className={`screen-only h-[100dvh] overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
+        className={`screen-only min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
         style={{
           ...(bgImageUrl ? {
             // 017E fix: always use the 2-layer linear-gradient format regardless of

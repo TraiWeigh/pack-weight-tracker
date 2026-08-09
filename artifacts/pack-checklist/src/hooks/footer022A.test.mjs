@@ -92,11 +92,12 @@ test('Original screen-content div still has overflow-hidden', () => {
   );
 });
 
-test('Original screen-content div still has h-[100dvh]', () => {
-  // The screen div keeps h-[100dvh] so checklist fills the viewport
+test('Original screen-content div still fills the viewport (min-h-[100dvh] on mobile, h-[100dvh] on desktop)', () => {
+  // 022U fix: mobile uses min-h-[100dvh] so content is not clipped; desktop keeps lg:h-[100dvh].
+  // We accept the responsive variant — both min-h-[100dvh] and lg:h-[100dvh] must be present.
   assert.ok(
-    checklistSrc.includes('h-[100dvh] overflow-hidden flex flex-col'),
-    'screen-content div must keep h-[100dvh] overflow-hidden flex flex-col',
+    checklistSrc.includes('min-h-[100dvh]') && checklistSrc.includes('lg:h-[100dvh]'),
+    'screen-content div must use min-h-[100dvh] on mobile + lg:h-[100dvh] on desktop (022U fix)',
   );
 });
 

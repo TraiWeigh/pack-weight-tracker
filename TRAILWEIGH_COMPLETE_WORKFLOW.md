@@ -5822,3 +5822,34 @@ Every call to `performLockerSync` threw `ReferenceError: mergeLockerEntries is n
 
 ### Real-iPhone Steps (for user)
 Open Locker → Cloud Sync row → Expand. Compare Build, Account Sync ID, and Server Files between desktop and iPhone. If Account Sync IDs match and Server Files match, tap Sync Now — files should appear immediately.
+
+---
+
+## Prompt 022U — Fix Mobile Locker Scrolling and Saved-File Visibility
+
+**Status:** COMPLETE ✅ — Responsive browser test PASS; real-iPhone scrolling verification pending  
+**Report:** [workflow-reports/PROMPT_022U_REPORT.md](workflow-reports/PROMPT_022U_REPORT.md)  
+**Tests:** 26 new (lockerScroll022U) — 0 failures; full suite clean
+
+### User Screenshot
+- Locker = 3, Cloud Sync = Synced, 3L / 3S — sync correct from 022T
+- Only **one** file visible; user cannot scroll
+
+### Root Cause
+`h-[100dvh] overflow-hidden` on the inner screen-content wrapper clipped all content beyond the viewport on mobile. On mobile the grid stacks single-column, so the Locker (order-first) and categories together exceed 100dvh — `overflow-hidden` made all entries below the fold invisible and unreachable. The outer `overflow-y-auto` container only scrolled to the footer, not into the clipped region.
+
+### Fix — One Line in Checklist.tsx
+```diff
+-  screen-only h-[100dvh] overflow-hidden flex flex-col
++  screen-only min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden flex flex-col
+```
+Mobile: `min-h-[100dvh]` — grows with content, outer `overflow-y-auto` scrolls everything.  
+Desktop (lg+): `lg:h-[100dvh] lg:overflow-hidden` — two-column layout unchanged.
+
+### What Was Preserved
+- 022T Sync Status panel (SyncStatusPanel in LockerPanel)
+- 022T mergeLockerEntries import fix
+- 022F footer normal document flow
+- Desktop two-column layout (lg: breakpoint)
+- Background image rendering
+- All prior sync, auth, share-link behavior

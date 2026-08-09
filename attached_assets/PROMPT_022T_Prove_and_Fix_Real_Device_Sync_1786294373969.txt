@@ -1,0 +1,933 @@
+PROMPT 022T — FIX REAL-DEVICE SYNC BY PROVING BUILD, ENVIRONMENT, ACCOUNT, AND SERVER STATE
+
+USER-VERIFIED STATUS
+
+Prompt 022R: FAIL — iPhone did not sync.
+Prompt 022S: FAIL — iPhone STILL does not sync.
+
+The 022S report improved the sync code, but it still did NOT prove that the
+real iPhone and desktop are using:
+
+1. the same TrailWeigh build,
+2. the same Replit/server environment,
+3. the same Clerk user identity,
+4. the same database,
+5. the same server-side Locker rows.
+
+This prompt must find which of those is actually different.
+
+DO NOT perform another broad mobile redesign.
+DO NOT rewrite the Locker architecture again until the real mismatch is proven.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before changing anything:
+
+1. Create the normal Replit checkpoint/backup.
+2. Inspect the COMPLETE current 022S implementation.
+3. Preserve all existing Locker data.
+4. Preserve stable file IDs.
+5. Preserve Save / Save As / Rename / Delete.
+6. Preserve authentication and account isolation.
+7. Preserve prior TrailWeigh fixes.
+8. Make the smallest reasonable change.
+9. Inspect the COMPLETE final diff.
+10. Revert unrelated changes.
+11. Run the full regression suite plus new 022T tests.
+
+NEVER fix this by:
+- clearing localStorage
+- deleting Locker files
+- deleting database rows
+- changing all file IDs
+- weakening authentication
+- asking the user to recreate their files
+
+==================================================
+1. STARTING FACT — 022S IS STILL NOT PROVEN END-TO-END
+==================================================
+
+The user has now performed the real-iPhone test after 022S.
+
+RESULT:
+
+FAIL — saved Locker files still do not synchronize to the iPhone.
+
+Therefore:
+
+Do NOT report 022S as a successful real-device fix.
+
+The 022S report showed authenticated GET/POST activity in server logs, but that
+does not prove those requests came from the SAME real user account and SAME
+environment used on both desktop and iPhone.
+
+The next investigation must prove identity and environment parity.
+
+==================================================
+2. MOST IMPORTANT QUESTIONS TO ANSWER
+==================================================
+
+Before making architectural changes, determine:
+
+A. Is the iPhone loading the SAME TrailWeigh application build as desktop?
+
+B. Are desktop and iPhone using the SAME hostname/origin/environment?
+
+C. Are they using the SAME Clerk publishable/auth environment?
+
+D. Do desktop and iPhone resolve to the SAME authenticated Clerk user ID?
+
+E. Are both API requests hitting the SAME API deployment?
+
+F. Is that API connected to the SAME PostgreSQL database?
+
+G. Does that user's database account actually contain the desktop Locker files?
+
+H. When the iPhone calls GET /api/locker, what file count does the server
+   return for THAT authenticated user?
+
+Do not guess.
+
+==================================================
+3. ADD A SMALL TEMPORARY/DIAGNOSTIC “SYNC STATUS” AREA
+==================================================
+
+The user should NOT need Safari Web Inspector or developer tools to diagnose
+this.
+
+Add a small, unobtrusive Sync Status area inside the signed-in private Locker.
+
+It may be a compact collapsible row or small status block.
+
+It should show only NON-SENSITIVE diagnostic information:
+
+Cloud Sync: Connected / Syncing / Error
+
+Local Locker Files: [count]
+
+Server Locker Files: [count]
+
+Last Successful Sync: [local time or “Never”]
+
+Build: [short build/version identifier]
+
+Server Environment: [safe environment label or hostname]
+
+Account Sync ID: [NON-SENSITIVE SHORT FINGERPRINT]
+
+[Sync Now] button
+
+Do NOT display:
+- raw JWT
+- auth token
+- cookies
+- password
+- full Clerk session data
+- database URL
+- secrets
+- API keys
+
+==================================================
+4. ACCOUNT SYNC ID — SAFE FINGERPRINT
+==================================================
+
+The Sync Status area must allow the user to compare desktop and iPhone without
+exposing the raw Clerk user ID.
+
+Generate a deterministic short fingerprint from the authenticated Clerk userId.
+
+Example concept:
+
+Account Sync ID: A7C4-91F2
+
+The SAME authenticated Clerk userId must always produce the SAME fingerprint.
+
+A different Clerk userId must produce a different fingerprint.
+
+The raw Clerk userId must NOT be shown in the UI.
+
+This allows the user to immediately determine whether desktop and iPhone are
+actually signed into the same backend account identity.
+
+==================================================
+5. BUILD IDENTIFIER
+==================================================
+
+Add a short build/version identifier that is visible in Sync Status.
+
+Example:
+
+Build: 022T-a1b2c3
+
+It must identify the code version actually being served to that browser.
+
+Do not hard-code a misleading permanent value that remains unchanged after
+future deployments.
+
+Use an existing build/version mechanism if available.
+
+Purpose:
+
+If desktop shows:
+Build: 022T-a1b2c3
+
+and iPhone shows:
+Build: 022S-old123
+
+then the iPhone is loading stale/old code and sync cannot be judged yet.
+
+==================================================
+6. SERVER ENVIRONMENT / ORIGIN
+==================================================
+
+Show a safe server/environment label.
+
+Examples:
+
+Host: trailweigh.example...
+Environment: production
+
+or equivalent safe information.
+
+Do NOT expose:
+- database credentials
+- internal secret URLs
+- tokens
+
+The purpose is to determine whether desktop and iPhone are using different
+Replit preview/deployment environments.
+
+==================================================
+7. PROVE DESKTOP LOCAL FILES ACTUALLY EXIST ON THE SERVER
+==================================================
+
+This is CRITICAL.
+
+The desktop can show files from localStorage even when the server database is
+empty.
+
+For the currently authenticated SAFE/test user:
+
+Compare:
+- local Locker file stable IDs
+- server Locker stable IDs
+
+Do not log private payload contents.
+
+At runtime, determine:
+
+LOCAL count: N
+SERVER count: M
+LOCAL-ONLY IDs: count
+SERVER-ONLY IDs: count
+MATCHED IDs: count
+
+If local files are not on the server:
+
+UPLOAD/MIGRATE the local-only files safely using the 022S stable-ID merge logic.
+
+Await each result.
+
+Then re-fetch the server.
+
+Do not declare synchronization successful until the server returns those same
+stable IDs.
+
+==================================================
+8. “SYNC NOW” BUTTON
+==================================================
+
+Add a small:
+
+Sync Now
+
+control in the Sync Status area.
+
+When clicked:
+
+1. Verify the user is authenticated.
+2. Fetch current server Locker.
+3. Compare server and local records by stable ID.
+4. Safely merge using newest valid savedAt timestamps.
+5. Upload local-only/newer-local records.
+6. Re-fetch server.
+7. Update local cache.
+8. Update Sync Status counts.
+9. Show success or failure.
+
+Success example:
+
+Synced — 7 files
+
+Failure example:
+
+Sync failed — tap to retry
+
+Do not create duplicates.
+Do not silently discard local files.
+
+==================================================
+9. SERVER MUST RETURN A SAFE SYNC DIAGNOSTIC
+==================================================
+
+Use the existing authenticated Locker API where possible.
+
+If needed, add a small authenticated diagnostic endpoint such as:
+
+GET /api/locker/status
+
+It may return only safe data such as:
+
+{
+  authenticated: true,
+  accountFingerprint: "...",
+  lockerCount: 7,
+  environment: "...",
+  serverBuild: "...",
+  serverTime: "..."
+}
+
+Do NOT return:
+- raw userId
+- token
+- cookie
+- database URL
+- secret environment variables
+
+The endpoint must require authentication.
+
+==================================================
+10. VERIFY SAME CLERK IDENTITY
+==================================================
+
+At runtime, verify the desktop authenticated account and iPhone account.
+
+The same displayed email address is NOT sufficient proof if the auth provider
+could have created separate Clerk users.
+
+The Account Sync ID fingerprint must match.
+
+If fingerprints DO NOT match:
+
+CLASSIFY ROOT CAUSE:
+
+ACCOUNT IDENTITY MISMATCH
+
+Then determine why.
+
+Investigate:
+- Google sign-in versus password/email sign-in
+- duplicate Clerk users
+- different Clerk development/production instance
+- different publishable key/environment
+- different deployment URL
+
+Do NOT automatically merge two user accounts.
+Do NOT move private Locker files between different Clerk users without an
+explicit safe account-linking/migration design.
+
+Report the mismatch clearly.
+
+==================================================
+11. VERIFY SAME CLERK ENVIRONMENT
+==================================================
+
+Inspect the frontend environment actually served on:
+
+- desktop URL
+- iPhone URL
+
+Confirm both use the same intended Clerk instance/publishable-key environment.
+
+Do NOT print the full secret or sensitive key.
+
+A safe hash/fingerprint of the configured Clerk environment may be documented
+internally if needed.
+
+If desktop uses DEVELOPMENT Clerk and iPhone uses PRODUCTION Clerk, they can
+represent separate identities even when the user believes they signed in the
+same way.
+
+If this is the root cause:
+
+Fix deployment/environment configuration so TrailWeigh uses the intended
+single environment for the public app.
+
+Do not expose secrets.
+
+==================================================
+12. VERIFY SAME API / DATABASE ENVIRONMENT
+==================================================
+
+Prove that desktop and iPhone calls reach the same intended API deployment.
+
+Then prove the API uses the intended database.
+
+Do not rely on:
+“DATABASE_URL should be the same.”
+
+Actually verify using a safe environment/build identifier and server-side
+database test.
+
+If preview and deployed TrailWeigh use different databases:
+
+CLASSIFY ROOT CAUSE:
+
+ENVIRONMENT / DATABASE MISMATCH
+
+Then correct the deployment configuration safely.
+
+Do NOT copy/delete production data casually.
+
+Preserve existing files.
+
+==================================================
+13. VERIFY THE USER’S SERVER ROW COUNT
+==================================================
+
+For the currently authenticated account, the API must be able to report the
+server-side Locker count.
+
+Example:
+
+Desktop:
+Local files: 8
+Server files: 8
+
+iPhone:
+Local files: 0
+Server files: 8
+
+After sync:
+Local files: 8
+Server files: 8
+
+This would prove the iPhone is retrieving the same server account.
+
+If instead:
+
+Desktop:
+Account Sync ID: AAAA
+Server files: 8
+
+iPhone:
+Account Sync ID: BBBB
+Server files: 0
+
+the identity mismatch is immediately visible.
+
+==================================================
+14. STALE IPHONE BUILD / CACHE
+==================================================
+
+The iPhone may be loading an older deployed bundle or cached PWA/service-worker
+version.
+
+Investigate:
+- service worker
+- PWA cache
+- Safari cached application resources
+- Replit deployment not updated after code changes
+- iPhone using a different URL
+- home-screen shortcut pointing to an older/different host
+
+If a service worker exists:
+
+Ensure a newly deployed TrailWeigh version can update safely.
+
+Do NOT indiscriminately destroy all browser storage.
+
+IMPORTANT:
+
+Do NOT clear localStorage as a cache fix because Locker files may still exist
+there.
+
+Application-code cache and user data storage must be treated separately.
+
+==================================================
+15. DO NOT ASK THE USER TO CLEAR ALL SAFARI DATA
+==================================================
+
+Do not use “clear website data” as the first solution.
+
+That could erase local-only TrailWeigh data.
+
+If browser-cache clearing becomes necessary:
+
+First prove all local Locker files are safely present on the server.
+
+Then give the user a targeted, safe refresh procedure.
+
+==================================================
+16. REAL DESKTOP TEST — REQUIRED
+==================================================
+
+From the running desktop TrailWeigh application using a safe authenticated
+account:
+
+1. Open Sync Status.
+2. Record:
+   - Build
+   - Host/environment
+   - Account Sync ID
+   - Local file count
+   - Server file count
+
+3. Create:
+   REAL SYNC 022T
+
+4. Save it.
+
+5. Click Sync Now.
+
+6. Verify:
+   [ ] server file count increases appropriately
+   [ ] GET /api/locker returns the same stable ID
+   [ ] no duplicate is created
+   [ ] status says successful
+
+Do not rely only on unit tests.
+
+==================================================
+17. FRESH BROWSER CONTEXT TEST — REQUIRED
+==================================================
+
+Use a second independent browser context/profile with:
+
+- same intended TrailWeigh URL
+- same SAFE test account
+- empty TrailWeigh localStorage
+
+After sign-in:
+
+Verify:
+
+[ ] Build matches first browser.
+[ ] Host/environment matches.
+[ ] Account Sync ID matches.
+[ ] Server file count matches.
+[ ] REAL SYNC 022T appears.
+[ ] Same stable file ID.
+[ ] No duplicate.
+[ ] Local count populates from server.
+
+This is the required desktop simulation of a brand-new phone.
+
+==================================================
+18. DIFFERENT-ACCOUNT CONTROL TEST
+==================================================
+
+Using a second SAFE test account if available:
+
+Verify:
+
+[ ] Account Sync ID is different.
+[ ] It cannot see first account's Locker.
+[ ] Server count is scoped correctly.
+[ ] Account isolation remains intact.
+
+Do not use real user private data for this test.
+
+==================================================
+19. USER REAL-IPHONE TEST MUST BE SIMPLE
+==================================================
+
+The user is not expected to open Safari Web Inspector.
+
+After Replit finishes, instruct the user to compare the Sync Status area.
+
+DESKTOP:
+- Build:
+- Host:
+- Account Sync ID:
+- Local Files:
+- Server Files:
+
+IPHONE:
+- Build:
+- Host:
+- Account Sync ID:
+- Local Files:
+- Server Files:
+
+Then tap:
+
+Sync Now
+
+on iPhone.
+
+The values themselves should reveal which layer is different.
+
+==================================================
+20. HOW TO INTERPRET REAL-IPHONe RESULTS
+==================================================
+
+CASE A
+Build differs:
+ROOT CAUSE = stale/different deployed build.
+
+CASE B
+Host/environment differs:
+ROOT CAUSE = different app/deployment environment.
+
+CASE C
+Build/host match but Account Sync ID differs:
+ROOT CAUSE = authentication identity/Clerk environment mismatch.
+
+CASE D
+Account Sync ID matches but Server Files differs:
+ROOT CAUSE = API/database/environment mismatch.
+
+CASE E
+Account Sync ID and Server Files match, but Local Files stay empty:
+ROOT CAUSE = client retrieval/merge/rendering bug.
+
+CASE F
+Desktop Server Files is lower than Desktop Local Files:
+ROOT CAUSE = desktop files were never successfully migrated to server.
+
+Use these classifications in the report.
+
+==================================================
+21. IF CLIENT RETRIEVAL IS THE PROBLEM
+==================================================
+
+If build, host, account fingerprint, database and server count all match but
+iPhone still does not populate local Locker:
+
+Inspect the actual iPhone-compatible client path:
+
+- fetch response
+- JSON parsing
+- savedAt Date/string normalization
+- mergeLockerEntries()
+- state update
+- localStorage write
+- Locker filtering/rendering
+
+Check specifically for Safari incompatibilities such as:
+- unsupported APIs
+- serialization assumptions
+- date parsing differences
+- crypto usage
+- BroadcastChannel assumptions
+- structuredClone assumptions
+- storage exceptions
+- quota/private-mode behavior
+
+Do not assume Chrome behavior equals Safari behavior.
+
+Add safe fallback only where a real compatibility issue is proven.
+
+==================================================
+22. DATE / SERIALIZATION AUDIT
+==================================================
+
+Because server JSON converts dates to strings, audit LockerEntry.savedAt across
+the full path:
+
+database timestamp
+→ API JSON
+→ fetch JSON parse
+→ merge comparison
+→ React state
+→ localStorage
+→ reload
+
+Ensure comparisons do not depend on calling date methods on a string unless it
+is normalized first.
+
+Test Safari-compatible ISO date parsing.
+
+Invalid dates must not cause entries to disappear from merge/sort.
+
+==================================================
+23. LOCALSTORAGE ERROR HANDLING ON IOS
+==================================================
+
+Wrap required localStorage operations safely.
+
+If iOS Safari rejects a storage write:
+
+- server-fetched entries should still remain visible in current React state
+- do not throw away the server result
+- show Sync Status warning
+- do not claim sync succeeded locally
+
+Do not make localStorage availability a prerequisite for displaying valid
+server Locker entries.
+
+==================================================
+24. DO NOT REQUIRE BROADCASTCHANNEL FOR CLOUD SYNC
+==================================================
+
+BroadcastChannel is useful for same-browser tabs but must NOT be required for
+cross-device cloud synchronization.
+
+Verify that server Locker retrieval works even if BroadcastChannel is
+unavailable or disabled.
+
+==================================================
+25. REQUIRED AUTOMATED TESTS
+==================================================
+
+Add tests for at least:
+
+[ ] deterministic Account Sync ID fingerprint
+[ ] raw Clerk userId never shown in UI
+[ ] Sync Status counts local and server separately
+[ ] Sync Now fetches server
+[ ] Sync Now uploads local-only records
+[ ] Sync Now re-fetches/validates result
+[ ] no duplicate stable IDs
+[ ] failed sync retains local files
+[ ] fresh empty localStorage populates from server
+[ ] localStorage write failure does not hide valid server-fetched entries
+[ ] server date strings normalize correctly
+[ ] invalid savedAt does not silently remove files
+[ ] BroadcastChannel absence does not prevent server sync
+[ ] diagnostic endpoint requires auth, if endpoint is added
+[ ] diagnostic endpoint exposes no raw userId/secrets
+[ ] account isolation remains intact
+
+==================================================
+26. RUNTIME TESTS ARE MANDATORY
+==================================================
+
+Prompt 022T may NOT be marked complete using source inspection only.
+
+Runtime prove:
+
+[ ] authenticated server Locker fetch
+[ ] authenticated server Locker count
+[ ] authenticated Account Sync ID generation
+[ ] first browser context save
+[ ] server contains saved stable ID
+[ ] second empty-storage browser context retrieves same stable ID
+[ ] Build identifiers match across contexts
+[ ] Environment identifiers match across contexts
+[ ] Account Sync IDs match across same-account contexts
+[ ] different test account cannot retrieve those records
+
+If something cannot be runtime-tested, mark it NOT TESTED.
+
+==================================================
+27. OUT OF SCOPE
+==================================================
+
+Do not expand 022T into:
+
+- general mobile redesign
+- toolbar redesign
+- Weight Distribution redesign
+- custom theme/photo cloud migration unless it is directly causing Locker sync
+- PDF changes
+- share redesign
+- authentication UI styling
+
+The goal is:
+
+PROVE AND FIX WHY THE SAME USER’S SAVED LOCKER FILES DO NOT APPEAR ON THE REAL
+IPHONE.
+
+==================================================
+28. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022T_REPORT.md
+
+It must include:
+
+- Exact title:
+  Prompt 022T — Fix Real-Device Sync by Proving Build, Environment, Account, and Server State
+
+- User-verified status:
+  022R FAIL
+  022S FAIL
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Desktop build identifier
+
+- Test second-browser build identifier
+
+- Desktop host/environment
+
+- Test second-browser host/environment
+
+- Same-account Account Sync ID comparison
+
+- Different-account control comparison
+
+- Desktop local Locker count
+
+- Desktop server Locker count
+
+- Second-browser local/server counts
+
+- Whether local-only desktop files were found
+
+- Whether they were successfully migrated
+
+- Runtime GET results
+
+- Runtime Sync Now results
+
+- Stable-ID verification
+
+- Database/environment verification
+
+- Clerk environment verification
+
+- Any stale-build/cache findings
+
+- Date/serialization findings
+
+- iOS localStorage compatibility findings
+
+- BroadcastChannel findings
+
+- Exact root-cause classification:
+  BUILD MISMATCH
+  ENVIRONMENT MISMATCH
+  ACCOUNT IDENTITY MISMATCH
+  DATABASE MISMATCH
+  DESKTOP MIGRATION FAILURE
+  CLIENT RETRIEVAL/MERGE BUG
+  IOS STORAGE/COMPATIBILITY BUG
+  OTHER — explain
+
+- Automated test results
+
+- Runtime test results
+
+- Full regression results
+
+- Complete final-diff review
+
+- Anything reverted
+
+- Exact real-iPhone verification steps
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+29. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022T-report.zip
+
+Prompt 022T is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_022T_REPORT.md
+
+2.
+workflow-reports/trailweigh-022T-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022T_REPORT.md
+
+It may additionally contain NON-SENSITIVE:
+- sanitized runtime logs
+- test output
+- sync diagnostic screenshots from safe test accounts
+- cross-browser test evidence
+
+DO NOT include:
+- passwords
+- raw Clerk user IDs
+- tokens
+- cookies
+- API keys
+- .env files
+- database URLs
+- private user Locker payloads
+- real user personal data
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022T_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if Replit supports this.
+
+Do not mark Prompt 022T complete without the verified ZIP.
+
+==================================================
+30. COMPLETION RESPONSE
+==================================================
+
+At completion provide:
+
+1. Full Markdown report path
+2. Markdown file size
+3. Markdown line count
+4. Full ZIP path
+5. ZIP size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Most important:
+   EXACT reason the real iPhone still failed after 022S
+
+10. Whether desktop and test browser used the same:
+    - Build
+    - Host/environment
+    - Account Sync ID
+    - API
+    - Database
+
+11. Desktop:
+    - Local Locker count
+    - Server Locker count
+
+12. Fresh second browser:
+    - Local Locker count
+    - Server Locker count
+
+13. Confirmation REAL SYNC 022T was retrieved in the second empty-storage
+    browser context with the same stable ID
+
+14. Any local-only desktop files discovered and whether migration succeeded
+
+15. Exact Sync Status values the user should compare on desktop and iPhone
+
+FINAL STATUS RULE:
+
+Do NOT report:
+“Real iPhone sync PASS”
+
+until the user confirms it on the actual iPhone.
+
+If desktop/fresh-browser runtime tests pass, state:
+
+“Server/cross-browser sync PASS; real-iPhone verification pending.”
+
+If the user later reports failure again, use the Sync Status values to identify
+the exact mismatched layer rather than guessing.

@@ -1,0 +1,623 @@
+PROMPT 022U — FIX MOBILE LOCKER SCROLLING AND SAVED-FILE VISIBILITY
+
+USER-VERIFIED STATUS
+
+Prompt 022T appears to have fixed the underlying Locker synchronization.
+
+REAL IPHONE SCREENSHOT NOW SHOWS:
+
+- Locker count badge: 3
+- Cloud Sync: Synced
+- Local / Server count: 3L / 3S
+
+Therefore the three saved files appear to exist and be synchronized.
+
+CURRENT USER-VERIFIED FAILURE:
+
+On iPhone, only ONE saved Locker file is visible.
+
+The user cannot scroll up or down to reach the other saved files.
+
+The footer appears immediately after the first visible Locker entry.
+
+THIS IS NOW A MOBILE SCROLL / LAYOUT / OVERFLOW BUG, NOT A CLOUD-SYNC BUG.
+
+Do NOT redesign the synchronization architecture again unless a new sync
+failure is independently proven.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before making any changes:
+
+1. Create the normal Replit project checkpoint/backup.
+
+2. Inspect the current mobile DOM/CSS/layout before editing.
+
+3. Inspect:
+   - html
+   - body
+   - root application container
+   - Checklist page wrapper
+   - LockerPanel
+   - Locker saved-file list/container
+   - SyncStatusPanel
+   - Footer
+   - any fixed/sticky/mobile wrappers
+   - dialogs/popovers that may leave scroll locking behind
+
+4. Specifically inspect all relevant use of:
+   - overflow
+   - overflow-y
+   - overflow-hidden
+   - overflow-auto
+   - max-height
+   - height: 100vh
+   - min-height
+   - 100dvh / 100svh
+   - position: fixed
+   - position: absolute
+   - touch-action
+   - overscroll-behavior
+   - pointer-events
+   - body scroll-lock classes/styles
+
+5. Make the smallest reasonable correction.
+
+6. Do NOT broadly redesign the mobile interface.
+
+7. Preserve:
+   - 022T cloud synchronization
+   - Locker count
+   - Sync Status panel
+   - Save / Save As / Rename / Delete
+   - stable file IDs
+   - background behavior
+   - Scan Gear List
+   - footer styling
+   - Prompt 022F footer normal-document-flow fix
+   - all previous verified TrailWeigh behavior
+
+8. Inspect the COMPLETE final diff.
+
+9. Revert unrelated changes.
+
+10. Run the full regression suite plus new 022U tests.
+
+==================================================
+1. REQUIRED USER EXPERIENCE
+==================================================
+
+On iPhone, Android, and other narrow mobile screens:
+
+If the Locker contains three saved files, the user must be able to reach and
+interact with ALL THREE.
+
+The user must be able to scroll naturally through:
+
+- Locker header
+- Cloud Sync row
+- saved Locker entries
+- the rest of the TrailWeigh page
+- footer
+
+No saved file may be clipped, hidden behind the footer, or placed inside an
+unusable nested scroll area.
+
+==================================================
+2. FIRST DETERMINE WHICH SCROLL CONTAINER IS BROKEN
+==================================================
+
+Do not guess.
+
+At mobile width, identify exactly which element is supposed to scroll:
+
+A. the main page/body
+B. the Locker file list
+C. a nested container
+D. another wrapper
+
+Then determine why vertical touch scrolling stops.
+
+Check for:
+- body/root overflow:hidden
+- fixed-height page wrapper
+- Locker max-height with hidden overflow
+- nested overflow:auto that does not respond correctly on iOS
+- touch-action restrictions
+- an invisible overlay intercepting touch events
+- modal/body scroll lock not being removed
+- footer positioned over the list
+- fixed viewport-height calculations
+- a parent clipping the Locker contents
+
+Document the actual root cause.
+
+==================================================
+3. MOBILE PREFERENCE — AVOID UNNECESSARY NESTED SCROLLING
+==================================================
+
+For the Locker on a phone, prefer normal page/document scrolling unless there
+is a strong existing design reason for a separate internal Locker scrollbar.
+
+The user should normally be able to swipe vertically on the Locker area and
+have the page continue moving naturally.
+
+If Locker currently uses a fixed/max-height internal scrolling area:
+
+Inspect whether that is actually needed.
+
+If not needed on mobile:
+- allow the Locker content to expand to fit its saved entries
+- let the MAIN PAGE scroll
+
+This is preferred over creating a tiny internal scroll box that is difficult
+to discover or operate on iPhone.
+
+Desktop behavior may retain an intentional internal list limit if it is useful,
+but mobile must remain obvious and usable.
+
+==================================================
+4. DO NOT REGRESS PROMPT 022F FOOTER FIX
+==================================================
+
+The footer must remain in NORMAL DOCUMENT FLOW.
+
+It must NOT be:
+- fixed over the page
+- absolutely positioned over the Locker
+- sticky over saved files
+- visually covering Locker entries
+
+Correct mobile order should be:
+
+Locker header
+Cloud Sync
+Saved file 1
+Saved file 2
+Saved file 3
+...any additional page content...
+Footer
+
+The footer should naturally appear only AFTER the Locker content that belongs
+before it.
+
+Do not solve scrolling by restoring the old footer-overlay bug.
+
+==================================================
+5. LOCKER FILE LIST MUST EXPAND / SCROLL CORRECTLY
+==================================================
+
+Test a Locker with at least:
+
+5 saved test files
+
+at iPhone-sized portrait width.
+
+Expected:
+
+[ ] File 1 visible/reachable
+[ ] File 2 visible/reachable
+[ ] File 3 visible/reachable
+[ ] File 4 visible/reachable
+[ ] File 5 visible/reachable
+[ ] Rename controls reachable
+[ ] Delete controls reachable
+[ ] Open/load controls reachable
+[ ] Footer appears after the Locker list
+[ ] User can scroll back upward again
+
+The user must be able to scroll BOTH DOWN and UP.
+
+==================================================
+6. SYNC STATUS MUST NOT BREAK SCROLLING
+==================================================
+
+Prompt 022T added the Cloud Sync / Sync Status UI.
+
+Inspect whether this new component introduced:
+- fixed height
+- overflow rule
+- event interception
+- absolute positioning
+- a wrapper that clips the Locker list
+
+Collapsed Sync Status:
+- must not block scrolling
+
+Expanded Sync Status:
+- must not block scrolling
+- must remain fully reachable
+- page must still continue below it
+
+Do not remove Sync Status merely to hide the bug.
+
+==================================================
+7. IOS SAFARI TOUCH SCROLLING
+==================================================
+
+Test the actual interaction model for iOS Safari.
+
+Verify vertical swiping works when the gesture begins on:
+
+[ ] Locker header
+[ ] Cloud Sync row
+[ ] file-name text
+[ ] empty space inside Locker
+[ ] saved-file control row
+[ ] page background near Locker
+
+Interactive buttons should still work, but ordinary non-button areas must not
+capture/prevent normal vertical scrolling.
+
+Inspect touch/pointer handlers for unnecessary preventDefault() calls.
+
+Do not disable native vertical scrolling with touch-action:none.
+
+==================================================
+8. BODY SCROLL LOCK AUDIT
+==================================================
+
+Inspect modal/popover scroll-lock behavior.
+
+TrailWeigh has several dialogs/popovers.
+
+Verify that closing any of these restores page scrolling:
+- Save / Save As
+- Rename
+- Delete confirmation
+- Preview
+- Background/theme dialogs
+- Sources & References
+- authentication overlays
+- custom-theme delete popover
+
+Check whether the page is left with:
+- body { overflow: hidden }
+- inline overflow:hidden
+- pointer lock
+- fixed-body workaround
+- stale modal class
+
+after the dialog closes.
+
+If found, fix the cleanup.
+
+==================================================
+9. VIEWPORT HEIGHT AUDIT
+==================================================
+
+Inspect any use of:
+- height: 100vh
+- max-height: 100vh
+
+On iPhone Safari, browser chrome changes the effective viewport.
+
+Prefer safe responsive sizing such as:
+- min-height rather than hard height where appropriate
+- dynamic viewport units where appropriate
+- content-driven height for normal page sections
+
+Do NOT convert the entire app to a new viewport system without need.
+
+Fix only the rules causing clipping/scroll failure.
+
+==================================================
+10. FOOTER + SAFARI BOTTOM BAR
+==================================================
+
+The Safari bottom toolbar/home area must not make the final content
+unreachable.
+
+Verify:
+[ ] user can scroll past last Locker entry
+[ ] footer can be fully viewed
+[ ] footer bottom links remain reachable
+[ ] page can scroll back up
+[ ] Safari bottom toolbar does not permanently cover controls
+
+Use safe-area spacing only where actually necessary.
+
+==================================================
+11. ANDROID REGRESSION CHECK
+==================================================
+
+Although the reported problem is on iPhone, verify Android Chrome at a similar
+narrow portrait width.
+
+Expected:
+[ ] natural vertical scrolling
+[ ] all Locker files reachable
+[ ] footer after Locker content
+[ ] no nested-scroll trap
+[ ] no regression from iOS-specific fix
+
+Do not create an iPhone-only CSS hack when a standards-based responsive fix is
+available.
+
+==================================================
+12. DESKTOP REGRESSION CHECK
+==================================================
+
+Verify desktop still works.
+
+Expected:
+[ ] Locker entries visible/scrollable as intended
+[ ] Cloud Sync works
+[ ] footer remains normal flow
+[ ] no excessive blank space
+[ ] no uncontrolled giant layout
+[ ] saved-file controls still work
+
+==================================================
+13. TEST THE EXACT USER CASE
+==================================================
+
+Reproduce the user's current state:
+
+Locker count = 3
+
+Cloud Sync = Synced
+
+3L / 3S
+
+At mobile iPhone portrait width:
+
+Expected:
+
+[ ] All three Locker files can be reached.
+
+[ ] If only one fits in the initial viewport, swiping down reveals the next
+    entries.
+
+[ ] Swiping back up returns to previous entries.
+
+[ ] Footer does not replace or cover the remaining files.
+
+[ ] The page is not frozen vertically.
+
+==================================================
+14. DO NOT MODIFY CLOUD-SYNC DATA TO FIX A DISPLAY BUG
+==================================================
+
+Do NOT:
+- delete saved files
+- recreate files
+- change file IDs
+- clear localStorage
+- clear server Locker data
+- reset the database
+- alter account identity
+
+The screenshot already shows:
+
+3L / 3S
+
+Treat this as a display/scrolling issue unless independent evidence proves
+otherwise.
+
+==================================================
+15. ACCESSIBILITY
+==================================================
+
+Maintain:
+- keyboard scrolling on desktop
+- focus visibility
+- button accessibility
+- logical DOM order
+- no inaccessible off-screen file controls
+
+Do not use CSS ordering tricks that make visual and DOM order inconsistent.
+
+==================================================
+16. REQUIRED AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for:
+
+[ ] Locker with 1 file
+[ ] Locker with 3 files
+[ ] Locker with 5+ files
+[ ] no mobile overflow:hidden on the page/Locker path unless intentionally
+    scoped
+[ ] footer remains after Locker in document structure
+[ ] SyncStatusPanel does not impose an incorrect fixed Locker height
+[ ] collapsed Sync Status does not hide Locker files
+[ ] expanded Sync Status does not hide Locker files
+[ ] any body scroll lock is removed when relevant overlays close
+
+Do not write tests that merely search for expected CSS strings without
+exercising layout/state behavior where a browser/runtime test is practical.
+
+==================================================
+17. RUNTIME / BROWSER TESTS
+==================================================
+
+Use browser runtime testing at mobile dimensions.
+
+At minimum test widths representative of:
+- small iPhone portrait
+- larger iPhone portrait
+- Android phone portrait
+
+Use a Locker containing at least 5 disposable test files.
+
+Verify:
+[ ] scroll downward
+[ ] reach last file
+[ ] reach footer
+[ ] scroll upward
+[ ] reach first file again
+
+If automated browser tooling cannot accurately simulate iOS touch scrolling,
+mark real iPhone scrolling:
+
+NOT TESTED
+
+and require user verification.
+
+Do not call it PASS merely because desktop browser responsive mode scrolls.
+
+==================================================
+18. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022U_REPORT.md
+
+The report must include:
+
+- Exact title:
+  Prompt 022U — Fix Mobile Locker Scrolling and Saved-File Visibility
+
+- User screenshot findings:
+  Locker = 3
+  Cloud Sync = Synced
+  3L / 3S
+  Only one file visible
+  User cannot scroll up/down
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Exact scroll container discovered
+
+- Exact root cause of scroll failure
+
+- Any overflow rules found
+
+- Any fixed/max-height rules found
+
+- Any body scroll-lock issue found
+
+- Any touch-action/preventDefault issue found
+
+- Any footer interaction with the bug
+
+- Whether SyncStatusPanel contributed
+
+- iPhone-width runtime result
+
+- Android-width runtime result
+
+- Desktop regression result
+
+- 1-file / 3-file / 5-file tests
+
+- Footer normal-flow verification
+
+- Full automated test results
+
+- Full regression results
+
+- Complete final-diff review
+
+- Anything reverted
+
+- Exact real-iPhone user verification steps
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior reports.
+
+==================================================
+19. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022U-report.zip
+
+Prompt 022U is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_022U_REPORT.md
+
+2.
+workflow-reports/trailweigh-022U-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022U_REPORT.md
+
+It may additionally contain NON-SENSITIVE:
+- test logs
+- mobile layout screenshots
+- runtime test output
+
+DO NOT include:
+- passwords
+- tokens
+- cookies
+- API keys
+- .env files
+- private user Locker data
+- private database exports
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022U_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if Replit supports this.
+
+Do not mark Prompt 022U complete without a valid ZIP.
+
+==================================================
+20. COMPLETION RESPONSE
+==================================================
+
+At completion provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Exact reason the iPhone could not scroll
+
+10. Exact element/CSS rule that caused the problem
+
+11. Whether the Locker now uses:
+    - main page scrolling
+    OR
+    - an intentional internal scroll container
+
+12. Why that choice is appropriate for mobile
+
+13. Confirmation the footer remains normal document flow
+
+14. Confirmation a 5-file Locker was tested at mobile width
+
+15. Exact real-iPhone USER verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+“Real iPhone scrolling PASS”
+
+unless it has been tested on actual iPhone hardware.
+
+If browser mobile-width testing passes, state:
+
+“Responsive browser test PASS; real-iPhone scrolling verification pending.”
