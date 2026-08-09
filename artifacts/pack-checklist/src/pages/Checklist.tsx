@@ -1678,7 +1678,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   className="flex items-center gap-1.5 text-xs font-semibold text-primary border border-primary/40 hover:border-primary bg-primary/5 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
                 >
                   <User className="w-3.5 h-3.5" />
-                  Sign in to save
+                  {/* 022V: "to save" hidden below sm: so narrow phones show just "Sign in" */}
+                  Sign in<span className="hidden sm:inline"> to save</span>
                 </button>
               ) : (
                 <div className="relative flex-shrink-0">
@@ -1727,8 +1728,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                To reposition the entire toolbar, change pt-4 on this element only. ── */}
           <div className="pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
-            {/* Left toolbar panel — Pinned pills row */}
-            <div className="pb-3 flex items-center lg:pr-7 flex-shrink-0 relative">
+            {/* Left toolbar panel — Pinned pills row
+                022V: flex-wrap + gap-y-2 so controls can spill onto a second row on
+                narrow portrait phones instead of overflowing the viewport. flex-shrink-0
+                removed — the grid column gives us full-width already. */}
+            <div className="pb-3 flex flex-wrap items-center gap-x-3 gap-y-2 lg:pr-7 relative">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -1767,7 +1771,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     </span>
                   </div>
                 )}
-                <div className="ml-auto flex items-center gap-3">
+                {/* 022V: lg:ml-auto so Hide/Preview/UnitToggle push right only on desktop;
+                    on mobile they follow Open/Close with normal gap and can wrap. */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0">
                   <button
                     onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
                     disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}

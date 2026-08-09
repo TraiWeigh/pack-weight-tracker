@@ -1,0 +1,720 @@
+PROMPT 022V — FIX MOBILE PORTRAIT TOOLBAR AND PILL ALIGNMENT
+
+USER-VERIFIED STATUS
+
+Prompt 022T / 022U results on the real iPhone:
+
+PASS — Locker synchronization now works.
+PASS — Mobile page/Locker scrolling now works.
+
+DO NOT change those systems in this prompt.
+
+CURRENT USER-VERIFIED PROBLEM
+
+TrailWeigh is difficult to use in iPhone PORTRAIT orientation because the top
+toolbar controls and pill controls do not align or fit correctly.
+
+The user can effectively use TrailWeigh only in LANDSCAPE mode.
+
+The screenshots show that landscape is substantially more usable, while
+portrait compresses/overflows the toolbar and pill controls.
+
+This prompt is focused on RESPONSIVE MOBILE PORTRAIT LAYOUT for the top
+TrailWeigh controls.
+
+Do NOT redesign TrailWeigh.
+Do NOT change the underlying actions/functions of the controls.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current responsive implementation for:
+   - Main TrailWeigh header
+   - TrailWeigh logo/title area
+   - Top icon toolbar
+   - Account/user display
+   - Background Edit
+   - Share
+   - Open / Close
+   - Hide
+   - Preview
+   - Imperial / Metric
+   - Any separators/dividers
+   - File-name display if present
+   - Relevant parent containers
+
+3. Inspect CSS/layout rules including:
+   - flex
+   - flex-wrap
+   - grid
+   - gap
+   - justify-content
+   - align-items
+   - min-width
+   - max-width
+   - width
+   - white-space
+   - overflow
+   - position
+   - responsive breakpoints
+
+4. Make the smallest reasonable responsive-layout correction.
+
+5. Do NOT alter control meaning or behavior.
+
+6. Preserve:
+   - 022T cloud synchronization
+   - 022U mobile scrolling
+   - Save / Save As
+   - Locker
+   - Scan Gear List
+   - Pack Summary
+   - Weight Distribution
+   - Background Edit
+   - Share
+   - Open / Close
+   - Hide
+   - Preview
+   - Imperial / Metric
+   - New
+   - Undo
+   - Redo
+   - Reset
+   - account controls
+   - footer normal-flow behavior
+   - desktop layout
+   - landscape layout
+
+7. Inspect the COMPLETE final diff.
+
+8. Revert unrelated changes.
+
+9. Run the full regression suite plus new 022V tests.
+
+==================================================
+1. DESIGN GOAL
+==================================================
+
+TrailWeigh must be fully usable in PHONE PORTRAIT orientation.
+
+Landscape may remain supported, but users must NOT be forced to rotate the
+phone simply to reach or understand toolbar controls.
+
+Primary target:
+
+iPhone portrait and similar-width Android phones.
+
+==================================================
+2. STANDARD UI APPROACH
+==================================================
+
+Use responsive grouping/wrapping.
+
+Do NOT try to squeeze every control into one desktop-width row.
+
+Preferred behavior on narrow screens:
+
+- Keep related controls grouped.
+- Allow groups to wrap onto additional rows.
+- Preserve logical left-to-right order within each group.
+- Keep consistent spacing.
+- Keep controls centered or evenly aligned within available width.
+- Avoid off-screen controls.
+- Avoid overlapping pills.
+- Avoid text clipping.
+
+This is a RESPONSIVE TOOLBAR / CONTROL GROUP problem.
+
+==================================================
+3. HEADER / TOP TOOLBAR
+==================================================
+
+The top TrailWeigh header contains:
+
+- TrailWeigh logo/title
+- New
+- Undo
+- Redo
+- Locker/Save control
+- Reset
+- Account/user area
+- other existing top-level controls
+
+At phone portrait width:
+
+[ ] No essential control may extend off the right side of the viewport.
+
+[ ] No icon may overlap another icon.
+
+[ ] Account/user text must not push essential controls offscreen.
+
+[ ] TrailWeigh logo/title must remain recognizable.
+
+[ ] Touch targets must remain practical.
+
+[ ] Header height may increase if necessary.
+
+Preferred solution:
+
+Allow responsive wrapping or a deliberate second row for controls rather than
+compressing them into unusable spacing.
+
+Do NOT make icons extremely small to force a single row.
+
+==================================================
+4. ACCOUNT / USER DISPLAY
+==================================================
+
+The account/user display shown in the top header currently consumes significant
+horizontal space.
+
+On narrow phone screens:
+
+- Do not allow a long username/email to push toolbar controls offscreen.
+- Truncate text with ellipsis if needed.
+- Preserve the ability to access the account control.
+- Keep the account control's touch target usable.
+
+Do NOT expose more account information merely to fill space.
+
+==================================================
+5. BACKGROUND EDIT + SHARE ROW
+==================================================
+
+The Background Edit and Share controls should remain visually grouped.
+
+On portrait:
+
+Preferred:
+[ Background Edit ] [ Share ]
+
+If both fit comfortably, keep them on one centered row.
+
+If not:
+- allow responsive wrapping
+- keep them centered
+- preserve consistent pill height and spacing
+
+Do NOT let either control extend beyond the viewport.
+
+==================================================
+6. OPEN / CLOSE / HIDE / PREVIEW / IMPERIAL / METRIC
+==================================================
+
+This is the main visible portrait-layout problem.
+
+Current controls include:
+
+- Open
+- Close
+- Hide
+- Preview
+- Imperial
+- Metric
+
+Do NOT force all of these into one compressed row on narrow phones.
+
+Create responsive control grouping.
+
+Preferred logical grouping:
+
+GROUP A
+[ Open | Close ]
+
+GROUP B
+[ Hide ] [ Preview ]
+
+GROUP C
+[ Imperial | Metric ]
+
+On narrow portrait screens these groups may wrap into multiple rows.
+
+Example concept:
+
+Row 1:
+[ Open | Close ]   [ Hide ]   [ Preview ]
+
+Row 2:
+[ Imperial | Metric ]
+
+OR another balanced arrangement that fits the actual component widths.
+
+The exact row break may vary by screen width.
+
+Requirements:
+
+[ ] All controls remain fully visible.
+
+[ ] No pill overlaps another pill.
+
+[ ] No control is clipped at the right edge.
+
+[ ] All pill labels remain readable.
+
+[ ] Active-state styling remains obvious.
+
+[ ] Groups remain visually distinct.
+
+[ ] Spacing is consistent.
+
+==================================================
+7. KEEP SEGMENTED CONTROLS TOGETHER
+==================================================
+
+Open / Close is a segmented control.
+
+Imperial / Metric is a segmented control.
+
+Do NOT split the two halves of either segmented control across separate rows.
+
+The entire Open/Close control must move/wrap as one unit.
+
+The entire Imperial/Metric control must move/wrap as one unit.
+
+==================================================
+8. CONSISTENT PILL HEIGHT / ALIGNMENT
+==================================================
+
+At a given control row:
+
+- pill heights should visually match
+- text should be vertically centered
+- baseline alignment should be consistent
+- gaps should be consistent
+- controls should not appear randomly offset
+
+Do not change the established TrailWeigh visual style.
+
+==================================================
+9. PORTRAIT WIDTH BEHAVIOR
+==================================================
+
+Test at representative portrait widths such as approximately:
+
+320 px
+375 px
+390 px
+430 px
+
+Do not hard-code specifically for one iPhone model.
+
+Use responsive CSS that adapts across common phone widths.
+
+At every tested width:
+
+[ ] No horizontal toolbar overflow.
+
+[ ] No toolbar control is unreachable.
+
+[ ] No control overlaps.
+
+[ ] No label is cut in half.
+
+[ ] Main page remains vertically scrollable.
+
+==================================================
+10. LANDSCAPE MUST REMAIN GOOD
+==================================================
+
+The user reports landscape currently works much better.
+
+Preserve that.
+
+At phone landscape width:
+
+[ ] Existing useful compact arrangement remains.
+
+[ ] Controls do not become unnecessarily stacked into many rows.
+
+[ ] Layout may use fewer rows when width allows.
+
+Use responsive behavior based on available width rather than orientation-only
+hard-coding where possible.
+
+==================================================
+11. TABLET / IPAD
+==================================================
+
+On iPad/tablet widths:
+
+- use available space efficiently
+- do not force phone-style stacking when unnecessary
+- do not regress desktop-like alignment
+- preserve touch usability
+
+==================================================
+12. DESKTOP MUST NOT REGRESS
+==================================================
+
+Desktop should retain its current intentional layout unless a tiny shared CSS
+adjustment is required.
+
+Verify:
+
+[ ] Header remains aligned.
+
+[ ] Tools remain in intended order.
+
+[ ] Background Edit / Share remain aligned.
+
+[ ] Open / Close / Hide / Preview / Imperial / Metric remain aligned.
+
+[ ] No unnecessary row wrapping at normal desktop widths.
+
+==================================================
+13. NO HORIZONTAL PAGE SCROLL FROM TOOLBARS
+==================================================
+
+The toolbar/control area must not force the entire TrailWeigh page wider than
+the viewport.
+
+Inspect for:
+- fixed min-width
+- nowrap
+- oversized gaps
+- fixed pixel widths
+- unshrinkable account text
+- flex children with inappropriate min-width:auto behavior
+
+Correct the actual cause.
+
+Do NOT hide the overflow while leaving controls inaccessible.
+
+==================================================
+14. TOUCH TARGETS
+==================================================
+
+Do not solve the layout by shrinking controls below reasonable touch size.
+
+Visible icons may remain compact, but effective touch targets should remain
+practical for phone use.
+
+Audit:
+- New
+- Undo
+- Redo
+- Locker/Save
+- Reset
+- account control
+- Background Edit
+- Share
+- Open
+- Close
+- Hide
+- Preview
+- Imperial
+- Metric
+
+==================================================
+15. KEEP CONTROL ORDER LOGICAL
+==================================================
+
+Preserve logical order.
+
+Do not randomly reorder controls just to make them fit.
+
+If a row wraps, maintain intuitive grouping.
+
+Preferred conceptual order remains:
+
+Background Edit
+Share
+
+then:
+
+Open / Close
+Hide
+Preview
+Imperial / Metric
+
+unless the existing source establishes another deliberate order.
+
+==================================================
+16. DO NOT CHANGE FUNCTIONALITY
+==================================================
+
+This prompt is LAYOUT ONLY.
+
+Do NOT change:
+- what Open does
+- what Close does
+- what Hide does
+- Preview behavior
+- Imperial/Metric conversion behavior
+- Background Edit behavior
+- Share behavior
+- Save/Locker behavior
+- sync behavior
+- scroll behavior
+
+==================================================
+17. EXACT REAL-IPHONE ACCEPTANCE GOAL
+==================================================
+
+When the user opens TrailWeigh in normal iPhone PORTRAIT orientation:
+
+The user should be able to use TrailWeigh without rotating to landscape.
+
+PASS requires:
+
+[ ] Top toolbar controls are reachable.
+
+[ ] Background Edit and Share are visible.
+
+[ ] Open / Close are fully visible.
+
+[ ] Hide is fully visible.
+
+[ ] Preview is fully visible.
+
+[ ] Imperial / Metric are fully visible.
+
+[ ] No controls overlap.
+
+[ ] No controls run off the right edge.
+
+[ ] Labels are readable.
+
+[ ] Page still scrolls vertically.
+
+==================================================
+18. AUTOMATED / RESPONSIVE TESTS
+==================================================
+
+Add tests covering:
+
+[ ] narrow portrait header layout
+
+[ ] segmented Open/Close remains together
+
+[ ] segmented Imperial/Metric remains together
+
+[ ] toolbar container can wrap appropriately
+
+[ ] account text cannot force toolbar overflow
+
+[ ] no fixed min-width causes phone overflow
+
+[ ] Background Edit / Share responsive grouping
+
+[ ] desktop breakpoint preserves desktop layout
+
+[ ] landscape breakpoint uses available width efficiently
+
+Use meaningful component/layout tests where practical.
+
+Do not rely only on searching source files for CSS class names.
+
+==================================================
+19. RUNTIME BROWSER TESTS
+==================================================
+
+Use responsive browser testing at:
+
+- 320 px portrait
+- 375 px portrait
+- 390 px portrait
+- 430 px portrait
+- representative phone landscape width
+- representative tablet width
+- desktop width
+
+For each:
+
+Verify:
+[ ] no toolbar horizontal overflow
+[ ] no pill overlap
+[ ] no clipped controls
+[ ] logical grouping
+[ ] vertical page scrolling still works
+
+Take non-sensitive screenshots if the Replit environment supports it.
+
+If real iPhone hardware is unavailable:
+
+mark:
+
+REAL IPHONE PORTRAIT = NOT TESTED
+
+Do not call it PASS solely from desktop responsive emulation.
+
+==================================================
+20. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022V_REPORT.md
+
+The report must include:
+
+- Exact title:
+  Prompt 022V — Fix Mobile Portrait Toolbar and Pill Alignment
+
+- User-verified prior status:
+  Cloud sync PASS
+  Mobile scrolling PASS
+
+- Current issue:
+  Portrait toolbar/pill layout difficult to use; landscape substantially more usable
+
+- Checkpoint confirmation
+
+- Files changed
+
+- Existing toolbar layout architecture
+
+- Root causes of portrait overflow/alignment problems
+
+- Header changes
+
+- Account-display changes
+
+- Background Edit / Share changes
+
+- Open / Close grouping changes
+
+- Hide / Preview changes
+
+- Imperial / Metric grouping changes
+
+- Responsive breakpoint/layout strategy
+
+- 320 px result
+
+- 375 px result
+
+- 390 px result
+
+- 430 px result
+
+- landscape result
+
+- tablet result
+
+- desktop regression result
+
+- horizontal-overflow verification
+
+- touch-target verification
+
+- automated tests
+
+- runtime/browser tests
+
+- full regression results
+
+- complete final-diff review
+
+- anything reverted
+
+- exact real-iPhone verification steps
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+21. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022V-report.zip
+
+Prompt 022V is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_022V_REPORT.md
+
+2.
+workflow-reports/trailweigh-022V-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022V_REPORT.md
+
+It may additionally contain NON-SENSITIVE:
+- responsive test screenshots
+- test logs
+- browser runtime output
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env files
+- private user data
+- private Locker contents
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022V_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if Replit supports this.
+
+Do not mark Prompt 022V complete without a valid ZIP.
+
+==================================================
+22. COMPLETION RESPONSE
+==================================================
+
+At completion provide:
+
+1. Markdown report full path
+2. Markdown size
+3. Markdown line count
+4. ZIP full path
+5. ZIP size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Exact reason portrait layout was failing
+
+10. Exact responsive layout strategy used
+
+11. How the controls group/wrap at phone portrait width
+
+12. Confirmation Open/Close stays together
+
+13. Confirmation Imperial/Metric stays together
+
+14. Confirmation no controls are hidden offscreen
+
+15. Confirmation desktop and landscape did not regress
+
+16. Exact real-iPhone portrait verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+
+“Real iPhone portrait PASS”
+
+unless tested on actual iPhone hardware.
+
+If responsive browser tests pass, report:
+
+“Responsive portrait layout PASS; real-iPhone portrait verification pending.”

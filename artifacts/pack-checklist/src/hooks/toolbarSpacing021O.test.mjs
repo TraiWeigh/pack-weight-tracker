@@ -39,12 +39,14 @@ const toolbarGroupLine = lines.find(l =>
   !l.includes('gap-8')
 );
 
+// 022V: flex-shrink-0 removed; flex-wrap added; gap classes added
 const leftPanelLine = lines.find(l =>
   l.includes('pb-3') &&
-  l.includes('flex items-center') &&
+  l.includes('flex') &&
+  l.includes('items-center') &&
   l.includes('lg:pr-7') &&
-  l.includes('flex-shrink-0') &&
-  l.includes('relative')
+  l.includes('relative') &&
+  !l.includes('inset-0')
 );
 
 const rightPanelLine = lines.find(l =>

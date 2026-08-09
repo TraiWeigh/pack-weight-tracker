@@ -59,12 +59,13 @@ const toolbarGroupLine = lines.find(l =>
   !l.includes('gap-8')          // distinguishes from content area
 );
 
-// Left toolbar panel (pills row) — 021O removed pt-8; now identified by pb-3 + lg:pr-7.
+// Left toolbar panel (pills row) — 021O removed pt-8; 022V added flex-wrap, removed flex-shrink-0.
+// Now identified by pb-3 + flex-wrap + items-center + lg:pr-7 + relative.
 const pillsRowLine = lines.find(l =>
   l.includes('pb-3') &&
-  l.includes('flex items-center') &&
+  l.includes('flex') &&
+  l.includes('items-center') &&
   l.includes('lg:pr-7') &&
-  l.includes('flex-shrink-0') &&
   l.includes('relative') &&
   !l.includes('inset-0')
 );

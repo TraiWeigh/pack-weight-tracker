@@ -242,10 +242,11 @@ test('14. [018C] Pill uses absolute inset-0 centering — NOT hidden behind sm: 
 
 test('15. [018A] Pill NOT between Preview and UnitToggle; Hide→Preview→UnitToggle is contiguous', () => {
   // 018A correction: pill must be outside the right control group.
-  // The right group (ml-auto div) must have Preview immediately followed by UnitToggle
+  // The right group must have Preview immediately followed by UnitToggle
   // with no activeLockerFile conditional between them.
-  const mlAutoIdx = checklist.indexOf('ml-auto flex items-center gap-3');
-  assert.ok(mlAutoIdx > -1, 'ml-auto right control group not found (018A structure missing)');
+  // 022V: class changed from 'ml-auto flex items-center gap-3' to 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'
+  const mlAutoIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0');
+  assert.ok(mlAutoIdx > -1, 'lg:ml-auto right control group not found (022V responsive update expected)');
 
   // Hide button's disabled/title block is ~600 chars; use 1400 to safely cover all three buttons.
   const rightGroup = checklist.slice(mlAutoIdx, mlAutoIdx + 1400);

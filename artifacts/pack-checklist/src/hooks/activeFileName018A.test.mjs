@@ -84,9 +84,10 @@ assert.ok(gearListDiv > -1 && pillsRowIdx > -1, 'Left toolbar panel / Pinned pil
 // Use a generous 4000 chars so the ml-auto right group is fully inside the block.
 const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 4000);
 
-// Right control group: the ml-auto div containing Hide/Preview/UnitToggle.
+// Right control group: the flex-wrap div containing Hide/Preview/UnitToggle.
+// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'.
 // Search from the pillsRowIdx in the full checklist so the slice is never bounded by pillsRowBlock.
-const mlAutoChecklistIdx = checklist.indexOf('ml-auto flex items-center gap-3', pillsRowIdx);
+const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0', pillsRowIdx);
 const mlAutoIdx  = mlAutoChecklistIdx > -1 ? mlAutoChecklistIdx - pillsRowIdx : -1;
 // Hide button's disabled/title block is ~600 chars; use 1400 to cover all three buttons.
 const rightGroup = mlAutoChecklistIdx > -1
@@ -124,10 +125,11 @@ test('2. Pills row container no longer has `justify-between`', () => {
   );
 });
 
-test('3. Right control group has `ml-auto` to push it right', () => {
+test('3. Right control group has `lg:ml-auto` to push it right on desktop', () => {
+  // 022V: changed from bare 'ml-auto' to 'lg:ml-auto' so mobile uses natural flex-wrap flow.
   assert.ok(
     mlAutoIdx > -1,
-    'Right control group with `ml-auto` not found — 018A fix not applied or group is missing'
+    'Right control group with `lg:ml-auto` not found — group is missing or class changed again',
   );
 });
 

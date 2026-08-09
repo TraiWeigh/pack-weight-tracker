@@ -5853,3 +5853,49 @@ Desktop (lg+): `lg:h-[100dvh] lg:overflow-hidden` — two-column layout unchange
 - Desktop two-column layout (lg: breakpoint)
 - Background image rendering
 - All prior sync, auth, share-link behavior
+
+---
+
+## Prompt 022V — Fix Mobile Portrait Toolbar and Pill Alignment
+
+**Completed:** 2026-08-09  
+**Status:** COMPLETE — Responsive portrait layout PASS; real-iPhone portrait verification pending
+
+### Problem
+TrailWeigh unusable in iPhone portrait orientation. Toolbar pill controls (Open/Close, Hide, Preview, Imperial/Metric) overflowed or were clipped. Landscape worked fine (wider viewport).
+
+### Root Causes
+
+1. **Left toolbar panel had no `flex-wrap`** — `pb-3 flex items-center lg:pr-7 flex-shrink-0 relative` forced all 6 pill controls into one row; overflowed at 320–390px portrait.
+2. **Bare `ml-auto` on Hide/Preview/UnitToggle group** — prevented natural wrapping behavior on mobile. Changed to `lg:ml-auto`.
+3. **Guest "Sign in to save" button too wide** — ~120px at portrait. Shortened to "Sign in" below sm: breakpoint.
+
+### Changes (3 class strings, 4 comment lines; zero functional changes)
+
+| Change | Before | After |
+|---|---|---|
+| Left toolbar outer div | `flex items-center ... flex-shrink-0 relative` | `flex flex-wrap items-center gap-x-3 gap-y-2 ... relative` |
+| Hide/Preview/UnitToggle group | `ml-auto flex items-center gap-3` | `flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0` |
+| Guest button text | `Sign in to save` | `Sign in<span class="hidden sm:inline"> to save</span>` |
+
+### Tests
+- `mobileToolbar022V.test.mjs`: 26/26 passed
+- Updated: `activeFileName018.test.mjs`, `activeFileName018A.test.mjs`, `activeFileName018B.test.mjs`, `activeFileName018C.test.mjs`, `sidebar019.test.mjs`, `gutterLayout021H.test.mjs`, `toolbarSpacing021O.test.mjs`, `toolbarGroup021N.test.mjs`, `toolbarAlign021M.test.mjs` (all updated to match new `lg:ml-auto` / `flex-wrap` patterns)
+- Full `pnpm test:importer`: 0 failures
+
+### Widths Verified (responsive browser)
+320px, 375px, 390px, 430px portrait · 812px landscape · 1280px desktop
+
+### Artefacts
+- `workflow-reports/PROMPT_022V_REPORT.md`
+- `workflow-reports/trailweigh-022V-report.zip`
+- Screenshots: `screenshot-022V-{320,375,390,430}px.jpg`, `screenshot-022V-landscape.jpg`, `screenshot-022V-desktop.jpg`
+
+### Invariants Preserved
+- 022U `min-h-[100dvh] lg:h-[100dvh] lg:overflow-hidden` mobile scroll ✓
+- 022T `mergeLockerEntries` import ✓
+- Open/Close stays together (single shared container) ✓
+- Imperial/Metric stays together (single shared container) ✓
+- Desktop two-column grid `lg:grid-cols-[1fr_365px]` ✓
+- `lg:pr-7` alignment on left toolbar panel ✓
+- All button actions, icons, and touch targets unchanged ✓

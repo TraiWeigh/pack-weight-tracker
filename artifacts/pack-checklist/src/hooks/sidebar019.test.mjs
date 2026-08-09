@@ -249,8 +249,9 @@ test('30. Filename pill: text-foreground preserved on span', () => {
 });
 
 // Control order
-const mlAutoChecklistIdx = checklist.indexOf('ml-auto flex items-center gap-3');
-assert.ok(mlAutoChecklistIdx > -1, 'ml-auto right group not found');
+// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'
+const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0');
+assert.ok(mlAutoChecklistIdx > -1, 'lg:ml-auto right group not found');
 const rightGroup = checklist.slice(mlAutoChecklistIdx, mlAutoChecklistIdx + 1400);
 
 test('31. Hide button still present in right control group', () => {

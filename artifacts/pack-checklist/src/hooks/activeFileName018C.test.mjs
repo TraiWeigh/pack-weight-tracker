@@ -42,9 +42,10 @@ const pillsRowIdx = checklist.indexOf('Pinned pills row');
 assert.ok(pillsRowIdx > -1, 'Pinned pills row marker not found');
 const pillsRowBlock = checklist.slice(pillsRowIdx, pillsRowIdx + 4000);
 
-// Outer container className — 021O moved pt-8 to the toolbar-group parent; panel now has pb-3 only.
-const containerDivIdx = pillsRowBlock.indexOf('pb-3 flex items-center');
-assert.ok(containerDivIdx > -1, 'Outer container (pb-3 flex items-center) not found — 021O: pt-8 moved to toolbar group parent');
+// Outer container className — 021O moved pt-8 to toolbar-group parent; 022V added flex-wrap.
+// Old: 'pb-3 flex items-center'; New: 'pb-3 flex flex-wrap items-center'
+const containerDivIdx = pillsRowBlock.indexOf('pb-3 flex flex-wrap items-center');
+assert.ok(containerDivIdx > -1, 'Outer container (pb-3 flex flex-wrap items-center) not found — 022V: flex-wrap added');
 const containerDecl = pillsRowBlock.slice(containerDivIdx, containerDivIdx + 200);
 
 // Filename pill conditional
@@ -58,8 +59,9 @@ assert.ok(spanIdx > -1, 'filename <span> not found in pill block');
 const spanBlock = pillBlock.slice(spanIdx, spanIdx + 400);
 
 // Right control group (1400 chars for verbose Hide button)
-const mlAutoChecklistIdx = checklist.indexOf('ml-auto flex items-center gap-3', pillsRowIdx);
-assert.ok(mlAutoChecklistIdx > -1, 'ml-auto right control group not found');
+// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'
+const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0', pillsRowIdx);
+assert.ok(mlAutoChecklistIdx > -1, 'lg:ml-auto right control group not found');
 const rightGroup = checklist.slice(mlAutoChecklistIdx, mlAutoChecklistIdx + 1400);
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -223,10 +225,11 @@ test('25. Span renders `{activeLockerFile.name}` as text content', () => {
 
 test('26. Pill conditional appears in pills row before the right control group', () => {
   const pillCondInPillsRow = pillsRowBlock.indexOf('{activeLockerFile && (');
-  const mlAutoInPillsRow   = pillsRowBlock.indexOf('ml-auto flex items-center gap-3');
+  // 022V: updated class pattern
+  const mlAutoInPillsRow   = pillsRowBlock.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0');
   assert.ok(pillCondInPillsRow > -1, 'Pill conditional not found in pills row block');
-  assert.ok(mlAutoInPillsRow   > -1, 'ml-auto group not found in pills row block');
-  assert.ok(pillCondInPillsRow < mlAutoInPillsRow, 'Pill conditional should appear before ml-auto group');
+  assert.ok(mlAutoInPillsRow   > -1, 'lg:ml-auto group not found in pills row block');
+  assert.ok(pillCondInPillsRow < mlAutoInPillsRow, 'Pill conditional should appear before lg:ml-auto group');
 });
 
 test('27. Pill conditional NOT inside the right control group', () => {

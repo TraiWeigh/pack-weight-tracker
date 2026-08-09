@@ -52,8 +52,9 @@ const spanBlock = pillBlock.slice(spanIdx, spanIdx + 400);
 
 // ── Locate right control group ────────────────────────────────────────────────
 
-const mlAutoChecklistIdx = checklist.indexOf('ml-auto flex items-center gap-3', pillsRowIdx);
-assert.ok(mlAutoChecklistIdx > -1, 'ml-auto right control group not found');
+// 022V: class was 'ml-auto flex items-center gap-3'; now 'flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0'
+const mlAutoChecklistIdx = checklist.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0', pillsRowIdx);
+assert.ok(mlAutoChecklistIdx > -1, 'lg:ml-auto right control group not found');
 // Use 1400 chars from checklist to safely cover the verbose Hide disabled block + Preview + UnitToggle
 const rightGroup = checklist.slice(mlAutoChecklistIdx, mlAutoChecklistIdx + 1400);
 
@@ -153,9 +154,10 @@ test('18. [018C] Centering wrapper uses inset-0 + matching padding (not left-1/2
 
 test('19. Pill wrapper appears as sibling before the right control group (not inside it)', () => {
   const pillCondInPillsRow = pillsRowBlock.indexOf('{activeLockerFile && (');
-  const mlAutoInPillsRow   = pillsRowBlock.indexOf('ml-auto flex items-center gap-3');
+  // 022V: updated class pattern
+  const mlAutoInPillsRow   = pillsRowBlock.indexOf('flex flex-wrap items-center gap-x-3 gap-y-2 lg:ml-auto flex-shrink-0');
   assert.ok(pillCondInPillsRow > -1, 'Pill conditional not found in pills row block');
-  assert.ok(mlAutoInPillsRow > -1, 'ml-auto group not found in pills row block');
+  assert.ok(mlAutoInPillsRow > -1, 'lg:ml-auto group not found in pills row block');
   assert.ok(
     pillCondInPillsRow < mlAutoInPillsRow,
     'Pill conditional should appear before the ml-auto right group (sibling, not child)'

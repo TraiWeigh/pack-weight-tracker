@@ -179,7 +179,8 @@ test('F2. Left column pills row uses lg:pr-7 (021M toolbar alignment — Metric 
   // 021M changed lg:pr-3 (12px) → lg:pr-7 (28px) on the checklist toolbar row.
   // Extra 16px right ≈ scrollbar-gutter(≈15px) so Metric's right edge aligns with card right edges.
   // 021O removed pt-8 from the pills row; now identified by pb-3 + lg:pr-7.
-  const pillsLine = checklist.split('\n').find(l => l.includes('pb-3 flex items-center lg:pr-7 flex-shrink-0'));
+  // 022V: class changed to 'pb-3 flex flex-wrap items-center gap-x-3 gap-y-2 lg:pr-7 relative' (flex-shrink-0 removed)
+  const pillsLine = checklist.split('\n').find(l => l.includes('pb-3') && l.includes('flex') && l.includes('items-center') && l.includes('lg:pr-7') && !l.includes('inset-0'));
   assert.ok(pillsLine, '021M: Pinned pills row must use lg:pr-7 (28px right) for Metric-to-card-panel right-edge alignment');
 });
 
