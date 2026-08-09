@@ -5654,3 +5654,25 @@ Root cause: `colorInput` and `colorNeutral` in the Clerk appearance object were 
 - Visual confirmation on physical device (screenshot looks correct in preview)
 - Clerk appearance is static — OS dark-mode sign-in form will still show light values (follow-up needed for full dark-mode support)
 - OTP/verification-code screen updated but requires live MFA/email-code flow to verify
+
+---
+
+## Prompt 022N — Increase Sign-In Contrast & Fix Continue Button States
+
+**Status:** COMPLETE ✅  
+**Report:** [workflow-reports/PROMPT_022N_REPORT.md](workflow-reports/PROMPT_022N_REPORT.md)  
+**Tests:** 25 new (signInContrast022N) — 0 failures
+
+### Summary
+Root cause of remaining 022M problems: `colorInput`/`colorNeutral` Clerk variables were not reliably rendering as expected borders (Clerk's internal CSS pipeline can attenuate them), `!bg-neutral-50` (#fafafa) was nearly indistinguishable from white, and `formButtonPrimary: ''` caused Clerk to use `colorForeground` (near-black) as button text — producing dark text on dark-green. Fixed by adding explicit `!important` Tailwind overrides directly on the element classes: `#9CA6A0` border + `#F5F6F5` background on `formFieldInput`, `!text-white` on `formButtonPrimary` with full disabled-state treatment, and explicit `#9CA6A0` border on `socialButtonsBlockButton`.
+
+### Files Changed
+- `artifacts/pack-checklist/src/App.tsx` — 3 variable values + 5 element classes
+- `artifacts/pack-checklist/src/hooks/signInContrast022N.test.mjs` — new (25 assertions)
+- `package.json` — test added to chain
+
+### Requiring User Verification
+- Confirm visually on physical device
+- Live button-state transition test (empty → valid email → empty) requires browser interaction
+- OTP screen updated but needs live email-code flow to verify
+- Dark-mode sign-in form remains static light-mode (pre-existing architectural limitation)

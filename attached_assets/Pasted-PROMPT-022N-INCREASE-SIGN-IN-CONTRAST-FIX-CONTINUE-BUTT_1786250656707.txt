@@ -1,0 +1,439 @@
+PROMPT 022N — INCREASE SIGN-IN CONTRAST & FIX CONTINUE BUTTON STATES
+
+GOAL
+
+Correct the remaining visibility problems on TrailWeigh authentication forms.
+
+USER TEST RESULT FROM PROMPT 022M
+
+The previous change improved the screen slightly, but the controls are still
+far too light.
+
+Current problems visible in user testing:
+
+1. Email Address input still blends into the white authentication card.
+2. Continue with Google still has a boundary/text treatment that is too faint.
+3. Continue currently appears as a dark-green pill with BLACK text.
+4. The enabled/disabled Continue states are not visually clear enough.
+
+Do NOT redesign the authentication page.
+
+This is a contrast and button-state correction only.
+
+==================================================
+0. BACKUP / PROTECTION
+==================================================
+
+Before making changes:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the changes made by Prompt 022M.
+
+3. Determine exactly which CSS variables/components control:
+   - Authentication text inputs
+   - Placeholder text
+   - Google sign-in button
+   - Continue button
+   - Enabled button state
+   - Disabled button state
+   - Focus state
+
+4. Correct the shared source where practical.
+
+5. Do NOT change authentication logic.
+
+6. Do NOT change:
+   - Sign-in flow
+   - Sign-up flow
+   - Google authentication
+   - Email authentication
+   - Sessions
+   - Redirects
+   - Validation logic
+
+7. Inspect the final diff and revert unrelated changes.
+
+==================================================
+1. EMAIL INPUT — MAKE IT OBVIOUS
+==================================================
+
+The Email Address input needs substantially MORE visual contrast than the
+current implementation.
+
+In LIGHT MODE:
+
+Use a clearly visible medium neutral-gray border.
+
+Target appearance approximately equivalent to:
+
+Border:
+#9CA6A0 to #A8B0AC
+
+Background:
+#F5F6F5 to #F7F8F7
+
+Do not use an almost-white border.
+
+The field must be immediately recognizable against the white authentication
+card BEFORE the user clicks it.
+
+The goal is:
+
+WHITE CARD
++
+CLEAR LIGHT-GRAY INPUT SURFACE
++
+VISIBLE MEDIUM-GRAY BORDER
+
+The user should not need to search visually for the input box.
+
+==================================================
+2. PLACEHOLDER TEXT — DARKER
+==================================================
+
+The current placeholder:
+
+Enter your email address
+
+is still too light.
+
+Make placeholder text visibly darker.
+
+Use approximately a medium gray with sufficient readability.
+
+Do NOT use pale gray text that nearly disappears.
+
+The placeholder should still look secondary to entered text, but it must be
+easy to read.
+
+==================================================
+3. GOOGLE BUTTON — STRONGER BOUNDARY
+==================================================
+
+The Continue with Google button is still too faint.
+
+In Light mode:
+
+- Give it the same clearly visible medium-gray border family as the input.
+- Keep its background white or very lightly tinted.
+- Make "Continue with Google" clearly readable.
+- Preserve the Google logo.
+- Keep it visually secondary to the main Continue button.
+
+Do NOT use nearly invisible gray text.
+
+The complete button outline should be obvious.
+
+==================================================
+4. CONTINUE BUTTON — ENABLED STATE
+==================================================
+
+When Continue is ENABLED:
+
+Use the existing TrailWeigh dark/medium green primary-button background.
+
+The button text MUST be:
+
+WHITE or very near white.
+
+DO NOT use black or dark text on the TrailWeigh dark-green primary button.
+
+Expected visual relationship:
+
+DARK TRAILWEIGH GREEN BACKGROUND
++
+WHITE "Continue" TEXT
++
+WHITE/LIGHT ARROW ICON
+
+Maintain sufficient contrast.
+
+==================================================
+5. CONTINUE BUTTON — DISABLED STATE
+==================================================
+
+When the Email Address field is empty or invalid and Continue is DISABLED:
+
+Do NOT display the same dark-green primary-button appearance.
+
+The disabled state should look clearly unavailable.
+
+Use a lighter muted treatment such as:
+
+- Light gray-green / neutral background
+- Medium-gray text
+
+or the closest appropriate TrailWeigh design token.
+
+IMPORTANT:
+
+The disabled button must remain clearly visible as a button.
+
+Do NOT make it disappear into the page.
+
+But it must also be immediately distinguishable from the ENABLED dark-green
+button.
+
+Conceptually:
+
+DISABLED:
+muted/light background + readable muted text
+
+ENABLED:
+TrailWeigh green + WHITE text
+
+==================================================
+6. BUTTON STATE TRANSITION TEST
+==================================================
+
+Test this exact sequence:
+
+A. Open Sign In with Email Address empty.
+
+Expected:
+
+[ ] Continue is visibly DISABLED.
+[ ] Continue is NOT dark green.
+[ ] Button shape is still clearly visible.
+[ ] Text remains readable.
+
+B. Enter a valid email address.
+
+Expected:
+
+[ ] Continue switches to TrailWeigh green.
+[ ] Text becomes WHITE.
+[ ] Arrow becomes WHITE/light.
+[ ] It clearly looks clickable.
+
+C. Remove the email address.
+
+Expected:
+
+[ ] Continue returns to the disabled visual state.
+
+==================================================
+7. FOCUS STATE
+==================================================
+
+When the Email field receives focus:
+
+Use a clearly visible TrailWeigh-green focus treatment.
+
+The focused control should be noticeably different from the unfocused state.
+
+Use:
+
+- Green border and/or
+- Accessible focus ring
+
+Do NOT make the focus effect so faint that it cannot be seen.
+
+==================================================
+8. LABELS AND SECONDARY TEXT
+==================================================
+
+Review the following authentication text for visibility:
+
+- Sign in to your TrailWeigh account
+- or
+- Email address
+- Last used
+- Enter your email address
+- Don't have an account?
+- Sign up
+
+Do not unnecessarily darken everything to black.
+
+But any functional/instructional text must be comfortably readable.
+
+==================================================
+9. SIGN-UP AND RELATED AUTH FORMS
+==================================================
+
+Apply the corrected form treatment consistently to shared authentication
+components used by:
+
+- Sign In
+- Sign Up
+- Password fields
+- Verification/code fields
+- Password recovery/reset
+- Other authentication text inputs
+
+Do NOT separately copy/paste styling into every screen if a shared component
+or design token controls them.
+
+==================================================
+10. DARK MODE
+==================================================
+
+Verify equivalent contrast in Dark mode.
+
+Do NOT simply reuse Light-mode colors.
+
+Ensure:
+
+[ ] Input surface distinguishable
+[ ] Border visible
+[ ] Placeholder readable
+[ ] Google button visible
+[ ] Enabled Continue has strong text contrast
+[ ] Disabled Continue is clearly distinguishable
+[ ] Focus ring visible
+
+==================================================
+11. DO NOT CHANGE LAYOUT
+==================================================
+
+Preserve:
+
+- Authentication card dimensions
+- Logo
+- Welcome back
+- Subtitle
+- Google button location
+- "or" divider
+- Email label
+- Last Used indicator
+- Email input location
+- Continue button location
+- Sign Up link
+- Development Mode indicator
+
+This is not a layout redesign.
+
+==================================================
+12. USER-VISIBLE TARGET
+==================================================
+
+The finished Light-mode screen should have this visual hierarchy:
+
+WHITE PAGE
+
+WHITE AUTHENTICATION CARD
+
+Inside the card:
+
+CLEARLY DEFINED GOOGLE BUTTON
+↓
+CLEARLY DEFINED EMAIL INPUT
+↓
+CLEARLY DEFINED CONTINUE BUTTON
+
+The user should be able to identify all three controls immediately.
+
+Do not aim for the faint/minimal appearance currently shown in the user
+screenshot.
+
+Visibility is more important than making the borders nearly invisible.
+
+==================================================
+13. ACCESSIBILITY TARGETS
+==================================================
+
+Where applicable:
+
+- Normal text: approximately 4.5:1 contrast or better
+- Meaningful UI boundaries/focus indicators: approximately 3:1 or better
+
+Do not merely claim compliance.
+
+Verify actual rendered colors rather than relying only on CSS variable names.
+
+==================================================
+14. REQUIRED USER TEST
+==================================================
+
+Reproduce the user scenario in LIGHT MODE at desktop width.
+
+Take particular care to verify:
+
+[ ] Email input is plainly visible without focusing it.
+[ ] Google button is plainly visible.
+[ ] Placeholder is easily readable.
+[ ] Empty-email Continue button visibly looks disabled.
+[ ] Disabled Continue is NOT dark green.
+[ ] Enabled Continue becomes TrailWeigh green.
+[ ] Enabled Continue text is WHITE.
+[ ] Enabled Continue arrow/icon is WHITE/light.
+[ ] Overall screen still looks clean rather than heavy.
+
+==================================================
+15. PROMPT 022M REGRESSION REVIEW
+==================================================
+
+Document why Prompt 022M did not provide enough contrast.
+
+Specifically report:
+
+- Previous input border color
+- New input border color
+- Previous input background
+- New input background
+- Previous placeholder color
+- New placeholder color
+- Previous enabled Continue background/text colors
+- New enabled Continue background/text colors
+- Previous disabled Continue background/text colors
+- New disabled Continue background/text colors
+
+This will make the correction measurable rather than subjective.
+
+==================================================
+16. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022N_REPORT.md
+
+Include:
+
+- Exact prompt:
+  Prompt 022N — Increase Sign-In Contrast & Fix Continue Button States
+
+- Checkpoint confirmation
+- Files changed
+- Root cause of remaining low contrast
+- Why Continue had dark green + black text
+- Exact before/after rendered colors
+- Input correction
+- Google button correction
+- Placeholder correction
+- Enabled Continue correction
+- Disabled Continue correction
+- Focus-state correction
+- Light-mode test
+- Dark-mode test
+- Sign-up/auth-form regression test
+- Authentication-function regression test
+- Final diff review
+- Anything reverted
+- Anything requiring user verification
+
+Use:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+At completion provide:
+
+1. Full report path
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Exact before/after form-control colors
+6. Explanation of the Continue-button state correction
+7. Confirmation authentication logic was unchanged
+8. Anything requiring user verification

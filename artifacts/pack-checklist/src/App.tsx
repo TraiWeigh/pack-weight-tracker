@@ -54,16 +54,16 @@ const clerkAppearance = {
   variables: {
     colorPrimary: 'hsl(140, 15%, 35%)',
     colorForeground: 'hsl(150, 15%, 15%)',
-    // Slightly darker placeholder text for readability (was 45% lightness)
-    colorMutedForeground: 'hsl(150, 8%, 40%)',
+    // Darker placeholder: ~33% lightness gives ~6:1 contrast on #F5F6F5 bg
+    colorMutedForeground: 'hsl(150, 8%, 33%)',
     colorDanger: 'hsl(15, 45%, 50%)',
     colorBackground: 'hsl(40, 20%, 97%)',
-    // Darkened from 85% → 58% lightness so input borders are clearly visible
-    // on the white sign-in card (~3.2:1 contrast ratio against white)
-    colorInput: 'hsl(140, 8%, 58%)',
+    // colorInput feeds Clerk's internal border variable — also overridden
+    // explicitly via formFieldInput element class for reliable rendering.
+    colorInput: 'hsl(162, 5%, 63%)',            // #9CA6A0 equivalent
     colorInputForeground: 'hsl(150, 15%, 15%)',
-    // Darkened from 85% → 60% so Continue-with-Google button boundary is visible
-    colorNeutral: 'hsl(140, 6%, 60%)',
+    // colorNeutral: also overridden explicitly via socialButtonsBlockButton class
+    colorNeutral: 'hsl(162, 5%, 55%)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     borderRadius: '0.5rem',
   },
@@ -74,7 +74,7 @@ const clerkAppearance = {
     footer: '!shadow-none !border-0 !bg-transparent !rounded-none',
     headerTitle: 'font-bold',
     headerSubtitle: '',
-    socialButtonsBlockButtonText: '',
+    socialButtonsBlockButtonText: '!text-[hsl(150,15%,20%)] !font-medium',
     formFieldLabel: 'font-medium',
     footerActionLink: 'font-semibold',
     footerActionText: '',
@@ -84,16 +84,20 @@ const clerkAppearance = {
     alertText: '',
     logoBox: 'flex justify-center mb-2',
     logoImage: 'h-10',
-    // No extra class needed; colorNeutral now gives visible boundary
-    socialButtonsBlockButton: '',
-    formButtonPrimary: '',
-    // Subtle off-white background so the field is distinguishable from the card
-    formFieldInput: '!bg-neutral-50',
+    // Explicit medium-gray border so Google button outline is clearly visible
+    socialButtonsBlockButton: '!border !border-[#9CA6A0] hover:!border-[#7a8480] !bg-white hover:!bg-[#F5F6F5] !transition-colors',
+    // White text on the dark TrailWeigh green button (was inheriting dark colorForeground).
+    // Disabled: muted light background + medium text so the shape stays visible
+    // but is clearly distinguishable from the enabled dark-green state.
+    formButtonPrimary: '!text-white disabled:!bg-[hsl(140,8%,82%)] disabled:!text-[hsl(150,8%,48%)] disabled:!opacity-100 aria-disabled:!bg-[hsl(140,8%,82%)] aria-disabled:!text-[hsl(150,8%,48%)]',
+    // Explicit light-gray surface + medium-gray border so the field is
+    // immediately visible against the white card without requiring focus.
+    formFieldInput: '!bg-[#F5F6F5] !border !border-[#9CA6A0] placeholder:!text-[hsl(150,8%,38%)] focus:!border-[hsl(140,15%,35%)] !shadow-none !outline-none',
     footerAction: '',
     dividerLine: '',
     alert: '',
-    // Same off-white for OTP / verification-code inputs
-    otpCodeFieldInput: '!bg-neutral-50',
+    // OTP / verification-code fields: same surface + border treatment
+    otpCodeFieldInput: '!bg-[#F5F6F5] !border !border-[#9CA6A0] !shadow-none !outline-none',
     formFieldRow: '',
     main: '',
   },
