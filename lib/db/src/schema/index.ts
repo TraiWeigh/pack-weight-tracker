@@ -26,3 +26,22 @@ export const shareLinksTable = pgTable("share_links", {
 });
 
 export type ShareLink = typeof shareLinksTable.$inferSelect;
+
+/**
+ * Server-backed Locker entries.
+ * Enables cross-device synchronization for authenticated TrailWeigh users.
+ * One row per saved gear-list file, scoped to the Clerk user ID.
+ *
+ * payload contains: { store, background, bgFade, bgTone, bgSize, chartPaletteKey }
+ * (everything in LockerEntry except id, name, savedAt which are top-level columns).
+ */
+export const lockerEntriesTable = pgTable("locker_entries", {
+  id:        text("id").primaryKey(),
+  userId:    text("user_id").notNull(),
+  name:      text("name").notNull(),
+  savedAt:   timestamp("saved_at", { withTimezone: true }).notNull(),
+  payload:   jsonb("payload").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export type LockerDbEntry = typeof lockerEntriesTable.$inferSelect;

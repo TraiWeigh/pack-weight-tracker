@@ -1,0 +1,585 @@
+PROMPT 022R — MOBILE COMPATIBILITY & CROSS-DEVICE SYNCHRONIZATION
+
+GOAL
+Fix TrailWeigh mobile compatibility and cross-device synchronization for:
+- iPhone / iPad — Safari
+- Android phone / tablet — Chrome
+- Desktop browsers as the comparison environment
+
+PRIMARY USER-REPORTED FAILURE
+The same signed-in TrailWeigh account shows saved Locker files on desktop, but those saved files are not appearing correctly on iPhone. Some other mobile functions are also not working correctly.
+
+PRIORITY
+Fix the saved-file synchronization problem first, then audit the mobile interface and mobile-specific browser behavior.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+Before editing:
+1. Create the normal Replit checkpoint/backup.
+2. Inspect the current implementation before changing it.
+3. Make the smallest reasonable change.
+4. Do not perform unrelated refactors.
+5. Preserve user data, authentication, permissions, file IDs, saved lists, previous share fixes, background features, and prior prompt fixes.
+6. Inspect the COMPLETE final diff.
+7. Revert unrelated changes.
+8. Run the full regression suite plus new tests.
+9. Do not claim completion if an existing feature regresses.
+10. Document checkpoint and final diff.
+
+==================================================
+1. DETERMINE WHERE DATA IS ACTUALLY STORED
+==================================================
+Inspect and document where TrailWeigh stores:
+- Saved gear lists
+- Locker file index/metadata
+- Stable file IDs
+- File names
+- Gear items/categories
+- Quantities and weights
+- Saved checked states
+- Active-file information
+- Background/theme selection
+- Custom themes
+- Custom uploaded photos
+- Shared snapshots
+- Last-active-file state
+- User/account identity
+
+Identify whether each is stored in:
+- Server/database/account-backed storage
+- localStorage
+- sessionStorage
+- IndexedDB
+- cookies
+- memory
+- other device/browser-specific storage
+
+Do not guess.
+
+==================================================
+2. CORE ACCOUNT-SYNC REQUIREMENT
+==================================================
+A user signed into the SAME TrailWeigh account must be able to access the same account-owned saved gear files from supported devices.
+
+Examples:
+Desktop → iPhone
+iPhone → Desktop
+Desktop → Android
+Android → Desktop
+iPhone → Android
+Android → iPhone
+
+A saved file must retain the SAME stable file ID across devices.
+
+Opening the file from another device must NOT silently create a duplicate.
+
+Save must update the active saved file by its ID.
+Save As must create a new file.
+
+==================================================
+3. FIND ROOT CAUSE OF MISSING IPHONE LOCKER FILES
+==================================================
+Investigate why files visible on desktop are missing on iPhone.
+
+Check for:
+- localStorage-only persistence
+- device-local Locker index
+- authentication/user-ID mismatch
+- mobile Locker fetch not running
+- auth initialization race
+- cached empty Locker state
+- Safari storage assumptions
+- UI hiding data that actually exists
+- responsive layout preventing rendering
+- failed mobile API calls
+- cookie/session/cross-origin issues
+- anonymous/local saves not associated with authenticated account
+- stale cache/service worker behavior
+
+Document the ACTUAL root cause.
+
+==================================================
+4. ACCOUNT DATA VS TEMPORARY DEVICE STATE
+==================================================
+Account-owned data that should follow the signed-in user generally includes:
+- Saved files
+- Stable file IDs
+- File names
+- Gear items/categories
+- Quantities
+- Weights
+- Saved checked states
+- Saved background/theme references where appropriate
+- Other user-created saved data intended to belong to the account
+
+Temporary/device/session state does not necessarily need cross-device sync:
+- Open/closed panels during the current session
+- Temporary menus
+- Temporary modals
+- Hover state
+- Unsaved temporary edits unless TrailWeigh intentionally restores them
+- Temporary checkbox changes in shared viewer links
+
+Do not migrate every UI preference to the server.
+
+==================================================
+5. SAFE PERSISTENCE CORRECTION
+==================================================
+If authenticated Locker files currently depend solely on browser/device-local storage, correct the architecture so account-owned saved files use persistent account-backed storage.
+
+Do not create separate stores such as:
+desktopLocker
+iphoneLocker
+androidLocker
+
+Use one authoritative account-backed source where appropriate.
+
+Preserve existing useful local temporary state.
+
+==================================================
+6. NO DUPLICATES / NO CORRUPTION
+==================================================
+Test cross-device use for:
+- Stable IDs
+- No accidental duplicate files
+- No invalid/corrupt data
+- No cross-account leakage
+- Safe behavior if the same file is open on two devices
+
+If current behavior is last-save-wins, document it.
+Do not invent a real-time collaborative merge system in this prompt unless required.
+
+==================================================
+7. REQUIRED CROSS-DEVICE TEST MATRIX
+==================================================
+Using a SAFE test account, test:
+
+A. DESKTOP → IPHONE
+Create/save "MOBILE SYNC TEST" on desktop.
+Verify on iPhone:
+[ ] same file appears in Locker
+[ ] same file ID
+[ ] same items/categories
+[ ] same quantities/weights
+[ ] same saved checked states
+[ ] same saved background behavior
+[ ] no duplicate
+
+B. IPHONE → DESKTOP
+Modify and Save on iPhone.
+Verify desktop retrieves the saved update with the same file ID.
+
+C. DESKTOP → ANDROID
+Repeat and verify.
+
+D. ANDROID → DESKTOP
+Repeat and verify.
+
+E. IPHONE → ANDROID
+Verify saved update appears.
+
+F. ANDROID → IPHONE
+Verify saved update appears.
+
+Report each direction as:
+PASS / FAIL / PARTIAL / NOT TESTED
+
+Do not claim real-device testing if only emulation/source inspection was used.
+
+==================================================
+8. ACCOUNT ISOLATION
+==================================================
+Verify:
+- Account A sees only Account A private Locker files.
+- Account B sees only Account B private Locker files.
+- Signing out removes private UI access.
+- Signing from Account A into Account B on the same device does not leave Account A file names/data visible.
+- Device cache never exposes another user's private files.
+
+==================================================
+9. LAST ACTIVE FILE
+==================================================
+Inspect current last-active-file behavior from prior TrailWeigh work.
+
+Determine whether it is per-account, per-device, or hybrid.
+
+Do not blindly change it.
+
+Saved files must synchronize across devices.
+Temporary navigation/workspace state may remain device-specific if that is the safest intended design.
+
+Opening a Shared Link must not replace the owner's private last-active file.
+
+==================================================
+10. MOBILE LOCKER
+==================================================
+On iPhone/iPad/Android verify:
+[ ] Locker is visible and OPEN by default in private signed-in view.
+[ ] Saved file names are readable.
+[ ] Open/Load works.
+[ ] Save works.
+[ ] Save As works.
+[ ] Rename works.
+[ ] Delete works.
+[ ] Scrolling works.
+[ ] Long names do not break layout.
+[ ] Touch controls do not overlap.
+[ ] No feature depends on hover.
+
+==================================================
+11. MOBILE UI AUDIT
+==================================================
+Audit TrailWeigh on narrow mobile screens, especially portrait.
+
+Verify:
+- Toolbar controls remain reachable and do not overlap.
+- New, Undo, Redo, Save/Locker, Reset, Background, Showcase, Share, Imperial/Metric, Open/Close and file-name display remain usable.
+- Gear categories remain usable.
+- Scan Gear List remains OPEN by default.
+- Gear categories remain collapsed by default.
+- Pack Summary remains collapsed by default.
+- Weight Distribution remains collapsed where present.
+- Entire intended accordion header can be tapped where appropriate.
+- Touch targets for pencil, trash, eye, chevrons and other icons are practical.
+- No essential feature requires hover.
+- Checklist/table fields remain readable and editable.
+- Quantity, weight, description, Move and checkboxes remain usable.
+- Do not remove important fields merely to make the page fit.
+
+==================================================
+12. MOBILE KEYBOARD / INPUT
+==================================================
+Test file names, descriptions, quantities, weights, theme names and authentication fields.
+
+Verify:
+[ ] mobile keyboard does not permanently cover active field
+[ ] page can scroll field into view
+[ ] input is not lost when keyboard closes
+[ ] decimal weight entry works
+[ ] Return/Done does not accidentally trigger the wrong action
+
+==================================================
+13. IOS SAFARI
+==================================================
+Audit:
+- Safari top/bottom browser chrome
+- safe areas / notch / Dynamic Island where applicable
+- bottom home indicator
+- viewport resizing
+- on-screen keyboard
+- portrait first, landscape second
+- native iOS Share sheet
+- file picker/upload
+- Preview
+- Print
+- PDF/download behavior
+- modals/popovers staying on-screen
+
+Do not hack around genuine Safari-controlled behavior.
+Classify genuine platform limitations accurately.
+
+==================================================
+14. ANDROID CHROME
+==================================================
+Audit:
+- Chrome address/toolbar resizing
+- gesture navigation area
+- software navigation where applicable
+- on-screen keyboard
+- portrait first, landscape second
+- native Android Share sheet
+- file picker/upload
+- Preview
+- Print
+- PDF/download behavior
+- modals/popovers staying on-screen
+
+Do not assume Android and iOS behave identically.
+
+==================================================
+15. SCAN GEAR LIST
+==================================================
+Test on iOS Safari and Android Chrome:
+[ ] file picker opens
+[ ] supported files can be selected where OS/browser allows
+[ ] upload does not freeze
+[ ] imported-item review works
+[ ] Import Selected Items remains reachable
+[ ] OCR/image upload works where supported
+[ ] errors are understandable
+
+Do not claim support for a file type the mobile OS/browser does not expose.
+
+==================================================
+16. BACKGROUNDS / CUSTOM THEMES
+==================================================
+Test:
+- built-in themes
+- custom themes
+- rename
+- delete
+- add/remove photo
+- Fit / Fill
+- Showcase
+- current anchored delete confirmation behavior
+
+Determine and document whether custom themes/photos are:
+- account-synchronized
+- device-local
+- hybrid
+
+If custom themes are intended to belong to the account, they should follow the user.
+Do not silently upload private local assets unless that is already the intended architecture.
+
+==================================================
+17. SHARE / SHARED LINKS
+==================================================
+On iOS and Android verify:
+- Share TrailWeigh List uses native share where supported.
+- Share Checkable Packing List uses native share where supported.
+- Correct URL is shared.
+- Copy Link fallback works where needed.
+- Full Shared Link opens correctly on mobile.
+- Shared Files starts OPEN.
+- Scan Gear List starts OPEN where required.
+- Gear categories start collapsed.
+- Temporary viewer checkbox changes remain temporary.
+- Owner data cannot be modified.
+- Checkable Packing List is easy to use on a phone.
+
+Do not attempt to control browser/OS behavior such as whether an external link opens a new tab/window.
+
+==================================================
+18. PACK SUMMARY / WEIGHT DISTRIBUTION
+==================================================
+On iPhone/iPad/Android verify:
+[ ] Pack Summary opens and calculations match desktop.
+[ ] Weight Distribution opens where present.
+[ ] charts/data fit available width.
+[ ] labels remain readable.
+[ ] calculations match desktop.
+
+Do not confuse this audit with any separate unresolved Shared Link Weight Distribution issue.
+
+==================================================
+19. MODALS / POPOVERS / FOOTER
+==================================================
+Verify on mobile:
+[ ] delete confirmations stay visible
+[ ] Save / Save As / Rename dialogs fit
+[ ] Sources & References fits and scrolls
+[ ] Preview fits
+[ ] auth dialogs fit
+[ ] anchored popovers reposition instead of clipping
+[ ] footer remains in normal document flow
+[ ] footer never overlays checklist content
+[ ] footer links are tappable
+
+Preserve the existing footer overlay fix.
+
+==================================================
+20. NETWORK / CACHE SAFETY
+==================================================
+Inspect slow/failing mobile requests and stale caching.
+
+Expected:
+[ ] an empty/failed fetch cannot overwrite valid saved data
+[ ] user receives understandable retry/error feedback
+[ ] temporary network failure does not delete Locker records
+[ ] app can retry safely
+[ ] cached empty list cannot permanently hide valid account data
+[ ] service-worker/PWA caching is audited if present
+
+==================================================
+21. CLASSIFY EVERY DISCOVERED ISSUE
+==================================================
+Use exactly one of these classifications:
+
+SYNC BUG
+Account-owned data is not propagated/retrieved correctly across devices.
+
+MOBILE UI BUG
+Data/function exists but mobile layout/touch/viewport behavior prevents correct use.
+
+GENERAL BUG
+Problem affects desktop and mobile.
+
+IOS / SAFARI LIMITATION
+Controlled/limited by iOS or Safari.
+
+ANDROID / CHROME LIMITATION
+Controlled/limited by Android or Chrome.
+
+Do not dismiss a real TrailWeigh bug as a browser limitation without evidence.
+Do not report browser-controlled behavior as a TrailWeigh coding failure.
+
+==================================================
+22. REAL DEVICE VS EMULATION
+==================================================
+The report must distinguish:
+- REAL DEVICE
+- BROWSER EMULATION
+- SOURCE INSPECTION
+- AUTOMATED TEST
+
+If Replit cannot test real iPhone/iPad/Android hardware, mark those items PARTIAL or NOT TESTED and tell the user exactly what to verify.
+
+==================================================
+23. USER VERIFICATION PRIORITIES
+==================================================
+At completion, user testing should begin with:
+
+1. Same account on desktop and iPhone:
+   Does Locker show the same saved files?
+
+2. Same account on desktop and Android:
+   Does Locker show the same saved files?
+
+3. Save a change on mobile:
+   Does desktop receive it?
+
+4. Save a change on desktop:
+   Does mobile receive it?
+
+5. Are mobile toolbar controls usable?
+
+6. Does Scan Gear List work on mobile?
+
+7. Do native Share actions work?
+
+==================================================
+24. REGRESSION PROTECTION
+==================================================
+Preserve all existing TrailWeigh behavior not directly related to this fix, including:
+- Save / Save As
+- Locker
+- Rename/Delete
+- stable file IDs
+- Undo/Redo
+- backgrounds/custom themes
+- Scan Gear List
+- Pack Summary
+- Weight Distribution
+- Imperial/Metric
+- authentication
+- account isolation
+- Full Shared Links
+- Checkable Packing Lists
+- native sharing
+- footer normal-flow fix
+- current custom-theme delete confirmation behavior
+- prior verified fixes
+
+Run the full regression suite.
+
+==================================================
+25. REQUIRED WORKFLOW REPORT
+==================================================
+REPLIT MUST create:
+
+workflow-reports/PROMPT_022R_REPORT.md
+
+It must include:
+- Prompt title
+- Checkpoint confirmation
+- Files changed
+- Persistence architecture discovered
+- Where saved files were stored before
+- Actual root cause of missing iPhone Locker files
+- Issue classifications
+- Account-backed storage changes
+- Device-local storage changes
+- Stable-ID verification
+- Duplicate prevention
+- Cross-device test matrix
+- Locker mobile results
+- iOS results
+- Android results
+- Scan Gear List results
+- toolbar/input results
+- backgrounds/custom-theme sync findings
+- share/shared-link results
+- Pack Summary/Weight Distribution results
+- Preview/PDF/Print findings
+- network/cache findings
+- account-isolation findings
+- real-device vs emulation disclosure
+- automated tests
+- runtime/browser tests
+- complete regression results
+- complete final-diff review
+- anything reverted
+- anything requiring user verification
+
+Use:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+26. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-022R-report.zip
+
+Prompt 022R is NOT complete until BOTH exist:
+1. workflow-reports/PROMPT_022R_REPORT.md
+2. workflow-reports/trailweigh-022R-report.zip
+
+The ZIP must contain at minimum:
+PROMPT_022R_REPORT.md
+
+It may include non-sensitive logs, test output and screenshots.
+
+DO NOT include:
+- .env
+- passwords
+- API keys
+- auth tokens
+- cookies
+- private account data
+- real user gear files
+- sensitive database exports
+
+Before completion:
+1. Verify ZIP exists.
+2. Verify size > 0 bytes.
+3. Programmatically open/list ZIP.
+4. Confirm PROMPT_022R_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave it in workflow-reports/.
+7. Attach/provide it if Replit supports this.
+
+Do not mark Prompt 022R complete if the ZIP is missing or invalid.
+
+==================================================
+27. COMPLETION RESPONSE
+==================================================
+Provide:
+1. Full Markdown report path
+2. Markdown size
+3. Markdown line count
+4. Full ZIP path
+5. ZIP size
+6. ZIP contents
+7. Confirmation ZIP was opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+9. Actual root cause of missing iPhone files
+10. Where saved TrailWeigh files are now persisted
+11. Sync status for Desktop / iPhone / Android
+12. Stable file-ID confirmation
+13. Duplicate-file protection confirmation
+14. Summary of mobile UI fixes
+15. Genuine iOS/Safari limitations
+16. Genuine Android/Chrome limitations
+17. Exact real-device items requiring USER verification

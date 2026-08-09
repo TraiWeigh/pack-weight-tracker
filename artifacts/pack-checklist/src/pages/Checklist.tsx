@@ -18,6 +18,14 @@ import { LockerDeleteDialog } from '../components/LockerDeleteDialog';
 import { LockerIcon } from '../components/LockerIcon';
 import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
 import { buildShareURL, type SharedLockerFile } from '../lib/shareLink';
+import {
+  fetchLockerEntries,
+  serverSaveNew,
+  serverSaveReplace,
+  serverRename,
+  serverDeleteMany,
+  migrateLockerToServer,
+} from '../lib/lockerApi';
 import { useToast } from '../hooks/use-toast';
 import {
   RotateCcw, Tent, Share2, Link, FileDown, LogOut,
@@ -809,6 +817,43 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     } catch {}
   }, []);
 
+  // ── 022R: server-backed Locker sync ──────────────────────────────────────
+  // Keep a ref so server-fetch effects can read lockerEntries without adding
+  // it as a dependency (which would cause infinite re-fetches on every save).
+  const lockerEntriesRef = useRef<LockerEntry[]>(lockerEntries);
+  useEffect(() => { lockerEntriesRef.current = lockerEntries; }, [lockerEntries]);
+
+  // Guard against running the server sync twice (e.g. after a Clerk token-refresh
+  // remount where userId stays the same but the component briefly unmounts/remounts).
+  const serverSyncRanRef = useRef(false);
+
+  useEffect(() => {
+    if (!userId || serverSyncRanRef.current) return;
+    serverSyncRanRef.current = true;
+
+    fetchLockerEntries()
+      .then(serverEntries => {
+        if (serverEntries.length > 0) {
+          // Server is the cross-device source of truth — replace device-local cache
+          setLockerEntries(serverEntries);
+          localStorage.setItem(LOCKER_KEY, JSON.stringify(serverEntries));
+          broadcastLocker(serverEntries);
+        } else {
+          // Server empty (new user or first login on this account) — migrate
+          // any existing localStorage data so it becomes available on all devices.
+          const local = lockerEntriesRef.current;
+          if (local.length > 0) {
+            migrateLockerToServer(local).catch(() => {});
+          }
+        }
+      })
+      .catch(() => {
+        // Network unavailable — localStorage cache continues working on this device.
+        // The user's data is safe; the next online session will sync normally.
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   // Error toast when a ?savedListId= was not found in the Locker
   useEffect(() => {
     const hadError = sessionStorage.getItem('tw-savedlist-error');
@@ -995,6 +1040,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setActiveLockerFile(newFile);
     // 022G: persist as last-active so the next fresh open restores this file.
     if (userId) writeLastActiveFileToLS(userId, newFile);
+    // 022R: server sync — fire-and-forget; localStorage is the safety net
+    if (userId) serverSaveNew(entry).catch(() => {});
     closeSaveDialog();
     toast({ description: `Saved ${name}` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1030,6 +1077,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       setActiveLockerFile(refreshed);
       // 022G: persist as last-active so the next fresh open restores this file.
       if (userId) writeLastActiveFileToLS(userId, refreshed);
+      // 022R: server sync — fire-and-forget; localStorage is the safety net
+      if (userId) serverSaveReplace(entry).catch(() => {});
       closeSaveDialog();
       toast({ description: `Saved ${name}` });
     } catch {
@@ -1204,13 +1253,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         writeLastActiveFileToLS(userId, null);
       }
     }
+    // 022R: server sync — fire-and-forget; entry already removed from localStorage
+    if (userId) serverDeleteMany(pendingDeleteIds).catch(() => {});
     setShowDeleteDialog(false);
     setPendingDeleteIds([]);
     const msg = toDelete.length === 1
       ? `"${toDelete[0].name}" was permanently deleted.`
       : `${toDelete.length} Locker files were permanently deleted.`;
     toast({ description: msg });
-  }, [lockerEntries, pendingDeleteIds, broadcastLocker, toast]);
+  }, [lockerEntries, pendingDeleteIds, broadcastLocker, toast, userId]);
 
   // ── Rename in Locker ──────────────────────────────────────────────────────
 
@@ -1220,7 +1271,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const updated = lockerEntries.map(e => e.id === id ? { ...e, name: trimmed } : e);
     setLockerEntries(updated);
     broadcastLocker(updated);
-  }, [lockerEntries, broadcastLocker]);
+    // 022R: server sync — fire-and-forget
+    if (userId) serverRename(id, trimmed).catch(() => {});
+  }, [lockerEntries, broadcastLocker, userId]);
 
   // ── Toolbar button style ──────────────────────────────────────────────────
   const toolBtn = 'flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50';
