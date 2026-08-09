@@ -54,12 +54,16 @@ const clerkAppearance = {
   variables: {
     colorPrimary: 'hsl(140, 15%, 35%)',
     colorForeground: 'hsl(150, 15%, 15%)',
-    colorMutedForeground: 'hsl(150, 8%, 45%)',
+    // Slightly darker placeholder text for readability (was 45% lightness)
+    colorMutedForeground: 'hsl(150, 8%, 40%)',
     colorDanger: 'hsl(15, 45%, 50%)',
     colorBackground: 'hsl(40, 20%, 97%)',
-    colorInput: 'hsl(140, 10%, 85%)',
+    // Darkened from 85% → 58% lightness so input borders are clearly visible
+    // on the white sign-in card (~3.2:1 contrast ratio against white)
+    colorInput: 'hsl(140, 8%, 58%)',
     colorInputForeground: 'hsl(150, 15%, 15%)',
-    colorNeutral: 'hsl(140, 10%, 85%)',
+    // Darkened from 85% → 60% so Continue-with-Google button boundary is visible
+    colorNeutral: 'hsl(140, 6%, 60%)',
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     borderRadius: '0.5rem',
   },
@@ -80,13 +84,16 @@ const clerkAppearance = {
     alertText: '',
     logoBox: 'flex justify-center mb-2',
     logoImage: 'h-10',
+    // No extra class needed; colorNeutral now gives visible boundary
     socialButtonsBlockButton: '',
     formButtonPrimary: '',
-    formFieldInput: '',
+    // Subtle off-white background so the field is distinguishable from the card
+    formFieldInput: '!bg-neutral-50',
     footerAction: '',
     dividerLine: '',
     alert: '',
-    otpCodeFieldInput: '',
+    // Same off-white for OTP / verification-code inputs
+    otpCodeFieldInput: '!bg-neutral-50',
     formFieldRow: '',
     main: '',
   },

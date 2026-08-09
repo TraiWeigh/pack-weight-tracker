@@ -5633,3 +5633,24 @@ Complete rewrite of `AboutPage.tsx`: 12 → 17 accordions, 4 non-collapsible sec
 3. Review independence disclaimer with legal counsel before commercial launch
 4. All 25 SourcesModal references need accuracy review before public launch
 5. About the Creator section contains placeholder — replace before launch
+
+---
+
+## Prompt 022M — Improve Sign-In / Form Field Visibility
+
+**Status:** COMPLETE ✅  
+**Report:** [workflow-reports/PROMPT_022M_REPORT.md](workflow-reports/PROMPT_022M_REPORT.md)  
+**Tests:** 23 new (signInVisibility022M) — 0 failures
+
+### Summary
+Root cause: `colorInput` and `colorNeutral` in the Clerk appearance object were both set to `hsl(140, 10%, 85%)` (~1.3:1 contrast against the white card), making input borders and the Google button boundary nearly invisible. `formFieldInput` was empty so inputs had no background differentiation. Fixed by darkening `colorInput` → `hsl(140, 8%, 58%)` (~3.2:1), `colorNeutral` → `hsl(140, 6%, 60%)` (~3.0:1), tightening `colorMutedForeground` 45%→40%, and adding `!bg-neutral-50` to `formFieldInput` and `otpCodeFieldInput`. Authentication logic: unchanged. All changes are in the Clerk appearance variables only.
+
+### Files Changed
+- `artifacts/pack-checklist/src/App.tsx` — 3 variable values + 2 element classes (visual only)
+- `artifacts/pack-checklist/src/hooks/signInVisibility022M.test.mjs` — new (23 assertions)
+- `package.json` — test added to chain
+
+### Requiring User Verification
+- Visual confirmation on physical device (screenshot looks correct in preview)
+- Clerk appearance is static — OS dark-mode sign-in form will still show light values (follow-up needed for full dark-mode support)
+- OTP/verification-code screen updated but requires live MFA/email-code flow to verify

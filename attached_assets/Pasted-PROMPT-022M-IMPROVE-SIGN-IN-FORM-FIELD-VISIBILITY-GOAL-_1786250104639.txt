@@ -1,0 +1,382 @@
+PROMPT 022M — IMPROVE SIGN-IN / FORM FIELD VISIBILITY
+
+GOAL
+
+Improve the visibility and accessibility of TrailWeigh form controls.
+
+USER-TESTED PROBLEM
+
+On the current Sign In screen, the text-entry field and secondary controls are
+so close in color to the white card/background that their boundaries are
+difficult to see.
+
+The Email Address input is particularly hard to distinguish.
+
+The Continue with Google control also has insufficient visual definition.
+
+Keep the current clean TrailWeigh design, but make form controls clearly
+recognizable.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before changing anything:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the existing authentication/form styling first.
+
+3. Determine whether these controls use:
+   - Shared form/input components
+   - Shared CSS/design tokens
+   - Authentication-specific styles
+   - Third-party authentication components
+
+4. Make the smallest reasonable change.
+
+5. Do NOT redesign authentication.
+
+6. Do NOT change:
+   - Authentication logic
+   - Sign-in flow
+   - Sign-up flow
+   - Google authentication
+   - Email authentication
+   - Password/code handling
+   - Redirect behavior
+   - Sessions
+   - Account data
+
+7. Inspect the complete final diff and revert unrelated changes.
+
+==================================================
+1. LIGHT-MODE INPUT FIELD VISIBILITY
+==================================================
+
+In Light mode, text-entry fields must be visibly distinct from the white card.
+
+Use approximately:
+
+- 1 px neutral-gray border
+- Very subtle off-white/light-gray input background
+- Clearly readable input text
+- Clearly readable placeholder text
+
+Do NOT use:
+- Black/heavy borders
+- Thick boxes
+- Strong shadows
+- Dark backgrounds
+
+The appearance should remain clean and understated.
+
+The goal is simply:
+
+A user should immediately be able to see where they are supposed to click and
+type.
+
+==================================================
+2. PLACEHOLDER TEXT
+==================================================
+
+Placeholder text such as:
+
+"Enter your email address"
+
+must be easy to read.
+
+Do not use extremely pale gray placeholder text.
+
+Maintain appropriate distinction between:
+
+- Entered text
+- Placeholder text
+- Disabled text
+
+Normal text should meet approximately WCAG 4.5:1 contrast where applicable.
+
+==================================================
+3. FOCUS STATE
+==================================================
+
+When an input receives keyboard or pointer focus:
+
+Show a clearly visible TrailWeigh-compatible focus indication.
+
+Prefer:
+
+- TrailWeigh green border and/or
+- Accessible focus ring
+
+Do not rely only on a tiny color change.
+
+The focus indicator must be easy to see in both Light and Dark modes.
+
+==================================================
+4. CONTINUE WITH GOOGLE
+==================================================
+
+The Continue with Google control is also visually difficult to distinguish.
+
+Give it a clearly visible boundary in Light mode.
+
+Preserve:
+
+- Google icon
+- Current wording
+- Existing authentication functionality
+- Existing button size and basic layout
+
+It should remain visually secondary to the primary Continue button.
+
+Do NOT make it look like the primary action.
+
+==================================================
+5. PRIMARY CONTINUE BUTTON
+==================================================
+
+Preserve the existing TrailWeigh green primary Continue button.
+
+Verify:
+
+- Text is clearly readable
+- Disabled state is visibly disabled
+- Enabled state is clearly actionable
+- Disabled and enabled states are visually distinguishable
+
+Do not make disabled controls so faint that the shape of the control
+disappears.
+
+==================================================
+6. FORM-CONTROL BOUNDARY CONTRAST
+==================================================
+
+Where practical, target approximately WCAG 2.2 guidance for user-interface
+component boundaries:
+
+- Approximately 3:1 contrast against adjacent colors for meaningful control
+  boundaries/focus indicators.
+
+Do not over-style the page merely to hit a number.
+
+Use accessible design tokens consistent with TrailWeigh.
+
+==================================================
+7. APPLY CONSISTENTLY
+==================================================
+
+Inspect all authentication screens that use the same form system.
+
+Apply the same visual treatment where appropriate to:
+
+- Sign In
+- Sign Up
+- Email fields
+- Password fields
+- Verification/code fields
+- Name fields if present
+- Password-reset/recovery forms if present
+
+If these forms share one reusable input component or CSS token, fix the shared
+source rather than duplicating styles on every page.
+
+==================================================
+8. OTHER TRAILWEIGH FORMS
+==================================================
+
+Inspect whether the same shared input component is used elsewhere in
+TrailWeigh.
+
+If changing the shared component naturally improves those fields as well,
+verify that they still look correct.
+
+Do NOT perform a broad redesign of unrelated forms.
+
+Do NOT change tables, checklist cells, toolbar controls or dropdown menus
+unless they actually use the same form-control styling being corrected.
+
+==================================================
+9. DARK MODE
+==================================================
+
+Do not assume Dark mode is already correct.
+
+Verify:
+
+- Input boundary is visible
+- Input text is readable
+- Placeholder is readable
+- Focus ring is visible
+- Google button boundary is visible
+- Disabled states remain understandable
+
+Do not make Dark mode unnecessarily bright.
+
+==================================================
+10. SYSTEM MODE
+==================================================
+
+If TrailWeigh supports System appearance:
+
+Verify the authentication form follows the active system Light/Dark state
+correctly.
+
+==================================================
+11. PRESERVE CURRENT LAYOUT
+==================================================
+
+Keep:
+
+- Existing centered sign-in card
+- Existing card size
+- Existing logo/icon
+- "Welcome back"
+- "Sign in to your TrailWeigh account"
+- Google sign-in placement
+- "or" divider
+- Email-address label
+- Last Used indicator
+- Continue button
+- Sign Up link
+- Development Mode indicator
+
+Do not move these merely to fix contrast.
+
+==================================================
+12. MOBILE / NARROW SCREEN
+==================================================
+
+Verify on narrow/mobile widths:
+
+- Inputs remain clearly visible
+- Fields do not overflow
+- Focus ring is not clipped
+- Buttons remain usable
+- Text remains readable
+
+==================================================
+13. TEST — LIGHT MODE
+==================================================
+
+Open Sign In in Light mode.
+
+Expected:
+
+[ ] Email field boundary is immediately visible.
+
+[ ] Input background is distinguishable from the card.
+
+[ ] Placeholder text is readable.
+
+[ ] Google button boundary is clearly visible.
+
+[ ] Primary Continue button remains visually primary.
+
+[ ] Page still looks clean and consistent with TrailWeigh.
+
+==================================================
+14. TEST — FOCUS
+==================================================
+
+Tab into the Email Address field.
+
+Expected:
+
+[ ] Focus indication is obvious.
+
+[ ] Keyboard focus is not communicated only by a barely noticeable color
+    change.
+
+[ ] Focus ring/border is not clipped.
+
+==================================================
+15. TEST — SIGN-UP / OTHER AUTH SCREENS
+==================================================
+
+Open every applicable authentication form.
+
+Expected:
+
+[ ] Matching input fields use the same improved treatment.
+
+[ ] No auth page retains nearly invisible form controls.
+
+[ ] Authentication behavior is unchanged.
+
+==================================================
+16. TEST — DARK / SYSTEM
+==================================================
+
+Expected:
+
+[ ] Dark mode fields are clearly identifiable.
+
+[ ] System mode changes appropriately.
+
+[ ] No new contrast regression was introduced.
+
+==================================================
+17. AUTHENTICATION REGRESSION TEST
+==================================================
+
+Verify:
+
+[ ] Email sign-in still works.
+
+[ ] Sign-up still works.
+
+[ ] Google sign-in still works.
+
+[ ] Existing user sessions still work.
+
+[ ] Redirect after authentication is unchanged.
+
+[ ] No authentication logic was modified unnecessarily.
+
+==================================================
+18. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022M_REPORT.md
+
+Include:
+
+- Exact prompt:
+  Prompt 022M — Improve Sign-In / Form Field Visibility
+
+- Checkpoint confirmation
+- Files changed
+- Existing form styling architecture discovered
+- Whether a shared form component/style was updated
+- Light-mode colors/borders used
+- Placeholder treatment
+- Focus treatment
+- Google button treatment
+- Dark-mode verification
+- System-mode verification
+- Mobile verification
+- Authentication regression results
+- Complete final-diff review
+- Anything reverted
+- Anything requiring user verification
+- PASS / FAIL / PARTIAL / NOT TESTED for each test
+
+Append the report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier reports.
+
+At completion provide:
+
+1. Full report path
+2. Report file size
+3. Report line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short explanation of what caused the low-visibility form controls
+6. Summary of the visual changes
+7. Confirmation authentication logic was not changed
+8. Anything requiring user verification
