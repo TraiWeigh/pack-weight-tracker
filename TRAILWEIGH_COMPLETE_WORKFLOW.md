@@ -5721,3 +5721,27 @@ Combined prompt replacing unused separate password-recovery and password-visibil
 - Eye toggle: icon clearly visible and responsive in Set New Password screen
 - Google account: use "Continue with Google" if account was Google-created
 - 2 remaining attempts: protected — no authentication attempts made during this session
+
+---
+
+## Prompt 022P — Delete Custom Background Themes
+
+**Status:** COMPLETE ✅  
+**Report:** [workflow-reports/PROMPT_022P_REPORT.md](workflow-reports/PROMPT_022P_REPORT.md)  
+**Tests:** 38 new (deleteCustomTheme022P) — 0 failures
+
+### Summary
+Added a small trash-can icon button immediately to the right of the existing pencil/rename icon in every custom theme's header row (`[pencil] [trash]`). Clicking opens an inline confirmation: "Delete Custom Theme?" / `Delete "[name]" and its custom background photos?` / "This action cannot be undone." / Cancel + Delete Theme. Removed the old bottom-of-panel "Delete Theme" text button. Confirmation now always shown (previously skipped for 0-photo themes). Built-in PRESETS are never passed to `renderCustomThemePanel` so the trash icon is structurally impossible to render for built-in themes. All deletion logic was pre-existing (`confirmAndDeleteTheme`, `deleteCollection`, cross-reference blob check) — only the UI entry point and dialog wording changed. Active background fallback: `onBackgroundChange(null)` + `setActiveThemeId('landscapes')`. Shared links: blob-lookup failure already handled gracefully in `SharedChecklistPage`. Gear data is entirely separated from theme/photo storage — deletion cannot corrupt a gear list.
+
+### Files Changed
+- `artifacts/pack-checklist/src/components/BackgroundPicker.tsx` — trash icon in header; updated confirmation wording; removed bottom text button
+- `artifacts/pack-checklist/src/hooks/deleteCustomTheme022P.test.mjs` — new (38 assertions)
+- `package.json` — test added to chain
+
+### Requiring User Verification
+- Live visual: [pencil][trash] pair visible in custom theme header
+- Cancel flow: confirmation wording matches spec, no change on cancel
+- Confirm delete: theme disappears from panel and dropdown
+- Delete active theme: falls back to Landscapes default, no broken image
+- Built-in themes: no trash icon in landscape grid
+- Mobile: icons do not overlap name/count at narrow widths

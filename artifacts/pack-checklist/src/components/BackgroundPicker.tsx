@@ -804,7 +804,14 @@ export function BackgroundPickerPanel({
                 onClick={() => startRename(col)}
                 className="p-1 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label={`Edit theme name: ${col.name}`}
+                title={`Rename theme "${col.name}"`}
               ><Pencil className="w-3 h-3" /></button>
+              <button
+                onClick={() => setConfirmDeleteTheme(col.id)}
+                className="p-1 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+                aria-label={`Delete theme "${col.name}"`}
+                title={`Delete theme "${col.name}"`}
+              ><Trash2 className="w-3 h-3" /></button>
             </>
           )}
         </div>
@@ -827,38 +834,26 @@ export function BackgroundPickerPanel({
           JPEG, PNG, WebP, GIF — max 25 MB · click or drag to add
         </p>
 
-        {/* Delete Theme */}
-        <div className="mt-3">
-          {isConfirmingDelete ? (
-            <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/30 text-[11px]">
-              <p className="text-foreground mb-2 leading-snug">
-                Delete <strong>{col.name}</strong>? This removes the custom theme and its {photoCount} photo{photoCount !== 1 ? 's' : ''} from your library.
-              </p>
-              <div className="flex gap-1.5">
-                <button
-                  onClick={() => confirmAndDeleteTheme(col.id)}
-                  className="font-semibold bg-destructive text-destructive-foreground px-2.5 py-1 rounded-md text-[11px] hover:bg-destructive/90 transition-colors"
-                >Delete</button>
-                <button
-                  onClick={() => setConfirmDeleteTheme(null)}
-                  className="font-semibold bg-muted text-muted-foreground px-2.5 py-1 rounded-md text-[11px] hover:bg-muted/80 transition-colors"
-                >Cancel</button>
-              </div>
+        {/* Delete Theme confirmation dialog */}
+        {isConfirmingDelete && (
+          <div className="mt-3 p-2.5 rounded-lg bg-destructive/10 border border-destructive/30 text-[11px]">
+            <p className="text-foreground font-semibold mb-1 leading-snug">Delete Custom Theme?</p>
+            <p className="text-foreground mb-1 leading-snug">
+              Delete <strong>"{col.name}"</strong> and its custom background photos?
+            </p>
+            <p className="text-muted-foreground mb-2 text-[10px]">This action cannot be undone.</p>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setConfirmDeleteTheme(null)}
+                className="font-semibold bg-muted text-muted-foreground px-2.5 py-1 rounded-md text-[11px] hover:bg-muted/80 transition-colors"
+              >Cancel</button>
+              <button
+                onClick={() => confirmAndDeleteTheme(col.id)}
+                className="font-semibold bg-destructive text-destructive-foreground px-2.5 py-1 rounded-md text-[11px] hover:bg-destructive/90 transition-colors"
+              >Delete Theme</button>
             </div>
-          ) : (
-            <button
-              onClick={() => {
-                if (photoCount > 0) setConfirmDeleteTheme(col.id);
-                else confirmAndDeleteTheme(col.id);
-              }}
-              className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-destructive transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-label={`Delete theme ${col.name}`}
-            >
-              <Trash2 className="w-3 h-3" />
-              Delete Theme
-            </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   };

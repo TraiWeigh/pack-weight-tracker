@@ -1,0 +1,658 @@
+PROMPT 022P — DELETE CUSTOM BACKGROUND THEMES
+
+GOAL
+
+Add a Delete option for user-created/custom Background Themes.
+
+CURRENT UI
+
+In the custom-theme editor, the theme name appears above the photo slots.
+
+Example:
+
+Test 3          0/10       [pencil icon]
+
+Add a small TRASH CAN icon button immediately to the RIGHT of the existing
+pencil/edit icon.
+
+The intended layout is conceptually:
+
+Test 3          0/10       [pencil] [trash]
+
+The trash icon deletes the CUSTOM THEME.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before changing anything:
+
+1. Create the normal Replit project checkpoint/backup.
+
+2. Inspect the existing custom Background Theme architecture.
+
+3. Determine:
+   - How custom themes are stored
+   - How their names are stored
+   - How custom photos are stored
+   - How saved gear lists reference a theme
+   - How the currently selected background references a theme
+   - How shared snapshots/links preserve backgrounds
+   - Whether uploaded photos can be shared by more than one theme
+
+4. Make the smallest reasonable change.
+
+5. Do NOT rewrite the Background Theme system.
+
+6. Preserve:
+   - Existing built-in themes
+   - Existing custom themes
+   - Existing custom photos
+   - Fit / Fill
+   - Showcase
+   - Background selection
+   - Undo/redo behavior
+   - Saved gear lists
+   - Shared links
+   - User/account isolation
+
+7. Inspect the COMPLETE final diff.
+
+8. Revert unrelated changes.
+
+9. Run the existing TrailWeigh regression test suite.
+
+==================================================
+1. ADD TRASH ICON
+==================================================
+
+For USER-CREATED CUSTOM THEMES only:
+
+Add a trash-can icon button immediately to the RIGHT of the existing
+pencil/edit icon.
+
+Example:
+
+Theme Test 3                 0/10   ✎   🗑
+
+Use the existing TrailWeigh icon style.
+
+Requirements:
+
+- Simple outline-style trash icon
+- Similar visual size to the pencil icon
+- Similar stroke weight
+- Same vertical alignment
+- Similar clickable/tap target
+- Appropriate Light/Dark mode color
+- Hover state
+- Keyboard focus state
+
+Do NOT make the trash icon oversized or visually dominant.
+
+==================================================
+2. BUILT-IN THEMES CANNOT BE DELETED
+==================================================
+
+The trash/delete-theme button must appear ONLY for custom themes created by
+the user.
+
+Do NOT allow deletion of built-in/default TrailWeigh themes.
+
+Examples of system/built-in themes should remain protected according to the
+current implementation.
+
+Do not merely hide the icon while leaving an unrestricted delete endpoint.
+
+Protect this at the data/action layer as well where appropriate.
+
+==================================================
+3. DELETE CONFIRMATION
+==================================================
+
+Clicking the trash icon must NOT immediately delete the theme.
+
+Open a confirmation dialog.
+
+Use wording substantially like:
+
+Delete Custom Theme?
+
+Delete “Test 3” and its custom background photos?
+
+This action cannot be undone.
+
+Buttons:
+
+Cancel
+
+Delete Theme
+
+Use the ACTUAL theme name.
+
+Example:
+
+Delete “Theme Test 3” and its custom background photos?
+
+Do not ask for the user's account password.
+
+This is a simple owner-confirmation action.
+
+==================================================
+4. DELETION IS PERMANENT
+==================================================
+
+If the user confirms:
+
+Delete the custom theme from that user's Background Themes collection.
+
+Also remove custom photo records/assets that belong exclusively to that
+deleted theme where safe and appropriate.
+
+IMPORTANT:
+
+Before deleting physical uploaded image assets, inspect whether any asset is
+referenced elsewhere.
+
+Do NOT accidentally delete an image that is still legitimately used by
+another custom theme or another protected record.
+
+Avoid leaving unnecessary/orphaned custom-theme files where safe cleanup is
+possible.
+
+Document the storage behavior in the report.
+
+==================================================
+5. CANCEL
+==================================================
+
+If the user selects:
+
+Cancel
+
+Expected:
+
+- Close confirmation
+- Theme remains
+- Photos remain
+- Current background remains
+- No data changes occur
+
+==================================================
+6. IF THE DELETED THEME IS CURRENTLY SELECTED
+==================================================
+
+If the custom theme being deleted is the CURRENTLY ACTIVE background theme:
+
+After successful deletion:
+
+1. Remove the deleted theme.
+2. Switch the current working view to the normal safe/default TrailWeigh
+   background/theme.
+
+Use the existing default background behavior rather than inventing a new
+special theme.
+
+Do NOT leave:
+
+- Blank broken background
+- Missing-image icon
+- Invalid theme ID
+- JavaScript error
+
+==================================================
+7. SAVED GEAR LIST PROTECTION
+==================================================
+
+Deleting a custom theme must NOT corrupt a saved TrailWeigh gear list.
+
+Inspect how saved lists reference custom backgrounds.
+
+If a saved list references a custom theme that the owner later deletes:
+
+Use a safe fallback according to the existing architecture.
+
+The saved gear data must remain intact:
+
+- Items
+- Categories
+- Quantities
+- Weights
+- Checked states
+- File name
+- File ID
+
+Deleting a BACKGROUND THEME must never delete or corrupt the GEAR LIST.
+
+==================================================
+8. SHARED-LINK PROTECTION
+==================================================
+
+Inspect how existing Shared TrailWeigh Links preserve backgrounds.
+
+Deleting an owner's custom theme must not cause an existing Shared Link to:
+
+- Crash
+- Show a broken-image icon
+- Fail to load the gear list
+- Expose an invalid internal reference
+
+If shared snapshots contain their own durable background snapshot/reference,
+preserve that established behavior.
+
+If the shared page depends directly on a deleted live custom-theme record,
+provide the safest existing/default fallback.
+
+Do NOT redesign the sharing architecture in this prompt.
+
+Document the discovered behavior.
+
+==================================================
+9. ACCOUNT ISOLATION
+==================================================
+
+A user may delete only THEIR OWN custom themes.
+
+Deletion must never affect:
+
+- Another user's themes
+- Another user's photos
+- Another user's gear lists
+- Another user's background library
+
+Preserve account isolation.
+
+==================================================
+10. DELETE ICON ACCESSIBILITY
+==================================================
+
+The trash icon must be a real accessible button.
+
+Provide an accessible label using the actual theme name.
+
+Example:
+
+Delete Theme Test 3
+
+Requirements:
+
+- Keyboard focusable
+- Enter/Space activation as appropriate
+- Visible focus state
+- Tooltip where consistent with TrailWeigh
+- Reasonable touch target on mobile
+
+Do not rely on the trash symbol alone for assistive technology.
+
+==================================================
+11. PENCIL / EDIT BUTTON
+==================================================
+
+Preserve the existing pencil/edit functionality.
+
+The layout should become:
+
+[pencil] [trash]
+
+Do NOT:
+
+- Replace pencil with trash
+- Change rename behavior
+- Make clicking the pencil delete anything
+- Merge edit and delete into a dropdown unless technically required
+
+Two simple icon buttons are preferred.
+
+==================================================
+12. VISUAL SPACING
+==================================================
+
+Keep the icons visually grouped.
+
+There should be a small consistent gap between:
+
+Pencil
+Trash
+
+Do not create a large empty space between them.
+
+Both should align with the existing:
+
+0/10
+
+photo-count indicator.
+
+==================================================
+13. DARK MODE
+==================================================
+
+Verify in Dark mode:
+
+[ ] Pencil visible
+
+[ ] Trash visible
+
+[ ] Neither icon is excessively bright
+
+[ ] Hover state visible
+
+[ ] Focus state visible
+
+[ ] Confirmation dialog readable
+
+==================================================
+14. LIGHT MODE
+==================================================
+
+Verify equivalent behavior in Light mode.
+
+Do not use a trash icon so faint that it disappears.
+
+==================================================
+15. MOBILE / NARROW WIDTH
+==================================================
+
+At narrow/mobile widths:
+
+[ ] Theme name remains readable
+
+[ ] Photo count remains readable
+
+[ ] Pencil remains usable
+
+[ ] Trash remains usable
+
+[ ] Icons do not overlap
+
+[ ] Confirmation dialog fits screen
+
+==================================================
+16. TEST A — CUSTOM THEME
+==================================================
+
+Create or use a custom theme such as:
+
+Theme Test 3
+
+Expected:
+
+[ ] Pencil icon appears.
+
+[ ] Trash icon appears immediately to its right.
+
+[ ] Both controls are visually aligned.
+
+==================================================
+17. TEST B — CANCEL DELETE
+==================================================
+
+Click trash.
+
+Expected:
+
+[ ] Confirmation appears.
+
+[ ] Actual theme name appears in confirmation.
+
+Select Cancel.
+
+Expected:
+
+[ ] Theme remains.
+
+[ ] Photos remain.
+
+[ ] No background changes.
+
+==================================================
+18. TEST C — CONFIRM DELETE
+==================================================
+
+Create a disposable test custom theme.
+
+Add one or more disposable test photos.
+
+Click trash.
+
+Confirm:
+
+Delete Theme
+
+Expected:
+
+[ ] Theme disappears from custom-theme list.
+
+[ ] It no longer appears in Background Themes selector.
+
+[ ] Theme-specific assets are cleaned up where safe.
+
+[ ] No unrelated custom theme is affected.
+
+==================================================
+19. TEST D — DELETE CURRENT THEME
+==================================================
+
+Select a disposable custom theme as the active background.
+
+Delete that theme.
+
+Expected:
+
+[ ] Theme is deleted.
+
+[ ] TrailWeigh safely falls back to the normal/default background.
+
+[ ] No broken image appears.
+
+[ ] Checklist remains usable.
+
+[ ] Gear data remains unchanged.
+
+==================================================
+20. TEST E — BUILT-IN THEME PROTECTION
+==================================================
+
+Inspect built-in themes.
+
+Expected:
+
+[ ] No trash icon appears.
+
+[ ] Built-in themes cannot be deleted through UI.
+
+[ ] Direct action/API protections prevent unauthorized deletion where
+    applicable.
+
+==================================================
+21. TEST F — SAVED FILE REGRESSION
+==================================================
+
+Use a saved gear list with a custom background.
+
+Verify deletion behavior according to the architecture discovered.
+
+Expected:
+
+[ ] Saved gear list still opens.
+
+[ ] Gear items remain.
+
+[ ] Weights remain.
+
+[ ] Checked states remain.
+
+[ ] No file corruption.
+
+[ ] Safe background behavior occurs.
+
+==================================================
+22. TEST G — SHARED LINK REGRESSION
+==================================================
+
+If practical, create a disposable shared link from a list using a disposable
+custom theme.
+
+Then delete the custom theme.
+
+Expected:
+
+[ ] Shared gear list still loads.
+
+[ ] No application crash.
+
+[ ] No owner permissions exposed.
+
+[ ] Background either remains through the existing shared-snapshot mechanism
+    or safely falls back according to the architecture.
+
+Document exact behavior.
+
+==================================================
+23. REGRESSION PROTECTION
+==================================================
+
+Verify no regressions to:
+
+- Background Themes dropdown
+- ADD custom theme
+- Rename theme
+- Add photo
+- Remove individual photo
+- 10-photo maximum
+- Fit / Fill
+- Showcase
+- Undo / Redo
+- Save
+- Save As
+- Locker
+- Shared Links
+- Checkable Packing List
+- Light mode
+- Dark mode
+
+==================================================
+24. REQUIRED WORKFLOW REPORT
+==================================================
+
+Replit MUST create:
+
+workflow-reports/PROMPT_022P_REPORT.md
+
+Report must include:
+
+- Exact prompt:
+  Prompt 022P — Delete Custom Background Themes
+- Checkpoint confirmation
+- Files changed
+- Custom-theme storage architecture
+- Custom-photo storage architecture
+- Theme-reference behavior in saved files
+- Theme-reference behavior in shared snapshots
+- Delete-button implementation
+- Confirmation-dialog implementation
+- Built-in theme protection
+- Active-theme fallback behavior
+- Asset-cleanup behavior
+- Account-isolation verification
+- Mobile verification
+- Light/Dark verification
+- Automated test results
+- Runtime/browser results
+- Complete regression results
+- Complete final-diff review
+- Anything reverted
+- Anything requiring user verification
+
+Use:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier reports.
+
+==================================================
+25. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF must also create:
+
+workflow-reports/trailweigh-022P-report.zip
+
+Prompt 022P is NOT complete until BOTH physically exist:
+
+1. workflow-reports/PROMPT_022P_REPORT.md
+2. workflow-reports/trailweigh-022P-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_022P_REPORT.md
+
+It may additionally contain non-sensitive:
+
+- Test logs
+- Test output
+- Verification screenshots
+
+DO NOT include:
+
+- Secrets
+- Passwords
+- Tokens
+- .env files
+- API keys
+- Private user data
+- Unrelated source files
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_022P_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP stored in workflow-reports/.
+
+If ZIP creation fails, FIX IT before reporting completion.
+
+==================================================
+26. COMPLETION RESPONSE
+==================================================
+
+At completion provide:
+
+1. Full path to:
+   workflow-reports/PROMPT_022P_REPORT.md
+
+2. Markdown report file size
+
+3. Markdown report line count
+
+4. Full path to:
+   workflow-reports/trailweigh-022P-report.zip
+
+5. ZIP file size
+
+6. List of ZIP contents
+
+7. Confirmation ZIP was opened and verified
+
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+
+9. Explanation of how custom themes are deleted
+
+10. Explanation of what happens if the deleted theme was currently active
+
+11. Explanation of what happens to saved lists/shared links referencing the
+    deleted theme
+
+12. Confirmation built-in themes cannot be deleted
+
+13. Anything requiring USER verification
