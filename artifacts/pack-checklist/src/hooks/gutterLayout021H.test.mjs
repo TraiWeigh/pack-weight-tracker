@@ -210,14 +210,14 @@ test('G2. 021G — ImportGearPanel no longer uses ChevronRight', () => {
     '021G ImportGearPanel must still not use ChevronRight');
 });
 
-test('G3. 021F — Share Link label preserved', () => {
-  assert.match(checklist, /['"]Share Link['"]/,
-    '021F Share Link menu label must still be present');
+test('G3. 022J — Share TrailWeigh List label present (renamed from Share Link)', () => {
+  assert.match(checklist, /Share TrailWeigh List/,
+    '022J Share TrailWeigh List must be present in share menu (renamed from "Share Link")');
 });
 
-test('G4. 021F — Copy link, read-only label preserved', () => {
-  assert.match(checklist, /Copy link, read-only/,
-    '021F Share Pack List subtitle must still be present');
+test('G4. 022J — Share Checkable Packing List subtitle present (renamed from Copy link, read-only)', () => {
+  assert.match(checklist, /Simple checklist for packing/,
+    '022J "Simple checklist for packing" subtitle must be present (renamed from "Copy link, read-only")');
 });
 
 test('G5. 021C — SharedLockerPanel still defined', () => {

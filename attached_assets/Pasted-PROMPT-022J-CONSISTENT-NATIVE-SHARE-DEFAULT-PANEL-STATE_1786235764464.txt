@@ -1,0 +1,942 @@
+PROMPT 022J — CONSISTENT NATIVE SHARE + DEFAULT PANEL STATE
+
+GOAL
+
+Make two intentional TrailWeigh behavior changes:
+
+1. Make URL-sharing behavior consistent between:
+   - The signed-in/private TrailWeigh Checklist
+   - The full Shared TrailWeigh Link
+
+2. Establish the desired default open/closed panel state for BOTH views.
+
+IMPORTANT:
+
+This prompt replaces the previous draft of Prompt 022J.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before making ANY changes:
+
+1. Create the normal Replit project checkpoint/backup.
+
+2. Inspect the current private Checklist implementation.
+
+3. Inspect the current SharedChecklistPage implementation.
+
+4. Inspect the working native-share implementation from Prompt 022I.
+
+5. Make the smallest reasonable change set required.
+
+6. Do NOT refactor unrelated application architecture.
+
+7. Preserve:
+   - Existing saved files
+   - Shared snapshots
+   - Authentication
+   - Ownership/permission boundaries
+   - Weight calculations
+   - Backgrounds
+   - Previously user-verified fixes
+
+8. After implementation, inspect the COMPLETE final diff.
+
+9. Revert unrelated changes.
+
+10. Run the existing TrailWeigh regression test suite.
+
+Document the checkpoint and final-diff review in:
+
+workflow-reports/PROMPT_022J_REPORT.md
+
+==================================================
+1. REQUIRED DEFAULT PANEL STATE
+==================================================
+
+TrailWeigh should NOT start with every panel closed.
+
+The desired startup state is:
+
+SIGNED-IN / PRIVATE CHECKLIST
+
+OPEN BY DEFAULT:
+- Scan Gear List
+- Locker
+
+CLOSED BY DEFAULT:
+- All gear-category panels
+- Pack Summary
+- Weight Distribution
+- Temporary menus/popovers
+- Background picker/editor panel
+- Preview/modal/dialog UI
+- Other temporary UI
+
+FULL SHARED TRAILWEIGH LINK
+
+OPEN BY DEFAULT:
+- Scan Gear List
+- Shared Files
+
+CLOSED BY DEFAULT:
+- All gear-category panels
+- Pack Summary
+- Weight Distribution, once present
+- Temporary menus/popovers
+- Background picker/editor panel
+- Preview/modal/dialog UI
+- Other temporary UI
+
+This is the intended design.
+
+==================================================
+2. TERMINOLOGY — LOCKER VS SHARED FILES
+==================================================
+
+On the signed-in/private Checklist, the user's personal saved-file area is the:
+
+Locker
+
+On the Shared Link, the equivalent browsing panel currently displayed to the viewer is:
+
+Shared Files
+
+Do not rename these controls merely to make their labels identical.
+
+The requirement is:
+
+PRIVATE:
+Locker starts OPEN.
+
+SHARED:
+Shared Files starts OPEN.
+
+==================================================
+3. SCAN GEAR LIST STARTS OPEN
+==================================================
+
+Scan Gear List should start OPEN in BOTH:
+
+- Signed-in/private Checklist
+- Full Shared TrailWeigh Link
+
+When TrailWeigh is opened, refreshed, or reinitialized:
+
+Scan Gear List should be expanded and its content immediately visible.
+
+The user can still manually collapse it.
+
+During the current session:
+
+- If the user collapses it, leave it collapsed.
+- Do not continually force it back open.
+
+On the next page initialization/refresh:
+
+- Return it to its intended default OPEN state.
+
+Do not change:
+- Import behavior
+- Supported file types
+- OCR/import logic
+- Item-selection behavior
+
+==================================================
+4. LOCKER STARTS OPEN — PRIVATE VIEW
+==================================================
+
+On the signed-in/private Checklist:
+
+Locker should start OPEN.
+
+The user should immediately be able to see/access their saved lists without first opening the panel.
+
+Preserve all current Locker functions and permissions.
+
+Do not change:
+- Save
+- Save As
+- Open
+- Rename
+- Delete
+- File IDs
+- Account isolation
+- Saved-file behavior
+
+The user may manually collapse Locker during the current session.
+
+On a new initialization/reopen/refresh, return it to OPEN.
+
+==================================================
+5. SHARED FILES STARTS OPEN — SHARED VIEW
+==================================================
+
+On the full Shared TrailWeigh Link:
+
+Shared Files should start OPEN.
+
+Preserve:
+- Shared-file count
+- Shared-file browsing
+- Existing allowed file switching/viewing behavior
+- Viewer-only permissions
+
+Do NOT expose:
+- Rename
+- Delete
+- Owner-only Locker management
+
+The recipient may manually collapse Shared Files during the session.
+
+On refresh/reopen, Shared Files returns to OPEN.
+
+==================================================
+6. GEAR CATEGORIES REMAIN COLLAPSED
+==================================================
+
+Preserve the useful clean-start behavior for the actual gear categories.
+
+On both private and shared views:
+
+All individual gear-category panels should start COLLAPSED.
+
+Examples may include:
+- Shelter
+- Sleep System
+- Electronics
+- Expendables
+- Clothing
+- Kitchen
+- Other current categories
+
+Do not uncheck items.
+
+Do not change data.
+
+This is visual state only.
+
+==================================================
+7. PACK SUMMARY REMAINS COLLAPSED
+==================================================
+
+On both private and shared views:
+
+Pack Summary should start COLLAPSED.
+
+The header remains visible.
+
+The user can open it normally.
+
+Do not change its calculations.
+
+==================================================
+8. WEIGHT DISTRIBUTION DEFAULT
+==================================================
+
+Where Weight Distribution currently exists:
+
+It should start COLLAPSED.
+
+IMPORTANT:
+
+The known issue that Weight Distribution is missing from the full Shared TrailWeigh Link is NOT part of this prompt.
+
+That will be handled separately in Prompt 022K.
+
+Do not implement the missing shared Weight Distribution in 022J.
+
+==================================================
+9. PRIVATE WORKSPACE RESTORATION
+==================================================
+
+Preserve Prompt 022G behavior:
+
+When the signed-in user returns to TrailWeigh:
+
+- Restore the same active saved file.
+- Restore the same background.
+- Preserve saved checked/unchecked gear.
+- Preserve saved gear data.
+
+But update the panel initialization rule to the new intended state:
+
+OPEN:
+- Scan Gear List
+- Locker
+
+CLOSED:
+- Gear categories
+- Pack Summary
+- Weight Distribution
+- Temporary panels
+
+This new requirement intentionally supersedes the earlier "all panels closed" wording for Scan Gear List and Locker only.
+
+==================================================
+10. SHARED-LINK INITIALIZATION
+==================================================
+
+For the full Shared TrailWeigh Link:
+
+Preserve:
+- Same shared snapshot
+- Same background
+- Same shared checked/unchecked state
+- Existing temporary viewer interactions
+- Existing permissions
+
+Default UI:
+
+OPEN:
+- Scan Gear List
+- Shared Files
+
+CLOSED:
+- Gear categories
+- Pack Summary
+- Weight Distribution when present
+- Temporary UI
+
+This new requirement intentionally supersedes Prompt 022I only for:
+
+- Scan Gear List
+- Shared Files
+
+They are now intended to start OPEN.
+
+==================================================
+11. CONSISTENT SHARE BEHAVIOR
+==================================================
+
+TrailWeigh has two primary URL-sharing actions:
+
+A. Share TrailWeigh List
+B. Share Checkable Packing List
+
+Whenever either is used on a browser/device that supports native Web Share:
+
+USE THE BROWSER'S NATIVE SHARE SHEET.
+
+This must work consistently from:
+
+- Signed-in/private Checklist
+- Full Shared TrailWeigh Link
+
+==================================================
+12. PRIVATE CHECKLIST SHARE
+==================================================
+
+From the normal signed-in Checklist:
+
+Clicking Share should show:
+
+- Share TrailWeigh List
+- Share Checkable Packing List
+- Download PDF
+
+Selecting:
+
+Share TrailWeigh List
+
+should:
+
+1. Create/use the proper full TrailWeigh shared URL.
+2. Invoke the browser-native Share sheet.
+
+Selecting:
+
+Share Checkable Packing List
+
+should:
+
+1. Create/use the proper checkable packing-list URL.
+2. Invoke the browser-native Share sheet.
+
+The private Checklist should use the same native-sharing experience already working from the Shared Link.
+
+==================================================
+13. FULL SHARED LINK SHARE
+==================================================
+
+Preserve the working Prompt 022I behavior.
+
+From the full Shared TrailWeigh Link:
+
+Share TrailWeigh List
+→ native Share sheet
+
+Share Checkable Packing List
+→ native Share sheet
+
+Download PDF
+→ existing PDF download/export behavior
+
+Do not regress this.
+
+==================================================
+14. SAFARI NATIVE SHARE SHEET
+==================================================
+
+On Safari, the native Share sheet may provide options such as:
+
+- Messages
+- Mail
+- AirDrop
+- Copy
+- Other installed/system destinations
+
+TrailWeigh must allow Safari/macOS/iOS to provide those choices.
+
+Do NOT manually reproduce Safari's native Share sheet.
+
+==================================================
+15. SAFARI "SHARE ANYWAY" WARNING
+==================================================
+
+Safari may first display a browser-controlled:
+
+Share Anyway
+
+warning.
+
+This is normal browser/security behavior.
+
+TrailWeigh must NOT:
+
+- Suppress it
+- Bypass it
+- Automatically confirm it
+- Fake its own version
+- Replace it
+
+If Safari displays the warning:
+
+1. Safari shows the warning.
+2. The user chooses whether to continue.
+3. If the user selects Share Anyway, Safari proceeds to its native Share sheet.
+
+TrailWeigh should simply initiate the native sharing request correctly.
+
+==================================================
+16. SHARED NATIVE-SHARE HELPER
+==================================================
+
+Inspect whether private and shared pages currently use separate implementations for essentially the same operation.
+
+Where practical, reuse/generalize the proven native-sharing helper already working in the Shared Link.
+
+Prefer one consistent helper for sharing URLs rather than maintaining two different behaviors.
+
+Do not refactor unrelated code.
+
+==================================================
+17. FALLBACK WHEN NATIVE SHARE IS UNAVAILABLE
+==================================================
+
+If the browser/device does not support native sharing:
+
+Provide:
+
+Copy Link
+
+or the existing TrailWeigh equivalent.
+
+Provide clear feedback such as:
+
+Link copied
+
+Use existing clipboard/copy-link infrastructure where possible.
+
+==================================================
+18. SHARE TRAILWEIGH LIST — PRIVATE VIEW
+==================================================
+
+When sharing from the signed-in Checklist:
+
+Use TrailWeigh's existing shared-snapshot/link architecture.
+
+Do NOT share a private Locker URL.
+
+The recipient receives the normal full Shared TrailWeigh Link.
+
+Sharing must not:
+- Transfer ownership
+- Expose private Locker information
+- Modify the original file
+
+==================================================
+19. SHARE TRAILWEIGH LIST — SHARED VIEW
+==================================================
+
+When someone re-shares an existing full Shared Link:
+
+Use the current shared URL/snapshot identity where appropriate.
+
+Do NOT create unnecessary duplicate owner records merely because a viewer passes the link to another person.
+
+Re-sharing must not elevate permissions.
+
+==================================================
+20. SHARE CHECKABLE PACKING LIST
+==================================================
+
+From BOTH private and shared full views:
+
+Share Checkable Packing List should invoke the native Share sheet with the correct checkable-list URL.
+
+Preserve the simplified packing-list experience from Prompt 022I.
+
+It should remain:
+
+- Checkable
+- Printable
+- Easy to use on a phone
+- Temporary/session based for recipient checkbox changes
+- Unable to modify the owner's original file
+
+==================================================
+21. DOWNLOAD PDF
+==================================================
+
+Download PDF is not the same as sharing a URL.
+
+Preserve:
+
+Share
+  - Share TrailWeigh List → native Share sheet
+  - Share Checkable Packing List → native Share sheet
+  - Download PDF → PDF download/export
+
+Download PDF should NOT automatically invoke the native Share sheet as part of this prompt.
+
+==================================================
+22. DO NOT CONTROL EXTERNAL SAFARI WINDOW/TAB BEHAVIOR
+==================================================
+
+When a TrailWeigh link is tapped from:
+
+- Messages
+- Mail
+- Notes
+- Another application
+
+Safari/macOS/iOS controls whether it opens:
+
+- In an existing window
+- In a new tab
+- In a new window
+
+Do NOT attempt to override this with browser hacks.
+
+Do NOT add:
+- window.open hacks
+- automatic window closing
+- redirect loops
+- opener manipulation
+- target tricks intended to override Safari preferences
+
+This behavior is outside TrailWeigh's reliable control.
+
+==================================================
+23. CONSISTENT SHARE LABELS
+==================================================
+
+Use these labels consistently where the functions are equivalent:
+
+Share TrailWeigh List
+
+Share Checkable Packing List
+
+Download PDF
+
+Avoid different wording for the same function between private and shared pages.
+
+==================================================
+24. SHARE MENU STATE
+==================================================
+
+The Share menu itself should start CLOSED.
+
+It should:
+
+- Open when Share is selected.
+- Close appropriately after an action.
+- Support keyboard use.
+- Work in Light and Dark modes.
+- Fit on narrow/mobile screens.
+- Avoid off-screen overflow.
+
+==================================================
+25. OWNERSHIP / DATA PROTECTION
+==================================================
+
+Sharing must never:
+
+- Modify gear
+- Modify saved checkbox state
+- Modify weights
+- Modify quantities
+- Modify categories
+- Modify backgrounds
+- Rename files
+- Delete files
+- Modify Locker contents
+- Transfer ownership
+- Reveal private account data
+
+Save Your Own Copy remains the explicit mechanism for creating an independent copy where currently supported.
+
+==================================================
+26. SAVE YOUR OWN COPY
+==================================================
+
+Keep:
+
+Save Your Own Copy
+
+separate from:
+
+Share
+
+SHARE:
+Pass a link to another person.
+
+SAVE YOUR OWN COPY:
+Create an independent copy owned by the recipient.
+
+Preserve current behavior and permissions.
+
+==================================================
+27. PRESERVE PROMPT 022F
+==================================================
+
+Prompt 022F is USER VERIFIED.
+
+Preserve the Shared Link footer fix:
+
+- Footer remains in normal document flow.
+- Footer is not fixed/sticky over content.
+- Footer appears below all page content.
+- Long and short pages scroll correctly.
+
+==================================================
+28. PRESERVE PROMPT 022I
+==================================================
+
+Preserve working Prompt 022I functionality except for the intentional change in default panel state.
+
+KEEP:
+- Native sharing on Shared Link
+- Checkable Packing List
+- Download PDF
+- Viewer permissions
+- Temporary recipient changes
+- Share menu behavior
+
+INTENTIONAL CHANGE:
+
+022I previously made:
+- Scan Gear List closed
+- Shared Files closed
+
+022J changes those defaults to:
+
+- Scan Gear List OPEN
+- Shared Files OPEN
+
+Do not interpret this as a regression.
+
+==================================================
+29. PRESERVE PROMPT 022G
+==================================================
+
+Preserve:
+- Same private saved file restoration
+- Same background restoration
+- Saved checkbox state
+- Last-active-file behavior
+- Account isolation
+- Shared-link isolation
+
+INTENTIONAL CHANGE:
+
+On private startup:
+
+Scan Gear List and Locker now start OPEN.
+
+==================================================
+30. WEIGHT DISTRIBUTION OUT OF SCOPE
+==================================================
+
+The missing Weight Distribution panel on the full Shared Link remains a separate known issue.
+
+Do NOT fix it in this prompt.
+
+It will be addressed in:
+
+Prompt 022K — Restore Weight Distribution to Shared TrailWeigh Links
+
+==================================================
+31. TEST A — PRIVATE DEFAULT PANELS
+==================================================
+
+Open/refresh the signed-in Checklist.
+
+Expected:
+
+[ ] Same saved file restoration still works.
+
+[ ] Same background restoration still works.
+
+[ ] Scan Gear List starts OPEN.
+
+[ ] Locker starts OPEN.
+
+[ ] Gear categories start collapsed.
+
+[ ] Pack Summary starts collapsed.
+
+[ ] Weight Distribution starts collapsed where currently present.
+
+[ ] Temporary menus start closed.
+
+==================================================
+32. TEST B — SHARED DEFAULT PANELS
+==================================================
+
+Open/refresh a full Shared TrailWeigh Link.
+
+Expected:
+
+[ ] Scan Gear List starts OPEN.
+
+[ ] Shared Files starts OPEN.
+
+[ ] Gear categories start collapsed.
+
+[ ] Pack Summary starts collapsed.
+
+[ ] Other temporary UI starts closed.
+
+[ ] Shared file/background/data remain correct.
+
+==================================================
+33. TEST C — MANUAL PANEL CONTROL
+==================================================
+
+During the current session:
+
+1. Collapse Scan Gear List.
+2. Collapse Locker or Shared Files.
+3. Open some gear categories.
+
+Expected:
+
+[ ] TrailWeigh respects the user's choices during that session.
+
+[ ] It does not continually force default states.
+
+Refresh/reopen.
+
+Expected:
+
+[ ] Scan Gear List returns OPEN.
+
+[ ] Locker/Shared Files returns OPEN.
+
+[ ] Gear categories return collapsed.
+
+==================================================
+34. TEST D — PRIVATE NATIVE SHARE
+==================================================
+
+From signed-in Checklist:
+
+1. Click Share.
+2. Select Share TrailWeigh List.
+
+On supported Safari:
+
+Expected:
+
+[ ] Safari native sharing flow is invoked.
+
+[ ] If Safari shows Share Anyway, allow that browser warning normally.
+
+[ ] After continuing, Safari's normal Share sheet appears.
+
+[ ] System destinations such as Messages/Mail/AirDrop/Copy are supplied by Safari as available.
+
+Repeat for:
+
+Share Checkable Packing List.
+
+Expected:
+
+[ ] Native Safari sharing flow is also invoked for the checkable-list URL.
+
+==================================================
+35. TEST E — SHARED NATIVE SHARE
+==================================================
+
+From full Shared TrailWeigh Link:
+
+Verify:
+
+[ ] Share TrailWeigh List still invokes native Share.
+
+[ ] Share Checkable Packing List still invokes native Share.
+
+[ ] Download PDF still downloads/exports PDF.
+
+==================================================
+36. TEST F — FALLBACK
+==================================================
+
+Where native Web Share is unavailable:
+
+Expected:
+
+[ ] Copy Link fallback works.
+
+[ ] Correct URL is copied.
+
+[ ] User receives visible success feedback.
+
+==================================================
+37. TEST G — OWNER PROTECTION
+==================================================
+
+After sharing/re-sharing:
+
+Expected:
+
+[ ] Owner's original file is unchanged.
+
+[ ] Owner's Locker is unchanged.
+
+[ ] Checkbox data is unchanged.
+
+[ ] Background is unchanged.
+
+[ ] Recipient does not gain Rename/Delete permissions.
+
+==================================================
+38. TEST H — PRIVATE LAST-ACTIVE FILE
+==================================================
+
+1. Establish a private last-active file.
+2. Open/re-share a Shared Link.
+3. Return to private TrailWeigh.
+
+Expected:
+
+[ ] Original private last-active file is still restored.
+
+[ ] Shared-link activity did not replace it.
+
+==================================================
+39. TEST I — FOOTER REGRESSION
+==================================================
+
+On a long Shared Link:
+
+Expected:
+
+[ ] Footer remains below content.
+
+[ ] Footer does not overlay Scan Gear List.
+
+[ ] Footer does not overlay Shared Files.
+
+[ ] Footer does not become fixed/sticky.
+
+==================================================
+40. AUTOMATED TESTING
+==================================================
+
+Add/update focused tests where practical for:
+
+- Private Scan Gear List default-open state
+- Private Locker default-open state
+- Shared Scan Gear List default-open state
+- Shared Files default-open state
+- Gear categories default-collapsed state
+- Pack Summary default-collapsed state
+- Native share helper use
+- Private Share TrailWeigh List
+- Private Share Checkable Packing List
+- Shared native-share regression
+- Copy Link fallback
+- Ownership protection
+- 022F footer regression
+- 022G private restoration
+- 022I checkable-list regression
+
+Do not mark Safari-native UI behavior PASS purely from static source inspection.
+
+Use:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+==================================================
+41. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022J_REPORT.md
+
+Include:
+
+- Exact prompt ID/title:
+  Prompt 022J — Consistent Native Share + Default Panel State
+
+- Files changed
+- Backup/checkpoint created
+- Existing private share behavior discovered
+- Existing shared share behavior discovered
+- Native share helper changes
+- Private default panel states before/after
+- Shared default panel states before/after
+- Confirmation Scan Gear List starts open in both views
+- Confirmation Locker starts open in private view
+- Confirmation Shared Files starts open in shared view
+- Confirmation gear categories remain collapsed
+- Safari Share Anyway behavior
+- Copy Link fallback behavior
+- Ownership/data protection
+- Confirmation Prompt 022F remains intact
+- Confirmation Prompt 022G restoration remains intact
+- Confirmation Prompt 022I sharing/checkable-list functionality remains intact
+- Confirmation Weight Distribution issue was NOT addressed in this prompt
+- Automated test results
+- Runtime/browser verification results
+- PASS / FAIL / PARTIAL / NOT TESTED for each requirement
+- Failed attempts
+- Anything reverted
+- Anything requiring user verification
+- Confirmation unrelated TrailWeigh functionality was preserved
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier reports.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022J_REPORT.md
+2. File size
+3. Line count
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+5. Short summary of native-share changes
+6. Short summary of panel-default changes
+7. Anything requiring user verification

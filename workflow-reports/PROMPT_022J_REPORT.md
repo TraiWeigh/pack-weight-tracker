@@ -1,7 +1,9 @@
-# Prompt 022J — Restore Weight Distribution to Shared TrailWeigh Links
+# Prompt 022J — Consistent Native Share + Default Panel State
 
 **Date:** 2026-08-09  
 **Status:** COMPLETE — all tests passing, 0 failures
+
+> This prompt supersedes the earlier draft of Prompt 022J (Weight Distribution to Shared Links). That WeightDistribution work was already merged and tested; it is preserved intact. This prompt addresses panel defaults and native share consistency.
 
 ---
 
@@ -9,178 +11,177 @@
 
 | File | Change |
 |---|---|
-| `artifacts/pack-checklist/src/pages/SharedChecklistPage.tsx` | Added `WeightDistribution` import; added `chartPaletteKey` state; added `<WeightDistribution>` in sidebar gated to non-checkable mode |
-| `artifacts/pack-checklist/src/hooks/weightDistShared022J.test.mjs` | NEW — 43 tests |
-| `artifacts/pack-checklist/src/hooks/shareMenuConsistency021F.test.mjs` | Tests L, M, N window size 1200→1800 (SharedLockerPanel shifted out of range after new component) |
-| `artifacts/pack-checklist/src/hooks/sharedFileOpen021G.test.mjs` | Tests G1, G2 window size 1200→1800 (same reason) |
-| `package.json` | Added `weightDistShared022J.test.mjs` to `test:importer` chain |
-| `workflow-reports/PRE_022J_SharedChecklistPage_BACKUP.tsx` | Backup of SharedChecklistPage.tsx before changes |
-
-**Backup:** `workflow-reports/PRE_022J_SharedChecklistPage_BACKUP.tsx` (63,672 bytes)
-
----
-
-## Root Cause — Why Weight Distribution Was Absent
-
-`WeightDistribution` is a separately-exported component from `WeightSummary.tsx`.  
-`SharedChecklistPage.tsx` imported only `WeightSummary` (Pack Summary), never `WeightDistribution`.  
-The component was simply never added to the shared page sidebar — it was an omission, not a design decision.
+| `artifacts/pack-checklist/src/pages/SharedChecklistPage.tsx` | SharedLockerPanel `open` init `false→true`; ImportGearPanel `defaultOpen={false}→{true}`; `handleShareCheckableList` updated to use `navigator.share` |
+| `artifacts/pack-checklist/src/pages/Checklist.tsx` | `copiedPackList→copiedCheckable`; `handleSharePackList→handleShareCheckableList` (type:'checkable', navigator.share); `handleShareLocker` updated to use `navigator.share`; menu labels "Share Link"→"Share TrailWeigh List", "Share Pack List"→"Share Checkable Packing List" |
+| `artifacts/pack-checklist/src/hooks/panelDefaults022J.test.mjs` | NEW — 45 tests |
+| `artifacts/pack-checklist/src/hooks/sharePillMenu021E.test.mjs` | Tests A, F, F2, G, I updated to reflect 022J intentional renames |
+| `artifacts/pack-checklist/src/hooks/shareMenuConsistency021F.test.mjs` | Tests A, C, D, G, T updated for 022J renames |
+| `artifacts/pack-checklist/src/hooks/sharedFileOpen021G.test.mjs` | Tests F1, F2, F3, H4 updated for 022J renames |
+| `artifacts/pack-checklist/src/hooks/gutterLayout021H.test.mjs` | Tests G3, G4 updated for 022J renames |
+| `artifacts/pack-checklist/src/hooks/sharedCollapse022I.test.mjs` | 3 tests updated: SharedLockerPanel and ImportGearPanel now assert open (022J intentional) |
+| `artifacts/pack-checklist/src/hooks/weightDistShared022J.test.mjs` | 2 tests updated: SharedLockerPanel open and ImportGearPanel defaultOpen now assert true |
+| `package.json` | Added `panelDefaults022J.test.mjs` to `test:importer` chain |
+| `workflow-reports/PRE_022J_NEW_Checklist_BACKUP.tsx` | Backup of Checklist.tsx before changes |
+| `workflow-reports/PRE_022J_NEW_SharedChecklistPage_BACKUP.tsx` | Backup of SharedChecklistPage.tsx before changes |
 
 ---
 
-## Private Weight Distribution Architecture (Discovered)
+## Existing Share Behavior Discovered
 
-**Component:** `WeightDistribution` — exported from `artifacts/pack-checklist/src/components/WeightSummary.tsx` (line 157)
+### Private Checklist (before 022J)
+- **Share Link** (now "Share TrailWeigh List"): triggered `locker-warning` step → "Share Link Anyway" → `handleShareLocker` → builds type:'locker' payload with all saved Locker files → `copyUrlToClipboard` only (no `navigator.share`)
+- **Share Pack List** (now "Share Checkable Packing List"): `handleSharePackList` → builds type:'pack-list' payload → `copyUrlToClipboard` only
+- **Download PDF**: `sharePackList` (PDF export, unchanged)
+- **No** "Share Checkable Packing List" action existed; no `navigator.share` anywhere
 
-**Props:**
+### Shared View (before 022J)
+- **Share TrailWeigh List**: `handleShareTrailWeighList` → `navigator.share` when available, clipboard fallback ✓
+- **Share Checkable Packing List**: `handleShareCheckableList` → clipboard only (no `navigator.share`) — **inconsistency fixed in 022J**
+- **Download PDF**: unchanged
+
+### Panel defaults (before 022J)
+| Panel | Private | Shared |
+|---|---|---|
+| Gear categories | closed | closed |
+| Pack Summary | closed | closed |
+| Weight Distribution | closed | closed |
+| Scan Gear List | open (defaultOpen=true default) | **closed** (defaultOpen={false}) |
+| Locker (private) | open (useState(true) in LockerPanel) | N/A |
+| Shared Files | N/A | **closed** (useState(false)) |
+
+---
+
+## Panel Default Changes
+
+### Private Checklist
+**No code changes required.** `ImportGearPanel` already defaults to `defaultOpen=true` (no prop passed in Checklist.tsx). `LockerPanel` already has `useState(true)`.
+
+### Shared View
+| Change | Before | After |
+|---|---|---|
+| `SharedLockerPanel.open` | `useState(false)` | `useState(true)` |
+| `ImportGearPanel defaultOpen` | `defaultOpen={false}` | `defaultOpen={true}` |
+
+---
+
+## Native Share Changes
+
+### handleShareLocker (private Checklist — "Share TrailWeigh List")
 ```ts
-interface WeightDistributionProps {
-  data: PackState;           // gear items by category
-  categoryOrder: string[];   // display order
-  categoryMeta: Record<string, CategoryMeta>;  // countsToBase, labels
-  paletteKey: string;        // chart colour palette (parent-controlled)
-  onPaletteChange: (key: string) => void;
-}
+// Was:
+const url = await buildShareURL(payload);
+const ok = await copyUrlToClipboard(url);
+if (!ok) window.prompt('Copy this link:', url);
+setCopied(true); setTimeout(() => setCopied(false), 2000);
+
+// Now:
+const url = await buildShareURL(payload);
+const title = activeLockerFile?.name ? `${activeLockerFile.name} — TrailWeigh` : 'TrailWeigh Pack List';
+try {
+  if (navigator.share) {
+    await navigator.share({ title, url });
+  } else {
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this link:', url);
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
+  }
+} catch { /* user dismissed share sheet — silently ignore */ }
 ```
 
-**Calculation (`calcWeights`):**
-- Filters items by `i.checked` only — unchecked gear contributes zero weight
-- Sums `calcTotalOz(item.weightOz, item.qty)` per category (weight × quantity)
-- Partitions by `categoryMeta[cat]?.countsToBase ?? true` → Base Weight vs. non-base (Expendables, etc.)
-- Grand total = base + all non-base category totals
-- Chart slices = per-category totals; zero-total categories are filtered from the chart
+### handleSharePackList → handleShareCheckableList (private Checklist — "Share Checkable Packing List")
+- Function renamed; payload type changed `'pack-list'` → `'checkable'`
+- `navigator.share` added (same pattern as above)
+- `copiedPackList` state renamed to `copiedCheckable`
+- No `lockerFiles` in payload (intentional — checkable is a simple focused view)
 
-**Collapse state:** `useState(false)` — starts collapsed on every fresh render (022G requirement, already in place)
-
-**Palette:** Session-scoped state (`paletteKey`) controlled by the parent component.
-
-**Position in private Checklist sidebar:** WeightSummary → **WeightDistribution** → ImportGearPanel → LockerPanel
-
----
-
-## Implementation — How It Was Restored
-
-Three minimal changes to `SharedChecklistPage.tsx`:
-
-### 1. Import added
+### handleShareCheckableList (shared view — updated)
 ```ts
-// Before:
-import { WeightSummary } from '../components/WeightSummary';
-
-// After:
-import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
-```
-
-### 2. Palette state added to SharedChecklistContent
-```ts
-// ── Chart palette for Weight Distribution (session-only, not persisted) ───
-const [chartPaletteKey, setChartPaletteKey] = useState('trail');
-```
-
-### 3. Component added to sidebar (non-checkable mode only)
-```tsx
-<WeightSummary
-  data={store.items}
-  categoryOrder={store.order}
-  categoryMeta={store.meta}
-/>
-{/* Weight Distribution — full shared view only; NOT shown on checkable packing list */}
-{snapshot.type !== 'checkable' && (
-  <WeightDistribution
-    data={store.items}
-    categoryOrder={store.order}
-    categoryMeta={store.meta}
-    paletteKey={chartPaletteKey}
-    onPaletteChange={setChartPaletteKey}
-  />
-)}
+// Added navigator.share branch (was clipboard-only before):
+const title = snapshot.name ? `${snapshot.name} — Packing List` : 'TrailWeigh Packing List';
+try {
+  if (navigator.share) {
+    await navigator.share({ title, url });
+  } else {
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this link:', url);
+    setCopiedCheckable(true); ...
+  }
+} catch { /* user dismissed */ }
 ```
 
 ---
 
-## Data Source
+## Share Menu Labels (private Checklist)
 
-`store` in `SharedChecklistContent` is initialised from the shared snapshot:
-```ts
-const [store, setStore] = useState<Store>(() => ({
-  items: snapshot.data,
-  order: snapshot.categoryOrder,
-  meta:  snapshot.categoryMeta,
-}));
-```
+| Old label | New label | Action |
+|---|---|---|
+| Share Link | **Share TrailWeigh List** | locker-warning → `handleShareLocker` → native share |
+| Share Pack List | **Share Checkable Packing List** | `handleShareCheckableList` → native share |
+| Download PDF | Download PDF | unchanged |
 
-- `store.items` = snapshot gear items at time of sharing
-- `store.order` = snapshot category order
-- `store.meta` = snapshot category metadata
-
-**Owner private data is never read or modified.** The shared page writes nothing to localStorage.
+Labels are now consistent between private and shared views.
 
 ---
 
-## Calculation Parity
+## Safari Share Anyway Behavior
 
-The exact same `WeightDistribution` component and `calcWeights` function from `WeightSummary.tsx` is reused — there is no duplicate calculation logic. For an identical gear snapshot, the shared view and private Checklist will produce identical category totals, base weight, and grand total.
-
----
-
-## Weight Distribution NOT Added to Checkable Packing List
-
-The component is wrapped in `{snapshot.type !== 'checkable' && ...}`.  
-The checkable view (`type: 'checkable'`) continues to show only gear categories and checkboxes.  
-Pack Summary (`WeightSummary`) is also not gated — it was intentionally not added to the checkable type in 022I and that is preserved.
+TrailWeigh calls `navigator.share({ title, url })` and handles dismissal via `try/catch`. Safari controls its own "Share Anyway" security prompt — TrailWeigh does not suppress, bypass, or fake it. If Safari shows the warning, Safari handles it; if the user continues, Safari shows its native share sheet. TrailWeigh only initiates the sharing request.
 
 ---
 
-## Initial Collapsed State
+## Copy Link Fallback
 
-`WeightDistribution` owns `const [chartOpen, setChartOpen] = useState(false)` internally (set to `false` in 022G). The shared page does not pass a `forceOpen` or `open` prop — the component collapses itself on every fresh render, satisfying the 022I clean-start rule. On refresh, it returns to collapsed.
-
----
-
-## Temporary Viewer Checkbox Behavior
-
-The shared page's `store` is updated by `pushAndSet` when a recipient checks/unchecks an item (no localStorage writes). Since `WeightDistribution` receives `data={store.items}`, it **recalculates live** as the viewer checks/unchecks items — consistent with the private Checklist behavior. This is viewer-session-only: nothing is written to the owner's data or the stored snapshot.
+When `navigator.share` is unavailable (e.g. desktop Chrome, non-HTTPS contexts): both private handlers fall back to `copyUrlToClipboard` (clipboard API with textarea execCommand fallback). A "Copied!" indicator replaces the menu label for 2 seconds. If clipboard also fails, `window.prompt` is shown as a last resort.
 
 ---
 
-## Imperial / Metric
+## Ownership / Data Protection
 
-`WeightDistribution` uses `useUnit()` internally to obtain the active `system` and calls the shared `formatWeight` / `largeUnit` utilities from `weightUtils.ts`. The shared page wraps everything in `<UnitProvider initialSystem={snapshot.unit}>`, so the shared unit preference from the snapshot is respected. Unit switching (if available in the shared view) updates both Pack Summary and Weight Distribution consistently.
+No sharing action modifies the owner's data:
+- `handleShareLocker` snapshots Locker at share time; original Locker is unchanged
+- `handleShareCheckableList` reads current store state; writes nothing
+- SharedChecklistPage writes nothing to localStorage
+- Recipient interactions are session-only
 
 ---
 
-## Stale Test Window Fixes
+## Stale Test Fixes (prior suites)
 
-Adding `WeightDistribution` (~250 chars) to the sidebar pushed `SharedLockerPanel` beyond the 1200-char search window used by tests in two prior suites. Updated six test slice windows from 1200 → 1800 chars:
+Adding panel-default changes and renaming share labels caused 16 assertions in 6 prior test files to fail — all mechanical label/value mismatches. Each was annotated with the prompt number that caused the intentional change:
 
-- `shareMenuConsistency021F.test.mjs`: tests L, M, N
-- `sharedFileOpen021G.test.mjs`: tests G1, G2
-
-These are mechanical window-size adjustments — the structural assertions themselves are unchanged.
+| Suite | Tests updated |
+|---|---|
+| `sharePillMenu021E` | A, F, F2, G, I |
+| `shareMenuConsistency021F` | A, C, D, G, T |
+| `sharedFileOpen021G` | F1, F2, F3, H4 |
+| `gutterLayout021H` | G3, G4 |
+| `sharedCollapse022I` | SharedLockerPanel open, does-not-use-true, ImportGearPanel defaultOpen |
+| `weightDistShared022J` | SharedLockerPanel open, ImportGearPanel defaultOpen |
 
 ---
 
 ## Test Results
 
-### New Suite — weightDistShared022J.test.mjs
+### New Suite — panelDefaults022J.test.mjs
 
 | Section | Tests | Result |
 |---|---|---|
-| A. WeightDistribution imported & rendered | 7 | ✓ PASS |
-| B. NOT shown in checkable mode | 3 | ✓ PASS |
-| C. Starts collapsed | 2 | ✓ PASS |
-| D. Palette state present | 3 | ✓ PASS |
-| E. Calculation parity (same component) | 4 | ✓ PASS |
-| F. Data source: shared store used | 3 | ✓ PASS |
-| G. 022I Share menu regression | 4 | ✓ PASS |
-| H. 022I panel-collapse regression | 5 | ✓ PASS |
-| I. 022F footer regression | 3 | ✓ PASS |
-| J. 022G private workspace isolation | 3 | ✓ PASS |
-| K. Private Checklist unchanged | 4 | ✓ PASS |
-| L. Checkable packing list remains simple | 2 | ✓ PASS |
-| **Total** | **43/43** | **✓ ALL PASS** |
+| A. Private Scan Gear List and Locker start open | 5 | ✓ PASS |
+| B. Shared Scan Gear List and Shared Files start open | 3 | ✓ PASS |
+| C. Gear categories remain collapsed | 3 | ✓ PASS |
+| D. Pack Summary / Weight Distribution remain collapsed | 2 | ✓ PASS |
+| E. Native share — private Checklist | 4 | ✓ PASS |
+| F. Native share — shared view | 3 | ✓ PASS |
+| G. Consistent share labels | 6 | ✓ PASS |
+| H. Copy-link fallback | 3 | ✓ PASS |
+| I. type:'checkable' in private Checklist | 3 | ✓ PASS |
+| J. 022I shared share menu regression | 5 | ✓ PASS |
+| K. 022F footer regression | 3 | ✓ PASS |
+| L. 022G private workspace isolation | 3 | ✓ PASS |
+| M. handleSharePackList replaced | 2 | ✓ PASS |
+| **Total** | **45/45** | **✓ ALL PASS** |
 
-### Full Regression Suite
+### Full Regression Suite (final run)
 
 ```
 022F Shared Footer Fix: 32 passed, 0 failed
@@ -188,48 +189,48 @@ These are mechanical window-size adjustments — the structural assertions thems
 022H Shared Panels Closed: 37 passed, 0 failed
 022I Shared Collapse & Share: 41 passed, 0 failed
 022J Weight Distribution Shared — 43/43 passed, 0 failed
+022J Panel Defaults + Native Share — 45/45 passed, 0 failed
 ```
 
-All suites in `pnpm test:importer`: **0 failures across all suites.**
+**All suites in `pnpm test:importer`: 0 failures.**
 
 ---
 
-## Test Results by Prompt Section
+## Per-requirement Test Results
 
-| Test | Status | Notes |
+| Requirement | Status | Notes |
 |---|---|---|
-| A — Panel exists (full shared link) | PASS | Verified by source tests A1–A7 |
-| B — Expand Weight Distribution | PASS | chartOpen init false; no forced open |
-| C — Calculation parity | PASS | Same component + calcWeights used by both |
-| D — Refresh returns to collapsed | PASS | useState(false) resets on re-render |
-| E — Temporary viewer checkboxes | PASS | Live recalc from store.items; no owner writes |
-| F — Imperial / Metric | PASS | Uses UnitProvider + existing formatWeight |
-| G — Checkable Packing List (absent) | PASS | Gated by snapshot.type !== 'checkable' |
-| H — Share menu regression | PASS | All 3 actions preserved |
-| I — Footer regression | PASS | flex flex-col, flex-shrink-0 confirmed |
-| J — Mobile / narrow screen | NOT TESTED | Requires browser; layout uses same CSS as private |
-| K — Private Checklist regression | PASS | Private WeightDistribution unchanged |
+| A — Private default panels: Scan Gear List open | PASS | defaultOpen=true (no prop needed) |
+| A — Private default panels: Locker open | PASS | LockerPanel useState(true) |
+| A — Private gear categories collapsed | PASS | useState(false) |
+| A — Private Pack Summary collapsed | PASS | summaryOpen useState(false) |
+| B — Shared: Scan Gear List starts OPEN | PASS | defaultOpen={true} in shared context |
+| B — Shared: Shared Files starts OPEN | PASS | SharedLockerPanel useState(true) |
+| B — Shared: gear categories collapsed | PASS | unchanged |
+| C — Manual panel control session-only | NOT TESTED | Requires browser interaction |
+| D — Private native share: Share TrailWeigh List | PASS (source) | NOT TESTED in browser |
+| D — Private native share: Share Checkable Packing List | PASS (source) | NOT TESTED in browser |
+| E — Shared native share regression | PASS | 022I behavior preserved |
+| F — Fallback copy-link | PASS (source) | NOT TESTED in browser |
+| G — Owner protection | PASS | No localStorage writes; snapshot model preserved |
+| H — Private last-active file isolation | PASS | SharedChecklistPage never writes last-active-file |
+| I — Footer regression | PASS | flex-col, flex-shrink-0 confirmed |
+| Safari Share Anyway | NOT TESTED | Requires Safari browser |
+| Weight Distribution (out of scope) | N/A | Will be addressed in 022K |
 
 ---
 
 ## Failed Attempts
 
-None. The fix was correct on the first attempt.
-
----
+None. All changes were correct on the first attempt.
 
 ## Anything Reverted
 
-None.
+None. All stale test fixes are mechanical label/value updates annotated with the prompt that caused the intentional change.
 
----
+## Confirmation: Weight Distribution Not Addressed
 
-## Unrelated Changes
-
-None. The only modifications outside `SharedChecklistPage.tsx` were:
-- Test window sizes in two prior test files (triggered by the new component shifting the sidebar layout)
-- New test file added
-- `package.json` test chain updated
+Weight Distribution was previously added to the Shared TrailWeigh Link as part of the earlier draft 022J work (now labeled as WeightDistribution fix). The new 022J prompt correctly notes this is out of scope for this prompt and will be addressed in 022K. The WeightDistribution work already present is preserved and tested.
 
 ---
 
@@ -237,13 +238,15 @@ None. The only modifications outside `SharedChecklistPage.tsx` were:
 
 | Verification | Notes |
 |---|---|
-| Open full shared link → Weight Distribution header present, collapsed | Source-confirmed; browser needed for visual check |
-| Click header → expands; click again → collapses | Standard accordion; no browser-side issues expected |
-| Category totals match private Checklist for same snapshot | Mathematically guaranteed (same component + same data) |
-| Refresh → returns to collapsed | useState(false) guarantees this |
-| Check/uncheck item in shared view → WeightDistribution updates | Live recalc from store; needs browser confirmation |
-| Switch Imperial ↔ Metric → WeightDistribution updates | UnitProvider covers this |
-| Open Checkable Packing List → no Weight Distribution visible | Source-gated; confirm visually |
-| Mobile/narrow layout → no overflow | CSS uses same responsive classes as private |
-| Footer below expanded Weight Distribution on long page | 022F flex-col layout handles this |
-| Private Checklist Weight Distribution still works | Unchanged component |
+| Open private Checklist → Scan Gear List starts expanded | Source-confirmed; needs browser |
+| Open private Checklist → Locker starts expanded | LockerPanel useState(true) guarantees this |
+| Open shared link → Scan Gear List starts expanded | defaultOpen={true} guarantees this |
+| Open shared link → Shared Files starts expanded | useState(true) guarantees this |
+| Collapse panels → TrailWeigh respects choice during session | Session-only — no forced reopen |
+| Refresh → panels return to defaults | useState resets on re-render |
+| Click Share → Share TrailWeigh List → Safari native sheet | Requires Safari |
+| Click Share → Share Checkable Packing List → Safari native sheet | Requires Safari |
+| Safari "Share Anyway" prompt appears naturally | Browser-controlled; TrailWeigh does not suppress |
+| Non-Safari (desktop Chrome): fallback "Copied!" appears | navigator.share unavailable |
+| Download PDF still works | Unchanged function |
+| Private Checklist: last-active file still restored after shared-link visit | 022G isolation preserved |

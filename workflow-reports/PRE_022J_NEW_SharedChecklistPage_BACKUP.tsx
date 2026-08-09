@@ -83,8 +83,7 @@ function SharedLockerPanel({
   activeId: string | null;
   onOpen: (file: SharedLockerFile) => void;
 }) {
-  // 022J: Shared Files starts OPEN on every fresh load/refresh
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
@@ -638,19 +637,10 @@ function SharedChecklistContent({
       // No lockerFiles — checkable list is single-file, focused view
     };
     const url = await buildShareURL(payload);
-    const title = snapshot.name ? `${snapshot.name} — Packing List` : 'TrailWeigh Packing List';
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url });
-      } else {
-        const ok = await copyUrlToClipboard(url);
-        if (!ok) window.prompt('Copy this link:', url);
-        setCopiedCheckable(true);
-        setTimeout(() => setCopiedCheckable(false), 2000);
-      }
-    } catch {
-      // User dismissed the share sheet or clipboard failed — silently ignore
-    }
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this link:', url);
+    setCopiedCheckable(true);
+    setTimeout(() => setCopiedCheckable(false), 2000);
   };
 
   // ── Save Your Own Copy ────────────────────────────────────────────────────
@@ -1170,12 +1160,12 @@ function SharedChecklistContent({
                       onPaletteChange={setChartPaletteKey}
                     />
                   )}
-                  {/* Scan Gear List — hidden in checkable-packing-list mode; starts OPEN (022J) */}
+                  {/* Scan Gear List — hidden in checkable-packing-list mode (simplified view) */}
                   {snapshot.type !== 'checkable' && (
                     <ImportGearPanel
                       categoryOrder={store.order}
                       onAddItem={(category, prefill) => addItem(category, prefill)}
-                      defaultOpen={true}
+                      defaultOpen={false}
                     />
                   )}
                   {/* View-only Shared Locker — browse files, no Rename/Delete (lower panel, same position as owner Locker) */}

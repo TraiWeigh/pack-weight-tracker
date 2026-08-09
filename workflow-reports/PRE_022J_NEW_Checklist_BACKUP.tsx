@@ -550,8 +550,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     isDialogOpen,
   });
 
-  const [copied,           setCopied]           = useState(false);
-  const [copiedCheckable,  setCopiedCheckable]  = useState(false);
+  const [copied,         setCopied]         = useState(false);
+  const [copiedPackList, setCopiedPackList] = useState(false);
   async function copyUrlToClipboard(url: string): Promise<boolean> {
     try {
       await navigator.clipboard.writeText(url);
@@ -620,30 +620,20 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     };
 
     const url = await buildShareURL(payload);
-    const title = activeLockerFile?.name ? `${activeLockerFile.name} — TrailWeigh` : 'TrailWeigh Pack List';
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url });
-      } else {
-        const ok = await copyUrlToClipboard(url);
-        if (!ok) window.prompt('Copy this link:', url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch {
-      // User dismissed the share sheet or clipboard failed — silently ignore
-    }
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this link:', url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   /**
-   * Share Checkable Packing List — generates a simplified, focused link that
-   * opens a clean gear checklist (type:'checkable') without Scan Gear List or
-   * background controls.  Invokes native Web Share when available.
+   * Share Pack List — generates a single read-only Preview-style link for the
+   * CURRENT open list only.  No Locker panel, no editing, Print only.
    */
-  const handleShareCheckableList = async () => {
-    if (store.order.length === 0) return;
+  const handleSharePackList = async () => {
+    if (store.order.length === 0) return; // defensive — button is already grayed when !canShare
     const payload = {
-      type:          'checkable' as const,
+      type:          'pack-list' as const,
       data:          store.items,
       categoryOrder: store.order,
       categoryMeta:  store.meta,
@@ -653,21 +643,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgSize,
       unit:          system,
       name:          activeLockerFile?.name ?? undefined,
+      // No lockerFiles — Pack List share intentionally exposes no Locker
     };
+    console.log('[TrailWeigh] Share Pack List: generating read-only single-list link (no Locker snapshot)');
     const url = await buildShareURL(payload);
-    const title = activeLockerFile?.name ? `${activeLockerFile.name} — Packing List` : 'TrailWeigh Packing List';
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, url });
-      } else {
-        const ok = await copyUrlToClipboard(url);
-        if (!ok) window.prompt('Copy this link:', url);
-        setCopiedCheckable(true);
-        setTimeout(() => setCopiedCheckable(false), 2000);
-      }
-    } catch {
-      // User dismissed the share sheet or clipboard failed — silently ignore
-    }
+    const ok = await copyUrlToClipboard(url);
+    if (!ok) window.prompt('Copy this link:', url);
+    setCopiedPackList(true);
+    setTimeout(() => setCopiedPackList(false), 2000);
   };
 
   // ── Add Category ──────────────────────────────────────────────────────────
@@ -1645,24 +1628,24 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                           <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[220px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
                             {shareStep === 'menu' ? (
                               <>
-                                {/* ── Share TrailWeigh List ── */}
+                                {/* ── Share Link ── */}
                                 <button
                                   onClick={() => setShareStep('locker-warning')}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted/60 transition-colors"
                                 >
                                   <Link className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                                   <div className="text-left">
-                                    <div className="font-medium">{copied ? 'Copied!' : 'Share TrailWeigh List'}</div>
-                                    <div className="text-[11px] text-muted-foreground">Full list with all saved files</div>
+                                    <div className="font-medium">{copied ? 'Copied!' : 'Share Link'}</div>
+                                    <div className="text-[11px] text-muted-foreground">All your saved files</div>
                                   </div>
                                 </button>
 
-                                {/* ── Share Checkable Packing List ── */}
+                                {/* ── Share Pack List ── */}
                                 <button
                                   onClick={async () => {
                                     setShowShareMenu(false);
                                     setShareStep('menu');
-                                    await handleShareCheckableList();
+                                    await handleSharePackList();
                                   }}
                                   disabled={!canShare}
                                   className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors ${
@@ -1673,9 +1656,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                                 >
                                   <Share2 className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
                                   <div className="text-left">
-                                    <div className="font-medium">{copiedCheckable ? 'Copied!' : 'Share Checkable Packing List'}</div>
+                                    <div className="font-medium">{copiedPackList ? 'Copied!' : 'Share Pack List'}</div>
                                     <div className="text-[11px] text-muted-foreground">
-                                      {canShare ? 'Simple checklist for packing' : 'Add gear items first'}
+                                      {canShare ? 'Copy link, read-only' : 'Add gear items first'}
                                     </div>
                                   </div>
                                 </button>
@@ -1870,7 +1853,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           onClose={() => setShowPreview(false)}
           onSharePackList={canShare ? async () => {
             setShowPreview(false);
-            await handleShareCheckableList();
+            await handleSharePackList();
           } : undefined}
         />
       )}

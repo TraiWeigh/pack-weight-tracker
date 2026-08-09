@@ -301,29 +301,30 @@ test('allOpen initialised to false (022H)', () => {
   assert.strictEqual(match[1].trim(), 'false', 'allOpen must initialise to false');
 });
 
-test('SharedLockerPanel open state still false', () => {
+test('SharedLockerPanel open state true (022J: Shared Files starts OPEN)', () => {
+  // 022J intentionally changed Shared Files to start OPEN
   const panelBlock = sharedPage.slice(
     sharedPage.indexOf('SharedLockerPanel'),
     sharedPage.indexOf('SharedLockerPanel') + 1200
   );
   const openMatch = panelBlock.match(/const\s*\[open[^\]]*\]\s*=\s*useState\(([^)]+)\)/);
   if (openMatch) {
-    assert.strictEqual(openMatch[1].trim(), 'false', 'SharedLockerPanel open must be false');
+    assert.strictEqual(openMatch[1].trim(), 'true', 'SharedLockerPanel open must be true (022J: starts open)');
   } else {
-    // Alternate: open may be directly in the component body
     assert.ok(
-      panelBlock.includes('useState(false)'),
-      'SharedLockerPanel must initialise open to false'
+      panelBlock.includes('useState(true)'),
+      'SharedLockerPanel must initialise open to true (022J)'
     );
   }
 });
 
-test('ImportGearPanel receives defaultOpen={false} in shared context', () => {
+test('ImportGearPanel receives defaultOpen={true} in shared context (022J: Scan Gear List starts OPEN)', () => {
+  // 022J intentionally changed Scan Gear List to start open in shared view
   const importIdx = sharedPage.indexOf('<ImportGearPanel');
   const block = sharedPage.slice(importIdx, importIdx + 300);
   assert.ok(
-    block.includes('defaultOpen={false}'),
-    'ImportGearPanel in shared context must pass defaultOpen={false}'
+    block.includes('defaultOpen={true}'),
+    'ImportGearPanel in shared context must pass defaultOpen={true} (022J: starts open)'
   );
 });
 

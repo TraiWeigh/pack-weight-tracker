@@ -302,19 +302,19 @@ test('E6. SharedLockerPanel uses ChevronDown/ChevronUp pattern (021J corrected d
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nF. Share menu labels — 021F regression');
 
-test('F1. Owner Share menu still shows "Share Link"', () => {
-  assert.match(checklist, /['"]Share Link['"]/,
-    'Owner Share menu must still show "Share Link" (021F label)');
+test('F1. Owner Share menu still shows "Share TrailWeigh List" (022J renamed from Share Link)', () => {
+  assert.match(checklist, /Share TrailWeigh List/,
+    'Owner Share menu must show "Share TrailWeigh List" (022J renamed from "Share Link")');
 });
 
-test('F2. Owner Share menu still shows "Share Pack List"', () => {
-  assert.match(checklist, /Share Pack List/,
-    'Owner Share menu must still show "Share Pack List"');
+test('F2. Owner Share menu still shows "Share Checkable Packing List" (022J renamed from Share Pack List)', () => {
+  assert.match(checklist, /Share Checkable Packing List/,
+    'Owner Share menu must show "Share Checkable Packing List" (022J renamed from "Share Pack List")');
 });
 
-test('F3. Owner Share menu still shows "Copy link, read-only"', () => {
-  assert.match(checklist, /Copy link, read-only/,
-    'Share Pack List subtitle must still say "Copy link, read-only"');
+test('F3. Owner Share Checkable Packing List subtitle present (022J updated from "Copy link, read-only")', () => {
+  assert.match(checklist, /Simple checklist for packing/,
+    'Share Checkable Packing List subtitle must say "Simple checklist for packing" (022J)');
 });
 
 test('F4. Share Link Anyway button still present (warning step)', () => {
@@ -365,13 +365,14 @@ test('H3. 021C — SharedLockerPanel is defined in SharedChecklistPage', () => {
     'SharedLockerPanel must still be defined');
 });
 
-test('H4. 021E — Share Pack List type payload still set', () => {
+test('H4. 022J — handleShareCheckableList type:checkable replaces handleSharePackList type:pack-list', () => {
+  // 022J replaced handleSharePackList (pack-list) with handleShareCheckableList (checkable)
   const block = checklist.slice(
-    checklist.indexOf('const handleSharePackList'),
-    checklist.indexOf('const handleSharePackList') + 800
+    checklist.indexOf('const handleShareCheckableList'),
+    checklist.indexOf('const handleShareCheckableList') + 800
   );
-  assert.match(block, /type\s*:\s*['"]pack-list['"]/,
-    'handleSharePackList must still set type: "pack-list"');
+  assert.match(block, /type\s*:\s*['"]checkable['"]/,
+    'handleShareCheckableList must set type: "checkable" (022J)');
 });
 
 test('H5. 020F — LOCKER_KEY exported from usePackData', () => {

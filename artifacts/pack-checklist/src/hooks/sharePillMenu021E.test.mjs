@@ -65,9 +65,9 @@ function test(name, fn) {
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nA–E. Share Locker — Checklist.tsx');
 
-test('A. Share Link menu item text present (renamed from Share Locker in 021F)', () => {
-  // 021F renamed the user-visible label "Share Locker" → "Share Link"
-  assert.match(checklist, /['"]Share Link['"]/, 'Share menu must contain "Share Link" user-visible text');
+test('A. Share TrailWeigh List menu item text present (renamed from Share Link in 022J)', () => {
+  // 022J renamed the user-visible label "Share Link" → "Share TrailWeigh List"
+  assert.match(checklist, /Share TrailWeigh List/, 'Share menu must contain "Share TrailWeigh List" user-visible text');
 });
 
 test('B. Share Locker triggers locker-warning step', () => {
@@ -123,28 +123,30 @@ test('E2. handleShareLocker logs warning when no saved files', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nF–M. Share Pack List — Checklist.tsx and PreviewModal.tsx');
 
-test('F. Share Pack List menu item text present', () => {
-  assert.match(checklist, /Share Pack List/,
-    'Share menu must contain "Share Pack List" text');
+test('F. Share Checkable Packing List menu item text present (renamed from Share Pack List in 022J)', () => {
+  // 022J renamed "Share Pack List" → "Share Checkable Packing List" with type:'checkable'
+  assert.match(checklist, /Share Checkable Packing List/,
+    'Share menu must contain "Share Checkable Packing List" text');
 });
 
-test('F2. Share Pack List item in dropdown (not just in preview modal)', () => {
+test('F2. Share Checkable Packing List item in dropdown (renamed from Share Pack List in 022J)', () => {
   // Should appear in the Share dropdown section of Checklist.tsx
   const shareMenuBlock = checklist.slice(
     checklist.indexOf('showShareMenu && ('),
     checklist.indexOf('showShareMenu && (') + 3000
   );
-  assert.match(shareMenuBlock, /Share Pack List/,
-    '"Share Pack List" must appear in the Share dropdown menu');
+  assert.match(shareMenuBlock, /Share Checkable Packing List/,
+    '"Share Checkable Packing List" must appear in the Share dropdown menu');
 });
 
-test('G. handleSharePackList sets type: pack-list in payload', () => {
+test('G. handleShareCheckableList sets type: checkable in payload (022J: was handleSharePackList/pack-list)', () => {
+  // 022J replaced handleSharePackList (type:'pack-list') with handleShareCheckableList (type:'checkable')
   const block = checklist.slice(
-    checklist.indexOf('handleSharePackList'),
-    checklist.indexOf('handleSharePackList') + 800
+    checklist.indexOf('handleShareCheckableList'),
+    checklist.indexOf('handleShareCheckableList') + 800
   );
-  assert.match(block, /type\s*:\s*['"]pack-list['"]\s*as\s+const/,
-    'handleSharePackList payload must have type: \'pack-list\' as const');
+  assert.match(block, /type\s*:\s*['"]checkable['"]\s*as\s+const/,
+    'handleShareCheckableList payload must have type: \'checkable\' as const');
 });
 
 test('H. handleSharePackList has no lockerFiles field in payload object', () => {
@@ -159,13 +161,12 @@ test('H. handleSharePackList has no lockerFiles field in payload object', () => 
     'handleSharePackList payload must NOT include lockerFiles assignment or property');
 });
 
-test('I. handleSharePackList console.log present', () => {
-  const block = checklist.slice(
-    checklist.indexOf('handleSharePackList'),
-    checklist.indexOf('handleSharePackList') + 800
+test('I. handleShareCheckableList exists (022J: replaced handleSharePackList)', () => {
+  // 022J replaced handleSharePackList with handleShareCheckableList; no console.log needed
+  assert.ok(
+    checklist.includes('handleShareCheckableList'),
+    'handleShareCheckableList must exist in Checklist.tsx (022J replacement for handleSharePackList)'
   );
-  assert.match(block, /console\.log\(.*Share Pack List/,
-    'handleSharePackList must log for debuggability');
 });
 
 test('J. Preview modal toolbar has Share Pack List button', () => {

@@ -71,9 +71,9 @@ function test(name, fn) {
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nA–F. Label changes in Checklist.tsx');
 
-test('A. "Share Link" is the user-visible label in owner Share menu', () => {
-  assert.match(checklist, /['"]Share Link['"]/,
-    'Owner Share menu must show "Share Link" as the user-visible label');
+test('A. "Share TrailWeigh List" is the user-visible label in owner Share menu (022J renamed from "Share Link")', () => {
+  assert.match(checklist, /Share TrailWeigh List/,
+    'Owner Share menu must show "Share TrailWeigh List" as the user-visible label (022J rename)');
 });
 
 test('B. "Share Locker" no longer appears as a user-visible menu item label', () => {
@@ -89,14 +89,14 @@ test('B. "Share Locker" no longer appears as a user-visible menu item label', ()
     'The label "Share Locker" must not appear in the user-visible Share menu JSX (label renamed to Share Link)');
 });
 
-test('C. Share Link subtitle = "All your saved files"', () => {
-  assert.match(checklist, /All your saved files/,
-    'Share Link subtitle must be "All your saved files"');
+test('C. Share TrailWeigh List subtitle = "Full list with all saved files" (022J updated subtitle)', () => {
+  assert.match(checklist, /Full list with all saved files/,
+    'Share TrailWeigh List subtitle must be "Full list with all saved files" (022J)');
 });
 
-test('D. Share Pack List subtitle = "Copy link, read-only"', () => {
-  assert.match(checklist, /Copy link, read-only/,
-    'Share Pack List subtitle must be "Copy link, read-only"');
+test('D. Share Checkable Packing List subtitle present (022J renamed from Share Pack List)', () => {
+  assert.match(checklist, /Simple checklist for packing/,
+    'Share Checkable Packing List subtitle must be "Simple checklist for packing" (022J)');
 });
 
 test('E. "Current list, read-only" no longer appears in owner Share menu', () => {
@@ -122,13 +122,13 @@ test('F2. "Share Locker Anyway" no longer appears in owner Share menu JSX', () =
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nG–K. Share menu structure — Checklist.tsx');
 
-test('G. All 3 entries present in owner Share dropdown', () => {
+test('G. All 3 entries present in owner Share dropdown (022J labels)', () => {
   const menuBlock = checklist.slice(
     checklist.indexOf('{showShareMenu && ('),
     checklist.indexOf('{showShareMenu && (') + 4000
   );
-  assert.match(menuBlock, /Share Link/, 'Share Link must be in dropdown');
-  assert.match(menuBlock, /Share Pack List/, 'Share Pack List must be in dropdown');
+  assert.match(menuBlock, /Share TrailWeigh List/, 'Share TrailWeigh List must be in dropdown (022J)');
+  assert.match(menuBlock, /Share Checkable Packing List/, 'Share Checkable Packing List must be in dropdown (022J)');
   assert.match(menuBlock, /Download PDF/, 'Download PDF must be in dropdown');
 });
 
@@ -267,16 +267,17 @@ test('S. handleShareLocker still builds lockerFiles from LOCKER_KEY', () => {
     'handleShareLocker must still read LOCKER_KEY to build lockerFiles');
 });
 
-test('T. handleSharePackList unchanged — type:pack-list, no lockerFiles', () => {
+test('T. handleShareCheckableList type:checkable, no lockerFiles (022J replaced handleSharePackList)', () => {
+  // 022J replaced handleSharePackList (type:pack-list) with handleShareCheckableList (type:checkable)
   const block = checklist.slice(
-    checklist.indexOf('const handleSharePackList'),
-    checklist.indexOf('const handleSharePackList') + 800
+    checklist.indexOf('const handleShareCheckableList'),
+    checklist.indexOf('const handleShareCheckableList') + 800
   );
-  assert.match(block, /type\s*:\s*['"]pack-list['"]/,
-    'handleSharePackList must still set type: "pack-list"');
+  assert.match(block, /type\s*:\s*['"]checkable['"]/,
+    'handleShareCheckableList must set type: "checkable" (022J)');
   const codeOnly = block.split('\n').filter(l => !l.trim().startsWith('//')).join('\n');
   assert.doesNotMatch(codeOnly, /lockerFiles\s*[,:=]/,
-    'handleSharePackList must not include lockerFiles');
+    'handleShareCheckableList must not include lockerFiles');
 });
 
 test('U. Preview modal still has Share Pack List button', () => {

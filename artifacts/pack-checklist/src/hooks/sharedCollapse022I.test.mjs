@@ -42,26 +42,25 @@ function test(name, fn) {
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nA. SharedLockerPanel starts collapsed');
 
-test('SharedLockerPanel open state initialised to false', () => {
-  // The SharedLockerPanel sub-component (before SharedChecklistContent) must
-  // initialise its own open state to false, not true.
+test('SharedLockerPanel open state initialised to true (022J: Shared Files starts OPEN)', () => {
+  // 022J intentionally changed Shared Files to start OPEN (was false in 022I)
   const panelBlock = sharedPage.slice(
     sharedPage.indexOf('SharedLockerPanel'),
     sharedPage.indexOf('SharedLockerPanel') + 800
   );
-  assert.match(panelBlock, /useState\s*\(\s*false\s*\)/,
-    'SharedLockerPanel must use useState(false) so Shared Files starts collapsed');
+  assert.match(panelBlock, /useState\s*\(\s*true\s*\)/,
+    'SharedLockerPanel must use useState(true) so Shared Files starts open (022J)');
 });
 
-test('SharedLockerPanel does NOT use useState(true) for open state', () => {
+test('SharedLockerPanel uses useState(true) for open state (022J: Shared Files starts OPEN)', () => {
+  // 022J intentionally changed Shared Files to start open; useState(true) is now correct
   const panelBlock = sharedPage.slice(
     sharedPage.indexOf('SharedLockerPanel'),
     sharedPage.indexOf('SharedLockerPanel') + 800
   );
-  // Must not have useState(true) in the panel — that was the bug
   assert.ok(
-    !/const\s+\[open[^\]]*\]\s*=\s*useState\s*\(\s*true\s*\)/.test(panelBlock),
-    'SharedLockerPanel must not initialise open to true'
+    /const\s+\[open[^\]]*\]\s*=\s*useState\s*\(\s*true\s*\)/.test(panelBlock),
+    'SharedLockerPanel must initialise open to true (022J: starts open)'
   );
 });
 
@@ -108,9 +107,10 @@ test('ImportGearPanel does NOT hard-code useState(true) for open', () => {
   );
 });
 
-test('SharedChecklistPage passes defaultOpen={false} to ImportGearPanel', () => {
-  assert.match(sharedPage, /defaultOpen\s*=\s*\{false\}/,
-    'SharedChecklistPage must pass defaultOpen={false} to ImportGearPanel so Scan Gear List starts collapsed');
+test('SharedChecklistPage passes defaultOpen={true} to ImportGearPanel (022J: Scan Gear List starts OPEN)', () => {
+  // 022J intentionally changed Scan Gear List to start open in shared view
+  assert.match(sharedPage, /defaultOpen\s*=\s*\{true\}/,
+    'SharedChecklistPage must pass defaultOpen={true} to ImportGearPanel so Scan Gear List starts open (022J)');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
