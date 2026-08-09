@@ -32,6 +32,7 @@ import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib
 import { buildShareURL } from '../lib/shareLink';
 import type { SharePayload, SharedLockerFile } from '../lib/shareLink';
 import Footer from '@/components/Footer';
+import SourcesModal from '@/components/SourcesModal';
 import {
   Tent, Printer, Share2, FileDown, Link, Plus, Check, X,
   User, UserPlus, LogOut, Info, FolderOpen, ChevronDown, ChevronUp,
@@ -194,6 +195,9 @@ function SharedChecklistContent({
   const { signOut } = useClerk();
   const [, setLocation] = useLocation();
   const { system } = useUnit();
+
+  // ── Sources & References modal ────────────────────────────────────────────
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   // ── In-memory store — NO localStorage writes ─────────────────────────────
 
@@ -1193,8 +1197,21 @@ function SharedChecklistContent({
           </div>
         </main>
 
+        {/* ── Sources & References link ── */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-2 mt-1">
+          <button
+            onClick={() => setSourcesOpen(true)}
+            className="text-[12px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+          >
+            Sources &amp; References
+          </button>
+        </div>
+
         {/* ── Informational footer — public links only, no owner-account controls ── */}
         <Footer informationalOnly />
+
+        {/* ── Sources modal (shared-checklist instance) ── */}
+        <SourcesModal isOpen={sourcesOpen} onClose={() => setSourcesOpen(false)} />
       </div>
 
       {/* ── Preview modal ── */}
@@ -1393,6 +1410,7 @@ function SharedChecklistLoader() {
  */
 function SharedPackListContent({ snapshot }: { snapshot: SharePayload }) {
   const { system } = useUnit();
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   return (
     <>
@@ -1451,8 +1469,21 @@ function SharedPackListContent({ snapshot }: { snapshot: SharePayload }) {
           </div>
         </main>
 
+        {/* ── Sources & References link ── */}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 pb-2 mt-1">
+          <button
+            onClick={() => setSourcesOpen(true)}
+            className="text-[12px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+          >
+            Sources &amp; References
+          </button>
+        </div>
+
         {/* ── Informational footer — public links only, no owner-account controls ── */}
         <Footer informationalOnly />
+
+        {/* ── Sources modal (pack-list share instance) ── */}
+        <SourcesModal isOpen={sourcesOpen} onClose={() => setSourcesOpen(false)} />
       </div>
 
       {/* Print-only layout — hidden on screen, rendered when window.print() fires */}

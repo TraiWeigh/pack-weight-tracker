@@ -5606,3 +5606,30 @@ Weight Distribution was previously added to the Shared TrailWeigh Link as part o
 | Non-Safari (desktop Chrome): fallback "Copied!" appears | navigator.share unavailable |
 | Download PDF still works | Unchanged function |
 | Private Checklist: last-active file still restored after shared-link visit | 022G isolation preserved |
+
+---
+
+## Prompt 022L — Expand About TrailWeigh + Sources & References
+
+**Status:** COMPLETE ✅  
+**Report:** [workflow-reports/PROMPT_022L_REPORT.md](workflow-reports/PROMPT_022L_REPORT.md)  
+**Tests:** 92 new (about022L) + 106 updated (about022D) — 0 failures
+
+### Summary
+Complete rewrite of `AboutPage.tsx`: 12 → 17 accordions, 4 non-collapsible section labels (MENTAL/PHYSICAL/SPIRITUAL, HIKING PHILOSOPHY, ULTRALIGHT, TRAILWEIGH). Three new evidence-based sections (Mind, Body, Spirit) with 25 inline citation markers. Corrected Ray-Way mileage to 12,500 (from 15,000); added independence disclaimer. New `SourcesModal.tsx` component with all 25 references (DOIs/PMIDs), accessible dialog, focus trap, Escape-to-close. `Footer.tsx` gains Sources & References button with own modal state. `SharedChecklistPage.tsx` gains Sources links in both render paths (full shared view + checkable pack list). 4 intentional 022D assertions updated for content changes (section order, mileage, "inherently better", new Why-here phrase).
+
+### Files Changed
+- `artifacts/pack-checklist/src/pages/info/AboutPage.tsx` — full rewrite (681 → 1,143 lines)
+- `artifacts/pack-checklist/src/components/SourcesModal.tsx` — new (25 refs, accessible modal)
+- `artifacts/pack-checklist/src/components/Footer.tsx` — Sources button + modal state added
+- `artifacts/pack-checklist/src/pages/SharedChecklistPage.tsx` — Sources links in both views
+- `artifacts/pack-checklist/src/hooks/about022D.test.mjs` — 4 intentional assertion updates
+- `artifacts/pack-checklist/src/hooks/about022L.test.mjs` — new (92 assertions)
+- `package.json` — `about022L.test.mjs` added to `test:importer` chain
+
+### ⚠️ PRE-LAUNCH REMINDERS
+1. Verify 12,500-mile Ray-Way total against most current published chronology
+2. No Ray Jardine / Ray-Way artwork has been added — do not add without confirming rights
+3. Review independence disclaimer with legal counsel before commercial launch
+4. All 25 SourcesModal references need accuracy review before public launch
+5. About the Creator section contains placeholder — replace before launch

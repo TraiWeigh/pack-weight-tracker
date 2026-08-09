@@ -8,8 +8,9 @@
  *   informationalOnly  — omit owner-only links (Delete Account / Data)
  *                        for use in shared-list views.
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'wouter';
+import SourcesModal from '@/components/SourcesModal';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -35,7 +36,11 @@ function FooterLink({ to, children }: { to: string; children: React.ReactNode })
 }
 
 export default function Footer({ informationalOnly = false }: FooterProps) {
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+
   return (
+    <>
+    <SourcesModal isOpen={sourcesOpen} onClose={() => setSourcesOpen(false)} />
     <footer
       data-footer="trailweigh"
       style={{ backgroundColor: BG }}
@@ -51,6 +56,13 @@ export default function Footer({ informationalOnly = false }: FooterProps) {
             <nav aria-label="About TrailWeigh">
               <FooterLink to="/about">About TrailWeigh</FooterLink>
               <FooterLink to="/how-it-works">How It Works</FooterLink>
+              <button
+                onClick={() => setSourcesOpen(true)}
+                className="block text-[14px] text-white/70 hover:text-white/95 transition-colors leading-[21px] text-left w-full"
+                data-testid="footer-sources-btn"
+              >
+                Sources &amp; References
+              </button>
             </nav>
           </div>
 
@@ -87,5 +99,6 @@ export default function Footer({ informationalOnly = false }: FooterProps) {
         </div>
       </div>
     </footer>
+    </>
   );
 }

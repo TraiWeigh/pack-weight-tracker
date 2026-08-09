@@ -1,0 +1,2551 @@
+PROMPT 022L — COMPLETE ABOUT TRAILWEIGH UPDATE + SOURCES & REFERENCES
+
+GOAL
+
+Completely update the About TrailWeigh page using the exact content and
+organization provided in this prompt.
+
+This prompt includes:
+
+1. Reorganizing the About TrailWeigh content into clear topic groups.
+
+2. Adding:
+   - Mental / Physical / Spiritual
+   - Mind — Mental & Emotional Benefits
+   - Body — Physical Benefits
+   - Spirit — Awe, Connection & Meaning
+
+3. Correcting and improving the existing Ray-Way / Ray Jardine material.
+
+4. Preserving:
+   - About the Creator
+   - Credits
+
+5. Replacing/updating Credits with the exact Credits text supplied below.
+
+6. Adding a reusable Sources & References modal.
+
+7. Making Sources & References available from:
+   - About TrailWeigh
+   - Normal signed-in TrailWeigh
+   - Full Shared TrailWeigh Links
+   - Shared Checkable Packing Lists
+
+8. Keeping scientific claims carefully separated from spiritual,
+   philosophical and religious interpretation.
+
+IMPORTANT:
+
+Use the exact app copy supplied in this prompt.
+
+Do NOT ask AI to rewrite, shorten, summarize, embellish, or generate alternate
+content.
+
+Do NOT make unrelated changes.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before making ANY changes:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the existing About TrailWeigh page.
+
+3. Inventory:
+   - All existing About accordions
+   - About the Creator
+   - Credits
+   - Existing Sources/References content, if any
+   - Footer components
+   - Shared-link footer components
+   - Checkable Packing List footer
+
+4. Preserve the existing reusable accordion architecture where practical.
+
+5. Preserve existing modal/dialog architecture where practical.
+
+6. Make the smallest reasonable implementation changes.
+
+7. Do NOT refactor unrelated components.
+
+8. Preserve:
+   - Saved gear files
+   - Locker
+   - Shared Files
+   - Authentication
+   - Sharing
+   - Shared snapshots
+   - Backgrounds
+   - Scan Gear List
+   - OCR/import
+   - Weight calculations
+   - Pack Summary
+   - Weight Distribution
+   - Preview
+   - Print/PDF
+   - Existing permissions
+
+9. Inspect the COMPLETE final diff.
+
+10. Revert unrelated changes.
+
+11. Run the existing TrailWeigh regression test suite.
+
+12. Do NOT report complete if unrelated working functionality regresses.
+
+==================================================
+1. ABOUT PAGE VISUAL DESIGN
+==================================================
+
+Preserve the current About TrailWeigh design language.
+
+The screenshot/current implementation uses large rounded accordion cards.
+
+Keep that general design.
+
+Accordion requirements:
+
+- Entire title row clickable
+- Disclosure chevron/caret
+- Collapsed by default
+- More than one accordion may remain open
+- Enter and Space keyboard support
+- Appropriate aria-expanded state
+- Visible keyboard focus
+- Hover feedback
+- Light/Dark compatibility
+- Mobile/narrow-screen compatibility
+
+Do NOT add:
+
+- Expand All
+- Nested accordions inside accordions
+- Tabs replacing the accordions
+
+The category headings described below are NON-COLLAPSIBLE section labels.
+
+==================================================
+2. FINAL ABOUT PAGE STRUCTURE
+==================================================
+
+The final order must be:
+
+ABOUT TRAILWEIGH
+Introduction
+
+MENTAL / PHYSICAL / SPIRITUAL
+1. Remember Why We're Here
+2. Mind — Mental & Emotional Benefits
+3. Body — Physical Benefits
+4. Spirit — Awe, Connection & Meaning
+
+HIKING PHILOSOPHY
+5. Do You Hike for the Trail or the Camp?
+6. Hike Your Own Hike — HYOH
+7. Respect the Trail—and Each Other
+
+ULTRALIGHT
+8. What Is Ultralight?
+9. Ultralight Is a Tool, Not a Contest
+10. The Minimalist Mindset
+11. Ray-Way
+12. Knowledge Weighs Nothing
+13. Think in Systems
+14. One Tool, Many Uses
+
+TRAILWEIGH
+15. Where TrailWeigh Fits In
+16. About the Creator
+17. Credits
+
+Then:
+
+Sources & References
+
+Then preserve the existing:
+
+Help & How-To / Contact Us informational card.
+
+==================================================
+3. SECTION HEADING DESIGN
+==================================================
+
+Add these visual section labels:
+
+MENTAL / PHYSICAL / SPIRITUAL
+
+HIKING PHILOSOPHY
+
+ULTRALIGHT
+
+TRAILWEIGH
+
+These are organizational headings only.
+
+They are NOT accordions.
+
+They should be visually subordinate to the main:
+
+About TrailWeigh
+
+page title, but clearly distinguish groups of accordion topics.
+
+Use the existing typography/design system.
+
+Do not make the labels oversized.
+
+==================================================
+4. ABOUT TRAILWEIGH — INTRODUCTION
+==================================================
+
+Use this exact visible app copy:
+
+ABOUT TRAILWEIGH
+
+TrailWeigh is built around a simple idea: what we carry should support why
+we went outside in the first place.
+
+A lighter pack can make long miles easier, but the number on a scale is not
+the destination. Gear is a tool. Knowledge is a tool. TrailWeigh is a tool.
+
+The real goal might be adventure, solitude, challenge, friendship, discovery,
+healing, a mountaintop sunrise, a quiet camp beside a stream—or simply seeing
+what is around the next bend.
+
+Carry what you need. Understand why you carry it. Make each item earn its
+place.
+
+==================================================
+5. MENTAL / PHYSICAL / SPIRITUAL
+==================================================
+
+Add the non-collapsible section label:
+
+MENTAL / PHYSICAL / SPIRITUAL
+
+The following FOUR accordions belong under this heading:
+
+Remember Why We're Here
+
+Mind — Mental & Emotional Benefits
+
+Body — Physical Benefits
+
+Spirit — Awe, Connection & Meaning
+
+==================================================
+6. REMEMBER WHY WE'RE HERE
+==================================================
+
+Accordion title:
+
+Remember Why We're Here
+
+Exact content:
+
+It is surprisingly easy for backpacking to become about gear.
+
+We compare ounces, fabrics, shelters, shoes, quilts, stoves, electronics and
+base weights. We build spreadsheets. We study specifications. We search for
+the next item that might save another few grams.
+
+Those things can be useful. They can also become the focus instead of the
+means.
+
+The backpack exists to carry what helps us safely experience the trail. The
+trail does not exist to give us somewhere to carry the backpack.
+
+For one person, being outside means covering thirty miles in a day. For
+another, it means walking six miles and spending the afternoon beside a lake.
+It can mean solitude or companionship, challenge or peace, exploration or
+returning to a place that feels familiar.
+
+Sometimes the most important thing we can do is remember why we came.
+
+Look up.
+
+Listen.
+
+Notice where you are.
+
+The lightest pack in the world has little value if we become so consumed by
+equipment, mileage or numbers that we forget to experience the place we
+worked so hard to reach.
+
+==================================================
+7. MIND — MENTAL & EMOTIONAL BENEFITS
+==================================================
+
+Accordion title:
+
+Mind — Mental & Emotional Benefits
+
+Exact content:
+
+There is something many hikers recognize intuitively: our minds can feel
+different outside.
+
+Research increasingly supports parts of that experience. Studies of nature
+exposure and exercise in natural settings have found benefits involving
+well-being, positive mood, negative affect and stress, although results vary
+by study, population and type of exposure.[1][2] A systematic review of
+cognitive research also found improvements after nature exposure in areas
+including working memory and cognitive flexibility, with less consistent
+effects on attentional control.[3]
+
+A trail asks for a different kind of attention than much of modern life.
+Instead of notifications, schedules and constant streams of information,
+attention turns toward terrain, weather, water, navigation, changing light,
+the sound of wind through trees and the rhythm of walking.
+
+That does not mean every hike is peaceful. Backpacking can be uncomfortable,
+frustrating, frightening and exhausting. But even those experiences can
+create opportunities for perspective, problem-solving and confidence.
+
+There is also value in mental space.
+
+A long walk can provide time to think without requiring an immediate answer.
+Solitude can create room for reflection. Hiking with someone else can create
+conversations that rarely happen in ordinary surroundings. Completing a
+difficult climb, navigating an unexpected problem or simply continuing when
+the day becomes hard can produce a genuine sense of accomplishment.
+
+Nature is not a cure-all, and time outdoors is not a replacement for
+appropriate medical or mental-health care. Research describes tendencies and
+outcomes observed across groups—not guarantees for every individual.
+
+But for many people, going outside can be one meaningful part of a healthy
+mental and emotional life.
+
+Sometimes we go into the wilderness to see the world more clearly. Sometimes
+we come back seeing ourselves more clearly.
+
+==================================================
+8. BODY — PHYSICAL BENEFITS
+==================================================
+
+Accordion title:
+
+Body — Physical Benefits
+
+Exact content:
+
+Hiking is movement, and movement matters.
+
+Walking for hours, climbing grades, descending uneven terrain, stepping over
+rocks and roots, balancing, carrying a pack and repeating those movements day
+after day challenge the cardiovascular system, muscles, bones, balance and
+coordination.
+
+Regular physical activity is associated with better cardiovascular health,
+stronger bones and muscles, improved sleep, reduced risk of several chronic
+diseases and better functional ability.[4] The difficulty of an individual
+hike—and therefore the physical demand—depends on terrain, elevation, pace,
+pack weight, weather, altitude and the individual doing it.
+
+There may also be benefits associated with the environment in which we move,
+not only the exercise itself.
+
+A systematic review and meta-analysis covering more than 100 million people
+found greater green-space exposure associated with modestly lower measures of
+cardiovascular disease risk.[5] Forest-therapy research has also reported
+short-term changes in blood pressure and the stress hormone cortisol, although
+study quality and results vary and the mechanisms remain under
+investigation.[6][7] Research on green-space exposure and sleep has similarly
+found generally favorable associations, while noting substantial differences
+among studies.[8]
+
+WE ARE ECOSYSTEMS, TOO
+
+One of the more fascinating areas of newer research concerns the relationship
+between environmental biodiversity, microorganisms and human health.
+
+The human body does not exist in biological isolation. We live with vast
+communities of microorganisms on and within us, and those microbial
+communities interact with normal immune and physiological processes.
+
+Researchers are studying whether contact with biologically diverse
+environments can influence the human microbiome and immune regulation. A
+2024 systematic review of green-space exposure and human microbiota found
+intriguing but mixed results.[9] A broader biodiversity-and-health review
+judged evidence for an environmental microbiota–human health pathway to be
+moderate, while emphasizing that important questions about causation and
+mechanisms remain unanswered.[10] A separate systematic review found
+promising immune-related findings from nature exposure but also highlighted
+weaknesses in study design and uncertainty about effect size and duration.[11]
+
+That is a more interesting conclusion than claiming that "being in a forest
+boosts your immune system."
+
+The emerging picture is that human health and environmental health may be
+connected through more pathways than we once understood—and science is still
+working out the details.
+
+==================================================
+9. SPIRIT — AWE, CONNECTION & MEANING
+==================================================
+
+Accordion title:
+
+Spirit — Awe, Connection & Meaning
+
+Exact content:
+
+Here, spirit does not mean adherence to any particular religion.
+
+It means the part of human experience concerned with wonder, meaning,
+humility, gratitude, belonging, connection and the feeling that we are part
+of something larger than ourselves.
+
+One person may understand that feeling through God or faith. Another may call
+it spirituality. Someone else may describe it as awe, consciousness, ecology,
+interconnectedness or simply a deep love of the natural world.
+
+Some may feel it strongly without giving it any name at all.
+
+TrailWeigh does not choose among those interpretations.
+
+AWE
+
+There is, however, science behind part of the experience.
+
+Psychologists study awe as an emotional response to something perceived as
+vast enough to challenge our ordinary frame of reference.
+
+That vastness can be physical—a mountain, an ancient forest, a night sky—or
+conceptual.
+
+In a series of experiments, researchers found that awe could produce what
+they called the "small self": a temporary reduction in the prominence of
+one's individual concerns relative to something larger. It was also
+associated in those experiments with greater generosity and prosocial
+behavior. In one study, researchers induced awe simply by placing
+participants among towering trees.[12] Later experimental work has found
+connections between awe, a sense of global citizenship and greater valuing
+of interconnectedness.[13]
+
+"Small self" does not mean insignificant or worthless.
+
+It is closer to the experience many hikers know well:
+
+Standing on a ridge and seeing mountains continue beyond the horizon.
+
+Looking into a night sky so clear that the Milky Way becomes unmistakable.
+
+Walking beneath trees that were alive centuries before we were born.
+
+Watching a storm travel across a landscape too large to comprehend all at
+once.
+
+For a moment, our problems may not disappear—but their scale can change.
+
+CONNECTED TO NATURE
+
+Psychologists also study nature connectedness: the degree to which people
+experience themselves as related to, or part of, the natural world.
+
+A meta-analysis involving more than 8,500 participants found a modest
+positive relationship between nature connectedness and measures including
+positive affect, vitality and life satisfaction.[14] Another meta-analysis
+involving more than 13,000 participants found a substantial association
+between nature connectedness and pro-environmental behavior.[15] Global
+research has similarly examined human–nature connectedness as a potential
+pathway toward both human well-being and environmental stewardship.[16]
+
+There is also an important idea emerging within the science itself.
+
+A 2025 review argued that nature-connectedness research benefits from moving
+away from a "humans over here, nature over there" view and toward a
+human-ecological perspective that recognizes humans as part of nature.[17]
+
+Biologically and ecologically, that is not merely poetry.
+
+The oxygen we breathe participates in biological and atmospheric cycles. Our
+food ultimately comes from living systems. Water moves through us and back
+into the world. Elements in our bodies came from the Earth and will return to
+it. Our microbiomes are communities of other organisms. Our biological
+clocks respond to environmental light and darkness.
+
+We are not merely surrounded by nature. We are part of it.
+
+Science can describe many of those physical, ecological and psychological
+connections. It cannot establish that they prove a universal spirit, divine
+consciousness or any other metaphysical belief.
+
+What those connections mean is a personal question.
+
+DIFFERENT WAYS OF EXPRESSING CONNECTION
+
+Different traditions have expressed that question in different ways:
+
+"When we try to pick out anything by itself, we find it hitched to everything
+else in the Universe."
+— John Muir, My First Summer in the Sierra, 1911 [18]
+
+"Man takes his law from the Earth; the Earth takes its law from Heaven."
+— Tao Te Ching, Chapter 25, James Legge translation [19]
+
+"The earth is the LORD's, and the fulness thereof."
+— Psalm 24:1, King James Version [20]
+
+"May all beings be happy!"
+— Karaṇīya Mettā Sutta, Sutta Nipāta 1.8,
+  translation by Acharya Buddharakkhita [21]
+
+These traditions are not being presented as saying the same thing, and
+religious quotations are not scientific evidence. They are examples of
+something human beings across cultures and centuries have repeatedly tried to
+describe: our relationship with the world around us and with one another.
+
+The trail gives us room to consider that relationship for ourselves.
+
+==================================================
+10. HIKING PHILOSOPHY
+==================================================
+
+Add the non-collapsible section heading:
+
+HIKING PHILOSOPHY
+
+Under it place:
+
+Do You Hike for the Trail or the Camp?
+
+Hike Your Own Hike — HYOH
+
+Respect the Trail—and Each Other
+
+==================================================
+11. DO YOU HIKE FOR THE TRAIL OR THE CAMP?
+==================================================
+
+Accordion title:
+
+Do You Hike for the Trail or the Camp?
+
+Exact content:
+
+There are hikers who wake before sunrise, start walking and happily remain on
+the trail until evening. Camp is where they eat, recover and sleep before
+doing it again.
+
+There are hikers who love the destination as much as the journey. They may
+carry a more comfortable pad, camp shoes, a chair, photography equipment,
+fishing gear, a book or something else that makes camp part of the
+experience.
+
+And there are plenty of us somewhere in between.
+
+Neither approach is inherently better.
+
+A piece of gear that seems unnecessary to one hiker may be one of the things
+another person enjoys most about the trip.
+
+That leads to a better question than:
+
+"Should I carry this?"
+
+Ask:
+
+"What makes this trip enjoyable for me—and is this item worth carrying for
+that experience?"
+
+Ultralight thinking is most useful when it helps you make that choice
+intentionally.
+
+==================================================
+12. HIKE YOUR OWN HIKE — HYOH
+==================================================
+
+Accordion title:
+
+Hike Your Own Hike — HYOH
+
+Exact content:
+
+There is no perfect gear list.
+
+A system that works beautifully for one hiker may be miserable—or unsafe—for
+another.
+
+The right equipment can change with the trail, season, altitude, weather,
+water availability, expected temperatures, terrain, trip length, experience,
+physical ability, comfort priorities and personal tolerance for risk.
+
+A Pacific Crest Trail desert list may look different from a Sierra list. A
+summer setup may look very different from one intended for shoulder season
+or winter. One hiker may sleep comfortably with equipment another person
+cannot tolerate.
+
+That is the useful part of Hike Your Own Hike—HYOH.
+
+It gives people permission to think for themselves.
+
+But HYOH does not mean that nothing matters beyond personal preference.
+
+Safety still matters. Regulations still matter. Wildlife protection matters.
+Fire restrictions matter. Leave No Trace principles matter. Other hikers
+matter.
+
+Your hike is your own. The trail is shared.
+
+==================================================
+13. RESPECT THE TRAIL—AND EACH OTHER
+==================================================
+
+Accordion title:
+
+Respect the Trail—and Each Other
+
+Exact content:
+
+The freedom we enjoy outdoors comes with responsibility.
+
+We enter places that existed before us and will remain after we leave.
+Wildlife lives there. Plants grow there. Water flows downstream to someone or
+something else. Other people came for their own experience of the same place.
+
+Respect can be remarkably simple.
+
+Leave a campsite better than you found it.
+
+Protect water sources.
+
+Store food appropriately.
+
+Respect wildlife instead of turning animals into entertainment.
+
+Follow fire restrictions even when they are inconvenient.
+
+Pack out what you bring in.
+
+Give people room to experience the trail differently than you do.
+
+Know the rules of the land you are traveling through.
+
+HYOH works best when it is paired with another idea:
+
+Enjoy the trail in your own way without unnecessarily diminishing someone
+else's ability to enjoy it—or the ability of the land itself to endure us.
+
+==================================================
+14. ULTRALIGHT
+==================================================
+
+Add the non-collapsible section heading:
+
+ULTRALIGHT
+
+The following accordions belong under ULTRALIGHT:
+
+What Is Ultralight?
+
+Ultralight Is a Tool, Not a Contest
+
+The Minimalist Mindset
+
+Ray-Way
+
+Knowledge Weighs Nothing
+
+Think in Systems
+
+One Tool, Many Uses
+
+==================================================
+15. WHAT IS ULTRALIGHT?
+==================================================
+
+Accordion title:
+
+What Is Ultralight?
+
+Exact content:
+
+At its simplest, ultralight backpacking is an approach to traveling outdoors
+with less unnecessary weight.
+
+Backpackers often discuss several kinds of weight.
+
+Base weight generally means the weight of the equipment carried in the pack
+before variable consumables such as food and water.
+
+Consumables are things whose weight changes during the trip—food, water, fuel
+and similar supplies.
+
+Worn weight is equipment worn or carried on the body rather than stored in
+the pack.
+
+You will sometimes see particular numbers used to define "ultralight." Those
+numbers can be useful reference points, but they are not laws.
+
+A safe and appropriate pack for a hot desert trip may be very different from
+one for cold mountains. A person with specialized equipment, medical needs,
+photography gear, dog equipment or other requirements may have entirely
+different priorities.
+
+The more important principle is not:
+
+"How do I get below a particular number?"
+
+It is:
+
+"Why am I carrying each thing?"
+
+Reducing unnecessary weight can make walking more comfortable, decrease the
+effort required to move the pack and allow equipment to work together more
+efficiently.
+
+But ultralight works best as a method of thinking—not as membership in a
+weight class.
+
+==================================================
+16. ULTRALIGHT IS A TOOL, NOT A CONTEST
+==================================================
+
+Accordion title:
+
+Ultralight Is a Tool, Not a Contest
+
+Exact content:
+
+Pack weight is easy to measure.
+
+That makes it easy to turn backpacking into a competition.
+
+Someone always has a lighter shelter. A smaller pack. A lower base weight.
+A more extreme system.
+
+But the lightest pack is not automatically the best pack.
+
+A person who removes equipment they genuinely need simply to reach an
+arbitrary number has misunderstood the purpose.
+
+A person who carries a few additional ounces because those ounces
+meaningfully improve sleep, safety, health or enjoyment may be making a very
+good decision.
+
+The objective is not to win at ultralight.
+
+The objective is to use weight as information.
+
+Ask whether something earns its place.
+
+Then make your decision and go hiking.
+
+Ultralight is a tool, not a contest.
+
+==================================================
+17. THE MINIMALIST MINDSET
+==================================================
+
+Accordion title:
+
+The Minimalist Mindset
+
+Exact content:
+
+Minimalism is sometimes mistaken for deprivation.
+
+That is not what it needs to mean.
+
+In backpacking, a minimalist mindset is simply intentionality.
+
+Instead of beginning with everything you might possibly use and trying to fit
+it into a backpack, begin with the problems the trip actually requires you
+to solve.
+
+Shelter.
+
+Sleep.
+
+Warmth.
+
+Weather.
+
+Water.
+
+Food.
+
+Navigation.
+
+Safety.
+
+Then ask what equipment solves those problems effectively.
+
+For every item, useful questions include:
+
+What job does this perform?
+
+How likely am I to use it?
+
+Do I already carry something that performs the same job?
+
+Would I genuinely miss it if I left it behind?
+
+Is the value it provides worth the weight I will carry for every mile?
+
+The answer does not always have to be "leave it home."
+
+Sometimes the answer is:
+
+Yes. It is worth every ounce.
+
+That is still minimalism—because the decision was intentional.
+
+==================================================
+18. RAY-WAY
+==================================================
+
+Accordion title:
+
+Ray-Way
+
+REPLACE inaccurate or outdated Ray-Way copy with the exact text below.
+
+Exact content:
+
+Long before "ultralight" became a familiar outdoor-industry category, Ray
+Jardine was developing, testing and documenting a systematic approach to
+carrying less while traveling long distances.
+
+Jardine brought an inventor's mindset to the outdoors. Before his
+lightweight-backpacking work became widely known, he had worked as an
+aerospace engineer and space-flight simulation specialist and was an
+accomplished rock climber. In the 1970s, his work on expanding camming
+devices led to what became the Friend, later commercially produced by Wild
+Country.[22]
+
+Ray and Jenny Jardine also spent years experimenting with long-distance
+hiking systems. Jardine's published chronology records five major
+long-distance hikes between 1987 and 1994 totaling approximately 12,500
+miles, including multiple Pacific Crest Trail journeys and thru-hikes of the
+Continental Divide Trail and Appalachian Trail.[23]
+
+In his account of their 1993 Appalachian Trail hike, Jardine describes their
+equipment as a sub-10-pound "Baseline Pack Weight," before expendables such
+as food and water. Importantly, his own account also acknowledges that other
+people had backpacked with very light equipment before him.[24]
+
+That distinction matters.
+
+Ray Jardine did not invent traveling light.
+
+His importance lies in helping develop, test, document and popularize a
+practical, systematic form of lightweight long-distance backpacking that
+became highly influential in what we now call modern ultralight backpacking.
+
+He began documenting the approach in the PCT Hiker's Handbook, with a beta
+printing in December 1991 and first commercial printing in April 1992. The
+work evolved through the Pacific Crest Trail Hiker's Handbook, Second Edition
+in 1996, Beyond Backpacking in 1999 and Trail Life in 2008.[25]
+
+The important lesson is bigger than any single piece of gear.
+
+Question what you carry.
+
+Understand the function.
+
+Look at the whole system.
+
+Test assumptions.
+
+Reduce unnecessary duplication.
+
+Develop skills.
+
+Use knowledge.
+
+Make equipment work together.
+
+And carry what the actual conditions require.
+
+That thinking helped influence modern lightweight backpacking, and it
+connects naturally with TrailWeigh:
+
+Carry what you need. Understand why you carry it. Make each item earn its
+place.
+
+TrailWeigh is an independent project and is not affiliated with, sponsored
+by or endorsed by Ray Jardine or Ray-Way.
+
+==================================================
+19. RAY JARDINE HISTORICAL ACCURACY RULES
+==================================================
+
+The following protections are REQUIRED.
+
+Use:
+
+Ray Jardine
+
+Possessive:
+
+Ray Jardine's
+
+Do NOT write:
+
+Ray Jardines
+
+Do NOT claim:
+
+- Ray Jardine invented ultralight backpacking.
+- Ray Jardine invented traveling light.
+- TrailWeigh is a Ray-Way product.
+- Ray Jardine endorses TrailWeigh.
+- Ray Jardine is affiliated with TrailWeigh.
+
+Do NOT revert approximately 12,500 miles to 15,000+ miles for the
+1987–1994 five-hike period.
+
+The underlying mileage from Jardine's chronology is approximately:
+
+1987 — 2,500 miles
+1991 — 2,700 miles
+1992 — 2,500 miles
+1993 — 2,100 miles
+1994 — 2,700 miles
+
+Total — approximately 12,500 miles.
+
+Keep the 1993 sub-10-pound statement explicitly connected to Jardine's own
+account.
+
+==================================================
+20. THIRD-PARTY RAY JARDINE ARTWORK
+==================================================
+
+Do NOT add:
+
+- Ray Jardine photographs
+- Ray-Way logos
+- Book cover artwork
+- Publisher artwork
+- Wild Country logos
+
+to About TrailWeigh.
+
+A Ray Jardine book-cover background is currently being used privately during
+development.
+
+The owner intends to remove it before TrailWeigh becomes public.
+
+Do NOT:
+
+- Duplicate that asset
+- Place it in About
+- Place it in Sources & References
+- Add it to Shared Links because of this prompt
+
+Add this PRE-LAUNCH reminder to the workflow report:
+
+"Remove the Ray Jardine book-cover background/theme and its public asset
+before production launch unless appropriate permission has been obtained."
+
+Do NOT remove that development background in this prompt unless separately
+instructed.
+
+==================================================
+21. KNOWLEDGE WEIGHS NOTHING
+==================================================
+
+Accordion title:
+
+Knowledge Weighs Nothing
+
+Exact content:
+
+Equipment solves problems.
+
+So does knowledge.
+
+Understanding weather can help you choose appropriate clothing.
+
+Understanding campsite selection can affect warmth, wind exposure and
+condensation.
+
+Understanding your layering system can help you use the clothing you already
+carry more effectively.
+
+Knowing the next reliable water source can change how much water you need to
+carry.
+
+Navigation skills can prevent a small mistake from becoming a dangerous one.
+
+Experience with your shelter can matter more in a storm than owning a shelter
+with impressive specifications that you do not know how to use.
+
+This does not mean that knowledge replaces necessary safety equipment.
+
+It means that equipment and skill work together.
+
+The goal is not to prove that you can survive with less.
+
+The goal is to understand enough to make informed decisions about what you
+actually need.
+
+Knowledge weighs nothing—but good judgment is priceless.
+
+And good judgment matters more than a number on a scale.
+
+==================================================
+22. THINK IN SYSTEMS
+==================================================
+
+Accordion title:
+
+Think in Systems
+
+Exact content:
+
+A backpack is not really a collection of independent objects.
+
+It is a system.
+
+Your sleeping bag or quilt works with your sleeping pad, sleep clothing and
+shelter.
+
+Your shelter may work with trekking poles you are already carrying.
+
+Your insulation, wind layer and rain protection overlap in ways that can
+change what each individual garment needs to accomplish.
+
+Your water capacity depends partly on where water is available.
+
+Your stove—or decision not to carry one—changes your food system.
+
+Your pack size depends partly on the volume of everything else.
+
+That means asking only:
+
+"How much does this item weigh?"
+
+can miss the larger question:
+
+"What does this item allow the rest of my system to do?"
+
+Sometimes a slightly heavier item makes the total system lighter.
+
+Sometimes eliminating one item requires adding two others.
+
+Sometimes the smartest weight reduction comes from changing the system rather
+than buying a lighter version of the same thing.
+
+TrailWeigh helps make those relationships visible.
+
+==================================================
+23. ONE TOOL, MANY USES
+==================================================
+
+Accordion title:
+
+One Tool, Many Uses
+
+Exact content:
+
+A common way to reduce unnecessary weight is to let one item perform more
+than one useful function.
+
+A trekking pole may also support a shelter.
+
+A stuff sack and spare clothing can become a pillow.
+
+A bandana can serve several simple camp functions.
+
+A smartphone can combine navigation, camera, communication, reading and
+note-taking functions that once required several separate devices.
+
+Clothing layers can work together as a system rather than depending on a
+single heavy garment for every condition.
+
+Multi-use equipment can be elegant because one ounce is doing more than one
+job.
+
+But multi-use is not a rule.
+
+Some things should be excellent at one important task.
+
+A piece of safety equipment does not need a clever second purpose to justify
+its weight.
+
+The goal is not to force every object to do three things.
+
+It is simply to notice unnecessary duplication when it exists.
+
+==================================================
+24. TRAILWEIGH
+==================================================
+
+Add the non-collapsible section heading:
+
+TRAILWEIGH
+
+Under it place:
+
+Where TrailWeigh Fits In
+
+About the Creator
+
+Credits
+
+==================================================
+25. WHERE TRAILWEIGH FITS IN
+==================================================
+
+Accordion title:
+
+Where TrailWeigh Fits In
+
+Exact content:
+
+TrailWeigh cannot tell you what belongs in your backpack.
+
+That decision should remain yours.
+
+What TrailWeigh can do is make your decisions easier to see.
+
+Build a gear list.
+
+Organize equipment into systems and categories.
+
+Enter weights and quantities.
+
+Select the gear you are actually taking on a particular trip.
+
+See where the weight comes from.
+
+Compare the parts of your system.
+
+Save different lists for different trails, seasons and conditions.
+
+Use the same list as a packing checklist so important equipment does not
+remain on the garage floor when you leave for the trailhead.
+
+Print it.
+
+Share it.
+
+Come back later and reconsider it.
+
+Maybe an item stays.
+
+Maybe it goes.
+
+Maybe you discover that the three ounces you were obsessing over are less
+important than getting a good night's sleep.
+
+Maybe you discover that you have been carrying something for years simply
+because you never stopped to ask why.
+
+That is where TrailWeigh fits in.
+
+It does not decide what matters.
+
+It helps you decide.
+
+Because the goal isn't the lightest possible pack.
+
+The goal is a pack that works for you and helps you enjoy whatever brought
+you to the trail.
+
+Carry what you need.
+Understand why you carry it.
+Make each item earn its place.
+
+Then go outside.
+
+==================================================
+26. ABOUT THE CREATOR — PRESERVE
+==================================================
+
+Accordion title:
+
+About the Creator
+
+IMPORTANT:
+
+Do NOT remove this accordion.
+
+Do NOT rename it.
+
+Do NOT accidentally replace it with the new Credits material.
+
+Preserve the existing About the Creator copy unless a change is explicitly
+required by this prompt.
+
+Do not invent personal biographical details.
+
+Preserve any existing approved creator material and approved quotation
+already in this section.
+
+Move the accordion into the required final location:
+
+Immediately after:
+
+Where TrailWeigh Fits In
+
+and immediately before:
+
+Credits
+
+==================================================
+27. CREDITS
+==================================================
+
+Accordion title:
+
+Credits
+
+Do NOT remove, rename, merge, or omit Credits.
+
+REPLACE/UPDATE the Credits body with this exact copy:
+
+TrailWeigh was built from ideas that have developed across generations of
+backpackers, hikers, explorers, inventors, researchers and outdoor educators.
+
+Modern lightweight and ultralight backpacking did not come from one person or
+one idea. It grew through experimentation, shared experience, new materials,
+cottage-industry innovation, long-distance hikers willing to question
+established practices, and countless conversations on trails, in books, in
+outdoor communities and around campfires.
+
+TrailWeigh recognizes Ray Jardine as one of the most influential early
+popularizers of the systematic lightweight approach that helped shape modern
+ultralight backpacking. His work is discussed separately in the Ray-Way
+section. References to Ray Jardine and Ray-Way are historical and educational
+and do not imply affiliation or endorsement.
+
+TrailWeigh also acknowledges the researchers whose work helps us better
+understand the relationships among physical activity, natural environments,
+mental well-being, awe, nature connectedness and human health. The research
+used in About TrailWeigh is identified in Sources & References.
+
+Most of all, credit belongs to the broader hiking community—the people who
+test ideas in the real world, share what works and what does not, help one
+another on the trail, care for the places through which we travel, and
+continue asking a very useful question:
+
+Do I really need to carry this?
+
+TrailWeigh is an independent project. References to individuals, companies,
+books, organizations, research institutions, religious or philosophical
+traditions, products or other third parties are provided for historical,
+educational or citation purposes and do not imply sponsorship, affiliation or
+endorsement.
+
+==================================================
+28. SOURCES & REFERENCES LINK — ABOUT PAGE
+==================================================
+
+Immediately after the Credits accordion and before the existing Help &
+How-To / Contact Us card, add a small text link:
+
+Sources & References
+
+This is NOT another large accordion.
+
+Suggested visual treatment:
+
+- 13–14 px
+- Normal or medium weight
+- Clearly recognizable as a link
+- Underline or equivalent accessible link treatment
+- Appropriate hover state
+- Visible keyboard focus
+- Works in Light and Dark modes
+
+Clicking it opens the reusable:
+
+Sources & References
+
+modal.
+
+==================================================
+29. INLINE REFERENCE MARKERS
+==================================================
+
+The [1] through [25] markers appearing in the About text are references.
+
+Render them unobtrusively as small superscript-style clickable reference
+markers where practical.
+
+Example:
+
+nature exposure.[3]
+
+should visually appear with a small citation number.
+
+Clicking a citation marker should:
+
+1. Open Sources & References.
+2. Where reasonably practical, scroll/focus the corresponding reference.
+
+Do NOT create 25 separate modal components.
+
+Use ONE source-of-truth references system.
+
+Do not overcrowd the prose.
+
+==================================================
+30. SOURCES & REFERENCES MODAL — INTRODUCTION
+==================================================
+
+Modal title:
+
+Sources & References
+
+Use this introductory copy:
+
+The scientific and historical material in About TrailWeigh is based on the
+sources below. Research findings describe results observed in studies and
+populations; they are not guarantees of individual outcomes and should not be
+interpreted as medical advice.
+
+==================================================
+31. REFERENCES — MIND
+==================================================
+
+Section heading:
+
+Mind — Mental & Emotional Benefits
+
+Reference 1:
+
+Liu X, Sun Z, Wang X, Dong D, Samsudin SB.
+"Effects of green exercise on mental health: a systematic review and
+meta-analysis."
+Frontiers in Psychology.
+2026;17:1802759.
+DOI: 10.3389/fpsyg.2026.1802759
+PMID: 42058299
+
+Plain-language note:
+A systematic review and meta-analysis examining mental-health outcomes from
+green exercise.
+
+Reference 2:
+
+Bettmann JE, Speelman E, Blumenthal E, Couch S, McArthur T.
+"How Does Nature Exposure Affect Adults With Symptoms of Mental Illness?
+A Meta-Analysis."
+International Journal of Mental Health Nursing.
+2024;33(6):1889–1907.
+DOI: 10.1111/inm.13400
+PMID: 39209768
+
+Plain-language note:
+A meta-analysis examining nature exposure among adults with symptoms of
+mental illness.
+
+Reference 3:
+
+Stevenson MP, Schilhab T, Bentsen P.
+"Attention Restoration Theory II: a systematic review to clarify attention
+processes affected by exposure to natural environments."
+Journal of Toxicology and Environmental Health, Part B.
+2018;21(4):227–268.
+DOI: 10.1080/10937404.2018.1505571
+PMID: 30130463
+
+Plain-language note:
+A systematic review examining cognitive domains affected by exposure to
+natural environments.
+
+==================================================
+32. REFERENCES — BODY
+==================================================
+
+Section heading:
+
+Body — Physical Benefits
+
+Reference 4:
+
+Centers for Disease Control and Prevention.
+"Health Benefits of Physical Activity for Adults."
+
+Plain-language note:
+Authoritative public-health guidance summarizing established health benefits
+associated with regular physical activity.
+
+Link to the current official CDC page, not a third-party copy.
+
+Reference 5:
+
+Liu XX, Ma XL, Huang WZ, et al.
+"Green space and cardiovascular disease: A systematic review with
+meta-analysis."
+Environmental Pollution.
+2022;301:118990.
+DOI: 10.1016/j.envpol.2022.118990
+PMID: 35181451
+
+Plain-language note:
+A large systematic review and meta-analysis examining green-space exposure
+and cardiovascular outcomes.
+
+Reference 6:
+
+"The Effects of Forest Therapy on the Blood Pressure and Salivary Cortisol
+Levels of Urban Residents: A Meta-Analysis."
+2023.
+PMID: 36612777
+
+Use the verified publication metadata from the authoritative record when
+rendering this citation.
+
+Do not invent missing bibliographic fields.
+
+Reference 7:
+
+Antonelli M, Barbieri G, Donelli D.
+"Effects of forest bathing (shinrin-yoku) on levels of cortisol as a stress
+biomarker: a systematic review and meta-analysis."
+International Journal of Biometeorology.
+2019;63(8):1117–1134.
+DOI: 10.1007/s00484-019-01717-x
+PMID: 31001682
+
+Reference 8:
+
+Shin JC, Parab KV, An R, Grigsby-Toussaint DS.
+"Greenspace exposure and sleep: A systematic review."
+Environmental Research.
+2020;182:109081.
+DOI: 10.1016/j.envres.2019.109081
+PMID: 31891829
+
+Reference 9:
+
+Zhang YD, Zhou GL, Wang L, et al.
+"Greenspace and human microbiota: A systematic review."
+Environment International.
+2024;187:108662.
+DOI: 10.1016/j.envint.2024.108662
+PMID: 38653130
+
+Reference 10:
+
+Robinson JM, Breed AC, Camargo A, Redvers N, Breed MF.
+"Biodiversity and human health: A scoping review and examples of
+underrepresented linkages."
+Environmental Research.
+2024;246:118115.
+DOI: 10.1016/j.envres.2024.118115
+PMID: 38199470
+
+Reference 11:
+
+Andersen L, Corazon SS, Stigsdotter UK.
+"Nature Exposure and Its Effects on Immune System Functioning:
+A Systematic Review."
+International Journal of Environmental Research and Public Health.
+2021;18(4):1416.
+DOI: 10.3390/ijerph18041416
+PMID: 33546397
+
+==================================================
+33. REFERENCES — SPIRIT / CONNECTION
+==================================================
+
+Section heading:
+
+Spirit — Awe, Connection & Meaning
+
+Reference 12:
+
+Piff PK, Dietze P, Feinberg M, Stancato DM, Keltner D.
+"Awe, the small self, and prosocial behavior."
+Journal of Personality and Social Psychology.
+2015;108(6):883–899.
+DOI: 10.1037/pspi0000018
+PMID: 25984788
+
+Plain-language note:
+Five studies examining awe, the "small self," generosity and prosocial
+behavior.
+
+Reference 13:
+
+Sparkman DJ, et al.
+"No one is an island: Awe encourages global citizenship identification."
+Emotion.
+DOI: 10.1037/emo0001160
+PMID: 36074621
+
+Plain-language note:
+Experimental work examining awe, perceived smallness, interconnectedness and
+global citizenship identification.
+
+Reference 14:
+
+Capaldi CA, Dopko RL, Zelenski JM.
+"The relationship between nature connectedness and happiness:
+a meta-analysis."
+Frontiers in Psychology.
+2014;5:976.
+DOI: 10.3389/fpsyg.2014.00976
+PMID: 25249992
+
+Plain-language note:
+Meta-analysis of 30 samples and 8,523 participants examining nature
+connectedness and subjective well-being.
+
+Reference 15:
+
+Whitburn J, Linklater W, Abrahamse W.
+"Meta-analysis of human connection to nature and proenvironmental behavior."
+Conservation Biology.
+2020.
+PMID: 31251416
+
+Plain-language note:
+Meta-analysis of 37 samples and 13,237 participants examining connection to
+nature and pro-environmental behavior.
+
+Verify and include the complete DOI/publication metadata from the authoritative
+record.
+
+Reference 16:
+
+Barragan-Jason G, de Mazancourt C, Parmesan C, Singer MC, Loreau M.
+"Human-nature connectedness as a pathway to sustainability:
+A global meta-analysis."
+Conservation Letters.
+2022;15(1).
+DOI: 10.1111/conl.12852
+PMID: 35865265
+
+Reference 17:
+
+Christens BD, McCormick ML, Wolf J.
+"Understanding and promoting nature connectedness:
+A human ecological perspective."
+Current Opinion in Psychology.
+2025;65:102046.
+DOI: 10.1016/j.copsyc.2025.102046
+PMID: 40334530
+
+Plain-language note:
+A review contrasting human-exceptionalist views with a human-ecological
+perspective that understands humans as part of nature.
+
+==================================================
+34. REFERENCES — QUOTATIONS & HISTORICAL TEXTS
+==================================================
+
+Section heading:
+
+Quotations & Historical Texts
+
+Reference 18:
+
+John Muir.
+My First Summer in the Sierra.
+1911.
+Page 110.
+
+Quote used:
+"When we try to pick out anything by itself, we find it hitched to everything
+else in the Universe."
+
+Use a reputable John Muir archival or primary-text source.
+
+Do NOT replace this with the commonly misattributed paraphrase about
+"tugging at a single thing in nature."
+
+Reference 19:
+
+Tao Te Ching / Dao De Jing.
+Chapter 25.
+James Legge translation.
+1891.
+
+Quote used:
+"Man takes his law from the Earth; the Earth takes its law from Heaven."
+
+Identify the translation.
+
+Reference 20:
+
+Psalm 24:1.
+King James Version.
+Public-domain translation.
+
+Quote used:
+"The earth is the LORD's, and the fulness thereof."
+
+Reference 21:
+
+Karaṇīya Mettā Sutta.
+Sutta Nipāta 1.8 / Khuddakapāṭha 9.
+Translation by Acharya Buddharakkhita.
+
+Quote used:
+"May all beings be happy!"
+
+Identify the translation/source.
+
+IMPORTANT:
+
+The quotations are examples of different religious, philosophical and
+naturalist perspectives.
+
+They are NOT scientific references.
+
+Do not imply that the traditions are identical.
+
+==================================================
+35. REFERENCES — RAY JARDINE / RAY-WAY
+==================================================
+
+Section heading:
+
+Ray Jardine / Ray-Way History
+
+Reference 22:
+
+Wild Country.
+"Making Friends Since 1977: The History."
+
+Plain-language note:
+Wild Country's historical account of Ray Jardine's aerospace background,
+Friend prototypes, collaboration with Mark Vallance and the commercial
+production of Friends beginning in 1977.
+
+Use Wild Country's official historical source.
+
+Reference 23:
+
+Ray Jardine.
+"Profile of Ray Jardine."
+RayJardine.com.
+
+Plain-language note:
+Source for the long-distance hiking chronology, including the five major
+1987–1994 hikes totaling approximately 12,500 miles.
+
+Reference 24:
+
+Ray Jardine.
+"Appalachian Trail hiking adventure, 1993 — Pearl Four."
+RayJardine.com.
+
+Plain-language note:
+Source for Jardine's description of the sub-10-pound "Baseline Pack Weight"
+and his acknowledgement of earlier lightweight backpacking.
+
+Reference 25:
+
+Ray Jardine.
+"Trail Life's Publication History."
+RayJardine.com.
+
+Plain-language note:
+Source for:
+
+PCT Hiker's Handbook
+- Beta printing: December 1991
+- First commercial printing: April 1992
+
+Pacific Crest Trail Hiker's Handbook, Second Edition
+- 1996
+
+Beyond Backpacking
+- 1999
+
+Trail Life
+- 2008
+
+==================================================
+36. CANONICAL EXTERNAL LINKS
+==================================================
+
+For scientific references:
+
+Prefer official canonical destinations in this order where practical:
+
+1. DOI/publisher page
+2. PubMed/National Library of Medicine
+3. Official institutional source
+
+For CDC material:
+
+Use the official CDC page.
+
+For Ray Jardine:
+
+Use RayJardine.com for Jardine's own chronology/accounts.
+
+For Friend history:
+
+Use Wild Country's official history.
+
+For quotations:
+
+Use reputable primary, archival, public-domain or identified-translation
+sources.
+
+Do NOT link references to:
+
+- Random blogs
+- AI-generated pages
+- Quote aggregation websites when a primary/reputable source is available
+- Unverified social media posts
+
+==================================================
+37. RESEARCH INTERPRETATION NOTICE
+==================================================
+
+At the bottom of Sources & References display:
+
+ABOUT THESE SOURCES
+
+Then use this exact copy:
+
+Scientific research evolves. TrailWeigh summarizes research for general
+educational purposes and will favor systematic reviews, meta-analyses,
+peer-reviewed research and authoritative public-health sources whenever
+practical.
+
+Research findings describe averages and associations observed in particular
+studies and populations. They do not guarantee that any individual will
+experience the same result and should not be interpreted as medical advice.
+
+Religious and philosophical quotations are included as examples of different
+ways human beings have expressed ideas about nature, meaning, stewardship and
+connection. They are not presented as scientific evidence, and their
+inclusion does not indicate that TrailWeigh endorses a particular religious
+or philosophical belief.
+
+TrailWeigh is an independent project. References to Ray Jardine, Ray-Way,
+researchers, authors, publishers, religious or philosophical texts, companies
+and other third parties are provided for historical, educational and citation
+purposes only and do not imply sponsorship, affiliation or endorsement.
+
+==================================================
+38. REFERENCE MODAL ACCESSIBILITY
+==================================================
+
+The Sources & References modal must:
+
+- Have visible title
+- Have obvious Close/X control
+- Close with Escape
+- Trap keyboard focus appropriately
+- Return focus to the triggering link/citation after closing
+- Use appropriate dialog semantics
+- Be keyboard navigable
+- Work in Light mode
+- Work in Dark mode
+- Be vertically scrollable
+- Never extend unusably beyond viewport
+- Work on narrow/mobile screens
+
+On a small phone, a near-full-screen modal is acceptable.
+
+==================================================
+39. SOURCES & REFERENCES — NORMAL SITE FOOTER
+==================================================
+
+Add a small:
+
+Sources & References
+
+link to the appropriate informational/legal area of the normal TrailWeigh
+footer.
+
+Do not duplicate the reference content.
+
+It opens the SAME reusable Sources & References modal.
+
+Preserve the existing footer design and footer typography.
+
+==================================================
+40. SOURCES & REFERENCES — FULL SHARED LINK
+==================================================
+
+The user explicitly requires references to be available from Shared Links.
+
+On the FULL Shared TrailWeigh Link:
+
+Add:
+
+Sources & References
+
+as a small informational/footer link.
+
+It must:
+
+- Work without requiring sign-in
+- Open the same reusable reference content
+- Not expose owner account information
+- Not expose private Locker information
+- Not expose internal/private file IDs
+- Not alter shared data
+- Not alter the owner's original file
+
+Do NOT place all references directly in the checklist body.
+
+Keep them behind the small link/modal.
+
+==================================================
+41. SOURCES & REFERENCES — CHECKABLE PACKING LIST
+==================================================
+
+Also make:
+
+Sources & References
+
+available from the Shared Checkable Packing List.
+
+Use a small footer/informational link.
+
+It opens the SAME reusable reference content.
+
+Do NOT add:
+
+- About accordions
+- Mind/Body/Spirit content
+- Ray-Way article
+- Long research sections
+
+directly into the Checkable Packing List.
+
+The packing list should remain simple.
+
+==================================================
+42. SHARED-LINK FOOTER PROTECTION
+==================================================
+
+Prompt 022F fixed the Shared Link footer overlay and was USER VERIFIED.
+
+Adding Sources & References must NOT regress that fix.
+
+Footer must:
+
+- Remain in normal document flow
+- Appear after actual content
+- Never float over checklist content
+- Never cover categories
+- Never cover Pack Summary
+- Never cover Scan Gear List
+- Never cover Shared Files
+- Never become fixed/sticky accidentally
+
+==================================================
+43. RESEARCH CLAIM QUALITY RULES
+==================================================
+
+Audit all scientific claims.
+
+Prefer language such as:
+
+- research suggests
+- studies have found
+- is associated with
+- has been observed
+- may contribute
+- evidence is emerging
+- evidence remains mixed
+
+Do NOT write:
+
+- proves
+- guarantees
+- cures
+- prevents disease
+
+unless a source specifically and appropriately supports such language.
+
+Specifically prohibit:
+
+"Science proves we are all spiritually one."
+
+"Science proves universal consciousness."
+
+"Quantum physics proves spirituality."
+
+"Forest microbes cure disease."
+
+"Being in nature boosts everyone's immune system."
+
+"Hiking cures depression."
+
+"Hiking cures anxiety."
+
+Do not add pseudoscientific claims.
+
+==================================================
+44. SCIENCE / SPIRITUALITY BOUNDARY
+==================================================
+
+This distinction must remain explicit.
+
+TrailWeigh MAY state:
+
+"We are not merely surrounded by nature. We are part of it."
+
+in the biological/ecological context provided.
+
+TrailWeigh MAY discuss:
+
+- Nature connectedness
+- Awe
+- Human ecology
+- Biological interdependence
+- Microbiomes
+- Environmental cycles
+- Personal spiritual interpretation
+
+TrailWeigh must ALSO retain:
+
+"Science can describe many of those physical, ecological and psychological
+connections. It cannot establish that they prove a universal spirit, divine
+consciousness or any other metaphysical belief."
+
+Do not weaken or remove this sentence.
+
+It protects both scientific accuracy and the inclusive nature of the Spirit
+section.
+
+==================================================
+45. RELIGIOUS NEUTRALITY
+==================================================
+
+TrailWeigh is not a religious organization.
+
+The Spirit section should remain welcoming to:
+
+- Christians
+- Buddhists
+- Taoists
+- Members of other faiths
+- Spiritual but nonreligious people
+- Agnostics
+- Atheists
+- Scientific naturalists
+- People who do not wish to define the experience
+
+Do not tell readers what they should believe.
+
+Do not describe one tradition as more correct than another.
+
+Do not imply that the selected quotations represent every belief system.
+
+==================================================
+46. QUOTATION ACCURACY
+==================================================
+
+Do not replace the supplied quotations with internet-famous alternatives.
+
+Do NOT add vague:
+
+- "Native American proverb"
+- "Buddha said..."
+- Einstein quotation
+- John Muir quotation
+- Indigenous wisdom quotation
+
+unless the actual source can be verified.
+
+Every displayed quote must have:
+
+- Speaker/text/tradition
+- Work/source
+- Translation when relevant
+- Reference entry
+
+==================================================
+47. ABOUT THE CREATOR REGRESSION PROTECTION
+==================================================
+
+About the Creator is REQUIRED.
+
+Do not:
+
+- Delete it
+- Rename it
+- Merge it into Credits
+- Replace it with Credits
+- Move its personal material into Ray-Way
+- Invent creator information
+
+Final order:
+
+Where TrailWeigh Fits In
+About the Creator
+Credits
+Sources & References
+
+==================================================
+48. CREDITS REGRESSION PROTECTION
+==================================================
+
+Credits is REQUIRED.
+
+Do not:
+
+- Delete it
+- Rename it
+- Merge it into About the Creator
+- Replace it with Sources & References
+
+Credits must remain a normal About accordion.
+
+Detailed bibliographic citations belong in:
+
+Sources & References
+
+not inside Credits.
+
+==================================================
+49. HELP & HOW-TO / CONTACT CARD
+==================================================
+
+Preserve the existing informational card beneath the About content.
+
+Its purpose should remain substantially:
+
+"For step-by-step instructions on using any feature, visit Help & How-To.
+To report a problem or get in touch, see Contact Us."
+
+Do NOT remove those navigation links.
+
+==================================================
+50. DO NOT MODIFY HELP OR HOW IT WORKS CONTENT
+==================================================
+
+This prompt is primarily an About TrailWeigh content change plus the reusable
+Sources & References access.
+
+Do NOT rewrite:
+
+- Help & How-To
+- How It Works
+
+unless a minimal shared navigation change is required to expose the Sources &
+References link.
+
+==================================================
+51. DO NOT MODIFY SHARE FUNCTIONALITY
+==================================================
+
+Do NOT change:
+
+- Share TrailWeigh List
+- Share Checkable Packing List
+- Native browser share
+- Download PDF
+
+as part of this prompt.
+
+Prompt 022J handles native Share consistency separately.
+
+The addition of Sources & References to Shared Links must not alter Share
+behavior.
+
+==================================================
+52. WEIGHT DISTRIBUTION OUT OF SCOPE
+==================================================
+
+The missing Weight Distribution panel on the full Shared TrailWeigh Link is
+a separate issue reserved for Prompt 022K.
+
+Do NOT fix Weight Distribution in this prompt.
+
+Do not let this content change interfere with Prompt 022K planning.
+
+==================================================
+53. TEST A — FINAL ABOUT ORDER
+==================================================
+
+Verify exact order:
+
+[ ] About TrailWeigh introduction
+
+[ ] MENTAL / PHYSICAL / SPIRITUAL
+
+[ ] Remember Why We're Here
+
+[ ] Mind — Mental & Emotional Benefits
+
+[ ] Body — Physical Benefits
+
+[ ] Spirit — Awe, Connection & Meaning
+
+[ ] HIKING PHILOSOPHY
+
+[ ] Do You Hike for the Trail or the Camp?
+
+[ ] Hike Your Own Hike — HYOH
+
+[ ] Respect the Trail—and Each Other
+
+[ ] ULTRALIGHT
+
+[ ] What Is Ultralight?
+
+[ ] Ultralight Is a Tool, Not a Contest
+
+[ ] The Minimalist Mindset
+
+[ ] Ray-Way
+
+[ ] Knowledge Weighs Nothing
+
+[ ] Think in Systems
+
+[ ] One Tool, Many Uses
+
+[ ] TRAILWEIGH
+
+[ ] Where TrailWeigh Fits In
+
+[ ] About the Creator
+
+[ ] Credits
+
+[ ] Sources & References
+
+[ ] Help & How-To / Contact Us card
+
+==================================================
+54. TEST B — ACCORDION BEHAVIOR
+==================================================
+
+Expected:
+
+[ ] All About accordion topics start collapsed.
+
+[ ] Entire title rows are clickable.
+
+[ ] Clicking one accordion does not force another open accordion closed.
+
+[ ] Multiple topics may remain open.
+
+[ ] Enter works.
+
+[ ] Space works.
+
+[ ] aria-expanded is accurate.
+
+[ ] Disclosure chevrons work.
+
+[ ] Mobile layout works.
+
+==================================================
+55. TEST C — MIND / BODY / SPIRIT
+==================================================
+
+Verify:
+
+[ ] All four topics appear beneath MENTAL / PHYSICAL / SPIRITUAL.
+
+[ ] Remember Why We're Here is first.
+
+[ ] Mind is second.
+
+[ ] Body is third.
+
+[ ] Spirit is fourth.
+
+[ ] Scientific references display.
+
+[ ] Spirit is not written as religion-specific.
+
+[ ] Science does not claim to prove metaphysical spirituality.
+
+[ ] Quotations are attributed.
+
+==================================================
+56. TEST D — ULTRALIGHT
+==================================================
+
+Verify under ULTRALIGHT:
+
+[ ] What Is Ultralight?
+
+[ ] Ultralight Is a Tool, Not a Contest
+
+[ ] The Minimalist Mindset
+
+[ ] Ray-Way
+
+[ ] Knowledge Weighs Nothing
+
+[ ] Think in Systems
+
+[ ] One Tool, Many Uses
+
+==================================================
+57. TEST E — RAY-WAY ACCURACY
+==================================================
+
+Verify:
+
+[ ] Ray Jardine spelling correct.
+
+[ ] Ray Jardine's possessive correct.
+
+[ ] No "Ray Jardines" typo.
+
+[ ] No claim Jardine invented traveling light.
+
+[ ] No claim Jardine invented all ultralight backpacking.
+
+[ ] Approximately 12,500 miles used for 1987–1994 five-hike chronology.
+
+[ ] Sub-10-pound Baseline Pack Weight tied to Jardine's own 1993 account.
+
+[ ] Friend history correctly sourced.
+
+[ ] PCT Hiker's Handbook beta: Dec. 1991.
+
+[ ] First commercial printing: Apr. 1992.
+
+[ ] Pacific Crest Trail Hiker's Handbook Second Edition: 1996.
+
+[ ] Beyond Backpacking: 1999.
+
+[ ] Trail Life: 2008.
+
+[ ] Independence statement present.
+
+==================================================
+58. TEST F — CREDITS
+==================================================
+
+Verify:
+
+[ ] Credits exists.
+
+[ ] Credits is an accordion.
+
+[ ] Credits follows About the Creator.
+
+[ ] Exact new Credits copy is present.
+
+[ ] Broader hiking community is acknowledged.
+
+[ ] Ray Jardine is acknowledged without endorsement.
+
+[ ] Researchers are acknowledged.
+
+[ ] Detailed citations are NOT duplicated inside Credits.
+
+==================================================
+59. TEST G — ABOUT THE CREATOR
+==================================================
+
+Verify:
+
+[ ] About the Creator still exists.
+
+[ ] Existing approved content remains.
+
+[ ] It was not replaced by Credits.
+
+[ ] No invented personal details were added.
+
+==================================================
+60. TEST H — SOURCES & REFERENCES
+==================================================
+
+Verify:
+
+[ ] Small Sources & References link appears after Credits.
+
+[ ] Modal opens.
+
+[ ] Mind references appear.
+
+[ ] Body references appear.
+
+[ ] Spirit references appear.
+
+[ ] Quote sources appear.
+
+[ ] Ray Jardine sources appear.
+
+[ ] DOI/PMID data is accurate.
+
+[ ] No reference was invented.
+
+[ ] External links use reputable destinations.
+
+[ ] Modal scrolls.
+
+[ ] Modal works on mobile.
+
+[ ] Escape closes it.
+
+[ ] Focus management works.
+
+==================================================
+61. TEST I — INLINE CITATIONS
+==================================================
+
+Verify:
+
+[ ] Reference markers appear unobtrusively.
+
+[ ] They are clickable where implemented.
+
+[ ] They open Sources & References.
+
+[ ] Appropriate corresponding source is findable/focused.
+
+[ ] Citations do not make About difficult to read.
+
+==================================================
+62. TEST J — FULL SHARED LINK REFERENCES
+==================================================
+
+Open a Full Shared TrailWeigh Link without signing in.
+
+Expected:
+
+[ ] Sources & References link is available.
+
+[ ] Modal opens.
+
+[ ] Research references display.
+
+[ ] Ray-Way references display.
+
+[ ] No owner's private data is exposed.
+
+[ ] Shared list remains unchanged.
+
+[ ] Footer remains in normal page flow.
+
+==================================================
+63. TEST K — CHECKABLE PACKING LIST REFERENCES
+==================================================
+
+Open Shared Checkable Packing List.
+
+Expected:
+
+[ ] Small Sources & References footer link exists.
+
+[ ] Modal opens.
+
+[ ] No sign-in required.
+
+[ ] About content is not dumped into the packing list.
+
+[ ] Packing list remains simple.
+
+[ ] Temporary recipient checkbox behavior remains unchanged.
+
+[ ] Owner original remains unchanged.
+
+==================================================
+64. TEST L — NORMAL FOOTER
+==================================================
+
+Verify:
+
+[ ] Sources & References is available in appropriate normal-site footer area.
+
+[ ] Existing footer links remain.
+
+[ ] Footer styling remains compact.
+
+[ ] Light mode works.
+
+[ ] Dark mode works.
+
+==================================================
+65. TEST M — THIRD-PARTY ARTWORK
+==================================================
+
+Verify:
+
+[ ] No Ray Jardine image added.
+
+[ ] No book-cover image added to About.
+
+[ ] No book-cover image added to Sources & References.
+
+[ ] No Wild Country logo added.
+
+[ ] Existing development background was not duplicated.
+
+[ ] Pre-launch removal reminder appears in report.
+
+==================================================
+66. REGRESSION TESTING
+==================================================
+
+Verify no regressions to:
+
+- Save
+- Save As
+- Locker
+- Shared Files
+- Scan Gear List
+- Import
+- Share
+- Checkable Packing List
+- Preview
+- Print
+- PDF
+- Backgrounds
+- Pack Summary
+- Weight calculations
+- Authentication
+- Account isolation
+- Prompt 022F footer fix
+- Prompt 022G restoration
+- Prompt 022I Shared Link behavior
+
+Use:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Do not claim PASS for behavior verified only by source inspection when runtime
+testing is required.
+
+==================================================
+67. REQUIRED WORKFLOW REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_022L_REPORT.md
+
+The report must include:
+
+- Exact prompt:
+  Prompt 022L — Complete About TrailWeigh Update + Sources & References
+
+- Checkpoint/backup confirmation
+
+- Files changed
+
+- Complete final-diff review
+
+- Existing About architecture discovered
+
+- Final About order
+
+- Section heading implementation
+
+- Mental / Physical / Spiritual implementation
+
+- Mind content implementation
+
+- Body content implementation
+
+- Spirit content implementation
+
+- Science/spirituality boundary confirmation
+
+- Hiking Philosophy implementation
+
+- Ultralight implementation
+
+- Ray-Way corrections
+
+- Exact Ray Jardine sources used
+
+- Confirmation 12,500-mile figure
+
+- Confirmation 1993 Baseline Pack Weight wording
+
+- Friend history source
+
+- Book publication chronology
+
+- About the Creator preservation
+
+- Credits implementation
+
+- Sources & References implementation
+
+- Citation-marker implementation
+
+- Research metadata verification
+
+- Quote-source verification
+
+- Normal-site reference access
+
+- Full Shared Link reference access
+
+- Checkable Packing List reference access
+
+- Independence notice
+
+- Research interpretation notice
+
+- Accessibility results
+
+- Mobile results
+
+- Light/Dark results
+
+- Confirmation no new third-party artwork was added
+
+- PRE-LAUNCH reminder:
+  Remove Ray Jardine book-cover development background/theme and its public
+  asset before production launch unless appropriate permission has been
+  obtained.
+
+- Automated test results
+
+- Runtime/browser test results
+
+- PASS / FAIL / PARTIAL / NOT TESTED for each requested test
+
+- Failed attempts
+
+- Anything reverted
+
+- Anything requiring user verification
+
+- Confirmation unrelated functionality was preserved
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do NOT overwrite any previous workflow report.
+
+At completion provide:
+
+1. Full path to workflow-reports/PROMPT_022L_REPORT.md
+
+2. Report file size
+
+3. Report line count
+
+4. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md was updated
+
+5. Short summary of About TrailWeigh reorganization
+
+6. Short summary of Mental / Physical / Spiritual additions
+
+7. Short summary of Ray-Way corrections
+
+8. Confirmation About the Creator remains
+
+9. Confirmation Credits remains and was updated
+
+10. Confirmation Sources & References works from About
+
+11. Confirmation Sources & References works from Full Shared Links
+
+12. Confirmation Sources & References works from Checkable Packing Lists
+
+13. Anything requiring user verification

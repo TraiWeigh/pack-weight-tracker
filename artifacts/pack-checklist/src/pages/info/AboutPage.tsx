@@ -1,32 +1,43 @@
 /**
  * AboutPage.tsx — TrailWeigh About Page
- * Prompt 022D: Full accordion rewrite with philosophy/ultralight content.
+ * Prompt 022L: Complete content rewrite + Sources & References modal.
  *
- * Structure:
- *   Visible introduction (always shown)
- *   Philosophy callout (always shown)
- *   12 accordion sections:
- *     1. What Is Ultralight?
- *     2. Ray-Way
- *     3. The Minimalist Mindset
- *     4. One Tool, Many Uses
- *     5. Think in Systems
- *     6. Knowledge Weighs Nothing
- *     7. Do You Hike for the Trail or the Camp?
- *     8. Hike Your Own Hike — HYOH
- *     9. Ultralight Is a Tool, Not a Contest
- *    10. Remember Why We're Here
- *    11. Respect the Trail—and Each Other
- *    12. Where TrailWeigh Fits In
+ * Final structure:
+ *   About TrailWeigh — Introduction
  *
- * All sections collapsed by default.
- * Multiple sections may be open simultaneously.
- * Full title row is the click/keyboard target.
+ *   MENTAL / PHYSICAL / SPIRITUAL  (section label)
+ *   1.  Remember Why We're Here
+ *   2.  Mind — Mental & Emotional Benefits
+ *   3.  Body — Physical Benefits
+ *   4.  Spirit — Awe, Connection & Meaning
+ *
+ *   HIKING PHILOSOPHY  (section label)
+ *   5.  Do You Hike for the Trail or the Camp?
+ *   6.  Hike Your Own Hike — HYOH
+ *   7.  Respect the Trail—and Each Other
+ *
+ *   ULTRALIGHT  (section label)
+ *   8.  What Is Ultralight?
+ *   9.  Ultralight Is a Tool, Not a Contest
+ *   10. The Minimalist Mindset
+ *   11. Ray-Way
+ *   12. Knowledge Weighs Nothing
+ *   13. Think in Systems
+ *   14. One Tool, Many Uses
+ *
+ *   TRAILWEIGH  (section label)
+ *   15. Where TrailWeigh Fits In
+ *   16. About the Creator
+ *   17. Credits
+ *
+ *   Sources & References link → modal
+ *   Help & How-To / Contact card
  */
 import React, { useState, useCallback } from 'react';
 import { Link } from 'wouter';
 import { Tent, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import Footer from '@/components/Footer';
+import SourcesModal from '@/components/SourcesModal';
 
 // ── Accordion hook ────────────────────────────────────────────────────────────
 
@@ -58,10 +69,6 @@ interface SectionProps {
 function Section({ id, title, isOpen, onToggle, children }: SectionProps) {
   return (
     <div className="border border-card-border rounded-xl overflow-hidden shadow-sm bg-card">
-      {/*
-       * Entire title row is the button — meeting the full-row clickable requirement.
-       * Standard <button> handles Enter and Space natively.
-       */}
       <button
         id={`sec-btn-${id}`}
         aria-expanded={isOpen}
@@ -95,6 +102,16 @@ function Section({ id, title, isOpen, onToggle, children }: SectionProps) {
   );
 }
 
+// ── Non-collapsible section label ─────────────────────────────────────────────
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-semibold tracking-widest uppercase text-muted-foreground/60 pt-6 pb-1 px-1 select-none">
+      {children}
+    </p>
+  );
+}
+
 // ── Pull quote ────────────────────────────────────────────────────────────────
 
 function PullQuote({ children }: { children: React.ReactNode }) {
@@ -105,15 +122,11 @@ function PullQuote({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Philosophy callout (reusable) ─────────────────────────────────────────────
+// ── Inline sub-heading (non-bold label inside an accordion body) ───────────────
 
-function PhilosophyCallout() {
+function SubHead({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-primary/5 border border-primary/20 rounded-xl px-5 py-4 text-sm text-foreground/80 leading-relaxed font-medium">
-      "Carry what you need.<br />
-      Understand why you carry it.<br />
-      Make each item earn its place."
-    </div>
+    <p className="font-semibold text-foreground text-sm pt-1">{children}</p>
   );
 }
 
@@ -121,6 +134,32 @@ function PhilosophyCallout() {
 
 export default function AboutPage() {
   const { toggle, isOpen } = useAccordion();
+
+  // Sources & References modal state (page-level; footer has its own)
+  const [sourcesOpen, setSourcesOpen]   = useState(false);
+  const [scrollToRef, setScrollToRef]   = useState<string | null>(null);
+
+  /** Open the Sources modal and optionally scroll to a specific reference. */
+  function openSources(refId?: string) {
+    setScrollToRef(refId ?? null);
+    setSourcesOpen(true);
+  }
+
+  /** Clickable inline citation marker  e.g. [1] */
+  function Cite({ n }: { n: number }) {
+    return (
+      <sup>
+        <button
+          onClick={() => openSources(`ref-${n}`)}
+          className="text-[11px] text-primary hover:underline ml-0.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded"
+          title={`Reference ${n} — click to view sources`}
+          aria-label={`Reference ${n}`}
+        >
+          [{n}]
+        </button>
+      </sup>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
@@ -141,303 +180,347 @@ export default function AboutPage() {
         {/* ── Always-visible introduction ────────────────────────────────── */}
         <h1 className="text-3xl font-black text-foreground mb-5">About TrailWeigh</h1>
 
-        <div className="space-y-4 text-foreground/80 leading-relaxed mb-6">
+        <div className="space-y-4 text-foreground/80 leading-relaxed mb-8">
           <p>
-            TrailWeigh helps you plan, organize, and understand what you're carrying.
+            TrailWeigh is built around a simple idea: what we carry should support why
+            we went outside in the first place. It gives you a place to plan your gear,
+            organize it into a system, and understand where the weight comes from.
           </p>
           <p>
-            Build your gear list, organize equipment by category, track individual and
-            total weights, and see where your pack weight comes from. TrailWeigh gives
-            you the information to decide what belongs in your pack—and what might not.
+            A lighter pack can make long miles easier, but the number on a scale is not
+            the destination. Gear is a tool. Knowledge is a tool. TrailWeigh is a tool.
           </p>
           <p>
-            But a gear list isn't useful only for calculating weight.
+            The real goal might be adventure, solitude, challenge, friendship, discovery,
+            healing, a mountaintop sunrise, a quiet camp beside a stream—or simply seeing
+            what is around the next bend.
           </p>
-          <p className="font-semibold text-foreground">
-            Your TrailWeigh list is also a checklist.
-          </p>
-          <p>
-            Before a trip, use it to make sure everything you planned to bring actually
-            makes it into your pack. Check items off as you gather and pack your gear,
-            or print your completed checklist and use a paper copy while preparing at
-            home or performing a final equipment check before leaving for the trail.
-          </p>
-          <p>
-            A checklist can help prevent something far more frustrating than carrying an
-            extra ounce: arriving at the trailhead and realizing an important piece of
-            gear is still at home.
-          </p>
-          <p>
-            TrailWeigh isn't here to tell you what to carry.
-          </p>
-          <p>
-            We help you see what you're carrying, understand why you're carrying it, and
-            make informed decisions for yourself.
+          <p className="font-medium text-foreground">
+            Carry what you need. Understand why you carry it. Make each item earn its place.
           </p>
         </div>
 
-        <PhilosophyCallout />
-
         {/* ── Accordion sections ─────────────────────────────────────────── */}
-        <div className="mt-10 space-y-3">
+        <div className="space-y-3">
 
-          {/* 1. What Is Ultralight? */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <SectionLabel>Mental / Physical / Spiritual</SectionLabel>
+
+          {/* 1. Remember Why We're Here */}
           <Section
-            id="ultralight"
-            title="What Is Ultralight?"
-            isOpen={isOpen('ultralight')}
+            id="why-here"
+            title="Remember Why We're Here"
+            isOpen={isOpen('why-here')}
             onToggle={toggle}
           >
             <p>
-              Ultralight backpacking is an approach to thoughtfully reducing carried
-              weight so that hiking can be more comfortable, efficient, and enjoyable.
+              It is surprisingly easy for backpacking to become about gear.
             </p>
             <p>
-              You'll find commonly used base-weight categories referenced in the
-              backpacking community—numbers that loosely distinguish "lightweight" from
-              "ultralight." But those numbers are starting points, not official
-              definitions. Ultralight is also a mindset: a way of evaluating gear before
-              it goes into your pack.
-            </p>
-            <p>A few questions at the center of that mindset:</p>
-            <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>Do I need this?</li>
-              <li>Will I actually use it on this trip?</li>
-              <li>Does something I already carry do the same job?</li>
-              <li>Is there a simpler way to accomplish the same thing?</li>
-            </ul>
-            <p>
-              Ultralight is not merely about buying lighter gear. Replacing every item
-              with the lightest commercially available version is one path—but it can be
-              expensive and isn't the only path.
+              We compare ounces, fabrics, shelters, shoes, quilts, stoves, electronics and
+              base weights. We build spreadsheets. We study specifications. We search for
+              the next item that might save another few grams.
             </p>
             <p>
-              The goal is a thoughtful, efficient backpacking system suited to the
-              individual hiker and the specific trip. For some trips and some hikers,
-              that means a very light pack. For others, it means examining each item
-              deliberately and deciding what's worth carrying. Both are useful habits.
+              Those things can be useful. They can also become the focus instead of the
+              means.
+            </p>
+            <p>
+              The backpack exists to carry what helps us safely experience the trail. The
+              trail does not exist to give us somewhere to carry the backpack.
+            </p>
+            <p>
+              For one person, being outside means covering thirty miles in a day. For
+              another, it means walking six miles and spending the afternoon beside a lake.
+              It can mean solitude or companionship, challenge or peace, exploration or
+              returning to a place that feels familiar.
+            </p>
+            <p>Sometimes the most important thing we can do is remember why we came.</p>
+            <p>Look up.</p>
+            <p>Listen.</p>
+            <p>Notice where you are.</p>
+            <p>
+              The goal of the pack is to help make those experiences possible—not to
+              compete with them.
+            </p>
+            <p>
+              The lightest pack in the world has little value if we become so consumed by
+              equipment, mileage or numbers that we forget to experience the place we
+              worked so hard to reach.
             </p>
           </Section>
 
-          {/* 2. Ray-Way */}
+          {/* 2. Mind — Mental & Emotional Benefits */}
           <Section
-            id="ray-way"
-            title="Ray-Way"
-            isOpen={isOpen('ray-way')}
+            id="mind"
+            title="Mind — Mental & Emotional Benefits"
+            isOpen={isOpen('mind')}
             onToggle={toggle}
           >
             <p>
-              Traveling light is not a new idea. Hikers, hunters, mountaineers, and
-              scouts have been thinking about carried weight for as long as people have
-              carried things on their backs.
+              There is something many hikers recognize intuitively: our minds can feel
+              different outside.
             </p>
             <p>
-              But in the modern backpacking world, few people have had more influence on
-              how lightweight and ultralight hiking is understood than Ray Jardine.
-            </p>
-
-            <p className="font-semibold text-foreground">A background in climbing and engineering</p>
-            <p>
-              Before becoming widely known for lightweight backpacking, Ray Jardine was
-              an engineer, inventor, and accomplished rock climber. In the 1970s he
-              developed the Friend—a practical spring-loaded camming device that became
-              highly influential in crack-climbing protection and is an important
-              predecessor to the modern climbing cams in use today.
-            </p>
-
-            <p className="font-semibold text-foreground">Thousands of miles on the trail</p>
-            <p>
-              Ray and Jenny Jardine completed thousands of miles of long-distance hiking
-              while experimenting with lighter homemade gear and simpler systems. From
-              1987 through 1994 they logged more than 15,000 miles of long-distance
-              hiking. By their 1993 Appalachian Trail thru-hike, they were using base
-              packs below 10 pounds, excluding food and water.
+              Research increasingly supports parts of that experience. Studies of nature
+              exposure and exercise in natural settings have found benefits involving
+              well-being, positive mood, negative affect and stress, although results vary
+              by study, population and type of exposure.<Cite n={1} /><Cite n={2} /> A systematic
+              review of cognitive research also found improvements after nature exposure in
+              areas including working memory and cognitive flexibility, with less consistent
+              effects on attentional control.<Cite n={3} />
             </p>
             <p>
-              Jardine documented his developing ideas in{' '}
-              <em>The PCT Hiker's Handbook</em>, whose early publication history began
-              in 1991 and 1992. His writing developed further through{' '}
-              <em>The Pacific Crest Trail Hiker's Handbook</em>,{' '}
-              <em>Beyond Backpacking</em>, and{' '}
-              <em>Trail Life</em>. His approach became widely known as the Ray-Way.
-            </p>
-
-            <p className="font-semibold text-foreground">A way of thinking</p>
-            <p>
-              Jardine encouraged hikers to question the conventional backpacking system
-              rather than simply accept the standard gear list as given:
-            </p>
-            <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>Why am I carrying this?</li>
-              <li>What job does it perform?</li>
-              <li>Do I actually need it?</li>
-              <li>Can something else perform the same job?</li>
-              <li>Can several pieces work together as a system?</li>
-              <li>Is there a simpler, effective solution?</li>
-            </ul>
-            <p>
-              Ideas associated with modern ultralight backpacking—lightweight shelters,
-              quilts, frameless or minimal-frame packs, homemade and cottage-made gear,
-              multi-use equipment, simpler systems, and viewing the pack as an
-              interconnected whole—were all discussed and demonstrated through his hiking
-              and writing.
+              A trail asks for a different kind of attention than much of modern life.
+              Instead of notifications, schedules and constant streams of information,
+              attention turns toward terrain, weather, water, navigation, changing light,
+              the sound of wind through trees and the rhythm of walking.
             </p>
             <p>
-              Jardine did not invent traveling light, and the ultralight movement has
-              many contributors. But his experimentation, his thousands of miles on
-              long-distance trails, his gear design, and his writing played a major role
-              in shaping how modern lightweight and ultralight backpacking is understood
-              and practiced.
+              That does not mean every hike is peaceful. Backpacking can be uncomfortable,
+              frustrating, frightening and exhausting. But even those experiences can
+              create opportunities for perspective, problem-solving and confidence.
+            </p>
+            <p>There is also value in mental space.</p>
+            <p>
+              A long walk can provide time to think without requiring an immediate answer.
+              Solitude can create room for reflection. Hiking with someone else can create
+              conversations that rarely happen in ordinary surroundings. Completing a
+              difficult climb, navigating an unexpected problem or simply continuing when
+              the day becomes hard can produce a genuine sense of accomplishment.
+            </p>
+            <p>
+              Nature is not a cure-all, and time outdoors is not a replacement for
+              appropriate medical or mental-health care. Research describes tendencies and
+              outcomes observed across groups—not guarantees for every individual.
+            </p>
+            <p>
+              But for many people, going outside can be one meaningful part of a healthy
+              mental and emotional life.
+            </p>
+            <p>
+              Sometimes we go into the wilderness to see the world more clearly. Sometimes
+              we come back seeing ourselves more clearly.
             </p>
           </Section>
 
-          {/* 3. The Minimalist Mindset */}
+          {/* 3. Body — Physical Benefits */}
           <Section
-            id="minimalist"
-            title="The Minimalist Mindset"
-            isOpen={isOpen('minimalist')}
+            id="body"
+            title="Body — Physical Benefits"
+            isOpen={isOpen('body')}
+            onToggle={toggle}
+          >
+            <p>Hiking is movement, and movement matters.</p>
+            <p>
+              Walking for hours, climbing grades, descending uneven terrain, stepping over
+              rocks and roots, balancing, carrying a pack and repeating those movements day
+              after day challenge the cardiovascular system, muscles, bones, balance and
+              coordination.
+            </p>
+            <p>
+              Regular physical activity is associated with better cardiovascular health,
+              stronger bones and muscles, improved sleep, reduced risk of several chronic
+              diseases and better functional ability.<Cite n={4} /> The difficulty of an individual
+              hike—and therefore the physical demand—depends on terrain, elevation, pace,
+              pack weight, weather, altitude and the individual doing it.
+            </p>
+            <p>
+              There may also be benefits associated with the environment in which we move,
+              not only the exercise itself.
+            </p>
+            <p>
+              A systematic review and meta-analysis covering more than 100 million people
+              found greater green-space exposure associated with modestly lower measures of
+              cardiovascular disease risk.<Cite n={5} /> Forest-therapy research has also reported
+              short-term changes in blood pressure and the stress hormone cortisol, although
+              study quality and results vary and the mechanisms remain under
+              investigation.<Cite n={6} /><Cite n={7} /> Research on green-space exposure and sleep
+              has similarly found generally favorable associations, while noting substantial
+              differences among studies.<Cite n={8} />
+            </p>
+
+            <SubHead>We Are Ecosystems, Too</SubHead>
+            <p>
+              One of the more fascinating areas of newer research concerns the relationship
+              between environmental biodiversity, microorganisms and human health.
+            </p>
+            <p>
+              The human body does not exist in biological isolation. We live with vast
+              communities of microorganisms on and within us, and those microbial
+              communities interact with normal immune and physiological processes.
+            </p>
+            <p>
+              Researchers are studying whether contact with biologically diverse
+              environments can influence the human microbiome and immune regulation. A
+              2024 systematic review of green-space exposure and human microbiota found
+              intriguing but mixed results.<Cite n={9} /> A broader biodiversity-and-health review
+              judged evidence for an environmental microbiota–human health pathway to be
+              moderate, while emphasizing that important questions about causation and
+              mechanisms remain unanswered.<Cite n={10} /> A separate systematic review found
+              promising immune-related findings from nature exposure but also highlighted
+              weaknesses in study design and uncertainty about effect size and duration.<Cite n={11} />
+            </p>
+            <p>
+              That is a more interesting conclusion than claiming that "being in a forest
+              boosts your immune system."
+            </p>
+            <p>
+              The emerging picture is that human health and environmental health may be
+              connected through more pathways than we once understood—and science is still
+              working out the details.
+            </p>
+          </Section>
+
+          {/* 4. Spirit — Awe, Connection & Meaning */}
+          <Section
+            id="spirit"
+            title="Spirit — Awe, Connection & Meaning"
+            isOpen={isOpen('spirit')}
             onToggle={toggle}
           >
             <p>
-              Minimalism, in the context of backpacking, is about intentionality—not
-              deprivation.
+              Here, spirit does not mean adherence to any particular religion.
             </p>
             <p>
-              Gear lists tend to grow. Something goes in because you might need it.
-              Something else because it adds a bit of comfort. Another item because it's
-              always been in your pack. A backup for something you're not sure about. On
-              their own, each addition can seem reasonable. Together, they can add
-              substantial weight.
+              It means the part of human experience concerned with wonder, meaning,
+              humility, gratitude, belonging, connection and the feeling that we are part
+              of something larger than ourselves.
             </p>
-            <p>A different approach:</p>
-            <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>Start with what you actually need for this trip and expected conditions.</li>
-              <li>Choose equipment deliberately.</li>
-              <li>Look for unnecessary duplication.</li>
-              <li>Question anything carried only from habit.</li>
-              <li>Favor simple solutions when they work.</li>
-              <li>Keep equipment that genuinely contributes to safety, comfort, or enjoyment.</li>
-            </ul>
             <p>
-              The goal isn't to go without. It's to make intentional choices rather
-              than accumulating by default.
+              One person may understand that feeling through God or faith. Another may call
+              it spirituality. Someone else may describe it as awe, consciousness, ecology,
+              interconnectedness or simply a deep love of the natural world.
             </p>
-            <PullQuote>
-              "The goal isn't deprivation. The goal is simplicity with purpose."
-            </PullQuote>
-            <PullQuote>
-              "Carry what you need. Understand why you carry it. Make each item earn its place."
-            </PullQuote>
+            <p>Some may feel it strongly without giving it any name at all.</p>
+            <p>TrailWeigh does not choose among those interpretations.</p>
+
+            <SubHead>Awe</SubHead>
+            <p>
+              There is, however, science behind part of the experience.
+            </p>
+            <p>
+              Psychologists study awe as an emotional response to something perceived as
+              vast enough to challenge our ordinary frame of reference.
+            </p>
+            <p>
+              That vastness can be physical—a mountain, an ancient forest, a night sky—or
+              conceptual.
+            </p>
+            <p>
+              In a series of experiments, researchers found that awe could produce what
+              they called the "small self": a temporary reduction in the prominence of
+              one's individual concerns relative to something larger. It was also
+              associated in those experiments with greater generosity and prosocial
+              behavior. In one study, researchers induced awe simply by placing
+              participants among towering trees.<Cite n={12} /> Later experimental work has found
+              connections between awe, a sense of global citizenship and greater valuing
+              of interconnectedness.<Cite n={13} />
+            </p>
+            <p>"Small self" does not mean insignificant or worthless.</p>
+            <p>It is closer to the experience many hikers know well:</p>
+            <p>Standing on a ridge and seeing mountains continue beyond the horizon.</p>
+            <p>Looking into a night sky so clear that the Milky Way becomes unmistakable.</p>
+            <p>Walking beneath trees that were alive centuries before we were born.</p>
+            <p>Watching a storm travel across a landscape too large to comprehend all at once.</p>
+            <p>For a moment, our problems may not disappear—but their scale can change.</p>
+
+            <SubHead>Connected to Nature</SubHead>
+            <p>
+              Psychologists also study nature connectedness: the degree to which people
+              experience themselves as related to, or part of, the natural world.
+            </p>
+            <p>
+              A meta-analysis involving more than 8,500 participants found a modest
+              positive relationship between nature connectedness and measures including
+              positive affect, vitality and life satisfaction.<Cite n={14} /> Another meta-analysis
+              involving more than 13,000 participants found a substantial association
+              between nature connectedness and pro-environmental behavior.<Cite n={15} /> Global
+              research has similarly examined human–nature connectedness as a potential
+              pathway toward both human well-being and environmental stewardship.<Cite n={16} />
+            </p>
+            <p>There is also an important idea emerging within the science itself.</p>
+            <p>
+              A 2025 review argued that nature-connectedness research benefits from moving
+              away from a "humans over here, nature over there" view and toward a
+              human-ecological perspective that recognizes humans as part of nature.<Cite n={17} />
+            </p>
+            <p>Biologically and ecologically, that is not merely poetry.</p>
+            <p>
+              The oxygen we breathe participates in biological and atmospheric cycles. Our
+              food ultimately comes from living systems. Water moves through us and back
+              into the world. Elements in our bodies came from the Earth and will return to
+              it. Our microbiomes are communities of other organisms. Our biological
+              clocks respond to environmental light and darkness.
+            </p>
+            <p>We are not merely surrounded by nature. We are part of it.</p>
+            <p>
+              Science can describe many of those physical, ecological and psychological
+              connections. It cannot establish that they prove a universal spirit, divine
+              consciousness or any other metaphysical belief.
+            </p>
+            <p>What those connections mean is a personal question.</p>
+
+            <SubHead>Different Ways of Expressing Connection</SubHead>
+            <p>Different traditions have expressed that question in different ways:</p>
+
+            <div className="space-y-4 my-3">
+              <blockquote className="border-l-2 border-muted pl-4 text-foreground/80 leading-relaxed">
+                <p className="italic">
+                  "When we try to pick out anything by itself, we find it hitched to everything
+                  else in the Universe."
+                </p>
+                <footer className="mt-1 text-xs text-muted-foreground not-italic">
+                  — John Muir, <em>My First Summer in the Sierra</em>, 1911
+                  {' '}<Cite n={18} />
+                </footer>
+              </blockquote>
+
+              <blockquote className="border-l-2 border-muted pl-4 text-foreground/80 leading-relaxed">
+                <p className="italic">
+                  "Man takes his law from the Earth; the Earth takes its law from Heaven."
+                </p>
+                <footer className="mt-1 text-xs text-muted-foreground not-italic">
+                  — Tao Te Ching, Chapter 25, James Legge translation
+                  {' '}<Cite n={19} />
+                </footer>
+              </blockquote>
+
+              <blockquote className="border-l-2 border-muted pl-4 text-foreground/80 leading-relaxed">
+                <p className="italic">
+                  "The earth is the LORD's, and the fulness thereof."
+                </p>
+                <footer className="mt-1 text-xs text-muted-foreground not-italic">
+                  — Psalm 24:1, King James Version
+                  {' '}<Cite n={20} />
+                </footer>
+              </blockquote>
+
+              <blockquote className="border-l-2 border-muted pl-4 text-foreground/80 leading-relaxed">
+                <p className="italic">
+                  "May all beings be happy!"
+                </p>
+                <footer className="mt-1 text-xs text-muted-foreground not-italic">
+                  — Kara&#7751;&#299;ya Mett&#257; Sutta, Sutta Nip&#257;ta 1.8,
+                  translation by Acharya Buddharakkhita
+                  {' '}<Cite n={21} />
+                </footer>
+              </blockquote>
+            </div>
+
+            <p>
+              These traditions are not being presented as saying the same thing, and
+              religious quotations are not scientific evidence. They are examples of
+              something human beings across cultures and centuries have repeatedly tried to
+              describe: our relationship with the world around us and with one another.
+            </p>
+            <p>The trail gives us room to consider that relationship for ourselves.</p>
           </Section>
 
-          {/* 4. One Tool, Many Uses */}
-          <Section
-            id="multi-use"
-            title="One Tool, Many Uses"
-            isOpen={isOpen('multi-use')}
-            onToggle={toggle}
-          >
-            <p>
-              One of the practical ideas at the center of ultralight thinking is
-              multi-use equipment: asking, before adding something to your pack,
-            </p>
-            <PullQuote>
-              "Can something I already carry do this job too?"
-            </PullQuote>
-            <p>A few familiar examples:</p>
-            <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>A trekking pole used for hiking and for supporting certain shelters, eliminating the need for separate tent poles.</li>
-              <li>A stuff sack filled with clothing that serves as a pillow at camp.</li>
-              <li>A bandana that serves several functions—sun protection, trail marker, pot holder, filter, or first-aid backup.</li>
-              <li>Clothing layers that work together across a temperature range instead of carrying a separate garment for every condition.</li>
-              <li>A smartphone that replaces several separate electronics—navigation, camera, communication—for some hikers on some trips.</li>
-            </ul>
-            <p>
-              Not every piece of equipment needs multiple uses. Some safety-critical
-              gear should perform one important job very well, and that job alone is
-              sufficient justification for carrying it. The principle is to think of
-              your gear as a system and to avoid unnecessary duplication—not to force
-              every item to justify itself through versatility.
-            </p>
-            <PullQuote>
-              "Carry less by asking more of the things you choose to carry—not by giving up what you truly need."
-            </PullQuote>
-          </Section>
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <SectionLabel>Hiking Philosophy</SectionLabel>
 
-          {/* 5. Think in Systems */}
-          <Section
-            id="systems"
-            title="Think in Systems"
-            isOpen={isOpen('systems')}
-            onToggle={toggle}
-          >
-            <p>
-              Ultralight backpacking works best when equipment is evaluated as a system
-              rather than one item at a time.
-            </p>
-            <p>
-              Your shelter affects what stakes or poles you carry. Your sleeping gear
-              interacts with your shelter and your clothing. Your clothing layers work
-              together across conditions rather than each one operating independently.
-              Your water capacity depends on the route, season, and the distances between
-              reliable sources. A lighter, more compact gear system may allow you to use
-              a smaller, lighter backpack—which creates further savings.
-            </p>
-            <p>
-              Reducing weight isn't always about replacing an item with a lighter version
-              of the same thing. Sometimes the better question is:
-            </p>
-            <PullQuote>
-              "Do I need this item at all, or can the rest of my system already perform its job?"
-            </PullQuote>
-            <p>
-              Seeing your gear organized by category—and its weight laid out clearly—can
-              make it easier to ask that question with real information in front of you.
-            </p>
-          </Section>
-
-          {/* 6. Knowledge Weighs Nothing */}
-          <Section
-            id="knowledge"
-            title="Knowledge Weighs Nothing"
-            isOpen={isOpen('knowledge')}
-            onToggle={toggle}
-          >
-            <p>
-              Experience and skills can meaningfully influence what equipment a hiker
-              needs to carry—and what can safely be left behind.
-            </p>
-            <p>
-              Knowledge of weather patterns can help you plan for conditions rather than
-              carry redundant gear for every possible scenario. Skill at campsite
-              selection can reduce reliance on certain shelter features. Understanding
-              layering means you can do more with fewer garments. Water management
-              knowledge affects how much you need to carry between sources. Navigation
-              confidence can reduce the backup tools you feel you need. Experience with
-              food and resupply affects how much you're carrying on any given day.
-              Familiarity with terrain, equipment, and your own physical needs all
-              contribute to more accurate decisions about what belongs in your pack.
-            </p>
-            <p>
-              This doesn't mean experience eliminates the need for reasonable safety
-              equipment. Weather changes. Equipment fails. Water sources can dry up or
-              become inaccessible. Trips differ, seasons differ, and hikers have
-              different physical needs, fitness levels, and experience with specific
-              conditions. The goal is better judgment, not a lower number regardless
-              of circumstances.
-            </p>
-            <p>
-              Sometimes the right choice is to leave something behind. Sometimes the
-              right choice is to carry more. Good information—about the route,
-              conditions, your equipment, and your own abilities—is the foundation for
-              making that call well.
-            </p>
-            <PullQuote>
-              "Good judgment matters more than a number on a scale."
-            </PullQuote>
-          </Section>
-
-          {/* 7. Do You Hike for the Trail or the Camp? */}
+          {/* 5. Do You Hike for the Trail or the Camp? */}
           <Section
             id="trail-or-camp"
             title="Do You Hike for the Trail or the Camp?"
@@ -445,75 +528,171 @@ export default function AboutPage() {
             onToggle={toggle}
           >
             <p>
-              Among backpackers, you'll sometimes hear a distinction between those who
-              hike for the trail and those who hike for the camp. Neither is wrong.
+              There are hikers who wake before sunrise, start walking and happily remain on
+              the trail until evening. Camp is where they eat, recover and sleep before
+              doing it again.
             </p>
             <p>
-              Some hikers spend most of their day moving—covering miles, climbing passes,
-              descending into valleys, exploring new country. For them, the walking is a
-              central part of the experience, and a lighter pack makes that walking more
-              enjoyable. Every ounce saved is felt over the course of a long day or a
-              long trail.
+              There are hikers who love the destination as much as the journey. They may
+              carry a more comfortable pad, camp shoes, a chair, photography equipment,
+              fishing gear, a book or something else that makes camp part of the
+              experience.
             </p>
+            <p>And there are plenty of us somewhere in between.</p>
+            <p>Neither approach is inherently better.</p>
             <p>
-              Other hikers place more importance on what happens after they stop. They
-              arrive earlier, cook a real meal, bring a chair to sit in, fish, read,
-              photograph the light at dusk, or simply relax somewhere beautiful. For
-              them, camp comfort is a meaningful part of why they're out there—and they
-              may willingly carry more equipment because it contributes directly to what
-              they came for.
+              A piece of gear that seems unnecessary to one hiker may be one of the things
+              another person enjoys most about the trip.
             </p>
+            <p>That leads to a better question than:</p>
+            <PullQuote>"Should I carry this?"</PullQuote>
+            <p>Ask:</p>
+            <PullQuote>
+              "What makes this trip enjoyable for me—and is this item worth carrying for
+              that experience?"
+            </PullQuote>
             <p>
-              Many hikers fall somewhere between the two, and the same hiker may
-              approach different trips differently—a long thru-hike is different from a
-              weekend at a lakeside camp.
-            </p>
-            <PullQuote>"Neither approach is wrong."</PullQuote>
-            <p>
-              The important question isn't: <em>What should a backpacker carry?</em>
-            </p>
-            <p>
-              It is: <em>What makes this trip enjoyable for me?</em>
+              Ultralight thinking is most useful when it helps you make that choice
+              intentionally.
             </p>
           </Section>
 
-          {/* 8. Hike Your Own Hike — HYOH */}
+          {/* 6. Hike Your Own Hike — HYOH */}
           <Section
             id="hyoh"
             title="Hike Your Own Hike — HYOH"
             isOpen={isOpen('hyoh')}
             onToggle={toggle}
           >
+            <p>There is no perfect gear list.</p>
             <p>
-              HYOH—Hike Your Own Hike—is a familiar idea in long-distance hiking
-              communities. At its core it means: there is no single correct way to
-              experience a trail.
+              A system that works beautifully for one hiker may be miserable—or unsafe—for
+              another.
             </p>
             <p>
-              Gear should reflect the particular trip, your experience, your abilities,
-              the expected conditions, your personal needs, and what makes the trip
-              genuinely enjoyable for you.
+              The right equipment can change with the trail, season, altitude, weather,
+              water availability, expected temperatures, terrain, trip length, experience,
+              physical ability, comfort priorities and personal tolerance for risk.
             </p>
             <p>
-              One person sleeps on a foam pad and carries no-cook meals, keeps a high
-              daily mileage, and finishes their season with an intact budget. Another
-              person carries a heavier inflatable mattress, makes hot meals, spends an
-              extra afternoon beside a lake, and comes home just as satisfied with their
-              trip. Neither person is automatically doing it wrong. There is no single
-              perfect gear list.
+              A Pacific Crest Trail desert list may look different from a Sierra list. A
+              summer setup may look very different from one intended for shoulder season
+              or winter. One hiker may sleep comfortably with equipment another person
+              cannot tolerate.
             </p>
+            <p>That is the useful part of Hike Your Own Hike—HYOH.</p>
+            <p>It gives people permission to think for themselves.</p>
+            <p>
+              But HYOH does not mean that nothing matters beyond personal preference.
+            </p>
+            <p>
+              Safety still matters. Regulations still matter. Wildlife protection matters.
+              Fire restrictions matter. Leave No Trace principles matter. Other hikers
+              matter.
+            </p>
+            <PullQuote>Your hike is your own. The trail is shared.</PullQuote>
+          </Section>
+
+          {/* 7. Respect the Trail—and Each Other */}
+          <Section
+            id="respect"
+            title="Respect the Trail—and Each Other"
+            isOpen={isOpen('respect')}
+            onToggle={toggle}
+          >
+            <p>The freedom we enjoy outdoors comes with responsibility.</p>
+            <p>
+              We enter places that existed before us and will remain after we leave.
+              Wildlife lives there. Plants grow there. Water flows downstream to someone or
+              something else. Other people came for their own experience of the same place.
+            </p>
+            <p>Respect can be remarkably simple.</p>
+            <ul className="list-disc list-inside space-y-1.5 ml-1">
+              <li>Leave a campsite better than you found it.</li>
+              <li>Protect water sources.</li>
+              <li>Store food appropriately.</li>
+              <li>Respect wildlife instead of turning animals into entertainment.</li>
+              <li>Follow fire restrictions even when they are inconvenient.</li>
+              <li>Handle waste disposal properly—pack out what you bring in.</li>
+              <li>Minimize your impact on the land and on other visitors.</li>
+              <li>Give people room to experience the trail differently than you do.</li>
+              <li>Know the rules of the land you are traveling through.</li>
+            </ul>
+            <p>
+              We don't all need to hike the same way to appreciate the same trail.
+            </p>
+            <p>HYOH works best when it is paired with another idea:</p>
             <PullQuote>
-              "There is the gear that works for you, on this trip, under these conditions."
+              Hike your own hike—and respect everyone else's opportunity to do the same.
             </PullQuote>
-            <p>
-              HYOH does not mean ignoring safety, regulations, wildlife, environmental
-              impact, or other trail users. Choosing your own approach to hiking is
-              separate from your responsibilities to the land and to everyone else who
-              uses it.
-            </p>
             <PullQuote>
-              "Your hike is your own. The trail is shared."
+              Enjoy the trail in your own way without unnecessarily diminishing someone
+              else's ability to enjoy it—or the ability of the land itself to endure us.
             </PullQuote>
+          </Section>
+
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <SectionLabel>Ultralight</SectionLabel>
+
+          {/* 8. What Is Ultralight? */}
+          <Section
+            id="ultralight"
+            title="What Is Ultralight?"
+            isOpen={isOpen('ultralight')}
+            onToggle={toggle}
+          >
+            <p>
+              At its simplest, ultralight backpacking is an approach to traveling outdoors
+              with less unnecessary weight.
+            </p>
+            <p>Backpackers often discuss several kinds of weight.</p>
+            <p>
+              Base weight generally means the weight of the equipment carried in the pack
+              before variable consumables such as food and water.
+            </p>
+            <p>
+              Consumables are things whose weight changes during the trip—food, water, fuel
+              and similar supplies.
+            </p>
+            <p>
+              Worn weight is equipment worn or carried on the body rather than stored in
+              the pack.
+            </p>
+            <p>
+              You will sometimes see particular numbers used to define "ultralight." Those
+              numbers can be useful reference points, but they are not laws.
+            </p>
+            <p>
+              A safe and appropriate pack for a hot desert trip may be very different from
+              one for cold mountains. A person with specialized equipment, medical needs,
+              photography gear, dog equipment or other requirements may have entirely
+              different priorities.
+            </p>
+            <p>The more important principle is not:</p>
+            <PullQuote>"How do I get below a particular number?"</PullQuote>
+            <p>It is:</p>
+            <PullQuote>"Why am I carrying each thing?"</PullQuote>
+            <p>
+              Reducing unnecessary weight can make walking more comfortable, decrease the
+              effort required to move the pack and allow equipment to work together more
+              efficiently.
+            </p>
+            <p>
+              Ultralight is not merely about buying lighter gear—it is a mindset about
+              understanding why each item is carried.
+            </p>
+            <p>
+              Useful questions before adding something to the pack include:
+            </p>
+            <ul className="list-disc list-inside space-y-1.5 ml-1">
+              <li>Do I need this?</li>
+              <li>Will I actually use it on this trip?</li>
+              <li>Does it earn its place?</li>
+            </ul>
+            <p>
+              But ultralight works best as a method of thinking—not as membership in a
+              weight class.
+            </p>
           </Section>
 
           {/* 9. Ultralight Is a Tool, Not a Contest */}
@@ -523,134 +702,329 @@ export default function AboutPage() {
             isOpen={isOpen('tool-not-contest')}
             onToggle={toggle}
           >
+            <p>Pack weight is easy to measure.</p>
+            <p>That makes it easy to turn backpacking into a competition.</p>
             <p>
-              Reducing pack weight can reduce physical burden, improve comfort, make
-              movement easier and more efficient, allow some hikers to travel farther or
-              faster, and simply make hiking more enjoyable. These are real benefits, and
-              they're worth pursuing when they align with your goals.
+              Someone always has a lighter shelter. A smaller pack. A lower base weight.
+              A more extreme system.
             </p>
             <p>
-              But weight should not become the purpose of backpacking—and a lower number
-              on a scale is not inherently more virtuous than a higher one.
+              Another person's base weight does not determine your list. Lighter does not automatically mean better.
             </p>
-            <PullQuote>"Ultralight is a tool, not a contest."</PullQuote>
+            <p>But the lightest pack is not automatically the best pack.</p>
             <p>
-              Another person's base weight doesn't determine whether your gear list is
-              right or wrong for your trip. Carrying less should not become an excuse to
-              criticize others for carrying more. Lighter doesn't automatically mean
-              better. The best choice is the equipment that safely and reliably performs
-              the job the hiker needs it to perform—on this trail, in these conditions,
-              for this person.
+              A person who removes equipment they genuinely need simply to reach an
+              arbitrary number has misunderstood the purpose.
             </p>
             <p>
-              Sometimes lighter is the appropriate answer. Sometimes carrying more is the
-              appropriate answer. The decision belongs to the person carrying the pack.
+              A person who carries a few additional ounces because those ounces
+              meaningfully improve sleep, safety, health or enjoyment may be making a very
+              good decision.
+            </p>
+            <p>The objective is not to win at ultralight.</p>
+            <p>The objective is to use weight as information.</p>
+            <p>Ask whether something earns its place.</p>
+            <p>Then make your decision and go hiking.</p>
+            <PullQuote>Ultralight is a tool, not a contest.</PullQuote>
+          </Section>
+
+          {/* 10. The Minimalist Mindset */}
+          <Section
+            id="minimalist"
+            title="The Minimalist Mindset"
+            isOpen={isOpen('minimalist')}
+            onToggle={toggle}
+          >
+            <p>Minimalism is sometimes mistaken for deprivation.</p>
+            <p>That is not what it needs to mean.</p>
+            <p>
+              In backpacking, a minimalist mindset is simply intentionality.
+            </p>
+            <p>
+              Instead of beginning with everything you might possibly use and trying to fit
+              it into a backpack, begin with the problems the trip actually requires you
+              to solve.
+            </p>
+            <ul className="list-disc list-inside space-y-1.5 ml-1">
+              <li>Shelter.</li>
+              <li>Sleep.</li>
+              <li>Warmth.</li>
+              <li>Weather.</li>
+              <li>Water.</li>
+              <li>Food.</li>
+              <li>Navigation.</li>
+              <li>Safety.</li>
+            </ul>
+            <p>Then ask what equipment solves those problems effectively.</p>
+            <p>For every item, useful questions include:</p>
+            <ul className="list-disc list-inside space-y-1.5 ml-1">
+              <li>What job does this perform?</li>
+              <li>How likely am I to use it?</li>
+              <li>Do I already carry something that performs the same job?</li>
+              <li>Would I genuinely miss it if I left it behind?</li>
+              <li>Is the value it provides worth the weight I will carry for every mile?</li>
+            </ul>
+            <p>The answer does not always have to be "leave it home."</p>
+            <p>Sometimes the answer is:</p>
+            <PullQuote>Yes. It is worth it.</PullQuote>
+            <p>That is still minimalism—because the decision was intentional.</p>
+            <p>
+              Minimalism in this sense is not about simplicity with purpose as an
+              aesthetic goal—it is about making room for what genuinely matters.
             </p>
           </Section>
 
-          {/* 10. Remember Why We're Here */}
+          {/* 11. Ray-Way */}
           <Section
-            id="why-here"
-            title="Remember Why We're Here"
-            isOpen={isOpen('why-here')}
+            id="ray-way"
+            title="Ray-Way"
+            isOpen={isOpen('ray-way')}
             onToggle={toggle}
           >
             <p>
-              Ounces and grams, spreadsheets and gear lists, base weights and pack
-              weights, forums and gear comparisons—all of these can be interesting and
-              useful. But they are not the reason people go outside.
+              Long before "ultralight" became a familiar outdoor-industry category, Ray
+              Jardine was developing, testing and documenting a systematic approach to
+              carrying less while traveling long distances.
             </p>
             <p>
-              The reason is harder to put on a scale:
+              Jardine brought an inventor's mindset to the outdoors. Before his
+              lightweight-backpacking work became widely known, he had worked as an
+              aerospace engineer and space-flight simulation specialist and was an
+              accomplished rock climber. In the 1970s, his work on expanding camming
+              devices led to what became the Friend, later commercially produced by Wild
+              Country.<Cite n={22} />
             </p>
+            <p>
+              Ray and Jenny Jardine also spent years experimenting with long-distance
+              hiking systems. Jardine's published chronology records five major
+              long-distance hikes between 1987 and 1994 totaling approximately 12,500
+              miles, including multiple Pacific Crest Trail journeys and thru-hikes of the
+              Continental Divide Trail and Appalachian Trail.<Cite n={23} />
+            </p>
+            <p>
+              In his account of their 1993 Appalachian Trail hike, Jardine describes their
+              equipment at below 10 pounds "Baseline Pack Weight," before expendables such
+              as food and water. Importantly, his own account also acknowledges that other
+              people had backpacked with very light equipment before him.<Cite n={24} />
+            </p>
+            <p>That distinction matters.</p>
+            <p>Ray Jardine did not invent traveling light.</p>
+            <p>
+              His importance lies in helping develop, test, document and popularize a
+              practical, systematic form of lightweight long-distance backpacking that
+              became highly influential in what we now call modern ultralight backpacking.
+            </p>
+            <p>
+              He began documenting the approach in the PCT Hiker's Handbook, with a beta
+              printing in December 1991 and first commercial printing in April 1992. The
+              work evolved through the Pacific Crest Trail Hiker's Handbook, Second Edition
+              in 1996, Beyond Backpacking in 1999 and Trail Life in 2008.<Cite n={25} />
+            </p>
+            <p>The important lesson is bigger than any single piece of gear.</p>
             <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>Sunrise over a ridge, light changing by the second.</li>
-              <li>Water moving through a canyon you've never seen before.</li>
-              <li>Walking beneath trees that were old before anyone thought to measure them.</li>
-              <li>Crossing a mountain pass and seeing what's on the other side.</li>
-              <li>Sleeping beneath the stars without a ceiling in the way.</li>
-              <li>The particular kind of quiet that comes with real solitude.</li>
-              <li>Sharing a trail with friends, family, strangers who become friends, or a four-legged hiking partner who has no idea how many miles they've done.</li>
-              <li>Not knowing what's around the next bend, and finding out.</li>
+              <li>Question what you carry.</li>
+              <li>Understand the function.</li>
+              <li>Look at the whole system.</li>
+              <li>Test assumptions.</li>
+              <li>Reduce unnecessary duplication.</li>
+              <li>Develop skills.</li>
+              <li>Use knowledge.</li>
+              <li>Make equipment work together.</li>
+              <li>And carry what the actual conditions require.</li>
             </ul>
-            <PullQuote>"We go outside to be outside."</PullQuote>
             <p>
-              Gear should help make those experiences possible. The moment it starts
-              feeling more important than the experiences themselves—more time spent
-              optimizing than actually hiking—it may be worth stepping back and
-              remembering what all of it is for.
+              That thinking helped influence modern lightweight backpacking, and it
+              connects naturally with TrailWeigh:
+            </p>
+            <PullQuote>
+              Carry what you need. Understand why you carry it. Make each item earn its
+              place.
+            </PullQuote>
+            <p className="text-xs text-muted-foreground/60 pt-2">
+              TrailWeigh is an independent project and is not affiliated with, sponsored
+              by or endorsed by Ray Jardine or Ray-Way.
             </p>
           </Section>
 
-          {/* 11. Respect the Trail—and Each Other */}
+          {/* 12. Knowledge Weighs Nothing */}
           <Section
-            id="respect"
-            title="Respect the Trail—and Each Other"
-            isOpen={isOpen('respect')}
+            id="knowledge"
+            title="Knowledge Weighs Nothing"
+            isOpen={isOpen('knowledge')}
+            onToggle={toggle}
+          >
+            <p>Equipment solves problems.</p>
+            <p>So does knowledge.</p>
+            <p>
+              Understanding weather can help you choose appropriate clothing.
+            </p>
+            <p>
+              Understanding campsite selection can affect warmth, wind exposure and
+              condensation.
+            </p>
+            <p>
+              Understanding your layering system can help you use the clothing you already
+              carry more effectively.
+            </p>
+            <p>
+              Knowing the next reliable water source can change how much water you need to
+              carry.
+            </p>
+            <p>
+              Navigation skills can prevent a small mistake from becoming a dangerous one.
+            </p>
+            <p>
+              Experience with your shelter can matter more in a storm than owning a shelter
+              with impressive specifications that you do not know how to use.
+            </p>
+            <p>
+              This does not mean that knowledge replaces necessary safety equipment.
+            </p>
+            <p>It means that equipment and skill work together.</p>
+            <p>The goal is not to prove that you can survive with less.</p>
+            <p>
+              The goal is to understand enough to make informed decisions about what you
+              actually need.
+            </p>
+            <PullQuote>
+              Knowledge weighs nothing—but good judgment is priceless.
+            </PullQuote>
+            <PullQuote>
+              And good judgment matters more than a number on a scale.
+            </PullQuote>
+          </Section>
+
+          {/* 13. Think in Systems */}
+          <Section
+            id="systems"
+            title="Think in Systems"
+            isOpen={isOpen('systems')}
+            onToggle={toggle}
+          >
+            <p>A backpack is not really a collection of independent objects.</p>
+            <p>It is a system.</p>
+            <p>
+              Your sleeping bag or quilt works with your sleeping pad, sleep clothing and
+              shelter.
+            </p>
+            <p>Your shelter may work with trekking poles you are already carrying.</p>
+            <p>
+              Your insulation, wind layer and rain protection overlap in ways that can
+              change what each individual garment needs to accomplish.
+            </p>
+            <p>Your water capacity depends partly on where water is available.</p>
+            <p>Your stove—or decision not to carry one—changes your food system.</p>
+            <p>Your pack size depends partly on the volume of everything else.</p>
+            <p>That means asking only:</p>
+            <PullQuote>"How much does this item weigh?"</PullQuote>
+            <p>can miss the larger question:</p>
+            <PullQuote>"What does this item allow the rest of my system to do?"</PullQuote>
+            <p>Sometimes a slightly heavier item makes the total system lighter.</p>
+            <p>Sometimes eliminating one item requires adding two others.</p>
+            <p>
+              Sometimes the smartest weight reduction comes from changing the system rather
+              than buying a lighter version of the same thing.
+            </p>
+            <p>
+              Sometimes the right question is: Do I need this item at all, or can the
+              rest of my system handle it without it?
+            </p>
+            <p>TrailWeigh helps make those relationships visible.</p>
+          </Section>
+
+          {/* 14. One Tool, Many Uses */}
+          <Section
+            id="multi-use"
+            title="One Tool, Many Uses"
+            isOpen={isOpen('multi-use')}
             onToggle={toggle}
           >
             <p>
-              Outdoor spaces are shared by people with different backgrounds, abilities,
-              equipment, experience levels, hiking speeds, goals, and reasons for being
-              there. The trail doesn't belong to any one type of hiker.
-            </p>
-            <p>
-              Taking care of it—and of each other—looks like:
+              A common way to reduce unnecessary weight is to let one item perform more
+              than one useful function.
             </p>
             <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>Respect for the land and for wildlife.</li>
-              <li>Following rules and regulations that protect access for everyone.</li>
-              <li>Proper waste disposal and leaving what you find.</li>
-              <li>Minimizing your impact on terrain, water sources, and vegetation.</li>
-              <li>Consideration for other visitors—on the trail and in camp.</li>
+              <li>A trekking pole may also support a shelter.</li>
+              <li>A stuff sack and spare clothing can become a pillow.</li>
+              <li>A bandana can serve several simple camp functions.</li>
+              <li>
+                A smartphone can combine navigation, camera, communication, reading and
+                note-taking functions that once required several separate devices.
+              </li>
+              <li>
+                Clothing layers can work together as a system rather than depending on a
+                single heavy garment for every condition.
+              </li>
             </ul>
-            <PullQuote>
-              "We don't all need to hike the same way to appreciate the same trail."
-            </PullQuote>
-            <PullQuote>
-              "Hike your own hike—and respect everyone else's opportunity to hike theirs."
-            </PullQuote>
+            <p>
+              A useful question before adding anything new: Can something I already carry
+              do this job?
+            </p>
+            <p>Multi-use equipment can be elegant because one ounce is doing more than one job.</p>
+            <p>Carry less by asking more of the things you already bring.</p>
+            <p>But multi-use is not a rule.</p>
+            <p>Some things should be excellent at one important job.</p>
+            <p>
+              A piece of safety-critical equipment does not need a clever second purpose
+              to justify its weight.
+            </p>
+            <p>The goal is not to force every object to do three things.</p>
+            <p>It is simply to notice unnecessary duplication when it exists.</p>
           </Section>
 
-          {/* 12. Where TrailWeigh Fits In */}
+          {/* ═══════════════════════════════════════════════════════════════ */}
+          <SectionLabel>TrailWeigh</SectionLabel>
+
+          {/* 15. Where TrailWeigh Fits In */}
           <Section
             id="trailweigh-fits"
             title="Where TrailWeigh Fits In"
             isOpen={isOpen('trailweigh-fits')}
             onToggle={toggle}
           >
-            <p>
-              TrailWeigh is not here to decide what belongs in your backpack. It's here
-              to give you the information to make that decision yourself.
-            </p>
-            <p>
-              Organizing your gear and seeing weights by category can reveal things that
-              might otherwise stay invisible:
-            </p>
+            <p>TrailWeigh is not here to decide what belongs in your backpack.</p>
+            <p>That decision should remain yours.</p>
+            <p>What TrailWeigh can do is make your decisions easier to see.</p>
             <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>An item you no longer need for this particular trip.</li>
-              <li>Unnecessary duplication—two things doing one job.</li>
-              <li>Two items that could potentially be replaced by one piece that does both jobs.</li>
-              <li>A change in one part of your system that allows something else to be simplified.</li>
-              <li>A heavier item that, after seeing exactly what it weighs, you deliberately decide is worth carrying.</li>
+              <li>Build a gear list.</li>
+              <li>Organize equipment into systems and categories.</li>
+              <li>Enter weights and quantities.</li>
+              <li>Select the gear you are actually taking on a particular trip.</li>
+              <li>See where the weight comes from.</li>
+              <li>Compare the parts of your system.</li>
+              <li>Save different lists for different trails, seasons and conditions.</li>
+              <li>
+                Use the same list as also a packing checklist to gather and pack
+                systematically—so important equipment does not stay on the garage floor
+                when you leave for the trailhead.
+              </li>
+              <li>Print it.</li>
+              <li>Share it.</li>
+              <li>Come back later and reconsider it.</li>
             </ul>
-            <p>That last one matters:</p>
-            <PullQuote>
-              "Maybe a heavier piece of equipment is important enough that, after seeing exactly what it weighs, you decide: It's worth it."
-            </PullQuote>
+            <p>Maybe an item stays.</p>
+            <p>Maybe it goes.</p>
             <p>
-              That's a real and valid outcome. The point of having good information is
-              not to force a particular answer—it's to make the answer yours.
+              Maybe you discover that the three ounces you were obsessing over are less
+              important than getting a good night's sleep.
             </p>
+            <p>
+              Maybe you discover that you have been carrying something for years simply
+              because you never stopped to ask why.
+            </p>
+            <p>That is where TrailWeigh fits in.</p>
+            <p>It does not decide what matters.</p>
+            <p>It helps you decide.</p>
             <div className="pt-2 space-y-3">
               <PullQuote>
-                "Because the goal isn't the lightest possible pack.{' '}
-                The goal is a pack that works for you and helps you enjoy whatever brought you to the trail."
+                Because the goal isn't the lightest possible pack.
+                {' '}The goal is a pack that works for you and helps you enjoy whatever brought
+                you to the trail.
               </PullQuote>
               <div className="bg-primary/5 border border-primary/20 rounded-xl px-5 py-4 text-sm text-foreground/80 leading-relaxed font-medium">
-                "Carry what you need.<br />
+                Carry what you need.<br />
                 Understand why you carry it.<br />
-                Make each item earn its place."
+                Make each item earn its place.
               </div>
               <p className="text-base font-bold text-foreground text-center pt-2">
                 Then go outside.
@@ -658,10 +1032,91 @@ export default function AboutPage() {
             </div>
           </Section>
 
-        </div>{/* end accordion */}
+          {/* 16. About the Creator */}
+          <Section
+            id="creator"
+            title="About the Creator"
+            isOpen={isOpen('creator')}
+            onToggle={toggle}
+          >
+            <p>
+              TrailWeigh was built by a hiker, backpacker and software developer who wanted
+              a more practical tool for building, organizing and understanding gear lists
+              for long-distance and multi-day hiking trips.
+            </p>
+            <p>
+              The motivation was simple: existing tools were either too heavy (spreadsheets
+              that became their own project) or too lightweight (basic list apps that
+              showed totals without context). TrailWeigh tries to sit in the useful middle.
+            </p>
+            <p>
+              More information about the creator will be added here.
+            </p>
+          </Section>
 
-        {/* ── Footer nav ─────────────────────────────────────────────────── */}
-        <div className="mt-10 bg-card border border-card-border rounded-xl p-5 shadow-sm text-sm text-muted-foreground leading-relaxed">
+          {/* 17. Credits */}
+          <Section
+            id="credits"
+            title="Credits"
+            isOpen={isOpen('credits')}
+            onToggle={toggle}
+          >
+            <p>
+              TrailWeigh was built from ideas that have developed across generations of
+              backpackers, hikers, explorers, inventors, researchers and outdoor educators.
+            </p>
+            <p>
+              Modern lightweight and ultralight backpacking did not come from one person or
+              one idea. It grew through experimentation, shared experience, new materials,
+              cottage-industry innovation, long-distance hikers willing to question
+              established practices, and countless conversations on trails, in books, in
+              outdoor communities and around campfires.
+            </p>
+            <p>
+              TrailWeigh recognizes Ray Jardine as one of the most influential early
+              popularizers of the systematic lightweight approach that helped shape modern
+              ultralight backpacking. His work is discussed separately in the Ray-Way
+              section. References to Ray Jardine and Ray-Way are historical and educational
+              and do not imply affiliation or endorsement.
+            </p>
+            <p>
+              TrailWeigh also acknowledges the researchers whose work helps us better
+              understand the relationships among physical activity, natural environments,
+              mental well-being, awe, nature connectedness and human health. The research
+              used in About TrailWeigh is identified in Sources &amp; References.
+            </p>
+            <p>
+              Most of all, credit belongs to the broader hiking community—the people who
+              test ideas in the real world, share what works and what does not, help one
+              another on the trail, care for the places through which we travel, and
+              continue asking a very useful question:
+            </p>
+            <PullQuote>Do I really need to carry this?</PullQuote>
+            <p className="text-xs text-muted-foreground/60 pt-1">
+              TrailWeigh is an independent project. References to individuals, companies,
+              books, organizations, research institutions, religious or philosophical
+              traditions, products or other third parties are provided for historical,
+              educational or citation purposes and do not imply sponsorship, affiliation or
+              endorsement.
+            </p>
+          </Section>
+
+        </div>{/* end accordion sections */}
+
+        {/* ── Sources & References link ───────────────────────────────────── */}
+        <div className="mt-6 px-1">
+          <button
+            onClick={() => openSources()}
+            className="text-[13px] text-primary underline underline-offset-2 hover:text-primary/80
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
+                       focus-visible:ring-offset-2 rounded"
+          >
+            Sources &amp; References
+          </button>
+        </div>
+
+        {/* ── Help & How-To / Contact ─────────────────────────────────────── */}
+        <div className="mt-4 bg-card border border-card-border rounded-xl p-5 shadow-sm text-sm text-muted-foreground leading-relaxed">
           <p>
             For step-by-step instructions on using any feature, visit{' '}
             <Link to="/help" className="underline underline-offset-2 hover:text-foreground font-medium">
@@ -676,6 +1131,13 @@ export default function AboutPage() {
       </main>
 
       <Footer />
+
+      {/* Sources & References modal (page-level; Footer has its own independent instance) */}
+      <SourcesModal
+        isOpen={sourcesOpen}
+        onClose={() => setSourcesOpen(false)}
+        scrollToRef={scrollToRef}
+      />
     </div>
   );
 }

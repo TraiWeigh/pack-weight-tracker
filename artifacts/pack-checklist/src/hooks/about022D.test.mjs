@@ -197,19 +197,20 @@ sections.forEach(({ id, title }) => {
 
 suite('022D Section Order');
 
+// NOTE (022L): Section order changed. Original 12 sections now in new 022L order.
 const orderedTitles = [
-  'What Is Ultralight?',
-  'Ray-Way',
-  'The Minimalist Mindset',
-  'One Tool, Many Uses',
-  'Think in Systems',
-  'Knowledge Weighs Nothing',
-  'Do You Hike for the Trail or the Camp?',
+  'Remember Why We',                       // Mental / Physical / Spiritual group
+  'Do You Hike for the Trail or the Camp?', // Hiking Philosophy group
   'Hike Your Own Hike',
-  'Ultralight Is a Tool, Not a Contest',
-  'Remember Why We',
   'Respect the Trail',
-  'Where TrailWeigh Fits In',
+  'What Is Ultralight?',                   // Ultralight group
+  'Ultralight Is a Tool, Not a Contest',
+  'The Minimalist Mindset',
+  'Ray-Way',
+  'Knowledge Weighs Nothing',
+  'Think in Systems',
+  'One Tool, Many Uses',
+  'Where TrailWeigh Fits In',              // TrailWeigh group
 ];
 
 test('All 12 section titles appear in required order', () => {
@@ -319,8 +320,9 @@ test('Ray-Way: Friend (climbing cam) mentioned briefly', () => {
   );
 });
 
-test('Ray-Way: 15,000 miles figure present', () => {
-  assert.ok(has('15,000') || has('15000'), 'Must mention 15,000 miles of long-distance hiking');
+// NOTE (022L): corrected to verified total mileage (12,500 not 15,000)
+test('Ray-Way: 12,500 miles figure present', () => {
+  assert.ok(has('12,500') || has('12500'), 'Must mention 12,500 miles of long-distance hiking');
 });
 
 test('Ray-Way: 1993 AT thru-hike or base pack below 10 pounds', () => {
@@ -482,10 +484,12 @@ test('Trail or camp: both approaches described', () => {
   );
 });
 
-test('Trail or camp: "Neither approach is wrong"', () => {
+// NOTE (022L): phrase updated to "inherently better" (more accurate framing)
+test('Trail or camp: "Neither approach is inherently better"', () => {
   assert.ok(
-    has('Neither approach is wrong') || has('neither approach is wrong'),
-    'Must include "Neither approach is wrong"',
+    has('Neither approach is inherently better') || has('neither approach is inherently better') ||
+    has('Neither approach is wrong')             || has('neither approach is wrong'),
+    'Must include "Neither approach is inherently better" (or equivalent)',
   );
 });
 
@@ -560,10 +564,13 @@ test('Lighter does not automatically mean better', () => {
 
 suite('022D Remember Why We Are Here');
 
-test('"We go outside to be outside" present', () => {
+// NOTE (022L): "We go outside to be outside" replaced with new intro prose
+test('Why here: nature / experience theme present', () => {
   assert.ok(
-    has('We go outside to be outside') || has('go outside to be outside'),
-    'Must include "We go outside to be outside"',
+    has('We go outside to be outside') || has('go outside to be outside') ||
+    has('why we came') || has('remember why we came') ||
+    has('Look up') || has('Notice where you are'),
+    'Why We\'re Here must include nature/experience theme (look up / notice / remember why)',
   );
 });
 
