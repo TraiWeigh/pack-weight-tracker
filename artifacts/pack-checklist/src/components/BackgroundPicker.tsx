@@ -64,6 +64,16 @@ export const PRESETS = [
   { id: 'starry-night',     label: 'Starry Night',      photoId: '1419242902214-272b3f66ee7a' },
 ];
 
+/** 023B — Second built-in theme.  Topographic / terrain-style backgrounds. */
+export const TOPO_PRESETS = [
+  { id: 'topo-ridge',    label: 'Ridge Lines',    photoId: '1526772662643-f5a7a916bb34' },
+  { id: 'topo-aerial',   label: 'Aerial Terrain', photoId: '1495555687398-3f50d6060351' },
+  { id: 'topo-plateau',  label: 'High Plateau',   photoId: '1510784722668-fca4b3d54754' },
+  { id: 'topo-trail',    label: 'Backcountry',    photoId: '1541963463532-d928c4aeab99' },
+  { id: 'topo-alpine',   label: 'Alpine Summit',  photoId: '1490122417551-6ee9691429d0' },
+  { id: 'topo-canyon',   label: 'Canyon Walls',   photoId: '1574076820601-de87d6de0e59' },
+];
+
 export function getFullUrl(photoId: string) {
   return `https://images.unsplash.com/photo-${photoId}?w=1920&q=85&fit=crop`;
 }
@@ -239,9 +249,10 @@ export function BackgroundPickerPanel({
 
   const dropdownLabel = (() => {
     if (isAddingTheme) return 'Add Theme';
-    if (activeThemeId === 'landscapes') return 'Landscapes';
+    if (activeThemeId === 'landscapes') return 'Landscape';
+    if (activeThemeId === 'topo')       return 'Topo';
     const col = collections.find(c => c.id === activeThemeId);
-    if (col) return `Theme ${col.name}`;
+    if (col) return col.name;  // 023B: no "Theme " prefix
     return 'Themes';
   })();
 
@@ -298,7 +309,8 @@ export function BackgroundPickerPanel({
     Object.values(thumbnailUrlsRef.current).forEach(revokePhotoObjectUrl);
     thumbnailUrlsRef.current = {};
 
-    if (!open || activeThemeId === 'landscapes' || isAddingTheme) {
+    // Skip custom-thumbnail loading for built-in themes (landscapes/topo) and add-form
+    if (!open || activeThemeId === 'landscapes' || activeThemeId === 'topo' || isAddingTheme) {
       setThumbnailUrls({});
       return;
     }
@@ -400,7 +412,12 @@ export function BackgroundPickerPanel({
 
   // ── Ensure activeThemeId references a valid collection ────────────────────
   useEffect(() => {
-    if (activeThemeId !== 'landscapes' && !collections.find(c => c.id === activeThemeId)) {
+    // 023B: 'topo' is now also a valid built-in theme ID
+    if (
+      activeThemeId !== 'landscapes' &&
+      activeThemeId !== 'topo' &&
+      !collections.find(c => c.id === activeThemeId)
+    ) {
       setActiveThemeId('landscapes');
     }
   }, [collections, activeThemeId]);
@@ -947,7 +964,7 @@ export function BackgroundPickerPanel({
               if (e.key === 'Enter') commitNewTheme();
               if (e.key === 'Escape') cancelNewTheme();
             }}
-            placeholder="Theme name…"
+            placeholder="Name…"
             maxLength={40}
             aria-label="New theme name"
             className="flex-1 text-xs border border-border rounded-md px-2 py-1.5 bg-background focus:outline-none focus:border-primary/50 text-foreground placeholder:text-muted-foreground min-w-0"
@@ -1080,6 +1097,7 @@ export function BackgroundPickerPanel({
               aria-label="Select theme"
               className="absolute left-0 right-0 top-full mt-1 z-10 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
             >
+              {/* 023B — Built-in 1: Landscape */}
               <button
                 role="option"
                 aria-selected={!isAddingTheme && activeThemeId === 'landscapes'}
@@ -1089,8 +1107,21 @@ export function BackgroundPickerPanel({
                     ? 'bg-primary/10 text-primary'
                     : 'text-foreground hover:bg-muted/50'
                 }`}
-              >Landscapes</button>
+              >Landscape</button>
 
+              {/* 023B — Built-in 2: Topo */}
+              <button
+                role="option"
+                aria-selected={!isAddingTheme && activeThemeId === 'topo'}
+                onClick={() => handleThemeSelect('topo')}
+                className={`w-full text-left px-3 py-2 text-[11px] font-semibold transition-colors ${
+                  !isAddingTheme && activeThemeId === 'topo'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-foreground hover:bg-muted/50'
+                }`}
+              >Topo</button>
+
+              {/* 023B — Custom themes: display exact user-entered name, no "Theme " prefix */}
               {collections.map(col => (
                 <button
                   key={col.id}
@@ -1102,7 +1133,7 @@ export function BackgroundPickerPanel({
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground hover:bg-muted/50'
                   }`}
-                >Theme {col.name}</button>
+                >{col.name}</button>
               ))}
 
               {canAddTheme ? (
@@ -1171,6 +1202,39 @@ export function BackgroundPickerPanel({
             })}
           </div>
         </div>
+
+      ) : activeThemeId === 'topo' ? (
+        // 023B — Topo built-in panel: same tile layout as Landscape
+        <div className="px-3 pb-3">
+          <div className="grid grid-cols-2 gap-1.5">
+            {TOPO_PRESETS.map(p => {
+              const isActive = activePresetId === p.id;
+              return (
+                <div key={p.id} className="relative" style={{ paddingTop: '66.667%' }}>
+                  <button
+                    onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
+                    aria-pressed={isActive}
+                    aria-label={p.label}
+                    className={`absolute inset-0 overflow-hidden rounded-lg group ${
+                      isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
+                    }`}
+                  >
+                    <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 pointer-events-none">
+                      <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
+                    </div>
+                    {isActive && (
+                      <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
+                        <Check className="w-2.5 h-2.5" />
+                      </div>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
       ) : activeCollection ? (
         renderCustomThemePanel(activeCollection)
       ) : null}

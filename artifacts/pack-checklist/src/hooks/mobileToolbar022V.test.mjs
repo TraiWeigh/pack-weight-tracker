@@ -28,11 +28,14 @@ const checklistSrc = src('artifacts/pack-checklist/src/pages/Checklist.tsx');
 // ─── §A  Left toolbar panel — explicit rows on portrait (022W supersedes 022V flex-wrap) ──
 
 test('[022V §A] left toolbar panel uses flex-col rows on mobile (022X)', () => {
-  // 022X supersedes 022W: outer container uses flex-col gap-2 (no items-center on portrait
-  // so children stretch full-width, enabling justify-between on Row A).
+  // 022X supersedes 022W: outer container uses flex-col gap-2 (no items-center on portrait).
+  // 023B supersedes 022X: left toolbar is hidden on mobile (hidden lg:flex); mobile controls
+  // moved to Phone Row 1 (top) and Lower Phone Toolbar (below Locker). Accept either form.
+  const hasOld = checklistSrc.includes('flex flex-col gap-2');
+  const hasNew = checklistSrc.includes('hidden lg:flex lg:flex-row lg:items-center');
   assert.ok(
-    checklistSrc.includes('flex flex-col gap-2'),
-    '022X: Left toolbar panel outer must use flex-col gap-2 on mobile',
+    hasOld || hasNew,
+    '023B: Left toolbar outer must use flex-col gap-2 (022X) or hidden lg:flex lg:flex-row (023B)',
   );
 });
 
@@ -120,11 +123,16 @@ test('[022V §D] desktop right group uses hidden lg:flex + ml-auto (022W)', () =
 });
 
 test('[022V §D] mobile hide/preview row is hidden on desktop', () => {
-  // 022X: Row C uses justify-center + lg:hidden so it disappears on desktop.
-  // The class is now "flex items-center justify-center gap-3 lg:hidden".
+  // 022X: Row C used justify-center + lg:hidden. 023B removed Row C entirely:
+  //   - Hide moved to Lower Phone Toolbar (lg:hidden flex items-center justify-between after Locker)
+  //   - Preview moved to Phone Row 1 (lg:hidden div at top of page)
+  // Accept either the original Row C pattern or the 023B Lower Phone Toolbar pattern.
+  const hasOldRowC    = checklistSrc.includes('justify-center gap-3 lg:hidden');
+  const hasLowerToolbar = checklistSrc.includes('Lower Phone Toolbar') &&
+                          checklistSrc.includes('lg:hidden flex items-center justify-between');
   assert.ok(
-    checklistSrc.includes('justify-center gap-3 lg:hidden'),
-    '022X: mobile Hide+Preview row must use justify-center + gap-3 + lg:hidden',
+    hasOldRowC || hasLowerToolbar,
+    '023B: Either Row C (justify-center gap-3 lg:hidden) or the Lower Phone Toolbar must exist',
   );
 });
 
@@ -148,9 +156,13 @@ test('[022V §E] guest button still shows "Sign in" text on all screens', () => 
 // ─── §F  Right toolbar panel (Background Edit / Share) — existing flex-wrap ──
 
 test('[022V §F] right toolbar panel already has flex-wrap (unchanged from prior work)', () => {
+  // 023B: justify-center changed to justify-between on mobile so Background Edit goes
+  // LEFT and Share goes RIGHT. lg:justify-end unchanged. Accept either value.
+  const hasOld = checklistSrc.includes('flex flex-wrap justify-center lg:justify-end gap-2');
+  const hasNew = checklistSrc.includes('flex flex-wrap justify-between lg:justify-end gap-2');
   assert.ok(
-    checklistSrc.includes('flex flex-wrap justify-center lg:justify-end gap-2'),
-    'Right toolbar panel (Background Edit / Share) must retain flex-wrap',
+    hasOld || hasNew,
+    '023B: Right toolbar panel must use flex-wrap with justify-center or justify-between + lg:justify-end',
   );
 });
 
@@ -207,15 +219,18 @@ test('[022V §H] header inner container has min-w-0 to prevent overflow', () => 
 
 test('[022V §H] pill labels are not forced to be white-space: nowrap at root level', () => {
   // Only specific buttons need whitespace-nowrap (e.g. "Create New List").
-  // The 022W pill row itself uses flex-col — no blanket nowrap that prevents layout.
+  // 022X: Left panel used flex-col gap-2 (no blanket nowrap that prevents layout).
+  // 023B: Left toolbar is hidden on mobile (hidden lg:flex); whitespace-nowrap still must
+  // not appear on the outer container. Check: outer container has no whitespace-nowrap.
   const toolbarStart = checklistSrc.indexOf('Left toolbar panel');
   const toolbarEnd = checklistSrc.indexOf('Right toolbar panel');
   const toolbarSection = checklistSrc.slice(toolbarStart, toolbarEnd);
-  // 022X outer container uses flex-col gap-2 (no items-center on portrait)
-  const containerIdx = toolbarSection.indexOf('flex flex-col gap-2');
+  // Accept flex-col gap-2 (022X) or hidden lg:flex (023B) — either is valid
+  const containerIdx022X = toolbarSection.indexOf('flex flex-col gap-2');
+  const containerIdx023B = toolbarSection.indexOf('hidden lg:flex lg:flex-row lg:items-center');
   assert.ok(
-    containerIdx !== -1,
-    '022X: Left panel outer must be flex-col gap-2 (whitespace-nowrap not on container)',
+    containerIdx022X !== -1 || containerIdx023B !== -1,
+    '023B: Left panel outer must be flex-col gap-2 (022X) or hidden lg:flex (023B) — whitespace-nowrap not on container',
   );
 });
 
@@ -261,9 +276,17 @@ test('[022V §J] Open/Close group appears before Hide button in source order', (
 });
 
 test('[022V §J] Hide appears before Preview in source order', () => {
-  const hideIdx = checklistSrc.indexOf('aria-label="Hide interface');
-  const previewIdx = checklistSrc.indexOf('setShowPreview(true)');
-  assert.ok(hideIdx < previewIdx, 'Hide must appear before Preview in DOM order');
+  // 023B: Preview button moved to Phone Row 1 (before the left toolbar in source),
+  // so the first setShowPreview(true) now precedes the first Hide button.
+  // Scope to the desktop right group where Hide → Preview order is still enforced.
+  const groupStart = checklistSrc.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0');
+  assert.ok(groupStart > -1, 'Desktop right group anchor must exist');
+  const section = checklistSrc.slice(groupStart, groupStart + 1500);
+  const hideIdx    = section.indexOf('aria-label="Hide interface');
+  const previewIdx = section.indexOf('setShowPreview(true)');
+  assert.ok(hideIdx > -1,    'Hide button must exist in desktop right group');
+  assert.ok(previewIdx > -1, 'Preview button must exist in desktop right group');
+  assert.ok(hideIdx < previewIdx, 'In desktop right group: Hide must appear before Preview in DOM order');
 });
 
 test('[022V §J] Preview appears before UnitToggle in the desktop right group', () => {

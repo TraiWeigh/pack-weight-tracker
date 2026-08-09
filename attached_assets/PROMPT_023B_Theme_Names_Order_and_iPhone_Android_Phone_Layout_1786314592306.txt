@@ -1,0 +1,927 @@
+PROMPT 023B — CLEAN THEME NAMES/ORDER + IMPLEMENT USER-DESIGNED PHONE LAYOUT
+
+USER-VERIFIED STATUS
+
+Prompt 023A:
+PASS — custom-theme deletion Undo worked.
+
+This prompt has TWO focused goals:
+
+A. Clean up Background Theme names/order.
+B. Implement the USER-DESIGNED PHONE-ONLY layout exactly as specified below.
+
+IMPORTANT:
+The phone layout described in this prompt applies to BOTH:
+- iPhone / iOS Safari
+- Android phones / Chrome
+
+It applies only to PHONE-SIZED screens.
+
+Do NOT rearrange the normal desktop layout.
+Do NOT rearrange the normal tablet/iPad layout unless the existing responsive
+breakpoint intentionally classifies that narrow viewport as a phone layout.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current implementation of:
+   - Background Themes selector
+   - built-in theme definitions
+   - custom-theme name rendering
+   - theme ordering/sorting
+   - custom-theme rename
+   - current iPhone portrait layout
+   - current Android phone portrait layout
+   - current landscape layout
+   - current tablet/desktop layout
+   - file-name pill
+   - Preview
+   - Background Edit
+   - Share
+   - Pack Summary
+   - Weight Distribution
+   - Scan Gear List
+   - Locker
+   - Open/Close
+   - Hide
+   - Imperial/Metric
+   - category list
+   - footer
+
+3. Preserve all verified fixes:
+   - 023A custom-theme Delete → Undo/Redo
+   - 022Z one-click custom-theme delete
+   - anchored custom-theme delete confirmation
+   - iPhone Locker sync
+   - mobile Locker/page scrolling
+   - Save / Save As / Locker
+   - stable file IDs
+   - built-in theme protection
+   - one user-created custom theme per account
+   - 10-photo maximum
+   - Fit / Fill
+   - Showcase
+   - Pack Summary
+   - Weight Distribution
+   - Scan Gear List
+   - footer normal document flow
+
+4. Make the smallest reasonable changes.
+
+5. Do NOT perform unrelated refactors.
+
+6. Inspect the COMPLETE final diff.
+
+7. Revert unrelated changes.
+
+8. Run the full regression suite plus new 023B tests.
+
+==================================================
+PART A — THEME NAMES AND ORDER
+==================================================
+
+==================================================
+1. REMOVE AUTOMATIC WORD "THEME"
+==================================================
+
+Do NOT automatically add the word:
+
+Theme
+
+to any individual built-in or custom theme name.
+
+CORRECT examples:
+Landscape
+Topo
+Sierra
+Test 9
+
+INCORRECT automatic examples:
+Landscape Theme
+Topo Theme
+Theme Test 9
+Test 9 Theme
+Custom Theme
+
+IMPORTANT:
+
+The SECTION HEADING:
+
+Background Themes
+
+may remain.
+
+This rule applies only to individual theme names.
+
+==================================================
+2. BUILT-IN THEME NAMES
+==================================================
+
+Use these exact built-in names:
+
+1. Landscape
+2. Topo
+
+Do NOT use:
+- Topographic
+- Topographic Theme
+- Topo Theme
+- Landscape Theme
+
+==================================================
+3. THEME ORDER
+==================================================
+
+The Background Themes selector must be ordered:
+
+1. Landscape
+2. Topo
+3. User's custom theme
+
+If no custom theme exists:
+
+Landscape
+Topo
+
+If the user's custom theme is named Sierra:
+
+Landscape
+Topo
+Sierra
+
+Do not alphabetically move the custom theme above the built-ins.
+
+==================================================
+4. CUSTOM THEME NAME
+==================================================
+
+Display the custom theme using exactly the user-entered name.
+
+Do not prefix or suffix "Theme".
+
+If the app itself previously inserted "Theme" into stored names:
+- safely remove only the system-added word
+- do not remove the word if the user intentionally typed it and that can be
+  distinguished
+
+If only rendering added "Theme":
+- fix rendering only
+- do not rewrite stored names unnecessarily
+
+==================================================
+5. DEFAULT CUSTOM NAME
+==================================================
+
+If the automatic default currently says:
+
+Custom Theme
+
+change the automatic default to:
+
+Custom
+
+The user may manually enter the word "Theme" themselves if they intentionally
+want it in the name.
+
+==================================================
+6. DELETE / UNDO / REDO REGRESSION
+==================================================
+
+Test a custom theme named:
+
+Sierra
+
+Delete → Undo
+
+Expected:
+[ ] returns as Sierra
+[ ] NOT Sierra Theme
+[ ] NOT Theme Sierra
+[ ] photos restore
+[ ] stable theme identity remains correct
+
+Redo → Undo again:
+[ ] exact clean name remains Sierra
+
+==================================================
+PART B — USER-DESIGNED PHONE LAYOUT
+==================================================
+
+==================================================
+7. THIS LAYOUT IS FOR IPHONE AND ANDROID PHONES ONLY
+==================================================
+
+The following layout applies to PHONE-SIZED screens on BOTH:
+
+- iPhone / iOS Safari
+- Android phone / Chrome
+
+Do NOT rearrange:
+- normal desktop layout
+- normal tablet layout
+- normal iPad layout
+- wider landscape layout unless the existing responsive breakpoint still
+  classifies it as a phone layout
+
+Use responsive width-based behavior rather than device-brand hacks.
+
+==================================================
+8. EXACT PHONE LAYOUT ORDER
+==================================================
+
+On phone-sized screens, the vertical order MUST be:
+
+1. FILE NAME / PREVIEW TOOLBAR ROW — CENTERED
+2. BACKGROUND EDIT / SHARE ROW
+3. PACK SUMMARY
+4. WEIGHT DISTRIBUTION
+5. SCAN GEAR LIST
+6. LOCKER
+7. OPEN/CLOSE + HIDE + IMPERIAL/METRIC TOOLBAR ROW
+8. CATEGORIES
+9. FOOTER
+
+This is the exact intended phone layout for iPhone AND Android.
+
+Do not move these controls back to the old top toolbar arrangement.
+
+==================================================
+9. ROW 1 — FILE NAME / PREVIEW
+==================================================
+
+At the top of the phone content area, create ONE centered toolbar row:
+
+[ File Name ] [ Preview ]
+
+Requirements:
+
+- The row as a whole is centered.
+- File Name appears first.
+- Preview appears immediately to the right.
+- Both remain on the same row at normal phone widths where practical.
+- Use compact spacing.
+- File Name may flex/truncate with ellipsis if needed.
+- Preview remains fully readable/tappable.
+- No overlap.
+- No horizontal page overflow.
+- File Name must remain in normal layout flow on phone.
+- Do not absolutely position the File Name over another row.
+
+If the filename is very long:
+- constrain it
+- use ellipsis
+- preserve accessible full-name exposure where appropriate
+
+==================================================
+10. ROW 2 — BACKGROUND EDIT / SHARE
+==================================================
+
+Directly below the File Name / Preview row:
+
+[ Background Edit ]                    [ Share ]
+
+Requirements:
+
+- Background Edit aligned toward the left content gutter.
+- Share aligned toward the right content gutter.
+- Keep both on one row at normal phone widths.
+- Use the same horizontal content width as Pack Summary.
+- Do not center both together as one small cluster.
+- Do not overlap.
+- Do not clip.
+
+==================================================
+11. PACK SUMMARY
+==================================================
+
+Immediately after the Background Edit / Share row:
+
+PACK SUMMARY
+
+Preserve:
+- existing accordion behavior
+- collapsed default state
+- calculations
+- current styling
+
+==================================================
+12. WEIGHT DISTRIBUTION
+==================================================
+
+Immediately after Pack Summary:
+
+WEIGHT DISTRIBUTION
+
+Preserve:
+- existing accordion behavior
+- collapsed default state
+- existing display controls
+- calculations
+
+==================================================
+13. SCAN GEAR LIST
+==================================================
+
+Immediately after Weight Distribution:
+
+SCAN GEAR LIST
+
+Preserve:
+- current open-by-default behavior
+- upload area
+- mobile scrolling
+- import functions
+
+==================================================
+14. LOCKER
+==================================================
+
+Immediately after Scan Gear List:
+
+LOCKER
+
+Preserve:
+- current open-by-default behavior
+- Cloud Sync
+- all saved files
+- mobile scrolling
+- Save/Open/Rename/Delete
+- current sync behavior
+
+==================================================
+15. LOWER PHONE TOOLBAR — BELOW LOCKER
+==================================================
+
+DIRECTLY BELOW LOCKER and IMMEDIATELY ABOVE CATEGORIES, place one compact
+phone-only toolbar row containing:
+
+[ Open / Close ]   [ Hide ]   [ Imperial / Metric ]
+
+This row is intentionally near the category list.
+
+Requirements:
+
+LEFT:
+[ Open | Close ]
+
+CENTER:
+[ Hide ]
+
+RIGHT:
+[ Imperial | Metric ]
+
+Use the same left/right content gutters as the category panels.
+
+Do NOT move this row to the top of the page.
+Do NOT place it between Background Edit and Pack Summary.
+Do NOT place it above Locker.
+
+This row belongs BETWEEN LOCKER AND CATEGORIES.
+
+==================================================
+16. OPEN / CLOSE
+==================================================
+
+Open/Close remains one segmented control.
+
+- Keep both halves together.
+- Left-align the segmented control to the phone content gutter.
+- Preserve existing Open/Close functionality.
+
+==================================================
+17. HIDE
+==================================================
+
+Hide is centered in the lower phone toolbar row.
+
+- Keep it enabled whenever its existing logic says it should be enabled.
+- Do not create new Hide behavior.
+- Do not change its function.
+- Do not fade it merely because of the responsive layout.
+- Preserve current working behavior.
+
+==================================================
+18. IMPERIAL / METRIC
+==================================================
+
+Imperial/Metric remains one segmented control.
+
+- Keep both halves together.
+- Right-align the segmented control to the phone content gutter.
+- Preserve current unit-conversion behavior.
+
+==================================================
+19. CATEGORIES
+==================================================
+
+The Categories/gear-category area begins immediately AFTER the lower phone
+toolbar.
+
+The relationship must be visually:
+
+Locker
+
+[ Open/Close ]   [ Hide ]   [ Imperial/Metric ]
+
+Categories
+
+Do not insert unrelated controls between this toolbar and Categories.
+
+==================================================
+20. FOOTER
+==================================================
+
+The footer remains at the bottom of the normal document flow after the
+categories/content.
+
+Preserve the existing footer fix.
+
+Do NOT make the footer:
+- fixed
+- sticky over content
+- absolute over categories
+- an obstacle to phone scrolling
+
+==================================================
+21. PHONE PORTRAIT IS THE PRIMARY MOBILE TARGET
+==================================================
+
+This layout must work cleanly in portrait on BOTH:
+
+- iPhone
+- Android phones
+
+Test representative widths including:
+
+320 px
+360 px
+375 px
+390 px
+412 px
+430 px
+
+At each width:
+
+[ ] File Name + Preview row fits/handles truncation correctly.
+[ ] Background Edit + Share row remains usable.
+[ ] Pack Summary follows next.
+[ ] Weight Distribution follows next.
+[ ] Scan Gear List follows next.
+[ ] Locker follows next.
+[ ] Lower toolbar appears below Locker.
+[ ] Categories follow the lower toolbar.
+[ ] Footer remains after content.
+[ ] No horizontal page overflow.
+[ ] No overlap.
+[ ] All touch controls remain usable.
+
+==================================================
+22. VERY NARROW PHONE FALLBACK
+==================================================
+
+At extremely narrow widths, if one row genuinely cannot fit:
+
+Use the smallest deterministic fallback possible.
+
+However, DO NOT change the vertical SECTION ORDER.
+
+For example:
+
+File Name / Preview must remain the FIRST toolbar area.
+
+Open/Close + Hide + Imperial/Metric must remain BELOW LOCKER and ABOVE
+CATEGORIES.
+
+If the lower toolbar cannot fit on one line at ~320 px:
+- preserve the same order
+- wrap internally as compactly as necessary
+- do NOT move those controls to a different section of the page
+
+At ordinary iPhone/Android phone widths, prefer one lower toolbar row.
+
+==================================================
+23. LANDSCAPE
+==================================================
+
+Phone landscape may use a more compact arrangement if width allows.
+
+However:
+- do not break the established landscape layout
+- do not force the portrait stacking onto wide landscape unnecessarily
+- preserve all controls and their functions
+
+==================================================
+24. TABLET / DESKTOP PRESERVATION
+==================================================
+
+This is critical.
+
+The user's sketch/layout is PHONE ONLY.
+
+At tablet/iPad/desktop widths:
+
+Preserve the existing accepted layout.
+
+Do NOT move:
+- Open/Close below Locker
+- Hide below Locker
+- Imperial/Metric below Locker
+- Preview next to filename
+
+on desktop/tablet unless that was already the established non-phone behavior.
+
+Use a dedicated responsive phone structure or CSS ordering strategy that does
+not alter the larger-screen DOM/layout behavior.
+
+==================================================
+25. ACCESSIBILITY / TOUCH TARGETS
+==================================================
+
+On iPhone and Android:
+
+- Keep practical touch targets.
+- Do not shrink buttons excessively.
+- Maintain focus states.
+- Maintain readable labels.
+- Keep segmented controls intact.
+- Maintain logical focus/tab order matching the visual phone order where
+  practical.
+
+==================================================
+26. NO FUNCTIONAL CHANGES
+==================================================
+
+This prompt changes phone layout and theme naming/order.
+
+Do NOT change the actual function of:
+
+- Preview
+- Background Edit
+- Share
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- Open
+- Close
+- Hide
+- Imperial/Metric
+- category behavior
+- footer links
+- sync
+- custom-theme delete
+- custom-theme Undo/Redo
+
+==================================================
+27. PHONE VISUAL ACCEPTANCE — EXACT STRUCTURE
+==================================================
+
+At a representative phone portrait width (~390 px), the page should visually
+follow this exact concept:
+
+          [ FILE NAME ] [ PREVIEW ]
+
+[ BACKGROUND EDIT ]              [ SHARE ]
+
+[ PACK SUMMARY ]
+
+[ WEIGHT DISTRIBUTION ]
+
+[ SCAN GEAR LIST ]
+
+[ LOCKER ]
+
+[ OPEN/CLOSE ]   [ HIDE ]   [ IMPERIAL/METRIC ]
+
+[ CATEGORIES ]
+
+...
+
+[ FOOTER ]
+
+This is the USER'S approved phone layout.
+
+Do not substitute another arrangement.
+
+==================================================
+28. THEME-NAME VISUAL ACCEPTANCE
+==================================================
+
+The Background Themes selector should display:
+
+Landscape
+Topo
+[Custom Name]
+
+Example:
+
+Landscape
+Topo
+Sierra
+
+No automatic "Theme" should appear in individual names.
+
+==================================================
+29. RUNTIME VISUAL TESTS — MANDATORY
+==================================================
+
+Render the ACTUAL application with a saved file loaded at:
+
+IPHONE-LIKE:
+- 375 px
+- 390 px
+- 430 px
+
+ANDROID-LIKE:
+- 360 px
+- 412 px
+
+VERY NARROW:
+- 320 px
+
+ALSO:
+- phone landscape
+- tablet/iPad width
+- desktop width
+
+For every phone portrait test, verify the exact section order from this prompt.
+
+Use a long filename such as:
+
+Sierra-Dutch-Mobile-Test-0826
+
+to verify truncation.
+
+Do NOT mark PASS based only on source/CSS inspection.
+
+==================================================
+30. AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for:
+
+THEME NAMES:
+[ ] built-in name exactly Landscape
+[ ] built-in name exactly Topo
+[ ] Landscape sorts before Topo
+[ ] custom theme follows built-ins
+[ ] no automatic prefix/suffix "Theme"
+[ ] custom rename remains exact
+[ ] Delete → Undo restores exact custom name
+[ ] built-in protections remain
+
+PHONE LAYOUT:
+[ ] phone order starts File Name/Preview
+[ ] Background Edit/Share follows
+[ ] Pack Summary follows
+[ ] Weight Distribution follows
+[ ] Scan Gear List follows
+[ ] Locker follows
+[ ] lower toolbar follows Locker
+[ ] Categories follow lower toolbar
+[ ] Open/Close stays grouped
+[ ] Imperial/Metric stays grouped
+[ ] Hide remains interactive
+[ ] filename truncates safely
+[ ] no phone horizontal overflow
+[ ] iPhone-sized widths use phone layout
+[ ] Android-sized widths use phone layout
+[ ] tablet/desktop do NOT use phone-only rearrangement
+[ ] mobile scrolling does not regress
+
+==================================================
+31. REGRESSION PROTECTION
+==================================================
+
+Run the full TrailWeigh regression suite.
+
+Specifically verify:
+
+[ ] 023A custom-theme Undo
+[ ] 022Z one-click delete
+[ ] anchored delete warning
+[ ] custom photo restoration
+[ ] Locker sync
+[ ] iPhone/mobile scrolling
+[ ] Save / Save As
+[ ] Locker open/load
+[ ] Background Edit
+[ ] Share
+[ ] Open/Close
+[ ] Hide
+[ ] Preview
+[ ] Imperial/Metric
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] footer normal flow
+[ ] desktop layout unchanged
+[ ] tablet layout unchanged
+
+==================================================
+32. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023B_REPORT.md
+
+The report must include:
+
+- Exact title:
+  Prompt 023B — Clean Theme Names/Order + Implement User-Designed Phone Layout
+
+- User-verified 023A result:
+  PASS — Undo restored deleted custom theme
+
+- Checkpoint confirmation
+
+- Files changed
+
+THEME SECTION:
+- existing theme naming architecture
+- where automatic "Theme" came from
+- exact built-in names after change
+- exact order after change
+- custom-theme naming behavior
+- whether any stored names required safe migration
+- rename result
+- Delete → Undo naming result
+
+PHONE LAYOUT SECTION:
+- exact previous phone structure
+- exact new phone structure
+- iPhone breakpoint behavior
+- Android breakpoint behavior
+- File Name/Preview row result
+- Background Edit/Share row result
+- Pack Summary order result
+- Weight Distribution order result
+- Scan Gear List order result
+- Locker order result
+- lower toolbar placement result
+- Categories placement result
+- Footer placement result
+- filename truncation behavior
+- 320 px result
+- 360 px result
+- 375 px result
+- 390 px result
+- 412 px result
+- 430 px result
+- phone landscape result
+- tablet/iPad result
+- desktop result
+- horizontal overflow result
+- vertical scrolling regression result
+- Hide functionality verification
+
+- automated test results
+- runtime/visual test results
+- full regression results
+- complete final-diff review
+- anything reverted
+- exact real-iPhone user verification steps
+- exact real-Android user verification steps
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Real iPhone and real Android hardware must remain NOT TESTED unless actually
+tested on those physical devices.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+33. REQUIRED REPLIT-CREATED ZIP — MANDATORY
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023B-report.zip
+
+Prompt 023B is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023B_REPORT.md
+
+2.
+workflow-reports/trailweigh-023B-report.zip
+
+The ZIP must contain at minimum:
+
+PROMPT_023B_REPORT.md
+
+It SHOULD also include NON-SENSITIVE responsive screenshots for:
+- Background Themes selector/name order
+- 320 px
+- 360 px
+- 375 px
+- 390 px
+- 412 px
+- 430 px
+- phone landscape
+- tablet
+- desktop
+
+It may include non-sensitive automated/runtime logs.
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env files
+- private user data
+- private Locker contents
+- private real-user photos
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_023B_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+Do not mark Prompt 023B complete without a valid ZIP.
+
+==================================================
+34. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. Confirmation individual built-in names are exactly:
+   Landscape
+   Topo
+
+10. Confirmation no automatic "Theme" is added to custom names
+
+11. Confirmation selector order is:
+    Landscape
+    Topo
+    Custom user theme
+
+12. Confirmation 023A Delete → Undo still restores theme/photos
+
+13. Exact phone layout order implemented
+
+14. Confirmation File Name / Preview is the centered first toolbar row
+
+15. Confirmation Background Edit / Share is the next row
+
+16. Confirmation Pack Summary, Weight Distribution, Scan Gear List, and Locker
+    follow in that order
+
+17. Confirmation Open/Close + Hide + Imperial/Metric is BELOW Locker and ABOVE
+    Categories on phone layouts
+
+18. Confirmation this phone layout applies to BOTH iPhone and Android phones
+
+19. Confirmation tablet and desktop layouts were not rearranged
+
+20. Confirmation no phone toolbar horizontal overflow
+
+21. Exact real-iPhone USER verification steps
+
+22. Exact real-Android USER verification steps
+
+FINAL STATUS RULE:
+
+Do NOT report:
+"Real iPhone phone-layout PASS"
+or
+"Real Android phone-layout PASS"
+
+until tested on the respective physical device.
+
+If responsive visual tests pass, report:
+
+"Responsive iPhone/Android phone visual tests PASS; real-device verification pending."

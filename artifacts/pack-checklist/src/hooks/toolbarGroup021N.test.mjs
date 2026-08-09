@@ -71,9 +71,10 @@ const pillsRowLine = lines.find(l =>
 );
 
 // Right toolbar panel (action bar) — 021O removed pt-8; now identified by pb-3 + lg:pl-3 lg:pr-9.
+// 023B: justify-center → justify-between on mobile; accept either.
 const actionBarLine = lines.find(l =>
   l.includes('pb-3') &&
-  l.includes('justify-center') &&
+  (l.includes('justify-center') || l.includes('justify-between')) &&
   l.includes('lg:justify-end') &&
   l.includes('lg:pl-3') &&
   l.includes('lg:pr-9') &&

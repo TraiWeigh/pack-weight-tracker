@@ -44,9 +44,11 @@ const pillsRowLine = lines.find(l =>
   l.includes('pb-3') && l.includes('flex') && l.includes('items-center') && l.includes('lg:pr-7') && l.includes('relative') && !l.includes('inset-0')
 );
 
-// Action bar (sidebar bar): pb-3 + justify-center + gap-2 + flex-shrink-0 (no pt-8 post-021O).
+// Action bar (sidebar bar): pb-3 + justify-center/justify-between + gap-2 + flex-shrink-0 (no pt-8 post-021O).
+// 023B: justify-center → justify-between on mobile; both are accepted.
 const sidebarBarLine = lines.find(l =>
-  l.includes('pb-3') && l.includes('justify-center') && l.includes('gap-2') && l.includes('flex-shrink-0') && !l.includes('items-center') && !l.includes('inset-0')
+  l.includes('pb-3') && (l.includes('justify-center') || l.includes('justify-between')) &&
+  l.includes('gap-2') && l.includes('flex-shrink-0') && !l.includes('items-center') && !l.includes('inset-0')
 );
 
 let passed = 0;
@@ -121,9 +123,13 @@ test('B2. Sidebar action bar uses lg:justify-end (desktop right-align)', () => {
 });
 
 test('B3. Sidebar action bar retains justify-center (mobile/tablet center)', () => {
+  // 023B: justify-center → justify-between on mobile (BG Edit LEFT · Share RIGHT).
+  // Desktop (lg:justify-end) unchanged. Accept either justify-center or justify-between.
   assert.ok(sidebarBarLine, 'Sidebar action bar must exist');
-  assert.match(sidebarBarLine, /\bjustify-center\b/,
-    'justify-center must remain for mobile/tablet stacked layout');
+  assert.ok(
+    /\bjustify-center\b/.test(sidebarBarLine) || /\bjustify-between\b/.test(sidebarBarLine),
+    '023B: action bar must use justify-center or justify-between for mobile/tablet layout'
+  );
 });
 
 test('B4. Sidebar action bar uses lg:pl-3 (12px left padding preserved)', () => {

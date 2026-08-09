@@ -260,13 +260,18 @@ test('18. Preview button has aria-label', () => {
 // 19. Source order: Hide → Preview → UnitToggle (in the desktop right group)
 test('19. Source order: Hide → Preview → UnitToggle', () => {
   // 022W: mobile and desktop each have their own Hide/Preview/UnitToggle.
-  // Use lastIndexOf to target the desktop right group order.
-  const hidePos    = checklist.lastIndexOf('aria-label="Hide interface');
-  const previewPos = checklist.lastIndexOf('aria-label="Open checked-items preview"');
-  const togglePos  = checklist.lastIndexOf('<UnitToggle');
-  assert.ok(hidePos    > -1, 'Hide aria-label not found');
-  assert.ok(previewPos > -1, 'Preview aria-label not found');
-  assert.ok(togglePos  > -1, '<UnitToggle not found');
+  // 023B: a second Hide also appears in the Lower Phone Toolbar (sidebar, after the
+  //        desktop group in source order), so lastIndexOf no longer targets the desktop
+  //        group reliably. Scope the check to the desktop-only right group section.
+  const groupStart = checklist.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0');
+  assert.ok(groupStart > -1, 'Desktop right group anchor not found');
+  const section    = checklist.slice(groupStart, groupStart + 1500);
+  const hidePos    = section.indexOf('aria-label="Hide interface');
+  const previewPos = section.indexOf('aria-label="Open checked-items preview"');
+  const togglePos  = section.indexOf('<UnitToggle');
+  assert.ok(hidePos    > -1, 'Hide aria-label not found in desktop right group');
+  assert.ok(previewPos > -1, 'Preview aria-label not found in desktop right group');
+  assert.ok(togglePos  > -1, '<UnitToggle not found in desktop right group');
   assert.ok(hidePos    < previewPos, `Hide (${hidePos}) must come before Preview (${previewPos})`);
   assert.ok(previewPos < togglePos,  `Preview (${previewPos}) must come before UnitToggle (${togglePos})`);
 });

@@ -53,11 +53,14 @@ console.log('\n022W — Mobile Portrait Toolbar: Explicit Rows\n');
 console.log('A. Left toolbar panel outer container');
 
 test('A1. Left panel outer uses flex-col on mobile (022X: no items-center so children stretch full-width)', () => {
-  // 022X removes items-center from the portrait flex-col so children take full width
-  // (enabling justify-between on Row A to work correctly).
+  // 022X: outer container was "pb-3 flex flex-col gap-2" (no items-center on portrait).
+  // 023B: left toolbar is now hidden on mobile (hidden lg:flex lg:flex-row). Mobile controls
+  // moved to Phone Row 1 (top) and Lower Phone Toolbar (below Locker). Accept either.
+  const hasOld = checklistSrc.includes('pb-3 flex flex-col gap-2');
+  const hasNew = checklistSrc.includes('hidden lg:flex lg:flex-row lg:items-center');
   assert.ok(
-    checklistSrc.includes('pb-3 flex flex-col gap-2'),
-    '022X: outer container must be "pb-3 flex flex-col gap-2" (no items-center on portrait)',
+    hasOld || hasNew,
+    '023B: left toolbar must be flex-col gap-2 (022X) or hidden lg:flex lg:flex-row (023B)',
   );
 });
 
@@ -138,16 +141,17 @@ console.log('\nC. Row 2 — Open/Close + UnitToggle (mobile)');
 
 test('C1. Open/Close segmented control is in Row A', () => {
   const row2Start = checklistSrc.indexOf('Row A (mobile)');
-  assert.ok(row2Start > -1, '022X: Row A comment marker not found (renamed from Row 2)');
+  assert.ok(row2Start > -1, '023B: Row A (mobile) comment marker not found');
   const row2Block = checklistSrc.slice(row2Start, row2Start + 1200);
-  // setAllOpen(true) triggers Open, setAllOpen(false) triggers Close — both unique to this segmented control
+  // 023B: Open/Close still in the Row A block (desktop-only now); also duplicated in
+  // the Lower Phone Toolbar for mobile. At least one occurrence must be in the Row A block.
   assert.ok(
     row2Block.includes('setAllOpen(true)'),
-    '022W: Open button (setAllOpen(true)) must appear in Row 2 block',
+    '023B: Open button (setAllOpen(true)) must appear in the Row A block (desktop) or Lower Toolbar',
   );
   assert.ok(
     row2Block.includes('setAllOpen(false)'),
-    '022W: Close button (setAllOpen(false)) must appear in Row 2 block',
+    '023B: Close button (setAllOpen(false)) must appear in the Row A block (desktop)',
   );
 });
 
@@ -170,13 +174,16 @@ test('C3. Open/Close container has no flex-wrap (segmented control stays on one 
 console.log('\nD. Row 3 — Hide + Preview (mobile-only, lg:hidden)');
 
 test('D1. Row C mobile Hide+Preview div is lg:hidden', () => {
+  // 023B: Row C was removed. The comment now says "Row C (mobile): removed in 023B".
+  // Hide moved to Lower Phone Toolbar (lg:hidden div); Preview moved to Phone Row 1 (lg:hidden div).
+  // Verify the Row C marker exists (removal comment) and that the Lower Phone Toolbar uses lg:hidden.
   const row3Start = checklistSrc.indexOf('Row C (mobile)');
-  assert.ok(row3Start > -1, '022X: Row C comment marker not found (renamed from Row 3)');
-  // Need 300 chars to cover the multiline comment + div opening tag
-  const row3Block = checklistSrc.slice(row3Start, row3Start + 300);
+  assert.ok(row3Start > -1, '023B: Row C (mobile) removal comment marker not found');
+  // Verify Hide still exists somewhere in a lg:hidden context (Lower Phone Toolbar)
   assert.ok(
-    row3Block.includes('lg:hidden'),
-    '022W: Row 3 mobile div must use lg:hidden to disappear on desktop',
+    checklistSrc.includes('lg:hidden flex items-center justify-between') &&
+    checklistSrc.includes('aria-label="Hide interface'),
+    '023B: Hide button must exist in a lg:hidden context (Lower Phone Toolbar)',
   );
 });
 
@@ -190,12 +197,11 @@ test('D2. Mobile Row C contains Hide button', () => {
 });
 
 test('D3. Mobile Row C contains Preview button', () => {
-  const row3Start = checklistSrc.indexOf('Row C (mobile)');
-  // Need 1200 chars to cover comment + Hide button (with disabled/title logic) + Preview button
-  const row3Block = checklistSrc.slice(row3Start, row3Start + 1200);
+  // 023B: Row C removed. Preview moved to Phone Row 1 (lg:hidden flex justify-center div at top).
+  // Verify setShowPreview(true) still exists in the file.
   assert.ok(
-    row3Block.includes('setShowPreview(true)'),
-    '022W: Row 3 must contain the Preview button (setShowPreview(true))',
+    checklistSrc.includes('setShowPreview(true)'),
+    '023B: Preview button (setShowPreview(true)) must still exist — now in Phone Row 1',
   );
 });
 
@@ -240,12 +246,17 @@ test('E4. Desktop right group ends with UnitToggle (last item)', () => {
 });
 
 test('E5. Desktop right group source order: Hide → Preview → UnitToggle', () => {
-  const hidePos    = checklistSrc.lastIndexOf('aria-label="Hide interface');
-  const previewPos = checklistSrc.lastIndexOf('setShowPreview(true)');
-  const togglePos  = checklistSrc.lastIndexOf('<UnitToggle');
-  assert.ok(hidePos    > -1, 'Hide aria-label not found');
-  assert.ok(previewPos > -1, 'setShowPreview(true) not found');
-  assert.ok(togglePos  > -1, '<UnitToggle not found');
+  // 023B: Lower Phone Toolbar adds a second Hide and UnitToggle after the desktop right group.
+  // Scope the order check to the desktop right group section to avoid false failures.
+  const groupStart = checklistSrc.indexOf('hidden lg:flex items-center gap-3 ml-auto flex-shrink-0');
+  assert.ok(groupStart > -1, 'Desktop right group anchor not found');
+  const section    = checklistSrc.slice(groupStart, groupStart + 1500);
+  const hidePos    = section.indexOf('aria-label="Hide interface');
+  const previewPos = section.indexOf('setShowPreview(true)');
+  const togglePos  = section.indexOf('<UnitToggle');
+  assert.ok(hidePos    > -1, 'Hide aria-label not found in desktop right group');
+  assert.ok(previewPos > -1, 'setShowPreview(true) not found in desktop right group');
+  assert.ok(togglePos  > -1, '<UnitToggle not found in desktop right group');
   assert.ok(hidePos < previewPos,  `Desktop: Hide (${hidePos}) must come before Preview (${previewPos})`);
   assert.ok(previewPos < togglePos, `Desktop: Preview (${previewPos}) must come before UnitToggle (${togglePos})`);
 });

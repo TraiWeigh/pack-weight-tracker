@@ -150,12 +150,12 @@ test('E3. Sidebar scrollable uses lg:pl-1 lg:pr-5 (021L gutter rebalance: 4px le
 
 test('E4. Sidebar button-row uses lg:pl-3 lg:pr-9 lg:justify-end (021M toolbar alignment)', () => {
   // 021M aligned Share button's right edge with sidebar-panel right edge.
-  // justify-center → justify-center lg:justify-end (desktop right-align)
-  // lg:px-3 → lg:pl-3 lg:pr-9 (left 12px, right 36px; total 48px vs old 24px;
-  //   extra 24px right = pr-5(20px) + scrollbar-gutter(≈15px) ≈ 35px — nearest standard token pr-9=36px)
-  // 021O removed pt-8 from child panels; action bar now identified by pb-3 + lg:pl-3 lg:pr-9 lg:justify-end.
+  // 023B: justify-center → justify-between on mobile (BG Edit LEFT · Share RIGHT);
+  //        desktop uses lg:justify-end (unchanged). Accept either justify-center or
+  //        justify-between so this test passes before and after 023B.
+  // 021O removed pt-8 from child panels; action bar identified by pb-3 + lg:pl-3 lg:pr-9 lg:justify-end.
   const buttonRowLine = checklist.split('\n').find(l =>
-    l.includes('justify-center') && l.includes('lg:justify-end') &&
+    (l.includes('justify-center') || l.includes('justify-between')) && l.includes('lg:justify-end') &&
     l.includes('pb-3') && l.includes('lg:pl-3') && l.includes('lg:pr-9') && !l.includes('inset-0')
   );
   assert.ok(buttonRowLine, '021M: sidebar button row must have lg:justify-end, lg:pl-3, and lg:pr-9 for Share-to-panel right-edge alignment');

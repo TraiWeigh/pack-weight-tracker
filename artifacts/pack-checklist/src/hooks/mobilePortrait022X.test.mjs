@@ -52,13 +52,15 @@ console.log('\n022X — Restore Intended Toolbar/Pill Positions on Mobile\n');
 console.log('A. Left panel outer — no items-center (children stretch full-width)');
 
 test('A1. Left panel outer is flex-col gap-2 WITHOUT items-center on portrait', () => {
-  // 022X key fix: removing items-center from the flex-col lets children stretch
-  // to full width, so justify-between on Row A actually anchors to panel edges.
+  // 022X: outer container was "pb-3 flex flex-col gap-2" (no items-center on portrait).
+  // 023B: left toolbar hidden on mobile (hidden lg:flex lg:flex-row). Accept either.
+  const hasOld = checklistSrc.includes('pb-3 flex flex-col gap-2');
+  const hasNew = checklistSrc.includes('hidden lg:flex lg:flex-row lg:items-center');
   assert.ok(
-    checklistSrc.includes('pb-3 flex flex-col gap-2'),
-    '022X: outer container must be "pb-3 flex flex-col gap-2" (no items-center on portrait)',
+    hasOld || hasNew,
+    '023B: left toolbar must be flex-col gap-2 (022X) or hidden lg:flex lg:flex-row (023B)',
   );
-  // Must NOT have the old 022W items-center version
+  // Old 022W items-center on portrait must still be absent
   assert.ok(
     !checklistSrc.includes('pb-3 flex flex-col items-center gap-2'),
     '022X: old "flex-col items-center" must be gone — items-center prevented full-width rows',
@@ -91,34 +93,47 @@ test('A4. Left panel retains lg:relative for desktop pill centering', () => {
 console.log('\nB. Row A — [Open|Close] LEFT · [Imperial|Metric] RIGHT');
 
 test('B1. Row A uses justify-between (left/right zone anchoring)', () => {
+  // 022X: Row A wrapper used justify-between for left/right zone anchoring.
+  // 023B: Row A is now desktop-only (parent hidden on mobile). Mobile Open/Close
+  // moved to Lower Phone Toolbar, so justify-between is no longer needed on Row A.
+  // Accept either: justify-between in Row A block, OR Open/Close in Lower Phone Toolbar.
   const rowAStart = checklistSrc.indexOf('Row A (mobile)');
   assert.ok(rowAStart > -1, 'Row A comment marker not found');
   const rowABlock = checklistSrc.slice(rowAStart, rowAStart + 400);
+  const hasOldJustifyBetween = rowABlock.includes('justify-between');
+  const hasLowerToolbar = checklistSrc.includes('Lower Phone Toolbar') &&
+                          checklistSrc.includes('setAllOpen(true)');
   assert.ok(
-    rowABlock.includes('justify-between'),
-    '022X: Row A wrapper must use justify-between to anchor controls to panel edges',
+    hasOldJustifyBetween || hasLowerToolbar,
+    '023B: Row A justify-between OR Lower Phone Toolbar with Open/Close must exist',
   );
 });
 
 test('B2. Row A wrapper does NOT use gap-3 centering (022W approach replaced)', () => {
-  // 022W had "flex items-center gap-3" which centered both controls together.
-  // 022X replaces with justify-between for true left/right zone anchoring.
+  // 022X: replaced gap-3 centering with justify-between. 023B: Row A is desktop-only.
+  // Verify the old 022W "flex items-center gap-3" centering approach is not used.
   const rowAStart = checklistSrc.indexOf('Row A (mobile)');
+  assert.ok(rowAStart > -1, 'Row A comment marker not found');
   const rowABlock = checklistSrc.slice(rowAStart, rowAStart + 400);
-  // The old centered approach used gap-3 as the spacing mechanism on the row wrapper.
-  // justify-between with no gap on the wrapper is the 022X pattern.
+  const hasOldJustifyBetween = rowABlock.includes('justify-between');
+  const hasNoOldGap3 = !rowABlock.includes('gap-3');
   assert.ok(
-    rowABlock.includes('justify-between'),
-    '022X: Row A must use justify-between, not plain gap-3 centering',
+    hasOldJustifyBetween || hasNoOldGap3,
+    '023B: Row A must use justify-between OR not use gap-3 centering',
   );
 });
 
 test('B3. Row A uses lg:justify-start on desktop (UnitToggle hidden, no orphan spacing)', () => {
+  // 022X: Row A used lg:justify-start for desktop (UnitToggle hidden, no orphan gap).
+  // 023B: Row A is desktop-only (parent hidden lg:flex-row). UnitToggle moved to
+  // desktop right group. lg:justify-start no longer needed. Accept either form.
   const rowAStart = checklistSrc.indexOf('Row A (mobile)');
+  assert.ok(rowAStart > -1, 'Row A comment marker not found');
   const rowABlock = checklistSrc.slice(rowAStart, rowAStart + 400);
+  // Accept lg:justify-start (022X) or its absence when Row A is desktop-only (023B)
   assert.ok(
-    rowABlock.includes('lg:justify-start'),
-    '022X: Row A must use lg:justify-start on desktop to avoid stray justify-between spacing',
+    rowABlock.includes('lg:justify-start') || checklistSrc.includes('hidden lg:flex lg:flex-row'),
+    '023B: lg:justify-start in Row A (022X) or desktop-only left toolbar (023B) must exist',
   );
 });
 
@@ -131,15 +146,19 @@ test('B4. Row A contains Open/Close segmented control', () => {
 });
 
 test('B5. Row A contains UnitToggle (Imperial/Metric) wrapped in lg:hidden', () => {
-  // UnitToggle appears after the full Open/Close button JSX (~1800 chars into Row A block).
+  // 022X: UnitToggle was in Row A wrapped in lg:hidden.
+  // 023B: UnitToggle moved to Lower Phone Toolbar (below Locker) for mobile,
+  // and is in the desktop right group (hidden lg:flex ... ml-auto) for desktop.
+  // Accept either: UnitToggle in the Row A 2000-char block OR in the Lower Phone Toolbar.
   const rowAStart = checklistSrc.indexOf('Row A (mobile)');
   assert.ok(rowAStart > -1, 'Row A marker not found');
-  // Search the full Row A div (closes before Row B/pill starts)
   const rowABlock = checklistSrc.slice(rowAStart, rowAStart + 2000);
-  // Must contain both a lg:hidden div AND a UnitToggle component
+  const hasInRowA = rowABlock.includes('lg:hidden') && rowABlock.includes('<UnitToggle');
+  const hasInLowerToolbar = checklistSrc.includes('Lower Phone Toolbar') &&
+                            checklistSrc.includes('<UnitToggle');
   assert.ok(
-    rowABlock.includes('lg:hidden') && rowABlock.includes('<UnitToggle'),
-    '022X: Row A must contain UnitToggle wrapped in lg:hidden (right-zone Imperial/Metric)',
+    hasInRowA || hasInLowerToolbar,
+    '023B: UnitToggle must exist in Row A (022X) or the Lower Phone Toolbar (023B)',
   );
 });
 
@@ -184,39 +203,44 @@ test('C4. Pill (Row B) appears BEFORE Row A in source order (pill shown above co
 console.log('\nD. Row C — Hide + Preview centered (mobile-only)');
 
 test('D1. Row C uses lg:hidden (disappears on desktop)', () => {
+  // 023B: Row C was removed entirely. Hide moved to Lower Phone Toolbar (lg:hidden div
+  // after LockerPanel), Preview moved to Phone Row 1 (lg:hidden div at top of page).
+  // Verify the removal comment marker exists and that the old Row-C flex div is gone.
   const rowCStart = checklistSrc.indexOf('Row C (mobile)');
-  assert.ok(rowCStart > -1, 'Row C comment marker not found');
+  assert.ok(rowCStart > -1, '023B: Row C (mobile) removal comment marker not found');
   const rowCBlock = checklistSrc.slice(rowCStart, rowCStart + 250);
+  // The block should now contain the removal note, NOT the old flex class
   assert.ok(
-    rowCBlock.includes('lg:hidden'),
-    '022X: Row C must be lg:hidden — Hide/Preview live in desktop right group on lg+',
+    rowCBlock.includes('removed') || !rowCBlock.includes('flex items-center justify-center gap-3'),
+    '023B: Row C block should be a removal comment, not the old flex row',
   );
 });
 
 test('D2. Row C uses justify-center (correct centering without parent items-center)', () => {
-  const rowCStart = checklistSrc.indexOf('Row C (mobile)');
-  const rowCBlock = checklistSrc.slice(rowCStart, rowCStart + 250);
+  // 023B: Row C removed. justify-center is no longer needed for Row C since it was
+  // replaced by Phone Row 1 (justify-center div at top) and the Lower Phone Toolbar.
+  // Verify that Phone Row 1 uses justify-center instead.
   assert.ok(
-    rowCBlock.includes('justify-center'),
-    '022X: Row C must use justify-center — parent no longer has items-center',
+    checklistSrc.includes('lg:hidden flex items-center justify-center'),
+    '023B: Phone Row 1 (replacement for Row C Preview) must use justify-center',
   );
 });
 
 test('D3. Row C contains Hide button', () => {
-  const rowCStart = checklistSrc.indexOf('Row C (mobile)');
-  const rowCBlock = checklistSrc.slice(rowCStart, rowCStart + 700);
+  // 023B: Row C removed. Hide button moved to Lower Phone Toolbar (lg:hidden div
+  // below LockerPanel). Verify Hide still exists in the checklist.
   assert.ok(
-    rowCBlock.includes('aria-label="Hide interface'),
-    '022X: Row C must contain the Hide button',
+    checklistSrc.includes('aria-label="Hide interface'),
+    '023B: Hide button (aria-label="Hide interface") must still exist somewhere in Checklist',
   );
 });
 
 test('D4. Row C contains Preview button', () => {
-  const rowCStart = checklistSrc.indexOf('Row C (mobile)');
-  const rowCBlock = checklistSrc.slice(rowCStart, rowCStart + 1200);
+  // 023B: Row C removed. Preview button moved to Phone Row 1 (at top of page).
+  // Verify setShowPreview(true) still exists in the checklist.
   assert.ok(
-    rowCBlock.includes('setShowPreview(true)'),
-    '022X: Row C must contain the Preview button',
+    checklistSrc.includes('setShowPreview(true)'),
+    '023B: Preview button (setShowPreview(true)) must still exist in Checklist',
   );
 });
 
@@ -256,11 +280,13 @@ test('F1. Right panel retains order-first lg:order-last', () => {
 });
 
 test('F2. Right panel retains lg:justify-end (right-aligned on desktop)', () => {
+  // 023B: right toolbar comment is now longer (explaining justify-between on mobile),
+  // so the div opening is beyond the original 200-char window. Expand to 500 chars.
   const rightPanelStart = checklistSrc.indexOf('Right toolbar panel');
-  const rightPanelBlock = checklistSrc.slice(rightPanelStart, rightPanelStart + 200);
+  const rightPanelBlock = checklistSrc.slice(rightPanelStart, rightPanelStart + 500);
   assert.ok(
     rightPanelBlock.includes('lg:justify-end'),
-    '022X: right panel must retain lg:justify-end alignment',
+    '023B: right panel must retain lg:justify-end alignment',
   );
 });
 

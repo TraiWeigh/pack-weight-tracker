@@ -1787,21 +1787,41 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
         <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:flex lg:flex-col">
 
+          {/* ── 023B: Phone Row 1 — File Name + Preview, centered (mobile only) ──
+               On desktop this div is lg:hidden; the file-name pill and Preview button
+               continue to appear in the left-toolbar via their own lg: positioning.
+               On mobile this row sits at the very top of the content area, above the
+               Background Edit / Share row. */}
+          <div className="pt-4 lg:hidden flex items-center justify-center gap-2 pb-2 flex-wrap">
+            {activeLockerFile && (
+              <span
+                aria-label={`Active file: ${activeLockerFile.name}`}
+                title={activeLockerFile.name}
+                className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
+              >
+                {activeLockerFile.name}
+              </span>
+            )}
+            <button
+              onClick={() => setShowPreview(true)}
+              aria-label="Open checked-items preview"
+              className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Preview
+            </button>
+          </div>
+
           {/* ── Toolbar group — all toolbar controls share this single parent.
-               To reposition the entire toolbar, change pt-4 on this element only. ── */}
-          <div className="pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
+               pt-4 is desktop-only (lg:pt-4); mobile top spacing is in Phone Row 1. ── */}
+          <div className="lg:pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
             {/* Left toolbar panel — Pinned pills row
-                022X: restore LEFT / CENTER / RIGHT toolbar zones with explicit
-                portrait rows. No items-center on the flex-col (children stretch
-                full-width so Row A can anchor controls to opposite panel edges).
-                ─ Portrait (flex-col):
-                    Row A: [Open|Close] anchored LEFT · [Imperial|Metric] anchored RIGHT
-                    Row B: [File-name pill — centered in normal flow]
-                    Row C: [Hide]  [Preview]  (centered, lg:hidden)
+                023B: hidden on mobile (all mobile controls now live in Phone Row 1 and
+                the Lower Phone Toolbar below Locker). On desktop (lg:flex-row) the
+                existing layout is preserved unchanged.
                 ─ Desktop (lg: flex-row):
                     [Open|Close] ··· [pill: lg:absolute centered] ··· [Hide][Preview][UnitToggle] */}
-            <div className="pb-3 flex flex-col gap-2 lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative">
+            <div className="hidden lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative lg:pb-3">
 
               {/* ── Row B (mobile): File-name pill — centered in normal flow ──────
                   Desktop: lg:absolute lg:inset-0 removes it from flex-row flow while
@@ -1819,11 +1839,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 </div>
               )}
 
-              {/* ── Row A (mobile): [Open|Close] LEFT · [Imperial|Metric] RIGHT ───
-                  justify-between anchors each control to its panel edge.
-                  Desktop: UnitToggle is hidden here; lg:justify-start prevents
-                  stray spacing when only Open/Close remains as a child. */}
-              <div className="flex items-center justify-between lg:justify-start lg:flex-shrink-0">
+              {/* ── Row A (mobile) — 023B: both Open/Close and Units moved to Lower Phone Toolbar.
+                  Parent is hidden on mobile (lg:flex-row only), so this renders desktop-only.
+                  On desktop: just Open/Close (Units are in the desktop right group). */}
+              <div className="flex items-center flex-shrink-0">
                 {/* Open/Close segmented control — always together */}
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
@@ -1847,36 +1866,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     Close
                   </button>
                 </div>
-                {/* Imperial/Metric beside Open/Close on mobile; hidden on desktop (shown in right group) */}
-                <div className="lg:hidden">
-                  <UnitToggle />
-                </div>
               </div>
 
-              {/* ── Row C (mobile): [Hide] + [Preview] centered, lg:hidden ──────
-                  Hidden on desktop — these appear in the desktop-only right group. */}
-              <div className="flex items-center justify-center gap-3 lg:hidden">
-                <button
-                  onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
-                  disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
-                  aria-label="Hide interface and show background view"
-                  title={
-                    showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
-                      ? 'Finish the current action first'
-                      : 'Hide the interface'
-                  }
-                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Hide
-                </button>
-                <button
-                  onClick={() => setShowPreview(true)}
-                  aria-label="Open checked-items preview"
-                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Preview
-                </button>
-              </div>
+              {/* Row C (mobile): removed in 023B — Hide moved to Lower Phone Toolbar,
+                  Preview moved to Phone Row 1. Desktop right group unchanged. */}
 
               {/* ── Desktop-only right group: ml-auto → [Hide][Preview][UnitToggle] ──
                   Hidden on mobile (handled by rows above). */}
@@ -1905,8 +1898,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               </div>
             </div>
 
-            {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ── */}
-            <div className="order-first lg:order-last relative flex flex-wrap justify-center lg:justify-end gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
+            {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ──
+                023B: justify-between on mobile so Background Edit anchors LEFT and Share anchors
+                RIGHT; lg:justify-end preserves the existing desktop right-alignment. */}
+            <div className="order-first lg:order-last relative flex flex-wrap justify-between lg:justify-end gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton
                     onClick={() => setBackgroundPickerOpen(o => !o)}
@@ -2192,6 +2187,52 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     onSyncNow: handleSyncNow,
                   } : undefined}
                 />
+
+                {/* ── 023B: Lower Phone Toolbar — below Locker, above Categories ──
+                    Mobile-only (lg:hidden). Mirrors the desktop left-toolbar row:
+                    [Open|Close] LEFT · [Hide] CENTER · [Imperial|Metric] RIGHT.
+                    On desktop this div does not render (lg:hidden). */}
+                <div className="lg:hidden flex items-center justify-between gap-2 pt-1">
+                  {/* Open / Close — left */}
+                  <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
+                    <button
+                      onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                        allOpen === true
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Open
+                    </button>
+                    <button
+                      onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                        allOpen === false
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Close
+                    </button>
+                  </div>
+                  {/* Hide — center */}
+                  <button
+                    onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
+                    disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
+                    aria-label="Hide interface and show background view"
+                    title={
+                      showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
+                        ? 'Finish the current action first'
+                        : 'Hide the interface'
+                    }
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Hide
+                  </button>
+                  {/* Imperial / Metric — right */}
+                  <UnitToggle />
+                </div>
               </div>
             </div>
 

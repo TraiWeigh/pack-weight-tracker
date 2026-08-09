@@ -183,12 +183,16 @@ test('9. Pill is a <span> not a <button> — informational only', () => {
 });
 
 test('10. Pill has pointer-events-none (click/hover events pass through)', () => {
-  const condIdx = checklist.indexOf('{activeLockerFile && (');
-  assert.ok(condIdx > -1, 'Conditional activeLockerFile render not found');
+  // 023B: a second, simpler pill appears in Phone Row 1 (before "Pinned pills row").
+  // The desktop pill (Row B) is the one with pointer-events-none; scope search to it.
+  const pillsRowIdx = checklist.indexOf('Pinned pills row');
+  assert.ok(pillsRowIdx > -1, '"Pinned pills row" marker not found');
+  const condIdx = checklist.indexOf('{activeLockerFile && (', pillsRowIdx);
+  assert.ok(condIdx > -1, 'Conditional activeLockerFile render not found after pills row');
   const pillBlock = checklist.slice(condIdx, condIdx + 600);
   assert.ok(
     pillBlock.includes('pointer-events-none'),
-    'pointer-events-none not found on the filename pill'
+    'pointer-events-none not found on the desktop filename pill'
   );
 });
 
@@ -225,12 +229,15 @@ test('13. Pill has truncate class (overflow text hidden with ellipsis)', () => {
 test('14. [018C] Pill uses absolute inset-0 centering — NOT hidden behind sm: breakpoint', () => {
   // 018A correction: pill moved out of the control group, responsive hiding removed.
   // 018C correction: left-1/2/top-1/2/translate replaced with inset-0 + padding approach.
-  const condIdx = checklist.indexOf('{activeLockerFile && (');
-  assert.ok(condIdx > -1, 'Conditional activeLockerFile render not found');
+  // 023B: a simpler phone-row-1 pill appears before "Pinned pills row"; scope to desktop pill.
+  const pillsRowIdx = checklist.indexOf('Pinned pills row');
+  assert.ok(pillsRowIdx > -1, '"Pinned pills row" marker not found');
+  const condIdx = checklist.indexOf('{activeLockerFile && (', pillsRowIdx);
+  assert.ok(condIdx > -1, 'Conditional activeLockerFile render not found after pills row');
   const pillBlock = checklist.slice(condIdx, condIdx + 600);
   assert.ok(
     pillBlock.includes('absolute') && pillBlock.includes('inset-0'),
-    'Pill wrapper does not have absolute inset-0 centering (018C correction not applied)'
+    'Desktop pill wrapper does not have absolute inset-0 centering (018C correction not applied)'
   );
   assert.ok(
     !pillBlock.includes('hidden sm:inline-flex') && !pillBlock.includes('hidden sm:flex'),
