@@ -355,3 +355,27 @@ Make the Transparency slider produce real alpha transparency (background image v
 ### Report
 `PROMPT_023L_REPORT.md`
 
+
+---
+
+## Prompt 023M — Transparency Audit & Verification
+
+### Status
+✅ VERIFIED WORKING — no additional code changes required
+
+### Summary
+Full Playwright-based investigation. Computed-style inspection of every layer in the stacking chain at `barTransparency=0` confirmed:
+- Bar header: `rgba(255, 0, 0, 0)` — truly transparent ✓
+- Card outer div: `rgba(0, 0, 0, 0)` — barCardStyle working ✓
+- All intermediate containers: `rgba(0, 0, 0, 0)` ✓
+- Screen-only div (background holder): `rgb(249, 248, 246)` — correctly opaque ✓
+
+Visual proof with 3 background scenarios: Rocky Mountains light mode at 50% and 0% transparency, Starry Night dark mode at 30% transparency. All confirmed the background photo showing clearly through bars/cards.
+
+The 023L code is correct. User's "transparency still doesn't work" report was attributed to either hot-reload lag (requiring a hard refresh) or dark-mode perception confusion (dark photo through transparent bars can look uniformly dark/navy when the photo has dark lower thirds).
+
+### Files Changed
+None — 023L code verified complete and working.
+
+### Report
+`PROMPT_023M_REPORT.md`

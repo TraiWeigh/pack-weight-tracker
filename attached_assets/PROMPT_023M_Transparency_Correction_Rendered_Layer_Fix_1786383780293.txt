@@ -1,0 +1,596 @@
+PROMPT 023M — TRANSPARENCY CORRECTION: FIND THE ACTUAL OPAQUE LAYER AND PROVE TRUE ALPHA VISUALLY
+
+PURPOSE
+
+Prompt 023L attempted to fix TrailWeigh Transparency by making several `bg-card` wrappers transparent and fixing Open/Close to use `barBgStyle`.
+
+The user then tested the live TrailWeigh interface and reported:
+
+TRANSPARENCY STILL DOES NOT WORK.
+
+Therefore:
+
+PROMPT 023L = FAIL in real-user verification.
+
+Do NOT assume the 023L root-cause diagnosis was complete.
+Do NOT repeat the same fix without proving what is still blocking transparency.
+
+This prompt is a focused corrective investigation and repair for Transparency only.
+
+DO NOT work on the eyedropper safety issue in this prompt.
+The eyedropper remains a separate later prompt.
+DO NOT ask the user to test the eyedropper.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Read:
+   - `workflow-reports/PROMPT_023L_REPORT.md`
+   - the current Transparency implementation
+   - the current Bar Color / Text / Font implementation
+3. Inspect the actual current code before changing anything.
+4. Make the smallest reasonable correction.
+5. Do not perform unrelated refactors.
+6. Preserve:
+   - authentication
+   - user data
+   - Locker
+   - sharing
+   - Scan Gear List
+   - themes
+   - mobile layout
+   - Bar Color
+   - Text Color
+   - Font
+   - Darken
+   - Hide
+   - Share hover behavior
+   - cross-window appearance isolation
+   - all prior working fixes
+7. Inspect the complete final diff.
+8. Revert unrelated changes.
+9. Do not claim completion based only on source inspection.
+10. Document checkpoint and final diff in the report.
+
+==================================================
+1. ACCEPT THE REAL USER RESULT
+==================================================
+
+Prompt 023L reported:
+
+- `hexToRgba()` correct
+- `barBgStyle()` correct
+- `barCombinedStyle()` correct
+- several outer `bg-card` wrappers made transparent
+- Open/Close changed to use `barBgStyle`
+
+But the user tested the live application and Transparency still failed.
+
+Therefore the actual rendered page still has one or more opaque/dark layers, overrides, fallback surfaces, stacking layers, pseudo-elements, nested backgrounds, or state paths preventing the background image from showing through.
+
+The 023L source-level prediction is NOT proof.
+
+Treat the user's live result as authoritative:
+
+TRANSPARENCY = FAIL.
+
+==================================================
+2. REPRODUCE THE FAILURE IN THE RUNNING APP FIRST
+==================================================
+
+Before making another code change:
+
+1. Run the current application.
+2. Use an actual background image/theme that is visually obvious.
+3. Choose an obvious custom Bar Color.
+4. Test Transparency at:
+   - 100% Solid
+   - approximately 50%
+   - 0% / Transparent
+5. Observe the actual rendered result.
+
+Do not proceed directly from source-code assumptions.
+
+If browser automation is available, use it.
+
+Capture evidence of the failure before changing code:
+- screenshot(s), if available
+- DOM/computed-style inspection
+- relevant element hierarchy
+
+The key question is:
+
+AT TRANSPARENCY = 0, WHAT EXACT RENDERED LAYER IS STILL DRAWING THE DARK/OPAQUE SURFACE?
+
+==================================================
+3. TRACE THE FULL RENDERED BACKGROUND STACK
+==================================================
+
+For at least these representative surfaces:
+
+A. one category bar
+B. Pack Summary
+C. Weight Distribution
+D. Locker
+E. Scan Gear List
+F. File Name / toolbar pill
+G. Open/Close pill
+H. Background Edit pill
+I. Share pill
+
+inspect the actual rendered DOM from the bar/pill element outward to the element containing the page background image.
+
+For each layer, inspect:
+
+- `background`
+- `background-color`
+- `background-image`
+- CSS variables used by those properties
+- inline styles
+- Tailwind utility classes
+- inherited/custom theme classes
+- `::before`
+- `::after`
+- backdrop/filter layers
+- overlays
+- pseudo-elements
+- absolutely positioned children
+- parent/ancestor opaque surfaces
+- selected/open/disabled state classes
+- dark/light mode classes
+- z-index/stacking context if relevant
+
+Do not stop after finding one transparent element.
+
+Identify EVERY rendered layer between the user-visible bar/pill and the background image.
+
+==================================================
+4. VERIFY WHERE THE BACKGROUND IMAGE ACTUALLY LIVES
+==================================================
+
+Prompt 023L assumed that making the card wrapper transparent would expose the page background image.
+
+Verify that assumption.
+
+Identify:
+
+- the exact DOM element that owns the TrailWeigh background image
+- whether another solid page/container/background layer exists between that image and the bars
+- whether Darken uses an overlay element or pseudo-element
+- whether Light/Dark display mode inserts a solid surface above the image
+- whether mobile and desktop use different background-layer structures
+
+At Transparency = 0, the transparent bar/pill must reveal the ACTUAL TrailWeigh background image.
+
+If it instead reveals a dark page/container background, trace further until the exact blocker is found.
+
+==================================================
+5. FIND CSS OVERRIDES / SPECIFICITY PROBLEMS
+==================================================
+
+Inspect whether the correct RGBA value is being generated but then overridden.
+
+At each slider position, inspect the final COMPUTED `background-color` of the visible surface.
+
+For a chosen Bar Color, record:
+
+Solid:
+expected alpha = 1
+
+Middle:
+expected alpha ≈ 0.5
+
+Transparent:
+expected alpha = 0
+
+Then compare:
+- intended inline/style helper output
+- browser computed value
+- actual visual result
+
+If the computed value is not the intended RGBA, identify the winning CSS rule and fix the specificity/state path.
+
+If the computed value IS correct but the result remains dark, the problem is behind/below that element. Continue tracing the rendered stack.
+
+==================================================
+6. DO NOT FAKE THE FIX
+==================================================
+
+Do NOT:
+
+- blend the color toward black
+- blend toward navy
+- reduce brightness
+- change saturation
+- replace the selected color with a theme color
+- use whole-component `opacity`
+- hide the background image
+- make text/icons transparent
+- add a compensating light background
+- add an unrelated blur merely to disguise the problem
+
+The user wants TRUE ALPHA.
+
+At 0% opacity, the bar/pill background must contribute no opaque color.
+
+==================================================
+7. REQUIRED VISUAL PROOF
+==================================================
+
+This prompt must not be considered successful from unit tests/source inspection alone.
+
+After the fix, use the running app with a visible background image and prove:
+
+A. Solid endpoint
+- selected Bar Color is opaque
+
+B. 50% midpoint
+- SAME RGB color
+- alpha approximately 0.5
+- background image visibly shows through
+
+C. Transparent endpoint
+- alpha = 0 or equivalent fully transparent surface
+- background image is clearly visible through the bar/pill region
+
+D. Text/icons
+- remain fully opaque and readable
+
+E. No dark/navy substitute
+- surface does not become black/navy as alpha decreases
+
+Capture screenshots or equivalent rendered evidence if Replit's environment supports it.
+
+If Replit cannot visually render the relevant background state, mark the visual verification NOT TESTED rather than PASS.
+
+==================================================
+8. ADD AN AUTOMATED RENDERED-STYLE TEST
+==================================================
+
+Add a targeted regression test that verifies the actual rendered/computed style path rather than only checking helper-source text.
+
+Where technically practical:
+
+- render a representative bar/pill with a known Bar Color
+- set Transparency = 1, 0.5, 0
+- verify the visible surface's background color/alpha
+- verify the ancestor intended to expose the background is transparent at alpha < 1
+- verify text/icon opacity remains 1
+
+If Playwright/browser testing is available, prefer one browser-level test that checks computed styles.
+
+Do not rely only on regex tests that search source strings.
+
+==================================================
+9. CHECK ALL SURFACE FAMILIES AFTER ROOT CAUSE IS FOUND
+==================================================
+
+Once the actual cause is known, verify the fix across:
+
+- category bars
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- File Name
+- Preview
+- Background Edit
+- Share
+- Open / Close
+- Hide
+- Imperial / Metric
+- Desert / Trail
+- +Base
+
+Do not automatically duplicate code everywhere.
+
+Use the smallest shared fix when the surfaces share the same root cause.
+
+==================================================
+10. WEIGHT DISTRIBUTION
+==================================================
+
+Verify Weight Distribution carefully because it previously had a split/dark backing problem.
+
+At 0% Transparency:
+
+- the entire intended bar background must reveal the background image
+- no right-side black/navy backing may remain
+- Desert / Trail controls must remain distinguishable and usable
+- selected state must remain visible
+
+==================================================
+11. DARKEN VS TRANSPARENCY
+==================================================
+
+The Darken slider applies to the TrailWeigh background image/display treatment.
+
+Transparency applies to bar/pill surfaces.
+
+They must remain independent.
+
+Test:
+
+Darken unchanged + Transparency changes
+Transparency unchanged + Darken changes
+
+Do not let one overwrite the other.
+
+==================================================
+12. ACTIVE / HOVER / DISABLED STATES
+==================================================
+
+Verify true transparency does not disappear when a surface changes state.
+
+Check:
+
+- Background Edit open/active
+- Share hover
+- Hide disabled/enabled
+- Desert/Trail selected
+- +Base
+- category open/closed
+- Pack Summary open/closed
+- Weight Distribution open/closed
+- Locker open/closed
+- Scan Gear List open/closed
+
+If a state intentionally adds a ring/border/shade, it must not replace the transparency surface with an opaque dark fallback.
+
+==================================================
+13. PERSISTENCE / UNDO / REDO / WINDOW ISOLATION
+==================================================
+
+Preserve current intended behavior.
+
+Verify:
+
+- Transparency change can be undone
+- Redo restores it
+- saved file appearance restores appropriately if currently designed to persist
+- a new unsaved tab/window does not inherit another tab's live Transparency merely through shared storage
+
+Do not turn this into a broad state-management rewrite.
+
+==================================================
+14. EYEDROPPER SAFETY — DO NOT TOUCH
+==================================================
+
+The macOS native color picker/eyedropper previously caused a severe whole-Mac freeze.
+
+For Prompt 023M:
+
+- KEEP the eyedropper
+- DO NOT remove it
+- DO NOT use it
+- DO NOT test it
+- DO NOT ask the user to test it
+- DO NOT modify its event path unless the Transparency root cause absolutely requires shared code changes
+
+If shared code must be touched, document exactly why.
+
+The dedicated eyedropper safety fix is deferred to the next focused prompt after Transparency is verified.
+
+==================================================
+15. RESPONSIVE CHECK
+==================================================
+
+Smoke test:
+
+- desktop
+- 390 px
+- 412 px
+
+Do not redesign layout.
+
+Verify the fix behaves the same on mobile and desktop.
+
+==================================================
+16. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- category expand/collapse
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Background Edit
+- Bar Color
+- Text Color
+- Font
+- Darken
+- theme selection
+
+Use:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim live behavior PASS from source inspection alone.
+
+==================================================
+17. PRODUCTION BUILD / RUNTIME
+==================================================
+
+Run the exact production build/start checks appropriate to the project.
+
+Confirm:
+
+- frontend builds
+- app renders
+- no new console/runtime errors
+- backend remains operational
+- Locker API is not regressed
+- Scan Gear List/import is not regressed
+
+Do not perform unrelated backend changes.
+
+==================================================
+18. USER TEST AFTER REPLIT COMPLETES
+==================================================
+
+Give the user this exact simple test:
+
+1. Open Background Edit.
+2. Choose a background image with obvious detail behind the bars.
+3. Choose a bright/easily recognized Bar Color.
+4. Move Transparency fully right.
+5. Move it to the center.
+6. Move it fully left.
+7. Confirm the SAME bar color becomes increasingly see-through.
+8. Confirm the background IMAGE itself becomes visible through the bars.
+9. Confirm the bars do NOT turn black/navy.
+10. Confirm text/icons remain solid.
+11. Check Weight Distribution for any remaining dark backing.
+12. Do NOT test the eyedropper.
+
+Do not mark USER PASS until the user confirms this.
+
+==================================================
+19. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023M_REPORT.md
+
+The report must include:
+
+- checkpoint
+- acknowledgment that 023L failed user verification
+- pre-fix reproduction result
+- exact remaining root cause
+- exact rendered layer that blocked the background image
+- DOM/computed-style evidence
+- files changed
+- smallest-change explanation
+- actual fix
+- rendered visual verification result
+- browser/computed-style test result
+- Weight Distribution result
+- active/hover/disabled state result
+- Darken/Transparency independence
+- Undo/Redo
+- persistence
+- window isolation
+- desktop/mobile
+- build/runtime
+- backend regression
+- final diff
+- unresolved items
+- eyedropper = NOT TESTED
+- user test
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+IMPORTANT:
+
+If the Transparency behavior was not actually rendered and visually verified in the running app, overall status cannot be PASS.
+
+==================================================
+20. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023M-report.zip
+
+Include at minimum:
+
+- PROMPT_023M_REPORT.md
+
+May also include useful non-sensitive:
+- before/after screenshots
+- browser computed-style output
+- targeted test output
+- build output
+- diff summary
+
+Do NOT include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- private Locker contents
+- private uploads/photos
+- database dumps
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023M_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+Append PROMPT_023M_REPORT.md to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous history.
+
+==================================================
+21. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status
+2. Pre-fix reproduction result
+3. Exact remaining root cause after 023L
+4. Exact opaque/dark rendered layer found
+5. Files changed
+6. How true alpha is now achieved
+7. Browser/computed-style proof at 100%, 50%, 0%
+8. Whether the actual background image shows through
+9. Whether RGB hue stays the same while only alpha changes
+10. Whether text/icons remain opaque
+11. Weight Distribution result
+12. State/hover/disabled result
+13. Darken independence
+14. Undo/Redo
+15. Persistence
+16. Window isolation
+17. Desktop/mobile
+18. Build/runtime
+19. Backend regression result
+20. Eyedropper status: NOT TESTED
+21. Unresolved items
+22. PROMPT_023M_REPORT.md path
+23. ZIP path
+24. ZIP size
+25. ZIP contents
+26. ZIP verification
+27. User verification steps
+
+FINAL RULE:
+
+Do not repeat Prompt 023L's mistake of declaring success from code reasoning alone.
+
+The Transparency fix is only technically PASS if the running app actually shows the background image through the bars/pills as Transparency moves toward 0.
