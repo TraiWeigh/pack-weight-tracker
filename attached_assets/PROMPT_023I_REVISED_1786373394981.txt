@@ -1,0 +1,771 @@
+PROMPT 023I — EMERGENCY BACKEND RECOVERY: FIX 502 API FAILURES BEFORE ANY MORE UI WORK
+
+CRITICAL USER-VERIFIED STATUS
+
+Prompt 023H restored the TrailWeigh frontend enough for the page to render, but
+TrailWeigh is NOT operationally restored.
+
+REAL USER EVIDENCE AFTER 023H:
+
+LOCKER / CLOUD SYNC:
+- Cloud Sync = Error
+- Local Files = 3
+- Server Files = —
+- error shown:
+  [lockerApi] HTTP 502 from /api/locker
+- Server Build = —
+- Environment = —
+- Account Sync ID is still visible
+- local files are still present
+
+SCAN GEAR LIST:
+- import attempt fails with:
+  "Import failed"
+  "Server error 502: unexpected response format."
+
+Therefore multiple server-backed features are failing with HTTP 502.
+
+Treat Prompt 023H as:
+
+PARTIAL — frontend renders, backend/API service is not operational.
+
+PRIMARY PRIORITY FOR THIS PROMPT:
+
+RESTORE THE BACKEND/API SERVICE FIRST.
+
+Do NOT continue work on:
+- Transparency
+- Bar Color
+- Text Color
+- Font
+- Weight Distribution styling
+- window/tab appearance isolation
+until the API/backend is healthy.
+
+
+==================================================
+ADDITIONAL CRITICAL SAFETY NOTE — MAC COLOR PICKER / ROSETTA
+==================================================
+
+Before running this prompt, note a separate user-reported stability incident:
+
+- While using TrailWeigh's native macOS color picker / eyedropper from the
+  Bar Color control, the user's entire Mac froze and required a hard reboot.
+- After reboot, macOS displayed a Rosetta notice explaining that some installed
+  Intel-based app/component relies on Rosetta and that Rosetta support will
+  eventually be reduced.
+- TrailWeigh itself is a web app running in Safari. Do NOT assume the Rosetta
+  notice is the cause of the TrailWeigh freeze or the backend 502 failures.
+- Do NOT claim any connection between Rosetta and TrailWeigh unless logs or
+  reproducible evidence prove one.
+
+FOR PROMPT 023I:
+- DO NOT use or test the native macOS color-picker eyedropper.
+- DO NOT ask the user to use the eyedropper.
+- DO NOT perform stress testing of Bar Color / Text controls.
+- DO NOT continue appearance/customization work.
+- Focus only on restoring the backend/API service.
+
+Preserve the color-picker freeze as a separate unresolved issue for a later
+prompt after the backend is healthy.
+
+==================================================
+0. BACKUP / DATA PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Record the checkpoint identifier/time in the report.
+
+3. DO NOT delete, reset, overwrite, or recreate:
+   - user database
+   - user accounts
+   - Locker records
+   - local Locker data
+   - saved lists
+   - custom themes
+   - custom-theme photos
+   - workflow reports
+   - environment/secrets configuration
+
+4. DO NOT "fix" the 502 by:
+   - wiping the database
+   - clearing all storage
+   - replacing the production database
+   - deleting user records
+   - recreating the project
+   - disabling authentication
+   - bypassing authorization
+   - returning fake/mock success responses
+
+5. The user's screenshot shows 3 Local Files.
+   Preserve all local files and do not run any destructive sync operation.
+
+==================================================
+1. REPRODUCE THE ACTUAL DEPLOYED 502 FAILURES
+==================================================
+
+Use the ACTUAL deployed TrailWeigh runtime, not only a development preview.
+
+Reproduce at minimum:
+
+A. Locker:
+GET /api/locker
+or the exact request the current Locker client sends.
+
+Expected current failure:
+HTTP 502
+
+B. Scan Gear List:
+perform the smallest safe test request through the actual import endpoint used
+by Scan Gear List.
+
+Expected current failure:
+HTTP 502 / unexpected response format
+
+Capture:
+- exact request URL
+- request method
+- response status
+- response headers
+- response body/content-type
+- browser console error
+- browser network entry
+- server/deployment logs at the same timestamp
+
+Do not include sensitive auth headers/cookies/tokens in the report.
+
+==================================================
+2. DETERMINE WHETHER THIS IS ONE COMMON BACKEND FAILURE
+==================================================
+
+Do not assume the two 502s have the same cause.
+
+Trace both request paths.
+
+Determine whether:
+- both requests reach the same backend process
+- both fail before route handling
+- one backend process is down
+- reverse proxy/upstream target is unavailable
+- route registration is broken
+- server startup crashes
+- production environment variables are missing
+- database connection startup fails
+- Python OCR/import service fails separately
+- Node-to-Python subprocess path is broken
+- production build/deploy is serving frontend only
+- API server is listening on the wrong port/interface
+- deployment health check is failing
+- authentication middleware throws
+- server returns HTML/error proxy page instead of JSON
+
+Classify the relationship:
+
+COMMON ROOT CAUSE
+SEPARATE ROOT CAUSES
+NOT YET PROVEN
+
+Document evidence.
+
+==================================================
+3. INSPECT DEPLOYMENT / SERVER STARTUP
+==================================================
+
+Inspect the production/deployed backend startup path.
+
+Verify:
+- correct server entry point
+- correct start command
+- correct production command
+- correct port binding
+- correct host binding
+- API server actually starts
+- API routes register
+- frontend and backend are served/proxied as intended
+- production deployment includes required backend files
+- required Python OCR files/binaries exist where expected
+- deployment did not silently switch to static-frontend-only behavior
+
+Capture the actual startup logs.
+
+If the server crashes:
+identify the FIRST meaningful exception, not only the final 502 symptom.
+
+==================================================
+4. VERIFY PRODUCTION ENVIRONMENT CONFIGURATION
+==================================================
+
+Compare development vs deployed environment requirements WITHOUT exposing
+secret values.
+
+Check presence/availability only for required:
+- database connection settings
+- auth/session settings
+- server environment flags
+- storage configuration
+- Python/Tesseract paths if required by importer
+- any production-only API base URL/proxy setting
+
+Report only:
+PRESENT
+MISSING
+INVALID/UNUSABLE
+NOT REQUIRED
+
+Never print secret values.
+
+Do not replace production secrets with hard-coded values.
+
+==================================================
+5. VERIFY DATABASE CONNECTIVITY SAFELY
+==================================================
+
+Because /api/locker depends on server-backed saved data, verify the backend can
+connect to the existing database.
+
+Use a NON-DESTRUCTIVE connectivity/read test.
+
+Verify:
+- connection succeeds
+- expected schema/tables exist
+- no destructive migration is required merely to make the server boot
+- current user/account lookup path does not crash
+- Locker query can execute
+
+If schema mismatch exists:
+- inspect migrations
+- use the smallest safe forward-compatible fix
+- preserve existing data
+- do not drop/recreate tables
+
+==================================================
+6. /api/locker — TRACE AND FIX THE EXACT FAILURE
+==================================================
+
+Trace:
+
+frontend Locker client
+→ request
+→ auth/session middleware
+→ /api/locker route
+→ database/service layer
+→ response serialization
+
+Identify the exact point producing the 502.
+
+The final deployed behavior must be:
+
+- authenticated valid request returns valid JSON
+- correct HTTP status
+- correct content-type
+- server file count is returned
+- Locker can display server-backed files
+- Cloud Sync no longer reports HTTP 502
+
+Do not hide errors with an empty fake list.
+
+If authentication is missing/invalid:
+return the appropriate controlled auth response rather than a proxy 502.
+
+==================================================
+7. SCAN GEAR LIST — TRACE AND FIX THE EXACT FAILURE
+==================================================
+
+Trace the actual Scan Gear List upload/import path.
+
+Inspect:
+- browser request
+- Node/Express route
+- multipart/file handling
+- temp-file creation
+- Python subprocess invocation if used
+- Pillow/Tesseract/Office parsing path
+- JSON response serialization
+- error handling
+
+The user currently receives:
+"Server error 502: unexpected response format."
+
+Determine:
+- whether the 502 is from the same dead backend
+- or whether the importer itself is returning/proxying a bad response
+
+Use a safe small test file.
+
+Verify final behavior:
+- supported file reaches server
+- importer returns valid JSON
+- frontend receives expected response schema
+- no HTML proxy/error page is parsed as JSON
+- a real import can proceed to its normal review/mapping stage
+
+Do not include private uploaded content in the report ZIP.
+
+==================================================
+8. RESPONSE FORMAT / ERROR HANDLING
+==================================================
+
+Both server-backed features should return controlled responses.
+
+For API routes:
+- JSON success responses where the client expects JSON
+- JSON error body where appropriate
+- correct content-type
+- meaningful server-side logging
+
+Do not let a reverse-proxy HTML error page masquerade as the application's
+normal API response.
+
+The client should still handle non-2xx responses safely, but fixing client
+error wording is NOT a substitute for restoring the server.
+
+==================================================
+9. PRESERVE LOCAL LOCKER DATA DURING RECOVERY
+==================================================
+
+The user's current UI shows:
+
+Local Files: 3
+
+Do not overwrite local files with an empty/failed server response.
+
+Until server sync is healthy:
+- local files remain intact
+- failed sync does not interpret "server unavailable" as "server has zero files"
+- no destructive reconciliation occurs on HTTP 5xx
+
+Once server is healthy:
+- perform the existing safe merge/sync behavior
+- preserve stable IDs
+- do not create duplicates unnecessarily
+- do not delete local-only files because the server was previously unavailable
+
+==================================================
+10. SERVER HEALTH / BUILD METADATA
+==================================================
+
+The user's Sync Status currently shows:
+
+Server Build = —
+Environment = —
+
+Once backend service is healthy, verify the existing safe metadata/status path
+can populate these values if that is what the current implementation intends.
+
+Do not invent values.
+
+The key goal is that the server is reachable and the status reflects the actual
+deployed backend.
+
+==================================================
+11. DO NOT TOUCH APPEARANCE WORK
+==================================================
+
+Do NOT continue implementing or correcting:
+
+- Transparency
+- Bar Color
+- Text Color
+- Font
+- Desert/Trail styling
+- Background-panel font
+- appearance persistence/isolation
+
+unless a tiny related rollback is REQUIRED to make the backend start.
+
+If any 023G appearance change is directly causing server startup failure:
+- revert only the offending part
+- document it
+- do not reimplement it during 023I
+
+The appearance issues remain queued for later.
+
+==================================================
+12. REQUIRED DEPLOYED RUNTIME TEST — FRONTEND + BACKEND
+==================================================
+
+After the fix, use the ACTUAL deployed TrailWeigh URL.
+
+Verify:
+
+ROOT PAGE:
+[ ] renders
+[ ] not blank
+[ ] no top-level crash
+
+SIGNED-IN CHECKLIST:
+[ ] renders
+
+LOCKER:
+[ ] /api/locker returns non-502
+[ ] response is valid expected format
+[ ] Server Files count is available
+[ ] Cloud Sync is no longer HTTP 502
+[ ] existing saved-file metadata can load
+[ ] no local files were deleted
+
+SCAN GEAR LIST:
+[ ] upload request returns non-502
+[ ] response is valid expected format
+[ ] supported test file reaches import review/mapping stage
+
+Do not mark deployed backend PASS using dev-server results.
+
+==================================================
+13. NORMAL + PRIVATE BROWSER SMOKE TEST
+==================================================
+
+Use:
+1. normal browser window
+2. private/incognito browser window
+
+Verify in both:
+[ ] root page renders
+[ ] no blank screen
+[ ] server-backed routes no longer fail because backend is unavailable
+
+Private/incognito may require sign-in for authenticated Locker tests; that is
+fine. Do not bypass auth.
+
+==================================================
+14. API HEALTH TESTS
+==================================================
+
+Add meaningful integration tests for:
+
+[ ] deployed-equivalent server boot
+[ ] API route registration
+[ ] /api/locker returns controlled JSON
+[ ] database-unavailable condition returns controlled error, not process crash
+[ ] importer endpoint returns controlled JSON
+[ ] unsupported/bad import request returns controlled 4xx, not proxy 502
+[ ] server can survive one failed importer request
+[ ] server remains available after OCR/import subprocess failure
+[ ] failed server sync never deletes local files
+
+Use mocks/test fixtures only where necessary, but also perform real runtime
+tests against the actual server process.
+
+==================================================
+15. PRODUCTION BUILD / START TEST
+==================================================
+
+Run the exact production build/start commands used by deployment.
+
+Verify:
+- typecheck
+- lint if used
+- tests
+- production build
+- production server start
+- API routes reachable after production start
+
+Do not stop at "build succeeds."
+
+The actual production server must remain running and answer requests.
+
+==================================================
+16. DEPLOYMENT VERIFICATION
+==================================================
+
+Verify the deployment corresponding to the fixed build is actually live.
+
+Record:
+- checkpoint/commit/build identifier
+- deployment identifier if available
+- safe host/environment name
+- server startup time
+- test timestamp
+
+Then test the live deployment.
+
+==================================================
+17. CORE REGRESSION CHECK AFTER SERVER RECOVERY
+==================================================
+
+After the backend is healthy, verify:
+
+[ ] Save
+[ ] Save As
+[ ] Locker open/load
+[ ] Locker sync
+[ ] New
+[ ] Preview
+[ ] Share
+[ ] Hide
+[ ] Open/Close
+[ ] Imperial/Metric
+[ ] Background Edit opens/closes
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] custom-theme delete
+[ ] custom-theme Undo
+[ ] mobile scrolling
+[ ] footer
+[ ] auth/login/signup
+
+Do not use this prompt to visually polish these features.
+
+==================================================
+18. MOBILE SMOKE TEST
+==================================================
+
+At:
+- 390 px
+- 412 px
+
+Verify:
+[ ] frontend renders
+[ ] Locker opens
+[ ] no backend 502 in status
+[ ] vertical scrolling works
+[ ] existing phone layout is not rearranged
+
+Do not claim real iPhone/Android PASS without physical-device testing.
+
+==================================================
+19. DO NOT OVERCLAIM
+==================================================
+
+Use accurate statuses.
+
+Examples:
+
+If /api/locker works only on dev server but not live:
+DEPLOYED LOCKER = FAIL
+
+If importer route is not tested with a supported test file:
+IMPORTER = NOT TESTED
+
+If server responds but database query fails:
+BACKEND = PARTIAL or FAIL depending on scope
+
+Do NOT call the backend restored until the live deployed server-backed features
+actually respond.
+
+==================================================
+20. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023I_REPORT.md
+
+Exact title:
+
+Prompt 023I — Emergency Backend Recovery: Fix 502 API Failures Before Any More UI Work
+
+The report must include:
+
+INCIDENT SECTION:
+- 023H status = PARTIAL
+- frontend render status
+- exact user-observed Locker 502
+- exact user-observed Scan Gear List 502
+- local files shown = 3
+- recovery checkpoint ID
+- note the separate native macOS color-picker/eyedropper freeze incident
+- confirmation the eyedropper was NOT used during 023I
+- confirmation Rosetta was NOT treated as the 502 root cause without evidence
+
+ROOT CAUSE SECTION:
+- whether failures shared one root cause
+- exact backend/deployment failure
+- exact first meaningful exception/log line
+- exact file/process/service involved
+- why 502 was returned
+- why prior automated tests missed it
+
+DEPLOYMENT SECTION:
+- exact production start command
+- backend listening host/port
+- route registration result
+- required environment presence status
+- database connectivity result
+- production build result
+- actual deployed runtime result
+
+LOCKER SECTION:
+- exact /api/locker failure before fix
+- exact fix
+- final HTTP status
+- final content-type/format
+- server-file count retrieval result
+- Cloud Sync result
+- local-file preservation result
+
+SCAN GEAR LIST SECTION:
+- exact endpoint/path
+- exact failure before fix
+- exact fix
+- Python/import subprocess result if applicable
+- final HTTP status
+- final response format
+- supported test-import result
+
+DATA SAFETY SECTION:
+- database reset = NO
+- user records deleted = NO
+- Locker records deleted = NO
+- local files deleted = NO
+- custom themes deleted = NO
+- destructive migration = NO unless absolutely required and explicitly documented
+
+REGRESSION SECTION:
+- Save / Save As
+- Locker open/load
+- Locker sync
+- New
+- Preview
+- Share
+- Hide
+- Open/Close
+- Imperial/Metric
+- Background Edit
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- auth
+- mobile
+
+TEST SECTION:
+- automated tests
+- integration tests
+- production-start tests
+- live-deployment tests
+
+FINAL DIFF SECTION:
+- files changed
+- complete final-diff review
+- unrelated changes reverted
+- confirmation appearance work was not continued
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+21. REQUIRED REPLIT-CREATED ZIP
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023I-report.zip
+
+Prompt 023I is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023I_REPORT.md
+
+2.
+workflow-reports/trailweigh-023I-report.zip
+
+ZIP must contain at minimum:
+PROMPT_023I_REPORT.md
+
+It SHOULD also include NON-SENSITIVE:
+- backend startup log excerpt
+- production build/test output
+- API test output showing /api/locker non-502
+- API test output showing importer non-502
+- screenshot of Locker Cloud Sync healthy
+- screenshot of Scan Gear List successful test-import stage
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private user data
+- private Locker contents
+- private user-uploaded documents
+- private user photos
+- database dumps
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_023I_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+==================================================
+22. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. ZIP verification result
+8. confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. exact root cause of the 502 failure(s)
+
+10. whether Locker and Scan Gear List had the same root cause
+
+11. exact backend/deployment fix
+
+12. confirmation no database/user/Locker/local data was deleted
+
+13. confirmation /api/locker is non-502 on the ACTUAL deployed app
+
+14. confirmation Cloud Sync can retrieve server state
+
+15. confirmation Scan Gear List is non-502 on the ACTUAL deployed app
+
+16. confirmation supported test import reaches expected review/mapping stage
+
+17. confirmation production backend actually starts and remains running
+
+18. confirmation normal deployed frontend still renders
+
+19. confirmation private/incognito frontend still renders
+
+20. confirmation appearance/customization work was NOT continued
+
+21. confirmation native macOS color-picker/eyedropper was NOT used during 023I
+
+22. confirmation Rosetta was not blamed for TrailWeigh/backend behavior without evidence
+
+23. exact unresolved issues remaining after backend recovery, including the separate
+    color-picker freeze and failed Transparency behavior
+
+24. exact user verification steps
+
+FINAL STATUS RULE:
+
+Do NOT claim:
+
+"Backend recovery — USER PASS"
+
+until the user verifies TrailWeigh themselves.
+
+Replit may state:
+
+"Deployed backend runtime PASS; user verification pending."
+
+ONLY if the actual deployed backend has been tested successfully, including
+/api/locker and the Scan Gear List server path.
