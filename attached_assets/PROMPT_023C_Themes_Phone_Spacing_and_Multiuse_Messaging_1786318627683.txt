@@ -1,0 +1,741 @@
+PROMPT 023C — CORRECT THEME LIST/ORDER, POLISH PHONE SPACING, AND ADD MULTI-USE TRAILWEIGH MESSAGING
+
+USER-VERIFIED CURRENT STATUS
+
+Prompt 023B:
+- Real iPhone layout is substantially closer to the user's intended sketch.
+- The user provided a real-iPhone screenshot showing the new phone-only structure.
+- Do NOT undo that structure.
+- The user wants visual spacing polish, a corrected theme list/order, and clearer messaging that TrailWeigh is useful for more than backpacking/pack lists.
+
+This prompt has THREE focused goals:
+
+A. Correct the Background Themes list and order.
+B. Polish spacing between logical groups on PHONE layouts only.
+C. Add clear user-facing messaging that TrailWeigh can be used for many kinds of lists and that item weight is optional.
+
+Do NOT perform unrelated refactors.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current implementation before changing anything, including:
+   - built-in theme IDs/keys
+   - display names
+   - theme asset/photo sets
+   - theme sorting/order
+   - custom-theme insertion logic
+   - current phone-only layout from Prompt 023B
+   - current tablet/desktop layout
+   - auth/sign-up/login copy
+   - About / How It Works / Help introductory copy
+   - any existing general-purpose-list messaging
+
+3. Preserve all verified recent fixes:
+   - 023A custom-theme Delete → Undo/Redo
+   - 022Z one-click custom-theme deletion
+   - anchored delete confirmation
+   - mobile Locker sync
+   - mobile scrolling
+   - 023B phone-only layout structure
+   - Save / Save As / Locker
+   - stable file IDs
+   - one user-created custom theme per account
+   - 10-photo maximum for the custom theme
+   - Fit / Fill
+   - Showcase
+   - Pack Summary
+   - Weight Distribution
+   - Scan Gear List
+   - footer normal document flow
+
+4. Make the smallest reasonable changes.
+
+5. Do NOT perform unrelated refactors.
+
+6. Inspect the COMPLETE final diff.
+
+7. Revert unrelated changes.
+
+8. Run the full regression suite plus new 023C tests.
+
+==================================================
+PART A — CORRECT BACKGROUND THEMES
+==================================================
+
+==================================================
+1. DELETE THE BUILT-IN "TOPO" — KEEP "TOPO 1"
+==================================================
+
+The user specifically wants:
+
+DELETE:
+Topo
+
+KEEP:
+Topo 1
+
+IMPORTANT:
+Do NOT delete Topo 1 by mistake.
+
+Before deleting anything:
+- identify the stable ID/key for the built-in theme currently displayed as "Topo"
+- identify the stable ID/key for "Topo 1"
+- identify which photo/assets belong to each
+- verify which one is being removed
+- preserve all Topo 1 assets/photos
+
+Do NOT infer deletion solely from array index or display position.
+
+Remove the unwanted built-in "Topo" from:
+- selector options
+- built-in theme definitions
+- any ordering arrays
+- any fallback/default references that point specifically to the deleted theme
+
+If old saved files reference the removed "Topo":
+- do not corrupt those files
+- use the safest existing fallback behavior
+- document the exact fallback in the report
+
+Do not silently remap "Topo" to "Topo 1" unless the architecture requires it and that is clearly documented.
+
+==================================================
+2. APPROVED THEME ORDER
+==================================================
+
+The exact approved theme order is:
+
+1. Landscape
+2. Retro-Outdoors
+3. Psychedelic
+4. Topo 1
+5. Custom
+
+CUSTOM MUST ALWAYS BE LAST.
+
+If the user has named the custom theme something else, for example "Sierra",
+the order must be:
+
+1. Landscape
+2. Retro-Outdoors
+3. Psychedelic
+4. Topo 1
+5. Sierra
+
+In other words:
+- all approved built-in themes first
+- the single user-created custom theme last
+
+Do NOT alphabetically sort the custom theme into the built-ins.
+
+Do NOT put the custom theme before Psychedelic, Retro-Outdoors, or Topo 1.
+
+==================================================
+3. EXACT BUILT-IN DISPLAY NAMES
+==================================================
+
+Use these exact built-in names:
+
+Landscape
+Retro-Outdoors
+Psychedelic
+Topo 1
+
+Do NOT automatically append the word "Theme".
+
+Do NOT change:
+Retro-Outdoors
+to:
+Retro Outdoors
+
+unless the existing approved stored/display name already intentionally differs.
+
+The approved display spelling for this prompt is:
+
+Retro-Outdoors
+
+==================================================
+4. CUSTOM THEME
+==================================================
+
+There is exactly ONE user-created custom theme allowed per account.
+
+Its display name should be exactly what the user chose.
+
+The custom theme:
+- must always appear LAST
+- must remain renameable
+- must preserve its photos
+- must preserve Delete → Undo/Redo behavior
+- must not receive an automatic "Theme" suffix/prefix
+
+==================================================
+5. REMOVE DUPLICATE / STALE THEME ENTRIES
+==================================================
+
+The current selector screenshot shows an incorrect theme list/order, including
+an unwanted "Topo" and the custom theme in the middle.
+
+Fix the source of the incorrect entries.
+
+Do NOT merely hide one duplicate with CSS.
+
+After the fix, the selector should contain only the intended built-ins plus the
+single custom theme.
+
+Expected example:
+
+Landscape
+Retro-Outdoors
+Psychedelic
+Topo 1
+Custom 1
+
+or, if renamed:
+
+Landscape
+Retro-Outdoors
+Psychedelic
+Topo 1
+Sierra
+
+==================================================
+PART B — PHONE-ONLY SPACING POLISH
+==================================================
+
+==================================================
+6. PRESERVE THE 023B PHONE STRUCTURE
+==================================================
+
+The user has now tested the layout on a REAL iPhone.
+
+Preserve this PHONE-ONLY order:
+
+1. centered File Name + Preview toolbar row
+2. Background Edit / Share row
+3. Pack Summary
+4. Weight Distribution
+5. Scan Gear List
+6. Locker
+7. Open/Close + Hide + Imperial/Metric row
+8. Categories
+9. Footer
+
+This applies to:
+- iPhone phones
+- Android phones
+
+Do NOT rearrange tablet/iPad/desktop.
+
+==================================================
+7. ADD MORE CONSISTENT SPACING BETWEEN LOGICAL GROUPS
+==================================================
+
+The user says the phone layout now needs more visual spacing between groups.
+
+This is a VISUAL POLISH change, not a layout redesign.
+
+Use the real-iPhone 023B layout as the baseline.
+
+Create a clearer spacing hierarchy:
+
+WITHIN A GROUP:
+- controls that belong together should remain relatively tight
+
+BETWEEN MAJOR GROUPS:
+- add a modest, consistent vertical separation so the page is easier to scan
+
+Examples of separate logical groups:
+- File Name + Preview
+- Background Edit + Share
+- summary/import/storage panels
+- lower Open/Close + Hide + Imperial/Metric toolbar
+- Categories
+
+IMPORTANT:
+Do NOT create huge blank dead zones.
+
+Prefer a consistent spacing system such as:
+- smaller gap inside a group
+- larger gap between major groups
+
+Use the existing TrailWeigh spacing scale/tokens where possible rather than
+hard-coding arbitrary values everywhere.
+
+==================================================
+8. SPECIFIC PHONE SPACING REVIEW
+==================================================
+
+On 375–430 px phone portrait widths, visually inspect:
+
+A.
+File Name + Preview
+to
+Background Edit + Share
+
+B.
+Background Edit + Share
+to
+Pack Summary
+
+C.
+Pack Summary
+to
+Weight Distribution
+to
+Scan Gear List
+to
+Locker
+
+D.
+Locker
+to
+Open/Close + Hide + Imperial/Metric
+
+E.
+lower toolbar
+to
+first category
+
+The goal is:
+- distinct groups
+- comfortable touch layout
+- no cramped transitions
+- no excessive empty vertical space
+- consistent rhythm
+
+Do NOT move controls to different sections.
+
+==================================================
+9. LOWER TOOLBAR
+==================================================
+
+Preserve:
+
+[ Open / Close ]   [ Hide ]   [ Imperial / Metric ]
+
+below Locker and above Categories.
+
+Keep:
+- Open/Close as one segmented control
+- Hide centered
+- Imperial/Metric as one segmented control
+
+Do not change behavior.
+
+Only adjust spacing around the row if needed.
+
+==================================================
+10. PHONE WIDTHS
+==================================================
+
+Test:
+- 320 px
+- 360 px
+- 375 px
+- 390 px
+- 412 px
+- 430 px
+
+Also verify:
+- iPhone-sized portrait
+- Android-sized portrait
+- phone landscape
+- tablet/iPad
+- desktop
+
+No horizontal overflow.
+
+No clipped controls.
+
+No overlap.
+
+==================================================
+PART C — MULTI-USE TRAILWEIGH MESSAGING
+==================================================
+
+==================================================
+11. CORE PRODUCT MESSAGE
+==================================================
+
+TrailWeigh must clearly tell users that it is NOT limited to:
+- backpacking
+- hiking gear
+- pack lists
+
+TrailWeigh can be used to create and organize many kinds of lists.
+
+Entering a weight is OPTIONAL.
+
+A user should be able to use TrailWeigh simply as:
+- a checklist
+- a packing list
+- an equipment list
+- a travel list
+- an inventory-style list
+- another general item list
+
+without entering weight for every item.
+
+Do not overcomplicate this with a long list of use cases.
+
+==================================================
+12. APPROVED CORE COPY
+==================================================
+
+Use this meaning, while adapting punctuation/line breaks to the existing UI:
+
+"TrailWeigh is more than a pack-list tool. Use it to build and organize almost any kind of checklist or item list. Track weight when it is useful—or skip it entirely. Adding a weight is never required."
+
+You may make SMALL grammatical adjustments to fit the existing page, but do
+not change the meaning.
+
+Key points that MUST remain explicit:
+
+1. TrailWeigh is more than a pack-list tool.
+2. It can organize many kinds of lists/checklists.
+3. Weight tracking is optional.
+4. Adding a weight is never required.
+
+==================================================
+13. SIGN-UP / LOGIN PAGE
+==================================================
+
+Add a SHORT version of the multi-use message to the sign-up/login experience.
+
+Use concise copy such as:
+
+"Build packing lists, checklists, gear lists, and more. Track weight when useful—or skip it entirely."
+
+Do not overwhelm the authentication form.
+
+Placement:
+- visually associated with the TrailWeigh introduction/branding
+- not buried below legal links
+- do not interfere with form fields/buttons
+- preserve mobile readability and auth contrast
+
+Do NOT remove:
+- Privacy Policy
+- Terms of Use
+- password recovery
+- password visibility
+- existing authentication behavior
+
+==================================================
+14. ABOUT / INTRODUCTORY PRODUCT EXPLANATION
+==================================================
+
+Add the fuller multi-use concept to the most appropriate existing
+About/TrailWeigh introductory section.
+
+Do NOT rewrite the entire About page.
+
+Prefer the existing:
+- "Where TrailWeigh Fits In"
+or
+- introductory TrailWeigh explanation
+
+if that is the most natural location.
+
+Make it clear that:
+- TrailWeigh began from a gear/weight-oriented use case
+- users are not required to use it only for backpacking
+- weight is an available tool, not a mandatory field
+
+Preserve the existing TrailWeigh philosophy and About hierarchy.
+
+==================================================
+15. HOW IT WORKS / HELP
+==================================================
+
+Where the current Help / How It Works text says or strongly implies that every
+list is a gear/pack list with required weight:
+
+adjust the wording so it remains accurate.
+
+Do NOT rewrite all Help content.
+
+Small corrections are enough.
+
+For example:
+- items may have a weight, but weight is optional
+- users may build general lists, not only hiking pack lists
+
+Keep hiking/gear examples because TrailWeigh still serves that use case.
+
+The goal is to broaden the product, not remove its backpacking identity.
+
+==================================================
+16. DATA / VALIDATION REGRESSION CHECK
+==================================================
+
+Because the user-facing copy now explicitly says weight is optional, verify the
+actual app already supports blank/no-weight items.
+
+If blank weight is already supported:
+- do not change data behavior
+- document that it was verified
+
+If some UI currently forces a weight for ordinary manually-added items:
+- report this as PARTIAL/FAIL
+- do NOT silently make a broad data-model change in this prompt unless the
+  current architecture makes the correction trivial and safe
+
+Do not invent a fake promise in copy that the app cannot support.
+
+==================================================
+17. DO NOT REMOVE BACKPACKING IDENTITY
+==================================================
+
+TrailWeigh remains strongly useful for:
+- backpacking
+- hiking
+- pack weight
+- gear organization
+
+Do not replace existing backpacking identity with generic productivity-app
+language.
+
+The intended message is:
+
+TrailWeigh can do MORE than pack-weight lists.
+
+Not:
+
+TrailWeigh is no longer a hiking/gear application.
+
+==================================================
+18. AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for at least:
+
+THEMES:
+[ ] "Topo" is no longer an available built-in theme
+[ ] "Topo 1" remains available
+[ ] exact built-in order is Landscape, Retro-Outdoors, Psychedelic, Topo 1
+[ ] custom theme is last
+[ ] custom rename remains exact
+[ ] no automatic "Theme" suffix/prefix
+[ ] Delete → Undo restores custom theme/photos
+
+PHONE:
+[ ] 023B phone section order preserved
+[ ] spacing classes/tokens do not move controls
+[ ] no phone horizontal overflow
+[ ] lower toolbar remains below Locker and above Categories
+[ ] tablet/desktop do not receive phone-only rearrangement
+
+MESSAGING:
+[ ] sign-up/login contains multi-use/optional-weight message
+[ ] About/introduction contains fuller multi-use message
+[ ] weight is not falsely described as required
+[ ] Privacy Policy / Terms remain present
+[ ] existing auth behavior remains
+
+==================================================
+19. REGRESSION PROTECTION
+==================================================
+
+Run the full TrailWeigh regression suite.
+
+Specifically verify:
+
+[ ] 023A custom-theme Undo
+[ ] 022Z one-click delete
+[ ] anchored delete warning
+[ ] custom photos
+[ ] Locker sync
+[ ] mobile scrolling
+[ ] Save / Save As
+[ ] Locker open/load
+[ ] Background Edit
+[ ] Share
+[ ] Preview
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Categories
+[ ] footer
+[ ] auth/login/signup
+[ ] password recovery
+[ ] password visibility
+[ ] tablet layout
+[ ] desktop layout
+
+==================================================
+20. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023C_REPORT.md
+
+The report must include:
+
+Exact title:
+Prompt 023C — Correct Theme List/Order, Polish Phone Spacing, and Add Multi-Use TrailWeigh Messaging
+
+Include:
+
+- checkpoint confirmation
+- files changed
+- complete final-diff review
+- anything reverted
+
+THEME SECTION:
+- exact ID/key of deleted "Topo"
+- exact ID/key of preserved "Topo 1"
+- asset/photo impact
+- exact final built-in order
+- confirmation custom theme is last
+- legacy saved-file behavior if deleted Topo is referenced
+- Delete → Undo regression result
+
+PHONE SECTION:
+- confirmation 023B structure preserved
+- spacing changes made
+- 320 result
+- 360 result
+- 375 result
+- 390 result
+- 412 result
+- 430 result
+- phone landscape result
+- tablet result
+- desktop result
+- overflow result
+- scrolling result
+
+MULTI-USE MESSAGING SECTION:
+- exact sign-up/login copy
+- exact About/introduction copy
+- any Help/How It Works wording changed
+- verification that blank/no-weight items are actually supported
+- confirmation backpacking/gear identity was preserved
+
+TEST SECTION:
+- automated results
+- runtime/visual results
+- full regression results
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Real iPhone / Android visual status must remain NOT TESTED unless actually
+tested on physical devices after this prompt.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+21. REQUIRED REPLIT-CREATED ZIP
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023C-report.zip
+
+Prompt 023C is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023C_REPORT.md
+
+2.
+workflow-reports/trailweigh-023C-report.zip
+
+ZIP must contain at minimum:
+
+PROMPT_023C_REPORT.md
+
+It SHOULD also contain NON-SENSITIVE screenshots of:
+- final Background Themes selector
+- representative phone portrait layout
+- sign-up/login message
+- About/introduction message
+
+Do NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private account data
+- private Locker contents
+- private user photos
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list contents.
+4. Confirm report is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+==================================================
+22. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. ZIP verification result
+8. confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. confirmation deleted built-in:
+   Topo
+
+10. confirmation preserved:
+    Topo 1
+
+11. exact final order:
+    Landscape
+    Retro-Outdoors
+    Psychedelic
+    Topo 1
+    [custom theme last]
+
+12. confirmation 023B phone layout structure remains unchanged
+
+13. summary of phone spacing polish
+
+14. exact sign-up/login multi-use wording
+
+15. exact About/introduction multi-use wording
+
+16. confirmation whether blank/no-weight items are supported
+
+17. confirmation tablet/desktop layouts did not receive the phone-only rearrangement
+
+18. exact real-device verification steps for the user
+
+FINAL STATUS RULE:
+
+Do not claim real iPhone or Android PASS until the user verifies the result on
+the physical device.

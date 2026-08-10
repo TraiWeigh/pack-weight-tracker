@@ -121,7 +121,12 @@ const clerkAppearance = {
 
 function SignInPage() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4">
+    <div className="flex min-h-[100dvh] items-center justify-center bg-background px-4 py-8 flex-col gap-4">
+      {/* 023C: multi-use tagline — brief, above the Clerk card */}
+      <p className="text-xs text-muted-foreground text-center max-w-[340px]">
+        Build packing lists, checklists, gear lists, and more.&nbsp;
+        Weight tracking is always optional.
+      </p>
       <SignIn
         routing="path"
         path={`${basePath}/sign-in`}
@@ -199,7 +204,7 @@ function ClerkProviderWithRoutes() {
         signUp: {
           start: {
             title: 'Create your account',
-            subtitle: 'Start tracking your pack weight',
+            subtitle: 'Build checklists, gear lists, and more. Weight tracking is always optional.',
           },
         },
       }}

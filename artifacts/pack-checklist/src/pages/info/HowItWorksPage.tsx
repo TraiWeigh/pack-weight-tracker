@@ -108,9 +108,9 @@ export default function HowItWorksPage() {
         {/* ── Always-visible intro ───────────────────────────────────────── */}
         <h1 className="text-3xl font-black text-foreground mb-3">How It Works</h1>
         <p className="text-muted-foreground leading-relaxed mb-8">
-          TrailWeigh follows a simple workflow: build your gear list, organize and
-          refine it, then save, print, or share it. Open a topic below to see how
-          each part works.
+          TrailWeigh follows a simple workflow: build your gear list or checklist,
+          organize and refine it, then save, print, or share it. Open a topic below
+          to see how each part works.
         </p>
 
         {/* ── Accordion ─────────────────────────────────────────────────── */}
@@ -169,8 +169,8 @@ export default function HowItWorksPage() {
               <p className="font-semibold text-foreground mb-1">Adding and editing items</p>
               <p>
                 Use <strong>Add Item</strong> inside any category to add gear manually.
-                For each item you can enter a type, description, weight, and quantity
-                (1–20). The item's total weight updates automatically.
+                For each item you can enter a type, description, weight (optional), and
+                quantity (1–20). The item's total weight updates automatically.
               </p>
             </div>
 

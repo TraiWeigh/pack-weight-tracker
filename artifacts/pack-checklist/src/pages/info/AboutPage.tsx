@@ -982,13 +982,21 @@ export default function AboutPage() {
             isOpen={isOpen('trailweigh-fits')}
             onToggle={toggle}
           >
+            {/* 023C: multi-use note — TrailWeigh is broader than backpacking */}
+            <div className="bg-muted/60 border border-border rounded-xl px-4 py-3 text-sm text-foreground/80 leading-relaxed">
+              <p>
+                TrailWeigh is more than a pack-list tool. Use it to build and organize almost
+                any kind of checklist or item list. Track weight when it is useful—or skip it
+                entirely. Adding a weight is never required.
+              </p>
+            </div>
             <p>TrailWeigh is not here to decide what belongs in your backpack.</p>
             <p>That decision should remain yours.</p>
             <p>What TrailWeigh can do is make your decisions easier to see.</p>
             <ul className="list-disc list-inside space-y-1.5 ml-1">
-              <li>Build a gear list.</li>
+              <li>Build a gear list, checklist, or item list.</li>
               <li>Organize equipment into systems and categories.</li>
-              <li>Enter weights and quantities.</li>
+              <li>Enter weights and quantities—or leave weight blank if it is not relevant.</li>
               <li>Select the gear you are actually taking on a particular trip.</li>
               <li>See where the weight comes from.</li>
               <li>Compare the parts of your system.</li>

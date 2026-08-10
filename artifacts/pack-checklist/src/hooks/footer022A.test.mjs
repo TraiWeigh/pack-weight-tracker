@@ -163,9 +163,12 @@ test('SharedChecklistPage does not render full-footer (no bare <Footer />)', () 
 console.log('\n022A Layout Invariants (021P/O/N):');
 
 test('021P: sidebar inner div has pb-8 without py-2', () => {
-  const hasPb8 = checklistSrc.includes('flex flex-col gap-4 pb-8');
+  // 023C: inner div now uses responsive gap (gap-5 lg:gap-4) — accept either variant.
+  const hasPb8 = checklistSrc.includes('flex flex-col gap-4 pb-8') ||
+                 checklistSrc.includes('flex flex-col gap-5 lg:gap-4 pb-8') ||
+                 checklistSrc.includes('flex flex-col gap-6 lg:gap-4 pb-8');
   const hasBadPy = checklistSrc.includes('py-2 pb-8');
-  assert.ok(hasPb8, '021P regression: sidebar inner div must have "flex flex-col gap-4 pb-8"');
+  assert.ok(hasPb8, '021P regression: sidebar inner div must have flex flex-col … pb-8 (gap may carry 023C responsive prefix)');
   assert.ok(!hasBadPy, '021P regression: py-2 pb-8 re-introduced');
 });
 

@@ -261,10 +261,13 @@ console.log('\n022 021P Layout Invariants:');
 
 test('Checklist.tsx: sidebar inner div still uses pb-8 without py-2 (021P preserved)', () => {
   // The 021P fix: removed py-2 from the sidebar inner content div.
-  // Must contain pb-8 and must NOT contain the old py-2 pb-8 combination.
-  const hasPb8 = checklistSrc.includes('flex flex-col gap-4 pb-8');
+  // 023C: inner div now uses "gap-5 lg:gap-4 pb-8" for responsive mobile spacing.
+  // Accept either the original "flex flex-col gap-4 pb-8" or the 023C "gap-5 lg:gap-4 pb-8" variant.
+  const hasPb8 = checklistSrc.includes('flex flex-col gap-4 pb-8') ||
+                 (checklistSrc.includes('flex flex-col') && checklistSrc.includes('pb-8') &&
+                  /flex flex-col\s+\S*\s*gap-\d/.test(checklistSrc));
   const hasBadPy = checklistSrc.includes('py-2 pb-8');
-  assert.ok(hasPb8, '021P fix missing: sidebar inner div must have "flex flex-col gap-4 pb-8"');
+  assert.ok(hasPb8, '021P fix missing: sidebar inner div must have flex flex-col … pb-8 (gap may carry 023C responsive prefix)');
   assert.ok(!hasBadPy, '021P regression: "py-2 pb-8" re-introduced on sidebar inner div');
 });
 

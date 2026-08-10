@@ -78,14 +78,11 @@ test('023B-A-06: dropdownLabel returns Landscape (not Landscapes) for landscapes
   assert.ok(hasNot("return 'Landscapes'"), "dropdownLabel must not return 'Landscapes'");
 });
 
-// ─── 7. dropdownLabel returns 'Topo' for topo tab ───────────────────────────
-test('023B-A-07: dropdownLabel returns Topo for topo tab', () => {
+// ─── 7. dropdownLabel returns 'Topo 1' for topo tab (023C renamed from 'Topo') ─
+test('023B-A-07: dropdownLabel returns Topo 1 for topo tab (023C rename)', () => {
   assert.ok(
-    /activeThemeId === 'topo'\s*\)\s*return 'Topo'/.test(src) ||
-    /activeThemeId === 'topo'\s*\)\s+return 'Topo'/.test(src) ||
-    /=== 'topo'\s+return 'Topo'/.test(src) ||
-    src.includes("activeThemeId === 'topo'") && src.includes("return 'Topo'"),
-    "dropdownLabel should return 'Topo' when activeThemeId === 'topo'"
+    src.includes("activeThemeId === 'topo'") && src.includes("return 'Topo 1'"),
+    "dropdownLabel should return 'Topo 1' when activeThemeId === 'topo' (023C rename)"
   );
 });
 
@@ -104,9 +101,10 @@ test('023B-A-09: dropdown option button shows Landscape not Landscapes', () => {
   assert.ok(hasNot('>Landscapes</button>'), "Dropdown button text must not be 'Landscapes'");
 });
 
-// ─── 10. Dropdown renders 'Topo' button ─────────────────────────────────────
-test('023B-A-10: dropdown option button shows Topo', () => {
-  assert.ok(has('>Topo</button>'), "Dropdown must have a 'Topo' button");
+// ─── 10. Dropdown renders 'Topo 1' button (023C renamed from 'Topo') ─────────
+test('023B-A-10: dropdown option button shows Topo 1 (023C rename)', () => {
+  assert.ok(has('>Topo 1</button>'), "Dropdown must have a 'Topo 1' button (023C rename from 'Topo')");
+  assert.ok(hasNot('>Topo</button>'), "Dropdown must NOT have a bare 'Topo' button (023C: renamed to 'Topo 1')");
 });
 
 // ─── 11. Custom theme dropdown option shows col.name without 'Theme ' ────────
@@ -116,10 +114,14 @@ test('023B-A-11: custom theme dropdown option has no Theme prefix', () => {
 });
 
 // ─── 12. activeThemeId guard effect accepts 'topo' as valid built-in ─────────
-test('023B-A-12: activeThemeId guard accepts topo as built-in', () => {
+// 023C: guard was refactored to use BUILT_IN_IDS array; 'topo' must still be listed
+test('023B-A-12: activeThemeId guard accepts topo as built-in (023C: BUILT_IN_IDS array)', () => {
+  // Either the old explicit !== check or the new BUILT_IN_IDS array must include 'topo'
+  const hasOldGuard   = /activeThemeId !== 'topo'/.test(src);
+  const hasArrayGuard = /BUILT_IN_IDS\s*=\s*\[[\s\S]*?'topo'[\s\S]*?\]/.test(src);
   assert.ok(
-    /activeThemeId !== 'topo'/.test(src),
-    "Guard effect must exclude 'topo' from resetting to landscapes"
+    hasOldGuard || hasArrayGuard,
+    "Guard effect must still protect 'topo' from resetting to landscapes"
   );
 });
 

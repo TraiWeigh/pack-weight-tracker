@@ -519,7 +519,11 @@ test('SharedChecklistPage uses informationalOnly footer', () => {
 });
 
 test('021P layout: sidebar inner div has pb-8 no py-2', () => {
-  assert.ok(checklistSrc.includes('flex flex-col gap-4 pb-8'), '021P invariant must be unchanged');
+  // 023C: inner div now uses "gap-5 lg:gap-4 pb-8" — accept either variant
+  const hasPb8 = checklistSrc.includes('flex flex-col gap-4 pb-8') ||
+                 checklistSrc.includes('flex flex-col gap-5 lg:gap-4 pb-8') ||
+                 checklistSrc.includes('flex flex-col gap-6 lg:gap-4 pb-8');
+  assert.ok(hasPb8, '021P invariant must be unchanged: sidebar inner div needs flex flex-col … pb-8');
 });
 
 test('All 10 footer routes still registered in App.tsx', () => {

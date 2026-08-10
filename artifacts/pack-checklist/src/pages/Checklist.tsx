@@ -1813,7 +1813,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
           {/* ── Toolbar group — all toolbar controls share this single parent.
                pt-4 is desktop-only (lg:pt-4); mobile top spacing is in Phone Row 1. ── */}
-          <div className="lg:pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
+          <div className="pt-2 lg:pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
             {/* Left toolbar panel — Pinned pills row
                 023B: hidden on mobile (all mobile controls now live in Phone Row 1 and
@@ -2147,7 +2147,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
             {/* Scrollable sidebar content */}
             <div className="order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
-              <div className="flex flex-col gap-4 pb-8">
+              {/* 023C: pt-3 lg:pt-0 adds a small top gap on mobile between the BG-edit/Share
+                   row and Pack Summary. Desktop sidebar has no top padding (lg:pt-0). */}
+              <div className="pt-3 lg:pt-0 flex flex-col gap-5 lg:gap-4 pb-8">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}

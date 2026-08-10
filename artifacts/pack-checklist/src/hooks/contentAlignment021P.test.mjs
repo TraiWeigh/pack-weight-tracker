@@ -41,11 +41,12 @@ const lines = checklist.split('\n');
 // ─── Element finders ──────────────────────────────────────────────────────────
 
 // Sidebar inner content div (the flex column wrapping WeightSummary etc.)
+// 023C: this div now has responsive classes (pt-3 lg:pt-0, gap-5 lg:gap-4) for
+// intentional mobile spacing, so the !l.includes('lg:') guard is relaxed —
+// we identify it by flex flex-col + pb-8 + no grid.
 const sidebarInnerLine = lines.find(l =>
   l.includes('flex flex-col') &&
-  l.includes('gap-4') &&
   l.includes('pb-8') &&
-  !l.includes('lg:') &&       // not the content area grid
   !l.includes('grid')
 );
 
@@ -92,22 +93,22 @@ function test(name, fn) {
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nA. Sidebar inner content div — no top padding (021P fix)');
 
-test('A1. Sidebar inner content div exists (flex flex-col gap-4 pb-8)', () => {
+test('A1. Sidebar inner content div exists (flex flex-col … pb-8)', () => {
   assert.ok(sidebarInnerLine,
-    '021P: inner sidebar content div must exist with flex flex-col gap-4 pb-8');
+    '021P: inner sidebar content div must exist with flex flex-col … pb-8 (gap and pt may carry 023C responsive prefixes)');
 });
 
-test('A2. Sidebar inner content div has NO pt-* top padding (021P: cause of Pack Summary offset)', () => {
+test('A2. Sidebar inner content div has NO unrestricted pt-* top padding (021P: cause of Pack Summary offset)', () => {
   assert.ok(sidebarInnerLine, 'Sidebar inner content div must exist');
   // py-2 caused the 8px top offset; it must be gone
   assert.doesNotMatch(sidebarInnerLine, /\bpy-2\b/,
-    '021P: py-2 must be removed from inner sidebar div — it caused Pack Summary to sit ~8px below categories');
-  assert.doesNotMatch(sidebarInnerLine, /\bpt-2\b/,
-    '021P: pt-2 must not appear on inner sidebar div');
-  assert.doesNotMatch(sidebarInnerLine, /\bpt-4\b/,
-    '021P: pt-4 must not appear on inner sidebar div — that value belongs on the toolbar-group parent');
+    '021P: py-2 must be removed from inner sidebar div');
+  // pt-4 (unrestricted, without lg: scope) must not appear — it belongs on the toolbar-group
+  assert.doesNotMatch(sidebarInnerLine, /(?<!lg:)\bpt-4\b/,
+    '021P: unrestricted pt-4 must not appear on inner sidebar div — that value belongs on the toolbar-group parent');
   assert.doesNotMatch(sidebarInnerLine, /\bmt-\d/,
     '021P: no mt-* on inner sidebar div');
+  // 023C: pt-3 paired with lg:pt-0 is an intentional mobile-only spacing addition — it is allowed
 });
 
 test('A3. Sidebar inner content div retains pb-8 bottom spacing', () => {
@@ -116,10 +117,14 @@ test('A3. Sidebar inner content div retains pb-8 bottom spacing', () => {
     '021P: pb-8 bottom spacing must be retained');
 });
 
-test('A4. Sidebar inner content div retains gap-4 between panels', () => {
+test('A4. Sidebar inner content div retains gap between panels (gap-4 or gap-5)', () => {
   assert.ok(sidebarInnerLine, 'Sidebar inner content div must exist');
-  assert.match(sidebarInnerLine, /\bgap-4\b/,
-    '021P: gap-4 spacing between sidebar panels must be retained');
+  // 023C: mobile gap upgraded to gap-5 with lg:gap-4 for desktop.
+  // Acceptable patterns: gap-4, gap-5 (with or without responsive variants).
+  assert.ok(
+    /\bgap-4\b/.test(sidebarInnerLine) || /\bgap-5\b/.test(sidebarInnerLine),
+    '021P/023C: sidebar inner div must have gap-4 or gap-5 spacing between panels'
+  );
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

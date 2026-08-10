@@ -395,7 +395,11 @@ test('SharedChecklistPage still uses informationalOnly', () => {
 console.log('\n022B 021P Layout Invariants:');
 
 test('021P: sidebar inner div has pb-8 without py-2', () => {
-  assert.ok(checklistSrc.includes('flex flex-col gap-4 pb-8'), '021P invariant broken');
+  // 023C: inner div now uses "gap-5 lg:gap-4 pb-8" — accept either variant
+  const hasPb8 = checklistSrc.includes('flex flex-col gap-4 pb-8') ||
+                 checklistSrc.includes('flex flex-col gap-5 lg:gap-4 pb-8') ||
+                 checklistSrc.includes('flex flex-col gap-6 lg:gap-4 pb-8');
+  assert.ok(hasPb8, '021P invariant broken: sidebar inner div must have flex flex-col … pb-8');
   assert.ok(!checklistSrc.includes('py-2 pb-8'), '021P py-2 regression');
 });
 
