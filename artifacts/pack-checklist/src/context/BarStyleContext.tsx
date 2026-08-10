@@ -62,3 +62,13 @@ export function barCombinedStyle(v: BarStyleContextValue): React.CSSProperties {
   if (v.barFont)      s.fontFamily      = v.barFont;
   return s;
 }
+
+/**
+ * Returns an inline style object with only fontFamily.
+ * Apply to outer component wrapper divs so the selected font cascades
+ * to both the bar/header AND the expanded panel content beneath it.
+ * Empty object when no custom font is set (preserves Tailwind default).
+ */
+export function barFontStyle(v: BarStyleContextValue): React.CSSProperties {
+  return v.barFont ? { fontFamily: v.barFont } : {};
+}

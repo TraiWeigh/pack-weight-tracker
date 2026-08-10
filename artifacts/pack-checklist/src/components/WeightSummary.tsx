@@ -14,7 +14,7 @@ import { useUnit } from '../context/UnitContext';
 import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { ChevronDown, ChevronUp, Palette } from 'lucide-react';
-import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle } from '../context/BarStyleContext';
 
 // ── Chart palettes ────────────────────────────────────────────────────────────
 
@@ -87,8 +87,9 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseP
 
   const { baseWeightOz, nonBaseTotals, grandTotalOz } = calcWeights(data, categoryOrder, categoryMeta);
 
+  // 023F: font cascades to expanded body via outer wrapper
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm">
+    <div className="bg-card border border-card-border rounded-xl shadow-sm" style={barFontStyle(barStyle)}>
       {/* Collapsible header — same chevron pattern as Weight Distribution */}
       <button
         onClick={() => setSummaryOpen(o => !o)}
@@ -201,8 +202,9 @@ export function WeightDistribution({
     return null;
   };
 
+  // 023F: font cascades to expanded body (chart + legend) via outer wrapper
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm">
+    <div className="bg-card border border-card-border rounded-xl shadow-sm" style={barFontStyle(barStyle)}>
       {/* Header row: collapse toggle + palette pill */}
       <div className="flex items-center">
         <button
@@ -222,11 +224,12 @@ export function WeightDistribution({
           </span>
         </button>
 
-        {/* Palette pill */}
+        {/* Palette pill — 023F: participates in bar color system */}
         <div className="relative pr-4 sm:pr-5">
           <button
             onClick={() => setShowPaletteMenu(o => !o)}
             className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
+            style={barCombinedStyle(barStyle)}
           >
             <Palette className="w-3.5 h-3.5" />
             {palette.label}

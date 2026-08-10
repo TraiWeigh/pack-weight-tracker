@@ -5,7 +5,7 @@ import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUt
 import { useUnit } from '../context/UnitContext';
 import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react';
 import { GEAR_GRID_COLS, GEAR_GRID_GAP, RG_MOVE_W, RG_WEIGHT_W, RG_QTY_W, RG_TOTAL_W, RG_DELETE_W } from './gearGrid';
-import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle } from '../context/BarStyleContext';
 
 interface GearCategoryProps {
   name: string;
@@ -173,11 +173,15 @@ export function GearCategory({
 
   const stopProp = (e: React.MouseEvent) => e.stopPropagation();
 
+  // 023F: font cascades to both the bar header AND the expanded panel body
+  const fontWrapStyle = barFontStyle(barStyle);
+
   return (
     <div
       className={`mb-6 bg-card border rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md ${
         isDragOver ? 'border-primary shadow-md ring-2 ring-primary/30' : 'border-card-border'
       }`}
+      style={fontWrapStyle}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
@@ -196,7 +200,8 @@ export function GearCategory({
           <div onClick={stopProp} className="min-w-0">
             <EditableCategoryTitle name={name} onRename={onRename} />
           </div>
-          <span className="text-xs font-normal text-muted-foreground bg-black/5 px-2 py-0.5 rounded-full ml-2 flex-shrink-0">
+          {/* 023F: text color cascades from barFgStyle so packed count follows text color */}
+          <span className="text-xs font-normal text-muted-foreground bg-black/5 px-2 py-0.5 rounded-full ml-2 flex-shrink-0" style={barFgStyle(barStyle)}>
             {packedCount} / {items.length} packed
           </span>
         </div>
@@ -222,18 +227,19 @@ export function GearCategory({
             </div>
           ) : (
             <div className="flex items-center gap-1">
-              {/* Drag handle */}
+              {/* Drag handle — 023F: follows text color */}
               <div
                 draggable
                 onDragStart={e => { e.stopPropagation(); onDragStart?.(e); }}
                 onDragEnd={e => { e.stopPropagation(); onDragEnd?.(e); }}
                 title="Drag to reorder"
                 className="p-1 rounded cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors touch-none"
+                style={barFgStyle(barStyle)}
               >
                 <GripVertical className="w-3.5 h-3.5" />
               </div>
 
-              {/* Base weight toggle */}
+              {/* Base weight toggle — 023F: participates in bar color system */}
               <button
                 title={meta.countsToBase ? 'Counts toward base weight — click to exclude' : 'Not counted in base weight — click to include'}
                 onClick={() => onUpdateMeta({ countsToBase: !meta.countsToBase })}
@@ -242,31 +248,41 @@ export function GearCategory({
                     ? 'border-primary/40 bg-primary/10 text-primary'
                     : 'border-border bg-muted/40 text-muted-foreground'
                 }`}
+                style={barStyle.barColor ? {
+                  backgroundColor: meta.countsToBase ? barStyle.barColor : `${barStyle.barColor}50`,
+                  borderColor: barStyle.barColor,
+                  color: barStyle.barTextColor || undefined,
+                  fontFamily: barStyle.barFont || undefined,
+                } : (barStyle.barTextColor || barStyle.barFont ? {
+                  color: barStyle.barTextColor || undefined,
+                  fontFamily: barStyle.barFont || undefined,
+                } : undefined)}
               >
                 {meta.countsToBase ? '+ Base' : '— Base'}
               </button>
 
-              {/* Delete */}
+              {/* Delete — 023F: follows text color */}
               <button
                 title="Delete category"
                 onClick={() => setConfirmDelete(true)}
                 className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                style={barFgStyle(barStyle)}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
 
-          {/* Weight display */}
+          {/* Weight display — 023F: weight/unit values follow text color */}
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 text-right ml-2 pl-2 border-l border-border/50">
             <div className="flex items-baseline gap-1">
-              <span className="font-mono font-bold text-primary tabular-nums">{displaySmall}</span>
-              <span className="text-xs font-medium text-muted-foreground">{su}</span>
+              <span className="font-mono font-bold text-primary tabular-nums" style={barFgStyle(barStyle)}>{displaySmall}</span>
+              <span className="text-xs font-medium text-muted-foreground" style={barFgStyle(barStyle)}>{su}</span>
             </div>
             <div className="hidden sm:flex items-baseline gap-1">
-              <span className="text-muted-foreground/30">/</span>
-              <span className="font-mono font-medium text-muted-foreground tabular-nums">{displayLarge}</span>
-              <span className="text-[10px] font-medium text-muted-foreground">{lu}</span>
+              <span className="text-muted-foreground/30" style={barFgStyle(barStyle)}>/</span>
+              <span className="font-mono font-medium text-muted-foreground tabular-nums" style={barFgStyle(barStyle)}>{displayLarge}</span>
+              <span className="text-[10px] font-medium text-muted-foreground" style={barFgStyle(barStyle)}>{lu}</span>
             </div>
           </div>
         </div>

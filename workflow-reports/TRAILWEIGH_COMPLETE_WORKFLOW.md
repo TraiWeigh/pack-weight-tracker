@@ -133,3 +133,37 @@ Headline: "Build smarter lists for the trail—and beyond". Copy: "Create packin
 - `src/hooks/barColor023E.test.mjs` (30 tests), `hideShare023E.test.mjs` (15 tests), `landing023E.test.mjs` (15 tests)
 
 ### Full report: `workflow-reports/PROMPT_023E_REPORT.md`
+
+---
+
+## Prompt 023F — Complete Bar Color / Text / Font Coverage
+
+**Date:** 2026-08-10  
+**Status:** ✅ Complete — 160/160 tests pass (38 new + 122 prior)
+
+### Problem
+023E shipped bar color, text color, and font settings but coverage was incomplete:
+- **Part A** — Bar Color: Desert/Trail palette pill and Background Edit button were excluded
+- **Part B** — Text Color: packed count, drag handle, trash icon, weight/unit spans, LockerPanel text not covered
+- **Part C** — Font: expanded panel bodies (category rows, Locker, Scan Gear) did not inherit chosen font
+
+### Architecture
+Added `barFontStyle(v)` helper to `BarStyleContext` — returns `{ fontFamily }` or `{}`. Applied to the **outer wrapper div** of each component so the font cascades naturally to all children. Bar color and text color remain explicit on bar-level elements only.
+
+### Files Changed
+- `src/context/BarStyleContext.tsx` — added `barFontStyle` helper export
+- `src/components/BackgroundPicker.tsx` — BackgroundPickerButton uses `barCombinedStyle` + outline ring for open/custom state
+- `src/components/WeightSummary.tsx` — both outer wrappers get `barFontStyle`; Desert/Trail pill gets `barCombinedStyle`
+- `src/components/GearCategory.tsx` — outer wrapper gets font cascade; packed count, drag handle, trash, weight/unit spans, +Base button all bar-style-aware
+- `src/components/LockerPanel.tsx` — outer wrapper gets font cascade; count badge and description get `barFgStyle`
+- `src/components/ImportGearPanel.tsx` — outer wrapper gets font cascade
+
+### Font List
+8 entries: Default TrailWeigh, Arial, Helvetica, Verdana, Trebuchet MS, Georgia, Times New Roman, Courier New  
+(Impact and Palatino removed; Helvetica and Times New Roman added)
+
+### Tests
+38 new tests in `src/hooks/coverage023F.test.mjs` covering all bar color, text color, font cascade, font list, and regression assertions.  
+**160/160 total** across all suites.
+
+### Full report: `workflow-reports/PROMPT_023F_REPORT.md`

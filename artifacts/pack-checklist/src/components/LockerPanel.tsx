@@ -4,7 +4,7 @@ import { Background } from './BackgroundPicker';
 import { ChevronDown, ChevronUp, Trash2, FolderOpen, Pencil, Check, X } from 'lucide-react';
 import { LockerIcon } from './LockerIcon';
 import { SyncStatusPanel, type SyncProps } from './SyncStatusPanel';
-import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle } from '../context/BarStyleContext';
 
 export type Store = {
   items: PackState;
@@ -89,8 +89,9 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncPr
 
   const barStyle = useBarStyle();
 
+  // 023F: font cascades to expanded Locker body via outer wrapper
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={barFontStyle(barStyle)}>
       {/* Header */}
       <button
         onClick={() => setOpen(o => !o)}
@@ -106,12 +107,14 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncPr
             <LockerIcon className="w-4 h-4 flex-shrink-0" />
             <h2 className="font-semibold text-base">Locker</h2>
             {entries.length > 0 && (
-              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              /* 023F: count badge follows text color */
+              <span className="text-[10px] font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded-full" style={barFgStyle(barStyle)}>
                 {entries.length}
               </span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          {/* 023F: description follows text color */}
+          <p className="text-xs text-muted-foreground mt-0.5" style={barFgStyle(barStyle)}>
             Your saved gear lists.
           </p>
         </div>

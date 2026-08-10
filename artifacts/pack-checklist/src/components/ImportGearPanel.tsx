@@ -5,7 +5,7 @@ import {
   FileUp, Loader2, CheckCircle2, AlertCircle, X,
   ChevronDown, ChevronUp, Check, AlertTriangle,
 } from 'lucide-react';
-import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle } from '../context/BarStyleContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -266,8 +266,9 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  // 023F: font cascades to expanded Scan Gear body via outer wrapper
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={barFontStyle(barStyle)}>
 
       {/* ── Panel header ── */}
       <button

@@ -1,0 +1,911 @@
+PROMPT 023F — COMPLETE BAR COLOR / TEXT / FONT COVERAGE ACROSS ALL BARS, PILLS, AND EXPANDED PANELS
+
+USER-VERIFIED / REPORT STATUS
+
+Prompt 023E:
+- Hide stale-disabled bug: USER VERIFIED PASS
+- Share hover: USER VERIFIED PASS
+- Landing page multi-use rewrite: implemented
+- Bar Color / Text controls: positioned correctly above Full Screen / Fit Image
+- Bar Color: PARTIAL
+- Text Color: PARTIAL
+- Font: PARTIAL
+
+REAL USER EVIDENCE FROM SCREENSHOTS / VIDEO OVERRIDES AUTOMATED CLAIMS.
+
+The user has shown these specific remaining problems:
+
+1. BAR COLOR does not reach every pill/control.
+   Examples:
+   - Desert/Trail pill located on the Weight Distribution bar
+   - Background Edit pill while active/open
+
+2. TEXT COLOR does not reach all text/icons within customized bars/pills.
+   Examples:
+   - packed counts ("2 / 4 packed")
+   - weights
+   - units
+   - +Base pill text/icon
+   - drag/reorder handles
+   - trash icons
+   - secondary/status text
+   - some active/disabled pill text/icons
+
+3. FONT does not reach expanded panel content.
+   Example:
+   - Georgia is selected
+   - category title "Backpack" changes to Georgia
+   - expanded category panel content remains default sans-serif
+
+The user wants the selected font to apply throughout the expanded category panel as well, not only the category bar.
+
+This is a focused corrective prompt.
+Do NOT redesign Background Edit.
+Do NOT change Hide behavior.
+Do NOT change Share hover behavior.
+Do NOT change the landing page.
+Do NOT alter themes.
+Do NOT alter phone layout.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current 023E implementation before changing anything.
+
+3. Identify the shared styling mechanism currently used for:
+   - Bar Color
+   - Text Color
+   - Font
+   - category bars
+   - expanded category content
+   - panel headers
+   - nested pills
+   - toolbar pills
+   - active/open pills
+   - segmented controls
+   - disabled states
+   - secondary text
+   - icons
+
+4. Preserve all verified fixes:
+   - 023A custom-theme Undo
+   - 022Z one-click delete
+   - anchored delete warning
+   - 023D theme cleanup
+   - 023E Hide fix
+   - 023E Share hover fix
+   - 023E landing-page rewrite
+   - mobile Locker sync
+   - mobile scrolling
+   - phone layout
+   - Save / Save As / Locker
+   - Preview
+   - Open/Close
+   - Imperial/Metric
+   - Pack Summary
+   - Weight Distribution
+   - Scan Gear List
+   - Footer
+   - auth fixes
+
+5. Make the smallest reasonable changes.
+
+6. Do NOT perform unrelated refactors.
+
+7. Inspect the COMPLETE final diff.
+
+8. Revert unrelated changes.
+
+9. Run the full regression suite plus new 023F tests.
+
+==================================================
+PART A — BAR COLOR MUST REACH EVERY BAR AND PILL
+==================================================
+
+==================================================
+1. BAR COLOR SCOPE
+==================================================
+
+The selected Bar Color must apply consistently to the visual surfaces the user
+understands as TrailWeigh "bars" and "pills."
+
+This includes:
+
+MAIN BARS / PANEL HEADERS:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- every category bar/header
+
+TOOLBAR PILLS:
+- File Name
+- Preview
+- Background Edit
+- Share
+- Open / Close segmented control
+- Hide
+- Imperial / Metric segmented control
+
+NESTED PILLS ON BARS:
+- Desert / Trail pill inside Weight Distribution
+- +Base pill inside category bars
+- any other pill/chip that visually sits on or inside a customizable bar
+
+Do not leave nested pills on their old default background simply because they
+are child controls.
+
+==================================================
+2. WEIGHT DISTRIBUTION NESTED DESERT/TRAIL PILL
+==================================================
+
+The user specifically identified the Desert/Trail control as a pill located on
+the Weight Distribution bar.
+
+It must participate in the same Bar Color / Text Color styling system.
+
+Requirements:
+- background uses selected Bar Color
+- text/icon uses selected Text Color
+- selected state remains visually distinguishable
+- hover/focus remains accessible
+- do not revert to default dark-gray styling
+
+If necessary, distinguish selected state with:
+- border
+- outline
+- inset ring
+- subtle derived shade
+
+Do NOT ignore the user-selected colors.
+
+==================================================
+3. BACKGROUND EDIT ACTIVE/OPEN STATE
+==================================================
+
+Background Edit must also obey Bar Color / Text Color while open.
+
+Current problem:
+- when active/open, it falls back to TrailWeigh's default dark-gray appearance
+
+Required:
+- remain visually distinct as active/open
+- BUT stay based on the user's selected Bar Color and Text Color
+
+Use a subtle active-state distinction:
+- border
+- outline
+- ring
+- shade variation
+- inset highlight
+
+Do not fall back to unrelated default gray styling.
+
+==================================================
+4. SEGMENTED CONTROLS
+==================================================
+
+Open/Close and Imperial/Metric must both inherit Bar Color.
+
+Selected/unselected halves must remain understandable.
+
+Requirements:
+- same overall custom color family
+- selected segment still visually clear
+- text/icon still use Text Color
+- hover/focus/disabled states remain accessible
+- no whole-control opacity fade on hover
+
+==================================================
+PART B — TEXT COLOR MUST REACH ALL BAR/PILL CONTENT
+==================================================
+
+==================================================
+5. TEXT COLOR SCOPE
+==================================================
+
+When a user chooses Text Color, ALL textual and iconographic content within the
+customizable bars and pills must use that selected color unless a legitimate
+state treatment intentionally modifies opacity.
+
+This includes BOTH primary and secondary content.
+
+Examples that MUST follow Text Color:
+
+CATEGORY BAR:
+- category title
+- packed count ("2 / 4 packed")
+- weight number
+- unit labels (oz, lbs, g, kg)
+- secondary weight value
+- +Base pill text
+- +Base icon if present
+- drag/reorder handle
+- trash icon
+- chevrons/disclosure arrows
+- other status text/icons inside the bar
+
+PANEL BARS:
+- Pack Summary text/icon
+- Weight Distribution text/icon
+- Scan Gear List text/icon
+- Locker text/icon
+- secondary text visible in their bars/headers
+
+PILLS:
+- File Name text
+- Preview text/icon
+- Background Edit text/icon
+- Share text/icon
+- Open/Close text
+- Hide text/icon
+- Imperial/Metric text
+- Desert/Trail text/icon
+- +Base text/icon
+
+==================================================
+6. SECONDARY TEXT MUST NOT KEEP OLD COLORS
+==================================================
+
+Do not leave secondary text using old hard-coded gray/white/muted classes when
+the user selected a custom Text Color.
+
+If secondary text needs to remain visually secondary:
+- preserve hierarchy using opacity
+- preserve weight/font-size differences
+- preserve spacing
+
+But the base color should still derive from the selected Text Color.
+
+Example:
+selected Text Color = black
+
+Then:
+- primary text may be black at full opacity
+- secondary text may be black at reduced opacity
+
+Do NOT use unrelated hard-coded gray.
+
+==================================================
+7. ICONS
+==================================================
+
+Icons inside bars/pills should inherit currentColor where practical.
+
+This includes:
+- chevrons
+- trash
+- drag handles
+- Base icon
+- Share icon
+- Background Edit icon
+- Desert/Trail icon
+- other bar/pill icons
+
+Do not maintain separate hard-coded icon colors that ignore Text Color.
+
+==================================================
+8. HOVER / ACTIVE / DISABLED STATES
+==================================================
+
+Preserve state meaning.
+
+Text Color is the base color.
+
+Allowed state effects:
+- hover: white for Share as already user-approved
+- disabled: reduced opacity
+- active/open: border/ring/shade distinction
+- selected: outline/shade/contrast distinction
+
+Do NOT revert the entire component to default gray merely because it is:
+- active
+- selected
+- open
+- disabled
+
+==================================================
+PART C — FONT MUST APPLY TO EXPANDED PANEL CONTENT
+==================================================
+
+==================================================
+9. CURRENT FONT BUG
+==================================================
+
+User screenshot:
+- Font selector set to Georgia
+- category bar title "Backpack" changes to Georgia
+- expanded category panel remains default sans-serif
+
+This is incorrect.
+
+==================================================
+10. CATEGORY COMPONENT FONT SCOPE
+==================================================
+
+The selected Font must apply to the ENTIRE category component, including:
+
+CATEGORY BAR:
+- category title
+- packed count
+- weights/units
+- +Base text
+- other textual content
+
+EXPANDED CATEGORY PANEL:
+- table/column headers:
+  TYPE
+  DESCRIPTION
+  MOVE
+  WEIGHT
+  QTY
+  TOTAL
+
+- item type text
+- item description text
+- item weights
+- units
+- quantities
+- totals
+- "Add Item"
+- inline category-panel labels
+- other normal text inside the expanded category panel
+
+The font should remain consistent from the category bar into its expanded
+content.
+
+==================================================
+11. OTHER EXPANDED PANELS
+==================================================
+
+Where the same Background Edit Font customization is intended to style a
+panel/bar component, apply the selected font to its expanded content too when
+that content is part of the same TrailWeigh workspace component.
+
+Examples:
+- Pack Summary expanded content
+- Weight Distribution expanded content
+- Scan Gear List expanded content
+- Locker expanded content
+
+Do NOT change:
+- About page
+- Help page
+- auth pages
+- public landing page
+- footer
+unless those areas already intentionally share this same customization scope.
+
+==================================================
+12. FONT LIST
+==================================================
+
+Correct the font selector list to the intended curated set:
+
+1. Default TrailWeigh
+2. Arial
+3. Helvetica
+4. Verdana
+5. Trebuchet MS
+6. Georgia
+7. Times New Roman
+8. Courier New
+
+Remove unintended substitutions:
+- Impact
+- Palatino
+
+unless those were independently approved elsewhere.
+
+Use safe CSS fallback stacks.
+
+Examples:
+Arial, Helvetica, sans-serif
+Georgia, "Times New Roman", serif
+"Courier New", Courier, monospace
+
+Do not load remote fonts.
+
+==================================================
+13. DEFAULT FONT
+==================================================
+
+Default TrailWeigh must reproduce the current TrailWeigh typography exactly.
+
+A user who never changes Font must see no typography regression.
+
+Reset Bar / Text must restore the original TrailWeigh font.
+
+==================================================
+PART D — SHARED STYLING ARCHITECTURE
+==================================================
+
+==================================================
+14. USE SHARED VARIABLES / TOKENS
+==================================================
+
+Do not continue patching individual components one by one with duplicated
+hard-coded style rules if there is a cleaner scoped CSS-variable/token approach.
+
+Preferred:
+- one scoped bar color variable
+- one scoped text color variable
+- one scoped font-family variable
+
+Then child elements inherit:
+- background/color/font-family
+- icons inherit currentColor
+
+Use explicit exceptions only where state behavior truly requires one.
+
+==================================================
+15. DO NOT RECOLOR THE WRONG AREAS
+==================================================
+
+Still do NOT apply Bar Color to:
+- page background
+- background image
+- modal body surfaces
+- footer
+- marketing page
+- auth page
+- About page
+
+Still do NOT apply Text Color globally to:
+- all app body text
+- all item-edit inputs
+- public pages
+- footer
+
+Still do NOT apply Font globally outside the intended TrailWeigh workspace
+components.
+
+==================================================
+PART E — PERSISTENCE / UNDO / REDO
+==================================================
+
+==================================================
+16. PRESERVE 023E PERSISTENCE
+==================================================
+
+Do not change persistence scope unless a bug is found.
+
+Verify:
+- Bar Color survives save/reopen
+- Text Color survives save/reopen
+- Font survives save/reopen
+- one saved file's styling does not overwrite another file unexpectedly
+
+==================================================
+17. UNDO / REDO
+==================================================
+
+Verify:
+- Bar Color change → Undo → Redo
+- Text Color change → Undo → Redo
+- Font change → Undo → Redo
+
+Do not break:
+- custom-theme delete Undo/Redo
+- normal checklist history
+
+==================================================
+PART F — MANDATORY VISUAL TESTS
+==================================================
+
+==================================================
+18. BAR COLOR TEST
+==================================================
+
+Choose a clearly visible test Bar Color, for example bright magenta.
+
+Verify the selected Bar Color reaches:
+
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Locker
+[ ] category bars
+[ ] File Name
+[ ] Preview
+[ ] Background Edit
+[ ] Share
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Desert/Trail nested pill
+[ ] +Base nested pill
+
+No intended bar/pill remains on default gray/black unless its selected-state
+treatment is visibly derived from the custom Bar Color.
+
+==================================================
+19. TEXT COLOR TEST
+==================================================
+
+Use:
+Bar Color = bright magenta
+Text Color = black
+
+Verify black reaches ALL:
+
+CATEGORY BAR:
+[ ] category title
+[ ] packed count
+[ ] weights
+[ ] units
+[ ] +Base text/icon
+[ ] drag handle
+[ ] trash icon
+[ ] chevrons
+[ ] secondary/status text
+
+PILLS:
+[ ] File Name
+[ ] Preview
+[ ] Background Edit
+[ ] Share
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Desert/Trail
+[ ] +Base
+
+No hard-coded gray text/icons should remain inside the customized bar/pill
+scope except via intentional opacity of the SAME selected color.
+
+==================================================
+20. FONT TEST
+==================================================
+
+Set Font = Georgia.
+
+Open a category.
+
+Visually verify Georgia appears in:
+[ ] category title
+[ ] packed count
+[ ] table headings
+[ ] Type values
+[ ] Description values
+[ ] weights
+[ ] Qty
+[ ] totals
+[ ] Add Item
+
+Then set Font = Courier New and repeat.
+
+Then Reset Bar / Text and verify TrailWeigh default font returns.
+
+==================================================
+21. ACTIVE/SELECTED STATE TEST
+==================================================
+
+With custom Bar Color/Text Color active:
+
+Open Background Edit.
+
+Verify:
+- Background Edit remains visually active
+- still uses custom Bar Color family
+- still uses custom Text Color
+- does not revert to default gray
+
+Test Desert/Trail:
+- selected state visually clear
+- custom Bar Color still applies
+- custom Text Color still applies
+
+==================================================
+22. SHARE HOVER REGRESSION
+==================================================
+
+With custom Bar Color/Text Color:
+
+Hover Share.
+
+Verify:
+[ ] Share background remains stable
+[ ] Share text turns white
+[ ] Share icon turns white
+[ ] whole control does not fade
+
+Preserve user-verified 023E behavior.
+
+==================================================
+23. HIDE REGRESSION
+==================================================
+
+Verify:
+- Hide enabled while idle
+- Hide disables only during legitimate blocking state
+- closing Background Edit re-enables Hide
+- no stale disabled state after file switching
+
+Preserve user-verified 023E behavior.
+
+==================================================
+24. PHONE REGRESSION
+==================================================
+
+Do NOT rearrange phone layout.
+
+Verify at:
+- 360 px
+- 390 px
+- 412 px
+
+No:
+- horizontal overflow
+- clipping
+- loss of scrolling
+
+==================================================
+25. AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for at least:
+
+BAR COLOR:
+[ ] Desert/Trail receives Bar Color
+[ ] Background Edit active state derives from Bar Color
+[ ] +Base receives Bar Color
+[ ] segmented controls derive from Bar Color
+[ ] no fallback hard-coded default bar background remains in customized scope
+
+TEXT COLOR:
+[ ] packed count derives from Text Color
+[ ] weights derive from Text Color
+[ ] unit labels derive from Text Color
+[ ] +Base text/icon derives from Text Color
+[ ] drag handle derives from Text Color/currentColor
+[ ] trash derives from Text Color/currentColor
+[ ] secondary text derives from Text Color
+[ ] Desert/Trail text/icon derives from Text Color
+[ ] Background Edit active text/icon derives from Text Color
+
+FONT:
+[ ] category bar uses selected Font
+[ ] expanded category panel inherits selected Font
+[ ] table headers inherit selected Font
+[ ] item data inherit selected Font
+[ ] Add Item inherits selected Font
+[ ] Pack Summary expanded content inherits selected Font where intended
+[ ] Weight Distribution expanded content inherits selected Font where intended
+[ ] Scan Gear List expanded content inherits selected Font where intended
+[ ] Locker expanded content inherits selected Font where intended
+[ ] font list is exactly the approved curated set
+[ ] Reset restores default
+
+REGRESSION:
+[ ] Share hover remains correct
+[ ] Hide remains correct
+[ ] 023D theme cleanup intact
+[ ] 023E landing page unchanged
+[ ] phone layout unchanged
+
+==================================================
+26. FULL REGRESSION SUITE
+==================================================
+
+Run the full TrailWeigh regression suite.
+
+Specifically verify:
+
+[ ] 023A custom-theme Undo
+[ ] 022Z one-click delete
+[ ] anchored delete confirmation
+[ ] 023D theme cleanup
+[ ] 023E Hide fix
+[ ] 023E Share hover
+[ ] 023E landing page
+[ ] Background Edit
+[ ] Fit / Fill
+[ ] Locker sync
+[ ] mobile scrolling
+[ ] Save / Save As
+[ ] Locker
+[ ] Preview
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Categories
+[ ] Footer
+[ ] auth
+[ ] tablet layout
+[ ] desktop layout
+
+==================================================
+27. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023F_REPORT.md
+
+Exact title:
+
+Prompt 023F — Complete Bar Color / Text / Font Coverage Across All Bars, Pills, and Expanded Panels
+
+The report must include:
+
+- checkpoint confirmation
+- files changed
+- complete final-diff review
+- anything reverted
+
+BAR COLOR SECTION:
+- exact shared variable/token/component path
+- all elements now affected
+- Desert/Trail result
+- Background Edit active-state result
+- +Base result
+- segmented-control result
+
+TEXT COLOR SECTION:
+- exact shared variable/token/component path
+- packed-count result
+- weight/unit result
+- +Base result
+- drag-handle result
+- trash-icon result
+- secondary-text result
+- active/disabled state behavior
+
+FONT SECTION:
+- exact font list
+- exact selected-font storage
+- exact category-bar behavior
+- exact expanded-category behavior
+- Pack Summary expanded-content result
+- Weight Distribution expanded-content result
+- Scan Gear List expanded-content result
+- Locker expanded-content result
+- Reset behavior
+
+PERSISTENCE / HISTORY SECTION:
+- save/reopen result
+- per-file scope result
+- Undo/Redo result
+
+REGRESSION SECTION:
+- Share hover
+- Hide
+- themes
+- landing page
+- phone
+- desktop/tablet
+
+TEST SECTION:
+- automated tests
+- runtime tests
+- visual tests
+- full regression results
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Do not claim real-device PASS unless tested on physical hardware.
+
+==================================================
+28. REQUIRED REPLIT-CREATED ZIP
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023F-report.zip
+
+Prompt 023F is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023F_REPORT.md
+
+2.
+workflow-reports/trailweigh-023F-report.zip
+
+ZIP must contain at minimum:
+PROMPT_023F_REPORT.md
+
+It SHOULD also include NON-SENSITIVE screenshots of:
+
+1. bright magenta Bar Color + black Text Color showing:
+   - category bar
+   - packed count
+   - weights/units
+   - +Base
+   - drag handle
+   - trash
+   - Desert/Trail
+   - Background Edit active/open
+
+2. Georgia selected with expanded category panel visible
+
+3. Courier New selected with expanded category panel visible
+
+4. Reset/default appearance
+
+5. Share hover with custom colors
+
+DO NOT include:
+- passwords
+- tokens
+- cookies
+- API keys
+- .env
+- private account data
+- private Locker contents
+- private user photos
+
+Before completion:
+1. Verify ZIP exists.
+2. Verify size > 0.
+3. Programmatically open/list ZIP contents.
+4. Confirm report is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide if supported.
+
+==================================================
+29. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. ZIP verification result
+8. confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. confirmation Bar Color now affects:
+   - Desert/Trail
+   - Background Edit active/open
+   - +Base
+   - all intended pills
+
+10. confirmation Text Color now affects:
+    - packed counts
+    - weights
+    - units
+    - +Base
+    - drag handles
+    - trash icons
+    - secondary/status text
+    - all intended icons
+
+11. exact final Font list
+
+12. confirmation selected Font now applies inside expanded category panels
+
+13. confirmation selected Font also applies to intended expanded Pack Summary /
+    Weight Distribution / Scan Gear List / Locker content
+
+14. confirmation Reset restores original TrailWeigh appearance
+
+15. confirmation Share hover remains fixed
+
+16. confirmation Hide remains fixed
+
+17. confirmation no 023D theme or 023E landing-page regression
+
+18. exact user verification steps
+
+FINAL STATUS RULE:
+
+Do not claim user PASS until the user verifies the result in TrailWeigh.

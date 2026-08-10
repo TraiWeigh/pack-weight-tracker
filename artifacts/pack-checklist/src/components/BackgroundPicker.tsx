@@ -14,6 +14,7 @@
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ImageIcon, X, Check, ChevronDown, Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { useBarStyle, barCombinedStyle } from '../context/BarStyleContext';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
 import { cleanupOrphanedPhotos } from '../lib/bgPhotoStore';
 import {
@@ -149,20 +150,33 @@ export function BackgroundPickerButton({
   onClick: () => void;
   active: boolean;
   /** Whether the Background Edit panel is currently open.
-   *  true  → pill turns white (active/open state).
+   *  true  → pill shows active/open state.
    *  false → normal inactive pill matching Hide/Preview. */
   panelOpen: boolean;
 }) {
+  // 023F: consume bar style so the button matches all other toolbar pills
+  const barStyle = useBarStyle();
+  const hasBarColor = !!barStyle.barColor;
+
+  // Active/open state: when a custom bar color is set, show an outline ring
+  // to signal "open" while staying within the custom color family.
+  // Without a custom color the legacy white-pill appearance is preserved.
+  const activeStyle: React.CSSProperties =
+    panelOpen && hasBarColor
+      ? { outline: '2px solid rgba(255,255,255,0.75)', outlineOffset: '1px' }
+      : {};
+
   return (
     <button
       onClick={onClick}
       title="Background Edit"
       aria-label="Background Edit"
       className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
-        panelOpen
+        panelOpen && !hasBarColor
           ? 'bg-white text-gray-900 border border-white/80'
           : 'bg-muted text-muted-foreground hover:text-foreground border border-transparent'
       }`}
+      style={{ ...barCombinedStyle(barStyle), ...activeStyle }}
     >
       <ImageIcon className="w-3.5 h-3.5" />
       Background Edit
