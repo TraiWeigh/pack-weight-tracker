@@ -171,6 +171,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const barFontRef         = useRef('');
   const barTextColorRef    = useRef('');
   const barTransparencyRef = useRef(1);
+  // 023N: Tracks the barTransparency value at the START of a drag/key interaction
+  // so that a single undo entry is pushed per gesture (not per pixel of movement).
+  const barTransparencyBeforeDragRef = useRef(1);
   const onRestoreBg = useCallback((bg: BgSnapshot) => {
     restoreBgCallbackRef.current?.(bg);
   }, []);
@@ -635,14 +638,38 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     else localStorage.removeItem('trailweigh:barTextColor');
     updateBarForkKey('bartextcolor', v);
   };
-  // 023G: Transparency change — participates in undo/redo like bar color/font/text.
+  // 023G/023N: Transparency change — split into live preview + commit.
+  //
+  // handleBarTransparencyDragStart — called on mousedown/keydown.
+  //   Records the value BEFORE the drag so the undo entry stores the correct
+  //   pre-drag snapshot instead of the mid-drag value.
+  const handleBarTransparencyDragStart = () => {
+    barTransparencyBeforeDragRef.current = barTransparencyRef.current;
+  };
+  //
+  // handleBarTransparencyChange — called on every onChange (many times per drag).
+  //   Live preview only: updates React state + ref so bars repaint immediately.
+  //   Does NOT push an undo entry or write to localStorage to avoid undo-storms
+  //   and excessive storage writes during a drag gesture.
   const handleBarTransparencyChange = (v: number) => {
     const clamped = Math.max(0, Math.min(1, v));
-    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
     setBarTransparency(clamped);
     barTransparencyRef.current = clamped;
-    localStorage.setItem('trailweigh:barTransparency', String(clamped));
-    updateBarForkKey('bartransparency', String(clamped));
+  };
+  //
+  // handleBarTransparencyCommit — called on mouseup/touchend/keyup/blur.
+  //   Fires once per drag gesture.  Pushes one undo entry using the
+  //   pre-drag snapshot and persists the final value to localStorage.
+  const handleBarTransparencyCommit = () => {
+    const before = barTransparencyBeforeDragRef.current;
+    const current = barTransparencyRef.current;
+    if (before === current) return; // no change — skip noisy undo entry
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: before });
+    localStorage.setItem('trailweigh:barTransparency', String(current));
+    updateBarForkKey('bartransparency', String(current));
+    // Update the "before" ref so a subsequent drag in the same session
+    // doesn't compare against a stale pre-drag value.
+    barTransparencyBeforeDragRef.current = current;
   };
   const handleResetBarStyle = () => {
     pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
@@ -2288,6 +2315,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     onResetBarStyle={handleResetBarStyle}
                     barTransparency={barTransparency}
                     onBarTransparencyChange={handleBarTransparencyChange}
+                    onBarTransparencyDragStart={handleBarTransparencyDragStart}
+                    onBarTransparencyCommit={handleBarTransparencyCommit}
                   />
                 </div>
                 {/* Share pill + dropdown */}

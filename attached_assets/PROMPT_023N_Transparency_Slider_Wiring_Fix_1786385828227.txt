@@ -1,0 +1,598 @@
+PROMPT 023N — FIX TRANSPARENCY SLIDER WIRING: TEST THE ACTUAL CONTROL, NOT LOCALSTORAGE
+
+PURPOSE
+
+Prompt 023M reported Transparency as "VERIFIED WORKING," but the user's live test still failed.
+
+The key new evidence is this:
+
+- 023M proved that true alpha rendering works when `barTransparency` is manually injected through localStorage.
+- The user then used the ACTUAL Transparency slider in TrailWeigh.
+- The slider visibly moved.
+- The bars/pills did NOT become increasingly transparent as expected.
+
+Therefore the most likely remaining failure is now in the REAL CONTROL PATH:
+
+Transparency slider
+→ slider event/value
+→ React state
+→ BarStyleContext/state propagation
+→ rendered alpha
+
+This prompt must focus on that path.
+
+DO NOT repeat the 023M localStorage-only test and call it proof.
+DO NOT work on the eyedropper yet.
+DO NOT redesign the appearance system.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Read:
+   - `workflow-reports/PROMPT_023L_REPORT.md`
+   - `workflow-reports/PROMPT_023M_REPORT.md`
+3. Inspect the current Transparency control and current BarStyleContext implementation before changing anything.
+4. Make the smallest reasonable fix.
+5. Do not perform unrelated refactors.
+6. Preserve:
+   - authentication
+   - user data
+   - Locker
+   - sharing
+   - Scan Gear List
+   - themes
+   - mobile layout
+   - Bar Color
+   - Text Color
+   - Font
+   - Darken
+   - Hide
+   - Share hover behavior
+   - current true-alpha rendering helpers
+   - cross-window appearance isolation
+7. Inspect the complete final diff.
+8. Revert unrelated changes.
+9. Do not claim success unless the ACTUAL Transparency slider is manipulated in the browser.
+10. Document checkpoint and final diff.
+
+==================================================
+1. ACCEPT THE USER'S LIVE RESULT
+==================================================
+
+Prompt 023M concluded that the alpha rendering path itself works when `barTransparency` is manually set through localStorage.
+
+However, the user tested the live UI and Transparency still did not work.
+
+Treat the user's result as authoritative:
+
+PROMPT 023M USER RESULT = FAIL.
+
+Do not attribute the failure to:
+- hot reload
+- user perception
+- dark mode
+- no background image
+
+unless the ACTUAL slider interaction test proves that.
+
+==================================================
+2. REPRODUCE USING THE REAL TRANSPARENCY SLIDER
+==================================================
+
+Before changing code:
+
+1. Run TrailWeigh.
+2. Select a clearly visible background image/theme.
+3. Choose a bright, obvious Bar Color.
+4. Open Background Edit.
+5. Locate the actual Transparency slider in the DOM.
+6. Manipulate that slider exactly as a user does.
+
+Test:
+- far right / Solid
+- midpoint
+- far left / Transparent
+
+IMPORTANT:
+
+Do NOT set `barTransparency` directly in localStorage for this reproduction.
+Do NOT call the state setter from devtools.
+Do NOT inject the desired value through JavaScript as a substitute for moving the control.
+
+Use Playwright/browser automation to interact with the real slider element/control.
+
+If drag simulation is unreliable, use keyboard Arrow/Home/End interaction on the actual focused slider control, or another genuine user-event mechanism.
+
+==================================================
+3. TRACE THE SLIDER VALUE END TO END
+==================================================
+
+For each of these three positions:
+
+A. Solid
+B. Midpoint
+C. Transparent
+
+record:
+
+1. slider's actual DOM/UI value
+2. value delivered by the slider's event handler
+3. value written to React state
+4. value exposed by BarStyleContext
+5. value used by `barBgStyle` / `barCombinedStyle`
+6. final computed `background-color` alpha of a representative bar
+7. persisted/session value, if persistence occurs
+
+Create a small diagnostic table in the report.
+
+Example structure:
+
+| Slider position | DOM value | Handler value | Context value | Computed alpha |
+|-----------------|-----------|---------------|---------------|----------------|
+| Solid           | ...       | ...           | ...           | ...            |
+| Midpoint        | ...       | ...           | ...           | ...            |
+| Transparent     | ...       | ...           | ...           | ...            |
+
+This should reveal where the value stops changing, reverses, gets clamped, gets overwritten, or gets transformed incorrectly.
+
+==================================================
+4. INSPECT THE ACTUAL SLIDER IMPLEMENTATION
+==================================================
+
+Find the exact Transparency slider component/control.
+
+Inspect:
+
+- `value`
+- `defaultValue`
+- `min`
+- `max`
+- `step`
+- `onChange`
+- `onInput`
+- `onValueChange`
+- `onValueCommit`
+- any percentage conversion
+- any `1 - value` inversion
+- any string-to-number conversion
+- any clamping
+- any debouncing/throttling
+- any state selector
+- any duplicate/local component state
+- any effect that reloads the value from storage after interaction
+
+Look specifically for mismatches such as:
+
+- UI range 0–100 while state expects 0–1
+- state 0–1 while UI sends strings
+- "Transparent" direction reversed
+- slider uses `defaultValue` instead of controlled `value`
+- visual thumb moves from local state but BarStyleContext never changes
+- wrong setter used
+- setter updates a stale/duplicate state object
+- persistence effect immediately overwrites the new value
+- an `onValueCommit` updates storage but `onValueChange` does not update live state
+- input event handled on the wrong element
+
+Do not assume which one is happening. Trace it.
+
+==================================================
+5. VERIFY DIRECTION SEMANTICS
+==================================================
+
+Approved behavior:
+
+LEFT = more transparent
+RIGHT = more solid / opaque
+
+The internal alpha used by bar rendering must therefore be:
+
+left endpoint → alpha 0
+midpoint → alpha approximately 0.5
+right endpoint → alpha 1
+
+If the slider's own numeric value runs the opposite way, convert it explicitly and consistently.
+
+Do not change the approved labels or direction.
+
+==================================================
+6. FIX LIVE PREVIEW
+==================================================
+
+When the user moves the Transparency slider, the bars/pills must update live.
+
+Required:
+
+- thumb movement and rendered transparency stay synchronized
+- no reload required
+- no closing/reopening Background Edit required
+- no Save required
+- no hard refresh required
+
+The control should update the current window's appearance immediately.
+
+==================================================
+7. PRESERVE PERFORMANCE / AVOID WRITE STORMS
+==================================================
+
+The Transparency slider may generate many intermediate events while dragging.
+
+Use a safe pattern:
+
+- lightweight live state update for visual preview
+- do NOT create an Undo history entry for every tiny movement
+- do NOT perform expensive persistence/storage writes for every tiny sample if the existing architecture supports a commit/finalization event
+- commit the final slider value using the established appearance-state pattern
+
+This should be handled carefully because the later eyedropper fix will address a similar event-storm risk.
+
+Do not broaden this prompt into the eyedropper fix.
+
+==================================================
+8. UNDO / REDO
+==================================================
+
+Verify:
+
+1. Start at Solid.
+2. Move Transparency to midpoint.
+3. Complete/commit the interaction.
+4. Undo once.
+5. Transparency and the visible bars return to the prior committed value.
+6. Redo restores the midpoint.
+
+Do not create dozens of Undo steps from one drag gesture.
+
+If the current appearance architecture intentionally handles sliders differently, document the behavior and preserve consistency.
+
+==================================================
+9. PERSISTENCE
+==================================================
+
+Verify the intended persistence path:
+
+- move slider
+- complete/commit interaction
+- close and reopen Background Edit
+- value remains correct
+- if saved-file appearance persistence is part of current design, save/open restores it
+
+Do not require refresh to make the visible transparency match the stored value.
+
+==================================================
+10. WINDOW/TAB ISOLATION
+==================================================
+
+Preserve the established rule:
+
+A new unsaved TrailWeigh window/tab must NOT inherit another window's live Transparency changes merely because shared localStorage changed.
+
+Verify the 023N fix does not reintroduce cross-window live appearance leakage.
+
+Do not broaden into a full state-management refactor.
+
+==================================================
+11. TEST THE ACTUAL SLIDER IN BOTH POINTER AND KEYBOARD PATHS
+==================================================
+
+Where technically practical, test the actual control using:
+
+A. pointer/drag interaction
+B. keyboard interaction:
+   - focus slider
+   - Home/End or Arrow keys as appropriate
+
+Both must update the same real state.
+
+This helps identify a broken pointer handler or custom-slider wiring problem.
+
+==================================================
+12. BROWSER-LEVEL REGRESSION TEST
+==================================================
+
+Add a targeted browser-level test that operates the actual Transparency slider.
+
+The test must:
+
+1. load TrailWeigh with a visible background
+2. set/select a known Bar Color through the supported UI/state setup
+3. locate the actual Transparency slider
+4. move/set the actual control to Solid
+5. assert computed bar alpha = 1
+6. move/set the actual control to midpoint
+7. assert computed bar alpha ≈ 0.5
+8. move/set the actual control to Transparent
+9. assert computed bar alpha = 0
+10. confirm text/icon opacity remains 1
+
+CRITICAL:
+
+The test may set up unrelated prerequisites programmatically if necessary, but it must NOT set `barTransparency` directly in localStorage or state.
+
+The transparency value itself MUST come from operating the actual slider.
+
+==================================================
+13. VERIFY REPRESENTATIVE SURFACES
+==================================================
+
+After the slider is correctly wired, verify live response on:
+
+- one category bar
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- Open/Close
+- Hide
+- Imperial/Metric
+- Background Edit
+- Share
+- Desert/Trail
+- +Base
+
+Do not duplicate code if the shared appearance state fixes them all.
+
+==================================================
+14. WEIGHT DISTRIBUTION
+==================================================
+
+Verify the full Weight Distribution bar responds live to the slider.
+
+At Transparent:
+
+- no leftover opaque black/navy right-side backing
+- background image shows through the intended surface
+- Desert/Trail remain usable and distinguishable
+
+==================================================
+15. DARKEN INDEPENDENCE
+==================================================
+
+Transparency and Darken remain separate controls.
+
+Verify:
+
+- moving Transparency does not change Darken
+- moving Darken does not reset/overwrite Transparency
+
+==================================================
+16. EYEDROPPER — DO NOT TEST OR MODIFY
+==================================================
+
+The macOS native color picker/eyedropper previously caused a severe system freeze.
+
+For Prompt 023N:
+
+- KEEP the eyedropper
+- DO NOT remove it
+- DO NOT test it
+- DO NOT ask the user to test it
+- DO NOT modify its event path unless absolutely unavoidable
+
+The eyedropper safety/performance fix remains the NEXT separate prompt after Transparency is user-verified.
+
+==================================================
+17. RESPONSIVE SMOKE TEST
+==================================================
+
+Check:
+
+- desktop
+- 390 px
+- 412 px
+
+Do not redesign layout.
+
+Verify the Transparency slider remains accessible and functional.
+
+==================================================
+18. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- category expand/collapse
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Background Edit
+- Bar Color
+- Text Color
+- Font
+- Darken
+- theme selection
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim live control PASS from localStorage injection.
+
+==================================================
+19. PRODUCTION BUILD / RUNTIME
+==================================================
+
+Run the appropriate production build/start checks.
+
+Confirm:
+
+- frontend builds
+- app renders
+- no new console/runtime errors
+- backend remains operational
+- Locker API not regressed
+- Scan Gear List/import backend not regressed
+
+No unrelated backend changes.
+
+==================================================
+20. USER VERIFICATION
+==================================================
+
+At completion give the user only this simple Transparency test:
+
+1. Open Background Edit.
+2. Choose a clearly visible background image.
+3. Choose an obvious Bar Color.
+4. Drag Transparency fully right to Solid.
+5. Drag it to the middle.
+6. Drag it fully left to Transparent.
+7. Confirm the bars visibly change AS THE SLIDER MOVES.
+8. Confirm the same color becomes increasingly see-through.
+9. Confirm the background image becomes visible through the bars.
+10. Confirm bars do not become black/navy.
+11. Confirm Weight Distribution changes too.
+12. Do NOT test the eyedropper.
+
+Do not mark USER PASS until the user confirms this.
+
+==================================================
+21. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023N_REPORT.md
+
+Include:
+
+- checkpoint
+- acknowledgment that 023M failed user verification
+- exact actual-slider reproduction result
+- exact Transparency slider component/file
+- root cause in slider→state→context chain
+- diagnostic table:
+  slider position / DOM value / handler value / context value / computed alpha
+- files changed
+- smallest-change explanation
+- live-preview behavior
+- pointer test
+- keyboard test
+- browser-level actual-slider test
+- Undo/Redo
+- persistence
+- window isolation
+- Darken independence
+- Weight Distribution
+- desktop/mobile
+- build/runtime
+- backend regression
+- final diff
+- unresolved issues
+- eyedropper = NOT TESTED
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+IMPORTANT:
+
+If the actual Transparency slider itself was not manipulated in the running browser and shown to change computed alpha, overall status cannot be PASS.
+
+Append the report to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous history.
+
+==================================================
+22. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023N-report.zip
+
+Include at minimum:
+
+- PROMPT_023N_REPORT.md
+
+May also include useful non-sensitive:
+- actual-slider Playwright test output
+- before/after screenshots
+- computed-style diagnostic output
+- build output
+- diff summary
+
+Do NOT include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- private Locker contents
+- private uploads/photos
+- database dumps
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023N_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+==================================================
+23. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status
+2. Actual-slider pre-fix reproduction
+3. Root cause
+4. Slider component/file
+5. Files changed
+6. Solid DOM/handler/context/computed values
+7. Midpoint DOM/handler/context/computed values
+8. Transparent DOM/handler/context/computed values
+9. Whether bars update live while slider moves
+10. Actual-slider Playwright result
+11. Pointer result
+12. Keyboard result
+13. Undo/Redo
+14. Persistence
+15. Window isolation
+16. Weight Distribution
+17. Darken independence
+18. Desktop/mobile
+19. Build/runtime
+20. Backend regression
+21. Eyedropper status: NOT TESTED
+22. Unresolved issues
+23. PROMPT_023N_REPORT.md path
+24. ZIP path
+25. ZIP size
+26. ZIP contents
+27. ZIP verification
+28. User test steps
+
+FINAL RULE:
+
+Do not prove Transparency by manually setting localStorage.
+
+Prompt 023N only passes technically if operating the ACTUAL Transparency slider changes the real rendered bar alpha from Solid → Midpoint → Transparent.

@@ -222,10 +222,15 @@ interface BackgroundPickerPanelProps {
   barTextColor: string;
   onBarTextColorChange: (v: string) => void;
   onResetBarStyle: () => void;
-  // ── 023G: Transparency ────────────────────────────────────────────────────
+  // ── 023G/023N: Transparency ───────────────────────────────────────────────
   /** 0 = fully transparent, 1 = fully solid. Default 1. */
   barTransparency: number;
+  /** Called on every onChange — live preview only, no undo push. */
   onBarTransparencyChange: (v: number) => void;
+  /** Called on mousedown / keydown — records pre-drag state for undo. */
+  onBarTransparencyDragStart?: () => void;
+  /** Called on mouseup / touchend / keyup / blur — commits one undo entry. */
+  onBarTransparencyCommit?: () => void;
 }
 
 export function BackgroundPickerPanel({
@@ -253,6 +258,8 @@ export function BackgroundPickerPanel({
   onResetBarStyle,
   barTransparency,
   onBarTransparencyChange,
+  onBarTransparencyDragStart,
+  onBarTransparencyCommit,
 }: BackgroundPickerPanelProps) {
   const panelRef                = useRef<HTMLDivElement>(null);
   const dropdownRef             = useRef<HTMLDivElement>(null);
@@ -1240,10 +1247,19 @@ export function BackgroundPickerPanel({
           </span>
         </div>
         {/* LEFT = more transparent / RIGHT = more solid */}
+        {/* 023N: onChange → live preview only (no undo push).
+            onMouseDown/onKeyDown → record pre-drag value.
+            onMouseUp/onTouchEnd/onKeyUp/onBlur → commit one undo entry. */}
         <input
           type="range" min={0} max={1} step={0.01}
           value={barTransparency}
+          onMouseDown={() => onBarTransparencyDragStart?.()}
+          onKeyDown={() => onBarTransparencyDragStart?.()}
           onChange={e => onBarTransparencyChange(parseFloat(e.target.value))}
+          onMouseUp={() => onBarTransparencyCommit?.()}
+          onTouchEnd={() => onBarTransparencyCommit?.()}
+          onKeyUp={() => onBarTransparencyCommit?.()}
+          onBlur={() => onBarTransparencyCommit?.()}
           aria-label="Bar transparency — left is more transparent, right is more solid"
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-primary bg-border"
         />

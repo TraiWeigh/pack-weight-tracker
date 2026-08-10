@@ -379,3 +379,34 @@ None — 023L code verified complete and working.
 
 ### Report
 `PROMPT_023M_REPORT.md`
+
+---
+
+## Prompt 023N — Transparency Slider Wiring Fix
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+Full actual-slider investigation via Playwright. The transparency rendering chain was proven correct end-to-end (slider → onChange → setBarTransparency → BarStyleContext → bars). The only confirmed bug was an **undo-storm**: `pushBg` was called on every `onChange` event (~100× per drag), creating one undo history entry per pixel of movement and ~100 localStorage writes per gesture.
+
+**Fix:** Split `handleBarTransparencyChange` into three handlers:
+- `handleBarTransparencyDragStart` (onMouseDown/onKeyDown) — records pre-drag value for undo
+- `handleBarTransparencyChange` (onChange) — live preview only, no pushBg
+- `handleBarTransparencyCommit` (onMouseUp/onTouchEnd/onKeyUp/onBlur) — one pushBg + one localStorage write per gesture
+
+**Diagnostic table (Playwright-verified):**
+
+| Position | DOM value | Computed alpha | Computed bg-color |
+|---|---|---|---|
+| Solid | 1 | 1.0 | rgb(74,222,128) |
+| 25% drag | 0.25 | 0.25 | rgba(74,222,128,0.25) |
+| Midpoint | 0.5 | 0.5 | rgba(74,222,128,0.5) |
+| Transparent | 0 | 0.0 | rgba(74,222,128,0) |
+
+### Files Changed
+`artifacts/pack-checklist/src/pages/Checklist.tsx` — 3 handlers + barTransparencyBeforeDragRef  
+`artifacts/pack-checklist/src/components/BackgroundPicker.tsx` — 2 new optional props + 5 slider events
+
+### Report
+`PROMPT_023N_REPORT.md`
