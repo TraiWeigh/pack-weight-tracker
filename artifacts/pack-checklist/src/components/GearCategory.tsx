@@ -5,7 +5,7 @@ import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUt
 import { useUnit } from '../context/UnitContext';
 import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react';
 import { GEAR_GRID_COLS, GEAR_GRID_GAP, RG_MOVE_W, RG_WEIGHT_W, RG_QTY_W, RG_TOTAL_W, RG_DELETE_W } from './gearGrid';
-import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle, barCardStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle, barCardStyle, barBasePillStyle } from '../context/BarStyleContext';
 
 interface GearCategoryProps {
   name: string;
@@ -239,7 +239,8 @@ export function GearCategory({
                 <GripVertical className="w-3.5 h-3.5" />
               </div>
 
-              {/* Base weight toggle — 023F: participates in bar color system */}
+              {/* Base weight toggle — 023F: participates in bar color system.
+                  023O: uses barBasePillStyle so +Base follows Transparency. */}
               <button
                 title={meta.countsToBase ? 'Counts toward base weight — click to exclude' : 'Not counted in base weight — click to include'}
                 onClick={() => onUpdateMeta({ countsToBase: !meta.countsToBase })}
@@ -248,15 +249,7 @@ export function GearCategory({
                     ? 'border-primary/40 bg-primary/10 text-primary'
                     : 'border-border bg-muted/40 text-muted-foreground'
                 }`}
-                style={barStyle.barColor ? {
-                  backgroundColor: meta.countsToBase ? barStyle.barColor : `${barStyle.barColor}50`,
-                  borderColor: barStyle.barColor,
-                  color: barStyle.barTextColor || undefined,
-                  fontFamily: barStyle.barFont || undefined,
-                } : (barStyle.barTextColor || barStyle.barFont ? {
-                  color: barStyle.barTextColor || undefined,
-                  fontFamily: barStyle.barFont || undefined,
-                } : undefined)}
+                style={barBasePillStyle(barStyle, meta.countsToBase)}
               >
                 {meta.countsToBase ? '+ Base' : '— Base'}
               </button>

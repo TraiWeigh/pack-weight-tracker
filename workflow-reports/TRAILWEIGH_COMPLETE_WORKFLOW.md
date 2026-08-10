@@ -410,3 +410,32 @@ Full actual-slider investigation via Playwright. The transparency rendering chai
 
 ### Report
 `PROMPT_023N_REPORT.md`
+
+---
+
+## Prompt 023O — Transparency Final Correction: Default Bar Color + `+Base`
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+Two narrow fixes on top of 023N's working custom-color transparency:
+
+1. **Default-color transparency (no custom barColor)** — all helpers in `BarStyleContext.tsx` previously guarded on `!v.barColor` and returned `{}`, silently discarding `barTransparency`. Updated `barBgStyle`, `barCombinedStyle`, and `barCardStyle` to use CSS custom property expressions (`hsl(var(--muted) / alpha)`) when no custom color is set. Light/dark mode preserved — `--muted` and `--primary` are mode-aware CSS variables.
+
+2. **`+Base` pill transparency** — replaced 10-line inline style ternary in `GearCategory.tsx` with new `barBasePillStyle(barStyle, countsToBase)` helper exported from BarStyleContext. Helper routes `+Base` through the same effective-color + alpha calculation as bar headers, including both custom-color and default-color paths.
+
+### Computed Style Verification (Playwright)
+
+| Test | barTransparency | barColor | +Base bg | Bar header bg | Status |
+|---|---|---|---|---|---|
+| A | 0 | #4ade80 | rgba(74,222,128,0) | rgba(74,222,128,0) | PASS |
+| B | 0.5 | #4ade80 | rgba(74,222,128,0.5) | rgba(74,222,128,0.5) | PASS |
+| C | 0.5 | (none) | — | rgba(233,236,234,0.15) | PASS |
+
+### Files Changed
+`artifacts/pack-checklist/src/context/BarStyleContext.tsx` — updated 3 helpers + new `barBasePillStyle` export  
+`artifacts/pack-checklist/src/components/GearCategory.tsx` — import + use `barBasePillStyle`
+
+### Report
+`PROMPT_023O_REPORT.md`

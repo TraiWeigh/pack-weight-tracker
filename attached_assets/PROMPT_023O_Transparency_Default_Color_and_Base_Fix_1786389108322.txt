@@ -1,0 +1,507 @@
+PROMPT 023O — TRANSPARENCY FINAL CORRECTION: DEFAULT BAR COLOR + `+BASE`
+
+PURPOSE
+
+Prompt 023N partially succeeded.
+
+The user verified in the live TrailWeigh interface that Transparency DOES work when a custom Bar Color has been selected. The background image becomes visible through the customized bars.
+
+However, two problems remain:
+
+1. Transparency does not work correctly when the user has NOT manually selected a custom Bar Color.
+2. The `+Base` control does not follow the same Transparency behavior as the surrounding customized bars/pills and remains visually solid.
+
+Therefore:
+
+PROMPT 023N = PARTIAL.
+
+This prompt is a very narrow correction only for these two remaining issues.
+
+DO NOT redesign the appearance system.
+DO NOT perform another broad Transparency investigation.
+DO NOT work on the eyedropper safety issue yet.
+DO NOT change unrelated controls.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Read the current appearance implementation and:
+   - `workflow-reports/PROMPT_023N_REPORT.md`
+3. Inspect the current Bar Color + Transparency code before changing anything.
+4. Make the smallest reasonable change.
+5. Do not perform unrelated refactors.
+6. Preserve:
+   - authentication
+   - user data
+   - Locker
+   - sharing
+   - Scan Gear List
+   - themes
+   - mobile layout
+   - Text Color
+   - Font
+   - Darken
+   - Hide
+   - Share hover
+   - current working Transparency behavior with a custom Bar Color
+   - cross-window appearance isolation
+   - all prior working fixes
+7. Inspect the complete final diff.
+8. Revert unrelated changes.
+9. Document checkpoint and final diff in the report.
+
+==================================================
+1. ACCEPT THE USER-VERIFIED WORKING CASE
+==================================================
+
+The user verified this live behavior:
+
+- choose a background image
+- select a custom Bar Color
+- move Transparency
+- bars become genuinely transparent
+- background image shows through
+
+This working behavior MUST be preserved.
+
+Do NOT rewrite or replace the working true-alpha mechanism.
+
+The task is only to extend that same behavior to:
+
+A. the default/no-custom-Bar-Color state
+B. the `+Base` control
+
+==================================================
+2. FIX TRANSPARENCY WHEN NO CUSTOM BAR COLOR IS SELECTED
+==================================================
+
+Current problem:
+
+Transparency appears to be ignored unless a custom Bar Color exists.
+
+The user should NOT be required to select a custom Bar Color before Transparency can work.
+
+Required behavior:
+
+- if the user has selected a custom Bar Color:
+  use that Bar Color + current Transparency alpha
+
+- if the user has NOT selected a custom Bar Color:
+  use the existing/default effective TrailWeigh bar color + current Transparency alpha
+
+In other words:
+
+Transparency must apply to the EFFECTIVE bar color, whether that color is:
+- user-selected
+or
+- TrailWeigh's current/default bar color
+
+Do NOT introduce an arbitrary replacement color.
+
+Use the actual current default bar surface color that TrailWeigh would normally render in that state.
+
+==================================================
+3. PRESERVE LIGHT / DARK DEFAULT COLOR LOGIC
+==================================================
+
+If TrailWeigh uses different default bar colors in Light and Dark display modes:
+
+- preserve those default hues
+- apply Transparency to whichever default color is active
+- do not force the Light-mode color into Dark mode
+- do not force the Dark-mode color into Light mode
+
+The only change should be alpha.
+
+==================================================
+4. `+BASE` MUST USE THE SAME CUSTOM APPEARANCE PATH
+==================================================
+
+The user's live screenshot shows that `+Base` remains solid while surrounding customized bars are transparent.
+
+Fix `+Base` so it follows:
+
+- Bar Color
+- Text Color
+- Transparency
+
+The `+Base` control must use the same effective Bar Color + alpha calculation as the other customizable pills.
+
+At:
+- Solid → `+Base` is fully opaque
+- Midpoint → `+Base` is partially transparent
+- Transparent → `+Base` background becomes transparent and the background image shows through
+
+Text/icon content inside `+Base` must remain fully opaque and readable.
+
+Do NOT apply whole-component CSS opacity.
+
+==================================================
+5. PRESERVE `+BASE` STATE / FUNCTION
+==================================================
+
+Do not break the existing `+Base` function.
+
+Verify:
+
+- click behavior still works
+- active/selected state remains understandable
+- text/icon remains readable
+- hover/focus behavior remains usable
+- no accidental change to Base Weight logic
+
+This prompt is visual-only for `+Base`.
+
+==================================================
+6. VERIFY DEFAULT-COLOR TRANSPARENCY USING THE REAL SLIDER
+==================================================
+
+Use the ACTUAL Transparency slider.
+
+Test Case A — no custom Bar Color:
+
+1. Reset Bar/Text or otherwise return Bar Color to the normal/default state.
+2. Use a clearly visible background image.
+3. Move Transparency:
+   - Solid
+   - midpoint
+   - Transparent
+4. Confirm the default bar color remains the same hue while its alpha changes.
+5. Confirm the background image becomes increasingly visible.
+
+Do NOT set Transparency directly in localStorage as a substitute for the real slider.
+
+==================================================
+7. VERIFY CUSTOM-COLOR TRANSPARENCY STILL WORKS
+==================================================
+
+Test Case B — custom Bar Color:
+
+1. Choose an obvious custom color such as red.
+2. Move Transparency:
+   - Solid
+   - midpoint
+   - Transparent
+3. Confirm the current working behavior is preserved.
+
+This is a regression test only.
+
+Do not alter the working mechanism unnecessarily.
+
+==================================================
+8. VERIFY `+BASE`
+==================================================
+
+With the same live Transparency slider:
+
+Test `+Base` at:
+
+- Solid
+- midpoint
+- Transparent
+
+Verify its computed background alpha follows the same value as representative category/tool bars.
+
+If the rest of the surface family is at alpha 0.3, `+Base` should not remain alpha 1.
+
+==================================================
+9. SMALL-SCOPE IMPLEMENTATION
+==================================================
+
+Prefer a shared helper/effective-color fallback if the current architecture supports it.
+
+Examples of the intended logic conceptually:
+
+effectiveBarColor =
+  customBarColor ?? currentDefaultBarColor
+
+renderedBarBackground =
+  effectiveBarColor with current Transparency alpha
+
+Do not hard-code a new color if TrailWeigh already has the correct default color source.
+
+For `+Base`, route it through the existing shared bar/pill appearance helper if practical rather than creating a separate duplicate transparency calculation.
+
+==================================================
+10. DARKEN INDEPENDENCE
+==================================================
+
+Preserve:
+
+- Darken affects the background image/display treatment
+- Transparency affects bar/pill alpha
+
+Verify changing one does not change/reset the other.
+
+==================================================
+11. RESET BAR/TEXT
+==================================================
+
+After `Reset Bar/Text`:
+
+- Bar Color returns to default
+- Transparency returns to fully Solid if that is current intended reset behavior
+- after reset, if the user moves Transparency again WITHOUT picking a new Bar Color, Transparency must work on the default bar color
+
+This is important.
+
+==================================================
+12. UNDO / REDO
+==================================================
+
+Verify:
+
+- changing Transparency remains undoable/redoable according to current intended behavior
+- the fix does not create extra Undo entries
+- `+Base` follows the restored/reapplied transparency state automatically
+
+==================================================
+13. WINDOW/TAB ISOLATION
+==================================================
+
+Preserve current isolation behavior.
+
+A new unsaved window/tab must not inherit another window's live appearance changes merely because shared storage changed.
+
+Do not broaden into a state-management rewrite.
+
+==================================================
+14. EYEDROPPER — DO NOT TOUCH
+==================================================
+
+The native macOS color picker/eyedropper remains a separate safety/performance issue.
+
+For Prompt 023O:
+
+- KEEP the eyedropper
+- DO NOT remove it
+- DO NOT test it
+- DO NOT ask the user to test it
+- DO NOT modify its event path unless absolutely unavoidable
+
+The eyedropper safety fix is the next separate prompt after this Transparency correction is user-verified.
+
+==================================================
+15. RESPONSIVE SMOKE TEST
+==================================================
+
+Check:
+
+- desktop
+- 390 px
+- 412 px
+
+Do not redesign layout.
+
+Verify:
+- Transparency slider remains usable
+- default-color transparency works
+- `+Base` follows transparency where present
+
+==================================================
+16. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- category expand/collapse
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Background Edit
+- Bar Color
+- Text Color
+- Font
+- Darken
+- theme selection
+- Base Weight logic
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim user PASS until the user verifies live behavior.
+
+==================================================
+17. PRODUCTION BUILD / RUNTIME
+==================================================
+
+Run the appropriate production build/start checks.
+
+Confirm:
+
+- frontend builds
+- app renders
+- no new console/runtime errors
+- backend remains operational
+- Locker API is not regressed
+- Scan Gear List/import backend is not regressed
+
+No unrelated backend changes.
+
+==================================================
+18. USER VERIFICATION
+==================================================
+
+At completion give the user this short test:
+
+A. DEFAULT BAR COLOR
+1. Open Background Edit.
+2. Reset Bar/Text so no custom Bar Color is active.
+3. Choose a visible background image.
+4. Move Transparency from Solid → middle → Transparent.
+5. Confirm the NORMAL/default bars become increasingly see-through.
+
+B. CUSTOM BAR COLOR
+6. Choose an obvious custom Bar Color.
+7. Repeat the Transparency slider test.
+8. Confirm the custom-color transparency still works.
+
+C. `+BASE`
+9. Watch a visible `+Base` control while moving Transparency.
+10. Confirm `+Base` follows the same transparency level as the surrounding customized controls.
+
+11. Do NOT test the eyedropper.
+
+Do not mark USER PASS until the user confirms all three.
+
+==================================================
+19. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023O_REPORT.md
+
+Include:
+
+- checkpoint
+- acknowledgment that 023N was PARTIAL in user testing
+- exact reason Transparency previously required a custom Bar Color
+- exact default/effective color source used
+- files changed
+- smallest-change explanation
+- default-color Transparency result
+- custom-color Transparency regression result
+- `+Base` result
+- computed alpha checks
+- Darken independence
+- Reset Bar/Text result
+- Undo/Redo
+- window isolation
+- desktop/mobile
+- build/runtime
+- backend regression
+- final diff
+- unresolved issues
+- eyedropper = NOT TESTED
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append the report to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous history.
+
+==================================================
+20. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023O-report.zip
+
+Include at minimum:
+
+- PROMPT_023O_REPORT.md
+
+May include useful non-sensitive:
+- actual-slider test output
+- screenshots
+- computed-style output
+- build logs
+- diff summary
+
+Do NOT include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- private Locker contents
+- private uploads/photos
+- database dumps
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023O_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+==================================================
+21. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status
+2. Root cause of default-color Transparency failure
+3. Files changed
+4. Default/effective bar color source
+5. Default-color Transparency result
+6. Custom-color Transparency result
+7. `+Base` Transparency result
+8. Computed alpha verification
+9. Darken independence
+10. Reset result
+11. Undo/Redo
+12. Window isolation
+13. Desktop/mobile
+14. Build/runtime
+15. Backend regression
+16. Eyedropper status: NOT TESTED
+17. Unresolved issues
+18. PROMPT_023O_REPORT.md path
+19. ZIP path
+20. ZIP size
+21. ZIP contents
+22. ZIP verification
+23. User test steps
+
+FINAL RULE:
+
+Do not perform another broad Transparency rewrite.
+
+Prompt 023O is successful only if:
+1. Transparency works without requiring a custom Bar Color,
+2. existing custom-color Transparency still works,
+3. `+Base` follows the same Transparency setting.
