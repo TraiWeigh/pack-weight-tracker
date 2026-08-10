@@ -439,3 +439,38 @@ Two narrow fixes on top of 023N's working custom-color transparency:
 
 ### Report
 `PROMPT_023O_REPORT.md`
+
+---
+
+## Prompt 023P — Strong File Protection: Isolate Edit View Appearance Settings Per Saved File
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+**Files were NOT being silently rewritten.** Contamination was render-time leakage at initialization — wrong values read from global localStorage on page load.
+
+**Two leakage paths fixed:**
+
+**Path 1 — Same-tab in-place load (`handleLoadFromLocker`):**  
+`barTransparency` was the only appearance field not restored from the file entry. Added `setBarTransparency(entry.barTransparency ?? 1)` + both refs + localStorage write. Also added all 4 bar fields to the fork-scoped sessionStorage restore keys for React-remount resilience.
+
+**Path 2 — New-tab fork load (`usePackData.ts savedListId` branch):**  
+`barColor`, `barFont`, `barTextColor`, `barTransparency` were not stashed into sessionStorage, so the Checklist initializers fell through to global `trailweigh:*` localStorage keys (holding File A's values). Fixed by stashing `tw-savedlist-barcolor/barfont/bartextcolor/bartransparency` in `usePackData`, and consuming them in each bar field's `useState` initializer (same pattern as `tw-savedlist-bg` for background).
+
+### Playwright Isolation Test
+
+| Step | Test | Result |
+|---|---|---|
+| 1 | File A injected (red, Georgia, 0.5) | PASS |
+| 2 | File B injected (blue, Helvetica, Solid) | PASS |
+| 3 | Open File B via ?savedListId= — global bar values = File B's | PASS |
+| 4 | Persisted records: File A and File B both unchanged | PASS |
+
+### Files Changed
+`artifacts/pack-checklist/src/hooks/usePackData.ts` — stash 4 bar fields in savedListId fork setup  
+`artifacts/pack-checklist/src/pages/Checklist.tsx` — consume tw-savedlist-bar* in 4 initializers; fix handleLoadFromLocker; add fork restore keys for bar fields
+
+### Report
+`PROMPT_023P_REPORT.md`

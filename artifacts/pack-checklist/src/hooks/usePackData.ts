@@ -374,6 +374,13 @@ export function usePackData(
           sessionStorage.setItem('tw-savedlist-bgfade',    String(entry.bgFade ?? 1));
           sessionStorage.setItem('tw-savedlist-bgtone',    entry.bgTone ?? 'light');
           sessionStorage.setItem('tw-savedlist-palettekey', entry.chartPaletteKey ?? '');
+          // 023P: Stash bar appearance so Checklist bar-field initialisers load
+          // File B's own values instead of falling back to global localStorage
+          // (which would contain File A's last-written appearance).
+          sessionStorage.setItem('tw-savedlist-barcolor',        entry.barColor        ?? '');
+          sessionStorage.setItem('tw-savedlist-barfont',         entry.barFont         ?? '');
+          sessionStorage.setItem('tw-savedlist-bartextcolor',    entry.barTextColor    ?? '');
+          sessionStorage.setItem('tw-savedlist-bartransparency', String(entry.barTransparency ?? 1));
           // Stash the Locker entry identity so ChecklistContent can set
           // activeLockerFile on mount — this makes Save work without a dialog
           // in tabs opened via the new-tab ("Load This List") path.

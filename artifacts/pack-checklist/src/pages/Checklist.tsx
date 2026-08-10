@@ -522,6 +522,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       if (forkId) {
         const restore = sessionStorage.getItem(`tw-fork-barcolor-restore-${forkId}`);
         if (restore !== null) return restore;
+        // 023P: savedListId path — stashed by usePackData before any useState runs.
+        // Consume and promote to scoped restore key so remounts also recover the file's own value.
+        try {
+          const saved = sessionStorage.getItem('tw-savedlist-barcolor');
+          if (saved !== null) {
+            sessionStorage.removeItem('tw-savedlist-barcolor');
+            sessionStorage.setItem(`tw-fork-barcolor-restore-${forkId}`, saved);
+            return saved;
+          }
+        } catch {}
       }
     } catch {}
     // 023H: guard against Safari SecurityError / QuotaExceededError
@@ -544,6 +554,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       if (forkId) {
         const restore = sessionStorage.getItem(`tw-fork-barfont-restore-${forkId}`);
         if (restore !== null) return restore;
+        // 023P: savedListId path
+        try {
+          const saved = sessionStorage.getItem('tw-savedlist-barfont');
+          if (saved !== null) {
+            sessionStorage.removeItem('tw-savedlist-barfont');
+            sessionStorage.setItem(`tw-fork-barfont-restore-${forkId}`, saved);
+            return saved;
+          }
+        } catch {}
       }
     } catch {}
     // 023H: guard against Safari SecurityError / QuotaExceededError
@@ -566,6 +585,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       if (forkId) {
         const restore = sessionStorage.getItem(`tw-fork-bartextcolor-restore-${forkId}`);
         if (restore !== null) return restore;
+        // 023P: savedListId path
+        try {
+          const saved = sessionStorage.getItem('tw-savedlist-bartextcolor');
+          if (saved !== null) {
+            sessionStorage.removeItem('tw-savedlist-bartextcolor');
+            sessionStorage.setItem(`tw-fork-bartextcolor-restore-${forkId}`, saved);
+            return saved;
+          }
+        } catch {}
       }
     } catch {}
     // 023H: guard against Safari SecurityError / QuotaExceededError
@@ -595,6 +623,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           const n = parseFloat(restore);
           return isNaN(n) ? 1 : Math.max(0, Math.min(1, n));
         }
+        // 023P: savedListId path
+        try {
+          const saved = sessionStorage.getItem('tw-savedlist-bartransparency');
+          if (saved !== null) {
+            sessionStorage.removeItem('tw-savedlist-bartransparency');
+            const n2 = parseFloat(saved);
+            const result = isNaN(n2) ? 1 : Math.max(0, Math.min(1, n2));
+            sessionStorage.setItem(`tw-fork-bartransparency-restore-${forkId}`, String(result));
+            return result;
+          }
+        } catch {}
       }
     } catch {}
     // 023H: guard against Safari SecurityError / QuotaExceededError
@@ -1655,6 +1694,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       if (restoredBarTextColor) localStorage.setItem('trailweigh:barTextColor', restoredBarTextColor);
       else                      localStorage.removeItem('trailweigh:barTextColor');
 
+      // 023P: Restore bar transparency — the only field previously missing from
+      // this block.  Without it the previous working file's transparency persisted
+      // across in-place Locker opens.  Older entries without barTransparency fall
+      // back to 1 (Solid) — NOT to the global localStorage key.
+      const restoredBarTransparency = entry.barTransparency ?? 1;
+      setBarTransparency(restoredBarTransparency);
+      barTransparencyRef.current = restoredBarTransparency;
+      barTransparencyBeforeDragRef.current = restoredBarTransparency;
+      localStorage.setItem('trailweigh:barTransparency', String(restoredBarTransparency));
+
       // 023E: Clear stale input-focus state so Hide is never stuck disabled
       // after a file load (browser may not fire 'focusout' for removed inputs).
       setHasInputFocus(false);
@@ -1682,9 +1731,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       if (isForkTab && forkId) {
         // Scoped keys: suffixed with this tab's forkId so inherited generic keys
         // from the opener are never confused with this tab's restoration data.
-        sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`,     JSON.stringify(entry.background ?? null));
-        sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`, restoredTone);
-        sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`, String(restoredFade));
+        sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`,              JSON.stringify(entry.background ?? null));
+        sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`,          restoredTone);
+        sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`,          String(restoredFade));
+        // 023P: also scope bar fields so a React remount within this fork tab
+        // recovers File B's appearance, not the stale global localStorage value.
+        sessionStorage.setItem(`tw-fork-barcolor-restore-${forkId}`,        restoredBarColor);
+        sessionStorage.setItem(`tw-fork-barfont-restore-${forkId}`,         restoredBarFont);
+        sessionStorage.setItem(`tw-fork-bartextcolor-restore-${forkId}`,    restoredBarTextColor);
+        sessionStorage.setItem(`tw-fork-bartransparency-restore-${forkId}`, String(restoredBarTransparency));
       } else {
         if (entry.background) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(entry.background));
         else localStorage.removeItem(BG_STORAGE_KEY);
