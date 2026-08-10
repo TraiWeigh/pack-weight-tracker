@@ -4,7 +4,7 @@ import { Background } from './BackgroundPicker';
 import { ChevronDown, ChevronUp, Trash2, FolderOpen, Pencil, Check, X } from 'lucide-react';
 import { LockerIcon } from './LockerIcon';
 import { SyncStatusPanel, type SyncProps } from './SyncStatusPanel';
-import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle, barCardStyle } from '../context/BarStyleContext';
 
 export type Store = {
   items: PackState;
@@ -93,7 +93,7 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncPr
 
   // 023F: font cascades to expanded Locker body via outer wrapper
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={barFontStyle(barStyle)}>
+    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={{ ...barCardStyle(barStyle), ...barFontStyle(barStyle) }}>
       {/* Header */}
       <button
         onClick={() => setOpen(o => !o)}

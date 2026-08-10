@@ -14,7 +14,7 @@ import { useUnit } from '../context/UnitContext';
 import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { ChevronDown, ChevronUp, Palette } from 'lucide-react';
-import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle, barCardStyle } from '../context/BarStyleContext';
 
 // ── Chart palettes ────────────────────────────────────────────────────────────
 
@@ -89,7 +89,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseP
 
   // 023F: font cascades to expanded body via outer wrapper
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm" style={barFontStyle(barStyle)}>
+    <div className="bg-card border border-card-border rounded-xl shadow-sm" style={{ ...barCardStyle(barStyle), ...barFontStyle(barStyle) }}>
       {/* Collapsible header — same chevron pattern as Weight Distribution */}
       <button
         onClick={() => setSummaryOpen(o => !o)}
@@ -207,7 +207,7 @@ export function WeightDistribution({
   //       collapse-toggle + right palette area) so there is no black/default
   //       backing strip behind the Desert/Trail pill.
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={barFontStyle(barStyle)}>
+    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={{ ...barCardStyle(barStyle), ...barFontStyle(barStyle) }}>
       {/* Header row — 023G: barCombinedStyle on the row div paints the full-width
           surface so both the collapse toggle and the right controls share one
           uniform bar background without any gap or split. */}

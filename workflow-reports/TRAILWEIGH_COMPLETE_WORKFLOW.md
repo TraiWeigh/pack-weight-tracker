@@ -332,3 +332,26 @@ Future prompt reports should include a standardized workflow metrics block (valu
 ### Why Recovery Failed (precise explanation)
 Replit stores cost/time per checkpoint in their backend database. This data surfaces only through the Agent tab UI (hover → usage card). No file in the project workspace contains this data. No Agent callback exposes it. No export endpoint exists for individual accounts. Git auto-commits and PRE\_ backup files provide chronological ordering but contain no billing data.
 
+---
+
+## Prompt 023L — Fix True Background Alpha Transparency
+**Date:** 2026-08-10  
+**Status:** COMPLETE — awaiting user live-app verification
+
+### Goal
+Make the Transparency slider produce real alpha transparency (background image visible through bars/pills) rather than false transparency (surfaces darkening toward black/navy).
+
+### Root Cause
+`hexToRgba`, `barBgStyle`, and `barCombinedStyle` were all correct. The DOM layering was the bug: every bar header is a child of an outer card wrapper with `bg-card` (opaque). Semi-transparent bar headers blended against `bg-card` (dark in dark mode/dark themes) rather than the page background image. Second bug: Open/Close pill wrappers used `{ backgroundColor: barColor }` directly, ignoring `barTransparency` entirely.
+
+### Fix
+1. Added `barCardStyle(v)` to `BarStyleContext.tsx`: returns `{ backgroundColor: 'transparent' }` when `barColor` is set AND `barTransparency < 1`. This removes the opaque card wrapper background so the rgba bar header now blends against the visible background image.
+2. Applied `barCardStyle` to outer card wrappers in GearCategory, WeightSummary (both Pack Summary and Weight Distribution), LockerPanel, ImportGearPanel.
+3. Fixed both Open/Close pill wrappers (desktop + mobile) to use `barBgStyle(...)`, which correctly applies rgba with alpha.
+
+### Files Changed (6)
+`BarStyleContext.tsx`, `GearCategory.tsx`, `WeightSummary.tsx`, `LockerPanel.tsx`, `ImportGearPanel.tsx`, `Checklist.tsx`
+
+### Report
+`PROMPT_023L_REPORT.md`
+

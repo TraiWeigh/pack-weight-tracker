@@ -5,7 +5,7 @@ import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUt
 import { useUnit } from '../context/UnitContext';
 import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react';
 import { GEAR_GRID_COLS, GEAR_GRID_GAP, RG_MOVE_W, RG_WEIGHT_W, RG_QTY_W, RG_TOTAL_W, RG_DELETE_W } from './gearGrid';
-import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFgStyle, barFontStyle, barCardStyle } from '../context/BarStyleContext';
 
 interface GearCategoryProps {
   name: string;
@@ -181,7 +181,7 @@ export function GearCategory({
       className={`mb-6 bg-card border rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md ${
         isDragOver ? 'border-primary shadow-md ring-2 ring-primary/30' : 'border-card-border'
       }`}
-      style={fontWrapStyle}
+      style={{ ...barCardStyle(barStyle), ...fontWrapStyle }}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}

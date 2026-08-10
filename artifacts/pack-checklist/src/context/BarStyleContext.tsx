@@ -119,3 +119,21 @@ export function barCombinedStyle(v: BarStyleContextValue): React.CSSProperties {
 export function barFontStyle(v: BarStyleContextValue): React.CSSProperties {
   return v.barFont ? { fontFamily: v.barFont } : {};
 }
+
+/**
+ * Returns an inline style object for the OUTER CARD WRAPPER that contains
+ * a bar header (GearCategory, Pack Summary, Weight Distribution, etc.).
+ *
+ * When barTransparency < 1 (any transparency), removes the card wrapper's
+ * opaque bg-card background so the page background image shows through the
+ * semi-transparent bar header instead of the card's dark/light surface.
+ * When fully solid (alpha = 1) or no custom color, returns an empty object
+ * so the Tailwind bg-card class continues to govern the card background.
+ */
+export function barCardStyle(v: BarStyleContextValue): React.CSSProperties {
+  if (!v.barColor) return {};
+  const alpha = typeof v.barTransparency === 'number'
+    ? Math.max(0, Math.min(1, v.barTransparency))
+    : 1;
+  return alpha < 1 ? { backgroundColor: 'transparent' } : {};
+}

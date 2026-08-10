@@ -1,0 +1,554 @@
+PROMPT 023L — FIX TRANSPARENCY: TRUE BACKGROUND ALPHA FOR CUSTOMIZABLE BARS/PILLS
+
+PURPOSE
+
+Fix the existing Transparency control in TrailWeigh.
+
+The Transparency slider currently moves, but it does NOT create true transparency. Instead, the customized bars/pills become darker or shift toward black/navy. The background image is not actually revealed through the surfaces.
+
+This prompt is ONLY for fixing Transparency behavior.
+
+Do NOT redesign the appearance system.
+Do NOT change theme ordering or theme images.
+Do NOT change Bar Color behavior except as required to preserve the selected color while applying alpha.
+Do NOT remove the native color picker/eyedropper.
+Do NOT test the native macOS eyedropper during this prompt.
+Do NOT work on unrelated UI issues.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Inspect the current Transparency implementation and the current Bar Color/Text/Font appearance state before changing anything.
+3. Make the smallest reasonable change.
+4. Do not perform unrelated refactors.
+5. Preserve:
+   - current data
+   - authentication
+   - Locker behavior
+   - sharing
+   - import/Scan Gear List
+   - themes
+   - mobile layout
+   - existing Bar Color
+   - existing Text Color
+   - existing Font behavior
+   - existing Hide behavior
+   - existing Share hover fix
+   - previous fixes
+6. Inspect the complete final diff.
+7. Revert any unrelated changes before completion.
+8. Run regression tests plus the new Transparency tests.
+9. Do not claim completion if a prior working feature regresses.
+10. Document the checkpoint and final diff in the report.
+
+==================================================
+1. CURRENT FAILURE
+==================================================
+
+The Transparency slider exists and moves.
+
+Current incorrect behavior:
+
+- moving the slider toward "Transparent" changes the customized bar/pill surfaces to a darker shade
+- some surfaces appear black/navy
+- the background image does NOT become increasingly visible through the bar/pill
+- this is NOT true transparency
+
+The likely issue may involve color mixing, dark overlays, opacity calculations, theme fallback colors, or applying opacity incorrectly.
+
+Inspect the actual implementation before deciding the cause.
+
+Do not assume the cause.
+
+==================================================
+2. REQUIRED TRANSPARENCY BEHAVIOR
+==================================================
+
+The slider must control ONLY the alpha/transparency of the customizable bar/pill BACKGROUND surface.
+
+Required behavior:
+
+LEFT:
+more transparent
+
+RIGHT:
+more solid / opaque
+
+Preferred endpoint labels:
+
+Transparent        Solid
+
+At the far-right / Solid position:
+
+- surface alpha = fully opaque
+- selected Bar Color appears normally
+
+As the slider moves left:
+
+- keep the SAME selected Bar Color hue
+- reduce ONLY the background alpha
+- the TrailWeigh background image/theme should become increasingly visible through the bar/pill surface
+
+At the far-left / Transparent position:
+
+- surface background should be highly transparent or fully transparent, according to the current slider design
+- text and icons must remain readable
+- the background image/theme must visibly show through
+
+IMPORTANT:
+
+Do NOT simulate transparency by:
+- darkening the selected color
+- blending it toward black
+- blending it toward navy
+- changing brightness
+- reducing saturation
+- applying a dark overlay
+- switching to a different fallback background color
+
+Use real alpha transparency.
+
+==================================================
+3. DO NOT USE WHOLE-COMPONENT CSS OPACITY
+==================================================
+
+Do NOT apply CSS `opacity` to an entire bar/pill/container.
+
+That would also fade:
+
+- text
+- icons
+- chevrons
+- drag handles
+- trash icons
+- counts
+- units
+- nested controls
+
+Instead, apply alpha only to the background surface.
+
+Examples of acceptable implementation approaches include:
+
+- RGBA / HSLA with alpha
+- modern color syntax with alpha
+- a background layer/pseudo-element that receives alpha while content remains fully opaque
+
+Choose the smallest approach that fits the existing code architecture.
+
+==================================================
+4. TRANSPARENCY SCOPE
+==================================================
+
+The Transparency value must apply to the same customizable surface family controlled by Bar Color.
+
+Verify it on:
+
+- category bars
+- Pack Summary bar
+- Weight Distribution bar
+- Scan Gear List bar
+- Locker bar
+- File Name pill/bar
+- Preview pill
+- Background Edit pill
+- Share pill
+- Open / Close pill
+- Hide pill
+- Imperial / Metric pill
+- Desert / Trail nested pills
+- +Base pill
+
+If the current Bar Color implementation intentionally excludes any surface, document that before changing scope.
+
+Do not expand the customization system to unrelated page elements.
+
+==================================================
+5. WEIGHT DISTRIBUTION MUST BE ONE CONSISTENT SURFACE
+==================================================
+
+Verify the entire Weight Distribution bar uses the selected Bar Color plus the selected Transparency value.
+
+There must not be a leftover black/navy backing area behind the Desert / Trail controls.
+
+The full bar should visually behave as one transparent customized surface, while the nested Desert / Trail controls remain distinguishable as controls.
+
+Do not remove selected-state indication.
+
+==================================================
+6. NESTED PILLS / ACTIVE STATES
+==================================================
+
+Transparency must not destroy state visibility.
+
+Verify:
+
+- Desert / Trail selected state remains obvious
+- +Base remains readable and usable
+- Hide disabled state remains understandable
+- Background Edit active/open state remains distinguishable
+- Share hover behavior remains correct
+- hover/focus/pressed states remain meaningful
+
+Do not solve state visibility by forcing unrelated dark backgrounds.
+
+==================================================
+7. TEXT AND ICONS MUST NOT FADE
+==================================================
+
+Transparency affects the BACKGROUND surface only.
+
+Do not reduce opacity of:
+
+- primary text
+- secondary text
+- icons
+- chevrons
+- drag handles
+- trash icons
+- counts
+- weight values
+- units
+- status text
+
+Text Color must continue to control the text/icon color as currently designed.
+
+==================================================
+8. DEFAULT AND RESET
+==================================================
+
+Default Transparency must remain:
+
+FULLY SOLID / OPAQUE
+
+A new/default appearance state must not unexpectedly become transparent.
+
+"Reset Bar/Text" must restore:
+
+- default Bar Color
+- default Text Color
+- default Font, according to existing behavior
+- Transparency = fully Solid / opaque
+
+Do not change unrelated Reset behavior.
+
+==================================================
+9. PERSISTENCE / UNDO / REDO
+==================================================
+
+Inspect how appearance state is currently persisted.
+
+Transparency should follow the same established appearance-state rules as the other Bar Color/Text settings.
+
+Verify, if already intended by the current architecture:
+
+- Save/open preserves the file's Transparency setting
+- Undo restores the prior Transparency value
+- Redo reapplies it
+
+Do not introduce global cross-window appearance sharing.
+
+A new unsaved window/tab should not inherit another window's live Transparency changes merely because localStorage is shared.
+
+If the current architecture already fixed per-window isolation, preserve it.
+
+Do not broaden this prompt into a separate cross-window refactor unless Transparency itself is still violating the existing isolation rule.
+
+==================================================
+10. LOCATION OF THE CONTROL
+==================================================
+
+Preserve the approved Background Edit control order:
+
+Bar Color / Text
+Full Screen / Fit Image + Light/Dark
+Darken slider
+Transparency slider
+Background Themes
+
+The Transparency slider must remain:
+
+DIRECTLY BELOW the existing Darken slider
+and
+ABOVE Background Themes
+
+Do not move it into the Bar Color / Text group.
+
+==================================================
+11. DARKEN AND TRANSPARENCY MUST BE INDEPENDENT
+==================================================
+
+The existing Darken slider and Transparency slider must remain separate controls.
+
+Verify:
+
+- Darken changes the background-image darkening behavior it is already intended to control
+- Transparency changes only customized bar/pill surface alpha
+
+Changing Transparency must not secretly change Darken.
+
+Changing Darken must not overwrite Transparency.
+
+==================================================
+12. NATIVE COLOR PICKER / EYEDROPPER SAFETY
+==================================================
+
+There was a prior severe Mac freeze while using the native macOS color picker/eyedropper.
+
+For Prompt 023L:
+
+- KEEP the eyedropper feature
+- DO NOT remove it
+- DO NOT redesign it
+- DO NOT test it
+- DO NOT ask the user to test it
+- avoid touching its event/update path unless absolutely required for the Transparency fix
+
+If a Transparency change would require modifying the same shared color-update code, document that clearly and make the smallest safe change.
+
+Do not create an Undo snapshot or persistence write storm from Transparency slider movement.
+
+If the existing Transparency slider currently commits on every tiny input event, prefer lightweight live preview and a sensible commit strategy consistent with the existing appearance architecture.
+
+==================================================
+13. TECHNICAL VERIFICATION
+==================================================
+
+Inspect the rendered/computed styles rather than judging only from source code.
+
+At minimum test:
+
+A. Solid endpoint
+- selected Bar Color is fully opaque
+- no unintended darkening
+
+B. Midpoint
+- same Bar Color hue
+- background image visibly shows through
+- text/icons remain fully opaque
+
+C. Transparent endpoint
+- background image shows through strongly
+- no black/navy substitution
+- text/icons remain readable
+
+D. Different Bar Colors
+Test at least:
+- one light color
+- one dark color
+- one saturated color
+
+The alpha behavior should be consistent regardless of hue.
+
+E. Light/Dark display mode
+Verify Transparency in both existing Light and Dark display modes.
+
+F. Fit / Full Screen
+Verify the effect when a background image is visible in each image-fit mode used by the app.
+
+==================================================
+14. RESPONSIVE REGRESSION
+==================================================
+
+Smoke-test at least:
+
+- desktop
+- 390 px phone width
+- 412 px phone width
+
+Do not redesign responsive layout.
+
+Verify the Transparency control remains usable and does not break the approved phone toolbar/category ordering.
+
+==================================================
+15. CORE REGRESSION TESTS
+==================================================
+
+Verify that this focused Transparency fix does not break:
+
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- category expand/collapse
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Background Edit
+- Bar Color
+- Text Color
+- Font
+- Darken
+- theme selection
+
+Use accurate statuses:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim physical-device behavior PASS from source inspection or browser emulation alone.
+
+==================================================
+16. PRODUCTION BUILD / RUNTIME
+==================================================
+
+Run the exact production build/start checks appropriate to the project.
+
+Confirm:
+
+- frontend builds
+- app renders
+- no new console/runtime errors caused by this change
+- backend/server remains operational
+- `/api/locker` is not regressed
+- Scan Gear List/import backend is not regressed
+
+Do not turn this into another backend recovery task.
+
+==================================================
+17. USER-VERIFICATION TEST PLAN
+==================================================
+
+At completion, give the user a short manual test:
+
+1. Open Background Edit.
+2. Select a clearly visible background image/theme.
+3. Choose an obvious Bar Color.
+4. Move Transparency fully right to Solid.
+5. Move it to the middle.
+6. Move it fully left toward Transparent.
+7. Confirm the SAME Bar Color becomes see-through rather than darker/black/navy.
+8. Confirm the background image becomes increasingly visible.
+9. Confirm text/icons do not fade.
+10. Confirm Weight Distribution has no leftover black/navy backing.
+11. Close and reopen Background Edit and confirm the intended state behavior.
+12. Do NOT test the eyedropper during this user verification.
+
+Replit must not mark USER PASS until the user performs this test.
+
+==================================================
+18. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023L_REPORT.md
+
+Include:
+
+- checkpoint
+- exact root cause of false/dark transparency
+- files changed
+- smallest-change explanation
+- implementation used for true alpha
+- surface scope verified
+- Weight Distribution verification
+- nested state verification
+- Darken/Transparency independence
+- persistence/Undo/Redo result
+- cross-window isolation result
+- desktop/mobile smoke result
+- production build/runtime result
+- core regression result
+- final diff review
+- unresolved items
+- confirmation eyedropper was NOT tested
+- user-verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append the report to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+19. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023L-report.zip
+
+It must contain at minimum:
+
+- PROMPT_023L_REPORT.md
+
+It may also contain useful non-sensitive:
+
+- screenshots
+- test output
+- build logs
+- relevant diff summaries
+
+Do NOT include:
+
+- .env
+- secrets
+- API keys
+- passwords
+- tokens
+- cookies
+- private user/account information
+- private Locker contents
+- user uploads/photos
+- database dumps
+
+Before completion verify:
+
+1. ZIP exists.
+2. ZIP is greater than 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023L_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+==================================================
+20. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status: PASS / FAIL / PARTIAL / NOT TESTED
+2. Root cause
+3. Files changed
+4. How true alpha was implemented
+5. Whether Bar Color hue remains unchanged while alpha changes
+6. Whether background image visibly shows through
+7. Whether text/icons remain fully opaque
+8. Weight Distribution result
+9. Darken/Transparency independence result
+10. Undo/Redo result
+11. Persistence result
+12. Cross-window result
+13. Desktop/mobile result
+14. Backend regression result
+15. Production build result
+16. Eyedropper testing status: MUST state NOT TESTED
+17. Unresolved issues
+18. PROMPT_023L_REPORT.md path
+19. ZIP path
+20. ZIP size
+21. ZIP contents
+22. ZIP verification result
+23. User-verification steps
+
+Do not claim USER PASS until the user verifies the Transparency behavior on the live TrailWeigh interface.

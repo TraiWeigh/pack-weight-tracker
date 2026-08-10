@@ -2164,7 +2164,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 {/* Open/Close segmented control — always together */}
                 <div
                   className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
-                  style={barColor ? { backgroundColor: barColor } : {}}
+                  style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
                 >
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -2550,7 +2550,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   {/* Open / Close — left */}
                   <div
                     className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
-                    style={barColor ? { backgroundColor: barColor } : {}}
+                    style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
                   >
                     <button
                       onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
