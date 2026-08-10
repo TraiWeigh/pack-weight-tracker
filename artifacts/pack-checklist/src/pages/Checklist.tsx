@@ -297,7 +297,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       }
       return parsed as Background;
     } catch {
-      localStorage.removeItem(BG_STORAGE_KEY);
+      // 023H: removeItem can itself throw (Safari SecurityError) — guard it.
+      try { localStorage.removeItem(BG_STORAGE_KEY); } catch {}
       return null;
     }
   });
@@ -520,7 +521,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         if (restore !== null) return restore;
       }
     } catch {}
-    return localStorage.getItem('trailweigh:barColor') ?? '';
+    // 023H: guard against Safari SecurityError / QuotaExceededError
+    try { return localStorage.getItem('trailweigh:barColor') ?? ''; } catch { return ''; }
   });
   const [barFont, setBarFont] = useState<string>(() => {
     try {
@@ -541,7 +543,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         if (restore !== null) return restore;
       }
     } catch {}
-    return localStorage.getItem('trailweigh:barFont') ?? '';
+    // 023H: guard against Safari SecurityError / QuotaExceededError
+    try { return localStorage.getItem('trailweigh:barFont') ?? ''; } catch { return ''; }
   });
   const [barTextColor, setBarTextColor] = useState<string>(() => {
     try {
@@ -562,7 +565,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         if (restore !== null) return restore;
       }
     } catch {}
-    return localStorage.getItem('trailweigh:barTextColor') ?? '';
+    // 023H: guard against Safari SecurityError / QuotaExceededError
+    try { return localStorage.getItem('trailweigh:barTextColor') ?? ''; } catch { return ''; }
   });
   // 023G: Bar transparency (0 = fully transparent, 1 = solid).  Same fork
   // isolation pattern as barColor above.  Default = 1 (solid).
@@ -590,9 +594,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         }
       }
     } catch {}
-    const s = localStorage.getItem('trailweigh:barTransparency');
-    const n = s ? parseFloat(s) : 1;
-    return isNaN(n) ? 1 : Math.max(0, Math.min(1, n));
+    // 023H: guard against Safari SecurityError / QuotaExceededError
+    try {
+      const s = localStorage.getItem('trailweigh:barTransparency');
+      const n = s ? parseFloat(s) : 1;
+      return isNaN(n) ? 1 : Math.max(0, Math.min(1, n));
+    } catch { return 1; }
   });
 
   // ── helper: keep fork-scoped restore key current so React remounts within

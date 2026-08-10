@@ -1,0 +1,704 @@
+PROMPT 023H — EMERGENCY RECOVERY: FIX TRAILWEIGH BLANK-SCREEN REGRESSION FIRST
+
+CRITICAL USER-VERIFIED STATUS
+
+Prompt 023G introduced a CRITICAL regression.
+
+REAL USER TEST:
+- normal Safari window: TrailWeigh link opens to a completely blank screen
+- Safari Private Window: SAME blank screen
+
+Therefore this is NOT just stale normal-browser storage.
+
+Treat Prompt 023G as:
+
+FAIL — CRITICAL BLANK-SCREEN REGRESSION
+
+The app must render reliably again BEFORE any further customization work.
+
+IMPORTANT:
+Do NOT continue polishing Transparency, Bar Color, Text Color, Font, or window-isolation behavior until TrailWeigh itself loads normally again.
+
+==================================================
+0. PRIMARY GOAL
+==================================================
+
+Restore TrailWeigh so the deployed app reliably renders and is usable again.
+
+The recovery order is:
+
+1. PROTECT USER DATA
+2. CAPTURE THE ACTUAL RUNTIME/BUILD ERROR
+3. IDENTIFY THE EXACT 023G REGRESSION
+4. RESTORE THE APP TO A WORKING RENDERING STATE
+5. VERIFY SAVED USER DATA STILL EXISTS
+6. VERIFY THE CORE PRE-023G FEATURES STILL WORK
+7. ONLY THEN document which 023G changes remain safe or were reverted
+
+Do NOT guess.
+
+==================================================
+1. CREATE A RECOVERY CHECKPOINT FIRST
+==================================================
+
+Before editing:
+
+1. Create a new Replit checkpoint/backup of the CURRENT broken state.
+
+2. Record the identifier/time of that checkpoint in the report.
+
+3. Identify the last known-good checkpoint from BEFORE Prompt 023G if available.
+
+4. Do NOT overwrite or delete:
+   - user database
+   - Locker records
+   - saved lists
+   - user accounts
+   - custom-theme data
+   - custom-theme photos
+   - existing workflow reports
+   - existing checkpoints
+
+==================================================
+2. DATA SAFETY — MANDATORY
+==================================================
+
+The app being blank does NOT authorize destructive cleanup.
+
+DO NOT:
+- reset the database
+- delete tables
+- delete user records
+- delete Locker files
+- clear server storage
+- wipe browser storage globally
+- remove auth accounts
+- delete custom-theme assets
+- recreate the project from scratch
+- run destructive migrations
+
+If a migration is implicated:
+- inspect it
+- repair/revert the code path safely
+- preserve the existing data
+
+Before changing data-layer code, document the current schema/state.
+
+==================================================
+3. REPRODUCE THE BLANK SCREEN IN THE ACTUAL DEPLOYED APP
+==================================================
+
+Open the deployed TrailWeigh URL in a real browser runtime.
+
+Do NOT rely only on:
+- unit tests
+- source inspection
+- static analysis
+- build success
+
+Reproduce the blank page.
+
+Capture:
+- browser console errors
+- uncaught exceptions
+- failed network requests
+- HTTP status codes
+- JS chunk/module load errors
+- React render errors
+- hydration errors
+- routing errors
+- storage initialization errors
+- auth initialization errors
+- API errors
+- server logs corresponding to the page load
+- build/deploy logs
+
+If the browser displays no visible error, inspect DevTools console and network.
+
+==================================================
+4. DETERMINE WHETHER THIS IS BUILD, RUNTIME, ROUTING, OR STARTUP STATE
+==================================================
+
+Explicitly classify the failure.
+
+Check at minimum:
+
+A. BUILD / BUNDLE
+- did the latest deployment build successfully?
+- are all JS/CSS chunks present?
+- are chunk paths correct?
+- any syntax/import/export errors?
+- any missing module?
+
+B. REACT / APP RENDER
+- uncaught error during initial render?
+- hook initialization error?
+- undefined/null access?
+- invalid state shape?
+- infinite render/update loop?
+- hydration mismatch?
+- component crash before fallback UI?
+
+C. ROUTING
+- root route resolving?
+- auth route resolving?
+- checklist route resolving?
+- redirect loop?
+- blank fallback route?
+
+D. STORAGE / SESSION INITIALIZATION
+Prompt 023G changed window-isolation and appearance initialization.
+
+Inspect:
+- localStorage reads
+- sessionStorage reads
+- JSON parsing
+- default initialization
+- migration guards
+- missing-key behavior
+- invalid old stored values
+- cross-tab listeners
+- storage event handlers
+- useEffect initialization ordering
+- server/client rendering assumptions
+
+E. TRANSPARENCY / APPEARANCE STATE
+Inspect newly added:
+- transparency state
+- color parsing
+- alpha conversion
+- CSS variable creation
+- persistence serialization
+- undo/redo snapshot shape
+- state restoration
+
+F. SAVED FILE RESTORE
+Inspect whether loading/restoring saved file state now crashes when:
+- appearance fields are missing
+- old files predate 023G
+- transparency is undefined
+- font/color values are undefined/null
+- history snapshot lacks new fields
+
+G. AUTH / API
+- auth initialization failure?
+- API request throwing during startup?
+- unhandled rejected promise?
+- server response shape changed?
+
+==================================================
+5. INSPECT THE COMPLETE 023G DIFF
+==================================================
+
+Review every file changed by Prompt 023G.
+
+For each 023G change, classify:
+
+PASS / SAFE
+SUSPECT
+REGRESSION
+NOT RELATED
+
+Pay special attention to:
+- Checklist.tsx
+- usePackData / history snapshot code
+- appearance-state initialization
+- localStorage/sessionStorage changes
+- New-window logic
+- storage event listeners
+- Background Edit
+- Transparency
+- Weight Distribution styling
+- CSS variables
+- saved-file serialization/deserialization
+
+Do NOT keep a 023G change merely because a test says it passed.
+
+==================================================
+6. PREFERRED RECOVERY STRATEGY
+==================================================
+
+Use the SMALLEST safe fix that restores rendering.
+
+Preferred order:
+
+1. Fix the exact runtime error in place if it is isolated and obvious.
+
+2. If the 023G startup/window-isolation/Transparency changes are entangled or unsafe:
+   selectively revert ONLY the offending 023G changes to the last known-good pre-023G behavior.
+
+3. If selective rollback is not reliable:
+   restore the relevant code files from the last known-good pre-023G checkpoint,
+   while preserving all persistent user data.
+
+DO NOT roll back:
+- database contents
+- user-created saved files
+- accounts
+- custom-theme images
+- workflow reports
+
+==================================================
+7. DO NOT REIMPLEMENT 023G DURING RECOVERY
+==================================================
+
+This prompt is NOT the time to retry 023G feature work.
+
+Once TrailWeigh renders again:
+
+STOP adding new appearance functionality.
+
+Do NOT attempt to finish:
+- Transparency
+- window/tab appearance isolation
+- remaining Text Color propagation
+- Background-panel font propagation
+- Weight Distribution visual polish
+
+unless one of those changes is literally required to remove the crash.
+
+Those items can be addressed later after the recovered app is user-verified.
+
+==================================================
+8. ADD A RENDER-SAFETY FALLBACK
+==================================================
+
+If TrailWeigh currently has no useful top-level error boundary, add the smallest reasonable one.
+
+Goal:
+A future unexpected render error should show a clear non-destructive error message instead of a completely blank screen.
+
+Example meaning:
+"TrailWeigh couldn't load this view. Your saved data has not been deleted. Please refresh or try again."
+
+Requirements:
+- no sensitive error details shown publicly
+- log the technical error for diagnosis
+- do not auto-clear storage
+- do not auto-delete data
+- do not create a reload loop
+
+Do NOT redesign the app around this.
+
+==================================================
+9. OLD SAVED FILE COMPATIBILITY
+==================================================
+
+Verify TrailWeigh can open saved files created BEFORE 023G.
+
+Any newly introduced appearance fields must be optional/default-safe.
+
+If a saved file lacks:
+- barColor
+- textColor
+- font
+- transparency
+or any newer field:
+
+the app must apply safe defaults rather than crash.
+
+Add defensive normalization/migration if needed.
+
+==================================================
+10. STARTUP STORAGE MUST BE DEFENSIVE
+==================================================
+
+Any startup storage read must tolerate:
+
+- missing key
+- null
+- empty string
+- malformed JSON
+- old schema
+- unknown property
+- invalid color string
+- invalid font name
+- invalid transparency value
+
+Invalid appearance state must fall back to defaults.
+
+It must NEVER blank the entire application.
+
+==================================================
+11. REQUIRED LIVE RUNTIME TEST — ROOT PAGE
+==================================================
+
+After the fix, open the deployed TrailWeigh URL in:
+
+1. normal desktop browser window
+2. private/incognito browser window
+
+Expected:
+[ ] app renders
+[ ] no blank screen
+[ ] no uncaught startup exception
+[ ] normal navigation visible
+[ ] auth state behaves normally
+
+Do NOT mark PASS without a rendered page.
+
+==================================================
+12. REQUIRED LIVE RUNTIME TEST — SIGNED-IN CHECKLIST
+==================================================
+
+Sign in with a safe test account or existing authorized test path.
+
+Verify:
+[ ] checklist renders
+[ ] categories render
+[ ] Pack Summary renders
+[ ] Weight Distribution renders
+[ ] Scan Gear List renders
+[ ] Locker renders
+[ ] Background Edit opens
+[ ] Preview opens
+[ ] Share control renders
+[ ] Hide renders
+[ ] Open/Close renders
+[ ] Imperial/Metric renders
+
+==================================================
+13. USER DATA / LOCKER VERIFICATION
+==================================================
+
+After rendering is restored:
+
+Verify the user's persisted data path still functions.
+
+At minimum:
+[ ] Locker API responds
+[ ] saved-file count is nonzero where expected
+[ ] existing saved-file metadata can be retrieved
+[ ] no database reset occurred
+[ ] no user records were deleted
+
+Do NOT include private Locker contents in the report ZIP.
+
+If possible, use a test account for CRUD testing.
+
+==================================================
+14. SAVED FILE OPEN TEST
+==================================================
+
+Open:
+- one older saved file created before 023G
+- one recent saved file if safely available in a test account
+
+Verify:
+[ ] file loads
+[ ] no crash
+[ ] missing new appearance fields default safely
+[ ] categories/items render
+[ ] background/display state does not crash startup
+
+==================================================
+15. NEW LIST TEST
+==================================================
+
+Use New.
+
+Verify:
+[ ] new TrailWeigh working list opens
+[ ] no blank screen
+[ ] no startup crash
+[ ] no infinite redirect/reload
+[ ] normal controls render
+
+Do NOT evaluate 023G appearance-isolation success in this recovery prompt beyond ensuring New does not crash.
+
+==================================================
+16. CORE PRE-023G REGRESSION CHECK
+==================================================
+
+After restoring rendering, verify these previously working areas did not regress:
+
+[ ] Save
+[ ] Save As
+[ ] Locker open/load
+[ ] Locker sync
+[ ] mobile/page scrolling
+[ ] Preview
+[ ] Share
+[ ] Hide
+[ ] Open/Close
+[ ] Imperial/Metric
+[ ] Background Edit opens/closes
+[ ] Fit / Fill
+[ ] Light / Dark
+[ ] Darken
+[ ] Pack Summary
+[ ] Weight Distribution calculations
+[ ] Scan Gear List
+[ ] Categories
+[ ] footer
+[ ] auth/login/signup
+[ ] password recovery
+[ ] password visibility
+[ ] custom-theme delete
+[ ] custom-theme Undo/Redo
+[ ] 023D theme cleanup
+[ ] 023E landing page
+
+If any fail, report accurately.
+
+==================================================
+17. MOBILE SMOKE TEST
+==================================================
+
+After desktop render works, perform responsive runtime smoke tests at:
+
+- 390 px
+- 412 px
+
+Verify:
+[ ] app renders
+[ ] no blank screen
+[ ] phone layout still appears
+[ ] vertical scrolling works
+[ ] no horizontal overflow caused by recovery change
+
+Do not claim real iPhone/Android PASS unless physically tested.
+
+==================================================
+18. AUTOMATED TESTS
+==================================================
+
+Add/repair tests for the ACTUAL blank-screen root cause.
+
+At minimum include:
+
+[ ] app root renders with empty storage
+[ ] app root renders with missing appearance fields
+[ ] app root renders with old saved-file appearance schema
+[ ] malformed appearance storage does not crash the app
+[ ] invalid transparency value falls back safely
+[ ] invalid color value falls back safely
+[ ] invalid font value falls back safely
+[ ] new list initialization does not throw
+[ ] saved-file restoration does not throw
+[ ] top-level error boundary renders fallback if a child throws
+
+If the root cause is unrelated to appearance storage, add tests specific to the actual cause instead of fabricating irrelevant tests.
+
+==================================================
+19. BUILD / DEPLOY VERIFICATION
+==================================================
+
+Run:
+
+- type checking
+- lint if used
+- production build
+- automated test suite
+
+Then deploy/run the actual app.
+
+Verify the served/deployed version corresponds to the fixed build.
+
+Record:
+- build identifier / commit / checkpoint reference
+- deployment success
+- runtime URL test result
+
+==================================================
+20. DO NOT OVERCLAIM
+==================================================
+
+Source inspection is NOT a browser PASS.
+
+Unit tests are NOT a deployed-app PASS.
+
+A successful build is NOT a render PASS.
+
+For:
+"deployed TrailWeigh loads"
+
+only report PASS after visually confirming the actual deployed page renders.
+
+==================================================
+21. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023H_REPORT.md
+
+Exact title:
+
+Prompt 023H — Emergency Recovery: Fix TrailWeigh Blank-Screen Regression First
+
+The report must include:
+
+CRITICAL INCIDENT SECTION:
+- user symptom
+- normal Safari blank result
+- Safari Private Window blank result
+- 023G status = FAIL
+- recovery checkpoint ID
+- last-known-good pre-023G checkpoint ID if available
+
+ROOT CAUSE SECTION:
+- exact browser console error
+- exact server/build error if any
+- exact file/function/component
+- exact 023G change that caused the blank screen
+- why automated tests missed it
+
+RECOVERY SECTION:
+- exact files changed/reverted
+- whether fix was in-place or rollback
+- what 023G code was removed
+- what 023G code remains
+- confirmation persistent user data was not rolled back/deleted
+
+DATA SAFETY SECTION:
+- database reset = NO
+- user records deleted = NO
+- Locker records deleted = NO
+- custom-theme data deleted = NO
+- schema/data changes, if any
+
+RUNTIME SECTION:
+- normal browser result
+- private/incognito browser result
+- signed-in checklist result
+- saved-file open result
+- New result
+- 390 px result
+- 412 px result
+
+CORE REGRESSION SECTION:
+- Save / Save As
+- Locker
+- sync
+- Preview
+- Share
+- Hide
+- Open/Close
+- Imperial/Metric
+- Background Edit
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- custom-theme delete/Undo
+- landing page
+- auth
+- footer
+
+BUILD/TEST SECTION:
+- typecheck
+- lint
+- production build
+- automated tests
+- deployed runtime verification
+
+FINAL DIFF SECTION:
+- complete final-diff review
+- unrelated changes reverted
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+22. REQUIRED REPLIT-CREATED ZIP
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023H-report.zip
+
+Prompt 023H is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023H_REPORT.md
+
+2.
+workflow-reports/trailweigh-023H-report.zip
+
+ZIP must contain at minimum:
+PROMPT_023H_REPORT.md
+
+It SHOULD also include NON-SENSITIVE:
+- screenshot of recovered deployed root page
+- screenshot of recovered checklist
+- browser console excerpt showing the original error and/or clean post-fix load
+- production build/test output
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private user data
+- private Locker contents
+- private user photos
+- database dumps
+
+Before completion:
+
+1. Verify ZIP exists.
+2. Verify size > 0 bytes.
+3. Programmatically open/list ZIP.
+4. Confirm PROMPT_023H_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+==================================================
+23. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. ZIP verification result
+8. confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. exact root cause of the blank screen
+
+10. exact 023G change(s) reverted or fixed
+
+11. confirmation no user database/Locker data was deleted
+
+12. confirmation normal browser renders TrailWeigh
+
+13. confirmation private/incognito browser renders TrailWeigh
+
+14. confirmation signed-in checklist renders
+
+15. confirmation an older saved file opens without crashing
+
+16. confirmation New opens without crashing
+
+17. confirmation core pre-023G features were regression-tested
+
+18. exact items left unresolved from 023G
+
+19. exact user verification steps
+
+FINAL STATUS RULE:
+
+Do NOT claim "TrailWeigh restored — USER PASS" until the user verifies the recovered deployed app themselves.
+
+Replit may report:
+
+"Deployed runtime recovery PASS; user verification pending."
+
+only after the actual deployed app visibly renders in runtime testing.
