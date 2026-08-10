@@ -174,6 +174,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // 023N: Tracks the barTransparency value at the START of a drag/key interaction
   // so that a single undo entry is pushed per gesture (not per pixel of movement).
   const barTransparencyBeforeDragRef = useRef(1);
+  // 023Q: Tracks bar color / text color value BEFORE the native picker opens.
+  // Same one-entry-per-interaction pattern as barTransparencyBeforeDragRef.
+  const barColorBeforePickerRef     = useRef('');
+  const barTextColorBeforePickerRef = useRef('');
   const onRestoreBg = useCallback((bg: BgSnapshot) => {
     restoreBgCallbackRef.current?.(bg);
   }, []);
@@ -653,13 +657,37 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     } catch {}
   };
 
+  // 023Q: Bar Color — three-phase pattern matching barTransparency (023N).
+  //
+  // handleBarColorPickerStart — called on mousedown on the color input.
+  //   Records the color BEFORE the picker opens so the undo entry captures
+  //   the correct pre-pick snapshot regardless of how many intermediate
+  //   samples the native picker fires.
+  const handleBarColorPickerStart = () => {
+    barColorBeforePickerRef.current = barColorRef.current;
+  };
+  //
+  // handleBarColorChange — called on every onChange (many times per pick).
+  //   Live preview only: updates React state + ref + fork restore key so
+  //   bars repaint immediately.  Does NOT push an undo entry or write to
+  //   localStorage — avoids undo-storms and write-storms during sampling.
   const handleBarColorChange = (v: string) => {
-    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
     setBarColor(v);
     barColorRef.current = v;
-    if (v) localStorage.setItem('trailweigh:barColor', v);
-    else localStorage.removeItem('trailweigh:barColor');
     updateBarForkKey('barcolor', v);
+  };
+  //
+  // handleBarColorCommit — called on blur (picker closed / focus left input).
+  //   Fires once per pick interaction.  Pushes one undo entry using the
+  //   pre-pick snapshot and writes the final value to localStorage.
+  const handleBarColorCommit = () => {
+    const before  = barColorBeforePickerRef.current;
+    const current = barColorRef.current;
+    if (before === current) return; // picker opened but color unchanged — skip
+    pushBg({ background, bgSize: bgSizeRef.current, barColor: before, barFont, barTextColor, barTransparency: barTransparencyRef.current });
+    if (current) localStorage.setItem('trailweigh:barColor', current);
+    else         localStorage.removeItem('trailweigh:barColor');
+    barColorBeforePickerRef.current = current;
   };
   const handleBarFontChange = (v: string) => {
     pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
@@ -669,13 +697,23 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     else localStorage.removeItem('trailweigh:barFont');
     updateBarForkKey('barfont', v);
   };
+  // 023Q: Text Color — same three-phase pattern as Bar Color above.
+  const handleBarTextColorPickerStart = () => {
+    barTextColorBeforePickerRef.current = barTextColorRef.current;
+  };
   const handleBarTextColorChange = (v: string) => {
-    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
     setBarTextColor(v);
     barTextColorRef.current = v;
-    if (v) localStorage.setItem('trailweigh:barTextColor', v);
-    else localStorage.removeItem('trailweigh:barTextColor');
     updateBarForkKey('bartextcolor', v);
+  };
+  const handleBarTextColorCommit = () => {
+    const before  = barTextColorBeforePickerRef.current;
+    const current = barTextColorRef.current;
+    if (before === current) return;
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor: before, barTransparency: barTransparencyRef.current });
+    if (current) localStorage.setItem('trailweigh:barTextColor', current);
+    else         localStorage.removeItem('trailweigh:barTextColor');
+    barTextColorBeforePickerRef.current = current;
   };
   // 023G/023N: Transparency change — split into live preview + commit.
   //
@@ -2363,10 +2401,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     restoreCollectionsRef={restoreCollectionsRef}
                     barColor={barColor}
                     onBarColorChange={handleBarColorChange}
+                    onBarColorPickerStart={handleBarColorPickerStart}
+                    onBarColorCommit={handleBarColorCommit}
                     barFont={barFont}
                     onBarFontChange={handleBarFontChange}
                     barTextColor={barTextColor}
                     onBarTextColorChange={handleBarTextColorChange}
+                    onBarTextColorPickerStart={handleBarTextColorPickerStart}
+                    onBarTextColorCommit={handleBarTextColorCommit}
                     onResetBarStyle={handleResetBarStyle}
                     barTransparency={barTransparency}
                     onBarTransparencyChange={handleBarTransparencyChange}

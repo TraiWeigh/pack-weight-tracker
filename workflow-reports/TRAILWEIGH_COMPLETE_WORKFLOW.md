@@ -474,3 +474,39 @@ Two narrow fixes on top of 023N's working custom-color transparency:
 
 ### Report
 `PROMPT_023P_REPORT.md`
+
+---
+
+## Prompt 023Q — Native Color Picker / Eyedropper Safety & Performance Fix
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+**Root cause:** `handleBarColorChange` and `handleBarTextColorChange` called `pushBg()` and wrote to localStorage on EVERY `onChange` event from `<input type="color">`. With 100 intermediate samples (e.g. from the native eyedropper), this created 100 undo entries and 100 localStorage writes — an undo-storm and write-storm.
+
+**Fix:** Applied the same three-phase pattern used for barTransparency in 023N:
+- `handleBarColorPickerStart` (onMouseDown) — records pre-pick color to `barColorBeforePickerRef`
+- `handleBarColorChange` (onChange, live) — setState + ref + fork key ONLY (no pushBg, no localStorage)
+- `handleBarColorCommit` (onBlur) — one pushBg + one localStorage write per picker interaction
+
+### Stress Test (100-sample simulation)
+
+| Metric | Before | After |
+|---|---|---|
+| Undo entries per interaction | 100 | **1** |
+| localStorage writes per interaction | 100 | **1** |
+| BroadcastChannel messages | 0 | 0 |
+| Backend/network writes | 0 | 0 |
+
+Result: **ALL PASS ✓**
+
+### Files Changed
+`artifacts/pack-checklist/src/pages/Checklist.tsx` — split both color handlers into start/live/commit  
+`artifacts/pack-checklist/src/components/BackgroundPicker.tsx` — 4 new optional props; onMouseDown + onBlur on both color inputs
+
+### Physical macOS Eyedropper: NOT TESTED (system-level, cannot test via automation)
+
+### Report
+`PROMPT_023Q_REPORT.md`

@@ -217,10 +217,18 @@ interface BackgroundPickerPanelProps {
   // ── 023E: Bar Color / Text props ──────────────────────────────────────────
   barColor: string;
   onBarColorChange: (v: string) => void;
+  /** 023Q: Called on mousedown — records pre-pick value for single undo entry. */
+  onBarColorPickerStart?: () => void;
+  /** 023Q: Called on blur — commits one undo entry + localStorage write. */
+  onBarColorCommit?: () => void;
   barFont: string;
   onBarFontChange: (v: string) => void;
   barTextColor: string;
   onBarTextColorChange: (v: string) => void;
+  /** 023Q: Called on mousedown — records pre-pick value for single undo entry. */
+  onBarTextColorPickerStart?: () => void;
+  /** 023Q: Called on blur — commits one undo entry + localStorage write. */
+  onBarTextColorCommit?: () => void;
   onResetBarStyle: () => void;
   // ── 023G/023N: Transparency ───────────────────────────────────────────────
   /** 0 = fully transparent, 1 = fully solid. Default 1. */
@@ -251,10 +259,14 @@ export function BackgroundPickerPanel({
   restoreCollectionsRef,
   barColor,
   onBarColorChange,
+  onBarColorPickerStart,
+  onBarColorCommit,
   barFont,
   onBarFontChange,
   barTextColor,
   onBarTextColorChange,
+  onBarTextColorPickerStart,
+  onBarTextColorCommit,
   onResetBarStyle,
   barTransparency,
   onBarTransparencyChange,
@@ -1114,6 +1126,8 @@ export function BackgroundPickerPanel({
                   type="color"
                   value={barColor || '#f4f4f5'}
                   onChange={e => onBarColorChange(e.target.value)}
+                  onMouseDown={() => onBarColorPickerStart?.()}
+                  onBlur={() => onBarColorCommit?.()}
                   className="w-7 h-7 rounded border border-border cursor-pointer p-0.5 bg-transparent"
                   aria-label="Bar background color"
                 />
@@ -1157,6 +1171,8 @@ export function BackgroundPickerPanel({
                   type="color"
                   value={barTextColor || '#71717a'}
                   onChange={e => onBarTextColorChange(e.target.value)}
+                  onMouseDown={() => onBarTextColorPickerStart?.()}
+                  onBlur={() => onBarTextColorCommit?.()}
                   className="w-7 h-7 rounded border border-border cursor-pointer p-0.5 bg-transparent"
                   aria-label="Bar text color"
                 />

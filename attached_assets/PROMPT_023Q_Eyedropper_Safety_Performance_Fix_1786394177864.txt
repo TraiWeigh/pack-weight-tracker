@@ -1,0 +1,655 @@
+PROMPT 023Q — NATIVE COLOR PICKER / EYEDROPPER SAFETY & PERFORMANCE FIX
+
+PURPOSE
+
+Make TrailWeigh's existing native color picker / eyedropper safer and lighter while KEEPING the native eyedropper available.
+
+IMPORTANT HISTORY
+
+The user previously used TrailWeigh's native macOS color picker / eyedropper and the entire Mac froze, requiring a hard reboot.
+
+After reboot, macOS showed a Rosetta / Intel-app notice. There is no verified evidence that Rosetta caused the freeze. Do not assume a causal connection.
+
+The user likes the native eyedropper and wants to KEEP it.
+
+Prompt 023P was USER VERIFIED PASS for saved-file appearance isolation. Preserve that protection.
+
+This prompt is ONLY for the color-picker / eyedropper update path.
+
+DO NOT:
+- remove the native eyedropper
+- replace it with a custom eyedropper
+- redesign Edit View
+- change Transparency behavior
+- change theme ordering
+- weaken saved-file protections
+- perform unrelated refactors
+
+==================================================
+MANDATORY COMPLETION RULE — DO NOT STOP BEFORE THIS
+==================================================
+
+BEFORE YOU STOP OR DECLARE THE PROMPT COMPLETE, YOU MUST:
+
+1. Write:
+   workflow-reports/PROMPT_023Q_REPORT.md
+
+2. Append the report to:
+   workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+3. Create:
+   workflow-reports/trailweigh-023Q-report.zip
+
+4. Verify the ZIP:
+   - exists
+   - is greater than 0 bytes
+   - opens/lists programmatically
+   - contains PROMPT_023Q_REPORT.md
+   - is not corrupt
+
+5. Report the ZIP path, size, contents, and verification result.
+
+DO NOT stop after code/test work and leave the report or ZIP unfinished.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Inspect the current native color-input implementation before changing anything.
+3. Inspect the current appearance-state architecture:
+   - Bar Color
+   - Text Color
+   - Font
+   - Transparency
+   - Undo/Redo
+   - per-file persistence
+   - Locker save/load
+   - multi-tab/window isolation
+4. Read:
+   - workflow-reports/PROMPT_023P_REPORT.md
+5. Make the smallest reasonable change.
+6. Do not perform unrelated refactors.
+7. Preserve:
+   - authentication
+   - user data
+   - Locker
+   - sharing
+   - Scan Gear List
+   - themes
+   - mobile layout
+   - Transparency
+   - Bar Color
+   - Text Color
+   - Font
+   - Darken
+   - Hide
+   - Share hover
+   - +Base
+   - Base Weight logic
+   - Edit View
+   - Prompt 023P file isolation
+   - current Save / Save As behavior
+   - current New-file defaults
+8. Inspect the complete final diff.
+9. Revert unrelated changes.
+10. Document checkpoint and final diff.
+
+==================================================
+1. KEEP THE NATIVE EYEDROPPER
+==================================================
+
+The user explicitly wants to KEEP the native eyedropper.
+
+Preserve the existing browser/macOS native color-picker path.
+
+Do NOT:
+- remove the eyedropper
+- disable it
+- replace it with custom JavaScript
+- replace the native color picker with a third-party picker
+- require a paid service
+- use AI vision
+
+==================================================
+2. TRACE THE COMPLETE COLOR UPDATE PATH
+==================================================
+
+Trace exactly what happens when Bar Color and Text Color change through the native color picker:
+
+native color input
+→ input/change event
+→ handler
+→ temporary/live state
+→ React/context updates
+→ rendered preview
+→ Undo history
+→ per-file working state
+→ persistence/storage
+→ Locker/save logic
+→ cross-window synchronization
+
+Specifically inspect for excessive repeated work caused by continuous color sampling:
+
+- rapid `input` events
+- full-page/full-checklist rerenders
+- large context updates
+- Undo snapshots for every sample
+- serialization of the full pack/file on every sample
+- sessionStorage/localStorage writes on every sample
+- BroadcastChannel/storage-event broadcasts on every sample
+- backend/database/network writes
+- effects that write state back into themselves
+- Save behavior triggered indirectly
+- feedback loops between state, storage, and synchronization
+
+Do not assume which is responsible.
+Trace the current path and document it.
+
+==================================================
+3. SEPARATE LIVE PREVIEW FROM FINAL COMMIT
+==================================================
+
+Use a two-phase pattern if current code does not already have one.
+
+PHASE A — LIVE PREVIEW
+
+While the native picker/eyedropper produces intermediate samples:
+
+- update only lightweight preview state
+- update only the active file/window
+- keep the UI responsive
+- do NOT create an Undo entry for every sample
+- do NOT persist every sample
+- do NOT broadcast every sample to other windows
+- do NOT trigger Locker writes
+- do NOT trigger backend/database/network writes
+- do NOT serialize the complete file repeatedly
+- do NOT alter other saved files
+
+PHASE B — FINAL COMMIT
+
+When the user finishes choosing the color:
+
+- commit the final selected color to the active file's canonical working appearance state
+- create at most ONE logical Undo/history entry
+- persist only according to TrailWeigh's existing explicit Save behavior
+- do not silently save the file merely because the picker closed
+- preserve Prompt 023P file isolation
+
+IMPORTANT:
+The user must still explicitly Save the active file if they want the final appearance permanently written to that saved Locker file.
+
+==================================================
+4. DO NOT BREAK FILE PROTECTION FROM 023P
+==================================================
+
+Prompt 023P fixed appearance leakage between files.
+
+That protection is mandatory.
+
+During native color-picker sampling:
+
+- File A may preview its own color
+- File B must not change
+- File B's saved record must not change
+- a New unsaved file must not inherit File A's live color
+- another tab/window with a different file must not receive File A's intermediate colors
+
+After final color selection:
+
+- the final color remains part of File A's current working state
+- it is not persisted into File A's saved Locker record until explicit Save
+- it never modifies File B
+
+Test this directly.
+
+==================================================
+5. THROTTLE / COALESCE ONLY IF NEEDED
+==================================================
+
+If native `input` events arrive faster than TrailWeigh can safely process:
+
+- throttle/coalesce live preview events
+- keep preview responsive
+- always retain the latest sampled color
+- never lose the final selected color
+- cancel stale pending preview work
+- clean up timers/listeners on unmount
+
+Prefer `requestAnimationFrame` or a modest throttle if appropriate to the current architecture.
+
+Do not add a long lag.
+
+Document the chosen method.
+
+==================================================
+6. UNDO / REDO SAFETY
+==================================================
+
+One completed color-picker interaction must create no more than ONE logical Undo step.
+
+Test:
+
+1. File A starts with color A.
+2. Simulate many intermediate color samples.
+3. Finish on color B.
+4. Undo once.
+5. Return to color A.
+6. Redo once.
+7. Return to color B.
+
+Do this for:
+- Bar Color
+- Text Color
+
+if both use the same native input path.
+
+Do not create dozens/hundreds of Undo entries.
+
+==================================================
+7. WRITE / PERSISTENCE SAFETY
+==================================================
+
+For one synthetic picker interaction containing many intermediate color samples, count or instrument:
+
+- preview-state updates
+- canonical appearance commits
+- Undo snapshots
+- localStorage/sessionStorage writes
+- file serialization
+- cross-window messages
+- backend/database/network writes
+
+Expected:
+
+- many input samples are allowed
+- expensive commits remain bounded
+- Undo = at most one logical step
+- no backend/database/network write storm
+- no repeated full-file persistence
+- no other saved file is touched
+
+Remove temporary noisy diagnostics before completion.
+
+==================================================
+8. FEEDBACK-LOOP PROTECTION
+==================================================
+
+Inspect for loops such as:
+
+color input
+→ state update
+→ storage write
+→ storage event
+→ state update
+→ storage write
+
+or:
+
+color input
+→ Undo snapshot
+→ context update
+→ effect
+→ persistence
+→ broadcast
+→ context update
+
+If any duplicate/recursive path exists, break it with the smallest safe correction.
+
+==================================================
+9. AUTOMATED STRESS TEST
+==================================================
+
+Add a focused automated stress test.
+
+Simulate at least:
+
+100 intermediate color input events
++ 1 final commit
+
+Verify:
+
+- no exception
+- no runaway loop
+- final color is correct
+- active file preview remains functional
+- Undo history grows by no more than one logical commit
+- persistence writes are bounded
+- cross-window messages are bounded
+- no backend/database/network write storm
+- unrelated saved File B remains unchanged
+- New-file defaults remain unchanged
+
+This test proves TrailWeigh's event path is bounded.
+
+It does NOT prove a physical Mac can never freeze.
+
+==================================================
+10. BROWSER-NATIVE COLOR INPUT TEST
+==================================================
+
+Use the actual color input element in the browser test.
+
+Do not merely call the state setter.
+
+Verify:
+
+- Bar Color input
+- Text Color input
+
+where available.
+
+Test:
+- repeated `input`
+- final `change`/commit behavior
+- final rendered value
+- one Undo step
+
+==================================================
+11. PHYSICAL MACOS EYEDROPPER LIMITATION
+==================================================
+
+Replit automation may not be able to invoke the actual macOS system eyedropper.
+
+Clearly separate:
+
+A. TrailWeigh event-path stress test
+B. browser-native color input test
+C. physical macOS eyedropper test
+
+Unless the actual macOS eyedropper was physically tested on real macOS hardware, report:
+
+PHYSICAL MACOS EYEDROPPER: NOT TESTED
+
+Do NOT claim PASS from browser automation alone.
+
+==================================================
+12. CONSERVATIVE USER TEST
+==================================================
+
+Only ask the user to test the eyedropper AFTER:
+
+- event path traced
+- live preview separated from final commit
+- Undo storm prevented
+- persistence/write storm prevented
+- file isolation preserved
+- stress test passes
+- production build passes
+- no new runtime errors
+
+User test should be conservative:
+
+FIRST — WITHOUT EYEDROPPER
+
+1. Open a saved test file.
+2. Open Edit View.
+3. Open Bar Color.
+4. Choose a normal color manually in the native color picker.
+5. Close/commit the picker.
+6. Confirm TrailWeigh remains responsive.
+7. Undo once.
+8. Confirm prior color returns.
+9. Redo once.
+10. Confirm selected color returns.
+11. Open another saved file and confirm it did not change.
+
+ONLY AFTER THAT PASSES:
+
+12. Return to the first file.
+13. Open Bar Color.
+14. Use the native eyedropper ONCE.
+15. Pick one color.
+16. Confirm TrailWeigh and macOS remain responsive.
+17. Close/commit the picker.
+18. Confirm selected color is applied.
+19. Do not rapidly repeat eyedropper sampling during the first test.
+
+Only test Text Color eyedropper after Bar Color passes.
+
+==================================================
+13. PRESERVE TRANSPARENCY
+==================================================
+
+Prompt 023O visually fixed Transparency and Prompt 023P fixed file isolation.
+
+Verify:
+
+- default-color Transparency still works
+- custom Bar Color Transparency still works
+- `+Base` follows Transparency
+- changing Bar Color does not reset Transparency
+- File B's Transparency does not change while File A color is edited
+
+==================================================
+14. EDIT VIEW LABEL
+==================================================
+
+The approved user-facing label is:
+
+Edit View
+
+Use "Edit View" consistently in any user-facing text touched by this prompt.
+
+Do not rename internal code identifiers solely for cosmetic consistency.
+
+==================================================
+15. RESPONSIVE SMOKE TEST
+==================================================
+
+Check:
+
+- desktop
+- 390 px
+- 412 px
+
+Do not redesign layout.
+
+Verify the color controls remain usable.
+
+==================================================
+16. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Rename
+- Delete
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- category expand/collapse
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Edit View
+- Bar Color
+- Text Color
+- Font
+- Darken
+- Transparency
+- theme selection
+- +Base
+- Base Weight logic
+- file isolation from Prompt 023P
+- authentication
+- sharing permissions
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim real-device behavior PASS from source inspection or browser emulation.
+
+==================================================
+17. PRODUCTION BUILD / BACKEND
+==================================================
+
+Run appropriate production build/start checks.
+
+Verify:
+
+- frontend builds
+- app renders
+- no new console/runtime errors
+- Locker API works
+- Save works
+- Save As works
+- Load/open works
+- Scan Gear List/import backend is not regressed
+
+No unrelated backend changes.
+
+==================================================
+18. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023Q_REPORT.md
+
+Include:
+
+- checkpoint
+- exact native color input/component/file
+- current pre-fix event path
+- root cause(s) of excessive work, if found
+- files changed
+- smallest-change explanation
+- live-preview strategy
+- final-commit strategy
+- throttle/coalescing strategy, if used
+- before/after event/update counts
+- Undo result
+- persistence/write counts
+- cross-window message counts
+- backend/network-write counts
+- File A / File B isolation result
+- New-file default isolation result
+- Bar Color test
+- Text Color test
+- 100-event stress test
+- Transparency regression
+- desktop/mobile
+- build/runtime
+- backend regression
+- final diff
+- unresolved issues
+- PHYSICAL MACOS EYEDROPPER = PASS / FAIL / PARTIAL / NOT TESTED
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append the report to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior history.
+
+==================================================
+19. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023Q-report.zip
+
+Include at minimum:
+
+- PROMPT_023Q_REPORT.md
+
+May also include useful non-sensitive:
+
+- automated stress-test output
+- event/write-count diagnostics
+- browser test output
+- build output
+- diff summary
+
+Do NOT include:
+
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- real Locker contents
+- private uploaded photos
+- database dumps
+
+Use synthetic test data only.
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023Q_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+==================================================
+20. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status
+2. Root cause
+3. Native color input/component/file
+4. Files changed
+5. Live-preview behavior
+6. Final-commit behavior
+7. Throttle/coalescing behavior
+8. Input-event count
+9. Preview-update count
+10. Canonical-commit count
+11. Undo snapshot count
+12. Persistence/write count
+13. Cross-window message count
+14. Backend/network-write count
+15. 100-event stress-test result
+16. Bar Color result
+17. Text Color result
+18. File A / File B isolation result
+19. New-file default result
+20. Transparency regression
+21. Desktop/mobile
+22. Build/runtime
+23. Backend regression
+24. Physical macOS eyedropper status
+25. Unresolved issues
+26. PROMPT_023Q_REPORT.md path
+27. ZIP path
+28. ZIP size
+29. ZIP contents
+30. ZIP verification
+31. User test steps
+
+FINAL RULES
+
+1. KEEP the native eyedropper.
+2. Do not claim physical macOS eyedropper PASS unless it was physically tested.
+3. Do not allow one picker interaction to create an Undo/storage/broadcast/write storm.
+4. Preserve Prompt 023P saved-file isolation.
+5. DO NOT STOP until the report and ZIP have been written and verified.
