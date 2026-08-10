@@ -60,3 +60,43 @@ This file records every completed prompt in order. Each entry summarises the sco
 - 3 new test files: `themes023C.test.mjs` (18) + `phoneSpacing023C.test.mjs` (10) + `messaging023C.test.mjs` (15)
 - 6 existing test files updated for 023C compatibility (023B theme rename + 021P invariant gap pattern)
 - **Final: 0 failures across all test files**
+
+---
+
+## PROMPT 023D — Remove Replit-Added Duplicate Themes and Fix About TrailWeigh Multi-Use Intro
+
+**Date:** 2026-08-10 | **Status:** COMPLETE | **Tests:** 315 PASS / 0 FAIL
+
+### Summary
+Corrective prompt removing three built-in theme slots incorrectly added by Prompt 023C (Retro-Outdoors `retro-outdoors`, Psychedelic `psychedelic`, and Topo 1 `topo`). These appeared as duplicates of the user's pre-existing custom collection themes. Also added the multi-use clarification to the always-visible About page intro (before accordions).
+
+### Theme Correction (Part A)
+
+| Action | Theme | Stable ID | Type |
+|--------|-------|-----------|------|
+| REMOVED | Replit-added Retro-Outdoors | `retro-outdoors` (RETRO_PRESETS) | Built-in (incorrectly added) |
+| REMOVED | Replit-added Psychedelic | `psychedelic` (PSYCHEDELIC_PRESETS) | Built-in (incorrectly added) |
+| REMOVED | Replit-added Topo 1 | `topo` (TOPO_PRESETS) | Built-in (incorrectly added) |
+| PRESERVED | Landscape | `landscapes` (PRESETS) | Built-in |
+| PRESERVED | User's Retro-Outdoors | Custom collection in localStorage | Custom |
+| PRESERVED | User's Psychedelic | Custom collection in localStorage | Custom |
+| PRESERVED | User's Topo 2 | Custom collection in localStorage (user will rename) | Custom |
+| PRESERVED | Custom 1 | Custom collection in localStorage | Custom |
+
+Final selector order: Landscape → [user custom themes in localStorage order] → + Add Theme
+
+### About Page Intro (Part B)
+Added always-visible callout in the `space-y-4` intro div (before all accordion sections):
+> "TrailWeigh started as a way to understand and organize pack weight, but it isn't limited to backpacking. You can use TrailWeigh to build and organize almost any kind of checklist or item list. Add weights when they're useful—or leave them out entirely. Weight is never required."
+
+Auth messaging from 023C preserved unchanged.
+
+### Files Changed
+- `BackgroundPicker.tsx` — removed 3 preset arrays (18 preset objects, 18 Unsplash photoIds), 3 dropdown buttons, 3 panel sections, updated dropdownLabel/BUILT_IN_IDS/thumbnail guard
+- `AboutPage.tsx` — added always-visible callout paragraph
+- `themeNamesOrder023B.test.mjs` — 15 tests updated for 023D state
+- `themes023D.test.mjs` (new) — 18 tests
+- `messaging023D.test.mjs` (new) — 10 tests
+- `package.json` — removed themes023C, added themes023D + messaging023D
+
+### Full report: `workflow-reports/PROMPT_023D_REPORT.md`

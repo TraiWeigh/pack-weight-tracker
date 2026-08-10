@@ -198,6 +198,15 @@ export default function AboutPage() {
           <p className="font-medium text-foreground">
             Carry what you need. Understand why you carry it. Make each item earn its place.
           </p>
+          {/* 023D: multi-use clarification — always visible at top of About, before accordions */}
+          <div className="bg-muted/50 border border-border rounded-xl px-4 py-3 text-sm text-foreground/80 leading-relaxed">
+            <p>
+              TrailWeigh started as a way to understand and organize pack weight, but it
+              isn't limited to backpacking. You can use TrailWeigh to build and organize
+              almost any kind of checklist or item list. Add weights when they're
+              useful—or leave them out entirely. Weight is never required.
+            </p>
+          </div>
         </div>
 
         {/* ── Accordion sections ─────────────────────────────────────────── */}

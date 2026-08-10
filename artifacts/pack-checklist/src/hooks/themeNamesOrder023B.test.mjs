@@ -1,20 +1,27 @@
 /**
  * PROMPT 023B — Part A: Theme Names & Order
+ * Updated by PROMPT 023D: TOPO_PRESETS was a 023B built-in that is now removed
+ * (user's Topo is a custom collection, not a built-in theme).
  *
- * Verifies:
- *  1. TOPO_PRESETS exported with ≥4 entries, each having id/label/photoId
- *  2. No photoId overlap between PRESETS and TOPO_PRESETS
- *  3. dropdownLabel returns 'Landscape' (not 'Landscapes') for landscapes tab
- *  4. dropdownLabel returns 'Topo' for topo tab
- *  5. Custom theme label shows col.name — no 'Theme ' prefix in dropdownLabel
- *  6. Dropdown renders a 'Landscape' button (not 'Landscapes')
- *  7. Dropdown renders a 'Topo' button after Landscape and before custom themes
- *  8. Custom theme dropdown option shows col.name without 'Theme ' prefix
- *  9. activeThemeId guard effect accepts 'topo' as a valid built-in ID
- * 10. Topo panel rendered when activeThemeId === 'topo'
- * 11. New-theme input placeholder is 'Name…', not 'Theme name…'
- * 12. Topo preset IDs start with 'topo-'
- * 13. Landscape label in built-in section label guard (thumbnail loading)
+ * Tests 01–05, 07, 10, 12, 13, 15 are updated to reflect the 023D state.
+ * Tests 06, 08, 09, 11, 14 are unchanged.
+ *
+ * Verifies (023D state):
+ *  1. TOPO_PRESETS is NOT exported as a built-in (removed by 023D)
+ *  2. No hardcoded topo- preset IDs in the source (removed by 023D)
+ *  3. PRESETS still exported with id/label/photoId (Landscape still works)
+ *  4. No cross-preset overlap within PRESETS itself (no duplicate photoIds)
+ *  5. PRESETS entry IDs do not start with 'topo-' (user's custom theme, not built-in)
+ *  6. dropdownLabel returns 'Landscape' (not 'Landscapes') for landscapes tab
+ *  7. dropdownLabel does NOT have a branch for 'topo' (023D removal)
+ *  8. No 'Theme ' prefix in dropdownLabel for custom theme
+ *  9. Dropdown renders a 'Landscape' button (not 'Landscapes')
+ * 10. Dropdown does NOT have a hardcoded 'Topo' or 'Topo 1' button (023D removal)
+ * 11. Custom theme dropdown option shows col.name without 'Theme ' prefix
+ * 12. BUILT_IN_IDS does NOT include 'topo' (023D — only 'landscapes' is built-in)
+ * 13. No conditional panel for 'topo' built-in (023D removal)
+ * 14. New-theme input placeholder is 'Name…', not 'Theme name…'
+ * 15. Thumbnail loading guard does NOT check for 'topo' (023D removal)
  */
 
 import { readFileSync } from 'fs';
@@ -31,106 +38,100 @@ const src = readFileSync(BG_PATH, 'utf-8');
 const has = (pattern) => (typeof pattern === 'string' ? src.includes(pattern) : pattern.test(src));
 const hasNot = (pattern) => !has(pattern);
 
-// ─── 1. TOPO_PRESETS exported ───────────────────────────────────────────────
-test('023B-A-01: TOPO_PRESETS is exported', () => {
-  assert.ok(has('export const TOPO_PRESETS'), 'TOPO_PRESETS must be exported');
+// ─── 1. TOPO_PRESETS is NOT exported as a built-in (023D removal) ───────────
+test('023B-A-01: TOPO_PRESETS is NOT exported as a built-in (023D removed)', () => {
+  assert.ok(hasNot('export const TOPO_PRESETS'), 'TOPO_PRESETS must NOT be exported (removed by 023D)');
 });
 
-test('023B-A-02: TOPO_PRESETS has ≥4 entries', () => {
-  const block = src.match(/TOPO_PRESETS\s*=\s*\[([\s\S]*?)\];/)?.[1] ?? '';
-  const count = (block.match(/\{/g) ?? []).length;
-  assert.ok(count >= 4, `Expected ≥4 entries in TOPO_PRESETS, found ${count}`);
+// ─── 2. No hardcoded topo- preset IDs in source ─────────────────────────────
+test('023B-A-02: No hardcoded topo- preset IDs in BackgroundPicker (023D removed)', () => {
+  // Built-in preset IDs like 'topo-ridge' should not exist;
+  // user's custom Topo theme lives in localStorage, not in source
+  assert.ok(
+    hasNot("{ id: 'topo-ridge'") && hasNot("{ id: 'topo-aerial'"),
+    'Hardcoded topo- preset objects must not exist (removed by 023D)'
+  );
 });
 
-test('023B-A-03: TOPO_PRESETS entries have id, label, photoId', () => {
-  const block = src.match(/TOPO_PRESETS\s*=\s*\[([\s\S]*?)\];/)?.[1] ?? '';
-  assert.ok(block.includes('id:'), 'Each entry should have id');
-  assert.ok(block.includes('label:'), 'Each entry should have label');
-  assert.ok(block.includes('photoId:'), 'Each entry should have photoId');
+// ─── 3. PRESETS still exported with id/label/photoId ─────────────────────────
+test('023B-A-03: PRESETS (Landscape) exported with id, label, photoId', () => {
+  const block = src.match(/^export const PRESETS\s*=\s*\[([\s\S]*?)\];/m)?.[1] ?? '';
+  assert.ok(block.includes('id:'),      'PRESETS entries should have id');
+  assert.ok(block.includes('label:'),   'PRESETS entries should have label');
+  assert.ok(block.includes('photoId:'), 'PRESETS entries should have photoId');
 });
 
-// ─── 4. No photoId overlap ──────────────────────────────────────────────────
-test('023B-A-04: TOPO_PRESETS photoIds do not overlap with PRESETS', () => {
-  const presetBlock  = src.match(/^export const PRESETS\s*=\s*\[([\s\S]*?)\];/m)?.[1] ?? '';
-  const topoBlock    = src.match(/TOPO_PRESETS\s*=\s*\[([\s\S]*?)\];/)?.[1]  ?? '';
-  const photoIdRe   = /photoId:\s*'([^']+)'/g;
-  const extractIds  = (block) => { const ids = []; let m; while ((m = photoIdRe.exec(block)) !== null) ids.push(m[1]); return new Set(ids); };
-  const presetIds  = extractIds(presetBlock);
-  const topoIds    = extractIds(topoBlock);
-  for (const id of topoIds) {
-    assert.ok(!presetIds.has(id), `photoId '${id}' duplicated between PRESETS and TOPO_PRESETS`);
-  }
-});
-
-// ─── 5. Topo preset IDs start with 'topo-' ──────────────────────────────────
-test('023B-A-05: TOPO_PRESETS entry ids start with topo-', () => {
-  const block = src.match(/TOPO_PRESETS\s*=\s*\[([\s\S]*?)\];/)?.[1] ?? '';
-  const ids = [...block.matchAll(/id:\s*'([^']+)'/g)].map(m => m[1]);
-  assert.ok(ids.length > 0, 'Should have id strings in TOPO_PRESETS');
+// ─── 4. PRESETS photoIds have no duplicates ──────────────────────────────────
+test('023B-A-04: PRESETS photoIds have no duplicates', () => {
+  const block = src.match(/^export const PRESETS\s*=\s*\[([\s\S]*?)\];/m)?.[1] ?? '';
+  const ids = [...block.matchAll(/photoId:\s*'([^']+)'/g)].map(m => m[1]);
+  const seen = new Set();
   for (const id of ids) {
-    assert.ok(id.startsWith('topo-'), `TOPO_PRESETS id '${id}' should start with 'topo-'`);
+    assert.ok(!seen.has(id), `Duplicate photoId '${id}' in PRESETS`);
+    seen.add(id);
   }
 });
 
-// ─── 6. dropdownLabel returns 'Landscape' for landscapes tab ────────────────
+// ─── 5. PRESETS IDs do not start with 'topo-' (sanity check) ────────────────
+test('023B-A-05: PRESETS entry ids do not start with topo- (user custom theme, not built-in)', () => {
+  const block = src.match(/^export const PRESETS\s*=\s*\[([\s\S]*?)\];/m)?.[1] ?? '';
+  const ids = [...block.matchAll(/id:\s*'([^']+)'/g)].map(m => m[1]);
+  for (const id of ids) {
+    assert.ok(!id.startsWith('topo-'), `PRESETS id '${id}' should not start with 'topo-'`);
+  }
+});
+
+// ─── 6. dropdownLabel returns 'Landscape' for landscapes tab ─────────────────
 test('023B-A-06: dropdownLabel returns Landscape (not Landscapes) for landscapes tab', () => {
   assert.ok(has("return 'Landscape'"), "dropdownLabel should return 'Landscape'");
   assert.ok(hasNot("return 'Landscapes'"), "dropdownLabel must not return 'Landscapes'");
 });
 
-// ─── 7. dropdownLabel returns 'Topo 1' for topo tab (023C renamed from 'Topo') ─
-test('023B-A-07: dropdownLabel returns Topo 1 for topo tab (023C rename)', () => {
+// ─── 7. dropdownLabel does NOT have a topo branch (023D removal) ─────────────
+test('023B-A-07: dropdownLabel does NOT have a topo branch (023D removed built-in)', () => {
   assert.ok(
-    src.includes("activeThemeId === 'topo'") && src.includes("return 'Topo 1'"),
-    "dropdownLabel should return 'Topo 1' when activeThemeId === 'topo' (023C rename)"
+    hasNot("return 'Topo 1'") && hasNot("return 'Topo'"),
+    "dropdownLabel must NOT return 'Topo 1' or 'Topo' (023D removed the topo built-in)"
   );
 });
 
-// ─── 8. No 'Theme ' prefix in dropdownLabel for custom theme ────────────────
+// ─── 8. No 'Theme ' prefix in dropdownLabel for custom theme ─────────────────
 test('023B-A-08: dropdownLabel uses col.name without Theme prefix', () => {
-  // Must NOT contain backtick-template with "Theme " prefix in dropdownLabel
   assert.ok(hasNot('return `Theme ${col.name}`'), 'dropdownLabel must not prepend "Theme "');
-  // The if (col) branch must exist and use col.name
   assert.ok(has('if (col) return col.name'), "dropdownLabel should return col.name directly");
 });
 
-// ─── 9. Dropdown renders 'Landscape' button (not 'Landscapes') ──────────────
+// ─── 9. Dropdown renders 'Landscape' button (not 'Landscapes') ───────────────
 test('023B-A-09: dropdown option button shows Landscape not Landscapes', () => {
-  // Look for the button content — must have >Landscape< and must NOT have >Landscapes<
   assert.ok(has('>Landscape</button>'), "Dropdown button text should be 'Landscape'");
   assert.ok(hasNot('>Landscapes</button>'), "Dropdown button text must not be 'Landscapes'");
 });
 
-// ─── 10. Dropdown renders 'Topo 1' button (023C renamed from 'Topo') ─────────
-test('023B-A-10: dropdown option button shows Topo 1 (023C rename)', () => {
-  assert.ok(has('>Topo 1</button>'), "Dropdown must have a 'Topo 1' button (023C rename from 'Topo')");
-  assert.ok(hasNot('>Topo</button>'), "Dropdown must NOT have a bare 'Topo' button (023C: renamed to 'Topo 1')");
+// ─── 10. Dropdown does NOT have a hardcoded Topo or Topo 1 button (023D) ─────
+test('023B-A-10: dropdown does NOT have a hardcoded Topo or Topo 1 button (023D removed)', () => {
+  assert.ok(hasNot('>Topo 1</button>'), "Dropdown must NOT have a hardcoded 'Topo 1' button (removed by 023D)");
+  assert.ok(hasNot('>Topo</button>'),   "Dropdown must NOT have a hardcoded 'Topo' button (removed by 023D)");
 });
 
-// ─── 11. Custom theme dropdown option shows col.name without 'Theme ' ────────
+// ─── 11. Custom theme dropdown option shows col.name without 'Theme ' ─────────
 test('023B-A-11: custom theme dropdown option has no Theme prefix', () => {
   assert.ok(hasNot('>Theme {col.name}</button>'), 'Custom theme dropdown option must not say "Theme {col.name}"');
   assert.ok(has('>{col.name}</button>'), 'Custom theme dropdown option should show col.name directly');
 });
 
-// ─── 12. activeThemeId guard effect accepts 'topo' as valid built-in ─────────
-// 023C: guard was refactored to use BUILT_IN_IDS array; 'topo' must still be listed
-test('023B-A-12: activeThemeId guard accepts topo as built-in (023C: BUILT_IN_IDS array)', () => {
-  // Either the old explicit !== check or the new BUILT_IN_IDS array must include 'topo'
-  const hasOldGuard   = /activeThemeId !== 'topo'/.test(src);
-  const hasArrayGuard = /BUILT_IN_IDS\s*=\s*\[[\s\S]*?'topo'[\s\S]*?\]/.test(src);
+// ─── 12. BUILT_IN_IDS does NOT include 'topo' (023D) ─────────────────────────
+test('023B-A-12: BUILT_IN_IDS does NOT include topo (023D removed topo built-in)', () => {
   assert.ok(
-    hasOldGuard || hasArrayGuard,
-    "Guard effect must still protect 'topo' from resetting to landscapes"
+    hasNot("'topo'"),
+    "Source must not contain 'topo' as a built-in reference (removed by 023D)"
   );
 });
 
-// ─── 13. Topo panel rendered when activeThemeId === 'topo' ──────────────────
-test('023B-A-13: topo panel renders TOPO_PRESETS when activeThemeId is topo', () => {
-  // There should be a conditional for topo in the panel area
+// ─── 13. No conditional panel for topo built-in (023D removal) ───────────────
+test('023B-A-13: no topo built-in panel in render (023D removed)', () => {
   assert.ok(
-    /activeThemeId === 'topo'[\s\S]{1,200}TOPO_PRESETS/.test(src),
-    'Panel should render TOPO_PRESETS when activeThemeId === topo'
+    hasNot("activeThemeId === 'topo'"),
+    "Render must not have a conditional panel for 'topo' built-in (removed by 023D)"
   );
 });
 
@@ -140,11 +141,10 @@ test('023B-A-14: new-theme input placeholder is Name… not Theme name…', () =
   assert.ok(hasNot('placeholder="Theme name…"'), 'Old placeholder "Theme name…" should be gone');
 });
 
-// ─── 15. Thumbnail loading guard also covers 'topo' ─────────────────────────
-test('023B-A-15: thumbnail loading effect guard covers topo', () => {
+// ─── 15. Thumbnail loading guard does NOT check for 'topo' (023D removal) ────
+test('023B-A-15: thumbnail loading guard does NOT include topo (023D removed)', () => {
   assert.ok(
-    /activeThemeId === 'topo'[\s\S]{0,60}setThumbnailUrls\(\{\}\)/.test(src) ||
-    (src.includes("activeThemeId === 'topo'") && src.includes('setThumbnailUrls({}')),
-    'Thumbnail loading guard should also short-circuit for topo tab'
+    hasNot("activeThemeId === 'topo'"),
+    "Thumbnail loading guard must NOT check for 'topo' (removed by 023D)"
   );
 });

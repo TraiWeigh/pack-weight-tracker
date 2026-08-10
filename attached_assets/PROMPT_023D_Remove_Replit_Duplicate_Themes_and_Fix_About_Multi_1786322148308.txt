@@ -1,0 +1,583 @@
+PROMPT 023D — REMOVE REPLIT-ADDED DUPLICATE THEMES AND FIX ABOUT TRAILWEIGH MULTI-USE INTRO
+
+USER-VERIFIED / USER-PROVIDED EVIDENCE
+
+Prompt 023C produced an incorrect result in Background Themes.
+
+The user provided a screenshot identifying which theme entries were added by Replit.
+The entries marked by the user with RED CHECKMARKS are the unwanted Replit-added duplicates.
+
+REMOVE THESE REPLIT-ADDED ENTRIES:
+- the UPPER "Retro-Outdoors"
+- the UPPER "Psychedelic"
+- "Topo 1"
+
+PRESERVE THE USER'S PRE-EXISTING THEME COLLECTIONS:
+- Landscape
+- the LOWER "Retro-Outdoors"
+- the LOWER "Psychedelic"
+- "Topo 2"
+- Custom 1
+
+IMPORTANT:
+The user temporarily renamed their original Topo theme to "Topo 2" only so Replit would not confuse it with the duplicate.
+DO NOT rename "Topo 2" in this prompt.
+The user will manually rename "Topo 2" back to "Topo" afterward.
+
+Also correct the About TrailWeigh opening so it immediately states that TrailWeigh is not limited to backpacking/pack lists and that weight is optional.
+
+This is a corrective prompt.
+Do NOT add any new built-in themes.
+Do NOT invent replacement theme image sets.
+Do NOT download new theme images.
+Do NOT replace the user's existing theme assets.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the CURRENT implementation and Prompt 023C diff/report before editing.
+
+3. Identify, by stable ID/key and asset list, every current theme entry shown in the Background Themes selector.
+
+4. Specifically identify:
+   - the Replit-added upper Retro-Outdoors
+   - the user's pre-existing lower Retro-Outdoors
+   - the Replit-added upper Psychedelic
+   - the user's pre-existing lower Psychedelic
+   - Replit-added Topo 1
+   - the user's original Topo currently renamed Topo 2
+   - Landscape
+   - Custom 1
+
+5. Do NOT rely only on display name or array position when deleting.
+   Use stable IDs/keys and asset ownership/source so the correct entries are removed.
+
+6. Preserve all verified fixes:
+   - 023A custom-theme Delete → Undo/Redo
+   - 022Z one-click custom-theme delete
+   - anchored delete confirmation
+   - mobile Locker sync
+   - mobile scrolling
+   - 023B phone-only layout structure
+   - 023C phone spacing improvements that did not cause regressions
+   - Save / Save As / Locker
+   - stable saved-file IDs
+   - one user-created custom theme per account
+   - 10-photo custom-theme maximum
+   - Fit / Fill
+   - Showcase
+   - Pack Summary
+   - Weight Distribution
+   - Scan Gear List
+   - footer normal document flow
+   - auth/password fixes
+
+7. Make the smallest reasonable change.
+
+8. Do NOT perform unrelated refactors.
+
+9. Inspect the COMPLETE final diff.
+
+10. Revert unrelated changes.
+
+11. Run the full regression suite plus new 023D tests.
+
+==================================================
+PART A — REMOVE ONLY REPLIT-ADDED DUPLICATE THEMES
+==================================================
+
+==================================================
+1. REMOVE THE REPLIT-ADDED UPPER RETRO-OUTDOORS
+==================================================
+
+Delete ONLY the Retro-Outdoors theme instance that Prompt 023C/Replit added.
+
+PRESERVE the user's pre-existing Retro-Outdoors theme and all of its original images/assets/settings.
+
+Do not create another replacement Retro-Outdoors theme.
+
+Do not alter its image set.
+
+==================================================
+2. REMOVE THE REPLIT-ADDED UPPER PSYCHEDELIC
+==================================================
+
+Delete ONLY the Psychedelic theme instance that Prompt 023C/Replit added.
+
+PRESERVE the user's pre-existing Psychedelic theme and all of its original images/assets/settings.
+
+Do not create another replacement Psychedelic theme.
+
+Do not alter its image set.
+
+==================================================
+3. REMOVE REPLIT-ADDED TOPO 1
+==================================================
+
+Delete the Replit-added "Topo 1" theme and its Replit-added assets/references.
+
+PRESERVE the user's original Topo collection, which is CURRENTLY named:
+
+Topo 2
+
+Do NOT rename Topo 2 in this prompt.
+
+The user will manually rename:
+Topo 2 → Topo
+
+after this corrective work is complete.
+
+Do not create a new Topo theme.
+Do not generate/download replacement topo images.
+Do not substitute a terrain-photography theme for the user's existing topographic pattern theme.
+
+==================================================
+4. FINAL THEME LIST FOR THIS PROMPT
+==================================================
+
+After removing the three Replit-added duplicates, the selector should contain the preserved themes in this order:
+
+1. Landscape
+2. Retro-Outdoors
+3. Psychedelic
+4. Topo 2
+5. Custom 1
+
+IMPORTANT:
+- "Topo 2" is temporary and intentional.
+- Do not rename it.
+- Custom stays LAST.
+- Do not add "Theme" to any individual name.
+
+If the user's custom theme has since been renamed, use its actual current name but keep it last.
+
+==================================================
+5. DO NOT RECREATE DELETED PRESETS
+==================================================
+
+Prompt 023C incorrectly added new built-in preset sets.
+
+Inspect for code/assets introduced specifically for those duplicate themes, including any new:
+- RETRO preset arrays
+- PSYCHEDELIC preset arrays
+- TOPO 1 preset arrays
+- image URLs
+- theme IDs
+- ordering entries
+- migration/fallback entries
+
+Remove only what belongs to the unwanted Replit-added duplicates.
+
+Do NOT delete shared code or shared assets still used by the user's preserved themes.
+
+Document exactly what was removed.
+
+==================================================
+6. LEGACY / SAVED FILE SAFETY
+==================================================
+
+If any saved file currently points to one of the Replit-added duplicate IDs:
+
+- do not corrupt the saved file
+- do not delete the saved file
+- fall back safely to an existing valid background if needed
+- do not silently overwrite the saved user's theme selection with a different theme unless the current architecture requires a safe fallback
+
+Document the exact behavior.
+
+==================================================
+PART B — ABOUT TRAILWEIGH OPENING MUST STATE MULTI-USE PURPOSE
+==================================================
+
+==================================================
+7. CURRENT PROBLEM
+==================================================
+
+The user provided a screenshot of the current About TrailWeigh page.
+
+The visible opening still reads almost entirely as a backpacking/gear/pack-weight application.
+
+The broader TrailWeigh use case is not clear enough at the top.
+
+The user wants users to understand immediately that:
+
+- TrailWeigh started from pack/gear-weight use
+- TrailWeigh is NOT limited to backpacking
+- TrailWeigh can be used for many kinds of lists/checklists
+- entering item weight is OPTIONAL
+- a user can leave weight blank and still use TrailWeigh normally
+
+==================================================
+8. ADD THIS CONCEPT NEAR THE TOP OF ABOUT
+==================================================
+
+Near the top of About TrailWeigh, before the page moves deeply into hiking philosophy, add a concise paragraph with this meaning:
+
+"TrailWeigh started as a way to understand and organize pack weight, but it isn't limited to backpacking. You can use TrailWeigh to build and organize almost any kind of checklist or item list. Add weights when they're useful—or leave them out entirely. Weight is never required."
+
+Small grammatical or punctuation adjustments are allowed to match the page style.
+
+DO NOT weaken these four points:
+1. not limited to backpacking
+2. many kinds of lists/checklists
+3. weight is optional
+4. weight is never required
+
+==================================================
+9. PRESERVE EXISTING ABOUT CONTENT
+==================================================
+
+Do NOT rewrite the About page.
+
+Preserve:
+- the existing opening philosophy where still appropriate
+- Carry what you need...
+- Mental / Physical / Spiritual hierarchy
+- Hiking Philosophy sections
+- Ultralight sections
+- TrailWeigh sections
+- Ray Jardine content
+- citations/references
+- Credits
+- Help / Contact areas
+- existing accessibility behavior
+
+This is an ADDITIVE clarification near the top, not a new About-page rewrite.
+
+==================================================
+10. DO NOT REMOVE TRAILWEIGH'S BACKPACKING IDENTITY
+==================================================
+
+TrailWeigh should still clearly be useful for:
+- backpacking
+- hiking
+- gear
+- pack weight
+
+The intended message is:
+
+TrailWeigh can do MORE than backpacking/pack-weight lists.
+
+Do NOT turn the page into generic productivity-app marketing.
+
+==================================================
+11. VERIFY WEIGHT REALLY IS OPTIONAL
+==================================================
+
+Before publishing the wording "Weight is never required":
+
+Verify the actual application supports adding/using an item without a weight.
+
+If blank weight is already supported:
+- make no unnecessary data-model change
+- document PASS
+
+If blank weight is not supported:
+- report PARTIAL/FAIL
+- do NOT make a broad unrelated data-model rewrite in this corrective prompt
+- do not publish wording that is untrue
+
+==================================================
+12. SIGN-UP / LOGIN MESSAGE REGRESSION CHECK
+==================================================
+
+Prompt 023C was also supposed to add a short multi-use message to the auth page.
+
+Verify it exists and remains concise, with the meaning:
+
+"Build packing lists, checklists, gear lists, and more. Track weight when useful—or skip it entirely."
+
+If Prompt 023C already implemented it correctly:
+- preserve it
+- do not rewrite it unnecessarily
+
+If it is missing:
+- add the concise message
+- preserve auth layout/contrast and legal links
+
+==================================================
+PART C — REGRESSION / VISUAL VERIFICATION
+==================================================
+
+==================================================
+13. BACKGROUND THEMES VISUAL ACCEPTANCE
+==================================================
+
+Open Background Edit → Background Themes.
+
+At completion the visible selector must show only the preserved set:
+
+Landscape
+Retro-Outdoors
+Psychedelic
+Topo 2
+Custom 1
+
+or the actual custom name in the final slot.
+
+There must NOT be:
+- a second Retro-Outdoors
+- a second Psychedelic
+- Topo 1
+- Replit-added replacement themes
+
+Take a non-sensitive screenshot showing the final selector.
+
+==================================================
+14. PHONE LAYOUT REGRESSION
+==================================================
+
+Do not change the user-approved phone layout.
+
+Verify at representative phone widths:
+- 360 px Android-like
+- 390 px iPhone-like
+- 412 px Android-like
+
+Preserve:
+1. File Name + Preview centered top row
+2. Background Edit / Share
+3. Pack Summary
+4. Weight Distribution
+5. Scan Gear List
+6. Locker
+7. Open/Close + Hide + Imperial/Metric
+8. Categories
+9. Footer
+
+No horizontal overflow.
+No lost scrolling.
+No overlap.
+
+==================================================
+15. AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for at least:
+
+THEMES:
+[ ] only one Retro-Outdoors remains
+[ ] only one Psychedelic remains
+[ ] Topo 1 is absent
+[ ] Topo 2 remains
+[ ] Landscape remains
+[ ] custom theme remains
+[ ] custom theme remains last
+[ ] no automatic "Theme" suffix/prefix
+[ ] preserved theme IDs/assets are unchanged where expected
+[ ] unwanted Replit-added theme IDs are absent
+[ ] custom Delete → Undo still works
+
+ABOUT / MESSAGING:
+[ ] About top contains not-limited-to-backpacking message
+[ ] About top says many kinds of lists/checklists
+[ ] About top says weight is optional / never required
+[ ] existing About hierarchy remains
+[ ] sign-up/login multi-use text remains or is restored
+[ ] blank/no-weight item behavior is verified
+
+PHONE:
+[ ] phone structure remains unchanged
+[ ] no phone horizontal overflow
+[ ] mobile scrolling preserved
+
+==================================================
+16. FULL REGRESSION PROTECTION
+==================================================
+
+Run the full TrailWeigh regression suite.
+
+Specifically verify:
+
+[ ] 023A custom-theme Undo
+[ ] 022Z one-click custom-theme delete
+[ ] anchored delete confirmation
+[ ] custom photos
+[ ] Background Edit
+[ ] Fit / Fill
+[ ] Locker sync
+[ ] mobile scrolling
+[ ] Save / Save As
+[ ] Locker open/load
+[ ] Share
+[ ] Preview
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Categories
+[ ] footer
+[ ] auth/login/signup
+[ ] password recovery
+[ ] password visibility
+[ ] tablet layout
+[ ] desktop layout
+
+==================================================
+17. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023D_REPORT.md
+
+Exact report title:
+
+Prompt 023D — Remove Replit-Added Duplicate Themes and Fix About TrailWeigh Multi-Use Intro
+
+The report must include:
+
+- checkpoint confirmation
+- files changed
+- complete final-diff review
+- anything reverted
+
+THEME CORRECTION SECTION:
+- stable ID/key of removed upper Retro-Outdoors
+- stable ID/key of preserved lower Retro-Outdoors
+- stable ID/key of removed upper Psychedelic
+- stable ID/key of preserved lower Psychedelic
+- stable ID/key of removed Topo 1
+- stable ID/key of preserved Topo 2
+- exact assets removed
+- exact assets preserved
+- exact final selector order
+- confirmation no new themes/assets were invented
+- legacy saved-file fallback behavior if relevant
+
+ABOUT SECTION:
+- exact paragraph added near the top
+- exact placement
+- confirmation existing About hierarchy/content preserved
+- blank/no-weight item verification result
+
+AUTH SECTION:
+- exact current sign-up/login multi-use wording
+- whether it was preserved or restored
+
+PHONE SECTION:
+- 360 result
+- 390 result
+- 412 result
+- scrolling result
+- overflow result
+- confirmation phone structure unchanged
+
+TEST SECTION:
+- automated tests
+- runtime/visual tests
+- full regression tests
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Real-device status remains NOT TESTED unless tested on physical hardware after this prompt.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+18. REQUIRED REPLIT-CREATED ZIP
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023D-report.zip
+
+Prompt 023D is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023D_REPORT.md
+
+2.
+workflow-reports/trailweigh-023D-report.zip
+
+ZIP must contain at minimum:
+PROMPT_023D_REPORT.md
+
+It SHOULD also include NON-SENSITIVE screenshots of:
+- final Background Themes selector
+- About TrailWeigh opening
+- sign-up/login message
+- representative phone layout
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private account data
+- private Locker contents
+- private user photos
+
+Before completion:
+1. Verify ZIP exists.
+2. Verify ZIP size > 0.
+3. Programmatically open/list ZIP.
+4. Confirm report is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+==================================================
+19. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. ZIP verification result
+8. confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. confirmation removed ONLY:
+   - Replit-added upper Retro-Outdoors
+   - Replit-added upper Psychedelic
+   - Replit-added Topo 1
+
+10. confirmation preserved:
+   - Landscape
+   - user's original Retro-Outdoors
+   - user's original Psychedelic
+   - Topo 2
+   - Custom 1/current custom theme
+
+11. exact final theme order
+
+12. confirmation Topo 2 was NOT renamed
+
+13. confirmation no replacement/new theme image sets were created
+
+14. exact About multi-use paragraph added
+
+15. confirmation weight-optional behavior was verified
+
+16. exact current sign-up/login multi-use wording
+
+17. confirmation phone layout was not rearranged
+
+18. exact user verification steps
+
+FINAL STATUS RULE:
+
+Do not claim real iPhone or Android PASS until the user verifies on the physical device.
