@@ -598,3 +598,40 @@ Collapsed gap = max(6px, 4px) = **6px** ✓
 
 ### Report
 `PROMPT_023T_REPORT.md`
+
+---
+
+## Prompt 023U — Reduce Category Header Vertical Padding 50% + Protect Expanded Panel Bodies
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+**Part A — Header padding halved:**
+`GearCategory.tsx` header: `p-3 sm:p-4` → `py-1.5 px-3 sm:py-2 sm:px-4`
+- Mobile: 12px → 6px vertical (50%) ✓ · horizontal 12px unchanged
+- Desktop: 16px → 8px vertical (50%) ✓ · horizontal 16px unchanged
+- All font/icon sizes unchanged. 6px inter-category gap preserved.
+
+**Part B — Expanded body protection:**
+Root cause: `barCardStyle()` sets `backgroundColor: 'transparent'` on the outer wrapper when `barTransparency < 1`, making expanded bodies see-through. Fix: added `style={{ backgroundColor: 'hsl(var(--card))' }}` to expanded body divs in all five affected panels.
+
+| Component | Body protected |
+|---|---|
+| GearCategory (category accordions) | ✓ |
+| WeightSummary — Pack Summary | ✓ |
+| WeightSummary — Weight Distribution | ✓ |
+| LockerPanel | ✓ |
+| ImportGearPanel (Scan Gear) | ✓ |
+
+Bar Color and Text Color were already header-scoped (not leaking into bodies). Font intentionally continues to cascade via root wrapper.
+
+### Files Changed
+`GearCategory.tsx` — header padding + body protection  
+`WeightSummary.tsx` — Pack Summary + Weight Distribution body protection  
+`LockerPanel.tsx` — Locker body protection  
+`ImportGearPanel.tsx` — Scan Gear body protection
+
+### Report
+`PROMPT_023U_REPORT.md`

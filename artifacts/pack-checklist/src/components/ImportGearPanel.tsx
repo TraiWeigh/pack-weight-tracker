@@ -294,7 +294,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true }
       </button>
 
       {open && (
-        <div className="p-4 sm:p-5 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4" style={{ backgroundColor: 'hsl(var(--card))' }}>
 
           {/* ── Drop zone (idle + error) ── */}
           {(phase === 'idle' || phase === 'error') && (

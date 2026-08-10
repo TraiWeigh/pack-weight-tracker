@@ -123,7 +123,7 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncPr
       </button>
 
       {open && (
-        <div>
+        <div style={{ backgroundColor: 'hsl(var(--card))' }}>
           {/* 022T: Sync Status diagnostic panel — shown when signed in */}
           {syncProps && (
             <SyncStatusPanel {...syncProps} localCount={entries.length} />

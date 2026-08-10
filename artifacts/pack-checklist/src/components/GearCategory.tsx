@@ -188,7 +188,7 @@ export function GearCategory({
     >
       {/* ── Header ───────────────────────────────────────────── */}
       <div
-        className="flex items-center justify-between p-3 sm:p-4 bg-muted/30 cursor-pointer select-none"
+        className="flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 bg-muted/30 cursor-pointer select-none"
         style={barCombinedStyle(barStyle)}
         onClick={() => setIsOpen(o => !o)}
       >
@@ -283,7 +283,7 @@ export function GearCategory({
 
       {/* ── Body ─────────────────────────────────────────────── */}
       {isOpen && (
-        <div className="p-2 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="p-2 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-200" style={{ backgroundColor: 'hsl(var(--card))' }}>
           <div className={`hidden sm:grid ${GEAR_GRID_COLS} ${GEAR_GRID_GAP} px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 items-center`}>
             {/* Col 1 — checkbox/grip spacer */}
             <div className="w-[30px]" />

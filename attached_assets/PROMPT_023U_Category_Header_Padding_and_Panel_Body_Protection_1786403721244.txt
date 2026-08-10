@@ -1,0 +1,535 @@
+PROMPT 023U — REDUCE CATEGORY HEADER VERTICAL PADDING BY 50% + PROTECT EXPANDED PANEL BODIES
+
+RECOMMENDED REPLIT MODE: ECONOMY
+
+WHY:
+This is a focused UI/CSS correction. It changes category-header vertical padding and protects expanded accordion body styling. It should not require Power mode unless inspection reveals an unexpected shared-style architecture problem.
+
+PURPOSE
+
+Make two focused changes:
+
+A. CATEGORY HEADER DENSITY
+Reduce the vertical padding ABOVE and BELOW the text/icons inside each collapsible category header bar by exactly 50% of the current value.
+
+B. EXPANDED PANEL BODY PROTECTION
+Expanded collapsible-panel body/content areas must NOT be affected by:
+- Bar Color
+- Transparency
+- Text Color
+
+Those expanded body areas must keep their normal/default solid background and normal/default text color for readability.
+
+Only typography settings may affect expanded panel body text:
+- Font
+- Font Size, if/when that setting exists in the current implementation
+
+Do NOT add a new Font Size control in this prompt if one does not already exist.
+
+Panel/header bars and intended pills/controls may continue using Bar Color, Text Color, and Transparency.
+
+==================================================
+MANDATORY COMPLETION RULE — DO NOT STOP BEFORE THIS
+==================================================
+
+BEFORE YOU STOP OR DECLARE THE PROMPT COMPLETE, YOU MUST:
+
+1. Write:
+   workflow-reports/PROMPT_023U_REPORT.md
+
+2. Append the report to:
+   workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+3. Create:
+   workflow-reports/trailweigh-023U-report.zip
+
+4. Verify the ZIP:
+   - exists
+   - is greater than 0 bytes
+   - opens/lists programmatically
+   - contains PROMPT_023U_REPORT.md
+   - is not corrupt
+
+5. Report:
+   - report path
+   - ZIP path
+   - ZIP size
+   - ZIP contents
+   - ZIP verification result
+
+DO NOT stop after code/test work without writing and verifying the report and ZIP.
+
+==================================================
+0. CHECKPOINT / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Read:
+   - workflow-reports/PROMPT_023T_REPORT.md
+3. Inspect the current category accordion header implementation.
+4. Measure and record the ACTUAL current vertical padding above and below the category-header content.
+5. Inspect how Bar Color, Text Color, Transparency, and Font currently propagate into expanded accordion bodies.
+6. Make the smallest reasonable changes.
+7. Do not perform unrelated refactors.
+8. Preserve:
+   - the user-verified 6 px inter-category gap from Prompt 023T
+   - current font sizes
+   - current icon sizes
+   - chevron sizes
+   - drag handles
+   - +Base
+   - category expand/collapse
+   - item-row spacing
+   - Edit View behavior
+   - Transparency behavior on intended header bars/pills
+   - Bar Color behavior on intended header bars/pills
+   - Text Color behavior on intended header bars/pills
+   - saved-file isolation from Prompt 023P
+   - color-picker/eyedropper safety and Undo/Redo behavior
+   - authentication
+   - Locker
+   - Save / Save As
+   - sharing
+   - Scan Gear List
+   - themes
+9. Inspect the complete final diff.
+10. Revert unrelated changes.
+11. Document checkpoint and final diff.
+
+==================================================
+1. REDUCE CATEGORY HEADER VERTICAL PADDING BY 50%
+==================================================
+
+Find the exact current vertical padding ABOVE and BELOW the text/icons inside each category accordion HEADER BAR.
+
+Reduce each current vertical padding value by exactly 50%.
+
+Examples only:
+- 12 px top + 12 px bottom → 6 px top + 6 px bottom
+- 8 px top + 8 px bottom → 4 px top + 4 px bottom
+
+Do not guess the current value.
+
+Document:
+- current top padding
+- current bottom padding
+- new top padding
+- new bottom padding
+- exact CSS/Tailwind rule changed
+
+==================================================
+2. KEEP FONT / ICON SIZES UNCHANGED
+==================================================
+
+Do NOT shrink:
+- category title font size
+- packed-count font size
+- weight/unit font size
+- icons
+- disclosure chevron/caret
+- drag handle
+- trash icon
+- +Base text/icon
+
+The category header should become shorter ONLY because the empty vertical padding above and below its contents is reduced.
+
+Do not force a fixed total height if doing so would clip text/icons.
+
+==================================================
+3. PRESERVE THE 6 PX GAP FROM 023T
+==================================================
+
+Prompt 023T was USER VERIFIED PASS.
+
+Keep the vertical gap BETWEEN adjacent category accordion panels at exactly 6 px.
+
+Do NOT change:
+- `mb-1.5` / its effective 6 px role
+- `space-y-1` / its supporting role
+unless technically necessary, in which case preserve the final effective 6 px gap and explain why.
+
+==================================================
+4. EXPANDED BODY — NO TRANSPARENCY
+==================================================
+
+Expanded accordion body/content areas must remain SOLID.
+
+Transparency must NOT affect the background of expanded body/content areas.
+
+At:
+- Solid
+- midpoint
+- Transparent
+
+the expanded body background must stay at its normal/default solid background treatment.
+
+The background image must NOT show through the protected expanded body.
+
+Do NOT apply whole-component opacity.
+
+==================================================
+5. EXPANDED BODY — NO BAR COLOR
+==================================================
+
+Bar Color must NOT recolor expanded panel body backgrounds.
+
+Changing Bar Color may continue to affect:
+- category/header bars
+- panel/header bars
+- intended pills/controls
+
+But expanded body/content backgrounds must remain their normal/default solid color.
+
+==================================================
+6. EXPANDED BODY — NO TEXT COLOR
+==================================================
+
+Text Color must NOT recolor text/icons inside expanded body/content areas.
+
+Expanded body text/icons should use their normal/default text color for readability.
+
+Text Color may continue to affect intended header bars and pills.
+
+==================================================
+7. ONLY FONT / FONT SIZE MAY AFFECT EXPANDED BODY TYPOGRAPHY
+==================================================
+
+Expanded body text may inherit:
+- selected Font
+- selected Font Size, ONLY if a Font Size feature already exists
+
+Do NOT add a new Font Size feature in this prompt.
+
+If Font is currently intended to cascade into expanded body text, preserve it.
+
+Do not allow Bar Color, Transparency, or Text Color to leak into the expanded body.
+
+==================================================
+8. APPLY BODY PROTECTION CONSISTENTLY
+==================================================
+
+Verify the protection on expanded body/content areas for:
+
+- category accordions
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- any other similar current collapsible/accordion section using the same appearance system
+
+Important distinction:
+
+HEADER BAR:
+- may use Bar Color
+- may use Text Color
+- may use Transparency
+- may use Font
+
+EXPANDED BODY:
+- Bar Color: NO
+- Transparency: NO
+- Text Color: NO
+- Font: YES
+- Font Size: YES only if already implemented
+
+==================================================
+9. DO NOT BREAK NESTED CONTROLS
+==================================================
+
+Inside expanded bodies, controls that are intentionally styled as separate pills/buttons may retain their own intended control styling.
+
+Do not accidentally make controls unreadable.
+
+But the expanded BODY SURFACE itself must remain protected and solid.
+
+If a nested control belongs to the header-style customization scope by design, document it rather than changing unrelated behavior.
+
+==================================================
+10. FILE / WINDOW PROTECTION
+==================================================
+
+Preserve Prompt 023P file isolation.
+
+Changes to:
+- Bar Color
+- Text Color
+- Transparency
+- Font
+
+must remain isolated to the active working file/session.
+
+They must NOT:
+- alter another saved Locker file
+- modify the persisted version of the active file until explicit Save
+- carry into a New unsaved file/window/tab
+- leak into another open file/window
+
+Opening a saved file must use that file's own saved appearance state.
+
+==================================================
+11. COLLAPSED / EXPANDED VISUAL TEST
+==================================================
+
+Verify:
+
+A. COLLAPSED
+- category headers are shorter because vertical padding is halved
+- font/icon sizes unchanged
+- 6 px outer gap unchanged
+
+B. EXPANDED
+- header remains compact
+- expanded body retains normal solid background
+- expanded body text retains normal/default text color
+- item-row spacing unchanged
+- content is not clipped
+
+==================================================
+12. EDIT VIEW REGRESSION
+==================================================
+
+Verify:
+
+- Bar Color still changes intended header bars/pills
+- Text Color still changes intended header-bar/pill text/icons
+- Transparency still changes intended header bars/pills
+- Font still applies where intended
+- expanded body protection overrides Bar Color/Text Color/Transparency
+- Darken remains independent
+- themes remain functional
+
+==================================================
+13. RESPONSIVE CHECK
+==================================================
+
+Verify on:
+- desktop
+- 390 px
+- 412 px
+
+The shorter category headers must remain usable and readable.
+
+Do not redesign mobile layout.
+
+==================================================
+14. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- category expand/collapse
+- category drag/reorder
+- item editing
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Edit View
+- Bar Color
+- Text Color
+- Font
+- Darken
+- Transparency
+- themes
+- +Base
+- Base Weight logic
+- file isolation
+- color-picker/eyedropper safety
+- authentication
+- sharing permissions
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim physical-device behavior PASS from code inspection alone.
+
+==================================================
+15. BUILD / RUNTIME
+==================================================
+
+Run appropriate build/runtime checks.
+
+Confirm:
+- frontend builds
+- app renders
+- no new console/runtime errors
+- Locker API is not regressed
+- Save/Save As are not regressed
+- Scan Gear List/import backend is not regressed
+
+No unrelated backend changes.
+
+==================================================
+16. USER VERIFICATION
+==================================================
+
+Give the user this short test:
+
+CATEGORY HEADER SIZE
+1. Look at several category bars.
+2. Confirm the empty space above and below the text/icons is about half what it was.
+3. Confirm the text/icons themselves are the SAME size.
+4. Confirm the 6 px gap between adjacent category bars is unchanged.
+
+EXPANDED BODY PROTECTION
+5. Expand a category.
+6. Change Bar Color.
+7. Confirm the category HEADER changes, but the expanded BODY background does not.
+8. Move Transparency.
+9. Confirm the header changes transparency, but the expanded BODY remains solid.
+10. Change Text Color.
+11. Confirm header text changes, but expanded BODY text keeps its normal/default text color.
+12. Change Font.
+13. Confirm the font may still apply to expanded body text.
+14. Open another saved file and confirm it was not affected.
+
+Do not mark USER PASS until the user confirms.
+
+==================================================
+17. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023U_REPORT.md
+
+Include:
+
+- checkpoint
+- exact files changed
+- current category-header top/bottom padding
+- new category-header top/bottom padding
+- proof values are reduced by 50%
+- confirmation font sizes unchanged
+- confirmation icon sizes unchanged
+- confirmation 6 px inter-category gap preserved
+- category expanded-body Transparency result
+- category expanded-body Bar Color result
+- category expanded-body Text Color result
+- Pack Summary body result
+- Weight Distribution body result
+- Scan Gear List body result
+- Locker body result
+- Font result
+- file/window isolation result
+- desktop result
+- 390 px result
+- 412 px result
+- regression results
+- build/runtime
+- final diff
+- unresolved issues
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior history.
+
+==================================================
+18. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023U-report.zip
+
+Include at minimum:
+
+- PROMPT_023U_REPORT.md
+
+May include useful non-sensitive:
+- before/after screenshots
+- computed-style test output
+- browser test output
+- build output
+- diff summary
+
+Do NOT include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- real Locker contents
+- private uploaded photos
+- database dumps
+
+Use synthetic test data only.
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023U_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+==================================================
+19. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status
+2. Files changed
+3. Old top padding
+4. New top padding
+5. Old bottom padding
+6. New bottom padding
+7. Font-size preservation
+8. Icon-size preservation
+9. 6 px gap preservation
+10. Category body protection
+11. Pack Summary body protection
+12. Weight Distribution body protection
+13. Scan Gear List body protection
+14. Locker body protection
+15. Font behavior
+16. File/window isolation
+17. Desktop/mobile
+18. Build/runtime
+19. Backend regression
+20. Unresolved issues
+21. PROMPT_023U_REPORT.md path
+22. ZIP path
+23. ZIP size
+24. ZIP contents
+25. ZIP verification
+26. User test steps
+
+FINAL RULES:
+
+1. Reduce ONLY the vertical padding above and below category-header contents by 50%.
+2. Keep font/icon sizes unchanged.
+3. Preserve the 6 px inter-category gap.
+4. Expanded panel bodies must ignore Bar Color, Transparency, and Text Color.
+5. Only Font and an already-existing Font Size setting may affect expanded body typography.
+6. Preserve file/window isolation.
+7. DO NOT STOP until the report and ZIP are written and verified.

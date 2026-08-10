@@ -109,7 +109,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseP
 
       {/* Collapsible body */}
       {summaryOpen && (
-        <div className="p-4 sm:p-5 border-t border-border animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="p-4 sm:p-5 border-t border-border animate-in fade-in slide-in-from-top-2 duration-200" style={{ backgroundColor: 'hsl(var(--card))' }}>
           <div className="space-y-3">
             {/* Base Weight */}
             <div className="flex justify-between items-end">
@@ -269,7 +269,7 @@ export function WeightDistribution({
 
       {/* Chart body */}
       {chartOpen && (
-        <div className="p-4 sm:p-5 pt-2 border-t border-border animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="p-4 sm:p-5 pt-2 border-t border-border animate-in fade-in slide-in-from-top-2 duration-200" style={{ backgroundColor: 'hsl(var(--card))' }}>
           {grandTotalOz > 0 ? (
             <>
               <div className="h-[200px] w-full">
