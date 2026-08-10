@@ -1,0 +1,1047 @@
+PROMPT 023E — ADD BAR COLOR/TEXT CUSTOMIZATION, FIX HIDE + SHARE HOVER, AND BROADEN THE LANDING PAGE
+
+USER-VERIFIED / REPORT STATUS
+
+Prompt 023D ZIP has been received and reviewed.
+
+023D report:
+- ZIP/report valid
+- 315 automated tests reported PASS
+- Replit-added duplicate Retro-Outdoors / Psychedelic / Topo 1 presets were removed
+- user's existing theme collections were preserved
+- About multi-use message was added
+- sign-in multi-use message was preserved
+- phone layout structure was preserved
+
+IMPORTANT REAL-USER EVIDENCE OVERRIDES AUTOMATED CLAIMS:
+
+The 023D report lists Hide as PASS, but the user provided a REAL browser screen recording showing:
+- Hide is faded/disabled when it should be available
+- hovering it shows the blocked/not-allowed state / "Finish the current action first"
+- this problem has previously changed depending on which saved file was opened
+
+The same recording shows a separate Share hover bug:
+- Share itself is enabled
+- when the cursor moves over Share, the WHOLE Share pill fades/lightens
+- the intended behavior is for the Share pill background to stay stable while the Share TEXT AND ICON turn WHITE
+
+Do not treat source-level or automated Hide PASS as proof that the real runtime issue is solved.
+
+This prompt has FOUR focused goals:
+
+A. Add a new Background Edit control group: "Bar Color / Text"
+B. Fix the stale/incorrect Hide disabled state
+C. Fix Share hover behavior
+D. Rewrite the public landing page so TrailWeigh clearly supports many kinds of lists, and add a fourth feature card
+
+Do NOT modify the corrected theme collections/order from 023D.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the CURRENT implementation before changing anything, including:
+   - BackgroundPicker / Background Edit
+   - current Full Screen / Fit Image control group
+   - current background persistence model
+   - current undo/redo background snapshot model
+   - category/panel bar styling
+   - pill/control styling
+   - active/selected segmented-control styling
+   - Share normal/hover/focus classes
+   - Hide disabled logic
+   - global "action in progress" / modal / edit / pending-operation guards
+   - saved-file load/switch lifecycle
+   - public landing/marketing page
+   - sign-in/sign-up page
+   - current responsive card layout
+
+3. Preserve ALL verified recent fixes:
+   - 023A custom-theme Delete → Undo/Redo
+   - 022Z one-click custom-theme deletion
+   - anchored delete confirmation
+   - mobile Locker sync
+   - mobile page/Locker scrolling
+   - 023B phone-only layout structure
+   - 023C phone spacing improvements
+   - 023D duplicate-theme cleanup
+   - user's original Retro-Outdoors collection
+   - user's original Psychedelic collection
+   - user's Topo collection currently named Topo 2
+   - Custom theme(s) exactly as currently stored
+   - Save / Save As / Locker
+   - stable saved-file IDs
+   - Fit / Fill
+   - Showcase
+   - Pack Summary
+   - Weight Distribution
+   - Scan Gear List
+   - footer normal document flow
+   - auth/password fixes
+   - About multi-use message
+   - auth multi-use message
+
+4. Make the smallest reasonable changes.
+
+5. Do NOT perform unrelated refactors.
+
+6. Inspect the COMPLETE final diff.
+
+7. Revert unrelated changes.
+
+8. Run the full regression suite plus new 023E tests.
+
+==================================================
+PART A — BACKGROUND EDIT: "BAR COLOR / TEXT"
+==================================================
+
+==================================================
+1. ADD THE NEW CONTROL GROUP IN THE EXACT LOCATION
+==================================================
+
+Inside Background Edit, add a new control group labeled EXACTLY:
+
+Bar Color / Text
+
+Place this group:
+
+DIRECTLY ABOVE the existing:
+
+Full Screen / Fit Image
+
+control group.
+
+Do not place it at the bottom of Background Edit.
+Do not put it inside the theme selector.
+Do not combine it with Full Screen / Fit Image.
+
+The visual hierarchy should be:
+
+[ existing background/theme controls ]
+
+Bar Color / Text
+[ customization controls ]
+
+Full Screen / Fit Image
+[ existing controls ]
+
+==================================================
+2. BAR COLOR
+==================================================
+
+Inside "Bar Color / Text", provide a Bar Color control.
+
+Use a simple accessible color-selection UI, preferably:
+- native color picker/swatch
+- visible current color value
+- a Reset/Default action
+
+Do not require users to type CSS.
+
+The selected Bar Color must apply to the TrailWeigh checklist's customizable
+BAR/PANEL surfaces AND its PILL controls.
+
+At minimum, include these visible checklist surfaces where that same visual
+"bar/pill" language is used:
+
+PANEL / CATEGORY BARS:
+- Pack Summary bar/header
+- Weight Distribution bar/header
+- Scan Gear List bar/header
+- Locker bar/header
+- category bars/headers
+
+PILLS / TOOLBAR CONTROLS:
+- current File Name pill
+- Preview
+- Background Edit
+- Share
+- Open / Close segmented pill
+- Hide
+- Imperial / Metric segmented pill
+- other matching checklist toolbar pills that use the same established pill component/style
+
+IMPORTANT:
+Do NOT recolor:
+- page background itself
+- uploaded background image
+- footer background
+- auth/marketing page
+- modal body surfaces unrelated to the checklist bars/pills
+- TrailWeigh brand/logo
+unless those elements already intentionally inherit the same bar/pill token.
+
+Use a shared theme variable/token/component path where practical.
+Do NOT duplicate hard-coded style values across every component.
+
+==================================================
+3. SEGMENTED CONTROLS MUST REMAIN UNDERSTANDABLE
+==================================================
+
+Open/Close and Imperial/Metric have selected/unselected states.
+
+Applying Bar Color must NOT make the selected state impossible to distinguish.
+
+Preserve an accessible visual distinction using the current selected-state
+mechanism or a derived state that works with the custom Bar Color.
+
+Do not destroy:
+- selected state
+- disabled state
+- hover state
+- keyboard focus visibility
+
+==================================================
+4. FONT CONTROL
+==================================================
+
+Inside "Bar Color / Text", provide a Font selector.
+
+Include a curated, manageable list of common readable fonts.
+
+Use:
+1. Default TrailWeigh
+2. Arial
+3. Helvetica
+4. Verdana
+5. Trebuchet MS
+6. Georgia
+7. Times New Roman
+8. Courier New
+
+If TrailWeigh already bundles another common font safely, it may also remain as
+an option.
+
+Do NOT:
+- fetch arbitrary fonts from the internet at runtime
+- add dozens of fonts
+- require paid fonts
+- add a large font package solely for this feature
+
+Use safe CSS font stacks/fallbacks.
+
+==================================================
+5. FONT SCOPE
+==================================================
+
+The selected Font applies to the TEXT shown on the same customizable
+bars/pills controlled by this group.
+
+Examples:
+- Pack Summary label
+- Weight Distribution label
+- Scan Gear List label
+- Locker label
+- category names
+- File Name pill text
+- Preview
+- Background Edit
+- Share
+- Open / Close
+- Hide
+- Imperial / Metric
+
+Do NOT automatically change:
+- long item-description/body text inside expanded category tables
+- About page
+- Help page
+- footer
+- auth page
+- marketing page
+unless those areas already intentionally use the same bar/pill text token.
+
+==================================================
+6. TEXT COLOR
+==================================================
+
+Inside "Bar Color / Text", provide a Text Color control.
+
+Use the same simple accessible color-selection pattern as Bar Color:
+- color picker/swatch
+- visible current color
+- Reset/Default
+
+The selected Text Color applies to:
+- text on customizable bars
+- text on customizable pills
+- matching icons on those bars/pills where icons currently inherit text color
+
+Examples:
+- Share icon
+- Background Edit icon
+- disclosure chevrons where they are part of the bar
+- other matching bar/pill icons
+
+Do NOT recolor unrelated page/body text.
+
+==================================================
+7. DEFAULT / RESET BEHAVIOR
+==================================================
+
+Default must reproduce TrailWeigh's CURRENT appearance.
+
+A user who never touches Bar Color / Text must see no visual change.
+
+Provide a clear way to reset:
+- Bar Color → TrailWeigh default
+- Font → Default TrailWeigh
+- Text Color → TrailWeigh default
+
+If practical, one "Reset Bar / Text" action may reset all three, but individual
+control defaults should still be represented accurately.
+
+==================================================
+8. PERSISTENCE
+==================================================
+
+Inspect how Background Edit settings are currently persisted.
+
+Extend the SAME appropriate persistence scope rather than inventing a new
+account-global system.
+
+If background/display customization is saved with the active TrailWeigh list,
+save:
+- bar color
+- font
+- text color
+
+with that same list/display state.
+
+If current display/background customization uses another established persisted
+state model, follow that model.
+
+Requirements:
+- survives normal save/reload
+- survives closing/reopening the saved file as expected
+- does not unexpectedly overwrite other saved files
+- does not force one user's styling onto another user's unrelated file
+- shared views should preserve the owner's intended appearance if the existing
+  share model already preserves background/display styling
+
+Document the exact persistence scope in the report.
+
+==================================================
+9. UNDO / REDO
+==================================================
+
+Inspect the existing background/display Undo/Redo snapshot architecture.
+
+Because Bar Color / Text lives in Background Edit, these changes should follow
+the SAME undo/redo expectations as other background/display edits where
+technically appropriate.
+
+Test:
+Bar Color change → Undo → Redo
+Font change → Undo → Redo
+Text Color change → Undo → Redo
+
+Do not break 023A theme-delete Undo/Redo.
+
+==================================================
+10. CONTRAST / ACCESSIBILITY
+==================================================
+
+Users are intentionally allowed to choose their own colors.
+
+Do not silently override their chosen colors.
+
+However:
+- preserve visible keyboard focus
+- provide an unobtrusive contrast warning if the selected Bar Color and Text
+  Color have very low contrast, if this can be implemented simply
+- do not block saving merely because contrast is low
+
+==================================================
+PART B — FIX HIDE DISABLED / STALE ACTION STATE
+==================================================
+
+==================================================
+11. REAL BUG TO REPRODUCE
+==================================================
+
+The user's real screen recording shows Hide faded/disabled and unavailable.
+
+The blocked state displays behavior equivalent to:
+"Finish the current action first"
+
+This has also previously changed after opening another saved file.
+
+This strongly suggests a stale or incorrect "action in progress" state/guard.
+
+Do NOT solve this by:
+- simply removing all disabled protection
+- forcing Hide enabled unconditionally
+- changing opacity only
+- hiding the tooltip
+- deleting legitimate protection during real pending actions
+
+Find the actual state bug.
+
+==================================================
+12. INSPECT HIDE DISABLED CONDITIONS
+==================================================
+
+Trace the full current Hide control path:
+
+- disabled prop
+- aria-disabled
+- tooltip text
+- CSS opacity
+- pointer-events
+- onClick/onPress guard
+- global current-action/pending-action state
+- open editor state
+- background edit state
+- share-generation state
+- file-load state
+- modal state
+- upload/import state
+- save state
+- stale promise/pending flag
+- saved-file switching
+- component remount/state restoration
+
+Document the exact cause.
+
+==================================================
+13. EXPECTED HIDE BEHAVIOR
+==================================================
+
+When the app is idle and no genuinely blocking action is occurring:
+
+Hide must be:
+- fully enabled
+- visually active
+- clickable
+- keyboard accessible
+
+Opening or switching to a saved file must NOT leave Hide disabled because of a
+stale action lock.
+
+The "Finish the current action first" blocked state should appear ONLY when
+there really is an action that intentionally prevents Hide.
+
+==================================================
+14. FILE-SWITCH TEST
+==================================================
+
+Mandatory runtime test:
+
+1. Open saved file A.
+2. Confirm Hide enabled while idle.
+3. Use Hide.
+4. Restore/show using the established complementary behavior.
+5. Open saved file B.
+6. Confirm Hide enabled while idle.
+7. Return to saved file A.
+8. Confirm Hide remains enabled while idle.
+9. Repeat after Background Edit has been opened/closed.
+10. Repeat after Preview has been opened/closed.
+
+If a real pending operation intentionally disables Hide:
+- verify Hide re-enables immediately after that operation completes/cancels
+
+==================================================
+15. DO NOT CHANGE WHAT HIDE MEANS
+==================================================
+
+Preserve the existing established Hide functionality.
+
+This prompt fixes availability/state.
+
+Do not redesign or rename Hide.
+
+==================================================
+PART C — FIX SHARE HOVER
+==================================================
+
+==================================================
+16. CURRENT SHARE HOVER BUG
+==================================================
+
+The user's real recording shows:
+
+NORMAL:
+Share pill is enabled.
+
+HOVER:
+the entire Share pill fades/lightens.
+
+That is NOT the intended hover behavior.
+
+==================================================
+17. REQUIRED SHARE HOVER
+==================================================
+
+When the pointer moves over Share:
+
+- keep the Share pill BAR/BACKGROUND COLOR stable
+- do NOT fade the entire pill
+- do NOT lower pill opacity
+- change the Share TEXT to WHITE
+- change the Share ICON to WHITE
+
+The text and icon should transition together.
+
+This behavior must also work when the user chooses a custom Bar Color.
+
+Do not use opacity on the whole Share control for hover.
+
+==================================================
+18. SHARE FOCUS / ACTIVE
+==================================================
+
+Preserve:
+- click behavior
+- keyboard focus
+- accessible focus indication
+- disabled state if Share ever has a legitimate disabled state
+- current sharing logic
+
+Do not rewrite Share functionality.
+
+==================================================
+PART D — PUBLIC LANDING PAGE: MULTI-USE TRAILWEIGH
+==================================================
+
+==================================================
+19. CURRENT LANDING-PAGE PROBLEM
+==================================================
+
+The current public landing page still gives a new visitor the impression that
+TrailWeigh is ONLY a backpacking pack-weight application.
+
+Current headline:
+"Know your pack weight before you hit the trail"
+
+Current supporting copy/cards primarily reinforce gear, pack weight, and trips.
+
+The user wants TrailWeigh's broader usefulness obvious immediately.
+
+TrailWeigh should still retain its backpacking identity, but backpacking must
+read as ONE important use rather than the only use.
+
+==================================================
+20. NEW HERO HEADLINE
+==================================================
+
+Replace the current main headline with:
+
+Build smarter lists for the trail—and beyond
+
+Use the existing visual hierarchy/style.
+
+A two-line break is fine if visually balanced.
+
+Do NOT remove TrailWeigh branding or the existing CTA buttons.
+
+==================================================
+21. NEW HERO SUPPORTING COPY
+==================================================
+
+Use this supporting copy:
+
+Create packing lists, checklists, gear lists, inventories, and more. Track weight when it matters—or skip it entirely.
+
+This must be visible without scrolling on normal desktop and practical phone
+layouts.
+
+Keep the message concise.
+
+==================================================
+22. KEEP BACKPACKING IDENTITY
+==================================================
+
+The existing "ULTRALIGHT BACKPACKING" badge may remain.
+
+The new hero copy is meant to broaden TrailWeigh, not erase its origin and
+backpacking focus.
+
+Do NOT turn the page into generic office/productivity branding.
+
+==================================================
+23. FOUR FEATURE CARDS
+==================================================
+
+Replace the current three-card feature row with FOUR cards.
+
+Use these exact titles and meanings:
+
+1. Flexible Checklists
+
+Copy:
+Build lists for gear, travel, projects, equipment, supplies, or anything else you need to organize.
+
+2. Optional Weight Tracking
+
+Copy:
+Add weight when it matters—or leave it blank entirely.
+
+3. Print & Share
+
+Copy:
+Print, export, or share your list for any trip, project, or purpose.
+
+4. Use It Your Way
+
+Copy:
+TrailWeigh is not limited to backpacking. Create and organize almost any kind of item list.
+
+Use icons consistent with the existing design.
+
+Do not add decorative complexity.
+
+==================================================
+24. FOUR-CARD RESPONSIVE LAYOUT
+==================================================
+
+Desktop:
+- use a balanced four-card row if the available content width supports it
+
+Medium/tablet:
+- use a clean 2 × 2 grid
+
+Phone:
+- use 1 column or a readable 2-column layout only if text remains comfortable
+- no horizontal overflow
+- no tiny text
+- no clipped cards
+
+Keep card heights visually balanced where practical.
+
+==================================================
+25. CTA / AUTH LINKS
+==================================================
+
+Preserve:
+- Create Free Account
+- Sign In
+- top navigation Sign In / Get Started
+- existing auth routes
+- footer links
+
+Do not alter account creation behavior.
+
+==================================================
+26. SIGN-IN / SIGN-UP MESSAGE
+==================================================
+
+Prompt 023D confirms the auth message already exists:
+
+"Build packing lists, checklists, gear lists, and more. Weight tracking is always optional."
+
+Preserve it.
+
+Do not create duplicate competing paragraphs on the auth page.
+
+==================================================
+27. ABOUT PAGE
+==================================================
+
+Prompt 023D confirms the About page now contains:
+
+"TrailWeigh started as a way to understand and organize pack weight, but it
+isn't limited to backpacking. You can use TrailWeigh to build and organize
+almost any kind of checklist or item list. Add weights when they're
+useful—or leave them out entirely. Weight is never required."
+
+Preserve it.
+
+Do not rewrite the About page in 023E.
+
+==================================================
+PART E — VISUAL / RUNTIME ACCEPTANCE
+==================================================
+
+==================================================
+28. BACKGROUND EDIT VISUAL ACCEPTANCE
+==================================================
+
+Open Background Edit.
+
+Verify vertical control order includes:
+
+Bar Color / Text
+[ Bar Color ]
+[ Font ]
+[ Text Color ]
+
+immediately followed by:
+
+Full Screen / Fit Image
+
+Verify:
+- no overlap
+- no clipping
+- responsive on phone
+- color pickers usable by touch
+- font selector usable
+- Reset/default works
+
+==================================================
+29. BAR / PILL VISUAL ACCEPTANCE
+==================================================
+
+Choose a clearly different test Bar Color.
+
+Verify the same color is visibly applied to:
+- Pack Summary bar
+- Weight Distribution bar
+- Scan Gear List bar
+- Locker bar
+- category bars
+- File Name pill
+- Preview
+- Background Edit
+- Share
+- Open/Close
+- Hide
+- Imperial/Metric
+
+Then reset to default and verify the original TrailWeigh look returns.
+
+==================================================
+30. FONT / TEXT COLOR ACCEPTANCE
+==================================================
+
+Select:
+- Georgia
+- a clearly different test Text Color
+
+Verify only intended bar/pill text changes.
+
+Then test:
+- Arial
+- Courier New
+- Default TrailWeigh
+
+Reset and verify original appearance returns.
+
+==================================================
+31. SHARE HOVER WITH CUSTOM COLORS
+==================================================
+
+Test Share with:
+- default Bar Color
+- custom Bar Color
+
+On hover in both cases:
+[ ] pill background stays stable
+[ ] Share text turns white
+[ ] Share icon turns white
+[ ] whole control does not fade
+
+==================================================
+32. PHONE REGRESSION
+==================================================
+
+Do not rearrange the user-approved phone structure.
+
+At:
+- 360 px Android-like
+- 390 px iPhone-like
+- 412 px Android-like
+
+preserve:
+1. File Name + Preview
+2. Background Edit / Share
+3. Pack Summary
+4. Weight Distribution
+5. Scan Gear List
+6. Locker
+7. Open/Close + Hide + Imperial/Metric
+8. Categories
+9. Footer
+
+Also verify Background Edit customization controls do not introduce horizontal
+overflow.
+
+==================================================
+33. LANDING-PAGE VISUAL ACCEPTANCE
+==================================================
+
+Desktop:
+- new hero headline visible
+- new multi-use supporting copy visible
+- four feature cards visible and balanced
+- CTA preserved
+- footer preserved
+
+Phone:
+- hero copy readable
+- four cards stack/wrap cleanly
+- no overflow
+- CTAs remain accessible
+
+==================================================
+34. AUTOMATED TESTS
+==================================================
+
+Add meaningful tests for at least:
+
+BAR COLOR / TEXT:
+[ ] "Bar Color / Text" renders above Full Screen / Fit Image
+[ ] Bar Color state exists
+[ ] Font state exists
+[ ] Text Color state exists
+[ ] Default/Reset restores current TrailWeigh style
+[ ] bar style reaches panel/category bars
+[ ] bar style reaches pill controls
+[ ] text color reaches bar/pill text/icons
+[ ] font reaches bar/pill text
+[ ] persistence follows existing display/background state model
+[ ] Undo/Redo works if integrated into existing background/display history
+
+HIDE:
+[ ] idle Hide is not disabled
+[ ] legitimate pending action can still disable Hide
+[ ] stale pending state clears after completion/cancel
+[ ] saved-file switch does not leave Hide disabled
+[ ] Background Edit open/close does not leave Hide disabled
+[ ] Preview open/close does not leave Hide disabled
+
+SHARE:
+[ ] hover does not change whole-control opacity
+[ ] hover keeps background stable
+[ ] hover text becomes white
+[ ] hover icon becomes white
+[ ] click/share behavior preserved
+
+LANDING:
+[ ] new hero headline exact text
+[ ] supporting multi-use copy present
+[ ] four feature cards present
+[ ] Flexible Checklists present
+[ ] Optional Weight Tracking present
+[ ] Print & Share present
+[ ] Use It Your Way present
+[ ] CTA/auth links preserved
+[ ] auth multi-use wording preserved
+[ ] About multi-use wording preserved
+
+THEMES:
+[ ] 023D duplicate-theme cleanup remains intact
+[ ] no new built-in theme arrays/image sets are introduced by 023E
+
+==================================================
+35. FULL REGRESSION PROTECTION
+==================================================
+
+Run the full TrailWeigh regression suite.
+
+Specifically verify:
+
+[ ] 023A custom-theme Undo
+[ ] 022Z one-click custom-theme delete
+[ ] anchored delete confirmation
+[ ] 023D theme cleanup
+[ ] user's preserved theme assets
+[ ] Background Edit
+[ ] Fit / Fill
+[ ] Locker sync
+[ ] mobile scrolling
+[ ] Save / Save As
+[ ] Locker open/load
+[ ] Share functionality
+[ ] Preview
+[ ] Open/Close
+[ ] Hide functionality
+[ ] Imperial/Metric
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Categories
+[ ] footer
+[ ] auth/login/signup
+[ ] password recovery
+[ ] password visibility
+[ ] About
+[ ] Help
+[ ] tablet layout
+[ ] desktop layout
+
+==================================================
+36. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023E_REPORT.md
+
+Exact title:
+
+Prompt 023E — Add Bar Color/Text Customization, Fix Hide + Share Hover, and Broaden the Landing Page
+
+The report must include:
+
+- checkpoint confirmation
+- files changed
+- complete final-diff review
+- anything reverted
+
+BAR COLOR / TEXT SECTION:
+- exact component/files used
+- exact position relative to Full Screen / Fit Image
+- exact Bar Color UI
+- exact Font options
+- exact Text Color UI
+- exact elements affected
+- exact elements intentionally NOT affected
+- persistence scope
+- Undo/Redo behavior
+- Reset/default behavior
+- contrast/accessibility behavior
+- default appearance regression result
+
+HIDE SECTION:
+- exact root cause of stale/incorrect disabled state
+- exact disabled condition before fix
+- exact fix
+- file A → B → A runtime result
+- Background Edit open/close result
+- Preview open/close result
+- legitimate blocking-action result
+- confirmation Hide was not simply forced enabled globally
+
+SHARE SECTION:
+- exact old hover classes/behavior
+- exact new hover classes/behavior
+- default Bar Color hover result
+- custom Bar Color hover result
+- text-white result
+- icon-white result
+- click/share regression result
+
+LANDING SECTION:
+- exact new headline
+- exact new supporting copy
+- exact four card titles/copy
+- desktop layout result
+- tablet layout result
+- phone layout result
+- CTA/auth regression result
+- confirmation backpacking identity retained
+
+THEME PROTECTION SECTION:
+- confirmation no 023D theme changes were reversed
+- confirmation no new theme assets/preset arrays were added
+
+TEST SECTION:
+- automated tests
+- runtime tests
+- visual tests
+- full regression tests
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+IMPORTANT:
+Do NOT claim real iPhone/Android PASS unless tested on physical devices.
+
+==================================================
+37. REQUIRED REPLIT-CREATED ZIP
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023E-report.zip
+
+Prompt 023E is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023E_REPORT.md
+
+2.
+workflow-reports/trailweigh-023E-report.zip
+
+ZIP must contain at minimum:
+PROMPT_023E_REPORT.md
+
+It SHOULD also include NON-SENSITIVE screenshots of:
+- Background Edit showing Bar Color / Text above Full Screen / Fit Image
+- checklist with a test Bar Color
+- checklist with a test Font/Text Color
+- Share normal state
+- Share hover state
+- public landing page desktop
+- public landing page phone
+- representative 390 px checklist layout
+
+It may include non-sensitive test/runtime logs.
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private account data
+- private Locker contents
+- private real-user photos
+
+Before completion:
+1. Verify ZIP exists.
+2. Verify ZIP size > 0 bytes.
+3. Programmatically open/list ZIP contents.
+4. Confirm PROMPT_023E_REPORT.md is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+==================================================
+38. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. ZIP verification result
+8. confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. exact location of Bar Color / Text control group
+
+10. confirmation Bar Color affects bars AND pills
+
+11. exact Font list
+
+12. confirmation Text Color affects intended bar/pill text/icons
+
+13. exact persistence behavior
+
+14. exact Hide root cause and fix
+
+15. confirmation Hide is enabled when idle after switching saved files
+
+16. confirmation Share pill no longer fades on hover
+
+17. confirmation Share text AND icon turn white on hover
+
+18. exact landing-page headline
+
+19. exact landing supporting copy
+
+20. exact four feature card titles
+
+21. confirmation auth/About multi-use messages remain
+
+22. confirmation 023D theme cleanup remains intact
+
+23. exact user verification steps
+
+FINAL STATUS RULE:
+
+Do not claim real-device PASS until the user verifies on physical hardware.

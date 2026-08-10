@@ -5,6 +5,7 @@ import { calcTotalOz, formatWeight, smallUnit, largeUnit } from '../lib/weightUt
 import { useUnit } from '../context/UnitContext';
 import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react';
 import { GEAR_GRID_COLS, GEAR_GRID_GAP, RG_MOVE_W, RG_WEIGHT_W, RG_QTY_W, RG_TOTAL_W, RG_DELETE_W } from './gearGrid';
+import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
 
 interface GearCategoryProps {
   name: string;
@@ -168,6 +169,7 @@ export function GearCategory({
   const displaySmall = formatWeight(categoryTotalOz, system, 'small');
   const displayLarge = formatWeight(categoryTotalOz, system, 'large');
   const packedCount = items.filter(i => i.checked).length;
+  const barStyle = useBarStyle();
 
   const stopProp = (e: React.MouseEvent) => e.stopPropagation();
 
@@ -183,13 +185,14 @@ export function GearCategory({
       {/* ── Header ───────────────────────────────────────────── */}
       <div
         className="flex items-center justify-between p-3 sm:p-4 bg-muted/30 cursor-pointer select-none"
+        style={barCombinedStyle(barStyle)}
         onClick={() => setIsOpen(o => !o)}
       >
         {/* Left: collapse chevron + name + count badge */}
-        <div className="flex items-center gap-2 text-foreground font-semibold min-w-0">
+        <div className="flex items-center gap-2 text-foreground font-semibold min-w-0" style={barFgStyle(barStyle)}>
           {isOpen
-            ? <ChevronUp   className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-            : <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />}
+            ? <ChevronUp   className="w-5 h-5 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
+            : <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />}
           <div onClick={stopProp} className="min-w-0">
             <EditableCategoryTitle name={name} onRename={onRename} />
           </div>

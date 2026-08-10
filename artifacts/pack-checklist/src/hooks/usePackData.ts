@@ -77,6 +77,12 @@ export type BgSnapshot = {
   collections?: PhotoCollection[];
   /** 023A: Active custom-theme ID at the moment of the snapshot. */
   activeThemeId?: string;
+  /** 023E: Bar/pill background color (hex/CSS). '' = TrailWeigh default. */
+  barColor?: string;
+  /** 023E: Bar/pill font-family string. '' = TrailWeigh default. */
+  barFont?: string;
+  /** 023E: Bar/pill text color (hex/CSS). '' = TrailWeigh default. */
+  barTextColor?: string;
 };
 
 /** Each undo/redo entry captures both the gear state AND the background state. */

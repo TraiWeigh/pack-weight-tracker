@@ -14,6 +14,7 @@ import { useUnit } from '../context/UnitContext';
 import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { ChevronDown, ChevronUp, Palette } from 'lucide-react';
+import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
 
 // ── Chart palettes ────────────────────────────────────────────────────────────
 
@@ -82,6 +83,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseP
   const lu = largeUnit(system);
   // 022G: start collapsed — Pack Summary is closed on every fresh open/refresh
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const barStyle = useBarStyle();
 
   const { baseWeightOz, nonBaseTotals, grandTotalOz } = calcWeights(data, categoryOrder, categoryMeta);
 
@@ -91,14 +93,15 @@ export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseP
       <button
         onClick={() => setSummaryOpen(o => !o)}
         className="w-full flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors rounded-xl"
+        style={barCombinedStyle(barStyle)}
         aria-expanded={summaryOpen}
         aria-label={summaryOpen ? 'Collapse Pack Summary' : 'Expand Pack Summary'}
       >
         {summaryOpen
-          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
+          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
         }
-        <span className="text-sm font-semibold text-foreground uppercase tracking-wider">
+        <span className="text-sm font-semibold text-foreground uppercase tracking-wider" style={barFgStyle(barStyle)}>
           Pack Summary
         </span>
       </button>
@@ -166,6 +169,7 @@ export function WeightDistribution({
   // 022G: start collapsed — Weight Distribution is closed on every fresh open/refresh
   const [chartOpen, setChartOpen] = useState(false);
   const [showPaletteMenu, setShowPaletteMenu] = useState(false);
+  const barStyle = useBarStyle();
 
   const palette = PALETTES[paletteKey] ?? PALETTES.trail;
 
@@ -204,15 +208,16 @@ export function WeightDistribution({
         <button
           onClick={() => setChartOpen(o => !o)}
           className="flex-1 flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors"
+          style={barCombinedStyle(barStyle)}
           aria-expanded={chartOpen}
           aria-label={chartOpen ? 'Collapse Weight Distribution' : 'Expand Weight Distribution'}
         >
           {chartOpen
-            ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
+            : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
           }
           {/* text-foreground → white in dark mode, black in light mode */}
-          <span className="text-sm font-semibold text-foreground uppercase tracking-wider">
+          <span className="text-sm font-semibold text-foreground uppercase tracking-wider" style={barFgStyle(barStyle)}>
             Weight Distribution
           </span>
         </button>

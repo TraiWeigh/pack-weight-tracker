@@ -4,6 +4,7 @@ import { Background } from './BackgroundPicker';
 import { ChevronDown, ChevronUp, Trash2, FolderOpen, Pencil, Check, X } from 'lucide-react';
 import { LockerIcon } from './LockerIcon';
 import { SyncStatusPanel, type SyncProps } from './SyncStatusPanel';
+import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
 
 export type Store = {
   items: PackState;
@@ -25,6 +26,12 @@ export interface LockerEntry {
   /** Weight-distribution palette key saved with this file ('trail', 'ocean', etc.).
    *  Optional for backwards compatibility — older entries omit this field. */
   chartPaletteKey?: string;
+  /** 023E: Bar/pill background color. Optional for backwards compatibility. */
+  barColor?: string;
+  /** 023E: Bar/pill font-family. Optional for backwards compatibility. */
+  barFont?: string;
+  /** 023E: Bar/pill text color. Optional for backwards compatibility. */
+  barTextColor?: string;
 }
 
 // Re-export for backwards-compat (canonical definition is in usePackData)
@@ -80,19 +87,22 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncPr
     setRenameError(null);
   };
 
+  const barStyle = useBarStyle();
+
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
+        style={barCombinedStyle(barStyle)}
       >
         {open
-          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
+          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
         }
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-foreground">
+          <div className="flex items-center gap-2 text-foreground" style={barFgStyle(barStyle)}>
             <LockerIcon className="w-4 h-4 flex-shrink-0" />
             <h2 className="font-semibold text-base">Locker</h2>
             {entries.length > 0 && (

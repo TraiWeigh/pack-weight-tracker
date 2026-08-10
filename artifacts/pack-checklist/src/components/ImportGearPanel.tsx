@@ -5,6 +5,7 @@ import {
   FileUp, Loader2, CheckCircle2, AlertCircle, X,
   ChevronDown, ChevronUp, Check, AlertTriangle,
 } from 'lucide-react';
+import { useBarStyle, barCombinedStyle, barFgStyle } from '../context/BarStyleContext';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -98,6 +99,7 @@ type Phase = 'idle' | 'parsing' | 'review' | 'error';
 
 export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true }: ImportGearPanelProps) {
   const [open, setOpen]   = useState(defaultOpen);
+  const barStyle = useBarStyle();
   const [phase, setPhase] = useState<Phase>('idle');
   const [isDragging, setIsDragging] = useState(false);
 
@@ -272,18 +274,19 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true }
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
+        style={barCombinedStyle(barStyle)}
       >
         {/* Chevron reflects open/closed state: Up = expanded, Down = collapsed */}
         {open
-          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+          ? <ChevronUp   className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
+          : <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
         }
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <FileUp className="w-4 h-4 text-primary flex-shrink-0" />
-            <h2 className="font-semibold text-foreground text-base">Scan Gear List</h2>
+            <FileUp className="w-4 h-4 text-primary flex-shrink-0" style={barFgStyle(barStyle)} />
+            <h2 className="font-semibold text-foreground text-base" style={barFgStyle(barStyle)}>Scan Gear List</h2>
           </div>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5" style={barFgStyle(barStyle)}>
             Upload a file to import Type, Description, and Weight.
           </p>
         </div>

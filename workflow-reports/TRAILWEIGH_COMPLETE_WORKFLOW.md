@@ -100,3 +100,36 @@ Auth messaging from 023C preserved unchanged.
 - `package.json` — removed themes023C, added themes023D + messaging023D
 
 ### Full report: `workflow-reports/PROMPT_023D_REPORT.md`
+
+---
+
+## PROMPT 023E — Bar Color/Text Styling, Focus Fix, Share Hover, Landing Rewrite
+
+**Date:** 2026-08-10 | **Status:** COMPLETE | **Tests:** 60 PASS / 0 FAIL
+
+### Summary
+Four focused improvements: (A) new Bar Color / Text control group in the Background Edit panel, propagated via React Context to all checklist bars; (B) fix stale `hasInputFocus` that left the Hide button disabled; (C) fix Share button hover so custom bar text color doesn't fight Tailwind pseudo-classes; (D) rewrite LandingPage with new headline and 4-card feature grid.
+
+### Part A — Bar Color / Text Styling
+New `BarStyleContext.tsx` with `BarStyleProvider`, `useBarStyle`, `barCombinedStyle`, `barBgStyle`, `barFgStyle`. Controls added to BackgroundPickerPanel: bar color picker, font selector (8 safe CSS fonts), text color picker with WCAG contrast helper, reset button. State persisted to localStorage and LockerEntry; included in BgSnapshot for undo/redo. Applied to GearCategory, WeightSummary, ImportGearPanel, LockerPanel, UnitToggle, all toolbar buttons, active-file pill, Share button.
+
+### Part B — Fix Stale `hasInputFocus`
+- `closeSaveDialog`: calls `saveInputRef.current?.blur()` + `setHasInputFocus(false)` before dialog teardown.
+- `handleLoadFromLocker` in-place path: calls `setHasInputFocus(false)` after loading a file.
+
+### Part C — Share Button Hover Fix
+Replaced Tailwind `hover:bg-muted/50` / `hover:border-foreground/30` with `shareHovered` React state + `onMouseEnter`/`onMouseLeave`. Hover applies `{ color: 'white' }` inline (works even when custom bar text color overrides CSS pseudo-classes). `bg-card` retained for stable background.
+
+### Part D — Landing Page Rewrite
+Headline: "Build smarter lists for the trail—and beyond". Copy: "Create packing lists, checklists, gear lists, inventories, and more. Track weight when it matters—or skip it entirely." Feature grid: 4 cards in `sm:grid-cols-2 lg:grid-cols-4` — Flexible Checklists, Optional Weight Tracking, Print & Share, Use It Your Way.
+
+### Files Changed
+- `src/context/BarStyleContext.tsx` (new)
+- `src/components/BackgroundPicker.tsx` — 7 new props, FONT_OPTIONS, contrast helpers, control group
+- `src/components/GearCategory.tsx`, `WeightSummary.tsx`, `ImportGearPanel.tsx`, `LockerPanel.tsx` — useBarStyle consumers
+- `src/hooks/usePackData.ts` — BgSnapshot + LockerEntry type extensions
+- `src/pages/Checklist.tsx` — state, handlers, refs, BarStyleProvider wrap, focus fixes, share hover
+- `src/pages/LandingPage.tsx` — full rewrite
+- `src/hooks/barColor023E.test.mjs` (30 tests), `hideShare023E.test.mjs` (15 tests), `landing023E.test.mjs` (15 tests)
+
+### Full report: `workflow-reports/PROMPT_023E_REPORT.md`

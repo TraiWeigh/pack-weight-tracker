@@ -51,6 +51,39 @@ export type Background =
 
 export const BG_STORAGE_KEY = 'trailweigh:background';
 
+// ── Bar Color / Text — font options ───────────────────────────────────────────
+export const FONT_OPTIONS: { label: string; value: string }[] = [
+  { label: 'Default TrailWeigh',  value: '' },
+  { label: 'Arial',               value: 'Arial, sans-serif' },
+  { label: 'Helvetica',           value: 'Helvetica, sans-serif' },
+  { label: 'Verdana',             value: 'Verdana, sans-serif' },
+  { label: 'Trebuchet MS',        value: "'Trebuchet MS', sans-serif" },
+  { label: 'Georgia',             value: 'Georgia, serif' },
+  { label: 'Times New Roman',     value: "'Times New Roman', serif" },
+  { label: 'Courier New',         value: "'Courier New', monospace" },
+];
+
+// ── Contrast helpers (WCAG relative luminance) ─────────────────────────────────
+function hexToRgb(hex: string): [number, number, number] | null {
+  const m = hex.match(/^#?([0-9a-f]{6})$/i);
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return [(n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff];
+}
+function relLum(r: number, g: number, b: number): number {
+  return [r, g, b].reduce((acc, c, i) => {
+    const v = c / 255;
+    const l = v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    return acc + l * [0.2126, 0.7152, 0.0722][i];
+  }, 0);
+}
+function contrastRatio(c1: string, c2: string): number {
+  const r1 = hexToRgb(c1), r2 = hexToRgb(c2);
+  if (!r1 || !r2) return Infinity;
+  const l1 = relLum(...r1), l2 = relLum(...r2);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
 export const PRESETS = [
   { id: 'rocky-mountains',  label: 'Rocky Mountains',  photoId: '1464822759023-fed622ff2c3b' },
   { id: 'swiss-alps',       label: 'Swiss Alps',        photoId: '1506905925346-21bda4d32df4' },
@@ -167,6 +200,14 @@ interface BackgroundPickerPanelProps {
   restoreCollectionsRef?: React.MutableRefObject<
     ((collections: PhotoCollection[], activeThemeId: string) => void) | null
   >;
+  // ── 023E: Bar Color / Text props ──────────────────────────────────────────
+  barColor: string;
+  onBarColorChange: (v: string) => void;
+  barFont: string;
+  onBarFontChange: (v: string) => void;
+  barTextColor: string;
+  onBarTextColorChange: (v: string) => void;
+  onResetBarStyle: () => void;
 }
 
 export function BackgroundPickerPanel({
@@ -185,6 +226,13 @@ export function BackgroundPickerPanel({
   isShowcaseBlocked = false,
   onBeforeDeleteTheme,
   restoreCollectionsRef,
+  barColor,
+  onBarColorChange,
+  barFont,
+  onBarFontChange,
+  barTextColor,
+  onBarTextColorChange,
+  onResetBarStyle,
 }: BackgroundPickerPanelProps) {
   const panelRef                = useRef<HTMLDivElement>(null);
   const dropdownRef             = useRef<HTMLDivElement>(null);
@@ -1010,6 +1058,105 @@ export function BackgroundPickerPanel({
       <div className="px-4 pt-4 pb-2 flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-foreground">Background</h3>
       </div>
+
+      {/* ── 023E: Bar Color / Text ── */}
+      {(() => {
+        const barHasCustom = !!(barColor || barFont || barTextColor);
+        const lowContrast  = !!(barColor && barTextColor && contrastRatio(barColor, barTextColor) < 3);
+        return (
+          <div className="px-4 pb-3 border-b border-border">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-1">
+              Bar Color / Text
+            </p>
+
+            {/* Bar Color row */}
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-medium text-foreground">Bar Color</label>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-5 h-5 rounded border border-border flex-shrink-0"
+                  style={{ backgroundColor: barColor || 'transparent' }}
+                  title={barColor || 'Default'}
+                />
+                <input
+                  type="color"
+                  value={barColor || '#f4f4f5'}
+                  onChange={e => onBarColorChange(e.target.value)}
+                  className="w-7 h-7 rounded border border-border cursor-pointer p-0.5 bg-transparent"
+                  aria-label="Bar background color"
+                />
+                {barColor && (
+                  <button
+                    onClick={() => onBarColorChange('')}
+                    className="text-[10px] text-muted-foreground hover:text-foreground transition-colors px-1"
+                    title="Reset bar color"
+                  >✕</button>
+                )}
+              </div>
+            </div>
+
+            {/* Font row */}
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-medium text-foreground">Font</label>
+              <select
+                value={barFont}
+                onChange={e => onBarFontChange(e.target.value)}
+                className="text-[11px] border border-border rounded-md px-2 py-1 bg-background text-foreground w-[148px] focus:outline-none focus:border-primary/50 cursor-pointer"
+                style={barFont ? { fontFamily: barFont } : undefined}
+              >
+                {FONT_OPTIONS.map(f => (
+                  <option key={f.value} value={f.value} style={f.value ? { fontFamily: f.value } : undefined}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Text Color row */}
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-medium text-foreground">Text Color</label>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-5 h-5 rounded border border-border flex-shrink-0"
+                  style={{ backgroundColor: barTextColor || 'transparent' }}
+                  title={barTextColor || 'Default'}
+                />
+                <input
+                  type="color"
+                  value={barTextColor || '#71717a'}
+                  onChange={e => onBarTextColorChange(e.target.value)}
+                  className="w-7 h-7 rounded border border-border cursor-pointer p-0.5 bg-transparent"
+                  aria-label="Bar text color"
+                />
+                {barTextColor && (
+                  <button
+                    onClick={() => onBarTextColorChange('')}
+                    className="text-[10px] text-muted-foreground hover:text-foreground transition-colors px-1"
+                    title="Reset text color"
+                  >✕</button>
+                )}
+              </div>
+            </div>
+
+            {/* Reset all + contrast warning */}
+            <div className="flex items-center justify-between min-h-[18px]">
+              {barHasCustom ? (
+                <button
+                  onClick={onResetBarStyle}
+                  className="text-[10px] text-muted-foreground hover:text-foreground border border-border px-2 py-0.5 rounded transition-colors"
+                >
+                  Reset Bar / Text
+                </button>
+              ) : <span />}
+              {lowContrast && (
+                <p className="text-[10px] text-amber-600 dark:text-amber-400 text-right leading-tight">
+                  Low contrast — text may be hard to read
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Fill/Fit + Light/Dark + Fade ── */}
       <div className="px-4 pb-3 border-b border-border">

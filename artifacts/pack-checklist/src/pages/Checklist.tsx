@@ -41,31 +41,50 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
+import { BarStyleProvider, useBarStyle, barCombinedStyle, barBgStyle, barFgStyle } from '../context/BarStyleContext';
 import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib/bgPhotoStore';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
 import { BackgroundShowcase } from '../components/BackgroundShowcase';
 
 function UnitToggle() {
   const { system, setSystem } = useUnit();
+  const barStyle = useBarStyle();
+  const customBar = !!barStyle.barColor;
+
   return (
-    <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
+    <div
+      className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+      style={barBgStyle(barStyle)}
+    >
       <button
         onClick={() => setSystem('imperial')}
         className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-          system === 'imperial'
+          system === 'imperial' && !customBar
             ? 'bg-card text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
+            : !customBar ? 'text-muted-foreground hover:text-foreground' : ''
         }`}
+        style={customBar
+          ? system === 'imperial'
+            ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barStyle.barTextColor || 'white', fontFamily: barStyle.barFont || undefined }
+            : { color: barStyle.barTextColor ? `${barStyle.barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barStyle.barFont || undefined }
+          : barStyle.barFont ? { fontFamily: barStyle.barFont } : undefined
+        }
       >
         Imperial
       </button>
       <button
         onClick={() => setSystem('metric')}
         className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-          system === 'metric'
+          system === 'metric' && !customBar
             ? 'bg-card text-foreground shadow-sm'
-            : 'text-muted-foreground hover:text-foreground'
+            : !customBar ? 'text-muted-foreground hover:text-foreground' : ''
         }`}
+        style={customBar
+          ? system === 'metric'
+            ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barStyle.barTextColor || 'white', fontFamily: barStyle.barFont || undefined }
+            : { color: barStyle.barTextColor ? `${barStyle.barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barStyle.barFont || undefined }
+          : barStyle.barFont ? { fontFamily: barStyle.barFont } : undefined
+        }
       >
         Metric
       </button>
@@ -145,6 +164,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // Mirrors bgSize state as a ref so handleBackgroundChange can read the
   // current size without a temporal dependency on bgSize's declaration order.
   const bgSizeRef = useRef<'cover' | 'contain'>('cover');
+  // 023E: Bar style refs — same temporal-ordering pattern as bgSizeRef.
+  // Used in handleBackgroundChange and handleBgSizeChange which are declared
+  // before the barColor/barFont/barTextColor state initialisers.
+  const barColorRef     = useRef('');
+  const barFontRef      = useRef('');
+  const barTextColorRef = useRef('');
   const onRestoreBg = useCallback((bg: BgSnapshot) => {
     restoreBgCallbackRef.current?.(bg);
   }, []);
@@ -275,7 +300,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     // Capture state BEFORE the change — this is what Undo will restore.
     // bgSize is used here; it is declared later in the function body but
     // initialised before any event handler can fire.
-    pushBg({ background, bgSize: bgSizeRef.current });
+    pushBg({ background, bgSize: bgSizeRef.current, barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current });
     setBackground(bg);
     if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
     else localStorage.removeItem(BG_STORAGE_KEY);
@@ -412,7 +437,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
    */
   const handleBgSizeChange = (v: 'cover' | 'contain') => {
     if (v === bgSize) return; // no change — don't push empty history entry
-    pushBg({ background, bgSize });
+    pushBg({ background, bgSize, barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current });
     setBgSize(v);
     localStorage.setItem('trailweigh:bgSize', v);
   };
@@ -452,6 +477,56 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     localStorage.setItem('trailweigh:chartPalette', key);
   }, []);
 
+  // ── 023E: Bar Color / Text state ─────────────────────────────────────────
+  // Initialised from localStorage (global display preference).
+  // Overridden when loading a saved LockerEntry that has stored these values.
+  const [barColor, setBarColor] = useState<string>(
+    () => localStorage.getItem('trailweigh:barColor') ?? ''
+  );
+  const [barFont, setBarFont] = useState<string>(
+    () => localStorage.getItem('trailweigh:barFont') ?? ''
+  );
+  const [barTextColor, setBarTextColor] = useState<string>(
+    () => localStorage.getItem('trailweigh:barTextColor') ?? ''
+  );
+
+  const handleBarColorChange = (v: string) => {
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
+    setBarColor(v);
+    barColorRef.current = v;
+    if (v) localStorage.setItem('trailweigh:barColor', v);
+    else localStorage.removeItem('trailweigh:barColor');
+  };
+  const handleBarFontChange = (v: string) => {
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
+    setBarFont(v);
+    barFontRef.current = v;
+    if (v) localStorage.setItem('trailweigh:barFont', v);
+    else localStorage.removeItem('trailweigh:barFont');
+  };
+  const handleBarTextColorChange = (v: string) => {
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
+    setBarTextColor(v);
+    barTextColorRef.current = v;
+    if (v) localStorage.setItem('trailweigh:barTextColor', v);
+    else localStorage.removeItem('trailweigh:barTextColor');
+  };
+  const handleResetBarStyle = () => {
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
+    setBarColor(''); barColorRef.current = '';
+    setBarFont('');  barFontRef.current = '';
+    setBarTextColor(''); barTextColorRef.current = '';
+    localStorage.removeItem('trailweigh:barColor');
+    localStorage.removeItem('trailweigh:barFont');
+    localStorage.removeItem('trailweigh:barTextColor');
+  };
+
+  // ── Keep bar style refs in sync so handlers declared before these state
+  // declarations can safely read the current values.
+  barColorRef.current     = barColor;
+  barFontRef.current      = barFont;
+  barTextColorRef.current = barTextColor;
+
   // ── Wire up the onRestoreBg callback now that ALL bg state setters are in
   // scope.  Assigned inline on every render so the hook always calls the
   // freshest version (ref-based stable callback pattern).
@@ -466,6 +541,25 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     // (present only in entries created by custom-theme deletion).
     if (snap.collections !== undefined) {
       restoreCollectionsRef.current?.(snap.collections, snap.activeThemeId ?? 'landscapes');
+    }
+    // 023E: Restore bar style when the snapshot includes it
+    if (snap.barColor !== undefined) {
+      setBarColor(snap.barColor);
+      barColorRef.current = snap.barColor;
+      if (snap.barColor) localStorage.setItem('trailweigh:barColor', snap.barColor);
+      else localStorage.removeItem('trailweigh:barColor');
+    }
+    if (snap.barFont !== undefined) {
+      setBarFont(snap.barFont);
+      barFontRef.current = snap.barFont;
+      if (snap.barFont) localStorage.setItem('trailweigh:barFont', snap.barFont);
+      else localStorage.removeItem('trailweigh:barFont');
+    }
+    if (snap.barTextColor !== undefined) {
+      setBarTextColor(snap.barTextColor);
+      barTextColorRef.current = snap.barTextColor;
+      if (snap.barTextColor) localStorage.setItem('trailweigh:barTextColor', snap.barTextColor);
+      else localStorage.removeItem('trailweigh:barTextColor');
     }
   };
 
@@ -525,6 +619,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     : null;
 
   const [showShareMenu, setShowShareMenu] = useState(false);
+  // 023E: Tracks Share button hover so we can apply white text inline (inline
+  // styles can't be overridden by Tailwind hover pseudo-classes).
+  const [shareHovered, setShareHovered] = useState(false);
   // Computed: how many gear items exist (checked or not) — drives Share button state
   const totalItems = store.order.reduce(
     (s, cat) => s + (store.items[cat]?.length ?? 0), 0
@@ -1121,6 +1218,23 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setBgSize(restoredSize);
     localStorage.setItem('trailweigh:bgSize', restoredSize);
 
+    // 023E: Restore bar style — optional fields; older entries fall back to ''.
+    const startBarColor     = entry.barColor     ?? '';
+    const startBarFont      = entry.barFont      ?? '';
+    const startBarTextColor = entry.barTextColor ?? '';
+    setBarColor(startBarColor);
+    setBarFont(startBarFont);
+    setBarTextColor(startBarTextColor);
+    barColorRef.current     = startBarColor;
+    barFontRef.current      = startBarFont;
+    barTextColorRef.current = startBarTextColor;
+    if (startBarColor)     localStorage.setItem('trailweigh:barColor',     startBarColor);
+    else                   localStorage.removeItem('trailweigh:barColor');
+    if (startBarFont)      localStorage.setItem('trailweigh:barFont',      startBarFont);
+    else                   localStorage.removeItem('trailweigh:barFont');
+    if (startBarTextColor) localStorage.setItem('trailweigh:barTextColor', startBarTextColor);
+    else                   localStorage.removeItem('trailweigh:barTextColor');
+
     // Replace the gear store (clears undo/redo; does not write to the saved entry)
     replaceStore(entry.store as import('../hooks/usePackData').Store);
 
@@ -1169,6 +1283,11 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   };
 
   const closeSaveDialog = () => {
+    // 023E: Explicitly clear stale input-focus state before unmounting the save
+    // input. Some browsers don't fire 'focusout' when an element is removed from
+    // the DOM while focused, which leaves hasInputFocus=true and disables Hide.
+    saveInputRef.current?.blur();
+    setHasInputFocus(false);
     setShowSaveDialog(false);
     setSaveName('');
     setSaveConflictId(null);
@@ -1186,6 +1305,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgTone,
       bgSize,
       chartPaletteKey,
+      barColor,
+      barFont,
+      barTextColor,
     };
     const updated = [entry, ...lockerEntries];
     setLockerEntries(updated);
@@ -1207,7 +1329,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     closeSaveDialog();
     toast({ description: `Saved ${name}` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, lockerEntries, broadcastLocker, toast]);
 
   /** Save and replace an existing entry (same ID, updated content). */
   const commitSaveReplace = useCallback((existingId: string, name: string) => {
@@ -1222,6 +1344,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         bgTone,
         bgSize,
         chartPaletteKey,
+        barColor,
+        barFont,
+        barTextColor,
       };
       // Only update an entry that actually exists in the Locker.
       const exists = lockerEntries.some(e => e.id === existingId);
@@ -1252,7 +1377,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       toast({ description: 'Save failed. Your changes were not saved.', variant: 'destructive' });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, lockerEntries, broadcastLocker, toast]);
 
   const handleSaveToLocker = () => {
     const name = saveName.trim();
@@ -1318,6 +1443,27 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
       // Restore Fill/Fit (cover/contain).  Older entries without bgSize fall back to cover.
       setBgSize(entry.bgSize ?? 'cover');
+
+      // 023E: Restore bar color/font/text — optional fields; older entries fall back to ''.
+      const restoredBarColor     = entry.barColor     ?? '';
+      const restoredBarFont      = entry.barFont      ?? '';
+      const restoredBarTextColor = entry.barTextColor ?? '';
+      setBarColor(restoredBarColor);
+      setBarFont(restoredBarFont);
+      setBarTextColor(restoredBarTextColor);
+      barColorRef.current     = restoredBarColor;
+      barFontRef.current      = restoredBarFont;
+      barTextColorRef.current = restoredBarTextColor;
+      if (restoredBarColor)     localStorage.setItem('trailweigh:barColor',     restoredBarColor);
+      else                      localStorage.removeItem('trailweigh:barColor');
+      if (restoredBarFont)      localStorage.setItem('trailweigh:barFont',      restoredBarFont);
+      else                      localStorage.removeItem('trailweigh:barFont');
+      if (restoredBarTextColor) localStorage.setItem('trailweigh:barTextColor', restoredBarTextColor);
+      else                      localStorage.removeItem('trailweigh:barTextColor');
+
+      // 023E: Clear stale input-focus state so Hide is never stuck disabled
+      // after a file load (browser may not fire 'focusout' for removed inputs).
+      setHasInputFocus(false);
 
       // Persist appearance for React-remount resilience.
       //
@@ -1455,6 +1601,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const toolBtnDisabled = 'flex items-center gap-2 text-xs font-medium text-muted-foreground/30 px-2 py-1.5 rounded-md cursor-not-allowed';
 
   return (
+    // 023E: BarStyleProvider makes barColor/barFont/barTextColor available to all
+    // descendant components (GearCategory, WeightSummary, LockerPanel, ImportGearPanel,
+    // UnitToggle, etc.) without prop-drilling.
+    <BarStyleProvider value={{ barColor, barFont, barTextColor }}>
     <>
       {showMailingModal && (
         <MailingListModal userId={userId ?? ''} onDismiss={() => setShowMailingModal(false)} />
@@ -1833,6 +1983,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     aria-label={`Active file: ${activeLockerFile.name}`}
                     title={activeLockerFile.name}
                     className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
+                    style={barCombinedStyle({ barColor, barFont, barTextColor })}
                   >
                     {activeLockerFile.name}
                   </span>
@@ -1844,24 +1995,37 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   On desktop: just Open/Close (Units are in the desktop right group). */}
               <div className="flex items-center flex-shrink-0">
                 {/* Open/Close segmented control — always together */}
-                <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
+                <div
+                  className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+                  style={barColor ? { backgroundColor: barColor } : {}}
+                >
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
                     className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-                      allOpen === true
+                      allOpen === true && !barColor
                         ? 'bg-card text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
+                        : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                     }`}
+                    style={barColor
+                      ? allOpen === true
+                        ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                        : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                      : barFont ? { fontFamily: barFont } : undefined}
                   >
                     Open
                   </button>
                   <button
                     onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
                     className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-                      allOpen === false
+                      allOpen === false && !barColor
                         ? 'bg-card text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
+                        : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                     }`}
+                    style={barColor
+                      ? allOpen === false
+                        ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                        : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                      : barFont ? { fontFamily: barFont } : undefined}
                   >
                     Close
                   </button>
@@ -1884,6 +2048,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                       : 'Hide the interface'
                   }
                   className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={barCombinedStyle({ barColor, barFont, barTextColor })}
                 >
                   Hide
                 </button>
@@ -1891,6 +2056,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onClick={() => setShowPreview(true)}
                   aria-label="Open checked-items preview"
                   className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  style={barCombinedStyle({ barColor, barFont, barTextColor })}
                 >
                   Preview
                 </button>
@@ -1939,9 +2105,19 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         bgSize: bgSizeRef.current,
                         collections: snap.collections,
                         activeThemeId: snap.activeThemeId,
+                        barColor: barColorRef.current,
+                        barFont: barFontRef.current,
+                        barTextColor: barTextColorRef.current,
                       });
                     }}
                     restoreCollectionsRef={restoreCollectionsRef}
+                    barColor={barColor}
+                    onBarColorChange={handleBarColorChange}
+                    barFont={barFont}
+                    onBarFontChange={handleBarFontChange}
+                    barTextColor={barTextColor}
+                    onBarTextColorChange={handleBarTextColorChange}
+                    onResetBarStyle={handleResetBarStyle}
                   />
                 </div>
                 {/* Share pill + dropdown */}
@@ -1975,7 +2151,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     <>
                       <button
                         onClick={() => { setShowShareMenu(o => !o); setShareStep('menu'); }}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
+                        onMouseEnter={() => setShareHovered(true)}
+                        onMouseLeave={() => setShareHovered(false)}
+                        className="flex items-center gap-1.5 text-xs font-semibold border border-border/60 bg-card px-3 py-1.5 rounded-lg transition-colors text-muted-foreground"
+                        style={shareHovered
+                          ? { ...(barColorRef.current ? { backgroundColor: barColorRef.current } : {}), color: 'white' }
+                          : barCombinedStyle({ barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current })
+                        }
                       >
                         <Share2 className="w-3.5 h-3.5" />
                         Share
@@ -2196,24 +2378,37 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     On desktop this div does not render (lg:hidden). */}
                 <div className="lg:hidden flex items-center justify-between gap-2 pt-1">
                   {/* Open / Close — left */}
-                  <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
+                  <div
+                    className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+                    style={barColor ? { backgroundColor: barColor } : {}}
+                  >
                     <button
                       onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
                       className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-                        allOpen === true
+                        allOpen === true && !barColor
                           ? 'bg-card text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
+                          : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                       }`}
+                      style={barColor
+                        ? allOpen === true
+                          ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                          : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                        : barFont ? { fontFamily: barFont } : undefined}
                     >
                       Open
                     </button>
                     <button
                       onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
                       className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-                        allOpen === false
+                        allOpen === false && !barColor
                           ? 'bg-card text-foreground shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
+                          : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                       }`}
+                      style={barColor
+                        ? allOpen === false
+                          ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                          : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                        : barFont ? { fontFamily: barFont } : undefined}
                     >
                       Close
                     </button>
@@ -2229,6 +2424,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         : 'Hide the interface'
                     }
                     className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={barCombinedStyle({ barColor, barFont, barTextColor })}
                   >
                     Hide
                   </button>
@@ -2280,6 +2476,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         categoryMeta={categoryMeta}
       />
     </>
+    </BarStyleProvider>
   );
 }
 

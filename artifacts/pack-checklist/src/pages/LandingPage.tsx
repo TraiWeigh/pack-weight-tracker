@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'wouter';
-import { Tent, CheckSquare, Scale, Share2, ArrowRight } from 'lucide-react';
+import { Tent, List, Scale, Share2, ArrowRight, CheckSquare } from 'lucide-react';
 import Footer from '@/components/Footer';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -43,11 +43,13 @@ export default function LandingPage() {
           <Scale className="w-3.5 h-3.5" /> Ultralight Backpacking
         </div>
         <h1 className="text-4xl sm:text-5xl font-black text-foreground leading-tight mb-4">
-          Know your pack weight <br className="hidden sm:block" />
-          <span className="text-primary">before you hit the trail</span>
+          Build smarter lists{' '}
+          <span className="text-primary">for the trail—</span>
+          <br className="hidden sm:block" />
+          <span className="text-primary">and beyond</span>
         </h1>
         <p className="text-lg text-muted-foreground mb-10 max-w-xl">
-          Build your gear list, track weights, compare loadouts, and share your checklist — all in one place.
+          Create packing lists, checklists, gear lists, inventories, and more. Track weight when it matters—or skip it entirely.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 mb-14">
@@ -65,12 +67,29 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Feature cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full text-left">
+        {/* Feature cards — 4 cards: 1-col mobile, 2×2 tablet, 4-col desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full text-left">
           {[
-            { icon: CheckSquare, title: 'Gear Checklist', desc: 'Check off items as you pack — never forget essential gear again.' },
-            { icon: Scale, title: 'Live Weight Totals', desc: 'Base weight, dog pack, clothing worn, and expendables — tracked separately.' },
-            { icon: Share2, title: 'Print & Share', desc: 'Export a clean PDF or print your checklist for any trip.' },
+            {
+              icon: List,
+              title: 'Flexible Checklists',
+              desc: 'Build lists for gear, travel, projects, equipment, supplies, or anything else you need to organize.',
+            },
+            {
+              icon: Scale,
+              title: 'Optional Weight Tracking',
+              desc: 'Add weight when it matters—or leave it blank entirely.',
+            },
+            {
+              icon: Share2,
+              title: 'Print & Share',
+              desc: 'Print, export, or share your list for any trip, project, or purpose.',
+            },
+            {
+              icon: CheckSquare,
+              title: 'Use It Your Way',
+              desc: 'TrailWeigh is not limited to backpacking. Create and organize almost any kind of item list.',
+            },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="bg-card border border-card-border rounded-xl p-4 shadow-sm">
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary mb-3">
