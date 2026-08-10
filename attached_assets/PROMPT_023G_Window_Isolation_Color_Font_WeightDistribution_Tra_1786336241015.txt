@@ -1,0 +1,1149 @@
+PROMPT 023G — ISOLATE APPEARANCE BETWEEN WINDOWS, COMPLETE COLOR/FONT COVERAGE, FIX WEIGHT DISTRIBUTION BAR, AND ADD TRANSPARENCY BELOW DARKEN
+
+USER-VERIFIED / REPORT STATUS
+
+Prompt 023F is PARTIAL.
+
+The user provided real-browser screenshots after 023F and the 023F ZIP/report.
+
+REAL USER EVIDENCE OVERRIDES AUTOMATED TEST CLAIMS.
+
+The following issues remain:
+
+1. APPEARANCE LEAKS BETWEEN WINDOWS/TABS
+   - The user changed Bar Color in one TrailWeigh window.
+   - They then used New/opened another TrailWeigh window.
+   - The new window inherited some appearance changes from the previous window.
+   - A new unsaved TrailWeigh window/tab must NOT inherit live Bar Color/Text Color/Font/Transparency adjustments from another open window.
+
+2. TEXT COLOR IS STILL INCOMPLETE
+   - Some text/icons inside customizable bars/pills still use old/default gray/white colors.
+
+3. WEIGHT DISTRIBUTION BAR IS STILL SPLIT
+   - The Desert/Trail pill is visually located on the Weight Distribution bar.
+   - The right-hand portion behind/around Desert remains black instead of using the selected Bar Color.
+   - The entire Weight Distribution bar surface must participate in the same Bar Color system.
+   - The Desert/Trail pill itself must also use Bar Color/Text Color while preserving selected state.
+
+4. FONT COVERAGE IS STILL INCOMPLETE
+   - Selected Font now reaches most TrailWeigh text.
+   - It does NOT reach text inside the EXPANDED Background Edit panel.
+   - The expanded Background panel must use the selected Font too.
+
+5. TRANSPARENCY WAS NOT IMPLEMENTED
+   - The revised 023F prompt had a Transparency requirement, but the 023F report/screenshots show it was not implemented.
+   - The user has now clarified the exact location:
+     Transparency must be directly BELOW the existing Darken slider.
+   - It must NOT be placed inside the Bar Color / Text group.
+
+This is a focused corrective prompt.
+
+Do NOT change:
+- the 023E Hide fix
+- the 023E Share hover fix
+- the 023E landing-page rewrite
+- the 023D theme cleanup
+- phone layout
+- Locker sync
+- Save / Save As
+- existing background image/theme behavior
+except where needed to isolate only the appearance-customization state described below.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create the normal Replit checkpoint/backup.
+
+2. Inspect the current implementation before changing anything, including:
+   - Bar Color state
+   - Text Color state
+   - Font state
+   - any localStorage/sessionStorage usage
+   - saved-file serialization
+   - New-window/New-list creation behavior
+   - cross-tab/window synchronization listeners
+   - CSS variables/tokens used for bar/pill styling
+   - Weight Distribution bar structure
+   - Desert/Trail control structure
+   - Background Edit active/open styling
+   - expanded Background panel typography
+   - Darken slider implementation
+   - Background Themes section placement
+   - Undo/Redo display-history integration
+
+3. Preserve all verified fixes:
+   - 023A custom-theme Delete → Undo/Redo
+   - 022Z one-click custom-theme delete
+   - anchored delete confirmation
+   - 023D duplicate-theme cleanup
+   - user's original theme assets
+   - 023E Hide fix
+   - 023E Share hover fix
+   - 023E landing-page multi-use rewrite
+   - 023B/023C phone layout
+   - mobile Locker sync
+   - mobile scrolling
+   - Save / Save As / Locker
+   - stable saved-file IDs
+   - Preview
+   - Open/Close
+   - Imperial/Metric
+   - Pack Summary
+   - Weight Distribution calculations
+   - Scan Gear List
+   - footer
+   - auth/password fixes
+
+4. Make the smallest reasonable changes.
+
+5. Do NOT perform unrelated refactors.
+
+6. Inspect the COMPLETE final diff.
+
+7. Revert unrelated changes.
+
+8. Run the full regression suite plus new 023G tests.
+
+==================================================
+PART A — NEW WINDOWS/TABS MUST NOT INHERIT LIVE APPEARANCE CHANGES
+==================================================
+
+==================================================
+1. CURRENT BUG
+==================================================
+
+The user changed Bar Color in one TrailWeigh window and then opened a new
+TrailWeigh window using New.
+
+The new window inherited some of the previous window's appearance settings.
+
+That is incorrect.
+
+The likely cause may be:
+- shared localStorage
+- a global appearance preference
+- a storage event listener
+- shared mutable singleton state
+- or another cross-window persistence path
+
+Do NOT assume. Trace the actual state flow and document the root cause.
+
+==================================================
+2. REQUIRED WINDOW/TAB ISOLATION
+==================================================
+
+A brand-new unsaved TrailWeigh working window/tab must start with DEFAULT
+appearance customization values:
+
+- Bar Color = TrailWeigh default
+- Text Color = TrailWeigh default
+- Font = Default TrailWeigh
+- Transparency = Solid / fully opaque
+
+It must NOT automatically inherit unsaved/live customization changes made in
+another open TrailWeigh window/tab.
+
+This applies when:
+- user clicks New
+- a new blank/working TrailWeigh tab/window is created through the existing New
+  flow
+- another new unsaved TrailWeigh session is opened
+
+IMPORTANT:
+Preserve the existing New-list CONTENT behavior unless required by this fix.
+This prompt is specifically about appearance-customization isolation.
+
+Do NOT unnecessarily change:
+- list/category copying behavior
+- checkbox reset behavior
+- current background image behavior
+unless those are proven to be part of the same bug.
+
+==================================================
+3. SAVED FILES MAY RESTORE THEIR OWN SAVED APPEARANCE
+==================================================
+
+This isolation rule does NOT mean saved appearance must be lost.
+
+If a user opens a specifically saved file that has its own saved:
+- Bar Color
+- Text Color
+- Font
+- Transparency
+
+that saved file should restore ITS OWN appearance settings.
+
+The distinction is:
+
+NEW UNSAVED WINDOW/TAB:
+default appearance
+
+OPEN SAVED FILE:
+restore that saved file's appearance
+
+Do not treat one window's current unsaved appearance as an account-global
+preference.
+
+==================================================
+4. DO NOT BREAK LOCKER CROSS-DEVICE SYNC
+==================================================
+
+Do not solve this by disabling legitimate Locker/server synchronization.
+
+Saved files must still sync normally.
+
+The fix is to isolate live appearance state between open windows/tabs while
+preserving saved-file persistence.
+
+==================================================
+5. STORAGE ARCHITECTURE
+==================================================
+
+If Bar Color/Text Color/Font are currently stored directly in global
+localStorage keys that every tab reads immediately:
+
+refactor only the minimum necessary so:
+- live unsaved state is window/session-local
+- persisted saved-file appearance is stored with the saved file/display state
+- New starts with defaults
+- opening a saved file restores that file's values
+
+Do not create duplicate competing sources of truth.
+
+Document the final state architecture clearly.
+
+==================================================
+PART B — COMPLETE TEXT COLOR COVERAGE
+==================================================
+
+==================================================
+6. ALL TEXT/ICONS INSIDE CUSTOMIZABLE BARS/PILLS
+==================================================
+
+The selected Text Color must be the base color for ALL text and icons inside
+the customizable bar/pill scope.
+
+This includes:
+
+CATEGORY BARS:
+- category title
+- packed count
+- weight numbers
+- unit labels
+- secondary weight values
+- +Base text
+- +Base icon
+- drag/reorder handle
+- trash icon
+- disclosure chevron
+- secondary/status text
+
+PANEL BARS:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- their visible header icons/text/status labels
+
+TOOLBAR PILLS:
+- File Name
+- Preview
+- Background Edit
+- Share
+- Open
+- Close
+- Hide
+- Imperial
+- Metric
+
+NESTED PILLS:
+- Desert / Trail
+- +Base
+- any other pill visually contained in a customizable bar
+
+Icons should use currentColor where practical.
+
+==================================================
+7. SECONDARY TEXT
+==================================================
+
+Secondary text may remain visually secondary through:
+- reduced opacity
+- smaller size
+- lighter font weight
+
+But its BASE COLOR must still derive from the selected Text Color.
+
+Do not leave hard-coded gray/white colors inside the customized scope.
+
+Example:
+
+Text Color = black
+
+Then:
+- category title = black
+- packed count = black at reduced opacity if desired
+- weights/units = black
+- icons = black
+- +Base = black
+- drag/trash = black
+
+==================================================
+8. STATE BEHAVIOR
+==================================================
+
+Preserve legitimate state differences.
+
+Allowed:
+- disabled state may reduce opacity
+- Share hover may turn text/icon white as already user-approved
+- selected/open state may use border/ring/shade
+- focus state remains visible
+
+Do NOT revert text/icons to unrelated default gray merely because a control is:
+- selected
+- active
+- open
+- disabled
+
+==================================================
+PART C — FIX THE ENTIRE WEIGHT DISTRIBUTION BAR / DESERT-TRAIL AREA
+==================================================
+
+==================================================
+9. CURRENT VISUAL BUG
+==================================================
+
+The user showed the Weight Distribution bar with:
+
+- left portion using the selected Bar Color
+- right portion behind/around the Desert pill remaining black
+- Desert pill itself not fully participating in the selected style
+
+This makes the bar look split into two unrelated surfaces.
+
+==================================================
+10. ENTIRE WEIGHT DISTRIBUTION BAR MUST USE BAR COLOR
+==================================================
+
+The full Weight Distribution bar/header surface must use the selected Bar Color
+from left edge through the right edge.
+
+Do not leave a black/default right-side backing panel behind Desert/Trail.
+
+The entire visible bar should read as ONE customized bar surface.
+
+==================================================
+11. DESERT/TRAIL PILL
+==================================================
+
+Desert/Trail is a nested pill located ON the Weight Distribution bar.
+
+It must use:
+- selected Bar Color
+- selected Text Color
+- selected Font where applicable
+- selected Transparency once implemented
+
+while still preserving its selected/active state.
+
+Use a derived distinction such as:
+- border
+- outline
+- ring
+- subtle shade variation
+- inset effect
+
+Do not use an unrelated default black background.
+
+==================================================
+12. WEIGHT DISTRIBUTION STATE REGRESSION
+==================================================
+
+Preserve:
+- Desert/Trail switching behavior
+- calculations
+- selected mode
+- icon
+- accessibility
+- hover/focus
+- mobile layout
+
+Only fix the styling architecture.
+
+==================================================
+PART D — FONT MUST APPLY INSIDE EXPANDED BACKGROUND PANEL
+==================================================
+
+==================================================
+13. CURRENT FONT BUG
+==================================================
+
+The user verified that selected Font now changes almost all TrailWeigh text.
+
+The remaining exception is the EXPANDED Background Edit panel.
+
+Example:
+Font = Courier New
+
+Checklist text changes to Courier New, but the expanded Background panel text
+remains the default sans-serif.
+
+==================================================
+14. BACKGROUND PANEL FONT SCOPE
+==================================================
+
+The selected Font must apply throughout the expanded Background panel,
+including:
+
+- "Background" panel title
+- "BAR COLOR / TEXT" heading
+- "Bar Color"
+- "Font"
+- "Text Color"
+- "Reset Bar / Text"
+- "Full Screen"
+- "Fit Image"
+- "Light"
+- "Dark"
+- "Darken"
+- Transparency label/endpoints once added
+- theme selector text
+- theme names
+- Add Theme
+- custom-theme labels
+- photo-management labels
+- other normal text inside the Background panel
+
+Use the same selected Font variable/token already used for the checklist.
+
+Do not create a second font preference for Background Edit.
+
+==================================================
+15. FONT LIST
+==================================================
+
+Keep the approved font list:
+
+1. Default TrailWeigh
+2. Arial
+3. Helvetica
+4. Verdana
+5. Trebuchet MS
+6. Georgia
+7. Times New Roman
+8. Courier New
+
+Do not reintroduce:
+- Impact
+- Palatino
+
+unless separately approved.
+
+==================================================
+PART E — ADD TRANSPARENCY BELOW DARKEN
+==================================================
+
+==================================================
+16. EXACT PLACEMENT
+==================================================
+
+Add a slider labeled:
+
+Transparency
+
+DIRECTLY BELOW the existing Darken slider.
+
+Do NOT put Transparency inside the Bar Color / Text group.
+
+The Background Edit order should be:
+
+Bar Color / Text
+[ Bar Color ]
+[ Font ]
+[ Text Color ]
+[ Reset Bar / Text ]
+
+Full Screen / Fit Image
+Light / Dark
+
+Darken
+[ Darken slider ]
+
+Transparency
+[ Transparency slider ]
+
+Background Themes
+[ theme selector / photos / custom-theme controls ]
+
+The Transparency slider belongs between:
+Darken
+and
+Background Themes.
+
+==================================================
+17. TRANSPARENCY DIRECTION
+==================================================
+
+Slider behavior:
+
+LEFT  = more transparent
+RIGHT = more solid / opaque
+
+Use clear endpoint labels:
+
+Transparent                         Solid
+
+The default is:
+Solid / fully opaque
+
+Do not create an ambiguous percentage label where users must guess whether
+100% means transparent or opaque.
+
+If a numeric value is shown internally or in accessibility output, define it
+clearly.
+
+==================================================
+18. TRANSPARENCY AFFECTS BACKGROUND SURFACES ONLY
+==================================================
+
+The Transparency slider changes ONLY the background/surface alpha of the
+customizable bars and pills.
+
+It must NOT fade:
+- text
+- icons
+- chevrons
+- packed counts
+- weight values
+- units
+- +Base text/icon
+- drag handles
+- trash icons
+
+DO NOT apply CSS opacity to the whole component.
+
+Instead:
+- derive the bar/pill background color with alpha
+- keep text/icons at full opacity
+
+The selected Text Color must remain fully legible as transparency increases.
+
+==================================================
+19. TRANSPARENCY SCOPE
+==================================================
+
+Apply Transparency to the SAME customizable surface set as Bar Color:
+
+MAIN BARS:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- every category bar
+
+TOOLBAR PILLS:
+- File Name
+- Preview
+- Background Edit
+- Share
+- Open/Close
+- Hide
+- Imperial/Metric
+
+NESTED PILLS:
+- Desert/Trail
+- +Base
+- any other nested bar pill
+
+ACTIVE/OPEN:
+- Background Edit while open
+- selected segmented controls
+
+State distinctions must remain visible.
+
+==================================================
+20. TRANSPARENCY MUST NOT AFFECT NON-BAR AREAS
+==================================================
+
+Do NOT apply this Transparency slider to:
+- background photo/image itself
+- page body
+- expanded category table body
+- expanded Locker body
+- expanded Scan Gear List body
+- footer
+- About
+- Help
+- auth pages
+- landing page
+- modal body surfaces
+
+It controls TrailWeigh BAR/PILL SURFACES only.
+
+==================================================
+21. RESET
+==================================================
+
+Reset Bar / Text must also restore:
+
+Transparency = Solid / fully opaque
+
+If the current button name remains "Reset Bar / Text", that is acceptable.
+
+Do not require a second reset button solely for Transparency.
+
+==================================================
+22. SAVE / REOPEN / NEW / FILE ISOLATION
+==================================================
+
+Verify:
+
+SAVED FILE:
+- Transparency saves with the same appearance/display state as Bar Color/Text
+  Color/Font
+- reopening that saved file restores it
+
+NEW UNSAVED WINDOW:
+- starts Solid/default
+- does not inherit another window's live Transparency
+
+FILE A / FILE B:
+- each saved file restores its own saved Transparency
+- changing file A does not silently change file B
+
+==================================================
+23. UNDO / REDO
+==================================================
+
+Transparency must participate in the established appearance/display Undo/Redo
+history:
+
+Transparency change → Undo → Redo
+
+Also verify:
+- Bar Color Undo/Redo
+- Text Color Undo/Redo
+- Font Undo/Redo
+
+Do not break 023A custom-theme delete history.
+
+==================================================
+PART F — MANDATORY RUNTIME TESTS
+==================================================
+
+==================================================
+24. WINDOW/TAB ISOLATION TEST
+==================================================
+
+MANDATORY REAL RUNTIME FLOW:
+
+WINDOW A:
+1. Open a normal TrailWeigh working list.
+2. Set:
+   - Bar Color = bright magenta
+   - Text Color = black
+   - Font = Courier New
+   - Transparency = approximately middle / visibly transparent
+
+3. Leave Window A open.
+
+NEW WINDOW/TAB B:
+4. Use the existing New flow.
+5. Inspect B BEFORE making any appearance edits.
+
+Expected B:
+[ ] Bar Color = TrailWeigh default
+[ ] Text Color = TrailWeigh default
+[ ] Font = Default TrailWeigh
+[ ] Transparency = Solid
+[ ] no partial magenta/gray inheritance from A
+
+6. Make a different appearance change in B.
+
+Return to A:
+[ ] A remains unchanged
+
+Return to B:
+[ ] B remains unchanged
+
+This proves live cross-window isolation.
+
+==================================================
+25. SAVED FILE APPEARANCE TEST
+==================================================
+
+FILE A:
+- save magenta / black / Courier New / semi-transparent appearance
+
+FILE B:
+- save a different appearance
+
+Close/reopen each from Locker.
+
+Verify:
+[ ] A restores A appearance
+[ ] B restores B appearance
+[ ] A does not overwrite B
+[ ] B does not overwrite A
+
+==================================================
+26. TEXT COLOR TEST
+==================================================
+
+Set:
+Bar Color = light gray or magenta
+Text Color = black
+
+Verify ALL intended text/icons in bars/pills derive from black:
+
+[ ] category titles
+[ ] packed counts
+[ ] weights
+[ ] units
+[ ] secondary values
+[ ] +Base
+[ ] drag handles
+[ ] trash icons
+[ ] chevrons
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Locker
+[ ] File Name
+[ ] Preview
+[ ] Background Edit
+[ ] Share
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Desert/Trail
+
+No unrelated hard-coded gray/white remains except an intentional state opacity
+based on the SAME selected color.
+
+==================================================
+27. WEIGHT DISTRIBUTION VISUAL TEST
+==================================================
+
+With custom Bar Color active:
+
+Verify:
+[ ] entire Weight Distribution bar is one custom-color surface
+[ ] no black/default backing area remains behind Desert/Trail
+[ ] Desert/Trail pill uses custom Bar Color
+[ ] Desert/Trail text/icon uses Text Color
+[ ] selected state is still obvious
+[ ] switching Desert/Trail still works
+
+==================================================
+28. BACKGROUND PANEL FONT TEST
+==================================================
+
+Set Font = Courier New.
+
+Open Background Edit.
+
+Verify Courier New appears in:
+[ ] Background title
+[ ] BAR COLOR / TEXT
+[ ] Bar Color
+[ ] Font
+[ ] Text Color
+[ ] Reset Bar / Text
+[ ] Full Screen
+[ ] Fit Image
+[ ] Light
+[ ] Dark
+[ ] Darken
+[ ] Transparency
+[ ] Transparent/Solid endpoint labels
+[ ] theme selector
+[ ] theme names
+[ ] Add Theme
+[ ] custom-theme text
+
+Then test Georgia.
+
+Then Reset and verify Default TrailWeigh returns.
+
+==================================================
+29. TRANSPARENCY VISUAL TEST
+==================================================
+
+Use:
+- visible background image
+- clearly visible Bar Color
+- readable Text Color
+
+Move Transparency:
+
+RIGHT / SOLID:
+[ ] bar/pill surfaces fully opaque
+
+MIDDLE:
+[ ] background image visibly shows through bar/pill surfaces
+[ ] text/icons remain full opacity
+
+LEFT / MORE TRANSPARENT:
+[ ] surfaces become more transparent
+[ ] text/icons remain readable/full opacity
+
+Verify scope:
+[ ] category bars
+[ ] Pack Summary
+[ ] Weight Distribution
+[ ] Scan Gear List
+[ ] Locker
+[ ] File Name
+[ ] Preview
+[ ] Background Edit
+[ ] Share
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Desert/Trail
+[ ] +Base
+
+Verify expanded content bodies themselves are NOT made transparent by this
+slider.
+
+==================================================
+30. SHARE / HIDE REGRESSION
+==================================================
+
+SHARE:
+[ ] hover background stays stable
+[ ] text/icon turn white
+[ ] whole pill does not fade
+
+HIDE:
+[ ] enabled while idle
+[ ] disables only during legitimate blocking state
+[ ] re-enables after Background Edit closes
+[ ] no stale disabled state
+
+==================================================
+31. PHONE / DESKTOP REGRESSION
+==================================================
+
+Verify:
+- 360 px phone
+- 390 px phone
+- 412 px phone
+- tablet
+- desktop
+
+No:
+- horizontal overflow
+- lost scrolling
+- rearranged phone structure
+- clipped Background Edit controls
+
+==================================================
+PART G — AUTOMATED TESTS
+==================================================
+
+==================================================
+32. ADD MEANINGFUL TESTS
+==================================================
+
+WINDOW/TAB ISOLATION:
+[ ] new unsaved session defaults Bar Color
+[ ] new unsaved session defaults Text Color
+[ ] new unsaved session defaults Font
+[ ] new unsaved session defaults Transparency
+[ ] Window A live appearance does not mutate Window B
+[ ] Window B live appearance does not mutate Window A
+[ ] saved file restores its own appearance
+[ ] separate saved files retain separate appearance
+
+TEXT COLOR:
+[ ] packed count derives from Text Color
+[ ] weights derive from Text Color
+[ ] units derive from Text Color
+[ ] +Base derives from Text Color
+[ ] drag handle derives from Text Color/currentColor
+[ ] trash derives from Text Color/currentColor
+[ ] secondary/status text derives from Text Color
+[ ] Desert/Trail derives from Text Color
+[ ] active Background Edit derives from Text Color
+
+WEIGHT DISTRIBUTION:
+[ ] full bar background derives from Bar Color
+[ ] no separate default black backing survives
+[ ] Desert/Trail derives from Bar Color
+[ ] selected state remains distinguishable
+
+FONT:
+[ ] expanded Background panel inherits selected Font
+[ ] all listed Background panel labels inherit selected Font
+[ ] theme selector/theme names inherit selected Font
+[ ] approved font list remains exact
+
+TRANSPARENCY:
+[ ] control renders directly below Darken
+[ ] control renders above Background Themes
+[ ] left means more transparent
+[ ] right means more solid
+[ ] default = solid
+[ ] background alpha changes without changing text/icon opacity
+[ ] all intended bars receive transparency
+[ ] all intended pills receive transparency
+[ ] Desert/Trail receives transparency
+[ ] +Base receives transparency
+[ ] active Background Edit receives transparency
+[ ] expanded content bodies do not inherit bar/pill transparency
+[ ] Reset restores Solid
+[ ] save/reopen preserves saved transparency
+[ ] New defaults to Solid
+[ ] Undo/Redo works
+
+REGRESSION:
+[ ] Share hover remains correct
+[ ] Hide remains correct
+[ ] 023D theme cleanup remains correct
+[ ] 023E landing page unchanged
+[ ] phone layout unchanged
+
+==================================================
+33. FULL REGRESSION SUITE
+==================================================
+
+Run the full TrailWeigh regression suite.
+
+Specifically verify:
+
+[ ] 023A custom-theme Undo
+[ ] 022Z one-click delete
+[ ] anchored delete confirmation
+[ ] 023D theme cleanup
+[ ] 023E Hide fix
+[ ] 023E Share hover
+[ ] 023E landing page
+[ ] Background Edit
+[ ] Fit / Fill
+[ ] Light / Dark
+[ ] Darken
+[ ] Locker sync
+[ ] mobile scrolling
+[ ] Save / Save As
+[ ] Locker
+[ ] Preview
+[ ] Open/Close
+[ ] Hide
+[ ] Imperial/Metric
+[ ] Pack Summary
+[ ] Weight Distribution calculations
+[ ] Scan Gear List
+[ ] Categories
+[ ] Footer
+[ ] auth
+[ ] tablet
+[ ] desktop
+
+==================================================
+34. REQUIRED WORKFLOW REPORT
+==================================================
+
+REPLIT MUST create:
+
+workflow-reports/PROMPT_023G_REPORT.md
+
+Exact title:
+
+Prompt 023G — Isolate Appearance Between Windows, Complete Color/Font Coverage, Fix Weight Distribution Bar, and Add Transparency Below Darken
+
+The report must include:
+
+- checkpoint confirmation
+- files changed
+- complete final-diff review
+- anything reverted
+
+WINDOW/TAB ISOLATION SECTION:
+- exact root cause of cross-window appearance leakage
+- old storage/state architecture
+- new storage/state architecture
+- New-window default behavior
+- saved-file appearance restore behavior
+- Window A/B isolation runtime result
+
+TEXT COLOR SECTION:
+- remaining hard-coded/inherited colors found
+- exact fixes
+- packed-count result
+- weight/unit result
+- +Base result
+- drag/trash result
+- secondary/status result
+
+WEIGHT DISTRIBUTION SECTION:
+- exact cause of black right-side area
+- exact fix
+- entire bar-color result
+- Desert/Trail Bar Color result
+- Desert/Trail Text Color result
+- selected-state result
+
+FONT SECTION:
+- exact reason Background panel did not inherit Font
+- exact fix
+- all Background panel text result
+- final approved font list
+
+TRANSPARENCY SECTION:
+- exact placement
+- exact DOM/component location
+- exact left/right behavior
+- default
+- implementation method
+- confirmation background-only alpha
+- scope
+- Reset result
+- save/reopen result
+- New-window default result
+- Undo/Redo result
+
+REGRESSION SECTION:
+- Hide
+- Share hover
+- themes
+- landing page
+- phone
+- desktop/tablet
+- Locker/sync
+
+TEST SECTION:
+- automated tests
+- runtime tests
+- visual tests
+- full regression results
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+accurately.
+
+Do not claim real-device PASS unless the user verifies it.
+
+Append the verified report to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous reports.
+
+==================================================
+35. REQUIRED REPLIT-CREATED ZIP
+==================================================
+
+REPLIT ITSELF MUST create:
+
+workflow-reports/trailweigh-023G-report.zip
+
+Prompt 023G is NOT complete until BOTH exist:
+
+1.
+workflow-reports/PROMPT_023G_REPORT.md
+
+2.
+workflow-reports/trailweigh-023G-report.zip
+
+ZIP must contain at minimum:
+PROMPT_023G_REPORT.md
+
+It SHOULD also include NON-SENSITIVE screenshots showing:
+
+1. Window A with custom Bar/Text/Font/Transparency
+2. new Window B showing DEFAULT appearance
+3. Weight Distribution with full custom-color bar and styled Desert/Trail
+4. Background Edit with Courier New visibly applied inside the expanded panel
+5. Transparency at Solid
+6. Transparency at middle / visibly transparent
+7. Transparency near left / more transparent
+8. Share hover with custom colors
+9. representative phone layout
+
+DO NOT include:
+- passwords
+- auth tokens
+- cookies
+- API keys
+- .env
+- private account data
+- private Locker contents
+- private real-user photos
+
+Before completion:
+1. Verify ZIP exists.
+2. Verify ZIP size > 0.
+3. Programmatically open/list ZIP contents.
+4. Confirm report is inside.
+5. Confirm ZIP is not corrupt.
+6. Leave ZIP in workflow-reports/.
+7. Attach/provide it if supported.
+
+==================================================
+36. COMPLETION RESPONSE
+==================================================
+
+Provide:
+
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. ZIP verification result
+8. confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+9. exact root cause of appearance leaking between windows/tabs
+
+10. confirmation New unsaved windows start with DEFAULT:
+    - Bar Color
+    - Text Color
+    - Font
+    - Transparency = Solid
+
+11. confirmation saved files restore their OWN appearance
+
+12. confirmation all intended text/icons now follow Text Color
+
+13. confirmation the ENTIRE Weight Distribution bar follows Bar Color
+
+14. confirmation Desert/Trail follows Bar Color/Text Color/Font/Transparency
+
+15. confirmation selected Font now applies inside expanded Background Edit
+
+16. exact final font list
+
+17. confirmation Transparency is directly BELOW Darken
+
+18. confirmation Transparency is ABOVE Background Themes
+
+19. confirmation LEFT = more transparent / RIGHT = more solid
+
+20. confirmation Transparency affects backgrounds only, not text/icons
+
+21. confirmation Reset restores Solid/default appearance
+
+22. confirmation Transparency persists per saved file and participates in Undo/Redo
+
+23. confirmation Hide remains fixed
+
+24. confirmation Share hover remains fixed
+
+25. confirmation no theme/landing/phone regression
+
+26. exact user verification steps
+
+FINAL STATUS RULE:
+
+Do not claim USER PASS until the user verifies the result in TrailWeigh.
