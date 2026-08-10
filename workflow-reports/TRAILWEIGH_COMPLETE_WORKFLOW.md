@@ -221,3 +221,42 @@ User reported completely blank screen in both normal Safari and Safari Private W
 No database reset. No user records deleted. No Locker files deleted. No schema changes.
 
 ### Full report: `workflow-reports/PROMPT_023H_REPORT.md`
+
+---
+
+## Prompt 023I — Emergency Backend Recovery: Fix 502 API Failures Before Any More UI Work
+
+**Date:** 2026-08-10 | **Status:** INVESTIGATION COMPLETE — BACKEND STILL DOWN — No fix applied
+
+### Incident
+User reported HTTP 502 on both `/api/locker` (Cloud Sync = Error) and Scan Gear List ("Server error 502: unexpected response format") after 023H restored the frontend. 3 local Locker files were preserved; no destructive sync occurred.
+
+### Root cause (investigation only — fix not yet applied)
+**Common root cause:** `DATABASE_URL` is missing from production secrets. The API server imports `@workspace/db` at module-load time; `lib/db/src/index.ts` throws `"DATABASE_URL must be set"` before `app.listen()` is ever called. Process exits → health check fails → Replit marks `hasSuccessfulBuild: false` → all `/api/*` traffic receives infra-level 502/HTML.
+
+Confirmed signals:
+- `getDeploymentInfo().hasSuccessfulBuild = false`
+- `curl /api/healthz` (production) → HTML "This app isn't live yet"
+- `viewEnvVars({ environment: 'production' })` → no DATABASE_URL
+- Dev shell `printenv DATABASE_URL` → PRESENT (Replit auto-injects for managed Postgres in dev only)
+
+No Python/OCR subprocess is involved — import is pure JS (pdf-parse, mammoth, xlsx).
+
+### Fix required (not yet applied)
+1. Add `DATABASE_URL` to production secrets
+2. Redeploy
+3. Verify `/api/healthz` → 200 JSON, `/api/locker` → 401 JSON (unauthenticated)
+
+### Data safety
+No database reset. No user records deleted. No Locker files deleted. No schema changes. No code changes made during 023I.
+
+### Tests
+No new tests written during 023I (session was in Plan mode). Existing 111/111 tests unchanged.
+
+### Unresolved
+- DATABASE_URL not yet added to production secrets
+- OPENAI_API_KEY and CLERK_WEBHOOK_SECRET presence in production not verified
+- 023I integration test suite (§14) not yet written
+- macOS color-picker freeze — separate unresolved incident; eyedropper not used during 023I; Rosetta not implicated
+
+### Full report: `workflow-reports/PROMPT_023I_REPORT.md`

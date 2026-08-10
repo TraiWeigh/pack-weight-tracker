@@ -1,0 +1,92 @@
+PROMPT 023I — REPORT RECOVERY ONLY
+
+IMPORTANT:
+Do NOT make any additional TrailWeigh code changes.
+
+Prompt 023I was run, but the required report artifacts were not created.
+
+Your ONLY task is to create the missing Prompt 023I reporting artifacts from the work that was already performed.
+
+Create:
+
+workflow-reports/PROMPT_023I_REPORT.md
+
+and:
+
+workflow-reports/trailweigh-023I-report.zip
+
+REQUIREMENTS
+
+1. Do not modify TrailWeigh source code.
+2. Do not run new feature work.
+3. Use the work already completed during Prompt 023I to write the report accurately.
+4. Use only these status labels:
+   PASS
+   FAIL
+   PARTIAL
+   NOT TESTED
+5. Do not claim deployed/runtime testing occurred unless it actually occurred.
+6. Include the actual backend/API findings from Prompt 023I, including:
+   - Locker /api/locker status
+   - Cloud Sync status
+   - Scan Gear List/import status
+   - production/deployment status
+   - database connectivity status
+   - any root cause found
+   - any code/files that were changed during 023I
+   - anything that remained unresolved
+7. Include the actual final-diff review from 023I.
+8. Include the actual test results from 023I.
+9. Append PROMPT_023I_REPORT.md to:
+   TRAILWEIGH_COMPLETE_WORKFLOW.md
+   Do not overwrite previous reports.
+
+ZIP REQUIREMENTS
+
+The ZIP must:
+- be named exactly:
+  workflow-reports/trailweigh-023I-report.zip
+- contain at minimum:
+  PROMPT_023I_REPORT.md
+- be greater than 0 bytes
+- open/list successfully
+- not be corrupt
+
+DO NOT INCLUDE IN THE ZIP:
+- .env files
+- passwords
+- API keys
+- auth tokens
+- cookies
+- private account data
+- private Locker contents
+- user-uploaded files
+- private photos
+- database dumps
+
+BEFORE COMPLETION
+
+Verify:
+1. PROMPT_023I_REPORT.md exists.
+2. trailweigh-023I-report.zip exists.
+3. ZIP size is greater than 0 bytes.
+4. ZIP opens programmatically.
+5. PROMPT_023I_REPORT.md is inside the ZIP.
+6. ZIP is not corrupt.
+7. TRAILWEIGH_COMPLETE_WORKFLOW.md was updated.
+
+COMPLETION RESPONSE
+
+Provide:
+1. Markdown report full path
+2. Markdown file size
+3. Markdown line count
+4. ZIP full path
+5. ZIP file size
+6. ZIP contents
+7. Confirmation ZIP opened/verified
+8. Confirmation TRAILWEIGH_COMPLETE_WORKFLOW.md updated
+
+Do not mark this report-recovery task complete until both required files exist and the ZIP has been verified.
+
+Again: DO NOT make any TrailWeigh code changes.
