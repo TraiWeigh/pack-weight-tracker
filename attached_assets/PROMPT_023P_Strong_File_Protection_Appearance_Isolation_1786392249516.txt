@@ -1,0 +1,594 @@
+PROMPT 023P — STRONG FILE PROTECTION: ISOLATE ALL EDIT VIEW APPEARANCE SETTINGS PER SAVED FILE
+
+PURPOSE
+
+A serious file-protection problem has been found.
+
+The user verified that changing these Edit View settings in one file can affect other previously saved Locker files when those files are opened:
+
+- Transparency
+- Bar Color
+- Font
+
+Assume Text Color and other file-specific Edit View appearance settings may be vulnerable until proven otherwise.
+
+This is NOT acceptable.
+
+A saved TrailWeigh file must preserve its own appearance state. Changing one working file must never silently alter another saved file.
+
+PROMPT 023O must now be treated as PARTIAL because the appearance feature works visually but violates saved-file isolation.
+
+This prompt has priority over the planned eyedropper work.
+
+DO NOT work on eyedropper safety in this prompt.
+DO NOT redesign Edit View.
+DO NOT perform unrelated refactors.
+
+==================================================
+0. CHECKPOINT / DATA PROTECTION — REQUIRED FIRST
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Inspect the current saved-file schema/data model and appearance-state architecture.
+3. Identify where each Edit View setting currently lives:
+   - React/component state
+   - context
+   - localStorage
+   - sessionStorage
+   - Locker saved-file payload
+   - user/account preference storage
+   - BroadcastChannel/storage events
+   - backend/database
+4. Identify whether current saved files are:
+   A. actually being rewritten/modified, or
+   B. merely rendered with leaked/global appearance values.
+5. DO NOT bulk rewrite existing saved files.
+6. DO NOT run a destructive migration.
+7. DO NOT overwrite Locker contents during diagnosis.
+8. Preserve existing file IDs, names, checklist data, categories, quantities, weights, checked states, backgrounds, and user ownership.
+9. Inspect the complete final diff and revert unrelated changes.
+10. Document the checkpoint, diagnosis, and final diff.
+
+==================================================
+1. FILE IS THE PROTECTION BOUNDARY
+==================================================
+
+Treat each TrailWeigh saved file as an independent document.
+
+A saved file's appearance may change only when:
+
+1. that specific file is opened as the active working file,
+2. the user changes its appearance,
+3. the user explicitly saves that file.
+
+Changing File A must NOT alter File B.
+
+Opening File B must NOT import File A's current/live appearance.
+
+This rule applies even when both files belong to the same signed-in account.
+
+==================================================
+2. PROTECT ALL FILE-SPECIFIC EDIT VIEW SETTINGS
+==================================================
+
+Inventory every current setting inside Edit View.
+
+At minimum protect:
+
+- selected background/theme
+- Full Screen / Fit Image or equivalent fit/fill state
+- Light/Dark appearance state if currently stored per file
+- Darken
+- Transparency
+- Bar Color
+- Text Color
+- Font
+
+Also inspect any other current Edit View setting not listed above.
+
+For every appearance setting that is intended to belong to a saved list/document:
+
+- store it in that file's saved appearance state
+- load it from that file when opened
+- keep unsaved edits isolated to the active working file
+- save it only into the active file when the user explicitly saves
+
+Do not accidentally convert true account-wide accessibility/preferences into file-specific state. If any current setting is genuinely global by design, document it and leave it global.
+
+==================================================
+3. REMOVE GLOBAL APPEARANCE LEAKAGE
+==================================================
+
+Find and eliminate any path where file-specific appearance settings are being treated as global/shared live preferences.
+
+Inspect especially:
+
+- localStorage keys shared across files
+- account-level appearance objects
+- storage-event listeners
+- BroadcastChannel messages
+- shared React context initialized from "last used" values
+- effects that write appearance changes immediately
+- effects that apply one file's appearance to all tabs/windows
+- fallback logic that uses the last active file's appearance
+- Save/Load code that merges global appearance into opened files
+
+Do not simply hide the symptom.
+
+Fix the ownership model so file-specific appearance belongs to the active file/document.
+
+==================================================
+4. UNSAVED EDITS MUST STAY WITH THE CURRENT WORKING FILE
+==================================================
+
+When File A is open:
+
+- changing Bar Color should change File A's current working view only
+- changing Font should change File A's current working view only
+- changing Transparency should change File A's current working view only
+- changing any other file-specific Edit View setting should remain local to File A
+
+Until File A is explicitly saved:
+
+- File A's persisted saved version must remain unchanged
+- File B must remain unchanged
+- other open files/tabs must remain unchanged
+
+==================================================
+5. SAVE BEHAVIOR
+==================================================
+
+SAVE EXISTING FILE
+
+If File A is active and the user clicks Save:
+
+- write File A's current checklist/content state
+- write File A's current file-specific appearance state
+- update File A by its existing file ID
+- do not modify any other file
+
+SAVE AS
+
+If File A is active and the user chooses Save As:
+
+- create a NEW file ID
+- copy the current working checklist/content
+- copy the current working appearance state
+- preserve the original File A unchanged
+
+This must behave like a true document copy.
+
+==================================================
+6. OPEN / LOAD BEHAVIOR
+==================================================
+
+When File B is opened from Locker:
+
+- load File B's own saved appearance
+- do not merge in File A's current appearance
+- do not use "last used" Bar Color, Font, Transparency, etc.
+- do not overwrite File B during open
+
+Opening a file is READ/LOAD behavior, not SAVE behavior.
+
+==================================================
+7. NEW FILE BEHAVIOR
+==================================================
+
+A brand-new unsaved file must start with TrailWeigh's intended default appearance.
+
+It must NOT inherit live appearance changes from the currently open file.
+
+For example:
+
+File A:
+- red Bar Color
+- Georgia font
+- 40% Transparency
+
+Click New.
+
+New unsaved file should use TrailWeigh defaults, not:
+- red
+- Georgia
+- 40%
+
+Do not change established New-list content behavior.
+
+==================================================
+8. EXISTING SAVED FILES THAT LACK NEW APPEARANCE FIELDS
+==================================================
+
+If older Locker files do not contain some newer appearance fields:
+
+- do NOT pull values from the last-used/global appearance state
+- use stable TrailWeigh defaults for missing fields
+- preserve all existing file content
+- do not rewrite the file merely because it was opened
+
+If a safe schema-version or defaulting strategy is needed, implement the smallest backward-compatible solution.
+
+Document it.
+
+==================================================
+9. DO NOT SILENTLY MODIFY SAVED FILES ON OPEN
+==================================================
+
+This is critical.
+
+Opening/loading File B must not update its `updatedAt`, contents, appearance, or persisted record unless the user explicitly saves.
+
+Verify this with backend/storage inspection.
+
+If the current code auto-persists appearance during load/render, stop that behavior for file-specific appearance state.
+
+==================================================
+10. FILE A / FILE B / NEW FILE REGRESSION TEST — REQUIRED
+==================================================
+
+Create a browser-level test using at least two distinct saved files.
+
+FILE A:
+- Bar Color: obvious custom color, e.g. red
+- Text Color: a distinct color if practical
+- Font: Georgia
+- Transparency: midpoint
+- another Edit View setting if useful
+
+Save File A.
+
+FILE B:
+- use clearly different appearance settings
+- save File B
+
+Then test:
+
+1. Open File A.
+2. Confirm A appearance.
+3. Change A appearance WITHOUT saving.
+4. Open File B.
+5. Confirm B still has B appearance.
+6. Reopen File A from its SAVED version.
+7. Confirm unsaved A changes did not silently overwrite saved A unless current app deliberately keeps a working unsaved session; document exact behavior.
+8. Change and SAVE File A.
+9. Open File B.
+10. Confirm B is unchanged.
+11. Reopen File A.
+12. Confirm saved A appearance is restored.
+13. Click New.
+14. Confirm New starts with defaults rather than A or B appearance.
+
+The test must verify actual persisted records where practical, not only pixels.
+
+==================================================
+11. MULTI-TAB / WINDOW ISOLATION
+==================================================
+
+Test two TrailWeigh windows/tabs.
+
+Window 1:
+- File A
+
+Window 2:
+- File B
+
+Change:
+- Bar Color
+- Font
+- Transparency
+
+in File A.
+
+Verify File B does not change live.
+
+Save File A.
+
+Verify File B still does not change.
+
+If synchronization is used for Locker metadata/list refresh, preserve that without broadcasting file-specific appearance into unrelated open files.
+
+==================================================
+12. PROTECT CHECKLIST DATA TOO
+==================================================
+
+Because this prompt concerns stronger file protections, verify appearance changes do not cause unintended writes to unrelated checklist data.
+
+Changing Edit View in File A must not modify File B's:
+
+- categories
+- items
+- quantities
+- weights
+- checked/packed states
+- category expansion state if that is not persisted
+- filename
+- ownership
+- sharing permissions
+- background/theme
+- timestamps
+
+except where explicitly intended and saved for File A only.
+
+==================================================
+13. UNDO / REDO
+==================================================
+
+Undo/Redo for appearance changes must operate only within the current working file/session.
+
+Undo in File A must not affect File B.
+
+If the user switches files, do not apply A's appearance-history entries to B.
+
+Preserve current established Undo/Redo behavior otherwise.
+
+==================================================
+14. RESET BAR/TEXT
+==================================================
+
+Reset Bar/Text must affect only the active working file.
+
+It must not reset any other saved file.
+
+If the active file is not saved afterward, other persisted records remain untouched.
+
+==================================================
+15. TRANSPARENCY MUST REMAIN FUNCTIONAL
+==================================================
+
+Preserve the user-verified visual behavior from Prompt 023O:
+
+- default-color Transparency works
+- custom-color Transparency works
+- `+Base` follows Transparency
+
+The only change here is FILE ISOLATION / PROTECTION.
+
+Do not rework the transparency rendering system unnecessarily.
+
+==================================================
+16. EDIT VIEW LABEL
+==================================================
+
+The approved user-facing label is:
+
+Edit View
+
+Use "Edit View" in user-facing text.
+
+Do not rename internal code identifiers solely for cosmetic consistency unless needed.
+
+==================================================
+17. EYEDROPPER — DEFER
+==================================================
+
+Do NOT work on the native eyedropper safety/performance issue in this prompt.
+
+Keep it present.
+
+Do not ask the user to test it.
+
+That remains a separate prompt after file isolation is user-verified.
+
+==================================================
+18. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Rename
+- Delete
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- category expand/collapse
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Edit View
+- Bar Color
+- Text Color
+- Font
+- Darken
+- Transparency
+- theme selection
+- +Base
+- Base Weight logic
+- authentication
+- sharing permissions
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim physical-device/live behavior PASS from source inspection or browser emulation.
+
+==================================================
+19. PRODUCTION BUILD / BACKEND
+==================================================
+
+Run appropriate production build/start checks.
+
+Verify:
+
+- frontend builds
+- app renders
+- no new console/runtime errors
+- Locker API works
+- Save works
+- Save As works
+- Load/open works
+- Scan Gear List/import backend is not regressed
+
+No unrelated backend changes.
+
+==================================================
+20. USER VERIFICATION STEPS
+==================================================
+
+At completion give the user this short test:
+
+1. Open saved File A.
+2. Give it an obvious Bar Color, Font, and Transparency.
+3. Save File A.
+4. Open saved File B.
+5. Give File B clearly different appearance settings.
+6. Save File B.
+7. Reopen File A and confirm A still looks like A.
+8. Change File A's Bar Color, Font, and Transparency but DO NOT save.
+9. Open File B and confirm B is unchanged.
+10. Reopen File A from Locker and confirm its saved appearance was not silently overwritten.
+11. Change File A again and Save.
+12. Open File B and confirm B is still unchanged.
+13. Click New and confirm the new unsaved file starts with TrailWeigh defaults.
+14. Do NOT test the eyedropper yet.
+
+Do not mark USER PASS until the user confirms saved-file isolation.
+
+==================================================
+21. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023P_REPORT.md
+
+Include:
+
+- checkpoint
+- acknowledgment that 023O is PARTIAL due to saved-file appearance leakage
+- root cause
+- whether files were actually being rewritten or merely rendered from global leaked state
+- current ownership/storage location of every Edit View setting
+- which settings are file-specific
+- which settings, if any, remain intentionally global and why
+- files changed
+- schema/defaulting changes if any
+- Save behavior
+- Save As behavior
+- Open/load behavior
+- New-file behavior
+- old-file/default-field behavior
+- File A / File B test
+- persisted-record verification
+- multi-window test
+- Undo/Redo isolation
+- Reset isolation
+- Transparency regression result
+- checklist-data protection result
+- build/runtime
+- backend regression
+- final diff
+- unresolved issues
+- eyedropper = NOT TESTED
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append the report to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous history.
+
+==================================================
+22. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023P-report.zip
+
+Include at minimum:
+
+- PROMPT_023P_REPORT.md
+
+May also include useful non-sensitive:
+- File A / File B automated test output
+- persisted-record comparison
+- browser test screenshots
+- build output
+- diff summary
+
+Do NOT include:
+
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private user/account data
+- real Locker contents
+- private uploaded photos
+- database dumps
+
+Use synthetic test files/data only.
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023P_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+==================================================
+23. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status
+2. Root cause
+3. Were saved files actually rewritten, or was appearance leaking at render/load time?
+4. Files changed
+5. File-specific appearance fields protected
+6. Intentionally global settings, if any
+7. Save result
+8. Save As result
+9. Open/load result
+10. New-file default result
+11. Existing-old-file fallback result
+12. File A / File B isolation result
+13. Persisted-record verification
+14. Multi-window isolation
+15. Undo/Redo isolation
+16. Reset isolation
+17. Transparency regression
+18. Checklist-data protection
+19. Build/runtime
+20. Backend regression
+21. Eyedropper status: NOT TESTED
+22. Unresolved issues
+23. PROMPT_023P_REPORT.md path
+24. ZIP path
+25. ZIP size
+26. ZIP contents
+27. ZIP verification
+28. User test steps
+
+FINAL RULE:
+
+A saved TrailWeigh file is an independent document.
+
+No file-specific Edit View change in File A may silently alter File B.
+
+Do not mark this prompt PASS unless File A / File B / New file isolation is demonstrated with actual saved-file tests.
