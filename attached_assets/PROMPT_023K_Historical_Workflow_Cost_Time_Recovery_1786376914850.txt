@@ -1,0 +1,504 @@
+PROMPT 023K — RECOVER HISTORICAL REPLIT WORKFLOW TIME & COST
+
+PURPOSE
+
+Prompt 023J successfully inventoried the historical TrailWeigh prompts, but it FAILED the main objective: it recovered ZERO historical Time Worked values and ZERO historical Agent Cost values.
+
+This prompt is a REPORTING / DATA-RECOVERY task only.
+
+DO NOT modify TrailWeigh application code.
+DO NOT fix bugs.
+DO NOT change UI, backend, database, authentication, storage, themes, user files, or application behavior.
+
+The goal is to make a second, more targeted attempt to recover the ACTUAL historical Replit Agent workflow values associated with past TrailWeigh prompts, especially:
+
+- Time worked
+- Agent usage / cost
+- Work done / actions
+- Items read / lines read
+
+The previous conclusion "there is no Agent-accessible API" is NOT by itself sufficient for this prompt. Investigate all legitimate Replit-supported historical sources that may contain or export these values, while respecting access boundaries and privacy.
+
+Do not estimate or invent missing values.
+
+==================================================
+0. BACKUP / CHANGE PROTECTION
+==================================================
+
+Before doing anything:
+
+1. Create a checkpoint.
+2. Inspect the existing Prompt 023J historical files and report.
+3. Preserve all existing historical reports.
+4. Do not modify any TrailWeigh application/source-code file.
+5. Allowed writes are limited to:
+   - workflow-reports/
+   - append-only update to TRAILWEIGH_COMPLETE_WORKFLOW.md
+6. Inspect the complete final diff.
+7. If any application/source file changed, revert it before completion.
+8. Document the checkpoint and final-diff review in PROMPT_023K_REPORT.md.
+
+==================================================
+1. START FROM PROMPT 023J'S INVENTORY
+==================================================
+
+Use these existing files as the starting point:
+
+workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.md
+workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.csv
+workflow-reports/PROMPT_023J_REPORT.md
+
+Prompt 023J identified approximately 85 historical prompt IDs and reported that the project report files themselves do not contain historical Replit workflow time/cost data.
+
+Do NOT rebuild the entire inventory from scratch unless needed for validation.
+
+Preserve the canonical prompt IDs and titles already identified.
+
+==================================================
+2. INVESTIGATE LEGITIMATE HISTORICAL REPLIT SOURCES
+==================================================
+
+Investigate whether ACTUAL historical workflow metrics can be retrieved from any legitimate Replit-supported source available to this project/account/session.
+
+Investigate, where accessible:
+
+A. Replit Agent history / checkpoint history
+- chronological Agent history
+- checkpoint metadata
+- checkpoint detail records
+- session/task history
+- any visible per-checkpoint Agent usage records
+- any accessible metadata associated with "Worked for X minutes"
+- any accessible metadata associated with "Agent usage $X.XX"
+
+B. Replit Usage / Billing information
+- Replit account Usage records that are legitimately available to the Agent
+- project-scoped usage history
+- Agent usage history
+- downloadable/exportable usage data, if Replit provides it
+- CSV/JSON exports, if a supported export exists
+- any documented project/session identifiers that can correlate usage to a TrailWeigh prompt
+
+C. Project-local metadata
+- legitimate project/checkpoint metadata
+- git history/commit metadata
+- Replit-generated project history files
+- existing workflow reports
+- existing PRE_* backup files
+- existing ZIP/report timestamps
+
+Project-local timestamps may be used ONLY to correlate a prompt with a Replit history entry.
+They must NOT be used to manufacture a Time Worked value.
+
+D. Existing Replit-supported tools available to Agent
+Use any legitimate Replit-provided project/history/usage inspection capability that is actually available.
+
+Do NOT:
+- bypass permissions
+- scrape private credentials
+- inspect unrelated account data
+- use undocumented authentication tokens
+- reverse-engineer private Replit APIs
+- access payment-card information
+- expose secrets
+- guess values
+
+==================================================
+3. TRY TO CORRELATE EACH PROMPT WITH ITS REPLIT SESSION/CHECKPOINT
+==================================================
+
+For every historical TrailWeigh prompt in the 023J inventory, attempt to correlate it with the corresponding Replit Agent session/checkpoint.
+
+Use verifiable evidence such as:
+
+- prompt ID in report filename
+- report date
+- checkpoint description
+- PRE_* backup filename
+- git/checkpoint timestamp
+- files changed
+- prompt title/scope
+- chronological ordering
+
+Record a confidence status for the correlation:
+
+EXACT
+STRONG
+AMBIGUOUS
+NOT FOUND
+
+Do not attach cost/time to a prompt unless the session/checkpoint correlation is EXACT or STRONG and the cost/time value itself is directly retrieved from a Replit source.
+
+If more than one Replit session may correspond to the same prompt, document that ambiguity instead of choosing one arbitrarily.
+
+==================================================
+4. RECOVER ACTUAL COST FIRST
+==================================================
+
+Historical Agent Cost is the highest-priority metric.
+
+For every prompt where Replit exposes an actual Agent/checkpoint/session charge, capture:
+
+- prompt ID
+- actual Agent cost in USD
+- source
+- session/checkpoint reference
+- correlation confidence
+
+Do not calculate cost from time.
+
+Do not use current pricing formulas to reconstruct old costs.
+
+Do not infer cost from number of actions, lines read, test count, ZIP size, or files changed.
+
+If a cost exists in a user-visible Replit history/billing view but the Agent truly cannot read/export it, record:
+
+UI-ONLY — MANUAL RETRIEVAL REQUIRED
+
+rather than simply NOT AVAILABLE.
+
+==================================================
+5. RECOVER ACTUAL TIME WORKED
+==================================================
+
+Attempt to retrieve the historical equivalent of Replit's workflow card field:
+
+"Time worked — X minutes"
+
+Capture the actual value only if Replit exposes it directly.
+
+Do NOT calculate elapsed work time from:
+- first/last file timestamp
+- checkpoint timestamps
+- report creation time
+- git commit times
+- conversation duration
+
+Those are not the same as Replit's Time Worked metric.
+
+If Replit visibly stores the value but Agent cannot retrieve it, record:
+
+UI-ONLY — MANUAL RETRIEVAL REQUIRED
+
+==================================================
+6. RECOVER ACTIONS / ITEMS READ / LINES READ
+==================================================
+
+Where available, retrieve the historical workflow-card values:
+
+- Work done / actions
+- Items read
+- Lines read
+
+Do not infer these values.
+
+If only the UI can provide them, mark:
+
+UI-ONLY — MANUAL RETRIEVAL REQUIRED
+
+==================================================
+7. SPECIAL CROSS-CHECK: PROMPTS 023I AND 023J
+==================================================
+
+The user has supplied workflow screenshots for two prompts.
+
+PROMPT 023I:
+- Time worked: 4 minutes
+- Work done: 25 actions
+- Lines read: 1,074
+- Agent usage: $0.58
+- Checkpoint created: YES
+
+PROMPT 023J:
+- Time worked: 11 minutes
+- Work done: 18 actions
+- Lines read: 631
+- Agent usage: $1.33
+- Checkpoint created: YES
+
+Use these ONLY as cross-check values.
+
+Try to locate the corresponding Replit historical session/checkpoint records.
+
+Report whether Replit's accessible history independently exposes matching values.
+
+Possible result examples:
+
+MATCH — REPLIT HISTORY VERIFIED
+UI-ONLY — USER SCREENSHOT MATCH CANNOT BE PROGRAMMATICALLY VERIFIED
+NO MATCH FOUND
+
+Do not silently convert user-provided values into internally verified Replit values.
+
+==================================================
+8. IF REPLIT SUPPORTS AN EXPORT, USE IT
+==================================================
+
+If Replit provides a legitimate supported export/download of Agent usage, billing usage, checkpoint usage, session history, or similar data:
+
+1. Use it if Agent can access it safely.
+2. Preserve the raw export only if it contains no secrets/private payment information.
+3. If the export contains sensitive fields, create a sanitized derivative containing only:
+   - date/time
+   - project/session/checkpoint reference
+   - Agent cost
+   - usage units relevant to Agent
+4. Document exactly where the data came from.
+5. Correlate those records with TrailWeigh prompt IDs.
+
+Do not claim an export exists unless you actually find it.
+
+==================================================
+9. IF VALUES ARE UI-ONLY, BUILD A MANUAL RECOVERY MAP
+==================================================
+
+If Replit confirms that historical values are visible in the Replit UI but inaccessible to Agent, do not stop with "not available."
+
+Create:
+
+workflow-reports/TRAILWEIGH_MANUAL_WORKFLOW_RECOVERY_MAP.csv
+
+One row per historical prompt with:
+
+prompt_id
+prompt_title
+prompt_date
+checkpoint_or_session_reference
+correlation_confidence
+expected_ui_location
+time_worked_minutes
+actions
+items_read
+lines_read
+agent_cost_usd
+recovery_status
+notes
+
+For unknown numeric values, leave the field blank.
+
+The purpose is to make manual recovery fast: the user should be able to open Replit history, find the identified checkpoint/session, read the workflow card, and fill the values without having to determine which session belongs to which prompt.
+
+If possible, provide the exact chronological sequence and checkpoint label needed to find each prompt.
+
+Do NOT invent UI navigation labels you did not verify.
+
+==================================================
+10. CREATE THE RECOVERY REPORT
+==================================================
+
+Create:
+
+workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME_RECOVERY.md
+
+Include a canonical table:
+
+| Prompt | Session/Checkpoint | Correlation | Time Worked | Actions | Items/Lines Read | Agent Cost | Source | Recovery Status |
+
+Recovery Status must be one of:
+
+RECOVERED
+PARTIALLY RECOVERED
+UI-ONLY — MANUAL RETRIEVAL REQUIRED
+NOT FOUND
+AMBIGUOUS
+
+For actual numeric values, clearly distinguish:
+
+REPLIT-VERIFIED
+USER-PROVIDED
+NOT RECOVERED
+
+Do not label USER-PROVIDED values as REPLIT-VERIFIED.
+
+==================================================
+11. CREATE A MACHINE-READABLE RECOVERY CSV
+==================================================
+
+Create:
+
+workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME_RECOVERY.csv
+
+Columns:
+
+prompt_id
+prompt_title
+prompt_date
+session_checkpoint_reference
+correlation_confidence
+time_worked_minutes
+time_source
+actions
+actions_source
+items_read
+items_read_source
+lines_read
+lines_read_source
+agent_cost_usd
+cost_source
+recovery_status
+notes
+
+For unavailable numeric values, leave cells blank.
+
+Do not insert zero for missing values.
+
+==================================================
+12. SUMMARY — ANSWER THE ACTUAL QUESTION
+==================================================
+
+At the top and bottom of the recovery report, clearly state:
+
+- Total historical prompts
+- Number with ACTUAL Replit-verified cost recovered
+- Number with ACTUAL Replit-verified time recovered
+- Number with actual actions recovered
+- Number with actual lines/items read recovered
+- Number that are UI-only and require manual retrieval
+- Number not found
+- Number ambiguous
+- Total ACTUAL recovered Agent cost
+- Total ACTUAL recovered Time Worked
+
+Do not extrapolate totals to missing prompts.
+
+If zero values are recovered again, explicitly state:
+
+"HISTORICAL COST/TIME RECOVERY FAILED"
+
+and explain precisely what source remains inaccessible.
+
+Do NOT call the overall task COMPLETE/PASS merely because inventory/report files were created.
+
+==================================================
+13. 023K SUCCESS / FAILURE CRITERIA
+==================================================
+
+PASS:
+Actual historical Replit cost and/or Time Worked values are recovered for a meaningful set of older prompts and correctly correlated.
+
+PARTIAL:
+Some actual historical values are recovered, but substantial gaps remain.
+
+FAIL:
+No historical cost/time values are recovered beyond the two user-provided screenshots.
+
+The reporting files/ZIP can still be created successfully while the MAIN OBJECTIVE status is FAIL.
+
+This distinction is mandatory.
+
+==================================================
+14. PROMPT 023K REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023K_REPORT.md
+
+Include:
+
+- checkpoint
+- sources investigated
+- which Replit history/usage sources were accessible
+- which were inaccessible
+- number of prompt/session correlations
+- number of actual historical costs recovered
+- number of actual historical times recovered
+- number of UI-only records
+- cross-check result for 023I
+- cross-check result for 023J
+- files created
+- validation performed
+- final diff
+- confirmation no application code changed
+- MAIN OBJECTIVE status: PASS / PARTIAL / FAIL
+
+Append the report to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite earlier entries.
+
+==================================================
+15. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023K-report.zip
+
+Include at minimum:
+
+- PROMPT_023K_REPORT.md
+- TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME_RECOVERY.md
+- TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME_RECOVERY.csv
+
+If created, also include:
+
+- TRAILWEIGH_MANUAL_WORKFLOW_RECOVERY_MAP.csv
+
+Do not include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private Locker contents
+- private uploads/photos
+- database dumps
+- payment-card information
+- unrelated private account data
+
+Verify:
+
+1. ZIP exists.
+2. ZIP is greater than 0 bytes.
+3. ZIP opens/lists successfully.
+4. Required files are present.
+5. ZIP is not corrupt.
+
+==================================================
+16. FINAL DIFF / NO APPLICATION CHANGES
+==================================================
+
+Before completion:
+
+1. Inspect the complete final diff.
+2. Confirm no TrailWeigh application/source file changed.
+3. Revert any unrelated source-code change.
+4. Only workflow-reporting files may remain changed.
+
+==================================================
+17. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. MAIN OBJECTIVE status: PASS / PARTIAL / FAIL
+2. Historical prompts examined
+3. Actual Replit-verified costs recovered
+4. Actual Replit-verified times recovered
+5. Actual actions recovered
+6. Actual items/lines read recovered
+7. UI-only/manual-recovery count
+8. Not-found count
+9. Ambiguous count
+10. Total actual recovered cost
+11. Total actual recovered time
+12. 023I cross-check result
+13. 023J cross-check result
+14. Exact source(s) that produced historical metrics
+15. Recovery Markdown path
+16. Recovery CSV path
+17. Manual-recovery CSV path, if created
+18. PROMPT_023K_REPORT.md path
+19. ZIP path
+20. ZIP size
+21. ZIP contents
+22. ZIP verification result
+23. Confirmation no TrailWeigh application/source code changed
+
+IMPORTANT FINAL RULE:
+
+Do not substitute "we created a report" for recovering the requested historical cost/time data.
+
+If no old Replit workflow cost/time values are actually recovered, the MAIN OBJECTIVE is FAIL.

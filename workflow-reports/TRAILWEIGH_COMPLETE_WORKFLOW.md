@@ -289,3 +289,46 @@ Created a complete historical prompt inventory and workflow cost/time dataset co
 Future prompt reports should include a standardized workflow metrics block (values copied from the Replit UI at session end) to build a verifiable calibration dataset.
 
 ### Full report: `workflow-reports/PROMPT_023J_REPORT.md`
+
+---
+
+## PROMPT 023K — Recover Historical Replit Workflow Time & Cost
+
+**Date:** 2026-08-10
+**Objective:** Second targeted attempt to recover actual historical Replit workflow metrics (time, cost, actions, lines) for all 85 prior TrailWeigh prompts.
+**Application code changed:** NONE
+**MAIN OBJECTIVE STATUS:** FAIL
+
+### Sources Investigated
+- **A. Replit checkpoint metadata** — UI-ONLY; data visible in Agent tab (hover usage icon) but no programmatic API
+- **B. Replit usage/billing** — UI-ONLY; visible in Account Settings → Account usage → See previous invoices; Enterprise Admin API requires enterprise plan + separate token, not accessible
+- **C. Project-local metadata** — Inspected 47 PRE\_ backup files (timestamps), 274 git commits, 51 ZIP archives, 83 PROMPT reports; all contain zero cost/time data
+- **D. Replit agent callbacks** — None expose usage/billing/session history
+
+### Session Correlation
+- 47 prompts: **STRONG** — PRE\_ backup file timestamps give exact session start boundaries
+- 36 prompts: **AMBIGUOUS** — git commit approximate timestamps only
+- 2 prompts (022K, 022Q): **NOT FOUND** — no evidence in any source
+
+### Recovery Results
+| Metric | Replit-Verified | USER-PROVIDED |
+|--------|----------------|---------------|
+| Agent cost | $0.00 (0 prompts) | $1.91 (023I+023J screenshots) |
+| Time worked | 0 min (0 prompts) | 15 min (023I+023J screenshots) |
+| Actions | 0 (0 prompts) | 43 (023I: 25, 023J: 18) |
+| Lines read | 0 (0 prompts) | 1,705 (023I: 1,074, 023J: 631) |
+
+### Cross-Check
+- **023I:** UI-ONLY — USER SCREENSHOT MATCH CANNOT BE PROGRAMMATICALLY VERIFIED
+- **023J:** UI-ONLY — USER SCREENSHOT MATCH CANNOT BE PROGRAMMATICALLY VERIFIED
+
+### Files Created
+- `TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME_RECOVERY.md` — canonical recovery table (21 KB)
+- `TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME_RECOVERY.csv` — machine-readable (85 rows, 37 KB)
+- `TRAILWEIGH_MANUAL_WORKFLOW_RECOVERY_MAP.csv` — manual retrieval guide with exact UI navigation (37 KB)
+- `PROMPT_023K_REPORT.md` — this report (12 KB)
+- `trailweigh-023K-report.zip` — archive
+
+### Why Recovery Failed (precise explanation)
+Replit stores cost/time per checkpoint in their backend database. This data surfaces only through the Agent tab UI (hover → usage card). No file in the project workspace contains this data. No Agent callback exposes it. No export endpoint exists for individual accounts. Git auto-commits and PRE\_ backup files provide chronological ordering but contain no billing data.
+
