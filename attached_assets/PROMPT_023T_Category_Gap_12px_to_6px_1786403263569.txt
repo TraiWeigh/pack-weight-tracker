@@ -1,0 +1,278 @@
+PROMPT 023T — REDUCE CATEGORY BAR GAP FROM 12 PX TO 6 PX
+
+RECOMMENDED REPLIT MODE: ECONOMY
+
+WHY:
+This is a very small, low-risk spacing adjustment to one existing layout value.
+
+PURPOSE
+
+Prompt 023S reduced the vertical gap between adjacent collapsible category bars from 24 px to 12 px.
+
+The user wants that gap reduced again:
+
+CURRENT GAP: 12 px
+NEW GAP: 6 px
+
+This applies ONLY to the empty vertical space BETWEEN adjacent category accordion panels/bars.
+
+Do NOT change:
+- category bar height
+- vertical padding inside category headers
+- font size
+- icon size
+- chevron size
+- text position
+- expanded content spacing
+- item row spacing
+- borders
+- border radius
+- colors
+- Transparency
+- Bar Color
+- Text Color
+- Font
+- expand/collapse behavior
+- any unrelated layout
+
+==================================================
+MANDATORY COMPLETION RULE — DO NOT STOP BEFORE THIS
+==================================================
+
+BEFORE STOPPING OR DECLARING COMPLETION, YOU MUST:
+
+1. Write:
+   workflow-reports/PROMPT_023T_REPORT.md
+
+2. Append the report to:
+   workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+3. Create:
+   workflow-reports/trailweigh-023T-report.zip
+
+4. Verify the ZIP:
+   - exists
+   - is greater than 0 bytes
+   - opens/lists programmatically
+   - contains PROMPT_023T_REPORT.md
+   - is not corrupt
+
+5. Report:
+   - report path
+   - ZIP path
+   - ZIP size
+   - ZIP contents
+   - ZIP verification result
+
+DO NOT stop after making the visual change without writing and verifying the report and ZIP.
+
+==================================================
+0. CHECKPOINT / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Inspect the current category layout.
+3. Confirm Prompt 023S currently produces a 12 px vertical gap between adjacent category bars.
+4. Make the smallest reasonable change.
+5. Preserve all prior working TrailWeigh behavior and data.
+6. Do not modify any unrelated source file unless strictly necessary.
+7. Inspect the complete final diff.
+8. Revert unrelated changes.
+9. Document checkpoint and final diff.
+
+==================================================
+1. EXACT CHANGE
+==================================================
+
+Change the current vertical spacing between adjacent category accordion panels from:
+
+12 px → 6 px
+
+The final rendered outer gap must be 6 px.
+
+If the current implementation uses Tailwind `mb-3` for 12 px, replace it with the appropriate exact 6 px equivalent supported by the project, such as an arbitrary 6 px spacing utility if necessary.
+
+Do not approximate with 4 px or 8 px.
+
+Document:
+- old CSS/class/property
+- new CSS/class/property
+- old rendered value: 12 px
+- new rendered value: 6 px
+
+==================================================
+2. PRESERVE CATEGORY HEADER SIZE
+==================================================
+
+Do NOT reduce internal category-header padding in this prompt.
+
+Keep unchanged:
+- header height
+- text size
+- icons
+- chevrons
+- drag handle
+- packed count
+- weights
+- +Base
+- trash icon
+- internal top/bottom padding
+
+A separate future prompt may reduce internal category-header padding.
+
+==================================================
+3. COLLAPSED / EXPANDED CHECK
+==================================================
+
+Verify the 6 px inter-category gap when:
+- all categories are collapsed
+- one category is expanded
+- several categories are expanded
+
+Do not alter expanded-body content spacing.
+
+==================================================
+4. RESPONSIVE CHECK
+==================================================
+
+Verify on:
+- desktop
+- 390 px
+- 412 px
+
+Do not redesign mobile layout.
+
+==================================================
+5. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+- category expand/collapse
+- category drag/reorder
+- item editing
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Edit View
+- Bar Color
+- Text Color
+- Font
+- Darken
+- Transparency
+- themes
+- +Base
+- file isolation
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+==================================================
+6. BUILD / RUNTIME
+==================================================
+
+Run appropriate build/runtime checks.
+
+Confirm:
+- frontend builds
+- app renders
+- no new console/runtime errors
+- no backend regression
+
+No unrelated backend changes.
+
+==================================================
+7. USER VERIFICATION
+==================================================
+
+Give the user this short test:
+
+1. Look at several adjacent category bars.
+2. Confirm the empty vertical space between them is now approximately half of the 12 px spacing from Prompt 023S.
+3. Confirm the final gap is 6 px.
+4. Expand a category.
+5. Confirm the category bar itself did not become shorter.
+6. Confirm internal item spacing did not change.
+
+Do not mark USER PASS until the user confirms.
+
+==================================================
+8. REQUIRED REPORT
+==================================================
+
+Create:
+workflow-reports/PROMPT_023T_REPORT.md
+
+Include:
+- checkpoint
+- exact file(s) changed
+- exact spacing rule changed
+- old value: 12 px
+- new value: 6 px
+- collapsed-state result
+- expanded-state result
+- desktop result
+- 390 px result
+- 412 px result
+- regression results
+- build/runtime result
+- final diff
+- unresolved issues
+- user verification steps
+- overall status
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append to:
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+==================================================
+9. REQUIRED ZIP
+==================================================
+
+Create:
+workflow-reports/trailweigh-023T-report.zip
+
+Include at minimum:
+- PROMPT_023T_REPORT.md
+
+Do NOT include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- real Locker contents
+- private uploaded photos
+- database dumps
+
+Verify:
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023T_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+FINAL RULE:
+
+Change ONLY the inter-category vertical gap from 12 px to exactly 6 px.

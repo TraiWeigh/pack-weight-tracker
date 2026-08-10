@@ -2573,7 +2573,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
 
             {/* Scrollable categories */}
-            <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 space-y-2 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
+            <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 space-y-1 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
               {categoryOrder.map((category) => (
                 <GearCategory
                   key={category}

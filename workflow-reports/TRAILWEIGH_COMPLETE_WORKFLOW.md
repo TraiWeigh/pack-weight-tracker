@@ -572,3 +572,29 @@ Reduced the empty vertical gap between adjacent category bars from **24px to 12p
 
 ### Report
 `PROMPT_023S_REPORT.md`
+
+---
+
+## Prompt 023T — Reduce Category Bar Gap from 12 px to 6 px
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+Reduced the inter-category vertical gap from **12px → 6px** (023S had set it to 12px from the original 24px).
+
+**Why two files:** Adjacent block margins collapse to `max(mb, mt)`. With `mb-3` (12px) and `space-y-2` (8px mt), gap = 12px. Changing only `mb-3` → `mb-1.5` (6px) while leaving `space-y-2` (8px) would produce max(6, 8) = 8px — not 6px. Both must be reduced.
+
+**Fix:**
+- `GearCategory.tsx`: `mb-3` → `mb-1.5` (0.375rem = 6px)
+- `Checklist.tsx` container: `space-y-2` → `space-y-1` (0.25rem = 4px)
+
+Collapsed gap = max(6px, 4px) = **6px** ✓
+
+### Files Changed
+`artifacts/pack-checklist/src/components/GearCategory.tsx` — `mb-3` → `mb-1.5`  
+`artifacts/pack-checklist/src/pages/Checklist.tsx` — `space-y-2` → `space-y-1` (category list container only)
+
+### Report
+`PROMPT_023T_REPORT.md`

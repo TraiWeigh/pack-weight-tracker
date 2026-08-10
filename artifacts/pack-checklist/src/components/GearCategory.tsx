@@ -178,7 +178,7 @@ export function GearCategory({
 
   return (
     <div
-      className={`mb-3 bg-card border rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md ${
+      className={`mb-1.5 bg-card border rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md ${
         isDragOver ? 'border-primary shadow-md ring-2 ring-primary/30' : 'border-card-border'
       }`}
       style={{ ...barCardStyle(barStyle), ...fontWrapStyle }}
