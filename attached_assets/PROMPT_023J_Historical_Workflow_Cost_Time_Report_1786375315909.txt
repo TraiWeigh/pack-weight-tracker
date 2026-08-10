@@ -1,0 +1,369 @@
+PROMPT 023J — HISTORICAL WORKFLOW COST & TIME REPORT
+
+PURPOSE
+
+Create a historical TrailWeigh workflow report that records the actual Replit Agent time, cost, work/action counts, items/lines read, checkpoint information, and prompt outcomes for as many past TrailWeigh prompts as Replit can verify.
+
+This is a REPORTING-ONLY prompt.
+
+DO NOT modify TrailWeigh application code.
+DO NOT change UI, backend, database, authentication, storage, themes, files, or user data.
+DO NOT fix bugs or add features.
+DO NOT estimate or invent historical usage values.
+
+The goal is to build a trustworthy dataset that can later be compared with each prompt's ZIP/report so future Replit time and cost can be estimated more accurately.
+
+--------------------------------------------------
+0. BACKUP / CHANGE PROTECTION
+--------------------------------------------------
+
+Before doing anything:
+
+1. Create a checkpoint.
+2. Inspect the current project and existing workflow-report structure.
+3. Do not make any application/source-code changes.
+4. The only allowed changes are new/updated reporting files inside workflow-reports/ and the required append to TRAILWEIGH_COMPLETE_WORKFLOW.md.
+5. At the end, inspect the complete final diff.
+6. If any TrailWeigh application/source file changed, revert that unrelated change before completion.
+7. Document the checkpoint and final-diff review in the Prompt 023J report.
+
+--------------------------------------------------
+1. INVENTORY ALL PAST TRAILWEIGH PROMPTS
+--------------------------------------------------
+
+Build the most complete prompt inventory possible from:
+
+- workflow-reports/
+- TRAILWEIGH_COMPLETE_WORKFLOW.md
+- existing Prompt report Markdown files
+- existing report ZIP filenames
+- Replit Agent/checkpoint history that is actually accessible
+- any Replit project/session metadata that is actually accessible
+
+Include every identifiable TrailWeigh prompt, including lettered prompts such as:
+
+022C
+022D
+022E
+...
+022Z
+023A
+023B
+...
+023I
+
+Do not assume that this example list is complete.
+
+If a prompt number is referenced in history but no corresponding report exists, include it and clearly state that the report is missing.
+
+If duplicate ZIP/report copies exist for the same prompt, do not count them as separate prompts. Note the duplicate, but use one canonical prompt row.
+
+--------------------------------------------------
+2. RETRIEVE ACTUAL WORKFLOW METRICS
+--------------------------------------------------
+
+For each past prompt, retrieve ONLY values that Replit can directly verify.
+
+Look for these fields when available:
+
+- Prompt number
+- Prompt title / short description
+- Date/time
+- Time worked / "Worked for X minutes"
+- Work done / action count
+- Items read
+- Lines read
+- Agent usage / cost in USD
+- Whether a checkpoint was created
+- Checkpoint identifier or description, if safely available
+- Number of files changed, if verifiable
+- Report result/status
+- User/runtime result when documented
+- Whether follow-up/rework was required, when documented
+
+IMPORTANT:
+
+Do NOT calculate a historical cost from time.
+Do NOT infer time from timestamps.
+Do NOT infer actions or lines read from file sizes.
+Do NOT reconstruct missing usage values from guesses.
+Do NOT label an estimate as actual.
+
+If Replit cannot retrieve a metric directly, write exactly:
+
+NOT AVAILABLE
+
+For every actual time/cost/action/line metric, identify its source, for example:
+
+- Replit Agent workflow summary
+- checkpoint metadata
+- billing/usage metadata
+- existing Prompt report
+- other verifiable Replit metadata
+
+If the value exists only in the Replit UI but Agent cannot access it programmatically, record:
+
+NOT AVAILABLE — UI VALUE NOT ACCESSIBLE TO AGENT
+
+--------------------------------------------------
+3. CREATE THE MASTER HISTORICAL MARKDOWN REPORT
+--------------------------------------------------
+
+Create:
+
+workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.md
+
+The report must begin with a clear statement:
+
+"This report contains verified Replit values only. Missing historical time/cost/workflow metrics are marked NOT AVAILABLE and are not estimated."
+
+Include a table with at least these columns:
+
+| Prompt | Title / Scope | Date | Time Worked | Actions | Items Read | Lines Read | Agent Cost | Checkpoint | Result | Rework Needed | Metric Source |
+
+Use actual values only.
+
+For Result, use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+NOT AVAILABLE
+
+If a previous Replit report claimed PASS but later documented user testing showed a regression or failure, preserve that distinction in Notes rather than silently rewriting history.
+
+Example:
+
+Replit report: PASS
+User verification: FAIL
+Overall documented outcome: FAIL
+
+Where enough evidence exists, include both the Replit-reported result and the later user-verified result.
+
+--------------------------------------------------
+4. CREATE A MACHINE-READABLE CSV
+--------------------------------------------------
+
+Also create:
+
+workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.csv
+
+Use one canonical row per prompt.
+
+Required columns:
+
+prompt_id
+prompt_title
+date
+time_worked_minutes
+actions
+items_read
+lines_read
+agent_cost_usd
+checkpoint_created
+checkpoint_reference
+files_changed_count
+replit_report_status
+user_verified_status
+overall_status
+rework_required
+metric_source
+notes
+
+For unavailable numeric values, leave the CSV field blank and explain the missing value in notes.
+
+Do not use guessed numbers.
+
+--------------------------------------------------
+5. SUMMARY / CALIBRATION SECTION
+--------------------------------------------------
+
+At the bottom of the Markdown report, add a section:
+
+## Verified Cost & Time Calibration Data
+
+Report:
+
+- Number of prompts inventoried
+- Number with verified actual time
+- Number with verified actual Agent cost
+- Number with verified actions
+- Number with verified lines read
+- Number missing historical workflow metrics
+- Total VERIFIED Agent cost only where actual cost values exist
+- Total VERIFIED time only where actual time values exist
+- Average verified cost per prompt
+- Average verified time per prompt
+- Average verified cost per minute only across prompts that have BOTH verified time and verified cost
+
+Do NOT extrapolate these totals to prompts with missing data.
+
+Also identify broad work categories where the existing reports make classification possible, such as:
+
+- UI/CSS/layout
+- content/documentation
+- state/storage
+- sync/database
+- backend/API
+- deployment/recovery
+- testing/reporting
+
+Do not invent category-specific cost averages unless there are verified cost/time values for the prompts in that category.
+
+--------------------------------------------------
+6. PROMPT 023I KNOWN WORKFLOW VALUE CROSS-CHECK
+--------------------------------------------------
+
+Use Replit's own records if accessible to verify Prompt 023I.
+
+A user-provided workflow screenshot recorded these values:
+
+- Time worked: 4 minutes
+- Work done/actions: 25
+- Lines read: 1,074
+- Agent usage: $0.58
+- Checkpoint: created
+
+Do NOT automatically treat those numbers as Replit-internal historical data if Agent cannot independently see them.
+
+Instead:
+
+- If Replit can independently verify them, mark the source accordingly.
+- If Replit cannot independently access that workflow-summary metadata, note that Replit Agent could not independently retrieve it.
+- Do not replace a missing Replit value with an invented value.
+
+The purpose of this cross-check is to determine what historical workflow data Replit itself can actually retrieve.
+
+--------------------------------------------------
+7. DO NOT ACCESS OR EXPOSE SENSITIVE DATA
+--------------------------------------------------
+
+Do not expose or include:
+
+- .env contents
+- API keys
+- passwords
+- auth tokens
+- cookies
+- private account information
+- private Locker contents
+- user-uploaded private files
+- private photos
+- database dumps
+- secret values
+
+Billing/usage COST TOTALS and workflow counts are allowed, but do not include payment-card details or unrelated account information.
+
+--------------------------------------------------
+8. VALIDATE THE HISTORICAL DATASET
+--------------------------------------------------
+
+Before completion:
+
+1. Verify every identifiable prompt appears once in the canonical dataset.
+2. Check for duplicate prompt IDs.
+3. Check for duplicate ZIP/report copies.
+4. Verify that no missing value was silently converted to zero.
+5. Verify all monetary values labeled "actual" came from a verifiable Replit source.
+6. Verify all time values labeled "actual" came from a verifiable Replit source.
+7. Verify no estimates were inserted into the actual-data columns.
+8. Verify the Markdown and CSV agree.
+9. Verify no TrailWeigh application/source-code file was changed.
+
+--------------------------------------------------
+9. PROMPT 023J REPORT
+--------------------------------------------------
+
+Create:
+
+workflow-reports/PROMPT_023J_REPORT.md
+
+The report must state:
+
+- checkpoint created
+- files inspected
+- historical sources available
+- historical sources not accessible
+- number of prompts inventoried
+- number with verified time
+- number with verified cost
+- number with missing values
+- duplicate reports found
+- validation performed
+- final diff
+- confirmation that no TrailWeigh application code changed
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim PASS for historical data that Replit could not access.
+
+Append PROMPT_023J_REPORT.md to:
+
+TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior workflow history.
+
+--------------------------------------------------
+10. REQUIRED ZIP
+--------------------------------------------------
+
+Create:
+
+workflow-reports/trailweigh-023J-report.zip
+
+It must contain at minimum:
+
+- PROMPT_023J_REPORT.md
+- TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.md
+- TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.csv
+
+The ZIP may also include useful non-sensitive validation output.
+
+Do NOT include secrets or private user data.
+
+Verify:
+
+1. ZIP exists.
+2. ZIP size is greater than 0 bytes.
+3. ZIP opens/lists programmatically.
+4. All three required files are inside it.
+5. ZIP is not corrupt.
+
+Do not mark Prompt 023J complete until the ZIP is verified.
+
+--------------------------------------------------
+11. COMPLETION RESPONSE
+--------------------------------------------------
+
+At completion, report:
+
+1. Number of historical prompts found
+2. Number with actual verified time
+3. Number with actual verified cost
+4. Number with actual actions
+5. Number with actual lines read
+6. Number with unavailable workflow metrics
+7. Any limitations preventing historical usage retrieval
+8. Markdown report path
+9. CSV path
+10. Prompt 023J report path
+11. ZIP path
+12. ZIP file size
+13. ZIP contents
+14. ZIP verification result
+15. Confirmation that no TrailWeigh application/source code changed
+
+IMPORTANT:
+
+This prompt is for HISTORICAL REPORTING ONLY.
+
+Do not change TrailWeigh.
+Do not fix anything.
+Do not estimate missing historical Replit time or cost.
+Use NOT AVAILABLE when the actual historical metric cannot be verified.

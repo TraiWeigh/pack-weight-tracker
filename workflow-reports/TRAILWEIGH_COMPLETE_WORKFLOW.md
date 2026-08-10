@@ -260,3 +260,32 @@ No new tests written during 023I (session was in Plan mode). Existing 111/111 te
 - macOS color-picker freeze — separate unresolved incident; eyedropper not used during 023I; Rosetta not implicated
 
 ### Full report: `workflow-reports/PROMPT_023I_REPORT.md`
+
+---
+
+## Prompt 023J — Historical Workflow Cost & Time Report
+
+**Date:** 2026-08-10 | **Status:** COMPLETE — reporting only; no TrailWeigh application code changed
+
+### Summary
+Created a complete historical prompt inventory and workflow cost/time dataset covering all 85 identifiable TrailWeigh prompts (014H through 023I, plus 022K and 022Q which have missing reports).
+
+### Files Created
+- `workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.md` — master historical report (31,384 bytes)
+- `workflow-reports/TRAILWEIGH_HISTORICAL_WORKFLOW_COST_TIME.csv` — machine-readable CSV (16,772 bytes)
+- `workflow-reports/PROMPT_023J_REPORT.md` — this report
+- `workflow-reports/trailweigh-023J-report.zip` — ZIP containing all three
+
+### Key Findings
+- **85 prompt IDs** identified (014H–023I)
+- **83 prompts** have report files; **2 are missing** (022K, 022Q — no report, no ZIP, no test reference)
+- **50 ZIPs** exist; **35 prompts** have no ZIP archive
+- **0 prompts** have verified actual time, cost, actions, or lines read
+- All workflow metrics (time/actions/cost/lines) are **NOT AVAILABLE** — the Replit workflow-summary UI shows these values but no programmatic API exposes them to the Agent
+- User provided a screenshot of 023I values (4 min, 25 actions, 1,074 lines, $0.58) — recorded as USER-PROVIDED, not independently verified
+- **No TrailWeigh application source code was changed** during 023J
+
+### Recommendation
+Future prompt reports should include a standardized workflow metrics block (values copied from the Replit UI at session end) to build a verifiable calibration dataset.
+
+### Full report: `workflow-reports/PROMPT_023J_REPORT.md`

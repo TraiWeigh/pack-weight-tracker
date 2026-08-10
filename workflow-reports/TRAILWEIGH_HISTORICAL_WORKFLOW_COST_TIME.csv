@@ -1,0 +1,85 @@
+prompt_id,prompt_title,date,time_worked_minutes,actions,items_read,lines_read,agent_cost_usd,checkpoint_created,checkpoint_reference,files_changed_count,replit_report_status,user_verified_status,overall_status,rework_required,metric_source,notes
+014H,Create Complete TrailWeigh Workflow-Documentation System,2026-08-06,,,,,,NOT MENTIONED,,4,PASS,NOT AVAILABLE,PASS,YES,PROMPT_014H_REPORT.md,History incomplete/unavailable; user review required
+014I,Quick Category Width and QTY Heading Correction,2026-08-06,,,,,,NOT MENTIONED,,2,PASS (47/47),PARTIAL,PARTIAL,YES,PROMPT_014I_REPORT.md,QTY centering pending; 014J corrective follow-up
+014J,Restore Master Workflow and Correct QTY Heading,2026-08-06,,,,,,YES,PROMPT_014I_TRUNCATED_MASTER_BACKUP.md,4,PASS (47/47),PARTIAL,PARTIAL,YES,PROMPT_014J_REPORT.md,Restoration after truncation; QTY visual verify pending
+014K,Final QTY Heading Alignment Correction,2026-08-06,,,,,,NOT MENTIONED,,1,PASS,PASS,PASS,NO,PROMPT_014K_REPORT.md,User screenshot confirmed PASS
+014L,Complete the Missing 014K Documentation,2026-08-06,,,,,,NOT MENTIONED,,2,PASS,NOT AVAILABLE,PASS,YES,PROMPT_014L_REPORT.md,Required 014M to create self-report
+014M,Finish 014L Documentation and Record Visual Approval,2026-08-06,,,,,,YES,PRE_014M_MASTER_BACKUP.md,3,PASS (47/47),NOT AVAILABLE,PASS,NO,PROMPT_014M_REPORT.md,
+014N,Synchronize Master Workflow Summary Sections,2026-08-06,,,,,,YES,PRE_014N_MASTER_BACKUP.md,2,PASS (47/47),NOT AVAILABLE,PASS,YES,PROMPT_014N_REPORT.md,Doc inconsistencies led to 014O
+014O,Restore Workflow Protocol and Finish Documentation Cleanup,2026-08-06,,,,,,YES,PRE_014O_MASTER_BACKUP.md + PRE_014O_TESTING_BACKUP.md,4,PASS (47/47),NOT AVAILABLE,PASS,YES,PROMPT_014O_REPORT.md,Remaining unresolved issues noted
+015,(Title not extracted),2026-08-06,,,,,,YES,PRE_015_MASTER_BACKUP.md,,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,PROMPT_015_REPORT.md,Report exists; content not fully extracted in 023J
+016,(Title not extracted),2026-08-06,,,,,,YES,PRE_016_MASTER_BACKUP.md,,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,PROMPT_016_REPORT.md,Report exists; content not fully extracted in 023J
+016A,(Title not extracted),2026-08-06,,,,,,YES,PRE_016A_MASTER_BACKUP.md,,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,PROMPT_016A_REPORT.md; ZIP: trailweigh-016A-report.zip,Report exists; content not fully extracted in 023J
+016B,Fix Theme Label and Reliable Photo Storage,2026-08-06,,,,,,NOT MENTIONED,,8,PASS (659/659),NOT AVAILABLE,PASS,YES,PROMPT_016B_REPORT.md; ZIP: trailweigh-016B-report.zip,Shared custom photos device-local for recipients
+016C,Repair PDF Importer Regression,2026-08-06,,,,,,NOT MENTIONED,,7,PASS (692/692); password-protected PARTIAL,PARTIAL,PARTIAL,NO,PROMPT_016C_REPORT.md,User retest of original PDF required
+017,Replace Showcase with Hide; Reorganize Preview Controls,2026-08-06,,,,,,NOT MENTIONED,,4,PASS (716/716),NOT TESTED,PARTIAL,YES,PROMPT_017_REPORT.md,017A corrective follow-up; no ZIP
+017A,Make the Hide Pill Always Visible,2026-08-07,,,,,,NOT MENTIONED,,2,PASS (716/716),NOT TESTED,PARTIAL,YES,PROMPT_017A_REPORT.md,Fixes 017 defect; no ZIP
+017B,Stop Landscape Thumbnails from Shaking on Hover,2026-08-07,,,,,,NOT MENTIONED,,3,PASS (738/738),NOT TESTED,PARTIAL,YES,PROMPT_017B_REPORT.md,Human hover testing required; no ZIP
+017C,Stop Landscape Shaking When Active Background Displayed,2026-08-07,,,,,,NOT MENTIONED,,5,PASS (762/762),NOT TESTED,PARTIAL,YES,PROMPT_017C_REPORT.md,017B insufficient; no ZIP
+017D,Landscape Thumbnail Shaking — Confirmed Root Cause and Fix,2026-08-07,,,,,,YES,PRE_017D_MASTER_BACKUP.md,6,PASS (788/788),NOT TESTED,PARTIAL,YES,PROMPT_017D_REPORT.md,017C confirmed ineffective; no ZIP
+017E,Landscape Thumbnail Geometry Instability: Full Root Cause and Unified Fix,2026-08-07,,,,,,NOT MENTIONED,,4,PASS (826/826),PASS,PASS,YES,PROMPT_017E_REPORT.md,User confirmed hover and Darken resolved; no ZIP
+017F,Restore Scan Gear List After Post-017E Regression,2026-08-07,,,,,,YES,PRE_017F_MASTER_BACKUP.md,3,PASS (826/826),PASS,PASS,YES,PROMPT_017F_REPORT.md,User confirmed PDF/Word/Excel/Numbers; no ZIP
+018,Active File Name + Save Confirmation,2026-08-07,,,,,,NOT MENTIONED,,3,PASS (846/846),NOT TESTED,PARTIAL,YES,PROMPT_018_REPORT.md,018A corrective follow-up; no ZIP
+018A,Active File Name Position + Theme Text Color (correction to 018),2026-08-07,,,,,,NOT MENTIONED,,5,PASS (866/866),NOT TESTED,PARTIAL,YES,PROMPT_018A_REPORT.md,018B corrective follow-up; no ZIP
+018B,Match Active File Name Pill to Hide (correction to 018A),2026-08-07,,,,,,NOT MENTIONED,,3,PASS (896/896),NOT TESTED,PARTIAL,YES,PROMPT_018B_REPORT.md,018C corrective follow-up; no ZIP
+018C,Align Active File Name Pill to Top Control Row (correction to 018B),2026-08-07,,,,,,NOT MENTIONED,,6,PASS (925/925),NOT TESTED,PARTIAL,NO,PROMPT_018C_REPORT.md,No ZIP
+019,Background Edit Pill + Separate Collapsible Summary Panels,2026-08-07,,,,,,NOT MENTIONED,,5,PASS (961/961),NOT TESTED,PARTIAL,NO,PROMPT_019_REPORT.md,No ZIP
+020,New Starts With No Categories,2026-08-07,,,,,,NOT MENTIONED,,4,PASS (997/997),NOT TESTED,PARTIAL,YES,PROMPT_020_REPORT.md,020B corrective follow-up; no ZIP
+020B,Restore Saved Appearance on First Open After New,2026-08-07,,,,,,NOT MENTIONED,,3,PASS (1041/1041),NOT TESTED,PARTIAL,YES,PROMPT_020B_REPORT.md,020C corrective follow-up; no ZIP
+020C,Make New Deterministically Reset to Clear + Light,2026-08-07,,,,,,NOT MENTIONED,,6,PASS (1071/1071),NOT TESTED,PARTIAL,YES,PROMPT_020C_REPORT.md,020D corrective follow-up; no ZIP
+020D,Separate New Appearance From Saved-File Appearance,2026-08-07,,,,,,YES,PRE_020D_MASTER_BACKUP.md,5,PASS (1101/1101),NOT TESTED,PARTIAL,YES,PROMPT_020D_REPORT.md,020E corrective follow-up; no ZIP
+020E,Stop Cross-Tab Background Leakage + Protect Saved Appearance Data,2026-08-07,,,,,,YES,PRE_020E_MASTER_BACKUP.md,5,PASS (108/108 focused),NOT TESTED,PARTIAL,YES,PROMPT_020E_REPORT.md,020F corrective follow-up; no ZIP
+020F,(Title not extracted),2026-08-07,,,,,,NOT MENTIONED,,5,PASS,NOT TESTED,PARTIAL,NO,PROMPT_020F_REPORT.md,No ZIP
+021,Share Link Repair,2026-08-07,,,,,,NOT MENTIONED,,7,PASS (27 new),NOT TESTED,PARTIAL,YES,PROMPT_021_REPORT.md; ZIP: trailweigh-021-report.zip,021A corrective follow-up
+021A,Protect Private Checklist + Repair Locker Delete Auth,2026-08-07,,,,,,YES,PRE_021A backup,9,PASS (28 focused),NOT TESTED,PARTIAL,YES,PROMPT_021A_REPORT.md; ZIP: trailweigh-021A-report.zip,021B superseding
+021B,Simplify Private Delete + Shared Locker View/Copy Only,2026-08-07,,,,,,YES,,5,PASS (1197/1197; 31 suites),NOT TESTED,PARTIAL,YES,PROMPT_021B_REPORT.md; ZIP: trailweigh-021B-report.zip,021C corrective follow-up
+021C,Add View-Only Shared Locker + Preserve Viewer Isolation,,,,,,,YES,PRE_021C_MASTER_BACKUP.md,6,PASS (1267/1267; 32 suites),NOT TESTED,PARTIAL,YES,PROMPT_021C_REPORT.md; ZIP: trailweigh-021C-report.zip,021D corrective follow-up; date not in report
+021D,Make Shared Locker Visible in Real Shared Link,,,,,,,YES,PRE_021D_MASTER_BACKUP.md,7,PASS (1299/1299; 33 suites),NOT TESTED,PARTIAL,YES,PROMPT_021D_REPORT.md; ZIP: trailweigh-021D-report.zip,021E corrective follow-up; date not in report
+021E,Fix Real Shared Locker + Share Pack List,2026-08-08,,,,,,NOT MENTIONED,,8,PASS (45 new; 34 suites),NOT TESTED,PARTIAL,YES,PROMPT_021E_REPORT.md; ZIP: trailweigh-021E-report.zip,021F corrective follow-up
+021F,Fix Share Menu Consistency + Panel Order + Labels,2026-08-08,,,,,,NOT MENTIONED,,5,PASS (31 new; 35 suites),NOT TESTED,PARTIAL,YES,PROMPT_021F_REPORT.md; ZIP: trailweigh-021F-report.zip,021G corrective follow-up
+021G,Fix Shared File Open + Scan Gear List Chevron,2026-08-08,,,,,,NOT MENTIONED,,4,PASS (1387/1387; 36 suites),NOT TESTED,PARTIAL,NO,PROMPT_021G_REPORT.md; ZIP: trailweigh-021G-report.zip,
+021H,Rebalance Vertical Gutters and Center Sidebar,2026-08-08,,,,,,YES,PRE_021H_MASTER_BACKUP.md,2,PASS (29 focused; 37 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021H_REPORT.md; ZIP: trailweigh-021H-report.zip,
+021I,Pixel Baseline Diagnostic Report,2026-08-08,,,,,,NOT MENTIONED,,0,N/A — diagnostic only,NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021I_REPORT.md; ZIP: trailweigh-021I-report.zip,Zero application changes
+021J,Exact Gutter Correction + Collapsible-Panel Chevron Direction,2026-08-08,,,,,,YES,PRE_021J_MASTER_BACKUP.md,5,PASS (37 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021J_REPORT.md; ZIP: trailweigh-021J-report.zip,
+021K,Restore Category Padding and Equalize Main Gutters,2026-08-08,,,,,,YES,PRE_021K_MASTER_BACKUP.md,2,PASS (37 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021K_REPORT.md; ZIP: trailweigh-021K-report.zip,
+021L,Center Sidebar Panel + Fix Scan Gear List Disclosure Chevron,2026-08-08,,,,,,YES,PRE_021L_MASTER_BACKUP.md,2,PASS (26 focused; 38 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021L_REPORT.md; ZIP: trailweigh-021L-report.zip,
+021M,Align Toolbar Control Groups With Panel Edges,2026-08-08,,,,,,YES,PRE_021M_MASTER_BACKUP.md,1,PASS (24 focused; 39 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021M_REPORT.md; ZIP: trailweigh-021M-report.zip,
+021N,Toolbar Group Container,2026-08-08,,,,,,NOT MENTIONED,,5,PASS (36 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021N_REPORT.md; ZIP: trailweigh-021N-report.zip,
+021O,Move the Entire Toolbar Group Up,2026-08-08,,,,,,NOT MENTIONED,,11,PASS (25 focused; 41 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021O_REPORT.md; ZIP: trailweigh-021O-report.zip,
+021P,Align Pack Summary Top Edge With Checklist Panel,2026-08-08,,,,,,NOT MENTIONED,,1,PASS (22 focused; 42 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_021P_REPORT.md; ZIP: trailweigh-021P-report.zip,
+022,Add TrailWeigh Footer + Legal + Help & Support Navigation,2026-08-08,,,,,,NOT MENTIONED,,15,PASS (44 focused; 43 suites),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022_REPORT.md; ZIP: trailweigh-022-report.zip,
+022A,Add Footer to Main Checklist Page,2026-08-08,,,,,,NOT MENTIONED,,3,PASS (20 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022A_REPORT.md; ZIP: trailweigh-022A-report.zip,
+022B,Complete Footer Page Content + Detailed Help & How-To,2026-08-08,,,,,,NOT MENTIONED,,13,PASS (70 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022B_REPORT.md; ZIP: trailweigh-022B-report.zip,
+022C,Reorganize and Simplify Help & How-To,2026-08-08,,,,,,NOT MENTIONED,,4,PASS (68 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022C_REPORT.md; ZIP: trailweigh-022C-report.zip,
+022D,Build About TrailWeigh Accordion Content,2026-08-08,,,,,,NOT MENTIONED,,3,PASS (106 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022D_REPORT.md; ZIP: trailweigh-022D-report.zip,
+022E,Update How It Works,2026-08-08,,,,,,NOT MENTIONED,,3,PASS (48 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022E_REPORT.md; ZIP: trailweigh-022E-report.zip,
+022F,Shared-Link Footer Overlay Fix,2026-08-08,,,,,,YES,PRE_022F_SharedChecklistPage_BACKUP.tsx,3,PASS (32 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022F_REPORT.md; ZIP: trailweigh-022F-report.zip,
+022G,Restore Last Workspace With All Panels Closed,2026-08-08,,,,,,YES,3 PRE_022G backup files,5,PASS (56 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022G_REPORT.md; ZIP: trailweigh-022G-report.zip,
+022H,Start Shared Links With All Panels Closed,2026-08-08,,,,,,NOT MENTIONED,,3,PASS (37 focused),NOT TESTED,PARTIAL,NOT DOCUMENTED,PROMPT_022H_REPORT.md; ZIP: trailweigh-022H-report.zip,
+022I,Complete Shared-Link Collapse & Share Behavior,2026-08-08,,,,,,NOT MENTIONED,,4,PASS (41 focused),NOT TESTED,PARTIAL,YES,PROMPT_022I_REPORT.md; ZIP: trailweigh-022I-report.zip,3 stale test fixes required
+022J,Consistent Native Share + Default Panel State,2026-08-09,,,,,,NOT MENTIONED,,10,PASS (45 new),NOT TESTED,PARTIAL,NO,PROMPT_022J_REPORT.md; no ZIP,
+022K,REPORT MISSING,,,,,,,,,,,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,MISSING,No PROMPT_022K_REPORT.md; no ZIP,No test file referencing 022K found
+022L,Expanded About + Sources & References,2026-08-09,,,,,,NOT MENTIONED,,(not stated),PASS (92 new + 106 updated),NOT TESTED,PARTIAL,NO,PROMPT_022L_REPORT.md; no ZIP,
+022M,Improve Sign-In / Form Field Visibility,2026-08-09,,,,,,YES,,3,PASS (23 new),NOT TESTED,PARTIAL,NO,PROMPT_022M_REPORT.md; no ZIP,Dark-mode limitation noted for future
+022N,Increase Sign-In Contrast & Fix Continue Button States,2026-08-09,,,,,,YES,,3,PASS (25 new),NOT TESTED,PARTIAL,NO,PROMPT_022N_REPORT.md; no ZIP,
+022O,Fix Password Recovery + Password Visibility + Auth Contrast,2026-08-09,,,,,,YES,,3,PASS (21 new + 22 auth-flow),NOT TESTED,PARTIAL,NO,PROMPT_022O_REPORT.md; ZIP: trailweigh-022O-report.zip,
+022P,Delete Custom Background Themes,2026-08-09,,,,,,YES,,3,PASS (38 new),NOT TESTED,PARTIAL,NO,PROMPT_022P_REPORT.md; ZIP: trailweigh-022P-report.zip,
+022Q,REPORT MISSING,,,,,,,,,,,NOT AVAILABLE,NOT AVAILABLE,NOT AVAILABLE,MISSING,No PROMPT_022Q_REPORT.md; no ZIP,No test file referencing 022Q found
+022R,Mobile Compatibility & Cross-Device Synchronization,2026-08-09,,,,,,YES,,7,PASS (50 new),FAIL,FAIL,YES,PROMPT_022R_REPORT.md; ZIP: trailweigh-022R-report.zip,Superseded/corrected by 022S after sync failure
+022S,Fix Failed iPhone Locker Synchronization,2026-08-09,,,,,,YES,,5,PASS (55 new),PARTIAL,PARTIAL,YES,PROMPT_022S_REPORT.md; ZIP: trailweigh-022S-report.zip,Corrective rework of 022R bugs; real-iPhone pending
+022T,Fix Real-Device Sync by Proving Build/Environment/Account/Server State,2026-08-09,,,,,,YES,,(not stated),PASS (76 new),PARTIAL,PARTIAL,NO,PROMPT_022T_REPORT.md; ZIP: trailweigh-022T-report.zip,Real-iPhone pending
+022U,Fix Mobile Locker Scrolling and Saved-File Visibility,2026-08-10,,,,,,YES,,(not stated),PASS (26 new + 1 updated),PARTIAL,PARTIAL,NO,PROMPT_022U_REPORT.md; ZIP: trailweigh-022U-report.zip,Real-iPhone pending
+022V,Fix Mobile Portrait Toolbar and Pill Alignment,2026-08-10,,,,,,YES,,(not stated),PASS (26 new),PARTIAL,PARTIAL,NO,PROMPT_022V_REPORT.md; ZIP: trailweigh-022V-report.zip,Real-iPhone pending
+022W,Correct Mobile Portrait Toolbar Layout with Explicit Rows,2026-08-10,,,,,,NOT MENTIONED,,(not stated),PASS,PARTIAL,PARTIAL,NOT DOCUMENTED,PROMPT_022W_REPORT.md; ZIP: trailweigh-022W-report.zip,Real-iPhone pending
+022X,Restore Intended Toolbar/Pill Positions on Mobile,2026-08-10,,,,,,YES,,(not stated),PASS,PARTIAL,PARTIAL,NO,PROMPT_022X_REPORT.md; ZIP: trailweigh-022X-report.zip,Real-iPhone pending
+022Y,Fix Custom-Theme Delete Warning Position,2026-08-10,,,,,,YES,,4,PASS,PARTIAL,PARTIAL,NO,PROMPT_022Y_REPORT.md; ZIP: trailweigh-022Y-report.zip,Real-iPhone pending
+022Z,Fix Custom-Theme Delete Confirmation Jump and Double-Click,2026-08-10,,,,,,YES,,3,PASS,PARTIAL,PARTIAL,NO,PROMPT_022Z_REPORT.md; ZIP: trailweigh-022Z-report.zip,Real-iPhone pending
+023A,Make Custom-Theme Deletion Undoable,2026-08-10,,,,,,NOT MENTIONED,,(not stated),PASS (41/41),NOT TESTED,PARTIAL,NO,PROMPT_023A_REPORT.md; ZIP: trailweigh-023A-report.zip,
+023B,BackgroundPicker Theme Names/Order + Phone Layout Redesign,2026-08-10,,,,,,NOT MENTIONED,,(not stated),PASS (0 failures),NOT TESTED,PARTIAL,NO,PROMPT_023B_REPORT.md; ZIP: trailweigh-023B-report.zip,
+023C,Themes Phone Spacing & Multi-Use Messaging,2026-08-09,,,,,,NOT MENTIONED,,(not stated),PASS (0 failures),NOT TESTED,PARTIAL,NO,PROMPT_023C_REPORT.md; ZIP: trailweigh-023C-report.zip,
+023D,Remove Replit-Added Duplicate Themes + Fix About Multi-Use Intro,2026-08-10,,,,,,YES,,(not stated),PASS (315/315),NOT TESTED,PARTIAL,NO,PROMPT_023D_REPORT.md; ZIP: trailweigh-023D-report.zip,
+023E,Bar Color/Text Styling + Focus Fix + Share Hover + Landing Rewrite,2026-08-10,,,,,,NOT MENTIONED,,(not stated),PASS (60/60),NOT TESTED,PARTIAL,NO,PROMPT_023E_REPORT.md; ZIP: trailweigh-023E-report.zip,
+023F,Complete Bar Color / Text / Font Coverage,2026-08-10,,,,,,NOT MENTIONED,,(not stated),PASS (160/160),NOT TESTED,PARTIAL,NO,PROMPT_023F_REPORT.md; ZIP: trailweigh-023F-report.zip,
+023G,Bar Style Transparency + Window Isolation + Visual Polish,2026-08-10,,,,,,NOT MENTIONED,,(not stated),PASS (92/92),FAIL,FAIL,YES,PROMPT_023G_REPORT.md; ZIP: trailweigh-023G-report.zip,Blank-screen regression required 023H emergency recovery
+023H,Emergency Recovery: Fix TrailWeigh Blank-Screen Regression,2026-08-10,,,,,,YES,,(not stated),PASS (111/111),PARTIAL,PARTIAL,YES,PROMPT_023H_REPORT.md; ZIP: trailweigh-023H-report.zip,023G regression; deployed user verify pending
+023I,Emergency Backend Recovery: Fix 502 API Failures,2026-08-10,4 [USER-PROVIDED],25 [USER-PROVIDED],1074 [USER-PROVIDED],1074 [USER-PROVIDED],0.58 [USER-PROVIDED],YES,,(not stated),FAIL,FAIL,PARTIAL,YES,PROMPT_023I_REPORT.md; ZIP: trailweigh-023I-report.zip,"DATABASE_URL missing from production; fix not applied. User-provided screenshot values: time=4min actions=25 lines=1074 cost=$0.58 — cannot be independently verified by Agent"
