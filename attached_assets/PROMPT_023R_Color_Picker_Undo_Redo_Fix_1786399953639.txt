@@ -1,0 +1,587 @@
+PROMPT 023R — FIX COLOR PICKER UNDO/REDO TRANSACTION WITHOUT REGRESSING EYEDROPPER SAFETY
+
+RECOMMENDED REPLIT MODE: ECONOMY
+
+WHY:
+This is now a narrow history-state correction. Prompt 023Q already changed the color-picker event path to reduce excessive work. The remaining bug is that Undo works but Redo does not correctly restore the newly selected color. Do not broaden this into another performance rewrite.
+
+PURPOSE
+
+Prompt 023Q is PARTIAL.
+
+User verification showed:
+- the color picker/eyedropper interaction can be completed
+- Undo returns to the prior color
+- Redo does NOT restore the newly selected color
+
+The intended behavior is:
+old color → choose new color → Undo once = old color → Redo once = new color
+
+Fix that one logical history transaction for Bar Color and Text Color while preserving the safety/performance work from 023Q.
+
+DO NOT:
+- remove the native eyedropper
+- redesign Edit View
+- restore per-sample Undo entries
+- restore per-sample storage writes
+- weaken saved-file isolation from 023P
+- regress Transparency from 023O
+- perform unrelated refactors
+
+==================================================
+MANDATORY COMPLETION RULE — DO NOT STOP BEFORE THIS
+==================================================
+
+BEFORE YOU STOP OR DECLARE THE PROMPT COMPLETE, YOU MUST:
+
+1. Write:
+   workflow-reports/PROMPT_023R_REPORT.md
+
+2. Append the report to:
+   workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+3. Create:
+   workflow-reports/trailweigh-023R-report.zip
+
+4. Verify the ZIP:
+   - exists
+   - is greater than 0 bytes
+   - opens/lists programmatically
+   - contains PROMPT_023R_REPORT.md
+   - is not corrupt
+
+5. Report:
+   - report path
+   - ZIP path
+   - ZIP size
+   - ZIP contents
+   - ZIP verification result
+
+DO NOT stop after code/test work and leave the report or ZIP unfinished.
+
+==================================================
+0. CHECKPOINT / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Read:
+   - workflow-reports/PROMPT_023Q_REPORT.md
+   - workflow-reports/PROMPT_023P_REPORT.md
+3. Inspect the current:
+   - Bar Color picker path
+   - Text Color picker path
+   - preview state
+   - commit state
+   - Undo/Redo history structure
+   - current appearance snapshot structure
+4. Make the smallest reasonable change.
+5. Do not perform unrelated refactors.
+6. Preserve:
+   - authentication
+   - user data
+   - Locker
+   - Save / Save As
+   - sharing
+   - Scan Gear List
+   - themes
+   - mobile layout
+   - Edit View
+   - Transparency
+   - +Base
+   - Darken
+   - Font
+   - file isolation from Prompt 023P
+   - bounded color-picker event path from Prompt 023Q
+7. Inspect the complete final diff.
+8. Revert unrelated changes.
+9. Document checkpoint and final diff.
+
+==================================================
+1. ACCEPT THE USER-VERIFIED FAILURE
+==================================================
+
+Prompt 023Q is not PASS.
+
+User result:
+
+UNDO: works
+REDO: fails
+
+Treat that live result as authoritative.
+
+Do not claim Redo works based only on source inspection.
+
+==================================================
+2. TRACE ONE COMPLETE COLOR TRANSACTION
+==================================================
+
+Trace one Bar Color interaction from beginning to end:
+
+1. existing committed color = A
+2. picker opens
+3. intermediate preview colors occur
+4. final selected color = B
+5. picker commits/closes
+6. one history transaction is created
+7. Undo
+8. Redo
+
+Determine exactly what values are stored for:
+
+- BEFORE state
+- AFTER state
+- current appearance state
+- Undo stack entry
+- Redo stack entry
+
+Identify where B is lost, overwritten, omitted, or replaced.
+
+Do not guess.
+
+==================================================
+3. HISTORY ENTRY MUST CONTAIN BOTH CORRECT STATES
+==================================================
+
+A completed color-picker interaction must behave as one logical transaction.
+
+Conceptually the history record must be able to restore:
+
+BEFORE = color A
+AFTER = color B
+
+Undo:
+restore BEFORE
+
+Redo:
+restore AFTER
+
+If the current TrailWeigh Undo/Redo system stores snapshots differently, preserve its architecture but ensure the equivalent information is correct.
+
+Do not add a separate custom history system just for colors unless absolutely necessary.
+
+==================================================
+4. DO NOT REINTRODUCE THE 023Q EVENT STORM
+==================================================
+
+Prompt 023Q intentionally reduced repeated work.
+
+Preserve:
+
+- intermediate samples = lightweight preview only
+- no Undo entry per sample
+- no persistence write per sample
+- no cross-window broadcast per sample
+- no backend/database write per sample
+
+A single picker interaction must still create no more than ONE logical history transaction.
+
+==================================================
+5. BAR COLOR TEST — REQUIRED
+==================================================
+
+Test with actual browser color input behavior.
+
+Example:
+
+Initial Bar Color = red
+Final Bar Color = blue
+
+Verify:
+
+1. choose blue
+2. final rendered Bar Color = blue
+3. Undo once
+4. rendered Bar Color = red
+5. Redo once
+6. rendered Bar Color = blue
+
+Also verify the color control itself displays the restored value after Undo/Redo.
+
+==================================================
+6. TEXT COLOR TEST — REQUIRED
+==================================================
+
+Repeat for Text Color.
+
+Example:
+
+Initial Text Color = black
+Final Text Color = white
+
+Verify:
+
+1. choose white
+2. final text = white
+3. Undo once
+4. text = black
+5. Redo once
+6. text = white
+
+If Bar Color and Text Color share the same history mechanism, fix the shared cause once.
+
+==================================================
+7. MULTIPLE SEQUENTIAL COLOR CHANGES
+==================================================
+
+Test more than one committed interaction.
+
+Example:
+
+A → B → C
+
+Then:
+
+Undo = B
+Undo = A
+Redo = B
+Redo = C
+
+This is important because a fix that only handles one transaction is incomplete.
+
+==================================================
+8. INTERMEDIATE SAMPLE STRESS CHECK
+==================================================
+
+Keep the 023Q stress protection.
+
+Simulate many intermediate samples during one interaction, followed by one final commit.
+
+Verify:
+
+- no runaway loop
+- no exception
+- one logical history entry
+- Undo restores original color
+- Redo restores final color
+- intermediate samples do not become separate Redo steps
+
+Do not require a physical macOS eyedropper for this automated test.
+
+==================================================
+9. FILE ISOLATION — PRESERVE 023P
+==================================================
+
+Use File A and File B.
+
+In File A:
+
+- change Bar Color
+- commit selection
+- Undo
+- Redo
+
+Verify File B never changes.
+
+Also verify:
+
+- File B's saved appearance is untouched
+- File A is not silently saved unless the user explicitly clicks Save
+- New unsaved files still start with intended defaults
+
+==================================================
+10. SAVE / REOPEN BEHAVIOR
+==================================================
+
+Verify:
+
+A. Unsaved color change
+- change File A color
+- Undo/Redo works in current working session
+- do not silently persist to Locker
+
+B. Saved color change
+- change File A color
+- Save
+- reopen File A
+- saved final appearance loads correctly
+
+Do not change existing Save semantics.
+
+==================================================
+11. TRANSPARENCY REGRESSION
+==================================================
+
+Prompt 023O visually fixed Transparency.
+
+Verify:
+
+- default-color Transparency still works
+- custom Bar Color Transparency still works
+- +Base still follows Transparency
+- Undo/Redo of Bar Color does not reset Transparency incorrectly
+
+==================================================
+12. FONT AND OTHER HISTORY — DO NOT BROADEN
+==================================================
+
+This prompt is specifically for Bar Color / Text Color history unless inspection proves the same shared history bug affects other Edit View settings.
+
+Do not proactively rewrite Font, Transparency, Darken, or theme history.
+
+If a shared fix naturally corrects them, document it.
+
+==================================================
+13. EYEDROPPER SAFETY — PRESERVE, DO NOT STRESS USER
+==================================================
+
+Keep the native eyedropper.
+
+Preserve the 023Q bounded preview/commit behavior.
+
+Replit may test synthetic/browser color events.
+
+Do NOT claim physical macOS eyedropper PASS unless physically tested on a real Mac.
+
+Do NOT ask the user to repeatedly stress-test the eyedropper after this prompt.
+
+The user verification for 023R should first focus on normal picker + Undo/Redo.
+
+==================================================
+14. EDIT VIEW LABEL
+==================================================
+
+Use the approved user-facing label:
+
+Edit View
+
+Do not reintroduce "Background Edit" in visible UI text.
+
+==================================================
+15. RESPONSIVE SMOKE TEST
+==================================================
+
+Check:
+
+- desktop
+- 390 px
+- 412 px
+
+Do not redesign layout.
+
+==================================================
+16. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Rename
+- Delete
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- category expand/collapse
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Edit View
+- Bar Color
+- Text Color
+- Font
+- Darken
+- Transparency
+- theme selection
+- +Base
+- Base Weight logic
+- file isolation
+- authentication
+- sharing permissions
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim live-device PASS from source inspection or browser emulation.
+
+==================================================
+17. PRODUCTION BUILD / BACKEND
+==================================================
+
+Run appropriate production build/start checks.
+
+Verify:
+
+- frontend builds
+- app renders
+- no new console/runtime errors
+- Locker API works
+- Save works
+- Save As works
+- Load/open works
+- Scan Gear List/import backend is not regressed
+
+No unrelated backend changes.
+
+==================================================
+18. USER VERIFICATION STEPS
+==================================================
+
+At completion give the user this SHORT test:
+
+BAR COLOR
+1. Open a test file.
+2. Open Edit View.
+3. Change Bar Color normally using the native color picker.
+4. Close/commit the picker.
+5. Confirm the new color appears.
+6. Click Undo once.
+7. Confirm the old color returns.
+8. Click Redo once.
+9. Confirm the new color returns.
+
+TEXT COLOR
+10. Repeat the same test for Text Color.
+
+FILE ISOLATION
+11. Open another saved file.
+12. Confirm its Bar Color and Text Color did not change.
+
+Do NOT ask the user to stress-test the eyedropper yet.
+
+==================================================
+19. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023R_REPORT.md
+
+Include:
+
+- checkpoint
+- acknowledgment that 023Q was PARTIAL because Redo failed
+- root cause
+- exact files/components involved
+- BEFORE/AFTER history-state diagnosis
+- files changed
+- smallest-change explanation
+- Bar Color Undo result
+- Bar Color Redo result
+- Text Color Undo result
+- Text Color Redo result
+- A→B→C sequential history test
+- stress/intermediate-sample test
+- Undo-entry count
+- persistence/write behavior
+- File A / File B isolation
+- Save/reopen behavior
+- Transparency regression
+- desktop/mobile
+- build/runtime
+- backend regression
+- physical macOS eyedropper status
+- final diff
+- unresolved issues
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous history.
+
+==================================================
+20. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023R-report.zip
+
+Include at minimum:
+
+- PROMPT_023R_REPORT.md
+
+May also include useful non-sensitive:
+
+- Undo/Redo automated test output
+- browser test output
+- stress-test output
+- build output
+- diff summary
+
+Do NOT include:
+
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- real Locker contents
+- private uploaded photos
+- database dumps
+
+Use synthetic test data only.
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023R_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+==================================================
+21. COMPLETION RESPONSE
+==================================================
+
+Report:
+
+1. Overall status
+2. Root cause
+3. Files changed
+4. BEFORE-state handling
+5. AFTER-state handling
+6. Bar Color Undo
+7. Bar Color Redo
+8. Text Color Undo
+9. Text Color Redo
+10. A→B→C sequential history result
+11. Intermediate-sample stress result
+12. Undo-entry count
+13. Persistence/write behavior
+14. File A / File B isolation
+15. Save/reopen
+16. Transparency regression
+17. Desktop/mobile
+18. Build/runtime
+19. Backend regression
+20. Physical macOS eyedropper status
+21. Unresolved issues
+22. PROMPT_023R_REPORT.md path
+23. ZIP path
+24. ZIP size
+25. ZIP contents
+26. ZIP verification
+27. User test steps
+
+FINAL RULES
+
+1. One completed color selection = one logical history transaction.
+2. Undo restores the previous committed color.
+3. Redo restores the final committed color.
+4. Do not restore per-sample Undo/storage/write storms.
+5. Preserve Prompt 023P file isolation.
+6. Preserve Prompt 023O Transparency.
+7. DO NOT STOP until the report and ZIP are written and verified.

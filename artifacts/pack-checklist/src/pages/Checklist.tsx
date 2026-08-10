@@ -688,6 +688,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     if (current) localStorage.setItem('trailweigh:barColor', current);
     else         localStorage.removeItem('trailweigh:barColor');
     barColorBeforePickerRef.current = current;
+    // 023R: Update currentBgRef with the AFTER state so that when undo() fires
+    // it saves the correct after-color onto the redo stack (not the stale before-color).
+    // The syncBg useEffect only watches [background, bgSize] — bar color changes
+    // are never synced otherwise, causing redo to restore the wrong color.
+    syncBg({
+      background,
+      bgSize: bgSizeRef.current,
+      barColor: current,
+      barFont: barFontRef.current,
+      barTextColor: barTextColorRef.current,
+      barTransparency: barTransparencyRef.current,
+    });
   };
   const handleBarFontChange = (v: string) => {
     pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
@@ -714,6 +726,16 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     if (current) localStorage.setItem('trailweigh:barTextColor', current);
     else         localStorage.removeItem('trailweigh:barTextColor');
     barTextColorBeforePickerRef.current = current;
+    // 023R: Same fix as handleBarColorCommit — update currentBgRef with the
+    // AFTER text-color so the redo stack entry captures the correct value.
+    syncBg({
+      background,
+      bgSize: bgSizeRef.current,
+      barColor: barColorRef.current,
+      barFont: barFontRef.current,
+      barTextColor: current,
+      barTransparency: barTransparencyRef.current,
+    });
   };
   // 023G/023N: Transparency change — split into live preview + commit.
   //

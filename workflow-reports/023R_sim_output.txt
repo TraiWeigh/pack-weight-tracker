@@ -1,0 +1,34 @@
+
+=== TEST 1: Single A→B Undo/Redo ===
+After commit:  barColor = #0000ff (expect #0000ff)
+  undoStack.length: 1 (expect 1)
+  redoStack.length: 0 (expect 0)
+  currentBgRef.barColor: #0000ff (expect #0000ff)
+After Undo:    barColor = #ff0000 (expect #ff0000)
+  undoStack.length: 0 (expect 0)
+  redoStack.length: 1 (expect 1)
+  redoStack[0].bg.barColor: #0000ff (expect #0000ff)
+After Redo:    barColor = #0000ff (expect #0000ff)
+  undoStack.length: 1 (expect 1)
+  redoStack.length: 0 (expect 0)
+
+=== TEST 2: Sequential A→B→C Undo/Undo/Redo/Redo ===
+After A→B→C: barColor = #0000cc (expect #0000cc)
+Undo 1:      barColor = #00bb00 (expect #00bb00)
+Undo 2:      barColor = #aa0000 (expect #aa0000)
+Redo 1:      barColor = #00bb00 (expect #00bb00)
+Redo 2:      barColor = #0000cc (expect #0000cc)
+
+=== TEST 3: No-change guard ===
+undoStack unchanged: PASS
+
+=== TEST 4: 100 intermediate samples ===
+undoStack.length (expect 1): PASS
+After Undo: barColor = #ffffff (expect #ffffff): PASS
+After Redo: barColor = #123456 (expect #123456): PASS
+
+=== FINAL SUMMARY ===
+ ✓ Bar Color Undo restores A: got=#ff0000 expected=#ff0000
+ ✓ Bar Color Redo restores B: got=#0000ff expected=#0000ff
+
+ALL PASS ✓

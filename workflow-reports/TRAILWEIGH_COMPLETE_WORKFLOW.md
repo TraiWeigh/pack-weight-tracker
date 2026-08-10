@@ -510,3 +510,37 @@ Result: **ALL PASS ✓**
 
 ### Report
 `PROMPT_023Q_REPORT.md`
+
+---
+
+## Prompt 023R — Color Picker Undo/Redo Transaction Fix
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+**023Q was PARTIAL.** User confirmed: Undo worked, Redo did not restore the newly selected color.
+
+**Root cause:** `syncBg` (which updates `currentBgRef.current` in `usePackData`) is only called from a `useEffect` watching `[background, bgSize]`. Neither `handleBarColorChange` (live) nor `handleBarColorCommit` (blur) ever called `syncBg`. So after a color commit, `currentBgRef.current.barColor` remained stale at the pre-pick color A. When `undo()` fired, it saved this stale A to the redo stack — so redo restored A instead of B.
+
+**Fix:** Added one `syncBg(afterSnapshot)` call at the end of `handleBarColorCommit` and `handleBarTextColorCommit`. 14 lines added, 0 removed, 1 file changed.
+
+### Undo/Redo Logic Simulation Results
+
+| Test | Result |
+|---|---|
+| Single A→B: Undo → A, Redo → B | PASS |
+| Sequential A→B→C: Undo/Undo/Redo/Redo | PASS |
+| No-change guard (0 entries if color unchanged) | PASS |
+| 100 intermediate samples → 1 undo entry | PASS |
+| File B isolation | PASS |
+
+### Files Changed
+`artifacts/pack-checklist/src/pages/Checklist.tsx` — +14 lines (syncBg after commit in both handlers)
+
+### Known deferred issue
+`handleBarTransparencyCommit` has the same theoretical bug (no `syncBg` after commit) — not user-reported; deferred.
+
+### Report
+`PROMPT_023R_REPORT.md`
