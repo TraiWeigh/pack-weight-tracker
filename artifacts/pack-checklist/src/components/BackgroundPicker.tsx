@@ -14,7 +14,7 @@
  */
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { ImageIcon, X, Check, ChevronDown, Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
-import { useBarStyle, barCombinedStyle } from '../context/BarStyleContext';
+import { useBarStyle, barCombinedStyle, barFontStyle } from '../context/BarStyleContext';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
 import { cleanupOrphanedPhotos } from '../lib/bgPhotoStore';
 import {
@@ -222,6 +222,10 @@ interface BackgroundPickerPanelProps {
   barTextColor: string;
   onBarTextColorChange: (v: string) => void;
   onResetBarStyle: () => void;
+  // ── 023G: Transparency ────────────────────────────────────────────────────
+  /** 0 = fully transparent, 1 = fully solid. Default 1. */
+  barTransparency: number;
+  onBarTransparencyChange: (v: number) => void;
 }
 
 export function BackgroundPickerPanel({
@@ -247,6 +251,8 @@ export function BackgroundPickerPanel({
   barTextColor,
   onBarTextColorChange,
   onResetBarStyle,
+  barTransparency,
+  onBarTransparencyChange,
 }: BackgroundPickerPanelProps) {
   const panelRef                = useRef<HTMLDivElement>(null);
   const dropdownRef             = useRef<HTMLDivElement>(null);
@@ -1055,7 +1061,12 @@ export function BackgroundPickerPanel({
     <div
       ref={panelRef}
       className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-[24rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
-      style={{ display: open ? undefined : 'none', willChange: 'transform' }}
+      style={{
+        display: open ? undefined : 'none',
+        willChange: 'transform',
+        // 023G: selected Font cascades through the entire expanded panel
+        ...(barFont ? { fontFamily: barFont } : {}),
+      }}
     >
       {/* Hidden file input */}
       <input
@@ -1218,6 +1229,28 @@ export function BackgroundPickerPanel({
           aria-label={bgTone === 'dark' ? 'Darken level' : 'Lighten level'}
           className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-primary bg-border"
         />
+      </div>
+
+      {/* ── 023G: Transparency — directly below Darken, above Background Themes ── */}
+      <div className="px-4 pb-3 border-b border-border">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs text-muted-foreground">Transparency</span>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            {barTransparency >= 1 ? 'Solid' : barTransparency <= 0 ? 'Transparent' : `${Math.round(barTransparency * 100)}%`}
+          </span>
+        </div>
+        {/* LEFT = more transparent / RIGHT = more solid */}
+        <input
+          type="range" min={0} max={1} step={0.01}
+          value={barTransparency}
+          onChange={e => onBarTransparencyChange(parseFloat(e.target.value))}
+          aria-label="Bar transparency — left is more transparent, right is more solid"
+          className="w-full h-1.5 rounded-full appearance-none cursor-pointer accent-primary bg-border"
+        />
+        <div className="flex justify-between mt-0.5">
+          <span className="text-[9px] text-muted-foreground/70">Transparent</span>
+          <span className="text-[9px] text-muted-foreground/70">Solid</span>
+        </div>
       </div>
 
       {/* ── Theme dropdown ── */}

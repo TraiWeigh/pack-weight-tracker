@@ -1090,6 +1090,15 @@ function SharedChecklistContent({
                       containerRef={bgPickerRef as React.RefObject<HTMLDivElement>}
                       onShowcase={undefined}
                       isShowcaseBlocked={true}
+                      barColor=""
+                      onBarColorChange={() => {}}
+                      barFont=""
+                      onBarFontChange={() => {}}
+                      barTextColor=""
+                      onBarTextColorChange={() => {}}
+                      onResetBarStyle={() => {}}
+                      barTransparency={1}
+                      onBarTransparencyChange={() => {}}
                     />
                   </div>
                 )}

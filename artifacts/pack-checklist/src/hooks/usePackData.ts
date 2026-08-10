@@ -83,6 +83,8 @@ export type BgSnapshot = {
   barFont?: string;
   /** 023E: Bar/pill text color (hex/CSS). '' = TrailWeigh default. */
   barTextColor?: string;
+  /** 023G: Bar/pill background opacity (0 = transparent, 1 = solid). Default 1. */
+  barTransparency?: number;
 };
 
 /** Each undo/redo entry captures both the gear state AND the background state. */

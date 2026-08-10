@@ -203,14 +203,18 @@ export function WeightDistribution({
   };
 
   // 023F: font cascades to expanded body (chart + legend) via outer wrapper
+  // 023G: barCombinedStyle on the header row div covers the FULL width (left
+  //       collapse-toggle + right palette area) so there is no black/default
+  //       backing strip behind the Desert/Trail pill.
   return (
-    <div className="bg-card border border-card-border rounded-xl shadow-sm" style={barFontStyle(barStyle)}>
-      {/* Header row: collapse toggle + palette pill */}
-      <div className="flex items-center">
+    <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={barFontStyle(barStyle)}>
+      {/* Header row — 023G: barCombinedStyle on the row div paints the full-width
+          surface so both the collapse toggle and the right controls share one
+          uniform bar background without any gap or split. */}
+      <div className="flex items-center" style={barCombinedStyle(barStyle)}>
         <button
           onClick={() => setChartOpen(o => !o)}
-          className="flex-1 flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors"
-          style={barCombinedStyle(barStyle)}
+          className="flex-1 flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-black/10 transition-colors"
           aria-expanded={chartOpen}
           aria-label={chartOpen ? 'Collapse Weight Distribution' : 'Expand Weight Distribution'}
         >
@@ -224,12 +228,14 @@ export function WeightDistribution({
           </span>
         </button>
 
-        {/* Palette pill — 023F: participates in bar color system */}
         <div className="relative pr-4 sm:pr-5">
           <button
             onClick={() => setShowPaletteMenu(o => !o)}
             className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
-            style={barCombinedStyle(barStyle)}
+            style={{ /* Palette pill — 023F: participates in bar color system via barCombinedStyle. 023G: ring shows open state. */
+              ...barCombinedStyle(barStyle),
+              ...(showPaletteMenu && barStyle.barColor ? { outline: '2px solid rgba(255,255,255,0.55)', outlineOffset: '1px' } : {}),
+            }}
           >
             <Palette className="w-3.5 h-3.5" />
             {palette.label}

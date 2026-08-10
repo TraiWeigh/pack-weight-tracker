@@ -32,6 +32,8 @@ export interface LockerEntry {
   barFont?: string;
   /** 023E: Bar/pill text color. Optional for backwards compatibility. */
   barTextColor?: string;
+  /** 023G: Bar/pill background opacity (0 = transparent, 1 = solid). Optional for backwards compatibility. */
+  barTransparency?: number;
 }
 
 // Re-export for backwards-compat (canonical definition is in usePackData)

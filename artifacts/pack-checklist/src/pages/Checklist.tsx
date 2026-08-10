@@ -164,12 +164,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // Mirrors bgSize state as a ref so handleBackgroundChange can read the
   // current size without a temporal dependency on bgSize's declaration order.
   const bgSizeRef = useRef<'cover' | 'contain'>('cover');
-  // 023E: Bar style refs — same temporal-ordering pattern as bgSizeRef.
+  // 023E/023G: Bar style refs — same temporal-ordering pattern as bgSizeRef.
   // Used in handleBackgroundChange and handleBgSizeChange which are declared
-  // before the barColor/barFont/barTextColor state initialisers.
-  const barColorRef     = useRef('');
-  const barFontRef      = useRef('');
-  const barTextColorRef = useRef('');
+  // before the barColor/barFont/barTextColor/barTransparency state initialisers.
+  const barColorRef        = useRef('');
+  const barFontRef         = useRef('');
+  const barTextColorRef    = useRef('');
+  const barTransparencyRef = useRef(1);
   const onRestoreBg = useCallback((bg: BgSnapshot) => {
     restoreBgCallbackRef.current?.(bg);
   }, []);
@@ -217,6 +218,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             sessionStorage.setItem('tw-newbg-tone',       parsed.bgTone ?? 'light');
             sessionStorage.setItem('tw-newbg-size',       parsed.bgSize ?? 'cover');
             sessionStorage.setItem('tw-newbg-palettekey', parsed.chartPaletteKey ?? '');
+            // 023G: stash bar style defaults for the new tab (normally all '' / 1).
+            // The bar style lazy initialisers read these BEFORE falling through to
+            // global localStorage, so a new tab always starts with default appearance
+            // even if another tab has live customizations stored in localStorage.
+            sessionStorage.setItem('tw-newbg-barcolor',        parsed.barColor       ?? '');
+            sessionStorage.setItem('tw-newbg-barfont',         parsed.barFont        ?? '');
+            sessionStorage.setItem('tw-newbg-bartextcolor',    parsed.barTextColor   ?? '');
+            sessionStorage.setItem('tw-newbg-bartransparency', String(parsed.barTransparency ?? 1));
             // ── Stash fork-local restore keys (scoped to this tab's forkId) ──────
             // tw-newseed-bg-uuid is removed here and cannot be re-read on a React
             // remount (e.g. Clerk token refresh).  Scoped keys (suffix = forkId)
@@ -224,9 +233,14 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             // key inherited from the opener tab.  window.open() copies the opener's
             // sessionStorage to the new tab; generic (unsuffixed) keys would be
             // read by the wrong tab on its first render.
-            sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`,     JSON.stringify(parsed.background ?? null));
-            sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`, parsed.bgTone ?? 'light');
-            sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`, String(parsed.bgFade ?? 1));
+            sessionStorage.setItem(`tw-fork-bg-restore-${forkId}`,              JSON.stringify(parsed.background ?? null));
+            sessionStorage.setItem(`tw-fork-bgtone-restore-${forkId}`,          parsed.bgTone ?? 'light');
+            sessionStorage.setItem(`tw-fork-bgfade-restore-${forkId}`,          String(parsed.bgFade ?? 1));
+            // 023G: scoped restore keys for bar style (used on React remounts within the same fork tab)
+            sessionStorage.setItem(`tw-fork-barcolor-restore-${forkId}`,        parsed.barColor       ?? '');
+            sessionStorage.setItem(`tw-fork-barfont-restore-${forkId}`,         parsed.barFont        ?? '');
+            sessionStorage.setItem(`tw-fork-bartextcolor-restore-${forkId}`,    parsed.barTextColor   ?? '');
+            sessionStorage.setItem(`tw-fork-bartransparency-restore-${forkId}`, String(parsed.barTransparency ?? 1));
             localStorage.removeItem(`tw-newseed-bg-${forkId}`);
             return parsed.background ?? null;
           }
@@ -300,7 +314,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     // Capture state BEFORE the change — this is what Undo will restore.
     // bgSize is used here; it is declared later in the function body but
     // initialised before any event handler can fire.
-    pushBg({ background, bgSize: bgSizeRef.current, barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current });
+    pushBg({ background, bgSize: bgSizeRef.current, barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current, barTransparency: barTransparencyRef.current });
     setBackground(bg);
     if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
     else localStorage.removeItem(BG_STORAGE_KEY);
@@ -437,7 +451,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
    */
   const handleBgSizeChange = (v: 'cover' | 'contain') => {
     if (v === bgSize) return; // no change — don't push empty history entry
-    pushBg({ background, bgSize, barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current });
+    pushBg({ background, bgSize, barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current, barTransparency: barTransparencyRef.current });
     setBgSize(v);
     localStorage.setItem('trailweigh:bgSize', v);
   };
@@ -477,55 +491,174 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     localStorage.setItem('trailweigh:chartPalette', key);
   }, []);
 
-  // ── 023E: Bar Color / Text state ─────────────────────────────────────────
-  // Initialised from localStorage (global display preference).
-  // Overridden when loading a saved LockerEntry that has stored these values.
-  const [barColor, setBarColor] = useState<string>(
-    () => localStorage.getItem('trailweigh:barColor') ?? ''
-  );
-  const [barFont, setBarFont] = useState<string>(
-    () => localStorage.getItem('trailweigh:barFont') ?? ''
-  );
-  const [barTextColor, setBarTextColor] = useState<string>(
-    () => localStorage.getItem('trailweigh:barTextColor') ?? ''
-  );
+  // ── 023E/023G: Bar Color / Text / Transparency state ─────────────────────
+  // 023G ISOLATION FIX: New-tab fork isolation uses the same scoped-sessionStorage
+  // pattern as bgFade/bgTone/bgSize.  handleNew() writes bar style DEFAULTS
+  // (all '' / 1) into the tw-newseed-bg-${uuid} bundle.  The background state
+  // initialiser (which runs first) stashes these as tw-newbg-barcolor etc. and
+  // tw-fork-bar*-restore-${forkId} scoped keys.  The initialisers below read the
+  // newseed stash first — so a new tab always starts with default appearance even
+  // when another tab has live customizations stored in localStorage.
+  const [barColor, setBarColor] = useState<string>(() => {
+    try {
+      // New-tab path: consumed once on first render
+      const v = sessionStorage.getItem('tw-newbg-barcolor');
+      if (v !== null) {
+        sessionStorage.removeItem('tw-newbg-barcolor');
+        try {
+          const forkId = sessionStorage.getItem('tw-fork-id');
+          if (forkId) sessionStorage.setItem(`tw-fork-barcolor-restore-${forkId}`, v);
+        } catch {}
+        return v;
+      }
+    } catch {}
+    // Remount path for fork tabs
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) {
+        const restore = sessionStorage.getItem(`tw-fork-barcolor-restore-${forkId}`);
+        if (restore !== null) return restore;
+      }
+    } catch {}
+    return localStorage.getItem('trailweigh:barColor') ?? '';
+  });
+  const [barFont, setBarFont] = useState<string>(() => {
+    try {
+      const v = sessionStorage.getItem('tw-newbg-barfont');
+      if (v !== null) {
+        sessionStorage.removeItem('tw-newbg-barfont');
+        try {
+          const forkId = sessionStorage.getItem('tw-fork-id');
+          if (forkId) sessionStorage.setItem(`tw-fork-barfont-restore-${forkId}`, v);
+        } catch {}
+        return v;
+      }
+    } catch {}
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) {
+        const restore = sessionStorage.getItem(`tw-fork-barfont-restore-${forkId}`);
+        if (restore !== null) return restore;
+      }
+    } catch {}
+    return localStorage.getItem('trailweigh:barFont') ?? '';
+  });
+  const [barTextColor, setBarTextColor] = useState<string>(() => {
+    try {
+      const v = sessionStorage.getItem('tw-newbg-bartextcolor');
+      if (v !== null) {
+        sessionStorage.removeItem('tw-newbg-bartextcolor');
+        try {
+          const forkId = sessionStorage.getItem('tw-fork-id');
+          if (forkId) sessionStorage.setItem(`tw-fork-bartextcolor-restore-${forkId}`, v);
+        } catch {}
+        return v;
+      }
+    } catch {}
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) {
+        const restore = sessionStorage.getItem(`tw-fork-bartextcolor-restore-${forkId}`);
+        if (restore !== null) return restore;
+      }
+    } catch {}
+    return localStorage.getItem('trailweigh:barTextColor') ?? '';
+  });
+  // 023G: Bar transparency (0 = fully transparent, 1 = solid).  Same fork
+  // isolation pattern as barColor above.  Default = 1 (solid).
+  const [barTransparency, setBarTransparency] = useState<number>(() => {
+    try {
+      const v = sessionStorage.getItem('tw-newbg-bartransparency');
+      if (v !== null) {
+        sessionStorage.removeItem('tw-newbg-bartransparency');
+        const n = parseFloat(v);
+        const result = isNaN(n) ? 1 : Math.max(0, Math.min(1, n));
+        try {
+          const forkId = sessionStorage.getItem('tw-fork-id');
+          if (forkId) sessionStorage.setItem(`tw-fork-bartransparency-restore-${forkId}`, String(result));
+        } catch {}
+        return result;
+      }
+    } catch {}
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) {
+        const restore = sessionStorage.getItem(`tw-fork-bartransparency-restore-${forkId}`);
+        if (restore !== null) {
+          const n = parseFloat(restore);
+          return isNaN(n) ? 1 : Math.max(0, Math.min(1, n));
+        }
+      }
+    } catch {}
+    const s = localStorage.getItem('trailweigh:barTransparency');
+    const n = s ? parseFloat(s) : 1;
+    return isNaN(n) ? 1 : Math.max(0, Math.min(1, n));
+  });
+
+  // ── helper: keep fork-scoped restore key current so React remounts within
+  // this tab recover the correct live value, not the stale newseed default.
+  const updateBarForkKey = (suffix: string, value: string) => {
+    try {
+      const forkId = sessionStorage.getItem('tw-fork-id');
+      if (forkId) sessionStorage.setItem(`tw-fork-${suffix}-restore-${forkId}`, value);
+    } catch {}
+  };
 
   const handleBarColorChange = (v: string) => {
-    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
     setBarColor(v);
     barColorRef.current = v;
     if (v) localStorage.setItem('trailweigh:barColor', v);
     else localStorage.removeItem('trailweigh:barColor');
+    updateBarForkKey('barcolor', v);
   };
   const handleBarFontChange = (v: string) => {
-    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
     setBarFont(v);
     barFontRef.current = v;
     if (v) localStorage.setItem('trailweigh:barFont', v);
     else localStorage.removeItem('trailweigh:barFont');
+    updateBarForkKey('barfont', v);
   };
   const handleBarTextColorChange = (v: string) => {
-    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
     setBarTextColor(v);
     barTextColorRef.current = v;
     if (v) localStorage.setItem('trailweigh:barTextColor', v);
     else localStorage.removeItem('trailweigh:barTextColor');
+    updateBarForkKey('bartextcolor', v);
+  };
+  // 023G: Transparency change — participates in undo/redo like bar color/font/text.
+  const handleBarTransparencyChange = (v: number) => {
+    const clamped = Math.max(0, Math.min(1, v));
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
+    setBarTransparency(clamped);
+    barTransparencyRef.current = clamped;
+    localStorage.setItem('trailweigh:barTransparency', String(clamped));
+    updateBarForkKey('bartransparency', String(clamped));
   };
   const handleResetBarStyle = () => {
-    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor });
-    setBarColor(''); barColorRef.current = '';
-    setBarFont('');  barFontRef.current = '';
-    setBarTextColor(''); barTextColorRef.current = '';
+    pushBg({ background, bgSize: bgSizeRef.current, barColor, barFont, barTextColor, barTransparency: barTransparencyRef.current });
+    setBarColor('');       barColorRef.current        = '';
+    setBarFont('');        barFontRef.current          = '';
+    setBarTextColor('');   barTextColorRef.current     = '';
+    setBarTransparency(1); barTransparencyRef.current  = 1;
     localStorage.removeItem('trailweigh:barColor');
     localStorage.removeItem('trailweigh:barFont');
     localStorage.removeItem('trailweigh:barTextColor');
+    localStorage.removeItem('trailweigh:barTransparency');
+    updateBarForkKey('barcolor',        '');
+    updateBarForkKey('barfont',         '');
+    updateBarForkKey('bartextcolor',    '');
+    updateBarForkKey('bartransparency', '1');
   };
 
   // ── Keep bar style refs in sync so handlers declared before these state
   // declarations can safely read the current values.
-  barColorRef.current     = barColor;
-  barFontRef.current      = barFont;
-  barTextColorRef.current = barTextColor;
+  barColorRef.current        = barColor;
+  barFontRef.current         = barFont;
+  barTextColorRef.current    = barTextColor;
+  barTransparencyRef.current = barTransparency;
 
   // ── Wire up the onRestoreBg callback now that ALL bg state setters are in
   // scope.  Assigned inline on every render so the hook always calls the
@@ -542,24 +675,34 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     if (snap.collections !== undefined) {
       restoreCollectionsRef.current?.(snap.collections, snap.activeThemeId ?? 'landscapes');
     }
-    // 023E: Restore bar style when the snapshot includes it
+    // 023E/023G: Restore bar style when the snapshot includes it
     if (snap.barColor !== undefined) {
       setBarColor(snap.barColor);
       barColorRef.current = snap.barColor;
       if (snap.barColor) localStorage.setItem('trailweigh:barColor', snap.barColor);
       else localStorage.removeItem('trailweigh:barColor');
+      updateBarForkKey('barcolor', snap.barColor);
     }
     if (snap.barFont !== undefined) {
       setBarFont(snap.barFont);
       barFontRef.current = snap.barFont;
       if (snap.barFont) localStorage.setItem('trailweigh:barFont', snap.barFont);
       else localStorage.removeItem('trailweigh:barFont');
+      updateBarForkKey('barfont', snap.barFont);
     }
     if (snap.barTextColor !== undefined) {
       setBarTextColor(snap.barTextColor);
       barTextColorRef.current = snap.barTextColor;
       if (snap.barTextColor) localStorage.setItem('trailweigh:barTextColor', snap.barTextColor);
       else localStorage.removeItem('trailweigh:barTextColor');
+      updateBarForkKey('bartextcolor', snap.barTextColor);
+    }
+    if (snap.barTransparency !== undefined) {
+      const t = Math.max(0, Math.min(1, snap.barTransparency));
+      setBarTransparency(t);
+      barTransparencyRef.current = t;
+      localStorage.setItem('trailweigh:barTransparency', String(t));
+      updateBarForkKey('bartransparency', String(t));
     }
   };
 
@@ -859,6 +1002,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgTone: 'light',
       bgSize: 'cover',
       chartPaletteKey,
+      // 023G: new tab always starts with DEFAULT appearance — not inheriting
+      // another tab's live customizations from global localStorage.
+      barColor:        '',
+      barFont:         '',
+      barTextColor:    '',
+      barTransparency: 1,
     }));
 
     const base = (import.meta.env.BASE_URL as string).replace(/\/$/, '');
@@ -1218,22 +1367,31 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     setBgSize(restoredSize);
     localStorage.setItem('trailweigh:bgSize', restoredSize);
 
-    // 023E: Restore bar style — optional fields; older entries fall back to ''.
-    const startBarColor     = entry.barColor     ?? '';
-    const startBarFont      = entry.barFont      ?? '';
-    const startBarTextColor = entry.barTextColor ?? '';
+    // 023E/023G: Restore bar style — optional fields; older entries fall back to '' / 1.
+    const startBarColor        = entry.barColor        ?? '';
+    const startBarFont         = entry.barFont         ?? '';
+    const startBarTextColor    = entry.barTextColor    ?? '';
+    const startBarTransparency = typeof entry.barTransparency === 'number'
+      ? Math.max(0, Math.min(1, entry.barTransparency)) : 1;
     setBarColor(startBarColor);
     setBarFont(startBarFont);
     setBarTextColor(startBarTextColor);
-    barColorRef.current     = startBarColor;
-    barFontRef.current      = startBarFont;
-    barTextColorRef.current = startBarTextColor;
+    setBarTransparency(startBarTransparency);
+    barColorRef.current        = startBarColor;
+    barFontRef.current         = startBarFont;
+    barTextColorRef.current    = startBarTextColor;
+    barTransparencyRef.current = startBarTransparency;
     if (startBarColor)     localStorage.setItem('trailweigh:barColor',     startBarColor);
     else                   localStorage.removeItem('trailweigh:barColor');
     if (startBarFont)      localStorage.setItem('trailweigh:barFont',      startBarFont);
     else                   localStorage.removeItem('trailweigh:barFont');
     if (startBarTextColor) localStorage.setItem('trailweigh:barTextColor', startBarTextColor);
     else                   localStorage.removeItem('trailweigh:barTextColor');
+    localStorage.setItem('trailweigh:barTransparency', String(startBarTransparency));
+    updateBarForkKey('barcolor',        startBarColor);
+    updateBarForkKey('barfont',         startBarFont);
+    updateBarForkKey('bartextcolor',    startBarTextColor);
+    updateBarForkKey('bartransparency', String(startBarTransparency));
 
     // Replace the gear store (clears undo/redo; does not write to the saved entry)
     replaceStore(entry.store as import('../hooks/usePackData').Store);
@@ -1308,6 +1466,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       barColor,
       barFont,
       barTextColor,
+      barTransparency,
     };
     const updated = [entry, ...lockerEntries];
     setLockerEntries(updated);
@@ -1329,7 +1488,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     closeSaveDialog();
     toast({ description: `Saved ${name}` });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, barTransparency, lockerEntries, broadcastLocker, toast]);
 
   /** Save and replace an existing entry (same ID, updated content). */
   const commitSaveReplace = useCallback((existingId: string, name: string) => {
@@ -1347,6 +1506,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
         barColor,
         barFont,
         barTextColor,
+        barTransparency,
       };
       // Only update an entry that actually exists in the Locker.
       const exists = lockerEntries.some(e => e.id === existingId);
@@ -1377,7 +1537,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       toast({ description: 'Save failed. Your changes were not saved.', variant: 'destructive' });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, lockerEntries, broadcastLocker, toast]);
+  }, [store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, barTransparency, lockerEntries, broadcastLocker, toast]);
 
   const handleSaveToLocker = () => {
     const name = saveName.trim();
@@ -1601,10 +1761,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   const toolBtnDisabled = 'flex items-center gap-2 text-xs font-medium text-muted-foreground/30 px-2 py-1.5 rounded-md cursor-not-allowed';
 
   return (
-    // 023E: BarStyleProvider makes barColor/barFont/barTextColor available to all
-    // descendant components (GearCategory, WeightSummary, LockerPanel, ImportGearPanel,
-    // UnitToggle, etc.) without prop-drilling.
-    <BarStyleProvider value={{ barColor, barFont, barTextColor }}>
+    // 023E/023G: BarStyleProvider makes barColor/barFont/barTextColor/barTransparency
+    // available to all descendant components (GearCategory, WeightSummary, LockerPanel,
+    // ImportGearPanel, UnitToggle, etc.) without prop-drilling.
+    <BarStyleProvider value={{ barColor, barFont, barTextColor, barTransparency }}>
     <>
       {showMailingModal && (
         <MailingListModal userId={userId ?? ''} onDismiss={() => setShowMailingModal(false)} />
@@ -1983,7 +2143,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     aria-label={`Active file: ${activeLockerFile.name}`}
                     title={activeLockerFile.name}
                     className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
-                    style={barCombinedStyle({ barColor, barFont, barTextColor })}
+                    style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
                   >
                     {activeLockerFile.name}
                   </span>
@@ -2048,7 +2208,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                       : 'Hide the interface'
                   }
                   className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={barCombinedStyle({ barColor, barFont, barTextColor })}
+                  style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
                 >
                   Hide
                 </button>
@@ -2056,7 +2216,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onClick={() => setShowPreview(true)}
                   aria-label="Open checked-items preview"
                   className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                  style={barCombinedStyle({ barColor, barFont, barTextColor })}
+                  style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
                 >
                   Preview
                 </button>
@@ -2108,6 +2268,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         barColor: barColorRef.current,
                         barFont: barFontRef.current,
                         barTextColor: barTextColorRef.current,
+                        barTransparency: barTransparencyRef.current,
                       });
                     }}
                     restoreCollectionsRef={restoreCollectionsRef}
@@ -2118,6 +2279,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     barTextColor={barTextColor}
                     onBarTextColorChange={handleBarTextColorChange}
                     onResetBarStyle={handleResetBarStyle}
+                    barTransparency={barTransparency}
+                    onBarTransparencyChange={handleBarTransparencyChange}
                   />
                 </div>
                 {/* Share pill + dropdown */}
@@ -2156,7 +2319,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         className="flex items-center gap-1.5 text-xs font-semibold border border-border/60 bg-card px-3 py-1.5 rounded-lg transition-colors text-muted-foreground"
                         style={shareHovered
                           ? { ...(barColorRef.current ? { backgroundColor: barColorRef.current } : {}), color: 'white' }
-                          : barCombinedStyle({ barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current })
+                          : barCombinedStyle({ barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current, barTransparency: barTransparencyRef.current })
                         }
                       >
                         <Share2 className="w-3.5 h-3.5" />
@@ -2424,7 +2587,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         : 'Hide the interface'
                     }
                     className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={barCombinedStyle({ barColor, barFont, barTextColor })}
+                    style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
                   >
                     Hide
                   </button>
