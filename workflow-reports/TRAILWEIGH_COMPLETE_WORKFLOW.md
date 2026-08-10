@@ -544,3 +544,31 @@ Result: **ALL PASS ✓**
 
 ### Report
 `PROMPT_023R_REPORT.md`
+
+---
+
+## Prompt 023S — Reduce Category Bar Spacing by Half
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+Reduced the empty vertical gap between adjacent category bars from **24px to 12px** (exactly 50%).
+
+**Root:** Each `GearCategory` renders a root `<div>` with `mb-6` (1.5rem = 24px). The parent container also has `space-y-2` (8px margin-top between siblings), but since adjacent block margins collapse, the effective gap was max(24px, 8px) = 24px.
+
+**Fix:** `mb-6` → `mb-3` (0.75rem = 12px) on the GearCategory root element. New effective gap = max(12px, 8px) = 12px = 50% of 24px.
+
+### Files Changed
+`artifacts/pack-checklist/src/components/GearCategory.tsx` — 1 character changed (`mb-6` → `mb-3`)
+
+### Measurements
+| | Value |
+|---|---|
+| Old gap | `mb-6` = 1.5rem = 24px |
+| New gap | `mb-3` = 0.75rem = 12px |
+| Ratio | 12 ÷ 24 = 0.5 = 50% ✓ |
+
+### Report
+`PROMPT_023S_REPORT.md`

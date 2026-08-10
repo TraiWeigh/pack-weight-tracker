@@ -1,0 +1,299 @@
+PROMPT 023S — REDUCE THE SPACE BETWEEN CATEGORY BARS BY 1/2 OF THE CURRENT SPACING
+
+RECOMMENDED REPLIT MODE: ECONOMY
+
+WHY:
+This is a small, low-risk visual spacing adjustment. It should not require Power mode.
+
+PURPOSE
+
+Reduce the empty vertical space BETWEEN adjacent collapsible category bars by 1/2 of their current spacing.
+
+In plain language:
+- Find the current gap between Category Bar A and Category Bar B.
+- Reduce that gap by half.
+- The new gap must be 50% of the current gap.
+
+Example:
+- if the current gap is 12 px, change it to 6 px
+- if the current gap is 8 px, change it to 4 px
+
+This request applies only to the empty space BETWEEN category bars.
+
+DO NOT:
+- make the category bars themselves shorter
+- reduce padding inside a category bar
+- change spacing between item rows inside an expanded category
+- change expanded-content padding
+- change borders, radius, colors, transparency, font, text size, icons, or expand/collapse behavior
+- change unrelated panel spacing
+- perform unrelated refactors
+
+==================================================
+MANDATORY COMPLETION RULE — DO NOT STOP BEFORE THIS
+==================================================
+
+Before stopping or declaring completion, you MUST:
+
+1. Write:
+   workflow-reports/PROMPT_023S_REPORT.md
+
+2. Append that report to:
+   workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+3. Create:
+   workflow-reports/trailweigh-023S-report.zip
+
+4. Verify the ZIP:
+   - exists
+   - is greater than 0 bytes
+   - opens/lists programmatically
+   - contains PROMPT_023S_REPORT.md
+   - is not corrupt
+
+5. Report:
+   - report path
+   - ZIP path
+   - ZIP size
+   - ZIP contents
+   - ZIP verification result
+
+DO NOT stop after making the visual change without writing and verifying the report and ZIP.
+
+==================================================
+0. CHECKPOINT / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Inspect the current category accordion layout.
+3. Identify the exact CSS/layout property controlling the vertical gap between adjacent category bars.
+4. Record the current gap value.
+5. Make the smallest reasonable change.
+6. Preserve all prior working TrailWeigh behavior and data.
+7. Do not modify authentication, Locker, Save/Save As, sharing, file isolation, Edit View, themes, Transparency, Bar Color, Text Color, Font, Undo/Redo, or mobile layout behavior.
+8. Inspect the complete final diff.
+9. Revert unrelated changes.
+10. Document checkpoint and final diff.
+
+==================================================
+1. EXACT SPACING CHANGE
+==================================================
+
+Find the ACTUAL current outer vertical gap between adjacent category accordion bars/panels.
+
+Change that gap to:
+
+NEW GAP = CURRENT GAP × 0.5
+
+The new spacing must therefore be one-half of the current spacing.
+
+Do not guess the current value.
+
+Document:
+- current value
+- new value
+- exact CSS/layout rule changed
+
+==================================================
+2. DO NOT CHANGE THE BARS THEMSELVES
+==================================================
+
+Keep unchanged:
+
+- category bar height
+- category bar internal top/bottom padding
+- title position
+- packed count / weight position
+- chevron position
+- drag handle position
+- trash icon position
+- border radius
+- borders
+- item-row spacing
+- expanded category-body padding
+- expanded content spacing
+
+Only reduce the empty vertical gap BETWEEN one category bar/panel and the next.
+
+==================================================
+3. COLLAPSED AND EXPANDED STATES
+==================================================
+
+Verify the reduced gap when:
+
+- all categories are collapsed
+- one category is expanded
+- several categories are expanded
+
+Expanding a category must not create an unintended larger or smaller external gap.
+
+==================================================
+4. RESPONSIVE CHECK
+==================================================
+
+Verify on:
+
+- desktop
+- 390 px width
+- 412 px width
+
+The category list should look more compact while remaining easy to distinguish and tap.
+
+Do not redesign mobile layout.
+
+==================================================
+5. PRESERVE EXPANDED PANEL CONTENT
+==================================================
+
+Do not change the appearance or spacing INSIDE expanded category content.
+
+This prompt is only about the outer vertical gap between category bars.
+
+==================================================
+6. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- category expand/collapse
+- category drag/reorder
+- item editing
+- New
+- Save
+- Save As
+- Locker
+- Load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Edit View
+- Bar Color
+- Text Color
+- Font
+- Darken
+- Transparency
+- themes
+- +Base
+- file isolation
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+==================================================
+7. BUILD / RUNTIME
+==================================================
+
+Run appropriate build/runtime checks.
+
+Confirm:
+- frontend builds
+- app renders
+- no new console/runtime errors
+- no backend regression
+
+No unrelated backend changes.
+
+==================================================
+8. USER VERIFICATION
+==================================================
+
+At completion give the user this short test:
+
+1. Look at several adjacent category bars.
+2. Confirm the empty space between them is now about half the previous spacing.
+3. Expand one category.
+4. Confirm the category bar itself did not become shorter.
+5. Confirm item-row spacing and expanded-content padding did not change.
+
+Do not mark USER PASS until the user confirms.
+
+==================================================
+9. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023S_REPORT.md
+
+Include:
+- checkpoint
+- exact file(s) changed
+- exact spacing rule/property changed
+- old gap value
+- new gap value
+- confirmation new value is 50% of old value
+- collapsed-state result
+- expanded-state result
+- desktop result
+- 390 px result
+- 412 px result
+- regression results
+- build/runtime result
+- final diff
+- unresolved issues
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite previous history.
+
+==================================================
+10. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023S-report.zip
+
+Include at minimum:
+- PROMPT_023S_REPORT.md
+
+May also include useful non-sensitive:
+- before/after screenshots
+- test output
+- build output
+- diff summary
+
+Do NOT include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- real Locker contents
+- private uploaded photos
+- database dumps
+
+Verify:
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023S_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+FINAL RULE:
+
+Reduce ONLY the empty vertical space between adjacent category bars to exactly one-half of its current value.
