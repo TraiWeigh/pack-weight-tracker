@@ -658,24 +658,32 @@ const UNIT_RE       = /^(unit|units|weight unit|weightunit)$/;
 const QTY_HDR_RE    = /^(quantity|qty|count|#)$/;
 const CAT_HDR_RE    = /^(category|section|group|system)$/;
 const SUBCAT_HDR_RE = /^(subcategory|sub category|sub-category)$/; // 024P
+// 024R: dedicated product-name column headers (separate from TYPE/DESC)
+const NAME_HDR_RE   = /^(product|product name|model|item model)$/;
+// 024R: obvious status/metadata strings that must NOT become the visible Name field.
+// Conservative — only anchored, well-known patterns from the prompt spec.
+const STATUS_DESC_RE = /^(?:worn\b|carried\b|consumable\b|reusable\b|pair\s+weight\b|three\s+daily\s+portions?\b|quantity\s*[><=]|quantity\s+\w|generic\s+category\b|metric\s+decimal\b|same\s+mass\b|blank\s+weight\b|true\b|false\b|yes\b|no\b)/i;
 
 function detectCols(headerRow: unknown[]): {
-  typeCol: number; descCol: number; weightCol: number; unitCol: number;
+  typeCol: number; descCol: number; nameCol: number; weightCol: number; unitCol: number;
   qtyCol: number; catCol: number; subcatCol: number;
 } {
-  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  let typeCol = -1, descCol = -1, nameCol = -1, weightCol = -1, unitCol = -1;
   let qtyCol = -1, catCol = -1, subcatCol = -1;
   headerRow.forEach((h, i) => {
     const n = norm(h);
     if (typeCol   === -1 && TYPE_RE.test(n))        typeCol   = i;
     if (descCol   === -1 && DESC_RE.test(n))        descCol   = i;
+    // 024R: dedicated product-name columns (captured independently of typeCol so
+    // a file with both "Type" and "Product" populates typeCol AND nameCol separately)
+    if (nameCol   === -1 && NAME_HDR_RE.test(n))    nameCol   = i;
     if (weightCol === -1 && WEIGHT_HDR_RE.test(n))  weightCol = i;
     if (unitCol   === -1 && UNIT_RE.test(n))        unitCol   = i;
     if (qtyCol    === -1 && QTY_HDR_RE.test(n))     qtyCol    = i;
     if (catCol    === -1 && CAT_HDR_RE.test(n))     catCol    = i;
     if (subcatCol === -1 && SUBCAT_HDR_RE.test(n))  subcatCol = i;
   });
-  return { typeCol, descCol, weightCol, unitCol, qtyCol, catCol, subcatCol };
+  return { typeCol, descCol, nameCol, weightCol, unitCol, qtyCol, catCol, subcatCol };
 }
 
 // ── Section-mode extraction ───────────────────────────────────────────────────
@@ -770,7 +778,7 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
   // Find the first row that looks like a header (has weight col at minimum)
   let headerIdx = -1;
   // 024O: also detect category and quantity columns; 024P: subcategory column
-  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  let typeCol = -1, descCol = -1, nameCol = -1, weightCol = -1, unitCol = -1;
   let qtyCol = -1, catCol = -1, subcatCol = -1;
 
   for (let r = 0; r < Math.min(rows.length, 10); r++) {
@@ -779,6 +787,7 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
       headerIdx  = r;
       typeCol    = detected.typeCol;
       descCol    = detected.descCol;
+      nameCol    = detected.nameCol;
       weightCol  = detected.weightCol;
       unitCol    = detected.unitCol;
       qtyCol     = detected.qtyCol;
@@ -833,12 +842,24 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
       : Math.max(1, parseInt(String(rawQtyCell ?? ''), 10) || 1);
 
     // 024P: worn signals for XLSX — Subcategory column and leading "Worn" in description.
+    // Signal D uses the raw desc (before any 024R name filtering) so worn routing is preserved.
     const subcatRaw = subcatCol >= 0 ? String(row[subcatCol] ?? '').trim() : '';
     const isExplicitlyWorn =
       CLOTHING_WORN_SECTION_ALIASES.has(norm(subcatRaw)) ||
       /^worn\b/i.test(desc.trim());
     const isClothingType = CLOTHING_TYPES.has(norm(sub)) || APPAREL_WORD_RE.test(sub);
     const finalDest = (isExplicitlyWorn && isClothingType) ? 'Clothing Worn' : (cat || undefined);
+
+    // 024R: prefer dedicated product-name column (nameCol) over descCol for the Name field.
+    // nameCol is a separate column from typeCol; when both exist the product column wins.
+    // Apply STATUS_DESC_RE to filter obvious status/metadata text from the Name field.
+    if (nameCol >= 0 && nameCol !== typeCol) {
+      const nameCell = String(row[nameCol] ?? '').trim();
+      desc = (nameCell && !STATUS_DESC_RE.test(nameCell)) ? nameCell : '';
+    } else if (STATUS_DESC_RE.test(desc.trim())) {
+      desc = '';
+    }
+    desc = desc.slice(0, 200);
 
     results.push({ sub, desc, weightOz: oz, warning: warning || oz > 500, destination: finalDest, qty });
   }
@@ -896,7 +917,9 @@ const CSV_COL_ALIASES: Record<string, string[]> = {
   category:    ['category', 'section', 'group', 'system'],
   subcategory: ['subcategory', 'sub category'],
   // Item-identity headers map to TrailWeigh "Type" (sub field), not Description
-  type:        ['type', 'item name', 'name', 'gear', 'item', 'gear item', 'equipment', 'product'],
+  type:        ['type', 'item name', 'name', 'gear', 'item', 'gear item', 'equipment'],
+  // 024R: dedicated product-name headers populate the Name (desc) field, not Type
+  productname: ['product', 'product name', 'model', 'item model'],
   description: ['description', 'notes', 'details'],
   qty:         ['quantity', 'qty', 'count', '#'],
   weight:      ['weight', 'wt', 'mass'],
@@ -1017,7 +1040,8 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
       const field = mapCsvHeader(cell);
       if (field) {
         score++;
-        if (field === 'type' || field === 'description') hasIdentity = true;
+        // 024R: productname also qualifies as an identity field
+        if (field === 'type' || field === 'description' || field === 'productname') hasIdentity = true;
       }
     }
     if (hasIdentity && score > bestScore) {
@@ -1034,9 +1058,9 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     if (field !== null && !(field in colMap)) colMap[field] = i;
   });
 
-  // 024O: Accept files where the identity column maps to 'type' (e.g. "Name", "Gear")
-  // rather than requiring an explicit "description" header.
-  if (colMap['description'] === undefined && colMap['type'] === undefined) {
+  // 024O/024R: Accept files where the identity column maps to 'type', 'description',
+  // or the dedicated product-name field ('productname').
+  if (colMap['description'] === undefined && colMap['type'] === undefined && colMap['productname'] === undefined) {
     const err: any = new Error(
       'TrailWeigh could not identify an Item / Description / Gear column in this CSV. ' +
       'Make sure the header row includes one of: Type, Name, Item, Description, or Gear.',
@@ -1055,15 +1079,27 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     };
 
     // 024O: item identity column may be 'type' (Name/Gear/Item) or 'description'.
-    const typeRaw = get('type');
-    const descRaw = get('description');
-    // Use type as description fallback only when no separate description text exists.
-    const desc = descRaw || typeRaw;
-    if (!desc) continue; // skip rows with no identity value at all
+    const typeRaw    = get('type');
+    const descRaw    = get('description');
+    const nameRaw    = get('productname'); // 024R: dedicated product/model/name column
+
+    // Skip rows with no identity at all
+    if (!typeRaw && !descRaw && !nameRaw) continue;
 
     // Skip summary / total rows regardless of which column they appear in
     if (/^(total|grand\s*total|sub\s*total)\b/i.test(typeRaw) ||
         /^(total|grand\s*total|sub\s*total)\b/i.test(descRaw)) continue;
+
+    // 024R: Name (desc) priority:
+    //   1. Dedicated product-name column (Product / Model / Item Model) if not status text,
+    //      BUT only when typeRaw is also present (if typeRaw is absent, nameRaw serves as
+    //      the item identity/Type and should not also appear in the Name field).
+    //   2. Description/notes column if not status text
+    //   3. Blank — do NOT fall back to typeRaw (would duplicate the Type field)
+    // descRaw is still used directly for worn Signal D below, independent of this filter.
+    const nameDesc = typeRaw && nameRaw && !STATUS_DESC_RE.test(nameRaw.trim())
+      ? nameRaw
+      : (!STATUS_DESC_RE.test(descRaw.trim()) ? descRaw : '');
 
     const category  = get('category');
     const weightRaw = get('weight');
@@ -1086,7 +1122,7 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
       parseCsvBool(wornRaw) === true ||
       /^worn$/i.test(wornRaw.trim()) ||
       CLOTHING_WORN_SECTION_ALIASES.has(norm(subcatRaw)) ||
-      /^worn\b/i.test(desc.trim());
+      /^worn\b/i.test(descRaw.trim()); // 024R: use descRaw directly (nameDesc may be filtered out)
     // Only apply worn routing for items recognised as apparel/footwear/headwear.
     // CLOTHING_TYPES covers specific gear names; APPAREL_WORD_RE catches generic
     // terms (e.g. "Hiking Shirt") not individually enumerated in that set.
@@ -1117,8 +1153,9 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
         : (category || undefined);
 
     items.push(applyGearClassification({
-      sub:         typeRaw.slice(0, 60),
-      desc:        desc.slice(0, 200),
+      // 024R: when no 'type' column exists, nameRaw serves as the item identity (sub)
+      sub:         (typeRaw || nameRaw).slice(0, 60),
+      desc:        nameDesc.slice(0, 200), // 024R: filtered product-name value
       weightOz,
       warning,
       warningMsg,

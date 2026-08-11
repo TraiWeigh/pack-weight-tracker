@@ -1,0 +1,475 @@
+TRAILWEIGH — PROMPT 024R
+FIX NAME SEMANTICS WITHOUT UNDOING THE 024Q DESCRIPTION → NAME UI RENAME
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a very narrow correction to Prompt 024Q. The visible NAME rename already works. Only the import semantics for obvious status/metadata text need correction.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 3–6 minutes
+Estimated Agent usage/cost: about $0.50–$1.20
+
+ATTACH THESE TEST FILES WITH THIS PROMPT
+1. 01_lighterpack_style.csv
+2. 02_metagear_style.csv
+3. 05_nested_subcategory_test.xlsx
+4. 06_messy_spreadsheet.csv
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Prompt 024O = USER-VERIFIED PASS.
+Prompt 024P = USER-VERIFIED PASS.
+
+Prompt 024Q is PARTIAL / USER-VERIFIED FAIL for one specific semantic issue:
+- the visible column rename DESCRIPTION -> NAME works;
+- Scan Gear List now says Type, Name, and Weight;
+- worn routing still works;
+- BUT Test 01 imports:
+
+Type: Hiking Shirt
+Name: Worn while hiking
+Destination: Clothing Worn
+
+This is WRONG because "Worn while hiking" is status/usage text, not a product/manufacturer/model name.
+
+DO NOT UNDO THE 024Q UI RENAME.
+
+PRIMARY GOAL
+
+Keep the user-facing field:
+
+NAME
+
+and make sure the value placed into NAME represents item identity rather than obvious status/routing/quantity/weight-note text.
+
+TrailWeigh should continue to have ONE product-identity field in the visible list:
+
+TYPE | NAME | MOVE | WEIGHT | QTY | TOTAL
+
+Do NOT recreate a separate visible Description column.
+
+FIELD MEANING
+
+TYPE
+= what kind of item it is.
+Examples:
+- Tent
+- Backpack
+- Quilt
+- Hiking Shirt
+- Trail Runners
+- Power Bank
+
+NAME
+= the item/product identity when available.
+Examples:
+- Zpacks Duplex
+- Durston Kakwa 55
+- Enlightened Equipment Enigma 20°
+- Outdoor Research Echo
+- Altra Lone Peak
+- Nitecore NB10000
+
+IMPORTANT:
+NAME must NOT be populated with obvious status/metadata text.
+
+CONFIRMED BAD EXAMPLE
+
+SOURCE:
+Type = Hiking Shirt
+Description = Worn while hiking
+Worn = TRUE
+
+CURRENT BAD RESULT:
+Type = Hiking Shirt
+Name = Worn while hiking
+Destination = Clothing Worn
+
+REQUIRED RESULT:
+Type = Hiking Shirt
+Name = blank
+Destination = Clothing Worn
+Weight = preserved
+Qty = preserved
+
+The worn clue must still route the item to Clothing Worn.
+
+CONSERVATIVE NAME-SELECTION RULE
+
+Do NOT attempt a broad AI-like interpretation of every description.
+
+Use this conservative priority:
+
+1. If a dedicated product-identity column exists, prefer it for TrailWeigh NAME.
+
+Recognize reasonable product-name headers such as:
+- Name
+- Product
+- Product Name
+- Model
+- Item Model
+
+2. If no dedicated product-identity field exists, the existing source Description may still be used as the TrailWeigh NAME fallback, BUT NOT when it is clearly only status/metadata text.
+
+3. If the Description is clearly status/metadata rather than identity, leave NAME blank.
+Do not invent a replacement.
+
+EXPLICIT STATUS / METADATA TEXT THAT MUST NOT BECOME NAME
+
+At minimum reject obvious values/patterns such as:
+- Worn
+- Worn item
+- Worn while hiking
+- Carried
+- Carried layer
+- Consumable
+- Reusable
+- Pair weight
+- Three daily portions
+- quantity > 1
+- quantity four
+- generic category
+- metric decimal
+- same mass, different unit
+- blank weight should not block import
+
+Also reject a value that merely duplicates an explicit Worn/Status/Consumable field rather than identifying the product.
+
+Do NOT use:
+- TRUE / FALSE
+- Yes / No
+- worn status values
+- consumable status values
+- quantity-only text
+- weight-only text
+- category-only text
+
+as NAME.
+
+IMPORTANT DATA-PRESERVATION RULE
+
+Do NOT broadly blank every old Description value.
+
+For example, if a source only provides:
+Type = Tent
+Description = Zpacks Duplex
+
+then:
+Name = Zpacks Duplex
+
+is valid.
+
+If a source only provides:
+Type = Backpack
+Description = 40 L frameless backpack
+
+do NOT delete the value merely because it is not a perfect manufacturer/model string.
+This prompt is not a catalog-quality cleanup project.
+
+The narrow goal is:
+- preserve useful identity/descriptive text;
+- filter obvious status/metadata text;
+- prefer dedicated Name/Product/Model fields when available.
+
+IF BOTH NAME AND DESCRIPTION EXIST
+
+If both exist:
+- dedicated Name/Product/Model wins for TrailWeigh NAME;
+- do not overwrite it with Description;
+- Description can continue to serve any internal/import-support role it already has if needed;
+- obvious status text in Description must not replace the dedicated Name.
+
+EXAMPLES
+
+SOURCE:
+Type = Hiking Shirt
+Name = Outdoor Research Echo
+Description = Worn while hiking
+Worn = TRUE
+
+REQUIRED:
+Type = Hiking Shirt
+Name = Outdoor Research Echo
+Destination = Clothing Worn
+
+SOURCE:
+Type = Trail Runners
+Name = Altra Lone Peak
+Description = Pair weight
+Worn = Yes
+
+REQUIRED:
+Type = Trail Runners
+Name = Altra Lone Peak
+Destination = Clothing Worn
+
+SOURCE:
+Type = Tent
+Description = Zpacks Duplex
+
+REQUIRED:
+Type = Tent
+Name = Zpacks Duplex
+
+SOURCE:
+Type = Hiking Shirt
+Description = Worn while hiking
+Worn = TRUE
+
+REQUIRED:
+Type = Hiking Shirt
+Name = blank
+Destination = Clothing Worn
+
+NO NEW DATA MODEL
+
+If the internal property is still named:
+description
+or:
+desc
+
+it may remain that way.
+
+Do NOT perform a database/schema migration merely to change semantics.
+
+Do NOT add:
+- Brand column
+- Manufacturer column
+- Model column
+- Notes column
+- Status column
+
+to the visible main table.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024R_REPORT.md
+
+Initially write:
+- Prompt: 024R
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM THE CURRENT CAUSE
+
+Inspect only the CSV/XLSX field-selection path needed to prove why:
+
+Description = Worn while hiking
+
+currently becomes:
+
+Name = Worn while hiking
+
+Document the exact current mapping/fallback that causes this.
+
+Do not broadly rediagnose the entire importer.
+
+PHASE 3 — MINIMUM REPAIR
+
+Make the smallest safe change that:
+
+1. Preserves the 024Q visible NAME label.
+2. Prefers dedicated Name/Product/Product Name/Model/Item Model source fields for NAME.
+3. Uses source Description as a fallback only when appropriate.
+4. Prevents obvious status/metadata-only Description values from becoming NAME.
+5. Leaves NAME blank rather than inventing a product name when only status text exists.
+6. Preserves worn routing from 024P.
+7. Preserves all 024O quantity/category/weight/header fixes.
+8. Does not change PDF or DOCX parsing.
+
+Do not add AI.
+Do not add fuzzy web lookup.
+Do not add catalog matching.
+Do not create a second importer.
+
+PHASE 4 — REQUIRED TESTS
+
+TEST 01 — 01_lighterpack_style.csv
+
+Required:
+- 9 items found/imported.
+- Hiking Shirt -> Clothing Worn.
+- Hiking Shirt NAME must NOT be "Worn while hiking".
+- Because this test fixture has no real product-name field for Hiking Shirt, NAME may be blank.
+- Smartwater Bottle remains Qty 2.
+- Fuel remains correctly routed.
+- No item lost or duplicated.
+
+Also confirm that useful non-status Description fallback values still survive where appropriate and are not globally blanked.
+
+TEST 02 — 02_metagear_style.csv
+
+Required:
+- 7 items found/imported.
+- Trail Runners -> Clothing Worn.
+- Trail Runners NAME must NOT become "Pair weight".
+- Water remains Qty 2.
+- Dog Food remains Qty 3.
+- Backpack weight remains correct.
+- No item lost or duplicated.
+
+TEST 05 — 05_nested_subcategory_test.xlsx
+
+Required:
+- 12 items found/imported.
+- Sun Hat -> Clothing Worn.
+- NAME must NOT become "Worn item".
+- Fuel remains Qty 2.
+- No item lost or duplicated.
+
+TEST 06 — 06_messy_spreadsheet.csv
+
+Required:
+- 10 items found/imported.
+- Header row below title is still detected.
+- Sun Hat -> Clothing Worn.
+- NAME must NOT become status text.
+- Fuel remains Qty 2.
+- Socks remains Qty 2.
+- Tent remains 26 oz from "1 lb 10 oz".
+- blank Toothpaste weight still imports.
+- TOTAL row remains ignored.
+- No item lost or duplicated.
+
+PHASE 5 — DEDICATED PRODUCT-NAME ALIAS CHECK
+
+Add or run a very small parser-level test if practical proving that these headers can populate NAME without creating new visible fields:
+
+- Name
+- Product
+- Product Name
+- Model
+- Item Model
+
+Example fixture:
+Type,Product,Worn,Weight,Unit
+Hiking Shirt,Outdoor Research Echo,TRUE,5.2,oz
+
+Required normalized/import result:
+Type = Hiking Shirt
+Name = Outdoor Research Echo
+Destination = Clothing Worn
+Weight = 5.2 oz
+
+Do not add this as a permanent user-facing template unless already appropriate.
+It may be an automated/unit test only.
+
+PHASE 6 — REGRESSION PROTECTION
+
+Verify:
+- 024O header aliases still work.
+- 024O Qty handling still works.
+- 024O header-row detection still works.
+- 024O mixed unit handling still works.
+- 024P worn routing still works.
+- 024Q NAME label still appears in the main list.
+- 024Q NAME label still appears in Scan Gear List.
+- 77-item CSV regression still returns 77 if fixture is available.
+- 77-item PDF regression still returns 77 if fixture/path is available.
+
+Do NOT modify PDF code to run or satisfy the PDF regression.
+
+OUT OF SCOPE
+
+Do NOT fix in 024R:
+- Big Three / Big Four routing;
+- Bits / Misc / Stuff routing;
+- Leukotape routing;
+- Medication routing;
+- Repair Tape routing;
+- DOCX heading/category support;
+- PDF parsing;
+- catalog/search;
+- retailer integration;
+- AI features;
+- toolbar/layout;
+- Background;
+- Share;
+- Locker;
+- Save / Save As;
+- footer;
+- themes;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Before finishing, inspect every changed application file.
+
+Changes should be limited to:
+- CSV/XLSX source field normalization/selection;
+- directly necessary importer tests;
+- report artifacts.
+
+Do not refactor unrelated code.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024R_REPORT.md
+
+It must include:
+- Prompt number: 024R
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact files changed
+- exact confirmed cause of status text becoming NAME
+- exact repair made
+- Test 01 result
+- Test 02 result
+- Test 05 result
+- Test 06 result
+- confirmation Hiking Shirt NAME is not "Worn while hiking"
+- confirmation Trail Runners NAME is not "Pair weight"
+- confirmation Sun Hat NAME is not "Worn item"
+- confirmation Clothing Worn routing still works
+- confirmation Product/Product Name/Model aliases if implemented/tested
+- confirmation 024O quantities still work
+- confirmation 024Q NAME UI label remains intact
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF/DOCX code was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+After the report physically exists, create:
+
+workflow-reports/trailweigh-024R-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024R_REPORT.md
+
+Include any small 024R-specific automated test output if created and useful.
+
+Verify with the filesystem:
+- PROMPT_024R_REPORT.md exists;
+- trailweigh-024R-report.zip exists;
+- ZIP opens successfully;
+- required report is actually inside.
+
+Do not merely state that the files were created.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024R.
+
+Do not start Big Three/Bits routing cleanup or any other waiting TrailWeigh task.
+
+STOP after the report and ZIP are created and verified.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final status remains PENDING until the user tests live TrailWeigh.
