@@ -1,0 +1,90 @@
+TRAILWEIGH — PROMPT 024J
+ARTIFACT CHECK ONLY: VERIFY 024I RAW JSON EXISTS BEFORE ANY MORE WORK
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This should be a direct filesystem check only. No application work.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 10–30 seconds
+Estimated Agent usage/cost: about $0.05–$0.20
+
+CRITICAL RULES
+
+DO NOT MODIFY TRAILWEIGH APPLICATION CODE.
+DO NOT RERUN THE PDF PARSER.
+DO NOT RECONSTRUCT OR INVENT ANY 024I DATA.
+DO NOT MODIFY TESTS.
+DO NOT START ANOTHER TASK.
+
+The only purpose of this prompt is to determine whether the evidence file from Prompt 024I physically exists.
+
+STEP 1 — DIRECT FILESYSTEM CHECK
+
+Use a direct shell/filesystem command to check for:
+
+workflow-reports/024I-live-pdf-response.json
+
+Also check for:
+
+workflow-reports/PROMPT_024I_REPORT.md
+
+Use a direct command such as:
+
+ls -l workflow-reports/024I-live-pdf-response.json workflow-reports/PROMPT_024I_REPORT.md
+
+or an equivalent deterministic filesystem check.
+
+STEP 2 — IF THE JSON FILE IS MISSING
+
+If:
+
+workflow-reports/024I-live-pdf-response.json
+
+does NOT exist:
+
+STOP IMMEDIATELY.
+
+Respond only with:
+- “024I raw JSON is missing.”
+- whether PROMPT_024I_REPORT.md exists or is also missing.
+
+Do not rerun the PDF parser.
+Do not create a replacement JSON.
+Do not create a ZIP.
+Do not change any files.
+
+STEP 3 — IF THE JSON FILE EXISTS
+
+If the JSON file DOES exist:
+
+1. Report its exact file size.
+2. Inspect it only enough to identify:
+   - top-level keys;
+   - the item-array key;
+   - exact item count.
+3. Do not alter the JSON.
+
+If PROMPT_024I_REPORT.md also exists, create the ZIP with a DIRECT shell command, not an Agent-generated packaging workflow:
+
+cd workflow-reports
+zip -j trailweigh-024I-report.zip 024I-live-pdf-response.json PROMPT_024I_REPORT.md
+
+Then verify with:
+
+unzip -l trailweigh-024I-report.zip
+ls -l trailweigh-024I-report.zip
+
+Confirm both files are inside.
+
+If the Markdown report does NOT exist:
+- do not reconstruct it;
+- do not create the ZIP;
+- simply report that JSON exists but the report is missing.
+
+FINAL STOP RULE
+
+This is an artifact-existence check only.
+
+Do not modify any TrailWeigh code or behavior.
+Do not rerun any importer.
+Do not begin another task.
