@@ -1,0 +1,159 @@
+TRAILWEIGH — PROMPT 024I
+MINIMAL CAPTURE ONLY: SAVE THE RAW RESPONSE FROM THE LIVE PDF IMPORT PATH
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a single-run capture task. No application code changes, no diagnosis, no diff, and no fix.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 1–2 minutes
+Estimated Agent usage/cost: about $0.20–$0.60
+
+ATTACH THIS FILE WITH THE PROMPT
+
+TrailWeigh-024I-Test-Pack-Weight.pdf
+
+This is the exact PDF that the live TrailWeigh Scan Gear List currently reports as:
+68 items found
+
+CRITICAL RULE — CAPTURE ONLY
+
+DO NOT MODIFY APPLICATION CODE.
+DO NOT MODIFY TESTS.
+DO NOT CHANGE IMPORTER LOGIC.
+DO NOT FIX THE 68-vs-77 ISSUE.
+DO NOT DIAGNOSE THE CAUSE.
+DO NOT DIFF AGAINST CSV.
+DO NOT CREATE A NEW PARSER.
+DO NOT USE OCR.
+DO NOT MANUALLY RECONSTRUCT THE 68 ITEMS.
+
+The only goal of Prompt 024I is to capture and save the exact raw response produced by the SAME live PDF import path that Scan Gear List uses.
+
+STEP 1 — IDENTIFY THE EXACT LIVE PDF IMPORT PATH
+
+Inspect the current application only enough to identify the exact route/function/API path used when a user uploads a PDF in Scan Gear List.
+
+Do not edit it.
+
+The path must be the same one that currently produces:
+68 items found
+
+STEP 2 — CALL THAT SAME LIVE PATH ONCE
+
+Use the attached:
+TrailWeigh-024I-Test-Pack-Weight.pdf
+
+Invoke the same live PDF upload/import path one time.
+
+Do not use a substitute parser or a separate diagnostic parser.
+
+STEP 3 — IMMEDIATELY SAVE THE RAW RESPONSE
+
+Before doing any analysis or transformation, save the exact raw returned response to:
+
+workflow-reports/024I-live-pdf-response.json
+
+Requirements:
+- preserve the response structure exactly as returned;
+- preserve all item records exactly as returned;
+- preserve all fields present in the response;
+- do not rename keys;
+- do not normalize values;
+- do not add inferred fields;
+- do not remove records;
+- do not reorder records unless the live response itself does so.
+
+If the live response contains metadata plus items, save the full response, not just the item array.
+
+STEP 4 — VERIFY THE CAPTURE FILE
+
+Perform a direct filesystem check and verify:
+
+workflow-reports/024I-live-pdf-response.json
+
+physically exists.
+
+Then inspect the saved JSON and report:
+- the top-level keys;
+- the item-array key name;
+- the exact number of item records in that array.
+
+If the saved live response contains 68 item records:
+STOP.
+
+If it contains any number other than 68:
+STOP and report the exact number.
+Do not try to force it to 68.
+
+STEP 5 — CREATE A VERY SHORT REPORT
+
+Create:
+
+workflow-reports/PROMPT_024I_REPORT.md
+
+The report must contain only:
+- Prompt number: 024I
+- Agent mode used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- Exact live route/function/API path invoked
+- Name of the saved raw-response file
+- Top-level JSON keys
+- Item-array key name
+- Exact item count in the saved response
+- Confirmation: “No application code or behavior was changed.”
+
+Do not include a long diagnostic explanation.
+
+STEP 6 — CREATE AND VERIFY ZIP
+
+Create:
+
+workflow-reports/trailweigh-024I-report.zip
+
+The ZIP must contain exactly:
+1. 024I-live-pdf-response.json
+2. PROMPT_024I_REPORT.md
+
+Then:
+- list the ZIP contents;
+- confirm both files are inside;
+- confirm the ZIP physically exists.
+
+IMPORTANT FAILURE RULE
+
+If you cannot invoke the same live PDF path without modifying application code:
+STOP and report that limitation.
+Do not create a substitute parser.
+Do not fabricate a response file.
+
+If the raw response cannot be captured:
+STOP.
+Do not reconstruct it manually.
+
+NO UNRELATED CHANGES
+
+Do not touch:
+- CSV importer;
+- Background;
+- toolbar alignment;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- authentication;
+- shared-view units;
+- Stripe/payments/AI credits;
+- any unrelated task or Ready-for-review change.
+
+FINAL STOP RULE
+
+STOP immediately after:
+- 024I-live-pdf-response.json exists,
+- PROMPT_024I_REPORT.md exists,
+- trailweigh-024I-report.zip exists and contains both files.
+
+DO NOT IMPLEMENT ANY FIX.
+DO NOT BEGIN ANOTHER TASK.
