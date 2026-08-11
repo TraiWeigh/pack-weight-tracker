@@ -1,0 +1,388 @@
+TRAILWEIGH — PROMPT 025J
+SHARED VIEW VISUAL PARITY: MATCH HOME WIDTH, TOOLBAR POSITIONS, FILE-NAME PILL, AND BAR/THEME STYLING
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused correction to the visible differences that remain after 025I.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.40
+
+USER-VERIFIED STATUS
+
+Prompt 025I = USER-VERIFIED FAIL.
+
+The only clearly successful visible change from 025I was:
+- standalone Print pill removed from the shared top toolbar.
+
+The shared-link viewer still does NOT visually match Home.
+
+CONFIRMED LIVE DIFFERENCES
+
+1. OVERALL CONTENT WIDTH / GRID
+Home:
+- uses the wider main-list + sidebar layout;
+- main list occupies the full intended left area;
+- sidebar occupies the full intended right area.
+
+Shared:
+- still appears narrower and more centered;
+- main list and sidebar do not use the same width proportions as Home.
+
+Required:
+- shared content area must use the SAME outer width, horizontal margins, main/sidebar column proportions, and inter-column gap as Home at the same browser width.
+
+2. TOP TOOLBAR POSITIONS
+Because the shared layout width is different, the toolbar groups are still positioned differently.
+
+Required:
+- left group position must match Home;
+- center group position must match Home;
+- right/sidebar group position must match Home;
+- vertical baseline, spacing, and group offsets must match Home.
+
+3. FILE-NAME PILL
+Home currently shows the file name in the toolbar row, for example:
+
+Sierra/Dutch/0826
+
+Shared view is missing the equivalent file-name pill.
+
+Required:
+- shared view must show the shared file's actual name in the SAME location and style as Home;
+- this is display-only in the shared view;
+- do not allow the viewer to rename the sender's original through this pill.
+
+4. BAR / PANEL THEME STYLING
+Home currently shows the user's selected gray/transparency styling.
+
+Shared view is still visibly darker / blacker.
+
+Required:
+- category bars must match Home;
+- sidebar panel headers/bars must match Home;
+- Bar Color must match;
+- Transparency must match;
+- Text Color must match;
+- Font must match;
+- do not hard-code gray;
+- shared view must render the appearance state carried by the shared file/session using the SAME styling path Home uses.
+
+5. PRINT
+Standalone Print was correctly removed.
+KEEP IT REMOVED.
+Do not reintroduce it.
+
+IMPORTANT PRODUCT RULE
+
+The shared-link viewer should render the SAME TrailWeigh visual interface as Home.
+
+The only intended differences are:
+- shared edits are isolated from sender original;
+- Save Your Own Copy;
+- sign in/create account path;
+- shared-only ownership messaging/content.
+
+Do not create a second visual design.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025J_REPORT.md
+
+Initially write:
+- Prompt: 025J
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — SIDE-BY-SIDE RENDERED COMPARISON BEFORE EDITING
+
+Use the SAME browser width and the SAME underlying list/theme.
+
+Open:
+A. Home view
+B. Shared-link viewer
+
+Measure/document the rendered values for BOTH views:
+
+- outer content container width;
+- left edge of content;
+- right edge of content;
+- main-list column width;
+- sidebar width;
+- gap between main list and sidebar;
+- toolbar left-group x-position;
+- toolbar center-group x-position;
+- toolbar right-group x-position;
+- file-name pill presence/location;
+- category bar background computed style;
+- category bar opacity/transparency;
+- sidebar panel header background computed style;
+- font family;
+- text color.
+
+Do not start code changes until these actual rendered differences are known.
+
+PHASE 3 — FIND THE EXACT LAYOUT CAUSE
+
+Identify why the shared view is narrower/centered differently.
+
+Check for:
+- different max-width class;
+- different wrapper/container;
+- different px/mx-auto classes;
+- different grid-template-columns;
+- different sidebar width;
+- different padding;
+- shared-only centering wrapper;
+- nested container not present in Home.
+
+Document the exact cause.
+
+Then make the smallest change so shared uses the SAME layout values/components as Home.
+
+Do NOT approximate by eye if the Home layout values can be reused directly.
+
+PHASE 4 — MATCH OUTER WIDTH AND GRID EXACTLY
+
+Required at the same viewport width:
+
+- same content wrapper width;
+- same horizontal padding;
+- same left/right edges;
+- same main-list width;
+- same sidebar width;
+- same column gap.
+
+Prefer reusing the same Home layout classes/constants/component.
+
+Do NOT create a second set of copied "almost the same" values.
+
+PHASE 5 — MATCH TOP TOOLBAR EXACTLY
+
+Use Home as the source of truth.
+
+Required shared toolbar:
+- same left-group position;
+- same file-name pill position;
+- same Hide position;
+- same Preview position;
+- same Imperial / Metric position;
+- same category expand/collapse position;
+- same sidebar expand/collapse position;
+- same Background position;
+- same Share position;
+- same spacing and vertical alignment.
+
+Do NOT add Print.
+
+FILE-NAME PILL
+
+Shared view must display the actual shared file name in the same visual pill used by Home.
+
+Important:
+- display-only;
+- no rename action against sender's original;
+- do not add a pencil/edit affordance;
+- clicking it should not allow changing the sender's file name.
+
+PHASE 6 — MATCH BAR/THEME STYLING USING HOME PATH
+
+Do not hard-code colors.
+
+Trace how Home applies:
+- Bar Color;
+- Transparency;
+- Text Color;
+- Font;
+- Light/Dark state;
+- sidebar/header styling.
+
+Then ensure shared view uses the SAME style provider/helper/state path.
+
+Required:
+- Home and Share computed bar background values match when viewing the same shared appearance state;
+- Home and Share transparency/opacity match;
+- Home and Share font family match;
+- Home and Share text color match;
+- Home and Share sidebar panel header styling match.
+
+If a shared snapshot/state field is missing:
+- identify the missing field;
+- add only the minimum necessary shared snapshot/state propagation;
+- preserve backward compatibility with old links if practical.
+
+Do NOT force fallback black styling when valid appearance state exists.
+
+PHASE 7 — DARK/LIGHT APPEARANCE SAFETY
+
+Do not fix the separate white Background/Themes panel bug in this prompt unless the same root cause is directly responsible.
+
+However:
+- do not make it worse;
+- preserve current Home behavior;
+- preserve current selected Dark/Light state in shared view.
+
+The separate Background-panel surface issue can be handled later if still present.
+
+PHASE 8 — REQUIRED POST-FIX SIDE-BY-SIDE PROOF
+
+After the fix, repeat the same side-by-side comparison.
+
+At the same viewport width:
+
+LAYOUT
+- outer width matches;
+- main-list width matches;
+- sidebar width matches;
+- column gap matches.
+
+TOOLBAR
+- groups line up in same x-positions;
+- file-name pill appears in shared view;
+- no standalone Print pill.
+
+STYLING
+- category bar background matches;
+- transparency matches;
+- sidebar header styling matches;
+- font matches;
+- text color matches.
+
+Do not declare completion from source inspection alone.
+
+Take screenshots if practical and include them in workflow-reports/ or record exact pixel/computed-style comparisons in the report.
+
+PHASE 9 — PRESERVE WORKING SHARED FUNCTIONALITY
+
+Do NOT break:
+- shared edits remain temporary/isolated;
+- Save Your Own Copy;
+- account creation/sign-in flow;
+- Shared Files;
+- 025H sidebar accordion behavior;
+- 025G Share dropdown layering;
+- Hide;
+- Preview;
+- Imperial / Metric;
+- Background;
+- Share;
+- category expand/collapse controls.
+
+PHASE 10 — HOME REGRESSION PROTECTION
+
+Home is the source of truth.
+
+Do not visually change Home.
+
+Verify Home still has:
+- same width/layout;
+- same toolbar;
+- same file-name pill;
+- same bar/theme styling;
+- same sidebar behavior.
+
+OUT OF SCOPE
+
+Do NOT:
+- redesign Home;
+- redesign Share;
+- change importer/parser logic;
+- change calculations;
+- change category data;
+- change Save Your Own Copy semantics;
+- change sender ownership protections;
+- re-add standalone Print;
+- change the separate Background/Themes white-panel bug unless directly caused by the same styling path.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- shared layout wrapper/grid;
+- shared toolbar/presentation;
+- narrowly shared Home/Shared presentational helper if required;
+- shared appearance/style state/provider path;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025J_REPORT.md
+
+Include:
+- Prompt number: 025J
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact pre-fix Home outer width
+- exact pre-fix Shared outer width
+- exact pre-fix Home main/sidebar widths
+- exact pre-fix Shared main/sidebar widths
+- exact cause of width/layout mismatch
+- exact fix used
+- confirmation post-fix outer width matches
+- confirmation post-fix main/sidebar widths match
+- confirmation toolbar group positions match
+- confirmation shared file-name pill is present and display-only
+- confirmation standalone Print remains absent
+- exact cause of bar/theme mismatch
+- confirmation Bar Color matches Home
+- confirmation Transparency matches Home
+- confirmation Text Color matches Home
+- confirmation Font matches Home
+- confirmation sidebar panel styling matches Home
+- confirmation 025H accordion still works
+- confirmation 025G Share dropdown layering still works
+- confirmation Save Your Own Copy still works
+- confirmation sender original remains untouched
+- build/test result
+- confirmation importer/parser files were not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025J-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025J_REPORT.md
+
+Include any 025J-specific side-by-side screenshots/comparison output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025J.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user compares Home and Share live and confirms:
+1. overall widths/layout match;
+2. toolbar groups match;
+3. file-name pill appears in Share;
+4. standalone Print remains gone;
+5. bar/panel styling matches Home;
+6. shared edits remain isolated;
+7. Save Your Own Copy still works.

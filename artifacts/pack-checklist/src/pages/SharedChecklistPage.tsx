@@ -448,7 +448,13 @@ function SharedChecklistContent({
   const [barColor,        setBarColor]        = useState<string>(snapshot.barColor ?? '');
   const [barFont,         setBarFont]         = useState<string>(snapshot.barFont ?? '');
   const [barTextColor,    setBarTextColor]    = useState<string>(snapshot.barTextColor ?? '');
-  const [barTransparency, setBarTransparency] = useState<number>(snapshot.barTransparency ?? 1);
+  // 025J: explicit Number() coercion guards against old links where barTransparency
+  // was stored as a numeric string (e.g. "0.7") before strict typing was enforced.
+  const [barTransparency, setBarTransparency] = useState<number>(() => {
+    const raw = snapshot.barTransparency;
+    const n   = raw !== undefined && raw !== null ? Number(raw) : 1;
+    return isNaN(n) ? 1 : Math.max(0, Math.min(1, n));
+  });
 
   // ── Showcase (Hide) state ─────────────────────────────────────────────────
   const [showcaseActive, setShowcaseActive] = useState(false);
@@ -485,7 +491,7 @@ function SharedChecklistContent({
         barColor:        snapshot.barColor ?? '',
         barFont:         snapshot.barFont ?? '',
         barTextColor:    snapshot.barTextColor ?? '',
-        barTransparency: snapshot.barTransparency ?? 1,
+        barTransparency: (() => { const n = Number(snapshot.barTransparency ?? 1); return isNaN(n) ? 1 : Math.max(0, Math.min(1, n)); })(),
       };
     } else {
       const file = snapshot.lockerFiles?.find(f => f.id === fileId);
@@ -499,7 +505,7 @@ function SharedChecklistContent({
         barColor:        file.barColor ?? '',
         barFont:         file.barFont ?? '',
         barTextColor:    file.barTextColor ?? '',
-        barTransparency: file.barTransparency ?? 1,
+        barTransparency: (() => { const n = Number(file.barTransparency ?? 1); return isNaN(n) ? 1 : Math.max(0, Math.min(1, n)); })(),
       };
     }
 
@@ -1041,13 +1047,26 @@ function SharedChecklistContent({
         </header>
 
         {/* ── Main layout (mirrors ChecklistContent) ── */}
-        <main className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
+        <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:flex lg:flex-col">
+          <div className="pt-2 lg:pt-4 grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
             {/* ── Gear list ── */}
             <div>
+              {/* 025J: Mobile file-name pill row — mirrors Home "Phone Row 1" (lg:hidden) */}
+              {snapshot.name && (
+                <div className="pt-4 lg:hidden flex items-center justify-center gap-2 pb-2 flex-wrap">
+                  <span
+                    aria-label={`Shared file: ${snapshot.name}`}
+                    title={snapshot.name}
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
+                    style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                  >
+                    {snapshot.name}
+                  </span>
+                </div>
+              )}
               {/* 025I: Mobile controls row — shown on mobile, hidden on desktop */}
-              <div className="flex lg:hidden items-center justify-between pt-4 pb-3 flex-shrink-0">
+              <div className={`flex lg:hidden items-center justify-between ${snapshot.name ? 'pb-3' : 'pt-4 pb-3'} flex-shrink-0`}>
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
@@ -1078,8 +1097,22 @@ function SharedChecklistContent({
                   <UnitToggle />
                 </div>
               </div>
-              {/* 025I: Desktop toolbar row — matches Home layout (hidden on mobile) */}
-              <div className="hidden lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative lg:pb-3 pt-2">
+              {/* 025J: Desktop toolbar row — matches Home layout exactly (hidden on mobile) */}
+              <div className="hidden lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative lg:pb-3">
+                {/* File-name pill — absolutely centered over left panel, display-only (no rename) */}
+                {snapshot.name && (
+                  <div className="w-full flex justify-center pointer-events-none
+                                  lg:absolute lg:inset-0 lg:pb-3 lg:flex lg:items-center lg:justify-center lg:w-auto">
+                    <span
+                      aria-label={`Shared file: ${snapshot.name}`}
+                      title={snapshot.name}
+                      className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-foreground max-w-[10rem] truncate select-none"
+                      style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                    >
+                      {snapshot.name}
+                    </span>
+                  </div>
+                )}
                 {/* Category Open/Close icon buttons — matches Home compact style */}
                 <div className="flex items-center flex-shrink-0">
                   <div
