@@ -133,3 +133,10 @@ uri = "file://workflow-reports/trailweigh-025A-report.zip"
 type = "unspecified"
 title = "Prompt 025A Report"
 description = "PROMPT_025A_REPORT.md — Plain bold category label detection + all regression results"
+
+[[outputs]]
+id = "HTAhKNq5lTQjTwE-xzACh"
+uri = "file://workflow-reports/trailweigh-025B-report.zip"
+type = "unspecified"
+title = "Prompt 025B Report"
+description = "PROMPT_025B_REPORT.md — Bullet-list DOCX import + all regression results"

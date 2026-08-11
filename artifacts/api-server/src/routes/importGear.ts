@@ -1458,12 +1458,86 @@ async function extractFromDocxBuffer(buffer: Buffer): Promise<ExtractedItem[]> {
     return strongLen >= visible.length * 0.85;
   }
 
-  // Walk <h1>, <h2>, <p>, and <table> blocks in document order.
+  /**
+   * 025B: Parse a single bullet-list line into gear fields.
+   *
+   * Supported compact syntax (separator is spaced hyphen " - "):
+   *   TYPE - NAME - WEIGHT            → qty 1, name present
+   *   TYPE - WEIGHT                   → qty 1, name blank
+   *   TYPE - NAME - WEIGHT - Qty N    → qty N, name present
+   *   TYPE - WEIGHT - Qty N           → qty N, name blank
+   *
+   * Internal hyphens in product names (e.g. "Therm-a-Rest", "BRS-3000T") are
+   * preserved because we split only on spaced " - ", not every "-".
+   *
+   * Returns null when no parseable weight is found (Trip Notes bullets, etc.).
+   */
+  function parseBulletItem(text: string): {
+    type: string; name: string; weightOz: number; qty: number;
+  } | null {
+    if (!text) return null;
+
+    // Normalize spaced en/em dashes to spaced ASCII hyphen before splitting
+    const normalized = text
+      .replace(/ \u2013 /g, ' - ')  // en dash
+      .replace(/ \u2014 /g, ' - '); // em dash
+
+    let parts = normalized.split(' - ');
+
+    // 1. Strip trailing "Qty N" segment if present
+    let qty = 1;
+    if (parts.length > 0) {
+      const last = parts[parts.length - 1].trim();
+      const qm = /^qty\s*(\d+)$/i.exec(last);
+      if (qm) {
+        qty = parseInt(qm[1], 10) || 1;
+        parts = parts.slice(0, -1);
+      }
+    }
+
+    // 2. Find the right-most weight segment: must be exactly "<number> <unit>"
+    //    Very conservative: whole segment must match, so "3.9 oz" matches but
+    //    "Remember permits" and "Check weather before departure" never do.
+    const WEIGHT_SEG_RE = /^(\d+\.?\d*)\s*(oz|g|lbs?|kg|pounds?)$/i;
+    let weightIdx = -1;
+    let weightOz = 0;
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const wm = WEIGHT_SEG_RE.exec(parts[i].trim());
+      if (wm) {
+        const val = parseFloat(wm[1]);
+        const unit = wm[2].toLowerCase();
+        if (unit.startsWith('g'))                          weightOz = val / 28.3495;
+        else if (unit.startsWith('lb') || unit.startsWith('pound')) weightOz = val * 16;
+        else if (unit.startsWith('kg'))                    weightOz = val * 35.274;
+        else                                               weightOz = val; // oz
+        weightOz = Math.round(weightOz * 100) / 100;
+        weightIdx = i;
+        break;
+      }
+    }
+
+    // 3. No weight found → not a recognizable gear bullet
+    if (weightIdx < 0) return null;
+
+    // 4. Type must be the first segment; weight must not be the first
+    if (weightIdx === 0) return null; // nothing before weight → no Type
+
+    const type = parts[0].trim();
+    if (!type) return null;
+
+    // 5. Name = any segments between Type (index 0) and weight (exclusive)
+    const name = parts.slice(1, weightIdx).join(' - ').trim();
+
+    return { type, name, weightOz, qty };
+  }
+
+  // Walk <h1>, <h2>, <p>, <ul>, and <table> blocks in document order.
   // Including <p> allows plain-bold Normal paragraphs to provide category context (025A).
+  // Including <ul> allows Word List Bullet paragraphs to be parsed as gear items (025B).
   // The regex uses lazy [\s\S]*? so it stops at the first matching closing tag.
-  // mammoth does not produce nested <h1>/<h2>; nested <p> inside <table> cells is
-  // consumed by the <table> match before separate <p> matches can fire.
-  const BLOCK_RE = /<(h[12]|table|p)(?:\s[^>]*)?>[\s\S]*?<\/\1>/gi;
+  // mammoth does not produce nested <h1>/<h2>; nested <p> inside <table>/<ul> cells is
+  // consumed by those outer matches before separate <p> matches can fire.
+  const BLOCK_RE = /<(h[12]|table|ul|p)(?:\s[^>]*)?>[\s\S]*?<\/\1>/gi;
   let m: RegExpExecArray | null;
 
   while ((m = BLOCK_RE.exec(html)) !== null) {
@@ -1496,6 +1570,34 @@ async function extractFromDocxBuffer(buffer: Buffer): Promise<ExtractedItem[]> {
       } else {
         // Non-bold, long, or known-non-category paragraph → interrupts pending
         pendingBoldCategory = undefined;
+      }
+      continue;
+    }
+
+    // 025B: <ul> block — Word List Bullet paragraphs under a category heading
+    if (tag === 'ul') {
+      // Only extract gear items when a valid category context is established.
+      // This is the primary safety gate: Trip Notes bullets appear under the
+      // "Trip Notes" heading which IS a valid Heading 1 but has no parseable
+      // weight → parseBulletItem returns null for each → they are ignored.
+      if (!currentCategory) continue;
+
+      const liRe = /<li(?:\s[^>]*)?>[\s\S]*?<\/li>/gi;
+      let lm: RegExpExecArray | null;
+      while ((lm = liRe.exec(block)) !== null) {
+        const liText = innerText(lm[0]).trim();
+        const parsed = parseBulletItem(liText);
+        if (parsed === null) continue; // no weight → not a gear bullet
+
+        const raw: ExtractedItem = {
+          sub:         parsed.type.slice(0, 60),
+          desc:        parsed.name.slice(0, 200),
+          weightOz:    parsed.weightOz,
+          qty:         parsed.qty,
+          destination: currentCategory,
+          warning:     false,
+        };
+        items.push(applyGearClassification(raw));
       }
       continue;
     }
@@ -1576,8 +1678,10 @@ async function extractFromDocxBuffer(buffer: Buffer): Promise<ExtractedItem[]> {
     }
   }
 
-  // Fallback: no tables found → treat as plain-text DOCX (legacy format)
-  if (tableCount === 0) {
+  // Fallback: no tables AND no bullet items found → treat as plain-text DOCX (legacy format).
+  // 025B: bullet-list DOCXs have tableCount === 0 but populate items[] via the <ul> handler;
+  // checking items.length prevents the fallback from overwriting those parsed items.
+  if (tableCount === 0 && items.length === 0) {
     return extractFromText(rawResult.value);
   }
 

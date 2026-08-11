@@ -1,0 +1,632 @@
+TRAILWEIGH — PROMPT 025B
+DOCX IMPORT: SUPPORT BULLET-LIST GEAR ITEMS UNDER CATEGORY HEADINGS, WITHOUT TABLES
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: Standard DOCX tables, formal Heading 1/2 category context, and plain-bold category labels are already working. This prompt adds one new DOCX structure only: gear items written as bullet-list lines instead of tables.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 5–9 minutes
+Estimated Agent usage/cost: about $0.80–$1.70
+
+ATTACH THIS TEST FILE
+1. 11_TrailWeigh_DOCX_Bullet_List_12_Items.docx
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Preserve all verified behavior from:
+- 024O quantity/header/weight handling
+- 024P worn routing
+- 024R/024W Name behavior
+- 024U Backpack canonical routing
+- 024X Med Kit / Repair Kit routing
+- 024Y/024Z formal Word Heading 1/2 DOCX category context
+- 025A plain-bold DOCX category context
+- 77-item PDF regression
+
+Do NOT redo those prompts.
+
+PRIMARY PROBLEM
+
+Some users make Word packing lists with no tables.
+
+A common structure is:
+
+Backpack
+• Backpack - Durston Kakwa 55 - 30.1 oz
+
+Shelter
+• Tent - Zpacks Duplex - 18.5 oz
+
+Kitchen
+• Stove - BRS-3000T - 0.9 oz
+• Fuel Canister - 3.9 oz - Qty 2
+
+The category is supplied by the heading.
+Each gear item is a bullet paragraph.
+
+TrailWeigh should be able to import this simple structure.
+
+PRIMARY GOAL
+
+For DOCX import only:
+
+When a valid DOCX category context has already been established by the existing heading logic, recognize compatible bullet/list paragraphs beneath that category as gear items.
+
+Support this compact bullet syntax:
+
+TYPE - NAME - WEIGHT
+
+or, when Name is absent:
+
+TYPE - WEIGHT
+
+Optional quantity:
+
+TYPE - NAME - WEIGHT - Qty N
+
+or:
+
+TYPE - WEIGHT - Qty N
+
+The supplied test uses ASCII space-hyphen-space:
+
+" - "
+
+as the separator.
+
+You may safely normalize equivalent spaced separators such as:
+- " – "
+- " — "
+
+if that is trivial and does not broaden parsing risk.
+
+Do NOT split on every hyphen character.
+
+IMPORTANT:
+Product names such as:
+- Therm-a-Rest
+- BRS-3000T
+
+contain internal hyphens.
+
+Only spaced separator tokens should separate bullet fields.
+
+TEST FILE STRUCTURE
+
+11_TrailWeigh_DOCX_Bullet_List_12_Items.docx contains:
+
+- Word Heading 1 category labels.
+- Exactly 12 real gear-item bullets.
+- ZERO gear tables.
+- Two ordinary Trip Notes bullets that are NOT gear:
+  - Remember permits
+  - Check weather before departure
+
+The two Trip Notes bullets must be ignored.
+
+REQUIRED ITEM COUNT
+
+TrailWeigh must find exactly:
+
+12 items
+
+NOT 14.
+
+Do not import:
+- Remember permits
+- Check weather before departure
+- document title
+- explanatory paragraph
+- category heading paragraphs
+
+No duplicates.
+No dropped gear items.
+
+BULLET ITEM RECOGNITION — CONSERVATIVE
+
+A DOCX bullet/list paragraph should become a gear item only when it has enough structured evidence.
+
+For this prompt, require at minimum:
+
+1. It is structurally a Word list/bullet item or is emitted by the DOCX converter as a list item.
+2. A current category context exists.
+3. The text contains a parseable gear weight using the existing TrailWeigh weight parser.
+4. A plausible Type segment exists before the weight.
+5. The line matches the supported compact field structure.
+
+This is important because:
+
+• Remember permits
+• Check weather before departure
+
+have no parseable weight and must be ignored.
+
+Do NOT treat every bullet as gear.
+
+SUPPORTED FIELD PARSING
+
+Parse from the bullet text conservatively.
+
+Examples:
+
+"Backpack - Durston Kakwa 55 - 30.1 oz"
+
+Required:
+Type = Backpack
+Name = Durston Kakwa 55
+Weight = 30.1 oz
+Qty = 1
+
+"Tent - Zpacks Duplex - 18.5 oz"
+
+Required:
+Type = Tent
+Name = Zpacks Duplex
+Weight = 18.5 oz
+Qty = 1
+
+"Fuel Canister - 3.9 oz - Qty 2"
+
+Required:
+Type = Fuel Canister
+Name = blank
+Weight = 3.9 oz
+Qty = 2
+
+"Leukotape - 1.2 oz"
+
+Required:
+Type = Leukotape
+Name = blank
+Weight = 1.2 oz
+Qty = 1
+
+"Dog Pack - Ruffwear Approach - 16.0 oz"
+
+Required:
+Type = Dog Pack
+Name = Ruffwear Approach
+Weight = 16.0 oz
+Qty = 1
+
+PARSING ORDER / SAFETY
+
+Prefer parsing from recognizable right-side fields:
+
+1. Detect optional trailing Qty segment.
+2. Detect the weight segment using existing TrailWeigh weight parsing.
+3. Remaining first segment = Type.
+4. Remaining middle segment(s), if any = Name.
+
+Do not infer Name from weight/spec/status text.
+
+Do not invent Name.
+
+INTERNAL HYPHENS MUST SURVIVE
+
+Required Names/Types must remain intact:
+
+Therm-a-Rest NeoAir XLite NXT
+BRS-3000T
+
+Do NOT split these into multiple fields because of their internal hyphens.
+
+REQUIRED TEST 11 RESULTS
+
+Run:
+
+11_TrailWeigh_DOCX_Bullet_List_12_Items.docx
+
+through the SAME DOCX import path used by TrailWeigh.
+
+Required exact results:
+
+1.
+Source heading: Backpack
+Bullet:
+Backpack - Durston Kakwa 55 - 30.1 oz
+Final:
+Category = Backpack
+Type = Backpack
+Name = Durston Kakwa 55
+Weight = 30.1 oz
+Qty = 1
+
+2.
+Source heading: Shelter
+Bullet:
+Tent - Zpacks Duplex - 18.5 oz
+Final:
+Category = Shelter
+Type = Tent
+Name = Zpacks Duplex
+Weight = 18.5 oz
+Qty = 1
+
+3.
+Source heading: Sleep System
+Bullet:
+Quilt - Enlightened Equipment Enigma 20 - 22.4 oz
+Final:
+Category = current canonical sleep category
+Type = Quilt
+Name = Enlightened Equipment Enigma 20
+Weight = 22.4 oz
+Qty = 1
+
+4.
+Source heading: Sleep System
+Bullet:
+Sleeping Pad - Therm-a-Rest NeoAir XLite NXT - 13.0 oz
+Final:
+Category = current canonical sleep category
+Type = Sleeping Pad
+Name = Therm-a-Rest NeoAir XLite NXT
+Weight = 13.0 oz
+Qty = 1
+
+5.
+Source heading: Kitchen
+Bullet:
+Stove - BRS-3000T - 0.9 oz
+Final:
+Category = Kitchen
+Type = Stove
+Name = BRS-3000T
+Weight = 0.9 oz
+Qty = 1
+
+6.
+Source heading: Kitchen
+Bullet:
+Fuel Canister - 3.9 oz - Qty 2
+Final:
+Category = Consumables
+Type = Fuel Canister
+Name = blank
+Weight = 3.9 oz
+Qty = 2
+
+IMPORTANT:
+Preserve 024Z semantic routing.
+Fuel must override the Kitchen source heading.
+
+7.
+Source heading: Clothing Worn
+Bullet:
+Hiking Shirt - Outdoor Research Echo - 5.2 oz
+Final:
+Category = Clothing Worn
+Type = Hiking Shirt
+Name = Outdoor Research Echo
+Weight = 5.2 oz
+Qty = 1
+
+8.
+Source heading: Clothing Worn
+Bullet:
+Trail Runners - Altra Lone Peak 8 - 22.0 oz
+Final:
+Category = Clothing Worn
+Type = Trail Runners
+Name = Altra Lone Peak 8
+Weight = 22.0 oz
+Qty = 1
+
+9.
+Source heading: Electronics
+Bullet:
+Power Bank - Nitecore NB10000 - 5.3 oz
+Final:
+Category = Electronics
+Type = Power Bank
+Name = Nitecore NB10000
+Weight = 5.3 oz
+Qty = 1
+
+10.
+Source heading: Med Kit
+Bullet:
+Leukotape - 1.2 oz
+Final:
+Category = Med Kit
+Type = Leukotape
+Name = blank
+Weight = 1.2 oz
+Qty = 1
+
+11.
+Source heading: Repair Kit
+Bullet:
+Repair Tape - 0.7 oz
+Final:
+Category = Repair Kit
+Type = Repair Tape
+Name = blank
+Weight = 0.7 oz
+Qty = 1
+
+12.
+Source heading: Dog Gear
+Bullet:
+Dog Pack - Ruffwear Approach - 16.0 oz
+Final:
+Category = Dog Gear
+Type = Dog Pack
+Name = Ruffwear Approach
+Weight = 16.0 oz
+Qty = 1
+
+NON-GEAR BULLET SAFETY
+
+Under Heading 1:
+
+Trip Notes
+
+the file contains:
+
+• Remember permits
+• Check weather before departure
+
+Required:
+- neither becomes an item;
+- neither creates a category;
+- neither becomes a Name or Type;
+- they do not affect the Backpack category that follows.
+
+FORMAL CATEGORY CONTEXT
+
+Use the already-working 024Y/024Z Heading 1/2 category context.
+
+Do not create a second heading system for this prompt.
+
+When the next Heading 1/2 appears, update the category context as already implemented.
+
+PLAIN-BOLD REGRESSION
+
+Do not break 025A plain-bold table category support.
+
+This prompt does NOT need to add plain-bold + bullet-list support yet.
+
+For 025B, bullet-item extraction is required only under already-valid formal Heading 1/2 category context.
+
+That keeps this change focused.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025B_REPORT.md
+
+Initially write:
+- Prompt: 025B
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM CURRENT FAILURE
+
+Run or inspect the supplied Test 11 file through the current DOCX path before making application changes.
+
+Document:
+
+1. How the DOCX converter emits Word List Bullet paragraphs:
+   - <ul>/<li>
+   - paragraphs with list metadata
+   - or another structure.
+
+2. Whether current block traversal sees list items in correct document order.
+
+3. Current item count before the fix.
+
+4. Why list items are currently ignored or misparsed.
+
+Do not broadly redesign DOCX parsing.
+
+PHASE 3 — MINIMUM SAFE IMPLEMENTATION
+
+Add the smallest safe bullet-item parser to the existing DOCX path.
+
+Prefer:
+- existing DOCX block order;
+- existing current category context;
+- existing weight parser;
+- existing quantity parser where reusable;
+- existing Name/Type/category normalization;
+- existing semantic category routing.
+
+Do NOT build a second general importer.
+
+Do NOT:
+- add AI;
+- add OCR;
+- add fuzzy natural-language extraction;
+- parse arbitrary prose;
+- treat all list items as gear.
+
+PHASE 4 — REQUIRED TEST 11
+
+Run the supplied:
+
+11_TrailWeigh_DOCX_Bullet_List_12_Items.docx
+
+through the SAME current DOCX import path.
+
+Required:
+- exactly 12 items found;
+- exactly 12 items importable;
+- Trip Notes bullets ignored;
+- all 12 Type values correct;
+- all 12 Names correct/blank as specified;
+- all weights correct;
+- Fuel Qty = 2;
+- all other Qty = 1;
+- categories correct;
+- no duplicates;
+- no lost items.
+
+PHASE 5 — EXISTING DOCX REGRESSIONS
+
+If available, rerun:
+
+09_TrailWeigh_DOCX_Heading_Context_12_Items.docx
+and/or
+10_TrailWeigh_DOCX_Plain_Bold_Category_Labels_12_Items.docx
+
+Required:
+- table-based DOCX import remains 12/12;
+- formal Heading support remains intact;
+- plain-bold category support remains intact;
+- Stove -> Kitchen;
+- Fuel Canister -> Consumables;
+- no behavior regression.
+
+PHASE 6 — NEGATIVE PARSER TESTS
+
+If practical, add parser-level tests:
+
+A.
+Bullet:
+Remember permits
+Result:
+ignored
+
+B.
+Bullet:
+Check weather before departure
+Result:
+ignored
+
+C.
+Bullet:
+BRS-3000T - 0.9 oz
+Category context: Kitchen
+
+This is ambiguous because the first field would be treated as Type.
+
+Do NOT invent a Type from a model-only line in this prompt unless the existing classifier can safely do so.
+It is acceptable to ignore unsupported ambiguous bullet forms.
+
+D.
+Bullet:
+Sleeping Pad - Therm-a-Rest NeoAir XLite NXT - 13.0 oz
+Required:
+internal hyphens preserved.
+
+E.
+Bullet:
+Fuel Canister - 3.9 oz - Qty 2
+Required:
+Qty = 2.
+
+The parser should fail safely on unsupported/ambiguous bullet syntax rather than guessing.
+
+PHASE 7 — REGRESSION PROTECTION
+
+Verify:
+- 024W Name semantics preserved;
+- 024X Med Kit / Repair Kit routing preserved;
+- 024Z Fuel routing preserved;
+- 025A plain-bold table support preserved;
+- 77-item PDF remains 77 if available without changing PDF code;
+- 77-item CSV remains 77 if available without changing CSV/XLSX code.
+
+Do NOT modify PDF parsing.
+Do NOT modify CSV/XLSX parsing.
+
+OUT OF SCOPE
+
+Do NOT fix in 025B:
+- plain-bold category labels + bullet items;
+- bullets with no weight;
+- bullets where Type is omitted;
+- freeform sentences;
+- nested sub-bullets;
+- checkbox lists;
+- numbered lists;
+- merged/freeform Word layouts;
+- image/OCR DOCX content;
+- PDF parsing;
+- CSV/XLSX changes;
+- catalog/search;
+- AI;
+- retailer integration;
+- toolbar/layout;
+- Background;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- DOCX bullet/list-item parsing;
+- directly necessary DOCX tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025B_REPORT.md
+
+Include:
+- Prompt number: 025B
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- how Word List Bullet paragraphs are represented in the current DOCX conversion
+- exact confirmed current failure
+- exact bullet syntax/parser implemented
+- exact Test 11 item count
+- confirmation both Trip Notes bullets were ignored
+- Type/Name/category result for all 12 gear items
+- Fuel final category and Qty
+- confirmation Therm-a-Rest and BRS-3000T internal hyphens were preserved
+- existing DOCX table regression result
+- 77-item CSV result if available
+- 77-item PDF result if available
+- build/test result
+- confirmation PDF code was not changed
+- confirmation CSV/XLSX code was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025B-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025B_REPORT.md
+
+Include useful 025B-specific test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025B.
+Do not begin plain-bold + bullet support or another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final PASS remains pending until the user tests the live TrailWeigh app with 11_TrailWeigh_DOCX_Bullet_List_12_Items.docx.
