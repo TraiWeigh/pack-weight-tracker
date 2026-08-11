@@ -1,0 +1,358 @@
+TRAILWEIGH — PROMPT 025C
+SCAN GEAR LIST PREVIEW: MAKE DETECTED TYPE AND NAME READ-ONLY
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a small UI behavior change in the Scan Gear List preview only. Do not alter importer parsing, category routing, or the main TrailWeigh list editor.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 2–5 minutes
+Estimated Agent usage/cost: about $0.40–$0.90
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Preserve all verified importer behavior through:
+- 024O
+- 024P
+- 024R
+- 024U
+- 024W
+- 024X
+- 024Y
+- 024Z
+- 025A
+- 025B
+
+The importer itself is working well across CSV/XLSX/PDF/DOCX test cases.
+
+DO NOT REDO PARSER OR ROUTING WORK.
+
+PRIMARY USER REQUEST
+
+In the Scan Gear List IMPORT PREVIEW:
+
+TYPE and NAME are currently editable.
+
+They should NOT be editable.
+
+The preview should be a review/correction step, not a second full list editor.
+
+REQUIRED PREVIEW BEHAVIOR
+
+For DETECTED / IMPORTED rows shown in Scan Gear List preview:
+
+CATEGORY
+- remains adjustable/editable as it is now.
+
+TYPE
+- becomes READ-ONLY / DISPLAY-ONLY.
+- user must not be able to type into it.
+- user must not be able to erase or overwrite it.
+- it should display the detected Type clearly.
+
+NAME
+- becomes READ-ONLY / DISPLAY-ONLY.
+- user must not be able to type into it.
+- user must not be able to erase or overwrite it.
+- it should display the detected Name clearly.
+- blank Name should remain visibly blank or use the existing subtle placeholder treatment, but must not become an editable input.
+
+WEIGHT
+- remains editable as it is now.
+- preserve unit controls and validation.
+
+QTY
+- remains editable as it is now.
+
+CHECKBOX / SELECTION
+- preserve current behavior.
+
+IMPORT BUTTON
+- preserve current behavior.
+
+CATEGORY ADJUSTMENT
+- preserve current behavior.
+
+AFTER IMPORT — MAIN TRAILWEIGH LIST
+
+IMPORTANT:
+Do NOT make Type or Name read-only in the main TrailWeigh list.
+
+After the user imports items into the main list:
+- Type remains editable exactly as it is now.
+- Name remains editable exactly as it is now.
+
+This prompt changes ONLY the Scan Gear List preview.
+
+VISUAL REQUIREMENT
+
+TYPE and NAME should look like normal readable table values, not disabled form controls.
+
+Preferred appearance:
+- plain text/display text inside the existing cell;
+- same normal text color as other readable values;
+- no gray "disabled" haze;
+- no obvious input box border/background;
+- preserve truncation/ellipsis behavior where needed;
+- preserve horizontal scrolling and column alignment.
+
+The user should visually understand:
+"This is what TrailWeigh detected."
+
+Do not make the values look unavailable or broken.
+
+ACCESSIBILITY / KEYBOARD
+
+Because Type and Name are no longer editable:
+- they should not receive text-input focus;
+- Tab navigation should skip any removed Type/Name text inputs;
+- Category, Weight, Qty, checkboxes, Import, Add Row, Cancel, and other actual controls should remain keyboard reachable;
+- preserve useful accessible labels for the row/cells.
+
+Do not remove text selection/copying if plain text naturally allows it.
+
+IMPORTANT — ADD ROW
+
+Do NOT redesign or remove the existing “+ Add Row” feature in this prompt.
+
+The user request is specifically about detected/imported preview rows.
+
+If Add Row creates a special manual row that technically requires Type/Name entry:
+- preserve the existing Add Row behavior for that MANUALLY ADDED row only;
+- do not use that exception to keep Type/Name editable on detected/imported rows.
+
+In other words:
+
+DETECTED / IMPORTED ROW:
+Type = read-only
+Name = read-only
+
+MANUALLY ADDED ROW VIA “+ Add Row”:
+May retain its existing Type/Name entry behavior if required for the feature to remain usable.
+
+Do not broaden this prompt into an Add Row redesign.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025C_REPORT.md
+
+Initially write:
+- Prompt: 025C
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM CURRENT IMPLEMENTATION
+
+Inspect only enough of the Scan Gear List preview component to determine:
+
+1. Which component renders preview rows.
+2. Which controls currently render Type and Name as editable fields.
+3. Whether detected rows and manually added rows are distinguishable in state.
+4. Whether changing Type/Name in the preview currently mutates the staged import row.
+5. Whether main-list editing uses the same component or a separate component.
+
+Document the exact findings.
+
+Do not broadly inspect unrelated UI.
+
+PHASE 3 — MINIMUM SAFE UI CHANGE
+
+Make the smallest safe change that:
+
+- renders detected-row Type as display-only text;
+- renders detected-row Name as display-only text;
+- leaves Category editable;
+- leaves Weight editable;
+- leaves Qty editable;
+- preserves selection/import behavior;
+- preserves Add Row behavior;
+- leaves main-list Type and Name editing untouched.
+
+Prefer:
+- a conditional render based on whether the row is detected/imported versus manually added;
+- existing table/cell styles;
+- no new dependency;
+- no parser or data-model change.
+
+DO NOT:
+- modify import parsing;
+- modify category routing;
+- modify Name inference;
+- modify weight parsing;
+- modify quantity parsing;
+- modify PDF/DOCX/CSV/XLSX logic;
+- make main-list fields read-only;
+- remove Add Row;
+- remove Category correction;
+- remove Weight correction;
+- remove Qty correction.
+
+PHASE 4 — REQUIRED LIVE/INTERNAL UI TEST
+
+Use any already-working import fixture that produces multiple rows, preferably one of:
+
+- 11_TrailWeigh_DOCX_Bullet_List_12_Items.docx
+or
+- 09_TrailWeigh_DOCX_Heading_Context_12_Items.docx
+
+In the Scan Gear List preview, verify on DETECTED rows:
+
+1. Type text is visible.
+2. Clicking Type does NOT put a text caret into an input.
+3. Typing cannot modify Type.
+4. Name text is visible.
+5. Clicking Name does NOT put a text caret into an input.
+6. Typing cannot modify Name.
+7. Category can still be adjusted.
+8. Weight can still be edited.
+9. Qty can still be edited.
+10. Row checkbox still works.
+11. Import button still imports selected rows.
+
+After importing:
+12. In the MAIN TrailWeigh list, Type is still editable.
+13. In the MAIN TrailWeigh list, Name is still editable.
+
+PHASE 5 — BLANK NAME CHECK
+
+Use at least one detected row with a blank Name, such as:
+- Fuel Canister
+- Leukotape
+- Repair Tape
+
+Required:
+- blank Name does not turn into an editable input;
+- blank Name does not show misleading editable affordance;
+- row remains importable.
+
+PHASE 6 — MANUAL ADD ROW CHECK
+
+Click “+ Add Row” once.
+
+If the existing Add Row feature requires manual Type/Name entry:
+- confirm that manually added row can still be completed;
+- detected rows must remain read-only.
+
+Do not redesign Add Row beyond what is necessary to preserve it.
+
+If Add Row does NOT require Type/Name editing in current design:
+- leave it unchanged.
+
+Document the actual behavior in the report.
+
+PHASE 7 — REGRESSION PROTECTION
+
+Verify:
+- exactly the same item count is detected before and after this UI change;
+- no staged row data is lost;
+- no Type/Name values change automatically because of this UI change;
+- Import Selected Items still works;
+- horizontal scrolling still works;
+- narrow/mobile Scan Gear List layout still renders without overlap;
+- warning text remains “missing names” if shown;
+- main TrailWeigh list editing remains unchanged.
+
+Do not rerun every parser regression unless needed.
+This is primarily a UI-only prompt.
+
+OUT OF SCOPE
+
+Do NOT change:
+- importer parsing;
+- CSV/XLSX/PDF/DOCX logic;
+- category classifiers;
+- Name inference;
+- Name fallback;
+- worn routing;
+- medical/repair routing;
+- Fuel routing;
+- Add Row design beyond preserving it;
+- main-list editing;
+- toolbar;
+- Background;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- Scan Gear List preview row rendering / directly related styling;
+- directly necessary UI tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025C_REPORT.md
+
+Include:
+- Prompt number: 025C
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact component rendering Scan Gear List rows
+- how detected rows are distinguished from manual Add Row rows
+- exact Type rendering change
+- exact Name rendering change
+- confirmation Category remains adjustable
+- confirmation Weight remains editable
+- confirmation Qty remains editable
+- confirmation detected Type cannot be edited
+- confirmation detected Name cannot be edited
+- confirmation blank Name row remains importable
+- Add Row behavior result
+- confirmation main-list Type remains editable
+- confirmation main-list Name remains editable
+- confirmation item counts/import behavior did not change
+- build/test result
+- confirmation parser/routing files were not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025C-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025C_REPORT.md
+
+Include useful 025C-specific test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025C.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user checks the live Scan Gear List preview and confirms:
+- detected Type is not editable;
+- detected Name is not editable;
+- Category/Weight/Qty remain usable;
+- Type/Name remain editable after import in the main list.

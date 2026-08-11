@@ -33,6 +33,10 @@ function displayToOz(display: string, unit: WeightUnit): number {
 interface EditedItem extends ParsedItem {
   selected:      boolean;
   added:         boolean;
+  /** 025C: true for rows created by "+ Add Row" (user-typed); false for rows from the importer.
+   *  Detected/imported rows render Type and Name as read-only display text.
+   *  Manually added rows retain editable Type/Name inputs so the feature stays usable. */
+  isManual:      boolean;
   destination:   string;
   displayWeight: string;
   weightUnit:    WeightUnit;
@@ -80,6 +84,7 @@ function parsedToEdited(item: ParsedItem, categoryOrder: string[]): EditedItem {
     ...item,
     selected:      true,
     added:         false,
+    isManual:      false, // 025C: detected/imported row — Type and Name are read-only
     destination:   resolved || (categoryOrder[0] ?? ''),
     displayWeight: String(item.weightOz),
     weightUnit:    'oz',
@@ -91,6 +96,7 @@ function blankEditedItem(categoryOrder: string[]): EditedItem {
   return {
     sub: '', desc: '', weightOz: 0, warning: false,
     selected: true, added: false,
+    isManual:      true, // 025C: manually added row — Type and Name remain editable
     destination:   categoryOrder[0] ?? '',
     displayWeight: '',
     weightUnit:    'oz',
@@ -441,10 +447,10 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
                             </select>
                           )}
 
-                          {/* Type */}
+                          {/* Type — read-only for detected/imported rows (025C); editable for manual Add Row rows */}
                           {item.added ? (
                             <span className="text-xs text-muted-foreground truncate">{item.sub || '—'}</span>
-                          ) : (
+                          ) : item.isManual ? (
                             <input
                               value={item.sub}
                               onChange={e => updateField(idx, { sub: e.target.value })}
@@ -454,12 +460,21 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
                                 item.errors.sub ? 'border-destructive text-destructive' : 'border-transparent focus:border-primary/40 text-foreground'
                               }`}
                             />
+                          ) : (
+                            // 025C: detected row — display only; no caret, no tab stop, no edit affordance
+                            <span
+                              className={`text-xs truncate block select-text ${
+                                item.errors.sub ? 'text-destructive' : 'text-foreground'
+                              }`}
+                            >
+                              {item.sub || ''}
+                            </span>
                           )}
 
-                          {/* Name */}
+                          {/* Name — read-only for detected/imported rows (025C); editable for manual Add Row rows */}
                           {item.added ? (
                             <span className="text-xs text-muted-foreground truncate">{item.desc || '—'}</span>
-                          ) : (
+                          ) : item.isManual ? (
                             <input
                               value={item.desc}
                               onChange={e => updateField(idx, { desc: e.target.value })}
@@ -471,6 +486,11 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
                                   : 'border-transparent focus:border-primary/40 text-foreground'
                               }`}
                             />
+                          ) : (
+                            // 025C: detected row — display only; blank name stays blank (no editable affordance)
+                            <span className="text-xs text-foreground truncate block select-text">
+                              {item.desc || ''}
+                            </span>
                           )}
 
                           {/* Weight + Unit */}

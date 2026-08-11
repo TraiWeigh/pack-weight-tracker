@@ -140,3 +140,10 @@ uri = "file://workflow-reports/trailweigh-025B-report.zip"
 type = "unspecified"
 title = "Prompt 025B Report"
 description = "PROMPT_025B_REPORT.md — Bullet-list DOCX import + all regression results"
+
+[[outputs]]
+id = "d5VKAk3HFzrBnehuvtyJf"
+uri = "file://workflow-reports/trailweigh-025C-report.zip"
+type = "unspecified"
+title = "Prompt 025C Report"
+description = "PROMPT_025C_REPORT.md — Type/Name read-only in Scan Gear List preview"
