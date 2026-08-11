@@ -179,7 +179,7 @@ export function BackgroundPickerButton({
       style={{ ...barCombinedStyle(barStyle), ...activeStyle }}
     >
       <ImageIcon className="w-3.5 h-3.5" />
-      Background Edit
+      Background
     </button>
   );
 }

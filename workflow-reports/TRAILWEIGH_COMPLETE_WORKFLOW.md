@@ -782,3 +782,25 @@ Available width: 341 px. Controls total ~253 px. Fits cleanly — "Background Ed
 
 ### Report
 `trailweigh-023Z-report.txt`
+
+---
+
+## Prompt 024 — Rename Visible "Background Edit" Label to "Background"
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+One text-node change. Zero behavior changes.
+
+**What changed:** The visible button text inside `BackgroundPickerButton` in `BackgroundPicker.tsx`:
+- `Background Edit` → `Background`
+
+`title="Background Edit"` and `aria-label="Background Edit"` were left unchanged (per prompt — accessibility label retains the full meaning).
+
+### Files Changed
+`BackgroundPicker.tsx` — 1 line (text node only)
+
+### Report
+`trailweigh-024-report.txt`

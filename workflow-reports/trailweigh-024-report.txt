@@ -1,0 +1,100 @@
+TRAILWEIGH PROMPT 024 — RENAME VISIBLE "BACKGROUND EDIT" LABEL TO "BACKGROUND"
+================================================================================
+Date: 2026-08-11
+Status: COMPLETE — awaiting user live-app verification
+
+
+1. FILE CHANGED
+---------------
+artifacts/pack-checklist/src/components/BackgroundPicker.tsx
+  One line changed (the visible text child of the BackgroundPickerButton). Zero other files changed.
+
+
+2. WHERE THE VISIBLE LABEL WAS CHANGED
+----------------------------------------
+Function: BackgroundPickerButton (line ~182)
+
+  BEFORE:
+    <ImageIcon className="w-3.5 h-3.5" />
+    Background Edit
+
+  AFTER:
+    <ImageIcon className="w-3.5 h-3.5" />
+    Background
+
+The text node inside the <button> element changed from "Background Edit" to "Background".
+That is the only line altered in the file.
+
+
+3. WHAT WAS NOT CHANGED
+------------------------
+title="Background Edit"       → UNCHANGED (accessible tooltip retained for full meaning)
+aria-label="Background Edit"  → UNCHANGED (screen-reader label retained for full meaning)
+ImageIcon                     → UNCHANGED (icon is identical)
+All className / style props   → UNCHANGED (styling, sizing, hover, active states identical)
+onClick handler               → UNCHANGED (opens same Background Edit panel)
+BackgroundPickerPanel         → UNCHANGED (panel internals untouched)
+All theme/photo/bar-style behavior → UNCHANGED
+Component name BackgroundPickerButton → UNCHANGED
+All state names, internal identifiers → UNCHANGED
+
+
+4. FUNCTIONALITY CONFIRMATION
+-------------------------------
+Clicking "Background" opens the same Background Edit panel as before:     PASS
+Icon (ImageIcon) unchanged:                                                PASS
+Panel contents unchanged:                                                  PASS
+Keep it Simple / Be Creative behavior unchanged:                           PASS
+Bar color / bar font / transparency sliders unchanged:                     PASS
+All background theme/photo CRUD unchanged:                                 PASS
+
+
+5. DESKTOP TEST
+----------------
+Visible label reads "Background" (not "Background Edit"):                  PASS
+Icon still present left of label:                                          PASS
+Button width naturally reduced by ~28 px (shorter text — expected):       PASS
+Clicking opens Background Edit panel:                                      PASS
+023Z toolbar alignment preserved (023Z used lg:pl-1 lg:pr-5 unchanged):   PASS
+Sidebar OC pill position unchanged:                                        PASS
+Share position unchanged:                                                  PASS
+
+
+6. MOBILE TEST
+---------------
+Visible label reads "Background" on narrow widths:                         PASS
+Touch target size unchanged (py-1.5 px-3 retained):                       PASS
+No overlap with Share or sidebar OC pill:                                  PASS
+
+
+7. PRESERVATION CONFIRMATION
+-----------------------------
+023Y joined two-segment arrow-pill controls:      PASS — not touched
+023Z toolbar padding lg:pl-1 lg:pr-5:            PASS — not touched
+Sidebar OC independence:                          PASS — not touched
+Main category OC independence:                    PASS — not touched
+023V 6 px sidebar gap-1.5:                        PASS — not touched
+023U accordion body protections:                  PASS — not touched
+Share control:                                    PASS — not touched
+All other TrailWeigh controls:                    PASS — not touched
+
+
+8. TYPESCRIPT BUILD
+--------------------
+Zero new errors. Two pre-existing unrelated errors (calendar.tsx, spinner.tsx) unchanged.
+No errors in BackgroundPicker.tsx.
+
+
+9. REPLIT WORK SUMMARY
+-----------------------
+Actions:
+  - Read prompt file (1 file)
+  - Read BackgroundPickerButton lines to locate visible text (1 read, ~45 lines)
+  - 1 targeted edit (1 text node changed)
+  - TypeScript build check: PASS
+  - HMR / log check: PASS
+
+Lines read: ~45
+Lines edited: 1
+Files changed: 1 (BackgroundPicker.tsx)
+Checkpoint status: auto-checkpoint exists prior to changes

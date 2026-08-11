@@ -1,0 +1,83 @@
+TRAILWEIGH — PROMPT 024
+Rename Visible “Background Edit” Control to “Background”
+
+GOAL
+Make one focused text-label change only.
+
+REQUIRED CHANGE
+Change the visible control label:
+
+Background Edit
+
+to:
+
+Background
+
+Apply this wherever the user-facing Background Edit control label appears in the working TrailWeigh interface, including desktop and mobile/responsive layouts.
+
+IMPORTANT
+This is ONLY a visible label change.
+
+DO NOT change:
+- The control’s icon.
+- The control’s position.
+- The control’s width except for the natural width reduction caused by the shorter label.
+- The control’s styling.
+- The panel it opens.
+- Any Background Edit functionality.
+- Any theme/background behavior.
+- Any Keep it Simple / Be Creative behavior.
+- Any accessibility behavior.
+- Any code identifiers, component names, state names, route names, or internal references unless absolutely required for the visible text change.
+
+ACCESSIBILITY
+- If the control currently has an aria-label, title, or tooltip that says “Background Edit,” it may remain “Background Edit” for clarity unless the visible label and accessibility implementation are tied together.
+- The visible text shown to the user must read exactly:
+  Background
+
+PRESERVE ALL EXISTING WORK
+Do not alter unrelated layout or behavior.
+
+Specifically preserve:
+- Prompt 023Y joined two-segment arrow-pill controls.
+- Prompt 023Z current toolbar placement and spacing.
+- Sidebar Open / Close behavior.
+- Main category Open / Close behavior.
+- Independence between the two Open / Close groups.
+- Pack Summary position and size.
+- Exactly 6 px spacing between sidebar accordion panels from Prompt 023V.
+- Prompt 023U accordion protections.
+- Share control and behavior.
+- Hide, Preview, Imperial/Metric, Save, Undo/Redo, Reset, Scan Gear List, Locker, and all other TrailWeigh functionality.
+- Existing desktop and mobile responsive behavior.
+
+DO NOT
+- Do not attempt another toolbar realignment in this prompt.
+- Do not move Share.
+- Do not move the arrow-pill control.
+- Do not move Pack Summary.
+- Do not resize or redesign unrelated controls.
+- Do not make unrelated CSS cleanup/refactors.
+
+TEST BEFORE FINISHING
+Verify:
+1. Desktop visible label reads “Background”.
+2. Mobile/responsive visible label reads “Background”.
+3. Clicking Background opens the same existing Background Edit panel.
+4. The icon remains unchanged.
+5. No other toolbar controls moved or changed.
+6. No unrelated visual or functional regressions.
+
+WORKFLOW REPORT REQUIREMENTS
+When finished, create:
+- workflow-reports/trailweigh-024-report.txt
+- workflow-reports/trailweigh-024-report.zip
+
+The report must clearly state:
+- What file(s) were changed.
+- Where the visible label was changed.
+- Confirmation that functionality was not changed.
+- Desktop and mobile test results.
+- Replit work summary: time worked, actions, lines/items read, Agent usage/cost, and checkpoint status.
+
+Keep this prompt strictly focused on changing the visible label from “Background Edit” to “Background”.
