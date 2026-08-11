@@ -1,0 +1,172 @@
+TRAILWEIGH — PROMPT 023Y
+Convert Both Open / Close Controls to Compact Arrow Pill Buttons
+
+GOAL
+Reduce the width of BOTH existing Open / Close control groups by replacing the visible text labels with compact arrow icons, while keeping each arrow inside its own pill-shaped button.
+
+APPLIES TO BOTH CONTROL GROUPS
+1. The Open / Close control above the MAIN CATEGORY LIST.
+2. The Open / Close control for the RIGHT SIDEBAR accordion group.
+
+CURRENT STATUS
+- Both Open / Close groups work correctly.
+- Prompt 023X corrected the sidebar group placement so it is on the same row as Background Edit.
+- The current “Open” and “Close” text makes each group wider than necessary.
+
+REQUIRED VISUAL CHANGE
+
+OPEN:
+- Remove the visible word “Open”.
+- Replace it with a simple DOWN arrow / DOWN chevron.
+- The arrow must remain inside its OWN compact pill-shaped button.
+
+CLOSE:
+- Remove the visible word “Close”.
+- Replace it with a simple UP arrow / UP chevron.
+- The arrow must remain inside its OWN compact pill-shaped button.
+
+The two pill buttons should sit directly beside each other and visually read as one grouped control:
+
+[  down chevron  ][  up chevron  ]
+
+Use a simple familiar chevron from TrailWeigh’s existing icon library if available.
+Do not use large decorative arrows.
+
+MEANING
+- Down arrow = Open all / expand all for that control group.
+- Up arrow = Close all / collapse all for that control group.
+
+SIZE / SHAPE
+- Keep each arrow inside a compact pill-shaped button.
+- Make the pills narrower than the current text-labeled buttons.
+- Do NOT make the click/tap target too small.
+- Keep enough internal horizontal and vertical padding for comfortable mouse and touch use.
+- Keep both pill buttons equal in size.
+- Center the arrow in each pill.
+
+BEHAVIOR — DO NOT CHANGE
+
+MAIN CATEGORY GROUP:
+- Down-arrow pill must perform the exact current Open behavior: expand all main categories.
+- Up-arrow pill must perform the exact current Close behavior: collapse all main categories.
+- It must not affect sidebar accordion state.
+
+SIDEBAR GROUP:
+- Down-arrow pill must perform the exact current sidebar Open behavior: expand all sidebar panels.
+- Up-arrow pill must perform the exact current sidebar Close behavior: collapse every open sidebar panel, including when only one is open.
+- It must not affect main-category expansion state.
+
+The two control groups must remain fully independent.
+
+ACCESSIBILITY — REQUIRED
+Because the visible words are being removed, give every icon-only pill a clear accessible name and tooltip/title.
+
+MAIN CATEGORY GROUP:
+- Down-arrow pill: “Open all categories”
+- Up-arrow pill: “Close all categories”
+
+SIDEBAR GROUP:
+- Down-arrow pill: “Open all sidebar panels”
+- Up-arrow pill: “Close all sidebar panels”
+
+Also preserve:
+- Keyboard operation.
+- Visible keyboard focus indication.
+- Adequate touch/click target size.
+- Existing hover/active states.
+- Screen-reader accessibility.
+
+PLACEMENT — DO NOT MOVE THE GROUPS
+
+MAIN CATEGORY GROUP:
+- Keep it in its existing position above the main categories.
+
+SIDEBAR GROUP:
+- Preserve the placement corrected in Prompt 023X.
+- Keep it on the SAME ROW as Background Edit.
+- Keep it immediately to the LEFT of Background Edit.
+- Keep the left edge of the sidebar arrow-pill group aligned with the left edge of Pack Summary.
+
+Do not move either group merely because the controls become narrower.
+
+STYLING
+- Match the existing TrailWeigh pill/control appearance.
+- Preserve existing color, transparency, border, radius, hover, and active styling.
+- Both arrow-pill groups should use the same icon size and visual treatment.
+- Do not add visible Open/Close text beside the icons.
+
+PRESERVE EXISTING WORK
+Do not alter unrelated layout, styling, or functionality.
+
+Specifically preserve:
+- Prompt 023X sidebar control placement.
+- Prompt 023W sidebar Open/Close behavior and independence.
+- Prompt 023V exact 6 px outer vertical gap between Pack Summary, Weight Distribution, Scan Gear List, and Locker.
+- Prompt 023U category-header/body protections.
+- Existing category spacing.
+- Existing Background Edit behavior and position.
+- Existing Share behavior and position.
+- Existing Hide, Preview, Imperial/Metric, Save, Undo/Redo, Reset, Scan Gear List, Locker, and all other TrailWeigh functions.
+- Existing desktop/mobile responsive behavior, except for the natural space savings created by narrower controls.
+
+DO NOT
+- Do not rewrite Open/Close logic.
+- Do not duplicate either control group.
+- Do not combine category and sidebar state.
+- Do not use bare uncontained arrows; each arrow must remain inside a pill-shaped button.
+- Do not shrink the pills so much that they become difficult to tap.
+- Do not redesign the surrounding toolbar.
+- Do not make unrelated refactors.
+
+TEST BEFORE FINISHING
+
+1. MAIN CATEGORY GROUP
+- Visible words “Open” and “Close” are gone.
+- Down arrow appears inside its own pill.
+- Up arrow appears inside its own pill.
+- Down arrow opens all main categories.
+- Up arrow closes all main categories.
+- Sidebar panels are unaffected.
+
+2. SIDEBAR GROUP
+- Visible words “Open” and “Close” are gone.
+- Down arrow appears inside its own pill.
+- Up arrow appears inside its own pill.
+- Down arrow opens all sidebar panels.
+- Up arrow closes all sidebar panels, including when only one is open.
+- Main categories are unaffected.
+
+3. PLACEMENT
+- Sidebar arrow-pill group remains on the same row as Background Edit.
+- It remains immediately left of Background Edit.
+- Its left edge remains aligned with Pack Summary.
+
+4. ACCESSIBILITY
+- Verify keyboard focus.
+- Verify each icon-only pill has the correct accessible name/title/tooltip.
+- Verify the pills remain comfortably clickable/tappable on desktop and mobile.
+
+5. PRESERVATION
+- 6 px sidebar accordion spacing remains unchanged.
+- Background Edit and Share remain correct.
+- Individual accordion panels/categories still open and close normally.
+- No unrelated visual or functional regressions.
+
+WORKFLOW REPORT REQUIREMENTS
+When finished, create:
+- workflow-reports/trailweigh-023Y-report.txt
+- workflow-reports/trailweigh-023Y-report.zip
+
+The report must clearly state:
+- What files were changed.
+- How the Open/Close text was replaced with arrow icons.
+- How the arrow icons remain inside compact pill-shaped buttons.
+- Confirmation that both control groups retained their existing behavior.
+- Confirmation that both groups remain independent.
+- Confirmation that the sidebar group retained its 023X placement.
+- Accessibility labels/tooltips used for all four icon-only controls.
+- Desktop and mobile test results.
+- Confirmation that the 6 px sidebar spacing remains unchanged.
+- Replit work summary: time worked, actions, lines/items read, Agent usage/cost, and checkpoint status.
+
+Keep this prompt focused only on converting BOTH Open / Close control groups to compact arrow pill buttons.

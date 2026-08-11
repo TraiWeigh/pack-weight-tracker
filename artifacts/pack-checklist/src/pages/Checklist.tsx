@@ -32,7 +32,7 @@ import {
 import { useToast } from '../hooks/use-toast';
 import {
   RotateCcw, Tent, Share2, Link, FileDown, LogOut,
-  User, Shield, Plus, Check, X, ChevronsUpDown, Printer, ChevronDown,
+  User, Shield, Plus, Check, X, ChevronsUpDown, Printer, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -2313,7 +2313,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 >
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                    aria-label="Open all categories"
+                    title="Open all categories"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
                       allOpen === true && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
@@ -2324,11 +2326,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
                   >
-                    Open
+                    <ChevronDown className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                    aria-label="Close all categories"
+                    title="Close all categories"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
                       allOpen === false && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
@@ -2339,7 +2343,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
                   >
-                    Close
+                    <ChevronUp className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -2388,7 +2392,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 >
                   <button
                     onClick={() => { setSidebarAllOpen(true); setSidebarOpenSeq(s => s + 1); }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                    aria-label="Open all sidebar panels"
+                    title="Open all sidebar panels"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
                       sidebarAllOpen === true && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
@@ -2399,11 +2405,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
                   >
-                    Open
+                    <ChevronDown className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => { setSidebarAllOpen(false); setSidebarOpenSeq(s => s + 1); }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                    aria-label="Close all sidebar panels"
+                    title="Close all sidebar panels"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
                       sidebarAllOpen === false && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
@@ -2414,7 +2422,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
                   >
-                    Close
+                    <ChevronUp className="h-4 w-4" />
                   </button>
                 </div>
                 {/* BgEdit + Share — grouped so they stay together on the right */}
@@ -2753,7 +2761,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   >
                     <button
                       onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
-                      className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                      aria-label="Open all categories"
+                      title="Open all categories"
+                      className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
                         allOpen === true && !barColor
                           ? 'bg-card text-foreground shadow-sm'
                           : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
@@ -2764,11 +2774,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                           : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                         : barFont ? { fontFamily: barFont } : undefined}
                     >
-                      Open
+                      <ChevronDown className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
-                      className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                      aria-label="Close all categories"
+                      title="Close all categories"
+                      className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
                         allOpen === false && !barColor
                           ? 'bg-card text-foreground shadow-sm'
                           : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
@@ -2779,7 +2791,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                           : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                         : barFont ? { fontFamily: barFont } : undefined}
                     >
-                      Close
+                      <ChevronUp className="h-4 w-4" />
                     </button>
                   </div>
                   {/* Hide — center */}

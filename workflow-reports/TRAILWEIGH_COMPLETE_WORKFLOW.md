@@ -716,3 +716,41 @@ Result: `[ Open | Close ]` ——————— `[ Background Edit ] [ Share ]`
 
 ### Report
 `trailweigh-023X-report.txt`
+
+---
+
+## Prompt 023Y — Convert Both Open / Close Controls to Compact Arrow Pill Buttons
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+Replaced "Open" / "Close" text labels with ChevronDown / ChevronUp icons across all three Open/Close button-pair instances in Checklist.tsx. Zero behavior, state, or layout changes.
+
+**What changed per button:**
+- Removed text child ("Open" / "Close")
+- Added `<ChevronDown className="h-4 w-4" />` or `<ChevronUp className="h-4 w-4" />`
+- Added `aria-label` + `title` for accessibility
+- Added `flex items-center justify-center` to center the icon
+- Changed `px-3` → `px-2` (narrower pill, still tappable ~32 × 28 px)
+- Removed `text-xs font-semibold` (no longer needed)
+
+**Import:** Added `ChevronUp` to the existing lucide-react import line (ChevronDown was already imported).
+
+**3 instances updated:**
+1. Desktop main category group
+2. Desktop sidebar group (023X placement preserved)
+3. Mobile main category group (lg:hidden toolbar)
+
+**Accessibility labels:**
+- Main category down: "Open all categories"
+- Main category up: "Close all categories"
+- Sidebar down: "Open all sidebar panels"
+- Sidebar up: "Close all sidebar panels"
+
+### Files Changed
+`Checklist.tsx` — 1 import line + 3 button-pair instances (6 buttons total)
+
+### Report
+`trailweigh-023Y-report.txt`

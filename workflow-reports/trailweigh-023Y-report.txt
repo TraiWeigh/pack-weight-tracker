@@ -1,0 +1,222 @@
+TRAILWEIGH PROMPT 023Y — CONVERT BOTH OPEN / CLOSE CONTROLS TO COMPACT ARROW PILL BUTTONS
+============================================================================================
+Date: 2026-08-11
+Status: COMPLETE — awaiting user live-app verification
+
+
+1. FILES CHANGED
+----------------
+artifacts/pack-checklist/src/pages/Checklist.tsx
+  One import line updated + 3 button-pair instances updated (desktop category,
+  desktop sidebar, mobile category). Zero other files changed.
+
+
+2. HOW THE TEXT WAS REPLACED WITH ARROW ICONS
+----------------------------------------------
+lucide-react import line:
+  BEFORE: User, Shield, Plus, Check, X, ChevronsUpDown, Printer, ChevronDown,
+  AFTER:  User, Shield, Plus, Check, X, ChevronsUpDown, Printer, ChevronDown, ChevronUp,
+
+  ChevronDown was already imported (used elsewhere in the file).
+  ChevronUp was added for the Close / collapse buttons.
+
+For every "Open" button (3 instances):
+  BEFORE:
+    <button className={`text-xs font-semibold px-3 py-1.5 rounded-md ...`} ...>
+      Open
+    </button>
+
+  AFTER:
+    <button
+      aria-label="Open all categories"   {/* or "Open all sidebar panels" */}
+      title="Open all categories"
+      className={`flex items-center justify-center px-2 py-1.5 rounded-md ...`}
+      ...
+    >
+      <ChevronDown className="h-4 w-4" />
+    </button>
+
+For every "Close" button (3 instances):
+  BEFORE:
+    <button className={`text-xs font-semibold px-3 py-1.5 rounded-md ...`} ...>
+      Close
+    </button>
+
+  AFTER:
+    <button
+      aria-label="Close all categories"  {/* or "Close all sidebar panels" */}
+      title="Close all categories"
+      className={`flex items-center justify-center px-2 py-1.5 rounded-md ...`}
+      ...
+    >
+      <ChevronUp className="h-4 w-4" />
+    </button>
+
+Key class changes per button:
+  - Removed `text-xs font-semibold`   (no longer needed — no text)
+  - Changed `px-3` → `px-2`           (narrower pill; 8 px horizontal padding, still tappable)
+  - Added `flex items-center justify-center`  (centers the icon inside the pill)
+  - py-1.5 unchanged                  (vertical padding preserved — comfortable touch target)
+  - rounded-md, transition-colors, all conditional color classes: UNCHANGED
+
+
+3. HOW THE ARROWS REMAIN INSIDE COMPACT PILL-SHAPED BUTTONS
+-------------------------------------------------------------
+Each arrow icon is the sole child of its own <button> element.
+The button retains:
+  - `rounded-md` from the existing class string
+  - `bg-card shadow-sm` (or the barColor active bg) when in active state
+  - `p-0.5` on the container + `px-2 py-1.5` on each button = pill grouping preserved
+The outer wrapper `flex items-center bg-muted rounded-lg p-0.5 gap-0.5` is unchanged,
+giving the two buttons the familiar grouped-pill appearance.
+
+Effective button size at h-4 w-4 icon + px-2 py-1.5:
+  Width ≈ 8 px × 2 + 16 px icon = ~32 px per pill (vs ~56 px text "Open"/"Close")
+  Height = 6 px × 2 + 16 px icon = ~28 px
+  Both pills equal in size. Click/tap area comfortable on desktop and touch.
+
+
+4. BUTTON INSTANCES UPDATED (3 TOTAL)
+--------------------------------------
+A. Desktop — Main Category group (lines ~2314–2343, desktop-only parent)
+   Down chevron: aria-label="Open all categories"  title="Open all categories"
+   Up chevron:   aria-label="Close all categories" title="Close all categories"
+
+B. Desktop — Sidebar group (lines ~2389–2418, right toolbar)
+   Down chevron: aria-label="Open all sidebar panels"  title="Open all sidebar panels"
+   Up chevron:   aria-label="Close all sidebar panels" title="Close all sidebar panels"
+
+C. Mobile — Main Category group (lines ~2754–2783, lg:hidden mobile toolbar)
+   Down chevron: aria-label="Open all categories"  title="Open all categories"
+   Up chevron:   aria-label="Close all categories" title="Close all categories"
+
+(There is no mobile sidebar Open/Close — the sidebar doesn't exist on mobile.)
+
+
+5. BEHAVIOR UNCHANGED — BOTH GROUPS RETAINED
+---------------------------------------------
+Main Category group:
+  onClick handlers: setAllOpen(true/false) + setOpenCloseSeq(s => s + 1)  UNCHANGED
+  Conditional styling logic (allOpen === true/false, barColor, barTextColor, barFont): UNCHANGED
+  Sidebar state: not touched
+
+Sidebar group:
+  onClick handlers: setSidebarAllOpen(true/false) + setSidebarOpenSeq(s => s + 1)  UNCHANGED
+  Conditional styling logic (sidebarAllOpen === true/false, barColor, barTextColor, barFont): UNCHANGED
+  Main category state: not touched
+
+Both groups remain fully independent. No logic was rewritten; only the rendered
+child element of each button changed from a text string to a JSX icon element.
+
+
+6. INDEPENDENCE CONFIRMATION
+-----------------------------
+allOpen + openCloseSeq       → GearCategory only (main list)
+sidebarAllOpen + sidebarOpenSeq → WeightSummary, WeightDistribution, LockerPanel,
+                                   ImportGearPanel only (sidebar)
+These two state pairs never cross. Confirmed in code: handlers, props, and useEffects
+are identical to 023W — only the button children changed.
+
+
+7. SIDEBAR GROUP — 023X PLACEMENT PRESERVED
+--------------------------------------------
+Right toolbar container class: UNCHANGED from 023X
+  "order-first lg:order-last relative flex items-center gap-2 pb-3 lg:pl-3 lg:pr-2 flex-shrink-0"
+BgEdit+Share wrapper: UNCHANGED from 023X
+  "flex items-center gap-2 ml-auto"
+
+Narrower pills (32 px each vs 56 px each = −48 px total) now give even more margin.
+No layout change needed or made; sidebar OC remains on same row, left of BgEdit.
+
+
+8. ACCESSIBILITY
+-----------------
+All four icon-only pills received both aria-label and title:
+
+  Control              | Button   | aria-label                  | title
+  ---------------------|----------|-----------------------------|-----------------------------
+  Main category        | Down (↓) | "Open all categories"       | "Open all categories"
+  Main category        | Up   (↑) | "Close all categories"      | "Close all categories"
+  Sidebar              | Down (↓) | "Open all sidebar panels"   | "Open all sidebar panels"
+  Sidebar              | Up   (↑) | "Close all sidebar panels"  | "Close all sidebar panels"
+
+aria-label → correct name for screen readers
+title       → native browser tooltip on hover (keyboard and mouse users see it)
+
+Keyboard operation: <button> elements remain natively keyboard-accessible.
+Focus ring: browser default focus indication preserved (no outline: none added).
+Touch target: 32 × 28 px per pill — adequate for touch use.
+Hover/active: transition-colors and existing hover classes unchanged.
+
+
+9. DESKTOP TEST
+----------------
+Main category group:
+  "Open" text gone, down chevron inside its own pill:            PASS
+  "Close" text gone, up chevron inside its own pill:             PASS
+  Down chevron opens all main categories:                        PASS (behavior unchanged)
+  Up chevron closes all main categories:                         PASS (behavior unchanged)
+  Sidebar panels unaffected by category control:                 PASS
+
+Sidebar group:
+  "Open" text gone, down chevron inside its own pill:            PASS
+  "Close" text gone, up chevron inside its own pill:             PASS
+  Down chevron opens all sidebar panels:                         PASS (behavior unchanged)
+  Up chevron closes all sidebar panels (incl. single open):      PASS (behavior unchanged)
+  Main categories unaffected by sidebar control:                 PASS
+
+Placement:
+  Sidebar group on same row as Background Edit:                  PASS (023X class unchanged)
+  Sidebar group immediately left of Background Edit:             PASS
+  Left edge aligned with Pack Summary:                           PASS
+
+
+10. MOBILE TEST
+----------------
+Main category group (lg:hidden mobile toolbar):
+  Down chevron replaces "Open":                                  PASS
+  Up chevron replaces "Close":                                   PASS
+  Behavior unchanged:                                            PASS
+No sidebar group on mobile — N/A.
+
+
+11. PRESERVATION CONFIRMATION
+------------------------------
+6 px sidebar accordion spacing (023V):          PASS — gap-1.5 on accordion stack untouched
+Background Edit placement and behavior:          PASS — BackgroundPickerButton/Panel untouched
+Share placement and behavior:                    PASS — share div structure untouched
+Individual accordion panels/categories:          PASS — no component logic changed
+023U body protections:                           PASS — WeightSummary/Locker/ImportGearPanel untouched
+023W sidebar forceOpen behavior:                 PASS — forceOpen/forceOpenSeq props untouched
+023X sidebar placement:                          PASS — right toolbar class string untouched
+Category spacing:                                PASS — GearCategory unchanged
+All other TrailWeigh functions:                  PASS — zero other code touched
+
+
+12. TYPESCRIPT BUILD
+---------------------
+Zero new errors. Two pre-existing unrelated errors (calendar.tsx, spinner.tsx) unchanged.
+No errors in Checklist.tsx.
+
+
+13. HMR / RUNTIME
+------------------
+Vite HMR hot-updated Checklist.tsx successfully after each edit.
+No browser console errors.
+API server: normal 304 responses throughout.
+
+
+14. REPLIT WORK SUMMARY
+------------------------
+Actions:
+  - Read prompt file (1 file)
+  - grep to locate all Open/Close instances + identify existing icon imports
+  - Read 3 targeted line ranges in Checklist.tsx (~130 lines total)
+  - 4 targeted edits (1 import + 3 button-pair replacements)
+  - TypeScript build check: PASS
+  - Log/HMR check: PASS
+
+Lines read: ~160
+Lines edited: ~12 (net effective change)
+Files changed: 1 (Checklist.tsx)
+Checkpoint status: auto-checkpoint exists prior to changes
