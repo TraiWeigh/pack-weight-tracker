@@ -1,0 +1,349 @@
+TRAILWEIGH — PROMPT 025H
+SHARED-LINK VIEWER: MATCH HOME-SCREEN SIDEBAR GROUP EXPAND/COLLAPSE BEHAVIOR
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: The regular/home TrailWeigh sidebar behavior already passes. This prompt should only bring the shared-link viewer sidebar into parity with that working behavior.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 3–6 minutes
+Estimated Agent usage/cost: about $0.50–$1.00
+
+USER-VERIFIED CURRENT STATE
+
+Prompt 025F = USER-VERIFIED PASS on the regular/home TrailWeigh screen.
+
+Working home-screen sidebar behavior:
+- normal individual use = single-open accordion;
+- opening one sidebar panel closes the others;
+- one open panel may be closed so zero panels are open;
+- group Expand All opens every sidebar panel;
+- group Collapse All closes every sidebar panel, even if only one is open;
+- after Expand All, individual panel interaction returns to normal accordion behavior.
+
+Prompt 025G = USER-VERIFIED PASS.
+Share dropdown layering is fixed.
+
+NEW USER-VERIFIED DIFFERENCE
+
+The regular/home TrailWeigh screen and the shared-link viewer do NOT currently match.
+
+The home screen has the working sidebar group expand/collapse behavior.
+
+The shared-link viewer does not expand/collapse the sidebar group the same way and does not provide the same effective sidebar group controls/behavior.
+
+PRIMARY GOAL
+
+Make the SHARED-LINK VIEWER sidebar group behave like the already-working HOME sidebar group.
+
+Do NOT rewrite the home behavior.
+
+Do NOT change the home screen unless a tiny shared helper extraction is strictly necessary and does not alter its verified behavior.
+
+REQUIRED SHARED-VIEW SIDEBAR BEHAVIOR
+
+NORMAL INDIVIDUAL PANEL USE
+
+In the shared-link viewer:
+
+- opening one sidebar panel automatically closes all other sidebar panels in that shared-view sidebar group;
+- only one panel remains open during normal individual use;
+- the currently open panel can be closed so zero panels are open;
+- do not force any panel to remain open.
+
+EXPAND ALL
+
+The shared-link viewer must have the same effective sidebar group Expand All control/arrow as the home screen.
+
+Clicking Expand All must:
+- open every sidebar panel in the shared-view sidebar group at once;
+- intentionally override the normal single-open rule;
+- leave all shared-view sidebar panels visibly expanded together.
+
+COLLAPSE ALL
+
+The shared-link viewer must have the same effective sidebar group Collapse All control/arrow as the home screen.
+
+Clicking Collapse All must:
+- close every sidebar panel in the shared-view sidebar group;
+- work when all panels are open;
+- work when several are open;
+- work when only one is open;
+- leave all panels closed if they are already closed.
+
+AFTER EXPAND ALL
+
+After Expand All opens every panel:
+
+- individual panel interaction must return to normal single-open accordion behavior;
+- opening/selecting one panel should result in that panel being the only open panel;
+- closing an individual open panel should be allowed normally.
+
+SHARED-VIEW-SPECIFIC PANELS
+
+Preserve the actual panels that belong to the shared-link viewer.
+
+Examples may include:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Shared Files
+
+Use the actual current shared-view sidebar group from the code.
+
+Do NOT replace Shared Files with Locker.
+Do NOT change shared-view permissions or content.
+
+The shared viewer may have different panel contents from the signed-in/home screen.
+That is okay.
+
+The GOAL is behavior parity, not content parity.
+
+VISUAL PARITY
+
+The shared-link viewer should use the same visual treatment for the sidebar group Expand All / Collapse All controls as the home screen wherever practical:
+
+- same icon/arrow style;
+- same size;
+- same placement relative to the sidebar group;
+- same hover/focus behavior;
+- same Light/Dark appearance.
+
+Do not redesign the controls.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025H_REPORT.md
+
+Initially write:
+- Prompt: 025H
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify it physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — COMPARE HOME AND SHARED IMPLEMENTATIONS
+
+Inspect only enough code to compare:
+
+1. Which component/state owns the working home sidebar group behavior.
+2. Which component/state owns the shared-link viewer sidebar group behavior.
+3. Whether the shared viewer uses a separate render path.
+4. Why the home Expand All / Collapse All controls are not functioning/present equivalently in the shared view.
+5. Which shared-view panels belong to the sidebar group.
+6. Whether shared-view panels currently maintain independent open/closed state.
+
+Document the exact cause before editing.
+
+Do NOT broadly inspect unrelated Share functionality.
+
+PHASE 3 — REUSE THE WORKING PATTERN
+
+Prefer reusing the already-passing 025F behavior instead of inventing a second accordion implementation.
+
+Safe approaches include:
+- reuse an existing sidebar group state helper;
+- reuse the same toggle handler pattern;
+- reuse the same group-control component;
+- extract a tiny shared helper/component if necessary.
+
+IMPORTANT:
+If code is shared between home and shared view, verify that the home behavior remains byte-for-byte functionally equivalent after any extraction/refactor.
+
+Do NOT perform a broad component architecture rewrite.
+
+PHASE 4 — REQUIRED SHARED-VIEW TESTS
+
+Test on an actual shared-link viewer route.
+
+TEST A — SINGLE OPEN
+
+Start with all shared sidebar panels closed.
+
+Open Pack Summary.
+Required:
+- Pack Summary open;
+- all other shared sidebar panels closed.
+
+Open Weight Distribution.
+Required:
+- Weight Distribution open;
+- Pack Summary closed;
+- all others closed.
+
+Open Scan Gear List or Shared Files.
+Required:
+- newly opened panel becomes the only open shared sidebar panel.
+
+TEST B — ZERO OPEN
+
+With exactly one panel open:
+- click that panel header.
+
+Required:
+- it closes;
+- zero shared sidebar panels are open.
+
+TEST C — EXPAND ALL
+
+Click the shared-view group Expand All control.
+
+Required:
+- every shared sidebar panel opens at once.
+
+TEST D — COLLAPSE ALL
+
+With all shared sidebar panels open:
+- click Collapse All.
+
+Required:
+- every shared sidebar panel closes.
+
+TEST E — COLLAPSE ALL WITH ONLY ONE OPEN
+
+Open exactly one shared sidebar panel.
+
+Click Collapse All.
+
+Required:
+- that panel closes;
+- all shared sidebar panels are closed.
+
+TEST F — RETURN TO NORMAL AFTER EXPAND ALL
+
+Click Expand All.
+
+Then interact with one individual shared sidebar panel.
+
+Required:
+- shared sidebar returns to normal single-open accordion behavior.
+
+PHASE 5 — HOME-SCREEN REGRESSION CHECK
+
+The regular/home TrailWeigh screen already passes.
+
+Verify it still behaves exactly as before:
+
+- single-open normal use;
+- zero-open allowed;
+- Expand All opens all;
+- Collapse All closes all;
+- Collapse All closes even when only one is open;
+- normal interaction resumes after Expand All.
+
+Do not change home-screen panel contents or layout.
+
+PHASE 6 — SHARED-VIEW REGRESSION PROTECTION
+
+Verify this change does NOT affect:
+
+- shared-view temporary-edit behavior;
+- Save Your Own Copy;
+- Shared Files content;
+- shared-view permissions;
+- shared-view category list;
+- Preview;
+- Imperial/Metric;
+- Background;
+- Print;
+- Share;
+- 025G Share dropdown layering;
+- importer behavior;
+- Pack Summary calculations;
+- Weight Distribution calculations;
+- main category accordions;
+- mobile/desktop layout.
+
+OUT OF SCOPE
+
+Do NOT:
+- redesign the shared viewer;
+- change shared permissions;
+- change Save Your Own Copy;
+- change Shared Files behavior;
+- change home sidebar contents;
+- change panel names;
+- change importer/parser logic;
+- change category accordion behavior;
+- change Share menu functionality;
+- change toolbar layout except adding/matching the already-existing sidebar group control if the shared viewer lacks it.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- shared-link viewer sidebar group state/toggle logic;
+- existing shared sidebar group controls or a narrowly shared helper/component;
+- directly necessary UI tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025H_REPORT.md
+
+Include:
+- Prompt number: 025H
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact home component/state owner
+- exact shared-view component/state owner
+- exact cause of the behavior difference
+- exact list of shared-view sidebar panels included
+- whether existing home logic/control was reused
+- confirmation shared normal use is single-open
+- confirmation zero-open is allowed in shared view
+- confirmation shared Expand All opens every shared sidebar panel
+- confirmation shared Collapse All closes every shared sidebar panel
+- confirmation shared Collapse All works when only one panel is open
+- confirmation individual behavior resumes after shared Expand All
+- confirmation home 025F behavior remains unchanged
+- confirmation 025G Share layering remains unchanged
+- build/test result
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025H-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025H_REPORT.md
+
+Include useful 025H-specific test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025H.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user verifies live that the shared-link viewer now matches the home sidebar interaction:
+
+1. one panel open at a time during normal use;
+2. zero panels open is allowed;
+3. Expand All opens all shared sidebar panels;
+4. Collapse All closes all shared sidebar panels;
+5. Collapse All works when only one is open;
+6. home-screen 025F behavior remains working.

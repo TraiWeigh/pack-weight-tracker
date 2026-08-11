@@ -79,18 +79,30 @@ function SharedLockerPanel({
   files,
   activeId,
   onOpen,
+  forceOpen,
+  forceOpenSeq,
+  onToggle,
 }: {
   files: SharedLockerFile[];
   activeId: string | null;
   onOpen: (file: SharedLockerFile) => void;
+  /** 025H: sidebar accordion force-control props — same pattern as WeightSummary/ImportGearPanel */
+  forceOpen?: boolean | null;
+  forceOpenSeq?: number;
+  onToggle?: (nowOpen: boolean) => void;
 }) {
-  // 022J: Shared Files starts OPEN on every fresh load/refresh
-  const [open, setOpen] = useState(true);
+  // 025H: start closed — accordion group controls open/close (replaces standalone 022J default-open)
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (forceOpen !== null && forceOpen !== undefined) {
+      setOpen(forceOpen);
+    }
+  }, [forceOpen, forceOpenSeq]);
   return (
     <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
       {/* Header */}
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={() => { const next = !open; setOpen(next); onToggle?.(next); }}
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
       >
         {open
@@ -749,6 +761,35 @@ function SharedChecklistContent({
   const toolBtn = 'flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5 rounded-md hover:bg-muted/50';
   const toolBtnDisabled = 'flex items-center gap-2 text-xs font-medium text-muted-foreground/30 px-2 py-1.5 rounded-md cursor-not-allowed';
 
+  // ── 025H: Sidebar accordion state — single-open, Expand All, Collapse All ──
+  // Mirrors Checklist.tsx 025F behavior exactly (same key names, same handler).
+
+  type SharedSidebarKey = 'summary' | 'distribution' | 'import' | 'locker';
+  const [sidebarForce, setSidebarForce] = useState<Record<SharedSidebarKey, { open: boolean; seq: number }>>({
+    summary:      { open: false, seq: 0 },
+    distribution: { open: false, seq: 0 },
+    import:       { open: false, seq: 0 },
+    locker:       { open: false, seq: 0 },
+  });
+  // Derived active states for Expand All / Collapse All button highlights
+  const sidebarExpandActive   = (['summary', 'distribution', 'import', 'locker'] as SharedSidebarKey[]).every(k => sidebarForce[k].open);
+  const sidebarCollapseActive = (['summary', 'distribution', 'import', 'locker'] as SharedSidebarKey[]).every(k => !sidebarForce[k].open);
+  /** Accordion — opening one panel auto-closes all others; closing one leaves zero open. */
+  const handleSharedSidebarToggle = useCallback((id: SharedSidebarKey, nowOpen: boolean) => {
+    setSidebarForce(prev => {
+      const next = { ...prev };
+      if (nowOpen) {
+        for (const k of ['summary', 'distribution', 'import', 'locker'] as SharedSidebarKey[]) {
+          if (k !== id) next[k] = { open: false, seq: prev[k].seq + 1 };
+        }
+        next[id] = { open: true, seq: prev[id].seq };
+      } else {
+        next[id] = { open: false, seq: prev[id].seq };
+      }
+      return next;
+    });
+  }, []);
+
   // ── User menu ─────────────────────────────────────────────────────────────
 
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -1069,6 +1110,43 @@ function SharedChecklistContent({
             <div className="lg:col-span-4 order-first lg:order-last">
               {/* Pinned action bar */}
               <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
+                {/* 025H: Sidebar Expand All / Collapse All — same visual treatment as home-screen 025F */}
+                <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
+                  <button
+                    onClick={() => setSidebarForce(prev => ({
+                      summary:      { open: true, seq: prev.summary.seq + 1 },
+                      distribution: { open: true, seq: prev.distribution.seq + 1 },
+                      import:       { open: true, seq: prev.import.seq + 1 },
+                      locker:       { open: true, seq: prev.locker.seq + 1 },
+                    }))}
+                    aria-label="Open all sidebar panels"
+                    title="Open all sidebar panels"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                      sidebarExpandActive
+                        ? 'bg-card text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setSidebarForce(prev => ({
+                      summary:      { open: false, seq: prev.summary.seq + 1 },
+                      distribution: { open: false, seq: prev.distribution.seq + 1 },
+                      import:       { open: false, seq: prev.import.seq + 1 },
+                      locker:       { open: false, seq: prev.locker.seq + 1 },
+                    }))}
+                    aria-label="Close all sidebar panels"
+                    title="Close all sidebar panels"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                      sidebarCollapseActive
+                        ? 'bg-card text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                </div>
                 {/* Background picker — hidden in checkable-packing-list mode (simplified view) */}
                 {snapshot.type !== 'checkable' && (
                   <div ref={bgPickerRef}>
@@ -1172,6 +1250,9 @@ function SharedChecklistContent({
                     data={store.items}
                     categoryOrder={store.order}
                     categoryMeta={store.meta}
+                    forceOpen={sidebarForce.summary.open}
+                    forceOpenSeq={sidebarForce.summary.seq}
+                    onToggle={nowOpen => handleSharedSidebarToggle('summary', nowOpen)}
                   />
                   {/* Weight Distribution — full shared view only; NOT shown on checkable packing list */}
                   {snapshot.type !== 'checkable' && (
@@ -1181,6 +1262,9 @@ function SharedChecklistContent({
                       categoryMeta={store.meta}
                       paletteKey={chartPaletteKey}
                       onPaletteChange={setChartPaletteKey}
+                      forceOpen={sidebarForce.distribution.open}
+                      forceOpenSeq={sidebarForce.distribution.seq}
+                      onToggle={nowOpen => handleSharedSidebarToggle('distribution', nowOpen)}
                     />
                   )}
                   {/* Scan Gear List — hidden in checkable-packing-list mode; starts OPEN (022J) */}
@@ -1188,7 +1272,10 @@ function SharedChecklistContent({
                     <ImportGearPanel
                       categoryOrder={store.order}
                       onAddItem={(category, prefill) => addItem(category, prefill)}
-                      defaultOpen={true}
+                      defaultOpen={false}
+                      forceOpen={sidebarForce.import.open}
+                      forceOpenSeq={sidebarForce.import.seq}
+                      onToggle={nowOpen => handleSharedSidebarToggle('import', nowOpen)}
                     />
                   )}
                   {/* View-only Shared Locker — browse files, no Rename/Delete (lower panel, same position as owner Locker) */}
@@ -1197,6 +1284,9 @@ function SharedChecklistContent({
                       files={snapshot.lockerFiles}
                       activeId={activeFileId}
                       onOpen={f => switchToFile(f.id)}
+                      forceOpen={sidebarForce.locker.open}
+                      forceOpenSeq={sidebarForce.locker.seq}
+                      onToggle={nowOpen => handleSharedSidebarToggle('locker', nowOpen)}
                     />
                   )}
                 </div>

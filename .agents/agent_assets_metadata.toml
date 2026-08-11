@@ -175,3 +175,10 @@ uri = "file://workflow-reports/trailweigh-025G-report.zip"
 type = "unspecified"
 title = "Prompt 025G Report"
 description = "PROMPT_025G_REPORT.md — Share dropdown fixed-position fix (escapes overflow-hidden)"
+
+[[outputs]]
+id = "Xeq60_QkDZekoMHwRmdkl"
+uri = "file://workflow-reports/trailweigh-025H-report.zip"
+type = "unspecified"
+title = "Prompt 025H Report"
+description = "PROMPT_025H_REPORT.md — Shared-link viewer sidebar accordion parity with home screen"
