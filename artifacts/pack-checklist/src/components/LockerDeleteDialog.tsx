@@ -13,6 +13,14 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import { Trash2, X } from 'lucide-react';
 import type { LockerEntry } from './LockerPanel';
 
+// ── Constants (exported so Checklist can use them without duplication) ─────────
+
+/** sessionStorage key for IDs pending deletion across an OAuth redirect round-trip. */
+export const LOCKER_PENDING_DELETE_KEY = 'locker_pending_delete_ids';
+
+/** URL query-parameter set to '1' after a successful identity verification redirect. */
+export const LOCKER_DELETE_VERIFIED_PARAM = 'locker_delete_verified';
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 interface LockerDeleteDialogProps {

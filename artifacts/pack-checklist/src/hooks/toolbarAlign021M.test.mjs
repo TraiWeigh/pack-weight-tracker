@@ -44,11 +44,15 @@ const pillsRowLine = lines.find(l =>
   l.includes('pb-3') && l.includes('flex') && l.includes('items-center') && l.includes('lg:pr-7') && l.includes('relative') && !l.includes('inset-0')
 );
 
-// Action bar (sidebar bar): pb-3 + justify-center/justify-between + gap-2 + flex-shrink-0 (no pt-8 post-021O).
-// 023B: justify-center → justify-between on mobile; both are accepted.
+// 024A: Sidebar toolbar moved INSIDE the scrollable sidebar wrapper (no longer a separate
+// flex-shrink-0 pinned bar). The toolbar row is now a plain flex row inside the scrollable div
+// that also contains Pack Summary, Weight Distribution, etc. This gives all controls the exact
+// same content box — scrollbar-gutter: stable narrows it identically for toolbar and panels.
+// Detect by: relative flex items-center pb-3, no flex-shrink-0, no justify-center, no lg:pr-7.
 const sidebarBarLine = lines.find(l =>
-  l.includes('pb-3') && (l.includes('justify-center') || l.includes('justify-between')) &&
-  l.includes('gap-2') && l.includes('flex-shrink-0') && !l.includes('items-center') && !l.includes('inset-0')
+  l.includes('relative') && l.includes('flex') && l.includes('items-center') &&
+  l.includes('pb-3') && !l.includes('flex-shrink-0') && !l.includes('justify-center') &&
+  !l.includes('lg:pr-7') && !l.includes('inset-0')
 );
 
 let passed = 0;
@@ -110,44 +114,49 @@ test('A7. Filename pill absolute positioning preserved (021O: pt-8 removed from 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nB. Sidebar toolbar — right edge alignment (021M)');
+console.log('\nB. Sidebar toolbar — alignment (024A: toolbar inside scrollable wrapper)');
 
-test('B1. Sidebar action bar exists with structural classes', () => {
-  assert.ok(sidebarBarLine, 'Sidebar action bar (pt-8 pb-3 flex-wrap justify-center gap-2 flex-shrink-0) must exist');
+test('B1. Sidebar toolbar row exists inside scrollable wrapper (024A)', () => {
+  assert.ok(sidebarBarLine,
+    '024A: sidebar toolbar row (relative flex items-center pb-3, no flex-shrink-0) must exist inside scrollable');
 });
 
-test('B2. Sidebar action bar uses lg:justify-end (desktop right-align)', () => {
-  assert.ok(sidebarBarLine, 'Sidebar action bar must exist');
-  assert.match(sidebarBarLine, /\blg:justify-end\b/,
-    '021M: sidebar action bar must use lg:justify-end to right-align Share with panel right edge');
-});
-
-test('B3. Sidebar action bar retains justify-center (mobile/tablet center)', () => {
-  // 023B: justify-center → justify-between on mobile (BG Edit LEFT · Share RIGHT).
-  // Desktop (lg:justify-end) unchanged. Accept either justify-center or justify-between.
-  assert.ok(sidebarBarLine, 'Sidebar action bar must exist');
-  assert.ok(
-    /\bjustify-center\b/.test(sidebarBarLine) || /\bjustify-between\b/.test(sidebarBarLine),
-    '023B: action bar must use justify-center or justify-between for mobile/tablet layout'
+test('B2. Sidebar toolbar is NOT a separate pinned bar with flex-shrink-0 (024A)', () => {
+  // 024A moved the toolbar inside the scrollable div — no separate pinned bar should exist.
+  const pinnedBar = lines.find(l =>
+    l.includes('flex-shrink-0') &&
+    (l.includes('justify-center') || l.includes('justify-between')) &&
+    l.includes('pb-3') && l.includes('gap-2')
   );
+  assert.ok(!pinnedBar,
+    '024A: no separate flex-shrink-0 pinned action bar should exist — toolbar is inside scrollable');
 });
 
-test('B4. Sidebar action bar uses lg:pl-3 (12px left padding preserved)', () => {
-  assert.ok(sidebarBarLine, 'Sidebar action bar must exist');
-  assert.match(sidebarBarLine, /\blg:pl-3\b/,
-    '021M: sidebar action bar left padding stays 12px (lg:pl-3)');
+test('B3. Sidebar toolbar row has no padding-offset alignment hacks (lg:pr-9 etc.)', () => {
+  // 024A uses containment (same scrollable wrapper) for alignment, not padding offsets.
+  assert.ok(sidebarBarLine, 'Sidebar toolbar row must exist');
+  assert.doesNotMatch(sidebarBarLine, /\blg:pr-9\b/,
+    '024A: alignment via containment, not lg:pr-9 offset — pr-9 must not be on toolbar row');
 });
 
-test('B5. Sidebar action bar uses lg:pr-9 (36px right padding)', () => {
-  assert.ok(sidebarBarLine, 'Sidebar action bar must exist');
-  assert.match(sidebarBarLine, /\blg:pr-9\b/,
-    '021M: sidebar action bar must use lg:pr-9 (36px) — aligns Share right edge with panel right edge');
+test('B4. Sidebar toolbar contains ChevronDown/Up open-close controls', () => {
+  // 023W/024A: down/up arrows are the sidebar open-all / close-all controls.
+  assert.match(checklist, /setSidebarAllOpen\(true\)/,
+    'setSidebarAllOpen(true) — ChevronDown open button — must be in sidebar toolbar');
+  assert.match(checklist, /setSidebarAllOpen\(false\)/,
+    'setSidebarAllOpen(false) — ChevronUp close button — must be in sidebar toolbar');
 });
 
-test('B6. Old lg:px-3 no longer on sidebar action bar (replaced)', () => {
-  assert.ok(sidebarBarLine, 'Sidebar action bar must exist');
+test('B5. Sidebar scrollable div still uses lg:pl-1 lg:pr-5 (021L alignment wrapper)', () => {
+  // 024A: alignment is achieved by placing controls inside this wrapper — padding must be preserved.
+  assert.match(checklist, /lg:pl-1 lg:pr-5 lg:\[scrollbar-gutter:stable\]/,
+    '021L/024A: sidebar scrollable wrapper must keep lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]');
+});
+
+test('B6. No free-standing lg:px-3 on sidebar toolbar row (old pre-024A padding)', () => {
+  assert.ok(sidebarBarLine, 'Sidebar toolbar row must exist');
   assert.doesNotMatch(sidebarBarLine, /\blg:px-3\b/,
-    '021M: old lg:px-3 must be replaced by lg:pl-3 lg:pr-9 on sidebar action bar');
+    '024A: old lg:px-3 standalone must not appear on toolbar row — alignment by containment');
 });
 
 test('B7. Background Edit button still present in sidebar', () => {
@@ -191,7 +200,8 @@ test('C5. No transform:translateX (no position hacks)', () => {
 
 test('C6. No negative margin on toolbar rows', () => {
   assert.ok(pillsRowLine && !/-m[lrx]-/.test(pillsRowLine), 'No negative margin on pills row');
-  assert.ok(sidebarBarLine && !/-m[lrx]-/.test(sidebarBarLine), 'No negative margin on sidebar bar');
+  // 024A: sidebar toolbar row inside scrollable — no negative margin needed or allowed.
+  assert.ok(sidebarBarLine && !/-m[lrx]-/.test(sidebarBarLine), 'No negative margin on sidebar toolbar row');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
