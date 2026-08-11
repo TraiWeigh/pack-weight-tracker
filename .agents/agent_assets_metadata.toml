@@ -126,3 +126,10 @@ uri = "file://workflow-reports/trailweigh-024Z-report.zip"
 type = "unspecified"
 title = "Prompt 024Z Report"
 description = "PROMPT_024Z_REPORT.md — Fuel Canister → Consumables fix + all regression results"
+
+[[outputs]]
+id = "vLZe-GaConAEPFFbEmWM7"
+uri = "file://workflow-reports/trailweigh-025A-report.zip"
+type = "unspecified"
+title = "Prompt 025A Report"
+description = "PROMPT_025A_REPORT.md — Plain bold category label detection + all regression results"

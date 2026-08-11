@@ -1438,10 +1438,32 @@ async function extractFromDocxBuffer(buffer: Buffer): Promise<ExtractedItem[]> {
   let currentCategory: string | undefined;
   let tableCount = 0;
 
-  // Walk <h1>, <h2>, <table> blocks in document order.
+  // 025A: pending plain-bold category label — set when an all-bold short Normal paragraph
+  // is seen; confirmed as currentCategory only when the very next non-empty block is a
+  // valid gear-item table.  Cleared by any intervening non-empty non-bold paragraph,
+  // or by a real Heading 1/2 (which takes priority).
+  let pendingBoldCategory: string | undefined;
+
+  /**
+   * 025A: Returns true when an HTML paragraph block is substantially all-bold.
+   * mammoth emits bold runs as <strong>...</strong>; we check that the <strong>
+   * text covers ≥ 85 % of the visible text, confirming the paragraph is mostly bold.
+   */
+  function isAllBold(pBlock: string): boolean {
+    const visible = innerText(pBlock);
+    if (!visible) return false;
+    // Collect text from all <strong>...</strong> runs (may be multiple)
+    const strongRuns = pBlock.match(/<strong(?:\s[^>]*)?>[\s\S]*?<\/strong>/gi) ?? [];
+    const strongLen = strongRuns.reduce((sum, run) => sum + innerText(run).length, 0);
+    return strongLen >= visible.length * 0.85;
+  }
+
+  // Walk <h1>, <h2>, <p>, and <table> blocks in document order.
+  // Including <p> allows plain-bold Normal paragraphs to provide category context (025A).
   // The regex uses lazy [\s\S]*? so it stops at the first matching closing tag.
-  // mammoth does not produce nested <h1>/<h2>, and nested <table> is rare in gear lists.
-  const BLOCK_RE = /<(h[12]|table)(?:\s[^>]*)?>[\s\S]*?<\/\1>/gi;
+  // mammoth does not produce nested <h1>/<h2>; nested <p> inside <table> cells is
+  // consumed by the <table> match before separate <p> matches can fire.
+  const BLOCK_RE = /<(h[12]|table|p)(?:\s[^>]*)?>[\s\S]*?<\/\1>/gi;
   let m: RegExpExecArray | null;
 
   while ((m = BLOCK_RE.exec(html)) !== null) {
@@ -1454,17 +1476,51 @@ async function extractFromDocxBuffer(buffer: Buffer): Promise<ExtractedItem[]> {
       if (heading && !DOCX_NON_CATEGORY_HEADINGS.has(norm(heading))) {
         currentCategory = heading;
       }
+      // Real heading clears any pending plain-bold candidate
+      pendingBoldCategory = undefined;
+      continue;
+    }
+
+    // 025A: plain paragraph — check for plain-bold category label
+    if (tag === 'p') {
+      const visible = innerText(block);
+      if (!visible) continue; // empty spacer — preserve pending
+
+      if (
+        isAllBold(block) &&
+        visible.length <= 50 &&
+        !DOCX_NON_CATEGORY_HEADINGS.has(norm(visible))
+      ) {
+        // All-bold, short, not a known non-category word → candidate
+        pendingBoldCategory = visible;
+      } else {
+        // Non-bold, long, or known-non-category paragraph → interrupts pending
+        pendingBoldCategory = undefined;
+      }
       continue;
     }
 
     // ── table ──
     tableCount++;
     const rows = parseTableRows(block);
-    if (rows.length < 2) continue; // header-only or empty
+    if (rows.length < 2) {
+      // Empty or header-only table — not a gear table; clear pending
+      pendingBoldCategory = undefined;
+      continue;
+    }
 
     const cols = detectCols(rows[0]);
     // Skip blocks that look nothing like an item table (no Type or Weight column)
-    if (cols.typeCol < 0 && cols.weightCol < 0) continue;
+    if (cols.typeCol < 0 && cols.weightCol < 0) {
+      pendingBoldCategory = undefined;
+      continue;
+    }
+
+    // 025A: valid gear table — confirm pending bold label as current category context
+    if (pendingBoldCategory !== undefined) {
+      currentCategory = pendingBoldCategory;
+      pendingBoldCategory = undefined;
+    }
 
     for (let ri = 1; ri < rows.length; ri++) {
       const row = rows[ri];

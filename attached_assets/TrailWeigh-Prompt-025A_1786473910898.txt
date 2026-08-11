@@ -1,0 +1,511 @@
+TRAILWEIGH — PROMPT 025A
+DOCX IMPORT: SUPPORT PLAIN BOLD CATEGORY LABELS THAT ARE NOT WORD HEADING STYLES
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: Standard Word Heading 1/Heading 2 category context is now USER-VERIFIED working. This prompt extends DOCX compatibility to a common simpler Word format: a bold category label in a normal paragraph immediately followed by an item table.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.50
+
+ATTACH THIS TEST FILE
+1. 10_TrailWeigh_DOCX_Plain_Bold_Category_Labels_12_Items.docx
+
+IMPORTANT VERIFIED CURRENT STATE
+
+Preserve all USER-VERIFIED behavior from:
+- 024O quantity/header/weight handling
+- 024P worn routing
+- 024R/024W Name behavior
+- 024U Backpack canonical routing
+- 024X Med Kit / Repair Kit routing
+- 024Y/024Z standard Word Heading 1/Heading 2 DOCX category context
+- 77-item PDF regression
+
+Do NOT redo those prompts.
+
+PRIMARY PROBLEM
+
+Many people make Word packing lists without using Microsoft Word's formal Heading 1/Heading 2 styles.
+
+Instead they often format category labels like this:
+
+Backpack   <-- ordinary Normal paragraph, bold text
+[table follows]
+
+Shelter    <-- ordinary Normal paragraph, bold text
+[table follows]
+
+Those visually obvious bold labels should be usable as category context when they clearly function as a category label for the table immediately following them.
+
+PRIMARY GOAL
+
+For DOCX import only:
+
+Support a conservative fallback where an ordinary Word paragraph can supply category context when ALL of the following are true:
+
+1. It is NOT already a Word Heading 1/Heading 2 paragraph.
+2. Its visible text is substantially/all bold.
+3. It is a short standalone paragraph.
+4. It is immediately followed by, or structurally associated with, a compatible gear-item table.
+5. The text is a meaningful category label or safely normalizes to one.
+
+This fallback must come AFTER the existing real Heading 1/Heading 2 support.
+
+DO NOT TREAT EVERY BOLD PARAGRAPH AS A CATEGORY.
+
+TEST FILE PURPOSE
+
+10_TrailWeigh_DOCX_Plain_Bold_Category_Labels_12_Items.docx contains:
+
+- ZERO Word Heading 1/Heading 2 paragraphs.
+- Category labels are Normal-style paragraphs with bold text.
+- Exactly 12 real gear items.
+- A bold document title that must NOT become a category.
+- A bold paragraph "Trip Notes" that must NOT become a category because it is followed by ordinary body text, not a gear table.
+
+The test deliberately proves that simple "bold = category" logic would be unsafe.
+
+REQUIRED ITEM COUNT
+
+TrailWeigh must find exactly:
+
+12 items
+
+Do not count:
+- the bold title;
+- the explanatory paragraph;
+- "Trip Notes";
+- the body note beneath Trip Notes;
+- category label paragraphs;
+- table header rows.
+
+No duplicates.
+No dropped items.
+
+PLAIN BOLD CATEGORY LABELS IN THE TEST
+
+These ordinary bold Normal-style paragraphs should provide category context:
+
+Backpack
+Shelter
+Sleep System
+Kitchen
+Clothing Worn
+Electronics
+Med Kit
+Repair Kit
+Dog Gear
+
+They are immediately followed by compatible gear tables.
+
+NON-CATEGORY BOLD PARAGRAPHS IN THE TEST
+
+These must NOT become categories:
+
+TrailWeigh DOCX Plain Bold Category Test
+Trip Notes
+
+The document title is not a gear category.
+Trip Notes is followed by body text rather than a gear-item table.
+
+REQUIRED FINAL RESULTS
+
+1. Backpack
+Type: Backpack
+Name: Durston Kakwa 55
+Weight: 30.1 oz
+Qty: 1
+Final category: Backpack
+
+2. Shelter
+Type: Tent
+Name: Zpacks Duplex
+Weight: 18.5 oz
+Qty: 1
+Final category: Shelter
+
+3. Sleep System
+Type: Quilt
+Name: Enlightened Equipment Enigma 20
+Weight: 22.4 oz
+Qty: 1
+Final category: current canonical sleep category
+
+4. Sleep System
+Type: Sleeping Pad
+Name: Therm-a-Rest NeoAir XLite NXT
+Weight: 13.0 oz
+Qty: 1
+Final category: current canonical sleep category
+
+5. Kitchen
+Type: Stove
+Name: BRS-3000T
+Weight: 0.9 oz
+Qty: 1
+Final category: Kitchen
+
+6. Kitchen heading with semantic override
+Type: Fuel Canister
+Name: blank
+Weight: 3.9 oz
+Qty: 2
+Final category: Consumables
+
+IMPORTANT:
+Preserve 024Z.
+Fuel Canister must override the plain bold Kitchen label exactly as it now overrides a formal Word Kitchen heading.
+
+7. Clothing Worn
+Type: Hiking Shirt
+Name: Outdoor Research Echo
+Weight: 5.2 oz
+Qty: 1
+Final category: Clothing Worn
+
+8. Clothing Worn
+Type: Trail Runners
+Name: Altra Lone Peak 8
+Weight: 22.0 oz
+Qty: 1
+Final category: Clothing Worn
+
+9. Electronics
+Type: Power Bank
+Name: Nitecore NB10000
+Weight: 5.3 oz
+Qty: 1
+Final category: Electronics
+
+10. Med Kit
+Type: Leukotape
+Name: blank
+Weight: 1.2 oz
+Qty: 1
+Final category: Med Kit
+
+11. Repair Kit
+Type: Repair Tape
+Name: blank
+Weight: 0.7 oz
+Qty: 1
+Final category: Repair Kit
+
+12. Dog Gear
+Type: Dog Pack
+Name: Ruffwear Approach
+Weight: 16.0 oz
+Qty: 1
+Final category: Dog Gear
+
+DETECTION RULE — CONSERVATIVE
+
+A plain paragraph may become category context only when it strongly looks like a category label.
+
+At minimum consider:
+- paragraph style is not Title/Subtitle/Heading;
+- paragraph is short;
+- text is substantially/all bold;
+- paragraph has no list/bullet numbering;
+- paragraph is immediately before a compatible item table, allowing only empty spacer paragraphs if necessary;
+- following table has recognizable item headers such as Type / Name / Weight / Unit / Qty.
+
+Do not use only font size.
+Do not use only boldness.
+Do not use only capitalization.
+
+STRUCTURAL ASSOCIATION IS IMPORTANT
+
+The strongest signal is:
+
+plain bold standalone paragraph
++
+next meaningful block is a compatible item table.
+
+This should allow:
+Backpack + item table
+
+while rejecting:
+Trip Notes + ordinary body paragraph
+
+Do not let a bold note several paragraphs above a table become category context.
+
+CATEGORY NORMALIZATION
+
+Feed accepted plain-bold labels through the same existing category normalization and semantic routing used by formal Word headings.
+
+Do not create a second category system.
+
+Examples:
+Backpack -> Backpack
+Shelter -> Shelter
+Sleep System -> Sleep System
+Clothing Worn -> Clothing Worn
+Med Kit -> Med Kit
+Repair Kit -> Repair Kit
+Dog Gear -> Dog Gear
+
+SEMANTIC ROUTING STILL WINS
+
+Preserve high-confidence semantic item rules.
+
+Examples:
+Kitchen bold label + Stove -> Kitchen
+Kitchen bold label + Fuel Canister -> Consumables
+
+Med Kit + Leukotape -> Med Kit
+Repair Kit + Repair Tape -> Repair Kit
+Clothing Worn + Hiking Shirt -> Clothing Worn
+
+REAL WORD HEADINGS REMAIN HIGHER CONFIDENCE
+
+Do NOT weaken 024Y/024Z.
+
+If a DOCX uses real Heading 1/Heading 2 styles:
+continue using those as the preferred structural category context.
+
+Plain-bold detection is a fallback for documents that do not use formal heading styles.
+
+NAME / WEIGHT / QTY
+
+Preserve current behavior.
+
+Dedicated Name values must remain:
+- Durston Kakwa 55
+- Zpacks Duplex
+- Enlightened Equipment Enigma 20
+- Therm-a-Rest NeoAir XLite NXT
+- BRS-3000T
+- Outdoor Research Echo
+- Altra Lone Peak 8
+- Nitecore NB10000
+- Ruffwear Approach
+
+Blank Names for:
+- Fuel Canister
+- Leukotape
+- Repair Tape
+
+must remain blank.
+
+Fuel Canister Qty must remain 2.
+All other Qty values remain 1.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025A_REPORT.md
+
+Initially write:
+- Prompt: 025A
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM CURRENT FAILURE
+
+Run or inspect the supplied DOCX through the current DOCX parser before changing application code.
+
+Document:
+- exact current item count;
+- whether the plain bold category labels are ignored;
+- what categories the rows receive before the fix;
+- how paragraph formatting/bold-run information is currently exposed by the DOCX parser;
+- whether block order from 024Y is available to associate a bold paragraph with the next table.
+
+Do not broadly rediagnose Word parsing.
+
+PHASE 3 — MINIMUM SAFE IMPLEMENTATION
+
+Add the smallest safe plain-bold category-label fallback.
+
+Prefer:
+- reusing the block-order traversal from 024Y;
+- a helper such as isLikelyPlainCategoryLabel(paragraph, nextBlock);
+- existing category normalization;
+- existing semantic routing.
+
+Do not:
+- rewrite DOCX parsing;
+- add OCR;
+- add AI;
+- create a large category dictionary if existing normalization is sufficient;
+- treat all bold text as headings.
+
+PHASE 4 — REQUIRED TEST 10
+
+Run:
+
+10_TrailWeigh_DOCX_Plain_Bold_Category_Labels_12_Items.docx
+
+through the SAME TrailWeigh DOCX import path.
+
+Required:
+- exactly 12 items found;
+- all 12 importable;
+- no duplicates;
+- no lost items;
+- title not imported as category/item;
+- Trip Notes not imported as category/item;
+- all listed plain-bold category labels inherited correctly;
+- Fuel Canister -> Consumables, Qty 2;
+- Stove -> Kitchen;
+- Hiking Shirt / Trail Runners -> Clothing Worn;
+- Leukotape -> Med Kit;
+- Repair Tape -> Repair Kit;
+- Backpack -> Backpack;
+- Names/weights/quantities preserved.
+
+PHASE 5 — FORMAL HEADING REGRESSION
+
+Run the already-established formal-heading fixture if available:
+
+09_TrailWeigh_DOCX_Heading_Context_12_Items.docx
+
+Required:
+- still exactly 12 items;
+- formal Heading 1/2 context still works;
+- Stove -> Kitchen;
+- Fuel Canister -> Consumables;
+- no regression from 024Y/024Z.
+
+Do not make plain-bold fallback interfere with real Word headings.
+
+PHASE 6 — NEGATIVE SAFETY CHECKS
+
+If practical, add small parser-level checks proving:
+
+A.
+Bold Normal paragraph: Trip Notes
+Next block: ordinary paragraph
+Result:
+NOT category context
+
+B.
+Bold Normal paragraph: Packing List
+Next block: ordinary paragraph
+Result:
+NOT category context
+
+C.
+Bold Normal paragraph: Backpack
+Next meaningful block: compatible gear table
+Result:
+category context = Backpack
+
+D.
+Ordinary non-bold paragraph: Shelter
+Next meaningful block: compatible table
+Result:
+do not treat as plain-bold category under this prompt
+
+Do not add UI for these tests.
+
+PHASE 7 — REGRESSION PROTECTION
+
+Verify:
+- 024Z Fuel routing preserved;
+- 024X Med Kit / Repair Kit preserved;
+- 024W Name behavior preserved;
+- Backpack routing preserved;
+- worn routing preserved;
+- 77-item PDF remains 77 if available without changing PDF code;
+- 77-item CSV remains 77 if available without changing CSV/XLSX code.
+
+Do NOT modify PDF parsing.
+Do NOT modify CSV/XLSX parsing.
+
+OUT OF SCOPE
+
+Do NOT fix in 025A:
+- bullet-list-only DOCX files;
+- non-bold plain category labels;
+- colored/underlined-only category labels;
+- merged-cell/freeform Word layouts;
+- image/OCR DOCX content;
+- PDF parsing;
+- CSV/XLSX changes;
+- catalog/search;
+- AI;
+- retailer integration;
+- toolbar/layout;
+- Background;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- DOCX plain-bold category-context detection;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025A_REPORT.md
+
+Include:
+- Prompt number: 025A
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed current failure
+- exact plain-bold detection rule implemented
+- exact 10-test item count
+- category result for each of 12 items
+- confirmation title was not treated as category
+- confirmation Trip Notes was not treated as category
+- Fuel final category and Qty
+- confirmation formal Heading 1/2 fixture still works
+- negative safety-test results
+- 77-item CSV result if available
+- 77-item PDF result if available
+- build/test result
+- confirmation PDF code was not changed
+- confirmation CSV/XLSX code was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025A-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025A_REPORT.md
+
+Include useful 025A-specific test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- required report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025A.
+Do not begin bullet-list DOCX support or another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final PASS remains pending until the user tests the live TrailWeigh app using 10_TrailWeigh_DOCX_Plain_Bold_Category_Labels_12_Items.docx.
