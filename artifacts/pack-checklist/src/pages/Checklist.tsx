@@ -1027,6 +1027,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
           bgTone:          e.bgTone ?? 'light',
           bgSize:          e.bgSize ?? 'cover',  // use saved bgSize; older entries without it default to cover
           chartPaletteKey: e.chartPaletteKey,
+          barColor:        e.barColor ?? '',
+          barFont:         e.barFont ?? '',
+          barTextColor:    e.barTextColor ?? '',
+          barTransparency: e.barTransparency ?? 1,
         }));
         console.log(`[TrailWeigh] Share Locker: included ${lockerFiles.length} Locker file(s) in shared snapshot`);
       } else {
@@ -1048,6 +1052,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       unit:          system,
       name:          activeLockerFile?.name ?? undefined,
       lockerFiles,
+      barColor,
+      barFont,
+      barTextColor,
+      barTransparency,
     };
 
     const url = await buildShareURL(payload);
@@ -1084,6 +1092,10 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       bgSize,
       unit:          system,
       name:          activeLockerFile?.name ?? undefined,
+      barColor,
+      barFont,
+      barTextColor,
+      barTransparency,
     };
     const url = await buildShareURL(payload);
     const title = activeLockerFile?.name ? `${activeLockerFile.name} — Packing List` : 'TrailWeigh Packing List';

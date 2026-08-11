@@ -1,0 +1,518 @@
+TRAILWEIGH — PROMPT 025I
+SHARED-LINK VIEWER MUST MATCH HOME VIEW EXACTLY — TOOLBAR, THEMES, BAR STYLING, AND LAYOUT
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused shared-view parity correction. The Home view already has the desired UI. Do not redesign anything. Reuse/match the Home implementation.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 5–9 minutes
+Estimated Agent usage/cost: about $0.80–$1.60
+
+IMPORTANT USER-VERIFIED STATUS
+
+Prompt 025H = USER-VERIFIED FAIL.
+
+The shared-link viewer still does NOT match the Home view.
+
+LIVE FAILURES CONFIRMED BY USER SCREENSHOTS
+
+1. The top control groups are arranged differently from Home.
+2. Shared view shows Open / Close controls where Home uses the current compact expand/collapse controls.
+3. Shared view is missing the Home-view Hide control in the correct position.
+4. Shared view has a standalone Print pill in the top toolbar.
+   - Home does NOT have this standalone Print pill there.
+   - Remove it from the shared top toolbar.
+   - Preserve Print in the same place Home currently provides it, such as inside Preview, if that is the current Home behavior.
+5. Shared-view bar/panel styling changed to black.
+   - It must use the SAME current Bar Color/theme styling as Home.
+6. Shared view is still behaving like a separately designed interface instead of the same TrailWeigh interface with different ownership/persistence.
+
+IMPORTANT PRODUCT RULE
+
+THE HOME VIEW IS THE VISUAL AND INTERACTION SOURCE OF TRUTH.
+
+The shared-link viewer should look and behave like the Home/Main TrailWeigh view as closely as possible.
+
+The ONLY intended differences are ownership/persistence/account behavior:
+
+- shared-view edits are isolated from the sender's original;
+- viewer changes must never modify the sender's original file;
+- a signed-in viewer can Save Your Own Copy to their account;
+- a signed-out viewer can create/sign into an account and then save their own copy.
+
+Do NOT preserve separate shared-view toolbar styling merely because it already exists.
+
+PRIMARY GOAL
+
+Make the shared-link viewer use the SAME:
+- top toolbar/control arrangement;
+- control grouping;
+- left/center/right alignment;
+- spacing;
+- button/pill sizing;
+- Hide control;
+- Preview control;
+- Imperial / Metric control;
+- category expand/collapse group controls;
+- sidebar expand/collapse group controls;
+- Background control;
+- Share control;
+- theme appearance;
+- bar/panel colors;
+- transparency;
+- text color;
+- font;
+- background image/theme;
+- Fit / Fill behavior;
+- Light/Dark appearance;
+- sidebar panel styling;
+- category bar styling;
+- overall visual spacing and layout
+
+as the Home view.
+
+Do not independently restyle the shared page.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025I_REPORT.md
+
+Initially write:
+- Prompt: 025I
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — SIDE-BY-SIDE HOME VS SHARED COMPARISON
+
+Before editing, inspect the CURRENT rendered Home view and CURRENT rendered shared-link viewer.
+
+Document the exact differences in:
+
+A. MAIN-LIST TOP LEFT
+Home current controls and positions.
+Shared current controls and positions.
+
+B. MAIN-LIST CENTER GROUP
+Home current controls and positions.
+Shared current controls and positions.
+
+C. SIDEBAR TOP GROUP
+Home current controls and positions.
+Shared current controls and positions.
+
+D. THEME / BAR STYLING
+Compare:
+- theme/background image;
+- Fit / Fill;
+- category bar color;
+- sidebar panel bar/header color;
+- transparency;
+- text color;
+- font;
+- Light/Dark treatment.
+
+E. SIDEBAR BEHAVIOR
+Confirm which 025H accordion behavior already works and preserve it.
+
+F. SHARED-ONLY ACCOUNT/PERSISTENCE CONTROLS
+Identify:
+- Save Your Own Copy;
+- account creation/sign-in path if signed out;
+- temporary-edit notice;
+- any ownership-specific messaging.
+
+These shared-only account/persistence items may remain different.
+
+Do not begin code changes until the exact render-path differences are understood.
+
+PHASE 3 — HOME TOOLBAR IS THE TEMPLATE
+
+Use the Home view's CURRENT toolbar structure as the exact template.
+
+Do NOT use old screenshots or old assumptions if current Home code differs.
+
+Required principle:
+
+If a control exists in Home in a certain position/group, shared view should use it in the same position/group unless the control is inherently ownership-specific.
+
+If a control does NOT exist in Home's top toolbar, shared view should not add it there.
+
+SPECIFIC REQUIRED CORRECTIONS
+
+A. REMOVE SHARED OPEN / CLOSE TEXT PILLS IF HOME DOES NOT USE THEM
+
+The shared screenshot currently shows:
+
+Open   Close
+
+Home currently uses compact expand/collapse controls instead.
+
+Required:
+- shared view must use the same compact controls as Home;
+- same icons;
+- same size;
+- same position;
+- same behavior;
+- no separate Open / Close text pills if Home no longer has them.
+
+B. RESTORE HIDE
+
+Home shows Hide in the main toolbar group.
+
+Required:
+- shared view must also show Hide in the same position;
+- same styling;
+- same functionality;
+- shared Hide changes remain temporary/isolated like other viewer changes.
+
+C. PREVIEW
+
+Required:
+- same Home position;
+- same styling;
+- same behavior.
+
+D. IMPERIAL / METRIC
+
+Required:
+- same Home grouping;
+- same position;
+- same selected styling;
+- same behavior.
+
+E. REMOVE STANDALONE PRINT FROM SHARED TOP TOOLBAR
+
+The shared screenshot currently shows:
+
+Background   Print   Share
+
+Home currently does NOT show standalone Print there.
+
+Required:
+- remove the standalone Print pill from that shared toolbar row;
+- do not remove Print functionality from TrailWeigh;
+- shared view should expose Print exactly where Home exposes Print now;
+- if Home provides Print inside Preview, shared view should do the same.
+
+F. BACKGROUND / SHARE
+
+Required:
+- same position/grouping as Home;
+- same spacing;
+- same pill size/style;
+- do not disturb the 025G Share dropdown layering fix.
+
+G. SIDEBAR GROUP EXPAND / COLLAPSE
+
+Required:
+- same position and visual treatment as Home;
+- preserve the working shared accordion behavior from 025H where it works.
+
+PHASE 4 — THEME AND APPEARANCE PARITY
+
+This is REQUIRED, not optional.
+
+The shared viewer must display the same saved/current appearance state as the shared file's Home view.
+
+That includes all applicable appearance values already supported by TrailWeigh:
+
+- selected built-in theme;
+- background image;
+- Fit / Fill;
+- Light / Dark mode/state as applicable;
+- Bar Color;
+- Transparency;
+- Text Color;
+- Font;
+- category bar appearance;
+- sidebar panel/header appearance;
+- pill/control appearance where theme styling currently applies.
+
+CURRENT LIVE FAILURE
+
+The user's shared-view bars became BLACK while Home showed the intended non-black customized bar styling.
+
+That must be corrected.
+
+Do not hard-code the Home screenshot color.
+
+Instead:
+- identify where Home obtains the current appearance/theme state;
+- ensure shared view receives/renders the same appearance state from the shared file snapshot;
+- use the same styling logic/components as Home wherever possible.
+
+If the sender's shared file includes theme/customization state:
+- the shared viewer should initially render that exact state.
+
+If the viewer changes theme/background/appearance while viewing the shared file:
+- those changes are temporary and isolated from the sender;
+- they should affect only the viewer's working shared session;
+- if the viewer saves their own copy, preserve the viewer's current appearance state in that saved copy.
+
+DO NOT:
+- mutate the sender's saved theme;
+- overwrite sender appearance settings;
+- force black/default styling in shared view;
+- create a second theme implementation.
+
+PHASE 5 — COMPONENT/PATH REUSE
+
+Prefer reusing the same Home components, shared helpers, toolbar groups, appearance helpers, and styling paths rather than duplicating markup.
+
+The long-term rule is:
+SHARED VIEW = HOME UI + DIFFERENT PERSISTENCE/OWNERSHIP MODE.
+
+Safe implementation approaches:
+- reuse Home toolbar group components;
+- reuse Home category/sidebar group controls;
+- reuse Home appearance/theme state application helpers;
+- extract a small shared presentational component if needed;
+- keep ownership/persistence conditions separate from visual layout.
+
+Avoid a broad rewrite.
+
+Do not force both pages into one huge component if that creates risk.
+
+PHASE 6 — PRESERVE SHARED-VIEW-ONLY FUNCTIONAL DIFFERENCES
+
+The following MAY remain different because they are ownership/persistence behavior:
+
+1. Temporary-edit notice
+Example:
+"Viewing [file] — your changes are temporary and reset on refresh."
+
+2. Save Your Own Copy
+- preserve for signed-in viewers;
+- saves a separate copy;
+- must never overwrite sender original.
+
+3. Signed-out viewer account path
+- preserve/provide option to sign in or create an account;
+- after authentication, viewer can save their own copy.
+
+4. Sender original protection
+- shared viewer cannot rename/delete/overwrite sender's original.
+
+These are the intended differences.
+
+Everything else should match Home unless a genuine permission difference requires otherwise.
+
+PHASE 7 — SIDEBAR CONTENT / BEHAVIOR
+
+Preserve the working shared sidebar behavior established by 025H where it is correct:
+
+- normal use = one panel open at a time;
+- zero open allowed;
+- Expand All opens all;
+- Collapse All closes all;
+- Collapse All works with only one open.
+
+The sidebar VISUAL treatment must match Home.
+
+If shared view has Shared Files where Home has Locker:
+- do not blindly replace data/permissions;
+- keep the correct shared-view content required by ownership rules;
+- but make its panel styling, width, header treatment, spacing, and accordion interaction match the Home sidebar pattern.
+
+This prompt is about UI parity while preserving legitimate ownership differences.
+
+PHASE 8 — REQUIRED SIDE-BY-SIDE LIVE TEST
+
+Use the SAME underlying TrailWeigh file in:
+
+A. Home/main view
+B. Shared-link viewer
+
+Use the same browser size and same theme.
+
+Capture/inspect both side by side.
+
+Required visual parity:
+
+TOP MAIN-LIST AREA
+- same left group
+- same center group
+- same spacing
+- same heights
+- same Hide
+- same Preview
+- same Imperial / Metric
+- same compact category expand/collapse controls
+
+TOP SIDEBAR AREA
+- same sidebar expand/collapse controls
+- same Background
+- same Share
+- NO standalone shared Print pill
+- same alignment and spacing
+
+CATEGORY BARS
+- same Bar Color
+- same Transparency
+- same Text Color
+- same Font
+- same bar styling
+
+SIDEBAR PANELS
+- same header/bar style
+- same theme appearance
+- same width and spacing pattern
+
+BACKGROUND
+- same theme image
+- same Fit / Fill
+- same appearance behavior
+
+The two screenshots should look like the same application UI, except for legitimate shared-only account/persistence messaging and content.
+
+PHASE 9 — FUNCTIONAL REGRESSION TESTS
+
+HOME VIEW
+Must remain unchanged:
+- toolbar works;
+- Hide works;
+- Preview works;
+- Imperial / Metric works;
+- Background works;
+- Share works;
+- 025F sidebar accordion works;
+- 025G Share dropdown layering works.
+
+SHARED VIEW
+Must work:
+- Hide works;
+- Preview works;
+- Print available in same location/method as Home;
+- Imperial / Metric works;
+- Background/Themes works;
+- sidebar accordion works;
+- Share dropdown remains above sidebar;
+- temporary edits do not modify original;
+- Save Your Own Copy saves a separate copy;
+- saved copy preserves viewer's current theme/appearance state.
+
+PHASE 10 — DO NOT CHANGE IMPORT/PARSER WORK
+
+Do NOT touch:
+- CSV importer;
+- XLSX importer;
+- PDF importer;
+- DOCX importer;
+- OCR;
+- category routing;
+- Type/Name import semantics;
+- 025E Type/Name fixed column-heading behavior.
+
+OUT OF SCOPE
+
+Do NOT:
+- redesign Home;
+- create a new Share design;
+- introduce new toolbar controls;
+- change calculations;
+- change Pack Summary calculations;
+- change Weight Distribution calculations;
+- change category content;
+- change authentication architecture;
+- change database schema unless absolutely required for already-existing appearance state persistence;
+- change sender data ownership rules;
+- alter unrelated footer/help/legal work.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- shared-link viewer layout/presentation;
+- narrowly shared Home/Shared presentational helpers if necessary;
+- shared appearance/theme application path;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025I_REPORT.md
+
+Include:
+- Prompt number: 025I
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact current Home toolbar structure
+- exact prior shared toolbar structure
+- exact cause of the toolbar mismatch
+- exact cause of the black bar/theme mismatch
+- how Home toolbar/presentation was reused or mirrored
+- confirmation Open/Close text pills were removed if Home does not use them
+- confirmation Hide appears in shared view in the Home position
+- confirmation Preview position matches Home
+- confirmation Imperial/Metric position matches Home
+- confirmation standalone Print was removed from shared top toolbar
+- confirmation Print remains available in the same place/method as Home
+- confirmation Background/Share group matches Home
+- confirmation 025G Share dropdown layering still works
+- confirmation category/group expand-collapse controls match Home
+- confirmation shared Bar Color matches the shared file/Home state
+- confirmation Transparency matches
+- confirmation Text Color matches
+- confirmation Font matches
+- confirmation theme/background image matches
+- confirmation Fit/Fill matches
+- confirmation viewer appearance changes remain isolated
+- confirmation Save Your Own Copy preserves viewer appearance state
+- confirmation sender original remains untouched
+- confirmation 025H sidebar accordion behavior remains working
+- side-by-side visual comparison result
+- build/test result
+- confirmation importer/parser files were not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025I-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025I_REPORT.md
+
+Include useful 025I-specific screenshots/test output if practical.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025I.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user compares the live Home and shared-link viewer and confirms:
+
+1. top toolbar groups match;
+2. Hide is present and correctly positioned;
+3. no standalone Print pill appears in shared top toolbar;
+4. category/sidebar expand-collapse controls match Home;
+5. Themes/Background appearance matches Home;
+6. Bar Color is correct and no longer incorrectly black;
+7. shared edits remain isolated;
+8. Save Your Own Copy still works correctly.

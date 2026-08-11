@@ -20,6 +20,10 @@ export interface SharedLockerFile {
   bgTone?: 'light' | 'dark';
   bgSize?: 'cover' | 'contain';
   chartPaletteKey?: string;
+  barColor?: string;
+  barFont?: string;
+  barTextColor?: string;
+  barTransparency?: number;
 }
 
 export interface SharePayload {
@@ -47,6 +51,10 @@ export interface SharePayload {
    * Absent for shares created before 021C; those render single-file view only.
    */
   lockerFiles?: SharedLockerFile[];
+  barColor?: string;
+  barFont?: string;
+  barTextColor?: string;
+  barTransparency?: number;
 }
 
 export function encodeSharePayload(payload: SharePayload): string {

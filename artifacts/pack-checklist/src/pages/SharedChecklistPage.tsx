@@ -17,6 +17,8 @@ import { useParams, useLocation } from 'wouter';
 import { GearCategory } from '../components/GearCategory';
 import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
+import { BackgroundShowcase } from '../components/BackgroundShowcase';
+import { BarStyleProvider, barCombinedStyle, barBgStyle } from '../context/BarStyleContext';
 import { PreviewModal, PreviewBody } from '../components/PreviewModal';
 import { ImportGearPanel } from '../components/ImportGearPanel';
 import { UnitProvider, useUnit } from '../context/UnitContext';
@@ -53,6 +55,11 @@ type TempFileState = {
   bgFade: number;
   bgTone: 'light' | 'dark';
   bgSize: 'cover' | 'contain';
+  /** 025I: bar style per-file stash (temporary, never written to sender's data) */
+  barColor: string;
+  barFont: string;
+  barTextColor: string;
+  barTransparency: number;
 };
 
 /** Key used in the tempEdits Map for the primary (top-level) snapshot. */
@@ -436,6 +443,16 @@ function SharedChecklistContent({
   const [bgPickerOpen, setBgPickerOpen] = useState(false);
   const bgPickerRef = useRef<HTMLDivElement>(null);
 
+  // ── 025I: Bar style state — initialized from snapshot, editable by viewer ─
+  // Viewer changes are temporary (never written to sender's data).
+  const [barColor,        setBarColor]        = useState<string>(snapshot.barColor ?? '');
+  const [barFont,         setBarFont]         = useState<string>(snapshot.barFont ?? '');
+  const [barTextColor,    setBarTextColor]    = useState<string>(snapshot.barTextColor ?? '');
+  const [barTransparency, setBarTransparency] = useState<number>(snapshot.barTransparency ?? 1);
+
+  // ── Showcase (Hide) state ─────────────────────────────────────────────────
+  const [showcaseActive, setShowcaseActive] = useState(false);
+
   // ── Switch between shared files ───────────────────────────────────────────
 
   /**
@@ -448,7 +465,7 @@ function SharedChecklistContent({
   const switchToFile = useCallback((fileId: string | null) => {
     // Stash current temp state
     const currentKey = activeFileId ?? PRIMARY_KEY;
-    tempEditsRef.current.set(currentKey, { store, background, bgFade, bgTone, bgSize });
+    tempEditsRef.current.set(currentKey, { store, background, bgFade, bgTone, bgSize, barColor, barFont, barTextColor, barTransparency });
 
     // Load the target file's state from stash or from original snapshot
     const newKey = fileId ?? PRIMARY_KEY;
@@ -465,6 +482,10 @@ function SharedChecklistContent({
         bgFade:     snapshot.bgFade ?? 1,
         bgTone:     snapshot.bgTone ?? 'light',
         bgSize:     snapshot.bgSize ?? 'cover',
+        barColor:        snapshot.barColor ?? '',
+        barFont:         snapshot.barFont ?? '',
+        barTextColor:    snapshot.barTextColor ?? '',
+        barTransparency: snapshot.barTransparency ?? 1,
       };
     } else {
       const file = snapshot.lockerFiles?.find(f => f.id === fileId);
@@ -475,6 +496,10 @@ function SharedChecklistContent({
         bgFade:     file.bgFade ?? 1,
         bgTone:     file.bgTone ?? 'light',
         bgSize:     file.bgSize ?? 'cover',
+        barColor:        file.barColor ?? '',
+        barFont:         file.barFont ?? '',
+        barTextColor:    file.barTextColor ?? '',
+        barTransparency: file.barTransparency ?? 1,
       };
     }
 
@@ -484,13 +509,17 @@ function SharedChecklistContent({
     setBgFade(next.bgFade);
     setBgTone(next.bgTone);
     setBgSize(next.bgSize);
+    setBarColor(next.barColor);
+    setBarFont(next.barFont);
+    setBarTextColor(next.barTextColor);
+    setBarTransparency(next.barTransparency);
     // Reset undo/redo for the incoming file context
     undoStackRef.current = [];
     redoStackRef.current = [];
     setHistoryVersion(0);
     setActiveFileId(fileId);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFileId, store, background, bgFade, bgTone, bgSize, snapshot]);
+  }, [activeFileId, store, background, bgFade, bgTone, bgSize, barColor, barFont, barTextColor, barTransparency, snapshot]);
 
   // ── Custom background object URL (resolved async from recipient's IndexedDB)
   const [customBgObjectUrl, setCustomBgObjectUrl] = useState<string | null>(null);
@@ -651,6 +680,10 @@ function SharedChecklistContent({
       bgSize,
       unit:          system,
       name:          snapshot.name ?? undefined,
+      barColor,
+      barFont,
+      barTextColor,
+      barTransparency,
       // No lockerFiles — checkable list is single-file, focused view
     };
     const url = await buildShareURL(payload);
@@ -729,6 +762,10 @@ function SharedChecklistContent({
       bgFade,
       bgTone,
       bgSize,         // preserve the viewed file's Fill/Fit setting in the saved copy
+      barColor,
+      barFont,
+      barTextColor,
+      barTransparency,
     };
     writeLockerEntry(entry);
     closeSaveDialog();
@@ -742,7 +779,7 @@ function SharedChecklistContent({
       // Pop-up blocked — silently saved; they can open from Locker
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [store, background, bgFade, bgTone, bgSize]);
+  }, [store, background, bgFade, bgTone, bgSize, barColor, barFont, barTextColor, barTransparency]);
 
   const handleSaveToLocker = () => {
     const name = saveName.trim();
@@ -801,7 +838,15 @@ function SharedChecklistContent({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <>
+    <BarStyleProvider value={{ barColor, barFont, barTextColor, barTransparency }}>
+      {/* ── Background showcase (Hide mode) — full-viewport overlay ── */}
+      <BackgroundShowcase
+        active={showcaseActive}
+        bgImageUrl={bgImageUrl}
+        onWake={() => setShowcaseActive(false)}
+        bgSize={bgSize}
+        letterboxColor={bgTone === 'dark' ? 'hsl(220, 20%, 8%)' : 'hsl(40, 20%, 97%)'}
+      />
       {/* ── Full-page wrapper with background ── */}
       <div
         className={`screen-only min-h-[100dvh] flex flex-col bg-background${bgTone === 'dark' ? ' screen-dark' : ''}`}
@@ -815,6 +860,9 @@ function SharedChecklistContent({
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'fixed',
           } : {}),
+          opacity: showcaseActive ? 0 : 1,
+          transition: showcaseActive ? 'none' : 'opacity 1000ms',
+          pointerEvents: showcaseActive ? 'none' : undefined,
         }}
       >
         {/* ── Header ── */}
@@ -994,34 +1042,102 @@ function SharedChecklistContent({
 
         {/* ── Main layout (mirrors ChecklistContent) ── */}
         <main className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 flex-1 min-h-0">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] lg:gap-4">
 
             {/* ── Gear list ── */}
-            <div className="lg:col-span-8">
-              {/* Pinned pills row */}
-              <div className="pt-8 pb-3 flex items-center justify-between lg:pr-3 flex-shrink-0">
+            <div>
+              {/* 025I: Mobile controls row — shown on mobile, hidden on desktop */}
+              <div className="flex lg:hidden items-center justify-between pt-4 pb-3 flex-shrink-0">
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
                     onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-                      allOpen ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    aria-label="Open all categories" title="Open all categories"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                      allOpen === true ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    Open
+                    <ChevronDown className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
-                      !allOpen ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    aria-label="Close all categories" title="Close all categories"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                      allOpen === false ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
-                    Close
+                    <ChevronUp className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowPreview(true)}
                     className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Preview
+                  </button>
+                  <UnitToggle />
+                </div>
+              </div>
+              {/* 025I: Desktop toolbar row — matches Home layout (hidden on mobile) */}
+              <div className="hidden lg:flex lg:flex-row lg:items-center lg:gap-0 lg:pr-7 lg:relative lg:pb-3 pt-2">
+                {/* Category Open/Close icon buttons — matches Home compact style */}
+                <div className="flex items-center flex-shrink-0">
+                  <div
+                    className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+                    style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
+                  >
+                    <button
+                      onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
+                      aria-label="Open all categories"
+                      title="Open all categories"
+                      className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                        allOpen === true && !barColor
+                          ? 'bg-card text-foreground shadow-sm'
+                          : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                      }`}
+                      style={barColor
+                        ? allOpen === true
+                          ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                          : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                        : barFont ? { fontFamily: barFont } : undefined}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
+                      aria-label="Close all categories"
+                      title="Close all categories"
+                      className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                        allOpen === false && !barColor
+                          ? 'bg-card text-foreground shadow-sm'
+                          : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                      }`}
+                      style={barColor
+                        ? allOpen === false
+                          ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                          : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                        : barFont ? { fontFamily: barFont } : undefined}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+                {/* Right group: [Hide][Preview][UnitToggle] — matches Home */}
+                <div className="flex items-center gap-3 ml-auto flex-shrink-0">
+                  <button
+                    onClick={() => setShowcaseActive(true)}
+                    aria-label="Hide interface and show background view"
+                    title="Hide the interface"
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                  >
+                    Hide
+                  </button>
+                  <button
+                    onClick={() => setShowPreview(true)}
+                    aria-label="Open checked-items preview"
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
                   >
                     Preview
                   </button>
@@ -1107,9 +1223,9 @@ function SharedChecklistContent({
             </div>
 
             {/* ── Sidebar ── */}
-            <div className="lg:col-span-4 order-first lg:order-last">
-              {/* Pinned action bar */}
-              <div className="relative flex flex-wrap justify-center gap-2 pt-8 pb-3 lg:px-3 flex-shrink-0">
+            <div className="order-first lg:order-last">
+              {/* 025I: Pinned action bar — matches Home sidebar toolbar layout */}
+              <div className="relative flex items-center pt-8 pb-3 lg:pl-1 lg:pr-5 flex-shrink-0">
                 {/* 025H: Sidebar Expand All / Collapse All — same visual treatment as home-screen 025F */}
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
@@ -1147,6 +1263,8 @@ function SharedChecklistContent({
                     <ChevronUp className="h-4 w-4" />
                   </button>
                 </div>
+                {/* BgEdit + Share — grouped, ml-auto pushes right to match Home */}
+                <div className="flex items-center gap-2 ml-auto">
                 {/* Background picker — hidden in checkable-packing-list mode (simplified view) */}
                 {snapshot.type !== 'checkable' && (
                   <div ref={bgPickerRef}>
@@ -1168,25 +1286,18 @@ function SharedChecklistContent({
                       containerRef={bgPickerRef as React.RefObject<HTMLDivElement>}
                       onShowcase={undefined}
                       isShowcaseBlocked={true}
-                      barColor=""
-                      onBarColorChange={() => {}}
-                      barFont=""
-                      onBarFontChange={() => {}}
-                      barTextColor=""
-                      onBarTextColorChange={() => {}}
-                      onResetBarStyle={() => {}}
-                      barTransparency={1}
-                      onBarTransparencyChange={() => {}}
+                      barColor={barColor}
+                      onBarColorChange={val => setBarColor(val)}
+                      barFont={barFont}
+                      onBarFontChange={val => setBarFont(val)}
+                      barTextColor={barTextColor}
+                      onBarTextColorChange={val => setBarTextColor(val)}
+                      onResetBarStyle={() => { setBarColor(''); setBarFont(''); setBarTextColor(''); setBarTransparency(1); }}
+                      barTransparency={barTransparency}
+                      onBarTransparencyChange={val => setBarTransparency(val)}
                     />
                   </div>
                 )}
-                <button
-                  onClick={() => window.print()}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  Print
-                </button>
                 {/* Share pill — full sharing menu for recipients */}
                 <div className="relative">
                   <button
@@ -1241,6 +1352,7 @@ function SharedChecklistContent({
                     </>
                   )}
                 </div>
+                </div>{/* end ml-auto group */}
               </div>
 
               {/* Scrollable sidebar content */}
@@ -1332,7 +1444,7 @@ function SharedChecklistContent({
         categoryOrder={store.order}
         categoryMeta={store.meta}
       />
-    </>
+    </BarStyleProvider>
   );
 }
 
