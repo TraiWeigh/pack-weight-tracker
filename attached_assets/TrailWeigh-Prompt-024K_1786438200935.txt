@@ -1,0 +1,181 @@
+TRAILWEIGH — PROMPT 024K
+CAPTURE THE RAW 68-ITEM RESPONSE FROM THE EXISTING LIVE PDF IMPORT PATH
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a single-file capture task. No application code changes, diagnosis, diff, or repair.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 30 seconds–2 minutes
+Estimated Agent usage/cost: about $0.10–$0.50
+
+IMPORTANT — TWO SEPARATE ATTACHMENTS
+
+This prompt is being sent with the PDF as a SEPARATE Replit attachment:
+
+TrailWeigh-024K-Test-Pack-Weight.pdf
+
+Do NOT look for the PDF inside a ZIP.
+Do NOT continue unless that PDF attachment is actually available to this task.
+
+The attached PDF is the exact file that the live TrailWeigh Scan Gear List currently reports as:
+68 items found
+
+PRIMARY GOAL
+
+Use the SAME existing live PDF import path that Scan Gear List uses, run the attached PDF through it ONE TIME, and save the exact raw response before doing anything else.
+
+CRITICAL RULES
+
+DO NOT MODIFY APPLICATION CODE.
+DO NOT MODIFY TESTS.
+DO NOT MODIFY IMPORTER LOGIC.
+DO NOT FIX THE 68-vs-77 ISSUE.
+DO NOT CREATE A SUBSTITUTE PARSER.
+DO NOT USE OCR.
+DO NOT MANUALLY RECONSTRUCT ITEMS.
+DO NOT DIAGNOSE OR DIFF THE RESULT.
+DO NOT TOUCH ANY UNRELATED READY-FOR-REVIEW TASK.
+
+STEP 0 — VERIFY THE ATTACHED PDF IS ACTUALLY AVAILABLE
+
+Before doing anything else, verify that:
+TrailWeigh-024K-Test-Pack-Weight.pdf
+is available to the task as an actual uploaded file.
+
+If it is NOT available:
+STOP IMMEDIATELY and say:
+“024K stopped: the standalone PDF attachment is not available.”
+
+Do not continue and do not create placeholder files.
+
+STEP 1 — IDENTIFY THE CURRENT LIVE PDF IMPORT PATH
+
+Inspect only enough code to identify the exact current route/function/API used when Scan Gear List uploads a PDF.
+
+Do not edit it.
+
+Use the same path that currently produces the live result:
+68 items found
+
+STEP 2 — RUN THE ATTACHED PDF THROUGH THAT SAME PATH ONCE
+
+Invoke the existing live PDF import path with:
+TrailWeigh-024K-Test-Pack-Weight.pdf
+
+Do not substitute a different parser.
+
+STEP 3 — FIRST ARTIFACT: SAVE THE RAW RESPONSE IMMEDIATELY
+
+BEFORE any analysis, report writing, or ZIP creation, save the exact returned response to:
+
+workflow-reports/024K-live-pdf-response.json
+
+Preserve the response exactly as returned:
+- same top-level structure;
+- same keys;
+- same item order;
+- same values;
+- same records;
+- no inferred fields;
+- no cleanup;
+- no normalization.
+
+If the response contains metadata plus an item array, save the FULL response.
+
+STEP 4 — VERIFY THE JSON EXISTS BEFORE CONTINUING
+
+Use a direct filesystem command to verify:
+
+workflow-reports/024K-live-pdf-response.json
+
+physically exists and has nonzero size.
+
+Then inspect the saved JSON only enough to report:
+- top-level keys;
+- item-array key name;
+- exact number of item records.
+
+If the item-array count is 68:
+continue.
+
+If the count is anything other than 68:
+STOP and report the exact count.
+Do not alter the response or force it to 68.
+
+STEP 5 — CREATE A SHORT REPORT ONLY AFTER THE JSON EXISTS
+
+Create:
+
+workflow-reports/PROMPT_024K_REPORT.md
+
+Keep it short. Include only:
+- Prompt number: 024K
+- Agent mode used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact live route/function/API path used
+- confirmation the standalone PDF attachment was used
+- raw JSON filename
+- top-level JSON keys
+- item-array key name
+- exact item count
+- confirmation: “No application code or behavior was changed.”
+
+STEP 6 — VERIFY BOTH SOURCE FILES BEFORE PACKAGING
+
+Run a direct filesystem check confirming BOTH exist:
+
+workflow-reports/024K-live-pdf-response.json
+workflow-reports/PROMPT_024K_REPORT.md
+
+If either is missing:
+STOP.
+Do not reconstruct it.
+
+STEP 7 — CREATE ZIP WITH A DIRECT SHELL COMMAND
+
+Only after both source files exist, create the ZIP deterministically:
+
+cd workflow-reports
+zip -j trailweigh-024K-report.zip 024K-live-pdf-response.json PROMPT_024K_REPORT.md
+
+Then verify with:
+
+unzip -l trailweigh-024K-report.zip
+ls -l trailweigh-024K-report.zip
+
+The ZIP must contain exactly:
+1. 024K-live-pdf-response.json
+2. PROMPT_024K_REPORT.md
+
+If ZIP creation fails but the raw JSON exists:
+DO NOT rerun the parser.
+Report that the JSON exists and ZIP creation failed.
+
+NO UNRELATED CHANGES
+
+Do not touch:
+- CSV importer;
+- Background;
+- toolbar alignment;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- authentication;
+- shared-view unit behavior;
+- Stripe/payments/AI credits;
+- any unrelated task or Ready-for-review change.
+
+FINAL STOP RULE
+
+STOP immediately after:
+- the standalone PDF has been run through the existing live PDF path once;
+- 024K-live-pdf-response.json physically exists;
+- PROMPT_024K_REPORT.md physically exists;
+- and the ZIP has either been created and verified or its packaging failure has been reported.
+
+DO NOT IMPLEMENT THE PDF FIX.
+DO NOT BEGIN ANOTHER TASK.
