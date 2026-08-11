@@ -465,6 +465,14 @@ export const CLOTHING_TYPES = new Set([
 ]);
 
 /**
+ * 024P: Broad apparel/footwear/headwear pattern for worn-routing gate.
+ * Used when the item's type is not in CLOTHING_TYPES but is clearly apparel
+ * (e.g. "Hiking Shirt" is not in the specific CLOTHING_TYPES set).
+ * Only applies when an explicit Worn signal is present.
+ */
+const APPAREL_WORD_RE = /\b(shirt|tee|t-shirt|shorts|pants|tights|leggings|dress|skirt|socks?|hat|cap|beanie|jacket|hoody|hoodie|sweater|jersey|top|bra|underwear|boots?|shoes?|sneakers?|runners?|sandals?|gaiters?|gloves?|mittens?|vest)\b/i;
+
+/**
  * Section headings that explicitly designate rows as "Clothing Worn".
  * When a source section matches these, the item keeps "Clothing Worn"
  * as its destination (unless overridden by a Consumables Type — nothing
@@ -585,7 +593,12 @@ export function applyGearClassification(item: ExtractedItem): ExtractedItem {
 
   // Priority 2: Wearable sleep/camp clothing → "Clothing Packed".
   // This overrides any source section, including Sleep System sections.
+  // 024P exception: if the import path already resolved destination to a Clothing Worn
+  // alias (from an explicit Worn column / Status column / Subcategory), preserve it.
   if (CLOTHING_TYPES.has(typeN)) {
+    if (CLOTHING_WORN_SECTION_ALIASES.has(destN)) {
+      return { ...item, destination: 'Clothing Worn', warning: item.warning };
+    }
     const conflict = sectionConflict('Clothing Packed');
     return {
       ...item,
@@ -644,11 +657,14 @@ const WEIGHT_HDR_RE = /^(weight|item weight|gear weight|wt|mass|ounces|oz|grams|
 const UNIT_RE       = /^(unit|units|weight unit|weightunit)$/;
 const QTY_HDR_RE    = /^(quantity|qty|count|#)$/;
 const CAT_HDR_RE    = /^(category|section|group|system)$/;
+const SUBCAT_HDR_RE = /^(subcategory|sub category|sub-category)$/; // 024P
 
 function detectCols(headerRow: unknown[]): {
-  typeCol: number; descCol: number; weightCol: number; unitCol: number; qtyCol: number; catCol: number;
+  typeCol: number; descCol: number; weightCol: number; unitCol: number;
+  qtyCol: number; catCol: number; subcatCol: number;
 } {
-  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1, qtyCol = -1, catCol = -1;
+  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  let qtyCol = -1, catCol = -1, subcatCol = -1;
   headerRow.forEach((h, i) => {
     const n = norm(h);
     if (typeCol   === -1 && TYPE_RE.test(n))        typeCol   = i;
@@ -657,8 +673,9 @@ function detectCols(headerRow: unknown[]): {
     if (unitCol   === -1 && UNIT_RE.test(n))        unitCol   = i;
     if (qtyCol    === -1 && QTY_HDR_RE.test(n))     qtyCol    = i;
     if (catCol    === -1 && CAT_HDR_RE.test(n))     catCol    = i;
+    if (subcatCol === -1 && SUBCAT_HDR_RE.test(n))  subcatCol = i;
   });
-  return { typeCol, descCol, weightCol, unitCol, qtyCol, catCol };
+  return { typeCol, descCol, weightCol, unitCol, qtyCol, catCol, subcatCol };
 }
 
 // ── Section-mode extraction ───────────────────────────────────────────────────
@@ -752,8 +769,9 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
 
   // Find the first row that looks like a header (has weight col at minimum)
   let headerIdx = -1;
-  // 024O: also detect category and quantity columns
-  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1, qtyCol = -1, catCol = -1;
+  // 024O: also detect category and quantity columns; 024P: subcategory column
+  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  let qtyCol = -1, catCol = -1, subcatCol = -1;
 
   for (let r = 0; r < Math.min(rows.length, 10); r++) {
     const detected = detectCols(rows[r]);
@@ -765,6 +783,7 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
       unitCol    = detected.unitCol;
       qtyCol     = detected.qtyCol;
       catCol     = detected.catCol;
+      subcatCol  = detected.subcatCol;
       break;
     }
   }
@@ -813,7 +832,15 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
       ? Math.round(rawQtyCell)
       : Math.max(1, parseInt(String(rawQtyCell ?? ''), 10) || 1);
 
-    results.push({ sub, desc, weightOz: oz, warning: warning || oz > 500, destination: cat || undefined, qty });
+    // 024P: worn signals for XLSX — Subcategory column and leading "Worn" in description.
+    const subcatRaw = subcatCol >= 0 ? String(row[subcatCol] ?? '').trim() : '';
+    const isExplicitlyWorn =
+      CLOTHING_WORN_SECTION_ALIASES.has(norm(subcatRaw)) ||
+      /^worn\b/i.test(desc.trim());
+    const isClothingType = CLOTHING_TYPES.has(norm(sub)) || APPAREL_WORD_RE.test(sub);
+    const finalDest = (isExplicitlyWorn && isClothingType) ? 'Clothing Worn' : (cat || undefined);
+
+    results.push({ sub, desc, weightOz: oz, warning: warning || oz > 500, destination: finalDest, qty });
   }
 
   return results;
@@ -874,7 +901,7 @@ const CSV_COL_ALIASES: Record<string, string[]> = {
   qty:         ['quantity', 'qty', 'count', '#'],
   weight:      ['weight', 'wt', 'mass'],
   unit:        ['unit', 'units', 'weight unit', 'weightunit'],
-  worn:        ['worn'],
+  worn:        ['worn', 'status'],   // 024P: 'status' column covers "status = worn"
   expendable:  ['consumable', 'expendable'],
 };
 
@@ -1042,11 +1069,28 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     const weightRaw = get('weight');
     const unitRaw   = get('unit');
     const expendRaw = get('expendable');
-    // worn is parsed but not propagated in v1 (no dedicated worn field in GearItem)
 
     // 024O: read quantity; default to 1 when absent, blank, or non-numeric
     const qtyRaw = get('qty');
     const qty    = Math.max(1, parseInt(qtyRaw, 10) || 1);
+
+    // 024P: detect explicit worn signals from the CSV source.
+    // Signal A: dedicated Worn column (TRUE / Yes / 1)
+    // Signal B: Status column with value "worn" / "WORN"
+    //   (both map to the 'worn' field via CSV_COL_ALIASES)
+    // Signal C: Subcategory column matches a Clothing Worn alias
+    // Signal D: Description/notes begins with "Worn" (tight: "Worn item", "Worn while hiking")
+    const wornRaw   = get('worn');      // covers Worn and Status columns via alias
+    const subcatRaw = get('subcategory');
+    const isExplicitlyWorn =
+      parseCsvBool(wornRaw) === true ||
+      /^worn$/i.test(wornRaw.trim()) ||
+      CLOTHING_WORN_SECTION_ALIASES.has(norm(subcatRaw)) ||
+      /^worn\b/i.test(desc.trim());
+    // Only apply worn routing for items recognised as apparel/footwear/headwear.
+    // CLOTHING_TYPES covers specific gear names; APPAREL_WORD_RE catches generic
+    // terms (e.g. "Hiking Shirt") not individually enumerated in that set.
+    const isClothingType = CLOTHING_TYPES.has(norm(typeRaw)) || APPAREL_WORD_RE.test(typeRaw);
 
     let weightOz = 0;
     let warning  = false;
@@ -1063,10 +1107,14 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     const expendable = parseCsvBool(expendRaw) ?? false;
 
     // 024E fix A: preserve the CSV "Type" column as the item's sub/type field.
-    // 024E fix B: when Expendable=true, override destination to 'Consumables' so
-    //   applyGearClassification routes the item there (via CONSUMABLES_SECTION_ALIASES
-    //   or CONSUMABLES_TYPES priority) regardless of the source CSV Category value.
-    const effectiveDestination = expendable ? 'Consumables' : (category || undefined);
+    // 024E fix B: when Expendable=true, override destination to 'Consumables'.
+    // 024P fix:   when item is explicitly worn AND recognised apparel, route to 'Clothing Worn'.
+    //   applyGearClassification Priority 2 (CLOTHING_TYPES) is patched to honour this.
+    const effectiveDestination = expendable
+      ? 'Consumables'
+      : (isExplicitlyWorn && isClothingType)
+        ? 'Clothing Worn'
+        : (category || undefined);
 
     items.push(applyGearClassification({
       sub:         typeRaw.slice(0, 60),

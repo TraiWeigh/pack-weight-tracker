@@ -1,0 +1,333 @@
+TRAILWEIGH — PROMPT 024P
+PRESERVE WORN STATUS DURING CSV/XLSX IMPORT WITHOUT CHANGING OTHER ROUTING
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a narrow follow-up to the USER-VERIFIED 024O CSV/XLSX compatibility repair. The parser already reads the files correctly; this prompt should only preserve explicit Worn status and route worn clothing/footwear/headwear correctly.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 5–10 minutes
+Estimated Agent usage/cost: about $0.80–$1.80
+
+ATTACH THESE TEST FILES WITH THIS PROMPT
+1. 01_lighterpack_style.csv
+2. 02_metagear_style.csv
+3. 05_nested_subcategory_test.xlsx
+4. 06_messy_spreadsheet.csv
+
+IMPORTANT VERIFIED CURRENT STATE
+Prompt 024O is USER-VERIFIED PASS.
+
+Do NOT redo or redesign 024O.
+
+024O successfully fixed:
+- Item Name / Name / Item / Gear header aliases;
+- Category/Group header handling;
+- Quantity/Qty/Count handling;
+- Weight/unit handling;
+- header-row detection when a title row appears above the real header;
+- blank-weight retention;
+- mixed metric/imperial parsing;
+- combined weights such as "1 lb 10 oz";
+- existing Fuel -> Consumables behavior.
+
+USER-VERIFIED 024O RESULTS INCLUDE:
+- Test 01: Smartwater Bottle Qty 2 imported correctly.
+- Test 02: Water Qty 2 and Dog Food Qty 3 imported correctly; mixed lb/kg/oz weights correct.
+- Test 05: Fuel Qty 2 imported correctly.
+- Test 06: Fuel Qty 2, Socks Qty 2, title/header detection, 1 lb 10 oz, and blank Toothpaste weight all correct.
+- Test 07: Water Bottle Qty 2, USB-C Cable Qty 2, Dog Food Qty 4, and metric conversions all correct.
+
+THE ONLY ISSUE TO FIX IN 024P
+Explicit source Worn status is being ignored.
+
+Examples observed in USER testing:
+- Test 01:
+  Hiking Shirt has Worn = TRUE, but it did not become Clothing Worn.
+- Test 02:
+  Trail Runners has Worn = Yes, but it imported into Clothing Packed.
+- Test 05:
+  Sun Hat has Subcategory = Worn and Notes = "Worn item", but it imported into Clothing Packed.
+- Test 06:
+  Sun Hat has status = worn, but it imported into Clothing Packed.
+
+PRIMARY GOAL
+When a CSV/XLSX source explicitly identifies an apparel/footwear/headwear item as worn, TrailWeigh must preserve that information and organize it as Clothing Worn instead of Clothing Packed.
+
+This prompt is NOT a general category/routing redesign.
+
+SUPPORTED EXPLICIT WORN SIGNALS
+Use the existing CSV/XLSX import path and support clear, explicit Worn indicators such as:
+
+A. Dedicated Worn column/header
+Examples:
+- Worn = TRUE
+- Worn = true
+- Worn = Yes
+- Worn = yes
+- Worn = 1
+- Worn = worn
+
+B. Status column/header
+Examples:
+- Status = worn
+- Status = WORN
+
+C. Category/Subcategory values
+Examples:
+- Worn
+- Worn Gear
+- Clothing Worn
+- Subcategory = Worn
+
+D. Notes/Description only when the wording is an explicit worn marker
+Examples:
+- "Worn item"
+- "Worn while hiking"
+
+Do NOT classify an item as worn merely because a note contains an unrelated word fragment or vague contextual wording.
+
+ROUTING RULE
+If an item is BOTH:
+1. clearly apparel / footwear / headwear under TrailWeigh's existing clothing recognition, AND
+2. explicitly marked worn by one of the supported signals above,
+
+then route it to:
+Clothing Worn
+
+instead of:
+Clothing Packed
+or generic Clothing.
+
+Examples that MUST work:
+- Hiking Shirt + Worn TRUE -> Clothing Worn
+- Trail Runners + Worn Yes -> Clothing Worn
+- Sun Hat + Subcategory Worn -> Clothing Worn
+- Sun Hat + Status worn -> Clothing Worn
+
+IMPORTANT SAFETY / SCOPE RULE
+Do NOT blindly send every item with a worn flag into Clothing Worn if it is not clothing/footwear/headwear.
+
+If a source marks a non-clothing item as worn/carried, preserve the existing normal TrailWeigh routing unless the current application already has a separate established non-clothing worn mechanism.
+
+Do NOT invent a new category or data model in this prompt.
+
+WORN STATUS SHOULD TAKE PRECEDENCE OVER GENERIC CLOTHING ROUTING
+For recognized clothing/footwear/headwear:
+explicit Worn status -> Clothing Worn
+
+It must NOT be subsequently overwritten by a generic rule that changes it back to:
+- Clothing
+- Clothing Packed
+
+PRESERVE EXISTING CONSUMABLE/EXPENDABLE BEHAVIOR
+Do NOT change consumable routing in this prompt.
+
+Known separate routing observations are OUT OF SCOPE:
+- Leukotape routing
+- Medication routing
+- Repair Tape routing
+- generic "Bits" category cleanup
+- any broader First Aid/Health mapping
+
+Fuel must continue following the existing verified Consumables/Expendables behavior.
+
+DO NOT TOUCH PDF OR DOCX
+This prompt is only for the CSV/XLSX compatibility/import path.
+
+Do NOT change:
+- PDF parsing;
+- PDF row detection;
+- PDF category extraction;
+- DOCX parsing;
+- DOCX heading/category logic;
+- OCR/image importing.
+
+Do not regress the USER-VERIFIED 77-item PDF result from 024M.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024P_REPORT.md
+
+Initially write:
+- Prompt: 024P
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — INSPECT THE CURRENT 024O CSV/XLSX IMPORT PATH
+Inspect only the code necessary to determine:
+- where 024O normalizes CSV/XLSX header aliases;
+- where source fields are turned into imported item records;
+- where category/routing decisions are applied;
+- where generic Clothing/Clothing Packed routing may overwrite an explicit worn clue.
+
+Do NOT broadly refactor the importer.
+
+State the exact confirmed reason explicit Worn status is currently lost or ignored in the report before making the repair.
+
+PHASE 3 — IMPLEMENT THE MINIMUM REPAIR
+Make the smallest robust change that:
+
+1. Reads explicit Worn signals from the supported fields.
+2. Normalizes common truthy worn values safely.
+3. Carries that explicit worn signal through the CSV/XLSX import flow.
+4. For apparel/footwear/headwear, ensures the final destination is Clothing Worn.
+5. Prevents later generic clothing routing from overwriting Clothing Worn.
+6. Leaves all other 024O field parsing unchanged.
+
+Do not add AI.
+Do not add a new UI control.
+Do not redesign Scan Gear List.
+Do not create a second importer.
+Do not add a new database field unless the current architecture absolutely requires it and no existing mechanism can represent the behavior. Prefer using existing category/routing behavior.
+
+PHASE 4 — REQUIRED REGRESSION TESTS
+Run the attached files through the SAME current CSV/XLSX import path.
+
+TEST 01 — 01_lighterpack_style.csv
+Required:
+- 9 items found.
+- Hiking Shirt is recognized as worn and final destination = Clothing Worn.
+- Smartwater Bottle remains Qty 2.
+- Fuel still routes to Consumables.
+- No item lost or duplicated.
+
+TEST 02 — 02_metagear_style.csv
+Required:
+- 7 items found.
+- Trail Runners has Worn = Yes and final destination = Clothing Worn.
+- Water remains Qty 2.
+- Dog Food remains Qty 3.
+- Backpack 1.55 lb still parses correctly.
+- Water 1 kg still parses correctly.
+- No item lost or duplicated.
+
+TEST 05 — 05_nested_subcategory_test.xlsx
+Required:
+- 12 items found.
+- Sun Hat with Subcategory = Worn / Notes = "Worn item" -> Clothing Worn.
+- Fuel remains Qty 2 and Consumables.
+- No item lost or duplicated.
+- Subcategory handling must not cause nested items to disappear.
+
+TEST 06 — 06_messy_spreadsheet.csv
+Required:
+- 10 items found.
+- Header row below the title is still detected.
+- Sun Hat with Status = worn -> Clothing Worn.
+- Fuel remains Qty 2.
+- Socks remains Qty 2.
+- Tent "1 lb 10 oz" remains 26 oz.
+- blank Toothpaste weight still imports.
+- TOTAL row remains ignored.
+- No item lost or duplicated.
+
+IMPORTANT:
+Test the final imported result/category, not only the preview text.
+
+PHASE 5 — PROTECT 024O AND 024M
+Verify:
+- 024O header aliases still work.
+- 024O Quantity behavior still works.
+- 024O header-row detection still works.
+- 024O metric/imperial weight parsing still works.
+- Fuel routing still works.
+- the known 77-item CSV regression still returns 77 if that regression fixture is available in the project.
+- the known 77-item PDF regression still returns 77 if that regression fixture/path is available without changing PDF code.
+
+If a regression fixture is unavailable, state that clearly; do not fabricate a result.
+
+CHANGED-FILE CONTROL
+Before finishing, inspect every changed application file.
+
+Changes should be limited to:
+- the CSV/XLSX import/mapping/routing path;
+- directly necessary tests/helpers.
+
+Do NOT change unrelated UI/layout/components.
+
+Specifically do not touch:
+- Background;
+- toolbar alignment;
+- Share;
+- Locker;
+- Save / Save As;
+- themes;
+- authentication;
+- footer;
+- Help/About;
+- payments/Stripe;
+- AI/credits;
+- PDF parser;
+- DOCX parser.
+
+REPORT REQUIREMENTS
+Update:
+
+workflow-reports/PROMPT_024P_REPORT.md
+
+It must include:
+- Prompt number: 024P
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of Worn status being ignored
+- exact repair made
+- Test 01 result
+- Test 02 result
+- Test 05 result
+- Test 06 result
+- confirmation Hiking Shirt -> Clothing Worn
+- confirmation Trail Runners -> Clothing Worn
+- confirmation both Sun Hat test variants -> Clothing Worn
+- confirmation Smartwater Bottle Qty 2 preserved
+- confirmation Water Qty 2 preserved
+- confirmation Dog Food Qty 3 preserved
+- confirmation Fuel Qty 2 preserved in Tests 05/06
+- confirmation Socks Qty 2 preserved
+- build/test result
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- confirmation PDF/DOCX code was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+After the report physically exists, create:
+
+workflow-reports/trailweigh-024P-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024P_REPORT.md
+
+If Replit creates useful automated test output specifically for 024P, include it too.
+
+Use a direct filesystem check to verify:
+- PROMPT_024P_REPORT.md exists;
+- trailweigh-024P-report.zip exists;
+- the ZIP opens successfully;
+- the required report is actually inside the ZIP.
+
+Do not merely say the files were created. Verify them.
+
+FINAL STOP RULE
+Complete ONLY Prompt 024P.
+
+Do not begin:
+- consumable-routing cleanup;
+- DOCX category-heading repair;
+- PDF parsing repair;
+- any other waiting TrailWeigh feature.
+
+STOP after the 024P report and ZIP are created and verified.
+
+USER VERIFICATION
+Replit must report its internal test results, but final PASS remains PENDING until the user tests the live TrailWeigh app.
