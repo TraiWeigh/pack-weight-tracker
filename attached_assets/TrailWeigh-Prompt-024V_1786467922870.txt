@@ -1,0 +1,563 @@
+TRAILWEIGH — PROMPT 024V
+CLEAN UP NAME SEMANTICS AND UPDATE “MISSING DESCRIPTIONS” WARNING TO “MISSING NAMES”
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused follow-up to the USER-VERIFIED NAME work in 024Q/024R and the routing fixes through 024U. Do not redesign the importer.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.50
+
+ATTACH THESE TEST FILES
+1. 01_lighterpack_style.csv
+2. 02_metagear_style.csv
+3. 05_nested_subcategory_test.xlsx
+4. 06_messy_spreadsheet.csv
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Prompt 024O = USER-VERIFIED PASS.
+Prompt 024P = USER-VERIFIED PASS.
+Prompt 024R = USER-VERIFIED PASS.
+Prompt 024U = USER-VERIFIED PASS.
+
+Preserve all verified behavior from those prompts.
+
+CURRENT USER-VERIFIED NAME DESIGN
+
+The visible TrailWeigh item row is:
+
+TYPE | NAME | MOVE | WEIGHT | QTY | TOTAL
+
+The user wants this simple meaning:
+
+TYPE
+= what kind of item it is.
+
+NAME
+= the actual manufacturer/product/model name, when the source provides one.
+
+WEIGHT
+= per-item weight.
+
+QTY
+= quantity.
+
+TOTAL
+= calculated total.
+
+Worn/consumable/status/notes/specification text must not be used as NAME.
+
+CURRENT PROBLEM
+
+Prompt 024R successfully stopped obvious worn/status notes such as:
+- Worn while hiking
+- Pair weight
+- Worn item
+
+from becoming NAME.
+
+But current Test 01 / Test 02 previews still show other non-product text in NAME, including examples such as:
+
+- 40 L frameless backpack
+- Single-wall shelter
+- 20 degree quilt
+- Inflatable pad
+- 750 ml pot
+- 110 g fuel canister
+- 1 L bottle
+- 10,000 mAh
+- Main pack
+- Carried layer
+- Reusable
+- Rechargeable
+- Three daily portions
+
+These are descriptions, specs, capacities, notes, status, or generic attributes.
+They are not manufacturer/product/model names.
+
+PRIMARY GOAL
+
+During CSV/XLSX import:
+
+1. Prefer explicit product-identity source fields for TrailWeigh NAME.
+2. Do NOT automatically use obvious description/specification/status/note text as NAME.
+3. If no actual product/model name is available, leave NAME blank.
+4. Do NOT invent or infer a manufacturer/model.
+5. Update the Scan Gear List warning text from “missing descriptions” to “missing names.”
+
+DO NOT RECREATE A DESCRIPTION COLUMN.
+
+NAME SOURCE PRIORITY
+
+Use dedicated product-identity columns first.
+
+Recognize source headers such as:
+- Name
+- Product
+- Product Name
+- Model
+- Item Model
+
+If one of these contains a real value:
+use it for TrailWeigh NAME.
+
+If multiple are present:
+prefer the strongest dedicated product identity in the current existing priority order, but do not overwrite a valid dedicated Name/Product/Model with a generic Description.
+
+DESCRIPTION FALLBACK RULE
+
+A source Description column must NOT be blindly copied into NAME.
+
+Use Description as NAME only when it clearly represents product/model identity.
+
+If Description is clearly a:
+- specification;
+- capacity;
+- dimension;
+- feature;
+- status;
+- use note;
+- routing note;
+- quantity note;
+- weight note;
+- generic descriptive phrase;
+
+then leave NAME blank.
+
+DO NOT INVENT A NAME.
+
+OBVIOUS NON-NAME EXAMPLES
+
+The following types of values must NOT populate NAME when they are merely source Description/Notes text:
+
+STATUS / ROUTING / USE
+- Worn while hiking
+- Worn item
+- Carried
+- Carried layer
+- Consumable
+- Reusable
+- Three daily portions
+- first aid
+- generic category
+
+WEIGHT / QUANTITY NOTES
+- Pair weight
+- quantity > 1
+- quantity four
+- weight intentionally blank
+- blank weight should not block import
+- same mass, different unit
+- metric decimal
+
+CAPACITY / SIZE / GENERIC SPECIFICATIONS
+- 10,000 mAh
+- 1 L bottle
+- 750 ml pot
+- 110 g fuel canister
+- 40 L frameless backpack
+
+GENERIC PRODUCT DESCRIPTIONS
+- Single-wall shelter
+- 20 degree quilt
+- Inflatable pad
+- Rechargeable
+- Main pack
+- canister stove
+- small fuel canisters
+- spare pairs
+
+These values may remain useful internally as source notes if the current architecture keeps them, but they must not be presented as the item NAME.
+
+VALID NAME EXAMPLES
+
+If source contains:
+
+Type = Tent
+Product = Zpacks Duplex
+
+Required:
+Type = Tent
+Name = Zpacks Duplex
+
+If source contains:
+
+Type = Backpack
+Name = Durston Kakwa 55
+
+Required:
+Type = Backpack
+Name = Durston Kakwa 55
+
+If source contains:
+
+Type = Hiking Shirt
+Model = Outdoor Research Echo
+
+Required:
+Type = Hiking Shirt
+Name = Outdoor Research Echo
+
+If source contains:
+
+Type = Power Bank
+Product Name = Nitecore NB10000
+
+Required:
+Type = Power Bank
+Name = Nitecore NB10000
+
+NAME MAY BE BLANK
+
+This is acceptable and preferred when the source does not provide real product identity.
+
+Examples:
+
+Type = Hiking Shirt
+Description = Worn while hiking
+Worn = TRUE
+
+Required:
+Name = blank
+
+Type = Power Bank
+Description = 10,000 mAh
+
+Required:
+Name = blank
+
+Type = Backpack
+Description = Main pack
+
+Required:
+Name = blank
+
+Type = Tent
+Description = Single-wall shelter
+
+Required:
+Name = blank
+
+Do not replace a missing Name with:
+- the Type;
+- the Category;
+- the source group;
+- a spec;
+- status text;
+- notes;
+- a guessed manufacturer/model.
+
+IMPORTANT COMPATIBILITY / LEGACY RULE
+
+Do NOT delete or blank existing saved user data.
+
+This prompt changes AUTOMATIC IMPORT NORMALIZATION only.
+
+If an existing saved TrailWeigh item already has text in its internal `desc`/description-backed field, leave it alone.
+
+Do NOT run a database migration that strips existing data.
+
+This prompt is about what newly imported CSV/XLSX rows place into the visible NAME field.
+
+CONSERVATIVE IMPLEMENTATION
+
+Do not build an AI-like natural-language classifier.
+
+Prefer simple, deterministic rules using:
+- source header origin;
+- known status/note fields;
+- obvious spec-only patterns;
+- current parser metadata.
+
+The strongest rule should be:
+dedicated Name/Product/Model source fields are trusted for NAME.
+
+Description/Notes are fallback-only and should be rejected when clearly non-identity.
+
+If uncertain:
+leave NAME blank rather than guessing.
+
+WARNING TEXT FIX
+
+In Scan Gear List, current warning text says approximately:
+
+“Flagged items may have unusual weights or missing descriptions — review before importing.”
+
+Change it to:
+
+“Flagged items may have unusual weights or missing names — review before importing.”
+
+Use “names”, not “descriptions”.
+
+Update any equivalent accessible label/message that refers to this same warning.
+
+Do not broadly replace unrelated uses of the word description elsewhere in help text unless they refer to the renamed item field.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024V_REPORT.md
+
+Initially write:
+- Prompt: 024V
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify it physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM CURRENT CAUSE
+
+Inspect only enough of the CSV/XLSX normalization path to prove why generic Description text currently becomes NAME.
+
+Document:
+- which source headers populate the internal NAME/desc field;
+- current priority order;
+- why dedicated Product/Model aliases do or do not win;
+- why spec/note text from Description survives into NAME.
+
+Do not broadly rediagnose the importer.
+
+PHASE 3 — MINIMUM SAFE REPAIR
+
+Make the smallest safe change that:
+
+1. Preserves dedicated Name/Product/Product Name/Model/Item Model as NAME.
+2. Prevents obvious status/spec/note Description values from becoming NAME.
+3. Leaves NAME blank when no product identity exists.
+4. Preserves existing saved data.
+5. Preserves 024O/024P/024R/024U behavior.
+6. Updates the warning wording to “missing names”.
+
+Do not add:
+- AI
+- manufacturer lookup
+- catalog lookup
+- retailer search
+- new visible columns
+- a Notes column
+- a Description column
+
+PHASE 4 — REQUIRED TEST 01
+
+Run:
+01_lighterpack_style.csv
+
+Required:
+- exactly 9 items found/imported;
+- Trail Backpack -> Backpack category;
+- Hiking Shirt -> Clothing Worn;
+- Smartwater Bottle Qty = 2;
+- Fuel routing preserved;
+- no items lost/duplicated.
+
+Required NAME results for this test fixture:
+- Trail Backpack -> Name blank, NOT “40 L frameless backpack”
+- Trekking Pole Tent -> Name blank, NOT “Single-wall shelter”
+- Down Quilt -> Name blank, NOT “20 degree quilt”
+- Sleeping Pad -> Name blank, NOT “Inflatable pad”
+- Titanium Pot -> Name blank, NOT “750 ml pot”
+- Fuel Canister -> Name blank, NOT “110 g fuel canister”
+- Smartwater Bottle -> Name blank, NOT “1 L bottle”
+- Hiking Shirt -> Name blank
+- Power Bank -> Name blank, NOT “10,000 mAh”
+
+This fixture intentionally contains descriptions/specs rather than real product names.
+Blank NAME is the correct result.
+
+PHASE 5 — REQUIRED TEST 02
+
+Run:
+02_metagear_style.csv
+
+Required:
+- exactly 7 items found/imported;
+- Trail Runners -> Clothing Worn;
+- Water Qty = 2;
+- Dog Food Qty = 3;
+- mixed weight units preserved;
+- no items lost/duplicated.
+
+Required NAME cleanup:
+- Backpack -> Name blank, NOT “Main pack”
+- Rain Jacket -> Name blank, NOT “Carried layer”
+- Trail Runners -> Name blank
+- Water Filter -> Name blank, NOT “Reusable”
+- Water -> Name blank
+- Dog Food -> Name blank, NOT “Three daily portions”
+- Headlamp -> Name blank, NOT “Rechargeable”
+
+PHASE 6 — REQUIRED TEST 05
+
+Run:
+05_nested_subcategory_test.xlsx
+
+Required:
+- exactly 12 items found/imported;
+- Sun Hat -> Clothing Worn;
+- Sun Hat Name remains blank;
+- Fuel Qty = 2;
+- no items lost/duplicated.
+
+Do not regress existing XLSX category/subcategory handling.
+
+PHASE 7 — REQUIRED TEST 06
+
+Run:
+06_messy_spreadsheet.csv
+
+Required:
+- exactly 10 items found/imported;
+- Backpack -> Backpack;
+- no Big Three;
+- no Bits;
+- Toothbrush -> Personal;
+- Fuel -> Consumables, Qty 2;
+- Socks Qty 2;
+- Sun Hat -> Clothing Worn, Name blank;
+- Tent = 26 oz;
+- blank Toothpaste weight retained;
+- no duplicates/lost items.
+
+For generic notes/specs in this fixture:
+do not populate NAME unless there is a real product/model identity.
+
+PHASE 8 — POSITIVE PRODUCT-NAME TESTS
+
+Add or run a small parser-level test fixture proving dedicated product identity is preserved:
+
+Example rows:
+
+Type,Product,Weight,Unit
+Tent,Zpacks Duplex,18.5,oz
+
+Type,Product Name,Weight,Unit
+Power Bank,Nitecore NB10000,5.3,oz
+
+Type,Model,Worn,Weight,Unit
+Hiking Shirt,Outdoor Research Echo,TRUE,5.2,oz
+
+Required:
+- Tent | Zpacks Duplex
+- Power Bank | Nitecore NB10000
+- Hiking Shirt | Outdoor Research Echo -> Clothing Worn
+
+Do not create new visible fields.
+
+PHASE 9 — WARNING TEXT VERIFICATION
+
+In the running Scan Gear List UI, verify the warning now says:
+
+“Flagged items may have unusual weights or missing names — review before importing.”
+
+It must not say:
+“missing descriptions”.
+
+PHASE 10 — REGRESSION PROTECTION
+
+Verify:
+- 024O header aliases/Qty/weights still work;
+- 024P worn routing still works;
+- 024R status text remains excluded from NAME;
+- 024S/024U category routing remains intact;
+- 77-item CSV regression still returns 77 if fixture is available;
+- 77-item PDF regression still returns 77 if available without modifying PDF code.
+
+Do NOT modify PDF or DOCX parsing.
+
+OUT OF SCOPE
+
+Do NOT fix in 024V:
+- Leukotape routing;
+- Medication routing;
+- Repair Tape routing;
+- DOCX heading/category support;
+- PDF parsing;
+- catalog/search;
+- retailer integration;
+- AI;
+- Background;
+- toolbar;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- CSV/XLSX Name normalization/field selection;
+- Scan Gear List warning wording;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024V_REPORT.md
+
+Include:
+- Prompt number: 024V
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of generic Description text becoming NAME
+- exact Name-selection repair
+- exact warning-text change
+- Test 01 result
+- Test 02 result
+- Test 05 result
+- Test 06 result
+- positive Product/Product Name/Model alias test result
+- confirmation all listed generic spec/status values remain out of NAME
+- confirmation blank NAME is allowed
+- 024O regression confirmation
+- 024P regression confirmation
+- 024R regression confirmation
+- 024S/024U regression confirmation
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF/DOCX code was not changed
+- confirmation no existing saved item data was migrated/blanked
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-024V-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024V_REPORT.md
+
+Include useful 024V-specific automated test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024V.
+Do not start another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final PASS remains pending until the user tests live TrailWeigh.

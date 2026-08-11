@@ -539,7 +539,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
               {items.some(i => i.warning && !i.added) && (
                 <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                  Flagged items may have unusual weights or missing descriptions — review before importing.
+                  Flagged items may have unusual weights or missing names — review before importing.
                 </p>
               )}
 

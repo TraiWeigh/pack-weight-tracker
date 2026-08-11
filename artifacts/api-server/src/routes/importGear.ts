@@ -918,13 +918,14 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
     const effectiveCat = WEAK_SOURCE_GROUPS.has(norm(cat)) ? '' : cat;
     const finalDest = (isExplicitlyWorn && isClothingType) ? 'Clothing Worn' : (effectiveCat || undefined);
 
-    // 024R: prefer dedicated product-name column (nameCol) over descCol for the Name field.
+    // 024R/024V: prefer dedicated product-name column (nameCol) for the Name field.
     // nameCol is a separate column from typeCol; when both exist the product column wins.
-    // Apply STATUS_DESC_RE to filter obvious status/metadata text from the Name field.
+    // 024V: when no dedicated product-identity column exists, always leave Name blank —
+    // Description / Notes cells are specs or generic notes, not product/model identity.
     if (nameCol >= 0 && nameCol !== typeCol) {
       const nameCell = String(row[nameCol] ?? '').trim();
       desc = (nameCell && !STATUS_DESC_RE.test(nameCell)) ? nameCell : '';
-    } else if (STATUS_DESC_RE.test(desc.trim())) {
+    } else {
       desc = '';
     }
     desc = desc.slice(0, 200);
@@ -1158,16 +1159,18 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     if (/^(total|grand\s*total|sub\s*total)\b/i.test(typeRaw) ||
         /^(total|grand\s*total|sub\s*total)\b/i.test(descRaw)) continue;
 
-    // 024R: Name (desc) priority:
-    //   1. Dedicated product-name column (Product / Model / Item Model) if not status text,
-    //      BUT only when typeRaw is also present (if typeRaw is absent, nameRaw serves as
-    //      the item identity/Type and should not also appear in the Name field).
-    //   2. Description/notes column if not status text
-    //   3. Blank — do NOT fall back to typeRaw (would duplicate the Type field)
+    // 024R/024V: Name (desc) priority:
+    //   1. Dedicated product-name column (Product / Model / Item Model) if present and not
+    //      status text, AND only when typeRaw is also present (if typeRaw is absent, nameRaw
+    //      serves as item identity/Type and must not also appear in the Name field).
+    //   2. Blank — do NOT use Description / Notes as NAME.
+    //      Description/Notes columns contain specs, capacities, and generic notes, not
+    //      product/model identity. Leaving NAME blank is the correct result when no dedicated
+    //      product-identity column exists.
     // descRaw is still used directly for worn Signal D below, independent of this filter.
-    const nameDesc = typeRaw && nameRaw && !STATUS_DESC_RE.test(nameRaw.trim())
+    const nameDesc = (typeRaw && nameRaw && !STATUS_DESC_RE.test(nameRaw.trim()))
       ? nameRaw
-      : (!STATUS_DESC_RE.test(descRaw.trim()) ? descRaw : '');
+      : '';
 
     const category  = get('category');
     const weightRaw = get('weight');
