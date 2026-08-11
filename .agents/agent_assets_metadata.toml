@@ -147,3 +147,10 @@ uri = "file://workflow-reports/trailweigh-025C-report.zip"
 type = "unspecified"
 title = "Prompt 025C Report"
 description = "PROMPT_025C_REPORT.md — Type/Name read-only in Scan Gear List preview"
+
+[[outputs]]
+id = "099XHns-P6cnT4Lc6-z8j"
+uri = "file://workflow-reports/trailweigh-025D-report.zip"
+type = "unspecified"
+title = "Prompt 025D Report"
+description = "PROMPT_025D_REPORT.md — Root cause analysis + isManual fix + workflow restart"

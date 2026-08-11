@@ -1,0 +1,345 @@
+TRAILWEIGH — PROMPT 025D
+CORRECT 025C: DETECTED TYPE AND NAME ARE STILL EDITABLE IN SCAN GEAR LIST PREVIEW
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a very narrow UI correction. Prompt 025C changed the right area but failed the live user test because detected-row Type and Name are still editable.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 2–4 minutes
+Estimated Agent usage/cost: about $0.30–$0.80
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Prompt 025C = USER-VERIFIED FAIL for exactly two behaviors:
+
+1. Detected/imported row TYPE is still editable.
+2. Detected/imported row NAME is still editable.
+
+EVERYTHING ELSE FROM 025C WORKS AND MUST BE PRESERVED:
+
+- Category remains adjustable.
+- Weight remains editable.
+- Qty remains editable.
+- + Add Row behavior is okay.
+- Import behavior is okay.
+- No other regressions were reported.
+
+DO NOT CHANGE ANYTHING ELSE.
+
+PRIMARY GOAL
+
+In the Scan Gear List preview:
+
+For DETECTED / IMPORTED rows only:
+
+TYPE
+- must be truly read-only/display-only;
+- must NOT be an <input>, <textarea>, contenteditable element, editable combobox, or any equivalent editable control;
+- clicking the Type value must NOT place a text caret;
+- typing must NOT change Type;
+- Backspace/Delete must NOT erase Type;
+- paste must NOT modify Type.
+
+NAME
+- must be truly read-only/display-only;
+- must NOT be an <input>, <textarea>, contenteditable element, editable combobox, or any equivalent editable control;
+- clicking the Name value must NOT place a text caret;
+- typing must NOT change Name;
+- Backspace/Delete must NOT erase Name;
+- paste must NOT modify Name.
+
+Preferred rendering for detected rows:
+- plain text inside the table cell;
+- use the current readable typography;
+- no disabled-input appearance;
+- no gray disabled haze;
+- preserve truncation/ellipsis if currently needed;
+- preserve horizontal scrolling and column alignment.
+
+DO NOT SOLVE THIS WITH CSS ONLY
+
+The live test proves that Type and Name are still functionally editable.
+
+Do NOT merely:
+- remove an input border;
+- change background color;
+- add pointer-events styling while leaving editable controls underneath;
+- visually disguise the input.
+
+For detected rows, the DOM/control itself must no longer be an editable text field.
+
+MANUAL + ADD ROW EXCEPTION
+
+Rows created manually with:
+
++ Add Row
+
+may keep editable Type and Name if the current Add Row workflow requires user entry.
+
+Required distinction:
+
+DETECTED / IMPORTED ROW
+- Type = read-only display
+- Name = read-only display
+
+MANUALLY ADDED ROW
+- Type = editable if currently required
+- Name = editable if currently required
+
+The live 025C failure strongly suggests the current detected-vs-manual row distinction or conditional render is not being applied correctly.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025D_REPORT.md
+
+Initially write:
+- Prompt: 025D
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — REPRODUCE THE LIVE FAILURE BEFORE EDITING
+
+Use an existing import fixture that produces detected rows.
+
+Open Scan Gear List and verify before the repair:
+
+- a detected Type can currently receive text-input focus and be edited;
+- a detected Name can currently receive text-input focus and be edited.
+
+Do not assume the 025C implementation works because code conditionals appear correct.
+
+Inspect the rendered DOM/component state and identify EXACTLY why the detected rows are still using editable controls.
+
+Specifically determine:
+
+1. How detected/imported rows are marked in state.
+2. How + Add Row rows are marked in state.
+3. Which boolean/condition 025C currently uses to choose display text versus inputs.
+4. Why that condition evaluates incorrectly for real uploaded rows.
+5. Whether a row property is missing, overwritten, defaulted, or not propagated.
+6. Whether a shared row component still renders the editable input regardless of the condition.
+
+Document the exact confirmed cause before editing.
+
+DO NOT GUESS.
+
+PHASE 3 — MINIMUM SAFE CORRECTION
+
+Make the smallest robust change so REAL uploaded/detected rows follow the read-only branch.
+
+Preferred approach:
+- use an existing reliable row-origin property if one already exists;
+- if no reliable origin property exists, add the smallest explicit staged-row origin flag at row creation time, such as detected/imported vs manual, and preserve it only in Scan Gear List staging state;
+- do not alter persisted gear data or database schema.
+
+Do NOT:
+- infer detected/manual status from whether Type/Name are blank;
+- infer it from row index;
+- infer it from category;
+- infer it from file type;
+- infer it from whether weight exists;
+- hard-code test filenames;
+- disable all Type/Name fields globally.
+
+The distinction must reflect the actual row origin.
+
+PHASE 4 — REQUIRED RENDERING BEHAVIOR
+
+For a detected row, inspect the rendered elements after the fix.
+
+TYPE cell must render as:
+- text / non-editable display element.
+
+NAME cell must render as:
+- text / non-editable display element.
+
+They must NOT have:
+- input value editing;
+- onChange text editing;
+- contentEditable=true.
+
+If accessibility requires focusable text for another reason, it must still not be editable.
+
+For a manual Add Row row:
+- preserve the current editable Type/Name controls.
+
+PHASE 5 — LIVE FUNCTION TEST
+
+Use the current running app.
+
+A. DETECTED ROW TYPE
+1. Upload a known working file.
+2. Click Type.
+3. Try typing.
+4. Try Backspace/Delete.
+5. Try paste.
+6. Confirm Type does not change.
+
+B. DETECTED ROW NAME
+1. Click Name.
+2. Try typing.
+3. Try Backspace/Delete.
+4. Try paste.
+5. Confirm Name does not change.
+
+C. PRESERVE OTHER PREVIEW CONTROLS
+Confirm:
+- Category still changes.
+- Weight still changes.
+- Qty still changes.
+- checkbox still works.
+- Import Selected Items still works.
+- horizontal scrolling still works.
+
+D. MANUAL + ADD ROW
+Click + Add Row.
+Confirm its Type/Name entry behavior still works as before.
+
+E. MAIN TRAILWEIGH LIST
+Import at least one detected item.
+Confirm in the MAIN TrailWeigh list:
+- Type is still editable.
+- Name is still editable.
+
+This is critical.
+Do not accidentally make main-list Type/Name read-only.
+
+PHASE 6 — DOM / IMPLEMENTATION VERIFICATION
+
+Before declaring completion, confirm from the rendered Scan Gear List DOM:
+
+For at least one detected row:
+- Type is not rendered as an editable input.
+- Name is not rendered as an editable input.
+
+For at least one manual Add Row row:
+- Type/Name remain editable if required.
+
+Do not declare PASS based only on component source code.
+
+The live 025C failure happened despite the prior implementation looking correct internally.
+
+PHASE 7 — REGRESSION PROTECTION
+
+Do NOT alter:
+- item detection counts;
+- imported Type values;
+- imported Name values;
+- category mapping;
+- weight parsing;
+- Qty parsing;
+- CSV/XLSX/PDF/DOCX parsing;
+- worn routing;
+- Fuel routing;
+- Med Kit / Repair Kit routing;
+- Backpack routing;
+- Name inference;
+- warning text.
+
+No parser regression suite is necessary unless your change touches parser code.
+It should not.
+
+OUT OF SCOPE
+
+Do NOT change:
+- Category editability;
+- Weight editability;
+- Qty editability;
+- + Add Row design;
+- importer parsing;
+- any routing rule;
+- main-list row UI;
+- toolbar;
+- Background;
+- Share;
+- Locker;
+- Save / Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- Scan Gear List preview row origin/conditional rendering;
+- directly necessary UI test/helper code;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025D_REPORT.md
+
+It must include:
+- Prompt number: 025D
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of the 025C failure
+- how detected rows are identified after the fix
+- how manual Add Row rows are identified
+- exact Type rendering used for detected rows
+- exact Name rendering used for detected rows
+- confirmation detected Type cannot be edited
+- confirmation detected Name cannot be edited
+- confirmation rendered detected Type is not an editable input
+- confirmation rendered detected Name is not an editable input
+- confirmation Category remains adjustable
+- confirmation Weight remains editable
+- confirmation Qty remains editable
+- confirmation + Add Row remains usable
+- confirmation main-list Type remains editable
+- confirmation main-list Name remains editable
+- confirmation importer/parser/routing code was not changed
+- build/test result
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025D-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025D_REPORT.md
+
+Include useful 025D-specific UI test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025D.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user verifies live:
+
+1. detected Type cannot be edited;
+2. detected Name cannot be edited;
+3. Category still works;
+4. Weight still works;
+5. Qty still works;
+6. + Add Row still works;
+7. main-list Type/Name are still editable after import.

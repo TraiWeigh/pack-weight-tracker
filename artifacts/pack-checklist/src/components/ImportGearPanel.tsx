@@ -33,10 +33,11 @@ function displayToOz(display: string, unit: WeightUnit): number {
 interface EditedItem extends ParsedItem {
   selected:      boolean;
   added:         boolean;
-  /** 025C: true for rows created by "+ Add Row" (user-typed); false for rows from the importer.
-   *  Detected/imported rows render Type and Name as read-only display text.
-   *  Manually added rows retain editable Type/Name inputs so the feature stays usable. */
-  isManual:      boolean;
+  /** 025D: present and true ONLY for rows created by "+ Add Row".
+   *  Absent (undefined) for detected/imported rows.
+   *  Render check uses strict equality (=== true) so absent/undefined is never truthy.
+   *  Detected rows always fall through to the read-only display branch. */
+  isManual?:     true;
   destination:   string;
   displayWeight: string;
   weightUnit:    WeightUnit;
@@ -84,7 +85,8 @@ function parsedToEdited(item: ParsedItem, categoryOrder: string[]): EditedItem {
     ...item,
     selected:      true,
     added:         false,
-    isManual:      false, // 025C: detected/imported row — Type and Name are read-only
+    // 025D: isManual is intentionally omitted — absence means detected/imported row.
+    // The render check uses strict === true so undefined never triggers the editable branch.
     destination:   resolved || (categoryOrder[0] ?? ''),
     displayWeight: String(item.weightOz),
     weightUnit:    'oz',
@@ -96,7 +98,7 @@ function blankEditedItem(categoryOrder: string[]): EditedItem {
   return {
     sub: '', desc: '', weightOz: 0, warning: false,
     selected: true, added: false,
-    isManual:      true, // 025C: manually added row — Type and Name remain editable
+    isManual:      true, // 025D: only manual "+ Add Row" rows carry this flag
     destination:   categoryOrder[0] ?? '',
     displayWeight: '',
     weightUnit:    'oz',
@@ -447,10 +449,10 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
                             </select>
                           )}
 
-                          {/* Type — read-only for detected/imported rows (025C); editable for manual Add Row rows */}
+                          {/* Type — read-only for detected/imported rows (025D); editable for manual Add Row rows */}
                           {item.added ? (
                             <span className="text-xs text-muted-foreground truncate">{item.sub || '—'}</span>
-                          ) : item.isManual ? (
+                          ) : item.isManual === true ? (
                             <input
                               value={item.sub}
                               onChange={e => updateField(idx, { sub: e.target.value })}
@@ -471,10 +473,10 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
                             </span>
                           )}
 
-                          {/* Name — read-only for detected/imported rows (025C); editable for manual Add Row rows */}
+                          {/* Name — read-only for detected/imported rows (025D); editable for manual Add Row rows */}
                           {item.added ? (
                             <span className="text-xs text-muted-foreground truncate">{item.desc || '—'}</span>
-                          ) : item.isManual ? (
+                          ) : item.isManual === true ? (
                             <input
                               value={item.desc}
                               onChange={e => updateField(idx, { desc: e.target.value })}
