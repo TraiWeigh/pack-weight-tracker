@@ -1,0 +1,118 @@
+TRAILWEIGH — PROMPT 024B
+VERTICALLY ALIGN THE SIDEBAR TOP CONTROL GROUP WITH THE MAIN TOP-LEFT ARROW CONTROL
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a narrow, low-risk visual/layout correction. Do not use Power mode unless Economy cannot complete the exact alignment without broader debugging.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 1–2 minutes
+Estimated Agent usage/cost: about $0.15–$0.40
+
+ATTACH THESE TWO SCREENSHOTS WITH THIS PROMPT
+1. TrailWeigh-024B-Full-Window.png — use for overall page/layout context.
+2. TrailWeigh-024B-Alignment-Detail.png — use as the precise visual reference for the alignment correction.
+
+SCOPE — ONE VISUAL CORRECTION ONLY
+
+Prompt 024A successfully fixed the HORIZONTAL alignment of the sidebar top controls with Pack Summary. Preserve that work exactly.
+
+The only remaining problem is VERTICAL alignment:
+
+- The main top-left joined down/up arrow control is higher on the page.
+- The sidebar top-right control group:
+  [joined down/up arrows] [Background] [Share]
+  is sitting lower.
+- Move the ENTIRE sidebar top-right control row upward as one unit until it aligns vertically with the main top-left joined down/up arrow control.
+
+VISUAL TARGET
+
+Use the attached screenshots as the source of truth.
+
+The final result must satisfy all of the following:
+
+1. The sidebar joined down/up arrow control and the main top-left joined down/up arrow control must share the same vertical position/centerline.
+2. The top edge of the sidebar joined arrow control should visually line up with the top edge of the main top-left joined arrow control.
+3. Background and Share must remain vertically centered in the same sidebar control row.
+4. Move the sidebar control row as ONE GROUP. Do not independently nudge Background, Share, or either arrow segment.
+5. Preserve the horizontal alignment achieved by Prompt 024A:
+   - left visible edge of the sidebar joined arrow control remains aligned with the left visible edge of Pack Summary;
+   - right visible edge of Share remains aligned with the right visible edge of Pack Summary.
+6. Pack Summary itself must NOT move up, down, left, right, become wider, or become narrower.
+7. The sidebar panels below Pack Summary must NOT move or change spacing.
+8. Keep the controls in the same rendered sidebar content-width system that Prompt 024A established so scrollbar-gutter behavior does not break the horizontal alignment.
+
+IMPLEMENTATION GUIDANCE
+
+- Inspect the actual rendered layout and the relevant container spacing before changing anything.
+- Correct the row/container spacing or positioning that causes the vertical offset.
+- Prefer a normal responsive layout correction over absolute positioning or transform/translate hacks.
+- Do not change control heights, widths, font sizes, icons, labels, colors, borders, or functionality.
+- Do not change scrollbar behavior, including scrollbar-gutter.
+- Do not move Pack Summary to compensate for the toolbar.
+- Do not alter the main category Open/Close control.
+- Do not change Background behavior.
+- Do not change Share behavior.
+- Do not make unrelated cleanup, refactoring, formatting, payment/Stripe, AI-credit, account, Locker, importer, theme, or data changes.
+
+PRESERVE ALL EXISTING BEHAVIOR
+
+The following must continue to work exactly as before:
+- Main joined down-arrow/up-arrow control:
+  - down = Open all categories
+  - up = Close all categories
+- Sidebar joined down-arrow/up-arrow control:
+  - down = Open all sidebar panels
+  - up = Close all sidebar panels
+- Background opens the existing Background controls.
+- Share keeps its existing Share behavior.
+- Keyboard focus, tooltips/accessibility labels, and touch targets remain intact.
+- Existing Prompt 023V spacing and Prompt 024A horizontal alignment remain intact.
+
+VERIFICATION
+
+After making the change:
+
+1. Run TrailWeigh and inspect the rendered page at the same desktop layout shown in the screenshots.
+2. Compare the final rendered result directly against both attached screenshots.
+3. Verify the sidebar top control row is vertically aligned with the main top-left arrow control.
+4. Verify the sidebar row still matches Pack Summary horizontally on both outer edges.
+5. Verify Pack Summary and the four sidebar panels did not move or change size/spacing.
+6. Click/test both joined arrow controls.
+7. Test Background.
+8. Test Share.
+9. Confirm the app builds/runs cleanly.
+
+DO NOT claim PASS merely because the CSS values look correct. Verify the actual rendered alignment visually.
+
+COMPLETION CRITERIA — REQUIRED BEFORE STOPPING OR DECLARING COMPLETION
+
+You MUST complete ALL of the following before you stop or say Prompt 024B is complete:
+
+- Make only the narrowly scoped vertical-alignment correction described above.
+- Verify the rendered result visually against the attached screenshots.
+- Verify the existing controls still function.
+- Verify the build/app runs cleanly.
+- Write the Markdown workflow report:
+  workflow-reports/PROMPT_024B_REPORT.md
+- Create the corresponding ZIP report:
+  workflow-reports/trailweigh-024B-report.zip
+- VERIFY that BOTH the .md report and the .zip file actually exist in workflow-reports/ before declaring completion.
+- Do not merely describe that the report/ZIP should exist; physically create and verify both files.
+
+The Markdown report must include:
+- Prompt number: 024B
+- Replit Agent mode actually used
+- Time worked
+- Number of actions
+- Lines/items read
+- Agent usage/cost
+- Exact files changed
+- What caused the vertical offset
+- Exact correction made
+- Build/test results
+- Visual verification results
+- Confirmation that 024A horizontal alignment was preserved
+- Confirmation that no unrelated changes were made
+- User verification status: PENDING until the user tests the live app
+
+STOP after Prompt 024B and its report/ZIP are completed and verified. Do not begin another task.
