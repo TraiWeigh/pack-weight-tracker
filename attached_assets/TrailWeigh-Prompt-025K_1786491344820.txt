@@ -1,0 +1,489 @@
+TRAILWEIGH — PROMPT 025K
+BACKGROUND / THEMES PANEL MUST FOLLOW LIGHT AND DARK APPEARANCE MODE
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+EXPECTED USAGE
+Estimated time: 3–6 minutes
+Estimated Agent usage/cost: about $0.50–$1.10
+
+==================================================
+ATTACH THESE TWO FILES
+==================================================
+
+1. TrailWeigh-Prompt-025K.txt
+2. 025K-A-BACKGROUND-PANEL-DARK-MODE-CURRENT-FAILURE.png
+
+Do not start application changes until both are accessible.
+
+If the screenshot is missing or unreadable:
+STOP.
+Do not modify application code.
+
+==================================================
+WHY THIS PROMPT EXISTS
+==================================================
+
+Prompt 025J was USER-VERIFIED PARTIAL.
+
+Preserve the 025J improvements:
+- shared file-name pill;
+- improved Shared layout/toolbar geometry;
+- standalone top-toolbar Print remains removed.
+
+Do NOT reopen those areas in this prompt.
+
+NEW CONFIRMED USER-OBSERVED ISSUE:
+
+The Background/Themes settings accordion/panel remains visually the SAME light/white color in both Light and Dark appearance modes.
+
+The attached screenshot shows:
+- Dark mode is selected;
+- the main application is visibly dark;
+- the Background/Themes panel surface is still white/light.
+
+This is the exact defect for 025K.
+
+IMPORTANT TERMINOLOGY:
+The target is the BACKGROUND / THEMES SETTINGS PANEL / ACCORDION SURFACE,
+not the gear-category accordion header bars.
+
+Do NOT change the user's selected Bar Color just to make the settings panel look dark.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+Make the Background/Themes settings panel visually follow TrailWeigh's selected appearance mode.
+
+LIGHT MODE:
+- panel surface uses TrailWeigh's existing light-mode panel styling;
+- controls, text, borders, dividers, dropdowns, sliders, and buttons remain readable and consistent.
+
+DARK MODE:
+- panel surface uses TrailWeigh's existing dark-mode surface styling;
+- text/labels use appropriate light foreground colors;
+- borders/dividers use dark-mode-compatible styling;
+- dropdown/select controls use dark-mode styling;
+- slider tracks/thumb surroundings remain readable;
+- buttons/toggles use dark-mode-compatible surfaces;
+- the panel must NOT remain white.
+
+IMAGE THUMBNAILS:
+- do not darken, recolor, filter, or alter the actual theme/background thumbnail images.
+
+SWITCHING MODES:
+- changing Light -> Dark updates the open panel immediately;
+- changing Dark -> Light updates the open panel immediately;
+- no refresh/reopen should be required.
+
+==================================================
+OBSERVED FACTS VS UNKNOWN ROOT CAUSE
+==================================================
+
+OBSERVED:
+- user selected Dark;
+- Background/Themes panel remains white/light;
+- user reports panel color appears the same in Light and Dark.
+
+UNKNOWN:
+- whether the panel is missing dark classes;
+- whether it is outside the active appearance provider;
+- whether a portal loses theme context/class styling;
+- whether hard-coded white/background classes override mode styling;
+- whether the panel has its own local styling path.
+
+Do NOT assume which cause applies.
+Prove the actual cause before editing.
+
+==================================================
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+==================================================
+
+Before editing application code create:
+
+workflow-reports/PROMPT_025K_REPORT.md
+
+Initially include:
+- Prompt: 025K
+- Status: IN PROGRESS
+- evidence attachment accessible: YES/NO
+- "Report created before application changes."
+
+Verify the report exists.
+
+If it cannot be created:
+STOP before application changes.
+
+==================================================
+PHASE 2 — CHECKPOINT
+==================================================
+
+Create a Replit checkpoint before editing if available.
+
+Record the checkpoint identifier/name in the report.
+
+If checkpoint creation is unavailable, record:
+CHECKPOINT = NOT AVAILABLE
+
+Do not invent a checkpoint value.
+
+==================================================
+PHASE 3 — VERIFY THE LIVE RENDER PATH
+==================================================
+
+Before editing, identify the exact current component(s) responsible for:
+- Background/Themes panel container;
+- panel body/surface;
+- controls inside it;
+- Light/Dark appearance state;
+- any portal/overlay mounting path if used.
+
+Document exact file/component names.
+
+Verify that the running route actually renders the component you intend to change.
+
+Do not treat source-code presence alone as proof that the live app uses it.
+
+==================================================
+PHASE 4 — REPRODUCE BEFORE EDITING
+==================================================
+
+Use Replit Preview / App Testing / browser testing on the running application.
+
+Open Background.
+
+TEST A — LIGHT
+1. Select Light.
+2. Keep Background panel open.
+3. Record:
+   - panel computed background color;
+   - panel text color;
+   - representative border/divider color;
+   - representative select/dropdown background and text color.
+
+TEST B — DARK
+1. Select Dark.
+2. Keep Background panel open.
+3. Record the same computed values.
+
+CONFIRMED FAILURE:
+If the panel stays visually/light-color equivalent between Light and Dark, record that as reproduced.
+
+AUTHENTICATION RULE:
+If this view requires authentication:
+1. first use an existing safe Agent test session/account if available;
+2. if Replit App Testing/Preview can use a valid existing authenticated test session, use it;
+3. do NOT create destructive test data.
+
+If authentication still prevents runtime reproduction:
+STOP.
+Do not modify code.
+Record exactly what could not be tested.
+
+Source comparison may help diagnosis, but it does NOT override this runtime reproduction gate.
+
+==================================================
+PHASE 5 — ROOT-CAUSE GATE
+==================================================
+
+Before editing, identify the confirmed reason the Background/Themes panel ignores Light/Dark.
+
+Inspect specifically:
+- hard-coded light background classes/colors;
+- missing `dark:` or equivalent mode styles;
+- CSS variables/theme tokens;
+- appearance context/provider availability;
+- root `dark` class or data attribute propagation;
+- portal-mounted content and whether it inherits the intended theme selector;
+- local component state that may be disconnected from global appearance state;
+- inline styles overriding theme styles.
+
+Prefer the existing TrailWeigh appearance mechanism.
+
+Current React/Tailwind best-practice principle for this task:
+- use the existing single appearance state/source of truth;
+- derive panel styling from that state/root theme mechanism;
+- do not create a second independent Light/Dark state just for this panel.
+
+Write the confirmed root cause into the report BEFORE code changes.
+
+If the root cause is materially broader than the Background/Themes panel/theme propagation path:
+STOP and report rather than expanding the task.
+
+==================================================
+PHASE 6 — SMALLEST SAFE FIX
+==================================================
+
+Make the smallest reversible repair.
+
+Preferred outcome:
+The Background/Themes panel uses the SAME existing TrailWeigh light/dark surface tokens/classes/appearance state used by other correctly themed application surfaces.
+
+Do NOT:
+- hard-code screenshot-specific RGB values if existing theme tokens/classes exist;
+- duplicate Light/Dark state;
+- change Bar Color semantics;
+- change Transparency semantics;
+- change Text Color semantics;
+- change Font semantics;
+- change Darken semantics;
+- change Fit/Fill behavior;
+- change theme selection behavior;
+- change theme images.
+
+==================================================
+PHASE 7 — PANEL SUBCOMPONENTS THAT MUST FOLLOW MODE
+==================================================
+
+Verify the complete visible Background/Themes panel, including where present:
+
+- panel outer surface;
+- section headings;
+- labels;
+- borders/dividers;
+- Bar Color controls;
+- Font select;
+- Text Color controls;
+- Reset Bar / Text button;
+- Fill Screen / Fit Image;
+- Light / Dark buttons;
+- Darken label/value/slider area;
+- Transparency label/value/slider area;
+- theme selector/dropdown;
+- scrollbar track/thumb where application styling controls it.
+
+Do not force native browser controls into custom styling if the app intentionally relies on browser-native rendering.
+Only ensure the TrailWeigh-controlled surfaces are mode-consistent and readable.
+
+THEME IMAGE THUMBNAILS:
+Must remain visually unchanged.
+
+==================================================
+PHASE 8 — REQUIRED RUNTIME PROOF
+==================================================
+
+After the fix, test with the SAME running route/session.
+
+LIGHT MODE:
+Record:
+- computed panel background;
+- computed text color;
+- representative border;
+- representative select/control surface.
+
+DARK MODE:
+Record the same values.
+
+PASS requires:
+- Light and Dark panel surfaces are visibly and measurably different;
+- Dark mode panel is no longer white/light;
+- Dark foreground text remains readable;
+- switching modes updates the already-open panel immediately;
+- switching back restores Light styling.
+
+Do not mark internal PASS merely because `dark:` classes or theme variables exist in source.
+
+==================================================
+PHASE 9 — SCREENSHOT PROOF
+==================================================
+
+If App Testing/browser screenshot capture is available, create:
+
+workflow-reports/025K-LIGHT-POSTFIX.png
+workflow-reports/025K-DARK-POSTFIX.png
+
+Use:
+- same viewport;
+- same file;
+- same background;
+- same open Background panel;
+- only appearance mode changed.
+
+The pair should clearly prove the panel changes between Light and Dark.
+
+If screenshot capture is unavailable:
+record SCREENSHOTS = NOT AVAILABLE
+and include the computed-style evidence instead.
+
+==================================================
+PHASE 10 — TARGETED REGRESSION
+==================================================
+
+Only test behavior realistically at risk.
+
+Verify:
+
+1. Background panel still opens/closes.
+2. Light button selects Light.
+3. Dark button selects Dark.
+4. Fit/Fill still works.
+5. Darken slider still works.
+6. Transparency slider still works.
+7. Bar Color still works as before.
+8. Text Color still works as before.
+9. Font still works as before.
+10. Theme selector/thumbnails still work.
+11. 025J file-name/layout improvements remain unchanged.
+12. standalone top-toolbar Print remains absent.
+13. Shared/Home layout is not intentionally changed.
+
+Do not run importer/parser work.
+
+==================================================
+IMPORTANT SEPARATE ISSUE — DO NOT MIX INTO 025K
+==================================================
+
+There is still a separate user-observed Shared/Home bar appearance mismatch from 025J:
+Shared category/header bars have appeared darker than Home.
+
+DO NOT attempt to solve that separate parity defect in 025K
+unless root-cause evidence proves it is literally the same appearance propagation bug.
+
+If it is NOT the same root cause:
+leave it unchanged and document it as OUT OF SCOPE / STILL PENDING.
+
+This keeps 025K focused.
+
+==================================================
+SCOPE / COST STOP CONDITION
+==================================================
+
+Expected:
+3–6 minutes
+about $0.50–$1.10 Agent usage.
+
+Expected application scope:
+approximately 1–2 directly related styling/component files.
+
+If the task unexpectedly requires:
+- broad appearance architecture rewrite;
+- many unrelated component files;
+- authentication redesign;
+- data/schema changes;
+- importer changes;
+- shared-link redesign;
+- work materially beyond the expected time/cost;
+
+STOP and report before expanding.
+
+==================================================
+CHANGED-FILE CONTROL
+==================================================
+
+Before completion:
+- inspect every changed application file;
+- revert unrelated edits;
+- no cleanup/refactor outside the confirmed fix.
+
+Expected changed areas:
+- Background/Themes panel styling/component;
+- directly necessary shared appearance helper/token if already used by this component;
+- targeted tests;
+- report artifacts.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Update:
+
+workflow-reports/PROMPT_025K_REPORT.md
+
+Include:
+- Prompt number: 025K
+- Replit Agent mode actually used
+- time worked
+- actions
+- lines/items read
+- Agent usage/cost
+- checkpoint result
+- evidence attachment verification
+- exact live route tested
+- exact component/file rendering Background/Themes panel
+- exact appearance-state/provider/root mechanism
+- Light pre-fix computed values
+- Dark pre-fix computed values
+- confirmed root cause
+- exact files changed
+- exact smallest fix
+- Light post-fix computed values
+- Dark post-fix computed values
+- immediate Light->Dark update result
+- immediate Dark->Light update result
+- theme-thumbnail unchanged result
+- Bar Color regression
+- Text Color regression
+- Font regression
+- Transparency regression
+- Darken regression
+- Fit/Fill regression
+- theme selector regression
+- 025J layout/file-name preservation result
+- standalone Print remains absent
+- post-fix screenshot paths or NOT AVAILABLE
+- final diff review
+- confirmation importer/parser files untouched
+- confirmation no unrelated changes
+- unresolved issues
+- separate Shared/Home bar mismatch status
+- User verification status: PENDING
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not call runtime behavior PASS if it was not actually tested.
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025K-report.zip
+
+Include at minimum:
+- PROMPT_025K_REPORT.md
+
+Also include if created:
+- 025K-LIGHT-POSTFIX.png
+- 025K-DARK-POSTFIX.png
+- small non-sensitive computed-style/test output.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+Complete ONLY Prompt 025K.
+
+Do not begin the separate Shared/Home bar appearance correction.
+Do not begin another TrailWeigh task.
+
+==================================================
+USER VERIFICATION
+==================================================
+
+Replit internal testing is NOT final PASS.
+
+Final status remains:
+USER VERIFICATION = PENDING
+
+User live PASS requires:
+1. Open Background in Light mode -> panel visibly uses Light styling.
+2. Switch to Dark while panel remains open -> panel immediately changes to Dark styling.
+3. Panel is no longer white in Dark mode.
+4. Text/controls remain readable.
+5. Switch back to Light -> panel immediately returns to Light styling.
+6. Theme thumbnails themselves are unchanged.
+7. Existing Background controls still work.

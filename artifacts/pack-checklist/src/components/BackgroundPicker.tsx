@@ -1105,7 +1105,7 @@ export function BackgroundPickerPanel({
   return createPortal(
     <div
       ref={panelRef}
-      className="w-[24rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
+      className={`w-[24rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150${bgTone === 'dark' ? ' screen-dark' : ''}`}
       style={{
         display: open ? undefined : 'none',
         position: 'fixed',
