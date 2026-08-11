@@ -28,3 +28,10 @@ uri = "file://trailweigh-017C-report.zip"
 type = "unspecified"
 title = "trailweigh-017C-report.zip"
 description = "Prompt 017C delivery: PROMPT_017C_REPORT.md, TRAILWEIGH_COMPLETE_WORKFLOW.md, TRAILWEIGH_WORKFLOW_PROTOCOL.md, TESTING.md"
+
+[[outputs]]
+id = "mhXCDE7JWGhyY23CcHWbd"
+uri = "file://workflow-reports/trailweigh-024M-report.zip"
+type = "unspecified"
+title = "TrailWeigh 024M Report"
+description = "PROMPT_024M_REPORT.md + 024M-post-fix-pdf-response.json (77 items)"

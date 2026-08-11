@@ -235,9 +235,14 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
   // we've already moved past that section (e.g. Kitchen → Backpack regression).
   let currentCategoryIndex = -1;
   let reachedMealPlanner = false;
+  // 024M fix B: tracks a checkbox-only line whose gear data appears on the very
+  // next line because the PDF text extractor split the row across two chunks.
+  // Always reset at page boundaries and at any line that cannot be a continuation.
+  let pendingOrphanedCheckbox = false;
 
   for (const page of pages) {
     if (reachedMealPlanner) break;
+    pendingOrphanedCheckbox = false; // never carry orphan state across page boundaries
 
     // Mark meal-planner boundary but still process lines before the heading
     if (/meal\s*planner/i.test(page.text)) reachedMealPlanner = true;
@@ -254,6 +259,7 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
       // ── Category header detection (before checkbox check) ──────────────────
       const catMatch = PDF_CAT_HDR_RE.exec(line) ?? PDF_CAT_HDR_X_RE.exec(line);
       if (catMatch) {
+        pendingOrphanedCheckbox = false; // category boundary is never a split-row continuation
         const key = catMatch[1].toLowerCase().replace(/\s*\+\s*/g, ' + ').trim();
         const candidate = PDF_CATEGORY_NAMES[key] ?? '';
         const candidateIndex = PDF_CATEGORY_ORDER.indexOf(candidate);
@@ -266,24 +272,55 @@ export function extractFromPdfPages(pages: { text: string }[]): ExtractedItem[] 
       }
 
       // ── Skip non-gear lines ───────────────────────────────────────────────
-      if (PDF_SKIP_RE.test(line))        continue;
-      if (PDF_SUMMARY_ROW_RE.test(line)) continue;
+      if (PDF_SKIP_RE.test(line))        { pendingOrphanedCheckbox = false; continue; }
+      if (PDF_SUMMARY_ROW_RE.test(line)) { pendingOrphanedCheckbox = false; continue; }
 
-      // ── Only process checkbox rows ────────────────────────────────────────
-      if (!PDF_CHECKBOX_RE.test(line)) continue;
-
-      // Strip the TRUE/FALSE prefix; handle concatenation ("FALSEPack Liner")
-      const gearLine = line.replace(/^(?:true|false)\s*/i, '').trim();
-      if (gearLine.length < 2) continue;
+      // ── Only process checkbox rows (or continuations of split rows) ────────
+      // A checkbox line is either the normal concatenated form ("FALSEPack Liner…")
+      // OR a bare "FALSE"/"TRUE" with nothing following — the lookahead in
+      // PDF_CHECKBOX_RE requires a character after the keyword, so bare lines
+      // need a separate test (024M fix B — root cause of missing Puffy Pants).
+      const isCheckboxLine = PDF_CHECKBOX_RE.test(line) || /^(?:true|false)\s*$/i.test(line);
+      let gearLine: string;
+      if (isCheckboxLine) {
+        pendingOrphanedCheckbox = false;
+        const stripped = line.replace(/^(?:true|false)\s*/i, '').trim();
+        if (stripped.length < 2) {
+          // 024M fix B: checkbox with no gear text on the same line — the actual
+          // row data appears on the very next PDF text-extraction chunk.
+          // Example: "FALSE" alone on P1:31, then "Puffy Pants … 5.5 0" on P1:32.
+          pendingOrphanedCheckbox = true;
+          continue;
+        }
+        gearLine = stripped;
+      } else if (pendingOrphanedCheckbox) {
+        // 024M fix B: this line is the gear-data continuation of a split row.
+        pendingOrphanedCheckbox = false;
+        if (line.length < 2) continue;
+        gearLine = line; // already trimmed by the pre-loop .map(l => l.trim())
+      } else {
+        continue; // not a checkbox row and no pending split-row continuation
+      }
 
       // ── Parse name + weight ───────────────────────────────────────────────
       const m = PDF_ROW_RE.exec(gearLine);
-      if (!m) continue;
+      let nameText: string;
+      let weightOz: number;
 
-      const nameText  = m[1].trim().replace(/\s+/g, ' ');
-      const weightOz  = parseFloat(m[2]);
-
-      if (!nameText || weightOz <= 0 || weightOz > 500) continue;
+      if (m) {
+        nameText = m[1].trim().replace(/\s+/g, ' ');
+        weightOz = parseFloat(m[2]);
+        if (!nameText || weightOz <= 0 || weightOz > 500) continue;
+      } else {
+        // 024M fix A: weight-less fallback — rows where Weight is blank but
+        // Type holds a meaningful item label (e.g. "Headphones 0", "Floss 0").
+        // The trailing integer is the Add/qty column value (always 0 here).
+        const noWtMatch = /^(.+?)\s+\d+$/.exec(gearLine) ?? /^(.+)$/.exec(gearLine);
+        if (!noWtMatch) continue;
+        nameText = noWtMatch[1].trim().replace(/\s+/g, ' ');
+        if (!nameText || nameText.length < 2) continue;
+        weightOz = 0; // item has no weight; allow it through
+      }
 
       // ── Split nameText into Type (sub) + Description (desc) ──────────────
       let sub  = '';

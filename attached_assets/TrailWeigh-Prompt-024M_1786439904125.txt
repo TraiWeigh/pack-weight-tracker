@@ -1,0 +1,401 @@
+TRAILWEIGH — PROMPT 024M
+REPAIR THE PDF IMPORTER USING THE VERIFIED 68-vs-77 EVIDENCE
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: The diagnosis is now evidence-based. This prompt should make the smallest parser repair necessary and verify the exact PDF result.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 5–10 minutes
+Estimated Agent usage/cost: about $0.90–$1.80
+
+UPLOAD ALL FIVE FILES AS SEPARATE REPLIT ATTACHMENTS
+
+1. TrailWeigh-Prompt-024M.txt
+2. TrailWeigh-024M-Test-Pack-Weight.pdf
+3. TrailWeigh-024M-Ground-Truth-77-Items.csv
+4. TrailWeigh-024M-Current-Live-68-Items.json
+5. TrailWeigh-024M-Exact-9-Missing-Items.json
+
+DO NOT put these files inside another ZIP for the Agent task.
+
+STEP 0 — VERIFY ALL FOUR EVIDENCE/TEST ATTACHMENTS BEFORE WORK
+
+Before reading or changing application code, verify that these four standalone attachments are actually available:
+
+- TrailWeigh-024M-Test-Pack-Weight.pdf
+- TrailWeigh-024M-Ground-Truth-77-Items.csv
+- TrailWeigh-024M-Current-Live-68-Items.json
+- TrailWeigh-024M-Exact-9-Missing-Items.json
+
+If ANY attachment is unavailable:
+STOP immediately.
+Do not modify application code.
+
+KNOWN VERIFIED EVIDENCE
+
+The current live PDF route is:
+
+POST /api/import-gear
+→ artifacts/api-server/src/routes/importGear.ts
+
+The supplied raw response file was captured from that exact live path and contains exactly 68 items.
+
+The supplied ground-truth CSV contains exactly 77 actual gear items from the same PDF.
+
+The supplied Exact-9 JSON is the verified diff between those two datasets.
+
+THE EXACT 9 CURRENTLY MISSING ITEMS ARE:
+
+1. Clothing Packed
+   Type: Puffy Pants
+   Description: Timmermade SUL Down Pants
+   Weight: 5.5 oz
+   Qty: 1
+
+2. Electronics
+   Type: Headphones
+   Description/fallback item identity: Headphones
+   Weight: blank
+   Qty: 1
+
+3. Toiletries + Med
+   Type: Toothbrush
+   Description/fallback item identity: Toothbrush
+   Weight: blank
+   Qty: 1
+
+4. Toiletries + Med
+   Type: Toothpaste
+   Description/fallback item identity: Toothpaste
+   Weight: blank
+   Qty: 1
+
+5. Toiletries + Med
+   Type: Floss
+   Description/fallback item identity: Floss
+   Weight: blank
+   Qty: 1
+
+6. Toiletries + Med
+   Type: Chapstick
+   Description/fallback item identity: Chapstick
+   Weight: blank
+   Qty: 1
+
+7. Toiletries + Med
+   Type: Sunscreen
+   Description/fallback item identity: Sunscreen
+   Weight: blank
+   Qty: 1
+
+8. Toiletries + Med
+   Type: Med Kit
+   Description/fallback item identity: Med Kit
+   Weight: blank
+   Qty: 1
+
+9. Toiletries + Med
+   Type: Repair Kit
+   Description/fallback item identity: Repair Kit
+   Weight: blank
+   Qty: 1
+
+IMPORTANT SOURCE-PDF DISTINCTION
+
+Eight of the nine missing source rows are Type-only rows whose separate Description cell is blank:
+- Headphones
+- Toothbrush
+- Toothpaste
+- Floss
+- Chapstick
+- Sunscreen
+- Med Kit
+- Repair Kit
+
+The ground-truth CSV uses the meaningful Type value as the fallback Description for these rows so they have an importable identity.
+
+Puffy Pants is DIFFERENT:
+- Type is present;
+- Description is present;
+- Weight is present;
+- yet the current live PDF path still omits it.
+
+DO NOT treat Puffy Pants as the same blank-Description bug without proving why it is lost.
+
+FUEL IS NOT MISSING
+
+The supplied current-live 68-item JSON proves that Fuel is already detected by the PDF route as:
+- Type/sub: Fuel
+- Description: 4 oz
+- Weight: 7.68 oz
+- destination: Expendables
+
+Do not alter or “repair” Fuel in this prompt.
+
+PRIMARY GOAL
+
+After the repair, running the attached PDF through the SAME existing POST /api/import-gear path must return exactly 77 real gear items, including all exact 9 items above, with no duplicates or junk rows.
+
+The result must come from the PDF itself.
+
+DO NOT manufacture the missing rows from the CSV or Exact-9 JSON.
+Those files are comparison/test evidence only.
+
+PHASE 1 — CREATE THE REPORT FILE BEFORE CHANGING CODE
+
+Because prior Replit tasks sometimes skipped report artifacts at completion, do this FIRST:
+
+Create:
+workflow-reports/PROMPT_024M_REPORT.md
+
+Initially write:
+- Prompt: 024M
+- Status: IN PROGRESS
+- “Report file created before application changes.”
+
+Verify the file physically exists.
+
+If you cannot create that report file:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM THE TWO ROOT CAUSES BEFORE EDITING
+
+Inspect the current PDF parser in:
+artifacts/api-server/src/routes/importGear.ts
+and any directly used helper only if necessary.
+
+A. BLANK-DESCRIPTION / TYPE-ONLY ROWS
+
+Trace one or more of the eight Type-only missing rows through the current PDF extraction/parsing flow.
+
+Confirm whether a condition such as:
+if (!desc) continue;
+or equivalent logic drops the row.
+
+Determine where the meaningful Type/sub value exists at the moment the row is discarded.
+
+B. PUFFY PANTS
+
+Separately trace this exact source row:
+
+Type: Puffy Pants
+Description: Timmermade SUL Down Pants
+Weight: 5.5 oz
+
+Determine exactly why this row is absent from the current 68-item response.
+
+Inspect the actual extracted PDF text around:
+- Timmermade SDUL .75 Down Sweater
+- Timmermade SUL Down Pants
+- Zpacks Octa Fleece Hoody
+
+Check parsing/extraction order, line grouping, regex matching, category/page boundaries, and subsequent filtering as relevant.
+
+Do not guess.
+
+Write the confirmed two root-cause findings into the existing 024M report before implementing the repair.
+
+PHASE 3 — MINIMUM REPAIR FOR TYPE-ONLY ROWS
+
+If confirmed that meaningful Type-only rows are discarded because Description is blank:
+
+Change the parser so a valid item row is NOT rejected solely because its Description cell/text is blank when a meaningful Type/sub item label exists.
+
+Required behavior:
+
+- preserve the meaningful Type/sub value;
+- if Description is truly blank, use the meaningful Type/sub value as the item Description fallback so TrailWeigh can retain/import the item;
+- allow Weight to remain blank/optional;
+- do not require a weight for an item to exist;
+- do not overwrite a valid nonblank Description;
+- do not convert empty placeholder rows into items;
+- do not convert category headings into items;
+- do not convert Total rows into items;
+- do not import charts or Meal Planner content as gear items.
+
+For the eight affected rows, each must appear exactly once after the repair.
+
+PHASE 4 — MINIMUM REPAIR FOR PUFFY PANTS
+
+Fix the separately confirmed cause for:
+
+Puffy Pants | Timmermade SUL Down Pants | 5.5 oz
+
+Use the smallest robust parser correction.
+
+Do not write a one-off hard-coded exception for the words “Puffy Pants” or “Timmermade”.
+
+The correction should address the actual parsing pattern that caused this valid row to be lost.
+
+If the correct repair necessarily affects other rows that share that same parsing pattern, verify those rows remain correct and are not duplicated.
+
+KNOWN COUNTED-BUT-IMPERFECT ROWS — OUT OF SCOPE UNLESS THE PUFFY-PANTS ROOT CAUSE REQUIRES THE SAME FIX
+
+The current 68-item raw response contains some rows whose multi-word Type was split imperfectly, for example:
+- Wall + “Charger ...”
+- Carry + “Bag ...”
+- Handheld + “Radio ...”
+- Air + “Pump ...”
+- Water + “Purifier ...”
+- Treking + “Pole ...”
+
+These rows are already COUNTED.
+
+Do not expand 024M into a general Type/Description cleanup project.
+
+Only change this behavior if the same confirmed parser defect must be corrected to recover Puffy Pants robustly. If such a shared correction is necessary, verify it does not reduce the item count or corrupt other rows.
+
+PHASE 5 — POST-FIX API CAPTURE
+
+After the repair, run the SAME attached PDF through the SAME live:
+
+POST /api/import-gear
+
+Save the exact post-fix response to:
+
+workflow-reports/024M-post-fix-pdf-response.json
+
+Verify:
+- top-level item array contains exactly 77 records;
+- all nine previously missing items are now represented exactly once;
+- no current valid item disappeared.
+
+PHASE 6 — MACHINE-COMPARE POST-FIX 77 AGAINST THE 77-ROW GROUND TRUTH
+
+Programmatically compare:
+
+workflow-reports/024M-post-fix-pdf-response.json
+
+against:
+
+TrailWeigh-024M-Ground-Truth-77-Items.csv
+
+Use the strongest available combination of:
+- Category/source section
+- Type/sub
+- Description
+- Weight
+
+Account for normal TrailWeigh destination mapping.
+
+Required result:
+- 77 expected gear rows represented;
+- zero expected rows missing;
+- zero duplicate gear rows caused by the repair.
+
+Do not count:
+- category headings;
+- totals;
+- empty placeholders;
+- charts;
+- Meal Planner rows.
+
+PHASE 7 — LIVE SCAN GEAR LIST VERIFICATION
+
+Run the TrailWeigh app and upload the attached PDF through the user-facing Scan Gear List.
+
+Verify the visible result says:
+
+77 items found
+
+Review enough of the preview to confirm the newly recovered rows are present.
+
+Then import all items into a blank/new list and confirm:
+- 77 total items import;
+- existing automatic category creation/mapping still works;
+- normal consumable/expendable routing still works;
+- Fuel still routes normally;
+- items without weight are allowed to exist;
+- the import panel clears/resets after successful import as before.
+
+Do not require every item to have weight.
+
+REGRESSION SAFETY
+
+Confirm the known-good CSV still finds/imports 77 items.
+
+Preserve:
+- Prompt 024E CSV Type/Expendable behavior;
+- Prompt 024D Background behavior;
+- current toolbar behavior/layout except do NOT attempt the separate 024L alignment repair here;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- authentication.
+
+Do not touch:
+- the unrelated “Shared view links show imperial units even for metric users” task;
+- Stripe/payments/AI credits;
+- unrelated application features.
+
+CHANGED-FILE CONTROL
+
+Before finishing, inspect every changed application file.
+
+For this repair, changes should be limited to the PDF import path and any directly necessary test/helper file.
+
+No unrelated refactoring or cleanup.
+
+REPORT — UPDATE THE FILE THAT WAS CREATED BEFORE CODING
+
+Update:
+workflow-reports/PROMPT_024M_REPORT.md
+
+It must include:
+- Prompt number: 024M
+- Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- confirmed cause for the eight Type-only rows
+- confirmed separate cause for Puffy Pants
+- exact repair made for each cause
+- before API count: 68
+- after API count: 77
+- confirmation all exact 9 missing items are now present
+- confirmation zero ground-truth items remain missing
+- confirmation no duplicates/junk rows were added
+- live Scan Gear List visible count
+- 77-item import result
+- CSV 77-item regression result
+- build/test result
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP — USE A DIRECT SHELL COMMAND
+
+Only after these files physically exist:
+
+workflow-reports/PROMPT_024M_REPORT.md
+workflow-reports/024M-post-fix-pdf-response.json
+
+create:
+
+workflow-reports/trailweigh-024M-report.zip
+
+using a direct deterministic shell command such as:
+
+cd workflow-reports
+zip -j trailweigh-024M-report.zip PROMPT_024M_REPORT.md 024M-post-fix-pdf-response.json
+
+Then verify:
+
+unzip -l trailweigh-024M-report.zip
+ls -l trailweigh-024M-report.zip
+
+The ZIP must contain both files.
+
+If ZIP creation fails but the report and post-fix JSON exist:
+DO NOT rerun the parser or redo the repair.
+Report the packaging failure and stop.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024M.
+
+Do not start the separate 024L toolbar-alignment repair.
+Do not apply unrelated pending tasks.
+Do not begin another task.

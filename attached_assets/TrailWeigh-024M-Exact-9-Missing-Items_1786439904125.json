@@ -1,0 +1,104 @@
+{
+  "expectedMissingCount": 9,
+  "items": [
+    {
+      "groundTruthRow": 23,
+      "Category": "Clothing Packed",
+      "Type": "Puffy Pants",
+      "Description": "Timmermade SUL Down Pants",
+      "Quantity": "1",
+      "Weight": "5.5",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 53,
+      "Category": "Electronics",
+      "Type": "Headphones",
+      "Description": "Headphones",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 58,
+      "Category": "Toiletries + Med",
+      "Type": "Toothbrush",
+      "Description": "Toothbrush",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 59,
+      "Category": "Toiletries + Med",
+      "Type": "Toothpaste",
+      "Description": "Toothpaste",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 60,
+      "Category": "Toiletries + Med",
+      "Type": "Floss",
+      "Description": "Floss",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 61,
+      "Category": "Toiletries + Med",
+      "Type": "Chapstick",
+      "Description": "Chapstick",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 62,
+      "Category": "Toiletries + Med",
+      "Type": "Sunscreen",
+      "Description": "Sunscreen",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 63,
+      "Category": "Toiletries + Med",
+      "Type": "Med Kit",
+      "Description": "Med Kit",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    },
+    {
+      "groundTruthRow": 64,
+      "Category": "Toiletries + Med",
+      "Type": "Repair Kit",
+      "Description": "Repair Kit",
+      "Quantity": "1",
+      "Weight": "",
+      "Unit": "oz",
+      "Worn": "false",
+      "Expendable": "false"
+    }
+  ]
+}

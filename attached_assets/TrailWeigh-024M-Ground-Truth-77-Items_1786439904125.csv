@@ -1,0 +1,78 @@
+﻿Category,Description,Quantity,Weight,Unit,Worn,Expendable,Type,Selected,Source Add
+Backpack,ULA Ultra Circuit,1,40.8,oz,false,false,Backpack,false,0.0
+Backpack,Zpacks Nero Classic Backpack,1,14.0,oz,false,false,Backpack,true,14.0
+Backpack,Durston Wapta 30,1,18.3,oz,false,false,Backpack,false,0.0
+Backpack,18G Compactor Bag,1,1.7,oz,false,false,Pack Liner,false,0.0
+Shelter,Zpacks Free-Zip 2 with poles / repair kit,1,36.8,oz,false,false,Tent,false,0.0
+Shelter,Zpacks Nylo Pro Groundsheet 5' x 8’,1,4.0,oz,false,false,Ground Sheet,true,4.0
+Shelter,Easton Nano,4,0.6,oz,false,false,Tent Stake,false,0.0
+Shelter,DIY Carbon Fiber 3mm Tent Stakes,6,0.1,oz,false,false,Tent Stake,true,0.6
+Shelter,Hilltop Tent Stake Bag,1,0.31,oz,false,false,Stake bag,false,0.0
+Shelter,Zpacks carbon tent poles with repair kit,1,16.0,oz,false,false,Tent Pole,false,0.0
+Shelter,Zpacks 8.5' x 10' Flat Tarp,1,6.4,oz,false,false,Tarp,false,0.0
+Shelter,Gear Swifts DCF Ponch/Tarp,1,4.8,oz,false,false,Tarp,false,0.0
+Shelter,Six Moons Ponch/Tarp,1,11.0,oz,false,false,Tarp,false,0.0
+Shelter,Ounce Design Adobi DCF Tarp,1,5.8,oz,false,false,Tarp,true,5.8
+Sleep,UGQ Bandit 10F,1,26.0,oz,false,false,Sleeping Bag,false,0.0
+Sleep,Enlightened Equipment 30F,1,17.7,oz,false,false,Sleeping Bag,false,0.0
+Sleep,Emergency Sleeping Bag Thermal Bivvy,1,5.0,oz,false,false,Sleeping Bag,true,5.0
+Sleep,Paria Elevate S insulated sleeping pad,1,10.0,oz,false,false,Inflatable Pad,false,0.0
+Sleep,Nemo Switchback Short,1,10.5,oz,false,false,Foam Pad,false,0.0
+Sleep,Nemo Switchback cut to 1/2,1,8.0,oz,false,false,Foam Pad,true,8.0
+Clothing Packed,Enlightened Torid Jacket,1,10.2,oz,false,false,Puffy Jacket,true,10.2
+Clothing Packed,Timmermade SDUL .75 Down Sweater,1,3.6,oz,false,false,Puffy Jacket,false,0.0
+Clothing Packed,Timmermade SUL Down Pants,1,5.5,oz,false,false,Puffy Pants,false,0.0
+Clothing Packed,Zpacks Octa Fleece Hoody,1,5.3,oz,false,false,Midlayer,true,5.3
+Clothing Packed,Outdoor Vitals Nebo Windbreaker,1,4.8,oz,false,false,Windbreaker,true,4.8
+Clothing Packed,Montbell Tachyon Pants,1,3.3,oz,false,false,Wind Pants,true,3.3
+Clothing Packed,Zpacks Brushtail Possum Socks,1,2.7,oz,false,false,Sleep Socks,true,2.7
+Clothing Packed,Zpacks Octa Fleece Camp Pants,1,5.3,oz,false,false,Thermal Pants,true,5.3
+Clothing Packed,Zpacks Octa Fleece Gaiter,1,0.71,oz,false,false,Neck Warmer,false,0.0
+Clothing Packed,Enlightened Equipment Visp rain coat,1,5.6,oz,false,false,Rain Jacket,false,0.0
+Clothing Packed,Zpacks Men's Vertice Rain Pants,1,2.8,oz,false,false,Rain Pants,false,0.0
+Clothing Packed,Mosquito Head Net,1,2.0,oz,false,false,Bug Net,false,0.0
+Clothing Packed,Goosefeet Balaclava,1,2.4,oz,false,false,Down Hood,true,2.4
+Clothing Packed,Goosefeet Down Socks,1,2.1,oz,false,false,Down Socks,false,0.0
+Clothing Packed,Emergency Survival Foil Poncho,1,2.8,oz,false,false,Poncho,true,2.8
+Kitchen,Fire-Maple Petrel G3 600ml HX Pot,1,5.7,oz,false,false,Pot/Mug,false,0.0
+Kitchen,TOAKS Titanium Long Handle Spoon,1,0.65,oz,false,false,Spoon,false,0.0
+Kitchen,MSR PocketRocket Deluxe,1,3.0,oz,false,false,Stove,false,0.0
+Kitchen,4 oz,1,7.68,oz,false,true,Fuel,false,0.0
+Kitchen,Peanut Butter Jar with plastic spoon,1,2.5,oz,false,false,Cold Soak Container,false,0.0
+Kitchen,Amazon,1,0.5,oz,false,false,1 Gal Freezer Bag,false,0.0
+Kitchen,Amazon,1,0.22,oz,false,false,1 Qrt Freezer Bag,false,0.0
+Kitchen,Adotec Grzzly 20L,1,8.0,oz,false,false,Bear Bag,false,0.0
+Kitchen,Plastic grocery bag,1,0.5,oz,false,false,Food Bag,false,0.0
+Kitchen,Weekender Bearikade 20L,1,31.0,oz,false,false,Bear Canister,false,0.0
+Electronics,INIU 10k power bankched USB-C,1,6.0,oz,false,false,Power Bank,false,0.0
+Electronics,UGREEN 25k Power Bank,1,17.8,oz,false,false,Power Bank,false,0.0
+Electronics,Fuji XT4 with 16-18mm,1,37.0,oz,false,false,Camera,false,0.0
+Electronics,USB-C,1,1.0,oz,false,false,Cables,false,0.0
+Electronics,Nitecore NU25,1,1.65,oz,false,false,Headlamp,false,0.0
+Electronics,ChubbyCable MagCore 65W,1,2.8,oz,false,false,Wall Charger,false,0.0
+Electronics,iPhone 16 Pro with case,1,9.0,oz,false,false,Phone,false,0.0
+Electronics,Headphones,1,,oz,false,false,Headphones,false,0.0
+Electronics,Hilltop Ultralight Ditty Bag,1,0.71,oz,false,false,Carry Bag,false,0.0
+Electronics,Rokie Talky Mountain Radio,1,6.0,oz,false,false,Handheld Radio,false,0.0
+Electronics,GIGA Pump,1,1.0,oz,false,false,Air Pump,false,0.0
+Electronics,Govee Bluetooth Thermometer,1,0.87,oz,false,false,Thermometer,false,0.0
+Toiletries + Med,Toothbrush,1,,oz,false,false,Toothbrush,false,0.0
+Toiletries + Med,Toothpaste,1,,oz,false,false,Toothpaste,false,0.0
+Toiletries + Med,Floss,1,,oz,false,false,Floss,false,0.0
+Toiletries + Med,Chapstick,1,,oz,false,false,Chapstick,false,0.0
+Toiletries + Med,Sunscreen,1,,oz,false,false,Sunscreen,false,0.0
+Toiletries + Med,Med Kit,1,,oz,false,false,Med Kit,false,0.0
+Toiletries + Med,Repair Kit,1,,oz,false,false,Repair Kit,false,0.0
+Hydration,CNOC water bottle 1L,1,3.2,oz,false,false,Water Bottle,false,0.0
+Hydration,Smart Water Bottle 1L Empty,1,1.2,oz,false,false,Water Bottle,false,0.0
+Hydration,CNOC Vecto 2L,1,2.5,oz,false,false,Water Bladder,false,0.0
+Hydration,Platypus Quickdraw,1,2.4,oz,false,false,Filter,false,0.0
+Hydration,Bleach Dropper,1,0.25,oz,false,false,Water Purifier,false,0.0
+Clothing Worn,Zpacks Mirage Merino Sun Hoody,1,7.0,oz,true,false,Shirt,false,0.0
+Clothing Worn,Pudolla Men’s Running Shorts,1,4.2,oz,true,false,Shorts,false,0.0
+Clothing Worn,Baseball Hat,1,2.6,oz,true,false,Hat,false,0.0
+Clothing Worn,Creepers toe socks,1,2.3,oz,true,false,Socks,false,0.0
+Clothing Worn,Topo Mtn 4 size 12,1,16.8,oz,true,false,Shoes,false,0.0
+Clothing Worn,Bedrock Cairn Evo 3D PRO,1,10.0,oz,true,false,Sandals,false,0.0
+Clothing Worn,Get Out Gear,1,9.2,oz,true,false,Treking Pole,false,0.0
+Clothing Worn,OKHEALING Carbon Hiking Poles,1,4.0,oz,true,false,Treking Pole,false,0.0
