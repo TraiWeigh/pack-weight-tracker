@@ -127,7 +127,7 @@ export function PreviewBody({ data, system, categoryOrder, categoryMeta }: Previ
                 {categoryMeta[cat]?.subLabel || 'Type'}
               </span>
               <span style={{ flex: 1 }}>
-                {categoryMeta[cat]?.descLabel || 'Description'}
+                {categoryMeta[cat]?.descLabel || 'Name'}
               </span>
               <span style={{ width: 64, flexShrink: 0, textAlign: 'right' }}>Weight</span>
             </div>

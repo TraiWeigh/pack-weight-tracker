@@ -98,7 +98,7 @@ export function generatePackPDF(
     y += 9;
 
     const subHdr  = (categoryMeta[cat]?.subLabel  || 'Type').toUpperCase();
-    const descHdr = (categoryMeta[cat]?.descLabel || 'Description').toUpperCase();
+    const descHdr = (categoryMeta[cat]?.descLabel || 'Name').toUpperCase();
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);

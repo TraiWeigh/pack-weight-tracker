@@ -1,0 +1,394 @@
+TRAILWEIGH — PROMPT 024Q
+RENAME THE VISIBLE DESCRIPTION COLUMN TO NAME AND PRESERVE CLEAN ITEM IDENTITY
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a small, focused UI/data-label cleanup after USER-VERIFIED Prompts 024O and 024P. Do not redesign the importer or category system.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.50
+
+IMPORTANT VERIFIED CURRENT STATE
+Prompt 024O = USER-VERIFIED PASS.
+Prompt 024P = USER-VERIFIED PASS.
+
+DO NOT REDO OR REGRESS THOSE PROMPTS.
+
+024O successfully fixed:
+- CSV/XLSX header aliases;
+- Item Name / Name / Item / Gear -> Type mapping;
+- Category / Group handling;
+- Quantity / Qty / Count handling;
+- header-row detection below title rows;
+- weight/unit parsing;
+- blank-weight retention;
+- mixed metric/imperial parsing;
+- combined weights such as "1 lb 10 oz".
+
+024P successfully fixed:
+- explicit worn status routing to Clothing Worn;
+- Hiking Shirt + Worn=TRUE -> Clothing Worn;
+- Trail Runners + Worn=Yes -> Clothing Worn;
+- Sun Hat + Subcategory=Worn -> Clothing Worn;
+- Sun Hat + Status=worn -> Clothing Worn.
+
+PRIMARY GOAL
+Change TrailWeigh's visible item column label from:
+
+DESCRIPTION
+
+to:
+
+NAME
+
+The main visible row should read conceptually:
+
+TYPE | NAME | MOVE | WEIGHT | QTY | TOTAL
+
+Do not add another permanent visible column.
+
+MEANING OF THE FIELDS
+Use this meaning consistently:
+
+TYPE
+= what kind of item it is.
+Examples:
+- Tent
+- Backpack
+- Quilt
+- Hiking Shirt
+- Power Bank
+- Water Filter
+
+NAME
+= the actual manufacturer/product/model name shown to the user.
+Examples:
+- Zpacks Duplex
+- Durston Kakwa 55
+- Enlightened Equipment Enigma 20°
+- Outdoor Research Echo
+- Nitecore NB10000
+- Sawyer Squeeze
+
+WEIGHT
+= per-item weight.
+
+QTY
+= quantity.
+
+TOTAL
+= calculated total weight.
+
+IMPORTANT:
+Worn, consumable, carried, status, and routing text are NOT item names.
+
+Examples of text that must NOT populate Name merely because it exists in a source field:
+- "Worn while hiking"
+- "Worn item"
+- "Pair weight"
+- "Consumable"
+- "Carried layer"
+- "Reusable"
+- "Three daily portions"
+- "quantity > 1"
+- "generic category"
+
+Those values may remain useful as internal metadata/routing clues or notes if the current architecture supports them, but they must not be treated as the product Name.
+
+SCOPE
+This prompt is primarily a visible label/field-semantics cleanup.
+
+Do NOT:
+- add Brand as a new permanent visible column;
+- add Manufacturer as a new permanent visible column;
+- add Model as a new permanent visible column;
+- add Notes as a new permanent visible column;
+- redesign category routing;
+- redesign CSV/XLSX parsing;
+- change PDF parsing;
+- change DOCX parsing;
+- add AI;
+- redesign Scan Gear List;
+- change Locker/Save/Share/Background;
+- change toolbar layout;
+- change footer;
+- change authentication;
+- change themes.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024Q_REPORT.md
+
+Initially write:
+- Prompt: 024Q
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — IDENTIFY WHERE "DESCRIPTION" IS DISPLAYED
+Inspect the current application and identify every USER-FACING place where the item field is labeled:
+
+Description
+DESCRIPTION
+
+This may include, where applicable:
+- main category item tables;
+- Scan Gear List preview;
+- Preview modal;
+- Print/PDF output;
+- item edit/add interfaces;
+- mobile/responsive table headers;
+- any accessible labels/tooltips tied to that visible field.
+
+Do NOT blindly rename unrelated internal variable names unless necessary.
+
+The goal is to change the USER-FACING terminology safely without causing a broad data migration.
+
+PHASE 3 — IMPLEMENT THE MINIMUM SAFE RENAME
+Rename the user-facing column/field label from:
+
+Description
+
+to:
+
+Name
+
+and from:
+
+DESCRIPTION
+
+to:
+
+NAME
+
+where it refers to the item's product/model identity field.
+
+Preserve:
+- existing stored data;
+- existing item values;
+- existing row layout;
+- existing column widths as much as practical;
+- existing responsive behavior;
+- existing editing behavior;
+- existing save/load behavior;
+- existing import behavior.
+
+Do not create a new duplicate field.
+
+If the current internal data property is named "description", it may remain internally named "description" if that is the safest implementation.
+Do NOT perform a risky database/schema migration merely to rename the visible label.
+
+VISIBLE UI REQUIREMENT
+The main row should visibly read:
+
+TYPE | NAME | MOVE | WEIGHT | QTY | TOTAL
+
+instead of:
+
+TYPE | DESCRIPTION | MOVE | WEIGHT | QTY | TOTAL
+
+SCAN GEAR LIST REQUIREMENT
+In the Scan Gear List preview, rename the visible column header:
+
+DESCRIPTION
+
+to:
+
+NAME
+
+Do not change the importer logic in this prompt except for the minimum semantic cleanup described below.
+
+SEMANTIC CLEANUP — DO NOT USE STATUS TEXT AS NAME
+Review the current CSV/XLSX import mapping enough to ensure that explicit status fields are not being chosen as the Name merely because Name/Description is missing.
+
+For example:
+
+A source row:
+Type = Hiking Shirt
+Product/Name = Outdoor Research Echo
+Worn = TRUE
+
+must result conceptually in:
+Type = Hiking Shirt
+Name = Outdoor Research Echo
+Destination = Clothing Worn
+
+It must NOT result in:
+Name = Worn while hiking
+
+A source row:
+Type = Trail Runners
+Name = Altra Lone Peak
+Worn = Yes
+
+must result conceptually in:
+Type = Trail Runners
+Name = Altra Lone Peak
+Destination = Clothing Worn
+
+It must NOT result in:
+Name = Pair weight
+
+IMPORTANT CONSERVATIVE RULE
+Do not invent a product Name when the source does not provide one.
+
+If a source row has:
+Type = Hiking Shirt
+Worn = TRUE
+and no real product/model/name field,
+
+then leave Name blank rather than filling it with:
+- "Worn while hiking"
+- "Worn"
+- "TRUE"
+- category text
+- quantity text
+- weight notes
+- routing/status text
+
+Do not manufacture brand/model data.
+
+IMPORT HEADER ALIASES FOR NAME
+Without redesigning the importer, preserve/allow reasonable source headers that represent the product/model Name, such as:
+- Name
+- Product
+- Product Name
+- Model
+- Item Model
+
+IMPORTANT:
+Do NOT reinterpret "Item Name" in a way that breaks USER-VERIFIED 024O behavior unless the current parser can distinguish a generic Type column from a product Name column safely.
+
+If ambiguity exists:
+- preserve the current 024O behavior;
+- document the ambiguity in the report;
+- do not break known working imports just to force a theoretical mapping.
+
+PHASE 4 — PRESERVE 024O AND 024P
+Run focused regression checks confirming:
+
+1. Test 01 still finds/imports 9 items.
+2. Smartwater Bottle remains Qty 2.
+3. Fuel still routes correctly.
+4. Hiking Shirt still routes to Clothing Worn.
+5. Test 02 still finds/imports 7 items.
+6. Water remains Qty 2.
+7. Dog Food remains Qty 3.
+8. Trail Runners still routes to Clothing Worn.
+9. Test 05 still finds/imports 12 items.
+10. Sun Hat still routes to Clothing Worn.
+11. Test 06 still finds/imports 10 items.
+12. Sun Hat still routes to Clothing Worn.
+13. Fuel Qty 2 remains correct.
+14. Socks Qty 2 remains correct.
+15. The 77-item CSV regression still returns 77 if available.
+16. The 77-item PDF regression still returns 77 if available.
+
+Do NOT change PDF or DOCX code to satisfy these checks.
+
+PHASE 5 — VISUAL VERIFICATION
+In the running app, verify:
+
+A. Main item table:
+- header reads NAME, not DESCRIPTION.
+
+B. Scan Gear List preview:
+- header reads NAME, not DESCRIPTION.
+
+C. Preview/Print views:
+- if they currently show a Description label for this same field, change it to Name.
+
+D. Existing item values:
+- still display in the same row/position;
+- are not lost;
+- are not duplicated;
+- remain editable if previously editable.
+
+E. Responsive/mobile:
+- no new overflow or broken layout caused by the shorter NAME label.
+
+DO NOT REDESIGN WIDTHS JUST BECAUSE THE LABEL IS SHORTER.
+Keep the existing layout unless a tiny label-only adjustment is truly necessary.
+
+PHASE 6 — ACCESSIBILITY / LABEL CONSISTENCY
+Where the visible item identity field has an accessibility label tied to "Description", update it to "Name" only if it represents the same user-facing field.
+
+Do not rename unrelated descriptive/help text.
+
+CHANGED-FILE CONTROL
+Before finishing, inspect every changed application file.
+
+Changes should be limited to:
+- user-facing labels for the existing item identity field;
+- minimal importer semantic guard if needed to prevent status text from becoming Name;
+- directly necessary tests.
+
+Do NOT refactor unrelated code.
+
+REPORT REQUIREMENTS
+Update:
+
+workflow-reports/PROMPT_024Q_REPORT.md
+
+It must include:
+- Prompt number: 024Q
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact files changed
+- every user-facing location changed from Description to Name
+- confirmation no database/schema migration was performed unless absolutely necessary
+- explanation of whether the internal field name remained "description"
+- confirmation status text is not used as Name
+- Test 01 regression result
+- Test 02 regression result
+- Test 05 regression result
+- Test 06 regression result
+- confirmation 024P worn routing still works
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF/DOCX parsing was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+After the report physically exists, create:
+
+workflow-reports/trailweigh-024Q-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024Q_REPORT.md
+
+If Replit creates useful 024Q-specific automated test output, include it too.
+
+Verify with the filesystem that:
+- PROMPT_024Q_REPORT.md exists;
+- trailweigh-024Q-report.zip exists;
+- the ZIP opens;
+- the required report is actually inside.
+
+Do not merely say the files were created. Verify them.
+
+FINAL STOP RULE
+Complete ONLY Prompt 024Q.
+
+Do not begin:
+- consumable-routing cleanup;
+- DOCX heading/category repair;
+- PDF parsing work;
+- gear catalog/search work;
+- any other waiting TrailWeigh feature.
+
+STOP after 024Q and its report ZIP are created and verified.
+
+USER VERIFICATION
+Replit's internal checks do not count as final PASS.
+User verification remains PENDING until the live TrailWeigh app is tested.

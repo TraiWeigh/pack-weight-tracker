@@ -72,7 +72,7 @@ export function PrintLayout({ data, system, categoryOrder, categoryMeta }: Print
             <div className="print-col-headers">
               <span className="pcol-check" />
               <span className="pcol-type">{categoryMeta[cat]?.subLabel  || 'Type'}</span>
-              <span className="pcol-desc">{categoryMeta[cat]?.descLabel || 'Description'}</span>
+              <span className="pcol-desc">{categoryMeta[cat]?.descLabel || 'Name'}</span>
               <span className="pcol-weight">Weight</span>
             </div>
             {items.map((item, idx) => (

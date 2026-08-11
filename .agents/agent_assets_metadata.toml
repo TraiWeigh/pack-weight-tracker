@@ -56,3 +56,10 @@ uri = "file://workflow-reports/trailweigh-024P-report.zip"
 type = "unspecified"
 title = "Prompt 024P Report"
 description = "PROMPT_024P_REPORT.md — Worn status repair + all test results"
+
+[[outputs]]
+id = "PqzO9CoBxWpJsR1VhUrtg"
+uri = "file://workflow-reports/trailweigh-024Q-report.zip"
+type = "unspecified"
+title = "Prompt 024Q Report"
+description = "PROMPT_024Q_REPORT.md — Description → Name rename + all regression results"

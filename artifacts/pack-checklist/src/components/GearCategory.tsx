@@ -294,10 +294,10 @@ export function GearCategory({
               onCommit={v => onUpdateMeta({ subLabel: v || undefined })}
               className="w-28"
             />
-            {/* Col 3 — DESCRIPTION heading (1fr) */}
+            {/* Col 3 — NAME heading (1fr) */}
             <EditableColHeader
               value={meta.descLabel ?? ''}
-              placeholder="Description"
+              placeholder="Name"
               onCommit={v => onUpdateMeta({ descLabel: v || undefined })}
             />
             {/* Col 4 — Right-side group headings, mirroring GearRow right-group exactly */}

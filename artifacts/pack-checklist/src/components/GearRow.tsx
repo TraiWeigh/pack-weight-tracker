@@ -76,12 +76,12 @@ export const GearRow = memo(function GearRow({
         className="text-xs sm:text-sm font-medium text-muted-foreground w-20 sm:w-28 bg-transparent focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate placeholder:text-muted-foreground/30 transition-colors hover:bg-black/5"
       />
 
-      {/* Col 3 — Description (1fr — receives all width the right group doesn't use) */}
+      {/* Col 3 — Name (1fr — receives all width the right group doesn't use) */}
       <input
         type="text"
         value={item.desc}
         onChange={(e) => updateItem(category, item.id, { desc: e.target.value })}
-        placeholder={descLabel ? `${descLabel}…` : 'Item description'}
+        placeholder={descLabel ? `${descLabel}…` : 'Item name'}
         className="w-full bg-transparent text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate placeholder:text-muted-foreground/50 transition-colors hover:bg-black/5"
       />
 

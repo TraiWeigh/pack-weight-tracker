@@ -62,7 +62,7 @@ const ACCEPT_LABEL = 'PDF, Word, Excel, Numbers, or CSV';
 
 function validateRow(item: EditedItem, categoryOrder: string[]): Record<string, string> {
   const errors: Record<string, string> = {};
-  if (!item.sub.trim() && !item.desc.trim()) errors.sub = 'Type or Description is required';
+  if (!item.sub.trim() && !item.desc.trim()) errors.sub = 'Type or Name is required';
   const w = parseFloat(item.displayWeight);
   if (item.displayWeight.trim() === '' || isNaN(w) || w < 0) errors.weight = 'Enter a valid weight (0 or more)';
   if (!SUPPORTED_UNITS.includes(item.weightUnit)) errors.unit = 'Unsupported unit';
@@ -300,7 +300,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
             <h2 className="font-semibold text-foreground text-base" style={barFgStyle(barStyle)}>Scan Gear List</h2>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5" style={barFgStyle(barStyle)}>
-            Upload a file to import Type, Description, and Weight.
+            Upload a file to import Type, Name, and Weight.
           </p>
         </div>
       </button>
@@ -390,7 +390,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
                   </button>
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Category</span>
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Type</span>
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Description</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Name</span>
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Weight / Unit</span>
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-center">⚠</span>
                 </div>
@@ -456,14 +456,14 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
                             />
                           )}
 
-                          {/* Description */}
+                          {/* Name */}
                           {item.added ? (
                             <span className="text-xs text-muted-foreground truncate">{item.desc || '—'}</span>
                           ) : (
                             <input
                               value={item.desc}
                               onChange={e => updateField(idx, { desc: e.target.value })}
-                              placeholder="Description"
+                              placeholder="Name"
                               maxLength={150}
                               className={`w-full text-xs bg-transparent border-b focus:outline-none placeholder:text-muted-foreground/50 truncate ${
                                 item.errors.sub && !item.sub.trim()
