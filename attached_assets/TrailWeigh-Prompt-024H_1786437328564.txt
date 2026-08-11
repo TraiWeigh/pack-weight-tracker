@@ -1,0 +1,190 @@
+TRAILWEIGH — PROMPT 024H
+MINIMAL DIAGNOSTIC ONLY: SAVE THE ACTUAL 68-ITEM PDF OUTPUT AND EXACT 9-ITEM DIFF
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a very small read/run/save/diff task. No application code changes are allowed.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 1–3 minutes
+Estimated Agent usage/cost: about $0.20–$0.70
+
+ATTACH THESE TWO FILES WITH THIS PROMPT
+
+1. TrailWeigh-024H-Test-Pack-Weight.pdf
+   - exact PDF that the live Scan Gear List currently reports as 68 items found.
+
+2. TrailWeigh-024H-Ground-Truth-77-Items.csv
+   - exact 77-row ground-truth list for the same gear file.
+
+CRITICAL RULE — NO CODE CHANGES
+
+DO NOT MODIFY APPLICATION CODE.
+DO NOT MODIFY TESTS.
+DO NOT MODIFY IMPORTER LOGIC.
+DO NOT FIX ANYTHING.
+DO NOT REFACTOR.
+DO NOT WRITE A BROAD DIAGNOSTIC ESSAY.
+DO NOT GUESS THE MISSING ITEMS.
+
+Prompt 024G failed because it did not preserve the exact 68 detected rows.
+
+Prompt 024H has only one purpose:
+PERSIST THE ACTUAL CURRENT 68-ITEM PDF PARSER OUTPUT, THEN DIFF IT AGAINST THE 77-ITEM CSV.
+
+STEP 1 — RUN THE CURRENT PDF PARSER ONCE
+
+Use the SAME current TrailWeigh PDF parsing/import path that the live Scan Gear List uses for this PDF.
+
+Do not substitute:
+- a new ad-hoc PDF parser;
+- manual PDF inspection;
+- OCR;
+- a separate script that does not call the current TrailWeigh PDF parser path.
+
+Run:
+TrailWeigh-024H-Test-Pack-Weight.pdf
+
+The result must correspond to the current live behavior that reports:
+68 items found.
+
+STEP 2 — SAVE THE EXACT 68 ITEMS BEFORE DOING ANY ANALYSIS
+
+Immediately save the raw normalized item output returned by the current PDF parser to:
+
+workflow-reports/024H-current-pdf-68-items.json
+
+This JSON file MUST contain exactly 68 item records.
+
+For each record, preserve every field the current parser provides, including where available:
+- index/order
+- category
+- Type
+- Description
+- Weight
+- Unit
+- Quantity
+- worn/consumable/expendable flags
+- any source text or parser metadata already available
+
+Do not clean up or rewrite the records merely to make them match the CSV.
+
+After writing the file, VERIFY:
+- the file exists;
+- it contains exactly 68 item records.
+
+If the current parser returns a count other than 68 during this diagnostic, STOP and report that discrepancy. Do not continue with a fabricated 68-item file.
+
+STEP 3 — DIFF THE SAVED 68 AGAINST THE 77-ROW CSV
+
+Compare:
+workflow-reports/024H-current-pdf-68-items.json
+
+against:
+TrailWeigh-024H-Ground-Truth-77-Items.csv
+
+Match items using the strongest available combination of:
+- Category
+- Type
+- Description
+- Weight
+- Unit
+- Quantity
+
+Handle blank fields carefully.
+
+Do not treat category headings, totals, charts, blank rows, or Meal Planner rows as ground-truth gear items.
+
+STEP 4 — SAVE THE EXACT 9 MISSING ITEMS
+
+Save the exact 9 ground-truth rows that are absent from the current 68-item PDF output to:
+
+workflow-reports/024H-exact-9-missing-items.json
+
+This file MUST contain exactly 9 records.
+
+Each record must include:
+- Category
+- Type
+- Description
+- Weight
+- Unit
+- Quantity
+
+Also include, if it can be determined directly from the current parser path without changing code:
+- the exact parser/filter condition that caused the row to be omitted.
+
+Do not invent a cause if it cannot be traced.
+
+STEP 5 — SAVE A SHORT HUMAN-READABLE DIFF
+
+Create:
+
+workflow-reports/024H-68-vs-77-diff.txt
+
+The text file must contain only:
+
+A. Current PDF detected count: 68
+B. Ground-truth CSV count: 77
+C. Exact numbered list of the 9 missing items
+D. For each missing item, the confirmed parser reason if known
+E. Any duplicate/misparsed current item that affects the diff
+F. One short sentence stating the likely smallest repair location, WITHOUT implementing it
+
+KEEP THIS FILE SHORT.
+
+STEP 6 — REPORT
+
+Create:
+
+workflow-reports/PROMPT_024H_REPORT.md
+
+The report should be concise and must state:
+- Prompt number: 024H
+- Agent mode used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- Confirmation no application code was changed
+- Current PDF count
+- Ground-truth count
+- The exact 9 missing items
+- Whether all 9 causes were confirmed or whether any remain unknown
+- Names of the three diagnostic files created
+
+REQUIRED FILES — VERIFY PHYSICALLY BEFORE STOPPING
+
+Before declaring completion, run a direct filesystem check/listing and verify ALL of these physically exist:
+
+1. workflow-reports/024H-current-pdf-68-items.json
+2. workflow-reports/024H-exact-9-missing-items.json
+3. workflow-reports/024H-68-vs-77-diff.txt
+4. workflow-reports/PROMPT_024H_REPORT.md
+5. workflow-reports/trailweigh-024H-report.zip
+
+Then create:
+workflow-reports/trailweigh-024H-report.zip
+
+The ZIP MUST contain the four files above.
+
+After creating the ZIP:
+- list/inspect the ZIP contents;
+- confirm all four expected files are inside;
+- confirm the ZIP physically exists.
+
+IMPORTANT:
+Do not merely say the ZIP was created.
+VERIFY it with the filesystem before stopping.
+
+NO APPLICATION CHANGES
+
+The only files Prompt 024H may create are diagnostic/report artifacts inside workflow-reports/.
+
+Do not change any TrailWeigh application file.
+
+FINAL STOP RULE
+
+STOP immediately after the five required workflow-reports files are created and verified.
+
+DO NOT IMPLEMENT THE FIX.
+DO NOT BEGIN ANOTHER TASK.
