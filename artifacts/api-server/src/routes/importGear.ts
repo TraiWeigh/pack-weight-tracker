@@ -674,9 +674,9 @@ export function applyGearClassification(item: ExtractedItem): ExtractedItem {
     if (normalized !== item.destination) return { ...item, destination: normalized };
   }
 
-  // Priority 6b: Pack type → "Pack".
+  // Priority 6b: Pack type → "Backpack" (canonical TrailWeigh category label).
   if (PACK_TYPES.has(typeN)) {
-    return { ...item, destination: 'Pack', warning: item.warning || sectionConflict('Pack') };
+    return { ...item, destination: 'Backpack', warning: item.warning || sectionConflict('Backpack') };
   }
 
   // Priority 6c: Electronics type → "Electronics".

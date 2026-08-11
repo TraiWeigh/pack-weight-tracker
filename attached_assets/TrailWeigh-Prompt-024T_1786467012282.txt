@@ -1,0 +1,389 @@
+TRAILWEIGH — PROMPT 024T
+TINY CORRECTION: ROUTE RECOGNIZED BACKPACK ITEMS TO BACKPACK, NOT PACK
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a very small follow-up to Prompt 024S. Do not rework the vague-category routing logic that already passed user testing.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 2–4 minutes
+Estimated Agent usage/cost: about $0.30–$0.80
+
+ATTACH THIS TEST FILE WITH THIS PROMPT
+1. 06_messy_spreadsheet.csv
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Prompt 024O = USER-VERIFIED PASS.
+Prompt 024P = USER-VERIFIED PASS.
+Prompt 024R = USER-VERIFIED PASS.
+
+Prompt 024S = PARTIAL PASS.
+
+USER-VERIFIED 024S RESULTS THAT MUST BE PRESERVED:
+- Big Three no longer remains as a final imported category.
+- Bits no longer remains as a final imported category.
+- Toothbrush routes to Personal.
+- Fuel remains in Consumables.
+- Fuel Qty remains 2.
+- Sun Hat remains in Clothing Worn.
+- No empty Big Three/Bits categories remain after all recognized items are reclassified.
+
+THE ONLY 024S PROBLEM TO FIX
+
+The Test 06 Backpack item currently imports as:
+
+Category: Pack
+Type: Backpack
+
+The required canonical TrailWeigh result is:
+
+Category: Backpack
+Type: Backpack
+
+PRIMARY GOAL
+
+When TrailWeigh confidently recognizes an imported item as a backpack, its final automatic import category must be:
+
+Backpack
+
+not:
+
+Pack
+
+This should apply to the existing CSV/XLSX automatic routing path only.
+
+DO NOT REDO 024S
+
+Do not change the successful weak-source-group logic.
+
+Continue treating these as weak source groups during automatic import:
+- Big Three
+- Big 3
+- Big Four
+- Big 4
+- Bits
+- Misc
+- Misc.
+- Miscellaneous
+- Stuff
+- Odds & Ends
+
+Recognized items should still override those vague source groups.
+
+SPECIFIC REQUIRED TEST
+
+SOURCE FROM 06_messy_spreadsheet.csv:
+Group = Big Three
+Gear = Backpack
+
+CURRENT RESULT:
+Pack
+
+REQUIRED FINAL RESULT:
+Backpack
+
+The final imported list must NOT contain:
+- Big Three for this item
+- Pack for this item
+
+It must contain:
+Backpack
+
+with the Backpack item inside it.
+
+CANONICAL BACKPACK RULE
+
+For confidently recognized backpack-type items during automatic import, use the existing TrailWeigh category label:
+
+Backpack
+
+Examples that should map to Backpack when confidently recognized:
+- Backpack
+- Pack when the item itself is clearly a backpack
+- Rucksack if the existing classifier already recognizes it as backpack gear
+- Main backpack if the existing classifier already recognizes it
+
+Do NOT broaden recognition unnecessarily in this prompt.
+Use the current item-classification logic and only correct the final canonical destination label.
+
+IMPORTANT:
+Do not rename manually created categories.
+Do not migrate existing saved files.
+Do not rename a user's custom category named Pack.
+This applies only to automatic import routing.
+
+PRESERVE 024S VAGUE-GROUP RESULTS
+
+After the correction, Test 06 must still produce:
+
+- Backpack item -> Backpack
+- Tent -> Shelter
+- Quilt -> current canonical sleep destination
+- Stove -> current existing destination
+- Fuel -> Consumables, Qty 2
+- Toothbrush -> Personal
+- Toothpaste -> current existing destination, blank weight still allowed
+- Leukotape -> do not change its current routing in this prompt
+- Socks -> current clothing destination, Qty 2
+- Sun Hat -> Clothing Worn, Name blank, Weight 2.1 oz
+
+There must still be:
+- no Big Three category
+- no Bits category
+
+when all their recognized items were reclassified.
+
+DO NOT CHANGE NAME SEMANTICS
+
+Prompt 024R is USER-VERIFIED PASS.
+
+Preserve:
+- visible NAME column;
+- obvious status/metadata text does not become Name;
+- Hiking Shirt Name blank when source only says Worn while hiking;
+- Trail Runners Name blank when source only says Pair weight;
+- Sun Hat Name blank when source only says Worn item;
+- existing Product/Model alias behavior.
+
+DO NOT CHANGE WORN ROUTING
+
+Prompt 024P is USER-VERIFIED PASS.
+
+Preserve:
+- Hiking Shirt -> Clothing Worn
+- Trail Runners -> Clothing Worn
+- Sun Hat -> Clothing Worn
+
+DO NOT CHANGE 024O IMPORT COMPATIBILITY
+
+Preserve:
+- header aliases;
+- Quantity/Qty/Count handling;
+- title-above-header detection;
+- metric/imperial weight parsing;
+- "1 lb 10 oz" parsing;
+- blank-weight retention;
+- Fuel routing and quantities.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024T_REPORT.md
+
+Initially write:
+- Prompt: 024T
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM THE EXACT CAUSE
+
+Inspect only enough of the current CSV/XLSX item-routing path to identify why the recognized Backpack item currently resolves to:
+
+Pack
+
+instead of:
+
+Backpack
+
+Document the exact current mapping/normalization rule responsible.
+
+Do not broadly rediagnose the importer.
+
+PHASE 3 — MINIMUM CORRECTION
+
+Make the smallest safe change that causes confidently recognized backpack items to use the canonical final category:
+
+Backpack
+
+Do not:
+- redesign category aliases;
+- change vague-source-group behavior;
+- refactor unrelated classifier code;
+- alter saved user categories;
+- change UI layout;
+- add new categories.
+
+Prefer a one-location canonical-label correction if possible.
+
+PHASE 4 — REQUIRED LIVE/PARSER REGRESSION
+
+Run:
+
+06_messy_spreadsheet.csv
+
+through the SAME current CSV import path.
+
+Required:
+- exactly 10 real items found;
+- exactly 10 items remain importable;
+- title row ignored;
+- correct header row detected;
+- TOTAL row ignored;
+- no duplicates;
+- no lost items.
+
+Specific required final categories:
+- Backpack -> Backpack
+- Tent -> Shelter
+- Fuel -> Consumables
+- Toothbrush -> Personal
+- Sun Hat -> Clothing Worn
+
+Specific preserved data:
+- Fuel Qty = 2
+- Socks Qty = 2
+- Tent = 26 oz
+- Toothpaste blank weight remains allowed
+- Sun Hat Name remains blank
+- Sun Hat Weight = 2.1 oz
+
+Required absence:
+- no Big Three category
+- no Bits category
+- no Pack category created solely for the recognized Backpack item
+
+PHASE 5 — SMALL CANONICAL BACKPACK CHECK
+
+If practical, add/run a tiny parser-level check proving:
+
+SOURCE:
+Group=Big Three
+Item=Backpack
+
+RESULT:
+Category=Backpack
+
+Also verify a meaningful source category:
+
+Category=Backpack
+Item=Backpack
+
+remains:
+Category=Backpack
+
+and is not changed to Pack.
+
+Do not add new UI.
+
+PHASE 6 — REGRESSION PROTECTION
+
+Verify:
+- 024O behavior remains intact;
+- 024P worn routing remains intact;
+- 024R Name behavior remains intact;
+- 024S Big Three/Bits cleanup remains intact;
+- 77-item CSV regression still returns 77 if fixture is available;
+- 77-item PDF regression still returns 77 if fixture/path is available without modifying PDF code.
+
+Do NOT modify PDF code.
+Do NOT modify DOCX code.
+
+OUT OF SCOPE
+
+Do NOT fix in 024T:
+- "missing descriptions" -> "missing names" warning text;
+- broader Name/specification cleanup;
+- Leukotape routing;
+- Medication routing;
+- Repair Tape routing;
+- DOCX category-heading support;
+- PDF parsing;
+- catalog/search;
+- AI;
+- Background;
+- toolbar;
+- Share;
+- Locker;
+- Save / Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Before finishing, inspect every changed application file.
+
+Changes should be limited to:
+- the CSV/XLSX canonical backpack routing/normalization location;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024T_REPORT.md
+
+It must include:
+- Prompt number: 024T
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of Backpack resolving to Pack
+- exact correction made
+- Test 06 item count
+- final Backpack category
+- confirmation Big Three remains absent
+- confirmation Bits remains absent
+- Toothbrush final category
+- Fuel final category and Qty
+- Sun Hat final category and Name state
+- 024O regression confirmation
+- 024P regression confirmation
+- 024R regression confirmation
+- 024S regression confirmation
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF/DOCX code was not changed
+- confirmation no saved user categories/lists were migrated or renamed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+After the report physically exists, create:
+
+workflow-reports/trailweigh-024T-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024T_REPORT.md
+
+Include useful 024T-specific automated test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- required report is inside.
+
+Do not merely claim the files were created.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024T.
+
+Do not begin:
+- Name/warning-text cleanup;
+- Leukotape/Medication/Repair Tape routing cleanup;
+- DOCX work;
+- PDF work;
+- any other waiting TrailWeigh task.
+
+STOP after the 024T report and ZIP are created and verified.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final status remains PENDING until the user tests the live TrailWeigh app.

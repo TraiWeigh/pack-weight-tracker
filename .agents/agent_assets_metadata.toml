@@ -77,3 +77,10 @@ uri = "file://workflow-reports/trailweigh-024S-report.zip"
 type = "unspecified"
 title = "Prompt 024S Report"
 description = "PROMPT_024S_REPORT.md — Weak source group routing + all regression results"
+
+[[outputs]]
+id = "6tujFzJKo6eBGlf3xKbCq"
+uri = "file://workflow-reports/trailweigh-024T-report.zip"
+type = "unspecified"
+title = "Prompt 024T Report"
+description = "PROMPT_024T_REPORT.md — Backpack canonical label fix + all regression results"
