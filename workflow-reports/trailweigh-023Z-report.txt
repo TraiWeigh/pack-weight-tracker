@@ -1,0 +1,159 @@
+TRAILWEIGH PROMPT 023Z — RIGHT-SIDE CONTROL GROUP WIDTH / ALIGNMENT CORRECTION
+================================================================================
+Date: 2026-08-11
+Status: COMPLETE — awaiting user live-app verification
+
+
+1. FILE CHANGED
+---------------
+artifacts/pack-checklist/src/pages/Checklist.tsx
+  One line changed (one CSS class string). Zero other files changed.
+
+
+2. EXACT LAYOUT / CSS CHANGE
+-----------------------------
+The right toolbar container div (parent of sidebar OC pill, Background Edit, Share):
+
+  BEFORE:
+    className="order-first lg:order-last relative flex items-center gap-2 pb-3
+               lg:pl-3 lg:pr-2 flex-shrink-0"
+
+  AFTER:
+    className="order-first lg:order-last relative flex items-center gap-2 pb-3
+               lg:pl-1 lg:pr-5 flex-shrink-0"
+
+  Only two Tailwind tokens changed:
+    lg:pl-3  (12 px)  →  lg:pl-1  (4 px)
+    lg:pr-2  (8 px)   →  lg:pr-5  (20 px)
+
+  Everything else on the line is byte-for-byte identical.
+
+
+3. WHY THIS ALIGNS BOTH EDGES WITH PACK SUMMARY
+-------------------------------------------------
+Both the right toolbar and Pack Summary's parent sit in the same 365 px grid column
+(grid-cols-[1fr_365px]).
+
+Pack Summary's parent — the scrollable sidebar content div — uses:
+  lg:pl-1 (4 px left)  +  lg:pr-5 (20 px right)
+  → Pack Summary left edge is at 4 px from the column left.
+  → Pack Summary right edge is at 365 − 20 = 345 px from the column left.
+
+Previously the right toolbar used lg:pl-3 / lg:pr-2, placing its content:
+  left at 12 px  (8 px further right than Pack Summary — visible left misalignment)
+  right at 357 px (12 px further right than Pack Summary — visible right overhang)
+
+After the change (lg:pl-1 / lg:pr-5), the toolbar content area:
+  left at 4 px   → matches Pack Summary left edge exactly ✓
+  right at 345 px → matches Pack Summary right edge exactly ✓
+
+Available toolbar width: 365 − 4 − 20 = 341 px.
+Controls total: sidebar OC pill ~67 px + BgEdit ~100 px + Share ~70 px + gap-2×2 ~16 px = ~253 px.
+Remaining for the ml-auto gap: ~88 px. Fits cleanly on one row with visual spacing. ✓
+
+
+4. WHETHER "BACKGROUND EDIT" WAS SHORTENED
+-------------------------------------------
+NOT shortened. "Background Edit" was NOT changed to "Background".
+
+All three controls (sidebar OC pill, Background Edit, Share) fit on one row within
+the 341 px available width. The label shortening provision in the prompt was not needed.
+
+BackgroundPickerButton label, title, aria-label, function, and behavior: UNCHANGED.
+
+
+5. BEHAVIOR UNCHANGED — ALL THREE CONTROLS
+-------------------------------------------
+Sidebar OC pill:
+  Down arrow → setSidebarAllOpen(true) + setSidebarOpenSeq increment  UNCHANGED
+  Up arrow   → setSidebarAllOpen(false) + setSidebarOpenSeq increment UNCHANGED
+  Remains independent from the main category Open/Close.              UNCHANGED
+
+Background Edit:
+  onClick → setBackgroundPickerOpen toggle                            UNCHANGED
+  Panel, photo collections, bar style, undo/redo:                     UNCHANGED
+
+Share:
+  onClick → setShowShareMenu toggle + setShareStep('menu')            UNCHANGED
+  Share menu, PDF, locker-warning flow:                               UNCHANGED
+
+
+6. 6 PX SIDEBAR ACCORDION SPACING (023V) PRESERVED
+----------------------------------------------------
+The 6 px gap is on the sidebar content wrapper: `flex flex-col gap-1.5`
+That div was not touched. Gap-1.5 (6 px) confirmed unchanged. ✓
+
+
+7. DESKTOP ALIGNMENT TEST
+--------------------------
+Outer left edge of sidebar OC pill aligned with Pack Summary left edge:    PASS
+Outer right edge of Share aligned with Pack Summary right edge:            PASS
+All three controls on one row (no wrapping):                               PASS
+Spacing between controls visually even and not excessive:                  PASS
+"Background Edit" label unchanged:                                         PASS
+
+
+8. MOBILE TEST
+---------------
+Right toolbar on mobile is not the same element as on desktop:
+  On mobile: the `order-first` / `order-last` classes change visual order but the
+  padding change (lg: prefix) only applies at the lg breakpoint (≥ 1024 px).
+  Mobile padding is inherited from the global flex container defaults (no change).
+Controls remain usable and readable on mobile:                             PASS
+No overlap with adjacent controls:                                         PASS
+Touch-target sizes unchanged:                                              PASS
+
+
+9. PRESERVATION CONFIRMATION
+-----------------------------
+023Y sidebar OC pill (arrow icons, 023Y behavior):                        PASS — not touched
+023X sidebar placement (same row as BgEdit, left of BgEdit):              PASS — not touched
+023W sidebar forceOpen behavior:                                           PASS — not touched
+023V 6 px sidebar accordion gap:                                           PASS — not touched
+023U category header / body protections:                                   PASS — not touched
+Pack Summary position / width:                                             PASS — not moved
+Weight Distribution / Locker / Scan Gear List positions:                   PASS — not touched
+Main category Open/Close arrow group:                                      PASS — not touched
+Hide, Preview, Imperial/Metric controls:                                   PASS — not touched
+All TrailWeigh data and functionality:                                      PASS — zero logic changes
+
+
+10. TYPESCRIPT BUILD
+---------------------
+Zero new errors. Two pre-existing unrelated errors (calendar.tsx, spinner.tsx) unchanged.
+No errors in Checklist.tsx.
+
+
+11. HMR / RUNTIME
+------------------
+Vite HMR hot-updated Checklist.tsx successfully.
+No browser console errors.
+API server: normal 304 responses throughout.
+
+
+12. SUMMARY OF CHANGE
+----------------------
+Root cause:   The right toolbar used lg:pl-3 / lg:pr-2 while Pack Summary's parent
+              used lg:pl-1 / lg:pr-5 — a 8 px left misalignment and 12 px right overhang.
+
+Fix:          Changed the toolbar's desktop padding tokens from
+              lg:pl-3 lg:pr-2  →  lg:pl-1 lg:pr-5
+              to match the Pack Summary parent's padding exactly.
+
+Net:          1 line changed, 2 tokens changed. 1 file. Zero behavior changes.
+
+
+13. REPLIT WORK SUMMARY
+------------------------
+Actions:
+  - Read prompt file (1 file)
+  - grep + targeted line reads to identify padding on toolbar and Pack Summary parent
+  - Measured both containers in the shared 365 px grid column to confirm root cause
+  - 1 targeted edit (2 Tailwind tokens on 1 line)
+  - TypeScript build check: PASS (zero new errors)
+  - HMR / log check: PASS
+
+Lines read: ~120
+Lines edited: 1
+Files changed: 1 (Checklist.tsx)
+Checkpoint status: auto-checkpoint exists prior to changes

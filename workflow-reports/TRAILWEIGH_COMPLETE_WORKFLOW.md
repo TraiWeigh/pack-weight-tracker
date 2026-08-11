@@ -754,3 +754,31 @@ Replaced "Open" / "Close" text labels with ChevronDown / ChevronUp icons across 
 
 ### Report
 `trailweigh-023Y-report.txt`
+
+---
+
+## Prompt 023Z — Right-Side Control Group Width / Alignment Correction
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+One-line CSS fix. Zero behavior changes.
+
+**Root cause:** The right toolbar container used `lg:pl-3 lg:pr-2` (12 px left, 8 px right), while Pack Summary's scrollable parent used `lg:pl-1 lg:pr-5` (4 px left, 20 px right). Both sit in the same 365 px grid column, so the mismatch caused an 8 px left misalignment and a 12 px right overhang.
+
+**Fix:** Changed right toolbar container padding:
+```
+lg:pl-3 lg:pr-2  →  lg:pl-1 lg:pr-5
+```
+
+Both outer edges now land at exactly the same pixel as Pack Summary's left and right edges.
+
+Available width: 341 px. Controls total ~253 px. Fits cleanly — "Background Edit" label was NOT shortened.
+
+### Files Changed
+`Checklist.tsx` — 1 line, 2 Tailwind padding tokens
+
+### Report
+`trailweigh-023Z-report.txt`

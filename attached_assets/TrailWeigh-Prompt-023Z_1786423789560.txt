@@ -1,0 +1,158 @@
+TRAILWEIGH — PROMPT 023Z
+Right-Side Control Group Width / Alignment Correction
+
+GOAL
+Adjust ONLY the layout of the right-side top control group so its OUTER left and right edges align exactly with the LEFT and RIGHT edges of the Pack Summary panel below it.
+
+CURRENT RIGHT-SIDE CONTROL GROUP
+The group contains:
+1. Sidebar Open / Close arrow control (joined two-segment pill from Prompt 023Y)
+2. Background Edit
+3. Share
+
+CURRENT STATUS
+- The sidebar Open / Close arrow control works correctly.
+- The joined arrow-pill appearance from Prompt 023Y is correct.
+- Background Edit works correctly.
+- Share works correctly.
+- The only problem is the total width/alignment of this control group relative to Pack Summary.
+
+REQUIRED ALIGNMENT
+
+The full control group:
+
+[ sidebar arrow group ] [ Background Edit ] [ Share ]
+
+must span exactly the same horizontal width as the Pack Summary panel below it.
+
+Specifically:
+- The OUTER LEFT EDGE of the sidebar arrow group must align with the LEFT EDGE of Pack Summary.
+- The OUTER RIGHT EDGE of the Share control must align with the RIGHT EDGE of Pack Summary.
+- The controls between those two edges should fit cleanly on one row.
+- Preserve visually even spacing between the three controls.
+- Do not move Pack Summary to achieve this alignment.
+
+BACKGROUND LABEL — ONLY IF NEEDED
+If the visible text “Background Edit” is too wide to achieve the required alignment cleanly:
+- Change the visible label from “Background Edit” to “Background”.
+- Keep the same icon if currently used.
+- Keep the exact same Background Edit function and behavior.
+- Do not rename the underlying feature, panel, code identifiers, or accessibility meaning unless necessary.
+- If a tooltip/title is used, it may still say “Background Edit” so the full meaning remains clear.
+
+IMPORTANT — LAYOUT ONLY
+Do NOT change any behavior.
+
+Preserve:
+- Sidebar down-arrow pill = open all sidebar panels.
+- Sidebar up-arrow pill = close all sidebar panels.
+- Sidebar Open / Close remains independent from the main category Open / Close control.
+- Main category arrow control remains unchanged.
+- Individual sidebar panels still open and close normally.
+- Background Edit / Background still opens the exact same panel.
+- Share remains unchanged.
+
+PRESERVE PROMPT 023Y
+Keep the current joined two-segment arrow pill exactly as implemented:
+- Down arrow on the left.
+- Up arrow on the right.
+- No visible gap between the two segments.
+- Same current size, style, border/radius, icon size, hover/focus states, and accessibility labels unless a minimal width adjustment is absolutely necessary.
+
+PRESERVE EXISTING WORK
+Do not alter unrelated styling, spacing, or functionality.
+
+Specifically preserve:
+- Prompt 023V: exactly 6 px outer vertical spacing between Pack Summary, Weight Distribution, Scan Gear List, and Locker.
+- Prompt 023U category-header/body protections.
+- Existing sidebar panel widths and positions.
+- Existing Pack Summary width and position.
+- Existing Weight Distribution, Scan Gear List, and Locker positions.
+- Existing main category layout.
+- Existing category arrow-pill control.
+- Existing Hide, Preview, Imperial/Metric controls.
+- Existing Save, Undo/Redo, Reset, Scan Gear List, Locker, Share, and all other TrailWeigh functionality.
+- Existing mobile/desktop behavior except for the minimum layout adjustment required for this right-side control group.
+
+DO NOT
+- Do not move Pack Summary.
+- Do not widen or narrow the Pack Summary panel.
+- Do not move the sidebar group to another row.
+- Do not stack the controls vertically on desktop.
+- Do not change arrow-control behavior.
+- Do not change Share behavior.
+- Do not redesign the toolbar.
+- Do not refactor unrelated components.
+- Do not make unrelated visual changes.
+
+IMPLEMENTATION GUIDANCE
+Use the smallest layout/CSS change necessary.
+
+Prefer:
+- A single row/container whose width matches Pack Summary.
+- The leftmost child anchored to the Pack Summary left edge.
+- The rightmost child anchored to the Pack Summary right edge.
+- Reasonable flex/grid spacing between the three controls.
+- Keep the controls compact rather than stretching them unnecessarily.
+
+If “Background Edit” prevents the group from fitting cleanly, shorten only the visible label to:
+“Background”
+
+RESPONSIVE REQUIREMENT
+Desktop:
+- All three controls remain on one row.
+- Group left edge aligns with Pack Summary left edge.
+- Group right edge aligns with Pack Summary right edge.
+
+Mobile/narrow widths:
+- Preserve current responsive conventions.
+- Do not shrink text or touch targets below comfortable usability.
+- If wrapping is unavoidable on very narrow screens, preserve logical order:
+  sidebar arrows -> Background -> Share
+- Do not change desktop alignment behavior to solve a mobile-only issue.
+
+TEST BEFORE FINISHING
+
+1. DESKTOP ALIGNMENT
+- Confirm outer left edge of sidebar arrow group aligns with Pack Summary left edge.
+- Confirm outer right edge of Share aligns with Pack Summary right edge.
+- Confirm all three controls remain on the same row.
+- Confirm spacing between controls is visually even and not excessive.
+
+2. LABEL
+- If “Background Edit” fits cleanly, it may remain unchanged.
+- If it does not fit cleanly, visible label is shortened to “Background”.
+- Background function remains unchanged.
+
+3. BEHAVIOR
+- Sidebar arrow group still opens/closes all sidebar panels correctly.
+- Main category arrow group remains independent.
+- Background control still opens the same Background Edit panel.
+- Share still works.
+
+4. PRESERVATION
+- Pack Summary position/width unchanged.
+- 6 px sidebar accordion spacing unchanged.
+- No unrelated visual or functional regressions.
+
+5. MOBILE
+- Controls remain usable and readable.
+- No overlap with adjacent controls.
+- No unnecessary reduction in touch-target size.
+
+WORKFLOW REPORT REQUIREMENTS
+When finished, create:
+- workflow-reports/trailweigh-023Z-report.txt
+- workflow-reports/trailweigh-023Z-report.zip
+
+The report must clearly state:
+- What file(s) were changed.
+- The exact layout/CSS change used.
+- Confirmation that the full right-side control group now aligns with both outer edges of Pack Summary.
+- Whether “Background Edit” was shortened to “Background”.
+- Confirmation that no Open/Close, Background, or Share behavior changed.
+- Confirmation that the 6 px sidebar spacing was preserved.
+- Desktop and mobile test results.
+- Replit work summary: time worked, actions, lines/items read, Agent usage/cost, and checkpoint status.
+
+Keep this prompt strictly focused on right-side control-group width/alignment.
