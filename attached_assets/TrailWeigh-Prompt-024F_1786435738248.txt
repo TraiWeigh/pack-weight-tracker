@@ -1,0 +1,215 @@
+TRAILWEIGH — PROMPT 024F
+FIX PDF SCAN ITEM LOSS: SAME SOURCE MUST FIND 77 GEAR ITEMS, NOT 68
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused importer diagnosis/repair using one exact PDF and one known-good ground-truth CSV. Do not redesign the importer.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 6–12 minutes
+Estimated Agent usage/cost: about $1.00–$2.20
+
+ATTACH THESE THREE FILES WITH THIS PROMPT
+
+1. TrailWeigh-024F-Test-Pack-Weight.pdf
+   - exact PDF that currently produces “68 items found”.
+
+2. TrailWeigh-024F-Ground-Truth-77-Items.csv
+   - known-good structured representation of the SAME gear list;
+   - contains the 77 actual gear-item rows expected from the PDF;
+   - use this as the ground-truth comparison set for item count and item identity.
+
+3. TrailWeigh-024F-PDF-68-Items-Reference.png
+   - screenshot of the current TrailWeigh PDF scan result showing “68 items found”.
+
+IMPORTANT CURRENT STATE
+
+- Prompt 024E is USER-VERIFIED PASS for CSV import.
+- The attached CSV imports all 77 gear items.
+- The attached PDF represents the same gear list, but TrailWeigh finds only 68 items.
+- This prompt is ONLY about the PDF scan path.
+- Do not change CSV parsing, CSV Type mapping, or CSV Expendable routing.
+
+PRIMARY GOAL
+
+When the attached PDF is uploaded to Scan Gear List, TrailWeigh must identify all 77 actual gear-item rows that correspond to the 77-row ground-truth CSV.
+
+It must NOT:
+- stop at 68;
+- duplicate rows;
+- invent rows from totals, headings, charts, category summaries, or the Meal Planner pages;
+- import empty placeholder rows.
+
+PHASE 1 — DIAGNOSE AND DIFF BEFORE EDITING
+
+Before changing code:
+
+1. Run the current PDF scan against:
+   TrailWeigh-024F-Test-Pack-Weight.pdf
+
+2. Capture/list the exact 68 items currently detected.
+
+3. Compare those 68 detected items against:
+   TrailWeigh-024F-Ground-Truth-77-Items.csv
+
+4. Produce an exact internal diff identifying:
+   - the 9 expected gear items that are currently missing;
+   - whether any detected item has the wrong Type/Description/category;
+   - whether any one source row is being merged into another;
+   - whether blank Description cells, Type-only rows, formatting, line grouping, page boundaries, or another parser rule explains the loss.
+
+5. State the exact root-cause pattern BEFORE implementing the fix.
+
+Do not guess that the missing rows are a particular set just because some Description cells are blank. Confirm the missing-item list from the actual current scan versus the ground-truth file.
+
+SOURCE PDF STRUCTURE
+
+The PDF contains more than just the main gear-list rows.
+
+For this test:
+- the gear-list content is the source of the expected 77 items;
+- category headings are NOT items;
+- “Total” rows are NOT items;
+- summary/category-weight tables are NOT items;
+- charts are NOT items;
+- empty placeholder rows are NOT items;
+- Meal Planner content on later pages is NOT part of this 77-item gear import.
+
+The repair must increase the real gear rows from 68 to 77 without pulling in unrelated later-page content.
+
+IMPORTANT FIELD-FALLBACK RULE
+
+If diagnosis confirms rows are being dropped because the Description cell is blank while Type contains a meaningful item label:
+
+- do NOT discard that row;
+- preserve the Type value;
+- use the existing Type value as a Description fallback only when the source Description is truly blank and TrailWeigh requires a Description to retain/import the row;
+- do not overwrite a valid nonblank Description;
+- do not convert headings/totals/empty placeholders into items.
+
+Examples from this PDF that may require this logic must be confirmed by the diff rather than assumed.
+
+PRESERVE EXISTING PDF DATA WHEN AVAILABLE
+
+For each detected gear item, preserve as much of the existing source data as the current PDF importer already supports:
+- category/section;
+- Type;
+- Description;
+- Weight;
+- Unit;
+- Quantity;
+- existing worn/consumable/expendable routing rules where applicable.
+
+Do not make this prompt a broad field-extraction redesign. The count-loss bug is the focus.
+
+EXPECTED RESULT FOR THE EXACT TEST PDF
+
+After the fix:
+
+- “77 items found” must be shown in Scan Gear List.
+- No more than 77 gear items should be found from this test PDF.
+- All 77 ground-truth gear items must be represented exactly once.
+- No Meal Planner item should appear in the gear preview.
+- No Total row should appear as an item.
+- No category heading should appear as an item.
+- No blank placeholder row should appear as an item.
+
+CATEGORY / ROUTING PRESERVATION
+
+Do not hard-code the final category counts from the CSV test because TrailWeigh may apply its normal mapping/routing rules after extraction.
+
+Instead verify:
+- every expected source item survives extraction;
+- normal TrailWeigh mapping still runs afterward;
+- Fuel/consumables continue to follow the existing mapping rules;
+- Type and Description are not lost.
+
+PDF PREVIEW VERIFICATION
+
+In the running app:
+
+1. Upload the attached PDF.
+2. Confirm Scan Gear List reports exactly “77 items found”.
+3. Review the full preview.
+4. Compare preview item identities against the 77-row ground-truth CSV.
+5. Confirm every ground-truth row is represented once.
+6. Confirm no unrelated PDF content was added.
+7. Import all 77 into a blank/new list.
+8. Confirm 77 total items are imported.
+9. Confirm the Scan Gear List panel clears/resets after successful import as before.
+
+REGRESSION TESTS
+
+Also confirm:
+- the 77-row CSV still detects/imports 77 items;
+- Prompt 024E Type/Expendable behavior remains intact;
+- PDF/DOCX/XLSX/image routes are not intentionally changed except the minimum PDF-specific/shared parser fix needed;
+- Prompt 024D Background fix remains intact;
+- Prompt 024B toolbar alignment remains intact;
+- app builds/runs cleanly.
+
+DO NOT CHANGE
+
+Do not change:
+- CSV header aliases or CSV parsing unless a shared helper absolutely requires a safe change;
+- Background behavior;
+- toolbar layout/alignment;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- authentication;
+- footer/legal/help;
+- Stripe/payments/AI credits;
+- Meal Planner features;
+- unrelated UI.
+
+STOP-ON-SCOPE-EXPANSION RULE
+
+If the diagnosis shows the fix requires a broad rewrite of the importer or substantial changes to multiple non-PDF formats, STOP and report the exact diagnosis before making those broader changes.
+
+Prefer the smallest robust parsing correction.
+
+CHANGED-FILE CHECK
+
+Before completion:
+- inspect every changed file;
+- only files genuinely required for the 68-to-77 PDF fix should change;
+- no unrelated refactoring or cleanup.
+
+REPORTING — REQUIRED
+
+Create:
+workflow-reports/PROMPT_024F_REPORT.md
+
+Create:
+workflow-reports/trailweigh-024F-report.zip
+
+VERIFY BOTH FILES PHYSICALLY EXIST before declaring completion.
+
+The Markdown report must include:
+- Prompt number: 024F
+- Agent mode actually used
+- Time worked
+- Number of actions
+- Lines/items read
+- Agent usage/cost
+- Exact files changed
+- Exact list of the 9 previously missing items
+- Root cause(s) for why those 9 were missed
+- Exact parsing correction made
+- Before count: 68
+- After count: 77
+- Confirmation all 77 ground-truth items are present exactly once
+- Confirmation totals/headings/placeholders/Meal Planner rows were not imported
+- PDF preview test result
+- 77-item import result
+- CSV 77-item regression test result
+- Build/test results
+- Confirmation Prompt 024E, 024D, and 024B behavior was preserved
+- Confirmation no unrelated changes were made
+- User verification status: PENDING until the user tests the live app
+
+FINAL STOP RULE
+
+Complete only Prompt 024F.
+Do not begin another task after this.
