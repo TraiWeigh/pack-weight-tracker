@@ -1,0 +1,198 @@
+TRAILWEIGH — PROMPT 024C
+ADD CSV SUPPORT TO THE EXISTING “SCAN GEAR LIST” IMPORTER
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused importer enhancement using TrailWeigh’s existing Scan Gear List workflow. Do not redesign the importer or touch unrelated features.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 5–10 minutes
+Estimated Agent usage/cost: about $0.80–$1.60
+
+SCOPE — ONE FEATURE ONLY
+
+Add .csv file support to TrailWeigh’s existing Scan Gear List importer.
+
+The goal is to let a user export a gear/list file from another app or spreadsheet as CSV and import it directly into TrailWeigh using the same Scan Gear List interface that already accepts other supported file types.
+
+IMPORTANT:
+- CSV must be parsed directly as structured text/data.
+- DO NOT use OCR, Tesseract, Pillow, image conversion, screenshots, or AI vision for CSV files.
+- Preserve all existing PDF, DOCX, XLSX, image/screenshot, and other current importer behavior exactly as it works now.
+- Do not create a separate “CSV Importer” page or panel.
+- Add CSV to the existing Scan Gear List workflow.
+
+SUPPORTED CSV COLUMN HEADINGS
+
+The first CSV version should recognize common heading variants, case-insensitively where practical.
+
+Map these heading names to TrailWeigh fields:
+
+CATEGORY
+- Category
+- Section
+
+DESCRIPTION
+- Description
+- Item
+- Gear
+
+QUANTITY
+- Quantity
+- Qty
+
+WEIGHT
+- Weight
+
+UNIT
+- Unit
+
+WORN STATUS
+- Worn
+
+CONSUMABLE / EXPENDABLE STATUS
+- Consumable
+- Expendable
+
+Do not require every column to exist.
+
+At minimum, a row with a recognizable item/description value should be eligible for preview/import even if some optional fields are blank.
+
+CSV PARSING RULES
+
+1. Accept files with the .csv extension in the existing Scan Gear List file picker/drop area.
+2. Parse standard CSV correctly, including:
+   - comma-separated fields;
+   - quoted values;
+   - commas inside quoted values;
+   - blank cells;
+   - normal CRLF or LF line endings.
+3. Treat the first meaningful row as the header row.
+4. Ignore completely blank rows.
+5. Do not import the header row as an item.
+6. Preserve item text rather than rewriting it unnecessarily.
+7. If Quantity is blank or missing, use TrailWeigh’s normal/default quantity behavior.
+8. If Weight or Unit is blank or missing, allow the item to import without requiring weight. TrailWeigh is not limited to weighted lists.
+9. If a recognized Category/Section value exists, use it when placing the item.
+10. If the CSV contains categories that do not yet exist in a blank/new TrailWeigh list, preserve the existing successful importer behavior that automatically creates the needed categories.
+11. Do not force clothing, fuel, consumables, worn items, or other fields into incorrect categories merely because a column is absent.
+12. Reuse existing TrailWeigh importer/category-mapping behavior wherever applicable instead of creating a second competing mapping system.
+
+BOOLEAN / STATUS VALUES
+
+For Worn and Consumable/Expendable columns, support common simple values where practical, such as:
+- true / false
+- yes / no
+- 1 / 0
+
+Do not make the import fail if a status value is unrecognized. Leave that status unset/default rather than rejecting the entire CSV.
+
+PREVIEW BEFORE IMPORT
+
+CSV rows must flow through TrailWeigh’s existing import preview/selection experience before anything is added to the list.
+
+The user must be able to:
+- see the detected rows/items;
+- review the detected/mapped information;
+- choose which items to import using the existing selection behavior;
+- use the existing Import Selected Items action.
+
+Do not silently import all CSV rows immediately after upload.
+
+AFTER IMPORT
+
+Preserve the existing importer behavior:
+- Imported items are placed in the appropriate categories.
+- Needed categories can be automatically created when importing into a blank New list.
+- After “Import Selected Items” succeeds, clear/reset the Scan Gear List import panel in the same way existing successful imports do.
+- Imported checklist items should follow TrailWeigh’s existing post-import checked/unchecked behavior. Do not introduce a new CSV-only behavior.
+
+ERROR HANDLING
+
+If the CSV cannot be parsed:
+- show a clear user-facing error inside the existing Scan Gear List workflow;
+- do not crash the page;
+- do not partially import corrupted/random rows;
+- do not expose technical stack traces to the user.
+
+If the CSV has no recognizable item/description column:
+- do not guess wildly;
+- show a concise message explaining that TrailWeigh could not identify an Item/Description/Gear column.
+
+TEST FILE / VERIFICATION
+
+Use a representative CSV test containing at least:
+- Category
+- Description or Item
+- Qty
+- Weight
+- Unit
+- Worn
+- Consumable or Expendable
+- quoted text containing a comma
+- one blank optional value
+- one category that must be created automatically in a blank list
+
+Verify all of the following:
+
+1. .csv is accepted by Scan Gear List.
+2. CSV is parsed directly, not passed through OCR.
+3. Common column-name variants map correctly.
+4. Quoted commas parse correctly.
+5. Missing optional fields do not block import.
+6. Rows appear in the existing preview before import.
+7. Selected rows import successfully.
+8. Categories are created automatically when needed in a blank list.
+9. Existing PDF/DOCX/XLSX/image import paths still work or at minimum remain unchanged and build cleanly.
+10. The app builds/runs cleanly.
+11. No unrelated UI or behavior is changed.
+
+DO NOT CHANGE
+
+Do not change:
+- Prompt 024A/024B toolbar alignment.
+- Open/Close joined arrow controls.
+- Background or Share controls.
+- Pack Summary or Weight Distribution layout.
+- Locker behavior.
+- themes/backgrounds.
+- authentication.
+- footer/legal/help.
+- mobile layout.
+- Stripe, payments, AI credits, or purchasing.
+- unrelated importer logic except where required to route .csv through the existing import preview/import pipeline.
+- any existing file format behavior unless absolutely necessary for shared importer plumbing.
+
+KEEP THE CHANGE SMALL AND REUSE EXISTING IMPORTER COMPONENTS.
+
+COMPLETION CRITERIA — REQUIRED BEFORE STOPPING OR DECLARING COMPLETION
+
+You MUST complete ALL of the following:
+
+- Implement .csv support in the existing Scan Gear List importer.
+- Verify CSV parsing and preview/import behavior.
+- Verify the app builds/runs cleanly.
+- Confirm no unrelated features were changed.
+- Write the Markdown workflow report:
+  workflow-reports/PROMPT_024C_REPORT.md
+- Create the corresponding ZIP report:
+  workflow-reports/trailweigh-024C-report.zip
+- VERIFY that BOTH the .md report and .zip file actually exist in workflow-reports/ before declaring completion.
+
+The Markdown report must include:
+- Prompt number: 024C
+- Replit Agent mode actually used
+- Time worked
+- Number of actions
+- Lines/items read
+- Agent usage/cost
+- Exact files changed
+- How CSV files are detected and parsed
+- Recognized heading aliases implemented
+- Preview/import behavior
+- Test CSV structure used
+- Test/build results
+- Confirmation existing non-CSV import behavior was preserved
+- Confirmation no unrelated changes were made
+- User verification status: PENDING until the user tests the live app
+
+STOP after Prompt 024C and its report/ZIP are completed and verified. Do not begin another task.

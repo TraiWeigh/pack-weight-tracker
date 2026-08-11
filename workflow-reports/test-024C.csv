@@ -1,0 +1,16 @@
+Category,Description,Qty,Weight,Unit,Worn,Consumable
+Shelter,Tent - 2P Ultralight,1,32,oz,no,no
+Shelter,Tent Stakes (6),6,1.2,oz,no,no
+Sleep System,Down Sleeping Bag -20F,1,28.5,oz,no,no
+Sleep System,Inflatable Sleeping Pad,1,16,oz,no,no
+Clothing,Rain Jacket,1,8.5,oz,yes,no
+Clothing,Merino Base Layer,1,6,oz,yes,no
+Food & Water,"Energy Bars, Assorted (3-day)",9,2,oz,no,yes
+Food & Water,Water Filter,1,2,oz,no,no
+Food & Water,Iodine Tablets,1,0.4,oz,no,yes
+Navigation,Topographic Map,1,2,oz,no,no
+Navigation,Compass,1,1.5,oz,no,no
+First Aid,First Aid Kit,1,4,oz,no,no
+First Aid,Blister Treatment,1,,,,
+New Gear Category,Headlamp,1,3,oz,no,false
+New Gear Category,Extra Batteries,4,0.8,oz,no,true

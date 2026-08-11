@@ -20,6 +20,7 @@ export interface ExtractedItem {
   warning: boolean;
   warningMsg?: string;  // human-readable reason for the warning flag
   destination?: string; // category from section header (spreadsheets only)
+  expendable?: boolean; // consumable/expendable status (CSV import)
 }
 
 // ── Normalisation helper ──────────────────────────────────────────────────────
@@ -807,6 +808,162 @@ export function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): Extracted
   return results.map(applyGearClassification);
 }
 
+// ── CSV parsing ───────────────────────────────────────────────────────────────
+
+/** Column heading aliases → canonical field name */
+const CSV_COL_ALIASES: Record<string, string[]> = {
+  category:    ['category', 'section'],
+  description: ['description', 'item', 'gear'],
+  qty:         ['quantity', 'qty'],
+  weight:      ['weight'],
+  unit:        ['unit'],
+  worn:        ['worn'],
+  expendable:  ['consumable', 'expendable'],
+};
+
+function mapCsvHeader(h: string): string | null {
+  const n = h.toLowerCase().trim();
+  for (const [field, aliases] of Object.entries(CSV_COL_ALIASES)) {
+    if (aliases.includes(n)) return field;
+  }
+  return null;
+}
+
+function parseCsvBool(val: string): boolean | null {
+  const v = val.toLowerCase().trim();
+  if (['true', 'yes', '1'].includes(v)) return true;
+  if (['false', 'no', '0'].includes(v)) return false;
+  return null; // unrecognised — don't fail the import
+}
+
+/**
+ * RFC 4180-compatible CSV parser.
+ * Handles: quoted fields, embedded commas, escaped quotes (""), CRLF/LF.
+ * Returns an array of rows; blank rows are omitted.
+ */
+function parseCsvRows(text: string): string[][] {
+  const result: string[][] = [];
+  const input = text.replace(/\r\n?/g, '\n');
+  let pos = 0;
+
+  while (pos < input.length) {
+    const row: string[] = [];
+
+    while (pos < input.length && input[pos] !== '\n') {
+      let field = '';
+
+      if (input[pos] === '"') {
+        // Quoted field
+        pos++; // skip opening quote
+        while (pos < input.length) {
+          if (input[pos] === '"') {
+            if (input[pos + 1] === '"') {
+              field += '"';     // escaped quote
+              pos += 2;
+            } else {
+              pos++;            // closing quote
+              break;
+            }
+          } else {
+            field += input[pos++];
+          }
+        }
+        // Advance past any trailing whitespace to the next delimiter
+        while (pos < input.length && input[pos] !== ',' && input[pos] !== '\n') pos++;
+      } else {
+        // Unquoted field
+        while (pos < input.length && input[pos] !== ',' && input[pos] !== '\n') {
+          field += input[pos++];
+        }
+      }
+
+      row.push(field.trim());
+      if (pos < input.length && input[pos] === ',') pos++; // consume comma
+    }
+    if (pos < input.length) pos++; // consume newline
+
+    if (row.some(f => f)) result.push(row); // skip blank rows
+  }
+
+  return result;
+}
+
+/**
+ * Parse a CSV buffer into ExtractedItems.
+ * Throws a user-facing error (with .statusCode) on unrecoverable problems.
+ */
+function parseCsvItems(buffer: Buffer): ExtractedItem[] {
+  const text = buffer.toString('utf-8');
+  const rows = parseCsvRows(text);
+
+  if (rows.length < 1) {
+    const err: any = new Error('The CSV file appears to be empty.');
+    err.code = 'csv_empty'; err.statusCode = 422;
+    throw err;
+  }
+
+  // Map header row → column indices
+  const headers = rows[0];
+  const colMap: Partial<Record<string, number>> = {};
+  headers.forEach((h, i) => {
+    const field = mapCsvHeader(h);
+    if (field !== null && !(field in colMap)) colMap[field] = i;
+  });
+
+  if (colMap['description'] === undefined) {
+    const err: any = new Error(
+      'TrailWeigh could not identify an Item / Description / Gear column in this CSV. ' +
+      'Make sure the header row includes one of: Description, Item, or Gear.',
+    );
+    err.code = 'csv_no_description_col'; err.statusCode = 422;
+    throw err;
+  }
+
+  const items: ExtractedItem[] = [];
+
+  for (let r = 1; r < rows.length; r++) {
+    const row = rows[r];
+    const get = (field: string): string => {
+      const idx = colMap[field];
+      return idx !== undefined ? (row[idx] ?? '').trim() : '';
+    };
+
+    const desc = get('description');
+    if (!desc) continue; // skip rows with no description value
+
+    const category   = get('category');
+    const weightRaw  = get('weight');
+    const unitRaw    = get('unit');
+    const expendRaw  = get('expendable');
+    // worn is parsed but not propagated in v1 (no dedicated worn field in GearItem)
+
+    let weightOz = 0;
+    let warning  = false;
+    let warningMsg: string | undefined;
+
+    if (weightRaw) {
+      const parsed = parseWeightToOz(weightRaw, unitRaw);
+      weightOz  = parsed.oz;
+      warning   = parsed.warning;
+      if (warning) warningMsg = `Unusual weight value: "${weightRaw}"`;
+    }
+
+    const expendable = parseCsvBool(expendRaw) ?? false;
+
+    items.push(applyGearClassification({
+      sub:         '',           // no sub/type column in CSV; applyGearClassification infers it
+      desc,
+      weightOz,
+      warning,
+      warningMsg,
+      destination: category || undefined,
+      expendable,
+    }));
+  }
+
+  return items;
+}
+
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 importGearRouter.post('/import-gear', upload.single('file'), async (req, res) => {
@@ -888,9 +1045,20 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       const wb = XLSX.read(buffer, { type: 'buffer' });
       items = extractFromWorkbook(wb);
 
+    } else if (ext === 'csv' || mimetype === 'text/csv' || mimetype === 'application/csv') {
+      try {
+        items = parseCsvItems(buffer);
+      } catch (csvErr: any) {
+        res.status(csvErr.statusCode ?? 422).json({
+          error: csvErr.message ?? 'Could not parse this CSV file.',
+          code:  csvErr.code  ?? 'csv_parse_error',
+        });
+        return;
+      }
+
     } else {
       res.status(400).json({
-        error: `Unsupported file type: .${ext}. Accepted formats: PDF, Word (.docx), Excel (.xlsx), or Numbers.`,
+        error: `Unsupported file type: .${ext}. Accepted formats: PDF, Word (.docx), Excel (.xlsx), Numbers, or CSV.`,
       });
       return;
     }

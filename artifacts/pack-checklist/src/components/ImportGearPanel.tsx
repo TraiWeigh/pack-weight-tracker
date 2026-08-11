@@ -16,6 +16,7 @@ interface ParsedItem {
   warning: boolean;
   warningMsg?: string;
   destination?: string;
+  expendable?: boolean;
 }
 
 type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
@@ -49,8 +50,8 @@ interface ImportGearPanelProps {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const ACCEPTED     = '.pdf,.docx,.doc,.xlsx,.xls,.numbers';
-const ACCEPT_LABEL = 'PDF, Word, Excel, or Numbers';
+const ACCEPTED     = '.pdf,.docx,.doc,.xlsx,.xls,.numbers,.csv';
+const ACCEPT_LABEL = 'PDF, Word, Excel, Numbers, or CSV';
 
 // CATEGORY_ROLE_ALIASES, normCat, and resolveDestination are imported from
 // ../lib/categoryAliases — the single source of truth shared with the final
@@ -236,7 +237,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
     // Call onAddItem for each valid item — outside the state updater
     for (const it of valid) {
       const weightOz = displayToOz(it.displayWeight, it.weightUnit);
-      onAddItem(it.destination, { sub: it.sub, desc: it.desc, weightOz, checked: false });
+      onAddItem(it.destination, { sub: it.sub, desc: it.desc, weightOz, checked: false, expendable: it.expendable ?? false });
     }
 
     if (invalid.length === 0) {
