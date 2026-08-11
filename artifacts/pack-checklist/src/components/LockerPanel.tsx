@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { Background } from './BackgroundPicker';
 import { ChevronDown, ChevronUp, Trash2, FolderOpen, Pencil, Check, X } from 'lucide-react';
@@ -48,6 +48,9 @@ interface LockerPanelProps {
   onRename: (id: string, newName: string) => void;
   /** Optional 022T sync diagnostic props. When provided, a SyncStatusPanel is rendered. */
   syncProps?: SyncProps;
+  /** 023W: Sidebar Open/Close — when forceOpenSeq increments, panel open/close is set to forceOpen. */
+  forceOpen?: boolean | null;
+  forceOpenSeq?: number;
 }
 
 function formatDate(ts: number) {
@@ -55,9 +58,16 @@ function formatDate(ts: number) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncProps }: LockerPanelProps) {
+export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncProps, forceOpen, forceOpenSeq }: LockerPanelProps) {
   const [open, setOpen] = useState(true);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  // 023W: respond to sidebar Open/Close control
+  useEffect(() => {
+    if (forceOpen !== null && forceOpen !== undefined) {
+      setOpen(forceOpen);
+    }
+  }, [forceOpen, forceOpenSeq]);
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [renameError, setRenameError] = useState<string | null>(null);

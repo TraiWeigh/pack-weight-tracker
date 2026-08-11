@@ -8,7 +8,7 @@
  * Both are rendered as separate sidebar siblings in Checklist.tsx.
  * Both collapse independently; neither affects the other's state.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PackState, CategoryMeta } from '../hooks/usePackData';
 import { useUnit } from '../context/UnitContext';
 import { calcTotalOz, formatWeight, largeUnit } from '../lib/weightUtils';
@@ -51,6 +51,9 @@ interface WeightBaseProps {
   data: PackState;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;
+  /** 023W: Sidebar Open/Close — when forceOpenSeq increments, panel open/close is set to forceOpen. */
+  forceOpen?: boolean | null;
+  forceOpenSeq?: number;
 }
 
 // ── Shared weight calculation ─────────────────────────────────────────────────
@@ -78,12 +81,19 @@ function calcWeights(data: PackState, categoryOrder: string[], categoryMeta: Rec
 // ── Pack Summary ──────────────────────────────────────────────────────────────
 
 /** Pack Summary card — collapsible, independent of Weight Distribution. */
-export function WeightSummary({ data, categoryOrder, categoryMeta }: WeightBaseProps) {
+export function WeightSummary({ data, categoryOrder, categoryMeta, forceOpen, forceOpenSeq }: WeightBaseProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
   // 022G: start collapsed — Pack Summary is closed on every fresh open/refresh
   const [summaryOpen, setSummaryOpen] = useState(false);
   const barStyle = useBarStyle();
+
+  // 023W: respond to sidebar Open/Close control
+  useEffect(() => {
+    if (forceOpen !== null && forceOpen !== undefined) {
+      setSummaryOpen(forceOpen);
+    }
+  }, [forceOpen, forceOpenSeq]);
 
   const { baseWeightOz, nonBaseTotals, grandTotalOz } = calcWeights(data, categoryOrder, categoryMeta);
 
@@ -164,6 +174,8 @@ export function WeightDistribution({
   categoryMeta,
   paletteKey,
   onPaletteChange,
+  forceOpen,
+  forceOpenSeq,
 }: WeightDistributionProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
@@ -171,6 +183,13 @@ export function WeightDistribution({
   const [chartOpen, setChartOpen] = useState(false);
   const [showPaletteMenu, setShowPaletteMenu] = useState(false);
   const barStyle = useBarStyle();
+
+  // 023W: respond to sidebar Open/Close control
+  useEffect(() => {
+    if (forceOpen !== null && forceOpen !== undefined) {
+      setChartOpen(forceOpen);
+    }
+  }, [forceOpen, forceOpenSeq]);
 
   const palette = PALETTES[paletteKey] ?? PALETTES.trail;
 

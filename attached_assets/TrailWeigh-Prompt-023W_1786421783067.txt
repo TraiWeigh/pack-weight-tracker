@@ -1,0 +1,112 @@
+TRAILWEIGH — PROMPT 023W
+Sidebar Open / Close Control
+
+GOAL
+Add a second Open / Close control that affects ONLY the right sidebar accordion group.
+
+IMPORTANT
+Do not change the existing Open / Close control above the main category list.
+The existing category control and the new sidebar control must operate independently.
+
+PLACEMENT
+1. Add the new Open / Close control immediately to the LEFT of the existing Background Edit control.
+2. Position it so the LEFT EDGE of the new Open / Close control is horizontally aligned with the LEFT EDGE of the Pack Summary sidebar panel below it.
+3. Keep the existing Background Edit control in its current general area; only make the minimum layout adjustment needed to place the new sidebar Open / Close control correctly.
+4. The new control should visually match the existing Open / Close control above the category list as closely as practical.
+
+SIDEBAR PANELS CONTROLLED
+The new sidebar Open / Close control must control the current collapsible sidebar panels as a group, including:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+
+BEHAVIOR
+OPEN:
+- Clicking Open must expand/open ALL collapsible sidebar panels in the sidebar group.
+
+CLOSE:
+- Clicking Close must collapse/close ALL collapsible sidebar panels in the sidebar group.
+- Close must work regardless of the current state.
+- If all four are open, Close closes all four.
+- If only one is open, Close closes that one.
+- If two or three are open, Close closes every open sidebar panel.
+- If all are already closed, Close should leave them closed without causing an error.
+
+INDEPENDENCE
+- The new sidebar Open / Close control must NOT open or close the main list categories.
+- The existing Open / Close control above the category list must NOT open or close the sidebar panels.
+- Do not change the normal ability to open or close each sidebar panel individually.
+
+PRESERVE EXISTING WORK
+Do not alter unrelated layout, styling, or functionality.
+
+Specifically preserve:
+- Prompt 023V: exactly 6 px outer vertical gap between Pack Summary, Weight Distribution, Scan Gear List, and Locker.
+- Existing sidebar panel size and internal padding.
+- Existing font sizes, icons, disclosure chevrons/carets, colors, and collapse/expand behavior.
+- Prompt 023U protections for expanded accordion bodies.
+- Existing category header spacing and behavior.
+- Existing Background Edit behavior.
+- Existing mobile and desktop behavior except for the minimum responsive adjustment needed for this new control.
+- All current TrailWeigh data, calculations, Save, Undo/Redo, Preview, Hide, Imperial/Metric, Share, Scan Gear List, Locker, and other functionality.
+
+RESPONSIVE REQUIREMENT
+Check both desktop and mobile layouts.
+The new control must not overlap Background Edit, the sidebar panels, or other toolbar controls.
+If available width becomes tight, use the existing responsive layout conventions rather than shrinking text or making controls unusably small.
+
+DO NOT
+- Do not redesign the toolbar.
+- Do not move the sidebar panels.
+- Do not change the 6 px sidebar accordion spacing.
+- Do not create a second copy of the sidebar accordion components.
+- Do not combine the category and sidebar Open / Close state.
+- Do not make unrelated cleanup/refactors.
+
+TEST BEFORE FINISHING
+Verify all of the following:
+
+1. Desktop:
+   - New Open / Close control is immediately left of Background Edit.
+   - Its left edge aligns with the left edge of Pack Summary.
+   - Open expands all sidebar panels.
+   - Close collapses all sidebar panels.
+
+2. Mixed sidebar states:
+   - Open only Pack Summary, then click Close -> Pack Summary closes.
+   - Open only Locker, then click Close -> Locker closes.
+   - Open two or three sidebar panels, then click Close -> every open sidebar panel closes.
+   - With all sidebar panels closed, click Open -> all sidebar panels open.
+
+3. Independence:
+   - Sidebar Open / Close does not change category expansion.
+   - Main category Open / Close does not change sidebar expansion.
+
+4. Existing behavior:
+   - Individual sidebar panels can still be opened/closed normally.
+   - The 6 px gap from Prompt 023V remains unchanged.
+   - Background Edit still works.
+   - No visual regressions in the sidebar.
+
+5. Mobile:
+   - New control remains usable and does not overlap adjacent controls.
+   - Sidebar Open / Close behavior is the same as desktop.
+
+WORKFLOW REPORT REQUIREMENTS
+When finished, create:
+- workflow-reports/trailweigh-023W-report.txt
+- workflow-reports/trailweigh-023W-report.zip
+
+The report must clearly state:
+- What files were changed.
+- What code/behavior was added.
+- How the new sidebar Open / Close control is positioned/aligned.
+- How Open-all and Close-all sidebar behavior was implemented.
+- Confirmation that the main category Open / Close remains independent.
+- Confirmation that the 6 px sidebar spacing from Prompt 023V was preserved.
+- Desktop and mobile test results.
+- Any issues encountered.
+- Replit work summary: time worked, actions, lines/items read, Agent usage/cost, and checkpoint status.
+
+Keep this prompt focused only on the sidebar Open / Close control.

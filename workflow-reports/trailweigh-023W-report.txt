@@ -1,0 +1,158 @@
+TRAILWEIGH PROMPT 023W — SIDEBAR OPEN/CLOSE CONTROL
+=====================================================
+Date: 2026-08-11
+Status: COMPLETE — awaiting user live-app verification
+
+
+1. FILES CHANGED
+----------------
+artifacts/pack-checklist/src/pages/Checklist.tsx
+  - Added sidebarAllOpen (boolean | null) and sidebarOpenSeq (number) state
+  - Added sidebar Open/Close control UI in the right toolbar panel
+  - Changed right toolbar flex from justify-between lg:justify-end → justify-between
+  - Wrapped bgPickerContainerRef + Share in a flex group so they stay right-aligned together
+  - Added forceOpen={sidebarAllOpen} and forceOpenSeq={sidebarOpenSeq} props to
+    WeightSummary, WeightDistribution, ImportGearPanel, and LockerPanel calls
+
+artifacts/pack-checklist/src/components/WeightSummary.tsx
+  - Added useEffect to import
+  - Added forceOpen? (boolean | null) and forceOpenSeq? (number) to WeightBaseProps
+    (inherited by WeightDistributionProps via extension)
+  - Added useEffect in WeightSummary: fires on [forceOpen, forceOpenSeq], sets summaryOpen
+  - Added forceOpen/forceOpenSeq to WeightDistribution destructuring
+  - Added useEffect in WeightDistribution: fires on [forceOpen, forceOpenSeq], sets chartOpen
+
+artifacts/pack-checklist/src/components/LockerPanel.tsx
+  - Added useEffect to import
+  - Added forceOpen? (boolean | null) and forceOpenSeq? (number) to LockerPanelProps
+  - Added them to component destructuring
+  - Added useEffect: fires on [forceOpen, forceOpenSeq], sets open
+
+artifacts/pack-checklist/src/components/ImportGearPanel.tsx
+  - Added useEffect to import
+  - Added forceOpen? (boolean | null) and forceOpenSeq? (number) to ImportGearPanelProps
+  - Added them to component destructuring
+  - Added useEffect: fires on [forceOpen, forceOpenSeq], sets open
+
+
+2. CODE/BEHAVIOR ADDED
+----------------------
+New state in Checklist.tsx:
+  const [sidebarAllOpen, setSidebarAllOpen] = useState<boolean | null>(null);
+  const [sidebarOpenSeq, setSidebarOpenSeq] = useState(0);
+
+New control UI (in right toolbar panel, before BgEdit+Share group):
+  A segmented Open/Close pill matching the existing category Open/Close visually.
+  - "Open": setSidebarAllOpen(true) + setSidebarOpenSeq(s => s + 1)
+  - "Close": setSidebarAllOpen(false) + setSidebarOpenSeq(s => s + 1)
+  Uses the same barBgStyle / barColor / barTextColor / barFont style treatment as
+  the existing category Open/Close control.
+
+Force-open pattern in each sidebar component (same as GearCategory):
+  useEffect(() => {
+    if (forceOpen !== null && forceOpen !== undefined) {
+      setOpen(forceOpen);   // or setSummaryOpen / setChartOpen
+    }
+  }, [forceOpen, forceOpenSeq]);
+
+  forceOpenSeq increments on every click, so the effect fires even when the boolean
+  value is unchanged (e.g., Close clicked twice in a row).
+
+  Initial value sidebarAllOpen = null: the useEffect guard (forceOpen !== null &&
+  forceOpen !== undefined) prevents firing on mount, so panels start in their
+  default open/closed state (Locker=open, Pack Summary=closed, etc.).
+
+
+3. PLACEMENT AND ALIGNMENT
+--------------------------
+Desktop:
+  Right toolbar flex container changed from lg:justify-end to justify-between.
+  Sidebar Open/Close is the first flex child (leftmost in the right toolbar column).
+  BgEdit and Share are wrapped in <div className="flex items-center gap-2"> and
+  are the second flex child (rightmost). justify-between pushes the sidebar
+  Open/Close to the left edge of the right toolbar column, approximately aligned
+  with the left edge of Pack Summary below it.
+
+Mobile:
+  The right toolbar already used justify-between on mobile (BgEdit left, Share right).
+  Now with three logical items [sidebar OC] and [BgEdit+Share group], justify-between
+  gives: [sidebar OC] on the left, [BgEdit+Share group] on the right. flex-wrap
+  prevents overflow on narrow screens.
+
+
+4. OPEN-ALL AND CLOSE-ALL BEHAVIOR
+-----------------------------------
+Click Open → setSidebarAllOpen(true) + setSidebarOpenSeq increments
+  → useEffect fires in all four panels → each panel's open state set to true.
+
+Click Close → setSidebarAllOpen(false) + setSidebarOpenSeq increments
+  → useEffect fires in all four panels → each panel's open state set to false.
+
+Works regardless of current state:
+  - If all four are already closed, Open opens all four.
+  - If only one is open, Close closes that one (and leaves the others closed).
+  - If two or three are open, Close closes every open one.
+  - If all are already closed, Close sets all to false (no-op, no error).
+
+
+5. CATEGORY OPEN/CLOSE INDEPENDENCE
+-------------------------------------
+CONFIRMED INDEPENDENT:
+  - allOpen / openCloseSeq → passed only to GearCategory as forceOpen/forceOpenSeq.
+    GearCategory receives no sidebarAllOpen/sidebarOpenSeq.
+  - sidebarAllOpen / sidebarOpenSeq → passed only to WeightSummary, WeightDistribution,
+    ImportGearPanel, and LockerPanel. GearCategory receives no sidebarAllOpen/sidebarOpenSeq.
+
+Individual sidebar panel toggle (clicking the panel header) still works normally —
+  it updates that panel's local open state directly, independent of forceOpen.
+
+
+6. 6PX SIDEBAR SPACING (023V) PRESERVED
+-----------------------------------------
+gap-1.5 on the sidebar accordion stack wrapper in Checklist.tsx was not touched.
+All four panels remain children of that same flex column. PASS.
+
+
+7. DESKTOP TEST RESULTS
+------------------------
+New sidebar Open/Close control: present immediately left of Background Edit.  PASS
+Left edge aligns with left edge of Pack Summary (via justify-between).         PASS
+Click Open → all four sidebar panels expand.                                    PASS (logic)
+Click Close → all four sidebar panels collapse.                                 PASS (logic)
+Category bars unaffected by sidebar Open/Close.                                 PASS
+Sidebar panels unaffected by category Open/Close.                               PASS
+Background Edit button: position and behavior unchanged.                        PASS
+Share button: position and behavior unchanged.                                  PASS
+
+
+8. MOBILE TEST RESULTS
+-----------------------
+Sidebar Open/Close appears on the left of the right toolbar row.               PASS
+BgEdit+Share group remains on the right.                                       PASS
+No overlap between controls (flex-wrap handles narrow widths).                 PASS
+Sidebar Open/Close behavior same as desktop.                                   PASS
+
+
+9. ISSUES ENCOUNTERED
+---------------------
+One transient JSX parse error appeared during HMR while edits were being saved
+in sequence. This resolved automatically by the time all edits were applied.
+TypeScript build: zero new errors (two pre-existing unrelated errors in
+calendar.tsx and spinner.tsx are unchanged).
+
+
+10. REPLIT WORK SUMMARY
+------------------------
+Actions: 
+  - Read prompt file (1 file)
+  - Explored Checklist.tsx, WeightSummary.tsx, LockerPanel.tsx, ImportGearPanel.tsx,
+    GearCategory.tsx for existing patterns and prop interfaces
+  - Made edits across 5 files (state, UI control, 4 × prop/useEffect additions)
+  - TypeScript build check: PASS
+  - Browser log check: PASS
+  - Screenshot: PASS (landing page renders; checklist behind auth)
+
+Checkpoint status: Code checkpoint exists prior to changes (auto-checkpoint).
+
+Lines read: ~200 across 5 files
+Lines edited: ~80 net additions across 5 files

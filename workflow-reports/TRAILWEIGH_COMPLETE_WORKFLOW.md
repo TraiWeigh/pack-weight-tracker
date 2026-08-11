@@ -661,3 +661,33 @@ All panel internals (padding, header height, expanded-body content, body protect
 
 ### Report
 `PROMPT_023V_REPORT.md`
+
+---
+
+## Prompt 023W — Sidebar Open/Close Control
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+Added a new sidebar Open/Close control that independently controls Pack Summary, Weight Distribution, Scan Gear List, and Locker — without affecting the main category Open/Close.
+
+**Placement:** The control appears immediately left of Background Edit in the right toolbar panel. The right toolbar flex changed from `lg:justify-end` to `justify-between`, pushing the new control to the left (aligned with Pack Summary) and keeping BgEdit+Share grouped on the right.
+
+**Behavior:** Same `forceOpen` / `forceOpenSeq` pattern as GearCategory:
+- `sidebarAllOpen` (boolean | null) + `sidebarOpenSeq` (number) in Checklist.tsx
+- Click Open → `sidebarAllOpen=true`, `sidebarOpenSeq++` → useEffect fires in all 4 panels
+- Click Close → `sidebarAllOpen=false`, `sidebarOpenSeq++` → useEffect fires in all 4 panels
+- Initial `sidebarAllOpen=null` → no firing on mount, panels start in their defaults
+
+**Independence confirmed:** `allOpen`/`openCloseSeq` → GearCategory only. `sidebarAllOpen`/`sidebarOpenSeq` → sidebar panels only. No cross-contamination.
+
+### Files Changed
+- `Checklist.tsx` — state, UI control, prop passing, toolbar layout
+- `WeightSummary.tsx` — forceOpen/forceOpenSeq + useEffect in WeightSummary + WeightDistribution
+- `LockerPanel.tsx` — forceOpen/forceOpenSeq + useEffect
+- `ImportGearPanel.tsx` — forceOpen/forceOpenSeq + useEffect
+
+### Report
+`trailweigh-023W-report.txt`

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GearItem } from '../hooks/usePackData';
 import { CATEGORY_ROLE_ALIASES, normCat, resolveDestination } from '../lib/categoryAliases';
 import {
@@ -42,6 +42,9 @@ interface ImportGearPanelProps {
   onAddItem: (category: string, prefill: Partial<GearItem>) => void;
   /** Whether the panel starts expanded. Defaults to true (private Checklist behavior). */
   defaultOpen?: boolean;
+  /** 023W: Sidebar Open/Close — when forceOpenSeq increments, panel open/close is set to forceOpen. */
+  forceOpen?: boolean | null;
+  forceOpenSeq?: number;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -97,9 +100,16 @@ function blankEditedItem(categoryOrder: string[]): EditedItem {
 
 type Phase = 'idle' | 'parsing' | 'review' | 'error';
 
-export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true }: ImportGearPanelProps) {
+export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, forceOpen, forceOpenSeq }: ImportGearPanelProps) {
   const [open, setOpen]   = useState(defaultOpen);
   const barStyle = useBarStyle();
+
+  // 023W: respond to sidebar Open/Close control
+  useEffect(() => {
+    if (forceOpen !== null && forceOpen !== undefined) {
+      setOpen(forceOpen);
+    }
+  }, [forceOpen, forceOpenSeq]);
   const [phase, setPhase] = useState<Phase>('idle');
   const [isDragging, setIsDragging] = useState(false);
 

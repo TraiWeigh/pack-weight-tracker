@@ -915,6 +915,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // normally after startup.
   const [allOpen, setAllOpen] = useState(false);
   const [openCloseSeq, setOpenCloseSeq] = useState(0);
+  // 023W: Sidebar accordion group Open/Close — independent of category allOpen/openCloseSeq
+  const [sidebarAllOpen, setSidebarAllOpen] = useState<boolean | null>(null);
+  const [sidebarOpenSeq, setSidebarOpenSeq] = useState(0);
 
   // ── Input-focus tracking (used to block inactivity showcase timer) ────────
   useEffect(() => {
@@ -2376,7 +2379,46 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ──
                 023B: justify-between on mobile so Background Edit anchors LEFT and Share anchors
                 RIGHT; lg:justify-end preserves the existing desktop right-alignment. */}
-            <div className="order-first lg:order-last relative flex flex-wrap justify-between lg:justify-end gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
+            <div className="order-first lg:order-last relative flex flex-wrap justify-between gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
+                {/* 023W: Sidebar accordion Open/Close — controls Pack Summary, Weight Distribution,
+                     Scan Gear List, and Locker only. Independent of the main category Open/Close. */}
+                <div
+                  className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+                  style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
+                >
+                  <button
+                    onClick={() => { setSidebarAllOpen(true); setSidebarOpenSeq(s => s + 1); }}
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                      sidebarAllOpen === true && !barColor
+                        ? 'bg-card text-foreground shadow-sm'
+                        : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                    }`}
+                    style={barColor
+                      ? sidebarAllOpen === true
+                        ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                        : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                      : barFont ? { fontFamily: barFont } : undefined}
+                  >
+                    Open
+                  </button>
+                  <button
+                    onClick={() => { setSidebarAllOpen(false); setSidebarOpenSeq(s => s + 1); }}
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-md transition-colors ${
+                      sidebarAllOpen === false && !barColor
+                        ? 'bg-card text-foreground shadow-sm'
+                        : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                    }`}
+                    style={barColor
+                      ? sidebarAllOpen === false
+                        ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                        : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                      : barFont ? { fontFamily: barFont } : undefined}
+                  >
+                    Close
+                  </button>
+                </div>
+                {/* BgEdit + Share — grouped so they stay together on the right */}
+                <div className="flex items-center gap-2">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton
                     onClick={() => setBackgroundPickerOpen(o => !o)}
@@ -2565,6 +2607,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     </>
                   )}
                 </div>
+                </div>{/* end BgEdit+Share group */}
             </div>
 
           </div>{/* end toolbar group */}
@@ -2654,6 +2697,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   data={data}
                   categoryOrder={categoryOrder}
                   categoryMeta={categoryMeta}
+                  forceOpen={sidebarAllOpen}
+                  forceOpenSeq={sidebarOpenSeq}
                 />
                 <WeightDistribution
                   data={data}
@@ -2661,9 +2706,13 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   categoryMeta={categoryMeta}
                   paletteKey={chartPaletteKey}
                   onPaletteChange={handlePaletteChange}
+                  forceOpen={sidebarAllOpen}
+                  forceOpenSeq={sidebarOpenSeq}
                 />
                 <ImportGearPanel
                   categoryOrder={categoryOrder}
+                  forceOpen={sidebarAllOpen}
+                  forceOpenSeq={sidebarOpenSeq}
                   onAddItem={(category, prefill) => {
                     // Re-resolve against the live order so alias variants
                     // (e.g. 'Shelter' → 'Shelter System') are honoured and
@@ -2680,6 +2729,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onLoad={handleLoadFromLocker}
                   onRequestDelete={requestProtectedDelete}
                   onRename={handleRenameInLocker}
+                  forceOpen={sidebarAllOpen}
+                  forceOpenSeq={sidebarOpenSeq}
                   syncProps={userId ? {
                     userId,
                     syncStatus: syncState.status,
