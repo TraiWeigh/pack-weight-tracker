@@ -1340,6 +1340,194 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
   return items;
 }
 
+// ── DOCX heading-aware parser ─────────────────────────────────────────────────
+//
+// 024Y: mammoth.extractRawText loses heading style info and table order.
+// Switch to mammoth.convertToHtml which emits <h1>/<h2> for Word Heading styles
+// and <table> for item tables, preserving document order.
+//
+// Strategy:
+//   1. Walk top-level <h1>, <h2>, <table> elements in document order.
+//   2. A Heading sets currentCategory (unless it is a known non-gear heading).
+//   3. A table immediately following a heading uses that heading as source category.
+//   4. applyGearClassification is applied AFTER, so semantic rules (Fuel→Consumables,
+//      Leukotape→Med Kit, worn routing, Backpack canonical) still override the heading.
+//   5. Falls back to extractFromText(rawText) if no tables are found, preserving
+//      backward compatibility with text-based DOCX formats.
+//
+// Heading style detection: mammoth maps "Heading 1" → <h1>, "Heading 2" → <h2>.
+// Title/Subtitle/Body styles map to <p> and are ignored.
+
+/** Normalized heading values that are document/trip metadata, not gear categories. */
+const DOCX_NON_CATEGORY_HEADINGS = new Set([
+  'introduction', 'notes', 'packing list', 'trip information', 'trip info',
+  'summary', 'total', 'instructions', 'overview', 'appendix', 'contents',
+  'table of contents', 'pack list', 'gear list', 'equipment list',
+]);
+
+/**
+ * 024Y: Extract items from a DOCX buffer using heading + table document order.
+ * Falls back to plain-text extraction when no tables are present.
+ */
+async function extractFromDocxBuffer(buffer: Buffer): Promise<ExtractedItem[]> {
+  const [htmlResult, rawResult] = await Promise.all([
+    mammoth.convertToHtml({ buffer }),
+    mammoth.extractRawText({ buffer }),
+  ]);
+
+  const html = htmlResult.value;
+
+  // Strip all HTML tags; decode common entities.
+  const innerText = (s: string) =>
+    s
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  /** Parse all rows of a <table> HTML block into string[][] (cells). */
+  function parseTableRows(tableHtml: string): string[][] {
+    const rows: string[][] = [];
+    const rowRe = /<tr[\s>][\s\S]*?<\/tr>/gi;
+    let rm: RegExpExecArray | null;
+    while ((rm = rowRe.exec(tableHtml)) !== null) {
+      const cells: string[] = [];
+      const cellRe = /<t[dh](?:\s[^>]*)?>[\s\S]*?<\/t[dh]>/gi;
+      let cm: RegExpExecArray | null;
+      while ((cm = cellRe.exec(rm[0])) !== null) {
+        cells.push(innerText(cm[0]));
+      }
+      if (cells.some(c => c.length > 0)) rows.push(cells);
+    }
+    return rows;
+  }
+
+  /** Detect column indices from a header row. */
+  function detectCols(hdr: string[]): {
+    typeCol: number; nameCol: number; weightCol: number;
+    unitCol: number; qtyCol: number; catCol: number;
+  } {
+    let typeCol = -1, nameCol = -1, weightCol = -1, unitCol = -1, qtyCol = -1, catCol = -1;
+    hdr.forEach((cell, i) => {
+      const n = norm(cell);
+      if (typeCol < 0 && TYPE_RE.test(n))               typeCol   = i;
+      else if (nameCol < 0 && NAME_HDR_RE.test(n))      nameCol   = i;
+      else if (weightCol < 0 && WEIGHT_HDR_RE.test(n))  weightCol = i;
+      else if (unitCol < 0 && UNIT_RE.test(n))          unitCol   = i;
+      else if (qtyCol < 0 && QTY_HDR_RE.test(n))        qtyCol    = i;
+      else if (catCol < 0 && CAT_HDR_RE.test(n))        catCol    = i;
+    });
+    // 024Y: In DOCX tables the column may be headed just "Name" (the product name).
+    // TYPE_RE also matches 'name', so when a dedicated "Type" column was already
+    // detected (typeCol ≠ -1 and assigned to a different column index), a bare "name"
+    // header on a different column is the product-name column, not the type column.
+    if (nameCol < 0) {
+      hdr.forEach((cell, i) => {
+        if (i !== typeCol && norm(cell) === 'name') nameCol = i;
+      });
+    }
+    return { typeCol, nameCol, weightCol, unitCol, qtyCol, catCol };
+  }
+
+  const items: ExtractedItem[] = [];
+  let currentCategory: string | undefined;
+  let tableCount = 0;
+
+  // Walk <h1>, <h2>, <table> blocks in document order.
+  // The regex uses lazy [\s\S]*? so it stops at the first matching closing tag.
+  // mammoth does not produce nested <h1>/<h2>, and nested <table> is rare in gear lists.
+  const BLOCK_RE = /<(h[12]|table)(?:\s[^>]*)?>[\s\S]*?<\/\1>/gi;
+  let m: RegExpExecArray | null;
+
+  while ((m = BLOCK_RE.exec(html)) !== null) {
+    const tag = m[1].toLowerCase();
+    const block = m[0];
+
+    if (tag === 'h1' || tag === 'h2') {
+      const heading = innerText(block);
+      // Only use as category if it is not a known non-gear heading
+      if (heading && !DOCX_NON_CATEGORY_HEADINGS.has(norm(heading))) {
+        currentCategory = heading;
+      }
+      continue;
+    }
+
+    // ── table ──
+    tableCount++;
+    const rows = parseTableRows(block);
+    if (rows.length < 2) continue; // header-only or empty
+
+    const cols = detectCols(rows[0]);
+    // Skip blocks that look nothing like an item table (no Type or Weight column)
+    if (cols.typeCol < 0 && cols.weightCol < 0) continue;
+
+    for (let ri = 1; ri < rows.length; ri++) {
+      const row = rows[ri];
+      const get = (col: number) => (col >= 0 ? (row[col] ?? '').trim() : '');
+
+      const typeRaw   = get(cols.typeCol);
+      const nameRaw   = get(cols.nameCol);
+      const weightRaw = get(cols.weightCol);
+      const unitRaw   = get(cols.unitCol) || 'oz';
+      const qtyRaw    = get(cols.qtyCol);
+      const catRaw    = get(cols.catCol);
+
+      // Skip fully blank rows
+      if (!typeRaw && !weightRaw) continue;
+
+      // Parse weight (blank → 0, preserved as allowed)
+      const wVal = parseFloat(weightRaw.replace(/[,\s]/g, '')) || 0;
+      const unitN = norm(unitRaw);
+      let oz: number;
+      if (unitN.startsWith('g') && unitN !== 'gal')    oz = wVal / 28.3495;
+      else if (unitN.startsWith('lb') || unitN.startsWith('pound')) oz = wVal * 16;
+      else if (unitN.startsWith('kg'))                  oz = wVal * 35.274;
+      else                                               oz = wVal;
+      oz = Math.round(oz * 100) / 100;
+
+      const qty = Math.max(1, parseInt(qtyRaw, 10) || 1);
+
+      // Name: use dedicated Name column if it is not status/metadata text.
+      // 024W semantics: if no nameCol, Description fallback via isLikelyProductIdentityFallback
+      // is intentionally NOT applied here — the DOCX Name column is already the product name.
+      let desc = '';
+      if (cols.nameCol >= 0 && nameRaw && !STATUS_DESC_RE.test(nameRaw)) {
+        desc = nameRaw;
+      }
+
+      // Source category priority: explicit per-row Category column > heading context
+      const explicitCat = catRaw && norm(catRaw) !== 'category' ? catRaw : undefined;
+      const sourceDest  = explicitCat ?? currentCategory;
+
+      const raw: ExtractedItem = {
+        sub:         typeRaw.slice(0, 60),
+        desc:        desc.slice(0, 200),
+        weightOz:    oz,
+        qty,
+        destination: sourceDest,
+        warning:     false,
+      };
+
+      // applyGearClassification runs after the heading context is set, so semantic
+      // rules (MED_KIT_TYPES, REPAIR_KIT_TYPES, CONSUMABLES_TYPES, CLOTHING_TYPES,
+      // CLOTHING_WORN_SECTION_ALIASES, PACK_TYPES, etc.) can still override the heading.
+      items.push(applyGearClassification(raw));
+    }
+  }
+
+  // Fallback: no tables found → treat as plain-text DOCX (legacy format)
+  if (tableCount === 0) {
+    return extractFromText(rawResult.value);
+  }
+
+  return items;
+}
+
 // ── Route ─────────────────────────────────────────────────────────────────────
 
 importGearRouter.post('/import-gear', upload.single('file'), async (req, res) => {
@@ -1414,8 +1602,8 @@ importGearRouter.post('/import-gear', upload.single('file'), async (req, res) =>
       }
 
     } else if (ext === 'docx' || ext === 'doc' || mimetype?.includes('wordprocessingml')) {
-      const result = await mammoth.extractRawText({ buffer });
-      items = extractFromText(result.value);
+      // 024Y: heading-aware HTML parser; falls back to extractFromText for text-based DOCX
+      items = await extractFromDocxBuffer(buffer);
 
     } else if (['xlsx', 'xls', 'numbers'].includes(ext)) {
       const wb = XLSX.read(buffer, { type: 'buffer' });

@@ -1,0 +1,471 @@
+TRAILWEIGH — PROMPT 024Y
+DOCX IMPORT: USE WORD CATEGORY HEADINGS AS CATEGORY CONTEXT FOR FOLLOWING ITEM TABLES
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: CSV/XLSX routing is now well-calibrated, PDF has a verified 77-item regression, and DOCX category-heading support is the next structured-format compatibility gap. This prompt is intentionally limited to standard Word heading styles followed by item tables.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.50
+
+ATTACH THIS TEST FILE
+1. 03_docx_category_headings_test.docx
+
+IMPORTANT VERIFIED CURRENT STATE
+
+Preserve all USER-VERIFIED behavior from the recent importer work:
+- 024O quantity/header/weight handling
+- 024P worn routing
+- 024R/024W Name semantics
+- 024U Backpack canonical routing
+- 024X Med Kit / Repair Kit routing
+- 77-item PDF regression remains 77
+
+Do NOT redo those prompts.
+
+PRIMARY PROBLEM
+
+Many Word packing lists are organized like this:
+
+Heading: Backpack
+table:
+Type | Name | Weight | Unit | Qty
+Backpack | Durston Kakwa 55 | 30.1 | oz | 1
+
+Heading: Shelter
+table:
+Type | Name | Weight | Unit | Qty
+Tent | Zpacks Duplex | 18.5 | oz | 1
+
+The table itself does NOT repeat the Category column.
+
+TrailWeigh must understand that the Word heading above the table supplies the category context for the rows in that table.
+
+PRIMARY GOAL
+
+For DOCX import only:
+
+When a standard Microsoft Word heading paragraph appears before an item table, treat that heading as the source Category context for the following table rows until another relevant heading replaces it.
+
+At minimum support:
+- Heading 1
+- Heading 2
+
+Do not require the table itself to contain a Category column when a valid category heading is available immediately before it.
+
+TEST FILE STRUCTURE
+
+03_docx_category_headings_test.docx contains 12 total items.
+
+Its categories are represented only by Word Heading 1 paragraphs:
+
+Backpack
+Shelter
+Sleep System
+Kitchen
+Clothing Worn
+Electronics
+Med Kit
+Repair Kit
+Dog Gear
+
+Each heading is followed by a table with:
+
+Type | Name | Weight | Unit | Qty
+
+The item tables intentionally do NOT contain a Category column.
+
+REQUIRED TEST RESULT — EXACT ITEM COUNT
+
+TrailWeigh must find exactly:
+
+12 items
+
+No items lost.
+No duplicates.
+Do not count:
+- document title;
+- purpose/instruction paragraph;
+- table header rows;
+- category heading paragraphs themselves.
+
+REQUIRED CATEGORY + ITEM RESULTS
+
+1. Backpack
+Type: Backpack
+Name: Durston Kakwa 55
+Weight: 30.1 oz
+Qty: 1
+Final category: Backpack
+
+2. Shelter
+Type: Tent
+Name: Zpacks Duplex
+Weight: 18.5 oz
+Qty: 1
+Final category: Shelter
+
+3. Sleep System
+Type: Quilt
+Name: Enlightened Equipment Enigma 20
+Weight: 22.4 oz
+Qty: 1
+Final category: Sleep System
+
+4. Sleep System
+Type: Sleeping Pad
+Name: Therm-a-Rest NeoAir XLite NXT
+Weight: 13.0 oz
+Qty: 1
+Final category: Sleep System
+
+5. Kitchen
+Type: Stove
+Name: BRS-3000T
+Weight: 0.9 oz
+Qty: 1
+Final category: Kitchen
+
+6. Kitchen / consumable precedence
+Type: Fuel Canister
+Name: blank
+Weight: 3.9 oz
+Qty: 2
+
+IMPORTANT:
+Preserve the existing verified Fuel rule.
+If current importer routing moves Fuel Canister to Consumables/Expendables, that semantic item rule may override the source Kitchen heading.
+Do NOT force Fuel back into Kitchen merely because the DOCX heading says Kitchen.
+
+7. Clothing Worn
+Type: Hiking Shirt
+Name: Outdoor Research Echo
+Weight: 5.2 oz
+Qty: 1
+Final category: Clothing Worn
+
+8. Clothing Worn
+Type: Trail Runners
+Name: Altra Lone Peak 8
+Weight: 22.0 oz
+Qty: 1
+Final category: Clothing Worn
+
+9. Electronics
+Type: Power Bank
+Name: Nitecore NB10000
+Weight: 5.3 oz
+Qty: 1
+Final category: Electronics
+
+10. Med Kit
+Type: Leukotape
+Name: blank
+Weight: 1.2 oz
+Qty: 1
+Final category: Med Kit
+
+11. Repair Kit
+Type: Repair Tape
+Name: blank
+Weight: 0.7 oz
+Qty: 1
+Final category: Repair Kit
+
+12. Dog Gear
+Type: Dog Pack
+Name: Ruffwear Approach
+Weight: 16.0 oz
+Qty: 1
+Final category: Dog Gear
+
+CATEGORY HEADING PRECEDENCE
+
+Use this order of trust:
+
+1. Explicit per-row Category column in the table, if present and meaningful.
+2. Existing high-confidence semantic item-routing rules that intentionally override source grouping, such as:
+   - worn routing;
+   - medical/repair routing;
+   - Fuel consumable routing;
+   - canonical Backpack normalization.
+3. DOCX heading category context.
+4. Existing safe fallback behavior.
+
+This prevents a heading from undoing the routing fixes already verified.
+
+Example:
+Heading = Kitchen
+Type = Fuel Canister
+If the existing verified semantic rule says Fuel belongs in Consumables/Expendables:
+keep Fuel there.
+
+STANDARD WORD HEADING DETECTION
+
+Detect heading context structurally from DOCX paragraph styles.
+
+At minimum:
+- Heading 1
+- Heading 2
+
+Do not rely only on visual font size or bold formatting in this prompt.
+
+Do not treat:
+- Title
+- Subtitle
+- ordinary body paragraphs
+- purpose/instruction paragraphs
+
+as category headings merely because they appear before a table.
+
+HEADING NORMALIZATION
+
+Feed the heading text through the same category-normalization/routing conventions already used elsewhere.
+
+Examples:
+- Backpack -> Backpack
+- Shelter -> Shelter
+- Sleep System -> Sleep System
+- Clothing Worn -> Clothing Worn
+- Electronics -> Electronics
+- Med Kit -> Med Kit
+- Repair Kit -> Repair Kit
+- Dog Gear -> Dog Gear
+
+Do not create duplicate category names merely because of case or minor whitespace.
+
+TABLE HEADER HANDLING
+
+Recognize the item-table headers:
+
+Type
+Name
+Weight
+Unit
+Qty
+
+Preserve existing aliases where already supported.
+
+Do not treat the header row as an item.
+
+NAME SEMANTICS
+
+Preserve 024W behavior.
+
+Dedicated Name values in this DOCX must remain Names:
+- Durston Kakwa 55
+- Zpacks Duplex
+- Enlightened Equipment Enigma 20
+- Therm-a-Rest NeoAir XLite NXT
+- BRS-3000T
+- Outdoor Research Echo
+- Altra Lone Peak 8
+- Nitecore NB10000
+- Ruffwear Approach
+
+Blank Name cells for:
+- Fuel Canister
+- Leukotape
+- Repair Tape
+
+must remain blank.
+
+Do not invent Names.
+
+WEIGHT + QUANTITY
+
+Preserve exact values and units.
+
+Especially verify:
+- Fuel Canister Qty = 2
+- all other rows Qty = 1
+- no table-row weight shifts across categories.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024Y_REPORT.md
+
+Initially write:
+- Prompt: 024Y
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify it physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — DIAGNOSE CURRENT DOCX FLOW
+
+Inspect only the existing DOCX import path needed to answer:
+
+1. How are DOCX paragraphs currently extracted?
+2. How are DOCX tables currently extracted?
+3. Is paragraph/table document order preserved?
+4. Is paragraph style information currently available?
+5. Why does a Heading 1/Heading 2 before a table currently fail to become category context, if it fails?
+
+Document the exact cause.
+
+Do not broadly redesign all document parsing.
+
+PHASE 3 — MINIMUM SAFE IMPLEMENTATION
+
+Make the smallest safe change that allows DOCX import to retain heading context while walking the document in correct order.
+
+Preferred concept:
+- iterate DOCX blocks in document order;
+- when a relevant Heading 1/2 paragraph is encountered, store currentCategoryContext;
+- when a following item table is encountered, apply currentCategoryContext to rows that lack an explicit category;
+- update the context when the next relevant heading is encountered.
+
+If the current DOCX library/API exposes paragraphs and tables separately and therefore loses interleaved order, fix only the minimum block-order traversal needed for DOCX.
+
+Do not rewrite PDF/CSV/XLSX parsing.
+
+IMPORTANT PAGE/SECTION SAFETY
+
+Word headings and tables may cross page boundaries visually.
+Do not reset category context merely because Word pagination changes.
+DOCX logical document order, not rendered page number, should control heading inheritance.
+
+UNKNOWN / NON-CATEGORY HEADINGS
+
+Do not assume every Heading 1/2 is a valid category.
+
+If a heading is clearly:
+- Introduction
+- Notes
+- Packing List
+- Trip Information
+- Summary
+- Total
+- Instructions
+
+and it is not a valid/meaningful category for the item table, do not force it as the final category.
+
+Use existing category normalization / item recognition safely.
+
+For this prompt, prioritize correctness on the supplied known category headings rather than building a huge heading ontology.
+
+PHASE 4 — REQUIRED 03 TEST
+
+Run the supplied:
+03_docx_category_headings_test.docx
+
+through the SAME DOCX import path used by TrailWeigh.
+
+Required:
+- exactly 12 items found;
+- exact Type/Name/Weight/Qty values preserved;
+- category headings inherited correctly;
+- Fuel semantic routing may override Kitchen according to existing verified rules;
+- worn/Med Kit/Repair Kit/Backpack routing remains correct;
+- no heading/title/header row imported as an item;
+- no duplicates;
+- no dropped rows.
+
+PHASE 5 — REGRESSION PROTECTION
+
+Verify:
+- DOCX files that already have an explicit Category column still import without regression, if an existing fixture is available;
+- 77-item PDF regression remains 77 without changing PDF code;
+- CSV/XLSX tests/build remain unaffected;
+- 024W Name behavior remains intact;
+- 024X Med Kit / Repair Kit behavior remains intact;
+- Backpack canonical routing remains intact;
+- worn routing remains intact.
+
+Do NOT modify PDF code.
+Do NOT modify CSV/XLSX code unless a truly shared helper must be reused without behavior changes.
+
+OUT OF SCOPE
+
+Do NOT fix in 024Y:
+- plain bold DOCX headings that are not Word Heading styles;
+- bullet-list-only DOCX packing lists;
+- OCR/image-only DOCX content;
+- PDF parsing;
+- CSV/XLSX changes;
+- catalog/search;
+- AI;
+- retailer integration;
+- toolbar/layout;
+- Background;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+Those can be tested separately after standard Word heading support is proven.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- DOCX import parsing/order/category-context handling;
+- directly necessary DOCX tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024Y_REPORT.md
+
+Include:
+- Prompt number: 024Y
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of missing DOCX heading category context
+- whether paragraph/table interleaved document order had to be added/fixed
+- exact implementation made
+- exact 03 test item count
+- final category for each of the 12 test items
+- Fuel final category and Qty
+- confirmation dedicated Names remained intact
+- confirmation blank Names remained blank
+- confirmation no heading/title/table-header row became an item
+- explicit-Category DOCX regression result if fixture exists
+- PDF 77-item regression result
+- build/test result
+- confirmation PDF code was not changed
+- confirmation CSV/XLSX behavior was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-024Y-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024Y_REPORT.md
+
+Include useful 024Y-specific automated test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024Y.
+Do not begin plain-heading DOCX support or another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final PASS remains pending until the user tests the live TrailWeigh app with 03_docx_category_headings_test.docx.

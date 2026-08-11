@@ -112,3 +112,10 @@ uri = "file://workflow-reports/trailweigh-024X-report.zip"
 type = "unspecified"
 title = "Prompt 024X Report"
 description = "PROMPT_024X_REPORT.md — Medical/Repair routing fix + all regression results"
+
+[[outputs]]
+id = "LWzTETCdTAxpjRpc45Xbu"
+uri = "file://workflow-reports/trailweigh-024Y-report.zip"
+type = "unspecified"
+title = "Prompt 024Y Report"
+description = "PROMPT_024Y_REPORT.md — DOCX heading-context parser + all regression results"
