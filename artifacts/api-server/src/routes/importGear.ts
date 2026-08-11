@@ -473,6 +473,51 @@ export const CLOTHING_TYPES = new Set([
 const APPAREL_WORD_RE = /\b(shirt|tee|t-shirt|shorts|pants|tights|leggings|dress|skirt|socks?|hat|cap|beanie|jacket|hoody|hoodie|sweater|jersey|top|bra|underwear|boots?|shoes?|sneakers?|runners?|sandals?|gaiters?|gloves?|mittens?|vest)\b/i;
 
 /**
+ * 024S: Vague/umbrella source-group labels treated as WEAK hints during automatic
+ * CSV/XLSX import.  When an item is confidently recognised by a type set, its
+ * normal TrailWeigh destination overrides these labels.  Unrecognised items keep
+ * the vague group so they are not lost.  Has no effect on saved lists.
+ */
+export const WEAK_SOURCE_GROUPS = new Set([
+  'big three', 'big 3', 'big four', 'big 4',
+  'bits', 'misc', 'misc.', 'miscellaneous',
+  'stuff', 'odds & ends', 'odds and ends',
+]);
+
+/** Pack / carry system — routes to "Pack". */
+export const PACK_TYPES = new Set([
+  'backpack', 'pack', 'rucksack', 'frameless pack', 'frameless backpack',
+  'ultralight pack', 'trail pack', 'hiking pack', 'overnight pack',
+  'day pack', 'daypack',
+  // Note: 'dog pack' / 'dog backpack' intentionally excluded — routes to "Dog Gear" via source category.
+]);
+
+/** Electronics / navigation — routes to "Electronics". */
+export const ELECTRONICS_TYPES = new Set([
+  'headlamp', 'lantern', 'flashlight', 'torch',
+  'gps', 'gps device', 'gps watch', 'watch',
+  'satellite communicator', 'spot messenger', 'emergency beacon', 'epirb', 'plb',
+  'power bank', 'battery bank', 'portable charger', 'external battery',
+  'solar panel', 'solar charger',
+  'camera', 'action camera',
+  'two-way radio', 'walkie-talkie',
+  'e-reader', 'kindle',
+  'usb cable', 'charging cable', 'power adapter', 'wall adapter',
+]);
+
+/** Personal care / toiletries (non-consumable) — routes to "Personal". */
+export const PERSONAL_TYPES = new Set([
+  'toothbrush', 'electric toothbrush',
+  'hairbrush', 'hair brush', 'comb',
+  'mirror', 'compact mirror',
+  'nail clippers', 'nail file',
+  'razor', 'disposable razor', 'safety razor',
+  'ear plugs', 'earplugs',
+  'eye mask', 'sleep mask',
+  'trowel', 'cathole trowel',
+]);
+
+/**
  * Section headings that explicitly designate rows as "Clothing Worn".
  * When a source section matches these, the item keeps "Clothing Worn"
  * as its destination (unless overridden by a Consumables Type — nothing
@@ -627,6 +672,21 @@ export function applyGearClassification(item: ExtractedItem): ExtractedItem {
   if (item.destination) {
     const normalized = normalizeDestination(item.destination);
     if (normalized !== item.destination) return { ...item, destination: normalized };
+  }
+
+  // Priority 6b: Pack type → "Pack".
+  if (PACK_TYPES.has(typeN)) {
+    return { ...item, destination: 'Pack', warning: item.warning || sectionConflict('Pack') };
+  }
+
+  // Priority 6c: Electronics type → "Electronics".
+  if (ELECTRONICS_TYPES.has(typeN)) {
+    return { ...item, destination: 'Electronics', warning: item.warning || sectionConflict('Electronics') };
+  }
+
+  // Priority 6d: Personal-care type → "Personal".
+  if (PERSONAL_TYPES.has(typeN)) {
+    return { ...item, destination: 'Personal', warning: item.warning || sectionConflict('Personal') };
   }
 
   // Priority 7: keep source section or leave empty for manual selection.
@@ -848,7 +908,9 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
       CLOTHING_WORN_SECTION_ALIASES.has(norm(subcatRaw)) ||
       /^worn\b/i.test(desc.trim());
     const isClothingType = CLOTHING_TYPES.has(norm(sub)) || APPAREL_WORD_RE.test(sub);
-    const finalDest = (isExplicitlyWorn && isClothingType) ? 'Clothing Worn' : (cat || undefined);
+    // 024S: strip vague/umbrella source-group labels before passing as destination hint.
+    const effectiveCat = WEAK_SOURCE_GROUPS.has(norm(cat)) ? '' : cat;
+    const finalDest = (isExplicitlyWorn && isClothingType) ? 'Clothing Worn' : (effectiveCat || undefined);
 
     // 024R: prefer dedicated product-name column (nameCol) over descCol for the Name field.
     // nameCol is a separate column from typeCol; when both exist the product column wins.
@@ -1146,11 +1208,17 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     // 024E fix B: when Expendable=true, override destination to 'Consumables'.
     // 024P fix:   when item is explicitly worn AND recognised apparel, route to 'Clothing Worn'.
     //   applyGearClassification Priority 2 (CLOTHING_TYPES) is patched to honour this.
+    // 024S fix:   vague/umbrella source-group labels are treated as WEAK hints.
+    //   Clear them before passing to applyGearClassification so that type-based
+    //   Priorities 1–6d can fire and route the item to its normal destination.
+    //   Unknown items (no priority matches) will then have undefined destination
+    //   rather than the vague group — they are preserved safely for user review.
+    const effectiveCategory = WEAK_SOURCE_GROUPS.has(norm(category)) ? '' : category;
     const effectiveDestination = expendable
       ? 'Consumables'
       : (isExplicitlyWorn && isClothingType)
         ? 'Clothing Worn'
-        : (category || undefined);
+        : (effectiveCategory || undefined);
 
     items.push(applyGearClassification({
       // 024R: when no 'type' column exists, nameRaw serves as the item identity (sub)

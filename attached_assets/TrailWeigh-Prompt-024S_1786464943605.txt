@@ -1,0 +1,536 @@
+TRAILWEIGH — PROMPT 024S
+DO NOT PRESERVE VAGUE SOURCE GROUP HEADINGS AS TRAILWEIGH CATEGORIES WHEN THE ITEM ITSELF CAN BE CLASSIFIED
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a narrow importer-routing cleanup after USER-VERIFIED Prompts 024O, 024P, and 024R. Do not redesign the category system.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.50
+
+ATTACH THIS TEST FILE WITH THIS PROMPT
+1. 06_messy_spreadsheet.csv
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Prompt 024O = USER-VERIFIED PASS.
+Prompt 024P = USER-VERIFIED PASS.
+Prompt 024R = USER-VERIFIED PASS.
+
+Preserve all of their verified behavior.
+
+CURRENT USER-VERIFIED PROBLEM
+
+Test 06 currently imports source-group labels such as:
+
+Big Three
+Bits
+
+as final TrailWeigh categories.
+
+Example current result:
+Big Three
+  Backpack
+
+This is not desirable.
+
+"Big Three" is a backpacking grouping concept, not the useful final TrailWeigh category for the Backpack item.
+
+The user wants TrailWeigh to organize recognized items into normal TrailWeigh categories rather than blindly preserving vague or umbrella source-group labels.
+
+PRIMARY GOAL
+
+During CSV/XLSX import only:
+
+Treat vague/umbrella source group headings as WEAK HINTS.
+
+When TrailWeigh can confidently recognize the actual item, use the item's normal TrailWeigh destination category instead of creating/preserving the vague source group as the final category.
+
+IMPORTANT:
+Do NOT globally ban these words from TrailWeigh.
+Do NOT rename or alter existing saved lists.
+Do NOT prevent a user from manually creating a custom category called "Big Three", "Misc", etc.
+
+This prompt applies only to AUTOMATIC IMPORT ROUTING.
+
+SOURCE GROUPS TO TREAT AS WEAK / NON-BINDING
+
+At minimum:
+- Big Three
+- Big 3
+- Big Four
+- Big 4
+- Bits
+- Misc
+- Misc.
+- Miscellaneous
+- Stuff
+- Odds & Ends
+
+These labels may be useful source context, but they should not override confident item classification.
+
+CORE ROUTING RULE
+
+If:
+1. the source category/group is one of the weak/vague headings above; AND
+2. TrailWeigh can confidently identify the item's normal destination using the existing item-routing logic;
+
+then:
+route the item to the normal TrailWeigh category.
+
+Do NOT preserve the vague source group as the final category.
+
+EXAMPLES
+
+SOURCE:
+Group = Big Three
+Gear = Backpack
+
+REQUIRED FINAL DESTINATION:
+Backpack
+
+NOT:
+Big Three
+
+SOURCE:
+Group = Big Three
+Gear = Tent
+
+REQUIRED FINAL DESTINATION:
+Shelter
+
+NOT:
+Big Three
+
+SOURCE:
+Group = Big Three
+Gear = Quilt
+
+REQUIRED FINAL DESTINATION:
+Sleep System or the current canonical TrailWeigh sleep category produced by the existing item mapper.
+
+NOT:
+Big Three
+
+SOURCE:
+Group = Big Four
+Gear = Sleeping Pad
+
+REQUIRED:
+the current normal TrailWeigh sleep-system destination
+
+NOT:
+Big Four
+
+SOURCE:
+Group = Bits
+Gear = Toothbrush
+
+REQUIRED:
+the current normal TrailWeigh Personal/Toiletries destination produced by existing item recognition
+
+NOT:
+Bits
+
+SOURCE:
+Group = Misc
+Gear = Headlamp
+
+REQUIRED:
+Electronics
+
+NOT:
+Misc
+
+SOURCE:
+Group = Stuff
+Gear = Fuel
+
+REQUIRED:
+Consumables/Expendables according to the existing verified Fuel rule
+
+NOT:
+Stuff
+
+UNKNOWN-ITEM SAFETY RULE
+
+Do NOT guess when the item cannot be confidently classified.
+
+If:
+- source group is vague; AND
+- the item is genuinely unknown to TrailWeigh's existing item recognition;
+
+then preserve enough source organization so the item is not lost.
+
+Acceptable behavior:
+- keep the original source group for the unknown item; OR
+- use an existing safe fallback category if TrailWeigh already has one.
+
+Do NOT:
+- discard the item;
+- invent a highly specific category without evidence;
+- force every vague-group item into the same unrelated category.
+
+The key rule is:
+RECOGNIZED ITEM -> normal TrailWeigh category.
+UNKNOWN ITEM -> preserve safely; do not guess.
+
+SOURCE-SPECIFIC CATEGORY SHOULD STILL BE PRESERVED WHEN IT IS USEFUL
+
+Do NOT weaken meaningful source categories.
+
+Examples that should continue to work normally:
+- Shelter
+- Kitchen
+- Water
+- Hydration
+- Electronics
+- Dog Gear
+- First Aid
+- Sleep System
+- Clothing
+- Clothing Worn
+- Clothing Packed
+
+This prompt is NOT permission to discard all source categories.
+
+BIG THREE / BIG FOUR SPECIAL RULE
+
+"Big Three" and "Big Four" should be treated only as umbrella source grouping labels during automatic import.
+
+They must not override recognized item destinations.
+
+For example:
+- Backpack -> Backpack
+- Tent/Shelter -> Shelter
+- Quilt/Sleeping Pad -> current canonical sleep destination
+
+Do NOT create a final "Big Three" or "Big Four" category merely because the source file grouped these items together.
+
+IMPORTANT:
+This rule applies to imports.
+Do not delete an existing manually created Big Three/Big Four category from a user's saved list.
+
+BITS / MISC / STUFF SPECIAL RULE
+
+Bits, Misc, Miscellaneous, Stuff, and Odds & Ends should also be treated as weak group labels.
+
+When the item is recognizable:
+- Toothbrush -> normal Personal/Toiletries destination
+- Headlamp -> Electronics
+- Repair item -> existing repair destination if confidently recognized
+- Fuel -> Consumables/Expendables
+- clothing -> normal Clothing destination
+
+If not recognizable:
+preserve the item safely rather than guessing.
+
+DO NOT CHANGE NAME SEMANTICS
+
+Prompt 024R is USER-VERIFIED PASS.
+
+Preserve:
+- visible NAME column;
+- status/metadata text must not become Name;
+- Hiking Shirt Name blank when source only says "Worn while hiking";
+- Trail Runners Name blank when source only says "Pair weight";
+- Sun Hat Name blank when source only says "Worn item";
+- dedicated Product/Model Name handling.
+
+Do not put source group text into NAME.
+
+DO NOT CHANGE WORN ROUTING
+
+Prompt 024P is USER-VERIFIED PASS.
+
+Preserve:
+- Hiking Shirt + worn signal -> Clothing Worn
+- Trail Runners + worn signal -> Clothing Worn
+- Sun Hat + worn signal -> Clothing Worn
+
+A vague source group must not override an explicit worn destination.
+
+DO NOT CHANGE QUANTITY / WEIGHT / HEADER HANDLING
+
+Prompt 024O is USER-VERIFIED PASS.
+
+Preserve:
+- Quantity/Qty/Count handling;
+- title-above-header detection;
+- mixed metric/imperial units;
+- "1 lb 10 oz" parsing;
+- blank-weight retention;
+- Fuel quantity and routing;
+- existing CSV/XLSX header aliases.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024S_REPORT.md
+
+Initially write:
+- Prompt: 024S
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM CURRENT ROUTING CAUSE
+
+Inspect only the CSV/XLSX category normalization/routing path necessary to determine why a recognized item such as:
+
+Group = Big Three
+Gear = Backpack
+
+currently keeps:
+Big Three
+
+instead of using the existing normal Backpack destination.
+
+Also determine why:
+Group = Bits
+Gear = Toothbrush
+
+currently preserves:
+Bits
+
+when Toothbrush can otherwise be recognized.
+
+Document the exact confirmed cause in the report before editing.
+
+Do not broadly redesign the classifier.
+
+PHASE 3 — IMPLEMENT MINIMUM REPAIR
+
+Make the smallest safe change that:
+
+1. marks the listed vague/umbrella group names as weak source-category hints during automatic CSV/XLSX import;
+2. allows existing confident item-routing rules to override those weak source groups;
+3. preserves meaningful source categories normally;
+4. preserves unknown items safely;
+5. does not modify existing saved lists;
+6. does not block manually created categories;
+7. preserves all 024O, 024P, and 024R behavior.
+
+Prefer a centralized helper/set for weak source-group labels rather than scattered one-off checks.
+
+Do not add AI.
+Do not create a second classifier.
+Do not rewrite the category system.
+
+PHASE 4 — REQUIRED TEST 06 REGRESSION
+
+Run:
+
+06_messy_spreadsheet.csv
+
+through the SAME current CSV import path.
+
+Required:
+- exactly 10 real items found;
+- title row remains ignored;
+- actual header row is still detected;
+- TOTAL row remains ignored;
+- no duplicates;
+- no lost items.
+
+Specific routing requirements:
+
+A. Backpack
+Source group: Big Three
+Required final category: Backpack
+"Big Three" must NOT be created merely for this recognized Backpack item.
+
+B. Tent
+Required final category remains Shelter.
+
+C. Quilt
+Required final category remains the existing canonical TrailWeigh sleep destination.
+
+D. Stove
+Meaningful source group Cook Kit may remain if that is current intended behavior; do not change it in this prompt unless existing item-routing already has a stronger established destination.
+
+E. Fuel
+Required final category remains Consumables/Expendables.
+Qty remains 2.
+Total remains correct.
+
+F. Toothbrush
+Source group: Bits
+Required:
+do NOT leave Toothbrush under Bits if the existing item mapper can confidently place it in its normal Personal/Toiletries destination.
+
+G. Toothpaste
+Preserve existing import behavior.
+Blank source weight remains allowed.
+
+H. Leukotape
+Do NOT redesign its current routing in this prompt.
+Leukotape routing is a separate known cleanup item.
+
+I. Socks
+Qty remains 2.
+Do not regress current clothing behavior.
+
+J. Sun Hat
+Required final category: Clothing Worn.
+Name remains blank.
+Weight remains 2.1 oz.
+
+REQUIRED CATEGORY CHECK
+
+After importing Test 06:
+- no final Big Three category should exist solely because Backpack came from that group;
+- no final Bits category should exist solely because Toothbrush came from that group, if Toothbrush was confidently recognized and moved to a normal TrailWeigh category.
+
+If a vague source group contains only items that were all confidently reclassified:
+do not leave an empty vague category behind.
+
+PHASE 5 — SMALL SYNTHETIC ROUTING TESTS
+
+If practical, add or run small parser-level tests for:
+
+1.
+Group=Big Four
+Item=Sleeping Pad
+Expected: normal sleep destination, not Big Four
+
+2.
+Group=Misc
+Item=Headlamp
+Expected: Electronics, not Misc
+
+3.
+Group=Stuff
+Item=Fuel
+Expected: Consumables/Expendables, not Stuff
+
+4.
+Group=Misc
+Item=Unrecognized Prototype Widget
+Expected: item survives safely; do not invent a specific category merely to eliminate Misc
+
+These may be automated tests only.
+Do not add new UI.
+
+PHASE 6 — REGRESSION PROTECTION
+
+Verify:
+- 024O quantity handling still works;
+- 024O header-row detection still works;
+- 024O weight parsing still works;
+- 024P worn routing still works;
+- 024R Name behavior still works;
+- 77-item CSV regression still returns 77 if fixture is available;
+- 77-item PDF regression still returns 77 if fixture/path is available without modifying PDF code.
+
+Do NOT modify PDF code.
+Do NOT modify DOCX code.
+
+OUT OF SCOPE
+
+Do NOT fix in 024S:
+- Scan Gear List warning text "missing descriptions" -> "missing names";
+- broader Name/specification cleanup such as "10,000 mAh" or "Main pack";
+- Leukotape routing;
+- Medication routing;
+- Repair Tape routing;
+- DOCX heading/category support;
+- PDF parsing;
+- retailer/catalog features;
+- AI;
+- Background;
+- toolbar;
+- Share;
+- Locker;
+- Save / Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Before finishing, inspect every changed application file.
+
+Changes should be limited to:
+- CSV/XLSX import category normalization/routing;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024S_REPORT.md
+
+It must include:
+- Prompt number: 024S
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of Big Three/Bits being preserved
+- exact repair made
+- Test 06 item count result
+- Backpack final category
+- Toothbrush final category
+- Fuel final category and Qty
+- Socks Qty
+- Sun Hat final category and Name state
+- confirmation no empty Big Three/Bits categories remain when all their items were reclassified
+- synthetic Big Four/Misc/Stuff test results if run
+- 024O regression confirmation
+- 024P regression confirmation
+- 024R regression confirmation
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF/DOCX code was not changed
+- confirmation no existing saved lists were migrated/renamed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+After the report physically exists, create:
+
+workflow-reports/trailweigh-024S-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024S_REPORT.md
+
+Include useful 024S-specific automated test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- required report is inside.
+
+Do not merely claim the files were created.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024S.
+
+Do not begin:
+- Name warning/spec cleanup;
+- Leukotape/Medication/Repair Tape cleanup;
+- DOCX work;
+- PDF work;
+- any other waiting TrailWeigh task.
+
+STOP after the 024S report and ZIP are created and verified.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final status remains PENDING until the user tests the live TrailWeigh app.
