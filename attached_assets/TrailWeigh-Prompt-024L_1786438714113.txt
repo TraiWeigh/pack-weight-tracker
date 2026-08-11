@@ -1,0 +1,191 @@
+TRAILWEIGH — PROMPT 024L
+DIAGNOSTIC ONLY: IDENTIFY WHAT CAUSED THE SIDEBAR TOOLBAR RIGHT-EDGE ALIGNMENT REGRESSION
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a read/compare/inspect task only. No application code changes are allowed.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 1–3 minutes
+Estimated Agent usage/cost: about $0.20–$0.70
+
+ATTACH THESE TWO SCREENSHOTS SEPARATELY WITH THIS PROMPT
+
+1. TrailWeigh-024L-Current-Layout-Full.png
+   - full current layout context.
+
+2. TrailWeigh-024L-Current-Alignment-Detail.png
+   - close-up showing the current regression:
+     the right edge of Share extends farther right than the right edge of Pack Summary.
+
+DO NOT LOOK FOR THESE SCREENSHOTS INSIDE A ZIP.
+They must be attached directly to the Replit Agent task.
+
+CRITICAL RULE — DIAGNOSTIC ONLY
+
+DO NOT MODIFY APPLICATION CODE.
+DO NOT MODIFY CSS.
+DO NOT MOVE THE TOOLBAR.
+DO NOT APPLY OR REVERT ANY READY-FOR-REVIEW TASK.
+DO NOT FIX THE ALIGNMENT.
+DO NOT CHANGE IMPORTER CODE.
+DO NOT TOUCH THE UNRELATED “Shared view links show imperial units even for metric users” task.
+DO NOT BEGIN ANOTHER TASK.
+
+CURRENT VERIFIED HISTORY
+
+- Prompt 024B was USER-VERIFIED PASS for vertical toolbar alignment.
+- Prompt 024D was USER-VERIFIED PASS and restored Background while preserving toolbar alignment.
+- Prompt 024E was USER-VERIFIED PASS for CSV mapping and did not intentionally touch the toolbar.
+- The current screenshot now shows the old horizontal-alignment regression again:
+  the sidebar toolbar begins correctly at the left edge of Pack Summary, but Share extends beyond Pack Summary’s visible right edge.
+
+This resembles the earlier scrollbar-gutter/content-wrapper problem, but DO NOT ASSUME that is the cause. Confirm it.
+
+PRIMARY GOAL
+
+Identify EXACTLY what changed between the last known-good toolbar layout and the current layout, and identify the smallest likely correction.
+
+DO NOT IMPLEMENT THE CORRECTION.
+
+PHASE 1 — CHECK CURRENT WORKING TREE / PENDING CHANGES
+
+Inspect:
+- current git status;
+- current branch/HEAD;
+- uncommitted changes;
+- staged changes;
+- pending/ready-for-review changes if visible in the current Replit task state;
+- recent commits after the last known-good 024D/024E state.
+
+Determine whether any application file affecting the sidebar toolbar, sidebar wrapper, scrollbar, overflow, grid/flex sizing, or Checklist layout changed after the last known-good state.
+
+List every relevant changed file and exact changed lines/sections.
+
+Do not apply, revert, or edit anything.
+
+PHASE 2 — COMPARE AGAINST LAST KNOWN-GOOD STATE
+
+Use the most recent checkpoint/commit that contained the USER-VERIFIED good layout after 024D/024E.
+
+Compare the current versions of the relevant files against that known-good checkpoint/commit.
+
+Focus especially on:
+- Checklist.tsx
+- sidebar wrapper/container classes
+- the toolbar row containing [down/up arrows] [Background] [Share]
+- Pack Summary wrapper
+- scrollbar-gutter
+- overflow / overflow-x / overflow-y
+- width / max-width / min-width
+- padding / margin / gap
+- grid / flex container nesting
+- portal/popover changes only if they alter layout containers
+
+Report the exact diff that could explain the right-edge mismatch.
+
+PHASE 3 — RENDERED / COMPUTED-LAYOUT CHECK
+
+Using the current running app and the attached close-up screenshot as the visual reference, inspect the actual rendered geometry if Replit/devtools-style inspection is available.
+
+Capture the current bounding-box or computed dimensions for:
+
+A. sidebar joined arrow group container
+B. Background button
+C. Share button
+D. full sidebar toolbar row
+E. Pack Summary visible outer box
+F. sidebar scroll/content wrapper
+
+At minimum report:
+- x / left
+- width
+- right edge
+for the full toolbar row and Pack Summary.
+
+Determine whether the mismatch equals:
+- scrollbar gutter width;
+- wrapper padding;
+- margin;
+- grid gap;
+- different parent width;
+- overflow behavior;
+- or another measured cause.
+
+Do not eyeball only from CSS. Use rendered measurements where possible.
+
+PHASE 4 — IDENTIFY THE PRECISE CAUSE
+
+State one of these clearly:
+
+A. “A code change after the known-good checkpoint caused the regression.”
+   - identify exact file, exact change, and why it changed the visible width.
+
+OR
+
+B. “No application-code change caused it.”
+   - explain the actual cause, such as viewport/responsive breakpoint/state/container behavior, and show the measured evidence.
+
+OR
+
+C. “The cause cannot be proven from current evidence.”
+   - explain exactly what remains unknown.
+
+Do NOT guess.
+
+PHASE 5 — RECOMMEND THE SMALLEST SAFE REPAIR, WITHOUT IMPLEMENTING IT
+
+Describe the smallest likely fix in 1–3 sentences only.
+
+The future repair must preserve:
+- current vertical alignment;
+- Background functionality;
+- Share functionality;
+- Pack Summary position and size;
+- sidebar panel spacing;
+- scrollbar behavior unless the confirmed cause requires a deliberate change;
+- all importer work.
+
+Do not implement the fix in 024L.
+
+REPORTING
+
+Create:
+workflow-reports/PROMPT_024L_REPORT.md
+
+The report must include:
+- Prompt number: 024L
+- Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- current git status summary
+- last known-good checkpoint/commit used for comparison
+- exact relevant changed files/diffs
+- current rendered toolbar row left/width/right measurements
+- current Pack Summary left/width/right measurements
+- confirmed root cause or explicit statement that it remains unproven
+- smallest recommended repair
+- confirmation: “No application code or behavior was changed.”
+
+Then create the ZIP using a DIRECT shell command:
+
+cd workflow-reports
+zip -j trailweigh-024L-report.zip PROMPT_024L_REPORT.md
+
+Verify with:
+
+unzip -l trailweigh-024L-report.zip
+ls -l trailweigh-024L-report.zip
+
+If ZIP creation fails but the Markdown report exists:
+STOP and report that the report exists but packaging failed.
+Do not redo the diagnostic.
+
+FINAL STOP RULE
+
+STOP after the diagnostic report and ZIP are created/verified.
+
+DO NOT FIX THE ALIGNMENT.
+DO NOT APPLY ANY PENDING TASK.
+DO NOT BEGIN ANOTHER TASK.
