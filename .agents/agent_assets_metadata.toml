@@ -119,3 +119,10 @@ uri = "file://workflow-reports/trailweigh-024Y-report.zip"
 type = "unspecified"
 title = "Prompt 024Y Report"
 description = "PROMPT_024Y_REPORT.md — DOCX heading-context parser + all regression results"
+
+[[outputs]]
+id = "amhqJJF7MvYbAlPGzOKua"
+uri = "file://workflow-reports/trailweigh-024Z-report.zip"
+type = "unspecified"
+title = "Prompt 024Z Report"
+description = "PROMPT_024Z_REPORT.md — Fuel Canister → Consumables fix + all regression results"

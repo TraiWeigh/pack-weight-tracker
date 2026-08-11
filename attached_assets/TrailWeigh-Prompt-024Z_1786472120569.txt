@@ -1,0 +1,336 @@
+TRAILWEIGH — PROMPT 024Z
+DOCX ONLY: FUEL / FUEL CANISTER MUST OVERRIDE A KITCHEN HEADING AND ROUTE TO CONSUMABLES
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a tiny follow-up to Prompt 024Y. DOCX Heading 1/Heading 2 category inheritance is already working. Only fix Fuel precedence.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 2–4 minutes
+Estimated Agent usage/cost: about $0.30–$0.80
+
+ATTACH THIS TEST FILE
+1. 09_TrailWeigh_DOCX_Heading_Context_12_Items.docx
+
+IMPORTANT CURRENT STATE
+
+Prompt 024Y = PARTIAL PASS.
+
+USER-VERIFIED 024Y RESULTS THAT MUST BE PRESERVED:
+- exactly 12 items found;
+- Word Heading 1 category context is inherited by following tables;
+- Backpack -> Backpack;
+- Tent -> Shelter;
+- Quilt / Sleeping Pad remain in the current sleep category;
+- Hiking Shirt / Trail Runners remain in clothing / worn routing;
+- Power Bank -> Electronics;
+- Leukotape -> Med Kit;
+- Repair Tape -> Repair Kit;
+- Dog Pack -> Dog Gear;
+- dedicated product Names remain intact;
+- blank Names remain blank;
+- no title/heading/table-header row is imported as an item.
+
+THE ONLY 024Y FAILURE TO FIX
+
+In the live 024Y preview:
+
+Heading = Kitchen
+Type = Fuel Canister
+Name = blank
+Weight = 3.9 oz
+Qty = 2
+
+currently remains under:
+Kitchen
+
+Required final category:
+Consumables
+
+This must follow TrailWeigh's existing verified semantic Fuel rule:
+Fuel / Fuel Canister belongs in Consumables even when the source document groups it under Kitchen.
+
+PRIMARY GOAL
+
+For DOCX imports only:
+
+When an item Type is confidently recognized as:
+- Fuel
+- Fuel Canister
+
+the semantic item-routing rule must override inherited DOCX heading context such as:
+Kitchen
+Cook Kit
+Cooking
+Kitchen Gear
+
+and route the item to:
+Consumables
+
+Do NOT change the Word heading inheritance feature itself.
+
+DO NOT REDO 024Y
+
+Keep the existing DOCX logic that:
+- reads Word Heading 1/Heading 2 category context;
+- preserves paragraph/table document order;
+- applies inherited category context to tables that lack an explicit Category column.
+
+This prompt is only about semantic precedence for Fuel.
+
+CATEGORY PRECEDENCE
+
+For DOCX imports, use this effective precedence:
+
+1. Existing high-confidence semantic routing rules that intentionally override source grouping, including:
+   - Fuel / Fuel Canister -> Consumables
+   - worn routing
+   - Med Kit routing
+   - Repair Kit routing
+   - canonical Backpack routing
+
+2. Explicit meaningful per-row Category if present, except where the existing high-confidence semantic rule already intentionally overrides it.
+
+3. Inherited DOCX Heading 1/Heading 2 category context.
+
+4. Existing safe fallback.
+
+Do not broadly reorder unrelated categories if not necessary.
+Make the smallest safe change needed for Fuel.
+
+REQUIRED 024Z LIVE/PARSER TEST
+
+Run:
+09_TrailWeigh_DOCX_Heading_Context_12_Items.docx
+
+through the SAME DOCX import path used by TrailWeigh.
+
+Required:
+- exactly 12 items found;
+- exactly 12 items remain importable;
+- no duplicates;
+- no items lost.
+
+Required categories:
+1. Backpack -> Backpack
+2. Tent -> Shelter
+3. Quilt -> current canonical sleep category
+4. Sleeping Pad -> current canonical sleep category
+5. Stove -> Kitchen
+6. Fuel Canister -> Consumables
+7. Hiking Shirt -> Clothing Worn
+8. Trail Runners -> Clothing Worn
+9. Power Bank -> Electronics
+10. Leukotape -> Med Kit
+11. Repair Tape -> Repair Kit
+12. Dog Pack -> Dog Gear
+
+REQUIRED FUEL DATA
+
+Fuel Canister:
+- Name remains blank
+- Weight = 3.9 oz
+- Qty = 2
+- Total remains correct
+- Final category = Consumables
+
+Do NOT change the Stove row.
+Stove must remain:
+Kitchen
+
+So the final result should demonstrate that the same Kitchen heading can produce:
+- Stove -> Kitchen
+- Fuel Canister -> Consumables
+
+based on semantic item recognition.
+
+PRESERVE NAME BEHAVIOR
+
+Do not modify Name logic.
+
+Preserve:
+- Durston Kakwa 55
+- Zpacks Duplex
+- Enlightened Equipment Enigma 20
+- Therm-a-Rest NeoAir XLite NXT
+- BRS-3000T
+- Outdoor Research Echo
+- Altra Lone Peak 8
+- Nitecore NB10000
+- Ruffwear Approach
+
+Blank Name cells for Fuel Canister, Leukotape, and Repair Tape must remain blank.
+
+PRESERVE 024X ROUTING
+
+Do not regress:
+- Leukotape -> Med Kit
+- Repair Tape -> Repair Kit
+
+PRESERVE WORN ROUTING
+
+Do not regress:
+- Hiking Shirt -> Clothing Worn
+- Trail Runners -> Clothing Worn
+
+PRESERVE BACKPACK ROUTING
+
+Do not regress:
+- Backpack -> Backpack
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024Z_REPORT.md
+
+Initially write:
+- Prompt: 024Z
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM EXACT CAUSE
+
+Inspect only enough of the DOCX normalization/routing path to confirm why:
+Type = Fuel Canister
+inheritedHeading = Kitchen
+
+currently keeps Kitchen instead of applying the existing Fuel semantic routing.
+
+Document the exact confirmed precedence/order problem.
+
+Do not broadly rediagnose DOCX parsing.
+
+PHASE 3 — MINIMUM SAFE FIX
+
+Make the smallest safe change that lets Fuel/Fuel Canister semantic routing override inherited DOCX heading context.
+
+Prefer:
+- reusing the existing Fuel classifier/routing helper;
+- a small precedence adjustment;
+- no duplicate Fuel rule.
+
+Do NOT:
+- hard-code this only for the supplied filename;
+- rewrite Word heading parsing;
+- change CSV/XLSX behavior;
+- change PDF behavior;
+- add AI;
+- add new categories.
+
+PHASE 4 — REGRESSION CHECKS
+
+Verify:
+- 024Y 12-item DOCX test remains 12/12;
+- Stove remains Kitchen;
+- Fuel Canister becomes Consumables;
+- Fuel Qty remains 2;
+- worn routing remains intact;
+- Med Kit / Repair Kit routing remains intact;
+- Backpack routing remains intact;
+- Name behavior remains intact.
+
+If available without changing PDF code:
+- 77-item PDF regression remains 77.
+
+If available without changing CSV/XLSX code:
+- 77-item CSV regression remains 77.
+
+DO NOT modify PDF parsing.
+DO NOT modify CSV/XLSX parsing.
+
+OUT OF SCOPE
+
+Do NOT fix in 024Z:
+- plain bold DOCX headings;
+- bullet-list-only DOCX files;
+- OCR/image-only Word files;
+- other DOCX category aliases;
+- PDF parsing;
+- CSV/XLSX routing;
+- Name logic;
+- warning text;
+- gear catalog/search;
+- AI;
+- retailer integration;
+- toolbar/layout;
+- Background;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- DOCX category-vs-semantic routing precedence;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024Z_REPORT.md
+
+Include:
+- Prompt number: 024Z
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of Fuel staying under Kitchen
+- exact correction made
+- 12-item DOCX result
+- Stove final category
+- Fuel Canister final category
+- Fuel Canister Qty
+- Fuel Canister Name state
+- confirmation worn routing preserved
+- confirmation Med Kit / Repair Kit routing preserved
+- confirmation Backpack routing preserved
+- confirmation Name behavior preserved
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF code was not changed
+- confirmation CSV/XLSX code was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-024Z-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024Z_REPORT.md
+
+Include useful 024Z-specific test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024Z.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final PASS remains pending until the user tests the live TrailWeigh app with 09_TrailWeigh_DOCX_Heading_Context_12_Items.docx.

@@ -592,7 +592,7 @@ export const CONSUMABLES_TYPES = new Set([
   'purification tablets', 'chlorine dioxide tablets', 'iodine tablets',
   'water treatment drops', 'purification drops', 'chlorine dioxide drops', 'bleach drops',
   // Stove and fire
-  'fuel', 'stove fuel', 'canister fuel', 'isobutane fuel', 'butane fuel',
+  'fuel', 'fuel canister', 'stove fuel', 'canister fuel', 'isobutane fuel', 'butane fuel',
   'propane fuel', 'alcohol fuel', 'denatured alcohol', 'white gas',
   'esbit', 'fuel tablet', 'solid fuel', 'matches', 'waterproof matches',
   'fire starter', 'tinder', 'lighter fuel', 'disposable lighter',
