@@ -1,0 +1,234 @@
+TRAILWEIGH — PROMPT 024N
+FIX SIDEBAR TOOLBAR RIGHT-EDGE ALIGNMENT WITHOUT BREAKING BACKGROUND
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: Prompt 024L already diagnosed the root cause. This should be a focused implementation + rendered verification task, not another broad diagnostic.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.50
+
+UPLOAD THESE THREE FILES AS SEPARATE REPLIT ATTACHMENTS
+
+1. TrailWeigh-Prompt-024N.txt
+2. TrailWeigh-024N-Current-Layout-Full.png
+3. TrailWeigh-024N-Alignment-Target-Detail.png
+
+DO NOT put the screenshots inside a ZIP for the Agent task.
+
+IMPORTANT KNOWN-GOOD / KNOWN-BAD STATE
+
+Prompt 024L was DIAGNOSTIC ONLY and identified the current right-edge mismatch.
+
+Current visual problem:
+- the sidebar toolbar row begins at the correct left edge;
+- the Share button extends about one scrollbar-gutter width farther right than Pack Summary;
+- the vertical alignment is already correct;
+- Background currently opens and works.
+
+Prompt 024L reported the confirmed cause:
+- `scrollbar-gutter: stable` reserves about 15 px on the scrollable Pack Summary/sidebar content area;
+- the toolbar row is not constrained by the same gutter after Prompt 024D removed `lg:overflow-hidden`;
+- 024D removed that class because it was clipping the Background picker;
+- removing the clipping exposed the latent width asymmetry.
+
+Prompt 024L recommended the smallest repair:
+1. render `BackgroundPickerPanel` outside the clipping toolbar row using an existing/appropriate React portal/overlay approach;
+2. restore the toolbar row's clipping/overflow constraint (`lg:overflow-hidden` or the exact equivalent known-good constraint) so its visible right edge matches Pack Summary again.
+
+DO NOT REDIAGNOSE THE ENTIRE LAYOUT.
+Read the existing 024L report in `workflow-reports/` if needed and implement the smallest safe repair consistent with that diagnosis.
+
+PRIMARY GOAL
+
+Achieve BOTH of these at the same time:
+
+A. VISUAL ALIGNMENT
+- sidebar joined arrow control left edge remains aligned with Pack Summary left edge;
+- Share right edge aligns with Pack Summary right edge;
+- right-side toolbar group remains vertically aligned with the top-left joined arrow control.
+
+B. BACKGROUND FUNCTION
+- Background opens the existing Background/Themes panel;
+- panel is fully visible and usable;
+- panel is not clipped by the toolbar row;
+- panel closes normally;
+- panel reopens normally.
+
+DO NOT solve one by breaking the other.
+
+PHASE 1 — CREATE REPORT ARTIFACT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024N_REPORT.md
+
+Initially write:
+- Prompt: 024N
+- Status: IN PROGRESS
+- “Report file created before application changes.”
+
+Verify the file physically exists.
+
+If it cannot be created, STOP before changing application code.
+
+PHASE 2 — IMPLEMENT THE MINIMUM REPAIR
+
+Use the current existing Background picker component/state.
+
+Preferred implementation, consistent with 024L:
+- keep the current toolbar row position and dimensions;
+- move only the rendered Background picker/panel layer outside the clipping toolbar container using `ReactDOM.createPortal` or the project’s existing equivalent overlay/portal mechanism;
+- anchor/position the portaled panel to the existing Background button;
+- restore the toolbar row’s known-good overflow constraint so the visible toolbar width respects the same content boundary as Pack Summary.
+
+Do NOT:
+- move Pack Summary;
+- move the toolbar row;
+- add arbitrary right padding/margin to fake alignment;
+- use `transform: translateX(...)` or hard-coded pixel nudges;
+- change scrollbar-gutter behavior merely to hide the symptom;
+- duplicate the Background panel;
+- create a second Background state system;
+- redesign Background;
+- change button widths/heights/fonts/icons;
+- change sidebar panel spacing.
+
+PORTAL / POSITIONING REQUIREMENTS
+
+If a portal is used:
+- preserve the current Background button as the anchor;
+- calculate/position the panel from the real button geometry;
+- keep the panel within the viewport where practical;
+- preserve desktop behavior;
+- do not break mobile/responsive behavior;
+- preserve click-away/close behavior;
+- preserve keyboard/focus behavior as much as the existing implementation supports;
+- ensure the panel remains above surrounding content with appropriate stacking.
+
+If the project already has an existing popover/portal helper, reuse it rather than introducing a second overlay system.
+
+PHASE 3 — RENDERED GEOMETRY VERIFICATION
+
+Use the running app.
+
+With Background CLOSED, measure/inspect:
+
+1. full sidebar toolbar row
+2. Pack Summary visible outer box
+
+Record:
+- left/x
+- width
+- right edge
+
+Required:
+- toolbar left edge = Pack Summary left edge within normal rendering tolerance;
+- toolbar right edge = Pack Summary right edge within approximately 1–2 px.
+
+Also verify the toolbar row remains vertically aligned with the top-left joined arrow control.
+
+Do not declare PASS based only on CSS class names.
+
+PHASE 4 — BACKGROUND FUNCTION VERIFICATION
+
+In the rendered app:
+
+1. Click Background.
+2. Confirm the existing panel becomes fully visible.
+3. Confirm it is not clipped by the restored toolbar overflow.
+4. Interact with at least one harmless existing control inside the panel.
+5. Close the panel normally.
+6. Reopen it.
+7. Close it again.
+8. Confirm the toolbar returns to the same aligned closed-state geometry.
+
+PHASE 5 — FUNCTIONAL REGRESSION CHECKS
+
+Verify:
+- sidebar down arrow opens all sidebar panels;
+- sidebar up arrow closes all sidebar panels;
+- main top-left arrows still work;
+- Share still works;
+- Pack Summary remains unchanged in position/size;
+- Weight Distribution, Scan Gear List, and Locker spacing remain unchanged;
+- Prompt 024M PDF importer still reports 77 items for the known test PDF if a quick non-destructive regression check is practical; do not rework importer code;
+- CSV importer behavior is untouched;
+- app builds/runs cleanly.
+
+DO NOT TOUCH
+
+Do not change:
+- PDF/CSV importer implementation;
+- Prompt 024M parser repair;
+- category mapping;
+- Save/Save As;
+- Locker;
+- Share behavior beyond verifying it;
+- themes or theme data;
+- authentication;
+- footer/legal/help;
+- the unrelated “Shared view links show imperial units even for metric users” task;
+- Stripe/payments/AI credits;
+- any unrelated Ready-for-review task.
+
+CHANGED-FILE CONTROL
+
+Before finishing:
+- inspect every changed application file;
+- only files genuinely needed for this toolbar/Background repair should change;
+- no unrelated cleanup/refactoring.
+
+REPORT — UPDATE THE PRE-CREATED FILE
+
+Update:
+
+workflow-reports/PROMPT_024N_REPORT.md
+
+Include:
+- Prompt number: 024N
+- Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact implementation used for the Background panel/portal
+- exact overflow constraint restored
+- before toolbar left/width/right measurements
+- after toolbar left/width/right measurements
+- after Pack Summary left/width/right measurements
+- Background open/close/reopen test results
+- internal Background control tested
+- Share/sidebar arrow regression results
+- build/test result
+- confirmation Prompt 024M importer code was not changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP — USE A DIRECT SHELL COMMAND
+
+After the report physically exists, create:
+
+workflow-reports/trailweigh-024N-report.zip
+
+using a direct deterministic shell command:
+
+cd workflow-reports
+zip -j trailweigh-024N-report.zip PROMPT_024N_REPORT.md
+
+Then verify:
+
+unzip -l trailweigh-024N-report.zip
+ls -l trailweigh-024N-report.zip
+
+If the report exists but ZIP creation fails:
+- do not redo the repair;
+- report the packaging failure and stop.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024N.
+
+Do not apply the unrelated shared-view unit task.
+Do not start another task.

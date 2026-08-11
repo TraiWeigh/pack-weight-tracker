@@ -2385,9 +2385,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                  matches the sidebar scrollable content box, preserving 024A horizontal
                  alignment. 024D: lg:overflow-hidden REMOVED — it was clipping the
                  BackgroundPickerPanel (position:absolute top-full) making it invisible.
-                 scrollbar-gutter:stable is kept for alignment; overflow is now visible so
-                 the panel can extend below the controls row without being clipped. */}
-            <div className="relative flex items-center pb-3 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
+                 024N: lg:overflow-hidden RESTORED — panel is now portaled to document.body
+                 with fixed positioning, so overflow-hidden no longer clips it. */}
+            <div className="relative flex items-center pb-3 lg:pl-1 lg:pr-5 lg:overflow-hidden lg:[scrollbar-gutter:stable]">
                 {/* 023W: Sidebar accordion Open/Close — controls Pack Summary, Weight Distribution,
                      Scan Gear List, and Locker only. Independent of the main category Open/Close. */}
                 <div

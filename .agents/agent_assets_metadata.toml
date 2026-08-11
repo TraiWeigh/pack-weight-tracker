@@ -35,3 +35,10 @@ uri = "file://workflow-reports/trailweigh-024M-report.zip"
 type = "unspecified"
 title = "TrailWeigh 024M Report"
 description = "PROMPT_024M_REPORT.md + 024M-post-fix-pdf-response.json (77 items)"
+
+[[outputs]]
+id = "Umu43lquL3Nb4A72NUaGz"
+uri = "file://workflow-reports/trailweigh-024N-report.zip"
+type = "unspecified"
+title = "TrailWeigh 024N Report"
+description = "PROMPT_024N_REPORT.md — toolbar alignment fix + Background portal"

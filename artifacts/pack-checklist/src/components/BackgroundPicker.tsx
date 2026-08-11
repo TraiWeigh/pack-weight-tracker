@@ -12,7 +12,8 @@
  *  - Object URLs for thumbnails are created on demand and revoked when unused.
  *  - Migration from old localStorage format runs on first panel open.
  */
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useLayoutEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ImageIcon, X, Check, ChevronDown, Plus, Pencil, Trash2, Loader2 } from 'lucide-react';
 import { useBarStyle, barCombinedStyle, barFontStyle } from '../context/BarStyleContext';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
@@ -321,6 +322,30 @@ export function BackgroundPickerPanel({
   const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
   const thumbnailUrlsRef = useRef<Record<string, string>>({});
 
+  // ── 024N: Fixed position for the portaled panel ───────────────────────────
+  const [panelStyle, setPanelStyle] = useState<React.CSSProperties>({});
+
+  useLayoutEffect(() => {
+    if (!open || !containerRef?.current) return;
+    const updatePos = () => {
+      const anchor = containerRef!.current;
+      if (!anchor) return;
+      const rect   = anchor.getBoundingClientRect();
+      const panelW = 384; // matches w-[24rem]
+      const margin = 8;
+      let left = rect.left + rect.width / 2 - panelW / 2;
+      left = Math.max(margin, Math.min(left, window.innerWidth - panelW - margin));
+      setPanelStyle({ top: rect.bottom + 8, left });
+    };
+    updatePos();
+    window.addEventListener('scroll', updatePos, true);
+    window.addEventListener('resize', updatePos);
+    return () => {
+      window.removeEventListener('scroll', updatePos, true);
+      window.removeEventListener('resize', updatePos);
+    };
+  }, [open, containerRef]);
+
   // ── Derived ──────────────────────────────────────────────────────────────
   const canAddTheme       = collections.length < MAX_COLLECTIONS;
   const activeCollection  = collections.find(c => c.id === activeThemeId) ?? null;
@@ -452,15 +477,13 @@ export function BackgroundPickerPanel({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      const root = containerRef?.current ?? panelRef.current;
-      if (root && !root.contains(e.target as Node)) {
-        // 022Z: The delete-confirmation popover renders in a Radix portal at
-        // document.body — outside `root`. Exclude those clicks so the panel
-        // does not close (and destroy the anchor) before the confirmation
-        // onClick handler can execute deletion.
-        if (deletePopoverContentRef.current?.contains(e.target as Node)) return;
-        onClose();
-      }
+      // 024N: panel is portaled to document.body so it lives outside
+      // containerRef — check both the anchor container and the portaled panel.
+      // Also exclude the Radix delete-confirmation popover (022Z).
+      if (containerRef?.current?.contains(e.target as Node)) return;
+      if (panelRef.current?.contains(e.target as Node)) return;
+      if (deletePopoverContentRef.current?.contains(e.target as Node)) return;
+      onClose();
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -1075,14 +1098,20 @@ export function BackgroundPickerPanel({
     );
   };
 
-  // ── Main render ───────────────────────────────────────────────────────────
-  return (
+  // ── Main render ──────────────────────────────────────────────────────────
+  // 024N: panel is portaled to document.body so it is never clipped by the
+  // toolbar row's restored lg:overflow-hidden. Position is computed via
+  // useLayoutEffect above and applied as fixed style props.
+  return createPortal(
     <div
       ref={panelRef}
-      className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-[24rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
+      className="w-[24rem] max-h-[calc(100dvh-10rem)] overflow-y-auto bg-card border border-card-border rounded-xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-150"
       style={{
         display: open ? undefined : 'none',
+        position: 'fixed',
+        zIndex: 50,
         willChange: 'transform',
+        ...panelStyle,
         // 023G: selected Font cascades through the entire expanded panel
         ...(barFont ? { fontFamily: barFont } : {}),
       }}
@@ -1424,5 +1453,5 @@ export function BackgroundPickerPanel({
         </>
       )}
     </div>
-  );
+  , document.body);
 }
