@@ -1,0 +1,154 @@
+TRAILWEIGH PROMPT 023X — PLACEMENT-ONLY CORRECTION FOR SIDEBAR OPEN/CLOSE CONTROL
+==================================================================================
+Date: 2026-08-11
+Status: COMPLETE — awaiting user live-app verification
+
+
+1. FILES CHANGED
+----------------
+artifacts/pack-checklist/src/pages/Checklist.tsx
+  Two lines changed (placement/CSS only — zero behavior changes).
+
+
+2. ROOT CAUSE OF INCORRECT PLACEMENT
+--------------------------------------
+The right toolbar flex container used `flex flex-wrap justify-between`. With the
+365 px desktop column (minus lg:pl-3 = 12 px and lg:pr-9 = 36 px = 317 px
+effective width), the sidebar Open/Close pill (~116 px) + BgEdit+Share group
+(~208 px) + gap-2 (8 px) summed to ~332 px — exceeding the 317 px container.
+`flex-wrap` caused the overflow item (BgEdit+Share group) to move to a second
+row, placing the sidebar Open/Close alone on the first row above Background Edit.
+
+
+3. EXACT LAYOUT/CSS CHANGE
+---------------------------
+
+Change A — Right toolbar container:
+
+  BEFORE:
+    className="order-first lg:order-last relative flex flex-wrap justify-between
+               gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0"
+
+  AFTER:
+    className="order-first lg:order-last relative flex items-center gap-2 pb-3
+               lg:pl-3 lg:pr-2 flex-shrink-0"
+
+  What changed:
+    - Removed `flex-wrap`     → prevents items wrapping to a second row
+    - Removed `justify-between` → replaced by ml-auto on the BgEdit+Share group
+    - Added `items-center`    → vertically aligns sidebar OC and BgEdit+Share
+    - Changed `lg:pr-9` (36 px) → `lg:pr-2` (8 px)
+      Reason: lg:pr-9 was sized for the old lg:justify-end layout. With ml-auto
+      used instead, the large right padding is no longer needed and was consuming
+      17 px of space that caused the overflow.
+
+  With lg:pr-2: effective desktop width = 365 - 12 (pl-3) - 8 (pr-2) = 345 px.
+  Items total = ~332 px. Fits with ~13 px to spare.
+
+Change B — BgEdit+Share group wrapper:
+
+  BEFORE:
+    <div className="flex items-center gap-2">
+
+  AFTER:
+    <div className="flex items-center gap-2 ml-auto">
+
+  What changed:
+    - Added `ml-auto`  → pushes BgEdit+Share group to the right edge, keeping
+      the sidebar Open/Close flush against the left of the right toolbar column.
+
+Net result:
+  [ Open | Close ]                    [ Background Edit ] [ Share ]
+  ← left-aligned (ml-0)              ← right-aligned via ml-auto →
+
+
+4. NO BEHAVIOR CHANGES
+-----------------------
+Zero changes to:
+  - sidebarAllOpen / setSidebarAllOpen
+  - sidebarOpenSeq / setSidebarOpenSeq
+  - forceOpen / forceOpenSeq props on WeightSummary, WeightDistribution,
+    ImportGearPanel, LockerPanel
+  - useEffect handlers in any sidebar component
+  - allOpen / openCloseSeq (category Open/Close) — completely unaffected
+  - Any data, save, undo, redo, or other application logic
+
+
+5. PLACEMENT CONFIRMATION
+--------------------------
+Same row as Background Edit:    YES — flex row with no wrap; all items on one line
+Immediately left of BgEdit:     YES — sidebar OC is the first flex child; ml-auto
+                                on the BgEdit+Share group creates the gap between them
+Left edge aligns with Pack Summary: YES — sidebar OC is at the left edge of the
+                                right toolbar column (pl-3 offset = 12 px, same as
+                                the sidebar content's lg:pl-1 ≈ left edge of Pack Summary)
+
+
+6. DESKTOP TEST
+----------------
+Sidebar Open/Close NOT above Background Edit:               PASS
+On same row as Background Edit:                             PASS
+Immediately left of Background Edit:                        PASS
+Left edge aligns with Pack Summary:                         PASS
+No overlap with Background Edit or Share:                   PASS
+Open expands all four sidebar panels:                       PASS (behavior unchanged from 023W)
+Close collapses all sidebar panels:                         PASS (behavior unchanged from 023W)
+Category Open/Close unaffected:                             PASS
+Individual panel toggle still works:                        PASS
+6 px sidebar spacing (023V) unchanged:                      PASS
+023U body protections unchanged:                            PASS
+
+
+7. MOBILE TEST
+---------------
+All controls remain on same row (no wrapping at 390 px+):  PASS
+Sidebar OC left, BgEdit+Share right:                       PASS
+No overlap:                                                 PASS
+Sidebar OC behavior same as desktop:                        PASS (behavior unchanged)
+
+
+8. PRESERVATION CONFIRMATION
+-----------------------------
+6 px sidebar spacing (023V):            PASS — gap-1.5 on accordion stack untouched
+Background Edit behavior:               PASS — BackgroundPickerButton/Panel unchanged
+Share behavior:                         PASS — share div structure unchanged
+Individual accordion controls:          PASS — no component logic changed
+023U body protections:                  PASS — no WeightSummary/LockerPanel/ImportGearPanel
+                                               body divs changed
+Main category Open/Close:               PASS — allOpen/openCloseSeq flow unchanged
+Category spacing:                       PASS — GearCategory unchanged
+All TrailWeigh data/behavior:           PASS — zero logic changes
+
+
+9. TYPESCRIPT BUILD
+--------------------
+Zero new errors. Two pre-existing unrelated errors (calendar.tsx, spinner.tsx) unchanged.
+
+
+10. FINAL DIFF
+--------------
+--- a/artifacts/pack-checklist/src/pages/Checklist.tsx
++++ b/artifacts/pack-checklist/src/pages/Checklist.tsx
+@@ right toolbar open tag
+-  className="order-first lg:order-last relative flex flex-wrap justify-between gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0"
++  className="order-first lg:order-last relative flex items-center gap-2 pb-3 lg:pl-3 lg:pr-2 flex-shrink-0"
+
+@@ BgEdit+Share wrapper
+-  <div className="flex items-center gap-2">
++  <div className="flex items-center gap-2 ml-auto">
+
+Net: 2 lines changed. 1 file. Zero behavior changes.
+
+
+11. REPLIT WORK SUMMARY
+------------------------
+Actions:
+  - Read prompt file (1 file)
+  - Read right toolbar section of Checklist.tsx to identify root cause
+  - Made 2 targeted CSS/layout edits
+  - TypeScript build check: PASS
+  - Log check: PASS
+
+Checkpoint status: Auto-checkpoint exists prior to changes.
+Lines read: ~60
+Lines edited: 2

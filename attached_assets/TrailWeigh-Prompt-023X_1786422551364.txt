@@ -1,0 +1,116 @@
+TRAILWEIGH — PROMPT 023X
+Placement-Only Correction for Sidebar Open / Close Control
+
+CURRENT STATUS
+Prompt 023W added the new sidebar Open / Close control and its behavior is working correctly.
+
+USER TEST RESULT
+- FUNCTION: PASS
+- PLACEMENT: FAIL
+
+The only problem is placement.
+
+CURRENT INCORRECT PLACEMENT
+The sidebar Open / Close control is currently positioned ABOVE Background Edit on its own row.
+
+REQUIRED CORRECTION
+Move the existing sidebar Open / Close control so that:
+
+1. It is on the SAME HORIZONTAL ROW as Background Edit.
+2. It sits IMMEDIATELY TO THE LEFT of Background Edit.
+3. The LEFT EDGE of the sidebar Open / Close control aligns with the LEFT EDGE of the Pack Summary sidebar panel below it.
+4. Background Edit and Share should remain in their normal right-side control area.
+5. Do not place Open / Close above Background Edit.
+
+TARGET VISUAL RELATIONSHIP
+The control row should read left-to-right approximately like:
+
+[ Open | Close ]   [ Background Edit ]   [ Share ]
+
+The Open / Close control begins at the same horizontal left position as the Pack Summary panel.
+
+IMPORTANT — PLACEMENT ONLY
+Do NOT change the working sidebar Open / Close behavior from Prompt 023W.
+
+Preserve all current 023W behavior:
+- Open expands all sidebar accordion panels.
+- Close collapses all open sidebar accordion panels, even if only one is open.
+- It affects only the sidebar accordion group.
+- It remains independent from the main category Open / Close control.
+- Individual sidebar panels can still be opened and closed normally.
+
+PRESERVE ALL EXISTING WORK
+Do not alter unrelated layout, styling, or functionality.
+
+Specifically preserve:
+- Prompt 023V: exactly 6 px outer vertical spacing between Pack Summary, Weight Distribution, Scan Gear List, and Locker.
+- Existing sidebar panel widths, heights, and internal padding.
+- Existing Background Edit behavior.
+- Existing Share behavior.
+- Existing fonts, icons, colors, chevrons, and collapse behavior.
+- Prompt 023U accordion-body protections.
+- Main category Open / Close control and its placement.
+- Current category spacing.
+- All TrailWeigh data and application behavior.
+- Current desktop and mobile functionality.
+
+IMPLEMENTATION GUIDANCE
+Use the minimum layout/CSS change needed to place the existing working control correctly.
+Do not create a duplicate Open / Close control.
+Do not rewrite the sidebar accordion logic.
+Do not refactor unrelated toolbar/header code.
+Do not change the sidebar panel positions just to achieve alignment.
+
+RESPONSIVE BEHAVIOR
+Verify desktop and mobile.
+
+Desktop:
+- Open / Close must be on the same row as Background Edit.
+- Open / Close must be immediately to the left of Background Edit.
+- Its left edge must align with the left edge of Pack Summary.
+- No overlap with Background Edit, Share, or sidebar content.
+
+Mobile/narrow widths:
+- Preserve the existing responsive behavior.
+- Keep the controls usable and readable.
+- Do not shrink font sizes or touch targets unnecessarily.
+- If responsive wrapping is already required at very narrow widths, keep the logical order Open / Close -> Background Edit -> Share.
+
+TEST BEFORE FINISHING
+Confirm all of the following:
+
+1. Placement:
+   - Open / Close is NOT above Background Edit.
+   - It is on the same row as Background Edit.
+   - It is immediately to the left of Background Edit.
+   - Its left edge aligns with the left edge of Pack Summary.
+
+2. Behavior:
+   - Open still opens all sidebar panels.
+   - Close still closes all sidebar panels.
+   - Close works when only one sidebar panel is open.
+   - Main category Open / Close remains independent.
+
+3. Preservation:
+   - 6 px sidebar panel spacing is unchanged.
+   - Background Edit works.
+   - Share works.
+   - Individual sidebar accordion controls work.
+   - No unrelated visual or functional changes.
+
+WORKFLOW REPORT REQUIREMENTS
+When finished, create:
+- workflow-reports/trailweigh-023X-report.txt
+- workflow-reports/trailweigh-023X-report.zip
+
+The report must clearly state:
+- What file(s) were changed.
+- The exact layout/CSS change used to move the existing control.
+- Confirmation that no sidebar Open / Close behavior was changed.
+- Confirmation that the new control is on the same row immediately left of Background Edit.
+- Confirmation that its left edge aligns with Pack Summary.
+- Desktop and mobile test results.
+- Confirmation that the 6 px sidebar spacing from 023V is preserved.
+- Replit work summary: time worked, actions, lines/items read, Agent usage/cost, and checkpoint status.
+
+Keep this prompt strictly focused on correcting the placement of the already-working sidebar Open / Close control.

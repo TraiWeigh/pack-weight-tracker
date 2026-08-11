@@ -2379,7 +2379,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ──
                 023B: justify-between on mobile so Background Edit anchors LEFT and Share anchors
                 RIGHT; lg:justify-end preserves the existing desktop right-alignment. */}
-            <div className="order-first lg:order-last relative flex flex-wrap justify-between gap-2 pb-3 lg:pl-3 lg:pr-9 flex-shrink-0">
+            <div className="order-first lg:order-last relative flex items-center gap-2 pb-3 lg:pl-3 lg:pr-2 flex-shrink-0">
                 {/* 023W: Sidebar accordion Open/Close — controls Pack Summary, Weight Distribution,
                      Scan Gear List, and Locker only. Independent of the main category Open/Close. */}
                 <div
@@ -2418,7 +2418,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   </button>
                 </div>
                 {/* BgEdit + Share — grouped so they stay together on the right */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-auto">
                 <div ref={bgPickerContainerRef}>
                   <BackgroundPickerButton
                     onClick={() => setBackgroundPickerOpen(o => !o)}

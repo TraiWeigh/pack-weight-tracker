@@ -691,3 +691,28 @@ Added a new sidebar Open/Close control that independently controls Pack Summary,
 
 ### Report
 `trailweigh-023W-report.txt`
+
+---
+
+## Prompt 023X — Placement-Only Correction for Sidebar Open/Close Control
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+Two-line CSS-only fix. No behavior changed.
+
+**Root cause:** `flex-wrap` on the right toolbar caused the sidebar OC pill + BgEdit+Share group (~332 px total) to overflow the 317 px desktop column (`365 px - pl-3 12 px - pr-9 36 px`). The BgEdit+Share group wrapped to a second row, placing sidebar OC alone above it.
+
+**Fix:**
+1. Right toolbar: removed `flex-wrap` and `justify-between`; added `items-center`; changed `lg:pr-9` → `lg:pr-2` (effective width 345 px, items fit with room to spare)
+2. BgEdit+Share wrapper: added `ml-auto` to push it right
+
+Result: `[ Open | Close ]` ——————— `[ Background Edit ] [ Share ]` — all on one row.
+
+### Files Changed
+`Checklist.tsx` — 2 lines (right toolbar outer div class + BgEdit+Share wrapper class)
+
+### Report
+`trailweigh-023X-report.txt`
