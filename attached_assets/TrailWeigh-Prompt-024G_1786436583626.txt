@@ -1,0 +1,197 @@
+TRAILWEIGH — PROMPT 024G
+DIAGNOSTIC ONLY: IDENTIFY THE EXACT 9 ITEMS MISSING FROM THE PDF SCAN
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a read/test/compare task only. NO application code or behavior may be changed.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 2–5 minutes
+Estimated Agent usage/cost: about $0.30–$0.90
+
+ATTACH THESE THREE FILES WITH THIS PROMPT
+
+1. TrailWeigh-024G-Test-Pack-Weight.pdf
+   - exact PDF that still returns “68 items found”.
+
+2. TrailWeigh-024G-Ground-Truth-77-Items.csv
+   - exact known-good 77-item representation of the same gear list;
+   - use this ONLY as the ground-truth item list for comparison.
+
+3. TrailWeigh-024G-PDF-68-Items-Reference.png
+   - visual reference showing the current 68-item PDF result.
+
+CRITICAL RULE — DIAGNOSTIC ONLY
+
+DO NOT MODIFY ANY APPLICATION CODE.
+DO NOT MODIFY ANY TEST FILE.
+DO NOT CHANGE IMPORTER BEHAVIOR.
+DO NOT EDIT CSS, UI, ROUTING, OR DATA.
+DO NOT CREATE A FIX.
+DO NOT REVERT ANY PRIOR WORK.
+
+Prompt 024F did not change the live result: the PDF still finds exactly 68 items.
+
+The purpose of 024G is to determine EXACTLY why.
+
+PRIMARY TASK
+
+Run the CURRENT PDF scan path against:
+TrailWeigh-024G-Test-Pack-Weight.pdf
+
+Then compare the exact detected output against:
+TrailWeigh-024G-Ground-Truth-77-Items.csv
+
+You must identify the exact 9 expected items that are missing from the PDF scan.
+
+DO NOT GUESS.
+
+PHASE 1 — CAPTURE THE CURRENT 68
+
+Using the same code path the live Scan Gear List PDF upload actually uses:
+
+1. Process the attached PDF.
+2. Capture the exact 68 detected items.
+3. For each detected item, record as much of the parsed identity as available:
+   - source category/section
+   - Type
+   - Description
+   - Weight
+   - Unit
+   - Quantity
+4. Do not use a separate ad-hoc parser that is not the same path the app uses unless necessary only for comparison. The 68-item list must come from the actual current TrailWeigh PDF import path.
+
+PHASE 2 — DIFF AGAINST THE 77-ITEM GROUND TRUTH
+
+Compare the 68 detected PDF items against all 77 rows in the ground-truth CSV.
+
+Produce an exact diff containing:
+
+A. The 9 ground-truth items missing from the PDF result.
+
+For EACH missing item, list:
+- Category
+- Type
+- Description
+- Weight
+- Unit
+- Quantity
+
+B. Any PDF-detected item that appears to represent the wrong source row.
+
+C. Any duplicate, merged, truncated, or malformed detection that may explain one of the missing rows.
+
+D. Any parser filter or validation rule that rejected each missing row.
+
+PHASE 3 — ROOT CAUSE FOR EACH OF THE 9
+
+For each missing item, identify the precise reason it is lost.
+
+Possible causes to check include, but are not limited to:
+- Description cell is blank;
+- Type-only row is rejected;
+- Weight is blank;
+- row has a FALSE/TRUE prefix parsing issue;
+- row is merged with adjacent text;
+- parser requires more fields than the source row contains;
+- category boundary handling drops a row;
+- PDF text extraction order differs from visual row order;
+- parser mistakes the row for a heading/total/placeholder;
+- line-break handling corrupts the row;
+- item is detected but filtered later;
+- item is parsed but discarded during normalization.
+
+Do NOT state a cause unless you traced it through the current code path.
+
+KNOWN CLUE — DO NOT TREAT AS ANSWER
+
+There are several rows in the source where the Description cell is blank but the Type cell contains the useful item label.
+
+That MAY explain some missing rows, but previous work appears to have assumed this too broadly.
+
+Confirm the actual missing list from the real diff first.
+
+Specifically:
+- do NOT assume all 9 are blank-Description rows;
+- do NOT assume Fuel is missing;
+- do NOT assume any particular set of 9 before performing the comparison.
+
+REQUIRED OUTPUT IN THE REPORT
+
+The report must contain these clearly separated sections:
+
+1. CURRENT PDF RESULT
+   - exact count: 68
+   - exact list of all 68 detected items
+
+2. GROUND-TRUTH RESULT
+   - exact count: 77
+   - confirmation that the attached CSV contains 77 expected gear rows
+
+3. EXACT 9 MISSING ITEMS
+   - numbered list 1 through 9
+   - each with Category, Type, Description, Weight, Unit, Quantity
+
+4. ROOT CAUSE BY MISSING ITEM
+   - one cause for each of the 9
+   - include the relevant parser/filter/function where possible
+
+5. PATTERN SUMMARY
+   - explain whether the 9 share one cause or multiple causes
+   - identify the smallest likely repair strategy
+   - DO NOT IMPLEMENT IT
+
+6. FILES THAT WOULD LIKELY NEED TO CHANGE
+   - list only;
+   - do not modify them.
+
+7. CONFIRMATION
+   - explicitly state: “No application code or behavior was changed in Prompt 024G.”
+
+NO APP CHANGES
+
+You may create ONLY diagnostic/report artifacts needed for 024G.
+
+Do not edit:
+- importer source files;
+- tests that affect behavior;
+- CSV importer;
+- PDF importer;
+- Background;
+- toolbar;
+- categories;
+- Locker;
+- Save/Share;
+- themes;
+- authentication;
+- Stripe/payments/AI credits;
+- any unrelated files.
+
+REPORTING — REQUIRED
+
+Create:
+workflow-reports/PROMPT_024G_REPORT.md
+
+Create:
+workflow-reports/trailweigh-024G-report.zip
+
+The ZIP should contain the 024G diagnostic report and any small diagnostic text output needed to support the exact 68-vs-77 diff.
+
+VERIFY BOTH FILES PHYSICALLY EXIST before stopping.
+
+The Markdown report must include:
+- Prompt number: 024G
+- Agent mode actually used
+- Time worked
+- Number of actions
+- Lines/items read
+- Agent usage/cost
+- Exact files created for diagnostics/reporting
+- Confirmation no application code was changed
+- all required diagnostic sections above
+
+FINAL STOP RULE
+
+STOP after the diagnostic and report ZIP are complete.
+
+DO NOT IMPLEMENT THE FIX.
+DO NOT BEGIN ANOTHER TASK.
