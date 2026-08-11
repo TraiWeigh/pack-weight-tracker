@@ -730,6 +730,65 @@ const NAME_HDR_RE   = /^(product|product name|model|item model)$/;
 // Conservative — only anchored, well-known patterns from the prompt spec.
 const STATUS_DESC_RE = /^(?:worn\b|carried\b|consumable\b|reusable\b|pair\s+weight\b|three\s+daily\s+portions?\b|quantity\s*[><=]|quantity\s+\w|generic\s+category\b|metric\s+decimal\b|same\s+mass\b|blank\s+weight\b|true\b|false\b|yes\b|no\b)/i;
 
+// ── 024W: Conservative product-identity fallback ─────────────────────────────
+//
+// When no dedicated Product/Model column exists, a Description cell may be used
+// as NAME only when it strongly resembles a manufacturer/model identity.
+// Strategy: prefer false-negatives over false-positives — when uncertain, blank.
+
+/** Measurement unit adjacent to a digit — strong spec/capacity signal. */
+const SPEC_UNIT_IN_DESC_RE = /\d\s*(?:oz|g|kg|lb|lbs|ml|mAh|Ah|mm|cm|inch|inches|ft|degree|°|kcal|cal\b)|\d\s*[lL]\b/i;
+
+/** Common generic first-word patterns — product attributes/descriptions, not brand identity. */
+const GENERIC_LEAD_DESC_RE = /^(?:single|inflatable|main|three|small|canister|travel|collapsible|folding|lightweight|budget|standard|regular|synthetic|ripstop|rechargeable|expendable|spare|down\b)/i;
+
+/**
+ * Alphanumeric model tokens (letters+digits merged, or mixed-case inside a word).
+ * Examples accepted: NB10000, inReach, NeoAir, XLite, NXT, pH2O, Kakwa55
+ */
+const MODEL_TOKEN_RE = /[A-Za-z][A-Za-z]*\d+[A-Za-z0-9]*|[a-z][A-Z][a-zA-Z]*|[A-Z]{2,}[a-z][a-zA-Z]*/;
+
+/**
+ * 024W: Returns true when a source Description value is likely a real
+ * product/manufacturer/model identity worth placing in the NAME field.
+ *
+ * Priority: dedicated Product/Model columns always win — this is only called
+ * as a fallback when no dedicated product-identity column exists.
+ * When uncertain → return false → NAME stays blank.
+ */
+function isLikelyProductIdentityFallback(desc: string): boolean {
+  if (!desc || desc.length < 4) return false;
+
+  // Reject specs starting with a digit: "40 L", "110 g", "10,000 mAh", "1 L bottle"
+  if (/^\d/.test(desc)) return false;
+
+  // Reject when a measurement unit appears next to a number inside the string
+  if (SPEC_UNIT_IN_DESC_RE.test(desc)) return false;
+
+  // Reject known status/metadata patterns (reusable, worn, carried, pair weight, …)
+  if (STATUS_DESC_RE.test(desc)) return false;
+
+  // Reject common generic first-word adjectives/nouns (single-wall, inflatable, main, …)
+  if (GENERIC_LEAD_DESC_RE.test(desc)) return false;
+
+  // Accept: contains a model-number token (NB10000, inReach, NeoAir, XLite, NXT)
+  if (MODEL_TOKEN_RE.test(desc)) return true;
+
+  // Accept: at least two words both starting with an uppercase letter → "Brand Model"
+  // Examples: Zpacks Duplex, Durston Kakwa 55, Altra Lone Peak 8, Sawyer Squeeze
+  const tokens = desc.trim().split(/\s+/);
+  if (
+    tokens.length >= 2 &&
+    /^[A-Z]/.test(tokens[0]) &&
+    /^[A-Z]/.test(tokens[1])
+  ) {
+    return true;
+  }
+
+  // Conservative default: leave blank when uncertain
+  return false;
+}
+
 function detectCols(headerRow: unknown[]): {
   typeCol: number; descCol: number; nameCol: number; weightCol: number; unitCol: number;
   qtyCol: number; catCol: number; subcatCol: number;
@@ -918,15 +977,15 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
     const effectiveCat = WEAK_SOURCE_GROUPS.has(norm(cat)) ? '' : cat;
     const finalDest = (isExplicitlyWorn && isClothingType) ? 'Clothing Worn' : (effectiveCat || undefined);
 
-    // 024R/024V: prefer dedicated product-name column (nameCol) for the Name field.
+    // 024R/024V/024W: prefer dedicated product-name column (nameCol) for the Name field.
     // nameCol is a separate column from typeCol; when both exist the product column wins.
-    // 024V: when no dedicated product-identity column exists, always leave Name blank —
-    // Description / Notes cells are specs or generic notes, not product/model identity.
+    // 024W: when no dedicated product-identity column exists, apply the conservative
+    // Description fallback — accepts brand/model-style values, rejects specs/status/notes.
     if (nameCol >= 0 && nameCol !== typeCol) {
       const nameCell = String(row[nameCol] ?? '').trim();
       desc = (nameCell && !STATUS_DESC_RE.test(nameCell)) ? nameCell : '';
     } else {
-      desc = '';
+      desc = isLikelyProductIdentityFallback(desc) ? desc : '';
     }
     desc = desc.slice(0, 200);
 
@@ -1159,18 +1218,20 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     if (/^(total|grand\s*total|sub\s*total)\b/i.test(typeRaw) ||
         /^(total|grand\s*total|sub\s*total)\b/i.test(descRaw)) continue;
 
-    // 024R/024V: Name (desc) priority:
+    // 024R/024V/024W: Name (desc) priority:
     //   1. Dedicated product-name column (Product / Model / Item Model) if present and not
     //      status text, AND only when typeRaw is also present (if typeRaw is absent, nameRaw
     //      serves as item identity/Type and must not also appear in the Name field).
-    //   2. Blank — do NOT use Description / Notes as NAME.
-    //      Description/Notes columns contain specs, capacities, and generic notes, not
-    //      product/model identity. Leaving NAME blank is the correct result when no dedicated
-    //      product-identity column exists.
+    //   2. 024W: Description/Notes as conservative fallback — only when it passes
+    //      isLikelyProductIdentityFallback (brand/model heuristic). Spec, status, and
+    //      generic-description text is still rejected and produces blank NAME.
+    //   3. Blank — when no product identity can be detected.
     // descRaw is still used directly for worn Signal D below, independent of this filter.
     const nameDesc = (typeRaw && nameRaw && !STATUS_DESC_RE.test(nameRaw.trim()))
       ? nameRaw
-      : '';
+      : isLikelyProductIdentityFallback(descRaw.trim())
+        ? descRaw.trim()
+        : '';
 
     const category  = get('category');
     const weightRaw = get('weight');

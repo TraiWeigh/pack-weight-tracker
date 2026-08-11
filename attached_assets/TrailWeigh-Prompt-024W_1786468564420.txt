@@ -1,0 +1,443 @@
+TRAILWEIGH — PROMPT 024W
+RESTORE A CONSERVATIVE DESCRIPTION → NAME FALLBACK FOR REAL PRODUCT/MODEL IDENTITIES
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a narrow correction to Prompt 024V. Keep all successful filtering and routing. Only restore a safe Description fallback when the Description clearly looks like an actual product/model identity.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 3–6 minutes
+Estimated Agent usage/cost: about $0.50–$1.20
+
+ATTACH THESE TEST FILES
+1. 08_description_as_name_fallback.csv
+2. 01_lighterpack_style.csv
+3. 02_metagear_style.csv
+
+IMPORTANT CURRENT STATE
+
+Prompt 024O = USER-VERIFIED PASS.
+Prompt 024P = USER-VERIFIED PASS.
+Prompt 024R = USER-VERIFIED PASS.
+Prompt 024U = USER-VERIFIED PASS.
+
+Prompt 024V = PARTIAL PASS.
+
+024V successfully:
+- kept obvious status/spec/note text out of NAME;
+- allowed blank NAME values;
+- preserved worn routing;
+- preserved quantity/weight/category behavior;
+- changed the Scan Gear List warning from “missing descriptions” to “missing names” internally;
+- preserved 77-item CSV/PDF regressions.
+
+BUT 024V became too strict:
+when there is no dedicated Name/Product/Model column, it now blanks ALL source Description values.
+
+USER-VERIFIED FAILURE USING TEST 08
+
+Source:
+Type = Tent
+Description = Zpacks Duplex
+
+Current result:
+Name = blank
+
+Required:
+Name = Zpacks Duplex
+
+Source:
+Type = Power Bank
+Description = Nitecore NB10000
+
+Current result:
+Name = blank
+
+Required:
+Name = Nitecore NB10000
+
+Source:
+Type = Hiking Shirt
+Description = Worn while hiking
+Worn = TRUE
+
+Current result:
+Name = blank
+
+Required:
+Name = blank
+Destination = Clothing Worn
+
+PRIMARY GOAL
+
+Restore a CONSERVATIVE Description -> Name fallback when:
+- no dedicated Name/Product/Product Name/Model/Item Model value exists; AND
+- the Description clearly looks like a product/manufacturer/model identity.
+
+Do NOT revert to blindly copying all Description text into NAME.
+
+NAME SOURCE PRIORITY
+
+1. Dedicated product identity fields remain highest priority:
+- Name
+- Product
+- Product Name
+- Model
+- Item Model
+
+If any valid dedicated value exists:
+use it for NAME.
+
+2. Only if no dedicated product identity exists:
+consider Description as a fallback.
+
+3. If Description does not clearly look like product identity:
+leave NAME blank.
+
+DO NOT INVENT A NAME.
+
+CONSERVATIVE DESCRIPTION FALLBACK
+
+Implement a small deterministic helper such as:
+
+isLikelyProductIdentityFallback(description)
+
+or equivalent.
+
+It must NOT use AI, web lookup, catalog lookup, or manufacturer databases.
+
+A Description may be accepted as NAME when it has strong product/model characteristics.
+
+Examples that SHOULD be accepted:
+- Zpacks Duplex
+- Nitecore NB10000
+- Durston Kakwa 55
+- Altra Lone Peak 8
+- Sawyer Squeeze
+- Garmin inReach Mini 2
+- Therm-a-Rest NeoAir XLite NXT
+
+Examples that MUST remain rejected:
+- Worn while hiking
+- Worn item
+- Pair weight
+- Main pack
+- Carried layer
+- Reusable
+- Rechargeable
+- Three daily portions
+- Consumable
+- first aid
+- generic category
+- 10,000 mAh
+- 1 L bottle
+- 750 ml pot
+- 110 g fuel canister
+- 40 L frameless backpack
+- Single-wall shelter
+- 20 degree quilt
+- Inflatable pad
+- canister stove
+- small fuel canisters
+- spare pairs
+
+SAFE HEURISTIC GUIDANCE
+
+Do NOT implement a naive “two words = product name” rule.
+
+Prefer conservative signals such as:
+- two or more product-name-like tokens;
+- brand/model-style capitalization;
+- uppercase/alphanumeric model tokens such as NB10000, XLite, X-Mid, Mini 2;
+- a proper-name-like manufacturer token followed by a model/product token.
+
+Reject obvious patterns such as:
+- unit/capacity/spec-only text: mAh, ml, L, oz, g, kg, degree, °, inches, cm, mm, etc.;
+- status/use wording: worn, carried, reusable, consumable, rechargeable;
+- quantity/weight notes;
+- generic descriptive phrases where the words are common product characteristics rather than brand/model identity.
+
+IMPORTANT:
+If uncertain, leave NAME blank.
+
+False negatives are safer than false positives here.
+
+DO NOT HARD-CODE ONLY THE TEST BRANDS
+
+Do not solve this by checking only:
+- Zpacks
+- Nitecore
+
+The logic must generalize conservatively to other brand/model-style names.
+
+At the same time, do not build an exhaustive brand database.
+
+TEST 08 — REQUIRED
+
+Run:
+08_description_as_name_fallback.csv
+
+Required preview/import results:
+
+1.
+Type = Tent
+Description = Zpacks Duplex
+Required:
+Name = Zpacks Duplex
+Weight = 18.5 oz
+
+2.
+Type = Power Bank
+Description = Nitecore NB10000
+Required:
+Name = Nitecore NB10000
+Weight = 5.3 oz
+
+3.
+Type = Hiking Shirt
+Description = Worn while hiking
+Worn = TRUE
+Required:
+Name = blank
+Category = Clothing Worn
+Weight = 5.2 oz
+
+All 3 items must remain importable.
+No item may be lost or duplicated.
+
+TEST 01 — REGRESSION
+
+Run:
+01_lighterpack_style.csv
+
+Required:
+- exactly 9 items found/imported;
+- Trail Backpack -> Backpack;
+- Smartwater Bottle Qty = 2;
+- Hiking Shirt -> Clothing Worn;
+- Fuel routing preserved.
+
+These generic/spec Description values must STILL remain out of NAME:
+- 40 L frameless backpack
+- Single-wall shelter
+- 20 degree quilt
+- Inflatable pad
+- 750 ml pot
+- 110 g fuel canister
+- 1 L bottle
+- Worn while hiking
+- 10,000 mAh
+
+Do not regress 024V by allowing those back into NAME.
+
+TEST 02 — REGRESSION
+
+Run:
+02_metagear_style.csv
+
+Required:
+- exactly 7 items found/imported;
+- Trail Runners -> Clothing Worn;
+- Water Qty = 2;
+- Dog Food Qty = 3;
+- mixed units remain correct.
+
+These generic Description values must remain out of NAME:
+- Main pack
+- Carried layer
+- Pair weight
+- Reusable
+- Consumable water
+- Three daily portions
+- Rechargeable
+
+POSITIVE SYNTHETIC TESTS
+
+If practical, add/run small parser-level checks proving the Description fallback accepts several product-style examples:
+
+- Zpacks Duplex
+- Nitecore NB10000
+- Durston Kakwa 55
+- Altra Lone Peak 8
+- Garmin inReach Mini 2
+
+and rejects several generic/spec examples:
+
+- 40 L frameless backpack
+- 10,000 mAh
+- Main pack
+- Rechargeable
+- Worn while hiking
+- 1 L bottle
+- Single-wall shelter
+
+Do not add any UI for these tests.
+
+WARNING TEXT
+
+Preserve the 024V wording:
+
+“Flagged items may have unusual weights or missing names — review before importing.”
+
+Do NOT revert to “missing descriptions.”
+
+NO DATA MIGRATION
+
+Do NOT alter existing saved items.
+
+This change applies only to newly normalized/imported CSV/XLSX rows.
+
+Do not blank or rewrite any Name/desc values already saved in existing user files.
+
+DO NOT CHANGE ROUTING
+
+Preserve:
+- Backpack canonical routing from 024U;
+- vague-source-group cleanup;
+- Toothbrush -> Personal behavior;
+- Fuel -> Consumables behavior;
+- worn routing from 024P.
+
+Do not change:
+- Leukotape routing;
+- Medication routing;
+- Repair Tape routing.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024W_REPORT.md
+
+Initially write:
+- Prompt: 024W
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify it physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM EXACT CAUSE
+
+Inspect only enough code to confirm why 024V currently:
+- trusts dedicated product identity columns;
+- but always blanks Description when no dedicated product identity exists.
+
+Document the exact current rule.
+
+PHASE 3 — MINIMUM CORRECTION
+
+Make the smallest safe change that:
+1. preserves dedicated Name/Product/Product Name/Model/Item Model priority;
+2. restores a conservative Description fallback;
+3. accepts clear product/model identities;
+4. rejects obvious specs/status/notes/generic descriptions;
+5. leaves NAME blank when uncertain;
+6. preserves all 024O/024P/024R/024U/024V behavior.
+
+Do not add AI.
+Do not add a brand database.
+Do not add web search.
+Do not add new visible fields.
+
+PHASE 4 — REGRESSION PROTECTION
+
+Verify:
+- 024O quantities/header/weights still work;
+- 024P worn routing still works;
+- 024R status text remains excluded from NAME;
+- 024U Backpack canonical routing still works;
+- 024V “missing names” warning remains correct;
+- 77-item CSV regression still returns 77 if fixture is available;
+- 77-item PDF regression still returns 77 if available without modifying PDF code.
+
+Do NOT modify PDF or DOCX parsing.
+
+OUT OF SCOPE
+
+Do NOT fix:
+- Leukotape/Medication/Repair Tape routing;
+- DOCX heading/category support;
+- PDF parsing;
+- gear catalog/search;
+- retailer integration;
+- AI;
+- Background;
+- toolbar;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- CSV/XLSX NAME fallback normalization;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024W_REPORT.md
+
+Include:
+- Prompt number: 024W
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of 024V over-filtering
+- exact fallback heuristic implemented
+- Test 08 result
+- confirmation Zpacks Duplex -> Name
+- confirmation Nitecore NB10000 -> Name
+- confirmation Worn while hiking -> Name blank + Clothing Worn
+- Test 01 regression result
+- Test 02 regression result
+- positive synthetic fallback results
+- negative generic/spec rejection results
+- confirmation “missing names” warning preserved
+- 024O/024P/024R/024U/024V regression confirmations
+- 77-item CSV result if available
+- 77-item PDF result if available
+- build/test result
+- confirmation PDF/DOCX code was not changed
+- confirmation no existing saved data was migrated/rewritten
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-024W-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024W_REPORT.md
+
+Include useful 024W test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024W.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final PASS remains pending until the user tests live TrailWeigh.
