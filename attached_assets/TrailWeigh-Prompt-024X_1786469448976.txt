@@ -1,0 +1,351 @@
+TRAILWEIGH — PROMPT 024X
+FIX CLEAR MEDICAL AND REPAIR ITEM ROUTING WITHOUT CHANGING GENERAL CONSUMABLE BEHAVIOR
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a narrow category-routing cleanup after the USER-VERIFIED importer work through 024W. Do not redesign categories or consumable logic.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 3–6 minutes
+Estimated Agent usage/cost: about $0.50–$1.20
+
+ATTACH THESE TEST FILES
+1. 05_nested_subcategory_test.xlsx
+2. 06_messy_spreadsheet.csv
+3. 07_edge_cases.csv
+
+IMPORTANT USER-VERIFIED CURRENT STATE
+
+Preserve all verified behavior from:
+- 024O
+- 024P
+- 024R
+- 024U
+- 024W
+
+Do NOT redo those prompts.
+
+CURRENT USER-VERIFIED ROUTING PROBLEMS
+
+TrailWeigh currently routes some clearly medical/repair items into Consumables.
+
+Examples observed in live tests:
+
+TEST 05 / TEST 06
+- Leukotape -> Consumables
+
+TEST 07
+- Medication -> Consumables
+- Repair Tape -> Consumables
+
+The user already has meaningful TrailWeigh categories:
+- Med Kit
+- Repair Kit
+
+These clear medical/repair items should use those categories.
+
+PRIMARY GOAL
+
+During automatic CSV/XLSX import:
+
+1. Route clearly medical / first-aid items to:
+Med Kit
+
+2. Route clearly repair / maintenance items to:
+Repair Kit
+
+3. Do NOT disturb normal consumable routing for:
+- Fuel
+- Food
+- Water when intentionally treated as consumable
+- Toothpaste or other true expendables under existing rules
+
+4. Do NOT change worn routing.
+
+5. Do NOT change Name behavior.
+
+REQUIRED ROUTING
+
+At minimum:
+
+Medication -> Med Kit
+Leukotape -> Med Kit
+Repair Tape -> Repair Kit
+
+If the existing item classifier already recognizes obvious close equivalents, preserve those sensible mappings.
+
+Examples that may map to Med Kit if already confidently recognized:
+- Bandage
+- Gauze
+- First Aid
+- Blister treatment
+- Medical tape
+
+Examples that may map to Repair Kit if already confidently recognized:
+- Gear repair tape
+- Patch kit
+- Repair patch
+
+Do NOT broaden aggressively in this prompt.
+
+IMPORTANT CATEGORY PRECEDENCE
+
+A clearly medical or repair item should not be forced into Consumables merely because:
+- it is expendable;
+- it has a consumable-like note;
+- it can be used up.
+
+Semantic organization should win for these clear cases.
+
+For example:
+Leukotape is physically consumable, but its final category should be Med Kit.
+
+Repair Tape may be used up, but its final category should be Repair Kit.
+
+If the current architecture separately stores an item's consumable/expendable status, preserve that metadata where practical.
+Do NOT create a new visible column or new data model in this prompt.
+
+TEST 05 — REQUIRED
+
+Run:
+05_nested_subcategory_test.xlsx
+
+Required:
+- exactly 12 items found/imported;
+- Leukotape final category = Med Kit;
+- Sun Hat remains Clothing Worn;
+- Fuel remains Consumables;
+- Fuel Qty remains 2;
+- no item lost or duplicated;
+- 024W Name behavior remains intact.
+
+TEST 06 — REQUIRED
+
+Run:
+06_messy_spreadsheet.csv
+
+Required:
+- exactly 10 items found/imported;
+- Leukotape final category = Med Kit;
+- Backpack remains Backpack;
+- no Big Three;
+- no Bits;
+- Toothbrush remains Personal;
+- Fuel remains Consumables, Qty 2;
+- Socks Qty remains 2;
+- Sun Hat remains Clothing Worn with Name blank;
+- Tent remains 26 oz;
+- blank Toothpaste weight remains allowed;
+- no item lost or duplicated.
+
+TEST 07 — REQUIRED
+
+Run:
+07_edge_cases.csv
+
+Required:
+- exactly 9 items found/imported;
+- Medication final category = Med Kit;
+- Repair Tape final category = Repair Kit;
+- Fuel remains Consumables;
+- Dog Food existing behavior remains unchanged in this prompt;
+- Water Bottle Qty remains 2;
+- USB-C Cable Qty remains 2;
+- Dog Food Qty remains 4;
+- both Base Layer metric conversions remain correct;
+- no item lost or duplicated.
+
+DO NOT CHANGE THESE ITEMS IN 024X
+
+Leave existing behavior unchanged for:
+- Fuel
+- Toothpaste
+- Dog Food
+- Water
+- Food
+- ordinary clothing
+- ordinary electronics
+- worn clothing
+
+This prompt is NOT a general consumables redesign.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024X_REPORT.md
+
+Initially write:
+- Prompt: 024X
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify it physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — CONFIRM EXACT CAUSE
+
+Inspect only enough of the current CSV/XLSX routing logic to determine why:
+- Leukotape becomes Consumables;
+- Medication becomes Consumables;
+- Repair Tape becomes Consumables.
+
+Document the exact confirmed rule/order responsible.
+
+Do not broadly rediagnose the importer.
+
+PHASE 3 — MINIMUM SAFE REPAIR
+
+Make the smallest safe change that gives clear medical and repair classifications priority over generic consumable routing.
+
+Prefer:
+- existing category classifier structure;
+- centralized exact/word-aware item recognition;
+- minimal precedence adjustment.
+
+Do not:
+- add AI;
+- add a new classifier;
+- add a category database;
+- refactor unrelated routing.
+
+PHASE 4 — NEGATIVE REGRESSION CHECKS
+
+Verify that the fix does NOT cause unrelated tape/repair-like words to be misrouted.
+
+Examples:
+- Tape measure must not become Med Kit merely because it contains "tape".
+- Duct tape / gear repair tape should follow Repair Kit if confidently recognized, not Med Kit.
+- Fuel must remain Consumables.
+- Toothpaste must not become Med Kit merely because it is a personal-care item.
+
+Use exact/word-aware matching rather than naive substring rules.
+
+PHASE 5 — PRESERVE NAME SEMANTICS
+
+024W is USER-VERIFIED PASS.
+
+Preserve:
+- Zpacks Duplex -> Name
+- Nitecore NB10000 -> Name
+- Worn while hiking -> Name blank
+- generic specs/notes remain out of Name
+- visible NAME column
+- Description fallback behavior
+
+Do not modify Name logic in this prompt.
+
+PHASE 6 — PRESERVE WORN/CATEGORY NORMALIZATION
+
+Preserve:
+- Hiking Shirt -> Clothing Worn
+- Trail Runners -> Clothing Worn
+- Sun Hat -> Clothing Worn
+- Trail Backpack -> Backpack
+- Big Three/Bits weak-source-group cleanup
+- Toothbrush -> Personal
+
+PHASE 7 — REGRESSION PROTECTION
+
+Verify:
+- 024O quantity/header/weight behavior still works;
+- 024P worn routing still works;
+- 024R/024W Name behavior still works;
+- 024U Backpack routing still works;
+- 77-item CSV regression still returns 77 if fixture is available;
+- 77-item PDF regression still returns 77 if available without modifying PDF code.
+
+Do NOT modify PDF or DOCX parsing.
+
+OUT OF SCOPE
+
+Do NOT fix in 024X:
+- DOCX heading/category support;
+- PDF parsing;
+- Dog Food routing;
+- broader food/water/consumable policy;
+- warning text unless already correct;
+- gear catalog/search;
+- retailer integration;
+- AI;
+- Background;
+- toolbar;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- CSV/XLSX medical/repair category routing;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_024X_REPORT.md
+
+Include:
+- Prompt number: 024X
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause of the incorrect Consumables routing
+- exact correction made
+- Test 05 result
+- Leukotape final category
+- Test 06 result
+- Leukotape final category
+- Test 07 result
+- Medication final category
+- Repair Tape final category
+- confirmation Fuel remains Consumables
+- confirmation worn routing remains intact
+- confirmation Backpack routing remains intact
+- confirmation Name behavior remains intact
+- negative tape/repair matching checks
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF/DOCX code was not changed
+- confirmation no existing saved lists were migrated/renamed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-024X-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024X_REPORT.md
+
+Include useful 024X-specific automated test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 024X.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal tests do not count as final PASS.
+Final PASS remains pending until the user tests live TrailWeigh.

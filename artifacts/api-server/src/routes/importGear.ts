@@ -542,6 +542,39 @@ export const CONSUMABLES_SECTION_ALIASES = new Set([
   'used up items', 'used-up items', 'perishables', 'food and fuel',
 ]);
 
+/**
+ * 024X: Known medical / first-aid Types (normalized).
+ * These take priority over CONSUMABLES_TYPES so items like Leukotape and Medication
+ * reach "Med Kit" instead of "Consumables". Items are physically consumable but their
+ * semantic organization in TrailWeigh is Med Kit.
+ * Exact/word-aware matching — "tape measure" does NOT match any entry here.
+ */
+export const MED_KIT_TYPES = new Set([
+  'medication', 'prescription medication', 'pain reliever', 'ibuprofen',
+  'acetaminophen', 'aspirin', 'antihistamine', 'anti-diarrheal', 'antacid',
+  'allergy medication', 'antibiotic', 'hydrocortisone', 'antibiotic ointment',
+  'bandage', 'adhesive bandage', 'gauze', 'sterile pad', 'alcohol wipe',
+  'antiseptic wipe', 'medical tape', 'athletic tape', 'leukotape',
+  'kinesiology tape', 'kt tape', 'moleskin', 'blister pad', 'blister treatment',
+  'hydrocolloid bandage', 'disposable gloves', 'oral rehydration salts',
+  'first aid', 'first aid kit', 'med kit', 'blister kit',
+]);
+
+/**
+ * 024X: Known repair / maintenance Types (normalized).
+ * These take priority over CONSUMABLES_TYPES so items like Repair Tape and Patch Kit
+ * reach "Repair Kit" instead of "Consumables".
+ * "Duct tape" and "gear tape" follow Repair Kit as confidently recognized repair items.
+ * Exact/word-aware matching — "tape measure" does NOT match any entry here.
+ */
+export const REPAIR_KIT_TYPES = new Set([
+  'duct tape', 'gear tape', 'tenacious tape', 'dcf tape', 'repair tape',
+  'gear repair tape', 'patch kit', 'repair kit',
+  'patch', 'repair patch', 'sleeping-pad patch', 'tent patch', 'seam sealer',
+  'seam sealant', 'fabric glue', 'super glue', 'adhesive', 'epoxy',
+  'thread', 'zip tie', 'cable tie', 'rubber band', 'waterproofing treatment', 'shoe glue',
+]);
+
 /** Known consumable Types (normalized). Explicit source section takes priority. */
 export const CONSUMABLES_TYPES = new Set([
   // Food and drinks
@@ -575,19 +608,6 @@ export const CONSUMABLES_TYPES = new Set([
   'toilet paper', 'tissue', 'wet wipes', 'body wipes', 'cleaning wipes',
   'alcohol wipes', 'deodorant', 'shampoo', 'conditioner', 'contact solution',
   'menstrual products', 'tampons', 'pads', 'wag bag', 'waste bag', 'poop bag', 'pack-out bag',
-  // Medical and first aid
-  'medication', 'prescription medication', 'pain reliever', 'ibuprofen',
-  'acetaminophen', 'aspirin', 'antihistamine', 'anti-diarrheal', 'antacid',
-  'allergy medication', 'antibiotic', 'hydrocortisone', 'antibiotic ointment',
-  'bandage', 'adhesive bandage', 'gauze', 'sterile pad', 'alcohol wipe',
-  'antiseptic wipe', 'medical tape', 'athletic tape', 'leukotape',
-  'kinesiology tape', 'kt tape', 'moleskin', 'blister pad', 'blister treatment',
-  'hydrocolloid bandage', 'disposable gloves', 'oral rehydration salts',
-  // Repair supplies
-  'duct tape', 'gear tape', 'tenacious tape', 'dcf tape', 'repair tape',
-  'patch', 'repair patch', 'sleeping-pad patch', 'tent patch', 'seam sealer',
-  'seam sealant', 'fabric glue', 'super glue', 'adhesive', 'epoxy',
-  'thread', 'zip tie', 'cable tie', 'rubber band', 'waterproofing treatment', 'shoe glue',
   // Disposable storage and packaging
   'freezer bag', 'ziploc bag', 'zip-top bag', 'plastic bag', 'grocery bag',
   'trash bag', 'garbage bag', 'litter bag', 'disposable meal bag', 'disposable food bag',
@@ -633,6 +653,20 @@ export function applyGearClassification(item: ExtractedItem): ExtractedItem {
   /** True when source section differs from the canonical destination we're assigning. */
   const sectionConflict = (canonical: string) =>
     !!(item.destination && destN !== norm(canonical));
+
+  // Priority 0a: 024X — Med Kit Type wins over Consumables.
+  // Medical/first-aid items are physically consumable but belong in "Med Kit" by
+  // semantic organization. Exact set membership — "tape measure" does not match.
+  if (MED_KIT_TYPES.has(typeN)) {
+    return { ...item, destination: 'Med Kit', warning: item.warning };
+  }
+
+  // Priority 0b: 024X — Repair Kit Type wins over Consumables.
+  // Repair supplies are physically consumable but belong in "Repair Kit".
+  // Exact set membership — "tape measure" does not match.
+  if (REPAIR_KIT_TYPES.has(typeN)) {
+    return { ...item, destination: 'Repair Kit', warning: item.warning };
+  }
 
   // Priority 1: Consumable Type always wins (even over explicit Clothing Worn section).
   // No sectionConflict warning here: the type match is definitive (Fuel is always

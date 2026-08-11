@@ -105,3 +105,10 @@ uri = "file://workflow-reports/trailweigh-024W-report.zip"
 type = "unspecified"
 title = "Prompt 024W Report"
 description = "PROMPT_024W_REPORT.md — Conservative Description→Name fallback + all regression results"
+
+[[outputs]]
+id = "8s-uP1NqZwV3JnKF2_N10"
+uri = "file://workflow-reports/trailweigh-024X-report.zip"
+type = "unspecified"
+title = "Prompt 024X Report"
+description = "PROMPT_024X_REPORT.md — Medical/Repair routing fix + all regression results"
