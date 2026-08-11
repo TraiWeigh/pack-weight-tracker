@@ -1,0 +1,252 @@
+TRAILWEIGH — PROMPT 024U
+CANONICALIZE CLEAR BACKPACK ITEMS TO THE BACKPACK CATEGORY
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a tiny consistency follow-up after 024T. Do not redesign import routing.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 2–4 minutes
+Estimated Agent usage/cost: about $0.30–$0.80
+
+ATTACH THESE TEST FILES
+1. 01_lighterpack_style.csv
+2. 06_messy_spreadsheet.csv
+
+IMPORTANT CURRENT STATE
+- Prompt 024O = USER-VERIFIED PASS
+- Prompt 024P = USER-VERIFIED PASS
+- Prompt 024R = USER-VERIFIED PASS
+- Prompt 024S fixed vague source groups such as Big Three/Bits.
+- Prompt 024T changed the canonical destination for a recognized Backpack item from Pack -> Backpack.
+
+DO NOT REDO THOSE PROMPTS.
+
+CURRENT CONSISTENCY ISSUE
+The 024T report shows Test 01 still allows:
+
+Source category: Pack
+Type: Trail Backpack
+
+to remain under:
+Pack
+
+because "Trail Backpack" is not currently recognized by the backpack-type classifier strongly enough to override the source category.
+
+The user wants clearly recognizable backpack items to use the canonical TrailWeigh category:
+
+Backpack
+
+not:
+Pack
+
+PRIMARY GOAL
+During automatic CSV/XLSX import, when the item Type clearly identifies a backpack, use the final TrailWeigh category:
+
+Backpack
+
+even if the source category/group is:
+Pack
+
+This is an automatic-import normalization only.
+
+DO NOT:
+- rename manually created user categories;
+- migrate existing saved lists;
+- globally delete the word Pack;
+- change unrelated category behavior.
+
+BACKPACK RECOGNITION
+Use the smallest safe extension to the existing backpack-type recognition.
+
+At minimum, these clearly backpack-like item Types should resolve to Backpack:
+- Backpack
+- Trail Backpack
+- Hiking Backpack
+- Ultralight Backpack
+- Main Backpack
+
+If the existing classifier already safely recognizes equivalent obvious backpack labels such as "Rucksack", preserve that behavior.
+
+Do NOT over-broaden matching so unrelated phrases containing "pack" are treated as backpacks.
+
+Examples that must NOT be reclassified merely because they contain "pack":
+- Dog Pack
+- Fanny Pack
+- Hip Pack
+- Pack Towel
+- Battery Pack
+- Clothing Packed
+- Pack Liner, unless TrailWeigh already has a specific existing rule for it
+
+A safe word/phrase-level backpack match is required, not a naive substring rule.
+
+SOURCE CATEGORY RULE
+If the item itself is clearly a backpack:
+- Source Category = Pack -> final Backpack
+- Source Category = Big Three -> final Backpack
+- Source Category = Big Four -> final Backpack
+- Source Category = Backpack -> remains Backpack
+
+If the item is NOT clearly a backpack, do not force it into Backpack merely because the source category is Pack.
+
+TEST 01 REQUIRED
+Run:
+01_lighterpack_style.csv
+
+Required:
+- exactly 9 items found/imported;
+- Trail Backpack final category = Backpack;
+- source category Pack must not remain as the final category for Trail Backpack;
+- Smartwater Bottle Qty remains 2;
+- Fuel routing remains correct;
+- Hiking Shirt remains Clothing Worn;
+- Hiking Shirt Name remains blank when only worn/status text is available;
+- no items lost or duplicated.
+
+TEST 06 REQUIRED
+Run:
+06_messy_spreadsheet.csv
+
+Required:
+- exactly 10 items found/imported;
+- Backpack final category = Backpack;
+- Big Three remains absent;
+- Bits remains absent;
+- Toothbrush remains Personal;
+- Fuel remains Consumables, Qty 2;
+- Socks Qty remains 2;
+- Sun Hat remains Clothing Worn with Name blank;
+- no items lost or duplicated.
+
+NEGATIVE REGRESSION CHECKS
+Add or run small parser-level checks if practical:
+
+Dog Pack -> must NOT become Backpack solely because it contains "Pack".
+Battery Pack -> must NOT become Backpack.
+Hip Pack/Fanny Pack -> must NOT become Backpack unless TrailWeigh already intentionally classifies them that way.
+
+Do not invent new category behavior for those items in this prompt; just prove the backpack recognition is not a naive substring match.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024U_REPORT.md
+
+Initially write:
+- Prompt: 024U
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify it physically exists.
+If it cannot be created, STOP before changing application code.
+
+PHASE 2 — CONFIRM THE EXACT CAUSE
+Inspect only enough code to confirm why:
+Type = Trail Backpack
+Source Category = Pack
+
+currently remains Pack instead of resolving to Backpack.
+
+Document the exact classifier/mapping condition.
+
+PHASE 3 — MINIMUM CORRECTION
+Make the smallest safe change to backpack item recognition/canonical routing.
+
+Prefer:
+- one centralized classifier/helper adjustment;
+- exact/word-aware backpack matching;
+- existing category-routing architecture.
+
+Avoid:
+- substring hacks;
+- broad refactoring;
+- new category systems.
+
+PHASE 4 — REGRESSION PROTECTION
+Verify:
+- 024O quantity/header/weight behavior remains intact;
+- 024P worn routing remains intact;
+- 024R Name behavior remains intact;
+- 024S vague-group cleanup remains intact;
+- 024T Backpack canonical label remains intact;
+- 77-item CSV regression still returns 77 if fixture is available;
+- 77-item PDF regression still returns 77 if available without modifying PDF code.
+
+Do NOT modify PDF or DOCX parsing.
+
+OUT OF SCOPE
+Do NOT fix:
+- Scan Gear List "missing descriptions" wording;
+- Name/specification cleanup such as "10,000 mAh", "Main pack", etc.;
+- Leukotape/Medication/Repair Tape routing;
+- DOCX heading/category support;
+- PDF parsing;
+- catalog/search;
+- AI;
+- toolbar/layout;
+- Background;
+- Share;
+- Locker;
+- Save/Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+Changes should be limited to:
+- the existing CSV/XLSX backpack-recognition/routing logic;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated cleanup.
+
+REPORT REQUIREMENTS
+Update:
+
+workflow-reports/PROMPT_024U_REPORT.md
+
+Include:
+- Prompt number: 024U
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact confirmed cause
+- exact correction made
+- Test 01 result
+- Trail Backpack final category
+- Test 06 result
+- Backpack final category
+- negative Dog Pack/Battery Pack/Hip Pack checks if run
+- 024O/024P/024R/024S/024T regression confirmations
+- 77-item CSV regression result if available
+- 77-item PDF regression result if available
+- build/test result
+- confirmation PDF/DOCX code was not changed
+- confirmation no saved lists/categories were migrated or renamed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+Create:
+
+workflow-reports/trailweigh-024U-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_024U_REPORT.md
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+Complete ONLY Prompt 024U.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+Internal Replit tests do not count as final PASS.
+Final PASS remains pending until the user tests live TrailWeigh.

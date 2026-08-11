@@ -84,3 +84,10 @@ uri = "file://workflow-reports/trailweigh-024T-report.zip"
 type = "unspecified"
 title = "Prompt 024T Report"
 description = "PROMPT_024T_REPORT.md — Backpack canonical label fix + all regression results"
+
+[[outputs]]
+id = "KDJOnsvsQpgjtLV6-DpfN"
+uri = "file://workflow-reports/trailweigh-024U-report.zip"
+type = "unspecified"
+title = "Prompt 024U Report"
+description = "PROMPT_024U_REPORT.md — Trail Backpack → Backpack fix + all regression results"

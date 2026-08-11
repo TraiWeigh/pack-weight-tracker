@@ -484,12 +484,18 @@ export const WEAK_SOURCE_GROUPS = new Set([
   'stuff', 'odds & ends', 'odds and ends',
 ]);
 
-/** Pack / carry system — routes to "Pack". */
+/** Pack / carry system — routes to "Backpack". */
 export const PACK_TYPES = new Set([
-  'backpack', 'pack', 'rucksack', 'frameless pack', 'frameless backpack',
-  'ultralight pack', 'trail pack', 'hiking pack', 'overnight pack',
-  'day pack', 'daypack',
-  // Note: 'dog pack' / 'dog backpack' intentionally excluded — routes to "Dog Gear" via source category.
+  // Generic / compound backpack phrases (exact phrase match — NOT a substring rule)
+  'backpack', 'trail backpack', 'hiking backpack', 'ultralight backpack',
+  'main backpack', 'overnight backpack', 'frameless backpack',
+  // "Pack" as a standalone item type or with common backpack qualifiers
+  'pack', 'trail pack', 'hiking pack', 'ultralight pack',
+  'overnight pack', 'frameless pack', 'day pack', 'daypack',
+  // Classic synonyms
+  'rucksack',
+  // Note: 'dog pack' / 'dog backpack' / 'fanny pack' / 'hip pack' / 'battery pack' /
+  //       'pack towel' intentionally excluded — those use source category or separate routing.
 ]);
 
 /** Electronics / navigation — routes to "Electronics". */
