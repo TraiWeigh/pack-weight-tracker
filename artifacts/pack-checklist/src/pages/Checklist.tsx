@@ -2380,10 +2380,90 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
               </div>
             </div>
 
-            {/* Right toolbar panel — visually first in sidebar column via order-first at mobile ──
-                023B: justify-between on mobile so Background Edit anchors LEFT and Share anchors
-                RIGHT; lg:justify-end preserves the existing desktop right-alignment. */}
-            <div className="order-first lg:order-last relative flex items-center gap-2 pb-3 lg:pl-3 lg:pr-2 flex-shrink-0">
+          </div>{/* end toolbar group */}
+
+          {/* ── Content area ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+
+            {/* Scrollable categories */}
+            <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 space-y-1 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
+              {categoryOrder.map((category) => (
+                <GearCategory
+                  key={category}
+                  name={category}
+                  items={data[category] || []}
+                  meta={categoryMeta[category] ?? { countsToBase: true }}
+                  forceOpen={allOpen}
+                  forceOpenSeq={openCloseSeq}
+                  order={categoryOrder}
+                  updateItem={updateItem}
+                  removeItem={removeItem}
+                  moveItem={moveItem}
+                  addItem={addItem}
+                  onUpdateMeta={updates => updateCategoryMeta(category, updates)}
+                  onDelete={() => deleteCategory(category)}
+                  onRename={newName => renameCategory(category, newName)}
+                  isDragOver={overCat === category && dragCat !== category}
+                  onDragStart={() => setDragCat(category)}
+                  onDragEnd={() => { setDragCat(null); setOverCat(null); }}
+                  onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
+                  onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
+                    setDragCat(null);
+                    setOverCat(null);
+                  }}
+                />
+              ))}
+
+              {/* ── Add Category ── */}
+              <div className="mt-2">
+                {addingCat ? (
+                  <div className="flex items-center gap-2 p-3 bg-card border border-primary/40 rounded-lg shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
+                    <input
+                      ref={newCatInputRef}
+                      type="text"
+                      value={newCatName}
+                      onChange={e => setNewCatName(e.target.value)}
+                      onKeyDown={handleAddCatKeyDown}
+                      placeholder="Category name…"
+                      maxLength={40}
+                      className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                    />
+                    <button
+                      onClick={handleAddCategory}
+                      disabled={!newCatName.trim()}
+                      className="flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      Add
+                    </button>
+                    <button
+                      onClick={() => { setAddingCat(false); setNewCatName(''); }}
+                      className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={openAddCat}
+                    className="w-full flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 px-4 py-3 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Category
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Scrollable sidebar content */}
+            <div className="order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
+              {/* 024A: Sidebar controls moved inside the sidebar scrollable so they
+                   share the exact same content box as Pack Summary. This guarantees
+                   left/right edge alignment regardless of scrollbar-gutter. */}
+              <div className="relative flex items-center pb-3">
                 {/* 023W: Sidebar accordion Open/Close — controls Pack Summary, Weight Distribution,
                      Scan Gear List, and Locker only. Independent of the main category Open/Close. */}
                 <div
@@ -2616,91 +2696,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   )}
                 </div>
                 </div>{/* end BgEdit+Share group */}
-            </div>
+              </div>{/* end sidebar controls */}
 
-          </div>{/* end toolbar group */}
-
-          {/* ── Content area ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
-
-            {/* Scrollable categories */}
-            <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 space-y-1 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              {categoryOrder.map((category) => (
-                <GearCategory
-                  key={category}
-                  name={category}
-                  items={data[category] || []}
-                  meta={categoryMeta[category] ?? { countsToBase: true }}
-                  forceOpen={allOpen}
-                  forceOpenSeq={openCloseSeq}
-                  order={categoryOrder}
-                  updateItem={updateItem}
-                  removeItem={removeItem}
-                  moveItem={moveItem}
-                  addItem={addItem}
-                  onUpdateMeta={updates => updateCategoryMeta(category, updates)}
-                  onDelete={() => deleteCategory(category)}
-                  onRename={newName => renameCategory(category, newName)}
-                  isDragOver={overCat === category && dragCat !== category}
-                  onDragStart={() => setDragCat(category)}
-                  onDragEnd={() => { setDragCat(null); setOverCat(null); }}
-                  onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
-                  onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
-                  onDrop={e => {
-                    e.preventDefault();
-                    if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
-                    setDragCat(null);
-                    setOverCat(null);
-                  }}
-                />
-              ))}
-
-              {/* ── Add Category ── */}
-              <div className="mt-2">
-                {addingCat ? (
-                  <div className="flex items-center gap-2 p-3 bg-card border border-primary/40 rounded-lg shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
-                    <input
-                      ref={newCatInputRef}
-                      type="text"
-                      value={newCatName}
-                      onChange={e => setNewCatName(e.target.value)}
-                      onKeyDown={handleAddCatKeyDown}
-                      placeholder="Category name…"
-                      maxLength={40}
-                      className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-                    />
-                    <button
-                      onClick={handleAddCategory}
-                      disabled={!newCatName.trim()}
-                      className="flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 disabled:opacity-40 transition-colors"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      Add
-                    </button>
-                    <button
-                      onClick={() => { setAddingCat(false); setNewCatName(''); }}
-                      className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={openAddCat}
-                    className="w-full flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 px-4 py-3 rounded-lg transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Category
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Scrollable sidebar content */}
-            <div className="order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
-              {/* 023C: pt-3 lg:pt-0 adds a small top gap on mobile between the BG-edit/Share
-                   row and Pack Summary. Desktop sidebar has no top padding (lg:pt-0). */}
-              <div className="pt-3 lg:pt-0 flex flex-col gap-1.5 pb-8">
+              <div className="flex flex-col gap-1.5 pb-8">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}

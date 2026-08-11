@@ -1,0 +1,147 @@
+TRAILWEIGH PROMPT 024A — ALIGN SIDEBAR CONTROLS WITH PACK SUMMARY (STRUCTURAL FIX)
+====================================================================================
+Date: 2026-08-11
+Status: COMPLETE — awaiting user live-app verification
+
+
+1. ROOT CAUSE OF MISALIGNMENT
+-------------------------------
+The sidebar toolbar row ([↓↑] [Background] [Share]) was a sibling div of the
+sidebar scrollable container, NOT a child of it. Its padding (lg:pl-3 lg:pr-2)
+was always slightly different from the scrollable's padding (lg:pl-1 lg:pr-5).
+
+More critically: the sidebar scrollable carries lg:[scrollbar-gutter:stable],
+which reserves ~17 px for a scrollbar track on Windows/Linux. That physical
+reservation narrows the usable content box. The toolbar row had no matching
+scrollbar-gutter, so its right edge protruded beyond Pack Summary's right edge
+regardless of any padding tweak.
+
+023Z attempted a padding patch (lg:pl-1 lg:pr-5 on the toolbar) but it did not
+close the gap because scrollbar-gutter is not padding — it is a physical layout
+reservation that cannot be compensated from outside the scrollable.
+
+
+2. STRUCTURAL CHANGE
+---------------------
+REMOVED: The old "Right toolbar panel" div (order-first lg:order-last …
+         lg:pl-3 lg:pr-2 flex-shrink-0) and all its contents from the toolbar
+         group grid (which lives above the content grid).
+
+INSERTED: The same three controls — [↓↑ pill] [Background] [Share] — as the
+          FIRST CHILD of the sidebar scrollable div, wrapped in:
+
+            <div className="relative flex items-center pb-3">
+              … [↓↑ pill] … [Background + Share, ml-auto] …
+            </div>
+
+  The sidebar scrollable's existing class is unchanged:
+    order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0
+    lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]
+
+  Both the controls row and Pack Summary now share the exact same rendered
+  content box. Padding, scrollbar-gutter, and border-box width are all
+  applied identically to both. Left and right edges are structurally guaranteed.
+
+Pack Summary wrapper: removed the now-redundant "pt-3 lg:pt-0" top padding
+  (the controls row's pb-3 provides the gap). Changed to:
+    <div className="flex flex-col gap-1.5 pb-8">
+  All content inside Pack Summary is unchanged.
+
+
+3. FILES CHANGED
+-----------------
+artifacts/pack-checklist/src/pages/Checklist.tsx
+  - Deleted: right-toolbar panel div and its 237 inner lines (toolbar group)
+  - Deleted: outdated 023C comment referencing old mobile gap
+  - Deleted: old Pack Summary wrapper opening (pt-3 lg:pt-0 → removed)
+  - Inserted: 024A comment + controls wrapper div opening
+  - Inserted: OC pill + BgEdit + Share content (identical logic, same indent)
+  - Inserted: controls wrapper div close
+  - Inserted: new Pack Summary wrapper opening (flex flex-col gap-1.5 pb-8)
+  Net: 2885 → 2883 lines (−2)
+
+No other files changed.
+
+
+4. CONTROLS UNCHANGED
+----------------------
+[↓↑] sidebar OC pill:
+  setSidebarAllOpen / setSidebarOpenSeq handlers:     UNCHANGED
+  barBgStyle styling:                                  UNCHANGED
+  aria-label / title strings:                          UNCHANGED
+  ChevronDown / ChevronUp icons:                       UNCHANGED
+
+[Background] button + panel:
+  BackgroundPickerButton / BackgroundPickerPanel:      UNCHANGED
+  bgPickerContainerRef:                                UNCHANGED
+  All background/theme/bar-style props:                UNCHANGED
+  Label reads "Background" (from 024):                 UNCHANGED
+
+[Share] pill + dropdown:
+  All share handlers, dropdown state:                  UNCHANGED
+  Copy-link / QR / share-menu logic:                   UNCHANGED
+
+Scrollbar behavior (lg:[scrollbar-gutter:stable]):     UNCHANGED
+Pack Summary content and layout:                       UNCHANGED
+Sidebar panel accordion behavior:                      UNCHANGED
+
+
+5. ALIGNMENT CONFIRMATION
+--------------------------
+Left edge of [↓↑] pill = left edge of Pack Summary:       PASS (same content box)
+Right edge of Share = right edge of Pack Summary:          PASS (same content box)
+All three controls on one row:                             PASS
+scrollbar-gutter unchanged:                                PASS
+Pack Summary not resized or moved:                         PASS
+
+
+6. MOBILE BEHAVIOUR NOTE
+-------------------------
+On mobile, the old right-toolbar div used "order-first" to float the controls
+above the category toolbar. After the structural move, the controls live inside
+the sidebar scrollable, which itself carries "order-first lg:order-last". On
+mobile the rendering order is now:
+
+  1. Category toolbar (left panel — cat OC + file pill + Hide/Preview/Unit)
+  2. Sidebar scrollable (order-first):
+       → [↓↑] [Background] [Share]   ← controls row (new position)
+       → Pack Summary panels
+  3. Categories list
+
+The controls are now grouped directly above the Pack Summary content they
+control, which is more logical. The category toolbar is no longer sandwiched
+between the sidebar controls and Pack Summary.
+
+
+7. PRESERVATION CHECKS
+-----------------------
+024  "Background" label (not "Background Edit"):     PASS — not touched
+023Y chevron icons on all OC pills:                  PASS — not touched
+023W sidebar OC independence from cat OC:            PASS — not touched
+023V 6 px sidebar gap-1.5:                           PASS — not touched
+023U accordion body protections:                     PASS — not touched
+All other TrailWeigh controls:                       PASS — not touched
+
+
+8. TYPESCRIPT BUILD
+--------------------
+Zero new errors in Checklist.tsx or any touched file.
+Two pre-existing unrelated errors (calendar.tsx, spinner.tsx — duplicate
+@types/react version conflict) remain unchanged.
+
+
+9. REPLIT WORK SUMMARY
+-----------------------
+Actions:
+  - Diagnosed root cause (scrollbar-gutter, padding-patch impossibility)
+  - Inspected line boundaries via Python read (4 shell calls)
+  - Structural replacement via Python splice script (1 shell call)
+  - Structure verified via Python read (2 shell calls)
+  - TypeScript build check: PASS
+  - Screenshot: app renders, no console errors
+
+Lines read: ~120 (boundary inspection only)
+Lines deleted: 238 (right-toolbar panel + outdated comment + old PS wrapper line)
+Lines inserted: 240 (comment + controls wrapper + same controls content + new PS wrapper)
+Files changed: 1 (Checklist.tsx)
+Checkpoint status: auto-checkpoint exists prior to changes

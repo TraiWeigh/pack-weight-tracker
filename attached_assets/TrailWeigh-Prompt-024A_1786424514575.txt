@@ -1,0 +1,179 @@
+TRAILWEIGH — PROMPT 024A
+Exact Sidebar Toolbar Edge Alignment
+
+GOAL
+Fix ONLY the horizontal alignment of the three right-side controls above Pack Summary.
+
+CONTROLS IN THIS GROUP
+1. Sidebar Open / Close joined arrow control
+2. Background
+3. Share
+
+CURRENT PROBLEM
+The live TrailWeigh view shows that:
+- The LEFT edge of the sidebar arrow control is too far to the RIGHT of the Pack Summary left edge.
+- The RIGHT edge of Share extends too far to the RIGHT of the Pack Summary right edge.
+
+This means neither outer edge of the visible control group is aligned with Pack Summary.
+
+REQUIRED RESULT
+The full visible control group must span EXACTLY the same horizontal width as the Pack Summary panel below it.
+
+Use this exact relationship:
+
+PACK SUMMARY LEFT EDGE
+↓
+[ joined sidebar arrows ]    [ Background ]    [ Share ]
+↑                                                     ↑
+EXACT SAME LEFT EDGE                         EXACT SAME RIGHT EDGE
+[                     PACK SUMMARY                     ]
+
+MECHANICAL ALIGNMENT REQUIREMENT
+Create or adjust ONE parent row/container for these three controls so that:
+
+1. The parent row/container starts at the EXACT same horizontal x-position as Pack Summary.
+2. The parent row/container has the EXACT same width as Pack Summary.
+3. The joined sidebar arrow control is anchored to the LEFT edge of that container.
+4. Share is anchored to the RIGHT edge of that container.
+5. Background remains between them.
+6. Do not use left/right margins or padding on the parent row that visually shift the outer controls inward or outward relative to Pack Summary.
+7. Do not align based on the sidebar column generally; align specifically to the actual Pack Summary panel edges.
+8. Do not rely on approximate visual centering.
+
+IMPORTANT
+Measure/alignment must be based on the ACTUAL rendered Pack Summary width and position.
+
+If Pack Summary uses an existing sidebar width/container variable or shared CSS width, reuse that same width/position source for the control row if practical.
+
+DO NOT move or resize Pack Summary to match the controls.
+The controls must match Pack Summary.
+
+CONTROL SPACING
+- Keep all three controls on one horizontal row on desktop.
+- Use the available space BETWEEN the three controls.
+- The outermost controls must remain anchored to the exact outer edges.
+- Background may remain its current width.
+- Share may remain its current width.
+- The joined arrow control may remain its current width.
+- Do not stretch the controls themselves merely to fill space unless necessary.
+- Prefer flex layout with:
+  - left control anchored left
+  - middle control centered/in the available middle space
+  - right control anchored right
+
+PRESERVE CURRENT LABEL
+Keep the visible label:
+Background
+
+Do NOT change it back to “Background Edit”.
+
+PRESERVE CURRENT ARROW CONTROL
+Keep the current joined two-segment sidebar arrow control exactly as it is:
+- Down chevron = Open all sidebar panels
+- Up chevron = Close all sidebar panels
+- No visible gap between the two segments
+- Same current styling and behavior
+
+BEHAVIOR — DO NOT CHANGE
+Do not alter any functionality.
+
+Preserve:
+- Sidebar Open all behavior
+- Sidebar Close all behavior
+- Independence from the main category Open / Close group
+- Individual sidebar accordion behavior
+- Background panel behavior
+- Share behavior
+
+PRESERVE EXISTING WORK
+Do not alter unrelated layout, styling, or behavior.
+
+Specifically preserve:
+- Prompt 024 visible label “Background”
+- Prompt 023Y joined arrow control appearance
+- Prompt 023W sidebar Open / Close functionality
+- Prompt 023V exact 6 px outer vertical gap between:
+  - Pack Summary
+  - Weight Distribution
+  - Scan Gear List
+  - Locker
+- Prompt 023U accordion body protections
+- Pack Summary width, position, padding, styling, and collapse behavior
+- Weight Distribution, Scan Gear List, and Locker positions
+- Main category layout
+- Main category arrow control
+- Hide, Preview, Imperial/Metric
+- Save, Undo/Redo, Reset
+- Scan Gear List
+- Locker
+- Share
+- All current TrailWeigh data and calculations
+
+DO NOT
+- Do not move Pack Summary.
+- Do not resize Pack Summary.
+- Do not move the sidebar panels.
+- Do not move this control group to another row.
+- Do not stack controls on desktop.
+- Do not change the Background label.
+- Do not change arrow behavior.
+- Do not redesign the toolbar.
+- Do not refactor unrelated code.
+- Do not make unrelated CSS cleanup.
+
+DESKTOP TEST — REQUIRED
+In the actual rendered TrailWeigh view:
+
+1. Visually compare the LEFT edge of the joined sidebar arrow control to the LEFT edge of Pack Summary.
+   - They must be exactly inline.
+
+2. Visually compare the RIGHT edge of Share to the RIGHT edge of Pack Summary.
+   - They must be exactly inline.
+
+3. Confirm Background remains between the two controls.
+
+4. Confirm all three controls are on one row.
+
+5. Confirm there is no overflow beyond either Pack Summary edge.
+
+6. Confirm there is no extra inset on either side.
+
+MOBILE / RESPONSIVE
+- Preserve current mobile behavior.
+- Do not reduce touch-target size just to satisfy desktop alignment.
+- If the mobile layout already wraps or changes naturally, preserve its usability.
+- The exact desktop edge-alignment requirement must not be weakened to solve a narrow-screen case.
+
+BEHAVIOR TESTS
+Verify:
+- Down arrow opens all sidebar panels.
+- Up arrow closes all sidebar panels.
+- Main category arrow control remains independent.
+- Background opens the same existing panel.
+- Share still works.
+- Individual sidebar panels still open/close normally.
+
+WORKFLOW REPORT REQUIREMENTS
+When finished, create:
+- workflow-reports/trailweigh-024A-report.txt
+- workflow-reports/trailweigh-024A-report.zip
+
+The report must clearly state:
+- What file(s) were changed.
+- The exact CSS/layout method used.
+- How the control row now shares the same left position and width as Pack Summary.
+- Confirmation that the actual visible left edge of the arrow group aligns with Pack Summary.
+- Confirmation that the actual visible right edge of Share aligns with Pack Summary.
+- Confirmation that Pack Summary itself was not moved or resized.
+- Confirmation that “Background” remains the visible label.
+- Confirmation that functionality was not changed.
+- Confirmation that the 6 px sidebar spacing remains unchanged.
+- Desktop and mobile test results.
+- Replit work summary:
+  - time worked
+  - actions
+  - lines/items read
+  - Agent usage/cost
+  - checkpoint status
+
+Keep this prompt STRICTLY focused on exact left/right edge alignment of the right-side control group with Pack Summary.
