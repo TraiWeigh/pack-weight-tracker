@@ -1,0 +1,367 @@
+TRAILWEIGH — PROMPT 025F
+SIDEBAR GROUP: SINGLE-OPEN ACCORDION + EXPAND ALL / COLLAPSE ALL
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused sidebar interaction change. Do not redesign the sidebar or change panel content.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 3–6 minutes
+Estimated Agent usage/cost: about $0.50–$1.00
+
+USER-VERIFIED CURRENT STATE
+
+Preserve all verified behavior through Prompt 025E.
+
+PRIMARY GOAL
+
+Apply accordion-style behavior to the ENTIRE sidebar panel group.
+
+NORMAL INDIVIDUAL PANEL BEHAVIOR
+
+By default:
+
+- Opening one sidebar panel automatically closes all other sidebar panels.
+- Only one sidebar panel should remain open at a time during normal individual panel use.
+- The user may close the currently open panel, leaving all sidebar panels closed.
+- Do NOT force one panel to remain open.
+
+Examples:
+
+If Pack Summary is open and the user opens Weight Distribution:
+- Weight Distribution opens.
+- Pack Summary closes.
+- all other sidebar panels remain closed.
+
+If Scan Gear List is open and the user opens Pack Summary:
+- Pack Summary opens.
+- Scan Gear List closes.
+- all other sidebar panels remain closed.
+
+This behavior must apply to the whole sidebar panel group, not only two named panels.
+
+EXPAND ALL CONTROL
+
+Preserve the existing group Expand All arrow/control.
+
+When the user clicks Expand All:
+
+- open EVERY sidebar panel in the group at once;
+- do not close panels because of the normal single-open rule;
+- this action intentionally overrides normal accordion behavior.
+
+The user should be able to see all sidebar panels expanded after one click.
+
+COLLAPSE ALL CONTROL
+
+Preserve the existing group Collapse All arrow/control.
+
+When the user clicks Collapse All:
+
+- close EVERY sidebar panel in the group.
+
+This must work regardless of current state:
+
+- if all panels are open -> close all;
+- if several panels are open -> close all;
+- if only one panel is open -> close that one;
+- if all panels are already closed -> remain closed.
+
+IMPORTANT:
+Collapse All always means "close every sidebar panel."
+
+AFTER EXPAND ALL
+
+After Expand All opens every panel:
+
+If the user then clicks an individual sidebar panel header:
+
+- return to normal single-open accordion behavior for that interaction.
+
+Required behavior:
+- if the clicked panel is currently open and the user is closing it, close that panel normally;
+- if the user opens/selects an individual panel after the all-open state, the clicked/opened panel should become the only open panel and the others should close.
+
+Do not keep the sidebar permanently in a special "all open" mode after the user resumes individual interaction.
+
+PANEL SCOPE
+
+Use the actual current sidebar panel group shown in TrailWeigh.
+
+This includes all collapsible panels controlled by the sidebar group expand/collapse controls, such as current panels like:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker / Shared Files or other current sidebar panels if they are part of the same sidebar group
+
+Do NOT hard-code only the examples above.
+
+Determine the actual current sidebar group from the existing code and apply the behavior consistently to that group.
+
+VISUAL REQUIREMENTS
+
+Do NOT redesign the sidebar.
+
+Preserve:
+- current panel headers;
+- current panel order;
+- current disclosure chevrons/arrows;
+- current animations;
+- current colors;
+- current spacing;
+- current contents;
+- current panel widths;
+- existing group Expand All / Collapse All controls.
+
+This prompt changes interaction/state behavior only.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025F_REPORT.md
+
+Initially write:
+- Prompt: 025F
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — INSPECT CURRENT SIDEBAR STATE MANAGEMENT
+
+Inspect only the sidebar panel state logic needed for this task.
+
+Document:
+
+1. Which component owns sidebar panel open/closed state.
+2. Which sidebar panels belong to the existing group.
+3. How individual panel toggles currently work.
+4. How the group Expand All control currently works.
+5. How the group Collapse All control currently works.
+6. Whether each panel currently owns independent state or whether state is centralized.
+
+Do not broadly inspect unrelated UI.
+
+PHASE 3 — MINIMUM SAFE IMPLEMENTATION
+
+Use the smallest safe state change.
+
+Preferred approach:
+- keep one centralized sidebar panel state if one already exists;
+- when an individual panel is opened, set all other sidebar panels closed;
+- allow the current panel to be closed so zero panels can be open;
+- Expand All explicitly sets all sidebar panels open;
+- Collapse All explicitly sets all sidebar panels closed.
+
+Do NOT:
+- create duplicate sidebar state systems;
+- add a new dependency;
+- redesign panel components;
+- change panel content;
+- change unrelated accordions elsewhere in TrailWeigh.
+
+IMPORTANT:
+This behavior is for the SIDEBAR PANEL GROUP only.
+
+Do not accidentally change category accordions, Help accordions, theme panels, or other collapsible controls elsewhere in the application.
+
+PHASE 4 — REQUIRED INTERACTION TESTS
+
+Test the live/current app with the actual sidebar panel group.
+
+TEST A — SINGLE OPEN
+
+Start with all panels closed.
+
+Open Pack Summary.
+
+Required:
+- Pack Summary open;
+- all other sidebar panels closed.
+
+Open Weight Distribution.
+
+Required:
+- Weight Distribution open;
+- Pack Summary closed;
+- all other sidebar panels closed.
+
+Open Scan Gear List.
+
+Required:
+- Scan Gear List open;
+- Weight Distribution closed;
+- all other sidebar panels closed.
+
+Repeat with any other sidebar panel that belongs to the group.
+
+Required:
+- newly opened panel becomes the only open panel.
+
+TEST B — ZERO OPEN IS ALLOWED
+
+Open one sidebar panel.
+
+Click its header to close it.
+
+Required:
+- that panel closes;
+- all sidebar panels can now be closed.
+
+Do not automatically open another panel.
+
+TEST C — EXPAND ALL
+
+Click the group Expand All control.
+
+Required:
+- every sidebar panel in the group opens;
+- all remain open simultaneously.
+
+TEST D — COLLAPSE ALL FROM ALL-OPEN STATE
+
+After Expand All:
+
+Click Collapse All.
+
+Required:
+- every sidebar panel closes.
+
+TEST E — COLLAPSE ALL WHEN ONLY ONE IS OPEN
+
+Open exactly one sidebar panel.
+
+Click Collapse All.
+
+Required:
+- that one panel closes;
+- all panels are closed.
+
+This exact behavior is user-required.
+
+TEST F — RETURN TO NORMAL AFTER EXPAND ALL
+
+Click Expand All.
+
+Confirm all panels are open.
+
+Then interact with one individual panel.
+
+Required:
+- the sidebar returns to normal individual accordion behavior;
+- opening/selecting an individual panel results in that panel being the only open panel;
+- if the user simply closes the clicked open panel, that close action should behave normally.
+
+Do not leave stale "Expand All" state that prevents normal accordion behavior.
+
+PHASE 5 — REGRESSION PROTECTION
+
+Verify this change does NOT affect:
+
+- category accordion sections in the main list;
+- Pack Summary content;
+- Weight Distribution content;
+- Scan Gear List functionality;
+- Locker / Shared Files functionality;
+- sidebar panel ordering;
+- sidebar width;
+- sidebar scrolling;
+- mobile/desktop sidebar layout;
+- importer behavior;
+- Type/Name headings from 025E;
+- toolbar controls;
+- Background;
+- Share;
+- Save / Save As;
+- themes;
+- footer;
+- authentication.
+
+OUT OF SCOPE
+
+Do NOT:
+- redesign the sidebar;
+- add new buttons;
+- rename panel headings;
+- change panel content;
+- change category accordions;
+- change mobile layout unless this interaction breaks it;
+- change importer/parser code;
+- modify Pack Summary calculations;
+- modify Weight Distribution calculations.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- sidebar panel state/toggle logic;
+- directly necessary sidebar tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025F_REPORT.md
+
+Include:
+- Prompt number: 025F
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact component/state owner for sidebar panel open/closed state
+- exact list of sidebar panels included in the group
+- prior individual-panel behavior
+- exact new single-open behavior
+- confirmation zero-open state is allowed
+- confirmation Expand All opens every sidebar panel
+- confirmation Collapse All closes every sidebar panel
+- confirmation Collapse All works when only one panel is open
+- confirmation individual interaction after Expand All returns to normal accordion behavior
+- confirmation non-sidebar accordions were not changed
+- confirmation panel content/layout was not changed
+- build/test result
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025F-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025F_REPORT.md
+
+Include useful 025F-specific test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025F.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user verifies live:
+
+1. opening one sidebar panel closes the others;
+2. one open panel can be closed so all are closed;
+3. Expand All opens every sidebar panel;
+4. Collapse All closes every sidebar panel;
+5. Collapse All also closes the sidebar when only one panel is open;
+6. normal single-open behavior resumes after individual interaction following Expand All.

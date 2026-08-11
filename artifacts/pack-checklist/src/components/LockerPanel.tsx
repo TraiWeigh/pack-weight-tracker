@@ -51,6 +51,8 @@ interface LockerPanelProps {
   /** 023W: Sidebar Open/Close — when forceOpenSeq increments, panel open/close is set to forceOpen. */
   forceOpen?: boolean | null;
   forceOpenSeq?: number;
+  /** 025F: Accordion callback — called after the panel header toggles internal open state. */
+  onToggle?: (nowOpen: boolean) => void;
 }
 
 function formatDate(ts: number) {
@@ -58,7 +60,7 @@ function formatDate(ts: number) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncProps, forceOpen, forceOpenSeq }: LockerPanelProps) {
+export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncProps, forceOpen, forceOpenSeq, onToggle }: LockerPanelProps) {
   const [open, setOpen] = useState(true);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
@@ -106,7 +108,7 @@ export function LockerPanel({ entries, onLoad, onRequestDelete, onRename, syncPr
     <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden" style={{ ...barCardStyle(barStyle), ...barFontStyle(barStyle) }}>
       {/* Header */}
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={() => { const next = !open; setOpen(next); onToggle?.(next); }}
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
         style={barCombinedStyle(barStyle)}
       >

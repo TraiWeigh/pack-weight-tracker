@@ -54,6 +54,8 @@ interface WeightBaseProps {
   /** 023W: Sidebar Open/Close — when forceOpenSeq increments, panel open/close is set to forceOpen. */
   forceOpen?: boolean | null;
   forceOpenSeq?: number;
+  /** 025F: Accordion callback — called after the panel header toggles internal open state. */
+  onToggle?: (nowOpen: boolean) => void;
 }
 
 // ── Shared weight calculation ─────────────────────────────────────────────────
@@ -81,7 +83,7 @@ function calcWeights(data: PackState, categoryOrder: string[], categoryMeta: Rec
 // ── Pack Summary ──────────────────────────────────────────────────────────────
 
 /** Pack Summary card — collapsible, independent of Weight Distribution. */
-export function WeightSummary({ data, categoryOrder, categoryMeta, forceOpen, forceOpenSeq }: WeightBaseProps) {
+export function WeightSummary({ data, categoryOrder, categoryMeta, forceOpen, forceOpenSeq, onToggle }: WeightBaseProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
   // 022G: start collapsed — Pack Summary is closed on every fresh open/refresh
@@ -102,7 +104,7 @@ export function WeightSummary({ data, categoryOrder, categoryMeta, forceOpen, fo
     <div className="bg-card border border-card-border rounded-xl shadow-sm" style={{ ...barCardStyle(barStyle), ...barFontStyle(barStyle) }}>
       {/* Collapsible header — same chevron pattern as Weight Distribution */}
       <button
-        onClick={() => setSummaryOpen(o => !o)}
+        onClick={() => { const next = !summaryOpen; setSummaryOpen(next); onToggle?.(next); }}
         className="w-full flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-muted/30 transition-colors rounded-xl"
         style={barCombinedStyle(barStyle)}
         aria-expanded={summaryOpen}
@@ -176,6 +178,7 @@ export function WeightDistribution({
   onPaletteChange,
   forceOpen,
   forceOpenSeq,
+  onToggle,
 }: WeightDistributionProps) {
   const { system } = useUnit();
   const lu = largeUnit(system);
@@ -232,7 +235,7 @@ export function WeightDistribution({
           uniform bar background without any gap or split. */}
       <div className="flex items-center" style={barCombinedStyle(barStyle)}>
         <button
-          onClick={() => setChartOpen(o => !o)}
+          onClick={() => { const next = !chartOpen; setChartOpen(next); onToggle?.(next); }}
           className="flex-1 flex items-center gap-2 px-4 sm:px-5 py-3 text-left hover:bg-black/10 transition-colors"
           aria-expanded={chartOpen}
           aria-label={chartOpen ? 'Collapse Weight Distribution' : 'Expand Weight Distribution'}

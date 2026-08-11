@@ -52,6 +52,8 @@ interface ImportGearPanelProps {
   /** 023W: Sidebar Open/Close — when forceOpenSeq increments, panel open/close is set to forceOpen. */
   forceOpen?: boolean | null;
   forceOpenSeq?: number;
+  /** 025F: Accordion callback — called after the panel header toggles internal open state. */
+  onToggle?: (nowOpen: boolean) => void;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -110,7 +112,7 @@ function blankEditedItem(categoryOrder: string[]): EditedItem {
 
 type Phase = 'idle' | 'parsing' | 'review' | 'error';
 
-export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, forceOpen, forceOpenSeq }: ImportGearPanelProps) {
+export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, forceOpen, forceOpenSeq, onToggle }: ImportGearPanelProps) {
   const [open, setOpen]   = useState(defaultOpen);
   const barStyle = useBarStyle();
 
@@ -292,7 +294,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
 
       {/* ── Panel header ── */}
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={() => { const next = !open; setOpen(next); onToggle?.(next); }}
         aria-expanded={open}
         className="w-full flex items-center gap-2 p-4 sm:p-5 border-b border-border bg-muted/20 text-left hover:bg-muted/30 transition-colors"
         style={barCombinedStyle(barStyle)}

@@ -915,9 +915,37 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // normally after startup.
   const [allOpen, setAllOpen] = useState(false);
   const [openCloseSeq, setOpenCloseSeq] = useState(0);
-  // 023W: Sidebar accordion group Open/Close — independent of category allOpen/openCloseSeq
-  const [sidebarAllOpen, setSidebarAllOpen] = useState<boolean | null>(null);
-  const [sidebarOpenSeq, setSidebarOpenSeq] = useState(0);
+  // 025F: Per-panel sidebar state for single-open accordion behavior.
+  // Each panel gets its own { open, seq } pair so Expand All / Collapse All and
+  // individual accordion toggles can be applied independently.
+  type SidebarPanelKey = 'summary' | 'distribution' | 'import' | 'locker';
+  const [sidebarForce, setSidebarForce] = useState<Record<SidebarPanelKey, { open: boolean; seq: number }>>({
+    summary:      { open: false, seq: 0 },
+    distribution: { open: false, seq: 0 },
+    import:       { open: false, seq: 0 },
+    locker:       { open: false, seq: 0 },
+  });
+  const SIDEBAR_KEYS: SidebarPanelKey[] = ['summary', 'distribution', 'import', 'locker'];
+  // Derived active states for Expand All / Collapse All button highlights
+  const sidebarExpandActive   = SIDEBAR_KEYS.every(k => sidebarForce[k].open);
+  const sidebarCollapseActive = SIDEBAR_KEYS.every(k => !sidebarForce[k].open);
+  /** 025F: Accordion — open one sidebar panel, automatically close all others. */
+  const handleSidebarPanelToggle = useCallback((id: SidebarPanelKey, nowOpen: boolean) => {
+    setSidebarForce(prev => {
+      const next = { ...prev };
+      if (nowOpen) {
+        // Close all other panels so only the newly opened one remains
+        for (const k of ['summary', 'distribution', 'import', 'locker'] as SidebarPanelKey[]) {
+          if (k !== id) next[k] = { open: false, seq: prev[k].seq + 1 };
+        }
+        next[id] = { open: true, seq: prev[id].seq };
+      } else {
+        // Panel closed itself — just sync Checklist state (siblings already closed in accordion mode)
+        next[id] = { open: false, seq: prev[id].seq };
+      }
+      return next;
+    });
+  }, []);
 
   // ── Input-focus tracking (used to block inactivity showcase timer) ────────
   useEffect(() => {
@@ -2395,16 +2423,21 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
                 >
                   <button
-                    onClick={() => { setSidebarAllOpen(true); setSidebarOpenSeq(s => s + 1); }}
+                    onClick={() => setSidebarForce(prev => ({
+                      summary:      { open: true, seq: prev.summary.seq + 1 },
+                      distribution: { open: true, seq: prev.distribution.seq + 1 },
+                      import:       { open: true, seq: prev.import.seq + 1 },
+                      locker:       { open: true, seq: prev.locker.seq + 1 },
+                    }))}
                     aria-label="Open all sidebar panels"
                     title="Open all sidebar panels"
                     className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                      sidebarAllOpen === true && !barColor
+                      sidebarExpandActive && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                     }`}
                     style={barColor
-                      ? sidebarAllOpen === true
+                      ? sidebarExpandActive
                         ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
@@ -2412,16 +2445,21 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     <ChevronDown className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => { setSidebarAllOpen(false); setSidebarOpenSeq(s => s + 1); }}
+                    onClick={() => setSidebarForce(prev => ({
+                      summary:      { open: false, seq: prev.summary.seq + 1 },
+                      distribution: { open: false, seq: prev.distribution.seq + 1 },
+                      import:       { open: false, seq: prev.import.seq + 1 },
+                      locker:       { open: false, seq: prev.locker.seq + 1 },
+                    }))}
                     aria-label="Close all sidebar panels"
                     title="Close all sidebar panels"
                     className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                      sidebarAllOpen === false && !barColor
+                      sidebarCollapseActive && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                     }`}
                     style={barColor
-                      ? sidebarAllOpen === false
+                      ? sidebarCollapseActive
                         ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
@@ -2707,8 +2745,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   data={data}
                   categoryOrder={categoryOrder}
                   categoryMeta={categoryMeta}
-                  forceOpen={sidebarAllOpen}
-                  forceOpenSeq={sidebarOpenSeq}
+                  forceOpen={sidebarForce.summary.open}
+                  forceOpenSeq={sidebarForce.summary.seq}
+                  onToggle={nowOpen => handleSidebarPanelToggle('summary', nowOpen)}
                 />
                 <WeightDistribution
                   data={data}
@@ -2716,13 +2755,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   categoryMeta={categoryMeta}
                   paletteKey={chartPaletteKey}
                   onPaletteChange={handlePaletteChange}
-                  forceOpen={sidebarAllOpen}
-                  forceOpenSeq={sidebarOpenSeq}
+                  forceOpen={sidebarForce.distribution.open}
+                  forceOpenSeq={sidebarForce.distribution.seq}
+                  onToggle={nowOpen => handleSidebarPanelToggle('distribution', nowOpen)}
                 />
                 <ImportGearPanel
                   categoryOrder={categoryOrder}
-                  forceOpen={sidebarAllOpen}
-                  forceOpenSeq={sidebarOpenSeq}
+                  forceOpen={sidebarForce.import.open}
+                  forceOpenSeq={sidebarForce.import.seq}
+                  onToggle={nowOpen => handleSidebarPanelToggle('import', nowOpen)}
                   onAddItem={(category, prefill) => {
                     // Re-resolve against the live order so alias variants
                     // (e.g. 'Shelter' → 'Shelter System') are honoured and
@@ -2739,8 +2780,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   onLoad={handleLoadFromLocker}
                   onRequestDelete={requestProtectedDelete}
                   onRename={handleRenameInLocker}
-                  forceOpen={sidebarAllOpen}
-                  forceOpenSeq={sidebarOpenSeq}
+                  forceOpen={sidebarForce.locker.open}
+                  forceOpenSeq={sidebarForce.locker.seq}
+                  onToggle={nowOpen => handleSidebarPanelToggle('locker', nowOpen)}
                   syncProps={userId ? {
                     userId,
                     syncStatus: syncState.status,

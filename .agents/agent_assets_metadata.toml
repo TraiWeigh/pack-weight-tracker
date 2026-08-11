@@ -161,3 +161,10 @@ uri = "file://workflow-reports/trailweigh-025E-report.zip"
 type = "unspecified"
 title = "Prompt 025E Report"
 description = "PROMPT_025E_REPORT.md — TYPE and NAME column headings locked (pencil/rename removed)"
+
+[[outputs]]
+id = "MkCiQkpBf8KqZBu_RgGIS"
+uri = "file://workflow-reports/trailweigh-025F-report.zip"
+type = "unspecified"
+title = "Prompt 025F Report"
+description = "PROMPT_025F_REPORT.md — Sidebar single-open accordion + Expand All / Collapse All"
