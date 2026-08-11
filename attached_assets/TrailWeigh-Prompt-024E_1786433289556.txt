@@ -1,0 +1,215 @@
+TRAILWEIGH — PROMPT 024E
+FIX CSV TYPE + EXPENDABLE FIELD MAPPING ONLY
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused correction to the CSV importer implemented under Prompt 024C. Do not change PDF scanning in this prompt.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: about $0.70–$1.50
+
+ATTACH THESE FILES WITH THIS PROMPT
+
+1. TrailWeigh-024E-Test-Import.csv
+   - this is the exact CSV that the user imported successfully;
+   - it contains 77 gear rows;
+   - use it as the primary functional test file.
+
+2. TrailWeigh-024E-CSV-Mapping-Reference.png
+   - this screenshot shows the current result after CSV import;
+   - the item Type column is blank;
+   - the Fuel row appears as Description “4 oz” inside Kitchen Gear;
+   - Expendables remains empty.
+
+IMPORTANT CURRENT STATE
+
+Prompt 024C successfully added CSV support and detected/imported all 77 rows from the attached CSV.
+
+Prompt 024D is USER-VERIFIED PASS and restored the Background panel. Do not disturb that fix.
+
+The CSV importer currently has TWO mapping defects:
+
+A. CSV “Type” values are not being preserved into TrailWeigh’s Type field.
+B. CSV rows explicitly marked Expendable=true are not being routed to Expendables. The test CSV contains a Fuel item with:
+   - Category = Kitchen
+   - Description = 4 oz
+   - Type = Fuel
+   - Expendable = true
+   It currently imports into Kitchen Gear instead of Expendables.
+
+SCOPE — ONLY THESE TWO CSV MAPPING DEFECTS
+
+Do NOT modify the PDF scanner in this prompt.
+Do NOT change the 77-row detection behavior.
+Do NOT redesign the importer.
+Do NOT change unrelated category-mapping rules.
+
+PHASE 1 — DIAGNOSE BEFORE EDITING
+
+Inspect the current CSV parsing/mapping code added under Prompt 024C.
+
+Determine exactly:
+1. whether the Type header is parsed but discarded, or never mapped;
+2. whether Expendable is parsed into a boolean/status field;
+3. where category placement is decided after CSV parsing;
+4. why an explicit Expendable=true does not override the source Category=Kitchen for the Fuel row.
+
+State the root cause in the final report.
+
+PHASE 2 — MINIMUM REPAIR
+
+TYPE FIELD
+
+For CSV input:
+- recognize the header “Type” case-insensitively;
+- preserve the cell value into TrailWeigh’s existing item Type field;
+- do not replace the Description with Type when a Description already exists;
+- if Description is present, keep Description as Description and Type as Type;
+- if Type is blank, keep TrailWeigh’s normal/default Type behavior.
+
+For the attached CSV, examples should import as:
+- Type = Backpack, Description = ULA Ultra Circuit
+- Type = Tent, Description = Zpacks Free-Zip 2 with poles / repair kit
+- Type = Fuel, Description = 4 oz
+- Type = Filter, Description = Platypus Quickdraw
+
+EXPENDABLE FIELD / CATEGORY ROUTING
+
+For CSV input:
+- recognize Expendable values such as true/false, yes/no, 1/0;
+- when Expendable is explicitly true, route that item to TrailWeigh’s Expendables category even when the source CSV Category says Kitchen;
+- explicit Expendable=true must take precedence over the source category for final placement;
+- preserve the Type and Description when moving the item.
+
+For the attached test CSV:
+- the Fuel / “4 oz” item must import into Expendables;
+- it must NOT remain in Kitchen Gear;
+- Type must remain “Fuel”;
+- Description must remain “4 oz”;
+- Weight must remain 7.68 oz;
+- Quantity must remain 1.
+
+WORN
+
+Do not expand this prompt into a redesign of worn-item handling.
+
+However, preserve the current CSV Worn field behavior already implemented under 024C. Do not break it while changing Type/Expendable mapping.
+
+PRESERVE 77-ITEM IMPORT
+
+The attached CSV contains 77 gear rows.
+
+After the fix:
+- Scan Gear List must still detect all 77;
+- all 77 must still appear in the preview;
+- importing all 77 must still result in 77 imported items total;
+- no row may be lost or duplicated by the routing correction.
+
+EXPECTED CATEGORY COUNT CHANGE FOR THIS TEST FILE
+
+The current CSV import places:
+- Kitchen Gear = 10
+- Expendables = 0
+
+After correcting the one explicit Fuel / Expendable=true row, the expected result for this exact test file is:
+- Kitchen Gear = 9
+- Expendables = 1
+
+The total number of imported items must remain 77.
+
+Do not alter unrelated category counts.
+
+PREVIEW VERIFICATION
+
+Before import, verify the CSV preview shows the Fuel row with the correct detected fields:
+- Category/source category: Kitchen (if the preview displays source category)
+- Type: Fuel
+- Description: 4 oz
+- Weight: 7.68
+- Unit: oz
+- Quantity: 1
+- Expendable: true, if that status is displayed
+
+If the existing preview does not visibly display every status field, do not redesign it merely to add new columns. The underlying mapped values must still be correct.
+
+RENDERED APP VERIFICATION — REQUIRED
+
+Use the attached CSV in the running TrailWeigh app.
+
+1. Upload TrailWeigh-024E-Test-Import.csv to Scan Gear List.
+2. Confirm 77 items are found.
+3. Confirm representative Type values are preserved in preview/data.
+4. Import all 77 items into a blank/new list.
+5. Confirm all 77 import.
+6. Confirm Kitchen Gear contains 9 items.
+7. Confirm Expendables contains 1 item.
+8. Open Expendables and verify:
+   - Type = Fuel
+   - Description = 4 oz
+   - Weight = 7.68 oz
+   - Qty = 1
+9. Inspect at least three other imported items from different categories and verify their Type fields are populated correctly.
+10. Confirm Scan Gear List clears/resets after successful import exactly as before.
+11. Confirm the app builds/runs cleanly.
+
+REGRESSION SAFETY
+
+Do NOT change:
+- PDF/DOCX/XLSX/image scanner behavior;
+- Background button/panel or Prompt 024D fix;
+- Prompt 024B toolbar alignment;
+- category UI/layout;
+- Locker;
+- Save/Save As;
+- Share;
+- themes;
+- authentication;
+- Stripe/payments/AI credits;
+- any unrelated importer behavior.
+
+If fixing these two CSV mappings requires broad changes to the shared non-CSV importer, STOP and report the diagnosis before making those broader changes.
+
+CHANGED-FILE CHECK
+
+Before completion:
+- review every changed file;
+- only files genuinely required for this CSV Type/Expendable correction should be changed;
+- no unrelated cleanup/refactoring.
+
+REPORTING — REQUIRED
+
+Create:
+workflow-reports/PROMPT_024E_REPORT.md
+
+Create:
+workflow-reports/trailweigh-024E-report.zip
+
+VERIFY BOTH FILES PHYSICALLY EXIST before declaring completion.
+
+The Markdown report must include:
+- Prompt number: 024E
+- Agent mode actually used
+- Time worked
+- Number of actions
+- Lines/items read
+- Agent usage/cost
+- Exact files changed
+- Root cause of missing Type mapping
+- Root cause of Expendable=true not routing to Expendables
+- Exact fixes made
+- 77-item detection/import result
+- Final Kitchen Gear count
+- Final Expendables count
+- Verification of Fuel Type/Description/Weight/Qty
+- At least three representative Type-field verification results
+- Confirmation non-CSV import behavior was not changed
+- Build/test results
+- Confirmation Prompt 024D Background fix and 024B alignment were preserved
+- Confirmation no unrelated changes were made
+- User verification status: PENDING until the user tests the live app
+
+FINAL STOP RULE
+
+Complete only Prompt 024E.
+Do not investigate or fix the separate PDF “68 items found instead of 77” issue in this prompt.
+Do not begin another task after 024E.

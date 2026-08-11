@@ -1,0 +1,22 @@
+Category,Type,Description,Qty,Weight,Unit,Worn,Expendable
+Backpack,Backpack,ULA Ultra Circuit,1,27.2,oz,no,no
+Shelter,Tent,Zpacks Free-Zip 2 with poles / repair kit,1,23.9,oz,no,no
+Shelter,Tent Stakes,Titanium Stakes (8),8,2.4,oz,no,no
+Sleep System,Sleeping Bag,Enlightened Equipment Revelation 20F,1,22.6,oz,no,no
+Sleep System,Sleeping Pad,Therm-a-Rest NeoAir XLite NXT,1,15.8,oz,no,no
+Clothing Packed,Puffy,Arc'teryx Cerium SL Hoody,1,8.2,oz,no,no
+Clothing Packed,Rain Jacket,Outdoor Research Helium II,1,9.4,oz,no,no
+Clothing Worn,Base Layer,Merino Wool Long Sleeve,1,6.1,oz,yes,no
+Clothing Worn,Hiking Pants,Arc'teryx Gamma LT,1,8.3,oz,yes,no
+Clothing Worn,Shoes,Altra Lone Peak 7,1,20.8,oz,yes,no
+Clothing Worn,Socks,Darn Tough Hiker,1,2.2,oz,yes,no
+Kitchen,Stove,BRS-3000T,1,1,oz,no,no
+Kitchen,Pot,Toaks Titanium 750ml,1,3,oz,no,no
+Kitchen,Spork,Titanium Spork,1,0.6,oz,no,no
+Kitchen,Fuel,4 oz,1,7.68,oz,no,true
+Navigation,Map,Topographic Map,1,1.8,oz,no,no
+Navigation,Compass,Suunto A-10,1,1.2,oz,no,no
+Hydration,Filter,Platypus Quickdraw,1,2,oz,no,no
+Hydration,Water Bottle,Smartwater 1L,2,1.5,oz,no,no
+Electronics,Headlamp,Black Diamond Spot 400,1,3.2,oz,no,no
+Electronics,Battery Pack,Anker PowerCore 5000,1,4.9,oz,no,no

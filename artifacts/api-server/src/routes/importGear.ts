@@ -813,6 +813,7 @@ export function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): Extracted
 /** Column heading aliases → canonical field name */
 const CSV_COL_ALIASES: Record<string, string[]> = {
   category:    ['category', 'section'],
+  type:        ['type'],
   description: ['description', 'item', 'gear'],
   qty:         ['quantity', 'qty'],
   weight:      ['weight'],
@@ -932,6 +933,7 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     if (!desc) continue; // skip rows with no description value
 
     const category   = get('category');
+    const typeRaw    = get('type');
     const weightRaw  = get('weight');
     const unitRaw    = get('unit');
     const expendRaw  = get('expendable');
@@ -950,13 +952,19 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
 
     const expendable = parseCsvBool(expendRaw) ?? false;
 
+    // 024E fix A: preserve the CSV "Type" column as the item's sub/type field.
+    // 024E fix B: when Expendable=true, override destination to 'Consumables' so
+    //   applyGearClassification routes the item there (via CONSUMABLES_SECTION_ALIASES
+    //   or CONSUMABLES_TYPES priority) regardless of the source CSV Category value.
+    const effectiveDestination = expendable ? 'Consumables' : (category || undefined);
+
     items.push(applyGearClassification({
-      sub:         '',           // no sub/type column in CSV; applyGearClassification infers it
+      sub:         typeRaw.slice(0, 60),
       desc,
       weightOz,
       warning,
       warningMsg,
-      destination: category || undefined,
+      destination: effectiveDestination,
       expendable,
     }));
   }
