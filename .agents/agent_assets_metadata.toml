@@ -154,3 +154,10 @@ uri = "file://workflow-reports/trailweigh-025D-report.zip"
 type = "unspecified"
 title = "Prompt 025D Report"
 description = "PROMPT_025D_REPORT.md — Root cause analysis + isManual fix + workflow restart"
+
+[[outputs]]
+id = "5U4-kuKcqG975wj3OwA2F"
+uri = "file://workflow-reports/trailweigh-025E-report.zip"
+type = "unspecified"
+title = "Prompt 025E Report"
+description = "PROMPT_025E_REPORT.md — TYPE and NAME column headings locked (pencil/rename removed)"

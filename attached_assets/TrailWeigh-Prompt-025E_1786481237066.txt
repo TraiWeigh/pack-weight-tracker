@@ -1,0 +1,248 @@
+TRAILWEIGH — PROMPT 025E
+LOCK THE TYPE AND NAME COLUMN HEADINGS — REMOVE RENAME/EDIT BEHAVIOR
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a small UI correction to two column headings only.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 1–3 minutes
+Estimated Agent usage/cost: about $0.20–$0.60
+
+IMPORTANT CORRECTION TO 025C / 025D
+
+The prior prompts misunderstood the user request.
+
+The problem is NOT that gear item values under Type and Name are editable.
+
+The actual problem is that the COLUMN HEADINGS themselves:
+
+TYPE
+NAME
+
+are currently renameable/editable.
+
+The live UI shows pencil icons next to those headings, and clicking them exposes rename behavior such as “Click to rename.”
+
+That is what must be removed.
+
+PRIMARY GOAL
+
+Make these two column headings permanently fixed:
+
+TYPE
+NAME
+
+Required behavior:
+
+TYPE heading
+- fixed text label: TYPE
+- no pencil icon
+- no rename/edit affordance
+- clicking it does nothing
+- no “Click to rename”
+- cannot be renamed
+- cannot enter edit mode
+
+NAME heading
+- fixed text label: NAME
+- no pencil icon
+- no rename/edit affordance
+- clicking it does nothing
+- no “Click to rename”
+- cannot be renamed
+- cannot enter edit mode
+
+IMPORTANT
+
+Do NOT make the item values under Type or Name read-only.
+
+The actual gear row values in the Type and Name columns must remain editable wherever they are currently intended to be editable.
+
+This prompt is ONLY about the column header labels themselves.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025E_REPORT.md
+
+Initially write:
+- Prompt: 025E
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — FIND THE ACTUAL HEADER COMPONENT
+
+Locate the exact component that renders the visible:
+
+TYPE ✎
+NAME ✎
+
+column headings in the live TrailWeigh UI.
+
+Confirm:
+1. which component/file renders these headings;
+2. which code adds the pencil icon;
+3. which code enables rename/edit mode;
+4. whether the same generic editable-header component is used for other headings.
+
+Do not broadly inspect unrelated UI.
+
+PHASE 3 — MINIMUM SAFE CHANGE
+
+Make only the smallest change needed so:
+
+TYPE and NAME are fixed, non-editable header labels.
+
+Preferred approaches:
+- pass a non-editable/fixed-header flag if the shared header component already supports one;
+- or conditionally disable rename behavior only when the header key is Type or Name;
+- or render Type and Name as simple static header text if that is the safest narrow option.
+
+Do NOT remove editable-heading behavior from other columns unless explicitly required by existing design.
+
+Do NOT change row editing.
+
+PHASE 4 — REQUIRED VISUAL RESULT
+
+After the fix, the live header must visually show:
+
+TYPE
+NAME
+
+with NO pencil icons beside either one.
+
+There should be no hover state, tooltip, cursor, click target, dialog, input, popover, or inline editor that allows renaming those two headings.
+
+Clicking TYPE must do nothing.
+
+Clicking NAME must do nothing.
+
+PHASE 5 — ROW VALUE REGRESSION CHECK
+
+Verify that the actual gear values under these headings are unchanged.
+
+Required:
+- Type values remain editable where they were editable before.
+- Name values remain editable where they were editable before.
+- import preview values behave exactly as they did before this prompt;
+- main TrailWeigh list values behave exactly as they did before this prompt.
+
+Do NOT carry forward the mistaken 025C/025D goal of making row values read-only.
+
+If 025C/025D introduced row-value read-only behavior anywhere:
+- do not expand or worsen it;
+- only revert it if it is clearly present and directly necessary to restore the prior intended row-edit behavior.
+
+Keep the change as narrow as possible.
+
+PHASE 6 — OTHER HEADER REGRESSION CHECK
+
+If other column headings are intentionally renameable:
+- preserve their existing behavior.
+
+Do not globally remove all editable-column-heading functionality unless Type and Name are the only headings using it and the implementation naturally allows a safe narrow removal.
+
+Document what was preserved.
+
+OUT OF SCOPE
+
+Do NOT change:
+- Type item values
+- Name item values
+- Category behavior
+- Weight behavior
+- Qty behavior
+- importer parsing
+- CSV/XLSX/PDF/DOCX logic
+- category routing
+- Name inference
+- main list layout
+- sidebar behavior
+- accordion behavior
+- Pack Summary
+- Weight Distribution
+- toolbar
+- Background
+- Share
+- Locker
+- Save / Save As
+- themes
+- footer
+- authentication
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- the column-heading component / directly related configuration or styling;
+- directly necessary tests/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025E_REPORT.md
+
+Include:
+- Prompt number: 025E
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact component that rendered TYPE and NAME pencil icons
+- exact cause of their rename/edit behavior
+- exact change used to lock TYPE
+- exact change used to lock NAME
+- confirmation TYPE pencil icon is gone
+- confirmation NAME pencil icon is gone
+- confirmation clicking TYPE does nothing
+- confirmation clicking NAME does nothing
+- confirmation Type row values remain editable where intended
+- confirmation Name row values remain editable where intended
+- confirmation other header behavior was preserved
+- build/test result
+- confirmation no importer/parser/routing code was changed
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025E-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025E_REPORT.md
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025E.
+
+Do not begin the sidebar accordion task yet.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user verifies live:
+
+1. TYPE has no pencil/edit behavior;
+2. NAME has no pencil/edit behavior;
+3. clicking either heading does nothing;
+4. row Type and Name values still behave normally.

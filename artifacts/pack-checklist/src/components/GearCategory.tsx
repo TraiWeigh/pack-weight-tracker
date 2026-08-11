@@ -36,17 +36,30 @@ function EditableColHeader({
   placeholder,
   onCommit,
   className = '',
+  readOnly = false,
 }: {
   value: string;
   placeholder: string;
   onCommit: (v: string) => void;
   className?: string;
+  /** 025E: when true the heading is a fixed, non-interactive label — no pencil,
+   *  no cursor, no click handler, no rename affordance of any kind. */
+  readOnly?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft]     = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { setDraft(value); }, [value]);
+
+  // 025E: fixed label — render nothing interactive
+  if (readOnly) {
+    return (
+      <span className={`${className} text-xs font-semibold uppercase tracking-wider text-muted-foreground`}>
+        {value || placeholder}
+      </span>
+    );
+  }
 
   const commit = () => {
     setEditing(false);
@@ -287,18 +300,20 @@ export function GearCategory({
           <div className={`hidden sm:grid ${GEAR_GRID_COLS} ${GEAR_GRID_GAP} px-2 pb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 items-center`}>
             {/* Col 1 — checkbox/grip spacer */}
             <div className="w-[30px]" />
-            {/* Col 2 — TYPE heading */}
+            {/* Col 2 — TYPE heading (025E: readOnly — no pencil, no rename) */}
             <EditableColHeader
               value={meta.subLabel ?? ''}
               placeholder="Type"
               onCommit={v => onUpdateMeta({ subLabel: v || undefined })}
               className="w-28"
+              readOnly
             />
-            {/* Col 3 — NAME heading (1fr) */}
+            {/* Col 3 — NAME heading (025E: readOnly — no pencil, no rename) */}
             <EditableColHeader
               value={meta.descLabel ?? ''}
               placeholder="Name"
               onCommit={v => onUpdateMeta({ descLabel: v || undefined })}
+              readOnly
             />
             {/* Col 4 — Right-side group headings, mirroring GearRow right-group exactly */}
             <div className="flex items-center">
