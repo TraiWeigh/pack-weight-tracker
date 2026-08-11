@@ -1,0 +1,10 @@
+Category,Item,Quantity,Weight,Unit,Notes
+Water,Bottle,2,39,g,same item name can appear elsewhere
+Kitchen,Bottle,1,60,g,small fuel bottle; should not merge with Water Bottle
+Electronics,USB-C Cable,2,18,g,quantity > 1
+First Aid,Medication,1,,,blank weight should not block import
+Expendables,Fuel,1,110,g,consumable
+Clothing,Base Layer Top,1,0.18,kg,metric decimal
+Clothing,Base Layer Bottom,1,180,g,"same mass, different unit"
+Dog Gear,Dog Food,4,16,oz,quantity four
+Misc,Repair Tape,1,0.7,oz,generic category

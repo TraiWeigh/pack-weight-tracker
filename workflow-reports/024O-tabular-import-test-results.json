@@ -1,0 +1,136 @@
+{
+  "prompt": "024O",
+  "title": "Tabular import compatibility",
+  "runDate": "2026-08-11",
+  "regressions": {
+    "csv_77_item": { "expected": 77, "actual": 77, "pass": true },
+    "pdf_77_item": { "expected": 77, "actual": 77, "pass": true }
+  },
+  "testFiles": {
+    "01_lighterpack_style.csv": {
+      "description": "LighterPack-style CSV with Item Name, Description, Quantity columns",
+      "expectedCount": 9,
+      "actualCount": 9,
+      "pass": true,
+      "highlights": [
+        "Item Name mapped to Type (sub) via new alias",
+        "Quantity column read (Smartwater Bottle qty=2)",
+        "Description column preserved as desc"
+      ],
+      "items": [
+        { "sub": "Trail Backpack", "desc": "40 L frameless backpack", "weightOz": 24.8, "qty": 1 },
+        { "sub": "Trekking Pole Tent", "desc": "Single-wall shelter", "weightOz": 28.5, "qty": 1 },
+        { "sub": "Down Quilt", "desc": "20 degree quilt", "weightOz": 22.4, "qty": 1 },
+        { "sub": "Sleeping Pad", "desc": "Inflatable pad", "weightOz": 15.5, "qty": 1 },
+        { "sub": "Titanium Pot", "desc": "750 ml pot", "weightOz": 3.6, "qty": 1 },
+        { "sub": "Fuel Canister", "desc": "110 g fuel canister", "weightOz": 7.1, "qty": 1 },
+        { "sub": "Smartwater Bottle", "desc": "1 L bottle", "weightOz": 1.4, "qty": 2 },
+        { "sub": "Hiking Shirt", "desc": "Worn while hiking", "weightOz": 5.2, "qty": 1 },
+        { "sub": "Power Bank", "desc": "10,000 mAh", "weightOz": 6.4, "qty": 1 }
+      ]
+    },
+    "02_metagear_style.csv": {
+      "description": "Metagear-style CSV with Name, Description, Qty, Weight Unit columns",
+      "expectedCount": 7,
+      "actualCount": 7,
+      "pass": true,
+      "highlights": [
+        "Name mapped to Type (sub) via new alias",
+        "Qty column read (Dog Food qty=3, Water qty=2)",
+        "Weight Unit column resolved correctly"
+      ],
+      "items": [
+        { "sub": "Backpack", "desc": "Main pack", "weightOz": 24.8, "qty": 1 },
+        { "sub": "Rain Jacket", "desc": "Carried layer", "weightOz": 6.4, "qty": 1 },
+        { "sub": "Trail Runners", "desc": "Pair weight", "weightOz": 22.0, "qty": 1 },
+        { "sub": "Water Filter", "desc": "Reusable", "weightOz": 2.3, "qty": 1 },
+        { "sub": "Water - 1 Liter", "desc": "Consumable water", "weightOz": 35.27, "qty": 2 },
+        { "sub": "Dog Food - Daily", "desc": "Three daily portions", "weightOz": 20.0, "qty": 3 },
+        { "sub": "Headlamp", "desc": "Rechargeable", "weightOz": 2.8, "qty": 1 }
+      ]
+    },
+    "05_nested_subcategory_test.xlsx": {
+      "description": "XLSX with Name, Category, Subcategory, Quantity, Weight, Unit, Brand, Notes columns",
+      "expectedCount": 12,
+      "actualCount": 12,
+      "pass": true,
+      "highlights": [
+        "Name mapped to typeCol (sub) via updated TYPE_RE",
+        "Category mapped to catCol → destination field",
+        "Quantity column read (Fuel qty=2)",
+        "Notes mapped to descCol",
+        "Fuel → Consumables via applyGearClassification",
+        "Rain Jacket → Clothing Packed via applyGearClassification"
+      ],
+      "items": [
+        { "sub": "Backpack", "desc": "", "destination": "Pack", "weightOz": 24.8, "qty": 1 },
+        { "sub": "Tent", "desc": "", "destination": "Shelter", "weightOz": 28.5, "qty": 1 },
+        { "sub": "Quilt", "desc": "", "destination": "Sleep", "weightOz": 22.4, "qty": 1 },
+        { "sub": "Sleeping Pad", "desc": "", "destination": "Sleep", "weightOz": 15.5, "qty": 1 },
+        { "sub": "Stove", "desc": "", "destination": "Kitchen", "weightOz": 0.9, "qty": 1 },
+        { "sub": "Fuel", "desc": "Consumable; should map as expendable/consumable", "destination": "Consumables", "weightOz": 3.9, "qty": 2 },
+        { "sub": "Toothbrush", "desc": "", "destination": "Personal", "weightOz": 0.6, "qty": 1 },
+        { "sub": "Toothpaste", "desc": "Consumable", "destination": "Consumables", "weightOz": 1.0, "qty": 1 },
+        { "sub": "Leukotape", "desc": "", "destination": "Consumables", "weightOz": 1.2, "qty": 1 },
+        { "sub": "Rain Jacket", "desc": "", "destination": "Clothing Packed", "weightOz": 6.4, "qty": 1 },
+        { "sub": "Sun Hat", "desc": "Worn item", "destination": "Clothing Packed", "weightOz": 2.1, "qty": 1 },
+        { "sub": "Dog Pack", "desc": "", "destination": "Dog Gear", "weightOz": 16.0, "qty": 1 }
+      ]
+    },
+    "06_messy_spreadsheet.csv": {
+      "description": "Messy CSV with title row above header, group/gear/count/wt/notes/status columns, compound weight strings",
+      "expectedCount": 10,
+      "actualCount": 10,
+      "pass": true,
+      "highlights": [
+        "Title row 'MY 2026 THRU-HIKE PACK LIST' correctly skipped by header-row scanner",
+        "Real header (row 1: group,gear,count,wt,notes,status) detected with score=5",
+        "group→category, gear→type, count→qty, wt→weight, notes→description",
+        "'1 lb 10 oz' → 26.0 oz via parseTabularWeight compound handler",
+        "'23.5oz' → 23.5 oz (no-space form already handled by parseWeightToOz stripping)",
+        "'3.9 oz each' → 3.9 oz (trailing noise stripped by parseFloat)",
+        "Blank wt cell (Toothpaste) → weightOz=0, item imported without error",
+        "TOTAL row and blank row correctly skipped",
+        "Fuel qty=2, Socks qty=2"
+      ],
+      "items": [
+        { "sub": "Backpack", "desc": "main pack", "weightOz": 25.0, "qty": 1 },
+        { "sub": "Tent", "desc": "trekking pole shelter", "weightOz": 26.0, "qty": 1, "note": "1 lb 10 oz compound" },
+        { "sub": "Quilt", "desc": "20 degree", "weightOz": 23.5, "qty": 1 },
+        { "sub": "Stove", "desc": "canister stove", "weightOz": 0.9, "qty": 1 },
+        { "sub": "Fuel", "desc": "small fuel canisters", "weightOz": 3.9, "qty": 2 },
+        { "sub": "Toothbrush", "desc": "Toothbrush", "weightOz": 0.6, "qty": 1 },
+        { "sub": "Toothpaste", "desc": "travel size; weight intentionally blank", "weightOz": 0.0, "qty": 1, "note": "blank weight allowed" },
+        { "sub": "Leukotape", "desc": "first aid", "weightOz": 1.2, "qty": 1 },
+        { "sub": "Socks", "desc": "spare pairs", "weightOz": 1.8, "qty": 2 },
+        { "sub": "Sun Hat", "desc": "Sun Hat", "weightOz": 2.1, "qty": 1 }
+      ]
+    },
+    "07_edge_cases.csv": {
+      "description": "Edge-cases CSV with Category, Item, Quantity, Weight, Unit, Notes columns",
+      "expectedCount": 9,
+      "actualCount": 9,
+      "pass": true,
+      "highlights": [
+        "Item mapped to type (sub) via new alias",
+        "Notes mapped to description",
+        "Two Bottle entries with different weights preserved (not deduped)",
+        "Medication with blank weight → oz=0, imported without error",
+        "Base Layer Top 180g → 6.35 oz",
+        "Base Layer Bottom 6 oz (same weight, different declared unit) → 6.35 oz",
+        "Dog Food qty=4, USB-C Cable qty=2, Bottle (Water) qty=2"
+      ],
+      "items": [
+        { "sub": "Bottle", "desc": "same item name can appear elsewhere with diff weight", "destination": "Water", "weightOz": 1.38, "qty": 2 },
+        { "sub": "Bottle", "desc": "small fuel bottle; should not merge with water bottle", "destination": "Kitchen", "weightOz": 2.12, "qty": 1 },
+        { "sub": "USB-C Cable", "desc": "quantity > 1", "destination": "Electronics", "weightOz": 0.63, "qty": 2 },
+        { "sub": "Medication", "desc": "blank weight should not block import", "destination": "Consumables", "weightOz": 0.0, "qty": 1 },
+        { "sub": "Fuel", "desc": "consumable", "destination": "Consumables", "weightOz": 3.88, "qty": 1 },
+        { "sub": "Base Layer Top", "desc": "metric decimal", "destination": "Clothing", "weightOz": 6.35, "qty": 1 },
+        { "sub": "Base Layer Bottom", "desc": "same mass, different unit", "destination": "Clothing", "weightOz": 6.35, "qty": 1 },
+        { "sub": "Dog Food", "desc": "quantity four", "destination": "Consumables", "weightOz": 16.0, "qty": 4 },
+        { "sub": "Repair Tape", "desc": "generic category", "destination": "Consumables", "weightOz": 0.7, "qty": 1 }
+      ]
+    }
+  }
+}

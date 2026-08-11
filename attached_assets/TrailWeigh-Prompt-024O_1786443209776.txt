@@ -1,0 +1,367 @@
+TRAILWEIGH — PROMPT 024O
+TABULAR IMPORT COMPATIBILITY: CSV/XLSX HEADER DETECTION, FIELD ALIASES, AND QUANTITY
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused repair to the existing tabular Scan Gear List import path. Do not redesign the importer or touch PDF/DOCX parsing.
+
+ATTACH THESE FIVE TEST FILES WITH THIS PROMPT
+1. 01_lighterpack_style.csv
+2. 02_metagear_style.csv
+3. 05_nested_subcategory_test.xlsx
+4. 06_messy_spreadsheet.csv
+5. 07_edge_cases.csv
+
+IMPORTANT USER-TESTED FINDINGS
+These five files were tested in the live TrailWeigh Scan Gear List before this prompt.
+
+Test 01 — 01_lighterpack_style.csv
+- 9/9 rows were found.
+- Category and Weight worked.
+- Fuel was correctly routed to Consumables.
+- Source header "Item Name" was NOT mapped to TrailWeigh Type, so Type was blank.
+- Source header "Quantity" was ignored; Smartwater Bottle expected QTY 2 but imported as QTY 1.
+
+Test 02 — 02_metagear_style.csv
+- Import failed before preview.
+- The file uses "Name" as the item-identity column.
+- TrailWeigh reported it could not identify an Item / Description / Gear column.
+
+Test 05 — 05_nested_subcategory_test.xlsx
+- 12/12 rows were found.
+- Weights worked.
+- Source "Name" went into Description instead of Type.
+- TrailWeigh Type was blank.
+- Source Category/Subcategory were not being used correctly in the preview.
+
+Test 06 — 06_messy_spreadsheet.csv
+- Import failed before preview.
+- Row 1 is a title: "MY 2026 THRU-HIKE PACK LIST".
+- The real header row is the next row: group | gear | count | wt | notes | status.
+- "gear" is already a valid concept for TrailWeigh, but the importer appears to assume the first row is the header and never reaches the real header row.
+
+Test 07 — 07_edge_cases.csv
+- 9/9 rows were found.
+- Categories worked.
+- Metric conversion worked correctly, including 39 g -> 1.38 oz, 60 g -> 2.12 oz, 110 g -> 3.88 oz, and both 0.18 kg and 180 g -> 6.35 oz.
+- Blank Medication weight did not prevent import.
+- Duplicate item name "Bottle" in Water and Kitchen remained separate.
+- Fuel was correctly routed to Consumables.
+- Source "Item" went into Description while TrailWeigh Type stayed blank.
+- Quantity was ignored: Water Bottle expected 2 but imported 1; USB-C Cable expected 2 but imported 1; Dog Food expected 4 but imported 1.
+
+PRIMARY GOAL
+Repair ONLY the CSV/XLSX/tabular import compatibility layer so common external pack-list/spreadsheet headers map into TrailWeigh correctly and a title row above the real table header does not cause a valid file to fail.
+
+This prompt is NOT a PDF repair and NOT a DOCX repair.
+
+PHASE 1 — CREATE THE REPORT FILE BEFORE CHANGING CODE
+Before modifying application code, create:
+
+workflow-reports/PROMPT_024O_REPORT.md
+
+Initially write:
+- Prompt: 024O
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the file physically exists.
+If it cannot be created, STOP before changing application code.
+
+PHASE 2 — INSPECT THE CURRENT TABULAR IMPORT PATH ONLY
+Inspect the existing CSV/XLSX import implementation and identify the smallest shared place where:
+- a header row is chosen;
+- column names are normalized/matched;
+- row fields are mapped to TrailWeigh Category / Type / Description / Weight / Unit / Quantity;
+- spreadsheet rows are converted into the existing Scan Gear List preview objects.
+
+Do not refactor unrelated importer code.
+Do not inspect or change PDF/DOCX parsing except only enough to make sure a shared helper change will not alter those paths.
+
+PHASE 3 — HEADER-ROW DETECTION
+Do not assume the first physical row is always the table header.
+
+For CSV and spreadsheet/tabular input, inspect a small bounded range at the beginning of the file (for example the first 10–20 meaningful rows) and select the strongest likely header row based on recognized field names.
+
+Required behavior:
+- Test 06 must recognize the second row as the real header row even though a title row is above it.
+- Do NOT hard-code "row 2".
+- A normal file whose header is already row 1 must continue to work.
+- Blank rows before a header must not break detection.
+- A title row must not become a gear item.
+- A trailing TOTAL row must not become a gear item.
+- Do not scan arbitrarily deep into huge files; keep header detection bounded and cheap.
+
+Prefer a simple scoring/recognition method rather than brittle file-specific rules. A likely header should contain an item-identity field plus one or more additional recognized fields such as Category, Weight, Unit, or Quantity.
+
+PHASE 4 — NORMALIZE COMMON COLUMN-HEADER ALIASES
+Match headers case-insensitively and tolerate ordinary spaces/punctuation differences.
+
+Map these source headers to TrailWeigh fields:
+
+A. TRAILWEIGH TYPE / ITEM IDENTITY
+Recognize at minimum:
+- Type
+- Item
+- Item Name
+- Name
+- Gear
+- Gear Item
+- Equipment
+- Product
+
+These values belong in TrailWeigh TYPE, not merely Description.
+
+IMPORTANT PRECEDENCE:
+- If the source has an explicit Type column, preserve it as Type.
+- If the source has a separate Description/Notes/Details column, preserve that separate text as Description.
+- Do not erase or replace a valid Type merely because a Description exists.
+- Do not put the item name only into Description when a recognized item-identity column exists.
+
+If TrailWeigh import validation requires a nonblank Description and a row has a valid Type/item identity but no distinct description text, preserve Type and use the Type text as a Description fallback only when necessary. Do not overwrite a valid source Description.
+
+B. DESCRIPTION
+Recognize at minimum:
+- Description
+- Notes
+- Details
+
+C. CATEGORY
+Recognize at minimum:
+- Category
+- Group
+- Section
+- System
+
+D. SUBCATEGORY
+Recognize:
+- Subcategory
+- Sub Category
+
+TrailWeigh currently has one main category level. Do not build nested-category UI in this prompt.
+Use a valid main Category when supplied. A Subcategory may be used as a fallback/clue when the main Category is blank, but must not cause items to disappear or overwrite a valid main Category.
+
+E. QUANTITY
+Recognize at minimum:
+- Quantity
+- Qty
+- Count
+- #
+
+Preserve a valid positive numeric quantity.
+Default to 1 only when Quantity is absent, blank, or invalid.
+Do NOT silently replace a valid 2, 3, 4, etc. with 1.
+
+F. WEIGHT
+Recognize at minimum:
+- Weight
+- Wt
+- Mass
+
+G. WEIGHT UNIT
+Recognize at minimum:
+- Unit
+- Units
+- Weight Unit
+- WeightUnit
+
+Preserve the current working unit conversion behavior.
+Do not regress g, kg, oz, or lb handling.
+
+PHASE 5 — KEEP EXISTING ITEM-ROUTING INTELLIGENCE
+This prompt must preserve the existing post-parse TrailWeigh routing/mapping rules.
+
+In particular:
+- Fuel must continue to route to the existing Consumables/Expendables destination used by the current app.
+- Do not turn this task into a category-taxonomy redesign.
+- Do not hard-code the five test files by filename or exact row contents.
+- Do not special-case "Smartwater Bottle", "Dog Food", or other test item names just to make tests pass.
+
+The repair must be based on generic header/field mapping and existing routing logic.
+
+PHASE 6 — COMMON TABULAR WEIGHT TEXT
+Use the existing weight parser wherever possible.
+
+For Test 06, the Wt column contains ordinary real-world forms such as:
+- 25 oz
+- 1 lb 10 oz
+- 23.5oz
+- 3.9 oz each
+- blank weight
+
+If the existing shared weight parser already supports these forms, reuse it.
+If a very small normalization is required inside the TABULAR path to pass these forms safely, make the minimum change.
+Do not redesign all weight parsing and do not modify PDF-specific parsing in this prompt.
+
+PHASE 7 — RUN THE FIVE ATTACHED REGRESSION TESTS
+Use the same current Scan Gear List path that a user invokes.
+
+TEST 01 — 01_lighterpack_style.csv
+Required:
+- exactly 9 gear rows detected;
+- all 9 have nonblank Type values from Item Name;
+- source Description remains Description;
+- weights remain correct;
+- Smartwater Bottle imports with QTY 2;
+- Fuel continues to route to Consumables/Expendables according to existing TrailWeigh behavior;
+- no duplicate or junk rows.
+
+TEST 02 — 02_metagear_style.csv
+Required:
+- file no longer fails because the identity header is Name;
+- exactly 7 gear rows detected;
+- all 7 have nonblank Type values from Name;
+- Qty is recognized;
+- Water - 1 Liter imports with QTY 2;
+- Dog Food - Daily imports with QTY 3;
+- Weight Unit is recognized;
+- existing lb / oz / kg handling remains correct;
+- no duplicate or junk rows.
+
+TEST 05 — 05_nested_subcategory_test.xlsx
+Required:
+- exactly 12 gear rows detected;
+- all 12 have nonblank Type values from Name;
+- main Category is recognized from the Category column;
+- Subcategory does not cause item loss or overwrite a valid main Category;
+- Fuel imports with QTY 2 and existing normal Fuel routing still applies;
+- no item is lost because of nested/subcategory source structure;
+- no duplicate or junk rows.
+
+TEST 06 — 06_messy_spreadsheet.csv
+Required:
+- importer finds the real header row beneath the title row;
+- exactly 10 real gear rows detected;
+- the title row is NOT imported;
+- the blank separator row is NOT imported;
+- the TOTAL row is NOT imported;
+- group maps as Category;
+- gear maps as Type;
+- count maps as Quantity;
+- wt maps as Weight;
+- notes maps as Description;
+- valid counts are preserved rather than defaulted to 1;
+- ordinary weight strings are parsed using the existing/general tabular weight logic;
+- a blank weight does not by itself discard a valid item;
+- no duplicate or junk rows.
+
+TEST 07 — 07_edge_cases.csv
+Required:
+- exactly 9 gear rows detected;
+- Item maps to Type, not only Description;
+- both Bottle items remain separate;
+- Water Bottle imports with QTY 2;
+- USB-C Cable imports with QTY 2;
+- Dog Food imports with QTY 4;
+- Medication with blank weight still imports;
+- current metric conversions remain correct;
+- Fuel continues to route normally;
+- no duplicate or junk rows.
+
+PHASE 8 — PRESERVE THE KNOWN-GOOD 77-ITEM IMPORT WORK
+Do not regress the already user-verified 77-item importer work from Prompt 024M.
+
+If the existing 77-row CSV regression fixture and 77-item PDF fixture are still available in the workspace:
+- run the existing 77-row CSV regression and confirm all 77 rows still survive;
+- run one quick count-only regression through the existing PDF path and confirm it still returns 77 items.
+
+Do NOT investigate or redesign PDF parsing in 024O.
+If the PDF count unexpectedly regresses because of a shared helper change, STOP and report rather than expanding scope into a PDF repair.
+
+DO NOT CHANGE
+- DOCX parsing/heading behavior;
+- PDF row extraction/parsing logic;
+- Scan Gear List UI/layout;
+- Background/Themes;
+- toolbar alignment;
+- Share;
+- Locker;
+- Save / Save As;
+- authentication;
+- themes;
+- footer/help/legal work;
+- AI/payment/Stripe work;
+- any unrelated feature.
+
+Do not rename existing UI labels in this prompt.
+Do not redesign categories.
+Do not add AI.
+Do not add a manual column-mapping screen.
+This prompt is for automatic tabular compatibility only.
+
+CHANGED-FILE CONTROL
+Before finishing, inspect every changed application file.
+Changes should be limited to the existing CSV/XLSX/tabular import path and directly necessary automated test/helper files.
+No unrelated refactoring or cleanup.
+
+REPORTING
+Update the report created before coding:
+
+workflow-reports/PROMPT_024O_REPORT.md
+
+The final report must include:
+- Prompt number: 024O
+- Replit Agent mode actually used
+- Time worked
+- Number of actions
+- Lines/items read
+- Agent usage/cost
+- Exact application files changed
+- Exact header-row detection method implemented
+- Exact header aliases implemented
+- Exact Quantity behavior implemented
+- Any small tabular weight-text normalization made, if any
+- Before/after result for Test 01
+- Before/after result for Test 02
+- Before/after result for Test 05
+- Before/after result for Test 06
+- Before/after result for Test 07
+- 77-row CSV regression result, if fixture available
+- 77-item PDF count-only regression result, if fixture available
+- Build/test result
+- Confirmation PDF/DOCX parser logic was not changed
+- Confirmation no unrelated changes were made
+- User verification status: PENDING
+
+Also create a compact machine-readable result file:
+
+workflow-reports/024O-tabular-import-test-results.json
+
+For each of the five attached test files record at minimum:
+- filename
+- detected item count
+- whether Type was populated for every expected row
+- key Quantity checks
+- whether any row was lost
+- whether any junk row was added
+- PASS/FAIL
+
+Do not put a long essay in the JSON.
+
+ZIP — REQUIRED
+Only after these files physically exist:
+- workflow-reports/PROMPT_024O_REPORT.md
+- workflow-reports/024O-tabular-import-test-results.json
+
+create:
+
+workflow-reports/trailweigh-024O-report.zip
+
+Use a direct deterministic shell command such as:
+
+cd workflow-reports
+zip -j trailweigh-024O-report.zip PROMPT_024O_REPORT.md 024O-tabular-import-test-results.json
+
+Then verify:
+
+unzip -l trailweigh-024O-report.zip
+ls -l trailweigh-024O-report.zip
+
+The ZIP must contain both required files.
+Verify the .md, .json, and .zip physically exist before declaring completion.
+
+FINAL STOP RULE
+Complete ONLY Prompt 024O.
+Do not begin the DOCX repair.
+Do not begin the PDF repair.
+Do not begin another waiting task.
+STOP after the report and ZIP are created and verified.

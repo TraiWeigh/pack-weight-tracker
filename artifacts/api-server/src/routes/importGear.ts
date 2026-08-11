@@ -21,6 +21,7 @@ export interface ExtractedItem {
   warningMsg?: string;  // human-readable reason for the warning flag
   destination?: string; // category from section header (spreadsheets only)
   expendable?: boolean; // consumable/expendable status (CSV import)
+  qty?: number;         // 024O: quantity / count (defaults to 1 when absent)
 }
 
 // ── Normalisation helper ──────────────────────────────────────────────────────
@@ -636,24 +637,28 @@ function isSectionHeaderRow(row: unknown[]): boolean {
   );
 }
 
-// Type aliases used in header detection
-const TYPE_RE   = /^(type|gear type|item type|equipment type)$/;
-const DESC_RE   = /^(description|item|item name|gear|gear item|product|product name|equipment|name)$/;
-const WEIGHT_HDR_RE = /^(weight|item weight|gear weight|wt|ounces|oz|grams|pounds|lbs|kilograms|kg)$/;
-const UNIT_RE   = /^(unit|weight unit|units)$/;
+// 024O: expanded column-header aliases for spreadsheet detection
+const TYPE_RE       = /^(type|gear type|item type|equipment type|item name|name|gear|item|gear item|equipment|product|product name)$/;
+const DESC_RE       = /^(description|notes|details)$/;
+const WEIGHT_HDR_RE = /^(weight|item weight|gear weight|wt|mass|ounces|oz|grams|pounds|lbs|kilograms|kg)$/;
+const UNIT_RE       = /^(unit|units|weight unit|weightunit)$/;
+const QTY_HDR_RE    = /^(quantity|qty|count|#)$/;
+const CAT_HDR_RE    = /^(category|section|group|system)$/;
 
 function detectCols(headerRow: unknown[]): {
-  typeCol: number; descCol: number; weightCol: number; unitCol: number;
+  typeCol: number; descCol: number; weightCol: number; unitCol: number; qtyCol: number; catCol: number;
 } {
-  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1, qtyCol = -1, catCol = -1;
   headerRow.forEach((h, i) => {
     const n = norm(h);
     if (typeCol   === -1 && TYPE_RE.test(n))        typeCol   = i;
     if (descCol   === -1 && DESC_RE.test(n))        descCol   = i;
     if (weightCol === -1 && WEIGHT_HDR_RE.test(n))  weightCol = i;
     if (unitCol   === -1 && UNIT_RE.test(n))        unitCol   = i;
+    if (qtyCol    === -1 && QTY_HDR_RE.test(n))     qtyCol    = i;
+    if (catCol    === -1 && CAT_HDR_RE.test(n))     catCol    = i;
   });
-  return { typeCol, descCol, weightCol, unitCol };
+  return { typeCol, descCol, weightCol, unitCol, qtyCol, catCol };
 }
 
 // ── Section-mode extraction ───────────────────────────────────────────────────
@@ -747,7 +752,8 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
 
   // Find the first row that looks like a header (has weight col at minimum)
   let headerIdx = -1;
-  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1;
+  // 024O: also detect category and quantity columns
+  let typeCol = -1, descCol = -1, weightCol = -1, unitCol = -1, qtyCol = -1, catCol = -1;
 
   for (let r = 0; r < Math.min(rows.length, 10); r++) {
     const detected = detectCols(rows[r]);
@@ -757,6 +763,8 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
       descCol    = detected.descCol;
       weightCol  = detected.weightCol;
       unitCol    = detected.unitCol;
+      qtyCol     = detected.qtyCol;
+      catCol     = detected.catCol;
       break;
     }
   }
@@ -785,9 +793,10 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
     let desc = '';
     if (descCol >= 0) {
       desc = String(row[descCol] ?? '').trim();
-    } else {
+    } else if (typeCol < 0) {
+      // No identity column found — scrape remaining non-key cells for a label
       desc = (row as unknown[])
-        .filter((_, i) => i !== typeCol && i !== weightCol && i !== unitCol)
+        .filter((_, i) => i !== weightCol && i !== unitCol && i !== qtyCol && i !== catCol)
         .map(v => String(v ?? '').trim())
         .filter(Boolean)
         .join(' ');
@@ -797,7 +806,14 @@ function extractGenericMode(rows: unknown[][]): ExtractedItem[] {
     if (!desc && !sub) continue;
     if (/^(true|false)$/i.test(sub)) continue;
 
-    results.push({ sub, desc, weightOz: oz, warning: warning || oz > 500 });
+    // 024O: category and quantity from newly detected columns
+    const cat = catCol >= 0 ? String(row[catCol] ?? '').trim() : '';
+    const rawQtyCell = qtyCol >= 0 ? row[qtyCol] : null;
+    const qty = typeof rawQtyCell === 'number' && rawQtyCell > 0
+      ? Math.round(rawQtyCell)
+      : Math.max(1, parseInt(String(rawQtyCell ?? ''), 10) || 1);
+
+    results.push({ sub, desc, weightOz: oz, warning: warning || oz > 500, destination: cat || undefined, qty });
   }
 
   return results;
@@ -847,14 +863,17 @@ export function extractFromWorkbook(wb: ReturnType<typeof XLSX.read>): Extracted
 
 // ── CSV parsing ───────────────────────────────────────────────────────────────
 
+// 024O: expanded aliases for common external pack-list / spreadsheet headers.
 /** Column heading aliases → canonical field name */
 const CSV_COL_ALIASES: Record<string, string[]> = {
-  category:    ['category', 'section'],
-  type:        ['type'],
-  description: ['description', 'item', 'gear'],
-  qty:         ['quantity', 'qty'],
-  weight:      ['weight'],
-  unit:        ['unit'],
+  category:    ['category', 'section', 'group', 'system'],
+  subcategory: ['subcategory', 'sub category'],
+  // Item-identity headers map to TrailWeigh "Type" (sub field), not Description
+  type:        ['type', 'item name', 'name', 'gear', 'item', 'gear item', 'equipment', 'product'],
+  description: ['description', 'notes', 'details'],
+  qty:         ['quantity', 'qty', 'count', '#'],
+  weight:      ['weight', 'wt', 'mass'],
+  unit:        ['unit', 'units', 'weight unit', 'weightunit'],
   worn:        ['worn'],
   expendable:  ['consumable', 'expendable'],
 };
@@ -927,6 +946,23 @@ function parseCsvRows(text: string): string[][] {
 }
 
 /**
+ * 024O: Tabular-path weight parser.
+ * Extends parseWeightToOz with support for compound "X lb Y oz" strings
+ * (e.g. "1 lb 10 oz" = 26 oz) that appear in real-world spreadsheet lists.
+ * All other forms are delegated to parseWeightToOz unchanged.
+ */
+function parseTabularWeight(raw: string | number, unitHint: string): { oz: number; warning: boolean } {
+  if (typeof raw === 'string') {
+    const compound = /(\d+(?:\.\d+)?)\s*lbs?\s+(\d+(?:\.\d+)?)\s*oz/i.exec(raw);
+    if (compound) {
+      const oz = parseFloat(compound[1]) * 16 + parseFloat(compound[2]);
+      return { oz: Math.round(oz * 100) / 100, warning: oz <= 0 || oz > 700 };
+    }
+  }
+  return parseWeightToOz(raw, unitHint);
+}
+
+/**
  * Parse a CSV buffer into ExtractedItems.
  * Throws a user-facing error (with .statusCode) on unrecoverable problems.
  */
@@ -940,18 +976,43 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
     throw err;
   }
 
+  // 024O: Scan the first CSV_HDR_SCAN rows to find the best header row.
+  // A valid header must contain at least one item-identity field (type or description)
+  // plus any other recognised field. This lets a title row above the real table
+  // header pass through without failing the import (e.g. "MY 2026 THRU-HIKE PACK LIST").
+  const CSV_HDR_SCAN = 20;
+  let headerIdx = 0;
+  let bestScore  = 0;
+  for (let r = 0; r < Math.min(rows.length, CSV_HDR_SCAN); r++) {
+    let score = 0;
+    let hasIdentity = false;
+    for (const cell of rows[r]) {
+      const field = mapCsvHeader(cell);
+      if (field) {
+        score++;
+        if (field === 'type' || field === 'description') hasIdentity = true;
+      }
+    }
+    if (hasIdentity && score > bestScore) {
+      bestScore = score;
+      headerIdx = r;
+    }
+  }
+
   // Map header row → column indices
-  const headers = rows[0];
+  const headers = rows[headerIdx];
   const colMap: Partial<Record<string, number>> = {};
   headers.forEach((h, i) => {
     const field = mapCsvHeader(h);
     if (field !== null && !(field in colMap)) colMap[field] = i;
   });
 
-  if (colMap['description'] === undefined) {
+  // 024O: Accept files where the identity column maps to 'type' (e.g. "Name", "Gear")
+  // rather than requiring an explicit "description" header.
+  if (colMap['description'] === undefined && colMap['type'] === undefined) {
     const err: any = new Error(
       'TrailWeigh could not identify an Item / Description / Gear column in this CSV. ' +
-      'Make sure the header row includes one of: Description, Item, or Gear.',
+      'Make sure the header row includes one of: Type, Name, Item, Description, or Gear.',
     );
     err.code = 'csv_no_description_col'; err.statusCode = 422;
     throw err;
@@ -959,29 +1020,41 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
 
   const items: ExtractedItem[] = [];
 
-  for (let r = 1; r < rows.length; r++) {
+  for (let r = headerIdx + 1; r < rows.length; r++) {
     const row = rows[r];
     const get = (field: string): string => {
       const idx = colMap[field];
       return idx !== undefined ? (row[idx] ?? '').trim() : '';
     };
 
-    const desc = get('description');
-    if (!desc) continue; // skip rows with no description value
+    // 024O: item identity column may be 'type' (Name/Gear/Item) or 'description'.
+    const typeRaw = get('type');
+    const descRaw = get('description');
+    // Use type as description fallback only when no separate description text exists.
+    const desc = descRaw || typeRaw;
+    if (!desc) continue; // skip rows with no identity value at all
 
-    const category   = get('category');
-    const typeRaw    = get('type');
-    const weightRaw  = get('weight');
-    const unitRaw    = get('unit');
-    const expendRaw  = get('expendable');
+    // Skip summary / total rows regardless of which column they appear in
+    if (/^(total|grand\s*total|sub\s*total)\b/i.test(typeRaw) ||
+        /^(total|grand\s*total|sub\s*total)\b/i.test(descRaw)) continue;
+
+    const category  = get('category');
+    const weightRaw = get('weight');
+    const unitRaw   = get('unit');
+    const expendRaw = get('expendable');
     // worn is parsed but not propagated in v1 (no dedicated worn field in GearItem)
+
+    // 024O: read quantity; default to 1 when absent, blank, or non-numeric
+    const qtyRaw = get('qty');
+    const qty    = Math.max(1, parseInt(qtyRaw, 10) || 1);
 
     let weightOz = 0;
     let warning  = false;
     let warningMsg: string | undefined;
 
     if (weightRaw) {
-      const parsed = parseWeightToOz(weightRaw, unitRaw);
+      // 024O: use tabular weight parser to handle compound "X lb Y oz" forms
+      const parsed = parseTabularWeight(weightRaw, unitRaw);
       weightOz  = parsed.oz;
       warning   = parsed.warning;
       if (warning) warningMsg = `Unusual weight value: "${weightRaw}"`;
@@ -997,12 +1070,13 @@ function parseCsvItems(buffer: Buffer): ExtractedItem[] {
 
     items.push(applyGearClassification({
       sub:         typeRaw.slice(0, 60),
-      desc,
+      desc:        desc.slice(0, 200),
       weightOz,
       warning,
       warningMsg,
       destination: effectiveDestination,
       expendable,
+      qty,
     }));
   }
 

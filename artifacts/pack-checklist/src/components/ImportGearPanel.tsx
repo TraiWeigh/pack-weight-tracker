@@ -17,6 +17,7 @@ interface ParsedItem {
   warningMsg?: string;
   destination?: string;
   expendable?: boolean;
+  qty?: number; // 024O: quantity / count from import source
 }
 
 type WeightUnit = 'oz' | 'g' | 'lb' | 'kg';
@@ -237,7 +238,7 @@ export function ImportGearPanel({ categoryOrder, onAddItem, defaultOpen = true, 
     // Call onAddItem for each valid item — outside the state updater
     for (const it of valid) {
       const weightOz = displayToOz(it.displayWeight, it.weightUnit);
-      onAddItem(it.destination, { sub: it.sub, desc: it.desc, weightOz, checked: false, expendable: it.expendable ?? false });
+      onAddItem(it.destination, { sub: it.sub, desc: it.desc, weightOz, checked: false, expendable: it.expendable ?? false, qty: it.qty ?? 1 });
     }
 
     if (invalid.length === 0) {
