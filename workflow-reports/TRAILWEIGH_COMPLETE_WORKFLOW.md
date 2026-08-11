@@ -635,3 +635,29 @@ Bar Color and Text Color were already header-scoped (not leaking into bodies). F
 
 ### Report
 `PROMPT_023U_REPORT.md`
+
+---
+
+## Prompt 023V — Reduce Sidebar Accordion Group Gap to 6 px
+
+### Status
+✅ COMPLETE — awaiting user live-app verification
+
+### Summary
+
+Single one-line change on the sidebar accordion stack wrapper in `Checklist.tsx`:
+
+`gap-5 lg:gap-4` (20 px mobile / 16 px desktop) → `gap-1.5` (6 px at all breakpoints)
+
+| | Old | New |
+|---|---|---|
+| Mobile | `gap-5` = 20 px | `gap-1.5` = 6 px |
+| Desktop (lg+) | `lg:gap-4` = 16 px | `gap-1.5` = 6 px |
+
+All panel internals (padding, header height, expanded-body content, body protection from 023U, category gap from 023T) unchanged.
+
+### Files Changed
+`artifacts/pack-checklist/src/pages/Checklist.tsx` — sidebar accordion stack gap
+
+### Report
+`PROMPT_023V_REPORT.md`

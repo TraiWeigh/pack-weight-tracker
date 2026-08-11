@@ -2649,7 +2649,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
             <div className="order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
               {/* 023C: pt-3 lg:pt-0 adds a small top gap on mobile between the BG-edit/Share
                    row and Pack Summary. Desktop sidebar has no top padding (lg:pt-0). */}
-              <div className="pt-3 lg:pt-0 flex flex-col gap-5 lg:gap-4 pb-8">
+              <div className="pt-3 lg:pt-0 flex flex-col gap-1.5 pb-8">
                 <WeightSummary
                   data={data}
                   categoryOrder={categoryOrder}

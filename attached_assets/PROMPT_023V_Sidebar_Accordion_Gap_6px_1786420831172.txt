@@ -1,0 +1,318 @@
+PROMPT 023V — REDUCE SIDEBAR ACCORDION GROUP GAP TO 6 PX
+
+RECOMMENDED REPLIT MODE: ECONOMY
+
+WHY:
+This is a small, low-risk layout spacing change affecting only the outer vertical gap between adjacent sidebar accordion groups.
+
+PURPOSE
+
+Reduce the empty vertical space BETWEEN the sidebar accordion groups shown in the TrailWeigh sidebar to exactly 6 px.
+
+This applies to the outer gap between groups such as:
+
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+- any other equivalent sidebar collapsible/accordion group using the same stack
+
+The requested value is:
+
+CURRENT OUTER GAP: inspect the actual current value
+NEW OUTER GAP: exactly 6 px
+
+This is the space BETWEEN one sidebar group/card and the next.
+
+DO NOT:
+- shrink the sidebar group/card itself
+- change header height
+- change internal top/bottom padding
+- change expanded-body padding
+- change font size
+- change icon size
+- change chevron/caret size
+- change borders or border radius
+- change Bar Color, Text Color, Transparency, or Font behavior
+- change collapse/expand behavior
+- change the 6 px category-bar gap from Prompt 023T
+- perform unrelated refactors
+
+==================================================
+MANDATORY COMPLETION RULE — DO NOT STOP BEFORE THIS
+==================================================
+
+BEFORE YOU STOP OR DECLARE THE PROMPT COMPLETE, YOU MUST:
+
+1. Write:
+   workflow-reports/PROMPT_023V_REPORT.md
+
+2. Append the report to:
+   workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+3. Create:
+   workflow-reports/trailweigh-023V-report.zip
+
+4. Verify the ZIP:
+   - exists
+   - is greater than 0 bytes
+   - opens/lists programmatically
+   - contains PROMPT_023V_REPORT.md
+   - is not corrupt
+
+5. Report:
+   - report path
+   - ZIP path
+   - ZIP size
+   - ZIP contents
+   - ZIP verification result
+
+DO NOT stop after making the CSS/layout change without writing and verifying the report and ZIP.
+
+==================================================
+0. CHECKPOINT / CHANGE PROTECTION
+==================================================
+
+Before editing:
+
+1. Create a checkpoint.
+2. Inspect the current sidebar accordion stack/layout.
+3. Identify the exact CSS/Tailwind/layout rule controlling the vertical gap between adjacent sidebar accordion groups.
+4. Record the current rendered gap.
+5. Make the smallest reasonable change.
+6. Preserve all prior working TrailWeigh behavior and data.
+7. Inspect the complete final diff.
+8. Revert unrelated changes.
+9. Document checkpoint and final diff.
+
+==================================================
+1. EXACT SPACING CHANGE
+==================================================
+
+Set the OUTER vertical gap between adjacent sidebar accordion groups to exactly:
+
+6 px
+
+Do not approximate with 4 px or 8 px.
+
+If the stack uses:
+- `gap-*`
+- `space-y-*`
+- margins
+- grid/flex spacing
+
+change only the property that controls the inter-group gap.
+
+Document:
+- old rule/property
+- old rendered value
+- new rule/property
+- new rendered value: 6 px
+
+==================================================
+2. PRESERVE PANEL SIZE AND INTERNAL SPACING
+==================================================
+
+Keep unchanged:
+
+- Pack Summary panel height/padding
+- Weight Distribution panel height/padding
+- Scan Gear List panel height/padding
+- Locker panel height/padding
+- internal text spacing
+- internal icon spacing
+- expanded-content spacing
+- header spacing
+- border radius
+- border treatment
+
+Only the empty vertical space BETWEEN neighboring sidebar groups should change.
+
+==================================================
+3. PRESERVE 023U BODY PROTECTION
+==================================================
+
+Prompt 023U was USER VERIFIED PASS.
+
+Expanded collapsible-panel bodies must remain protected from:
+
+- Bar Color
+- Transparency
+- Text Color
+
+Only Font and an already-existing Font Size setting may affect expanded-body typography.
+
+Do not weaken or alter that protection.
+
+==================================================
+4. COLLAPSED / EXPANDED CHECK
+==================================================
+
+Verify the 6 px gap when:
+
+- all sidebar groups are collapsed
+- one group is expanded
+- multiple groups are expanded
+
+Expansion must not introduce a larger unintended inter-group gap.
+
+==================================================
+5. RESPONSIVE CHECK
+==================================================
+
+Verify on:
+
+- desktop
+- 390 px
+- 412 px
+
+Do not redesign the sidebar.
+
+==================================================
+6. CORE REGRESSION
+==================================================
+
+Verify no regression to:
+
+- Pack Summary expand/collapse
+- Weight Distribution expand/collapse
+- Scan Gear List expand/collapse
+- Locker expand/collapse
+- category spacing from 023T
+- category header padding/body protection from 023U
+- New
+- Save
+- Save As
+- Locker load/open
+- Undo
+- Redo
+- Preview
+- Share
+- Hide
+- Imperial/Metric
+- Edit View
+- Bar Color
+- Text Color
+- Font
+- Darken
+- Transparency
+- themes
+- file isolation
+- color-picker/eyedropper safety
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+==================================================
+7. BUILD / RUNTIME
+==================================================
+
+Run appropriate build/runtime checks.
+
+Confirm:
+
+- frontend builds
+- app renders
+- no new console/runtime errors
+- no backend regression
+
+No unrelated backend changes.
+
+==================================================
+8. USER VERIFICATION
+==================================================
+
+Give the user this short test:
+
+1. Look at Pack Summary, Weight Distribution, Scan Gear List, and Locker.
+2. Confirm the empty vertical space between each neighboring sidebar group is now 6 px.
+3. Expand one or more groups.
+4. Confirm the panels themselves did not become shorter.
+5. Confirm internal padding/content spacing did not change.
+
+Do not mark USER PASS until the user confirms.
+
+==================================================
+9. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_023V_REPORT.md
+
+Include:
+
+- checkpoint
+- exact file(s) changed
+- exact spacing rule/property changed
+- old gap value
+- new gap value: 6 px
+- collapsed-state result
+- expanded-state result
+- desktop result
+- 390 px result
+- 412 px result
+- regression results
+- build/runtime result
+- final diff
+- unresolved issues
+- user verification steps
+- overall status
+
+Use only:
+
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Append to:
+
+workflow-reports/TRAILWEIGH_COMPLETE_WORKFLOW.md
+
+Do not overwrite prior history.
+
+==================================================
+10. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-023V-report.zip
+
+Include at minimum:
+
+- PROMPT_023V_REPORT.md
+
+May also include useful non-sensitive:
+- before/after screenshots
+- test output
+- build output
+- diff summary
+
+Do NOT include:
+- .env
+- passwords
+- API keys
+- tokens
+- cookies
+- private account data
+- real Locker contents
+- private uploaded photos
+- database dumps
+
+Verify:
+
+1. ZIP exists.
+2. ZIP > 0 bytes.
+3. ZIP opens/lists programmatically.
+4. PROMPT_023V_REPORT.md is inside.
+5. ZIP is not corrupt.
+
+FINAL RULE:
+
+Change ONLY the outer vertical gap between adjacent sidebar accordion groups to exactly 6 px.
