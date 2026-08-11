@@ -168,3 +168,10 @@ uri = "file://workflow-reports/trailweigh-025F-report.zip"
 type = "unspecified"
 title = "Prompt 025F Report"
 description = "PROMPT_025F_REPORT.md — Sidebar single-open accordion + Expand All / Collapse All"
+
+[[outputs]]
+id = "2uGW5vUjyavrCCrMJr09a"
+uri = "file://workflow-reports/trailweigh-025G-report.zip"
+type = "unspecified"
+title = "Prompt 025G Report"
+description = "PROMPT_025G_REPORT.md — Share dropdown fixed-position fix (escapes overflow-hidden)"

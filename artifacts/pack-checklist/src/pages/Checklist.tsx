@@ -895,6 +895,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     : null;
 
   const [showShareMenu, setShowShareMenu] = useState(false);
+  // 025G: ref + computed position for the Share dropdown.
+  // The toolbar row has lg:overflow-hidden which clips absolute children that extend
+  // below it (same issue that forced BackgroundPickerPanel to use fixed positioning).
+  // Using fixed + getBoundingClientRect lets the dropdown escape the overflow clip.
+  const shareContainerRef = useRef<HTMLDivElement>(null);
+  const [shareMenuPos, setShareMenuPos] = useState<{ top: number; right: number } | null>(null);
   // 023E: Tracks Share button hover so we can apply white text inline (inline
   // styles can't be overridden by Tailwind hover pseudo-classes).
   const [shareHovered, setShareHovered] = useState(false);
@@ -2531,7 +2537,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                   />
                 </div>
                 {/* Share pill + dropdown */}
-                <div className="relative">
+                {/* 025G: ref used to compute fixed position for the dropdown (escapes overflow-hidden) */}
+                <div className="relative" ref={shareContainerRef}>
                   {!canShare ? (
                     /* Empty list — visually dimmed, explains on hover (desktop) or tap (mobile) */
                     <div className="group relative">
@@ -2560,7 +2567,15 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     /* Active: normal Share button with dropdown */
                     <>
                       <button
-                        onClick={() => { setShowShareMenu(o => !o); setShareStep('menu'); }}
+                        onClick={() => {
+                          // 025G: compute fixed-position anchor before opening
+                          if (!showShareMenu && shareContainerRef.current) {
+                            const r = shareContainerRef.current.getBoundingClientRect();
+                            setShareMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right });
+                          }
+                          setShowShareMenu(o => !o);
+                          setShareStep('menu');
+                        }}
                         onMouseEnter={() => setShareHovered(true)}
                         onMouseLeave={() => setShareHovered(false)}
                         className="flex items-center gap-1.5 text-xs font-semibold border border-border/60 bg-card px-3 py-1.5 rounded-lg transition-colors text-muted-foreground"
@@ -2572,10 +2587,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                         <Share2 className="w-3.5 h-3.5" />
                         Share
                       </button>
-                      {showShareMenu && (
+                      {/* 025G: showShareMenu && shareMenuPos — position calculated on open */}
+                      {showShareMenu && shareMenuPos && (
                         <>
-                          <div className="fixed inset-0 z-10" onClick={() => { setShowShareMenu(false); setShareStep('menu'); }} />
-                          <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-20 min-w-[220px] py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                          {/* 025G: fixed backdrop at z-40 — above sidebar panels */}
+                          <div className="fixed inset-0 z-40" onClick={() => { setShowShareMenu(false); setShareStep('menu'); }} />
+                          {/* 025G: fixed dropdown at z-50 — escapes lg:overflow-hidden toolbar row
+                              that clipped the old absolute top-full dropdown (same issue as BackgroundPickerPanel) */}
+                          <div
+                            className="fixed bg-card border border-border rounded-lg shadow-lg z-50 min-w-[220px] py-1 animate-in fade-in slide-in-from-top-2 duration-150"
+                            style={{ top: shareMenuPos.top, right: shareMenuPos.right }}
+                          >
                             {shareStep === 'menu' ? (
                               <>
                                 {/* ── Share TrailWeigh List ── */}

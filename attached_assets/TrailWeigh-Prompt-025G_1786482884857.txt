@@ -1,0 +1,263 @@
+TRAILWEIGH — PROMPT 025G
+FIX SHARE DROPDOWN HIDING BEHIND SIDEBAR PANEL GROUP
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+Reason: This is a focused visual layering/stacking-order correction only.
+
+EXPECTED ECONOMY-MODE USAGE
+Estimated time: 2–4 minutes
+Estimated Agent usage/cost: about $0.30–$0.80
+
+USER-VERIFIED CURRENT STATE
+
+Prompt 025F = USER-VERIFIED PASS.
+
+Preserve the new whole-sidebar accordion behavior exactly as implemented:
+- normal individual use allows only one sidebar panel open at a time;
+- opening one sidebar panel closes the others;
+- zero panels open is allowed;
+- Expand All opens every sidebar panel;
+- Collapse All closes every sidebar panel, including when only one is open.
+
+DO NOT CHANGE 025F BEHAVIOR.
+
+NEW LIVE ISSUE
+
+The Share dropdown/menu opens, but part of it is visually hidden behind the sidebar panel group.
+
+The user's screen recording shows the Share menu being covered by sidebar content.
+
+This is a visual layering / stacking-order issue.
+
+PRIMARY GOAL
+
+Make the Share dropdown render visually ABOVE the sidebar panel group so:
+
+- the entire Share dropdown is visible;
+- none of it is covered by sidebar panels;
+- all Share dropdown controls remain clickable;
+- the dropdown stays in its current intended position relative to the Share control.
+
+Do NOT redesign the Share menu.
+
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+
+Before modifying application code, create:
+
+workflow-reports/PROMPT_025G_REPORT.md
+
+Initially write:
+- Prompt: 025G
+- Status: IN PROGRESS
+- "Report file created before application changes."
+
+Verify the report file physically exists.
+
+If it cannot be created:
+STOP before changing application code.
+
+PHASE 2 — REPRODUCE AND IDENTIFY THE ACTUAL CAUSE
+
+Reproduce the issue in the current running app.
+
+Open the Share dropdown while the sidebar panel group is visible.
+
+Confirm:
+- Share dropdown opens;
+- sidebar panel group visually covers part of it.
+
+Inspect the actual rendered DOM and CSS.
+
+Determine the exact cause before editing.
+
+Check specifically for:
+- z-index values;
+- stacking contexts created by positioned elements;
+- transform;
+- opacity;
+- filter;
+- isolation;
+- overflow clipping;
+- parent containers with lower stacking priority;
+- whether the Share dropdown is rendered inside a container that cannot escape the sidebar stacking context.
+
+Document the exact confirmed cause.
+
+Do NOT guess and do NOT simply keep increasing arbitrary z-index numbers without understanding the stacking context.
+
+PHASE 3 — MINIMUM SAFE FIX
+
+Use the smallest safe fix.
+
+Preferred solutions, in order:
+
+1. If this is only a simple z-index mismatch:
+   - give the Share dropdown/menu layer a z-index above the sidebar group using the application's existing layering conventions.
+
+2. If a parent stacking context prevents z-index from working correctly:
+   - render/portal the Share dropdown into document.body or the application's existing overlay/portal root;
+   - preserve its current screen position and anchoring to the Share control.
+
+3. If overflow clipping is the confirmed cause:
+   - correct only the specific clipping/overlay structure necessary for the Share menu;
+   - do not broadly remove overflow protections that other layout behavior depends on.
+
+Choose the smallest robust solution based on the actual cause.
+
+IMPORTANT:
+A portal is acceptable if needed, and TrailWeigh has already used portal-style overlay repairs elsewhere.
+Do not use a portal unless the current stacking context actually requires it.
+
+PHASE 4 — REQUIRED VISUAL RESULT
+
+After the fix:
+
+Open Share while sidebar panels are visible.
+
+Required:
+- Share dropdown is fully visible;
+- dropdown appears above all sidebar panel headers and bodies;
+- no sidebar text, panel, border, or background covers it;
+- dropdown content remains readable;
+- all menu controls are clickable.
+
+Test with:
+- exactly one sidebar panel open;
+- Expand All with every sidebar panel open;
+- all sidebar panels closed if relevant.
+
+The Share menu must remain on top in every case.
+
+PHASE 5 — POSITIONING REGRESSION CHECK
+
+Preserve the current intended Share dropdown position.
+
+Required:
+- do not move it to an unrelated part of the screen;
+- preserve horizontal alignment with the Share control;
+- preserve expected vertical offset;
+- preserve current width;
+- preserve current menu contents;
+- preserve open/close behavior;
+- preserve click-outside behavior;
+- preserve Escape-key behavior if currently supported.
+
+If a portal is used:
+- calculate/retain anchor positioning correctly;
+- account for scrolling/resizing if the current menu already does so;
+- do not create a detached-looking dropdown.
+
+PHASE 6 — SIDEBAR REGRESSION CHECK
+
+Verify Prompt 025F remains fully intact:
+
+- opening one sidebar panel closes the others;
+- zero open is still allowed;
+- Expand All still opens every sidebar panel;
+- Collapse All still closes every sidebar panel;
+- Collapse All still works when only one panel is open;
+- sidebar panel order and content are unchanged.
+
+The Share fix must not alter the sidebar interaction/state logic.
+
+PHASE 7 — OTHER OVERLAY REGRESSION CHECK
+
+Do not break other overlay/dropdown behavior.
+
+If practical, quickly confirm:
+- Background/Themes panel or picker still layers correctly;
+- any existing toolbar menus still open and remain clickable;
+- modals remain above normal page content.
+
+Do not refactor the application's entire z-index system for this prompt.
+
+OUT OF SCOPE
+
+Do NOT change:
+- sidebar accordion behavior;
+- sidebar panel contents;
+- sidebar widths;
+- sidebar order;
+- Share functionality;
+- Share link generation;
+- Share permissions;
+- toolbar layout;
+- importer behavior;
+- Type/Name heading behavior from 025E;
+- Background functionality;
+- Locker;
+- Save / Save As;
+- themes;
+- footer;
+- authentication.
+
+CHANGED-FILE CONTROL
+
+Changes should be limited to:
+- Share dropdown/menu layering or overlay rendering;
+- directly necessary overlay positioning styles/helpers;
+- workflow report artifacts.
+
+No unrelated refactoring.
+
+REPORT REQUIREMENTS
+
+Update:
+
+workflow-reports/PROMPT_025G_REPORT.md
+
+Include:
+- Prompt number: 025G
+- Replit Agent mode actually used
+- Time worked
+- Actions
+- Lines/items read
+- Agent usage/cost
+- exact application files changed
+- exact component that renders the Share dropdown
+- exact confirmed cause of the layering issue
+- whether the fix used z-index, portal rendering, overflow correction, or another narrow solution
+- exact layering change
+- confirmation Share dropdown appears above sidebar when one panel is open
+- confirmation Share dropdown appears above sidebar after Expand All
+- confirmation Share controls remain clickable
+- confirmation Share positioning is unchanged
+- confirmation Share open/close behavior is unchanged
+- confirmation 025F accordion behavior remains intact
+- build/test result
+- confirmation no unrelated changes were made
+- User verification status: PENDING
+
+ZIP REQUIREMENT
+
+Create:
+
+workflow-reports/trailweigh-025G-report.zip
+
+The ZIP must contain at minimum:
+1. PROMPT_025G_REPORT.md
+
+Include useful 025G-specific test output if created.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP opens;
+- report is inside.
+
+FINAL STOP RULE
+
+Complete ONLY Prompt 025G.
+Do not begin another TrailWeigh task.
+
+USER VERIFICATION
+
+Replit internal testing does not count as final PASS.
+
+Final PASS remains pending until the user verifies live:
+
+1. Share dropdown is fully visible;
+2. Share dropdown is above the sidebar panel group;
+3. all Share controls are clickable;
+4. Share positioning is still correct;
+5. 025F sidebar accordion behavior still works.
