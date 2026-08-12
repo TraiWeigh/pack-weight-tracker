@@ -1079,6 +1079,17 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
     };
 
     const url = await buildShareURL(payload);
+    // 025M: buildShareURL returns null when the server is unreachable.
+    // Show an error toast — do NOT fall through with a null/undefined URL,
+    // which would produce a broken or giant hash-encoded link.
+    if (!url) {
+      toast({
+        title: 'Could not create share link',
+        description: 'Check your connection and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
     const title = activeLockerFile?.name ? `${activeLockerFile.name} — TrailWeigh` : 'TrailWeigh Pack List';
     try {
       if (navigator.share) {
@@ -1118,6 +1129,15 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       barTransparency,
     };
     const url = await buildShareURL(payload);
+    // 025M: buildShareURL returns null when the server is unreachable.
+    if (!url) {
+      toast({
+        title: 'Could not create share link',
+        description: 'Check your connection and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
     const title = activeLockerFile?.name ? `${activeLockerFile.name} — Packing List` : 'TrailWeigh Packing List';
     try {
       if (navigator.share) {

@@ -1,0 +1,556 @@
+TRAILWEIGH — PROMPT 025M
+FIX THE PUBLIC REVIEW SHARE LINK SO IT COPIES/SHARES A SHORT VALID URL
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: approximately $0.70–$1.50.
+
+This is a narrow blocking correction to Prompt 025L.
+Do not reopen the broader Review sandbox architecture unless evidence proves it is involved.
+
+==================================================
+REQUIRED ATTACHMENTS
+==================================================
+
+Attach:
+1. TrailWeigh-Prompt-025M.txt
+2. 025M-A-SHARE-LINK-CURRENT-FAILURE.png
+
+Verify both are readable before changing application code.
+
+If the screenshot is unavailable/unreadable:
+STOP.
+Do not modify application code.
+
+==================================================
+USER-VERIFIED CURRENT STATE
+==================================================
+
+Prompt 025L introduced the new Public Review architecture:
+
+- `/s/:id` routes through thin `ReviewPage.tsx`;
+- ReviewPage reads the existing public share token/seed;
+- Review mode renders the SAME exported `ChecklistContent` used by Home;
+- reviewer state uses a review-specific local sandbox;
+- no login is intended;
+- reviewer writes must not affect owner data;
+- welcome modal exists.
+
+Preserve that architecture.
+
+USER LIVE TEST OF 025L:
+
+FAIL at the FIRST BLOCKING STEP.
+
+The user created/copied the Share link and pasted/opened it in a fresh browser.
+
+Instead of opening TrailWeigh, DuckDuckGo treated the pasted value as a search query and displayed:
+
+“Search query entered was too long. Please shorten and try again.”
+
+The attached screenshot is the source-of-truth evidence.
+
+Therefore the Share action is NOT currently delivering a normal browser-recognizable public URL to the user.
+
+Do not continue sandbox/theme/isolation work in this prompt.
+Fix only this blocking link-generation/share/copy defect.
+
+==================================================
+WHAT WORKED / WHAT FAILED / LESSON
+==================================================
+
+WHAT WORKED IN 025L:
+- the new Review route architecture is structurally promising;
+- Replit produced a no-login Review screenshot;
+- `ReviewPage.tsx` is a thin loader;
+- Review renders the same `ChecklistContent` as Home.
+
+WHAT FAILED:
+- the actual user-facing Share result did not behave like a normal URL;
+- the first real user test could not even reach `/s/:id`.
+
+WHY THIS MATTERS:
+A correct ReviewPage is irrelevant if the owner Share control gives reviewers
+a malformed, enormous, encoded, or otherwise non-navigable value.
+
+LESSON:
+Test the EXACT value emitted by the Share action end-to-end.
+Do not infer Share success merely because `/s/:id` works when manually entered.
+
+==================================================
+CURRENT OFFICIAL WEB/REPLIT GUIDANCE TO APPLY
+==================================================
+
+Use current platform behavior, not guessed string construction.
+
+- Replit development URLs are real `*.replit.dev` URLs intended for Preview/testing.
+- After publishing, TrailWeigh will have a normal public deployment origin.
+- A shared browser URL should therefore be constructed from the CURRENT app origin
+  plus the public review route/token rather than embedding the review payload.
+- Clipboard `writeText()` should receive the final URL string only.
+- If using the Web Share API, pass the final URL in the `url` field.
+- Do not put serialized file/locker JSON into the copied URL or into share `text`.
+
+Preferred conceptual form:
+
+CURRENT APP ORIGIN + `/s/<public-token>`
+
+Example shape only:
+`https://<current-trailweigh-origin>/s/abc123xyz0`
+
+Do NOT hard-code a specific Replit development domain.
+The same implementation must work in Preview now and on the published domain later.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+The owner-facing TrailWeigh Share control must produce a concise,
+absolute, valid Public Review URL.
+
+When the user copies/shares it and pastes it into a normal browser address bar:
+
+- the browser recognizes it as a URL;
+- it navigates directly to TrailWeigh;
+- it opens `/s/<public-token>`;
+- Review mode loads;
+- no login is required.
+
+The copied/shared content must NOT be:
+- serialized gear/locker JSON;
+- a data URL;
+- a giant encoded payload;
+- a search query;
+- a relative path with no usable origin;
+- malformed due to missing `https://`;
+- a comma-separated list of Replit domains;
+- an editor/internal URL that reviewers cannot open.
+
+==================================================
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+==================================================
+
+Before editing application code create:
+
+workflow-reports/PROMPT_025M_REPORT.md
+
+Initial contents:
+- Prompt: 025M
+- Status: IN PROGRESS
+- Agent mode
+- screenshot accessible: YES/NO
+- report created before application changes: YES
+
+Verify the report exists.
+
+If report creation fails:
+STOP.
+
+==================================================
+PHASE 2 — CHECKPOINT
+==================================================
+
+Create a Replit checkpoint before editing if available.
+
+Record exact checkpoint identifier/name.
+
+If unavailable:
+CHECKPOINT = NOT AVAILABLE
+
+Do not invent one.
+
+==================================================
+PHASE 3 — TRACE THE EXACT USER-FACING SHARE PATH
+==================================================
+
+Before editing, identify the exact path executed when the OWNER uses the Share
+control that is intended to generate the Public Review link.
+
+Inspect and document:
+
+1. Share button/dropdown component/handler.
+2. The exact user-facing Share option involved.
+3. `handleShareLocker`, `handleShareCheckableList`, or any newer handler actually used.
+4. `buildShareURL()` in `lib/shareLink.ts` or current equivalent.
+5. POST `/api/links` request.
+6. returned public token/id.
+7. final URL string construction.
+8. `navigator.share(...)`, clipboard copy, or fallback behavior.
+9. any use of:
+   - `REPLIT_DOMAINS`
+   - `REPLIT_DEV_DOMAIN`
+   - `window.location`
+   - `location.origin`
+   - URL/query encoding
+   - JSON serialization
+   - base64
+   - share payload `text`
+   - share payload `url`.
+
+Do NOT assume which handler is used based only on source names.
+Confirm the actual click path.
+
+==================================================
+PHASE 4 — REPRODUCE THE EXACT FAILURE BEFORE EDITING
+==================================================
+
+Use the running app in Preview/App Testing.
+
+From OWNER mode, use the same Share action a normal user uses.
+
+Capture the EXACT output passed to the browser share/copy layer.
+
+For safety:
+- do NOT paste a huge serialized payload into the report;
+- record:
+  - total character length;
+  - first ~150 characters;
+  - last ~100 characters;
+  - whether it contains JSON/base64/query payload;
+  - whether it begins with `http://` or `https://`;
+  - parsed origin;
+  - parsed pathname;
+  - query-string length;
+  - hash length.
+
+Attempt:
+
+`new URL(theSharedValue)`
+
+Record PASS/FAIL.
+
+Then record whether pathname matches the intended public review route,
+for example:
+
+`/s/<public-token>`
+
+Also record whether the token returned by POST `/api/links`
+matches the token in the final URL.
+
+FAILURE IS CONFIRMED if the Share action emits anything other than
+a normal concise absolute review URL.
+
+If Replit cannot capture/test the actual emitted value:
+STOP.
+Do not modify code from assumptions.
+
+==================================================
+PHASE 5 — CONFIRM ROOT CAUSE
+==================================================
+
+Determine exactly why the user's copied/shared value became a huge DuckDuckGo query.
+
+Possible causes to INSPECT, not assume:
+- full serialized share payload copied instead of returned URL;
+- payload placed into `navigator.share({ text: ... })`;
+- wrong fallback value sent to clipboard;
+- malformed URL missing scheme;
+- relative route copied instead of absolute URL;
+- `REPLIT_DOMAINS` used incorrectly as a complete origin;
+- multiple domains concatenated;
+- query/hash containing encoded file data;
+- old Share handler still being used instead of the 025L Review link flow;
+- Safari/native-share fallback discrepancy.
+
+Write the confirmed root cause in the report BEFORE editing.
+
+==================================================
+PHASE 6 — SMALLEST SAFE FIX
+==================================================
+
+Make the smallest reversible correction.
+
+The server-side public share record may continue storing the file/locker seed.
+
+But the USER-FACING link should contain ONLY:
+- normal app origin;
+- `/s/`;
+- the returned public token.
+
+Prefer a standards-based absolute URL construction using the current runtime origin,
+such as the equivalent of:
+
+`new URL(`/s/${token}`, window.location.origin).href`
+
+This is a preferred pattern, not permission to skip root-cause analysis.
+
+If current architecture has an existing correct origin helper, reuse it.
+
+DO NOT hard-code:
+- the current `replit.dev` hostname;
+- a future `replit.app` hostname;
+- a future custom domain.
+
+The same code must naturally use whichever origin TrailWeigh is actually running on.
+
+==================================================
+PHASE 7 — NATIVE SHARE AND COPY BEHAVIOR
+==================================================
+
+If TrailWeigh uses `navigator.share`:
+
+The actual Public Review URL must be passed in the `url` field.
+
+Example conceptual structure:
+
+- title: short optional TrailWeigh title
+- text: optional SHORT human-readable sentence only
+- url: the actual absolute review URL
+
+Do NOT put file JSON or encoded share payload in `text`.
+
+If TrailWeigh uses clipboard fallback:
+
+`navigator.clipboard.writeText(...)`
+
+must receive ONLY the absolute review URL string.
+
+If Safari/Web Share behaves differently from clipboard fallback,
+test both paths where practical.
+
+Do not add a complicated new sharing library for this fix.
+
+==================================================
+PHASE 8 — REQUIRED POST-FIX URL VALIDATION
+==================================================
+
+After the fix, create a fresh public Review link through the normal OWNER Share UI.
+
+Record:
+
+- total URL length;
+- protocol;
+- host;
+- pathname;
+- query length;
+- hash length;
+- token.
+
+PASS requires:
+
+1. URL starts with `https://` in the normal secure Replit Preview/public environment.
+2. URL host is the current TrailWeigh app origin.
+3. Path is `/s/<token>` or the existing equivalent public Review route.
+4. Token matches the server-created public share token.
+5. No serialized gear/locker data is present in URL.
+6. Query is empty unless a small documented query parameter is genuinely required.
+7. Hash is empty unless genuinely required.
+8. URL is concise — normal web-URL scale, not thousands of characters.
+9. `new URL(finalValue)` parses successfully.
+
+Do not use an arbitrary exact maximum if the development hostname is long;
+the key requirement is that the value is a normal concise route URL rather than payload data.
+
+==================================================
+PHASE 9 — MANDATORY SIGNED-OUT END-TO-END TEST
+==================================================
+
+This is the decisive test.
+
+In a fresh signed-out/private browser context:
+
+1. use the normal owner Share control to obtain/copy the link;
+2. paste the exact copied value into the BROWSER ADDRESS BAR;
+3. navigate.
+
+PASS requires:
+
+- browser navigates directly;
+- no search engine page appears;
+- no “query too long” message;
+- TrailWeigh Review route opens;
+- no TrailWeigh login is required;
+- the 025L welcome modal appears on a fresh review sandbox;
+- the preinstalled shared file is visible behind/after dismissal.
+
+If the link cannot be tested end-to-end:
+do NOT call 025M PASS.
+
+==================================================
+PHASE 10 — PRESERVE 025L ARCHITECTURE
+==================================================
+
+Do NOT reopen or rewrite unless absolutely necessary:
+
+- `ReviewPage.tsx` thin-loader architecture;
+- exported shared `ChecklistContent`;
+- review-specific `usePackData` storage key;
+- review-specific Locker/localStorage key;
+- review welcome modal;
+- review owner-isolation model;
+- 025K Background panel Dark/Light fix.
+
+If the bug is confined to Share URL construction/copying, change only that path.
+
+==================================================
+TARGETED REGRESSION
+==================================================
+
+Verify:
+
+OWNER:
+- Share button/dropdown still opens.
+- Public share record still gets created/reused as intended.
+- Copy/share reports success only when the URL was actually copied/shared.
+- owner file is unchanged.
+
+REVIEW:
+- manually opening the corrected `/s/<token>` route still loads ReviewPage.
+- no login.
+- welcome modal still works.
+
+DO NOT retest in this prompt:
+- full reviewer rename/delete/new-file sandbox matrix;
+- all themes;
+- importer/parser;
+- OCR;
+- unrelated layout.
+
+Those resume only after the link blocker is fixed.
+
+==================================================
+SCOPE / COST STOP CONDITION
+==================================================
+
+Expected:
+4–8 minutes
+approximately $0.70–$1.50 Agent usage.
+
+Expected application scope:
+approximately 1–3 directly related files.
+
+If confirmed root cause requires:
+- auth redesign;
+- database migration;
+- ReviewPage rewrite;
+- broad Checklist refactor;
+- more than ~3 directly related app files;
+- materially more than estimate;
+
+STOP and report before expanding.
+
+==================================================
+CHANGED-FILE CONTROL
+==================================================
+
+Before completion:
+- inspect every changed application file;
+- revert unrelated edits;
+- no cleanup/refactor outside Share URL generation/copy/share behavior.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Update:
+
+workflow-reports/PROMPT_025M_REPORT.md
+
+Include:
+
+- Prompt 025M
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- checkpoint
+- screenshot verification
+- exact owner Share UI path tested
+- exact handler(s)
+- exact URL-builder function
+- server POST endpoint
+- returned token format
+- PRE-FIX shared-value character length
+- PRE-FIX first ~150 chars, sanitized if necessary
+- PRE-FIX last ~100 chars, sanitized if necessary
+- PRE-FIX protocol/origin/path/query/hash findings
+- PRE-FIX `new URL()` result
+- confirmed root cause
+- exact files changed
+- exact smallest fix
+- whether native Web Share is used
+- whether clipboard fallback is used
+- POST-FIX URL length
+- POST-FIX protocol
+- POST-FIX host
+- POST-FIX pathname
+- POST-FIX query/hash lengths
+- POST-FIX token-match result
+- POST-FIX `new URL()` result
+- signed-out direct-address-bar navigation result
+- DuckDuckGo/search-engine regression result
+- no-login Review result
+- welcome modal result
+- seed file visible result
+- owner original unchanged result
+- 025L architecture preservation
+- unresolved issues
+- final diff review
+- importer/parser untouched
+- USER VERIFICATION = PENDING
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not claim PASS from source inspection alone.
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025M-report.zip
+
+Include at minimum:
+- PROMPT_025M_REPORT.md
+
+Optionally include:
+- a small non-sensitive URL validation text file;
+- a post-fix signed-out Review screenshot.
+
+Do NOT include secret tokens or private data unnecessarily.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+Complete ONLY Prompt 025M.
+
+Do not continue full 025L sandbox testing.
+Do not publish TrailWeigh.
+Do not begin another task.
+
+==================================================
+USER VERIFICATION
+==================================================
+
+Replit internal testing is NOT final PASS.
+
+USER VERIFICATION = PENDING.
+
+The user will verify:
+
+1. Click the normal TrailWeigh Share action.
+2. Copy/share the resulting Review link.
+3. Paste it into a fresh browser address bar.
+4. It opens TrailWeigh directly — not DuckDuckGo/search.
+5. No login is required.
+6. The Review welcome message appears.
+7. The preinstalled shared file loads.
+
+Only after this passes should full 025L sandbox/theme/isolation testing resume.

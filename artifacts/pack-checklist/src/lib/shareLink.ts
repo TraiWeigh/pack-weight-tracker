@@ -72,14 +72,22 @@ export function decodeSharePayload(encoded: string): SharePayload | null {
 }
 
 /**
- * Creates a short /s/<id> link stored on the server. Falls back to hash URL if offline.
- * Pass `{ editable: true }` to generate a link that loads the list into the viewer's checklist.
- * Without that option the link opens a read-only view.
+ * Creates a short /s/<id> link stored on the server.
+ * Returns null if the API call fails — callers MUST handle null and show an
+ * error rather than falling back to a hash-encoded payload URL.
+ *
+ * IMPORTANT: Do NOT restore a hash-encoded fallback here. A base64-JSON hash
+ * URL containing the full gear payload is thousands of characters long and is
+ * misidentified as a search query by browsers and search engines (025M root
+ * cause). When the server is unavailable the correct UX is an error toast.
+ *
+ * Pass `{ editable: true }` to generate a link that loads the list into the
+ * viewer's checklist. Without that option the link opens a read-only view.
  */
 export async function buildShareURL(
   payload: SharePayload,
   opts?: { editable?: boolean },
-): Promise<string> {
+): Promise<string | null> {
   const base = window.location.origin +
     (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
   const suffix = opts?.editable ? '?edit=1' : '';
@@ -96,11 +104,11 @@ export async function buildShareURL(
       console.log('[TrailWeigh] Short share URL:', url);
       return url;
     }
-    console.warn('[TrailWeigh] Share API returned', resp.status, '— using fallback URL');
+    console.warn('[TrailWeigh] Share API returned', resp.status, '— cannot create share link');
   } catch (err) {
-    console.warn('[TrailWeigh] Share API error — using fallback URL', err);
+    console.warn('[TrailWeigh] Share API error — cannot create share link', err);
   }
 
-  // Offline / API unavailable — hash-encoded fallback (long but works)
-  return `${base}/shared#${encodeSharePayload(payload)}`;
+  // Signal failure to the caller — do NOT fall back to a hash-encoded URL.
+  return null;
 }
