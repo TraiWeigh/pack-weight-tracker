@@ -1,0 +1,1094 @@
+TRAILWEIGH — PROMPT 025R
+COMPREHENSIVE WHOLE-TRAILWEIGH QUESTION / LEARNING AUDIT
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+==================================================
+CRITICAL VERSION CHECK — DO THIS BEFORE ANYTHING ELSE
+==================================================
+
+THIS IS THE FINAL 025R LEARNING PROMPT.
+
+It contains a comprehensive numbered audit running through QUESTION 390,
+plus required synthesis/report/ZIP instructions.
+
+Before doing any investigation, verify all of the following:
+
+- The prompt title says:
+  `COMPREHENSIVE WHOLE-TRAILWEIGH QUESTION / LEARNING AUDIT`
+- The prompt contains Question 1.
+- The prompt contains Question 100.
+- The prompt contains Question 200.
+- The prompt contains Question 300.
+- The prompt contains Question 390.
+
+If you only see approximately 22 questions, or the prompt is titled only
+`TRACE THE ACTUAL RUNTIME BACKGROUND PATH IN OWNER VS REVIEW`, you have an OLD
+025R VERSION.
+
+If an old 025R version is loaded:
+STOP IMMEDIATELY.
+DO NOT CREATE A TASK.
+DO NOT BUILD.
+DO NOT CHANGE TRAILWEIGH.
+Report: `WRONG 025R VERSION LOADED`.
+
+==================================================
+PURPOSE
+==================================================
+
+025R is NOT a repair prompt.
+
+Its main purpose is to TEACH CHATGPT HOW TRAILWEIGH AND THE REPLIT PROJECT
+ACTUALLY WORK so future prompts can communicate with Replit precisely,
+protect completed work, reduce wasted Agent credits, and avoid guessing.
+
+The current Share/background failure is only one CASE STUDY inside this audit.
+Do not limit the investigation to that issue.
+
+The broader goal is to understand:
+- current architecture;
+- component ownership and terminology;
+- state/data/storage paths;
+- how user work is saved and protected;
+- how appearance is changed and persisted;
+- how Owner and Review differ;
+- how past prompts changed current code;
+- what prior PASS behaviors must be preserved;
+- how to safely test and rollback;
+- privacy/security boundaries;
+- performance/accessibility implications;
+- future architecture implications;
+- the best exact language and evidence ChatGPT should use in future Replit prompts.
+
+NO APPLICATION-CODE CHANGES ARE ALLOWED.
+
+
+ESTIMATED SCOPE
+Estimated time: 6–12 minutes
+Estimated Agent usage/cost: approximately $1.10–$2.20.
+
+IMPORTANT:
+THIS IS A DIAGNOSTIC / QUESTION PROMPT ONLY.
+
+DO NOT MODIFY APPLICATION CODE.
+DO NOT APPLY A FIX.
+DO NOT REFACTOR.
+DO NOT CHANGE STYLES.
+DO NOT CHANGE STORAGE.
+DO NOT CHANGE SHARE ARCHITECTURE.
+DO NOT CHANGE THEME REGISTRY.
+DO NOT CHANGE AUTH.
+DO NOT CHANGE DATABASE/SCHEMA.
+
+The goal is to eliminate guessing before the next repair prompt.
+
+==================================================
+CORE RULE
+==================================================
+
+Answer ALL materially relevant questions that could change:
+
+- diagnosis;
+- root cause;
+- repair design;
+- regression risk;
+- architecture;
+- privacy/security;
+- persistence behavior;
+- browser/runtime behavior;
+- future TrailWeigh work;
+- Replit time/cost;
+- rollback strategy.
+
+Do NOT ask/answer irrelevant questions merely to create volume.
+
+If something is unknown:
+write UNKNOWN and explain how it could be proven.
+
+Separate:
+CONFIRMED FACTS
+from
+ASSUMPTIONS
+from
+UNKNOWNS.
+
+==================================================
+CURRENT USER-VERIFIED FACTS
+==================================================
+
+Treat these as current external truth unless runtime evidence proves a newer state:
+
+- 025K Background/Themes Light/Dark panel behavior = USER-VERIFIED PASS.
+- 025M concise public Share URL = USER-VERIFIED PASS.
+- 025P no-login Review opens = PASS.
+- 025P Review welcome = PASS.
+- 025P `Sample List` appears populated in Review = PASS.
+- 025P SAME-URL owner filename propagation = PASS.
+- Review Hide works.
+- Review New opens sign-in; user says this is acceptable for now.
+- 025Q = USER-VERIFIED FAIL.
+  No visible change after its attempted appearance restoration.
+- Owner saved file visibly has a built-in background.
+- Review of same live-shared file still renders without that saved background.
+- Review Background/Themes has shown only Landscape while owner-side theme expectations
+  include additional permanent built-in groups from prior TrailWeigh work.
+
+==================================================
+PAST PROMPT HISTORY TO REVIEW
+==================================================
+
+Review available reports/source changes for at least:
+
+025K
+025L
+025M
+025N
+025O
+025P
+025Q
+
+Also inspect any earlier relevant appearance/share/background/theme prompts if their
+changes remain in the current code path.
+
+For each relevant past prompt answer:
+
+1. What exact application files changed?
+2. What exact behavior was intended?
+3. What did Replit internally claim?
+4. What did the user live-verify?
+5. PASS / PARTIAL / FAIL?
+6. What root cause was claimed?
+7. Was that root cause later disproven?
+8. What code from that prompt still exists?
+9. What code was later superseded?
+10. What code is now dead/legacy/unused?
+11. What code remains duplicated?
+12. Did the prompt add fallback/default behavior that can now mask failures?
+13. Did the prompt create any temporary compatibility path that became permanent?
+14. Did any past prompt change storage keys, theme state, Review state, routing, or mount order?
+15. Do any current bugs appear to be regressions from those changes?
+
+Create a concise PAST PROMPT IMPACT MAP.
+
+==================================================
+CONTRADICTION AUDIT
+==================================================
+
+Identify contradictions between:
+
+- past Replit reports;
+- current source;
+- current runtime behavior;
+- user live screenshots/results.
+
+At minimum investigate these known contradictions:
+
+A. 025Q report said appearance values were present and restored,
+   but user saw NO change.
+
+B. Prior TrailWeigh product history expects multiple permanent built-in theme groups,
+   while 025Q report said current built-in registry contains only Landscape.
+
+C. 025N attempted downstream Review seed repair,
+   but upstream data was still wrong.
+
+D. 025O followed stale/older instructions instead of revised live-sharing requirement.
+
+For every contradiction answer:
+
+16. Which source is authoritative now?
+17. What evidence proves it?
+18. What earlier conclusion should be discarded?
+19. Is stale code still present because of the discarded conclusion?
+
+==================================================
+CURRENT RUNTIME BACKGROUND QUESTIONS
+==================================================
+
+Use the RUNNING app/browser.
+
+OWNER:
+open the signed-in saved file with the visible background.
+
+REVIEW:
+open the SAME live-shared file with no login.
+
+20. What exact DOM node visually renders the background in Owner?
+21. What exact DOM node visually renders the background in Review?
+22. Are they rendered by the same React component?
+23. If not, what are the exact component paths?
+24. What is Owner computed `background-image`?
+25. What is Review computed `background-image`?
+26. What is Owner computed `background-color`?
+27. What is Review computed `background-color`?
+28. What are `background-size`, `position`, and relevant classes/inline styles?
+29. Which direct React state/prop/context value feeds Owner background?
+30. Which direct React state/prop/context value feeds Review background?
+31. Are those values from the same hook/provider?
+32. If not, why not?
+
+==================================================
+OWNER APPEARANCE SOURCE-OF-TRUTH QUESTIONS
+==================================================
+
+33. What exact field is authoritative for Owner selected background?
+34. Is it stored in PackStore, LockerEntry metadata, localStorage, IndexedDB, DB, context,
+    or another source?
+35. What exact saved background ID/reference is active?
+36. What exact theme group owns that background?
+37. What exact asset URL/path is resolved?
+38. Is it bundled/static/public/private?
+39. What restores Owner background when a saved file is opened?
+40. Which function/effect runs that restoration?
+41. In what order relative to ChecklistContent mount?
+42. Which file controls the authoritative restoration?
+43. Does Owner rely on userId/auth to restore appearance?
+44. Which appearance fields travel with the file?
+45. Which appearance fields are global-only rather than file-scoped?
+46. Are there legacy duplicate keys for the same setting?
+
+==================================================
+REVIEW APPEARANCE SOURCE-OF-TRUTH QUESTIONS
+==================================================
+
+47. What exact field is authoritative for Review selected background at runtime?
+48. What value does it have before Review fetch resolves?
+49. What value after public DTO resolves?
+50. What value after local sandbox seeding?
+51. What value after ChecklistContent mounts?
+52. What value after all effects settle?
+53. Does the owner background ID ever reach authoritative Review React state?
+54. If yes, what later overwrites/resets it?
+55. If no, at which mapping/restoration step is it lost?
+56. Does Review use a different storage key namespace?
+57. Does Review use owner/global appearance keys accidentally?
+58. Does Review use stale localStorage from an earlier test?
+59. Does Review source-version logic reseed PackStore but not global appearance state?
+60. Does Review initialize state from storage only once?
+61. If 025Q writes storage before ready, why does the mounted state still remain wrong?
+62. Is the Review component remounted or preserved across route/status transitions?
+
+==================================================
+RUNTIME TIMELINE QUESTIONS
+==================================================
+
+Build actual sequence:
+
+T0 route begins
+T1 token fetch starts
+T2 public DTO resolves
+T3 live source version compared
+T4 review sandbox written/reseeded
+T5 appearance keys written
+T6 ChecklistContent mounts
+T7 hooks initialize
+T8 effects restore/reset state
+T9 background resolves asset
+T10 final DOM style stabilizes
+
+63. What is the real order?
+64. Does 025Q write happen before or after authoritative React state initialization?
+65. Is there a later reset to null/default?
+66. Which exact line/function performs that reset?
+67. Is there a race condition?
+68. Is there a stale closure or state initialization issue?
+69. Is route-level suspense/loading/status causing mount timing differences?
+70. Is StrictMode/dev double-mount relevant?
+71. Does production behavior differ from Preview behavior here?
+
+==================================================
+PUBLIC LIVE DTO QUESTIONS
+==================================================
+
+72. What exact public endpoint returns Review data?
+73. What exact fields are returned for appearance?
+74. Does DTO contain current background ID?
+75. Does DTO contain current theme group ID?
+76. Does DTO contain Fit/Fill?
+77. Light/Dark?
+78. Fade/Darken?
+79. Bar Color?
+80. Transparency?
+81. Text Color?
+82. Font?
+83. Are field names identical to Owner PackStore?
+84. Is any transform/default applied server-side?
+85. Is any private/custom background filtered?
+86. Could filtering be accidentally removing a bundled background?
+87. Is the live DTO current or stale?
+88. Does sourceVersion change when only appearance changes?
+89. If appearance changes but sourceVersion does not, Review may never reseed—does that happen?
+
+==================================================
+SOURCE VERSION / LIVE SHARE QUESTIONS
+==================================================
+
+90. How is 025P `sourceVersion` calculated?
+91. Does it include file rename?
+92. item changes?
+93. file add/delete?
+94. appearance changes?
+95. background changes?
+96. bar styling changes?
+97. theme changes?
+98. Does sourceVersion depend only on DB `updatedAt`?
+99. Are appearance changes persisted to DB in a way that updates that timestamp?
+100. Could Owner appearance be local-only and therefore invisible to live public resolver?
+101. Is filename live because it is DB-persisted while background is local-only?
+102. If yes, is this the actual architectural difference causing the failure?
+
+==================================================
+THEME REGISTRY QUESTIONS
+==================================================
+
+Do not assume current theme architecture.
+
+103. What exact module defines permanent built-in theme groups?
+104. What groups are present in source right now?
+105. What groups appear in signed-in Owner runtime right now?
+106. What groups appear in signed-out Review runtime right now?
+107. Are Home and Review using the same registry module?
+108. If source says only Landscape but Owner shows more, where do additional groups come from?
+109. localStorage?
+110. IndexedDB?
+111. API?
+112. static manifest?
+113. runtime-generated data?
+114. old cached browser data?
+115. service worker/cache?
+116. user-created permanent theme configuration?
+117. Are Retro-Outdoors, Psychedelic, and Topo 1 bundled assets or user-side stored data?
+118. Are they available in a brand-new signed-out/private browser?
+119. Are they committed to project source/public assets?
+120. Are they only present in current owner's browser storage?
+121. Is Review intentionally filtering them?
+122. Does auth/userId gate theme group registration?
+123. Is there more than one theme registry?
+124. Which registry should be canonical for future TrailWeigh?
+
+==================================================
+BACKGROUND ASSET QUESTIONS
+==================================================
+
+125. What exact background asset is active in Owner?
+126. Can Review browser request that exact asset URL directly?
+127. HTTP status?
+128. Any CSP/CORS/mixed-content issue?
+129. Any 404?
+130. Is asset path relative to a route in a way that breaks under `/s/:token`?
+131. Is base URL handling different between `/checklist` and `/s/:token`?
+132. Does Vite asset hashing/path rewriting differ?
+133. Is the asset available after publish as well as Preview?
+134. Is there any signed/auth-only asset URL?
+135. Is background stored as an object URL/blob URL that cannot survive across browser sessions?
+136. If it is a blob/object URL, where is the durable underlying asset reference?
+
+==================================================
+CUSTOM THEME / PRIVACY QUESTIONS
+==================================================
+
+137. How are private Custom Theme photos stored?
+138. local IndexedDB?
+139. server?
+140. account record?
+141. Are any Custom Theme IDs accidentally included in public DTO?
+142. Can Review fetch private custom assets?
+143. If not, what fallback occurs?
+144. Could current Owner background actually be Custom/private rather than bundled?
+145. If so, did we misclassify the screenshot?
+146. What should public Review do with a private Custom background?
+147. Is privacy boundary enforced server-side or only UI-side?
+
+==================================================
+SHARE / REVIEW ARCHITECTURE QUESTIONS
+==================================================
+
+148. What exact components are shared between Home and Review?
+149. What is still route-specific?
+150. What state is shared?
+151. What storage is shared?
+152. What behavior is still duplicated?
+153. Is SharedChecklistPage still mounted anywhere?
+154. Is `/shared` legacy route still reachable?
+155. Could old share state/code interfere with `/s/:token`?
+156. Are any old encoded-payload fallbacks still present?
+157. Are any old snapshot links still supported?
+158. Could backward-compatibility logic be selecting wrong code path?
+159. What decides live-locker vs old snapshot behavior?
+160. Is ReviewPage truly a thin adapter now, or has business logic accumulated there?
+
+==================================================
+LOCKER / LIVE COLLECTION QUESTIONS
+==================================================
+
+161. Current owner organization model: true folder, collection, or flat Locker?
+162. 025P exposed entire flat Locker as live source—confirm exact behavior.
+163. Does public token expose every current/future Locker file?
+164. Does owner understand that scope?
+165. Is any file filtered?
+166. Are deleted files immediately removed from Review?
+167. Are new files immediately added after reload?
+168. Are appearance fields stored per LockerEntry?
+169. Are some appearance settings global rather than per file?
+170. If appearance is global, how should multiple live-shared files with different backgrounds behave?
+171. Could global appearance state be fundamentally incompatible with multi-file Review?
+
+==================================================
+OWNER FILE PERSISTENCE QUESTIONS
+==================================================
+
+172. When Owner clicks Save, what exact data is persisted to DB?
+173. What remains only browser-local?
+174. Does background selection persist to DB?
+175. theme group?
+176. theme preset?
+177. Fit/Fill?
+178. Light/Dark?
+179. Bar Color?
+180. Transparency?
+181. Font?
+182. Text Color?
+183. If some are not DB-persisted, can a live server-resolved Review ever see them?
+184. Does current owner cross-device sync preserve these appearance settings?
+185. If not, should public live Review be expected to?
+
+==================================================
+PAST PROMPT REGRESSION QUESTIONS
+==================================================
+
+For each of 025K–025Q:
+
+186. Which verified behavior could a background repair regress?
+187. Does 025K portal theme-scope fix depend on global `screen-dark`?
+188. Could changing Review background state break Background panel Light/Dark?
+189. Could changing sourceVersion logic break 025P filename propagation?
+190. Could adding theme registry sharing expose private custom assets?
+191. Could fixing appearance overwrite reviewer-local customizations on every reload?
+192. Could correcting Review mount timing break welcome modal?
+193. Could route changes break 025M URL?
+194. Could localStorage changes contaminate Owner state?
+195. Could Reviewer changes write back to Owner by accident?
+
+==================================================
+FUTURE PROMPT / ARCHITECTURE QUESTIONS
+==================================================
+
+196. What future TrailWeigh work will depend on this architecture?
+197. live item/weight propagation?
+198. multi-file Review?
+199. built-in themes?
+200. publishing/custom domain?
+201. offline behavior?
+202. user-created Custom Theme sync?
+203. free vs paid features?
+204. catalog/AI features?
+205. accessibility modes?
+206. mobile layout?
+207. shared Preview/Print?
+208. If we choose the smallest repair now, will it create duplicate logic future prompts must maintain?
+209. Is there a slightly more reusable fix that remains narrow?
+210. What should become the single canonical appearance state source?
+211. What should become the single canonical theme registry?
+212. What should become the single canonical Review persistence adapter?
+213. What current technical debt should we explicitly NOT fix now?
+214. What future prompt should handle that debt?
+
+==================================================
+PERFORMANCE QUESTIONS
+==================================================
+
+215. Will proposed appearance restoration add duplicate renders?
+216. repeated localStorage reads?
+217. repeated large DTO serialization?
+218. expensive hash/version calculation?
+219. unnecessary theme asset loading?
+220. duplicate image preloads?
+221. Can the fix remain O(1) or proportional only to current file/collection size?
+222. Is there any measurable current performance issue caused by Review reseeding?
+223. Should performance be measured now or deferred because there is no evidence of a bottleneck?
+
+==================================================
+ACCESSIBILITY QUESTIONS
+==================================================
+
+224. Will restoring backgrounds reduce text contrast?
+225. Are Light/Dark and Bar/Text Color interactions still accessible?
+226. Does Review theme parity preserve current contrast behavior?
+227. Are welcome modal/focus behaviors affected by any remount?
+228. Could background image load failures leave unreadable text?
+229. Is reduced-motion irrelevant here?
+230. Are there any screen-reader semantics affected by proposed repair?
+
+==================================================
+SECURITY QUESTIONS
+==================================================
+
+231. Can anonymous Review mutate owner records?
+232. Can token manipulation enumerate another owner?
+233. Is ownerId ever client-controlled?
+234. Are public DTO fields allowlisted?
+235. Could theme asset paths expose private storage URLs?
+236. Could custom photo references leak signed URLs?
+237. Could localStorage include sensitive owner data?
+238. Are legacy share routes weaker than new route?
+239. Are old share tokens revocable?
+240. Could a repair accidentally reintroduce giant payload URLs or private IDs?
+
+==================================================
+BROWSER / PLATFORM QUESTIONS
+==================================================
+
+241. Is the failure reproducible in Replit App Testing?
+242. Safari?
+243. Chromium?
+244. private/incognito?
+245. same browser with stale localStorage?
+246. fresh browser with no storage?
+247. Does Web Share API matter here?
+248. Does service worker/cache affect theme assets?
+249. Does browser cache mask asset changes?
+250. Does route base path behave differently in published deployment?
+
+==================================================
+TEST / EVIDENCE QUESTIONS
+==================================================
+
+251. What exact screenshots are required for a repair prompt?
+252. What computed-style evidence is required?
+253. What runtime logs/breakpoints are required?
+254. What localStorage snapshots are safe/useful?
+255. What public DTO sample fields are needed?
+256. What should be measured before/after?
+257. What is the minimum regression matrix?
+258. What user live test would decisively prove the next repair?
+259. What test should NOT be repeated because already verified and unrelated?
+260. Can Replit automate the decisive test or must user perform it?
+
+==================================================
+SCOPE / COST QUESTIONS
+==================================================
+
+261. What is the smallest plausible repair?
+262. Exact files?
+263. Exact functions?
+264. Expected time?
+265. Expected Agent cost?
+266. Any schema change?
+267. Any auth change?
+268. Any migration?
+269. Any risk of broad refactor?
+270. What is the STOP threshold if root cause is broader?
+271. What rollback/checkpoint should be used?
+272. What previous known-good checkpoint is relevant?
+
+==================================================
+UNKNOWN / OPEN QUESTION AUDIT
+==================================================
+
+At the end answer:
+
+273. What important questions remain unanswered?
+274. Why are they unanswered?
+275. What exact evidence would answer them?
+276. Would those unknowns change the repair?
+277. If yes, DO NOT recommend a repair yet.
+278. If no, explain why the repair is still safe.
+
+==================================================
+REQUIRED SYNTHESIS
+==================================================
+
+After answering all materially relevant questions, provide these sections:
+
+A. CONFIRMED FACTS
+B. DISPROVEN PAST ASSUMPTIONS
+C. CURRENT UNKNOWNS
+D. PAST PROMPT IMPACT MAP
+E. OWNER RUNTIME BACKGROUND PATH
+F. REVIEW RUNTIME BACKGROUND PATH
+G. FIRST RUNTIME DIVERGENCE
+H. THEME REGISTRY FINDING
+I. LIVE DTO / SOURCE VERSION FINDING
+J. PRIVACY / SECURITY FINDING
+K. FUTURE ARCHITECTURE IMPACT
+L. SMALLEST SAFE REPAIR RECOMMENDATION
+M. REPAIR SCOPE / TIME / COST
+N. REQUIRED USER LIVE TEST
+O. WHAT NOT TO CHANGE
+
+
+==================================================
+USER WORKFLOW / SAVE / CHANGE-PROTECTION QUESTIONS
+==================================================
+
+Also answer the following practical questions so future prompts do not accidentally
+overwrite or reset completed user work.
+
+279. When the user edits a TrailWeigh file in the normal UI, what changes happen
+     immediately only in React/runtime state?
+
+280. Which file changes are written to browser localStorage?
+
+281. Which file changes are written to IndexedDB?
+
+282. Which file changes are written to the server/database/account?
+
+283. Which changes require the user to click Save?
+
+284. Which changes auto-save?
+
+285. Does clicking Save persist:
+     - categories;
+     - items;
+     - Type;
+     - Name;
+     - Weight;
+     - Qty;
+     - checked state;
+     - units;
+     - background;
+     - theme;
+     - Bar Color;
+     - Transparency;
+     - Text Color;
+     - Font;
+     - Light/Dark;
+     - Darken/Fade;
+     - Fit/Fill?
+
+286. Which of those settings are NOT persisted by Save?
+
+287. What exact data structure/database record is updated by Save?
+
+288. What happens if the user makes changes and starts a new Replit Agent prompt
+     without clicking Save?
+
+289. Can a code reload, hot reload, dev-server restart, browser refresh, Replit
+     checkpoint restore, or new Agent prompt cause unsaved TrailWeigh edits to disappear?
+
+290. Which kinds of user changes survive:
+     - browser refresh;
+     - browser close/reopen;
+     - Replit workspace restart;
+     - deployment/re-publish;
+     - application code change;
+     - database restart?
+
+291. Which kinds of changes do NOT survive those events?
+
+292. What is the safest exact user workflow BEFORE sending any future Replit prompt?
+
+293. Should the user always click Save on the active TrailWeigh file first?
+
+294. Should the user close/reopen the saved file to verify persistence before the
+     next prompt?
+
+295. Should Replit create a checkpoint before every prompt that changes application code?
+
+296. What exactly does a Replit checkpoint protect?
+     - source code?
+     - configuration?
+     - database?
+     - localStorage?
+     - IndexedDB?
+     - uploaded files?
+     - account records?
+     - Review sandbox state?
+
+297. What does a Replit checkpoint NOT protect?
+
+298. If a future Agent prompt breaks the app, what is the safest rollback sequence?
+
+299. Can checkpoint rollback accidentally roll back user account/database content?
+
+300. If yes, under what circumstances?
+
+301. If no, explain exactly why not.
+
+302. Are database migrations included in checkpoint rollback?
+
+303. Are server/database records created by the user after a checkpoint preserved
+     if source code is rolled back?
+
+304. What should the user back up separately before any future prompt that touches:
+     - database schema;
+     - file persistence;
+     - Locker storage;
+     - themes;
+     - account data?
+
+305. Is there a safe export/backup path already available for important user files?
+
+306. If not, should future prompts avoid persistence/schema changes until one exists?
+
+==================================================
+TEST DATA VS IMPORTANT USER DATA QUESTIONS
+==================================================
+
+307. How should Agent tests create temporary files without touching important owner files?
+
+308. Can Replit create clearly named test files such as `TW TEST - DO NOT KEEP`
+     inside a safe test context?
+
+309. Can tests use a dedicated test account?
+
+310. If no test account exists, how should Agent avoid destructive testing?
+
+311. Which user files should be treated as production/important and never deleted
+     during Agent tests?
+
+312. Should `Sample List` be treated as read-only test source except for user-approved
+     temporary rename/edit tests?
+
+313. How should test-created files be cleaned up?
+
+314. How can Replit prove cleanup did not alter unrelated Locker files?
+
+315. How should signed-in Owner data and signed-out Review data be separated during tests?
+
+316. What browser/localStorage namespaces correspond to Owner vs Review?
+
+317. Can Review testing contaminate Owner localStorage or vice versa?
+
+318. If yes, how?
+
+319. What safeguards should future prompts use?
+
+==================================================
+APPEARANCE-CHANGE WORKFLOW QUESTIONS
+==================================================
+
+Determine exactly how a normal user should change and save appearance.
+
+320. When the user changes Background/Themes, is the new background applied immediately?
+
+321. Is background selection saved automatically or only when Save is clicked?
+
+322. Is the selected background stored:
+     - per file;
+     - per account;
+     - per device;
+     - globally;
+     - some combination?
+
+323. Is the selected theme group stored separately from the background preset ID?
+
+324. Is Fit/Fill per file or global?
+
+325. Is Light/Dark per file, per account, or global?
+
+326. Is Darken/Fade per file or global?
+
+327. Is Bar Color per file or global?
+
+328. Is Transparency per file or global?
+
+329. Is Text Color per file or global?
+
+330. Is Font per file or global?
+
+331. Is chart palette per file or global?
+
+332. Which appearance values are part of LockerEntry?
+
+333. Which are part of PackStore?
+
+334. Which are in localStorage only?
+
+335. Which are in IndexedDB only?
+
+336. Which are persisted to server/database?
+
+337. Which are reconstructed from defaults when a file opens?
+
+338. When switching from File A to File B, how are their appearance settings isolated?
+
+339. Can File A's appearance leak into File B?
+
+340. Which past prompt fixed or affected that isolation?
+
+341. When opening a saved file, what exact sequence restores appearance?
+
+342. When clicking New, what appearance state should be reset?
+
+343. When clicking Save As, does the new file inherit the current appearance?
+
+344. When renaming a file, is appearance untouched?
+
+345. When sharing a file/collection, which appearance state is included in the public source?
+
+346. When Review locally changes appearance, where is that stored?
+
+347. Can Review appearance changes ever write to Owner?
+
+348. When Owner changes appearance after sharing, should same Review URL update
+     after source-version change?
+
+349. Does current sourceVersion actually detect every saved appearance change?
+
+350. If not, which appearance changes fail to propagate?
+
+351. When the user publishes/re-publishes TrailWeigh, do built-in theme selections
+     and saved file appearance remain intact?
+
+352. Can publishing change asset URLs enough to break saved background references?
+
+353. If background IDs are stable but URLs are hashed/generated, what is the correct
+     durable identifier to save?
+
+354. What appearance value should NEVER be saved as a temporary blob/object URL?
+
+==================================================
+BUILT-IN THEME EDITING / MAINTENANCE QUESTIONS
+==================================================
+
+355. How should the developer add a new permanent built-in theme safely?
+
+356. What exact files/registry entries/assets must be changed?
+
+357. What identifier rules should themes/presets follow so saved files do not break later?
+
+358. Can a built-in theme be renamed without breaking existing saved files?
+
+359. If yes, how?
+
+360. If no, what stable internal ID should remain unchanged while display name changes?
+
+361. How should a built-in theme be removed without breaking older saved files?
+
+362. Should deprecated presets remain resolvable even if hidden from the UI?
+
+363. What fallback should occur if a saved built-in preset no longer exists?
+
+364. How should permanent built-in themes be made available equally to Owner and Review?
+
+365. Which theme data belongs in app source/public assets instead of user storage?
+
+366. What is the correct process for adding/removing/reordering permanent theme groups?
+
+367. How can future prompts modify theme appearance without duplicating registries?
+
+==================================================
+CUSTOM THEME SAVE / SAFETY QUESTIONS
+==================================================
+
+368. How is the user's Custom Theme saved today?
+
+369. Does it survive app reload?
+
+370. browser restart?
+
+371. Replit code changes?
+
+372. re-publish?
+
+373. different device?
+
+374. What part is per-device only?
+
+375. What would the planned `Sync Custom Themes to This Device` need to copy?
+
+376. Could future Agent prompts wipe IndexedDB or Custom Theme data?
+
+377. If yes, what operations are dangerous?
+
+378. What must never be done in future prompts without user approval?
+
+379. Should future theme-related prompts first back up Custom Theme metadata?
+
+380. How can Replit inspect Custom Theme structure without exposing/private-copying images?
+
+==================================================
+SAFE FUTURE PROMPT WORKFLOW QUESTIONS
+==================================================
+
+381. Give an exact recommended workflow for every future TrailWeigh code-change prompt:
+
+BEFORE PROMPT:
+- what should user save?
+- what should user close/open?
+- what should Replit checkpoint?
+- what runtime state should be recorded?
+- what screenshot/evidence should be captured?
+
+DURING PROMPT:
+- what files may be changed?
+- how should Replit protect owner data?
+- how should temporary test data be handled?
+- when must Replit STOP?
+
+AFTER PROMPT:
+- what should Replit test internally?
+- what report/ZIP should it create?
+- what should the user verify live?
+- when should checkpoint be kept?
+- when should rollback happen?
+
+382. How should the next prompt explicitly preserve every prior USER-VERIFIED PASS?
+
+383. Can Replit compare the current diff against the previous checkpoint before completion?
+
+384. Should every prompt report all changed files and why?
+
+385. Should unrelated changed files automatically trigger a STOP/review?
+
+386. How can Agent avoid reformatting/refactoring files unrelated to the task?
+
+387. How should a prompt distinguish application-code changes from user-data changes?
+
+388. How should database/data modifications be reported separately from source-code changes?
+
+389. What exact warning should future prompts use before any destructive user-data operation?
+
+390. What user confirmation should be required before:
+     - deleting owner files;
+     - deleting theme assets;
+     - resetting storage;
+     - clearing localStorage;
+     - clearing IndexedDB;
+     - database migration;
+     - changing authentication;
+     - exposing additional data publicly?
+
+==================================================
+REQUIRED PRACTICAL USER GUIDE FROM REPLIT
+==================================================
+
+In addition to the technical diagnostic report, include a concise section:
+
+`SAFE TRAILWEIGH WORKFLOW FOR THE USER`
+
+Write it in plain language for a non-programmer.
+
+It must explain:
+
+1. How to safely edit a TrailWeigh file.
+2. When to click Save.
+3. How to verify a file really saved.
+4. What to do before sending the next Replit prompt.
+5. What a Replit checkpoint protects.
+6. What it does NOT protect.
+7. How to safely test a prompt.
+8. What to do if a prompt breaks something.
+9. How to change and save appearance.
+10. Which appearance settings follow a file versus the account/device.
+11. How to avoid losing important files/themes.
+12. What not to delete/reset without a backup.
+
+Do NOT make application changes while producing this guide.
+
+==================================================
+NO-CODE-CHANGE RULE
+==================================================
+
+025R must make ZERO application-code changes.
+
+Before finishing:
+
+- inspect git diff/status;
+- confirm no new application source changes were introduced by 025R;
+- revert any accidental diagnostic edit.
+
+Report:
+
+APPLICATION CODE CHANGED BY 025R = NONE
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Create/update:
+
+workflow-reports/PROMPT_025R_REPORT.md
+
+Include:
+- Prompt 025R
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- diagnostic-only confirmation
+- all materially relevant answers above
+- exact runtime evidence
+- contradictions
+- first divergence
+- smallest safe repair recommendation
+- future prompt impact
+- unresolved questions
+- application code changed: NONE
+- USER VERIFICATION = NOT APPLICABLE — DIAGNOSTIC ONLY
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025R-report.zip
+
+Include at minimum:
+- PROMPT_025R_REPORT.md
+
+Optional:
+- small non-sensitive diagnostic evidence;
+- runtime screenshots;
+- sanitized DTO/style traces.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+MANDATORY ANSWER ARCHIVE / ZIP — NOT OPTIONAL
+==================================================
+
+Do not leave substantive answers only in Replit Agent chat.
+
+Every materially relevant answer, finding, contradiction, unknown, recommendation,
+and plain-language workflow instruction must be written into:
+
+workflow-reports/PROMPT_025R_REPORT.md
+
+Then create:
+
+workflow-reports/trailweigh-025R-report.zip
+
+The ZIP must contain at minimum:
+- PROMPT_025R_REPORT.md
+
+Include any safe supporting evidence that was created:
+- screenshots;
+- sanitized runtime traces;
+- computed-style evidence;
+- sanitized DTO/state traces;
+- small diagnostic logs.
+
+Before declaring 025R complete verify:
+1. report exists;
+2. ZIP exists;
+3. ZIP > 0 bytes;
+4. ZIP opens/lists successfully;
+5. PROMPT_025R_REPORT.md is inside;
+6. answers are actually present in the report;
+7. ZIP is not corrupt.
+
+If any of these fail:
+STATUS = FAIL.
+Do not claim completion.
+
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+STOP after the diagnostic report.
+
+DO NOT FIX ANYTHING.
+
+The next repair prompt will be written only after this 025R diagnostic report is reviewed.
