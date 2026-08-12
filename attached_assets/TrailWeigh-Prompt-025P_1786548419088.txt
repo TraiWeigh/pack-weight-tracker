@@ -1,0 +1,774 @@
+TRAILWEIGH — PROMPT 025P
+BUILD THE LIVE PUBLIC REVIEW COLLECTION
+SO THE SAME SHARE LINK REFLECTS CURRENT OWNER CHANGES
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 10–18 minutes
+Estimated Agent usage/cost: approximately $2.00–$3.50.
+
+IMPORTANT:
+This is a NEW prompt number because prior 025O work followed stale/older instructions.
+
+DO NOT use, reinterpret, or continue any earlier 025O frozen-snapshot instructions.
+
+025P is about LIVE OWNER-SOURCE SHARING.
+
+==================================================
+REQUIRED ATTACHMENTS
+==================================================
+
+Attach:
+
+1. TrailWeigh-Prompt-025P.txt
+2. 025P-A-OWNER-SAMPLE-LIST-SOURCE-OF-TRUTH.png
+3. 025P-B-REVIEW-CURRENT-FAILURE.png
+
+Verify both screenshots are readable BEFORE application changes.
+
+If either screenshot is missing/unreadable:
+STOP.
+Do not modify application code.
+
+==================================================
+USER-VERIFIED CURRENT STATE
+==================================================
+
+PRESERVE:
+
+- 025K: Background/Themes panel correctly follows Light/Dark.
+- 025L: Public Review uses the same core `ChecklistContent` path as Home.
+- 025M: USER-VERIFIED PASS.
+  Share now creates a concise valid public URL and no longer creates giant
+  encoded share URLs.
+- Public Review opens with NO LOGIN.
+- Review welcome message works.
+- Review Hide works.
+- Review New currently opens TrailWeigh sign-in.
+  USER SAYS THIS IS ACCEPTABLE FOR NOW.
+  DO NOT CHANGE REVIEW NEW IN 025P.
+- standalone top-toolbar Print remains absent.
+- Print remains inside Preview.
+- importer/parser/OCR behavior must remain untouched.
+
+CURRENT OWNER SOURCE-OF-TRUTH FILE:
+
+`Sample List`
+
+The owner screenshot attached to this prompt shows this current file.
+
+CURRENT REVIEW FAILURE:
+
+The Review side has previously shown an empty/generic `Shared Pack List`
+instead of the owner’s intended current content.
+
+The latest 025O report only improved filename fallback for a snapshot share.
+It did NOT implement the live shared collection requested by the user.
+
+==================================================
+FINAL PRODUCT REQUIREMENT
+==================================================
+
+The Share URL should remain STABLE.
+
+The OWNER'S intentionally shared collection is the LIVE SOURCE OF TRUTH.
+
+When the owner changes that shared collection, the SAME public Share URL should
+show the latest owner state on the next Review open/reload.
+
+Owner-side changes that must flow through the SAME Share URL include:
+
+- add file;
+- delete file;
+- rename file;
+- edit file;
+- add/delete categories;
+- add/delete/edit items;
+- change weights;
+- change quantities;
+- change checked/packed state;
+- change Review-visible file appearance/background settings;
+- change file order if current collection ordering supports it.
+
+The owner should NOT have to generate a new Share URL after every change.
+
+==================================================
+REVIEWER EXPERIENCE
+==================================================
+
+The reviewer:
+
+- requires NO LOGIN;
+- receives a disposable Review sandbox;
+- can edit/rename/delete local Review files;
+- can experiment freely;
+- can use all current bundled/permanent TrailWeigh themes;
+- can use normal shared Checklist UI;
+- CANNOT modify the owner source;
+- CANNOT access unrelated owner files or private account data.
+
+OWNER SOURCE WINS WHEN IT CHANGES.
+
+On Review open/reload:
+
+- fetch current source collection;
+- compare source version to local Review sandbox source version;
+- if source unchanged: preserve reviewer local sandbox;
+- if source changed: reseed/replace Review sandbox from latest owner source.
+
+Do NOT build merge/conflict resolution.
+
+The Review sandbox is intentionally disposable.
+
+==================================================
+CURRENT OFFICIAL PRACTICES TO APPLY
+==================================================
+
+Use these principles while designing 025P:
+
+REACT:
+Use one source of truth for shared application state where practical.
+Do not duplicate Home and Review visual/state implementations.
+
+REPLIT:
+Use Preview/App Testing in the actual running browser.
+Source inspection is not proof of working runtime behavior.
+
+WEB STORAGE:
+Reviewer local sandbox may use token-namespaced `localStorage`.
+`localStorage` persists across browser sessions for the same origin.
+Never store owner auth secrets/private credentials there.
+
+API SECURITY:
+Public tokens must authorize only the intentionally shared object/collection.
+Do not trust a client-supplied owner file ID without server-side authorization.
+Do not expose unrelated owner objects through manipulable IDs.
+
+==================================================
+PHASE 1 — REPORT FIRST
+==================================================
+
+Before changing application code create:
+
+workflow-reports/PROMPT_025P_REPORT.md
+
+Initial fields:
+
+- Prompt: 025P
+- Status: IN PROGRESS
+- Agent mode
+- owner screenshot accessible: YES/NO
+- review screenshot accessible: YES/NO
+- report created before application changes: YES
+
+Verify report exists.
+
+If it cannot be created:
+STOP.
+
+==================================================
+PHASE 2 — CHECKPOINT
+==================================================
+
+Create a Replit checkpoint before editing if available.
+
+Record exact checkpoint identifier/name.
+
+If unavailable:
+CHECKPOINT = NOT AVAILABLE
+
+Do not invent one.
+
+==================================================
+PHASE 3 — INVENTORY THE ACTUAL OWNER DATA MODEL
+==================================================
+
+BEFORE EDITING, document:
+
+1. Owner Locker file model.
+2. Current file database/storage record.
+3. Whether TrailWeigh has a TRUE folder entity.
+4. Whether TrailWeigh has a collection/group entity.
+5. Whether Locker is currently flat.
+6. Current active-file handling.
+7. Current Share UI handler.
+8. Current POST `/api/links` or equivalent.
+9. Current public share-record schema.
+10. Current GET/read path used by `/s/:token`.
+11. Current ReviewPage bootstrap.
+12. Current Review localStorage keys.
+13. Current owner authorization checks.
+14. Current built-in theme source.
+15. Current Custom Theme/private-image behavior.
+
+Then answer:
+
+CURRENT OWNER ORGANIZATION MODEL =
+- TRUE FOLDER
+- COLLECTION/GROUP
+- FLAT LOCKER
+
+Do not guess.
+
+==================================================
+PHASE 4 — DEFINE THE SHARED SOURCE WITHOUT EXPOSING PRIVATE DATA
+==================================================
+
+The user wants what they are creating in the shared area to be what reviewers see.
+
+Use the SMALLEST safe source model already supported.
+
+PREFERRED ORDER:
+
+A. If a true owner folder already exists:
+   share that folder.
+
+B. If a collection/group already exists:
+   share that collection.
+
+C. If only a flat Locker exists:
+   DO NOT silently expose the entire private Locker.
+
+Instead, determine whether a narrow existing concept can represent a
+PUBLIC REVIEW COLLECTION using existing file IDs/relationships without
+inventing a full folder subsystem.
+
+Examples of acceptable narrow approaches if compatible with current architecture:
+
+- a public Review collection record containing references to intentionally
+  shared owner file IDs;
+- a current existing Locker subset/group;
+- a small existing share-membership relation.
+
+UNACCEPTABLE:
+- exposing every private Locker file merely because no folder exists;
+- building a broad new general-purpose folder UI in this prompt;
+- inventing unrelated file-management features.
+
+If no narrow safe collection representation is possible within scope:
+STOP and report:
+- exact blocker;
+- minimum design needed;
+- estimated scope/cost.
+
+==================================================
+PHASE 5 — IDENTIFY CURRENT SHARE RECORD SEMANTICS
+==================================================
+
+Use the normal owner Share action.
+
+Document exactly what the share record currently represents.
+
+Choose:
+
+- frozen file snapshot;
+- frozen multi-file snapshot;
+- live file reference;
+- live folder/collection reference;
+- other.
+
+Record exact server fields involved.
+
+Then write:
+
+CURRENT SHARE SEMANTICS:
+[exact behavior]
+
+REQUIRED SHARE SEMANTICS:
+stable public token → live intentionally shared collection
+
+FIRST ARCHITECTURAL GAP:
+[exact first difference]
+
+Do not edit before this is established.
+
+==================================================
+PHASE 6 — CURRENT SOURCE SIGNATURE
+==================================================
+
+Build a baseline signature from the owner shared source.
+
+At minimum include:
+
+- source collection/folder identifier, sanitized;
+- file count;
+- file names;
+- confirm `Sample List` exists;
+- `Sample List` category count;
+- `Sample List` item count;
+- checked/packed count;
+- 3 representative item identities;
+- representative weights/quantities;
+- current theme/background ID;
+- current updatedAt/version fields available.
+
+This is the OWNER SOURCE SIGNATURE.
+
+==================================================
+PHASE 7 — ROOT-CAUSE / SCOPE GATE
+==================================================
+
+Before editing, state:
+
+CONFIRMED CURRENT ARCHITECTURAL GAP:
+[exact reason same Share URL cannot currently reflect owner changes]
+
+PROPOSED MINIMUM LIVE-REFERENCE DESIGN:
+[exact design]
+
+EXPECTED APPLICATION FILES TO CHANGE:
+[list]
+
+EXPECTED DATABASE/SCHEMA CHANGE:
+YES / NO
+
+Proceed only if the live-reference solution fits roughly:
+
+- 3–6 directly related application files;
+- no broad auth redesign;
+- no broad Locker redesign;
+- no destructive migration;
+- approximately 10–18 minutes;
+- approximately $2.00–$3.50.
+
+If materially broader:
+STOP and report.
+
+==================================================
+PHASE 8 — IMPLEMENT STABLE LIVE SHARE REFERENCE
+==================================================
+
+Implement the smallest safe structure so a public share record stores a
+REFERENCE to the intentionally shared owner collection rather than a permanently
+copied Review payload.
+
+Public link remains the 025M pattern:
+
+CURRENT ORIGIN + `/s/<unguessable-token>`
+
+Do not place owner data in the URL.
+
+Do not hard-code Replit hostname.
+
+The share record may contain only what is necessary to resolve the public scope,
+such as:
+
+- token;
+- owner/server reference;
+- shared collection/folder reference;
+- active/revoked status;
+- timestamps/version metadata.
+
+Do not expose private identifiers unnecessarily to the browser.
+
+==================================================
+PHASE 9 — PUBLIC LIVE RESOLVER
+==================================================
+
+Build/reuse a server-side public resolver that:
+
+1. receives public token;
+2. validates token exists and is active;
+3. determines exactly which owner collection/files that token is allowed to expose;
+4. reads the CURRENT versions of those files from owner storage;
+5. maps them to a safe public Review DTO;
+6. returns current files plus source-version marker.
+
+The anonymous browser must NOT call owner-authenticated endpoints directly.
+
+The server public resolver is the authorization boundary.
+
+PUBLIC DTO should contain only Review-visible data required by TrailWeigh.
+
+Do not return:
+- unrelated Locker files;
+- sibling/private collections;
+- credentials;
+- private account data;
+- private user-uploaded theme photos unless already explicitly public by design.
+
+==================================================
+PHASE 10 — SOURCE VERSION
+==================================================
+
+Choose the simplest reliable source-version mechanism from current data.
+
+Prefer existing:
+
+- collection/folder updatedAt;
+- max/latest file updatedAt;
+- deterministic hash of Review-visible current collection manifest.
+
+Version must change when:
+
+- file added;
+- file deleted;
+- file renamed;
+- file contents change.
+
+Avoid a schema migration solely for versioning if a reliable version can be
+derived from existing data.
+
+Record the chosen method.
+
+==================================================
+PHASE 11 — REVIEW SYNC
+==================================================
+
+Keep Review on the SAME core `ChecklistContent`.
+
+On every `/s/:token` initial open/reload:
+
+1. fetch current public collection + source version;
+2. read Review local sandbox version.
+
+CASE A:
+No local Review sandbox.
+→ seed from latest owner source.
+
+CASE B:
+Local sandbox exists and source version is unchanged.
+→ preserve reviewer local changes.
+
+CASE C:
+Local sandbox exists and owner source version changed.
+→ replace/reseed local Review sandbox from latest owner source.
+→ store new source version.
+
+Optional:
+show a small non-blocking notice:
+
+“Review files updated to the latest shared version.”
+
+Do not merge.
+
+Do not repeatedly reseed during ordinary React renders.
+
+==================================================
+PHASE 12 — REQUIRED INITIAL RUNTIME TEST
+==================================================
+
+Use a fresh Review token/URL after implementation.
+
+SIGNED-IN OWNER:
+
+Confirm source contains:
+`Sample List`
+
+SIGNED-OUT FRESH REVIEW:
+
+Open the public URL.
+
+PASS requires:
+
+- no login;
+- welcome behavior remains;
+- Review file list contains `Sample List`;
+- generic empty `Shared Pack List` is absent;
+- `Sample List` opens;
+- real categories/items are populated;
+- representative items/weights/quantities match owner source.
+
+If this basic initial test fails:
+STOP.
+Do not continue to later tests.
+
+==================================================
+PHASE 13 — SAME-URL LIVE UPDATE TESTS
+==================================================
+
+Use the SAME public Review URL throughout.
+
+DO NOT create a new Share URL between tests.
+
+TEST A — OWNER RENAME
+
+Owner:
+rename `Sample List` to:
+
+`Sample List LIVE TEST`
+
+Save normally.
+
+Review:
+reload SAME URL.
+
+PASS:
+Review now shows `Sample List LIVE TEST`.
+
+Then owner restores name to:
+
+`Sample List`
+
+Review reloads SAME URL.
+
+PASS:
+Review returns to `Sample List`.
+
+TEST B — OWNER EDIT
+
+Change one safe, clearly identifiable item value in `Sample List`
+(weight, quantity, or item name) and save.
+
+Reload SAME Review URL.
+
+PASS:
+new value appears.
+
+Restore value if appropriate.
+
+TEST C — OWNER ADD FILE
+
+Create/add a safe temporary test file inside the shared source collection.
+
+Reload SAME Review URL.
+
+PASS:
+test file appears.
+
+TEST D — OWNER DELETE TEMP FILE
+
+Delete only the temporary test file.
+
+Reload SAME Review URL.
+
+PASS:
+test file disappears.
+
+Do NOT delete `Sample List`.
+
+==================================================
+PHASE 14 — REVIEWER SANDBOX ISOLATION TEST
+==================================================
+
+In Review:
+
+1. locally edit `Sample List`;
+2. locally rename it;
+3. locally delete/create a Review file if safe.
+
+Confirm:
+- owner source does not change;
+- owner Locker does not change;
+- no owner write endpoint is called.
+
+Reload while owner source version is unchanged.
+
+PASS:
+reviewer local state is preserved.
+
+Then make one new owner-side source change.
+
+Reload SAME Review URL.
+
+PASS:
+owner source version change causes Review to reseed to latest owner state.
+
+==================================================
+PHASE 15 — PRIVACY / AUTHORIZATION TEST
+==================================================
+
+Prove public scope is narrow.
+
+Have:
+
+- at least one file intentionally inside shared source;
+- at least one owner file outside shared source.
+
+Public response:
+- MUST include inside-shared file;
+- MUST NOT include outside/private file.
+
+Verify public token cannot be used to enumerate:
+- owner Locker;
+- sibling collections;
+- unrelated files.
+
+Do not perform destructive security testing.
+
+==================================================
+PHASE 16 — BUILT-IN THEMES
+==================================================
+
+Inventory current bundled/permanent TrailWeigh theme groups.
+
+Review must use the same bundled theme source as Home.
+
+Do not duplicate theme image binaries into share records.
+
+Private Custom Theme uploads/photos remain private unless already explicitly
+designed to be public.
+
+Do not change current theme behavior unless required by the live collection model.
+
+==================================================
+PHASE 17 — TARGETED REGRESSION
+==================================================
+
+Verify:
+
+- 025M concise URL remains.
+- no-login Review remains.
+- Review welcome remains.
+- same-core ChecklistContent remains.
+- Review Hide remains working.
+- Review New still opens sign-in and is intentionally unchanged.
+- 025K Background Light/Dark remains.
+- Owner Locker still works.
+- Owner Save/Rename/Delete still works.
+- importer/parser/OCR untouched.
+- standalone top-toolbar Print remains absent.
+
+==================================================
+REQUIRED SCREENSHOT EVIDENCE
+==================================================
+
+If browser screenshots are available, create:
+
+workflow-reports/025P-REVIEW-INITIAL-SAMPLE-LIST.png
+workflow-reports/025P-REVIEW-AFTER-OWNER-RENAME.png
+
+Both must use the SAME Review URL.
+
+The first must prove:
+- `Sample List` appears and is populated.
+
+The second must prove:
+- the SAME Review URL reflects owner rename.
+
+==================================================
+CHANGED-FILE CONTROL
+==================================================
+
+Before completion:
+
+- inspect every changed file;
+- revert unrelated edits;
+- no cleanup/refactor outside live shared collection path;
+- no importer/parser/OCR changes.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Update:
+
+workflow-reports/PROMPT_025P_REPORT.md
+
+Include:
+
+- Prompt 025P
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- checkpoint
+- attachment verification
+- current owner organization model
+- existing folder/collection finding
+- current share semantics
+- required share semantics
+- first architectural gap
+- owner source signature
+- chosen shared-source model
+- exact files changed
+- schema/database change
+- public share record design
+- public resolver path
+- source-version method
+- Review sync algorithm
+- initial `Sample List` result
+- `Shared Pack List` absent result
+- SAME-URL rename result
+- rename-back result
+- SAME-URL edit result
+- SAME-URL add-file result
+- SAME-URL delete-file result
+- reviewer local isolation result
+- owner-version-change reseed result
+- inside-shared-file privacy result
+- outside-private-file privacy result
+- owner Locker isolation
+- bundled theme inventory
+- private Custom Theme handling
+- 025M regression
+- no-login regression
+- welcome regression
+- Review Hide regression
+- Review New intentionally unchanged
+- 025K regression
+- screenshot paths or NOT AVAILABLE
+- final diff review
+- importer/parser/OCR untouched
+- unresolved issues
+- USER VERIFICATION = PENDING
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not call runtime behavior PASS unless actually tested.
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025P-report.zip
+
+Include at minimum:
+
+- PROMPT_025P_REPORT.md
+
+Also include if created:
+
+- 025P-REVIEW-INITIAL-SAMPLE-LIST.png/.jpg
+- 025P-REVIEW-AFTER-OWNER-RENAME.png/.jpg
+- small sanitized runtime evidence.
+
+Verify:
+
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+Complete ONLY Prompt 025P.
+
+Do not publish TrailWeigh.
+Do not fix Review New.
+Do not change Review Hide.
+Do not redesign unrelated Locker UI.
+Do not modify importer/parser/OCR.
+
+==================================================
+USER VERIFICATION
+==================================================
+
+Replit internal testing is NOT final PASS.
+
+USER VERIFICATION = PENDING.
+
+User will verify:
+
+1. Open permanent Review URL signed out.
+2. Review shows `Sample List`.
+3. `Sample List` is populated.
+4. Owner changes the shared source.
+5. SAME Review URL reflects owner changes after reload.
+6. Reviewer can experiment locally.
+7. Reviewer changes never modify owner data.
+8. Files outside shared source remain private.
+9. Review Hide still works.
+10. Review New still opening sign-in is acceptable for now.

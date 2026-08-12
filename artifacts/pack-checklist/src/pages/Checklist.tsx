@@ -18,7 +18,7 @@ import { LockerDeleteDialog } from '../components/LockerDeleteDialog';
 import { LockerIcon } from '../components/LockerIcon';
 import { LOCKER_KEY, BgSnapshot } from '../hooks/usePackData';
 import type { PhotoCollection } from '../lib/bgCollections';
-import { buildShareURL, type SharedLockerFile } from '../lib/shareLink';
+import { buildShareURL, buildLiveShareURL } from '../lib/shareLink';
 import {
   fetchLockerEntries,
   fetchLockerStatus,
@@ -1022,78 +1022,18 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
   }
 
   /**
-   * Share Locker — generates a multi-file shared experience.
-   * Snapshots ALL saved Locker files at generation time so the recipient sees
-   * the full Shared Locker panel.  The current open file is the primary view.
+   * Share Locker — 025P: creates a LIVE share link.
+   *
+   * Posts { type:'live-locker' } to the server; the server extracts the owner
+   * userId from the Clerk JWT and stores only { type, ownerId } — no gear data
+   * is snapshotted.  On every GET /api/links/:id the server reads the current
+   * Locker from the DB, so the same URL always reflects the owner's latest changes.
    */
   const handleShareLocker = async () => {
-    // Empty-list case is handled by the UI (Share button grayed out when canShare=false).
-    // This guard is a defensive fallback only.
-    if (store.order.length === 0) return;
+    // Live-locker share requires an authenticated owner.
+    if (!userId) return;
 
-    // Snapshot all saved Locker entries at share time (their saved state, not live state).
-    // This populates the view-only Shared Locker on /s/:shareId.
-    let lockerFiles: SharedLockerFile[] | undefined;
-    try {
-      const rawLocker = localStorage.getItem(LOCKER_KEY);
-      const entries: LockerEntry[] = rawLocker ? JSON.parse(rawLocker) as LockerEntry[] : [];
-      if (entries.length > 0) {
-        lockerFiles = entries.map(e => ({
-          id:              e.id,
-          name:            e.name,
-          store:           e.store,
-          background:      e.background ?? null,
-          bgFade:          e.bgFade ?? 1,
-          bgTone:          e.bgTone ?? 'light',
-          bgSize:          e.bgSize ?? 'cover',  // use saved bgSize; older entries without it default to cover
-          chartPaletteKey: e.chartPaletteKey,
-          barColor:        e.barColor ?? '',
-          barFont:         e.barFont ?? '',
-          barTextColor:    e.barTextColor ?? '',
-          barTransparency: e.barTransparency ?? 1,
-        }));
-        console.log(`[TrailWeigh] Share Locker: included ${lockerFiles.length} Locker file(s) in shared snapshot`);
-      } else {
-        console.log('[TrailWeigh] Share Locker: no saved Locker files found — sharing without Shared Locker panel');
-      }
-    } catch { /* ignore — share works without locker snapshot */ }
-
-    // 025O: Resolve the display name with a multi-level fallback.
-    // activeLockerFile?.name can be undefined when:
-    //   • the 022G mount-effect React state hasn't propagated yet after a page refresh;
-    //   • the user has the Locker open but hasn't explicitly loaded the file this session.
-    // Fallback 1: readLastActiveFileFromLS — survives page refresh via localStorage.
-    // Fallback 2: single Locker entry — it MUST be the file being shared.
-    // Fallback 3: undefined — ReviewPage will label it "Shared Pack List" as a last resort.
-    const resolvedShareName: string | undefined =
-      activeLockerFile?.name ??
-      (userId ? readLastActiveFileFromLS(userId)?.name : undefined) ??
-      (lockerFiles?.length === 1 ? lockerFiles[0].name : undefined);
-
-    // Snapshot the complete current working file — same structure as Save.
-    // Checkbox states are preserved as-is (unlike New which resets them).
-    const payload = {
-      type:          'locker' as const,
-      data:          store.items,
-      categoryOrder: store.order,
-      categoryMeta:  store.meta,
-      background:    background ?? null,
-      bgFade,
-      bgTone,
-      bgSize,
-      unit:          system,
-      name:          resolvedShareName,
-      lockerFiles,
-      barColor,
-      barFont,
-      barTextColor,
-      barTransparency,
-    };
-
-    const url = await buildShareURL(payload);
-    // 025M: buildShareURL returns null when the server is unreachable.
-    // Show an error toast — do NOT fall through with a null/undefined URL,
-    // which would produce a broken or giant hash-encoded link.
+    const url = await buildLiveShareURL();
     if (!url) {
       toast({
         title: 'Could not create share link',

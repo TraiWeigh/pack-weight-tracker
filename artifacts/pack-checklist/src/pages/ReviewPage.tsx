@@ -1,40 +1,69 @@
 /**
- * ReviewPage — Public Review Sandbox (025L)
+ * ReviewPage — Public Review Sandbox (025L / 025P)
  *
- * Thin loader for /s/:id routes. Fetches the share seed from /api/links/:id,
- * pre-populates a token-scoped localStorage namespace on first visit, then
- * renders the full ChecklistContent in review mode (isGuest + reviewToken).
+ * Thin loader for /s/:id routes.
  *
- * Reviewer sandbox keys: trailweigh:review:${token}:pack (gear data)
- *                         trailweigh:review:${token}:locker (local files)
- *                         trailweigh:review:${token}:welcomed (first-visit flag)
+ * LIVE-LOCKER links (025P+):
+ *   GET /api/links/:id returns { type:'live-locker', files, sourceVersion }.
+ *   On every open/reload, applies CASE A/B/C sync:
+ *     A — no local sandbox → seed from current owner source.
+ *     B — sandbox exists, source unchanged → preserve reviewer local edits.
+ *     C — sandbox exists, source changed → replace sandbox from latest owner source.
  *
- * Owner data is never touched — separate key namespace + no userId means all
- * server Locker API calls in ChecklistContent are skipped (already gated on userId).
+ * FROZEN-SNAPSHOT links (legacy, pre-025P):
+ *   GET /api/links/:id returns { payload }.
+ *   Seeds once; returning reviewers keep their own edits.
+ *
+ * Reviewer sandbox localStorage keys:
+ *   trailweigh:review:${token}:pack           — current working gear data
+ *   trailweigh:review:${token}:locker         — local Locker file list
+ *   trailweigh:review:${token}:welcomed       — first-visit flag
+ *   trailweigh:review:${token}:sourceVersion  — owner source fingerprint (live links only)
  */
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
 import { UnitProvider } from '../context/UnitContext';
 import { ChecklistContent } from './Checklist';
+import { useToast } from '../hooks/use-toast';
 
 // ── Review-namespace key helpers ───────────────────────────────────────────────
 
-function reviewWelcomedKey(token: string) { return `trailweigh:review:${token}:welcomed`; }
-function reviewPackKey(token: string)     { return `trailweigh:review:${token}:pack`; }
-function reviewLockerKey(token: string)   { return `trailweigh:review:${token}:locker`; }
+function reviewWelcomedKey(token: string)      { return `trailweigh:review:${token}:welcomed`; }
+function reviewPackKey(token: string)          { return `trailweigh:review:${token}:pack`; }
+function reviewLockerKey(token: string)        { return `trailweigh:review:${token}:locker`; }
+function reviewSourceVersionKey(token: string) { return `trailweigh:review:${token}:sourceVersion`; }
 
-/** sessionStorage key for the currently-open Locker file (same as ChecklistContent's constant). */
+/** sessionStorage key for the currently-open Locker file (matches ChecklistContent's constant). */
 const ACTIVE_LOCKER_FILE_SS_KEY = 'tw-active-locker-file';
+
+// ── Type: live-locker file returned by GET /api/links/:id ─────────────────────
+
+interface LiveLockerFile {
+  id:              string;
+  name:            string;
+  savedAt:         number;
+  store:           { items: Record<string, unknown>; order: string[]; meta: Record<string, unknown> };
+  background:      unknown;
+  bgFade:          number;
+  bgTone:          string;
+  bgSize:          string;
+  chartPaletteKey?: string;
+  barColor:        string;
+  barFont:         string;
+  barTextColor:    string;
+  barTransparency: number;
+}
 
 // ── ReviewPage ─────────────────────────────────────────────────────────────────
 
 export default function ReviewPage() {
   const params = useParams<{ id: string }>();
   const reviewToken = params.id ?? '';
+  const { toast } = useToast();
 
-  const [status, setStatus]       = useState<'loading' | 'ready' | 'error'>('loading');
-  const [errorMsg, setErrorMsg]   = useState('');
+  const [status, setStatus]           = useState<'loading' | 'ready' | 'error'>('loading');
+  const [errorMsg, setErrorMsg]       = useState('');
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
@@ -45,7 +74,8 @@ export default function ReviewPage() {
     }
 
     const packKey     = reviewPackKey(reviewToken);
-    const hasData     = !!localStorage.getItem(packKey);
+    const lockerKey   = reviewLockerKey(reviewToken);
+    const svKey       = reviewSourceVersionKey(reviewToken);
     const hasWelcomed = !!localStorage.getItem(reviewWelcomedKey(reviewToken));
 
     fetch(`/api/links/${reviewToken}`)
@@ -53,31 +83,62 @@ export default function ReviewPage() {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
-      .then(({ payload }) => {
+      .then((json: Record<string, unknown>) => {
+
+        // ── LIVE-LOCKER path (025P+) ───────────────────────────────────────────
+        if (json.type === 'live-locker') {
+          const files        = (json.files as LiveLockerFile[]) ?? [];
+          const newSourceVer = (json.sourceVersion as string) ?? '';
+
+          const hasData    = !!localStorage.getItem(packKey);
+          const hasLocker  = !!localStorage.getItem(lockerKey);
+          const localSV    = localStorage.getItem(svKey);
+
+          const needsSeed    = !hasData || !hasLocker;
+          const sourceChanged = !needsSeed && localSV !== newSourceVer;
+
+          if (needsSeed) {
+            // CASE A: no local sandbox — seed from current owner source.
+            seedFromLiveFiles(files, packKey, lockerKey, svKey, newSourceVer);
+          } else if (sourceChanged) {
+            // CASE C: owner source changed — replace review sandbox with latest state.
+            seedFromLiveFiles(files, packKey, lockerKey, svKey, newSourceVer);
+            toast({
+              title:       'Review files updated',
+              description: 'The shared collection changed — your view shows the latest version.',
+              duration:    4000,
+            });
+          }
+          // CASE B (else): source unchanged — preserve reviewer local edits; do nothing.
+
+          if (!hasWelcomed) setShowWelcome(true);
+          setStatus('ready');
+          return;
+        }
+
+        // ── FROZEN-SNAPSHOT path (legacy — pre-025P links) ────────────────────
+        const { payload } = json as { payload: Record<string, unknown> };
         if (!payload) throw new Error('Empty payload');
 
-        // ── Compute seed values once — used by both the fresh-seed and migration paths ──
         const data          = payload.data          ?? {};
         const categoryOrder = Array.isArray(payload.categoryOrder) ? payload.categoryOrder : [];
         const categoryMeta  = payload.categoryMeta  ?? {};
         const seedFileName  = (payload.name as string | undefined) ?? 'Shared Pack List';
-        // Stable per-token ID so the reviewer can rename/delete their copy like any file.
         const seedEntryId   = `review-seed-${reviewToken}`;
 
-        const lockerKey = reviewLockerKey(reviewToken);
+        const hasData   = !!localStorage.getItem(packKey);
+        const hasLocker = !!localStorage.getItem(lockerKey);
 
-        /** Build the LockerEntry for the seeded shared file.
-         *  Shape matches the LockerEntry interface in LockerPanel.tsx exactly. */
-        function buildSeedLockerEntry() {
+        function buildFrozenLockerEntry() {
           return [{
             id:              seedEntryId,
             name:            seedFileName,
             savedAt:         Date.now(),
             store:           { items: data, order: categoryOrder, meta: categoryMeta },
-            background:      (payload.background as unknown) ?? null,
-            bgFade:          (payload.bgFade as number)   ?? 1,
-            bgTone:          (payload.bgTone as string)   ?? 'light',
-            bgSize:          (payload.bgSize as string)   ?? 'cover',
+            background:      payload.background ?? null,
+            bgFade:          (payload.bgFade as number)          ?? 1,
+            bgTone:          (payload.bgTone as string)          ?? 'light',
+            bgSize:          (payload.bgSize as string)          ?? 'cover',
             chartPaletteKey: payload.chartPaletteKey as string | undefined,
             barColor:        (payload.barColor as string)        ?? '',
             barFont:         (payload.barFont as string)         ?? '',
@@ -86,57 +147,26 @@ export default function ReviewPage() {
           }];
         }
 
-        /** Write the active-file marker to sessionStorage so ChecklistContent
-         *  mounts with the seeded file already selected.
-         *  Key must match ACTIVE_LOCKER_FILE_SS_KEY = 'tw-active-locker-file'. */
-        function setActiveFileSS() {
-          try {
-            sessionStorage.setItem(
-              ACTIVE_LOCKER_FILE_SS_KEY,
-              JSON.stringify({ id: seedEntryId, name: seedFileName }),
-            );
-          } catch { /* sessionStorage unavailable in some private-mode browsers — safe to skip */ }
-        }
-
-        // ── Seed the review namespace on the first visit to this link ──────────
-        // Returning reviewers keep their own edits — we only seed once
-        // (hasData guards the pack-data key; a separate migration guard below
-        //  seeds the Locker for users who had the 025L partial state).
         if (!hasData) {
           try {
             const seedRecord = { __v: 5, items: data, order: categoryOrder, meta: categoryMeta };
             localStorage.setItem(packKey, JSON.stringify(seedRecord));
-
-            // 025N: also seed the Locker file list so the shared file appears
-            // as a named, manageable file entry in the Locker panel.
-            localStorage.setItem(lockerKey, JSON.stringify(buildSeedLockerEntry()));
-
-            // Pre-select the seeded file so ChecklistContent opens it on mount.
-            setActiveFileSS();
+            localStorage.setItem(lockerKey, JSON.stringify(buildFrozenLockerEntry()));
+            setActiveFileSS(seedEntryId, seedFileName);
           } catch (e) {
-            // Quota error or private-mode restriction — continue without seeding;
-            // reviewer will get an empty list they can populate manually.
             console.warn('[TrailWeigh] ReviewPage: could not seed review storage:', e);
           }
-        } else {
-          // ── Migration guard (025N): packKey exists from 025L partial seed ──
-          // 025L wrote packKey but never wrote lockerKey, leaving the file list
-          // empty for returning reviewers.  If the Locker key is absent, seed it
-          // now so the file appears in the panel on this visit.
-          const hasLocker = !!localStorage.getItem(lockerKey);
-          if (!hasLocker) {
-            try {
-              localStorage.setItem(lockerKey, JSON.stringify(buildSeedLockerEntry()));
-              setActiveFileSS();
-            } catch (e) {
-              console.warn('[TrailWeigh] ReviewPage: could not seed review locker (migration):', e);
-            }
+        } else if (!hasLocker) {
+          // Migration guard (025N): packKey exists from 025L partial seed, lockerKey absent.
+          try {
+            localStorage.setItem(lockerKey, JSON.stringify(buildFrozenLockerEntry()));
+            setActiveFileSS(seedEntryId, seedFileName);
+          } catch (e) {
+            console.warn('[TrailWeigh] ReviewPage: could not seed review locker (migration):', e);
           }
         }
 
-        // Show welcome modal on first-ever visit to this review link.
         if (!hasWelcomed) setShowWelcome(true);
-
         setStatus('ready');
       })
       .catch(err => {
@@ -152,7 +182,7 @@ export default function ReviewPage() {
     setShowWelcome(false);
   };
 
-  // ── Loading state ──────────────────────────────────────────────────────────
+  // ── Loading ────────────────────────────────────────────────────────────────
 
   if (status === 'loading') {
     return (
@@ -165,7 +195,7 @@ export default function ReviewPage() {
     );
   }
 
-  // ── Error state ────────────────────────────────────────────────────────────
+  // ── Error ──────────────────────────────────────────────────────────────────
 
   if (status === 'error') {
     return (
@@ -185,7 +215,7 @@ export default function ReviewPage() {
     );
   }
 
-  // ── Ready — render the full TrailWeigh UI in review/sandbox mode ───────────
+  // ── Ready — full TrailWeigh UI in review/sandbox mode ─────────────────────
 
   return (
     <>
@@ -199,7 +229,7 @@ export default function ReviewPage() {
         />
       </UnitProvider>
 
-      {/* ── Welcome modal — shown only on first open of a fresh review sandbox ── */}
+      {/* Welcome modal — shown only on first open of a fresh review sandbox */}
       {showWelcome && (
         <div
           className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
@@ -228,4 +258,90 @@ export default function ReviewPage() {
       )}
     </>
   );
+}
+
+// ── Module-level helpers (outside component) ───────────────────────────────────
+
+/** Write the active-file marker to sessionStorage. */
+function setActiveFileSS(id: string, name: string) {
+  try {
+    sessionStorage.setItem(ACTIVE_LOCKER_FILE_SS_KEY, JSON.stringify({ id, name }));
+  } catch { /* sessionStorage unavailable in some private-mode browsers — safe to skip */ }
+}
+
+/**
+ * Seed (or reseed) the review namespace from the current live-locker files.
+ *
+ * • The most-recently-saved file (files[0], server-sorted desc by savedAt) is
+ *   selected as the active/primary file and written to packKey.
+ * • All files are written to lockerKey — reviewer sees all in the Locker panel.
+ * • sourceVersion is persisted to detect future owner changes (CASE B/C).
+ *
+ * Called for CASE A (no local sandbox) and CASE C (source changed).
+ * NOT called for CASE B (source unchanged — reviewer local edits are preserved).
+ */
+function seedFromLiveFiles(
+  files:         LiveLockerFile[],
+  packKey:       string,
+  lockerKey:     string,
+  svKey:         string,
+  sourceVersion: string,
+) {
+  try {
+    if (files.length === 0) {
+      // Owner has no Locker files — write empty state so CASE B is stable.
+      const emptyPack = { __v: 5, items: {}, order: [], meta: {} };
+      localStorage.setItem(packKey,   JSON.stringify(emptyPack));
+      localStorage.setItem(lockerKey, JSON.stringify([]));
+      localStorage.setItem(svKey,     sourceVersion);
+      return;
+    }
+
+    // Primary file — most recently saved (first after server sort by savedAt desc).
+    const primary = files[0];
+    const pStore  = primary.store;
+
+    // Seed working state (what the gear editor opens with) from the primary file.
+    const seedRecord = {
+      __v:   5,
+      items: pStore.items ?? {},
+      order: Array.isArray(pStore.order) ? pStore.order : [],
+      meta:  pStore.meta  ?? {},
+    };
+    localStorage.setItem(packKey, JSON.stringify(seedRecord));
+
+    // Build LockerEntry array from ALL live files — reviewer sees all of them
+    // in the Locker panel and can switch between files, rename, delete locally.
+    const lockerEntries = files.map(f => {
+      const s = f.store;
+      return {
+        id:              f.id,
+        name:            f.name,
+        savedAt:         f.savedAt,
+        store: {
+          items: s.items ?? {},
+          order: Array.isArray(s.order) ? s.order : [],
+          meta:  s.meta  ?? {},
+        },
+        background:      f.background ?? null,
+        bgFade:          f.bgFade          ?? 1,
+        bgTone:          f.bgTone          ?? 'light',
+        bgSize:          f.bgSize          ?? 'cover',
+        chartPaletteKey: f.chartPaletteKey,
+        barColor:        f.barColor        ?? '',
+        barFont:         f.barFont         ?? '',
+        barTextColor:    f.barTextColor    ?? '',
+        barTransparency: f.barTransparency ?? 1,
+      };
+    });
+    localStorage.setItem(lockerKey, JSON.stringify(lockerEntries));
+
+    // Persist source version for CASE B/C comparison on next open/reload.
+    localStorage.setItem(svKey, sourceVersion);
+
+    // Pre-select the primary file so ChecklistContent opens it on mount.
+    setActiveFileSS(primary.id, primary.name);
+  } catch (e) {
+    console.warn('[TrailWeigh] ReviewPage: could not seed review storage from live files:', e);
+  }
 }

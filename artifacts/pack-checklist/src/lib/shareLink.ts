@@ -112,3 +112,36 @@ export async function buildShareURL(
   // Signal failure to the caller — do NOT fall back to a hash-encoded URL.
   return null;
 }
+
+/**
+ * Creates a LIVE share link (025P+).
+ *
+ * Unlike buildShareURL (which snapshots gear data into the record), this posts
+ * only { type: 'live-locker' } to the server. The server extracts ownerId from
+ * the Clerk JWT and stores { type:'live-locker', ownerId }. On every subsequent
+ * GET, the server reads the current Locker from the DB, so the same URL always
+ * reflects the owner's latest changes.
+ *
+ * Returns null on API failure — caller must handle and show an error toast.
+ */
+export async function buildLiveShareURL(): Promise<string | null> {
+  const base = window.location.origin +
+    (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+  try {
+    const resp = await fetch('/api/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payload: { type: 'live-locker' } }),
+    });
+    if (resp.ok) {
+      const { id } = await resp.json() as { id: string };
+      const url = `${base}/s/${id}`;
+      console.log('[TrailWeigh] Live share URL:', url);
+      return url;
+    }
+    console.warn('[TrailWeigh] Live share API returned', resp.status, '— cannot create live share link');
+  } catch (err) {
+    console.warn('[TrailWeigh] Live share API error — cannot create live share link', err);
+  }
+  return null;
+}
