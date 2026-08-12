@@ -96,6 +96,10 @@ interface ChecklistContentProps {
   userId?: string;
   userEmail?: string;
   isGuest?: boolean;
+  /** Present in Review/sandbox mode — keyed by share token for local-storage isolation.
+   *  When set: pack data and Locker entries use token-scoped localStorage keys;
+   *  server API calls are already gated on userId and are skipped automatically. */
+  reviewToken?: string;
 }
 
 /** Identifies the Locker file that is the current Save target for this tab. */
@@ -148,7 +152,7 @@ function writeLastActiveFileToLS(uid: string, value: ActiveLockerFile | null): v
   } catch {}
 }
 
-function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistContentProps) {
+export function ChecklistContent({ userId, userEmail, isGuest = false, reviewToken }: ChecklistContentProps) {
   // ── onRestoreBg: called by undo/redo to restore the background that was
   // active at the time of the history entry.  Defined as a stable useCallback
   // so the ref inside usePackData stays current without recreation.
@@ -182,6 +186,17 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     restoreBgCallbackRef.current?.(bg);
   }, []);
 
+  // ── Review/sandbox mode — derived from reviewToken prop ──────────────────
+  // isReview: true when this instance is the Public Review Sandbox (025L).
+  // reviewLockerKey: token-scoped localStorage key for reviewer's local files.
+  // All server Locker API calls (serverSaveNew, serverRename, etc.) are already
+  // gated on `if (userId)` throughout this file — they are automatically skipped
+  // in review mode because userId is undefined.
+  const isReview = !!reviewToken;
+  const reviewLockerKey = reviewToken
+    ? `trailweigh:review:${reviewToken}:locker`
+    : LOCKER_KEY;
+
   const {
     data, categoryOrder, categoryMeta, store,
     updateItem, addItem, removeItem, moveItem,
@@ -190,7 +205,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     resetToDefaults,
     undo, redo, canUndo, canRedo,
     syncBg, pushBg,
-  } = usePackData(userId, { onRestoreBg });
+  } = usePackData(userId, {
+    onRestoreBg,
+    // Review mode: use a token-scoped storage key so reviewer gear data is
+    // completely isolated from any owner or guest data on the same device.
+    storageKey: reviewToken ? `trailweigh:review:${reviewToken}:pack` : undefined,
+  });
 
   const { system } = useUnit();
   const { signOut } = useClerk();
@@ -1215,7 +1235,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
 
   const [lockerEntries, setLockerEntries] = useState<LockerEntry[]>(() => {
     try {
-      const raw = localStorage.getItem(LOCKER_KEY);
+      const raw = localStorage.getItem(reviewLockerKey);
       return raw ? JSON.parse(raw) : [];
     } catch { return []; }
   });
@@ -1231,8 +1251,8 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   // Persist whenever lockerEntries changes (does NOT broadcast — broadcasts happen
   // explicitly in mutating handlers to avoid cross-tab echo loops)
   useEffect(() => {
-    localStorage.setItem(LOCKER_KEY, JSON.stringify(lockerEntries));
-  }, [lockerEntries]);
+    localStorage.setItem(reviewLockerKey, JSON.stringify(lockerEntries));
+  }, [lockerEntries, reviewLockerKey]);
 
   // BroadcastChannel for cross-tab Locker sync
   const lockerChannelRef = useRef<BroadcastChannel | null>(null);
@@ -1240,13 +1260,18 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
   useEffect(() => {
     let ch: BroadcastChannel | null = null;
     try {
-      ch = new BroadcastChannel('gear-locker-sync');
+      // Review mode: use a token-scoped channel so reviewer tabs don't
+      // cross-sync with owner Locker tabs or other review sessions.
+      const channelName = isReview
+        ? `gear-locker-sync-review-${reviewToken}`
+        : 'gear-locker-sync';
+      ch = new BroadcastChannel(channelName);
       lockerChannelRef.current = ch;
       ch.onmessage = (e) => {
         if (e.data?.type === 'locker-update') {
           const entries: LockerEntry[] = e.data.entries;
           // Write immediately so any subsequent refresh gets the latest data
-          localStorage.setItem(LOCKER_KEY, JSON.stringify(entries));
+          localStorage.setItem(reviewLockerKey, JSON.stringify(entries));
           setLockerEntries(entries);
         }
       };
@@ -1257,6 +1282,7 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
       ch?.close();
       lockerChannelRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /** Broadcast Locker state to every other open tab. */
@@ -1757,7 +1783,9 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
     const totalItems = store.order.reduce(
       (sum, cat) => sum + (store.items[cat]?.length ?? 0), 0
     );
-    if (totalItems === 0) {
+    // Review mode: always load in-place — opening a new tab to /checklist
+    // would redirect unauthenticated users to sign-in.
+    if (totalItems === 0 || isReview) {
       // ── In-place open path ────────────────────────────────────────────────
       // Used when the current list is blank (New tab or empty list).
       //
@@ -1898,11 +1926,25 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
    * reaching /checklist, but this guard ensures no unauthenticated deletion path exists.
    */
   const requestProtectedDelete = useCallback((id: string) => {
+    // Review mode: allow direct local delete without identity verification.
+    // No server call is made (userId is undefined → serverDeleteMany is skipped).
+    if (isReview) {
+      const entry = lockerEntries.find(e => e.id === id);
+      const updated = lockerEntries.filter(e => e.id !== id);
+      setLockerEntries(updated);
+      broadcastLocker(updated);
+      const curB = readActiveLockerFileFromSS();
+      const nextB = curB?.id === id ? null : curB;
+      writeActiveLockerFileToSS(nextB);
+      setActiveLockerFile(nextB);
+      if (entry) toast({ description: `"${entry.name}" was deleted.` });
+      return;
+    }
     // Require authentication. This is a defensive check in addition to the route guard.
     if (isGuest || !userId) return;
     setPendingDeleteIds([id]);
     setShowDeleteDialog(true);
-  }, [isGuest, userId]);
+  }, [isReview, isGuest, userId, lockerEntries, broadcastLocker, toast]);
 
   /** Called by the dialog after identity is verified. */
   const handleConfirmedDelete = useCallback(() => {
@@ -2551,7 +2593,22 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                 {/* Share pill + dropdown */}
                 {/* 025G: ref used to compute fixed position for the dropdown (escapes overflow-hidden) */}
                 <div className="relative" ref={shareContainerRef}>
-                  {!canShare ? (
+                  {isReview ? (
+                    /* Review mode (025L): share = copy the existing review URL.
+                     * Reviewer cannot create new server-side share links. */
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const ok = await copyUrlToClipboard(window.location.href);
+                        if (ok) { setCopied(true); setTimeout(() => setCopied(false), 2000); }
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-semibold border border-border/60 bg-card px-3 py-1.5 rounded-lg transition-colors text-muted-foreground"
+                      style={barCombinedStyle({ barColor: barColorRef.current, barFont: barFontRef.current, barTextColor: barTextColorRef.current, barTransparency: barTransparencyRef.current })}
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      {copied ? 'Copied!' : 'Share'}
+                    </button>
+                  ) : !canShare ? (
                     /* Empty list — visually dimmed, explains on hover (desktop) or tap (mobile) */
                     <div className="group relative">
                       <button
@@ -2809,6 +2866,12 @@ function ChecklistContent({ userId, userEmail, isGuest = false }: ChecklistConte
                     addItem(resolved, prefill);
                   }}
                 />
+                {/* 025L: Review mode label — clarifies local-only storage to reviewer */}
+                {isReview && (
+                  <p className="text-[11px] text-muted-foreground px-3 -mt-1 mb-0.5">
+                    Review files — stored on this device
+                  </p>
+                )}
                 <LockerPanel
                   entries={lockerEntries}
                   onLoad={handleLoadFromLocker}

@@ -1,0 +1,688 @@
+TRAILWEIGH — PROMPT 025L
+REPLACE THE SEPARATE SHARE VIEWER WITH A NO-LOGIN PUBLIC REVIEW SANDBOX
+USING THE SAME CORE TRAILWEIGH CHECKLIST UI
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 10–18 minutes
+Estimated Agent usage/cost: approximately $2.00–$3.50.
+
+If confirmed scope becomes materially broader, STOP and report before spending more.
+
+==================================================
+REQUIRED ATTACHMENTS
+==================================================
+
+Attach:
+- this prompt;
+- the HOME source-of-truth screenshot;
+- the OLD SHARE implementation screenshot.
+
+Verify all required attachments are readable BEFORE application changes.
+
+If an attachment is missing/unreadable:
+STOP.
+Do not modify application code.
+
+==================================================
+WHY 025L EXISTS
+==================================================
+
+The current Share page has repeatedly drifted from Home.
+
+Past work showed:
+- 025J improved some width/toolbar geometry and added a file-name pill, but did not achieve visual parity.
+- Replit could not reproduce the authenticated Home route during 025J yet edited anyway, so source comparison was incorrectly used as proof.
+- 025K succeeded because the exact rendered root cause was identified: a portaled Background panel sat outside the `.screen-dark` theme scope, and one small targeted fix corrected the real component.
+
+LESSON:
+Do not keep repairing a duplicate Share UI.
+
+The user has decided to replace the separate Share-view experience with ONE TrailWeigh UI that runs in two modes:
+1. OWNER MODE
+2. PUBLIC REVIEW MODE
+
+The visual Checklist experience must come from the same core component path.
+
+==================================================
+CURRENT PRODUCT DECISION — SOURCE OF TRUTH
+==================================================
+
+OWNER MODE
+- normal TrailWeigh account;
+- authenticated persistence;
+- private Locker;
+- owner files remain private unless deliberately shared;
+- normal owner Save/Delete/Rename behavior remains unchanged.
+
+PUBLIC REVIEW MODE
+- NO LOGIN REQUIRED;
+- a reviewer opens a permanent public review/share link;
+- TrailWeigh opens as a fully usable sandbox;
+- the shared file is preinstalled in that sandbox;
+- reviewer may edit, add, delete, rename, reorder, save locally, create new files, delete files, change quantities/weights/units, use themes, use Light/Dark, Preview, Hide, etc.;
+- reviewer may freely experiment;
+- reviewer actions NEVER modify the owner's original file;
+- reviewer cannot access owner's private Locker, private files, account settings, or authenticated data.
+
+The reviewer experience should feel like a normal installation of TrailWeigh with preinstalled files — not a restricted viewer.
+
+==================================================
+WELCOME MESSAGE
+==================================================
+
+On the first open of a FRESH review sandbox, show a dismissible welcome modal:
+
+“Thank you for reviewing TrailWeigh. Feel free to explore, edit, and try anything — you won’t affect the original file.”
+
+Use one clear button such as:
+
+“Start Exploring”
+
+After dismissal, do not show it again on every refresh in that same browser/review sandbox.
+
+==================================================
+PERMANENT PUBLIC REVIEW LINK
+==================================================
+
+Preserve the existing no-login Share behavior.
+
+A review link must:
+- require no TrailWeigh login;
+- require no Replit login once published publicly;
+- remain valid across app restarts and future deployments;
+- remain valid until owner explicitly revokes/deletes the public share;
+- use the existing share-token system if sound;
+- use an unguessable token/slug;
+- never expose a simple sequential private owner-file ID;
+- never expose the owner's complete Locker.
+
+IMPORTANT:
+For development/testing, publishing is NOT required.
+Test the public review route using the current development app first.
+Publishing will happen only after the new review mode is user-verified.
+
+==================================================
+PERMANENT SERVER-SIDE SEED VS REVIEWER COPY
+==================================================
+
+Use a two-layer model:
+
+PERMANENT PUBLIC READ-ONLY SEED
+        ↓
+REVIEWER SANDBOX COPY
+
+The permanent seed contains only the file(s) intentionally assigned to that review link.
+
+For the existing Share action:
+- the currently active owner file may remain the seed file.
+
+Do NOT publish the owner's entire Locker.
+
+The reviewer sandbox copy is disposable and editable.
+
+Reviewer may:
+- rename it;
+- modify it;
+- delete it;
+- create other files.
+
+Deleting the reviewer copy must NOT:
+- delete the owner's original;
+- delete the permanent public seed;
+- revoke the public share;
+- affect another reviewer.
+
+A fresh browser/device/private session should receive a fresh copy from the permanent seed.
+
+For the SAME browser:
+- preserve reviewer sandbox changes across refresh/reopen where practical;
+- if reviewer deleted the preinstalled file, keep it deleted locally until local review data is reset/cleared;
+- the server seed still remains available.
+
+If practical with existing UI, add a small “Restore Preinstalled Files” or equivalent recovery action only if this can be done narrowly.
+Do not redesign the app just for this.
+
+==================================================
+SAME CORE UI — CRITICAL REQUIREMENT
+==================================================
+
+The purpose of 025L is to eliminate the parallel visual implementation.
+
+Do NOT make SharedChecklistPage continue imitating Home.
+
+The public review route must use the SAME core UI/component path as Home for:
+
+- main checklist workspace;
+- top toolbar;
+- file-name display;
+- category accordion headers;
+- item rows;
+- Type / Name / Weight / Qty / Total;
+- sidebar;
+- Locker/file-list presentation;
+- Weight Distribution;
+- Pack Summary;
+- Background/Themes;
+- Light/Dark;
+- Bar Color;
+- Transparency;
+- Text Color;
+- Font;
+- Fit/Fill;
+- Preview;
+- Print through Preview;
+- Hide;
+- Imperial/Metric;
+- typography and spacing.
+
+Acceptable architecture:
+A. Extract a reusable core `ChecklistWorkspace` from current Home and render it from Owner and Review mode with different storage/permission adapters; OR
+B. Make the current Checklist route/component accept a clear mode/config object (`owner` vs `review`) while sharing all visual components/state logic; OR
+C. another equally small design that results in ONE visual component path.
+
+UNACCEPTABLE:
+- copying Home JSX into SharedChecklistPage;
+- duplicated toolbar markup;
+- duplicated category/sidebar markup;
+- separate bar/theme style logic;
+- manually matching CSS between two different pages.
+
+SharedChecklistPage may remain only as a THIN ROUTE/LOADER/ADAPTER if useful.
+
+==================================================
+OWNER STORAGE VS REVIEW STORAGE
+==================================================
+
+Separate UI from persistence.
+
+Conceptual design:
+
+CORE CHECKLIST UI
+      ↓
+STORAGE / PERMISSION ADAPTER
+
+OWNER ADAPTER
+- existing authenticated persistence;
+- existing private Locker;
+- existing owner file Save/Delete/Rename behavior.
+
+REVIEW ADAPTER
+- reads permanent public seed;
+- writes reviewer changes ONLY to the local review sandbox;
+- never writes to owner records.
+
+Prefer an existing TrailWeigh guest/local-storage abstraction if one already exists.
+
+If none exists, use browser `localStorage` for NON-SENSITIVE reviewer sandbox data because it persists across browser sessions.
+
+Requirements if `localStorage` is used:
+- namespace keys by review token/link;
+- never store owner credentials/auth tokens/secrets;
+- catch quota/storage errors gracefully;
+- do not crash if storage is unavailable;
+- keep data structure versioned enough that future migrations can be handled safely.
+
+Do not use cookies for storing review file payloads.
+
+==================================================
+LOCKER / FILE PANEL IN REVIEW MODE
+==================================================
+
+Reviewer should get a normal-looking TrailWeigh file-management experience.
+
+Prefer reusing the SAME Locker/file-list component.
+
+But in Review mode it must connect to the reviewer LOCAL sandbox, not owner storage.
+
+Reviewer may:
+- open local review files;
+- Save;
+- Save As;
+- rename;
+- delete;
+- create new files.
+
+If a small clarification is useful, add:
+“Review files — stored on this device”
+
+Do not redesign the panel.
+
+==================================================
+ALL CURRENT BUILT-IN THEMES = PERMANENT APP ASSETS
+==================================================
+
+Before editing:
+inventory every CURRENT BUILT-IN/BUNDLED TrailWeigh theme and record its name in the report.
+
+All current built-in themes must:
+- remain permanent app assets;
+- be available in Owner mode;
+- be available in Review mode;
+- use the SAME theme definitions/assets/components;
+- not be duplicated into every review record.
+
+Reviewer theme changes are local to their sandbox and must not change the owner's file/theme selection.
+
+PRIVACY GATE:
+If any current visible theme is actually a user-uploaded Custom Theme/private photo rather than a bundled TrailWeigh theme:
+STOP and document that distinction before making it public.
+Do NOT silently expose private custom photos.
+
+==================================================
+SHARE CONTROL INSIDE REVIEW MODE
+==================================================
+
+Do not allow an anonymous reviewer to create server-side public shares of arbitrary local review content unless an existing safe anonymous-share path already explicitly supports it.
+
+Safe default:
+If Share remains visible in Review mode, it may simply copy/share the EXISTING review URL.
+
+It must not imply that the reviewer's local edits were published.
+
+Do not weaken server authorization to preserve this button.
+
+==================================================
+AUTHENTICATION / SECURITY
+==================================================
+
+Public Review mode intentionally has no login.
+
+However, anonymous access must be limited to PUBLIC REVIEW SEED data.
+
+Server/API authorization must prevent a reviewer from:
+- modifying owner original file;
+- deleting owner original file;
+- renaming owner original file;
+- reading owner Locker;
+- enumerating owner private files;
+- accessing another private object by changing an ID/token;
+- changing owner account settings;
+- writing to authenticated owner endpoints.
+
+Do not rely on hidden buttons alone.
+
+Apply least privilege / deny-by-default to owner resources.
+
+The public route/API may return only data intentionally included in the public review seed.
+
+==================================================
+IMPORT / OCR / EXPENSIVE SERVER FEATURES
+==================================================
+
+Do not silently expose privileged or expensive endpoints anonymously.
+
+If Scan Gear List / OCR / import already works safely in anonymous mode, preserve it.
+
+If it requires authenticated privileged server access:
+- do not weaken security;
+- document the limitation;
+- STOP before broadening endpoint permissions.
+
+This prompt is about the core public review architecture, not opening every server feature anonymously.
+
+==================================================
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_025L_REPORT.md
+
+Before application changes.
+
+Initial fields:
+- Prompt: 025L
+- Status: IN PROGRESS
+- Agent mode
+- Home screenshot accessible: YES/NO
+- Old Share screenshot accessible: YES/NO
+- Report created before application changes: YES
+
+Verify file exists.
+
+If report creation fails:
+STOP.
+
+==================================================
+PHASE 2 — CHECKPOINT
+==================================================
+
+Create a Replit checkpoint before editing if available.
+
+Record checkpoint identifier/name.
+
+If unavailable:
+CHECKPOINT = NOT AVAILABLE
+
+Do not invent one.
+
+==================================================
+PHASE 3 — ARCHITECTURE INVENTORY BEFORE EDITING
+==================================================
+
+Document exact current implementation for:
+
+1. Home Checklist route/page/component.
+2. SharedChecklistPage route/page/component.
+3. top toolbar.
+4. category/list rendering.
+5. item rows.
+6. sidebar.
+7. Locker/file list.
+8. Background/Themes.
+9. Preview.
+10. current owner storage/persistence.
+11. current public share token read path.
+12. current share link creation path.
+13. server authorization checks for owner files.
+14. current built-in theme definitions/assets.
+15. current custom/private theme handling.
+16. any existing guest/local storage utilities.
+
+Then explicitly answer:
+
+WHAT WORKED IN PAST WORK AND WHY?
+WHAT FAILED IN PAST SHARE WORK AND WHY?
+HOW WAS THE SUCCESSFUL 025K FAILURE CORRECTED?
+WHAT SHOULD 025L REUSE?
+WHAT SHOULD 025L AVOID?
+
+Do not edit until this inventory is complete.
+
+==================================================
+PHASE 4 — ROOT-CAUSE / SCOPE GATE
+==================================================
+
+Confirm whether the repeated Home/Share mismatch is materially caused by maintaining a separate SharedChecklistPage visual path.
+
+If YES:
+proceed with the one-core-UI solution.
+
+If NO:
+document evidence and STOP rather than performing an unrelated refactor.
+
+Expected application scope:
+approximately 4–8 directly related files.
+
+STOP before expanding if:
+- broad auth redesign is required;
+- destructive database migration is required;
+- more than roughly 8 unrelated app files are needed;
+- importer/parser architecture must change;
+- estimate exceeds ~18 minutes or ~$3.50 materially.
+
+==================================================
+PHASE 5 — IMPLEMENT THE MINIMUM SAFE ONE-UI ARCHITECTURE
+==================================================
+
+Implement the smallest reversible change that:
+
+1. routes Owner and Review through ONE core Checklist UI path;
+2. keeps existing Owner persistence unchanged;
+3. loads public seed through the existing safe share-token/read path;
+4. creates/uses local reviewer sandbox persistence;
+5. prevents Review writes to owner storage;
+6. gives Review mode the normal TrailWeigh controls/components;
+7. provides all current bundled themes through the same built-in theme source;
+8. displays the thank-you modal on fresh sandbox first open.
+
+Do not perform unrelated cleanup/refactoring.
+
+==================================================
+PHASE 6 — REQUIRED PUBLIC NO-LOGIN RUNTIME TEST
+==================================================
+
+This prompt MUST be tested signed out because Review mode is intentionally public.
+
+Use Replit Preview/App Testing in a fresh signed-out browser context.
+
+Open the review URL directly.
+
+PASS requires:
+- no TrailWeigh login;
+- no auth redirect;
+- TrailWeigh Checklist loads;
+- Home-equivalent core UI is visible;
+- welcome message appears for a fresh sandbox;
+- Start Exploring/dismiss works.
+
+If the no-login route cannot be runtime-tested:
+STOP.
+Do not declare PASS from source inspection.
+
+==================================================
+PHASE 7 — SAME-UI PROOF
+==================================================
+
+Use the HOME screenshot as visual source of truth.
+
+At the same viewport/zoom compare Home vs Review:
+
+- outer workspace width;
+- main/sidebar geometry;
+- toolbar structure;
+- filename location;
+- category headers;
+- sidebar headers;
+- typography;
+- bar styling;
+- Background/Themes panel;
+- Light/Dark;
+- Preview.
+
+Do NOT hand-match CSS.
+
+Prove Home and Review render the same core components/style path.
+
+If screenshot capture is available create:
+
+workflow-reports/025L-HOME-POSTFIX.png
+workflow-reports/025L-REVIEW-POSTFIX.png
+
+Use comparable viewport/state.
+
+==================================================
+PHASE 8 — REVIEW SANDBOX FUNCTION TEST
+==================================================
+
+In a signed-out Review session:
+
+1. Confirm preinstalled seed file appears.
+2. Rename local copy.
+3. Edit at least one item.
+4. Add an item.
+5. Delete an item.
+6. Save locally.
+7. Create a new local file.
+8. Delete the preinstalled local copy.
+9. Refresh/reopen same link in same browser.
+10. Confirm local sandbox persistence behaves as designed.
+11. Open same review link in a fresh isolated/private browser context.
+12. Confirm a fresh preinstalled copy is seeded again.
+
+Then verify OWNER original:
+- still exists;
+- original name unchanged;
+- original item data unchanged;
+- owner appearance unchanged;
+- review public seed still exists;
+- review link still works.
+
+This is mandatory isolation proof.
+
+==================================================
+PHASE 9 — THEME TEST
+==================================================
+
+Record all bundled theme names.
+
+In Review mode:
+- verify each bundled theme is present;
+- apply at least two;
+- verify Light/Dark still works;
+- verify Prompt 025K Background-panel dark-mode fix remains working;
+- verify theme choice persists locally if reviewer saves it;
+- verify reviewer theme changes do not change owner data.
+
+Do not expose private custom photos.
+
+==================================================
+PHASE 10 — TARGETED REGRESSION
+==================================================
+
+OWNER MODE:
+- normal owner login still works;
+- Locker still shows owner files;
+- Save / Save As still work;
+- Rename/Delete still affect only owner data when used by owner;
+- Share still creates/uses a no-login public review link;
+- Background/Themes still works;
+- 025K Light/Dark Background-panel fix remains;
+- Share dropdown layering from 025G remains;
+- sidebar accordion behavior from 025F remains;
+- standalone top-toolbar Print remains absent;
+- Print inside Preview remains.
+
+REVIEW MODE:
+- no login;
+- preinstalled seed present in fresh sandbox;
+- local edit/save/delete/rename/create works;
+- owner inaccessible;
+- built-in themes work;
+- Preview works;
+- Hide works;
+- units work;
+- Light/Dark works.
+
+OUT OF SCOPE:
+- importer/parser changes;
+- OCR architecture changes;
+- unrelated UI redesign;
+- account redesign;
+- publishing/deployment configuration.
+
+==================================================
+CHANGED-FILE CONTROL
+==================================================
+
+Before completion:
+- inspect every changed file;
+- revert unrelated edits;
+- no broad cleanup/refactor.
+
+Record exact changed files and reason for each.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Update:
+
+workflow-reports/PROMPT_025L_REPORT.md
+
+Include:
+- Prompt 025L
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- checkpoint
+- attachment verification
+- architecture inventory
+- past-work lessons
+- confirmed root cause
+- chosen one-core-UI design
+- exact shared core components
+- owner adapter/storage path
+- review adapter/storage path
+- public seed path
+- share-token path
+- authorization findings
+- built-in theme inventory
+- custom/private theme finding
+- exact files changed
+- runtime no-login test result
+- welcome modal test
+- Home/Review same-UI proof
+- same-browser sandbox persistence result
+- fresh-browser seed result
+- reviewer delete result
+- reviewer rename result
+- reviewer new-file result
+- owner original isolation result
+- owner Locker isolation result
+- built-in theme results
+- 025K regression
+- 025G regression
+- 025F regression
+- Preview/Print regression
+- unresolved issues
+- post-fix screenshots or NOT AVAILABLE
+- final diff review
+- importer/parser untouched confirmation
+- User verification: PENDING
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not call runtime behavior PASS if it was not actually tested.
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025L-report.zip
+
+Include at minimum:
+- PROMPT_025L_REPORT.md
+
+Also include if created:
+- 025L-HOME-POSTFIX.png
+- 025L-REVIEW-POSTFIX.png
+- small non-sensitive test output.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+Complete ONLY Prompt 025L.
+
+Do not publish TrailWeigh as part of this prompt.
+Do not start another task.
+Do not broaden anonymous access to unrelated private/privileged features.
+
+==================================================
+USER VERIFICATION
+==================================================
+
+Replit internal testing is NOT final PASS.
+
+USER VERIFICATION = PENDING
+
+The user will live-test:
+1. public review link opens with no login;
+2. thank-you message appears on fresh review;
+3. UI looks/works like normal TrailWeigh;
+4. preinstalled file is present;
+5. reviewer can edit/delete/rename/create files;
+6. reviewer can use built-in themes and Light/Dark;
+7. reviewer can refresh/reopen and retain local sandbox changes;
+8. fresh browser gets a fresh preinstalled copy;
+9. owner's original file remains untouched;
+10. owner's Locker/private files are inaccessible.

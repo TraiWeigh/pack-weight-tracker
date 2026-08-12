@@ -337,10 +337,17 @@ export function usePackData(
      * store update and the bg update into a single render.
      */
     onRestoreBg?: (bg: BgSnapshot) => void;
+    /**
+     * Override the computed localStorage key (for review/sandbox mode).
+     * When provided: load/persist from this key; bypass the fork/newseed chain.
+     * Key format: 'trailweigh:review:${token}:pack'
+     */
+    storageKey?: string;
   } = {},
 ) {
-  // Resolved once at mount — fork tabs get an isolated storage key
-  const [storageKey] = useState<string>(() => resolveStorageKey(userId).key);
+  // Resolved once at mount — fork tabs get an isolated storage key; review mode
+  // provides an explicit key (trailweigh:review:${token}:pack).
+  const [storageKey] = useState<string>(() => opts.storageKey ?? resolveStorageKey(userId).key);
 
   // Keep onRestoreBg fresh without recreating undo/redo callbacks
   const onRestoreBgRef = useRef(opts.onRestoreBg);
@@ -357,6 +364,13 @@ export function usePackData(
   const [historyVersion, setHistoryVersion] = useState(0);
 
   const [store, setStore] = useState<Store>(() => {
+    // Review/sandbox mode: when an explicit storageKey is provided, load directly
+    // from that key and skip the owner-mode fork/newseed/incoming-share chain.
+    if (opts.storageKey) {
+      const data = loadFromKey(opts.storageKey);
+      return data ?? emptyData();
+    }
+
     // 0. Saved list from Locker (opened via "Load This List" with ?savedListId=<id>)
     try {
       const params = new URLSearchParams(window.location.search);

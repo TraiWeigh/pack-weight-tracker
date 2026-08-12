@@ -10,6 +10,7 @@ import LandingPage from './pages/LandingPage';
 import AdminPage from './pages/AdminPage';
 import SharedPackView from './pages/SharedPackView';
 import SharedChecklistPage from './pages/SharedChecklistPage';
+import ReviewPage from './pages/ReviewPage';
 import NotFound from '@/pages/not-found';
 import AboutPage from './pages/info/AboutPage';
 import HowItWorksPage from './pages/info/HowItWorksPage';
@@ -216,7 +217,7 @@ function ClerkProviderWithRoutes() {
           <Route path="/" component={HomeRedirect} />
           <Route path="/checklist" component={ChecklistRoute} />
           <Route path="/shared" component={SharedPackView} />
-          <Route path="/s/:id" component={SharedChecklistPage} />
+          <Route path="/s/:id" component={ReviewPage} />
           {/* REQUIRED — /*? matches both bare URL and Clerk's OAuth sub-paths */}
           <Route path="/sign-in/*?" component={SignInPage} />
           <Route path="/sign-up/*?" component={SignUpPage} />
