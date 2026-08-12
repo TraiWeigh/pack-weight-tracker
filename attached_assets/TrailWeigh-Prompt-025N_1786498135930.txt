@@ -1,0 +1,602 @@
+TRAILWEIGH — PROMPT 025N
+FIX PUBLIC REVIEW SEED-FILE BOOTSTRAP
+AND FIX NEW ONLY IF IT HAS THE SAME CONFIRMED ROOT CAUSE
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 5–10 minutes
+Estimated Agent usage/cost: approximately $0.90–$1.80.
+
+This prompt follows the evidence-first rule:
+reproduce → trace state/storage → confirm root cause → smallest fix → runtime proof.
+
+==================================================
+USER-VERIFIED CURRENT STATE
+==================================================
+
+PRESERVE:
+
+- 025K: Background/Themes panel follows Light/Dark.
+- 025L: `/s/:id` uses the new Public Review architecture and the same core `ChecklistContent` as Home.
+- 025M: USER-VERIFIED PASS.
+  The Share control now produces a normal concise public Review URL.
+  The link opens directly in a fresh/private browser.
+  No login is required.
+  The Review welcome experience opens.
+
+NEW USER-VERIFIED FAILURES AFTER 025M:
+
+1. The intended preinstalled/shared file is MISSING in the no-login Review sandbox.
+2. The `New` control does NOT work in Review mode.
+
+025L is therefore still PARTIAL / FAIL overall.
+
+==================================================
+IMPORTANT PRODUCT BEHAVIOR
+==================================================
+
+PUBLIC REVIEW MODE is a disposable no-login TrailWeigh sandbox.
+
+A fresh reviewer/browser for a given Review link should receive the intentionally
+shared file as a PREINSTALLED LOCAL REVIEW FILE.
+
+The reviewer may then:
+- edit it;
+- rename it;
+- delete it;
+- create new files;
+- use TrailWeigh freely.
+
+OWNER ORIGINAL:
+must never be changed.
+
+PUBLIC SEED:
+must remain available server-side even if the reviewer deletes their local copy.
+
+SAME BROWSER / SAME REVIEW LINK:
+If the reviewer has already created a local sandbox, do NOT automatically
+reinstall a deleted preinstalled file on every refresh.
+Reviewer deletion is intentional.
+
+FRESH BROWSER / FRESH REVIEW SANDBOX:
+Seed the preinstalled shared file again.
+
+==================================================
+WHAT PAST WORK TAUGHT US
+==================================================
+
+WHAT WORKED:
+
+025K worked because Replit found the exact rendered state/style boundary and made
+a one-line targeted correction.
+
+025M worked because Replit traced the exact user-facing Share output and found the
+legacy encoded-payload fallback instead of continuing to guess about `/s/:id`.
+
+WHAT FAILED:
+
+Earlier Share work repeatedly edited parallel UI paths without proving the live
+runtime cause.
+
+025L created the correct general architecture, but the report did not fully test
+the actual seed/bootstrap lifecycle or New-file behavior.
+
+LESSON FOR 025N:
+
+Do not guess that these two failures are related.
+
+Trace:
+PUBLIC SHARE SEED
+→ ReviewPage bootstrap
+→ review-specific storage namespace
+→ `usePackData`
+→ file list/current file
+→ New handler
+
+Only fix both failures in 025N if evidence proves they share the same root cause.
+
+==================================================
+CURRENT TECHNICAL PRINCIPLES TO APPLY
+==================================================
+
+React official guidance emphasizes that state is preserved/reset according to
+component identity and that state structure should have a clear source of truth.
+
+For 025N:
+- do not create a second duplicate Review state model;
+- keep `ChecklistContent` / `usePackData` as the shared working state path;
+- initialize Review state deliberately from the public seed only when a Review
+  sandbox is genuinely fresh;
+- do not use an effect that repeatedly overwrites legitimate reviewer state.
+
+Web Storage behavior:
+- Review `localStorage` is origin-scoped persistent client storage;
+- namespace Review data by the public review token;
+- do not mix Review sandbox keys with Owner storage keys.
+
+Replit App Testing:
+- use the real browser to test fresh-context and same-context behavior;
+- source inspection alone is not proof.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+GOAL A — REQUIRED:
+
+A fresh no-login Review sandbox must contain the intentionally shared file.
+
+GOAL B — CONDITIONAL:
+
+Make `New` work in Review mode ONLY IF tracing proves its failure comes from the
+same Review storage/bootstrap/state-adapter defect.
+
+If `New` has a separate root cause:
+- do NOT broaden 025N;
+- fix only GOAL A;
+- document the separate New defect;
+- STOP.
+
+==================================================
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+==================================================
+
+Before application edits create:
+
+workflow-reports/PROMPT_025N_REPORT.md
+
+Initial fields:
+- Prompt: 025N
+- Status: IN PROGRESS
+- Agent mode
+- Report created before application changes: YES
+
+Verify report exists.
+
+If report creation fails:
+STOP.
+
+==================================================
+PHASE 2 — CHECKPOINT
+==================================================
+
+Create a Replit checkpoint before editing if available.
+
+Record exact checkpoint identifier/name.
+
+If unavailable:
+CHECKPOINT = NOT AVAILABLE
+
+Do not invent one.
+
+==================================================
+PHASE 3 — REPRODUCE BOTH FAILURES BEFORE EDITING
+==================================================
+
+Use the NORMAL owner Share action to create/use a fresh Review link.
+
+TEST CONTEXT A — FRESH REVIEWER
+
+Use a fresh isolated/private signed-out browser context.
+
+1. Open the Review URL.
+2. Dismiss the welcome modal if needed.
+3. Inspect the file list/current file state.
+
+Record:
+- Review token;
+- share response/seed file name;
+- number of seed files returned;
+- review storage keys present BEFORE bootstrap;
+- review storage keys present AFTER bootstrap;
+- file count shown in Review file list;
+- active/current file ID/name;
+- whether categories/items from the shared seed are visible.
+
+Confirm the user-observed failure:
+PREINSTALLED SHARED FILE = MISSING.
+
+Then click `New`.
+
+Record:
+- whether handler fires;
+- whether React state changes;
+- whether local review storage changes;
+- whether current file changes;
+- whether UI changes;
+- any console/runtime error.
+
+Confirm:
+NEW = DOES NOT WORK.
+
+Do not edit before both traces are recorded.
+
+==================================================
+PHASE 4 — TRACE THE PUBLIC SEED BOOTSTRAP PATH
+==================================================
+
+Document exact path from:
+
+`/s/:token`
+→ ReviewPage
+→ public share fetch
+→ returned seed payload
+→ local Review namespace
+→ Review Locker/file collection
+→ active/current file selection
+→ ChecklistContent
+→ usePackData
+
+Answer these questions in the report:
+
+1. Does the server public share response actually contain the intended file?
+2. Is that file lost BEFORE localStorage write or AFTER it?
+3. What exact localStorage key(s) are used for:
+   - review pack data;
+   - review Locker/file list;
+   - current file;
+   - welcome dismissal?
+4. Is bootstrap treating an empty/default Review state as already initialized?
+5. Is default `usePackData` initialization writing blank data before the seed can load?
+6. Is the seed written to one storage key while the Locker/UI reads another?
+7. Is the seed file present but not selected as the active file?
+8. Is a React effect/order/race resetting seeded data?
+9. Is Review mode accidentally reading an Owner/default storage key?
+10. Is a stale sandbox from a prior test masking fresh initialization?
+
+Do not solve this by adding arbitrary delays/timeouts.
+
+==================================================
+PHASE 5 — TRACE THE NEW CONTROL
+==================================================
+
+Identify the exact `New` UI handler rendered in Review mode.
+
+Trace:
+
+click
+→ handler
+→ state mutation
+→ storage adapter
+→ file list/current-file update
+→ render
+
+Compare Review mode with the working Owner `New` behavior.
+
+OWNER `New` semantics to preserve:
+- starts a genuinely new blank working list;
+- zero categories/items;
+- blank/Clear background as currently defined;
+- Light mode active per current verified product behavior;
+- it must not overwrite an existing saved owner file merely by pressing New.
+
+In REVIEW mode:
+- New should create/start a new LOCAL review file/workspace;
+- it must never call an Owner authenticated persistence endpoint;
+- it must never require `userId`;
+- it must use the review-local storage/file adapter.
+
+==================================================
+PHASE 6 — ROOT-CAUSE GATE
+==================================================
+
+Before editing, state clearly:
+
+ROOT CAUSE OF MISSING SEED FILE:
+[confirmed evidence]
+
+ROOT CAUSE OF NEW FAILURE:
+[confirmed evidence]
+
+Then choose ONE:
+
+A. SAME ROOT CAUSE
+Both failures come from the same Review storage/bootstrap/adapter defect.
+Proceed with the smallest fix for both.
+
+OR
+
+B. DIFFERENT ROOT CAUSES
+Fix ONLY the missing seed-file bootstrap in 025N.
+Do not repair New.
+Document New as the next separate defect and STOP after seed verification.
+
+Do not combine unrelated fixes merely because both occur in Review mode.
+
+==================================================
+PHASE 7 — REQUIRED SEED BOOTSTRAP BEHAVIOR
+==================================================
+
+Implement the smallest safe fix so that:
+
+FRESH REVIEW SANDBOX:
+
+1. Public seed is fetched successfully.
+2. Determine whether this review-token namespace has been initialized before.
+3. If genuinely fresh:
+   - copy the intended public seed file into the local Review file collection;
+   - give the local copy a local Review identity as needed;
+   - select/open it;
+   - persist the local Review sandbox.
+4. Render that file through the existing shared Checklist UI.
+
+DO NOT:
+- modify the public server-side seed;
+- modify the Owner original;
+- write into Owner Locker storage;
+- repeatedly overwrite local reviewer changes on every render/refresh.
+
+IMPORTANT INITIALIZATION RULE:
+
+“Empty because this is the first visit”
+must be distinguishable from
+“empty because the reviewer intentionally deleted all local files.”
+
+Use an explicit review-sandbox initialization marker/version or equivalent
+existing mechanism if needed.
+
+Do not use “file count === 0” alone as the permanent test for whether to reseed,
+because that would reinstall intentionally deleted files on every refresh.
+
+==================================================
+PHASE 8 — CONDITIONAL NEW FIX
+==================================================
+
+ONLY IF Phase 6 confirms SAME ROOT CAUSE:
+
+Repair `New` through the same Review storage/state adapter.
+
+Required Review behavior:
+
+- click New;
+- UI immediately changes to a new blank list/workspace;
+- local Review state updates;
+- no Owner API write;
+- reviewer can then add categories/items normally;
+- saving that new Review file stores it only in the Review sandbox.
+
+Prefer reuse of the exact Owner New state transition where safe, while swapping
+only the persistence adapter.
+
+Do not duplicate the entire New implementation.
+
+If New requires an unrelated handler/refactor:
+leave it for Prompt 025O.
+
+==================================================
+PHASE 9 — REQUIRED RUNTIME TEST: SEED
+==================================================
+
+TEST A — FRESH ISOLATED BROWSER
+
+1. Create/use a valid Review link.
+2. Open it signed out in a fresh isolated browser context.
+3. Dismiss welcome.
+4. Confirm the intended preinstalled file appears.
+5. Confirm its expected file name.
+6. Confirm its categories/items are visible.
+7. Confirm it is the active/open file.
+
+PASS requires actual rendered file content, not merely localStorage evidence.
+
+==================================================
+PHASE 10 — REQUIRED RUNTIME TEST: REFRESH / DELETE / FRESH CONTEXT
+==================================================
+
+TEST B — SAME BROWSER
+
+1. With seeded Review file present, refresh.
+2. Confirm file remains.
+3. Delete the local preinstalled file.
+4. Refresh/reopen same Review URL in SAME browser.
+
+PASS requires:
+- deleted local file remains deleted;
+- app does NOT automatically reseed merely because local file count is zero;
+- public link itself still works.
+
+TEST C — FRESH ISOLATED BROWSER
+
+Open the SAME Review URL in a separate fresh isolated browser context.
+
+PASS requires:
+- preinstalled file appears again from the permanent public seed.
+
+This proves:
+public seed is permanent,
+reviewer sandbox deletion is local.
+
+==================================================
+PHASE 11 — REQUIRED RUNTIME TEST: NEW
+==================================================
+
+ONLY if New was legitimately fixed in this prompt:
+
+1. In Review mode click New.
+2. Confirm blank new workspace appears.
+3. Confirm zero categories/items according to current New semantics.
+4. Add one category/item or otherwise make a small edit.
+5. Save locally.
+6. Confirm it appears in Review file list.
+7. Refresh.
+8. Confirm saved local review file persists.
+9. Confirm Owner data is unchanged.
+
+If New was NOT fixed because root causes differ:
+record NEW = DEFERRED / SEPARATE ROOT CAUSE.
+Do not mark it PASS.
+
+==================================================
+PHASE 12 — OWNER ISOLATION TEST
+==================================================
+
+After Review tests, verify the signed-in Owner original:
+
+- still exists;
+- original name unchanged;
+- original item/category data unchanged;
+- Owner Locker unchanged;
+- owner current file behavior unchanged;
+- Share link still works.
+
+No Review action may write back to Owner data.
+
+==================================================
+TARGETED REGRESSION
+==================================================
+
+Verify only affected areas:
+
+- 025M concise Share URL still works.
+- no-login Review still works.
+- welcome modal still works.
+- same `ChecklistContent` architecture preserved.
+- seeded file renders through normal core UI.
+- Review local storage remains token-namespaced.
+- 025K Background panel Light/Dark still works.
+- Owner New still works as before.
+- Owner Save/Locker behavior unchanged.
+
+DO NOT retest:
+- all themes;
+- importer/parser;
+- OCR;
+- broad layout;
+- publishing.
+
+Those remain outside 025N.
+
+==================================================
+SCOPE / COST STOP CONDITION
+==================================================
+
+Expected:
+5–10 minutes
+approximately $0.90–$1.80 Agent usage.
+
+Expected application scope:
+approximately 1–3 directly related files.
+
+If missing-seed repair requires:
+- database migration;
+- auth redesign;
+- replacement of ReviewPage architecture;
+- broad Checklist refactor;
+- more than ~3 directly related application files;
+- materially more than estimate;
+
+STOP and report before expanding.
+
+If New has a separate root cause:
+do NOT exceed scope to fix it.
+
+==================================================
+CHANGED-FILE CONTROL
+==================================================
+
+Before completion:
+- inspect every changed application file;
+- revert unrelated changes;
+- no cleanup/refactor beyond confirmed root cause.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Update:
+
+workflow-reports/PROMPT_025N_REPORT.md
+
+Include:
+
+- Prompt 025N
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- checkpoint
+- Review URL/token used for testing, sanitized as appropriate
+- seed response file name/count
+- Review storage keys
+- pre-fix fresh-browser file count
+- pre-fix active file
+- pre-fix New click trace
+- public seed bootstrap trace
+- exact missing-seed root cause
+- exact New root cause
+- SAME ROOT CAUSE or DIFFERENT ROOT CAUSES
+- exact files changed
+- exact smallest fix
+- initialization marker/design
+- fresh-browser seed result
+- same-browser refresh result
+- delete-then-refresh result
+- second fresh-browser reseed result
+- New result: PASS / DEFERRED / FAIL / NOT TESTED
+- Owner original isolation result
+- Owner Locker isolation result
+- 025M regression
+- no-login regression
+- welcome regression
+- 025K regression
+- Owner New regression
+- final diff review
+- importer/parser untouched
+- unresolved issues
+- USER VERIFICATION = PENDING
+
+Do not call runtime behavior PASS if it was not actually tested.
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025N-report.zip
+
+Include at minimum:
+- PROMPT_025N_REPORT.md
+
+Optionally include small non-sensitive runtime evidence.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+Complete ONLY Prompt 025N.
+
+If New has a separate root cause, leave it for the next prompt.
+Do not publish TrailWeigh.
+Do not begin theme testing.
+Do not modify importer/parser/OCR.
+
+==================================================
+USER VERIFICATION
+==================================================
+
+Replit internal testing is NOT final PASS.
+
+USER VERIFICATION = PENDING.
+
+User will verify:
+
+1. Fresh private Review link opens with no login.
+2. Intended preinstalled shared file is present.
+3. Shared file contents load.
+4. Refresh keeps it.
+5. Deleting it and refreshing SAME browser keeps it deleted.
+6. Fresh separate browser receives it again.
+7. If New was fixed because it shared the same root cause:
+   New creates a blank local Review file/workspace and works normally.
+8. Owner original/Locker remain untouched.

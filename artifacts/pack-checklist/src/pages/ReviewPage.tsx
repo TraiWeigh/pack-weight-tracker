@@ -22,6 +22,10 @@ import { ChecklistContent } from './Checklist';
 
 function reviewWelcomedKey(token: string) { return `trailweigh:review:${token}:welcomed`; }
 function reviewPackKey(token: string)     { return `trailweigh:review:${token}:pack`; }
+function reviewLockerKey(token: string)   { return `trailweigh:review:${token}:locker`; }
+
+/** sessionStorage key for the currently-open Locker file (same as ChecklistContent's constant). */
+const ACTIVE_LOCKER_FILE_SS_KEY = 'tw-active-locker-file';
 
 // ── ReviewPage ─────────────────────────────────────────────────────────────────
 
@@ -52,19 +56,81 @@ export default function ReviewPage() {
       .then(({ payload }) => {
         if (!payload) throw new Error('Empty payload');
 
-        // Seed the review namespace on the first visit to this link.
-        // Returning reviewers keep their own edits — we only seed once.
+        // ── Compute seed values once — used by both the fresh-seed and migration paths ──
+        const data          = payload.data          ?? {};
+        const categoryOrder = Array.isArray(payload.categoryOrder) ? payload.categoryOrder : [];
+        const categoryMeta  = payload.categoryMeta  ?? {};
+        const seedFileName  = (payload.name as string | undefined) ?? 'Shared Pack List';
+        // Stable per-token ID so the reviewer can rename/delete their copy like any file.
+        const seedEntryId   = `review-seed-${reviewToken}`;
+
+        const lockerKey = reviewLockerKey(reviewToken);
+
+        /** Build the LockerEntry for the seeded shared file.
+         *  Shape matches the LockerEntry interface in LockerPanel.tsx exactly. */
+        function buildSeedLockerEntry() {
+          return [{
+            id:              seedEntryId,
+            name:            seedFileName,
+            savedAt:         Date.now(),
+            store:           { items: data, order: categoryOrder, meta: categoryMeta },
+            background:      (payload.background as unknown) ?? null,
+            bgFade:          (payload.bgFade as number)   ?? 1,
+            bgTone:          (payload.bgTone as string)   ?? 'light',
+            bgSize:          (payload.bgSize as string)   ?? 'cover',
+            chartPaletteKey: payload.chartPaletteKey as string | undefined,
+            barColor:        (payload.barColor as string)        ?? '',
+            barFont:         (payload.barFont as string)         ?? '',
+            barTextColor:    (payload.barTextColor as string)    ?? '',
+            barTransparency: (payload.barTransparency as number) ?? 1,
+          }];
+        }
+
+        /** Write the active-file marker to sessionStorage so ChecklistContent
+         *  mounts with the seeded file already selected.
+         *  Key must match ACTIVE_LOCKER_FILE_SS_KEY = 'tw-active-locker-file'. */
+        function setActiveFileSS() {
+          try {
+            sessionStorage.setItem(
+              ACTIVE_LOCKER_FILE_SS_KEY,
+              JSON.stringify({ id: seedEntryId, name: seedFileName }),
+            );
+          } catch { /* sessionStorage unavailable in some private-mode browsers — safe to skip */ }
+        }
+
+        // ── Seed the review namespace on the first visit to this link ──────────
+        // Returning reviewers keep their own edits — we only seed once
+        // (hasData guards the pack-data key; a separate migration guard below
+        //  seeds the Locker for users who had the 025L partial state).
         if (!hasData) {
           try {
-            const data          = payload.data          ?? {};
-            const categoryOrder = Array.isArray(payload.categoryOrder) ? payload.categoryOrder : [];
-            const categoryMeta  = payload.categoryMeta  ?? {};
             const seedRecord = { __v: 5, items: data, order: categoryOrder, meta: categoryMeta };
             localStorage.setItem(packKey, JSON.stringify(seedRecord));
+
+            // 025N: also seed the Locker file list so the shared file appears
+            // as a named, manageable file entry in the Locker panel.
+            localStorage.setItem(lockerKey, JSON.stringify(buildSeedLockerEntry()));
+
+            // Pre-select the seeded file so ChecklistContent opens it on mount.
+            setActiveFileSS();
           } catch (e) {
             // Quota error or private-mode restriction — continue without seeding;
             // reviewer will get an empty list they can populate manually.
             console.warn('[TrailWeigh] ReviewPage: could not seed review storage:', e);
+          }
+        } else {
+          // ── Migration guard (025N): packKey exists from 025L partial seed ──
+          // 025L wrote packKey but never wrote lockerKey, leaving the file list
+          // empty for returning reviewers.  If the Locker key is absent, seed it
+          // now so the file appears in the panel on this visit.
+          const hasLocker = !!localStorage.getItem(lockerKey);
+          if (!hasLocker) {
+            try {
+              localStorage.setItem(lockerKey, JSON.stringify(buildSeedLockerEntry()));
+              setActiveFileSS();
+            } catch (e) {
+              console.warn('[TrailWeigh] ReviewPage: could not seed review locker (migration):', e);
+            }
           }
         }
 
