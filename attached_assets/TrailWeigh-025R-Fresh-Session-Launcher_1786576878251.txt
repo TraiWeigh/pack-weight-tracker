@@ -1,0 +1,44 @@
+TRAILWEIGH — 025R FRESH-SESSION LAUNCHER
+
+This is NOT the diagnostic prompt itself.
+
+Your first job is ONLY to verify that the correct FINAL Prompt 025R has been loaded.
+
+Do not inspect TrailWeigh yet.
+Do not create a task plan yet.
+Do not build.
+Do not change code.
+Do not change UI.
+Do not change database/storage/configuration.
+Do not reuse any earlier 025R task or cached task plan.
+
+The correct prompt must have this exact title:
+
+COMPREHENSIVE WHOLE-TRAILWEIGH QUESTION / LEARNING AUDIT
+
+Before doing anything else, verify that the loaded prompt contains ALL of these numbered questions:
+
+Question 1
+Question 100
+Question 200
+Question 300
+Question 390
+
+Then reply ONLY with one of these two responses:
+
+CORRECT 025R LOADED — 390-QUESTION WHOLE-TRAILWEIGH LEARNING AUDIT CONFIRMED
+
+or
+
+WRONG 025R VERSION LOADED — STOPPING
+
+If you see only about 22 questions, if the title refers primarily to diagnosing why Review background stays white after 025Q, or if Replit says “same prompt as before,” that is the OLD 025R version.
+
+In that case:
+- STOP immediately.
+- Do not create a task.
+- Do not investigate.
+- Do not change TrailWeigh.
+- Do not infer what the user intended.
+
+Only after you explicitly confirm the correct 390-question FINAL 025R has been loaded may the user tell you to proceed.
