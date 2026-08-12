@@ -1,0 +1,656 @@
+TRAILWEIGH — PROMPT 025O
+FIX THE PUBLIC REVIEW SEED SO THE EXACT OWNER FILE BEING SHARED
+IS THE PREINSTALLED REVIEW FILE
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 5–10 minutes
+Estimated Agent usage/cost: approximately $0.90–$1.80.
+
+This prompt fixes ONE blocker:
+the public Review seed is wrong/empty.
+
+Do not work on Review `New`.
+Do not work on Hide.
+Do not redesign Review mode.
+
+==================================================
+REQUIRED ATTACHMENTS
+==================================================
+
+Attach:
+
+1. TrailWeigh-Prompt-025O.txt
+2. 025O-A-OWNER-SHARED-FILE-SOURCE-OF-TRUTH.png
+3. 025O-B-REVIEW-EMPTY-SEED-CURRENT-FAILURE.png
+
+The screenshots are mandatory evidence.
+
+If either screenshot is unavailable or unreadable:
+STOP.
+Do not modify application code.
+
+==================================================
+USER-VERIFIED CURRENT STATE
+==================================================
+
+PRESERVE:
+
+- 025K: Background/Themes Light/Dark panel fix.
+- 025L: same-core `ChecklistContent` Review architecture.
+- 025M: USER-VERIFIED PASS.
+  Share produces a concise valid `/s/<token>` URL.
+  It opens directly in a fresh/private browser.
+  No login is required.
+- Review welcome modal works.
+- Review Hide works.
+- Review `New` currently opens sign-in.
+  USER SAYS THIS IS ACCEPTABLE FOR NOW.
+  Do not change it.
+
+CURRENT BLOCKER:
+
+The exact owner file intentionally being shared is shown in:
+
+025O-A-OWNER-SHARED-FILE-SOURCE-OF-TRUTH.png
+
+Visible source file name:
+
+`Seirra/Dutch/o826`
+
+The public Review Locker instead shows an EMPTY generic file:
+
+`Shared Pack List`
+
+shown in:
+
+025O-B-REVIEW-EMPTY-SEED-CURRENT-FAILURE.png
+
+Therefore 025N's local LockerEntry bootstrap was not sufficient.
+
+The wrong seed is being created, stored, returned, interpreted, or mapped somewhere
+UPSTREAM of the final Review Locker rendering.
+
+==================================================
+WHAT WORKED / WHAT FAILED / HOW FAILURE WAS CORRECTED
+==================================================
+
+025M WORKED because:
+- Replit traced the exact value emitted by Share;
+- found the legacy giant encoded-payload fallback;
+- removed that fallback;
+- preserved the token-based `/s/<token>` route.
+
+025N FAILED LIVE because:
+- it repaired only the local Review Locker metadata/bootstrap;
+- but the public seed feeding that bootstrap was still not the actual owner file;
+- Review therefore created a generic/empty `Shared Pack List`.
+
+LESSON:
+Do not patch another downstream placeholder.
+
+For 025O trace the ACTUAL source object end-to-end:
+
+OWNER ACTIVE FILE
+→ SHARE HANDLER
+→ POST `/api/links`
+→ STORED PUBLIC SHARE RECORD
+→ GET PUBLIC SHARE RESPONSE
+→ ReviewPage mapping
+→ REVIEW LOCAL LOCKER ENTRY
+→ RENDERED REVIEW FILE
+
+Prove the first point where the exact source identity/data changes or disappears.
+
+==================================================
+CURRENT BEST-PRACTICE PRINCIPLES
+==================================================
+
+Replit Agent App Testing can exercise the running application in a real browser.
+Use it for the real owner Share action and the signed-out Review route.
+
+For API data:
+- inspect the actual POST request body;
+- inspect the actual stored public record through the app's safe server/database path;
+- inspect the actual GET response;
+- compare structured values, not assumptions.
+
+Security:
+public review endpoints may return only intentionally shared public seed data.
+Do not weaken authorization on private owner-file endpoints.
+Do not expose owner Locker IDs or unrelated private files merely to make sharing work.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+When the owner shares the CURRENT active TrailWeigh file:
+
+`Seirra/Dutch/o826`
+
+the resulting public review token must represent a permanent public SNAPSHOT of
+that exact current file.
+
+A fresh Review sandbox using that token must be preinstalled with that file:
+
+- correct file name;
+- correct categories;
+- correct items;
+- correct Type/Name fields;
+- correct weights;
+- correct quantities;
+- correct checked/packed states;
+- correct Base/non-Base states where part of the file data;
+- current appearance/background settings that are already intended to be shared;
+- no generic empty placeholder.
+
+Do not make Review fetch the owner's private file directly.
+
+The public seed must remain a safe public snapshot/record.
+
+==================================================
+IMPORTANT SHARE SEMANTICS
+==================================================
+
+The public seed should represent the file as it exists in the TrailWeigh working
+screen at the moment Share is used.
+
+If the active saved Locker file has unsaved working changes:
+preserve the CURRENT rendered working file state being shared, consistent with
+TrailWeigh's existing Share behavior.
+
+The source file's display name must also be preserved.
+
+Do not silently replace the source name with:
+- `Shared Pack List`
+- `Untitled`
+- `New List`
+- another fallback name
+
+unless the source truly has no name.
+
+==================================================
+PHASE 1 — CREATE REPORT BEFORE CODE CHANGES
+==================================================
+
+Before any application code change create:
+
+workflow-reports/PROMPT_025O_REPORT.md
+
+Initial contents:
+- Prompt: 025O
+- Status: IN PROGRESS
+- Agent mode
+- owner source screenshot accessible: YES/NO
+- review failure screenshot accessible: YES/NO
+- report created before application changes: YES
+
+Verify it exists.
+
+If report creation fails:
+STOP.
+
+==================================================
+PHASE 2 — CHECKPOINT
+==================================================
+
+Create a Replit checkpoint before editing if available.
+
+Record exact checkpoint identifier/name.
+
+If unavailable:
+CHECKPOINT = NOT AVAILABLE
+
+Do not invent one.
+
+==================================================
+PHASE 3 — REPRODUCE USING THE ACTUAL OWNER SHARE ACTION
+==================================================
+
+Use the running application.
+
+OWNER TEST:
+
+1. Open/select the exact saved file shown in the source screenshot:
+   `Seirra/Dutch/o826`
+2. Confirm it is the ACTIVE file.
+3. Record a SOURCE SIGNATURE before sharing.
+
+SOURCE SIGNATURE must include:
+
+- displayed file name;
+- active Locker file ID, sanitized in the report if necessary;
+- category count;
+- total item count;
+- checked/packed item count;
+- first 3 category names;
+- last 3 category names;
+- 3 representative item identities from different categories;
+- representative weights/quantities;
+- current unit mode;
+- current background/theme identifier;
+- current Bar Color/Transparency/Text Color/Font values if included in share data.
+
+Do not rely only on the screenshot.
+Read the actual current application state.
+
+Then click the NORMAL owner Share control and create a FRESH public review token.
+
+Record the new token in sanitized form.
+
+==================================================
+PHASE 4 — CAPTURE THE EXACT SHARE REQUEST BODY
+==================================================
+
+Inspect the exact POST request used to create the public link,
+reported in earlier work as `/api/links` unless current code differs.
+
+Document the request schema and actual values.
+
+At minimum identify:
+
+- payload type/kind;
+- file/display name field;
+- file ID field if any;
+- store/categories/items payload;
+- checked states;
+- quantities/weights;
+- background/appearance payload;
+- Locker metadata if included.
+
+Create a POST BODY SIGNATURE matching the SOURCE SIGNATURE.
+
+Explicitly answer:
+
+1. Does POST body contain `Seirra/Dutch/o826`?
+2. Does POST body contain the real category/item data?
+3. Does POST body contain a BLANK/default store instead?
+4. Does POST body use a generic name?
+5. Is the Share handler using the wrong state variable?
+6. Is it sharing a blank `createDefaultStore()` / initial state?
+7. Is it sharing an old/stale saved snapshot rather than current working state?
+8. Is it using a different Share handler than expected?
+
+If the correct source data is already missing from POST:
+ROOT CAUSE IS CLIENT-SIDE SHARE PAYLOAD CONSTRUCTION.
+Do not waste time patching ReviewPage first.
+
+==================================================
+PHASE 5 — INSPECT THE STORED PUBLIC SHARE RECORD
+==================================================
+
+Using the application's safe server/database path, inspect the public record
+created for the fresh token.
+
+Do NOT query or expose unrelated owner records.
+
+Create a STORED SEED SIGNATURE:
+
+- stored public display name;
+- category count;
+- item count;
+- checked count;
+- representative category/item identities;
+- relevant appearance metadata.
+
+Compare:
+
+SOURCE
+vs
+POST BODY
+vs
+STORED PUBLIC RECORD
+
+Explicitly state whether the server:
+- stores the request correctly;
+- replaces the name;
+- drops store data;
+- transforms schema incorrectly;
+- uses a default/empty payload;
+- truncates data;
+- saves only partial metadata.
+
+==================================================
+PHASE 6 — INSPECT THE PUBLIC GET RESPONSE
+==================================================
+
+Open/fetch the public Review token through the SAME endpoint ReviewPage actually uses.
+
+Create a GET RESPONSE SIGNATURE:
+
+- returned display name;
+- category count;
+- item count;
+- checked count;
+- representative category/item identities;
+- appearance metadata.
+
+Compare:
+
+STORED PUBLIC RECORD
+vs
+GET RESPONSE.
+
+Determine whether serialization/deserialization or response mapping loses the data.
+
+==================================================
+PHASE 7 — INSPECT REVIEWPAGE MAPPING
+==================================================
+
+Trace the GET response through ReviewPage.
+
+Before changing code record:
+
+- exact fields ReviewPage reads;
+- exact field used as Review Locker display name;
+- exact store object passed/seeding `usePackData`;
+- whether a fallback `Shared Pack List` is applied;
+- exact condition that triggers the fallback;
+- whether real data exists under another property name;
+- whether schema mismatch makes ReviewPage think data is empty.
+
+Create a REVIEW MAPPING SIGNATURE before localStorage write.
+
+Compare it to GET RESPONSE.
+
+==================================================
+PHASE 8 — ROOT-CAUSE GATE
+==================================================
+
+Before editing, identify the FIRST layer where source truth diverges.
+
+Choose exactly one primary root-cause layer:
+
+A. OWNER SHARE HANDLER / CLIENT PAYLOAD
+B. POST API SERVER MAPPING
+C. PUBLIC SHARE STORAGE
+D. PUBLIC GET API SERIALIZATION
+E. REVIEWPAGE RESPONSE MAPPING
+F. OTHER — explain with evidence
+
+Write:
+
+FIRST DIVERGENCE:
+[exact field/data difference]
+
+CONFIRMED ROOT CAUSE:
+[exact cause]
+
+Do not edit until this is written.
+
+==================================================
+PHASE 9 — SMALLEST SAFE FIX
+==================================================
+
+Repair the FIRST divergence, not downstream symptoms.
+
+Preferred principles:
+
+- share the existing CURRENT working file/store state;
+- include the current display filename in the public snapshot;
+- keep using the concise 025M token URL;
+- keep using the safe public seed record;
+- do not expose the owner's private Locker endpoint in Review mode;
+- do not create a second giant encoded URL;
+- do not create duplicate parallel Share systems.
+
+If the public share schema already supports the needed fields:
+reuse it.
+
+If one small optional metadata field such as `fileName` is genuinely missing:
+add the minimum compatible field and safe fallback.
+
+Do not perform a broad data-model migration unless absolutely required.
+
+==================================================
+PHASE 10 — POST-FIX END-TO-END SIGNATURE COMPARISON
+==================================================
+
+Create a FRESH share token after the fix.
+
+Repeat the signature chain:
+
+SOURCE OWNER FILE
+→ POST BODY
+→ STORED PUBLIC RECORD
+→ PUBLIC GET RESPONSE
+→ REVIEWPAGE MAPPING
+→ LOCAL REVIEW LOCKER ENTRY
+
+For required shared file data, the values must match semantically.
+
+At minimum prove:
+
+FILE NAME:
+`Seirra/Dutch/o826`
+at source and Review.
+
+CATEGORY COUNT:
+same source vs Review.
+
+ITEM COUNT:
+same source vs Review.
+
+CHECKED/PACKED COUNT:
+same source vs Review.
+
+REPRESENTATIVE ITEMS:
+same identities/weights/quantities.
+
+Do not declare success because one filename matches while file content is empty.
+
+==================================================
+PHASE 11 — MANDATORY SIGNED-OUT RUNTIME TEST
+==================================================
+
+In a FRESH signed-out/private browser context:
+
+1. Open the NEW `/s/<token>` URL.
+2. Confirm no login.
+3. Dismiss welcome.
+4. Open/inspect Review Locker.
+
+PASS requires:
+
+- Locker contains the preinstalled file named:
+  `Seirra/Dutch/o826`
+- not `Shared Pack List`;
+- file opens as active file;
+- categories/items are visibly populated;
+- representative source items are present;
+- category/item counts match source;
+- weights/quantities match source;
+- checked states match source.
+
+Take a screenshot if available:
+
+workflow-reports/025O-REVIEW-SEED-POSTFIX.png
+
+The screenshot should include:
+- Review Locker showing the correct filename;
+- enough checklist content to prove it is not empty.
+
+==================================================
+PHASE 12 — PERMANENCE / ISOLATION CHECK
+==================================================
+
+Verify:
+
+PUBLIC SEED:
+- still exists after opening Review;
+- remains read-only from Review operations.
+
+OWNER:
+- original `Seirra/Dutch/o826` still exists;
+- owner data unchanged;
+- owner Locker unchanged.
+
+REVIEW:
+- local sandbox may edit/delete its copy without writing owner data.
+
+Do not perform the full 025L sandbox matrix here.
+Only prove the seed is correct and isolated.
+
+==================================================
+DO NOT CHANGE THESE VERIFIED/ACCEPTED BEHAVIORS
+==================================================
+
+- 025M short valid share URL.
+- no-login Review.
+- welcome modal.
+- same-core `ChecklistContent`.
+- Review Hide works.
+- 025K Background panel Light/Dark.
+- Review `New` opening sign-in is ACCEPTABLE FOR NOW.
+- standalone top-toolbar Print remains absent.
+- importer/parser behavior untouched.
+
+==================================================
+SCOPE / COST STOP CONDITION
+==================================================
+
+Expected:
+5–10 minutes
+approximately $0.90–$1.80 Agent usage.
+
+Expected application scope:
+approximately 1–3 directly related files.
+
+If confirmed root cause requires:
+- broad database migration;
+- auth redesign;
+- replacement of Review architecture;
+- broad Checklist refactor;
+- more than ~3 directly related application files;
+- materially more than estimate;
+
+STOP and report before expanding.
+
+==================================================
+CHANGED-FILE CONTROL
+==================================================
+
+Before completion:
+- inspect every changed application file;
+- revert unrelated edits;
+- no cleanup/refactor outside the confirmed seed-data path.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Update:
+
+workflow-reports/PROMPT_025O_REPORT.md
+
+Include:
+
+- Prompt 025O
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- checkpoint
+- attachment verification
+- exact owner source file name
+- SOURCE SIGNATURE
+- exact Share handler used
+- POST endpoint
+- POST BODY SIGNATURE
+- STORED PUBLIC RECORD SIGNATURE
+- GET endpoint
+- GET RESPONSE SIGNATURE
+- ReviewPage mapping fields
+- pre-fix REVIEW MAPPING SIGNATURE
+- FIRST DIVERGENCE
+- CONFIRMED ROOT CAUSE
+- exact files changed
+- exact smallest fix
+- post-fix SOURCE SIGNATURE
+- post-fix POST BODY SIGNATURE
+- post-fix STORED SEED SIGNATURE
+- post-fix GET RESPONSE SIGNATURE
+- post-fix REVIEW MAPPING SIGNATURE
+- post-fix local Review Locker signature
+- filename match result
+- category count match result
+- item count match result
+- checked count match result
+- representative item match result
+- signed-out runtime result
+- screenshot path or NOT AVAILABLE
+- owner isolation result
+- 025M regression
+- no-login regression
+- welcome regression
+- Review Hide regression
+- 025K regression
+- Review New intentionally unchanged
+- final diff review
+- importer/parser untouched
+- unresolved issues
+- USER VERIFICATION = PENDING
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not call runtime behavior PASS unless actually tested in the running app.
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025O-report.zip
+
+Include at minimum:
+- PROMPT_025O_REPORT.md
+
+Also include if created:
+- 025O-REVIEW-SEED-POSTFIX.png or .jpg
+- small sanitized signature/comparison evidence.
+
+Do not include secrets/private unrelated data.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+Complete ONLY Prompt 025O.
+
+Do not fix Review New.
+Do not modify Hide.
+Do not publish TrailWeigh.
+Do not begin another task.
+
+==================================================
+USER VERIFICATION
+==================================================
+
+Replit internal testing is NOT final PASS.
+
+USER VERIFICATION = PENDING.
+
+User will verify:
+
+1. Share `Seirra/Dutch/o826`.
+2. Open the new link signed out.
+3. No login required.
+4. Review Locker shows `Seirra/Dutch/o826`.
+5. The file is populated, not empty.
+6. Categories/items/weights/quantities/checked states match the shared source.
+7. Owner original remains untouched.

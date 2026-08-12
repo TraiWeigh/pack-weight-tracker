@@ -1058,6 +1058,18 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       }
     } catch { /* ignore — share works without locker snapshot */ }
 
+    // 025O: Resolve the display name with a multi-level fallback.
+    // activeLockerFile?.name can be undefined when:
+    //   • the 022G mount-effect React state hasn't propagated yet after a page refresh;
+    //   • the user has the Locker open but hasn't explicitly loaded the file this session.
+    // Fallback 1: readLastActiveFileFromLS — survives page refresh via localStorage.
+    // Fallback 2: single Locker entry — it MUST be the file being shared.
+    // Fallback 3: undefined — ReviewPage will label it "Shared Pack List" as a last resort.
+    const resolvedShareName: string | undefined =
+      activeLockerFile?.name ??
+      (userId ? readLastActiveFileFromLS(userId)?.name : undefined) ??
+      (lockerFiles?.length === 1 ? lockerFiles[0].name : undefined);
+
     // Snapshot the complete current working file — same structure as Save.
     // Checkbox states are preserved as-is (unlike New which resets them).
     const payload = {
@@ -1070,7 +1082,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       bgTone,
       bgSize,
       unit:          system,
-      name:          activeLockerFile?.name ?? undefined,
+      name:          resolvedShareName,
       lockerFiles,
       barColor,
       barFont,
@@ -1112,6 +1124,10 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
    */
   const handleShareCheckableList = async () => {
     if (store.order.length === 0) return;
+    // 025O: same multi-level name fallback as handleShareLocker (no lockerFiles here).
+    const resolvedCheckableName: string | undefined =
+      activeLockerFile?.name ??
+      (userId ? readLastActiveFileFromLS(userId)?.name : undefined);
     const payload = {
       type:          'checkable' as const,
       data:          store.items,
@@ -1122,7 +1138,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       bgTone,
       bgSize,
       unit:          system,
-      name:          activeLockerFile?.name ?? undefined,
+      name:          resolvedCheckableName,
       barColor,
       barFont,
       barTextColor,
