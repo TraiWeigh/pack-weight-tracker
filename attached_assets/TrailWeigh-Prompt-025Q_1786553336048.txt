@@ -1,0 +1,692 @@
+TRAILWEIGH — PROMPT 025Q
+RESTORE SAVED BUILT-IN BACKGROUND IN PUBLIC REVIEW
+AND MAKE REVIEW USE THE SAME PERMANENT BUILT-IN THEME REGISTRY AS HOME
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 6–12 minutes
+Estimated Agent usage/cost: approximately $1.10–$2.20.
+
+This prompt fixes ONE appearance-parity defect in Public Review.
+
+Do not change the live-share architecture from 025P.
+Do not work on Review New.
+Do not work on item/weight propagation yet.
+
+==================================================
+REQUIRED ATTACHMENTS
+==================================================
+
+Attach:
+
+1. TrailWeigh-Prompt-025Q.txt
+2. 025Q-A-OWNER-APPEARANCE-SOURCE-OF-TRUTH.png
+3. 025Q-B-REVIEW-THEME-PARITY-FAILURE.png
+
+Verify both screenshots are readable BEFORE application changes.
+
+If either screenshot is missing/unreadable:
+STOP.
+Do not modify application code.
+
+==================================================
+USER-VERIFIED CURRENT STATE
+==================================================
+
+PRESERVE:
+
+- 025K: Background/Themes panel follows Light/Dark correctly.
+- 025L: Review uses the same core `ChecklistContent` path as Home.
+- 025M: concise valid Share URL = USER-VERIFIED PASS.
+- 025P live-reference filename propagation = USER-VERIFIED PASS.
+  The SAME Review URL updated when owner renamed:
+  `Sample List` → `Sample List Live Test`.
+- Public Review opens with NO LOGIN.
+- Review welcome modal works.
+- Review Hide works.
+- Review New opens sign-in.
+  USER SAYS THIS IS ACCEPTABLE FOR NOW.
+  DO NOT CHANGE IT.
+- importer/parser/OCR must remain untouched.
+
+CURRENT APPEARANCE FAILURE:
+
+OWNER screenshot:
+- signed-in saved file is open;
+- a landscape background is visibly applied;
+- current TrailWeigh appearance is not plain white.
+
+REVIEW screenshot:
+- the saved background is missing / Review appears plain white;
+- Background/Themes exposes only `Landscape`;
+- other current permanent built-in theme groups are missing.
+
+Therefore 025P live data propagation is only PARTIAL.
+
+==================================================
+PRIMARY GOAL
+==================================================
+
+For a built-in/permanent TrailWeigh appearance:
+
+OWNER SAVED APPEARANCE
+        ↓
+LIVE PUBLIC DTO
+        ↓
+REVIEW LOCAL SANDBOX
+        ↓
+SAME BACKGROUND/THEME REGISTRY
+        ↓
+SAME RENDERED APPEARANCE
+
+A fresh/reseeded Review file must:
+
+1. resolve the same saved built-in background/preset as Owner;
+2. show that background;
+3. have access to the same permanent built-in theme groups as Home;
+4. retain the saved appearance fields intended to travel with the file.
+
+Do NOT expose private user-uploaded Custom Theme photos unless they are already
+explicitly designed as public assets.
+
+==================================================
+CURRENT THEME EXPECTATION
+==================================================
+
+Inventory the ACTUAL current permanent/bundled theme registry from source.
+
+Known product expectation from prior verified work includes these permanent
+theme groups if they are still present in current code:
+
+- Landscape
+- Retro-Outdoors
+- Psychedelic
+- Topo 1
+
+Do NOT hard-code this list without checking current source.
+
+If current code has additional permanent/bundled theme groups:
+include them.
+
+Treat `Custom` separately:
+- if it is only a UI slot/group for user-created private photos, it is NOT a
+  public bundled theme library;
+- do not expose private user Custom Theme images;
+- document exactly how Custom works today.
+
+==================================================
+WHAT PAST WORK TAUGHT US
+==================================================
+
+025K WORKED because:
+- exact rendering/theme-scope root cause was proven;
+- smallest real fix was made.
+
+025M WORKED because:
+- exact emitted Share value was traced end-to-end;
+- first divergence was fixed rather than downstream symptoms.
+
+025P WORKED PARTIALLY because:
+- live owner filename now flows through SAME Review URL;
+- but appearance data/theme availability does not match Owner.
+
+LESSON FOR 025Q:
+
+Do NOT assume “background missing because theme is missing.”
+
+Trace both independently:
+
+A. Does the public live DTO contain the exact saved appearance IDs/values?
+B. Does Review have the same theme registry needed to resolve those IDs?
+
+Fix the FIRST confirmed divergence(s), not a screenshot-specific color.
+
+==================================================
+CURRENT OFFICIAL PRACTICES TO APPLY
+==================================================
+
+React official guidance favors a single source of truth for state shared across
+components. Reuse the same built-in theme registry and appearance interpretation
+path rather than duplicating Review-specific theme definitions.
+
+Replit App Testing uses an actual browser. Verify the rendered owner/review
+appearance in the running app; source inspection alone is not proof.
+
+Browser localStorage is origin-scoped persistent storage. Review-local appearance
+state may be stored in the token-namespaced sandbox, but bundled theme definitions
+should come from application code/assets, not be copied from an authenticated
+owner's private browser storage.
+
+==================================================
+PHASE 1 — REPORT FIRST
+==================================================
+
+Before changing application code create:
+
+workflow-reports/PROMPT_025Q_REPORT.md
+
+Initial fields:
+
+- Prompt: 025Q
+- Status: IN PROGRESS
+- Agent mode
+- owner screenshot accessible: YES/NO
+- review screenshot accessible: YES/NO
+- report created before application changes: YES
+
+Verify report exists.
+
+If it cannot be created:
+STOP.
+
+==================================================
+PHASE 2 — CHECKPOINT
+==================================================
+
+Create a Replit checkpoint before editing if available.
+
+Record exact checkpoint identifier/name.
+
+If unavailable:
+CHECKPOINT = NOT AVAILABLE
+
+Do not invent one.
+
+==================================================
+PHASE 3 — INVENTORY THE ACTUAL THEME ARCHITECTURE
+==================================================
+
+BEFORE EDITING document:
+
+1. exact component rendering Background/Themes in Home;
+2. exact component rendering Background/Themes in Review;
+3. whether both are literally the same component path;
+4. exact built-in/permanent theme registry source;
+5. exact built-in theme group names;
+6. exact preset/background IDs inside each group;
+7. whether any permanent assets are read from:
+   - bundled imports;
+   - public/static assets;
+   - localStorage;
+   - IndexedDB;
+   - authenticated API;
+8. Custom Theme/private image storage path;
+9. exact appearance fields in `PackStore` / saved file state;
+10. exact appearance fields persisted in owner Locker file;
+11. exact appearance fields returned by 025P public live DTO;
+12. exact appearance fields written into Review local sandbox;
+13. exact logic used to resolve saved background/preset ID to an asset.
+
+Then answer:
+
+HOME BUILT-IN THEME REGISTRY SOURCE =
+[exact file/module/path]
+
+REVIEW BUILT-IN THEME REGISTRY SOURCE =
+[exact file/module/path]
+
+SAME REGISTRY?
+YES / NO
+
+==================================================
+PHASE 4 — CREATE OWNER APPEARANCE SIGNATURE
+==================================================
+
+Use the actual signed-in owner file shown in the screenshot.
+
+Record:
+
+- current file name;
+- current source version;
+- selected theme group ID/name;
+- selected background/preset ID;
+- background asset identifier/path/reference;
+- Fill/Fit mode;
+- Light/Dark;
+- Darken;
+- Bar Color;
+- Transparency;
+- Text Color;
+- Font;
+- any other appearance field actually stored with the file.
+
+Also record:
+- computed/rendered background-image value;
+- whether background image is from bundled/public asset or private uploaded asset.
+
+This is the OWNER APPEARANCE SIGNATURE.
+
+Do not edit before recording it.
+
+==================================================
+PHASE 5 — TRACE LIVE PUBLIC DTO
+==================================================
+
+Use the SAME live Share URL/token that is already proven to propagate filename changes.
+
+Inspect the public server response used by ReviewPage.
+
+Record the REVIEW PUBLIC APPEARANCE SIGNATURE:
+
+- theme group ID/name;
+- selected background/preset ID;
+- background asset identifier/reference;
+- Fit/Fill;
+- Light/Dark;
+- Darken;
+- Bar Color;
+- Transparency;
+- Text Color;
+- Font.
+
+Compare field-by-field to Owner.
+
+Explicitly answer:
+
+1. Is the owner's saved theme group present in public DTO?
+2. Is selected preset/background ID present?
+3. Has the server dropped/renamed/transformed an appearance field?
+4. Is an older snapshot/default appearance being returned?
+5. Does the DTO contain a private Custom asset that should NOT be public?
+
+If Owner appearance is already wrong/missing in the public DTO:
+fix the live public DTO mapping first.
+
+==================================================
+PHASE 6 — TRACE REVIEW SANDBOX APPEARANCE MAPPING
+==================================================
+
+Inspect ReviewPage/bootstrap/version-sync.
+
+Record the appearance values:
+
+PUBLIC DTO
+→ Review mapping object
+→ review localStorage PackStore
+→ usePackData
+→ ChecklistContent
+→ Background rendering
+
+Explicitly determine whether:
+
+- public appearance fields are discarded during reseed;
+- review defaults overwrite them after seed;
+- property names mismatch;
+- saved preset ID is stored but active background selector ignores it;
+- review-local state is stale from a previous source version.
+
+Do not fix with arbitrary timeouts.
+
+==================================================
+PHASE 7 — TRACE THEME REGISTRY PARITY
+==================================================
+
+The Review panel currently shows only Landscape.
+
+Find the exact reason.
+
+Inspect for:
+
+- Review-specific filtering;
+- owner-authenticated theme loading;
+- route-specific props;
+- localStorage/IndexedDB-only theme registry;
+- `userId` gate;
+- a hard-coded Review theme list;
+- missing imports;
+- missing bundled asset registration;
+- conditional rendering based on auth;
+- a default fallback registry containing only Landscape.
+
+Record:
+
+HOME THEME GROUPS:
+[list]
+
+REVIEW THEME GROUPS BEFORE FIX:
+[list]
+
+FIRST THEME-REGISTRY DIVERGENCE:
+[exact cause]
+
+==================================================
+PHASE 8 — ROOT-CAUSE GATE
+==================================================
+
+Before editing write:
+
+BACKGROUND ROOT CAUSE =
+[exact first divergence]
+
+THEME-REGISTRY ROOT CAUSE =
+[exact first divergence]
+
+Choose whether these are:
+
+A. SAME ROOT CAUSE
+or
+B. TWO NARROW RELATED ROOT CAUSES
+
+Both may be fixed in 025Q because they are one user-facing appearance-parity defect,
+but do not broaden beyond appearance/theme propagation.
+
+If fixing requires broad theme architecture rewrite:
+STOP and report.
+
+==================================================
+PHASE 9 — SMALLEST SAFE FIX
+==================================================
+
+Preferred outcome:
+
+- Home and Review import/use the SAME permanent built-in theme registry;
+- Review does not reconstruct its own built-in theme list;
+- saved built-in theme/preset IDs travel through the existing live public DTO;
+- Review seeds those appearance fields without replacing them with defaults;
+- Background renderer resolves the same ID to the same bundled/public asset.
+
+Do NOT:
+- duplicate all theme definitions into ReviewPage;
+- hard-code a specific screenshot background;
+- copy private owner IndexedDB custom photos into public Review;
+- expose private Custom Theme assets;
+- change 025P live-source semantics;
+- change 025M URL behavior.
+
+==================================================
+PHASE 10 — BUILT-IN THEME PUBLIC-ASSET RULE
+==================================================
+
+Permanent/bundled themes should be application assets.
+
+They should be available to:
+
+- signed-in Owner;
+- signed-out Review;
+- future published app;
+
+without requiring owner authentication.
+
+If a current “built-in” asset is incorrectly stored only in owner-local
+IndexedDB/localStorage:
+document that as the root cause and move only truly permanent/bundled assets to
+the existing appropriate app asset/registry path if this is a narrow change.
+
+Do not migrate user private Custom photos.
+
+==================================================
+PHASE 11 — REQUIRED RUNTIME TEST: SAVED BACKGROUND
+==================================================
+
+OWNER:
+
+Open the source file with its current saved built-in background.
+
+Record screenshot/computed appearance.
+
+REVIEW:
+
+Using SAME public Review URL:
+1. reload Review;
+2. allow 025P source-version logic to reseed if owner appearance version changed;
+3. dismiss welcome if needed.
+
+PASS requires:
+
+- Review visibly shows the same saved built-in background;
+- no plain-white fallback;
+- selected background/preset ID matches Owner;
+- Fit/Fill matches;
+- Light/Dark matches where stored;
+- representative Bar Color/Transparency/Text Color/Font values match where intended.
+
+Create if available:
+
+workflow-reports/025Q-OWNER-APPEARANCE.png
+workflow-reports/025Q-REVIEW-APPEARANCE.png
+
+Use comparable viewport/state.
+
+==================================================
+PHASE 12 — REQUIRED RUNTIME TEST: THEME REGISTRY
+==================================================
+
+Open Background/Themes in:
+
+A. signed-in Owner
+B. signed-out Review
+
+Record all permanent/bundled theme groups in each.
+
+PASS requires:
+HOME BUILT-IN GROUPS == REVIEW BUILT-IN GROUPS
+
+At minimum verify any current source-confirmed groups corresponding to:
+- Landscape
+- Retro-Outdoors
+- Psychedelic
+- Topo 1
+
+Apply at least two NON-Landscape built-in presets in Review.
+
+PASS requires:
+- asset renders;
+- no auth requirement;
+- no missing image;
+- no console asset error;
+- selection remains local to reviewer sandbox;
+- owner appearance is not modified.
+
+==================================================
+PHASE 13 — PRIVATE CUSTOM THEME TEST
+==================================================
+
+If Owner has user-created Custom Theme photos:
+
+Verify signed-out Review does NOT gain access to the owner's private Custom
+Theme images merely because a live share token exists.
+
+If the saved owner file currently references a private Custom image:
+do not silently expose it.
+
+Use a safe fallback and report the limitation unless product policy already
+explicitly marks that asset public.
+
+This prompt's required parity is for permanent/bundled themes.
+
+==================================================
+PHASE 14 — LIVE APPEARANCE UPDATE THROUGH SAME URL
+==================================================
+
+Use the SAME public Review URL.
+
+OWNER:
+change the saved file from its current built-in background to a DIFFERENT
+permanent built-in background and save.
+
+REVIEW:
+reload SAME URL.
+
+PASS requires:
+- new owner background appears through the same Review URL;
+- no new Share URL required.
+
+Then restore owner background if desired and verify Review follows again.
+
+This proves 025P live-reference architecture includes appearance updates.
+
+==================================================
+PHASE 15 — TARGETED REGRESSION
+==================================================
+
+Verify:
+
+- 025P same-URL filename update still works.
+- current owner filename remains live.
+- 025M concise URL remains.
+- no-login Review remains.
+- welcome modal remains.
+- Review Hide remains working.
+- Review New still opens sign-in and is intentionally unchanged.
+- 025K Background panel Light/Dark remains.
+- owner theme/background controls remain working.
+- Review theme changes do not write owner data.
+- importer/parser/OCR untouched.
+- standalone top-toolbar Print remains absent.
+
+Do NOT perform item/weight live-propagation testing in 025Q.
+Resume that after appearance parity passes.
+
+==================================================
+SCOPE / COST STOP CONDITION
+==================================================
+
+Expected:
+6–12 minutes
+approximately $1.10–$2.20 Agent usage.
+
+Expected application scope:
+approximately 1–4 directly related appearance/theme/share mapping files.
+
+If confirmed fix requires:
+- broad theme system rewrite;
+- auth redesign;
+- broad database migration;
+- changes to more than ~4 directly related application files;
+- material expansion beyond estimate;
+
+STOP and report before expanding.
+
+==================================================
+CHANGED-FILE CONTROL
+==================================================
+
+Before completion:
+
+- inspect every changed application file;
+- revert unrelated edits;
+- no broad cleanup/refactor;
+- no importer/parser/OCR changes.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Update:
+
+workflow-reports/PROMPT_025Q_REPORT.md
+
+Include:
+
+- Prompt 025Q
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- checkpoint
+- attachment verification
+- exact owner file name
+- OWNER APPEARANCE SIGNATURE
+- public DTO appearance signature
+- Review sandbox appearance signature
+- Home built-in theme registry source
+- Review built-in theme registry source
+- Home theme group inventory
+- Review pre-fix theme group inventory
+- Background first divergence
+- Theme-registry first divergence
+- confirmed root cause(s)
+- exact files changed
+- exact smallest fix
+- Review post-fix appearance signature
+- saved background parity result
+- Fit/Fill parity
+- Light/Dark parity
+- Bar Color parity
+- Transparency parity
+- Text Color parity
+- Font parity
+- Home vs Review built-in group parity
+- non-Landscape theme test results
+- private Custom Theme handling
+- same-URL owner background-change result
+- 025P filename regression
+- 025M regression
+- no-login regression
+- welcome regression
+- Review Hide regression
+- Review New intentionally unchanged
+- 025K regression
+- screenshot paths or NOT AVAILABLE
+- final diff review
+- importer/parser/OCR untouched
+- unresolved issues
+- USER VERIFICATION = PENDING
+
+Use only:
+PASS
+FAIL
+PARTIAL
+NOT TESTED
+
+Do not call runtime behavior PASS unless actually tested in the running app.
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025Q-report.zip
+
+Include at minimum:
+
+- PROMPT_025Q_REPORT.md
+
+Also include if created:
+
+- 025Q-OWNER-APPEARANCE.png/.jpg
+- 025Q-REVIEW-APPEARANCE.png/.jpg
+- small sanitized appearance/theme evidence.
+
+Verify:
+
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+Complete ONLY Prompt 025Q.
+
+Do not publish TrailWeigh.
+Do not fix Review New.
+Do not change Review Hide.
+Do not perform item/weight live-propagation work.
+Do not modify importer/parser/OCR.
+
+==================================================
+USER VERIFICATION
+==================================================
+
+Replit internal testing is NOT final PASS.
+
+USER VERIFICATION = PENDING.
+
+User will verify:
+
+1. Open same public Review URL.
+2. Saved owner built-in background appears.
+3. Review Background/Themes contains the same permanent built-in theme groups as Home.
+4. At least two non-Landscape built-in themes work in Review.
+5. Owner changes saved built-in background.
+6. SAME Review URL reflects the new background after reload.
+7. Review theme changes never modify owner data.
+8. Private Custom Theme photos remain private unless explicitly designed public.

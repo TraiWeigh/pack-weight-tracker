@@ -276,6 +276,10 @@ function setActiveFileSS(id: string, name: string) {
  *   selected as the active/primary file and written to packKey.
  * • All files are written to lockerKey — reviewer sees all in the Locker panel.
  * • sourceVersion is persisted to detect future owner changes (CASE B/C).
+ * • Primary file appearance is written to global localStorage keys so
+ *   ChecklistContent's lazy state initializers pick up the correct appearance
+ *   on first render (025Q fix — these keys are what the background/tone/fade
+ *   initialisers fall through to on the normal non-fork, non-savedlist path).
  *
  * Called for CASE A (no local sandbox) and CASE C (source changed).
  * NOT called for CASE B (source unchanged — reviewer local edits are preserved).
@@ -338,6 +342,40 @@ function seedFromLiveFiles(
 
     // Persist source version for CASE B/C comparison on next open/reload.
     localStorage.setItem(svKey, sourceVersion);
+
+    // ── 025Q: Write primary file appearance to global localStorage keys ────────
+    // ChecklistContent initialises background/bgFade/bgTone/bgSize/etc. from
+    // global keys ('trailweigh:background', 'trailweigh:bgFade', …) in its
+    // lazy useState initialisers — the same path taken by a normal non-fork tab.
+    // seedFromLiveFiles runs before ChecklistContent mounts (while status is
+    // 'loading'), so writing here ensures the initialisers pick up the owner's
+    // saved appearance on first render without requiring a page-reload.
+    //
+    // Custom backgrounds ({type:'custom',photoId}) reference blobs in the
+    // OWNER'S IndexedDB — not available in the reviewer's browser.  Only preset
+    // backgrounds (bundled Unsplash images) are safe to apply globally.
+    const bg = primary.background as { type?: string } | null;
+    if (bg?.type === 'preset') {
+      localStorage.setItem('trailweigh:background', JSON.stringify(primary.background));
+    } else {
+      // Custom or null — do not expose private owner blobs; clear to no-background.
+      localStorage.removeItem('trailweigh:background');
+    }
+    localStorage.setItem('trailweigh:bgFade', String(primary.bgFade ?? 1));
+    localStorage.setItem('trailweigh:bgTone', primary.bgTone ?? 'light');
+    localStorage.setItem('trailweigh:bgSize', primary.bgSize ?? 'cover');
+    if (primary.chartPaletteKey) {
+      localStorage.setItem('trailweigh:chartPalette', primary.chartPaletteKey);
+    } else {
+      localStorage.removeItem('trailweigh:chartPalette');
+    }
+    if (primary.barColor)        localStorage.setItem('trailweigh:barColor',        primary.barColor);
+    else                         localStorage.removeItem('trailweigh:barColor');
+    if (primary.barFont)         localStorage.setItem('trailweigh:barFont',         primary.barFont);
+    else                         localStorage.removeItem('trailweigh:barFont');
+    if (primary.barTextColor)    localStorage.setItem('trailweigh:barTextColor',     primary.barTextColor);
+    else                         localStorage.removeItem('trailweigh:barTextColor');
+    localStorage.setItem('trailweigh:barTransparency', String(primary.barTransparency ?? 1));
 
     // Pre-select the primary file so ChecklistContent opens it on mount.
     setActiveFileSS(primary.id, primary.name);
