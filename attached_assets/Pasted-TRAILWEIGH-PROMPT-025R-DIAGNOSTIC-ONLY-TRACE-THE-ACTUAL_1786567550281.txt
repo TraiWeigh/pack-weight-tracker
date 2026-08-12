@@ -1,0 +1,463 @@
+TRAILWEIGH — PROMPT 025R
+DIAGNOSTIC ONLY — TRACE THE ACTUAL RUNTIME BACKGROUND PATH IN OWNER VS REVIEW
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 4–8 minutes
+Estimated Agent usage/cost: approximately $0.70–$1.40.
+
+IMPORTANT:
+THIS IS A DIAGNOSTIC / QUESTION PROMPT ONLY.
+
+DO NOT MODIFY APPLICATION CODE.
+DO NOT APPLY A FIX.
+DO NOT REFACTOR.
+DO NOT CHANGE STYLES.
+DO NOT CHANGE STORAGE.
+DO NOT CHANGE REVIEW ARCHITECTURE.
+
+The purpose of 025R is to answer the exact technical questions needed so the
+next repair prompt is based on confirmed runtime facts instead of guesses.
+
+==================================================
+CURRENT USER-VERIFIED STATE
+==================================================
+
+PRESERVE AS FACTS:
+
+- 025K Background/Themes Light/Dark panel behavior = USER-VERIFIED PASS.
+- 025M concise public Share URL = USER-VERIFIED PASS.
+- 025P SAME-URL filename propagation = USER-VERIFIED PASS.
+- Public Review opens with no login.
+- Review welcome modal works.
+- Review Hide works.
+- Review New opening sign-in is acceptable for now.
+- 025Q = USER-VERIFIED FAIL.
+  Replit wrote owner appearance values into localStorage from ReviewPage, but
+  the Review page still rendered no saved owner background.
+- Review theme availability is also incomplete, but DO NOT diagnose broad theme
+  registry parity in 025R unless directly necessary to answer the background path.
+
+CURRENT PRIMARY FAILURE:
+
+OWNER:
+saved file visibly renders a built-in background.
+
+REVIEW:
+same live shared file renders plain/white with no saved background.
+
+==================================================
+WHAT 025Q TAUGHT US
+==================================================
+
+025Q assumed the problem was that ReviewPage had not copied saved appearance
+fields into the global appearance localStorage keys before ChecklistContent mounted.
+
+That code change produced NO visible user improvement.
+
+Therefore we do NOT yet know the authoritative runtime background state path.
+
+Possible explanations to INVESTIGATE, not assume:
+
+- ChecklistContent initializes background state before ReviewPage writes storage.
+- A React provider/context owns background state and ignores later localStorage.
+- Another effect resets background to null/default.
+- Review mode uses a different storage key.
+- Background rendering reads from a different state object than the one 025Q wrote.
+- Owner restoration uses a code path unavailable in Review.
+- The saved background ID exists but asset resolution fails.
+- The saved background reference is filtered/rejected in Review.
+- Review version-sync reseeding later overwrites appearance.
+- A route/mount timing issue means the intended component is not the component actually rendering the background.
+
+==================================================
+PRIMARY DIAGNOSTIC GOAL
+==================================================
+
+Answer:
+
+WHAT EXACT VALUE / STATE / PROP / CONTEXT CONTROLS THE ACTUAL RENDERED PAGE BACKGROUND
+IN OWNER AND IN REVIEW?
+
+Then identify:
+
+THE FIRST RUNTIME DIVERGENCE BETWEEN OWNER AND REVIEW.
+
+Do not propose a repair until that divergence is proven.
+
+==================================================
+PHASE 1 — REPORT FIRST
+==================================================
+
+Create before any investigation output:
+
+workflow-reports/PROMPT_025R_REPORT.md
+
+Initial fields:
+
+- Prompt: 025R
+- Status: IN PROGRESS
+- Agent mode
+- Diagnostic only: YES
+- Application code changes allowed: NO
+- Report created before investigation: YES
+
+Verify report exists.
+
+If report creation fails:
+STOP.
+
+==================================================
+PHASE 2 — CONFIRM NO-CODE-CHANGE BASELINE
+==================================================
+
+Before investigation:
+
+- run git/status/diff or equivalent;
+- record current changed application files from prior work;
+- do NOT modify application code;
+- at end verify no new application changes were created by 025R.
+
+If a tool automatically changes formatting/build output:
+revert it before completion.
+
+==================================================
+PHASE 3 — IDENTIFY THE ACTUAL RENDERED BACKGROUND DOM NODE
+==================================================
+
+Use the RUNNING app/browser.
+
+OWNER:
+open the signed-in file that visibly has the saved background.
+
+REVIEW:
+open the SAME live shared file using the public no-login Review URL.
+
+For each route:
+
+1. identify the exact DOM element whose style visually produces the page background;
+2. record:
+   - tag / stable selector;
+   - component that renders it;
+   - computed `background-image`;
+   - computed `background-color`;
+   - computed `background-size`;
+   - computed `background-position`;
+   - relevant inline style values;
+   - relevant CSS variables/classes/data attributes.
+
+QUESTION 1:
+WHAT EXACT DOM NODE RENDERS THE BACKGROUND IN OWNER?
+
+QUESTION 2:
+WHAT EXACT DOM NODE RENDERS THE BACKGROUND IN REVIEW?
+
+QUESTION 3:
+ARE OWNER AND REVIEW RENDERING THE SAME BACKGROUND COMPONENT?
+YES / NO
+
+If NO:
+record exact component paths.
+
+==================================================
+PHASE 4 — TRACE OWNER RUNTIME VALUE BACKWARDS
+==================================================
+
+Starting from the ACTUAL owner rendered background DOM/style:
+
+Trace backwards through runtime code:
+
+DOM background style
+→ component prop/state
+→ context/provider/hook
+→ initialization/restoration logic
+→ storage / file state / server data
+
+Record exact names.
+
+QUESTION 4:
+WHAT VARIABLE/STATE VALUE DIRECTLY FEEDS THE OWNER `background-image`?
+
+QUESTION 5:
+WHERE IS THAT VALUE CREATED?
+
+QUESTION 6:
+WHAT EVENT/EFFECT/HYDRATION STEP RESTORES IT WHEN AN OWNER SAVED FILE OPENS?
+
+QUESTION 7:
+WHAT IS THE OWNER RUNTIME VALUE FOR:
+- selected background ID/reference
+- theme group if applicable
+- actual resolved image URL/path
+- bgSize / Fit-Fill
+- bgTone
+- bgFade
+
+QUESTION 8:
+WHICH STORAGE KEY / saved-file field / context field is AUTHORITATIVE for Owner?
+
+Do not infer authority merely because a localStorage key exists.
+Prove which value actually reaches the rendered DOM.
+
+==================================================
+PHASE 5 — TRACE REVIEW RUNTIME VALUE BACKWARDS
+==================================================
+
+Starting from the ACTUAL Review rendered background DOM/style:
+
+Trace backwards:
+
+DOM background style
+→ component prop/state
+→ context/provider/hook
+→ initialization/restoration logic
+→ Review localStorage / Review file state / public DTO
+
+QUESTION 9:
+WHAT VARIABLE/STATE VALUE DIRECTLY FEEDS THE REVIEW `background-image`?
+
+QUESTION 10:
+WHAT IS ITS VALUE AT FIRST MOUNT?
+
+QUESTION 11:
+WHAT IS ITS VALUE AFTER ReviewPage finishes seeding?
+
+QUESTION 12:
+DOES THAT VALUE EVER CONTAIN THE OWNER'S SAVED BACKGROUND ID/URL?
+YES / NO
+
+QUESTION 13:
+IF IT DOES, WHAT LATER CHANGES IT?
+
+QUESTION 14:
+IF IT NEVER DOES, WHICH exact mapping/restoration step fails to supply it?
+
+QUESTION 15:
+WHICH Review storage key / PackStore field / context field is actually AUTHORITATIVE at runtime?
+
+==================================================
+PHASE 6 — EFFECT / ORDER / OVERWRITE TIMELINE
+==================================================
+
+Build a runtime timeline for Review from navigation to stable render.
+
+At minimum:
+
+T0 — Review route begins
+T1 — public live-share fetch resolves
+T2 — Review local data seeded
+T3 — ChecklistContent mounts
+T4 — background state initializes
+T5 — any restoration effects run
+T6 — any defaults/reset effects run
+T7 — final rendered background stabilizes
+
+Record actual order as observed from instrumentation/devtools/logging.
+
+Temporary diagnostic console logging is allowed ONLY if it can be done without
+persistently changing application code.
+
+If code instrumentation would require source edits:
+DO NOT EDIT.
+Use browser devtools, React devtools, breakpoints, existing logs, or source-map tracing.
+
+QUESTION 16:
+DOES 025Q WRITE STORAGE BEFORE OR AFTER THE AUTHORITATIVE BACKGROUND STATE INITIALIZES?
+
+QUESTION 17:
+IS THERE A LATER EFFECT THAT OVERWRITES the intended Review background?
+YES / NO
+
+If YES:
+identify exact file/function/effect and before/after values.
+
+==================================================
+PHASE 7 — COMPARE OWNER VS REVIEW PATHS
+==================================================
+
+Create a side-by-side trace:
+
+OWNER:
+Rendered DOM
+← direct state/prop
+← provider/hook
+← restoration path
+← authoritative source
+
+REVIEW:
+Rendered DOM
+← direct state/prop
+← provider/hook
+← restoration path
+← authoritative source
+
+QUESTION 18:
+AT WHAT FIRST STEP DO OWNER AND REVIEW DIVERGE?
+
+Choose one:
+
+A. DOM/component path differs
+B. direct React state differs
+C. provider/context differs
+D. initialization/restoration differs
+E. file/public DTO value differs
+F. asset resolution differs
+G. later overwrite/reset differs
+H. other
+
+State exact evidence.
+
+==================================================
+PHASE 8 — VERIFY THE SAVED BACKGROUND ASSET ITSELF
+==================================================
+
+Do NOT diagnose all themes.
+
+Only verify the specific background currently saved by Owner.
+
+QUESTION 19:
+WHAT EXACT BUILT-IN BACKGROUND/PRESET ID IS SAVED?
+
+QUESTION 20:
+WHAT EXACT ASSET URL/PATH DOES OWNER RESOLVE IT TO?
+
+QUESTION 21:
+CAN THE SIGNED-OUT Review browser load that exact asset URL directly?
+YES / NO
+
+QUESTION 22:
+IF Review has the same saved ID but no image, is asset resolution failing?
+YES / NO
+
+Record network status if relevant:
+- HTTP status
+- blocked/missing
+- resolved URL
+- console error
+
+==================================================
+PHASE 9 — ANSWER THE QUESTIONS BEFORE ANY RECOMMENDATION
+==================================================
+
+In the report include a section:
+
+DIAGNOSTIC ANSWERS
+
+Answer Questions 1–22 clearly and directly.
+
+Then include:
+
+CONFIRMED FIRST RUNTIME DIVERGENCE:
+[one concise statement]
+
+CONFIDENCE:
+HIGH / MEDIUM / LOW
+
+WHY:
+[evidence]
+
+==================================================
+PHASE 10 — RECOMMENDATION ONLY, NO FIX
+==================================================
+
+After answering the diagnostic questions, provide:
+
+SMALLEST LIKELY REPAIR:
+- exact file(s);
+- exact function/state/effect;
+- what would need to change;
+- why that change addresses the proven divergence.
+
+Also state:
+
+EXPECTED REPAIR SCOPE:
+- estimated files;
+- estimated time;
+- estimated Agent cost.
+
+Do NOT make the repair in 025R.
+
+If evidence is still incomplete:
+state exactly what additional evidence is needed instead of guessing.
+
+==================================================
+REPORT REQUIREMENTS
+==================================================
+
+Complete:
+
+workflow-reports/PROMPT_025R_REPORT.md
+
+Include:
+
+- Prompt 025R
+- Agent mode actually used
+- actual time
+- actions
+- lines/items read
+- Agent usage/cost
+- Diagnostic only confirmation
+- application-code changes made by 025R: NONE
+- exact Owner route tested
+- exact Review route tested
+- Owner rendered background DOM node
+- Review rendered background DOM node
+- Owner component path
+- Review component path
+- Owner computed background values
+- Review computed background values
+- Owner direct React state/prop
+- Review direct React state/prop
+- Owner authoritative source
+- Review authoritative source
+- Review initialization timeline
+- overwrite/reset finding
+- saved background ID
+- resolved owner asset URL/path
+- Review asset-load result
+- answers to Questions 1–22
+- CONFIRMED FIRST RUNTIME DIVERGENCE
+- recommended smallest repair
+- estimated repair scope/time/cost
+- confirmation no application files changed
+- unresolved questions
+- USER VERIFICATION = NOT APPLICABLE — DIAGNOSTIC ONLY
+
+==================================================
+ZIP REQUIREMENT
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-025R-report.zip
+
+Include at minimum:
+- PROMPT_025R_REPORT.md
+
+Optionally include:
+- small non-sensitive diagnostic text output;
+- screenshots of Owner/Review computed-style evidence if available.
+
+Verify:
+- report exists;
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens/lists successfully;
+- report is inside;
+- ZIP is not corrupt.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+STOP after answering the diagnostic questions.
+
+DO NOT FIX THE BACKGROUND.
+DO NOT CHANGE THE THEME REGISTRY.
+DO NOT CHANGE SHARE ARCHITECTURE.
+DO NOT FIX REVIEW NEW.
+DO NOT MODIFY HIDE.
+DO NOT MODIFY IMPORTER/PARSER/OCR.
+
+The next repair prompt will be written only after this diagnostic report is reviewed.
