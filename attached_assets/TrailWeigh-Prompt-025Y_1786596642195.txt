@@ -1,0 +1,531 @@
+TRAILWEIGH — PROMPT 025Y
+PUBLISHED-BUT-NO-PRODUCTION-DATABASE FORENSIC AUDIT
+DETERMINE WHAT THE PREVIOUS AUTOSCALE DEPLOYMENT USED — NO CHANGES
+
+INTERNAL VERSION ID:
+025Y-PRODDB-FORENSIC-2026-08-12-R1
+
+RECOMMENDED REPLIT MODE:
+ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 6–12 minutes
+Estimated Agent usage/cost: approximately $0.75–$1.75.
+
+============================================================
+PURPOSE
+============================================================
+
+Continue the learning phase only.
+
+DO NOT repair TrailWeigh.
+
+The user has now supplied direct Replit UI evidence establishing:
+
+- TrailWeigh has been published/deployed.
+- Production deployment exists.
+- Deployment type = Autoscale.
+- Visibility = Public.
+- Production status = paused.
+- A `replit.app` production URL exists.
+- Replit Database > All Databases currently lists ONLY:
+  Development Database.
+- No separate Production Database is currently listed.
+
+This creates one important project-specific question:
+
+HOW DID THE PREVIOUS PUBLISHED AUTOSCALE DEPLOYMENT ACCESS DATABASE DATA
+IF NO PRODUCTION DATABASE IS CURRENTLY LISTED?
+
+The goal of 025Y is to answer that question as close to conclusively as possible
+WITHOUT resuming, republishing, creating a database, modifying data, or changing
+configuration.
+
+============================================================
+CURRENT OFFICIAL REPLIT BASELINE
+============================================================
+
+Use current official Replit documentation as the platform baseline:
+
+1. Current Replit database architecture distinguishes Development and Production
+   databases for published apps.
+
+2. Current publishing/database documentation says a production database is used
+   for the published app and is isolated from the Development database.
+
+3. Replit has legacy/shared-database migration documentation for older projects
+   whose published app may have depended on older shared-database behavior.
+
+4. Replit documents a publishing flow in which a production database can be
+   created and development schema/data may be copied or migrated depending on the
+   project's database state and publishing workflow.
+
+5. Do not infer current project behavior solely from the modern default.
+   Determine which historical/current path applies to THIS TrailWeigh project.
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+DO NOT:
+
+- Resume production
+- Publish
+- Republish
+- Create a Production Database
+- Connect a database
+- Remove a database
+- Edit database settings
+- modify DATABASE_URL
+- modify Secrets
+- modify environment variables
+- modify source code
+- modify `.replit`
+- modify `replit.md`
+- modify package/dependency files
+- modify deployment configuration
+- modify database rows
+- modify database schema
+- restore a checkpoint
+- invoke App Testing
+- apply unrelated Ready tasks
+- enable Auto-apply
+- run migrations
+
+DO NOT run SQL that changes data.
+
+READ-ONLY SQL only if needed:
+SELECT
+SHOW
+safe PostgreSQL catalog/schema inspection
+
+NEVER print:
+- DATABASE_URL
+- passwords
+- tokens
+- connection strings
+- Clerk secrets
+- cookie values
+- database credentials
+
+AUTHORIZED WRITES ONLY:
+
+workflow-reports/PROMPT_025Y_REPORT.md
+workflow-reports/trailweigh-025Y-report.zip
+
+and optional sanitized evidence files inside workflow-reports/.
+
+============================================================
+VERSION GATE
+============================================================
+
+Before investigation verify:
+
+025Y-PRODDB-FORENSIC-2026-08-12-R1
+
+and Questions:
+1
+20
+40
+60
+
+If any are missing:
+STOP.
+Report exactly:
+
+WRONG 025Y VERSION LOADED
+
+============================================================
+READ FIRST
+============================================================
+
+Read:
+
+workflow-reports/PROMPT_025T_REPORT.md
+workflow-reports/PROMPT_025U_REPORT.md
+workflow-reports/PROMPT_025V_REPORT.md
+workflow-reports/PROMPT_025W_REPORT.md
+workflow-reports/PROMPT_025X_REPORT.md
+
+Do not repeat the broad audits.
+Use them only as context.
+
+============================================================
+EVIDENCE STANDARD
+============================================================
+
+Every material answer must be:
+
+VERIFIED — TWO-FACTOR
+VERIFIED — DIRECT AUTHORITATIVE
+PROVISIONAL
+STILL UNKNOWN
+DISPROVEN / SUPERSEDED
+
+Preferred evidence:
+
+CURRENT PROJECT CONFIG/SOURCE
++
+REPLIT DEPLOYMENT/DATABASE METADATA OR HISTORY
+
+Official Replit documentation explains possible platform behavior but does NOT
+prove which path THIS project used.
+
+============================================================
+PART A — CURRENT PROJECT DATABASE IDENTITY
+============================================================
+
+1. Confirm current Development Database exists.
+
+2. Confirm current Replit All Databases UI evidence supplied by user shows only
+   Development Database.
+
+3. Determine from project-accessible metadata whether the current Development DB
+   is Helium/current Replit infrastructure or legacy Neon.
+
+4. Do not print connection strings.
+
+5. Identify safe evidence used for classification.
+
+6. Is there any project metadata indicating a Production Database ID/reference
+   even though the All Databases UI does not list one?
+
+7. Search configuration and metadata only.
+
+8. Is any production DB identifier present in `.replit`, deployment config,
+   generated deployment metadata, or database config?
+
+9. Is any legacy Neon production DB reference present?
+
+10. Distinguish:
+   ACTIVE CONFIG
+   LEGACY CONFIG
+   STALE REFERENCE
+   UNKNOWN
+
+============================================================
+PART B — DEPLOYMENT HISTORY
+============================================================
+
+11. Can Replit Agent inspect read-only publishing/deployment history for this project?
+
+12. If yes, identify the most recent successful published deployment timestamp.
+
+13. Identify whether that deployment predates or postdates the project's move to
+   current Replit database infrastructure.
+
+14. Do not guess from current date alone.
+
+15. Is there evidence of a database being created during any prior publish?
+
+16. Is there evidence of a production database later being removed?
+
+17. Is there evidence the project previously used a shared Development/Production
+   database configuration?
+
+18. Is there evidence of a database migration from legacy Neon/shared DB to current
+   Replit DB?
+
+19. Search existing workflow reports, Git history, config history, and safe project
+   metadata for:
+   Neon
+   Helium
+   production database
+   shared database
+   migrate shared data
+   create production database
+   DATABASE_URL migration
+
+20. Build a concise database/deployment timeline.
+
+============================================================
+PART C — WHAT DATABASE DID THE OLD PUBLISHED APP USE?
+============================================================
+
+21. Inspect server code to determine how database connections are selected.
+
+22. Does server code simply read `process.env.DATABASE_URL`?
+
+23. Are there separate Development/Production variable names in source?
+
+24. Does any code hard-code a Development database connection?
+
+25. Does any code dynamically select DB based on NODE_ENV or deployment state?
+
+26. Inspect deployment configuration for environment-variable mapping WITHOUT
+   revealing any secret value.
+
+27. Can Agent determine whether the previous Autoscale deployment received a
+   deployment-specific DATABASE_URL?
+
+28. Can Agent determine whether that URL represented:
+   Development DB
+   Production DB
+   legacy shared DB
+   unknown
+
+29. If the deployment used current Replit infrastructure, could the deployment have
+   successfully used the Development Database directly under normal current defaults?
+
+30. Use official Replit docs for the platform rule, but project evidence for the
+   actual historical conclusion.
+
+31. If the project was on legacy/shared DB behavior when published, state that.
+
+32. If evidence cannot distinguish, mark STILL UNKNOWN.
+
+33. Do not infer that the Development DB's current rows necessarily came from public
+   production traffic.
+
+34. Can row timestamps safely establish whether records predate/postdate publishing?
+
+35. If useful, query only aggregate/min/max timestamps, not payload content.
+
+36. Do not attribute records to public users without evidence.
+
+37. State the strongest defensible conclusion:
+   OLD DEPLOYMENT USED DEVELOPMENT DB
+   OLD DEPLOYMENT USED SEPARATE PROD DB
+   OLD DEPLOYMENT USED LEGACY SHARED DB
+   OLD DEPLOYMENT DATABASE UNKNOWN
+   OLD DEPLOYMENT HAD NO FUNCTIONAL DB
+
+38. Give Evidence A.
+
+39. Give Evidence B.
+
+40. Confidence HIGH / MEDIUM / LOW.
+
+============================================================
+PART D — COULD A PRODUCTION DATABASE HAVE EXISTED AND BEEN REMOVED?
+============================================================
+
+41. Does Replit retain project-visible evidence when a Production Database is removed?
+
+42. Is there any such evidence here?
+
+43. Check existing logs/reports/history for removal/deletion.
+
+44. Do not access or change production.
+
+45. Is the current absence from All Databases enough to prove a Production Database
+   never existed historically?
+
+46. Correct answer should distinguish CURRENT ABSENCE from HISTORICAL ABSENCE.
+
+47. State:
+CURRENT PROD DB = NOT LISTED / USER VERIFIED.
+
+48. State:
+HISTORICAL PROD DB = VERIFIED EXISTED / VERIFIED NEVER EXISTED / STILL UNKNOWN.
+
+============================================================
+PART E — WHAT WOULD HAPPEN ON THE NEXT REPUBLISH?
+============================================================
+
+This section is FORECASTING from current official Replit documentation +
+THIS project's current state.
+
+DO NOT actually republish.
+
+49. Given:
+- published Autoscale deployment exists but is paused;
+- All Databases lists only Development DB;
+- current project DB infrastructure classification from Part A;
+
+what would Replit likely present in the Publishing flow on next Republish?
+
+50. Would it require/create a Production Database?
+
+51. Would it offer Create production database?
+
+52. Would it offer copy Development data into Production?
+
+53. Would it copy schema only by default?
+
+54. Would it copy data only if explicitly selected?
+
+55. Which answer depends on whether project is legacy/shared vs current infrastructure?
+
+56. Cite exact current Replit documentation page/title in report.
+
+57. Do not say “will” when the UI choice depends on Replit's current publishing dialog.
+Use:
+DOCUMENTED EXPECTED BEHAVIOR
+unless directly project-verified.
+
+58. What exact choices must the user NOT make casually on next Republish?
+
+59. What should ChatGPT verify from the Publishing dialog BEFORE the user proceeds?
+
+60. Write a plain-language “STOP BEFORE REPUBLISH” checklist.
+
+============================================================
+PART F — DATA-SAFETY IMPLICATIONS
+============================================================
+
+61. If Development currently contains the user's only Locker data, what happens if
+   a new empty Production Database is created without copying data?
+
+62. Would the published app start with no Locker data?
+
+63. If Development data is copied into Production, what privacy/security implications
+   exist from copying test/user/development records?
+
+64. Current Development DB contains share_links and locker_entries.
+Do not expose their payload contents.
+
+65. Before any data copy, should we distinguish:
+   real desired owner data
+   old diagnostic/test rows
+   stale share records
+   sensitive/private records
+
+66. Is there currently a safe user-facing backup/export sufficient to recover all
+   server Locker data?
+
+67. Do browser-only Custom Theme/photo blobs require separate backup?
+
+68. What should be backed up BEFORE any production DB provisioning/migration?
+
+69. What should NOT be copied blindly into Production?
+
+70. Do not perform cleanup or migration now.
+
+============================================================
+PART G — DOES THIS BLOCK ORDINARY TRAILWEIGH WORK?
+============================================================
+
+71. Does the production-DB uncertainty block ordinary Development UI repairs?
+
+72. Does it block Development-only importer repairs?
+
+73. Does it block persistence/schema changes?
+
+74. Does it block Share/privacy repairs?
+
+75. Does it block Resume/Republish?
+
+76. Does it block public privacy/security claims?
+
+77. State exactly which future work can safely continue while Production remains paused.
+
+78. State exactly which work must wait until production DB strategy is decided.
+
+============================================================
+PART H — REMAINING USER EVIDENCE
+============================================================
+
+79. After this audit, what project fact still requires user-only Replit UI evidence?
+
+Maximum 2 items.
+
+80. If no additional user evidence is needed, say NONE.
+
+81. Do not ask the user to click Resume/Republish/Create/Copy/Migrate.
+
+82. If future Republish dialog evidence is required, request a screenshot BEFORE any
+   confirmation button is clicked.
+
+============================================================
+FINAL REQUIRED REPORT SECTIONS
+============================================================
+
+A. EXECUTIVE RESULT
+B. CURRENT DATABASE IDENTITY
+C. DATABASE / DEPLOYMENT TIMELINE
+D. OLD AUTOSCALE DEPLOYMENT DATABASE — STRONGEST CONCLUSION
+E. HISTORICAL PRODUCTION DATABASE STATUS
+F. NEXT REPUBLISH — DOCUMENTED EXPECTED DATABASE FLOW
+G. DATA-SAFETY IMPLICATIONS
+H. STOP-BEFORE-REPUBLISH CHECKLIST
+I. WHAT DEVELOPMENT WORK CAN CONTINUE
+J. WHAT WORK MUST WAIT
+K. REMAINING USER EVIDENCE
+L. FINAL EVIDENCE LEDGER
+
+============================================================
+FINAL EVIDENCE LEDGER
+============================================================
+
+Include only these material facts:
+
+- current Development DB exists
+- current Production DB listed/not listed
+- current DB infrastructure type
+- historical Production DB existence
+- old published deployment DB source
+- current development data's role
+- expected next-republish DB flow
+- whether data copy is automatic/optional
+- whether schema copy is automatic/expected
+- backup readiness
+- Resume/Republish readiness
+
+For each:
+Classification
+Evidence A
+Evidence B
+Confidence
+Blocks ordinary Development work?
+Blocks persistence work?
+Blocks republish?
+
+Do not generate a fake probability percentage.
+
+============================================================
+NO-CHANGE VERIFICATION
+============================================================
+
+Before completion report exactly:
+
+APPLICATION SOURCE CHANGED BY 025Y = NONE
+APPLICATION CONFIG CHANGED BY 025Y = NONE
+REPLIT.MD CHANGED BY 025Y = NONE
+DATABASE DATA CHANGED BY 025Y = NONE
+DATABASE SCHEMA CHANGED BY 025Y = NONE
+SECRETS CHANGED BY 025Y = NONE
+DEPLOYMENT/PUBLISHING CHANGED BY 025Y = NONE
+PRODUCTION RESUMED BY 025Y = NO
+PRODUCTION DATABASE CREATED BY 025Y = NO
+DATABASE DATA COPIED BY 025Y = NO
+APP TESTING INVOKED BY 025Y = NO
+UNRELATED TASKS APPLIED BY 025Y = NONE
+
+============================================================
+MANDATORY REPORT + ZIP
+============================================================
+
+Create:
+
+workflow-reports/PROMPT_025Y_REPORT.md
+
+Create:
+
+workflow-reports/trailweigh-025Y-report.zip
+
+ZIP must contain:
+
+PROMPT_025Y_REPORT.md
+
+Verify:
+1. report exists
+2. ZIP exists
+3. ZIP opens successfully
+4. all 82 questions accounted for
+5. every UNKNOWN states exact missing evidence
+6. no secret/connection-string values appear
+7. no unauthorized changes occurred
+8. no Republish/Resume/Create Production Database action was performed
+
+============================================================
+FINAL STOP RULE
+============================================================
+
+STOP after report + ZIP.
+
+DO NOT repair TrailWeigh.
+
+DO NOT Resume or Republish.
+
+The next action will be chosen only after ChatGPT reviews the 025Y evidence.
