@@ -1,0 +1,449 @@
+TRAILWEIGH — PROMPT 025Z
+REPLIT PLATFORM DISCREPANCY AUDIT
+WHY DOES THIS PUBLISHED HELIUM APP HAVE NO LISTED PRODUCTION DATABASE?
+
+INTERNAL VERSION ID:
+025Z-REPLIT-DB-DISCREPANCY-2026-08-12-R1
+
+RECOMMENDED REPLIT MODE:
+ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 5–10 minutes
+Estimated Agent usage/cost: approximately $0.60–$1.50.
+
+============================================================
+PURPOSE
+============================================================
+
+THIS IS A QUESTION / LEARNING PROMPT ONLY.
+
+DO NOT REPAIR TRAILWEIGH.
+DO NOT RESUME OR REPUBLISH.
+DO NOT CREATE A PRODUCTION DATABASE.
+DO NOT MODIFY DATA OR CONFIGURATION.
+
+There is a specific contradiction between current Replit documentation and
+the CURRENT TrailWeigh project state.
+
+Current USER-VERIFIED Replit UI facts:
+
+1. TrailWeigh has a Production deployment.
+2. Deployment type = Autoscale.
+3. Visibility = Public.
+4. Status = paused.
+5. A `replit.app` production URL exists.
+6. Replit Database > All Databases currently lists ONLY:
+   Development Database.
+7. No Production Database is currently listed.
+8. Current project database infrastructure has previously been identified as
+   current Replit/Helium, not legacy Neon.
+9. Publishing > Logs currently shows:
+   "No logs are available."
+10. Current Publishing UI exposes:
+    Overview / Logs / Domains / Manage.
+    It does NOT expose a History tab.
+11. Some Replit help documentation still describes a Publishing > History path,
+    while the current project UI does not show that path.
+12. The user does NOT remember intentionally publishing TrailWeigh.
+
+The question is:
+
+WHY DOES A PUBLISHED, PAUSED, AUTOSCALE, HELIUM TRAILWEIGH PROJECT CURRENTLY
+HAVE NO PRODUCTION DATABASE LISTED?
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+DO NOT:
+
+- Resume
+- Republish
+- Publish
+- Create Production Database
+- Connect Database
+- Remove Database
+- Copy Development data
+- Run migrations
+- change DATABASE_URL
+- change Secrets
+- change environment variables
+- change deployment settings
+- change source code
+- change package files
+- change `.replit`
+- change `replit.md`
+- change DB rows
+- change DB schema
+- run App Testing
+- restore checkpoint
+- apply unrelated Ready tasks
+- enable Auto-apply
+
+READ-ONLY investigation only.
+
+Allowed:
+- inspect current project files/config
+- inspect read-only deployment/database metadata
+- inspect current official Replit documentation
+- inspect existing workflow reports
+- run safe read-only shell commands
+- run safe read-only SQL/catalog queries if necessary
+
+Never print:
+- DATABASE_URL
+- connection strings
+- passwords
+- secret values
+- tokens
+- Clerk credentials
+
+AUTHORIZED WRITES ONLY:
+
+workflow-reports/PROMPT_025Z_REPORT.md
+workflow-reports/trailweigh-025Z-report.zip
+
+============================================================
+VERSION GATE
+============================================================
+
+Before investigation verify:
+
+025Z-REPLIT-DB-DISCREPANCY-2026-08-12-R1
+
+and Questions:
+
+1
+10
+20
+30
+
+If any are missing:
+
+STOP.
+
+Report exactly:
+
+WRONG 025Z VERSION LOADED
+
+============================================================
+SOURCE PRIORITY
+============================================================
+
+Use this evidence order:
+
+1. CURRENT project/platform metadata
+2. CURRENT Replit UI/project-observable facts
+3. CURRENT official Replit documentation
+4. existing project history/workflow reports
+5. Replit Agent inference
+
+Do NOT treat Agent inference as proof.
+
+If official Replit docs conflict with current UI:
+report the conflict explicitly.
+
+============================================================
+MANDATORY ANSWER FORMAT
+============================================================
+
+Every numbered question must receive:
+
+STATUS:
+VERIFIED / PROVISIONAL / STILL UNKNOWN / DISPROVEN / NOT APPLICABLE
+
+DIRECT ANSWER
+
+EVIDENCE A
+
+EVIDENCE B
+or explain why no second independent evidence source exists.
+
+CONFIDENCE:
+HIGH / MEDIUM / LOW
+
+If STILL UNKNOWN:
+- exact missing evidence
+- whether Replit Support is required
+- exact question the user should ask Replit Support
+
+============================================================
+PART A — WHAT DO CURRENT REPLIT DOCS ACTUALLY SAY?
+============================================================
+
+1. Locate the CURRENT official Replit documentation for Development vs Production databases.
+
+2. Locate the CURRENT official Replit documentation for production databases on Helium/current infrastructure.
+
+3. Quote/paraphrase the exact rule for WHEN a Production Database is created.
+
+4. Does the documentation say a Production Database is:
+   - always created immediately on first publish;
+   - created only "when needed";
+   - created only when the published deployment uses the database;
+   - something else?
+
+5. Define exactly what "when needed" means, if Replit documents it.
+
+6. Can a published app legitimately exist with NO Production Database listed?
+
+7. If YES, under what documented conditions?
+
+8. If NO, what documented behavior says that?
+
+9. Does pausing a deployment remove or hide its Production Database?
+
+10. Can deleting/removing a Production Database leave the deployment object intact and paused?
+
+============================================================
+PART B — CURRENT TRAILWEIGH PROJECT STATE
+============================================================
+
+11. Reconfirm current database infrastructure classification:
+   HELIUM / LEGACY NEON / OTHER / UNKNOWN.
+
+12. Show safe evidence without revealing connection strings.
+
+13. Reconfirm current All Databases state:
+   only Development Database listed.
+
+14. Search read-only project metadata for any hidden/stale Production Database identifier.
+
+15. Search deployment metadata for any database attachment/reference.
+
+16. Search `.replit` and deployment config for DB attachment metadata.
+
+17. Search existing workflow reports for any past production-database creation/removal event.
+
+18. Search Git/project history for any database migration or production DB setup event.
+
+19. Is there evidence a Production Database EVER existed?
+
+20. Is there evidence it NEVER existed?
+
+Do not confuse "not currently listed" with "never existed."
+
+============================================================
+PART C — COULD THE DEPLOYMENT PRE-DATE DATABASE USAGE?
+============================================================
+
+21. Determine when TrailWeigh first added server-side database-dependent features,
+if project history can establish this.
+
+22. Determine whether the existing deployment could have been created BEFORE those
+database-dependent features were added.
+
+23. If exact deployment creation date is unavailable, state that clearly.
+
+24. Does the paused deployment's existence by itself prove it was created after
+database features existed?
+
+25. Could an old deployment remain paused while Development later gained database
+features that were never republished?
+
+26. Is this scenario consistent with current evidence?
+
+27. Is it the strongest explanation, or merely one plausible explanation?
+
+============================================================
+PART D — WHAT DATABASE COULD THE OLD DEPLOYMENT HAVE USED?
+============================================================
+
+28. Trace current server DB connection selection.
+
+29. Does source simply use `process.env.DATABASE_URL`?
+
+30. Does source distinguish Development vs Production database itself?
+
+31. Does Replit inject the appropriate environment-specific DATABASE_URL automatically
+for a published deployment?
+
+32. Can project-accessible metadata reveal what DATABASE_URL class the historical
+deployment received without exposing the value?
+
+33. Could the historical deployment have used:
+   A. current Development Database
+   B. a now-removed Production Database
+   C. an older legacy/shared Neon database
+   D. no functional database at all
+
+34. For each option, state:
+   SUPPORTED / POSSIBLE / DISPROVEN.
+
+35. Which option has the strongest evidence?
+
+36. If none can be proven, state:
+HISTORICAL DEPLOYMENT DATABASE = STILL UNKNOWN.
+
+============================================================
+PART E — REPLIT "HISTORY" DOCUMENTATION CONFLICT
+============================================================
+
+37. Identify the current official documentation page that references Publishing > History.
+
+38. Identify the current official documentation page describing the current Publishing tabs.
+
+39. Does current documentation itself appear inconsistent?
+
+40. Does the CURRENT TrailWeigh UI match:
+   Overview / Logs / Domains / Manage?
+
+41. Is there any current documented replacement for the old History tab?
+
+42. Can deployment-history metadata be accessed another documented way?
+
+43. Is there a Replit CLI/API/project metadata source Agent can read safely?
+
+44. If no supported history path exists in current UI, say so.
+
+45. Do not send the user searching through nonexistent UI.
+
+============================================================
+PART F — EXACT REPLIT SUPPORT QUESTION
+============================================================
+
+If Parts A–E cannot prove the historical database source:
+
+46. Is Replit Support the only remaining authoritative source?
+
+47. If YES, write ONE concise support question containing all necessary project facts
+without exposing secrets.
+
+It must ask Replit to confirm:
+
+- when this Autoscale production deployment was first created;
+- whether it ever had a Production Database;
+- what database/environment it was attached to at its last successful deployment;
+- whether a Production Database was later removed;
+- why All Databases currently shows only Development Database;
+- whether the next Republish will create a new Production Database on this Helium project;
+- whether Replit can identify who/what initiated the original deployment
+  (user action, Agent workflow, migration, or other platform event), if such audit data exists.
+
+48. State exactly what screenshot/project identifier the user would need to provide Support.
+
+49. Do NOT include secret IDs/connection strings unless Replit Support explicitly requests them
+through an authenticated support channel.
+
+============================================================
+PART G — WHAT DOES THIS BLOCK?
+============================================================
+
+50. Does this unresolved historical question block ordinary Development UI work?
+
+51. Does it block importer/parser work?
+
+52. Does it block ordinary non-persistence UI repairs?
+
+53. Does it block database/schema changes?
+
+54. Does it block Resume?
+
+55. Does it block Republish?
+
+56. Does it block public privacy/security claims?
+
+57. State what work can safely continue while deployment remains paused.
+
+58. State what must wait.
+
+============================================================
+FINAL REQUIRED CONCLUSIONS
+============================================================
+
+59. CURRENT DEVELOPMENT DB:
+VERIFIED / UNKNOWN
+
+60. CURRENT PRODUCTION DB:
+VERIFIED EXISTS / VERIFIED NOT LISTED / UNKNOWN
+
+61. HISTORICAL PRODUCTION DB:
+VERIFIED EXISTED / VERIFIED NEVER EXISTED / STILL UNKNOWN
+
+62. HISTORICAL DEPLOYMENT DATABASE SOURCE:
+DEVELOPMENT / PRODUCTION / LEGACY SHARED / NONE / STILL UNKNOWN
+
+63. ORIGINAL DEPLOYMENT INITIATOR:
+USER / AGENT / REPLIT MIGRATION / OTHER / STILL UNKNOWN
+
+64. NEXT REPUBLISH DB BEHAVIOR:
+VERIFIED PROJECT-SPECIFIC / DOCUMENTED EXPECTED / STILL UNKNOWN
+
+65. REPLIT DOC/UI HISTORY DISCREPANCY:
+RESOLVED / VERIFIED DOC-UI MISMATCH / STILL UNKNOWN
+
+66. REPLIT SUPPORT REQUIRED:
+YES / NO
+
+============================================================
+FINAL REPORT SECTIONS
+============================================================
+
+A. EXECUTIVE RESULT
+B. CURRENT OFFICIAL REPLIT DB RULE
+C. CURRENT TRAILWEIGH DB STATE
+D. DEPLOYMENT VS DATABASE TIMELINE
+E. HISTORICAL DATABASE OPTIONS
+F. REPLIT HISTORY-DOC/UI DISCREPANCY
+G. STRONGEST DEFENSIBLE CONCLUSION
+H. EXACT REPLIT SUPPORT QUESTION
+I. WHAT DEVELOPMENT WORK CAN CONTINUE
+J. WHAT MUST WAIT
+K. FINAL EVIDENCE LEDGER
+
+============================================================
+NO-CHANGE VERIFICATION
+============================================================
+
+Before completion report exactly:
+
+APPLICATION SOURCE CHANGED BY 025Z = NONE
+APPLICATION CONFIG CHANGED BY 025Z = NONE
+REPLIT.MD CHANGED BY 025Z = NONE
+DATABASE DATA CHANGED BY 025Z = NONE
+DATABASE SCHEMA CHANGED BY 025Z = NONE
+SECRETS CHANGED BY 025Z = NONE
+DEPLOYMENT/PUBLISHING CHANGED BY 025Z = NONE
+PRODUCTION RESUMED BY 025Z = NO
+PRODUCTION DATABASE CREATED BY 025Z = NO
+APP TESTING INVOKED BY 025Z = NO
+UNRELATED TASKS APPLIED BY 025Z = NONE
+
+============================================================
+MANDATORY REPORT + ZIP
+============================================================
+
+Create:
+
+workflow-reports/PROMPT_025Z_REPORT.md
+
+Create:
+
+workflow-reports/trailweigh-025Z-report.zip
+
+ZIP must contain:
+
+PROMPT_025Z_REPORT.md
+
+Verify:
+1. report exists
+2. ZIP exists
+3. ZIP opens successfully
+4. all 66 questions accounted for
+5. every UNKNOWN states exact missing evidence
+6. no secret or connection-string value appears
+7. no unauthorized changes occurred
+
+============================================================
+FINAL STOP RULE
+============================================================
+
+STOP after report + ZIP.
+
+DO NOT REPAIR TRAILWEIGH.
+DO NOT RESUME.
+DO NOT REPUBLISH.
+DO NOT CREATE A PRODUCTION DATABASE.
+
+If Replit Support is required, say so clearly and provide the exact support question.
