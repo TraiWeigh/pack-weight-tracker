@@ -581,8 +581,9 @@ function SharedChecklistContent({
 
   // ── Open / Close all categories ───────────────────────────────────────────
 
-  const [allOpen,       setAllOpen]       = useState(false);
-  const [openCloseSeq,  setOpenCloseSeq]  = useState(0);
+  // 026K: set of currently-open category names — drives single-open accordion behavior.
+  const [openCatIds, setOpenCatIds] = useState<ReadonlySet<string>>(new Set());
+  const [catSeq, setCatSeq] = useState(0); // bumped on every force-open/close action
 
   // ── Add Category ──────────────────────────────────────────────────────────
 
@@ -817,6 +818,9 @@ function SharedChecklistContent({
   // Derived active states for Expand All / Collapse All button highlights
   const sidebarExpandActive   = (['summary', 'distribution', 'import', 'locker'] as SharedSidebarKey[]).every(k => sidebarForce[k].open);
   const sidebarCollapseActive = (['summary', 'distribution', 'import', 'locker'] as SharedSidebarKey[]).every(k => !sidebarForce[k].open);
+  // 026K: Derived main-category Expand All / Collapse All button highlight state
+  const allCatsOpen   = store.order.length > 0 && store.order.every(k => openCatIds.has(k));
+  const allCatsClosed = store.order.every(k => !openCatIds.has(k));
   /** Accordion — opening one panel auto-closes all others; closing one leaves zero open. */
   const handleSharedSidebarToggle = useCallback((id: SharedSidebarKey, nowOpen: boolean) => {
     setSidebarForce(prev => {
@@ -831,6 +835,16 @@ function SharedChecklistContent({
       }
       return next;
     });
+  }, []);
+
+  /** 026K: Single-open accordion for main categories (mirrors Checklist.tsx pattern). */
+  const handleCategoryToggle = useCallback((name: string, nowOpen: boolean) => {
+    setOpenCatIds(prev => {
+      if (prev.size > 1) return new Set([name]); // post-Expand-All: select only clicked
+      if (nowOpen) return new Set([name]);        // normal open: single-open
+      return new Set<string>();                   // normal close: zero open
+    });
+    setCatSeq(s => s + 1);
   }, []);
 
   // ── User menu ─────────────────────────────────────────────────────────────
@@ -1069,19 +1083,19 @@ function SharedChecklistContent({
               <div className={`flex lg:hidden items-center justify-between ${snapshot.name ? 'pb-3' : 'pt-4 pb-3'} flex-shrink-0`}>
                 <div className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5">
                   <button
-                    onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
+                    onClick={() => { setOpenCatIds(new Set(store.order)); setCatSeq(s => s + 1); }}
                     aria-label="Open all categories" title="Open all categories"
                     className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                      allOpen === true ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                      allCatsOpen ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <ChevronDown className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
+                    onClick={() => { setOpenCatIds(new Set<string>()); setCatSeq(s => s + 1); }}
                     aria-label="Close all categories" title="Close all categories"
                     className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                      allOpen === false ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                      allCatsClosed ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <ChevronUp className="h-4 w-4" />
@@ -1120,16 +1134,16 @@ function SharedChecklistContent({
                     style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
                   >
                     <button
-                      onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
+                      onClick={() => { setOpenCatIds(new Set(store.order)); setCatSeq(s => s + 1); }}
                       aria-label="Open all categories"
                       title="Open all categories"
                       className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                        allOpen === true && !barColor
+                        allCatsOpen && !barColor
                           ? 'bg-card text-foreground shadow-sm'
                           : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                       }`}
                       style={barColor
-                        ? allOpen === true
+                        ? allCatsOpen
                           ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                           : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                         : barFont ? { fontFamily: barFont } : undefined}
@@ -1137,16 +1151,16 @@ function SharedChecklistContent({
                       <ChevronDown className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
+                      onClick={() => { setOpenCatIds(new Set<string>()); setCatSeq(s => s + 1); }}
                       aria-label="Close all categories"
                       title="Close all categories"
                       className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                        allOpen === false && !barColor
+                        allCatsClosed && !barColor
                           ? 'bg-card text-foreground shadow-sm'
                           : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                       }`}
                       style={barColor
-                        ? allOpen === false
+                        ? allCatsClosed
                           ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                           : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                         : barFont ? { fontFamily: barFont } : undefined}
@@ -1187,8 +1201,9 @@ function SharedChecklistContent({
                     items={store.items[category] || []}
                     meta={store.meta[category] ?? { countsToBase: true }}
                     order={store.order}
-                    forceOpen={allOpen}
-                    forceOpenSeq={openCloseSeq}
+                    forceOpen={openCatIds.has(category)}
+                    forceOpenSeq={catSeq}
+                    onToggle={nowOpen => handleCategoryToggle(category, nowOpen)}
                     updateItem={updateItem}
                     removeItem={removeItem}
                     moveItem={moveItem}

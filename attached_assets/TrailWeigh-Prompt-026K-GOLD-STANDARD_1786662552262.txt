@@ -1,0 +1,558 @@
+TRAILWEIGH — PROMPT 026K — GOLD STANDARD
+MAIN CATEGORY ACCORDION: SINGLE-OPEN + ZERO-OPEN + EXPAND ALL / COLLAPSE ALL
+
+INTERNAL VERSION ID:
+026K-MAIN-CATEGORY-ACCORDION-BEHAVIOR-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 8–14 minutes
+- Estimated Agent usage/cost: approximately $0.70–$1.50
+- HARD STOP if materially exceeding this estimate before root cause is understood
+
+============================================================
+MANDATORY STANDING TRAILWEIGH / REPLIT RULE
+============================================================
+
+Before any diagnosis, recommendation, edit, or test:
+
+1. Apply all relevant prior TrailWeigh/Replit lessons and current USER live evidence.
+2. USER live evidence outranks report claims, source inference, and prior assumptions.
+3. If current evidence contradicts an earlier finding, mark it:
+   SUPERSEDED / DISPROVEN EARLIER FINDING.
+4. Read current `replit.md` READ-ONLY. Do not modify it.
+5. Verify the exact ACTIVE render/interaction path before editing.
+6. Root cause before edit.
+7. Reuse working TrailWeigh patterns/components/state architecture where appropriate.
+8. Use the smallest reversible patch.
+9. Preserve all unrelated USER-VERIFIED PASS behavior.
+10. Do not modify `.agents/memory`, project-wide instructions, package versions, DB schema/data,
+    auth, publishing, or deployment.
+11. Replit internal PASS is NOT final USER PASS.
+12. Before final status, self-audit:
+    “Am I applying everything we have learned that is relevant to this decision?”
+
+============================================================
+SOURCE REQUEST — AUTHORITATIVE BEHAVIOR
+============================================================
+
+This prompt implements the user's waiting Main Category Accordion request.
+
+Use these exact terms:
+- main category accordions
+- main category accordion group
+- left-side main-category arrow control
+- Expand All / Open All
+- Collapse All / Close All
+- right-sidebar accordion group
+- right-side sidebar arrow control
+
+Do NOT call the category headers dropdown menus.
+They are collapsible accordion sections.
+
+============================================================
+CURRENT USER-VERIFIED BASELINE TO PRESERVE
+============================================================
+
+RIGHT-SIDEBAR ACCORDION GROUP:
+- USER-VERIFIED PASS.
+- Normal manual behavior is single-open.
+- Zero-open is allowed.
+- Its own right-side joined arrow control handles Expand All / Collapse All.
+- Share dropdown layering fix is USER-VERIFIED PASS.
+- Do NOT modify the sidebar accordion implementation unless strictly necessary to read/reuse
+  a pattern; no sidebar behavior change is authorized.
+
+MAIN CATEGORY VISUALS:
+Preserve current accepted styling:
+- 6 px vertical gap between main categories
+- current category header styling
+- current reduced category-header vertical padding
+- current font sizes
+- current icon sizes
+- current chevrons/carets
+- current colors
+- current expanded-body styling
+- current left-side joined two-segment arrow control placement/size/icons/styling
+
+This prompt is about BEHAVIOR ONLY, not redesign.
+
+============================================================
+PRIMARY DEFECT / GOAL
+============================================================
+
+Update ONLY the main category accordion group so normal manual interaction follows
+single-open accordion behavior while preserving the existing left-side Expand All / Collapse All
+exception.
+
+Required normal manual behavior:
+
+A. ONE OPEN
+- During ordinary manual use, only one main category may be expanded at a time.
+- Opening Category B must automatically collapse Category A.
+
+B. ZERO OPEN
+- Zero main categories may be open.
+- If exactly one category is open and the user clicks that same category, it closes.
+- Do not force another category open.
+
+C. EXPAND ALL EXCEPTION
+- Existing left-side DOWN arrow = Expand All / Open All.
+- Clicking it expands every main category simultaneously.
+- This is the intentional exception to normal single-open behavior.
+- All categories may remain open until the user interacts with an individual category
+  or uses Collapse All.
+
+D. RETURN TO NORMAL AFTER EXPAND ALL
+- After Expand All, the NEXT individual category click must immediately return the group
+  to normal single-open mode.
+- If several/all categories are open and the user clicks Category C:
+  Category C remains/becomes the ONLY open category.
+- A subsequent click on Category C may then close it, leaving zero open.
+- Do NOT leave several other categories open after that first individual interaction.
+
+E. COLLAPSE ALL
+- Existing left-side UP arrow = Collapse All / Close All.
+- Clicking it closes every main category.
+- It must work from:
+  all open / several open / one open / none open.
+
+============================================================
+GROUP INDEPENDENCE — MANDATORY
+============================================================
+
+The two accordion groups must remain completely independent.
+
+MAIN CATEGORY actions must NOT change:
+- right-sidebar open/closed state
+- right-sidebar Expand All / Collapse All state
+
+RIGHT-SIDEBAR actions must NOT change:
+- main category open/closed state
+- main category Expand All / Collapse All state
+
+The left-side main-category arrow control must operate ONLY on main categories.
+The right-side sidebar arrow control must operate ONLY on sidebar panels.
+
+Do not merge their state.
+
+============================================================
+LEFT-SIDE MAIN-CATEGORY ARROW CONTROL — PRESERVE
+============================================================
+
+The existing joined two-segment control must remain.
+
+Preserve exactly unless current source proves an unavoidable bug-specific reason otherwise:
+- current left-side placement
+- joined-pill appearance
+- down-arrow icon
+- up-arrow icon
+- icon sizes
+- control dimensions
+- spacing
+- colors
+- hover/focus styling
+
+No redesign is authorized.
+
+============================================================
+ACTIVE-PATH / ROOT-CAUSE TRACE BEFORE EDIT
+============================================================
+
+Before changing code, trace the CURRENT active main-category interaction path:
+
+1. exact component that renders main category accordion headers/bodies
+2. current state shape for open categories
+3. current individual-category click handler
+4. current Expand All handler
+5. current Collapse All handler
+6. current left-side arrow control wiring
+7. whether Owner/Home and Share/Review use the same active component
+8. whether any legacy/dead main-category accordion implementation exists
+
+Also inspect the working right-sidebar accordion pattern as a GOLDEN REFERENCE for interaction
+semantics only.
+
+Do NOT blindly copy sidebar code if the main-category Expand All exception or data model differs.
+
+Write the exact current behavior/root cause into the report BEFORE editing.
+
+============================================================
+PREFERRED IMPLEMENTATION PRINCIPLE
+============================================================
+
+Use the smallest state/handler change that satisfies the behavior.
+
+If the current main-category state already stores a set/list of open category IDs, preserve that
+shape if practical because Expand All legitimately needs multiple IDs.
+
+A safe behavior pattern may be:
+
+- normal individual click with one/zero open:
+  clicked open category -> none open
+  clicked closed category -> only clicked category open
+
+- individual click when multiple categories are open because of Expand All:
+  -> only clicked category remains open
+
+- Expand All:
+  -> set all category IDs open
+
+- Collapse All:
+  -> set no category IDs open
+
+This is a behavior description, not a requirement to use a specific implementation.
+
+Do not add a separate global “accordion mode” flag unless current architecture genuinely requires it.
+
+============================================================
+SHARED OWNER / REVIEW UI
+============================================================
+
+Prior TrailWeigh architecture uses shared Checklist UI for Owner and Public Review.
+
+If the CURRENT active main-category accordion component is shared:
+- implement this behavior once in the shared path
+- preserve parity automatically
+- do NOT fork a separate Review accordion implementation
+
+If current source no longer matches that architecture:
+document the difference before editing.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT change:
+
+- right-sidebar accordion behavior
+- right-side sidebar arrow control
+- Share/Review background behavior
+- permanent Share default background
+- Share/Review Locker behavior
+- Share token architecture
+- Background/Themes
+- permanent themes
+- Custom Theme
+- toolbar layout
+- category visual styling
+- category spacing
+- category header padding
+- fonts/icons/colors
+- importer/parser
+- Locker persistence
+- auth
+- database schema/data
+- production/publishing/deployment
+- replit.md
+- .replit
+- `.agents/memory`
+- package versions
+
+No opportunistic refactor.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before editing:
+
+Create:
+workflow-reports/PROMPT_026K_REPORT.md
+
+Record:
+- current root cause/current behavior
+- active component/handler path
+- working sidebar pattern inspected
+- expected changed files
+- risk areas
+- rollback plan
+
+After editing:
+- list ALL actually changed files
+- inspect git diff
+- revert unrelated changes
+- no unrelated formatting sweep/refactor
+
+If more than the directly relevant main-category component/state files are required:
+STOP and explain why before broadening.
+
+============================================================
+CHECKPOINT / ROLLBACK
+============================================================
+
+Before edits:
+- confirm normal Agent checkpoint/recoverable state if exposed
+
+This task authorizes NO database changes.
+
+Rollback guidance must identify only the exact application files changed by 026K.
+
+============================================================
+MANDATORY TEST MATRIX
+============================================================
+
+Use the CURRENT rendered UI, not source reasoning alone.
+
+TEST 1 — SINGLE-OPEN
+1. Start with all main categories collapsed.
+2. Open Category A.
+3. Open Category B.
+EXPECTED:
+- B open
+- A closed
+- no other category opened
+
+TEST 2 — ZERO-OPEN
+1. With only Category B open, click B again.
+EXPECTED:
+- B closes
+- zero main categories open
+
+TEST 3 — EXPAND ALL
+1. Click the left-side DOWN arrow.
+EXPECTED:
+- every main category opens simultaneously
+
+TEST 4 — RETURN TO NORMAL AFTER EXPAND ALL
+1. With all categories open from Expand All, click Category C once.
+EXPECTED:
+- Category C is the ONLY open main category
+- all others close
+
+2. Click Category C again.
+EXPECTED:
+- Category C closes
+- zero main categories open
+
+TEST 5 — COLLAPSE ALL
+Test the left-side UP arrow from:
+- all open
+- several open if current test tooling can create that state
+- one open
+- none open
+EXPECTED:
+- all categories closed in every case
+- no error
+
+TEST 6 — MAIN → SIDEBAR INDEPENDENCE
+1. Open one or more sidebar panels.
+2. Use main-category individual clicks and both left-side arrows.
+EXPECTED:
+- sidebar state does not change
+
+TEST 7 — SIDEBAR → MAIN INDEPENDENCE
+1. Open one or more main categories.
+2. Use sidebar individual clicks and right-side sidebar arrows.
+EXPECTED:
+- main-category state does not change
+
+TEST 8 — VISUAL PRESERVATION
+EXPECTED no change to:
+- 6 px main-category spacing
+- main-category header height/padding
+- left-side arrow control placement/styling
+- icons/chevrons/font sizes
+- colors
+- expanded category bodies
+
+TEST 9 — OWNER / REVIEW PARITY
+If main categories are rendered through the same shared component:
+- verify the same interaction behavior in Owner/Home and Share/Review
+- do not create a separate fork
+
+TEST 10 — REGRESSIONS
+Confirm:
+- right-sidebar accordion still behaves exactly as before
+- Share dropdown layering still works
+- Share/Review background and Locker behavior unchanged
+- no console error introduced
+
+Do NOT use App Testing auto-fix.
+
+If interaction testing is unavailable:
+state exactly which tests were NOT RUN.
+Do not mark them PASS from source inspection alone.
+
+============================================================
+EVIDENCE REQUIREMENT
+============================================================
+
+Because this is an interaction defect:
+
+- Prefer a short interaction video/screen recording if Replit can produce one.
+- Otherwise provide exact browser test steps and observed results in the report.
+- Source analysis alone is insufficient for a final internal interaction PASS.
+
+USER live verification still has final authority.
+
+============================================================
+USER LIVE VERIFICATION PLAN
+============================================================
+
+After Replit completes, USER VERIFICATION = PENDING.
+
+The user will verify:
+
+1. Open one main category, then another.
+   Expected: first closes.
+
+2. Click the currently open category again.
+   Expected: zero open.
+
+3. Click left-side DOWN arrow.
+   Expected: all main categories open.
+
+4. Click one individual main category.
+   Expected: only that category remains open.
+
+5. Click it again.
+   Expected: zero open.
+
+6. Click left-side UP arrow.
+   Expected: all closed.
+
+7. Confirm right-sidebar panels did not change.
+
+8. Use right-sidebar controls.
+   Expected: main-category state does not change.
+
+9. Confirm no visual changes to category spacing/headers/arrows.
+
+============================================================
+COST / SCOPE STOP RULE
+============================================================
+
+STOP before broadening if:
+
+- exact active main-category handler cannot be identified
+- current architecture materially contradicts the assumptions above
+- repair requires changing sidebar state architecture
+- repair requires a broad refactor
+- repair requires more than directly relevant files
+- estimated work materially exceeds 14 minutes / ~$1.50
+- DB/auth/deployment changes appear necessary
+
+Report the blocker instead of improvising.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Complete:
+workflow-reports/PROMPT_026K_REPORT.md
+
+Include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. user-requested behavior
+4. user-verified baseline preserved
+5. active component/state/handler trace
+6. root cause/current behavior
+7. sidebar golden-reference pattern inspected
+8. expected changed files
+9. actual changed files
+10. exact implementation
+11. Expand All behavior
+12. Collapse All behavior
+13. post-Expand-All individual-click behavior
+14. group-independence behavior
+15. Owner/Review shared-path result
+16. test matrix/results
+17. interaction evidence
+18. tests not run
+19. visual regression result
+20. sidebar regression result
+21. rollback guidance
+22. unresolved issues
+23. elapsed time
+24. Agent actions
+25. lines read
+26. Agent cost/usage if shown
+27. final self-audit
+28. USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+ROOT CAUSE IDENTIFIED = YES / NO
+MAIN CATEGORY SINGLE-OPEN = PASS / FAIL / NOT RUN
+MAIN CATEGORY ZERO-OPEN = PASS / FAIL / NOT RUN
+MAIN CATEGORY EXPAND ALL = PASS / FAIL / NOT RUN
+POST-EXPAND-ALL RETURNS TO SINGLE-OPEN = PASS / FAIL / NOT RUN
+MAIN CATEGORY COLLAPSE ALL = PASS / FAIL / NOT RUN
+MAIN CATEGORY → SIDEBAR INDEPENDENCE = PASS / FAIL / NOT RUN
+SIDEBAR → MAIN CATEGORY INDEPENDENCE = PASS / FAIL / NOT RUN
+LEFT-SIDE ARROW CONTROL VISUALS CHANGED = YES / NO
+MAIN CATEGORY VISUALS CHANGED = YES / NO
+RIGHT-SIDEBAR BEHAVIOR CHANGED = YES / NO
+SHARE DROPDOWN LAYERING CHANGED = YES / NO
+SHARE/REVIEW BACKGROUND BEHAVIOR CHANGED = YES / NO
+SHARE/REVIEW LOCKER BEHAVIOR CHANGED = YES / NO
+OWNER/REVIEW ACCORDION PATH FORKED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before claiming internal PASS:
+
+1. Did I edit only the active main-category accordion path?
+2. Does normal manual use allow only one open?
+3. Can zero categories be open?
+4. Does Expand All still open all?
+5. Does the first individual click after Expand All leave only that category open?
+6. Does Collapse All close all?
+7. Are main and sidebar groups still independent?
+8. Is the left-side arrow control visually unchanged?
+9. Are category spacing/header/body visuals unchanged?
+10. Is sidebar USER-VERIFIED behavior untouched?
+11. Did I preserve shared Owner/Review architecture rather than fork it?
+12. Did I avoid unrelated Share/background/Locker work?
+13. Did I avoid DB/auth/deployment/replit.md/.agents/memory changes?
+14. Did I review every changed file?
+15. Did I stay inside scope/cost?
+16. Is any material uncertainty unresolved?
+
+If any answer exposes a material unresolved issue:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+workflow-reports/trailweigh-026K-report.zip
+
+ZIP must contain only:
+PROMPT_026K_REPORT.md
+
+Verify:
+- report exists
+- ZIP exists
+- ZIP opens
+- no unrelated files are included
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not proceed to any other waiting TrailWeigh task.

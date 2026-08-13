@@ -969,8 +969,10 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
   // 022G: start collapsed — categories, Pack Summary, and Weight Distribution all
   // begin closed on every fresh open/refresh.  The Open/Close control still works
   // normally after startup.
-  const [allOpen, setAllOpen] = useState(false);
-  const [openCloseSeq, setOpenCloseSeq] = useState(0);
+  // 026K: set of currently-open category names — drives single-open accordion behavior.
+  // Expand All → new Set(categoryOrder). Collapse All / individual close → new Set().
+  const [openCatIds, setOpenCatIds] = useState<ReadonlySet<string>>(new Set());
+  const [catSeq, setCatSeq] = useState(0); // bumped on every force-open/close action
   // 025F: Per-panel sidebar state for single-open accordion behavior.
   // Each panel gets its own { open, seq } pair so Expand All / Collapse All and
   // individual accordion toggles can be applied independently.
@@ -985,6 +987,9 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
   // Derived active states for Expand All / Collapse All button highlights
   const sidebarExpandActive   = SIDEBAR_KEYS.every(k => sidebarForce[k].open);
   const sidebarCollapseActive = SIDEBAR_KEYS.every(k => !sidebarForce[k].open);
+  // 026K: Derived main-category Expand All / Collapse All button highlight state
+  const allCatsOpen   = categoryOrder.length > 0 && categoryOrder.every(k => openCatIds.has(k));
+  const allCatsClosed = categoryOrder.every(k => !openCatIds.has(k));
   /** 025F: Accordion — open one sidebar panel, automatically close all others. */
   const handleSidebarPanelToggle = useCallback((id: SidebarPanelKey, nowOpen: boolean) => {
     setSidebarForce(prev => {
@@ -1001,6 +1006,19 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       }
       return next;
     });
+  }, []);
+
+  /** 026K: Single-open accordion for main categories.
+   *  If multiple categories are open (post-Expand-All state), any individual click
+   *  collapses all others and keeps only the clicked one open.
+   *  Closing the only open category leaves zero open. */
+  const handleCategoryToggle = useCallback((name: string, nowOpen: boolean) => {
+    setOpenCatIds(prev => {
+      if (prev.size > 1) return new Set([name]); // post-Expand-All: select only clicked
+      if (nowOpen) return new Set([name]);        // normal open: single-open
+      return new Set<string>();                   // normal close: zero open
+    });
+    setCatSeq(s => s + 1);
   }, []);
 
   // ── Input-focus tracking (used to block inactivity showcase timer) ────────
@@ -2406,16 +2424,16 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
                 >
                   <button
-                    onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
+                    onClick={() => { setOpenCatIds(new Set(categoryOrder)); setCatSeq(s => s + 1); }}
                     aria-label="Open all categories"
                     title="Open all categories"
                     className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                      allOpen === true && !barColor
+                      allCatsOpen && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                     }`}
                     style={barColor
-                      ? allOpen === true
+                      ? allCatsOpen
                         ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
@@ -2423,16 +2441,16 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                     <ChevronDown className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
+                    onClick={() => { setOpenCatIds(new Set<string>()); setCatSeq(s => s + 1); }}
                     aria-label="Close all categories"
                     title="Close all categories"
                     className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                      allOpen === false && !barColor
+                      allCatsClosed && !barColor
                         ? 'bg-card text-foreground shadow-sm'
                         : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                     }`}
                     style={barColor
-                      ? allOpen === false
+                      ? allCatsClosed
                         ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                         : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                       : barFont ? { fontFamily: barFont } : undefined}
@@ -2770,8 +2788,9 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   name={category}
                   items={data[category] || []}
                   meta={categoryMeta[category] ?? { countsToBase: true }}
-                  forceOpen={allOpen}
-                  forceOpenSeq={openCloseSeq}
+                  forceOpen={openCatIds.has(category)}
+                  forceOpenSeq={catSeq}
+                  onToggle={nowOpen => handleCategoryToggle(category, nowOpen)}
                   order={categoryOrder}
                   updateItem={updateItem}
                   removeItem={removeItem}
@@ -2907,16 +2926,16 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                     style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
                   >
                     <button
-                      onClick={() => { setAllOpen(true); setOpenCloseSeq(s => s + 1); }}
+                      onClick={() => { setOpenCatIds(new Set(categoryOrder)); setCatSeq(s => s + 1); }}
                       aria-label="Open all categories"
                       title="Open all categories"
                       className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                        allOpen === true && !barColor
+                        allCatsOpen && !barColor
                           ? 'bg-card text-foreground shadow-sm'
                           : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                       }`}
                       style={barColor
-                        ? allOpen === true
+                        ? allCatsOpen
                           ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                           : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                         : barFont ? { fontFamily: barFont } : undefined}
@@ -2924,16 +2943,16 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                       <ChevronDown className="h-4 w-4" />
                     </button>
                     <button
-                      onClick={() => { setAllOpen(false); setOpenCloseSeq(s => s + 1); }}
+                      onClick={() => { setOpenCatIds(new Set<string>()); setCatSeq(s => s + 1); }}
                       aria-label="Close all categories"
                       title="Close all categories"
                       className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                        allOpen === false && !barColor
+                        allCatsClosed && !barColor
                           ? 'bg-card text-foreground shadow-sm'
                           : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
                       }`}
                       style={barColor
-                        ? allOpen === false
+                        ? allCatsClosed
                           ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
                           : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
                         : barFont ? { fontFamily: barFont } : undefined}

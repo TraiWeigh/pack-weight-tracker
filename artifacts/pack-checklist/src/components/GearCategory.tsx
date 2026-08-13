@@ -21,6 +21,8 @@ interface GearCategoryProps {
   onUpdateMeta: (updates: Partial<CategoryMeta>) => void;
   onDelete: () => void;
   onRename?: (newName: string) => void;
+  /** 026K: called with the new open/closed state when the header is clicked manually. */
+  onToggle?: (isNowOpen: boolean) => void;
   // Drag-to-reorder
   isDragOver?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
@@ -156,7 +158,7 @@ function EditableCategoryTitle({
 export function GearCategory({
   name, items, meta, forceOpen, forceOpenSeq,
   order, updateItem, removeItem, moveItem, addItem,
-  onUpdateMeta, onDelete, onRename,
+  onUpdateMeta, onDelete, onRename, onToggle,
   isDragOver, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
 }: GearCategoryProps) {
   // 022G: start collapsed — each category is closed on every fresh open/refresh
@@ -203,7 +205,7 @@ export function GearCategory({
       <div
         className="flex items-center justify-between py-1.5 px-3 sm:py-2 sm:px-4 bg-muted/30 cursor-pointer select-none"
         style={barCombinedStyle(barStyle)}
-        onClick={() => setIsOpen(o => !o)}
+        onClick={() => { const next = !isOpen; setIsOpen(next); onToggle?.(next); }}
       >
         {/* Left: collapse chevron + name + count badge */}
         <div className="flex items-center gap-2 text-foreground font-semibold min-w-0" style={barFgStyle(barStyle)}>
