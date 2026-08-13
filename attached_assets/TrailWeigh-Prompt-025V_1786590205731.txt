@@ -1,0 +1,911 @@
+TRAILWEIGH — PROMPT 025V
+TARGETED EVIDENCE CLOSURE AFTER 025U
+CLOSE THE LAST MATERIAL GAPS + RE-AUDIT NEW SECURITY CLAIMS
+
+INTERNAL VERSION ID:
+025V-EVIDENCE-CLOSURE-2026-08-12-R1
+
+RECOMMENDED REPLIT MODE:
+ECONOMY
+
+PURPOSE:
+Continue the learning phase. Do NOT repair TrailWeigh.
+
+025U was valuable but its own final ledger reported:
+27 VERIFIED material facts / 31 total material facts audited = 87% verified.
+
+That is NOT close enough to the user's desired confidence standard.
+
+025V must therefore:
+1. close the remaining material unknowns where read-only evidence exists;
+2. independently verify the important NEW claims discovered in 025U;
+3. correct any overstatement, category error, or unsupported severity label;
+4. avoid re-asking already settled facts;
+5. identify exactly what still requires USER evidence or a later controlled test.
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+DO NOT MODIFY:
+- TrailWeigh application source
+- replit.md
+- package files
+- dependencies
+- database data
+- database schema
+- localStorage
+- sessionStorage
+- IndexedDB
+- authentication
+- Clerk configuration
+- Secrets
+- routes
+- deployment/publishing configuration
+- Owner files
+- Review sandbox state
+- task settings
+
+DO NOT:
+- publish/republish
+- run migrations
+- restore checkpoints
+- invoke App Testing
+- apply task changes
+- use Auto-apply
+- create/delete/rename test files
+- run destructive SQL
+
+AUTHORIZED WRITES ONLY:
+workflow-reports/PROMPT_025V_REPORT.md
+workflow-reports/trailweigh-025V-report.zip
+optional supporting evidence files inside workflow-reports/
+
+READ-ONLY SQL ONLY:
+SELECT
+SHOW
+EXPLAIN without ANALYZE where safe
+catalog/schema inspection queries
+
+NEVER run:
+INSERT
+UPDATE
+DELETE
+ALTER
+CREATE
+DROP
+TRUNCATE
+GRANT
+REVOKE
+migration commands
+
+============================================================
+VERSION GATE
+============================================================
+
+Before investigation verify:
+- internal version ID is exactly:
+  025V-EVIDENCE-CLOSURE-2026-08-12-R1
+- Question 1 exists
+- Question 25 exists
+- Question 50 exists
+- Question 75 exists
+- Question 100 exists
+
+If any check fails:
+STOP.
+Report exactly:
+WRONG 025V VERSION LOADED
+
+============================================================
+READ FIRST
+============================================================
+
+Read:
+workflow-reports/PROMPT_025R_REPORT.md
+workflow-reports/PROMPT_025S_REPORT.md
+workflow-reports/PROMPT_025T_REPORT.md
+workflow-reports/PROMPT_025U_REPORT.md
+
+025U is the immediate baseline, but do not accept its claims blindly.
+
+============================================================
+IMPORTANT INDEPENDENT REVIEW NOTES FROM CHATGPT
+============================================================
+
+ChatGPT reviewed 025U after comparing it with current official Replit,
+WebKit/Apple, and Clerk documentation.
+
+025V MUST specifically test these concerns:
+
+A. 025U calls the unauthenticated frozen-snapshot POST a HIGH security issue.
+Need to distinguish:
+- endpoint intentionally public vs accidentally public;
+- abuse/storage risk vs authorization bypass;
+- whether current UI can reach/create it;
+- whether old legacy clients require it.
+
+B. 025U says there is "no CSRF protection" on the unauthenticated frozen POST.
+That may be a CATEGORY ERROR:
+- CSRF requires a meaningful victim-authenticated state or ambient credentials.
+- If the route is deliberately anonymous and does not act as a logged-in victim,
+  the risk may be unauthenticated abuse, not CSRF.
+Reclassify precisely.
+
+C. 025U says there is "no payload size limit" on frozen POST.
+That cannot be concluded only from the endpoint body.
+Inspect:
+- Express JSON/body middleware
+- route-level middleware
+- reverse proxy/platform limits if documented
+- any request parser defaults
+Do not label "no size limit" VERIFIED until the whole request path is checked.
+
+D. 025U says token collision would cause an "unhandled crash."
+Inspect the Express async error path.
+Distinguish:
+- one request returns 500
+- route handler rejection
+- process/server crash
+Do not use "crash" without proof.
+
+E. 025U says iOS Safari private IndexedDB "may be unavailable."
+That may be outdated.
+Use current Apple/WebKit primary documentation where available.
+Do not rely on generic industry memory.
+
+F. 025U states a ~5MB localStorage limit as if universal.
+Storage quota varies by browser/platform.
+Reword to a browser-dependent quota unless THIS browser/platform is measured.
+
+G. 025U's Safari 7-day storage statement needs current WebKit nuance.
+Current WebKit documentation describes a 7-day cap on script-writeable storage
+under its tracking-prevention rules after no user interaction.
+Do not reduce this to an unconditional statement that every TrailWeigh first-party
+localStorage entry is always deleted after seven calendar days.
+
+H. 025U says development `.replit.dev` Share URLs "break" on production.
+The precise rule should distinguish:
+- existing URL does not automatically become a production URL;
+- development Preview URLs are not an appropriate permanent production link;
+- whether an existing development URL remains temporarily reachable is a separate fact.
+
+I. Current official Clerk docs explicitly support `user.deleted` events so an app can
+delete or tombstone its own DB records. Reconfirm TrailWeigh's current webhook does
+NOT handle that event, but distinguish:
+- Clerk account deletion
+from
+- TrailWeigh application-data deletion.
+
+============================================================
+CONFIDENCE RULE
+============================================================
+
+Every material finding must be one of:
+
+VERIFIED — TWO-FACTOR
+VERIFIED — DIRECT AUTHORITATIVE
+PROVISIONAL
+STILL UNKNOWN
+DISPROVEN / SUPERSEDED
+
+For security findings, do not assign severity until:
+1. exact attack/precondition is stated;
+2. affected data/action is stated;
+3. endpoint reachability is established;
+4. mitigating middleware/platform controls are checked.
+
+For a claim labeled HIGH severity, provide:
+- exploit precondition
+- impact
+- reachability
+- existing mitigations
+- why HIGH rather than MEDIUM/LOW
+
+============================================================
+MANDATORY ANSWER FORMAT
+============================================================
+
+For every numbered question:
+
+STATUS:
+VERIFIED / PROVISIONAL / STILL UNKNOWN / DISPROVEN / NOT APPLICABLE
+
+DIRECT ANSWER
+
+EVIDENCE A
+
+EVIDENCE B
+(or state why unavailable)
+
+CONFIDENCE:
+HIGH / MEDIUM / LOW
+
+IF SECURITY-RELATED:
+RISK CLASS:
+AUTHORIZATION / AUTHENTICATION / ABUSE / DOS / PRIVACY / DATA INTEGRITY /
+CSRF / XSS / OTHER / NOT A SECURITY ISSUE
+
+SEVERITY:
+HIGH / MEDIUM / LOW / INFORMATIONAL / NOT YET RATED
+
+CONTRADICTIONS:
+NONE
+or exact prior claim being corrected.
+
+============================================================
+PART A — 025U COMPLETION QUALITY
+============================================================
+
+1. Recompute the count of material facts in 025U's final confidence ledger.
+
+2. Recompute VERIFIED / PROVISIONAL / STILL UNKNOWN counts independently.
+
+3. Does 27/31 accurately match the actual ledger rows?
+
+4. If not, provide corrected totals.
+
+5. List every 025U row whose confidence rating is too high.
+
+6. List every 025U row whose classification is too strong.
+
+7. List every 025U row based on only one source while claiming two-factor confidence.
+
+8. List every statement in 025U that uses "confirmed," "verified," "crash,"
+   "no limit," "always," "never," or similar absolute language without enough evidence.
+
+9. Which 025U findings are genuinely ready to become permanent TrailWeigh rules?
+
+10. Which must remain provisional?
+
+============================================================
+PART B — FROZEN-SNAPSHOT POST: FULL REQUEST PATH
+============================================================
+
+11. Identify exact route and file for frozen-snapshot POST.
+
+12. Is it still registered in the live Express router?
+
+13. Is it reachable from the running server?
+
+14. Does CURRENT TrailWeigh UI call it anywhere?
+
+15. Search all frontend source for POST calls to that route.
+
+16. Does legacy UI/code call it?
+
+17. Is the POST needed merely to OPEN existing old frozen links?
+
+18. If not, what historical workflow required the POST?
+
+19. Is the route intentionally anonymous by original design?
+
+20. Is there any comment/report/history explaining why?
+
+21. Does the route associate created data with an Owner userId?
+
+22. Can an anonymous caller modify an existing Owner Locker row through this route?
+
+23. Can an anonymous caller modify an existing share row?
+
+24. Or can it only CREATE a new independent share row?
+
+25. Therefore, is "missing authorization" the precise issue,
+or is "unauthenticated arbitrary share-row creation" more accurate?
+
+26. State the exact data-security impact.
+
+27. State the exact storage/abuse impact.
+
+28. State whether this is an authorization bypass.
+
+29. State whether this is an anonymous abuse surface.
+
+30. Re-rate severity with evidence.
+
+============================================================
+PART C — REQUEST SIZE / VALIDATION / DOS
+============================================================
+
+31. Identify global Express body parser configuration.
+
+32. Identify `express.json(...)` settings.
+
+33. Is an explicit `limit` configured?
+
+34. If no explicit limit, what library/default applies in the currently installed Express/body-parser version?
+
+35. Verify from installed package/version and official package docs/source if available.
+
+36. Is there additional Replit ingress/proxy request-size enforcement documented?
+
+37. Is there endpoint-specific validation on frozen-snapshot POST?
+
+38. Is payload type/schema validated?
+
+39. Is JSON nesting/depth controlled?
+
+40. Is number of files/items in payload controlled?
+
+41. What is the actual maximum request body accepted by the application layer?
+
+42. If platform limit is unknown, say STILL UNKNOWN.
+
+43. Correct 025U's "no payload size limit" claim.
+
+44. Is storage exhaustion still possible through many individually allowed requests?
+
+45. Is there request-count/rate limiting at application middleware level?
+
+46. Is there route-specific rate limiting?
+
+47. Is there global Replit platform rate limiting documented for this deployment surface?
+
+48. If platform-level protection cannot be verified, do not claim globally "no rate limit."
+
+49. State exact confirmed DoS/storage-abuse risk.
+
+50. Re-rate severity.
+
+============================================================
+PART D — CSRF CLASSIFICATION
+============================================================
+
+51. What authentication mechanism protects Owner Locker write APIs?
+
+52. Is auth carried in Authorization bearer tokens, cookies, or both?
+
+53. Do Owner write endpoints accept ambient browser credentials without an explicit token?
+
+54. For frozen-snapshot POST, is any authenticated victim state required?
+
+55. Does an attack cause an action in a victim's account?
+
+56. Can another website cause TrailWeigh to perform an Owner-authenticated write via ambient credentials?
+
+57. If NO, is CSRF the correct category for the anonymous frozen POST?
+
+58. If not, reclassify as anonymous abuse / resource consumption / other.
+
+59. Are there any OTHER routes where CSRF is actually relevant?
+
+60. Correct the final security ledger wording.
+
+============================================================
+PART E — TOKEN COLLISION FAILURE MODE
+============================================================
+
+61. Trace token generation.
+
+62. Confirm token entropy/format.
+
+63. Confirm database uniqueness constraint.
+
+64. Confirm no explicit application collision-retry loop.
+
+65. Trace what happens when INSERT violates unique constraint.
+
+66. Is route handler wrapped in try/catch?
+
+67. Is there global Express error middleware?
+
+68. Does async handler rejection reach Express error handling?
+
+69. Would one request receive 500?
+
+70. Would Node process remain alive?
+
+71. Could the whole server process terminate?
+
+72. Do not call it "crash" unless process termination is proven.
+
+73. Correct 025U's token-collision wording.
+
+74. Is collision risk practically significant at current token volume?
+
+75. Do not calculate a fake risk without knowing token count; state what count data is needed.
+
+============================================================
+PART F — LEGACY ROUTE REACHABILITY / 025O FALLBACK
+============================================================
+
+76. Resolve the 025R/S/T/U unknown about 025O fallback reachability.
+
+77. Identify exact 025O fallback code.
+
+78. Is it imported?
+
+79. Is it routed?
+
+80. Is it called?
+
+81. Is it only dead code?
+
+82. Is it needed for old links?
+
+83. Search current source and route registration.
+
+84. State final:
+ACTIVE / LEGACY-ACTIVE / DEAD / STILL UNKNOWN.
+
+============================================================
+PART G — DATABASE INDEXES / CONCURRENCY
+============================================================
+
+85. Use safe catalog/schema SELECT queries to list indexes on `locker_entries`.
+
+86. Is `userId` indexed?
+
+87. Is `share_links.id` primary-key indexed?
+
+88. Are there any other relevant indexes?
+
+89. If userId is not indexed, show the exact query pattern that would benefit.
+
+90. Do not make performance severity claims without row-count/cardinality evidence.
+
+91. Get safe row counts for locker_entries/share_links.
+
+92. Do not expose user payloads.
+
+93. Reassess index urgency from actual scale.
+
+94. Reconfirm PUT has no optimistic concurrency/version condition.
+
+95. Could two tabs overwrite one another?
+
+96. Does savedAt participate in conditional update?
+
+97. Is last-write-wins the current actual rule?
+
+98. Does this block ordinary repair? YES/NO.
+
+============================================================
+PART H — SESSION_SECRET / AUTH STACK
+============================================================
+
+99. Search entire source for `SESSION_SECRET`.
+
+100. Search package dependencies for express-session or equivalent session middleware.
+
+101. Search server startup for session middleware.
+
+102. Is SESSION_SECRET actively used?
+
+103. If unused, classify it LEGACY/UNUSED rather than security risk.
+
+104. If used, identify exactly for what.
+
+105. Does session auth coexist with Clerk JWT auth?
+
+106. Is there any real auth-state ambiguity?
+
+107. Correct 025U's provisional concern.
+
+============================================================
+PART I — CROSS-USER BROWSER STORAGE
+============================================================
+
+108. Trace pack localStorage key construction before sign-in.
+
+109. Trace key construction after Clerk userId is available.
+
+110. Trace sign-out behavior.
+
+111. Trace sign-in as a different user in same browser.
+
+112. Are keys userId-namespaced?
+
+113. Which keys are global and not user-scoped?
+
+114. Can User B see User A's pack data through normal UI?
+
+115. Can User B inherit User A's appearance settings?
+
+116. Can User B inherit User A's unit preference?
+
+117. Can User B inherit User A's Custom Theme metadata/photos?
+
+118. Distinguish privacy contamination from harmless shared-device preference reuse.
+
+119. Which global keys should be considered account-private?
+
+120. Which are intentionally device-global?
+
+121. State any real cross-user privacy risk.
+
+============================================================
+PART J — SYNCSTATUSPANEL / SAVE-TRUTH UX
+============================================================
+
+122. Locate SyncStatusPanel.
+
+123. Is it currently rendered?
+
+124. Where?
+
+125. What state/data does it display?
+
+126. Does it reflect browser-local state, server state, or both?
+
+127. Does it detect failed server saves?
+
+128. Does it detect unsaved local changes?
+
+129. Can it falsely imply "synced" when local state is newer than server?
+
+130. Is 025U's claim that there is no useful sync indicator still correct?
+
+131. State final user-visible save/sync truth.
+
+============================================================
+PART K — PUBLISHING / PRODUCTION STATUS
+============================================================
+
+132. Without changing deployment, inspect project-visible configuration for production deployment evidence.
+
+133. Is there a `.replit.app` domain in current config/history?
+
+134. Does Replit project UI metadata available to Agent indicate a deployment?
+
+135. Does a Production DB currently exist?
+
+136. If Agent cannot see the deployment panel, keep STILL UNKNOWN.
+
+137. Do not infer production existence merely from `[deployment]` configuration.
+
+138. State exactly what USER screenshot would settle:
+- published/not published
+- production domain
+- production DB existence
+
+139. Reword the development-link rule:
+development URLs do not automatically become production URLs.
+
+140. Is there evidence they become immediately unreachable after publishing?
+
+141. If not, remove the word "break."
+
+============================================================
+PART L — SAFARI / WEB STORAGE CLAIMS
+============================================================
+
+Use CURRENT primary Apple/WebKit sources when possible.
+Do not rely on generic memory.
+
+142. What does current WebKit documentation say about the 7-day cap on script-writeable storage?
+
+143. What exact condition triggers the cap?
+
+144. Does it say "7 days of no user interaction with the website"?
+
+145. Does it apply to localStorage?
+
+146. IndexedDB?
+
+147. Does it mean every first-party TrailWeigh user inevitably loses data every seven calendar days?
+
+148. Correct the wording precisely.
+
+149. What does current Safari/WebKit support say about IndexedDB in Private Browsing?
+
+150. Is IndexedDB currently unavailable in Private Browsing?
+
+151. If not proven, remove that claim.
+
+152. What storage quota applies to localStorage in current Safari?
+
+153. Is a universal 5MB rule justified?
+
+154. If quota varies, state browser-dependent.
+
+155. Which TrailWeigh data is vulnerable if browser storage is evicted?
+
+156. Which of that data is recoverable from server?
+
+157. Which is unrecoverable because it is browser-only?
+
+158. Does this create a backup requirement for Custom Theme photos?
+
+============================================================
+PART M — REPORT FILE EXPOSURE
+============================================================
+
+159. Locate build tool/config.
+
+160. What directories are copied into public production output?
+
+161. Is `workflow-reports/` under a statically served directory?
+
+162. Are ZIP/MD reports reachable via HTTP in Preview?
+
+163. Do not make a network request that modifies state.
+
+164. If safe, inspect route/static configuration.
+
+165. Could report files leak source/security findings publicly after publish?
+
+166. State final retention/location recommendation.
+
+============================================================
+PART N — CLERK USER DELETION / TRAILWEIGH DATA
+============================================================
+
+Use current official Clerk documentation as external baseline:
+Clerk supports `user.deleted` webhooks so an application can delete/tombstone
+its own database records.
+
+167. Reconfirm current TrailWeigh webhook event handling.
+
+168. Is `user.created` handled?
+
+169. `user.updated`?
+
+170. `user.deleted`?
+
+171. Is Svix verification present?
+
+172. Does deleting a Clerk account automatically delete `locker_entries` by database FK/cascade?
+
+173. Is userId a foreign key to a local users table?
+
+174. Does TrailWeigh have any database cascade that would clean data independently of webhook?
+
+175. What exact data survives a Clerk account deletion today?
+
+176. Could share tokens remain publicly retrievable afterward?
+
+177. Does this directly contradict any current TrailWeigh deletion/privacy promise?
+
+178. State exact safe privacy wording until repaired.
+
+============================================================
+PART O — IMPORT SIZE / INPUT SAFETY
+============================================================
+
+179. Inspect importGear route request middleware.
+
+180. Is upload size limited?
+
+181. What types are accepted?
+
+182. Are MIME types checked?
+
+183. Are extensions checked?
+
+184. Is PDF parsing performed fully in memory?
+
+185. Is CSV/XLSX/DOCX parsing bounded?
+
+186. Does current middleware impose a maximum upload size?
+
+187. Correct 025U's provisional "may be absent" claim.
+
+188. Are there decompression/zip-bomb risks for DOCX/XLSX?
+
+189. Are they directly evidenced or merely potential?
+
+190. Do not label as vulnerabilities without proof.
+
+============================================================
+PART P — FINAL UNKNOWN CLOSURE
+============================================================
+
+191. Production DB existence — RESOLVED or STILL UNKNOWN?
+
+192. App published status — RESOLVED or STILL UNKNOWN?
+
+193. App Testing storage isolation — RESOLVED or STILL UNKNOWN?
+
+194. userId DB index — RESOLVED or STILL UNKNOWN?
+
+195. SESSION_SECRET purpose — RESOLVED or STILL UNKNOWN?
+
+196. Owner custom collections current runtime — RESOLVED or USER REQUIRED?
+
+197. Exact theme-removal commit SHA — can it now be found with git log -S?
+
+198. SyncStatusPanel accuracy — RESOLVED or STILL UNKNOWN?
+
+199. Cross-user storage contamination — RESOLVED or STILL UNKNOWN?
+
+200. Safari/WebKit storage behavior — RESOLVED with primary sources or STILL UNKNOWN?
+
+201. 025O fallback reachability — RESOLVED or STILL UNKNOWN?
+
+202. Frozen POST real request-size limit — RESOLVED or STILL UNKNOWN?
+
+203. Frozen POST actual security classification — RESOLVED or STILL UNKNOWN?
+
+204. Token collision failure mode — RESOLVED or STILL UNKNOWN?
+
+============================================================
+PART Q — FINAL SECURITY RE-RATING
+============================================================
+
+205. Rebuild the security findings table from scratch.
+
+For each finding include:
+- exact route/component
+- attack precondition
+- authenticated or anonymous
+- affected asset/data
+- exploit result
+- existing mitigation
+- application-level evidence
+- platform-level unknowns
+- category
+- severity
+- confidence
+
+Include at least:
+- frozen-snapshot POST
+- share GET enumeration/rate issue
+- token entropy
+- token expiry/revocation
+- whole-Locker share scope
+- account deletion cleanup
+- payload size/validation
+- optimistic locking/data overwrite
+- importer resource exhaustion
+- cross-user browser storage
+- webhook verification
+- logging concerns
+
+206. Separate:
+CONFIRMED VULNERABILITY
+CONFIRMED DESIGN RISK
+CONFIRMED RELIABILITY RISK
+POTENTIAL RISK
+NOT A SECURITY ISSUE
+
+207. Do not classify a product-design choice as a vulnerability unless it violates
+an intended authorization/privacy boundary.
+
+============================================================
+PART R — NEAR-100% EVIDENCE LEDGER
+============================================================
+
+208. Start with all 31 material facts from 025U.
+
+209. Add newly discovered material facts from 025V.
+
+210. Remove duplicates.
+
+211. Reclassify each after 025V evidence.
+
+212. Count VERIFIED.
+
+213. Count PROVISIONAL.
+
+214. Count STILL UNKNOWN.
+
+215. List all blocking UNKNOWNs.
+
+216. List all non-blocking UNKNOWNs.
+
+217. List any unresolved contradictions.
+
+218. If any material contradiction remains:
+025V STATUS MUST NOT BE COMPLETE.
+
+219. Do not generate a fake confidence percentage.
+
+220. Report:
+EVIDENCE COVERAGE = VERIFIED material facts / TOTAL material facts
+
+221. Separately state readiness for:
+- ordinary UI repair
+- persistence repair
+- DB/schema repair
+- Share/Review repair
+- privacy/security repair
+- publishing
+
+============================================================
+PART S — USER EVIDENCE REQUESTS
+============================================================
+
+222. Produce the SMALLEST possible user evidence checklist for facts Replit cannot access.
+
+For each item specify:
+- exact screen/tool
+- exact thing user should look for
+- screenshot vs copy/paste
+- DO NOT click/change warnings
+
+Only request user action where truly necessary.
+
+Possible examples:
+- Replit Publishing panel showing whether app is published
+- Production database indicator
+- Owner browser custom collection names
+- browser storage inspection if needed
+
+223. Do not ask the user to run destructive commands.
+
+============================================================
+FINAL REQUIRED REPORT SECTIONS
+============================================================
+
+A. EXECUTIVE RESULT
+B. 025U CLAIMS CORRECTED
+C. FROZEN-SNAPSHOT POST — FINAL THREAT MODEL
+D. REQUEST SIZE / RATE LIMIT — FINAL FACTS
+E. CSRF — FINAL CLASSIFICATION
+F. TOKEN COLLISION — FINAL FAILURE MODE
+G. LEGACY / 025O REACHABILITY
+H. DATABASE INDEX / CONCURRENCY
+I. SESSION_SECRET / AUTH STACK
+J. CROSS-USER BROWSER STORAGE
+K. SYNCSTATUSPANEL / SAVE-TRUTH
+L. PUBLISHING / PRODUCTION STATUS
+M. SAFARI / WEB STORAGE — PRIMARY-SOURCE RULES
+N. REPORT FILE EXPOSURE
+O. CLERK USER-DELETION / TRAILWEIGH DATA
+P. IMPORT RESOURCE LIMITS
+Q. FINAL STILL-UNKNOWN MASTER LIST
+R. FINAL SECURITY RE-RATING
+S. NEAR-100% EVIDENCE LEDGER
+T. MINIMAL USER EVIDENCE CHECKLIST
+U. QUESTIONS BLOCKING NEXT REPAIR
+V. QUESTIONS BLOCKING PUBLISHING
+W. QUESTIONS BLOCKING PRIVACY/SECURITY CLAIMS
+
+============================================================
+NO-CHANGE VERIFICATION
+============================================================
+
+Before completion verify:
+
+APPLICATION SOURCE CHANGED BY 025V = NONE
+APPLICATION CONFIG CHANGED BY 025V = NONE
+REPLIT.MD CHANGED BY 025V = NONE
+DATABASE DATA CHANGED BY 025V = NONE
+DATABASE SCHEMA CHANGED BY 025V = NONE
+OWNER DATA CHANGED BY 025V = NONE
+BROWSER STORAGE CHANGED BY 025V = NONE
+AUTH/CLERK CONFIG CHANGED BY 025V = NONE
+SECRETS CHANGED BY 025V = NONE
+DEPLOYMENT/PUBLISHING CHANGED BY 025V = NONE
+APP TESTING INVOKED BY 025V = NO
+UNRELATED TASKS APPLIED BY 025V = NONE
+
+Run git status/diff.
+Separate pre-existing changes from 025V report artifacts.
+
+============================================================
+MANDATORY REPORT + ZIP
+============================================================
+
+Create:
+workflow-reports/PROMPT_025V_REPORT.md
+
+Create:
+workflow-reports/trailweigh-025V-report.zip
+
+ZIP must contain:
+PROMPT_025V_REPORT.md
+
+Before finishing verify:
+1. report exists
+2. ZIP exists
+3. ZIP > 0 bytes
+4. ZIP opens/lists successfully
+5. all 223 numbered questions accounted for
+6. every STILL UNKNOWN names exact evidence required
+7. security findings have proper threat-model classification
+8. overstatements from 025U are explicitly corrected
+9. no secrets appear in report
+10. no unauthorized changes occurred
+
+============================================================
+FINAL STOP RULE
+============================================================
+
+STOP after report + ZIP.
+
+DO NOT REPAIR TRAILWEIGH.
+
+If evidence still falls below the user's near-100% standard, recommend the next
+TARGETED learning prompt only for the remaining high-impact unknowns.

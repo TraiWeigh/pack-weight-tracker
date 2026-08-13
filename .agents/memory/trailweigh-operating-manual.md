@@ -24,9 +24,18 @@ description: Pointer to 025T report — the permanent comprehensive reference fo
 - No `user.deleted` webhook → orphaned DB rows on account deletion
 - No FK between share_links and locker_entries
 - DATABASE = HELIUM (host segment confirmed; no neon.tech; NEON_DATABASE_URL absent)
-- **NEW (025U):** Unauthenticated `POST /api/links` frozen-snapshot path (links.ts:50-53) — no auth check, stores arbitrary JSON. BLOCKING security gap for public launch.
-- **NEW (025U):** Review seedFromLiveFiles writes 5 GLOBAL appearance keys (trailweigh:background/bgFade/bgTone/bgSize/chartPalette) — two review tokens in same browser contaminate each other's appearance.
+- **Frozen POST (links.ts:50-53):** Intentionally anonymous for backward compat. Creates only new `share_links` row; cannot touch `locker_entries`. Risk = unauthenticated DB write / MEDIUM severity. NOT authorization bypass, NOT CSRF. Body capped at 12MB.
+- **Review writes 9 GLOBAL appearance keys** (trailweigh:background/bgFade/bgTone/bgSize/chartPalette/barColor/barFont/barTextColor/barTransparency). 025U said "5" — 025V corrected to 9.
 - Payload fields in server: store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, barTransparency. **unitSystem is NEVER included.**
+- **Express body limit = 12MB** (`express.json({ limit: '12mb' })`). Import upload = **20MB** (multer). 025U's "no size limit" was wrong.
+- **Token collision → HTTP 500 to one request, NOT a process crash.** Express 5 async error handling routes rejection to default error handler. Process survives.
+- **SESSION_SECRET = UNUSED/LEGACY.** `express-session` not in dependencies. No session middleware. Auth = Clerk-only.
+- **SyncStatusPanel IS rendered** inside LockerPanel. Shows sync status for completed saves. Cannot detect unsaved local changes (no dirty flag).
+- **userId NOT indexed** on `locker_entries` (confirmed by pg_indexes catalog query). Urgency: low at 3 rows; add before public launch.
+- **locker_entries: 3 rows; share_links: 82 rows** (as of 2026-08-13 dev DB).
+- **Pack data key = user-namespaced** (`pack-checklist-v5-${uid}`). Safe across accounts. Global keys (unit pref, background, bar*) are device-global — cross-user contamination risk on shared devices.
+- **SharedPackView (/shared) = ACTIVE** legacy route for hash-encoded share links. SharedChecklistPage = dead import (not routed).
+- **CSRF is wrong category for frozen POST** — no victim auth state. Correct: anonymous write surface.
 
 ## Replit platform facts (from official docs, HIGH confidence)
 
