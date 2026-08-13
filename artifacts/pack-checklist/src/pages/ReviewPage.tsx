@@ -371,18 +371,14 @@ function seedFromLiveFiles(
       // Unknown custom photo — discard (preserves arbitrary-photo privacy).
       localStorage.removeItem('trailweigh:background');
     }
-    // 026E: Also write to the review-scoped background key — isolated from the
-    // owner's own tab (which writes the global key on every unsaved background
-    // change, polluting CASE B reloads where seedFromLiveFiles is not called).
+    // 026F: Write the permanent Share default to the review-scoped background key.
+    // The owner's saved background no longer determines the Share initial background
+    // (026E synchronization superseded by product decision).  The review-namespace key
+    // is still used so the reviewer's later explicit changes persist across CASE B
+    // reloads (written by handleBackgroundChange in Checklist.tsx).
     // Key is derived from packKey by replacing the ':pack' suffix with ':background'.
     const reviewBgKey = packKey.replace(':pack', ':background');
-    if (bg?.type === 'preset') {
-      localStorage.setItem(reviewBgKey, JSON.stringify(primary.background));
-    } else if (bg?.type === 'custom' && bg.photoId && LEGACY_PHOTO_ID_MAP[bg.photoId]) {
-      localStorage.setItem(reviewBgKey, JSON.stringify({ type: 'preset', id: LEGACY_PHOTO_ID_MAP[bg.photoId] }));
-    } else {
-      localStorage.removeItem(reviewBgKey);
-    }
+    localStorage.setItem(reviewBgKey, JSON.stringify({ type: 'preset', id: 'share-default' }));
     localStorage.setItem('trailweigh:bgFade', String(primary.bgFade ?? 1));
     localStorage.setItem('trailweigh:bgTone', primary.bgTone ?? 'light');
     localStorage.setItem('trailweigh:bgSize', primary.bgSize ?? 'cover');

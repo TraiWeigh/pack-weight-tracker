@@ -146,9 +146,19 @@ export const BUILTIN_THEMES = [
   { id: 'trails-us',      label: 'Trails US',      presets: TRAILS_PRESETS       },
 ];
 
+/** 026F: Permanent Share/Review starting background — NOT user-facing (not in BUILTIN_THEMES).
+ *  Added to ALL_BUILTIN_PRESETS only so resolvePresetUrl('share-default') returns the correct path. */
+export const SHARE_DEFAULT_PRESET: BuiltinPreset = {
+  id: 'share-default',
+  photoPath: '/themes/share-default/TrailWeigh-Share-Default-Background.png',
+};
+
 /** Flat list of every built-in preset across all themes. Used to resolve any
  *  preset ID → display URL without knowing its parent theme. */
-export const ALL_BUILTIN_PRESETS: BuiltinPreset[] = BUILTIN_THEMES.flatMap(t => t.presets);
+export const ALL_BUILTIN_PRESETS: BuiltinPreset[] = [
+  SHARE_DEFAULT_PRESET,
+  ...BUILTIN_THEMES.flatMap(t => t.presets),
+];
 
 /** 026D: Legacy browser-local photo UUIDs → canonical built-in preset IDs.
  *  The four original custom collections were saved as { type:'custom', photoId }

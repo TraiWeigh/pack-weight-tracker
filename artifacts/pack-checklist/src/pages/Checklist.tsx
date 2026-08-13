@@ -310,13 +310,14 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
         return parsed ?? null;
       }
     } catch {}
-    // 026E: Review mode — prefer the review-scoped background key (written by
+    // 026E/026F: Review mode — prefer the review-scoped background key (written by
     // ReviewPage.seedFromLiveFiles) over the global key.  The global key is
-    // shared across all tabs and can be polluted by the owner's own session
-    // writing unsaved background changes (CASE B: no reseed on reload).
-    // A stored 'null' JSON value means the owner explicitly saved with no
-    // background; fall through to the global key only if the review namespace
-    // key is entirely absent (hasn't been seeded yet).
+    // shared across all tabs and can be polluted by the owner's own session.
+    // 026F: seedFromLiveFiles now always writes { type:'preset', id:'share-default' }
+    // to the namespace key (not the owner's saved background).  If the namespace key
+    // is absent (edge case: cleared storage between CASE A seed and ChecklistContent
+    // mount), return the permanent Share default directly rather than falling through
+    // to the owner-polluted global key.
     if (reviewToken) {
       try {
         const reviewBgKey = `trailweigh:review:${reviewToken}:background`;
@@ -324,10 +325,11 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
         if (s !== null) {
           const parsed = JSON.parse(s);
           if (parsed && typeof parsed === 'object') return parsed as Background;
-          return null; // explicit null → owner saved with no background
+          return null;
         }
       } catch {}
-      // Review namespace not yet seeded — fall through to global key as last resort.
+      // 026F: Namespace absent — use permanent Share default (not global key).
+      return { type: 'preset', id: 'share-default' } as Background;
     }
     // Normal path (primary / non-fork tab)
     try {

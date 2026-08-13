@@ -1,0 +1,482 @@
+TRAILWEIGH — PROMPT 026F — GOLD STANDARD
+PERMANENT DEFAULT BACKGROUND FOR ALL SHARE/REVIEW LINKS
+USE THE EXACT USER-PROVIDED IMAGE — DO NOT GENERATE OR ALTER IT
+
+INTERNAL VERSION ID:
+026F-PERMANENT-SHARE-DEFAULT-BACKGROUND-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 8–14 minutes
+- Estimated Agent usage/cost: approximately $0.80–$1.60
+
+============================================================
+AUTHORITATIVE IMAGE ASSET — MUST USE EXACTLY
+============================================================
+
+The user is attaching:
+
+TrailWeigh-Share-Default-Background.png
+
+Expected byte size:
+3206670
+
+Expected SHA-256:
+b9f06e9fd4b022c13a4df8b533ac6b278c7eb59ca35ac6533e53cb075e8d2811
+
+THIS EXACT FILE is the required permanent starting background for Share/Review.
+
+Do NOT:
+- generate a replacement
+- edit it
+- crop it
+- resize it
+- recompress it
+- recolor it
+- optimize it
+- substitute a visually similar image
+- use an AI-generated alternate
+- use any other TrailWeigh theme image instead
+
+The image depicts the user and Dutch hiking across a wooden bridge in an alpine landscape.
+That description is for identification only. The FILE BYTES are authoritative.
+
+Before code changes:
+1. locate the attached PNG
+2. verify exact byte size
+3. verify SHA-256
+4. if either differs, STOP and do not change application code
+
+============================================================
+USER-APPROVED PRODUCT DECISION
+============================================================
+
+This prompt intentionally SUPERSEDES the prior 026E rule that a Share link should keep
+synchronizing its starting background to later owner Saves.
+
+New approved behavior:
+
+1. Every Share/Review link starts with ONE permanent TrailWeigh Share background:
+   TrailWeigh-Share-Default-Background.png
+
+2. The owner file's background does NOT determine the Share link's initial background.
+
+3. Later owner background changes — saved or unsaved — do NOT change this Share default.
+
+4. The viewer/reviewer may use the existing Background/Themes controls and switch to any
+   available permanent theme/background while reviewing.
+
+5. Reviewer background changes remain local to the reviewer sandbox and never modify:
+   - the owner file
+   - the permanent Share default
+   - other reviewers
+
+6. A fresh Share/Review session/browser should begin from the permanent Share default image,
+   subject to the EXISTING Review sandbox persistence rules within the same reviewer/browser.
+   Do not redesign reviewer persistence unless necessary to satisfy the initial-default rule.
+
+7. The existing permanent Share URL behavior remains unchanged.
+
+============================================================
+CURRENT USER-VERIFIED STATE TO PRESERVE
+============================================================
+
+026D:
+- theme recovery USER-VERIFIED PASS
+- one each:
+  Landscape
+  Psychedelic
+  Retro-Outdoors
+  Topo
+  Trails US
+- recovered exact original themes are present in Share/Review
+- Share/Review lets viewers select themes
+
+026E:
+- Save-to-Share background synchronization was tested and worked
+- HOWEVER that synchronization behavior is now intentionally SUPERSEDED by this product decision
+
+Do not undo unrelated successful 026D infrastructure.
+
+============================================================
+MANDATORY ROOT-CAUSE / ACTIVE-PATH TRACE
+============================================================
+
+Before editing:
+
+1. Read current replit.md READ-ONLY.
+2. Read:
+   workflow-reports/PROMPT_026D_REPORT.md
+   workflow-reports/PROMPT_026E_REPORT.md
+3. Trace current Share/Review initial-background path:
+   - public Share response
+   - source/reseed logic
+   - token-specific Review background storage introduced by 026E
+   - Checklist/background state initialization
+   - final rendered background
+4. Identify the smallest place to establish the permanent default without breaking reviewer-local changes.
+5. Verify intended files are on the current active render path.
+6. Record expected changed files in report BEFORE editing.
+
+============================================================
+IMPLEMENTATION PRINCIPLE
+============================================================
+
+Install the exact PNG as a code-controlled/static public asset using the project's EXISTING
+Vite/public asset convention.
+
+Prefer a clear stable path such as:
+public/themes/share-default/TrailWeigh-Share-Default-Background.png
+
+Adapt the directory only if the current project has an established equivalent convention.
+
+Do not create a second asset architecture.
+Do not add Object Storage.
+Do not add an upload endpoint.
+Do not create a DB row for this image.
+
+============================================================
+SHARE/REVIEW INITIALIZATION RULE
+============================================================
+
+On INITIAL Share/Review seed for a fresh reviewer context:
+
+- set the background to the permanent Share default image
+- do NOT seed initial Review background from the owner's saved file background
+
+The permanent Share default should use a stable canonical preset/background identity if the
+current architecture requires one.
+
+Do not masquerade it as one of the five existing theme images.
+
+If a new internal preset ID is appropriate, use a clear stable ID, for example:
+
+share-default
+
+But do NOT add a new user-facing permanent theme named "Share Default" unless the current
+Background picker architecture requires it.
+
+Preferred UX:
+- Share opens with this image
+- viewer can then select Landscape/Psychedelic/Retro-Outdoors/Topo/Trails US using existing controls
+- no unnecessary extra theme entry
+
+============================================================
+REVIEWER LOCAL CHANGES
+============================================================
+
+Preserve reviewer freedom:
+
+After Share opens with the permanent default, reviewer may change the background using existing
+Background/Themes controls.
+
+Those changes:
+- stay in reviewer sandbox/local state
+- do not mutate owner
+- do not mutate public server source
+- do not change permanent default
+- do not affect another reviewer
+
+Do not remove the token-namespaced isolation added by 026E unless the current source proves a
+smaller safer replacement is necessary.
+
+============================================================
+OWNER BACKGROUND DECOUPLING
+============================================================
+
+After 026F:
+
+Owner background state is independent from Share initial background.
+
+Required:
+
+Owner selects/saves Landscape
+→ fresh Share starts with permanent Share default
+
+Owner selects/saves Psychedelic
+→ fresh Share starts with permanent Share default
+
+Owner selects unsaved Topo
+→ fresh Share starts with permanent Share default
+
+No owner Save should rewrite the permanent Share background.
+
+============================================================
+SEPARATE DEFECTS — DO NOT FIX
+============================================================
+
+Do NOT fix or alter:
+
+- Share/Review Locker file-open defect involving Sample List Live Test
+- Main Category Accordion request
+- left-side main-category arrow control
+- right-sidebar accordion behavior
+- importer/parser
+- toolbar layout
+- authentication
+- share-token architecture
+- theme ordering
+- + Add Theme behavior
+- Custom Theme storage model
+- database schema
+- production deployment/publishing
+
+============================================================
+026E CLEANUP — ONLY IF REQUIRED
+============================================================
+
+If 026E introduced logic whose sole purpose is:
+"owner last-saved background becomes Share initial background"
+
+and that logic is now obsolete under 026F:
+
+Remove or bypass ONLY the obsolete synchronization portion needed to enforce the new rule.
+
+Preserve any useful reviewer-local isolation from 026E.
+
+Do not perform broad cleanup.
+
+Clearly document:
+- which 026E behavior became superseded
+- which 026E code remains and why
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before code:
+Create:
+
+workflow-reports/PROMPT_026F_REPORT.md
+
+Record:
+- image gate result
+- current active path
+- exact root cause/current initialization
+- expected changed files
+- rollback plan
+
+After code:
+- list all actual changed files
+- investigate/revert unrelated changes
+- no package upgrades
+- no opportunistic refactor
+
+============================================================
+CHECKPOINT / ROLLBACK
+============================================================
+
+Before edits:
+- confirm standard Agent checkpoint/recoverable state if exposed
+
+No DB rollback should be needed because:
+- no schema changes authorized
+- no data migration authorized
+
+Rollback guidance must cover:
+- exact code files changed
+- static Share-default image asset
+
+============================================================
+TEST MATRIX
+============================================================
+
+Use controlled/non-destructive tests.
+
+Required:
+
+1. attached image SHA-256 = exact expected hash
+2. attached image byte size = exact expected size
+3. installed image bytes retain exact SHA-256
+4. build/typecheck succeeds
+5. fresh Share/Review starts with permanent Share default
+6. owner saved Landscape does NOT alter fresh Share default
+7. owner saved Psychedelic does NOT alter fresh Share default
+8. owner unsaved Topo does NOT alter fresh Share default
+9. reviewer can switch to Landscape
+10. reviewer can switch to Psychedelic
+11. reviewer can switch to Retro-Outdoors
+12. reviewer can switch to Topo
+13. reviewer can switch to Trails US
+14. reviewer background change does NOT mutate owner
+15. reviewer background change does NOT mutate permanent default
+16. second fresh reviewer context starts with permanent default
+17. no duplicate themes appear
+18. exact 40 legacy IDs remain mapped
+19. unknown custom-photo privacy remains unchanged
+20. Share/Review Locker file-open defect unchanged
+21. Main Category Accordion unchanged
+22. right-sidebar accordion unchanged
+23. no DB data/schema change
+24. no publishing/deployment change
+
+Do NOT use App Testing auto-fix.
+
+============================================================
+USER LIVE VERIFICATION
+============================================================
+
+USER VERIFICATION = PENDING after Replit completes.
+
+User will verify:
+
+TEST A
+- open a fresh/private Share link session
+Expected:
+- exact supplied hiker-and-Dutch image is the starting background
+
+TEST B
+- change viewer background to one of the permanent themes
+Expected:
+- viewer sees selected theme
+- owner remains unchanged
+
+TEST C
+- reopen Share in a fresh/private session
+Expected:
+- exact supplied hiker-and-Dutch image is again the starting background
+
+TEST D
+- change/save owner background
+- open a fresh/private Share session
+Expected:
+- Share still starts with exact supplied hiker-and-Dutch image
+
+============================================================
+COST / SCOPE STOP RULE
+============================================================
+
+STOP before broadening if:
+
+- attached PNG fails hash/size gate
+- this requires new DB schema/data migration
+- this requires changing live-share token architecture
+- this requires Object Storage
+- arbitrary custom-photo privacy would weaken
+- broad refactor is required
+- estimated work materially exceeds 14 minutes / ~$1.60
+- deployment/publishing changes appear necessary
+
+Do not improvise around a material blocker.
+
+============================================================
+MANDATORY FINAL REPORT
+============================================================
+
+Update:
+
+workflow-reports/PROMPT_026F_REPORT.md
+
+Include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. user-approved new product rule
+4. superseded 026E behavior
+5. image asset byte size
+6. image asset SHA-256
+7. installed asset path
+8. installed asset SHA-256
+9. current Share initialization trace
+10. exact repair
+11. expected changed files
+12. actual changed files
+13. 026E code retained/removed and why
+14. reviewer local persistence behavior
+15. owner decoupling behavior
+16. permanent-theme regressions
+17. custom-photo privacy regression
+18. separate defects unchanged
+19. test matrix/results
+20. tests not run
+21. rollback guidance
+22. elapsed time
+23. Agent actions
+24. lines read
+25. Agent cost/usage if shown
+26. final self-audit
+27. USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+IMAGE ATTACHMENT GATE = PASS / FAIL
+INSTALLED IMAGE HASH MATCH = YES / NO
+FRESH SHARE STARTS WITH PERMANENT DEFAULT = PASS / FAIL / NOT RUN
+OWNER SAVED BACKGROUND CHANGES SHARE DEFAULT = YES / NO / NOT RUN
+OWNER UNSAVED BACKGROUND CHANGES SHARE DEFAULT = YES / NO / NOT RUN
+REVIEWER CAN CHANGE BACKGROUND = PASS / FAIL / NOT RUN
+REVIEWER BACKGROUND MUTATES OWNER = YES / NO / NOT RUN
+REVIEWER BACKGROUND MUTATES PERMANENT DEFAULT = YES / NO / NOT RUN
+SECOND FRESH REVIEWER STARTS WITH PERMANENT DEFAULT = PASS / FAIL / NOT RUN
+LANDSCAPE REGRESSION = PASS / FAIL / NOT RUN
+PSYCHEDELIC REGRESSION = PASS / FAIL / NOT RUN
+RETRO-OUTDOORS REGRESSION = PASS / FAIL / NOT RUN
+TOPO REGRESSION = PASS / FAIL / NOT RUN
+TRAILS US REGRESSION = PASS / FAIL / NOT RUN
+EXACT 40 LEGACY PHOTO IDS STILL MAPPED = YES / NO
+UNKNOWN CUSTOM PHOTO PRIVACY CHANGED = YES / NO
+DUPLICATE THEMES REINTRODUCED = YES / NO
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = YES / NO
+MAIN CATEGORY ACCORDION CHANGED = YES / NO
+RIGHT SIDEBAR ACCORDION CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Did I use the exact user-provided PNG bytes?
+2. Did I avoid generating/editing/substituting the image?
+3. Does every fresh Share start from the permanent default?
+4. Are owner saved and unsaved backgrounds decoupled?
+5. Can reviewer still change background?
+6. Are reviewer changes isolated?
+7. Did I preserve all five permanent themes?
+8. Did I preserve 40 legacy mappings?
+9. Did arbitrary custom-photo privacy remain unchanged?
+10. Did I avoid the separate Locker-open defect?
+11. Did I avoid the Main Category Accordion request?
+12. Did I avoid DB/auth/token/deployment changes?
+13. Did I review every changed file?
+14. Did I stay inside scope/cost?
+15. Is any material uncertainty unresolved?
+
+If any answer exposes a material unresolved issue:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+workflow-reports/trailweigh-026F-report.zip
+
+ZIP must contain:
+PROMPT_026F_REPORT.md
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not proceed to any other waiting TrailWeigh task.
