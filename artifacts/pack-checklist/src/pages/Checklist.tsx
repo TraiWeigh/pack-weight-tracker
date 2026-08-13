@@ -2361,13 +2361,12 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
 
         <main className="w-full max-w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-h-0 lg:flex lg:flex-col">
 
-          {/* ── 023B: Phone Row 1 — File Name + Preview, centered (mobile only) ──
-               On desktop this div is lg:hidden; the file-name pill and Preview button
-               continue to appear in the left-toolbar via their own lg: positioning.
-               On mobile this row sits at the very top of the content area, above the
-               Background Edit / Share row. */}
-          <div className="pt-4 lg:hidden flex items-center justify-center gap-2 pb-2 flex-wrap">
-            {activeLockerFile && (
+          {/* ── 026L: Phone file-name pill row — only when a file is active.
+               Preview removed from here and moved to the lower toolbar alongside Hide,
+               restoring the 022X programmed grouping. The div now only renders when
+               activeLockerFile is set, preventing phantom padding. */}
+          {activeLockerFile && (
+            <div className="pt-4 lg:hidden flex items-center justify-center gap-2 pb-2">
               <span
                 aria-label={`Active file: ${activeLockerFile.name}`}
                 title={activeLockerFile.name}
@@ -2375,15 +2374,8 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
               >
                 {activeLockerFile.name}
               </span>
-            )}
-            <button
-              onClick={() => setShowPreview(true)}
-              aria-label="Open checked-items preview"
-              className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Preview
-            </button>
-          </div>
+            </div>
+          )}
 
           {/* ── Toolbar group — all toolbar controls share this single parent.
                pt-4 is desktop-only (lg:pt-4); mobile top spacing is in Phone Row 1. ── */}
@@ -2960,23 +2952,35 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                       <ChevronUp className="h-4 w-4" />
                     </button>
                   </div>
-                  {/* Hide — center */}
-                  <button
-                    onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
-                    disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
-                    aria-label="Hide interface and show background view"
-                    title={
-                      showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
-                        ? 'Finish the current action first'
-                        : 'Hide the interface'
-                    }
-                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
-                  >
-                    Hide
-                  </button>
-                  {/* Imperial / Metric — right */}
-                  <UnitToggle />
+                  {/* 026L: RIGHT GROUP — Hide, Preview, UnitToggle together.
+                      Restores 022X programmed grouping: Preview was stranded in
+                      Phone Row 1 (top); Hide was isolated as a solo center item.
+                      Now both sit in a single right-zone group, matching desktop order. */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
+                      disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
+                      aria-label="Hide interface and show background view"
+                      title={
+                        showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
+                          ? 'Finish the current action first'
+                          : 'Hide the interface'
+                      }
+                      className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                    >
+                      Hide
+                    </button>
+                    <button
+                      onClick={() => setShowPreview(true)}
+                      aria-label="Open checked-items preview"
+                      className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                      style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                    >
+                      Preview
+                    </button>
+                    <UnitToggle />
+                  </div>
                 </div>
               </div>
             </div>

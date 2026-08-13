@@ -1,0 +1,615 @@
+TRAILWEIGH — PROMPT 026L — GOLD STANDARD
+RESTORE THE PROGRAMMED MOBILE PILL / TOOLBAR ARRANGEMENT
+
+INTERNAL VERSION ID:
+026L-MOBILE-PILL-ARRANGEMENT-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 7–12 minutes
+- Estimated Agent usage/cost: approximately $0.70–$1.40
+- HARD STOP if this becomes a broad mobile redesign or materially exceeds scope before root cause is known
+
+============================================================
+AUTHORITATIVE CURRENT USER EVIDENCE
+============================================================
+
+The user has just supplied REAL-iPHONE portrait screenshots showing the current mobile layout.
+
+USER OBSERVATION:
+"The pills arrangement is not how we programmed it."
+
+Treat the supplied real-iPhone screenshots as CURRENT USER LIVE EVIDENCE.
+
+This prompt addresses ONLY the PILL / TOOLBAR ARRANGEMENT.
+
+DO NOT work on:
+- truncated main-category names
+- category bar redesign
+- footer
+- contrast/readability
+- mobile header/logo sizing
+- item-row layout
+- any other phone problem
+
+Those will be separate prompts.
+
+============================================================
+MANDATORY RECONCILIATION WITH PRIOR PROGRAMMED DESIGN
+============================================================
+
+TrailWeigh already had an explicit mobile-toolbar design in Prompt 022X.
+
+022X established these layout principles:
+
+1. DO NOT solve portrait layout by placing every pill/group into independent centered rows.
+
+2. The MAIN CATEGORY toolbar relationship is:
+   LEFT ZONE = main-category Expand/Collapse control
+   CENTER ZONE = current saved file-name pill
+   RIGHT ZONE = Imperial / Metric
+
+3. When all three zones fit:
+   [ main-category arrows ]   [ current file name ]   [ Imperial | Metric ]
+
+4. At narrow phone portrait widths where all three do not fit:
+   ROW A:
+   [ main-category arrows ]                    [ Imperial | Metric ]
+
+   ROW B:
+                      [ current file name ]
+
+   - left control anchored to the LEFT content-panel gutter
+   - units anchored to the RIGHT content-panel gutter
+   - filename centered
+   - compact vertical spacing
+   - no arbitrary centering of the left/right pair
+
+5. Background / Share are a SEPARATE toolbar relationship.
+   They remain in their own established toolbar area.
+   They are not part of one giant centered stack.
+
+6. Hide / Preview must keep their established functional zone/order.
+   Do not scatter or independently center them merely because space exists.
+
+7. Use the main panel/category panel left and right edges as the alignment guides.
+
+8. No free-form flex wrapping for these important controls.
+   Use deterministic grid areas / explicit zones / explicit breakpoint rows.
+
+============================================================
+IMPORTANT LATER SUPERSEDING RULES
+============================================================
+
+Do NOT literally restore obsolete "Open / Close" text buttons from 022X.
+
+Later TrailWeigh work replaced those old text controls with the CURRENT compact joined arrow controls.
+
+Therefore:
+
+- preserve the CURRENT compact joined main-category arrow control
+- preserve the CURRENT compact joined right-sidebar arrow control
+- preserve their current icons/sizes/behavior
+- only restore the PROGRAMMED SPATIAL RELATIONSHIPS
+
+Also preserve the later rule from 025I:
+
+HOME / LOGGED-IN TRAILWEIGH IS THE VISUAL SOURCE OF TRUTH.
+
+Share/Review must use the same layout/grouping/spacing as Home except for legitimate ownership/persistence differences.
+
+Do NOT create a separate mobile Share layout.
+
+============================================================
+CURRENT USER-VERIFIED FUNCTIONAL BASELINE — PRESERVE
+============================================================
+
+026K = USER-VERIFIED PASS in BOTH logged-in Home and Share/Review.
+
+Preserve:
+- main categories normal single-open behavior
+- zero-open allowed
+- main-category Expand All
+- main-category Collapse All
+- first individual click after Expand All returns to single-open
+- main category group independent from sidebar group
+
+Preserve existing USER-VERIFIED PASS behavior for:
+- sidebar accordion group
+- Share dropdown layering
+- Background/Themes
+- Share fixed default background
+- Share/Review Locker
+- owner/viewer isolation
+- Imperial/Metric functionality
+- Hide functionality
+- Preview functionality
+- Share functionality
+- Locker/mobile scrolling
+- footer normal document flow
+
+This prompt is LAYOUT ONLY.
+
+============================================================
+CURRENT REAL-iPHONE SCREENSHOT — VISIBLE PROBLEMS TO TRACE
+============================================================
+
+The current screenshot shows the pills visually scattered into several unrelated positions.
+
+Examples visible in the user's current real-iPhone screenshot:
+- Preview is isolated in its own centered row high above the sidebar panels.
+- One compact joined arrow pill appears beside the Background/Share area.
+- A second compact joined arrow pill appears below Locker beside Hide and Imperial/Metric.
+- Hide is centered as a standalone pill between the left arrow group and right units group.
+- The current saved file-name pill is not visibly occupying its programmed center-zone relationship in the shown mobile toolbar.
+
+Do NOT assume which CSS rule caused this.
+Trace the current active render path first.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Restore the programmed mobile pill arrangement on PHONE PORTRAIT without changing pill behavior.
+
+The result must look like a responsive adaptation of TrailWeigh's established toolbar geometry,
+not like a collection of unrelated centered buttons.
+
+============================================================
+REQUIRED MOBILE TOOLBAR RELATIONSHIPS
+============================================================
+
+A. SIDEBAR TOOLBAR GROUP
+
+The right-sidebar accordion controls, Background, and Share must preserve the CURRENT Home relationship.
+
+- current joined sidebar arrow control remains the sidebar-only Expand/Collapse control
+- Background remains Background
+- Share remains Share
+- use the established Home grouping/alignment
+- Share's right edge should follow the established sidebar/panel right-edge alignment
+- do not pull Preview into this group unless CURRENT Home architecture proves Preview belongs there
+
+B. MAIN CATEGORY TOOLBAR GROUP
+
+The programmed primary relationship is:
+
+LEFT:
+current compact joined MAIN-CATEGORY arrow control
+
+CENTER:
+current saved file-name pill
+
+RIGHT:
+Imperial / Metric segmented pill
+
+On a phone width where all 3 safely fit:
+[ MAIN ARROWS ]   [ FILE NAME ]   [ IMPERIAL | METRIC ]
+
+On narrower portrait widths:
+ROW A:
+[ MAIN ARROWS ]                         [ IMPERIAL | METRIC ]
+
+ROW B:
+                         [ FILE NAME ]
+
+Use the same outer gutters as the category panels.
+
+C. HIDE / PREVIEW
+
+Recover the CURRENT established Home functional relationship/order for Hide and Preview.
+
+Requirements:
+- preserve their relative order
+- do not isolate each into arbitrary centered rows
+- do not let one drift into the sidebar toolbar while the other is in the main-category toolbar unless CURRENT active Home source explicitly defines that relationship
+- preserve function and styling
+- make portrait positioning deterministic
+
+If current desktop/Home source and historical 022X differ:
+- CURRENT accepted Home structure controls function/group identity
+- 022X controls the responsive geometry principles
+- report the reconciliation before editing
+
+============================================================
+MANDATORY ACTIVE-PATH TRACE BEFORE EDIT
+============================================================
+
+Before modifying code identify:
+
+1. Exact component(s) rendering:
+   - Preview
+   - Hide
+   - main-category arrow control
+   - right-sidebar arrow control
+   - Background
+   - Share
+   - Imperial/Metric
+   - current file-name pill
+
+2. Which parent layout/container positions each on:
+   - desktop
+   - phone portrait
+
+3. Current breakpoint rules.
+
+4. Whether portrait uses:
+   - flex-wrap
+   - grid
+   - absolute/fixed positioning
+   - conditional render branches
+   - duplicated controls
+
+5. Whether Home and Share/Review currently render the SAME component path.
+
+6. Exact reason the real-iPhone arrangement now differs from the programmed 022X geometry.
+
+7. Whether recent shared-UI parity work or 026K changed only state behavior or also affected layout.
+
+Do not edit until the root cause is documented.
+
+============================================================
+NO DUPLICATE CONTROLS
+============================================================
+
+Verify that each control has one intended visible instance on phone portrait.
+
+Do not solve layout by creating mobile duplicates of:
+- Preview
+- Hide
+- main-category arrows
+- sidebar arrows
+- Imperial/Metric
+- Background
+- Share
+- file-name pill
+
+Reuse the existing controls.
+
+============================================================
+PHONE BREAKPOINT TARGETS
+============================================================
+
+Runtime test at minimum:
+
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+- representative phone landscape
+- tablet
+- desktop
+
+The user's supplied real-iPhone screenshot is the final real-device authority.
+
+At 390 px portrait specifically verify:
+
+SIDEBAR AREA:
+- sidebar arrow group is in its correct Home relationship
+- Background / Share keep their own toolbar area
+- no unrelated control is stranded between them
+
+MAIN CATEGORY AREA:
+- main-category arrow control aligned LEFT
+- Imperial/Metric aligned RIGHT
+- file-name centered in the same toolbar relationship
+- if file-name cannot safely fit on Row A, it moves to compact centered Row B
+- no overlap
+- no horizontal page overflow
+
+HIDE / PREVIEW:
+- exact established order preserved
+- not arbitrarily scattered or individually centered
+
+============================================================
+PANEL EDGE / GUTTER RULE
+============================================================
+
+On phone portrait:
+
+- left toolbar zone aligns to the same LEFT gutter/edge used by the relevant panels
+- right toolbar zone aligns to the same RIGHT gutter/edge used by the relevant panels
+- do not create unrelated custom widths for every pill row
+- preserve accepted horizontal gutters
+
+Do not change panel widths as a way to make the pills fit.
+
+============================================================
+TOUCH TARGETS
+============================================================
+
+Do not shrink controls excessively.
+
+If three zones cannot fit:
+USE THE PROGRAMMED MULTI-ROW FALLBACK.
+
+Do not:
+- reduce tap targets until unsafe
+- hide labels
+- clip pills
+- use overflow:hidden to conceal the problem
+
+============================================================
+STRICTLY OUT OF SCOPE
+============================================================
+
+DO NOT change:
+
+- main-category bar layout
+- category title truncation
+- packed-count layout
+- drag/delete positions
+- category weights
+- category spacing
+- category accordion behavior
+- sidebar accordion behavior
+- importers
+- catalog
+- footer
+- backgrounds/themes
+- exact Share default image
+- Share/Review Locker
+- Share token architecture
+- authentication
+- database schema/data
+- publishing/deployment
+- replit.md
+- .agents/memory
+- package versions
+
+Do not refactor unrelated toolbar code.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before application edits create:
+
+workflow-reports/PROMPT_026L_REPORT.md
+
+Record before editing:
+- current real-iPhone failure
+- historical 022X programmed layout
+- later compact-arrow superseding rule
+- current active Home structure
+- Home/Share render-path relationship
+- exact root cause
+- expected changed files
+- rollback plan
+
+After editing:
+- list every actual changed file
+- inspect complete final diff
+- revert unrelated changes
+- no broad formatting sweep
+
+If repair requires more than directly relevant responsive-layout files/components:
+STOP and explain.
+
+============================================================
+MANDATORY RUNTIME TEST MATRIX
+============================================================
+
+TEST 1 — 390 PX PORTRAIT / MAIN TOOLBAR
+Expected:
+- main-category arrows anchored LEFT
+- Imperial/Metric anchored RIGHT
+- file name centered in programmed relationship
+- compact deterministic fallback if needed
+
+TEST 2 — SIDEBAR TOOLBAR
+Expected:
+- sidebar arrows remain sidebar-only
+- Background + Share keep established Home grouping/alignment
+- Share right edge aligns correctly
+- no overlap
+
+TEST 3 — HIDE / PREVIEW
+Expected:
+- both remain visible/reachable
+- established relative order preserved
+- not scattered into arbitrary centered rows
+- functions unchanged
+
+TEST 4 — 320 / 375 / 430
+Expected:
+- no overlap
+- no toolbar-caused horizontal page scroll
+- no clipped pill labels
+- all controls reachable
+- deterministic placement
+
+TEST 5 — LANDSCAPE
+Expected:
+- efficient established layout preserved
+- portrait stacking not forced into landscape
+
+TEST 6 — TABLET / DESKTOP
+Expected:
+- no visual regression
+- existing accepted geometry preserved
+
+TEST 7 — LOGGED-IN HOME
+Expected:
+- corrected arrangement
+
+TEST 8 — SHARE/REVIEW
+Expected:
+- same corrected arrangement as Home
+- no ownership/persistence behavior changed
+
+TEST 9 — FUNCTION REGRESSION
+Tap/click:
+- main category Expand All / Collapse All
+- sidebar Expand All / Collapse All
+- Hide
+- Preview
+- Imperial / Metric
+- Background
+- Share
+
+Expected:
+all current functions still work exactly as before.
+
+TEST 10 — 026K REGRESSION
+Expected:
+- one main category open at a time manually
+- zero-open allowed
+- Expand All works
+- post-Expand-All click returns to one
+- groups remain independent
+
+============================================================
+REAL-iPHONE RULE
+============================================================
+
+Do NOT mark the real-iPhone result PASS from browser emulation.
+
+Replit may report:
+RESPONSIVE BROWSER TEST = PASS
+REAL IPHONE USER VERIFICATION = PENDING
+
+The user's real iPhone screenshot/live test is final authority.
+
+============================================================
+COST / SCOPE STOP RULE
+============================================================
+
+STOP before broadening if:
+
+- exact active layout path cannot be identified
+- Home and Share use materially different layouts requiring architectural work
+- repair requires broad toolbar refactor
+- more than directly relevant layout files are needed
+- work materially exceeds 12 minutes / ~$1.40 before implementation is understood
+
+Report the blocker instead of improvising.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Complete:
+workflow-reports/PROMPT_026L_REPORT.md
+
+Include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. current real-iPhone screenshot findings
+4. 022X programmed geometry recovered
+5. later compact-arrow superseding rule applied
+6. current Home toolbar structure
+7. current Share toolbar structure
+8. active component/layout path
+9. exact root cause
+10. expected changed files
+11. actual changed files
+12. exact responsive implementation
+13. 320 result
+14. 375 result
+15. 390 result
+16. 430 result
+17. phone landscape result
+18. tablet result
+19. desktop result
+20. Home result
+21. Share/Review result
+22. main-toolbar alignment result
+23. sidebar-toolbar alignment result
+24. file-name pill result
+25. Hide/Preview result
+26. horizontal overflow result
+27. functional regression result
+28. 026K regression result
+29. tests not run
+30. rollback guidance
+31. elapsed time
+32. Agent actions
+33. lines read
+34. Agent cost/usage if shown
+35. final self-audit
+36. USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+ROOT CAUSE IDENTIFIED = YES / NO
+022X GEOMETRY RECONCILED WITH CURRENT UI = YES / NO
+CURRENT COMPACT ARROW CONTROLS PRESERVED = YES / NO
+MAIN ARROWS LEFT-ALIGNED ON PHONE = PASS / FAIL / NOT RUN
+IMPERIAL/METRIC RIGHT-ALIGNED ON PHONE = PASS / FAIL / NOT RUN
+FILE-NAME CENTER RELATIONSHIP RESTORED = PASS / FAIL / NOT RUN
+BACKGROUND/SHARE RELATIONSHIP RESTORED = PASS / FAIL / NOT RUN
+HIDE/PREVIEW RELATIONSHIP RESTORED = PASS / FAIL / NOT RUN
+NO FREE-FORM TOOLBAR WRAPPING = YES / NO
+320 PX = PASS / FAIL / NOT RUN
+375 PX = PASS / FAIL / NOT RUN
+390 PX = PASS / FAIL / NOT RUN
+430 PX = PASS / FAIL / NOT RUN
+PHONE LANDSCAPE = PASS / FAIL / NOT RUN
+TABLET = PASS / FAIL / NOT RUN
+DESKTOP = PASS / FAIL / NOT RUN
+HOME/SHARE MOBILE PARITY = PASS / FAIL / NOT RUN
+026K BEHAVIOR PRESERVED = PASS / FAIL / NOT RUN
+HORIZONTAL TOOLBAR OVERFLOW = YES / NO
+DUPLICATE MOBILE CONTROLS CREATED = YES / NO
+CATEGORY BARS CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+REAL IPHONE USER VERIFICATION = PENDING
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before internal PASS ask:
+
+1. Did I fix ONLY pill/toolbar arrangement?
+2. Did I apply the actual 022X geometry rather than invent a new phone layout?
+3. Did I preserve current compact arrow controls instead of restoring obsolete text buttons?
+4. Are main arrows LEFT and units RIGHT?
+5. Is filename still part of that same programmed relationship?
+6. Are Background/Share kept as their own toolbar relationship?
+7. Are Hide/Preview in the established functional relationship/order?
+8. Did I avoid free-form accidental wrapping?
+9. Did I preserve Home/Share parity?
+10. Did I preserve 026K?
+11. Did I leave category bars untouched?
+12. Did I avoid DB/auth/deployment/replit.md/.agents/memory changes?
+13. Did I review every changed file?
+14. Is real-iPhone verification still correctly PENDING?
+
+If any material issue remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+workflow-reports/trailweigh-026L-report.zip
+
+ZIP must contain only:
+PROMPT_026L_REPORT.md
+
+Verify ZIP opens successfully.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after 026L report + ZIP.
+
+Do NOT continue into category-bar mobile work.
