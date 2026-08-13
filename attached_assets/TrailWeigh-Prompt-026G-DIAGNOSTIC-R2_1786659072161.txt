@@ -1,0 +1,396 @@
+TRAILWEIGH — PROMPT 026G — GOLD STANDARD DIAGNOSTIC ONLY
+WHY A FRESH SHARE/REVIEW OPENS WITH NO PERMANENT DEFAULT BACKGROUND
+
+INTERNAL VERSION ID:
+026G-DIAGNOSE-FRESH-SHARE-DEFAULT-BACKGROUND-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Plan / diagnostic-only if possible
+- If Plan mode cannot perform the required runtime inspection, use Build but DO NOT EDIT FILES
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- App Testing auto-fix OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 10–18 minutes
+- Estimated Agent usage/cost: approximately $1.00–$2.25
+- HARD STOP if materially exceeding this estimate before the root cause is identified
+
+============================================================
+MANDATORY RULE: DIAGNOSTIC ONLY — NO CODE CHANGES
+============================================================
+
+DO NOT MODIFY APPLICATION CODE IN THIS PROMPT.
+
+DO NOT:
+- edit source files
+- edit static assets
+- alter localStorage as a "fix"
+- alter DB data/schema
+- change share tokens
+- publish/deploy
+- modify replit.md
+- modify .replit
+- use App Testing auto-fix
+- apply unrelated Ready tasks
+
+This prompt exists because USER LIVE EVIDENCE disproved 026F's internal conclusion.
+
+Root cause must be established before any repair prompt.
+
+============================================================
+USER LIVE EVIDENCE — HIGHEST PRIORITY
+============================================================
+
+026F report claimed:
+
+FRESH SHARE STARTS WITH PERMANENT DEFAULT = PASS
+(code-path reasoning; user live verification pending)
+
+USER LIVE TESTS now establish:
+
+1. NORMAL SHARE FIRST LOAD:
+   FAIL
+   The Share link initially opens with NO background.
+
+2. SAFARI PRIVATE WINDOW / GENUINELY FRESH REVIEWER CONTEXT:
+   FAIL
+   The same Share link still initially opens with NO background.
+
+   Therefore the failure is NOT explained by stale reviewer localStorage from 026E or an
+   older browser session.
+
+3. SHARE LOCKER FILE OPEN:
+   PASS
+   When the reviewer opens the Locker file, the file's saved background appears.
+
+4. LIVE DATA UPDATE:
+   PASS
+   Owner changed item quantities → clicked Save → refreshed Share window →
+   quantities updated correctly.
+
+5. REVIEWER ISOLATION — USER LIVE PASS
+   In the Share/Review window, the user changed the background on the Locker file and clicked Save.
+   The logged-in owner window did NOT change its background.
+
+   Therefore:
+   - reviewer background edits remain isolated from the owner;
+   - reviewer Save does not mutate the owner's current background;
+   - do NOT spend 026G time re-diagnosing reviewer-to-owner background mutation unless new evidence contradicts this pass.
+
+Implications supported by live evidence:
+
+- the public live-share source/reseed path is functioning for saved data such as quantities;
+- the Share page can render backgrounds in general after a Locker file is opened;
+- reviewer-to-owner background isolation is USER-VERIFIED PASS;
+- the remaining defect is specifically the INITIAL fresh Share default-background path;
+- stale existing-browser storage is DISPROVEN as the primary cause.
+
+Mark any conflicting 026F report claim:
+
+DISPROVEN BY USER LIVE EVIDENCE
+
+============================================================
+CURRENT 026F IMPLEMENTATION CLAIMS TO VERIFY, NOT TRUST
+============================================================
+
+The 026F report says:
+
+A. ReviewPage `seedFromLiveFiles` writes:
+   `trailweigh:review:${token}:background`
+   = `{ type:'preset', id:'share-default' }`
+
+B. Checklist background initializer should read the review namespace first.
+
+C. If the review namespace is absent, Checklist should return:
+   `{ type:'preset', id:'share-default' }`
+
+D. BackgroundPicker added a non-user-facing preset:
+   id = `share-default`
+
+E. Expected URL:
+   `/themes/share-default/TrailWeigh-Share-Default-Background.png`
+
+F. Static file expected at:
+   `artifacts/pack-checklist/public/themes/share-default/TrailWeigh-Share-Default-Background.png`
+
+USER LIVE EVIDENCE proves that at least one link in this chain is not behaving as the
+026F report assumed.
+
+Do not infer which one.
+
+============================================================
+MANDATORY CURRENT-CONTEXT REVIEW
+============================================================
+
+Before runtime diagnosis:
+
+1. Read current `replit.md` READ-ONLY.
+2. Read:
+   - workflow-reports/PROMPT_026D_REPORT.md
+   - workflow-reports/PROMPT_026E_REPORT.md
+   - workflow-reports/PROMPT_026F_REPORT.md
+3. Inspect CURRENT active source for:
+   - ReviewPage.tsx
+   - Checklist.tsx
+   - BackgroundPicker.tsx
+   - the active preset/background resolver module(s)
+   - any background effects that run after initial state
+4. Verify the installed PNG exists at the exact current project path.
+5. Verify the current dev server's actual public URL for that file.
+
+No edits.
+
+============================================================
+DIAGNOSTIC QUESTION
+============================================================
+
+In a genuinely fresh Share/Review context:
+
+WHY does the page render no background even though 026F intended the initial background
+state to be `{ type:'preset', id:'share-default' }`?
+
+Find the FIRST DIVERGENCE between intended state and rendered result.
+
+============================================================
+MANDATORY RUNTIME TRACE — FRESH SHARE BEFORE LOCKER OPEN
+============================================================
+
+Use a safe public Share/Review test token / controlled fixture.
+
+Do NOT modify owner data.
+
+Capture these exact observations from the CURRENT runtime:
+
+1. ReviewPage load status and sequence.
+2. `seedFromLiveFiles` actually runs? YES/NO.
+3. Exact value written to:
+   `trailweigh:review:${token}:background`
+4. Exact value present in that key immediately before ChecklistContent mounts.
+5. Exact `background` React state on Checklist initial render.
+6. Exact `background` React state after all mount effects settle.
+7. Whether any effect/state setter overwrites it after initialization.
+8. Exact call/result of the active preset resolver for:
+   `share-default`
+9. Exact resolved URL string.
+10. Does browser request that URL? YES/NO.
+11. If requested:
+    - HTTP status
+    - content type
+    - byte count if available
+12. If not requested:
+    - explain why the render path never produced a usable URL.
+13. Exact computed/inlined CSS background-image value on the active page container.
+14. Any console errors/warnings relevant to image/preset/background resolution.
+15. Any network 404/403/CSP/mixed-content/path error relevant to the image.
+
+============================================================
+STATIC-ASSET PATH CHECK
+============================================================
+
+Separately verify:
+
+1. Exact file exists in project:
+   `artifacts/pack-checklist/public/themes/share-default/TrailWeigh-Share-Default-Background.png`
+
+2. SHA-256 remains:
+   b9f06e9fd4b022c13a4df8b533ac6b278c7eb59ca35ac6533e53cb075e8d2811
+
+3. Exact Vite/dev-server URL that successfully serves the file.
+
+4. Open/fetch that URL directly in the browser/runtime.
+
+Report:
+- PASS/FAIL
+- HTTP status
+- final resolved URL/path
+
+Do not modify the image.
+
+============================================================
+PRESET-RESOLUTION CHECK
+============================================================
+
+Trace the actual function used by Checklist to resolve a preset ID into an image URL.
+
+Do NOT assume `BackgroundPicker.tsx`'s `ALL_BUILTIN_PRESETS` is the same registry that the
+Checklist render path uses.
+
+Answer:
+
+1. Which exact function resolves `background.id` for the rendered page?
+2. Which exact module defines it?
+3. Which exact preset registry does it consult?
+4. Does that registry contain `share-default` at runtime?
+5. Does:
+   `resolvePresetUrl('share-default')`
+   return the exact expected static URL?
+6. Is the resolver used before or after any theme filtering?
+7. Is the non-user-facing preset accidentally excluded from the resolver even though it was
+   added to BackgroundPicker?
+
+This is a HIGH-PRIORITY hypothesis because 026F added the preset through BackgroundPicker,
+while live Share renders nothing.
+
+Do not conclude this is root cause unless runtime evidence proves it.
+
+============================================================
+STATE-OVERWRITE CHECK
+============================================================
+
+If preset resolution is correct, trace every path that can alter background after initialization.
+
+Specifically inspect:
+- useEffect hooks
+- Locker/default-file initialization
+- live-share reseed
+- sourceVersion logic
+- file-selection logic
+- global localStorage synchronization
+- Review namespace synchronization
+- theme/background hydration
+
+Determine whether `{type:'preset',id:'share-default'}` is later replaced by:
+- null
+- undefined
+- empty/default background
+- owner's background
+- a missing custom background
+- some other value
+
+Record exact setter/effect and timing if found.
+
+============================================================
+COMPARE AGAINST LOCKER-OPEN PASS
+============================================================
+
+The user verified that opening the Locker file inside Share causes its saved background to appear.
+
+Compare:
+
+A. Fresh Share initial state
+vs.
+B. After Share Locker file open
+
+Trace:
+- background object
+- resolver
+- image URL
+- active file/savedListId/fork state
+- relevant session/localStorage keys
+- render container CSS
+
+The comparison should identify what working Locker-open behavior has that fresh Share initialization lacks.
+
+Do NOT fix the separate Locker file-open defect itself.
+
+============================================================
+DO NOT RE-DIAGNOSE ALREADY-PROVEN WORKING BEHAVIOR
+============================================================
+
+Treat as USER-VERIFIED PASS unless evidence shows a regression:
+
+- Owner quantity Save → Share refresh updates quantity.
+- Share can render a saved file background after Locker open.
+- 026D permanent themes exist and are usable in Share.
+- Exact recovered themes are correct.
+- Reviewer sandbox isolation remains intended.
+
+Use these facts to narrow the diagnosis rather than starting over.
+
+============================================================
+REPORT
+============================================================
+
+Create BEFORE diagnosis:
+
+workflow-reports/PROMPT_026G_REPORT.md
+
+At completion include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. USER LIVE evidence
+4. 026F claims disproven by live evidence
+5. exact current source files inspected
+6. fresh Share runtime trace
+7. localStorage review-background value
+8. initial React background state
+9. settled React background state
+10. preset resolver function/module/registry
+11. `resolvePresetUrl('share-default')` result
+12. image network request/status
+13. computed background-image CSS
+14. static asset integrity/path result
+15. state-overwrite analysis
+16. fresh-vs-Locker-open comparison
+17. EXACT FIRST DIVERGENCE
+18. ROOT CAUSE
+19. smallest recommended repair
+20. expected repair files for NEXT prompt
+21. repair risks/regressions
+22. tests required after repair
+23. elapsed time
+24. Agent actions
+25. lines read
+26. Agent cost/usage if shown
+27. USER VERIFICATION = NOT APPLICABLE — DIAGNOSTIC ONLY
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+Report exactly:
+
+USER PRIVATE FRESH-SHARE RESULT = FAIL
+STALE REVIEWER STORAGE PRIMARY CAUSE = NO
+SHARE LIVE DATA RESEED WORKING = YES
+SHARE CAN RENDER BACKGROUND AFTER LOCKER OPEN = YES
+REVIEWER BACKGROUND SAVE MUTATES OWNER = NO
+
+SEEDFROM LIVEFILES RAN ON FRESH SHARE = YES / NO / UNKNOWN
+REVIEW BACKGROUND KEY AFTER SEED = <exact value>
+CHECKLIST INITIAL BACKGROUND STATE = <exact value>
+CHECKLIST SETTLED BACKGROUND STATE = <exact value>
+SHARE-DEFAULT PRESET FOUND BY ACTIVE RESOLVER = YES / NO
+SHARE-DEFAULT RESOLVED URL = <exact value or NONE>
+SHARE-DEFAULT IMAGE NETWORK REQUESTED = YES / NO
+SHARE-DEFAULT IMAGE HTTP STATUS = <status or NOT REQUESTED>
+SHARE-DEFAULT STATIC ASSET HASH MATCH = YES / NO
+COMPUTED BACKGROUND-IMAGE = <exact value or NONE>
+BACKGROUND STATE OVERWRITTEN AFTER INIT = YES / NO
+FIRST DIVERGENCE IDENTIFIED = YES / NO
+ROOT CAUSE IDENTIFIED = YES / NO
+CODE CHANGED = NO
+DATABASE DATA CHANGED = NO
+DATABASE SCHEMA CHANGED = NO
+REPLIT.MD CHANGED = NO
+DEPLOYMENT/PUBLISHING CHANGED = NO
+
+============================================================
+HARD STOP
+============================================================
+
+STOP after diagnosis + report.
+
+DO NOT implement the repair.
+
+Do not proceed to:
+- Share Locker file-open repair
+- Main Category Accordion request
+- any other waiting task
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+workflow-reports/trailweigh-026G-report.zip
+
+ZIP must contain only:
+PROMPT_026G_REPORT.md
+
+Verify ZIP opens successfully.
