@@ -371,6 +371,18 @@ function seedFromLiveFiles(
       // Unknown custom photo — discard (preserves arbitrary-photo privacy).
       localStorage.removeItem('trailweigh:background');
     }
+    // 026E: Also write to the review-scoped background key — isolated from the
+    // owner's own tab (which writes the global key on every unsaved background
+    // change, polluting CASE B reloads where seedFromLiveFiles is not called).
+    // Key is derived from packKey by replacing the ':pack' suffix with ':background'.
+    const reviewBgKey = packKey.replace(':pack', ':background');
+    if (bg?.type === 'preset') {
+      localStorage.setItem(reviewBgKey, JSON.stringify(primary.background));
+    } else if (bg?.type === 'custom' && bg.photoId && LEGACY_PHOTO_ID_MAP[bg.photoId]) {
+      localStorage.setItem(reviewBgKey, JSON.stringify({ type: 'preset', id: LEGACY_PHOTO_ID_MAP[bg.photoId] }));
+    } else {
+      localStorage.removeItem(reviewBgKey);
+    }
     localStorage.setItem('trailweigh:bgFade', String(primary.bgFade ?? 1));
     localStorage.setItem('trailweigh:bgTone', primary.bgTone ?? 'light');
     localStorage.setItem('trailweigh:bgSize', primary.bgSize ?? 'cover');

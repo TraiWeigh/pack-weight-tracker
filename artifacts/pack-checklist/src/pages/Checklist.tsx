@@ -310,6 +310,25 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
         return parsed ?? null;
       }
     } catch {}
+    // 026E: Review mode — prefer the review-scoped background key (written by
+    // ReviewPage.seedFromLiveFiles) over the global key.  The global key is
+    // shared across all tabs and can be polluted by the owner's own session
+    // writing unsaved background changes (CASE B: no reseed on reload).
+    // A stored 'null' JSON value means the owner explicitly saved with no
+    // background; fall through to the global key only if the review namespace
+    // key is entirely absent (hasn't been seeded yet).
+    if (reviewToken) {
+      try {
+        const reviewBgKey = `trailweigh:review:${reviewToken}:background`;
+        const s = localStorage.getItem(reviewBgKey);
+        if (s !== null) {
+          const parsed = JSON.parse(s);
+          if (parsed && typeof parsed === 'object') return parsed as Background;
+          return null; // explicit null → owner saved with no background
+        }
+      } catch {}
+      // Review namespace not yet seeded — fall through to global key as last resort.
+    }
     // Normal path (primary / non-fork tab)
     try {
       const s = localStorage.getItem(BG_STORAGE_KEY);
@@ -346,6 +365,15 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
     setBackground(bg);
     if (bg) localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bg));
     else localStorage.removeItem(BG_STORAGE_KEY);
+    // 026E: Review mode — also write to the review-scoped key so CASE B
+    // reloads preserve the reviewer's explicit choice over the seeded default.
+    if (reviewToken) {
+      try {
+        const reviewBgKey = `trailweigh:review:${reviewToken}:background`;
+        if (bg) localStorage.setItem(reviewBgKey, JSON.stringify(bg));
+        else localStorage.removeItem(reviewBgKey);
+      } catch {}
+    }
     // Keep the scoped restore key current so remounts reflect the user's
     // latest explicit choice, not the stale Locker-load value.
     try {

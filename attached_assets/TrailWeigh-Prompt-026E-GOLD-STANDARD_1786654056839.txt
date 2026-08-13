@@ -1,0 +1,528 @@
+TRAILWEIGH — PROMPT 026E — GOLD STANDARD
+SHARE/REVIEW MUST OPEN WITH THE OWNER FILE'S LAST SAVED BACKGROUND
+
+INTERNAL VERSION ID:
+026E-SHARE-LAST-SAVED-BACKGROUND-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 8–14 minutes
+- Estimated Agent usage/cost: approximately $0.80–$1.60
+
+============================================================
+MANDATORY STANDING TRAILWEIGH / REPLIT RULE
+============================================================
+
+Before any diagnosis, recommendation, edit, or test:
+
+1. Apply all relevant prior TrailWeigh/Replit lessons and current user-verified live evidence.
+2. USER LIVE EVIDENCE has highest priority for current behavior.
+3. Reconcile prior reports against CURRENT runtime/source.
+4. If current evidence contradicts an earlier finding, mark it:
+   SUPERSEDED / DISPROVEN EARLIER FINDING.
+5. Verify every file/component inspected is on the CURRENT active render/save/share path.
+6. Root cause before edit.
+7. If any material ambiguity remains, STOP and report the exact unknown before changing code.
+8. Use the smallest reversible patch.
+9. Preserve all unrelated USER-VERIFIED PASS behavior.
+10. Read current `replit.md` READ-ONLY. Do not modify it.
+11. Replit internal PASS is NOT final USER PASS.
+12. Before final status, self-audit:
+   “Am I applying everything we have learned that is relevant to this decision?”
+
+============================================================
+USER-VERIFIED STARTING STATE
+============================================================
+
+026D theme recovery is USER-VERIFIED PASS.
+
+Current permanent themes are visible exactly once:
+- Landscape
+- Psychedelic
+- Retro-Outdoors
+- Topo
+- Trails US
+
+The recovered themes are present in Share/Review and can be selected there.
+
+However, the user has now verified a separate defect:
+
+When a Share/Review link is opened, the shared Review page does NOT initially retain/show
+the background that is currently saved on the owner's logged-in file.
+
+This is the ONLY defect to repair in 026E.
+
+============================================================
+REQUIRED PRODUCT BEHAVIOR — USER APPROVED
+============================================================
+
+The Share/Review link must initialize from the OWNER FILE'S LAST SAVED BACKGROUND.
+
+Exact rule:
+
+A. Owner changes background and CLICKS SAVE
+- the saved file now owns that saved background state;
+- the existing permanent Share URL must show that newly saved background on next reload/open.
+
+B. Owner changes background but DOES NOT SAVE
+- the public Share/Review link must NOT change;
+- it must continue showing the prior last-saved background.
+
+C. The Share URL itself remains stable/permanent.
+- Do not generate a new URL merely because the owner changes/saves background.
+
+D. Reviewer sandbox edits remain isolated.
+- A reviewer may change background locally inside Review.
+- Those reviewer changes must not modify owner data.
+
+E. When the owner's saved source changes and the existing Review architecture decides to
+reseed because sourceVersion changed, the reseeded Review state must start from the owner's
+newly saved background.
+
+============================================================
+IMPORTANT EXISTING SHARE/REVIEW ARCHITECTURE TO PRESERVE
+============================================================
+
+Current architecture learned from prior prompts:
+
+- One Checklist UI is reused for Owner and Public Review.
+- Public Review requires no login.
+- Review is a disposable/sandboxed experience.
+- Owner data must never be mutated by reviewer actions.
+- Review local storage is token-namespaced for review-specific pack/locker/sourceVersion state.
+- Existing sourceVersion behavior:
+  - unsaved owner changes do NOT change sourceVersion;
+  - Save changes savedAt/sourceVersion;
+  - when sourceVersion changes, Review performs full reseed/no merge.
+- Existing permanent theme resolution from 026D must remain intact.
+- Arbitrary Custom Theme/private browser photos must remain private.
+- Share/Review must not expose arbitrary owner IndexedDB content.
+- The same permanent share link must continue to work.
+
+Do not redesign this architecture unless current source proves one of these facts is no longer true.
+
+============================================================
+OBSERVED FACT VS UNKNOWN
+============================================================
+
+OBSERVED FACT:
+- Permanent themes are available in Share/Review.
+- The owner's saved background is not being retained as the initial shared background.
+
+UNKNOWN UNTIL SOURCE TRACE:
+- Whether the saved background is already present in the Locker/server payload but dropped
+  by the public DTO.
+- Whether it is present in the public DTO but discarded during ReviewPage seed normalization.
+- Whether it is seeded correctly but later overwritten by a default/global background state.
+- Whether save serialization fails to persist part of the background state.
+- Whether sourceVersion/reseed logic omits background fields.
+
+Do NOT assume which layer is broken.
+
+============================================================
+MANDATORY ROOT-CAUSE TRACE BEFORE EDIT
+============================================================
+
+Trace one saved permanent-theme background end-to-end.
+
+Use a safe controlled test fixture if needed.
+
+Trace:
+
+1. Owner current background UI state
+2. Owner Save action
+3. Save serialization
+4. Locker/source record stored after Save
+5. Exact saved background field/value
+6. Share/public endpoint DTO
+7. Public token response
+8. ReviewPage/source seed
+9. any normalization step
+10. review localStorage initialization
+11. ChecklistContent/background state initialization
+12. final rendered Review background
+
+Also trace one UNSAVED owner background change to confirm it does NOT enter the saved/public source.
+
+Write the exact first divergence into the report before editing.
+
+============================================================
+BACKGROUND STATE SCOPE
+============================================================
+
+Preserve the complete saved background identity needed to reproduce the saved owner view.
+
+At minimum inspect and preserve all currently saved fields that materially define the background,
+such as whatever the active schema currently uses for:
+
+- background type
+- preset/theme ID
+- photo ID if legacy compatibility is involved
+- fit/fill mode if saved with the file
+- background fade/darken if saved with the file
+- light/dark background tone if saved with the file
+- any other FILE-SCOPED background property already serialized with the saved Locker item
+
+IMPORTANT:
+Do not automatically make GLOBAL UI preferences file-scoped.
+
+Only propagate fields that the CURRENT saved-file model already treats as belonging to the file,
+or that source tracing proves are intended file background state.
+
+If it is unclear whether a field is file-scoped or global:
+STOP and report that ambiguity rather than broadening behavior.
+
+============================================================
+026D COMPATIBILITY — MUST PRESERVE
+============================================================
+
+Permanent themes:
+- Landscape
+- Psychedelic
+- Retro-Outdoors
+- Topo
+- Trails US
+
+must continue resolving through the canonical permanent preset architecture.
+
+Known legacy 40-photo compatibility from 026D must remain intact.
+
+Do NOT:
+- remove the 40-ID compatibility map
+- expose arbitrary custom photos
+- alter exact legacy collection suppression
+- reintroduce duplicate themes
+- restore any 026B invented imagery
+
+============================================================
+TARGET BEHAVIOR EXAMPLES
+============================================================
+
+Example 1 — saved preset change:
+
+Owner saved file currently uses Landscape image A.
+Public Share opens with Landscape image A.
+
+Owner selects Psychedelic image 4 but does NOT Save.
+Public Share still opens with Landscape image A.
+
+Owner clicks Save.
+Same permanent Share URL now opens with Psychedelic image 4.
+
+Example 2 — reviewer local edit:
+
+Owner saved file uses Topo image 2.
+Reviewer opens Share and sees Topo image 2.
+Reviewer locally switches to Trails US image 7.
+Owner file remains Topo image 2.
+
+Reviewer reload behavior should follow the EXISTING Review sandbox/sourceVersion rules;
+do not redesign it in this prompt.
+
+============================================================
+SEPARATE DEFECT — DO NOT FIX
+============================================================
+
+The Share/Review Locker file-open defect involving `Sample List Live Test` remains separate.
+
+Do NOT alter:
+- Locker click/open behavior
+- shared file selection behavior
+- file navigation behavior
+
+026E is only about initial saved background retention in Share/Review.
+
+============================================================
+OTHER OUT-OF-SCOPE WORK
+============================================================
+
+Do NOT change:
+
+- main category accordion behavior
+- left-side category arrow control
+- right-sidebar accordion behavior
+- toolbar layout
+- importer/parser
+- authentication
+- live-share token architecture
+- theme image assets
+- theme ordering
+- + Add Theme behavior
+- Custom Theme storage model
+- database schema
+- production deployment
+- publishing
+- production database
+- production secrets
+- replit.md
+- .replit
+- package versions
+- unrelated styling
+
+A separate Main Category Accordion request exists and must remain untouched.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before editing:
+
+1. Create:
+   workflow-reports/PROMPT_026E_REPORT.md
+
+2. Record:
+   - observed defect
+   - exact root-cause trace
+   - expected changed files
+   - risk areas
+   - rollback plan
+
+After editing:
+- list every actually changed file
+- investigate/revert unrelated modifications
+- no opportunistic refactor
+- no package upgrades
+
+============================================================
+CHECKPOINT / ROLLBACK
+============================================================
+
+Before edit:
+- confirm normal Agent checkpoint/recoverable state if exposed.
+
+This task does NOT authorize:
+- DB schema mutation
+- DB data migration
+- Production DB work
+
+Rollback should identify only the actual application code files changed by 026E.
+
+============================================================
+TEST MATRIX
+============================================================
+
+Use non-destructive controlled fixtures where possible.
+
+Required internal tests:
+
+1. Build/typecheck succeeds.
+2. Existing saved Landscape background:
+   - public source contains correct canonical saved background
+   - Review seed resolves it
+3. Existing saved Psychedelic background:
+   - same
+4. Existing saved Retro-Outdoors background:
+   - same
+5. Existing saved Topo background:
+   - same
+6. Existing saved Trails US background:
+   - same
+7. Unsaved owner background change:
+   - does NOT alter public/share initial background
+8. Owner Save after background change:
+   - saved source changes
+   - sourceVersion changes through existing mechanism
+   - Review reseed starts with newly saved background
+9. Permanent Share URL remains unchanged.
+10. Reviewer background change:
+    - owner source remains unchanged
+11. Known 40-ID legacy compatibility still resolves.
+12. Unknown arbitrary custom photo remains private/guarded exactly as before.
+13. No duplicate permanent themes reappear.
+14. Share/Review Locker file-open behavior is unchanged.
+15. Main category accordion behavior is unchanged.
+16. Right-sidebar accordion behavior is unchanged.
+17. Light/Dark regressions checked where relevant.
+18. Fit/Fill/fade regressions checked if those values are confirmed file-scoped.
+19. No database schema change.
+20. No deployment/publishing change.
+
+Do NOT use App Testing auto-fix.
+
+If an interactive test would mutate the user's real Locker:
+leave that step for USER VERIFICATION instead.
+
+============================================================
+USER LIVE VERIFICATION PLAN
+============================================================
+
+After Replit internal work completes, USER VERIFICATION remains PENDING.
+
+User will test:
+
+TEST A — saved background appears
+1. Open logged-in owner file.
+2. Select a permanent theme/background.
+3. Click Save.
+4. Open/reload the existing Share link.
+Expected:
+- Share opens with the same saved background.
+
+TEST B — unsaved background does not leak
+1. In owner window, switch to another background.
+2. Do NOT Save.
+3. Reload the Share link.
+Expected:
+- Share still shows the last saved background.
+
+TEST C — save updates same permanent link
+1. Return to owner.
+2. Click Save with the new background.
+3. Reload the SAME Share URL.
+Expected:
+- Share now shows the newly saved background.
+
+TEST D — reviewer isolation
+1. In Share/Review, change to another theme.
+2. Return to owner.
+Expected:
+- owner saved background did not change.
+
+USER VERIFICATION = PENDING until those tests pass.
+
+============================================================
+COST / SCOPE STOP RULE
+============================================================
+
+STOP and report before expanding scope if:
+
+- root cause requires changing live-share token architecture
+- background is not currently represented in saved Locker/source model and adding it would
+  require a new schema/migration
+- arbitrary custom-photo privacy would need weakening
+- more than directly relevant files require broad refactor
+- estimated work materially exceeds 14 minutes / ~$1.60
+- auth/deployment/database changes appear necessary
+- current source materially contradicts the architecture assumptions above
+
+Do not improvise around a material blocker.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+At completion update:
+
+workflow-reports/PROMPT_026E_REPORT.md
+
+Include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. user-verified starting state
+4. observed facts
+5. unknowns before trace
+6. exact end-to-end root-cause trace
+7. first divergence point
+8. exact repair
+9. expected changed files
+10. actual changed files
+11. saved background schema/fields used
+12. public DTO behavior
+13. Review seed behavior
+14. sourceVersion/reseed behavior
+15. unsaved-vs-saved behavior
+16. permanent-theme compatibility
+17. custom-photo privacy regression result
+18. separate Locker-open defect unchanged
+19. test matrix/results
+20. tests not run
+21. rollback guidance
+22. unresolved issues
+23. elapsed time
+24. Agent actions
+25. lines read
+26. Agent cost/usage if shown
+27. final self-audit
+28. USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+Report exactly:
+
+ROOT CAUSE IDENTIFIED = YES / NO
+OWNER SAVE PERSISTS BACKGROUND = PASS / FAIL / NOT RUN
+PUBLIC SHARE DTO RETAINS SAVED BACKGROUND = PASS / FAIL / NOT RUN
+REVIEW INITIAL SEED USES SAVED BACKGROUND = PASS / FAIL / NOT RUN
+UNSAVED OWNER BACKGROUND CHANGES PUBLIC SHARE = YES / NO / NOT RUN
+SAVED OWNER BACKGROUND UPDATES SAME SHARE URL = PASS / FAIL / NOT RUN
+REVIEWER BACKGROUND CHANGE MUTATES OWNER = YES / NO / NOT RUN
+LANDSCAPE REGRESSION = PASS / FAIL / NOT RUN
+PSYCHEDELIC REGRESSION = PASS / FAIL / NOT RUN
+RETRO-OUTDOORS REGRESSION = PASS / FAIL / NOT RUN
+TOPO REGRESSION = PASS / FAIL / NOT RUN
+TRAILS US REGRESSION = PASS / FAIL / NOT RUN
+EXACT 40 LEGACY PHOTO IDS STILL MAPPED = YES / NO
+UNKNOWN CUSTOM PHOTO PRIVACY CHANGED = YES / NO
+DUPLICATE THEMES REINTRODUCED = YES / NO
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = YES / NO
+MAIN CATEGORY ACCORDION CHANGED = YES / NO
+RIGHT SIDEBAR ACCORDION CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL SELF-AUDIT
+============================================================
+
+Before claiming internal PASS:
+
+1. Did I trace Save → stored Locker/source → public DTO → Review seed → render?
+2. Did I identify the exact first divergence before editing?
+3. Does Share use LAST SAVED background only?
+4. Do unsaved owner changes remain private to the owner session?
+5. Does Save update the existing permanent Share URL rather than creating a new one?
+6. Is reviewer state still isolated?
+7. Did all five permanent themes remain intact?
+8. Did the exact 40 legacy-photo compatibility remain intact?
+9. Did arbitrary custom-photo privacy remain unchanged?
+10. Did I avoid the separate Locker-open defect?
+11. Did I avoid the main-category accordion request?
+12. Did I avoid DB/schema/auth/deployment changes?
+13. Did I review every changed file?
+14. Did I stay inside scope/cost?
+15. Is any material uncertainty unresolved?
+
+If any answer exposes a material unresolved problem:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+workflow-reports/trailweigh-026E-report.zip
+
+ZIP must contain:
+PROMPT_026E_REPORT.md
+
+Verify:
+- report exists
+- ZIP exists
+- ZIP opens
+- no unrelated files are included
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not proceed to:
+- the Share/Review Locker file-open repair
+- the Main Category Accordion request
+- any other waiting task
