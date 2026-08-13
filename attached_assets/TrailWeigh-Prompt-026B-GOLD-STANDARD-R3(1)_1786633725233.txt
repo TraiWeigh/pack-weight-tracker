@@ -1,0 +1,609 @@
+TRAILWEIGH — PROMPT 026B — GOLD STANDARD FINAL
+MAKE ALL PERMANENT THEMES USE LANDSCAPE'S WORKING PERMANENT/SHARE ARCHITECTURE
+
+INTERNAL VERSION ID:
+026B-PERMANENT-THEME-PARITY-GOLD-2026-08-13-R3
+
+RECOMMENDED REPLIT SETTINGS:
+- Agent mode: Economy
+- Work mode: Build
+- Start this in a FRESH Agent thread
+- Keep Auto-apply OFF
+- Do not apply any unrelated Ready task
+
+ESTIMATED SCOPE:
+Estimated time: 8–15 minutes
+Estimated Agent usage/cost: approximately $0.80–$1.75.
+
+============================================================
+MANDATORY CONTEXT REVIEW BEFORE ANY DECISION
+============================================================
+
+Before reproducing, diagnosing, planning, or editing:
+
+1. Read the CURRENT `replit.md` read-only.
+   Replit Agent uses `replit.md` as persistent project context, so its current
+   instructions/conventions must be reconciled with this prompt.
+
+2. Review only the prior TrailWeigh evidence materially relevant to this defect,
+   especially prior reports involving:
+   - Themes/background behavior
+   - Share/Review appearance
+   - live-locker Share architecture
+   - current-vs-historical built-in theme findings
+
+3. Do NOT treat any prior report as authority.
+   Prior reports are evidence only and must be reconciled with CURRENT:
+   - user live results
+   - active runtime behavior
+   - active render path
+   - active source
+
+4. Explicitly verify that every component/file you inspect is on the CURRENT ACTIVE
+   render/save/share path. Do not repair a dead, legacy, unused, or superseded component.
+
+5. If any current user observation contradicts `replit.md`, a prior workflow report,
+   Git history, or source-only inference:
+   - USER LIVE EVIDENCE wins for current behavior
+   - identify the contradiction
+   - mark the older conclusion:
+     SUPERSEDED / DISPROVEN EARLIER FINDING
+   - do not silently preserve the old assumption
+
+6. If this task requires relying on a Replit PLATFORM behavior that may have changed
+   (Agent mode behavior, background-task isolation/apply behavior, checkpoints, etc.),
+   use CURRENT official Replit documentation rather than memory or an older report.
+
+7. Do NOT modify `replit.md`, custom instructions, Agent Skills, or project-wide
+   instructions as part of this repair.
+
+If this context review reveals a material contradiction that changes the defect,
+scope, architecture, or safety assumptions:
+
+STOP BEFORE CODE CHANGES.
+
+Document the contradiction and exact evidence needed.
+
+============================================================
+WHY THIS PROMPT EXISTS
+============================================================
+
+This prompt deliberately uses the strongest communication and evidence rules learned
+from prior TrailWeigh/Replit work.
+
+Do not rely on prior Agent conclusions when current user/runtime evidence contradicts
+them.
+
+Evidence priority for this prompt:
+
+1. USER LIVE OBSERVATION
+2. CURRENT browser/runtime/rendered behavior
+3. CURRENT DB/API evidence when relevant and read-only
+4. EXACT CURRENT active source path
+5. controlled automated test
+6. prior workflow report
+7. Git/history evidence
+8. inference
+
+A prior report/source finding must NOT overrule a current user-verified result.
+
+If a prior finding is disproven, explicitly label it:
+
+SUPERSEDED / DISPROVEN EARLIER FINDING
+
+============================================================
+USER-VERIFIED CURRENT STATE
+============================================================
+
+The current Themes menu visibly contains these intended permanent built-in themes:
+
+- Landscape
+- Psychedelic
+- Retro-Outdoors
+- Topo
+- Trails US
+
+USER LIVE TEST:
+
+- Landscape background transfers to Share/Review correctly = PASS.
+- Backgrounds from the other intended permanent themes have failed to appear
+  in Share/Review = FAIL.
+- Previous Share/Review cases that showed NO background used non-Landscape themes.
+- Therefore the general Share background-transfer path is capable of working.
+- Landscape is the current working reference implementation.
+
+There is a SEPARATE user-verified issue:
+`Sample List Live Test` could not be opened from the Share/Review Locker.
+
+That Locker-open issue is OUT OF SCOPE here.
+
+IMPORTANT PRIOR-FINDING WARNING:
+
+Earlier diagnostics suggested that only Landscape existed in current source and that
+other themes had been removed. The user's CURRENT live UI now visibly shows
+Landscape, Psychedelic, Retro-Outdoors, Topo, and Trails US.
+
+Do NOT assume the earlier conclusion is still correct.
+
+Inspect the exact CURRENT runtime/source implementation.
+
+If the earlier conclusion is wrong or incomplete, mark it explicitly as:
+SUPERSEDED / DISPROVEN EARLIER FINDING.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+First determine exactly WHY Landscape behaves as a permanent, portable theme.
+
+Then make:
+
+- Psychedelic
+- Retro-Outdoors
+- Topo
+- Trails US
+
+use the SAME permanent, portable architecture for:
+
+- selection
+- persistence
+- Save / Save As
+- Locker load
+- Share/Review serialization
+- Share/Review resolution
+- refresh/reopen
+
+Do not invent a second architecture for the other themes.
+
+LANDSCAPE IS THE GOLDEN REFERENCE.
+
+============================================================
+FIRST: REPRODUCE BEFORE EDITING
+============================================================
+
+Before changing code:
+
+1. Verify the current live/rendered Themes menu contains all five expected permanent themes.
+2. Verify Landscape's exact current internal definition and runtime resolution path.
+3. Reproduce or otherwise directly verify the known difference:
+   - Landscape has a portable Share/Review representation.
+   - At least one non-Landscape permanent theme does not.
+4. Capture the exact first failure point for the non-Landscape theme.
+5. Identify the exact files/functions/components involved.
+
+If you cannot establish the failure mechanism with HIGH confidence:
+
+STOP.
+
+Do not guess.
+Do not patch based on Git history alone.
+Report the remaining unknown and exact evidence needed.
+
+============================================================
+LANDSCAPE REFERENCE TRACE
+============================================================
+
+Trace Landscape end-to-end:
+
+A. Theme menu definition
+B. internal stable ID/key
+C. image/asset source
+D. selected-background state
+E. persistence state
+F. Save serialization
+G. Locker payload representation
+H. saved-file load resolver
+I. public/share DTO representation
+J. Review seed
+K. Review background resolver
+L. final rendered image
+
+For every step, record the exact current file/function or data structure.
+
+Then trace the same steps for:
+
+- Psychedelic
+- Retro-Outdoors
+- Topo
+- Trails US
+
+Identify the FIRST architectural difference from Landscape that explains the failure.
+
+============================================================
+ROOT-CAUSE GATE
+============================================================
+
+Before any implementation, write the root cause into:
+
+workflow-reports/PROMPT_026B_REPORT.md
+
+The report must distinguish:
+
+OBSERVED FACTS
+CONFIRMED ROOT CAUSE
+STILL UNKNOWN
+
+Do NOT write application code until the root cause is identified.
+
+If the root cause requires any of the following, STOP and report instead:
+
+- database migration
+- database schema change
+- custom-photo redesign
+- broad theme-system rewrite
+- authentication change
+- Share-token architecture change
+- significant work outside the estimated scope
+- more than a small number of directly relevant files
+
+============================================================
+EXPECTED IMPLEMENTATION PRINCIPLE
+============================================================
+
+Use Landscape's working architecture as the reference.
+
+All five permanent themes should resolve from ONE stable built-in theme system.
+
+Each permanent theme must have:
+
+- a stable built-in ID/key
+- a code-controlled/publicly resolvable image source or bundled asset
+- no dependency on browser-only custom-theme metadata
+- no dependency on IndexedDB custom-photo blobs
+- a stable saved representation
+- the same owner-load and Share/Review resolution path
+
+If the existing code already has a centralized built-in theme registry:
+reuse and extend it.
+
+If the current implementation is fragmented:
+make only the smallest consolidation necessary for parity.
+
+Do NOT convert permanent themes into user Custom Themes.
+
+============================================================
+VISIBLE UI MUST REMAIN THE SAME
+============================================================
+
+Keep these names exactly as currently shown:
+
+Landscape
+Psychedelic
+Retro-Outdoors
+Topo
+Trails US
+
+Preserve:
+
+- dropdown placement
+- theme order
+- styling
+- disclosure behavior
+- Add Theme behavior
+- current Custom Theme behavior
+
+Do NOT rename Topo to Topo 1 in this prompt.
+
+============================================================
+SAVE / LOAD ACCEPTANCE
+============================================================
+
+For each permanent theme:
+
+1. select theme
+2. serialize using the current Save path
+3. verify the saved representation contains a stable built-in identity
+4. reload through the actual saved-file resolver
+5. verify the same theme/background resolves
+
+Required:
+
+LANDSCAPE -> same background
+PSYCHEDELIC -> same background
+RETRO-OUTDOORS -> same background
+TOPO -> same background
+TRAILS US -> same background
+
+No theme may silently become:
+
+- Landscape
+- Clear
+- blank
+- another theme
+- unresolved custom photo
+
+Do NOT modify the user's real Locker entries just to test this.
+
+Prefer controlled fixtures, existing safe data, or non-destructive test state.
+
+============================================================
+LEGACY COMPATIBILITY
+============================================================
+
+If older saved files can contain prior IDs/keys for these SAME permanent themes:
+
+- identify the legacy IDs
+- add a small read-time compatibility mapping if safe
+- do not rewrite user DB rows
+- do not migrate the DB merely for this prompt
+
+If compatibility cannot be safely added in scope:
+report it separately instead of expanding the patch.
+
+============================================================
+SHARE / REVIEW ACCEPTANCE
+============================================================
+
+Verify that each permanent theme can be reconstructed in Share/Review without relying on:
+
+- owner localStorage theme metadata
+- owner IndexedDB custom-photo blobs
+- owner-only object URLs
+- owner authentication state
+
+Use a controlled resolver/share fixture or safe clean-browser test path.
+
+Do NOT create, overwrite, rename, or delete the user's real Locker entries just for testing.
+Do NOT create a new live public share token unless explicitly necessary and safe.
+
+If an end-to-end Share test requires modifying the user's real data:
+STOP and leave that step for USER VERIFICATION.
+
+The known separate Share/Review Locker file-open defect must NOT be changed.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT change:
+
+- Share/Review Locker file-opening behavior
+- live-share token architecture
+- owner Locker architecture
+- custom user-created theme architecture
+- custom photo storage
+- importer/parser
+- toolbar
+- accordion behavior
+- authentication
+- database schema
+- database rows
+- deployment/publishing
+- Production Database
+- production secrets
+- unrelated styling
+
+============================================================
+REPLIT TASK-SYSTEM SAFETY
+============================================================
+
+Do not enable Auto-apply.
+
+If Replit creates a background task:
+
+- keep it isolated until review
+- do not apply unrelated Ready tasks
+- apply only the changes belonging to this 026B task when the user chooses to do so
+- do not silently merge another task
+
+Do not Resume, Publish, or Republish the app.
+
+============================================================
+REPLIT.MD / PROJECT-INSTRUCTION SAFETY
+============================================================
+
+Do NOT modify:
+
+- replit.md
+- .replit
+- custom instructions
+- Agent Skills
+- package versions
+
+unless a change is absolutely required for THIS repair.
+
+If you believe one is required:
+STOP and explain why before changing it.
+
+============================================================
+CHECKPOINT / ROLLBACK SAFETY
+============================================================
+
+Before changing application code:
+
+- confirm a current Replit checkpoint/recoverable state exists or create the normal Agent checkpoint
+- record the checkpoint/reference in the report if Replit exposes one
+
+Do NOT roll back the Development Database.
+
+This prompt does not authorize any database mutation.
+
+At completion, provide simple rollback guidance:
+which changed files would be reverted if user verification fails.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before editing:
+list the files EXPECTED to change.
+
+After editing:
+list the files ACTUALLY changed.
+
+If an unrelated file changes:
+investigate it and revert it unless it is strictly necessary.
+
+No broad refactors.
+No cleanup unrelated to this defect.
+No opportunistic styling changes.
+
+============================================================
+TESTING
+============================================================
+
+Use the least destructive tests that prove the repair.
+
+Required tests:
+
+1. current Theme selector still renders all five permanent themes
+2. Landscape remains working
+3. each non-Landscape theme resolves using the built-in path
+4. Save serialization parity
+5. Load resolution parity
+6. Share/Review resolution parity at code/runtime level
+7. Light mode regression
+8. Dark mode regression
+9. Fit/Fill regression
+10. fade regression
+11. Bar Color regression
+12. Font regression
+13. Text Color regression
+14. Transparency regression
+15. Custom Theme behavior unchanged
+16. no change to Share Locker file-open behavior
+
+Do NOT use an auto-fix testing mode that may make unrequested code changes.
+
+If a test fails:
+diagnose before making another edit.
+
+============================================================
+COST / SCOPE STOP RULE
+============================================================
+
+If any of these become true:
+
+- root cause is not what the evidence suggested
+- repair expands beyond directly relevant theme files
+- migration is required
+- architecture change is required
+- auth/share-token work is required
+- estimate will materially exceed 15 minutes or approximately $1.75
+- regression risk becomes broad
+
+STOP.
+
+Update the report.
+Do not expand scope automatically.
+
+============================================================
+MANDATORY PRE-COMPLETION SELF-AUDIT
+============================================================
+
+Before declaring this task internally PASS, answer each question in the report:
+
+1. Did I apply the CURRENT user live evidence rather than an older assumption?
+2. Did I verify the exact ACTIVE runtime/render/save/share path?
+3. Did I identify why Landscape works before changing the other themes?
+4. Did I make the other permanent themes reuse Landscape's working architecture
+   rather than creating a second theme system?
+5. Did I preserve every known unrelated USER-VERIFIED PASS behavior?
+6. Did I avoid changing the separate Share Locker file-open defect?
+7. Did I avoid browser-only custom-photo/custom-theme architecture for permanent themes?
+8. Did I avoid DB/schema/deployment/auth changes?
+9. Did I review every actually changed file and remove/revert unrelated edits?
+10. Did any prior conclusion become superseded during this run?
+11. Did I stay inside the agreed time/cost/scope stop rules?
+12. Is there any remaining material uncertainty that should prevent an internal PASS?
+
+If any answer reveals an unresolved material problem:
+DO NOT claim PASS.
+Report PARTIAL / FAIL / STILL UNKNOWN as appropriate.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create BEFORE code changes:
+
+workflow-reports/PROMPT_026B_REPORT.md
+
+At completion include:
+
+1. INTERNAL VERSION ID
+2. recommended/run Agent mode
+3. user-verified starting state
+4. reproduction result
+5. Landscape end-to-end trace
+6. non-Landscape end-to-end trace
+7. OBSERVED FACTS
+8. CONFIRMED ROOT CAUSE
+9. SUPERSEDED / DISPROVEN EARLIER FINDINGS
+10. STILL UNKNOWN
+11. files expected to change
+12. files actually changed
+13. exact patch
+14. legacy compatibility behavior
+15. test matrix
+16. regression results
+17. rollback guidance
+18. unresolved issues
+19. Replit elapsed time
+20. actions
+21. lines read
+22. Agent usage/cost if shown
+23. current `replit.md` reviewed read-only = YES / NO
+24. active render/save/share path verified = YES / NO
+25. final self-audit result
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+Report each exactly:
+
+LANDSCAPE SAVE/LOAD = PASS / FAIL
+LANDSCAPE SHARE RESOLUTION = PASS / FAIL
+
+PSYCHEDELIC SAVE/LOAD = PASS / FAIL
+PSYCHEDELIC SHARE RESOLUTION = PASS / FAIL
+
+RETRO-OUTDOORS SAVE/LOAD = PASS / FAIL
+RETRO-OUTDOORS SHARE RESOLUTION = PASS / FAIL
+
+TOPO SAVE/LOAD = PASS / FAIL
+TOPO SHARE RESOLUTION = PASS / FAIL
+
+TRAILS US SAVE/LOAD = PASS / FAIL
+TRAILS US SHARE RESOLUTION = PASS / FAIL
+
+CUSTOM THEME BEHAVIOR CHANGED = YES / NO
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+Replit internal PASS is NOT final PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+workflow-reports/trailweigh-026B-report.zip
+
+ZIP must contain:
+
+PROMPT_026B_REPORT.md
+
+Verify:
+
+- report exists
+- ZIP exists
+- ZIP opens
+- report is complete
+- no unauthorized DB/deployment/config changes occurred
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not proceed into the separate Share/Review Locker file-open defect.

@@ -40,7 +40,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, PRESETS, getFullUrl } from '../components/BackgroundPicker';
+import { BackgroundPickerButton, BackgroundPickerPanel, Background, BG_STORAGE_KEY, ALL_BUILTIN_PRESETS, getFullUrl } from '../components/BackgroundPicker';
 import { BarStyleProvider, useBarStyle, barCombinedStyle, barBgStyle, barFgStyle } from '../context/BarStyleContext';
 import { getPhotoBlob, createPhotoObjectUrl, revokePhotoObjectUrl } from '../lib/bgPhotoStore';
 import { useInactivityTimer } from '../hooks/useInactivityTimer';
@@ -910,7 +910,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
 
   const bgImageUrl = background
     ? background.type === 'preset'
-      ? getFullUrl(PRESETS.find(p => p.id === background.id)?.photoId ?? '')
+      ? getFullUrl(ALL_BUILTIN_PRESETS.find(p => p.id === background.id)?.photoId ?? '')
       : customBgObjectUrl
     : null;
 

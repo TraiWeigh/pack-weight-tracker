@@ -1,0 +1,66 @@
+TRAILWEIGH — 026B ZIP-ONLY FOLLOW-UP
+CREATE THE MISSING REPORT ZIP — DO NOT CHANGE TRAILWEIGH
+
+RECOMMENDED REPLIT MODE:
+ECONOMY
+
+PURPOSE:
+The 026B task already ran, but Replit did not create the required ZIP file.
+
+THIS FOLLOW-UP IS FILE-PACKAGING ONLY.
+
+DO NOT:
+- change application source
+- change replit.md
+- change .replit
+- change packages
+- change database data or schema
+- change Locker/share data
+- change themes
+- rerun the 026B repair
+- run App Testing
+- Resume
+- Publish/Republish
+- apply unrelated Ready tasks
+
+STEP 1 — VERIFY THE EXISTING REPORT
+
+Confirm this file already exists:
+
+workflow-reports/PROMPT_026B_REPORT.md
+
+If it does NOT exist:
+STOP.
+Do not recreate the repair from memory.
+Report exactly:
+
+026B REPORT FILE IS MISSING — ZIP CANNOT BE CREATED SAFELY
+
+STEP 2 — CREATE ONLY THE ZIP
+
+If the report exists, create:
+
+workflow-reports/trailweigh-026B-report.zip
+
+The ZIP must contain:
+
+PROMPT_026B_REPORT.md
+
+STEP 3 — VERIFY
+
+Verify:
+1. the ZIP exists
+2. the ZIP opens successfully
+3. PROMPT_026B_REPORT.md is inside it
+4. no application/project/database files were changed
+
+FINAL RESPONSE MUST INCLUDE:
+
+ZIP CREATED = YES / NO
+REPORT INCLUDED = YES / NO
+APPLICATION SOURCE CHANGED = NO
+DATABASE CHANGED = NO
+REPLIT.MD CHANGED = NO
+DEPLOYMENT/PUBLISHING CHANGED = NO
+
+STOP after creating and verifying the ZIP.

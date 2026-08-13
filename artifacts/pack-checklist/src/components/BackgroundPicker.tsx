@@ -99,6 +99,58 @@ export const PRESETS = [
   { id: 'starry-night',     label: 'Starry Night',      photoId: '1419242902214-272b3f66ee7a' },
 ];
 
+// ── Permanent built-in themes — use { type:'preset', id } so they are fully ──
+// portable through Share/Review without requiring the owner's IndexedDB blobs.
+
+export const PSYCHEDELIC_PRESETS = [
+  { id: 'psychedelic-aurora',    label: 'Northern Lights',  photoId: '1531366936-c1ca7eefd24e' },
+  { id: 'psychedelic-neon',      label: 'Neon City',        photoId: '1557683311-eac922347aa1' },
+  { id: 'psychedelic-bloom',     label: 'Wildflowers',      photoId: '1465146344425-f00d5f5c8f07' },
+  { id: 'psychedelic-lava',      label: 'Lava Flow',        photoId: '1497578195034-75dded7eda09' },
+  { id: 'psychedelic-milkyway',  label: 'Milky Way',        photoId: '1462331940-2c93fd22c667' },
+  { id: 'psychedelic-prism',     label: 'Light Prism',      photoId: '1513151233558-d860c5398176' },
+];
+
+export const RETRO_PRESETS = [
+  { id: 'retro-campfire',  label: 'Campfire',       photoId: '1534447677432-56d382f07ffc' },
+  { id: 'retro-cabin',     label: 'Log Cabin',      photoId: '1470770841591-52abcf45de23' },
+  { id: 'retro-trail',     label: 'Dusty Trail',    photoId: '1464207687429-7505649dae38' },
+  { id: 'retro-tent',      label: 'Tent Camp',      photoId: '1532339142463-fd0a8e7bb9f0' },
+  { id: 'retro-canoe',     label: 'River Canoe',    photoId: '1523987329168-b2ca43e98d4e' },
+  { id: 'retro-summit',    label: 'Rocky Summit',   photoId: '1486870591958-2fde7b1e1e43' },
+];
+
+export const TOPO_PRESETS = [
+  { id: 'topo-salt',    label: 'Salt Flats',    photoId: '1509610449-d3e99c1dc9e4' },
+  { id: 'topo-dunes',   label: 'Sand Patterns', photoId: '1530789253388-582c481ef399' },
+  { id: 'topo-fields',  label: 'Crop Fields',   photoId: '1500076656116-558758f991c1' },
+  { id: 'topo-canyon',  label: 'Canyon Strata', photoId: '1474044159687-1ee9f3a51722' },
+  { id: 'topo-glacier', label: 'Ice Fractures', photoId: '1502126199040-3e9b72b0c7c4' },
+  { id: 'topo-delta',   label: 'River Delta',   photoId: '1507501336603-6c0049da8bbc' },
+];
+
+export const TRAILS_PRESETS = [
+  { id: 'trails-yosemite',    label: 'Yosemite',       photoId: '1472214103451-9374bd1c798e' },
+  { id: 'trails-zion',        label: 'Zion Canyon',    photoId: '1469854523086-cc02fe5d8800' },
+  { id: 'trails-olympic',     label: 'Olympic Coast',  photoId: '1454496522488-7a8e488e8606' },
+  { id: 'trails-rainier',     label: 'Mt. Rainier',    photoId: '1433086966628-ab1c5087a33d' },
+  { id: 'trails-forest',      label: 'Forest Path',    photoId: '1483185406765-2e05d1b4a2bf' },
+  { id: 'trails-mesa',        label: 'High Desert',    photoId: '1476514525535-07fb3b4ae5f1' },
+];
+
+/** Ordered registry of every built-in theme. */
+export const BUILTIN_THEMES = [
+  { id: 'landscapes',     label: 'Landscape',      presets: PRESETS              },
+  { id: 'psychedelic',    label: 'Psychedelic',    presets: PSYCHEDELIC_PRESETS  },
+  { id: 'retro-outdoors', label: 'Retro-Outdoors', presets: RETRO_PRESETS        },
+  { id: 'topo',           label: 'Topo',           presets: TOPO_PRESETS         },
+  { id: 'trails-us',      label: 'Trails US',      presets: TRAILS_PRESETS       },
+];
+
+/** Flat list of every built-in preset across all themes. Used by Checklist.tsx
+ *  to resolve any preset ID → Unsplash photoId without knowing its parent theme.
+ *  Import this instead of PRESETS when you need cross-theme resolution. */
+export const ALL_BUILTIN_PRESETS = BUILTIN_THEMES.flatMap(t => t.presets);
 
 export function getFullUrl(photoId: string) {
   return `https://images.unsplash.com/photo-${photoId}?w=1920&q=85&fit=crop`;
@@ -351,8 +403,11 @@ export function BackgroundPickerPanel({
   const activeCollection  = collections.find(c => c.id === activeThemeId) ?? null;
 
   const dropdownLabel = (() => {
-    if (isAddingTheme)                  return 'Add Theme';
-    if (activeThemeId === 'landscapes') return 'Landscape';
+    if (isAddingTheme) return 'Add Theme';
+    // Check built-in themes first (Landscape, Psychedelic, Retro-Outdoors, Topo, Trails US)
+    const builtIn = BUILTIN_THEMES.find(t => t.id === activeThemeId);
+    if (builtIn) return builtIn.label;
+    // Then user custom collections
     const col = collections.find(c => c.id === activeThemeId);
     if (col) return col.name;  // 023B: no "Theme " prefix
     return 'Themes';
@@ -510,10 +565,9 @@ export function BackgroundPickerPanel({
     if (renamingId) setTimeout(() => renameInputRef.current?.focus(), 50);
   }, [renamingId]);
 
-  // ── Ensure activeThemeId references a valid collection ────────────────────
+  // ── Ensure activeThemeId references a valid built-in theme or user collection ─
   useEffect(() => {
-    // Only landscape is a built-in theme ID; custom themes are user collections.
-    const BUILT_IN_IDS = ['landscapes'];
+    const BUILT_IN_IDS = BUILTIN_THEMES.map(t => t.id);
     if (!BUILT_IN_IDS.includes(activeThemeId) && !collections.find(c => c.id === activeThemeId)) {
       setActiveThemeId('landscapes');
     }
@@ -1339,17 +1393,20 @@ export function BackgroundPickerPanel({
               aria-label="Select theme"
               className="absolute left-0 right-0 top-full mt-1 z-10 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
             >
-              {/* Built-in 1: Landscape */}
-              <button
-                role="option"
-                aria-selected={!isAddingTheme && activeThemeId === 'landscapes'}
-                onClick={() => handleThemeSelect('landscapes')}
-                className={`w-full text-left px-3 py-2 text-[11px] font-semibold transition-colors ${
-                  !isAddingTheme && activeThemeId === 'landscapes'
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground hover:bg-muted/50'
-                }`}
-              >Landscape</button>
+              {/* Built-in permanent themes: Landscape, Psychedelic, Retro-Outdoors, Topo, Trails US */}
+              {BUILTIN_THEMES.map(theme => (
+                <button
+                  key={theme.id}
+                  role="option"
+                  aria-selected={!isAddingTheme && activeThemeId === theme.id}
+                  onClick={() => handleThemeSelect(theme.id)}
+                  className={`w-full text-left px-3 py-2 text-[11px] font-semibold transition-colors ${
+                    !isAddingTheme && activeThemeId === theme.id
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-foreground hover:bg-muted/50'
+                  }`}
+                >{theme.label}</button>
+              ))}
 
               {/* 023B/C — Custom themes: display exact user-entered name, no "Theme " prefix; always last */}
               {collections.map(col => (
@@ -1388,54 +1445,58 @@ export function BackgroundPickerPanel({
       {/* ── Theme panel ── */}
       {isAddingTheme ? (
         renderAddThemeForm()
-      ) : activeThemeId === 'landscapes' ? (
-        // 017E fix: grid wrapper gets its own GPU compositing layer (willChange:transform)
-        // so re-compositing caused by parent background-image repaints cannot cascade
-        // into the tiles' rasterization context.  onMouseEnter fires the DEV measurement.
-        <div
-          ref={landscapeGridRef}
-          className="px-3 pb-3"
-          style={{ willChange: 'transform' }}
-          onMouseEnter={handleGridMeasure}
-        >
-          <div className="grid grid-cols-2 gap-1.5">
-            {PRESETS.map(p => {
-              const isActive = activePresetId === p.id;
-              return (
-                // 017E fix: outer div establishes the aspect-ratio container via
-                // padding-top: 66.667% (a layout-phase value, not a GPU compositing
-                // rasterization-phase value).  Replaces the Tailwind aspect-ratio
-                // class on the button, which was re-evaluated at compositing time
-                // and could produce different subpixel heights on consecutive frames,
-                // shifting the object-cover crop visibly.
-                <div key={p.id} className="relative" style={{ paddingTop: '66.667%' }}>
-                  <button
-                    onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
-                    aria-pressed={isActive}
-                    aria-label={p.label}
-                    className={`absolute inset-0 overflow-hidden rounded-lg group ${
-                      isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
-                    }`}
-                  >
-                    <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 pointer-events-none">
-                      <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
+      ) : (() => {
+        // Check whether the active theme is one of the built-in permanent themes
+        const builtInTheme = BUILTIN_THEMES.find(t => t.id === activeThemeId);
+        if (builtInTheme) {
+          // 017E fix: grid wrapper gets its own GPU compositing layer (willChange:transform)
+          // so re-compositing caused by parent background-image repaints cannot cascade
+          // into the tiles' rasterization context.  onMouseEnter fires the DEV measurement
+          // (landscape only; non-landscape grids share the same pattern for consistency).
+          return (
+            <div
+              ref={activeThemeId === 'landscapes' ? landscapeGridRef : undefined}
+              className="px-3 pb-3"
+              style={{ willChange: 'transform' }}
+              onMouseEnter={activeThemeId === 'landscapes' ? handleGridMeasure : undefined}
+            >
+              <div className="grid grid-cols-2 gap-1.5">
+                {builtInTheme.presets.map(p => {
+                  const isActive = activePresetId === p.id;
+                  return (
+                    // 017E fix: outer div establishes the aspect-ratio container via
+                    // padding-top: 66.667% (a layout-phase value, not a GPU compositing
+                    // rasterization-phase value).
+                    <div key={p.id} className="relative" style={{ paddingTop: '66.667%' }}>
+                      <button
+                        onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
+                        aria-pressed={isActive}
+                        aria-label={p.label}
+                        className={`absolute inset-0 overflow-hidden rounded-lg group ${
+                          isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
+                        }`}
+                      >
+                        <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 pointer-events-none">
+                          <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
+                        </div>
+                        {isActive && (
+                          <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
+                            <Check className="w-2.5 h-2.5" />
+                          </div>
+                        )}
+                      </button>
                     </div>
-                    {isActive && (
-                      <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
-                        <Check className="w-2.5 h-2.5" />
-                      </div>
-                    )}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-      ) : activeCollection ? (
-        renderCustomThemePanel(activeCollection)
-      ) : null}
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }
+        // User custom collection
+        if (activeCollection) return renderCustomThemePanel(activeCollection);
+        return null;
+      })()}
 
       {/* ── Remove background ── */}
       {background && (
