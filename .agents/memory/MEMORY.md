@@ -1,3 +1,5 @@
+- [TrailWeigh operating manual](trailweigh-operating-manual.md) — 025T report (101KB) is the permanent reference: architecture, platform facts, Gold Standard prompt skeleton, security findings.
+- [sourceVersion correction](sourceversion-correction.md) — 025S wording superseded: UNSAVED changes invisible; SAVED changes (updatedAt) DO change sourceVersion; rename always changes it.
 - [parseV5 forward migration](parsev5-migration.md) — v5 stores miss DEFAULT categories added after first save; mergeDefaultCategories() in parseV5 inserts them at canonical position on load.
 - [Locker Save — active file identity tracking](locker-save-active-file.md) — new-tab path never sets activeLockerFile; fix: stash entry id/name in sessionStorage during usePackData init, consume in mount effect.
 - [pdf-parse v2 API](pdf-parse-v2-api.md) — v2.4.5 exports a class not a default fn; use `new PDFParse({ data: buffer, verbosity: 0 })` then `await inst.getText()`.

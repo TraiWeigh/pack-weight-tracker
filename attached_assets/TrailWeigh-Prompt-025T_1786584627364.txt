@@ -1,0 +1,747 @@
+TRAILWEIGH — PROMPT 025T
+UNRESOLVED ANSWERS + REPLIT OPERATING MANUAL
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 12–20 minutes
+Estimated Agent usage/cost: approximately $1.75–$3.50.
+
+IMPORTANT:
+THIS IS A QUESTION / LEARNING PROMPT ONLY.
+
+DO NOT MODIFY TRAILWEIGH APPLICATION CODE.
+DO NOT MODIFY DATABASE DATA.
+DO NOT MODIFY DATABASE SCHEMA.
+DO NOT MODIFY AUTHENTICATION.
+DO NOT MODIFY ROUTES.
+DO NOT MODIFY STORAGE.
+DO NOT MODIFY THEMES.
+DO NOT APPLY A FIX.
+DO NOT REFACTOR.
+DO NOT CLEAN UP CODE.
+DO NOT APPLY TASK-PLAN CHANGES.
+DO NOT CLICK/EXECUTE DESTRUCTIVE DATABASE ACTIONS.
+
+025T has TWO purposes only:
+
+1. CLOSE every materially unresolved, weak, contradictory, inferred, or platform-unverified
+   answer remaining from 025R and 025S.
+
+2. CREATE A PRACTICAL REPLIT OPERATING MANUAL FOR CHATGPT AND THE USER so future
+   TrailWeigh prompts communicate with Replit precisely, protect saved work, avoid stale
+   task context, reduce wasted credits, and use the correct Replit workflow.
+
+==================================================
+VERSION GATE
+==================================================
+
+Before doing anything, verify the loaded prompt contains:
+
+- Question 1
+- Question 25
+- Question 50
+- Question 75
+- Question 100
+- Question 125
+
+If any are missing:
+STOP.
+Report: WRONG 025T VERSION LOADED.
+
+Do not create a task plan until this version gate passes.
+
+==================================================
+READ PRIOR LEARNING REPORTS FIRST
+==================================================
+
+Read:
+
+workflow-reports/PROMPT_025R_REPORT.md
+workflow-reports/PROMPT_025S_REPORT.md
+
+If either is missing:
+STOP and report which file is missing.
+
+Also inspect supporting evidence referenced by those reports where it remains available.
+
+Important known correction from ChatGPT review:
+
+The correct rule for current 025P sourceVersion is:
+
+- UNSAVED changes do NOT affect sourceVersion.
+- SAVED appearance/item/Qty/Weight/checked changes DO affect sourceVersion because
+  successful Save updates savedAt.
+- Rename changes sourceVersion because filename is part of the fingerprint even though
+  rename does not update savedAt.
+
+If either prior report states broadly that “sourceVersion does not track appearance
+changes,” mark that wording SUPERSEDED.
+
+==================================================
+MANDATORY ANSWER FORMAT
+==================================================
+
+EVERY numbered question must be answered with exactly one status:
+
+CONFIRMED
+DISPROVEN
+STILL UNKNOWN
+NOT APPLICABLE
+
+Every material answer must include:
+
+- Direct answer
+- Evidence source:
+  USER LIVE / RUNTIME / DATABASE / SOURCE / OFFICIAL REPLIT DOCS /
+  REPLIT PLATFORM UI / OTHER
+- Confidence:
+  HIGH / MEDIUM / LOW
+- Exact supporting detail where relevant:
+  file path, function, storage key, table/field, route, task/session behavior,
+  UI control, runtime value, or official documentation reference.
+
+If STILL UNKNOWN:
+- explain exactly why;
+- state exactly what evidence would answer it;
+- state who/what can provide that evidence:
+  user live test / safe DB SELECT / browser DevTools / Replit official docs /
+  Replit support / deployment test / other;
+- state whether the unknown blocks a future repair.
+
+NO vague completion language such as:
+“probably”
+“likely”
+“should”
+“appears”
+unless explicitly labeled LOW confidence.
+
+==================================================
+FINAL-CONSISTENCY GATE
+==================================================
+
+Before marking 025T complete:
+
+- compare every FINAL AUTHORITATIVE FINDING against the detailed numbered answers;
+- if any contradiction exists, resolve it or mark the issue STILL UNKNOWN;
+- do NOT mark COMPLETE while contradictory claims remain unresolved.
+
+==================================================
+PART A — AUDIT 025R + 025S ANSWERS
+==================================================
+
+1. How many numbered questions were in 025R?
+
+2. How many were answered CONFIRMED?
+
+3. How many were DISPROVEN?
+
+4. How many were UNKNOWN / STILL UNKNOWN?
+
+5. How many were NOT APPLICABLE?
+
+6. List every 025R question that still lacks HIGH-confidence evidence.
+
+7. List every 025R answer later superseded by stronger evidence.
+
+8. List every internal contradiction still present in 025R.
+
+9. How many numbered questions were in 025S?
+
+10. How many were answered CONFIRMED?
+
+11. How many were DISPROVEN?
+
+12. How many were UNKNOWN / STILL UNKNOWN?
+
+13. How many were NOT APPLICABLE?
+
+14. List every 025S question that still lacks HIGH-confidence evidence.
+
+15. List every 025S answer later superseded by stronger evidence.
+
+16. List every internal contradiction still present in 025S.
+
+17. List every contradiction between 025R and 025S.
+
+18. For each contradiction, state which answer is authoritative now and why.
+
+19. Which answers depend only on SOURCE inspection and still lack runtime/platform proof?
+
+20. Which answers depend on Replit-platform assumptions rather than verified Replit behavior?
+
+21. Which remaining unknowns could change a future repair design?
+
+22. Which remaining unknowns are safe to defer?
+
+23. Which prior answers should ChatGPT treat as standing rules?
+
+24. Which prior answers should ChatGPT NOT use yet?
+
+25. Create one authoritative “known facts / unresolved facts” table combining 025R + 025S.
+
+==================================================
+PART B — REPLIT AGENT TASK / SESSION MODEL
+==================================================
+
+26. What is the practical difference between a Replit Agent conversation/session and a task?
+
+27. What creates a truly fresh Agent context?
+
+28. Does starting a new task always clear prior prompt/task context?
+
+29. If not, what context can carry forward?
+
+30. Why did Replit repeatedly load/continue the old 22-question 025R after a materially
+    revised 390-question file was provided?
+
+31. Was that stale behavior caused by task reuse, attachment reuse, cached context,
+    Agent memory, task-plan continuation, or something else?
+
+32. What is the safest way to guarantee a future prompt starts from fresh task context?
+
+33. Is opening a new Agent chat sufficient?
+
+34. Is creating a new task sufficient?
+
+35. Is restarting the workspace ever required?
+
+36. What exact UI indicators tell the user they are continuing an old task versus starting fresh?
+
+37. Can a task plan retain instructions after a replacement prompt is uploaded?
+
+38. How should ChatGPT word a “fresh prompt version gate” so Replit reliably stops on stale content?
+
+39. Can Replit be instructed not to create a task plan until version verification passes?
+
+40. What should the user do if Replit says “same prompt as before” after a materially new prompt?
+
+==================================================
+PART C — TASK PLAN / BUILD HERE / REVIEW NOW / APPLY CHANGES
+==================================================
+
+41. What exactly does “Task plan created” mean?
+
+42. Does creating a task plan change application code?
+
+43. What exactly happens when the user clicks “Build here”?
+
+44. Does “Build here” authorize application-code edits?
+
+45. Can “Build here” also execute tests, DB operations, or config changes?
+
+46. What exactly does “Review now” mean?
+
+47. Does clicking “Review now” itself change source code or user data?
+
+48. What exactly does “Apply changes” do?
+
+49. Can “Apply changes” modify files that were created by an unrelated/stale task?
+
+50. What is the safest action when an unrelated old task card remains visible during a new diagnostic?
+
+51. Can a user safely ignore an old task card indefinitely?
+
+52. How can the user tell whether a task card has unapplied source changes?
+
+53. What should ChatGPT tell the user before clicking Build here / Review now / Apply changes?
+
+54. Which of these controls are safe during a diagnostic-only prompt?
+
+55. Which should never be clicked during a diagnostic-only prompt unless explicitly needed?
+
+==================================================
+PART D — ATTACHMENTS / PROMPT VERSIONING
+==================================================
+
+56. How does Replit Agent select among multiple attached files with similar names?
+
+57. Can an older attachment with the same prompt number be preferred over a newer one?
+
+58. Does renaming the final prompt file help prevent stale-version confusion?
+
+59. Should future prompt files include `FINAL` or a unique revision suffix?
+
+60. Is one immutable prompt file per prompt number safer than overwriting/re-uploading?
+
+61. What exact attachment workflow minimizes Agent using the wrong version?
+
+62. Should the user remove or ignore older attachments?
+
+63. Can Replit verify file contents before planning?
+
+64. Can Replit report a checksum/hash for the exact prompt file it read?
+
+65. Would a prompt version ID inside the file be safer than relying on filename alone?
+
+66. Recommend a standard future prompt-header format that proves the correct prompt version is loaded.
+
+==================================================
+PART E — DIAGNOSTIC-ONLY / READ-ONLY WORK
+==================================================
+
+67. What kinds of investigation can Agent perform without changing application source?
+
+68. Can Agent inspect source files read-only?
+
+69. Can Agent run `git status` / `git diff` without changing files?
+
+70. Can Agent run read-only SQL SELECT queries without changing DB data?
+
+71. Can Agent inspect runtime/browser state without changing source?
+
+72. Can Agent use temporary console/browser instrumentation without committing source changes?
+
+73. What diagnostic actions may accidentally create files or modify the workspace?
+
+74. What diagnostic actions may accidentally modify DB data?
+
+75. What exact prompt language best enforces “diagnostic only, zero changes”?
+
+76. Can Replit guarantee no source changes if told diagnostic-only?
+
+77. If not, how should Agent verify/revert accidental changes before completion?
+
+78. What should `git status` / `git diff` show at diagnostic completion?
+
+79. How should Agent separately report diagnostic artifact files vs application source changes?
+
+80. What should automatically trigger STOP during a diagnostic?
+
+==================================================
+PART F — CHECKPOINTS
+==================================================
+
+81. What exactly is a Replit checkpoint in the current Replit platform?
+
+82. What does it snapshot in THIS project?
+
+83. Does it include source files?
+
+84. app configuration?
+
+85. secrets?
+
+86. database schema?
+
+87. database rows/data?
+
+88. uploaded project/static assets?
+
+89. deployment settings?
+
+90. browser localStorage?
+
+91. browser IndexedDB?
+
+92. external object storage?
+
+93. If the user restores a checkpoint, what exactly is rolled back?
+
+94. Can restoring a checkpoint erase DB records created after the checkpoint?
+
+95. If answer is CONFIRMED, provide official Replit documentation or a safe platform test.
+
+96. If answer is STILL UNKNOWN, identify the exact official Replit source/support question needed.
+
+97. Are checkpoints suitable as the only backup before database/schema work?
+
+98. What does a checkpoint definitely NOT protect?
+
+99. What should be backed up separately before risky persistence work?
+
+100. Create a plain-language checkpoint safety guide for the user.
+
+==================================================
+PART G — DEVELOPMENT / PREVIEW / PUBLISHED ENVIRONMENTS
+==================================================
+
+101. What is the difference between Replit Development, Preview, and Published environments?
+
+102. Does Preview use the Development database?
+
+103. Does a Published app use the same database as Development by default?
+
+104. If this depends on project/deployment configuration, inspect THIS project.
+
+105. What environment/database does current TrailWeigh Preview use?
+
+106. What environment/database would current TrailWeigh Published app use?
+
+107. Does first Publish automatically carry existing development DB data?
+
+108. Does Republish preserve production user DB data?
+
+109. Can source rollback change production DB data?
+
+110. Can deployment rollback change production DB data?
+
+111. Does published app use a different origin, causing separate localStorage/IndexedDB?
+
+112. Will Owner browser-local Custom Theme data automatically appear on the published domain?
+
+113. What happens to Share URLs when moving from development Preview origin to published origin?
+
+114. What should be verified before the first public Publish?
+
+115. What data backup should exist before first Publish?
+
+116. What official Replit documentation supports these answers?
+
+==================================================
+PART H — FILES / WORKSPACE / REPORT ARTIFACTS
+==================================================
+
+117. Where do `workflow-reports/*.zip` files live relative to application source?
+
+118. Can diagnostic report files affect the app build?
+
+119. Can Agent accidentally include workflow reports in deployed output?
+
+120. Should reports live outside application source roots?
+
+121. What is the safest permanent location for Replit reports/checkpoints/evidence?
+
+122. Are generated ZIPs preserved across Agent tasks?
+
+123. Are they preserved across workspace restart?
+
+124. Are they preserved across Publish/Republish?
+
+125. Can a checkpoint rollback remove reports created after that checkpoint?
+
+126. Should the user download important report ZIPs after each prompt?
+
+127. What is the safest report-retention workflow?
+
+==================================================
+PART I — DATABASE OPERATING SAFETY
+==================================================
+
+128. Which DB environment was the user manually querying during 025R?
+
+129. Were the SELECT queries read-only?
+
+130. Can the Replit DB playground execute UPDATE/DELETE/DDL if the user pastes them?
+
+131. What visual cues distinguish a read-only SELECT from a destructive query?
+
+132. Can Replit provide a safe read-only SQL template for future diagnostics?
+
+133. Should future diagnostic prompts prohibit INSERT/UPDATE/DELETE/ALTER/DROP/TRUNCATE?
+
+134. Can Agent itself execute DB writes without asking the user?
+
+135. What user confirmation should be required before any DB write/migration?
+
+136. Can a database export be performed read-only?
+
+137. What format would best preserve TrailWeigh Locker data before migrations?
+
+138. How should DB backups be validated before a risky prompt?
+
+==================================================
+PART J — PROMPT COST / EFFICIENCY
+==================================================
+
+139. What Replit Agent activities consume the most time/credits in this project?
+
+140. Does repeatedly rereading large prompt/history files materially increase Agent usage?
+
+141. Does parallel source searching reduce or increase usage?
+
+142. When is Economy mode appropriate?
+
+143. When would Power mode materially help?
+
+144. What kinds of tasks should stay Economy even if they are long?
+
+145. What makes a diagnostic prompt unnecessarily expensive?
+
+146. How can ChatGPT request targeted evidence without causing broad codebase rereads?
+
+147. How should prompt scope be written to create reliable STOP conditions?
+
+148. How should Agent report actual time/actions/lines/cost?
+
+149. Does Replit ever omit those metrics?
+
+150. If metrics are unavailable, what should it report instead?
+
+==================================================
+PART K — TESTING / PREVIEW / BROWSER
+==================================================
+
+151. What is Replit App Testing in the current platform?
+
+152. Does it use a real browser session?
+
+153. Is its browser storage isolated from the user’s Safari browser?
+
+154. Is it signed into the same Clerk account automatically?
+
+155. How should Agent test authenticated Owner behavior safely?
+
+156. How should Agent test signed-out Review behavior safely?
+
+157. Can Replit App Testing use a fresh/incognito context?
+
+158. Can it create multiple isolated browser contexts?
+
+159. What user tests still cannot be replaced by App Testing?
+
+160. What should ChatGPT require as runtime proof for visual changes?
+
+161. What should ChatGPT require for behavior changes?
+
+162. When should screenshot/video evidence be required?
+
+==================================================
+PART L — PERSISTENT USER-DATA RISK FROM CODE PROMPTS
+==================================================
+
+163. Which kinds of source-code changes can endanger existing Locker rows?
+
+164. Which can endanger browser localStorage?
+
+165. Which can endanger IndexedDB?
+
+166. Which can invalidate old share links?
+
+167. Which can break old saved payloads without deleting them?
+
+168. Which can expose previously private data?
+
+169. Which changes require explicit user approval before Replit proceeds?
+
+170. What exact warning should Agent give before:
+     schema migration / storage-key rename / localStorage reset / IndexedDB reset /
+     auth change / share-scope change / deletion behavior change?
+
+171. What is the safest default if a prompt unexpectedly requires one of these?
+
+172. Should Agent STOP instead of broadening scope automatically?
+
+==================================================
+PART M — REPLIT COMMUNICATION MANUAL FOR CHATGPT
+==================================================
+
+173. When ChatGPT wants a VISUAL UI change, what information should the prompt always include?
+
+174. When ChatGPT wants a BEHAVIOR change?
+
+175. When ChatGPT wants a PERSISTENCE change?
+
+176. When ChatGPT wants a DATABASE change?
+
+177. When ChatGPT wants a SHARE/PRIVACY change?
+
+178. When ChatGPT wants a PARSER/IMPORTER change?
+
+179. What terminology causes Replit ambiguity and should be avoided?
+
+180. What exact terminology should ChatGPT use for:
+     component / route / handler / hook / localStorage / IndexedDB / server DB /
+     checkpoint / task / task plan / Preview / Published app?
+
+181. How should ChatGPT distinguish observed user behavior from source assumptions?
+
+182. How should ChatGPT tell Replit which prior PASS behavior is frozen/protected?
+
+183. How should ChatGPT define acceptance criteria?
+
+184. How should ChatGPT define “must not change”?
+
+185. How should ChatGPT request changed-file control?
+
+186. How should ChatGPT request rollback guidance?
+
+187. How should ChatGPT request evidence before code changes?
+
+188. What exact wording should force Agent to STOP when it cannot reproduce?
+
+189. What exact wording should force Agent to STOP if scope is broader than estimated?
+
+190. What exact wording should require every unanswered question to be marked STILL UNKNOWN?
+
+191. What exact wording should prevent Agent from replacing an answer with a speculative repair?
+
+192. Create a reusable “Gold Standard Replit Prompt Skeleton” for ChatGPT.
+
+==================================================
+PART N — USER OPERATING MANUAL
+==================================================
+
+Write plain-language answers for a non-programmer.
+
+193. How should the user safely make changes in TrailWeigh before a Replit prompt?
+
+194. What exactly should the user Save?
+
+195. How should the user verify server persistence?
+
+196. What should the user screenshot?
+
+197. When should a checkpoint be made?
+
+198. What should the user download after each prompt?
+
+199. What should the user never click when an unrelated stale task card appears?
+
+200. What should the user do if Replit says “same prompt as before”?
+
+201. What should the user do if the wrong prompt version is loaded?
+
+202. What should the user do if Replit starts modifying code during a diagnostic-only prompt?
+
+203. What should the user do if Agent asks for a DB query?
+
+204. What SQL verbs should the user recognize as potentially destructive?
+
+205. What should the user do before approving a migration?
+
+206. What should the user do before restoring a checkpoint?
+
+207. What should the user do if a live test fails despite Replit internal PASS?
+
+208. What should the user send back to ChatGPT after each Replit prompt?
+
+==================================================
+PART O — STILL-UNRESOLVED TRAILWEIGH QUESTIONS
+==================================================
+
+209. After combining 025R + 025S + 025T evidence, which TrailWeigh questions remain STILL UNKNOWN?
+
+210. Which remaining unknowns are about TrailWeigh code?
+
+211. Which are about Replit platform behavior?
+
+212. Which are about user product decisions rather than technical facts?
+
+213. Which require user live testing?
+
+214. Which require safe DB SELECT evidence?
+
+215. Which require official Replit documentation?
+
+216. Which require Replit support?
+
+217. Which are safe to defer until a related feature is worked on?
+
+218. Which block the next repair prompt?
+
+219. Which block publishing TrailWeigh?
+
+220. Which block privacy/security claims?
+
+==================================================
+FINAL AUTHORITATIVE OUTPUT
+==================================================
+
+Create these exact final sections:
+
+A. FINAL AUTHORITATIVE FINDINGS
+B. SUPERSEDED / DISPROVEN CLAIMS FROM 025R
+C. SUPERSEDED / DISPROVEN CLAIMS FROM 025S
+D. STILL UNKNOWN MASTER LIST
+E. REPLIT AGENT TASK / SESSION MODEL
+F. TASK PLAN / BUILD HERE / REVIEW NOW / APPLY CHANGES GUIDE
+G. ATTACHMENT / PROMPT VERSIONING GUIDE
+H. DIAGNOSTIC-ONLY / READ-ONLY GUIDE
+I. CHECKPOINT / ROLLBACK GUIDE
+J. DEVELOPMENT / PREVIEW / PUBLISHED ENVIRONMENT GUIDE
+K. REPORT / FILE RETENTION GUIDE
+L. DATABASE SAFETY GUIDE
+M. COST / EFFICIENCY GUIDE
+N. TESTING / BROWSER GUIDE
+O. PERSISTENT USER-DATA RISK GUIDE
+P. CHATGPT ↔ REPLIT COMMUNICATION MANUAL
+Q. GOLD STANDARD REPLIT PROMPT SKELETON
+R. SAFE REPLIT WORKFLOW FOR THE USER
+S. UNRESOLVED TRAILWEIGH QUESTIONS
+T. QUESTIONS THAT BLOCK THE NEXT REPAIR
+U. QUESTIONS THAT BLOCK PUBLISHING
+V. QUESTIONS THAT BLOCK PRIVACY/SECURITY CLAIMS
+
+==================================================
+OFFICIAL REPLIT DOCUMENTATION RULE
+==================================================
+
+For questions about Replit PLATFORM behavior — especially checkpoints, rollback,
+deployment databases, publishing, task/session semantics, and App Testing:
+
+- Prefer official current Replit documentation or directly observable Replit platform evidence.
+- Do NOT convert an assumption into CONFIRMED merely from TrailWeigh source code.
+- If current official documentation is unavailable from Agent access, mark STILL UNKNOWN
+  and state exactly which Replit documentation/support answer is required.
+
+==================================================
+NO-CHANGE VERIFICATION
+==================================================
+
+Before completion verify:
+
+APPLICATION CODE CHANGED BY 025T = NONE
+DATABASE DATA CHANGED BY 025T = NONE
+DATABASE SCHEMA CHANGED BY 025T = NONE
+OWNER DATA CHANGED BY 025T = NONE
+AUTH CONFIG CHANGED BY 025T = NONE
+DEPLOYMENT CONFIG CHANGED BY 025T = NONE
+
+Run git status/diff and separate pre-existing changes from anything caused by 025T.
+
+If 025T accidentally changed application/config/data:
+revert the diagnostic change if safe;
+otherwise STOP and report it clearly.
+
+==================================================
+MANDATORY REPORT + ZIP
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_025T_REPORT.md
+
+Every substantive answer must be in the report.
+Do not leave important information only in Agent chat.
+
+Then create:
+
+workflow-reports/trailweigh-025T-report.zip
+
+ZIP must contain at minimum:
+- PROMPT_025T_REPORT.md
+
+Also include safe supporting evidence if created:
+- unresolved-answer matrix;
+- Replit operating manual;
+- prompt skeleton;
+- sanitized official-doc excerpts/links;
+- safe diagnostic text evidence.
+
+Before completion verify:
+
+1. report exists;
+2. ZIP exists;
+3. ZIP > 0 bytes;
+4. ZIP opens/lists successfully;
+5. report is inside;
+6. every numbered question is accounted for;
+7. every STILL UNKNOWN has an evidence path;
+8. final synthesis contains no unresolved contradictions;
+9. ZIP is not corrupt.
+
+If a contradiction remains unresolved:
+do NOT mark COMPLETE.
+Mark the relevant issue STILL UNKNOWN.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+STOP after the verified 025T report and ZIP.
+
+DO NOT REPAIR TRAILWEIGH.
+
+The next repair prompt will be written only after ChatGPT reviews 025T and the user
+decides whether any remaining blocking questions require another learning prompt.
