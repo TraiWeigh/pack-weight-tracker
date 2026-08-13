@@ -1,0 +1,568 @@
+{
+  "packageFile": "TrailWeigh-Original-Themes-Recovery-Package.zip",
+  "packageSha256": "46d6859e187cc5aa3eddfb6850cfc2f561a299b0c681b147d7e4cbf019f0ad73",
+  "packageSizeBytes": 140793872,
+  "purpose": "Exact recovery of the user's original TrailWeigh browser-local permanent-theme candidates before 026B replacement.",
+  "source_backup": "trailweigh-original-themes-backup.json",
+  "exportedAt": "2026-08-13T17:18:57.259Z",
+  "origin": "https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.worf.replit.dev",
+  "integrity": {
+    "collectionCount": 4,
+    "photoCount": 40,
+    "allSourcePhotosHadDataUrls": true
+  },
+  "collections": [
+    {
+      "name": "Psychedelic",
+      "slug": "psychedelic",
+      "originalCollectionId": "d79067cd-baff-4945-ad0e-d0e9d76ecd77",
+      "photoCount": 10,
+      "photos": [
+        {
+          "order": 1,
+          "originalPhotoId": "3e332c40-c9f0-47ae-81a9-b8c935edbb6f",
+          "filename": "psychedelic/01_3e332c40-c9f0-47ae-81a9-b8c935edbb6f.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3912213,
+          "width": 1672,
+          "height": 941,
+          "sha256": "8ee79dc3b67a70145bd4c02830deb937207d9e1b02c6e4254c53efb7e2221d8b",
+          "metadata": {
+            "id": "3e332c40-c9f0-47ae-81a9-b8c935edbb6f"
+          }
+        },
+        {
+          "order": 2,
+          "originalPhotoId": "0b24e918-fbb1-41b1-bc98-d9536ac1b51e",
+          "filename": "psychedelic/02_0b24e918-fbb1-41b1-bc98-d9536ac1b51e.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3755684,
+          "width": 1672,
+          "height": 941,
+          "sha256": "f4de0d89a6a19b86e4128a38739d29fdbb513ad82aa93ac869a5644431556a54",
+          "metadata": {
+            "id": "0b24e918-fbb1-41b1-bc98-d9536ac1b51e"
+          }
+        },
+        {
+          "order": 3,
+          "originalPhotoId": "333224d7-35fa-4c46-9dd5-6018478f6f5b",
+          "filename": "psychedelic/03_333224d7-35fa-4c46-9dd5-6018478f6f5b.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3970624,
+          "width": 1672,
+          "height": 941,
+          "sha256": "ea37df6f5e139352457d16a94f35dcbbe188932ebdc1ba730278a443a720c1f1",
+          "metadata": {
+            "id": "333224d7-35fa-4c46-9dd5-6018478f6f5b"
+          }
+        },
+        {
+          "order": 4,
+          "originalPhotoId": "a259f90c-d276-441b-9e0a-b67b0b348805",
+          "filename": "psychedelic/04_a259f90c-d276-441b-9e0a-b67b0b348805.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3869363,
+          "width": 1672,
+          "height": 941,
+          "sha256": "e70c22d55f1e5f7698ef0996c35ac137d7edbcd115779ae249d9bd95167b1986",
+          "metadata": {
+            "id": "a259f90c-d276-441b-9e0a-b67b0b348805"
+          }
+        },
+        {
+          "order": 5,
+          "originalPhotoId": "4d5c2b91-91b5-43e6-91a8-4df2203a310c",
+          "filename": "psychedelic/05_4d5c2b91-91b5-43e6-91a8-4df2203a310c.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3921785,
+          "width": 1672,
+          "height": 941,
+          "sha256": "006990728b80d286e9db79aa21e0b404e49e80077b3dfac16b16e8c79a00b17c",
+          "metadata": {
+            "id": "4d5c2b91-91b5-43e6-91a8-4df2203a310c"
+          }
+        },
+        {
+          "order": 6,
+          "originalPhotoId": "029d55db-70c7-40f3-a593-0bd8c285da5a",
+          "filename": "psychedelic/06_029d55db-70c7-40f3-a593-0bd8c285da5a.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3899977,
+          "width": 1672,
+          "height": 941,
+          "sha256": "8c7a0672b3b922cd01be34b5b5774db0a89f2e9e91691d953a953d493faf6aed",
+          "metadata": {
+            "id": "029d55db-70c7-40f3-a593-0bd8c285da5a"
+          }
+        },
+        {
+          "order": 7,
+          "originalPhotoId": "efc60681-a786-470a-a90a-02ebb7c799bc",
+          "filename": "psychedelic/07_efc60681-a786-470a-a90a-02ebb7c799bc.png",
+          "mimeType": "image/png",
+          "sizeBytes": 4188102,
+          "width": 1672,
+          "height": 941,
+          "sha256": "71ffa17ec6697561c8d90d6723c00fbdc5c2b365306fc9d7dd98f64d8c6e63d5",
+          "metadata": {
+            "id": "efc60681-a786-470a-a90a-02ebb7c799bc"
+          }
+        },
+        {
+          "order": 8,
+          "originalPhotoId": "331425c9-7950-46c9-83ca-d22e8b0db75d",
+          "filename": "psychedelic/08_331425c9-7950-46c9-83ca-d22e8b0db75d.png",
+          "mimeType": "image/png",
+          "sizeBytes": 4212103,
+          "width": 1672,
+          "height": 941,
+          "sha256": "d82a820041358669a9c739dd85188d9808ffe262a51eb93e13976c009b907c94",
+          "metadata": {
+            "id": "331425c9-7950-46c9-83ca-d22e8b0db75d"
+          }
+        },
+        {
+          "order": 9,
+          "originalPhotoId": "1fa4bb40-8029-4d05-bf8b-c705165c1880",
+          "filename": "psychedelic/09_1fa4bb40-8029-4d05-bf8b-c705165c1880.png",
+          "mimeType": "image/png",
+          "sizeBytes": 4177204,
+          "width": 1672,
+          "height": 941,
+          "sha256": "9a710fa30541a1a16edda8914b980decc47e875920e212c9e5d1fa2cf9579630",
+          "metadata": {
+            "id": "1fa4bb40-8029-4d05-bf8b-c705165c1880"
+          }
+        },
+        {
+          "order": 10,
+          "originalPhotoId": "16b077e2-fd86-4012-926c-0df1ec92d46b",
+          "filename": "psychedelic/10_16b077e2-fd86-4012-926c-0df1ec92d46b.png",
+          "mimeType": "image/png",
+          "sizeBytes": 4166204,
+          "width": 1672,
+          "height": 941,
+          "sha256": "c5d0a5bb18dc081e8d148551f2e30d4af19c34dcaea3dd82cf553774e8d5e2b9",
+          "metadata": {
+            "id": "16b077e2-fd86-4012-926c-0df1ec92d46b"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Retro-Outdoors",
+      "slug": "retro-outdoors",
+      "originalCollectionId": "13ed57b7-c050-43b6-bd85-05a7c0fe102a",
+      "photoCount": 10,
+      "photos": [
+        {
+          "order": 1,
+          "originalPhotoId": "2440d098-98e0-41d7-9809-1e35811a30ce",
+          "filename": "retro-outdoors/01_2440d098-98e0-41d7-9809-1e35811a30ce.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3156193,
+          "width": 1672,
+          "height": 941,
+          "sha256": "ab291c7b3ed8853e0294c77e8ea5fd8a0de0d20eecf0de1cd806bf94136013d0",
+          "metadata": {
+            "id": "2440d098-98e0-41d7-9809-1e35811a30ce"
+          }
+        },
+        {
+          "order": 2,
+          "originalPhotoId": "4998c2db-c344-4210-85fd-aa5673f25e83",
+          "filename": "retro-outdoors/02_4998c2db-c344-4210-85fd-aa5673f25e83.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3810338,
+          "width": 1672,
+          "height": 941,
+          "sha256": "01277fc6cc49bdd525f6216edeacb2d33c27cc41f00825caf13cf4b99315390d",
+          "metadata": {
+            "id": "4998c2db-c344-4210-85fd-aa5673f25e83"
+          }
+        },
+        {
+          "order": 3,
+          "originalPhotoId": "f050f6c4-a3e4-4601-b9f8-518d000432ec",
+          "filename": "retro-outdoors/03_f050f6c4-a3e4-4601-b9f8-518d000432ec.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3289981,
+          "width": 1672,
+          "height": 941,
+          "sha256": "5e3287ad6a9fa1953fdf38328587970d8913600188b435a618c9fdc89acedd9b",
+          "metadata": {
+            "id": "f050f6c4-a3e4-4601-b9f8-518d000432ec"
+          }
+        },
+        {
+          "order": 4,
+          "originalPhotoId": "31ac6cb8-b02a-4df5-8561-69305a992949",
+          "filename": "retro-outdoors/04_31ac6cb8-b02a-4df5-8561-69305a992949.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3443586,
+          "width": 1672,
+          "height": 941,
+          "sha256": "00f83b3dd77912c235fe3879f2f906784dff1dbf48f17e9a9fdeb479cf490da2",
+          "metadata": {
+            "id": "31ac6cb8-b02a-4df5-8561-69305a992949"
+          }
+        },
+        {
+          "order": 5,
+          "originalPhotoId": "44b4390d-0c8a-4849-84d5-6f1a3130ecd6",
+          "filename": "retro-outdoors/05_44b4390d-0c8a-4849-84d5-6f1a3130ecd6.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3405238,
+          "width": 1672,
+          "height": 941,
+          "sha256": "279bcf063fc3c1bddef000fa005aebac54a2622bf74f2a925350f504c5c01388",
+          "metadata": {
+            "id": "44b4390d-0c8a-4849-84d5-6f1a3130ecd6"
+          }
+        },
+        {
+          "order": 6,
+          "originalPhotoId": "112b45c3-9a3f-4d5b-a789-c7fbf7517818",
+          "filename": "retro-outdoors/06_112b45c3-9a3f-4d5b-a789-c7fbf7517818.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3721038,
+          "width": 1672,
+          "height": 941,
+          "sha256": "50893b2a2e06f9af49e2c309a0e382d587c4deca98d5aa656731e7a5601c4270",
+          "metadata": {
+            "id": "112b45c3-9a3f-4d5b-a789-c7fbf7517818"
+          }
+        },
+        {
+          "order": 7,
+          "originalPhotoId": "35883452-6967-419d-9d2c-27fb52bdcb46",
+          "filename": "retro-outdoors/07_35883452-6967-419d-9d2c-27fb52bdcb46.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3197877,
+          "width": 1672,
+          "height": 941,
+          "sha256": "ea3b5d0e7786fc0267de4c9b9c124796af23a0873c489e1ff34547ab303f4bb8",
+          "metadata": {
+            "id": "35883452-6967-419d-9d2c-27fb52bdcb46"
+          }
+        },
+        {
+          "order": 8,
+          "originalPhotoId": "9854e28b-58cc-4dd8-b186-e8e2e0f23be7",
+          "filename": "retro-outdoors/08_9854e28b-58cc-4dd8-b186-e8e2e0f23be7.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3427733,
+          "width": 1672,
+          "height": 941,
+          "sha256": "865fb1292daaf47af93bad8512f650f9e00feb4794a5fa91f07c1b540d8f6e7f",
+          "metadata": {
+            "id": "9854e28b-58cc-4dd8-b186-e8e2e0f23be7"
+          }
+        },
+        {
+          "order": 9,
+          "originalPhotoId": "f0fccc20-5841-4635-9cd5-3303ac6a1894",
+          "filename": "retro-outdoors/09_f0fccc20-5841-4635-9cd5-3303ac6a1894.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3506876,
+          "width": 1672,
+          "height": 941,
+          "sha256": "ae3fddc20bc47ac7a7d43cc239092984b976d23025d3a835cb9b332ad242159b",
+          "metadata": {
+            "id": "f0fccc20-5841-4635-9cd5-3303ac6a1894"
+          }
+        },
+        {
+          "order": 10,
+          "originalPhotoId": "701cc0ea-4912-416c-b08e-0c747381668c",
+          "filename": "retro-outdoors/10_701cc0ea-4912-416c-b08e-0c747381668c.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3206670,
+          "width": 1672,
+          "height": 941,
+          "sha256": "b9f06e9fd4b022c13a4df8b533ac6b278c7eb59ca35ac6533e53cb075e8d2811",
+          "metadata": {
+            "id": "701cc0ea-4912-416c-b08e-0c747381668c"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Topo",
+      "slug": "topo",
+      "originalCollectionId": "0452da5c-3bbe-4255-994d-02065c67bbec",
+      "photoCount": 10,
+      "photos": [
+        {
+          "order": 1,
+          "originalPhotoId": "86ab16d2-a9b3-402e-b1c4-a9ef087bfaf3",
+          "filename": "topo/01_86ab16d2-a9b3-402e-b1c4-a9ef087bfaf3.png",
+          "mimeType": "image/png",
+          "sizeBytes": 2802888,
+          "width": 1672,
+          "height": 941,
+          "sha256": "977c2430ae927456c8d29b0adf219223b5b695c73dae5bdb1534541e839fe177",
+          "metadata": {
+            "id": "86ab16d2-a9b3-402e-b1c4-a9ef087bfaf3"
+          }
+        },
+        {
+          "order": 2,
+          "originalPhotoId": "5bcea54b-8af5-4f96-8235-66ef2e1f689b",
+          "filename": "topo/02_5bcea54b-8af5-4f96-8235-66ef2e1f689b.png",
+          "mimeType": "image/png",
+          "sizeBytes": 2571453,
+          "width": 1672,
+          "height": 941,
+          "sha256": "817e3f1622fec7b9d1c9545631137a169be8aa22642b8ceb3eb6a21c1e741cb8",
+          "metadata": {
+            "id": "5bcea54b-8af5-4f96-8235-66ef2e1f689b"
+          }
+        },
+        {
+          "order": 3,
+          "originalPhotoId": "d7e61aeb-ba47-46a4-97a9-bd52e60e1431",
+          "filename": "topo/03_d7e61aeb-ba47-46a4-97a9-bd52e60e1431.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3755073,
+          "width": 1920,
+          "height": 1080,
+          "sha256": "522c47fa489069c9bf7bb1a0072635896562160a1218afc894e95dc1c77b6134",
+          "metadata": {
+            "id": "d7e61aeb-ba47-46a4-97a9-bd52e60e1431"
+          }
+        },
+        {
+          "order": 4,
+          "originalPhotoId": "a6cee42d-b3ce-4d33-8423-95b0a678f80d",
+          "filename": "topo/04_a6cee42d-b3ce-4d33-8423-95b0a678f80d.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3916222,
+          "width": 1920,
+          "height": 1080,
+          "sha256": "7a9d21a072c3efbf60e8abc498189d12da085493b67753bc59535c761217e493",
+          "metadata": {
+            "id": "a6cee42d-b3ce-4d33-8423-95b0a678f80d"
+          }
+        },
+        {
+          "order": 5,
+          "originalPhotoId": "ddf5749c-e1f8-4be3-af3a-fd81ebcb3802",
+          "filename": "topo/05_ddf5749c-e1f8-4be3-af3a-fd81ebcb3802.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3686169,
+          "width": 1920,
+          "height": 1080,
+          "sha256": "95f5c6ad8489d58e6e5976ce82170b5c44cb388e002e59e8f53d604f19c5fdc9",
+          "metadata": {
+            "id": "ddf5749c-e1f8-4be3-af3a-fd81ebcb3802"
+          }
+        },
+        {
+          "order": 6,
+          "originalPhotoId": "eb6c7fe1-49f4-40bf-9fa3-4745cdc6966a",
+          "filename": "topo/06_eb6c7fe1-49f4-40bf-9fa3-4745cdc6966a.png",
+          "mimeType": "image/png",
+          "sizeBytes": 4023672,
+          "width": 1920,
+          "height": 1080,
+          "sha256": "39bce7f1430424dbafd677814994659592c30fc745c99fb7d67b18edc9c7b141",
+          "metadata": {
+            "id": "eb6c7fe1-49f4-40bf-9fa3-4745cdc6966a"
+          }
+        },
+        {
+          "order": 7,
+          "originalPhotoId": "1b386681-19cb-421e-afe9-ce3e2c374990",
+          "filename": "topo/07_1b386681-19cb-421e-afe9-ce3e2c374990.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3915063,
+          "width": 1920,
+          "height": 1080,
+          "sha256": "62917dade5b213444da72d0bcdfa7cf4340a72015b8128c39b08a24cd1f47455",
+          "metadata": {
+            "id": "1b386681-19cb-421e-afe9-ce3e2c374990"
+          }
+        },
+        {
+          "order": 8,
+          "originalPhotoId": "85bc06d6-35f3-4fbc-b94c-32f02099585f",
+          "filename": "topo/08_85bc06d6-35f3-4fbc-b94c-32f02099585f.png",
+          "mimeType": "image/png",
+          "sizeBytes": 2927793,
+          "width": 1920,
+          "height": 1080,
+          "sha256": "7df88e29dceecd4c6b8f81d0383749a289a2f15ed869e700487a0fb4989443ca",
+          "metadata": {
+            "id": "85bc06d6-35f3-4fbc-b94c-32f02099585f"
+          }
+        },
+        {
+          "order": 9,
+          "originalPhotoId": "e0ec1f6b-bdc8-4dd1-95b1-8ddcba03e049",
+          "filename": "topo/09_e0ec1f6b-bdc8-4dd1-95b1-8ddcba03e049.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3377851,
+          "width": 1920,
+          "height": 1080,
+          "sha256": "e1cd7de8f70f902c307b9a24cdda7c52cb22dcfc3831cd9dc5764aa7e9049e66",
+          "metadata": {
+            "id": "e0ec1f6b-bdc8-4dd1-95b1-8ddcba03e049"
+          }
+        },
+        {
+          "order": 10,
+          "originalPhotoId": "9cd855ca-f2e1-46b7-a39e-5ddfd605e137",
+          "filename": "topo/10_9cd855ca-f2e1-46b7-a39e-5ddfd605e137.png",
+          "mimeType": "image/png",
+          "sizeBytes": 2651911,
+          "width": 1672,
+          "height": 941,
+          "sha256": "55e3aec38c1df9fd481a936306bcecf62c16ebe758dd1d081da2bbde9d2b1540",
+          "metadata": {
+            "id": "9cd855ca-f2e1-46b7-a39e-5ddfd605e137"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trails US",
+      "slug": "trails-us",
+      "originalCollectionId": "77d40288-102c-41e6-8927-184eb55b073d",
+      "photoCount": 10,
+      "photos": [
+        {
+          "order": 1,
+          "originalPhotoId": "65e1d32d-25ec-4d41-96c7-dd6e60f85f43",
+          "filename": "trails-us/01_65e1d32d-25ec-4d41-96c7-dd6e60f85f43.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3177551,
+          "width": 1672,
+          "height": 941,
+          "sha256": "b9d6ac7f8b3faf34ff967469ac23f702bf8730b77787fa7cabcfafabfe1f610a",
+          "metadata": {
+            "id": "65e1d32d-25ec-4d41-96c7-dd6e60f85f43"
+          }
+        },
+        {
+          "order": 2,
+          "originalPhotoId": "3cf3b624-94a7-4c89-a904-08c536c58bcd",
+          "filename": "trails-us/02_3cf3b624-94a7-4c89-a904-08c536c58bcd.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3262263,
+          "width": 1672,
+          "height": 941,
+          "sha256": "0ac087bfe3f56c179df429efec8889f93b2928e8a1cba4ca9a97edc463fd1225",
+          "metadata": {
+            "id": "3cf3b624-94a7-4c89-a904-08c536c58bcd"
+          }
+        },
+        {
+          "order": 3,
+          "originalPhotoId": "dba3311b-adb5-46f0-a438-bc404842b01a",
+          "filename": "trails-us/03_dba3311b-adb5-46f0-a438-bc404842b01a.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3351806,
+          "width": 1672,
+          "height": 941,
+          "sha256": "0ef3f7392f45946e29e66ad2a247327f8ceaf857e09abf5a39917851252165df",
+          "metadata": {
+            "id": "dba3311b-adb5-46f0-a438-bc404842b01a"
+          }
+        },
+        {
+          "order": 4,
+          "originalPhotoId": "36f04b32-80e5-43c7-b57f-c98a31c7e34d",
+          "filename": "trails-us/04_36f04b32-80e5-43c7-b57f-c98a31c7e34d.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3345053,
+          "width": 1672,
+          "height": 941,
+          "sha256": "d04a4ba66dea07143b49f9537476732890c20630b6b499d8d7a1038cf2666d59",
+          "metadata": {
+            "id": "36f04b32-80e5-43c7-b57f-c98a31c7e34d"
+          }
+        },
+        {
+          "order": 5,
+          "originalPhotoId": "7eea6590-6d18-4785-bb1f-2578724ac108",
+          "filename": "trails-us/05_7eea6590-6d18-4785-bb1f-2578724ac108.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3197194,
+          "width": 1672,
+          "height": 941,
+          "sha256": "33d269b510eb33c4be260c61e0db3e771a447cf9f44ff02db445528f0be03acd",
+          "metadata": {
+            "id": "7eea6590-6d18-4785-bb1f-2578724ac108"
+          }
+        },
+        {
+          "order": 6,
+          "originalPhotoId": "611631b5-ff36-4dc1-81a2-10c11577c987",
+          "filename": "trails-us/06_611631b5-ff36-4dc1-81a2-10c11577c987.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3173903,
+          "width": 1672,
+          "height": 941,
+          "sha256": "9b0c4acc1b63029296b54dee452ccf7b8a40538b69411add8626878244a2a53f",
+          "metadata": {
+            "id": "611631b5-ff36-4dc1-81a2-10c11577c987"
+          }
+        },
+        {
+          "order": 7,
+          "originalPhotoId": "33c6e859-3cf9-43ac-ab22-fb473598631f",
+          "filename": "trails-us/07_33c6e859-3cf9-43ac-ab22-fb473598631f.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3406601,
+          "width": 1672,
+          "height": 941,
+          "sha256": "0c623d16bb3297781cfd830332e4651ec488ce27561db4699c6231e8f3c379d4",
+          "metadata": {
+            "id": "33c6e859-3cf9-43ac-ab22-fb473598631f"
+          }
+        },
+        {
+          "order": 8,
+          "originalPhotoId": "615f101e-afa2-4aed-b88c-c95136573092",
+          "filename": "trails-us/08_615f101e-afa2-4aed-b88c-c95136573092.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3239674,
+          "width": 1672,
+          "height": 941,
+          "sha256": "7e13d0c57b9ae14ae4944ee100021b04e18ecabf95a28326b0d6c4b7ec0aef15",
+          "metadata": {
+            "id": "615f101e-afa2-4aed-b88c-c95136573092"
+          }
+        },
+        {
+          "order": 9,
+          "originalPhotoId": "79e6f628-9ca5-47c8-b2d8-f18021c2d8ef",
+          "filename": "trails-us/09_79e6f628-9ca5-47c8-b2d8-f18021c2d8ef.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3418409,
+          "width": 1672,
+          "height": 941,
+          "sha256": "c822992abaf3bfa11db055f9d0d5c40f9004080997def8a57f74aa5d808e46ee",
+          "metadata": {
+            "id": "79e6f628-9ca5-47c8-b2d8-f18021c2d8ef"
+          }
+        },
+        {
+          "order": 10,
+          "originalPhotoId": "944a1a61-6037-483a-8600-c498bf2e0978",
+          "filename": "trails-us/10_944a1a61-6037-483a-8600-c498bf2e0978.png",
+          "mimeType": "image/png",
+          "sizeBytes": 3300151,
+          "width": 1672,
+          "height": 941,
+          "sha256": "41bb2aeae2b24f94841a522de2de07fad2ea4b51f111cf2bd54bcdfb214b3597",
+          "metadata": {
+            "id": "944a1a61-6037-483a-8600-c498bf2e0978"
+          }
+        }
+      ]
+    }
+  ]
+}

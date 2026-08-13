@@ -1,0 +1,817 @@
+TRAILWEIGH — PROMPT 026D — GOLD STANDARD
+EXACT ORIGINAL THEME RECOVERY + PERMANENT LANDSCAPE-STYLE MIGRATION
+REPLACE THE BAD 026B COPIES — DO NOT INVENT ANY IMAGERY
+
+INTERNAL VERSION ID:
+026D-EXACT-ORIGINAL-THEME-MIGRATION-2026-08-13-R2
+
+RECOMMENDED REPLIT SETTINGS:
+- Agent mode: Economy
+- Work mode: Build
+- Start in a FRESH Agent thread
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE:
+Estimated time: 12–20 minutes
+Estimated Agent usage/cost: approximately $1.20–$2.25.
+
+============================================================
+MANDATORY STANDING TRAILWEIGH / REPLIT RULE
+============================================================
+
+Before any recommendation, diagnosis, edit, or test:
+
+1. Apply all relevant prior TrailWeigh/Replit lessons.
+2. USER LIVE EVIDENCE has highest priority for current behavior.
+3. Reconcile prior reports against CURRENT runtime/source.
+4. If current evidence contradicts an earlier finding, mark it:
+   SUPERSEDED / DISPROVEN EARLIER FINDING.
+5. Verify every file/component inspected is on the CURRENT active render/save/share path.
+6. Do not invent facts, imagery, IDs, URLs, theme content, or migration mappings.
+7. Use current official Replit behavior for Plan/Build/background-task/checkpoint assumptions.
+8. Never omit a known safety/communication safeguard merely to shorten the task.
+9. Perform the final self-audit before claiming internal PASS.
+10. Replit internal PASS is NOT final USER PASS.
+
+============================================================
+USER-VERIFIED STARTING STATE
+============================================================
+
+The current Themes dropdown contains TWO sets of four same-named themes.
+
+Current order:
+
+1. Landscape — working permanent built-in reference
+
+2. Psychedelic — BAD 026B COPY
+3. Retro-Outdoors — BAD 026B COPY
+4. Topo — BAD 026B COPY
+5. Trails US — BAD 026B COPY
+
+6. Psychedelic — ORIGINAL EXISTING THEME
+7. Retro-Outdoors — ORIGINAL EXISTING THEME
+8. Topo — ORIGINAL EXISTING THEME
+9. Trails US — ORIGINAL EXISTING THEME
+
+USER LIVE EVIDENCE:
+
+- Landscape background transfers to Share/Review correctly.
+- Previous Share/Review "no background" failures occurred when the source background
+  came from one of the original non-Landscape themes.
+- The first four after Landscape were created by 026B and contain WRONG imagery.
+- The second four contain the user's CORRECT original imagery.
+- The bad copies and originals match BY NAME ONLY.
+- The original four each contain 10 photos.
+- The user has now safely exported the exact original browser-local image bytes.
+
+Recent live screenshots also show a bad 026B Psychedelic set visually different from the
+recovered original Psychedelic set. Do not use visual similarity as a migration rule;
+the recovery files below are authoritative.
+
+============================================================
+PRIOR FINDINGS THAT ARE NOW SUPERSEDED
+============================================================
+
+026C correctly found:
+- pre-026B only Landscape was a true built-in;
+- original Psychedelic / Retro-Outdoors / Topo / Trails US were browser-local
+  localStorage + IndexedDB collections;
+- 026B invented replacement built-in imagery;
+- original saved backgrounds still used `{type:'custom', photoId}` and therefore did not
+  survive Share/Review.
+
+However, 026C concluded that a NEW browser migration + Object Storage upload flow would
+be required because it could not access the original image blobs.
+
+THAT PARTICULAR MIGRATION REQUIREMENT IS NOW SUPERSEDED.
+
+The user has manually and safely exported the exact original 40 image blobs.
+They are now available as recovery attachments and can be installed directly as stable
+application assets.
+
+Therefore:
+
+DO NOT build a new browser migration UI.
+DO NOT add Object Storage.
+DO NOT add upload endpoints.
+DO NOT add a new server storage architecture.
+
+Use the exact recovered files.
+
+============================================================
+AUTHORITATIVE RECOVERY ATTACHMENTS
+============================================================
+
+REQUIRED:
+
+1. TrailWeigh-Theme-psychedelic.zip
+Expected SHA-256:
+93a1b56244f3abf800750651dbb03c2918ae83cb5e2acdf897ec4b02ddc0c6f4
+
+2. TrailWeigh-Theme-retro-outdoors.zip
+Expected SHA-256:
+15595c540a8dbb6d94f035677b892fd3ed52ba35f8b5ad3418b089cb389a7388
+
+3. TrailWeigh-Theme-topo.zip
+Expected SHA-256:
+62cee8c75165410f90382ec1da3d807dbbe2bca017f85f0d188a232a4e0a63ae
+
+4. TrailWeigh-Theme-trails-us.zip
+Expected SHA-256:
+d0982741dad2f07a5698b0b3a31681fefd1eb10a04d4e70eeedd4ec7ede19b90
+
+5. TrailWeigh-Original-Themes-Manifest.json
+
+OPTIONAL VISUAL REFERENCE:
+6. TrailWeigh-Original-Themes-Contact-Sheet.jpg
+
+Recovered exact content:
+- Psychedelic = 10 PNGs
+- Retro-Outdoors = 10 PNGs
+- Topo = 10 PNGs
+- Trails US = 10 PNGs
+- TOTAL = 40 PNGs
+
+Original collection IDs:
+
+Psychedelic
+d79067cd-baff-4945-ad0e-d0e9d76ecd77
+
+Retro-Outdoors
+13ed57b7-c050-43b6-bd85-05a7c0fe102a
+
+Topo
+0452da5c-3bbe-4255-994d-02065c67bbec
+
+Trails US
+77d40288-102c-41e6-8927-184eb55b073d
+
+The manifest contains:
+- exact original collection IDs
+- exact original photo IDs
+- exact order 1–10 per theme
+- exact image dimensions
+- exact byte sizes
+- exact SHA-256 per PNG
+- exact recovered filenames
+
+THESE FILES ARE THE SOURCE OF TRUTH FOR THEME CONTENT.
+
+============================================================
+ATTACHMENT / INTEGRITY GATE — MUST PASS BEFORE CODE
+============================================================
+
+Before changing application code:
+
+1. Verify all 5 required recovery attachments are accessible.
+2. Compute SHA-256 for each of the four ZIP files.
+3. Match against the expected ZIP hashes above.
+4. Read the manifest.
+5. Extract ZIPs to a temporary staging location only.
+6. Verify:
+   - exactly 4 recovered themes
+   - exactly 10 PNGs per theme
+   - exactly 40 PNGs total
+   - every PNG SHA-256 matches manifest
+   - collection IDs match the exact four IDs above
+   - image ordering matches manifest
+7. Do not recompress, resize, crop, regenerate, recolor, or replace any recovered PNG.
+
+If any check fails:
+
+STOP.
+
+Report:
+RECOVERY ATTACHMENT GATE = FAIL
+
+Do not change TrailWeigh.
+
+============================================================
+MANDATORY CONTEXT REVIEW
+============================================================
+
+Before editing:
+
+1. Read current `replit.md` READ-ONLY.
+2. Read:
+   - workflow-reports/PROMPT_026B_REPORT.md
+   - workflow-reports/PROMPT_026C_REPORT.md
+3. Inspect current active:
+   - BackgroundPicker.tsx
+   - theme registry
+   - bgCollections.ts
+   - background save/load resolution
+   - Locker serialization/deserialization
+   - ReviewPage/public share background normalization
+4. Inspect exact 026B diff/commit.
+5. Verify all intended files are on the CURRENT active path.
+6. Identify the exact current 026B invented preset IDs and arrays.
+7. Identify the exact current original-local collection render path.
+8. Write EXPECTED changed files into the report before editing.
+
+If a material contradiction changes scope or architecture:
+STOP before code.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Replace the WRONG 026B content with the user's EXACT recovered originals and make those
+exact four themes permanent/shareable like Landscape.
+
+After repair, the user-facing permanent theme list must show exactly once:
+
+Landscape
+Psychedelic
+Retro-Outdoors
+Topo
+Trails US
+
+The four recovered non-Landscape themes must each contain exactly the original 10 photos,
+in exact manifest order.
+
+No invented images may remain in these themes.
+
+============================================================
+LANDSCAPE IS THE ARCHITECTURAL GOLDEN REFERENCE
+============================================================
+
+Before editing, trace Landscape end-to-end:
+
+A. permanent theme registry entry
+B. stable theme/preset IDs
+C. publicly resolvable image path
+D. selection state
+E. save serialization
+F. Locker payload
+G. saved-file load resolver
+H. Share/public DTO
+I. Review resolver
+J. rendered background
+
+Use the same architectural principles for the recovered four themes.
+
+Landscape is NOT an image source for them.
+
+============================================================
+STATIC-ASSET INSTALLATION
+============================================================
+
+Use the exact recovered PNGs as code-controlled/publicly resolvable application assets.
+
+Inspect the current Vite/static asset conventions and use the project's existing public/static
+asset pipeline.
+
+Do NOT invent a second asset system.
+
+Preferred logical grouping, adapted to the actual existing public root:
+
+themes/
+  psychedelic/
+  retro-outdoors/
+  topo/
+  trails-us/
+
+Requirements:
+
+- exact recovered PNG bytes remain unchanged
+- exact manifest ordering remains unchanged
+- source recovery ZIPs and temporary staging files must not be shipped in runtime bundle
+- do not add Object Storage
+- do not add an upload API
+- do not add a browser migration UI
+
+NOTE:
+The recovered source assets total roughly 134 MB.
+If the current build/development environment cannot safely serve this amount of static
+content, or if Replit identifies a documented hard platform limit that materially blocks
+this strategy:
+
+STOP and report the exact constraint.
+
+Do NOT silently optimize/recompress/replace the images.
+
+============================================================
+CANONICAL PRESET IDS
+============================================================
+
+Prefer preserving the useful canonical theme IDs already introduced by 026B:
+
+- psychedelic
+- retro-outdoors
+- topo
+- trails-us
+
+because they are already integrated into the permanent preset/share architecture.
+
+For individual photo preset IDs:
+
+- create deterministic stable IDs tied to theme + manifest order, OR preserve an existing
+  stable 026B ID only when it does not create misleading semantic compatibility.
+
+Recommended stable pattern if safe:
+
+psychedelic-01 ... psychedelic-10
+retro-outdoors-01 ... retro-outdoors-10
+topo-01 ... topo-10
+trails-us-01 ... trails-us-10
+
+Do not infer image labels such as "Aurora", "Yosemite", etc.
+The recovered files have no trustworthy original caption metadata.
+
+If UI requires a thumbnail label, use neutral labels:
+1, 2, 3 ... 10
+or omit labels if current UI permits.
+
+============================================================
+REMOVE ALL 026B INVENTED CONTENT
+============================================================
+
+Remove the 24 026B-invented Unsplash image definitions from the permanent theme arrays.
+
+Specifically eliminate the WRONG content identified in 026C:
+
+Psychedelic bad copy:
+- Northern Lights
+- Neon City
+- Wildflowers
+- Lava Flow
+- Milky Way
+- Light Prism
+
+Retro-Outdoors bad copy:
+- Campfire
+- Log Cabin
+- Dusty Trail
+- Tent Camp
+- River Canoe
+- Rocky Summit
+
+Topo bad copy:
+- Salt Flats
+- Sand Patterns
+- Crop Fields
+- Canyon Strata
+- Ice Fractures
+- River Delta
+
+Trails US bad copy:
+- Yosemite
+- Zion Canyon
+- Olympic Coast
+- Mt. Rainier
+- Forest Path
+- High Desert
+
+Do NOT keep any of those merely because their preset architecture works.
+
+The architecture may be reused.
+The imagery must be replaced.
+
+============================================================
+ORIGINAL LOCAL COLLECTIONS — PRESERVE DATA, REMOVE DUPLICATE UI
+============================================================
+
+Do NOT delete the user's original localStorage collections.
+Do NOT delete their IndexedDB blobs.
+Do NOT clear browser storage.
+
+After the correct permanent built-ins exist, suppress ONLY these exact legacy collection IDs
+from the local/custom theme list:
+
+d79067cd-baff-4945-ad0e-d0e9d76ecd77
+13ed57b7-c050-43b6-bd85-05a7c0fe102a
+0452da5c-3bbe-4255-994d-02065c67bbec
+77d40288-102c-41e6-8927-184eb55b073d
+
+Filter by exact collection ID — NOT by display name.
+
+Reason:
+A genuine user-created Custom Theme could legitimately use one of these names.
+Do not hide arbitrary themes by name.
+
+Underlying original browser data must remain untouched until USER VERIFICATION.
+
+============================================================
+LEGACY PHOTO-ID COMPATIBILITY
+============================================================
+
+The manifest contains all 40 old original `photoId` UUIDs.
+
+Build one exact compatibility map:
+
+old original photo UUID
+→ new canonical permanent preset ID
+
+Requirements:
+
+1. Only exact manifest photo IDs qualify.
+2. Any other `{type:'custom', photoId}` remains a normal private custom image.
+3. Owner save/load should normalize exact known legacy IDs to canonical presets.
+4. New Saves should serialize canonical `{type:'preset', id}` values.
+5. Do not bulk rewrite DB rows.
+6. Preserve genuinely custom-photo privacy.
+
+============================================================
+SHARE / REVIEW LEGACY COMPATIBILITY
+============================================================
+
+The existing privacy protection for arbitrary custom photos must remain.
+
+For Share/public normalization:
+
+If:
+`background.type === 'custom'`
+AND
+`photoId` is one of the exact 40 recovered legacy IDs
+
+then:
+normalize to the matching canonical permanent preset ID/path.
+
+Otherwise:
+retain the current custom-photo privacy behavior exactly.
+
+This is narrowly scoped compatibility for the known former permanent themes.
+
+DO NOT:
+- expose arbitrary IndexedDB images
+- expose Custom Theme photos
+- expose unknown custom photoIds
+- weaken the Review custom-background guard generally
+
+============================================================
+SAVED FILE BEHAVIOR
+============================================================
+
+Required outcomes:
+
+A. New saved file using any recovered permanent theme:
+- stores canonical preset identity
+- reopens with exact same image
+
+B. Existing saved file using one of the exact 40 old original custom photoIds:
+- resolves to the exact corresponding recovered permanent image
+- may be normalized on the next ordinary Save
+- no bulk DB migration required
+
+C. Existing truly custom/private image:
+- behavior unchanged
+- Share/Review privacy unchanged
+
+============================================================
+THEME SELECTOR ACCEPTANCE
+============================================================
+
+Visible permanent theme list exactly once:
+
+Landscape
+Psychedelic
+Retro-Outdoors
+Topo
+Trails US
+
+Each recovered theme:
+- exactly 10 thumbnails
+- exact manifest order
+- exact recovered imagery
+
+No duplicate same-name original-local entries.
+
+Preserve:
+- current dropdown placement
+- styling
+- theme order
+- accordion/disclosure behavior
+- Add Theme behavior
+- genuine user-created Custom Theme behavior
+- Fit / Fill
+- fade
+- Light / Dark
+- Bar Color
+- Font
+- Text Color
+- Transparency
+
+Do not rename Topo to Topo 1.
+
+============================================================
+DO NOT FIX THIS SEPARATE DEFECT
+============================================================
+
+The Share/Review Locker file-open failure involving `Sample List Live Test` remains a
+SEPARATE defect.
+
+Do NOT change its file-open behavior in 026D.
+
+Theme background compatibility may make a saved theme resolvable, but do not alter the
+Locker click/open code.
+
+============================================================
+026B AGENT MEMORY CLEANUP
+============================================================
+
+026C confirmed 026B modified these without authorization:
+
+- `.agents/memory/MEMORY.md`
+- `.agents/memory/builtin-theme-architecture.md`
+
+Do NOT treat those files as authority during implementation.
+
+After the application repair is complete, update ONLY the exact 026B-added theme memory
+content so it no longer treats invented Unsplash imagery as authoritative.
+
+Preserve the valid architectural principle:
+permanent built-in themes use stable preset identities.
+
+Revise the entry to state:
+- the original four theme image sets were recovered from user browser storage
+- exact recovered static assets are authoritative
+- arbitrary custom photos remain private
+- only the exact 40 legacy photo IDs receive compatibility mapping
+
+Do not modify unrelated memory content.
+
+Report these memory changes separately from application files.
+
+If precise 026B-added lines cannot be isolated safely:
+do NOT change memory files; report them for later cleanup.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT change:
+- Share Locker file-open behavior
+- live-share token architecture
+- general Locker architecture
+- arbitrary Custom Theme architecture
+- arbitrary custom-photo storage/privacy
+- importer/parser
+- toolbar
+- accordion behavior
+- authentication
+- database schema
+- database data in bulk
+- deployment/publishing
+- Production Database
+- production Secrets
+- package versions
+- unrelated styling
+- replit.md
+- .replit
+- Agent Skills
+
+============================================================
+CHECKPOINT / ROLLBACK
+============================================================
+
+Before edits:
+- confirm normal Agent checkpoint/recoverable state
+- record checkpoint/reference if exposed
+
+Do NOT include Development Database in any rollback for this task because this prompt does
+not authorize DB mutations.
+
+If USER VERIFICATION fails, rollback guidance must identify:
+- application code files
+- static theme asset directories
+- narrowly scoped memory documentation changes if any
+
+============================================================
+REPLIT TASK-SYSTEM SAFETY
+============================================================
+
+Auto-apply OFF.
+
+If Agent creates a background task:
+- keep it isolated until review
+- do not apply unrelated Ready tasks
+- do not silently merge other task changes
+
+Do not Resume, Publish, or Republish.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before editing:
+list EXPECTED changed files/directories in report.
+
+After editing:
+list ALL ACTUALLY changed files/directories.
+
+Any unrelated change:
+investigate and revert unless strictly necessary.
+
+No opportunistic refactor.
+No package upgrade.
+No schema change.
+No unrelated cleanup.
+
+============================================================
+TESTING — NON-DESTRUCTIVE
+============================================================
+
+Use controlled fixtures/current runtime paths.
+Do not modify/delete the user's real Locker rows merely to test.
+
+Required test matrix:
+
+1. recovery attachment gate PASS
+2. all 40 asset SHA-256 values match manifest after installation
+3. app/build/typecheck succeeds
+4. permanent theme list contains exactly five names
+5. no duplicate original-local names visible for the exact four legacy collection IDs
+6. Landscape still works
+7. Psychedelic = 10 exact recovered thumbnails
+8. Retro-Outdoors = 10 exact recovered thumbnails
+9. Topo = 10 exact recovered thumbnails
+10. Trails US = 10 exact recovered thumbnails
+11. new preset selection/save/load path for all four
+12. exact 40-ID legacy normalization unit/runtime test
+13. unknown custom photoId remains custom/private
+14. Share/public resolver accepts known legacy IDs
+15. Share/public resolver rejects/guards unknown custom IDs exactly as before
+16. Light mode regression
+17. Dark mode regression
+18. Fit/Fill regression
+19. fade regression
+20. Bar Color regression
+21. Font regression
+22. Text Color regression
+23. Transparency regression
+24. genuine Custom Theme behavior unchanged
+25. Share Locker file-open behavior unchanged
+
+Do not use App Testing auto-fix.
+
+If interactive testing would mutate user's real Locker:
+STOP and leave that specific acceptance step for USER VERIFICATION.
+
+============================================================
+USER LIVE VERIFICATION PLAN
+============================================================
+
+At completion, USER must verify in TrailWeigh:
+
+1. Open Themes.
+2. Confirm only one each:
+   Landscape / Psychedelic / Retro-Outdoors / Topo / Trails US.
+3. Open each recovered theme and visually confirm all 10 photos are the original ones.
+4. Choose at least one image from each recovered theme.
+5. Save/reopen a safe test file and confirm image persists.
+6. Open Share/Review and confirm the selected recovered background appears.
+7. Verify a genuine private Custom Theme/photo is NOT made public.
+8. Verify the separate Share Locker open bug was not unintentionally changed.
+
+USER VERIFICATION = PENDING until the user completes those tests.
+
+============================================================
+COST / SCOPE STOP RULE
+============================================================
+
+STOP instead of expanding scope if:
+
+- any recovery hash fails
+- files are missing
+- exact original mapping is ambiguous
+- static asset strategy is blocked by a documented platform/build constraint
+- repair requires Object Storage/new upload architecture
+- repair requires DB migration/schema change
+- auth/share-token architecture must change
+- more than directly relevant files require broad refactor
+- estimated work materially exceeds 20 minutes / ~$2.25
+- any genuinely private custom-photo behavior would be weakened
+
+Report the blocker.
+Do not improvise.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create BEFORE code changes:
+
+workflow-reports/PROMPT_026D_REPORT.md
+
+At completion include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. user-verified starting state
+4. recovery attachment hashes
+5. recovery asset integrity results
+6. current Landscape architecture trace
+7. 026B bad-copy root cause
+8. superseded prior findings
+9. expected changed files
+10. actual changed files
+11. exact asset install paths
+12. canonical preset ID design
+13. exact 40-ID compatibility mapping location
+14. Share/public compatibility logic
+15. browser-local duplicate suppression logic
+16. memory cleanup/revision if any
+17. test matrix/results
+18. tests not run
+19. rollback guidance
+20. unresolved issues
+21. elapsed time
+22. Agent actions
+23. lines read
+24. Agent cost/usage if shown
+25. final self-audit
+26. USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+Report exactly:
+
+RECOVERY ATTACHMENT GATE = PASS / FAIL
+
+LANDSCAPE SAVE/LOAD = PASS / FAIL / NOT RUN
+LANDSCAPE SHARE RESOLUTION = PASS / FAIL / NOT RUN
+
+PSYCHEDELIC EXACT ASSETS = PASS / FAIL
+PSYCHEDELIC SAVE/LOAD = PASS / FAIL / NOT RUN
+PSYCHEDELIC SHARE RESOLUTION = PASS / FAIL / NOT RUN
+
+RETRO-OUTDOORS EXACT ASSETS = PASS / FAIL
+RETRO-OUTDOORS SAVE/LOAD = PASS / FAIL / NOT RUN
+RETRO-OUTDOORS SHARE RESOLUTION = PASS / FAIL / NOT RUN
+
+TOPO EXACT ASSETS = PASS / FAIL
+TOPO SAVE/LOAD = PASS / FAIL / NOT RUN
+TOPO SHARE RESOLUTION = PASS / FAIL / NOT RUN
+
+TRAILS US EXACT ASSETS = PASS / FAIL
+TRAILS US SAVE/LOAD = PASS / FAIL / NOT RUN
+TRAILS US SHARE RESOLUTION = PASS / FAIL / NOT RUN
+
+DUPLICATE LEGACY THEME ENTRIES VISIBLE = YES / NO
+LEGACY LOCAL DATA DELETED = YES / NO
+EXACT 40 LEGACY PHOTO IDS MAPPED = YES / NO
+UNKNOWN CUSTOM PHOTO PRIVACY CHANGED = YES / NO
+GENUINE CUSTOM THEME BEHAVIOR CHANGED = YES / NO
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL SELF-AUDIT
+============================================================
+
+Before claiming internal PASS answer:
+
+1. Did I use only the exact recovered user images?
+2. Did I verify all 40 hashes?
+3. Did I remove all 026B invented imagery?
+4. Did I preserve Landscape?
+5. Did I preserve the user's local original data?
+6. Did I hide legacy duplicates by exact collection ID, not name?
+7. Did I map only the exact 40 legacy photo IDs?
+8. Did arbitrary Custom Themes/photos remain private?
+9. Did Share use canonical permanent resolution for known recovered themes?
+10. Did I avoid the separate Share Locker file-open defect?
+11. Did I avoid DB/schema/auth/deployment changes?
+12. Did I review every changed file?
+13. Did any older finding become superseded?
+14. Did I stay inside scope/cost?
+15. Is any uncertainty material enough to prevent PASS?
+
+If any answer reveals a material unresolved problem:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+workflow-reports/trailweigh-026D-report.zip
+
+ZIP must contain:
+PROMPT_026D_REPORT.md
+
+Verify:
+- report exists
+- ZIP exists
+- ZIP opens
+- no recovery source ZIP is accidentally included in report ZIP
+- no unauthorized changes occurred
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not proceed to the separate Share Locker file-open repair.
