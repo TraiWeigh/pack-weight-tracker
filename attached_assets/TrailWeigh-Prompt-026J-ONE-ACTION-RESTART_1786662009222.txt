@@ -1,0 +1,86 @@
+TRAILWEIGH — PROMPT 026J — ONE-ACTION WORKFLOW RESTART
+
+INTERNAL VERSION ID:
+026J-GENUINE-WORKFLOW-RESTART-2026-08-13-R1
+
+MODE
+- Economy
+- Build
+- Auto-apply OFF
+- Do not apply any unrelated Ready tasks
+
+PURPOSE
+026I proved the Share-default PNG is physically correct and in the correct active publicDir,
+but the currently running Vite process never added it to Vite's publicFiles Set.
+
+026I also proved the prior 026H attempt did NOT create a new Vite process.
+
+AUTHORIZED ACTION — EXACTLY ONE
+Use Replit's actual workflow restart action/tool to restart:
+
+artifacts/pack-checklist: web
+
+This must create a genuinely new Vite process.
+
+DO NOT
+- edit any source file
+- edit any asset
+- move/copy/rename the PNG
+- change Vite config
+- change DB data/schema
+- change auth/share tokens
+- Publish/Republish
+- modify replit.md
+- apply unrelated Ready tasks
+
+VERIFY AFTER RESTART
+1. Confirm the new Vite process start time/PID is newer than the pre-restart process.
+2. Request:
+   /themes/share-default/TrailWeigh-Share-Default-Background.png
+3. Confirm:
+   - HTTP 200
+   - Content-Type = image/png
+   - response is the actual PNG
+4. Spot-check:
+   /themes/psychedelic/01.png
+   - HTTP 200
+   - Content-Type = image/png
+
+IF THE SHARE-DEFAULT URL STILL RETURNS HTML
+STOP.
+Do not edit code.
+Report the exact result.
+
+REPORT
+Create:
+workflow-reports/PROMPT_026J_REPORT.md
+
+Include:
+- old PID/start time if available
+- new PID/start time
+- exact workflow restarted
+- share-default HTTP status/content-type
+- psychedelic HTTP status/content-type
+- files changed = NONE
+- USER VERIFICATION = PENDING
+
+ZIP
+Create:
+workflow-reports/trailweigh-026J-report.zip
+
+FINAL STATUS
+WORKFLOW RESTART TOOL/ACTION ACTUALLY EXECUTED = YES / NO
+NEW VITE PROCESS CREATED = YES / NO
+SHARE-DEFAULT HTTP STATUS = <exact>
+SHARE-DEFAULT CONTENT-TYPE = <exact>
+SHARE-DEFAULT SERVES ACTUAL PNG = YES / NO
+PSYCHEDELIC STILL SERVES PNG = YES / NO
+CODE CHANGED = NO
+STATIC ASSETS CHANGED = NO
+DATABASE DATA CHANGED = NO
+DATABASE SCHEMA CHANGED = NO
+REPLIT.MD CHANGED = NO
+DEPLOYMENT/PUBLISHING CHANGED = NO
+USER VERIFICATION = PENDING
+
+STOP after report + ZIP.
