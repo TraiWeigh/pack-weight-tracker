@@ -1,0 +1,973 @@
+TRAILWEIGH — PROMPT 025S
+FOLLOW-UP QUESTION / LEARNING AUDIT — CLOSE THE UNANSWERED 025R QUESTIONS
+
+RECOMMENDED REPLIT AGENT MODE: ECONOMY
+
+ESTIMATED SCOPE
+Estimated time: 12–20 minutes
+Estimated Agent usage/cost: approximately $1.75–$3.50.
+
+IMPORTANT:
+THIS IS A DIAGNOSTIC / LEARNING PROMPT ONLY.
+
+DO NOT MODIFY TRAILWEIGH APPLICATION CODE.
+DO NOT MODIFY UI.
+DO NOT MODIFY DATABASE DATA.
+DO NOT MODIFY DATABASE SCHEMA.
+DO NOT MODIFY AUTHENTICATION.
+DO NOT MODIFY STORAGE.
+DO NOT MODIFY ROUTES.
+DO NOT MODIFY THEMES.
+DO NOT APPLY A FIX.
+DO NOT REFACTOR.
+DO NOT "CLEAN UP" CODE.
+
+The purpose of 025S is to close material unanswered questions from Prompt 025R
+and create a stronger technical/communication baseline for all future TrailWeigh work.
+
+==================================================
+START IN A FRESH AGENT TASK
+==================================================
+
+Do not continue an older 025R task plan.
+
+Before investigating, verify:
+
+- Prompt title contains:
+  `FOLLOW-UP QUESTION / LEARNING AUDIT — CLOSE THE UNANSWERED 025R QUESTIONS`
+- Question 1 is present.
+- Question 25 is present.
+- Question 50 is present.
+- Question 75 is present.
+- Question 100 is present.
+
+If those checks fail:
+STOP.
+Report: WRONG 025S VERSION LOADED.
+
+==================================================
+READ 025R FIRST
+==================================================
+
+Before answering 025S, read the existing:
+
+workflow-reports/PROMPT_025R_REPORT.md
+
+Treat the FINAL DB-confirmed addendum/final authoritative findings in 025R as
+higher priority than earlier provisional theories in that same report.
+
+Known 025R high-confidence facts include:
+
+- `Sample List Live Test` has a saved DB background:
+  `{ "type":"custom", "photoId":"701cc0ea-4912-416c-b08e-0c747381668c" }`
+- the actual custom photo blob is stored in Owner browser IndexedDB:
+  database `trailweigh`, store `bgPhotos`, keyed by `photoId`;
+- the server/Locker DB stores only the reference/UUID, not the blob;
+- signed-out Review cannot resolve that browser-local blob;
+- 025Q intentionally rejected non-preset/custom backgrounds;
+- Owner and Review both use the same `ChecklistContent` background-rendering path;
+- appearance changes require Save to reach Locker/server DB;
+- Review testing should use private/incognito because some appearance keys are global;
+- current live share uses the flat Locker as the live source.
+
+Do NOT re-open already-settled questions unless needed to resolve a contradiction.
+
+==================================================
+MANDATORY ANSWER FORMAT
+==================================================
+
+EVERY numbered question must receive one of:
+
+CONFIRMED
+DISPROVEN
+UNKNOWN
+NOT APPLICABLE
+
+For every material answer include:
+
+- Answer status
+- Direct answer
+- Evidence source:
+  - USER LIVE
+  - RUNTIME
+  - DATABASE
+  - SOURCE
+  - REPLIT PLATFORM
+  - OTHER
+- Confidence:
+  - HIGH
+  - MEDIUM
+  - LOW
+- Exact supporting detail where relevant:
+  - file path
+  - function/hook/component
+  - storage key
+  - DB table/field
+  - route/API endpoint
+  - runtime value
+  - query result
+- If UNKNOWN:
+  - why unknown;
+  - exact evidence needed;
+  - whether that unknown blocks a future repair.
+
+Do not answer important questions with:
+"probably"
+"likely"
+"should"
+"appears"
+unless clearly labeled as an assumption with LOW confidence.
+
+==================================================
+SUPERSEDED-CLAIM RULE
+==================================================
+
+If new evidence disproves or replaces an earlier 025R conclusion:
+
+1. Quote/summarize the old conclusion.
+2. Mark it:
+   SUPERSEDED
+   or
+   DISPROVEN
+3. State the new authoritative finding.
+4. State the evidence that outranks the older claim.
+
+Do not leave two contradictory claims standing without resolution.
+
+==================================================
+SECTION A — 025R RECONCILIATION
+==================================================
+
+1. Which 025R findings are HIGH-confidence and should be treated as authoritative?
+
+2. Which 025R findings were only source-based and still lack runtime/DB proof?
+
+3. Which 025R findings were later superseded by the DB evidence?
+
+4. Are any contradictory statements still present in the final 025R report?
+
+5. For each remaining contradiction, which statement is authoritative now?
+
+6. Did 025R make any Replit-platform claims that were not actually verified?
+
+7. Which 025R answers should ChatGPT NOT use yet when writing repair prompts?
+
+8. Which 025R answers are safe enough to become standing TrailWeigh rules?
+
+==================================================
+SECTION B — WHOLE-APP ARCHITECTURE MAP
+==================================================
+
+Create a concise architecture map for the CURRENT application.
+
+For each major feature below, identify:
+- visible UI name;
+- standard UI/technical term;
+- owning component;
+- exact source file;
+- controlling function/hook/state;
+- persistence source;
+- important regression tests;
+- exact terminology ChatGPT should use in future prompts.
+
+9. New
+
+10. Save
+
+11. Save As
+
+12. Locker / saved-file list
+
+13. Rename
+
+14. Delete
+
+15. Undo
+
+16. Redo
+
+17. Reset
+
+18. Imperial / Metric
+
+19. Hide
+
+20. Preview
+
+21. Print
+
+22. Background / Themes
+
+23. category accordion
+
+24. Expand All / Collapse All
+
+25. Scan Gear List importer
+
+26. Share
+
+27. Public Review
+
+28. authentication/sign-in
+
+29. file opening/loading
+
+30. active filename/header state
+
+31. Weight Distribution
+
+32. Pack Summary
+
+33. category/item data editing
+
+34. checked/selected item state
+
+35. quantity editing
+
+36. Type and Name fields
+
+37. mobile toolbar layout
+
+38. custom theme storage/sync path
+
+==================================================
+SECTION C — EXACT PERSISTENCE MATRIX
+==================================================
+
+Create a matrix for each item below.
+
+Columns:
+- React/runtime state
+- localStorage
+- sessionStorage
+- IndexedDB
+- server DB
+- requires Save YES/NO
+- per-file / per-account / per-device / global
+- survives browser refresh
+- survives browser restart
+- survives new device
+- survives Replit code restart
+- survives republish
+- authoritative source when reopening saved file
+
+39. categories
+
+40. items
+
+41. Type
+
+42. Name
+
+43. Weight
+
+44. Qty
+
+45. checked state
+
+46. category/item order
+
+47. active file
+
+48. filename
+
+49. Imperial/Metric unit choice
+
+50. Hide state
+
+51. background
+
+52. selected theme group
+
+53. selected preset/photo reference
+
+54. Fit/Fill
+
+55. Light/Dark
+
+56. Darken/Fade
+
+57. Bar Color
+
+58. Transparency
+
+59. Text Color
+
+60. Font
+
+61. chart palette
+
+62. custom theme metadata
+
+63. custom photo blobs
+
+==================================================
+SECTION D — UNSAVED / DIRTY-STATE BEHAVIOR
+==================================================
+
+64. Does TrailWeigh maintain an explicit dirty/unsaved flag for the active file?
+
+65. If yes, where is it stored and what UI uses it?
+
+66. If no, how can the user know browser-visible edits have not yet reached the server Locker?
+
+67. Can a user close/reopen the browser and still see local edits that were never saved to the server?
+
+68. Can local browser state be newer than the server Locker record?
+
+69. What exact action is the safest way to prove a file is server-saved?
+
+70. Does reopening the saved file from Locker prove server persistence?
+
+71. Is there any user-visible indicator that Save finished successfully other than the toast/message?
+
+==================================================
+SECTION E — SAVE PATHS / savedAt / sourceVersion
+==================================================
+
+Do not infer one Save path from another.
+
+For each action below determine:
+- exact handler;
+- exact API call;
+- whether Locker DB payload changes;
+- whether `savedAt` changes;
+- whether 025P `sourceVersion` therefore changes.
+
+72. Save existing file after item edit
+
+73. Save existing file after Qty-only edit
+
+74. Save existing file after Weight-only edit
+
+75. Save existing file after checkbox-only edit
+
+76. Save existing file after background-only edit
+
+77. Save existing file after Bar Color-only edit
+
+78. Save existing file after Transparency-only edit
+
+79. Save existing file after Font-only edit
+
+80. Save existing file after Text Color-only edit
+
+81. Save existing file after Light/Dark-only edit
+
+82. Save existing file after Fit/Fill-only edit
+
+83. Rename-only action
+
+84. Save As
+
+85. brand-new first Save
+
+86. delete file
+
+87. add new file to Locker
+
+88. Is `sourceVersion` guaranteed to change for every successful saved user-visible file change?
+
+89. If not, list every change type that can remain invisible to Review reload.
+
+==================================================
+SECTION F — REPLIT CHECKPOINT / ROLLBACK SAFETY
+==================================================
+
+These answers must distinguish verified Replit project/platform behavior from assumptions.
+
+90. What exactly does a Replit checkpoint protect in THIS project?
+
+91. Does it snapshot source code?
+
+92. configuration?
+
+93. environment settings?
+
+94. database schema?
+
+95. database rows/data?
+
+96. uploaded/static project assets?
+
+97. browser localStorage?
+
+98. browser IndexedDB?
+
+99. Custom Theme photo blobs?
+
+100. If a checkpoint is restored, can server DB records created after that checkpoint be lost?
+
+101. If yes, prove the mechanism/evidence.
+
+102. If unknown, say UNKNOWN and identify how to verify safely.
+
+103. Are DB migrations reversed by checkpoint restore?
+
+104. What is the safest rollback sequence after a bad code prompt?
+
+105. What should the user separately back up before any prompt involving schema/persistence/auth?
+
+==================================================
+SECTION G — DEVELOPMENT VS PUBLISHED DATA
+==================================================
+
+106. Does the current Development app use the same database as the Published app?
+
+107. If not, what database/environment does each use?
+
+108. Does localStorage/IndexedDB differ automatically between Preview/dev and published domains?
+
+109. If TrailWeigh is published for the first time, do existing development Locker records appear there?
+
+110. If not, what migration/sync is required?
+
+111. What happens to existing published user data when code is republished?
+
+112. What happens if deployment type changes?
+
+113. Can a published rollback affect user DB records?
+
+114. What must be tested before first public launch?
+
+==================================================
+SECTION H — BACKUP / EXPORT SAFETY
+==================================================
+
+115. Is there currently a user-facing export/backup of Locker files?
+
+116. Can the owner export all Locker entries without changing app code?
+
+117. Can Replit safely perform a read-only database export before risky persistence/schema work?
+
+118. What exact format would preserve all file payloads and appearance metadata?
+
+119. Would that export preserve custom photo blobs?
+
+120. If not, how would custom photo blobs need to be backed up?
+
+121. What minimum backup feature should exist before future schema migrations?
+
+==================================================
+SECTION I — LIVE SHARE SCOPE / PRIVACY
+==================================================
+
+122. Confirm whether one current 025P live token exposes the ENTIRE owner Locker.
+
+123. Does a new Locker file created tomorrow automatically become visible through the existing token?
+
+124. Does deleting a Locker file remove it from that Review link after reload?
+
+125. Does renaming a file update the same Review token?
+
+126. Can any current Locker file be excluded from a live token?
+
+127. Does the public DTO include every field of each LockerEntry or an allowlisted subset?
+
+128. List every field exposed publicly.
+
+129. Is ownerId ever returned to the anonymous reviewer?
+
+130. Are private Custom Theme photo blobs ever public?
+
+131. Are custom photo UUIDs exposed publicly even though the blob is not?
+
+132. Is that UUID exposure itself considered acceptable under current design?
+
+133. What exact user-facing privacy warning should eventually accompany "share entire Locker" if we retain this architecture?
+
+==================================================
+SECTION J — SHARE TOKEN SECURITY
+==================================================
+
+134. What exact token format is generated now?
+
+135. How many random bits of entropy does it provide?
+
+136. Is token generation cryptographically secure?
+
+137. Can tokens be enumerated/brute-forced realistically?
+
+138. Is there rate limiting on public GET `/api/links/:id`?
+
+139. Is there IP throttling?
+
+140. Is there abuse monitoring/logging?
+
+141. Do share tokens expire?
+
+142. Can the owner revoke a token?
+
+143. Can the owner list active tokens?
+
+144. Does deleting the owner account invalidate tokens?
+
+145. Does deleting all source files invalidate the token?
+
+146. Is a 10-character hex token appropriate for a public production app containing private user-created lists?
+
+147. If not, what token length/format is recommended and why?
+
+148. Would increasing token length break existing links?
+
+==================================================
+SECTION K — LEGACY SHARE PATHS
+==================================================
+
+149. Which routes currently serve old/frozen share links?
+
+150. Is `/shared` still reachable?
+
+151. Can current UI still generate an old payload/hash share?
+
+152. Is the giant base64 fallback completely removed?
+
+153. Are old frozen DB-backed share records still supported?
+
+154. What code decides old frozen vs `live-locker` behavior?
+
+155. Which legacy share files/functions are still active?
+
+156. Which are dead code?
+
+157. Could removing legacy share code break existing user links?
+
+158. What safe deprecation path would preserve old links?
+
+==================================================
+SECTION L — REVIEW SANDBOX / RESEED BEHAVIOR
+==================================================
+
+159. What exact localStorage keys are token-namespaced?
+
+160. Which Review keys are still global?
+
+161. Can two different Review tokens contaminate one another in the same browser?
+
+162. Can Review contaminate Owner appearance state in the same browser?
+
+163. When Owner sourceVersion changes, exactly what reviewer-local data is replaced?
+
+164. Are all reviewer edits discarded on reseed?
+
+165. Does Review warn before discarding local reviewer changes?
+
+166. Can Review preserve local edits when source did not change?
+
+167. What happens if Owner changes one file while reviewer modified another file?
+
+168. Is there any merge behavior?
+
+169. Is there any risk Review writes to Owner DB?
+
+170. What exact server/API gates prevent anonymous Review writes?
+
+==================================================
+SECTION M — CURRENT BACKGROUND UUID PROVENANCE
+==================================================
+
+Use the confirmed UUID:
+
+701cc0ea-4912-416c-b08e-0c747381668c
+
+171. Can current source/runtime/history determine when this UUID was created?
+
+172. Which function generated it?
+
+173. Was it created by an actual user-uploaded photo path?
+
+174. Was it created by selecting an image that visually came from the Landscape section?
+
+175. Could an earlier TrailWeigh prompt have copied a built-in image into the custom-photo storage path?
+
+176. Does the owner browser IndexedDB record contain metadata identifying filename/source URL/date?
+
+177. Can Replit inspect that metadata read-only without exposing the image itself?
+
+178. Is the image actually a private upload, a downloaded built-in preset, or UNKNOWN?
+
+179. If UNKNOWN, what exact safe evidence would determine provenance?
+
+==================================================
+SECTION N — THEME HISTORY / MISSING GROUPS
+==================================================
+
+Known product history expected:
+- Landscape
+- Retro-Outdoors
+- Psychedelic
+- Topo 1
+- Custom
+
+Current 025R source inspection found only Landscape as bundled presets.
+
+180. Search current source for Retro-Outdoors.
+
+181. Search current source for Psychedelic.
+
+182. Search current source for Topo 1.
+
+183. Search Git history/checkpoints/report files for evidence these groups were implemented.
+
+184. Search assets/public directories for their images.
+
+185. Search localStorage/IndexedDB theme metadata paths.
+
+186. Were these groups ever implemented as built-in themes?
+
+187. Were they removed or superseded?
+
+188. Are they currently only owner-local custom collections?
+
+189. If owner UI currently shows them, what exact data source creates them?
+
+190. What should the canonical permanent theme registry be going forward?
+
+191. What stable internal ID rules should built-in themes use?
+
+==================================================
+SECTION O — SAFE TEST ARCHITECTURE
+==================================================
+
+192. Is there currently a dedicated test account?
+
+193. Is there a test database?
+
+194. Is there a test Locker namespace?
+
+195. Can Agent tests create data without touching important owner files?
+
+196. Should future prompts use a dedicated TrailWeigh test account?
+
+197. What would be required to set one up safely?
+
+198. What exact files should never be altered during automated tests?
+
+199. Should `Sample List` remain a user-controlled test fixture only when explicitly approved?
+
+200. What naming convention should temporary test files use?
+
+201. How should Replit prove cleanup after a test?
+
+202. What destructive tests should never run against owner data?
+
+==================================================
+SECTION P — DELETION / PRIVACY LIFECYCLE
+==================================================
+
+203. When owner deletes a Locker file, what server DB row/data is removed?
+
+204. What browser-local copies remain?
+
+205. What Review sandbox copies remain?
+
+206. What live share references remain?
+
+207. When account is deleted, what happens to Locker rows?
+
+208. share_links rows?
+
+209. browser localStorage?
+
+210. IndexedDB custom photo blobs?
+
+211. logs?
+
+212. backups/snapshots?
+
+213. Is deletion currently immediate everywhere or only in primary DB?
+
+214. What retention cannot currently be guaranteed?
+
+215. What exact product wording is safe today regarding permanent deletion?
+
+==================================================
+SECTION Q — DATA MODEL VERSIONING / MIGRATIONS
+==================================================
+
+216. Does PackStore have an explicit schema/version number?
+
+217. Do Locker payloads have a version field?
+
+218. Is there a migration layer for old saved files?
+
+219. What happens if a field is renamed in future code?
+
+220. What happens if an older Locker payload lacks a new field?
+
+221. What defaults are applied?
+
+222. Can current migrations alter user data silently?
+
+223. Which previous prompts added compatibility/migration code?
+
+224. What migration test fixture should exist before future schema changes?
+
+225. What rollback strategy is safe if a migration fails?
+
+==================================================
+SECTION R — EXTERNAL BUILT-IN BACKGROUND RELIABILITY
+==================================================
+
+226. Are current Landscape presets remote Unsplash URLs?
+
+227. Are those URLs stable/permanent?
+
+228. What happens if one returns 404/403/rate-limit?
+
+229. Are images cached locally by the app?
+
+230. Does TrailWeigh depend on third-party availability for built-in themes?
+
+231. Are there licensing/attribution obligations currently implemented?
+
+232. Would bundling/hosting permanent theme assets improve reliability?
+
+233. What migration would be required without breaking existing saved preset IDs?
+
+234. Should saved files store stable preset IDs rather than raw external URLs?
+
+==================================================
+SECTION S — TECHNICAL DEBT TO LEAVE ALONE
+==================================================
+
+235. List current code that looks duplicated/awkward but is stable and should NOT be refactored during unrelated prompts.
+
+236. List current compatibility code that must remain for old saved files/links.
+
+237. List current technical debt that is actually causing bugs now.
+
+238. Which debt should have its own future prompt?
+
+239. Which debt should be deliberately deferred?
+
+240. What files/components are especially high-risk because many prior PASS behaviors depend on them?
+
+==================================================
+SECTION T — COMMUNICATION MAP FOR CHATGPT
+==================================================
+
+For each major TrailWeigh area, tell ChatGPT how to communicate with Replit later.
+
+For each area include:
+- exact standard UI term;
+- exact component/file;
+- controlling state/hook/function;
+- persistence path;
+- most important regression;
+- evidence Replit should request before editing;
+- wording ChatGPT should avoid because it is ambiguous.
+
+241. category accordion
+
+242. left-side Expand All/Collapse All control
+
+243. right sidebar accordion control
+
+244. Locker
+
+245. Save / Save As
+
+246. Background/Themes
+
+247. built-in theme group
+
+248. Custom Theme
+
+249. background preset/photo
+
+250. Bar Color / Transparency / Text Color / Font
+
+251. Preview / Print
+
+252. Hide
+
+253. Share
+
+254. Public Review
+
+255. importer / Scan Gear List
+
+256. Type / Name / Weight / Qty / Total
+
+257. Light/Dark
+
+258. mobile toolbar
+
+259. file-name pill/header
+
+260. account/authentication
+
+==================================================
+SECTION U — BEST FUTURE PROMPT PROTOCOL
+==================================================
+
+261. Based on the current codebase, what should ChatGPT always ask Replit BEFORE a visual/UI change?
+
+262. Before a persistence/data change?
+
+263. Before a Share/Review change?
+
+264. Before a theme/background change?
+
+265. Before a parser/importer change?
+
+266. Before an authentication/privacy change?
+
+267. What evidence should be attached for visual changes?
+
+268. What evidence should be attached for behavior changes?
+
+269. What evidence should be attached for importer/data changes?
+
+270. What should automatically trigger a STOP rather than an edit?
+
+271. How should Replit report changed files?
+
+272. How should Replit report user-data changes separately?
+
+273. How should Replit report unresolved unknowns?
+
+274. How should Replit label internal tests vs USER VERIFICATION?
+
+275. What exact pre-prompt save/checkpoint workflow should the user follow?
+
+==================================================
+SECTION V — REMAINING UNKNOWNS
+==================================================
+
+276. What important TrailWeigh architecture questions are still unanswered after 025S?
+
+277. Which unknowns would materially change future repair design?
+
+278. Which unknowns are safe to defer?
+
+279. What exact additional evidence would close each blocking unknown?
+
+280. Are there any areas where Replit cannot determine the truth from current access?
+
+281. Which questions would require user live testing?
+
+282. Which would require a safe database query?
+
+283. Which would require Replit platform documentation/support?
+
+==================================================
+FINAL AUTHORITATIVE SYNTHESIS
+==================================================
+
+Create these exact final sections:
+
+A. FINAL AUTHORITATIVE FINDINGS
+B. SUPERSEDED / DISPROVEN 025R FINDINGS
+C. WHOLE-APP ARCHITECTURE MAP
+D. PERSISTENCE MATRIX
+E. SAVE / savedAt / sourceVersion MATRIX
+F. CHECKPOINT / ROLLBACK SAFETY
+G. DEVELOPMENT VS PUBLISHED DATA
+H. BACKUP / EXPORT FINDING
+I. LIVE SHARE PRIVACY SCOPE
+J. SHARE TOKEN SECURITY
+K. REVIEW SANDBOX BEHAVIOR
+L. BACKGROUND UUID PROVENANCE
+M. THEME HISTORY / CURRENT CANONICAL REGISTRY
+N. TEST-DATA SAFETY PLAN
+O. DELETION / PRIVACY LIFECYCLE
+P. DATA MODEL VERSIONING
+Q. EXTERNAL-ASSET RELIABILITY
+R. TECHNICAL DEBT TO LEAVE ALONE
+S. CHATGPT ↔ REPLIT COMMUNICATION MAP
+T. BEST FUTURE PROMPT PROTOCOL
+U. REMAINING BLOCKING UNKNOWNS
+V. SAFE TRAILWEIGH WORKFLOW FOR THE USER
+
+==================================================
+SAFE TRAILWEIGH WORKFLOW FOR THE USER
+==================================================
+
+Write this section in plain language for a non-programmer.
+
+It must explain:
+
+1. What the user should Save before any future prompt.
+2. How to verify the file really saved to the server Locker.
+3. What screenshot/evidence to capture.
+4. What Replit checkpoint does and does not protect.
+5. When not to restore a checkpoint without checking DB consequences.
+6. How to test Review safely in private/incognito.
+7. How to protect Custom Theme photos.
+8. What never to clear/delete/reset without explicit approval.
+9. What to upload/send back to ChatGPT after Replit finishes.
+10. What to do if Replit cannot answer a question.
+
+==================================================
+NO-CODE / NO-DATA-CHANGE VERIFICATION
+==================================================
+
+Before completion:
+
+- inspect git diff/status;
+- confirm no application source changes were introduced by 025S;
+- confirm no database INSERT/UPDATE/DELETE was performed;
+- confirm no schema change was performed;
+- confirm no localStorage/IndexedDB clearing was performed;
+- confirm no Owner files were edited/deleted;
+- revert any accidental diagnostic edits.
+
+Report exactly:
+
+APPLICATION CODE CHANGED BY 025S = NONE
+DATABASE DATA CHANGED BY 025S = NONE
+DATABASE SCHEMA CHANGED BY 025S = NONE
+OWNER DATA CHANGED BY 025S = NONE
+
+==================================================
+MANDATORY REPORT / ZIP
+==================================================
+
+Create:
+
+workflow-reports/PROMPT_025S_REPORT.md
+
+Every substantive answer must be in that report.
+Do not leave important information only in Agent chat.
+
+Then create:
+
+workflow-reports/trailweigh-025S-report.zip
+
+ZIP must contain at minimum:
+
+- PROMPT_025S_REPORT.md
+
+Also include safe supporting evidence if created:
+- sanitized DB SELECT outputs;
+- architecture text maps;
+- persistence matrix CSV/MD;
+- screenshots;
+- sanitized runtime/source traces.
+
+Before completion verify:
+
+1. report exists;
+2. ZIP exists;
+3. ZIP > 0 bytes;
+4. ZIP opens/lists successfully;
+5. PROMPT_025S_REPORT.md is inside;
+6. every numbered question is accounted for;
+7. no important answer exists only in Agent chat;
+8. ZIP is not corrupt.
+
+If any required question is unanswered without an UNKNOWN explanation:
+STATUS = FAIL.
+
+==================================================
+FINAL STOP RULE
+==================================================
+
+STOP after the verified 025S report and ZIP.
+
+DO NOT FIX ANYTHING.
+
+The next TrailWeigh repair prompt will be written only after ChatGPT reviews
+the 025S answers and the user decides what product behavior they want.
