@@ -1,0 +1,391 @@
+TRAILWEIGH — PROMPT 026C — GOLD STANDARD R3
+DIAGNOSTIC ONLY — IDENTIFY AND PRESERVE THE REAL ORIGINAL THEMES
+THE FIRST FOUR AFTER LANDSCAPE ARE BAD 026B COPIES
+
+INTERNAL VERSION ID:
+026C-ORIGINAL-THEME-RECOVERY-2026-08-13-R3
+
+RECOMMENDED REPLIT SETTINGS:
+- Agent mode: Economy
+- Fresh Agent thread
+- Plan/read-only investigation only if available
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE:
+Estimated time: 5–10 minutes
+Estimated Agent usage/cost: approximately $0.50–$1.25.
+
+============================================================
+MANDATORY USER-VERIFIED CURRENT STATE
+============================================================
+
+The user has now directly verified the duplicate-theme ordering and content.
+
+CURRENT Themes dropdown order:
+
+1. Landscape
+
+2. Psychedelic      <-- BAD 026B COPY
+3. Retro-Outdoors   <-- BAD 026B COPY
+4. Topo             <-- BAD 026B COPY
+5. Trails US        <-- BAD 026B COPY
+
+6. Psychedelic      <-- ORIGINAL EXISTING THEME
+7. Retro-Outdoors   <-- ORIGINAL EXISTING THEME
+8. Topo             <-- ORIGINAL EXISTING THEME
+9. Trails US        <-- ORIGINAL EXISTING THEME
+
+USER-VERIFIED FACT:
+
+The duplicate pairs are the SAME BY NAME ONLY.
+
+The first four themes after Landscape DO NOT contain the same photos as the original
+four themes below them.
+
+Therefore:
+
+- The first Psychedelic / Retro-Outdoors / Topo / Trails US set is the BAD 026B-created set.
+- The second Psychedelic / Retro-Outdoors / Topo / Trails US set is the ORIGINAL pre-existing set.
+- Do NOT spend Agent time trying to determine which duplicate is original from name/order.
+  The user has already verified this.
+- Replit must now recover and preserve the ORIGINAL second set exactly.
+
+Any prior report or inference that treats the 026B copies as equivalent to the originals is:
+
+SUPERSEDED / DISPROVEN EARLIER FINDING.
+
+============================================================
+STANDING TRAILWEIGH DECISION RULE
+============================================================
+
+Before any diagnosis or recommendation:
+
+1. Apply all relevant TrailWeigh/Replit lessons and the Gold Standard Prompt Protocol.
+2. User live evidence has highest priority for current behavior.
+3. Reconcile prior reports against current runtime/source evidence.
+4. Verify every component/file inspected is on the CURRENT active path.
+5. Do not invent theme photos, IDs, URLs, labels, or mappings.
+6. Do not use Agent memory as authority for the intended theme imagery.
+7. If a platform behavior matters and may have changed, use current official Replit docs.
+8. If material evidence remains missing, report it instead of guessing.
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+THIS IS DIAGNOSTIC / RECOVERY ONLY.
+
+DO NOT:
+- edit application source
+- edit replit.md
+- edit .replit
+- edit `.agents/memory/*`
+- edit packages
+- create themes
+- delete themes
+- rename themes
+- reorder themes
+- hide duplicates
+- migrate themes
+- replace photos
+- create new Unsplash/photo IDs
+- change localStorage
+- change IndexedDB
+- clear browser storage
+- change database data/schema
+- change Locker/share data
+- Resume
+- Publish/Republish
+- invoke App Testing auto-fix
+- apply unrelated Ready tasks
+
+AUTHORIZED WRITES ONLY:
+- workflow-reports/PROMPT_026C_REPORT.md
+- workflow-reports/trailweigh-026C-report.zip
+
+============================================================
+MANDATORY CONTEXT REVIEW
+============================================================
+
+Before answering:
+
+1. Read current `replit.md` READ-ONLY.
+2. Read completed `workflow-reports/PROMPT_026B_REPORT.md`.
+3. Inspect the exact 026B diff/commit/checkpoint READ-ONLY.
+4. Inspect current active theme selector/runtime path READ-ONLY.
+5. Inspect Git/project history relevant to the four ORIGINAL themes.
+6. Inspect browser theme metadata READ-ONLY if safely accessible.
+7. Verify every inspected file/function is on the CURRENT active path.
+
+Do not modify anything during this review.
+
+============================================================
+PART A — CONFIRM THE USER-VERIFIED ORDER IN CODE/RUNTIME
+============================================================
+
+1. Confirm the current dropdown is built from at least two sources:
+   - built-in theme definitions
+   - browser-local/custom theme collections
+
+2. Confirm the first four entries after Landscape correspond to the 026B-created
+   built-in definitions.
+
+3. Confirm the second four entries correspond to the original pre-existing local themes.
+
+4. For each BAD 026B copy report:
+   - name
+   - built-in ID/key
+   - exact source file
+   - image/photo definitions
+   - whether 026B introduced it
+
+5. For each ORIGINAL theme report:
+   - name
+   - collection UUID/key
+   - exact metadata source
+   - number of photos
+   - storage type
+   - whether it existed before 026B
+
+Do not waste time re-proving the user's observed ordering from scratch.
+Use runtime/source to explain WHY the order occurs.
+
+============================================================
+PART B — RECOVER THE EXACT ORIGINAL THEME CONTENT
+============================================================
+
+For the ORIGINAL second-set themes:
+
+- Psychedelic
+- Retro-Outdoors
+- Topo
+- Trails US
+
+recover as much exact content/metadata as possible without changing storage.
+
+For each original theme report:
+
+1. theme/collection name
+2. collection UUID/key
+3. number of photos
+4. photo IDs
+5. filenames if present
+6. labels/captions if present
+7. source/provider URL metadata if present
+8. whether each image is:
+   - public URL
+   - bundled asset
+   - IndexedDB Blob
+   - other
+9. whether exact image bytes currently exist only in IndexedDB
+10. whether enough metadata exists to preserve the exact imagery when converting it
+    to a permanent/shareable theme
+
+DO NOT substitute visually similar photos.
+DO NOT invent new image IDs.
+DO NOT use the 026B copies as source material.
+
+============================================================
+PART C — SEARCH HISTORY FOR THE ORIGINAL DEFINITIONS
+============================================================
+
+Search exact Git/project history for the ORIGINAL versions of:
+
+- Psychedelic
+- Retro-Outdoors
+- Topo / Topo 1
+- Trails / Trails US
+
+For each theme:
+
+STATUS:
+RECOVERED / PARTIALLY RECOVERED / NOT FOUND
+
+If recovered report:
+- commit/checkpoint/date
+- old stable ID/key
+- exact photo IDs/assets/URLs
+- labels
+- count
+- source file/path
+
+Then compare the historical theme content against the CURRENT ORIGINAL second-set theme.
+
+Classify:
+EXACT MATCH
+PARTIAL MATCH
+DIFFERENT
+CANNOT COMPARE
+
+This is essential because the correct repair must preserve the user's actual intended
+original theme photos.
+
+============================================================
+PART D — EXPLAIN WHY 026B CREATED BAD COPIES
+============================================================
+
+Trace the 026B implementation and answer:
+
+1. Why did 026B fail to recognize the existing original themes?
+2. Did it see only names but not the actual local collection content?
+3. Did it create new hard-coded built-ins from guessed/remembered Unsplash IDs?
+4. Did it make any attempt to map original collection UUIDs/photo IDs to built-ins?
+5. Did it make any attempt to preserve the exact original photo sets?
+6. Why are the bad copies displayed before the originals?
+7. Why do both sets remain visible?
+8. Is there any de-duplication logic by name or semantic theme identity?
+9. Could selecting an ORIGINAL second-set theme still save `{type:'custom', photoId}`
+   and therefore still fail to appear in Share/Review?
+10. Could selecting a BAD first-set theme now share correctly but show the wrong photos?
+
+Give exact evidence.
+
+============================================================
+PART E — TRAILS US SPECIAL VERIFICATION
+============================================================
+
+The original Trails US content must be preserved exactly.
+
+Do NOT assume the 026B generic Yosemite/Zion/scenery set is correct.
+
+For the ORIGINAL Trails US theme:
+
+1. identify the actual photo/map content source
+2. identify all recoverable IDs/files/URLs
+3. determine whether these are long-distance trail-map backgrounds or another intended set
+4. compare them to the 026B bad copy
+5. state clearly whether 026B replaced the intended content
+
+Required classification:
+
+026B TRAILS US CONTENT =
+VERIFIED ORIGINAL / INCORRECT REPLACEMENT / UNKNOWN
+
+============================================================
+PART F — DESIGN THE CORRECT MIGRATION WITHOUT IMPLEMENTING
+============================================================
+
+Design the smallest safe later repair.
+
+The later repair must:
+
+1. preserve the exact ORIGINAL second-set imagery
+2. make those exact themes behave like Landscape
+3. use stable permanent built-in IDs/paths
+4. make Save/Load portable
+5. make Share/Review portable
+6. remove the visible bad-copy duplicates
+7. preserve original local data until user verification proves migration success
+8. preserve old saved files where possible
+9. avoid DB rewriting unless absolutely necessary
+10. preserve true user-created Custom Theme behavior
+
+Explicitly answer:
+
+A. Can original themes be converted directly using exact recovered URLs/assets?
+B. If original images exist only as IndexedDB blobs, what must happen to make those exact
+   images permanent/shareable without replacing them?
+C. Can the later repair create a compatibility mapping from known old
+   `{type:'custom', photoId}` values to stable built-in preset IDs?
+D. Should the bad 026B built-ins be removed only AFTER exact original-theme parity exists?
+E. Should original local same-name collections remain stored but be hidden only after
+   successful migration?
+F. Which exact files would the correction need to change?
+G. What user live tests will prove the repair?
+
+============================================================
+PART G — AUDIT 026B UNRELATED CHANGES
+============================================================
+
+Audit:
+
+- `.agents/memory/MEMORY.md`
+- `.agents/memory/builtin-theme-architecture.md`
+
+Report:
+1. what 026B changed
+2. whether the user requested it
+3. whether it was required for the application repair
+4. whether it could bias future Agent behavior
+5. whether the later correction should revert or revise those entries
+
+DO NOT modify them in this prompt.
+
+============================================================
+MANDATORY FINAL CLASSIFICATION
+============================================================
+
+Report exactly:
+
+USER-VERIFIED BAD COPY ORDER = CONFIRMED
+BAD COPY SET = FIRST FOUR AFTER LANDSCAPE
+ORIGINAL SET = SECOND FOUR AFTER LANDSCAPE
+
+ORIGINAL PSYCHEDELIC RECOVERED = YES / PARTIAL / NO
+ORIGINAL RETRO-OUTDOORS RECOVERED = YES / PARTIAL / NO
+ORIGINAL TOPO RECOVERED = YES / PARTIAL / NO
+ORIGINAL TRAILS US RECOVERED = YES / PARTIAL / NO
+
+026B BAD COPIES USE ORIGINAL PHOTOS = NO
+026B CREATED NEW DUPLICATE BUILT-INS = YES
+ORIGINAL SECOND-SET THEMES STILL SAVE AS CUSTOM = YES / NO / UNKNOWN
+BAD FIRST-SET THEMES SHARE WITH WRONG CONTENT = YES / NO / UNKNOWN
+
+026B TRAILS US CONTENT = VERIFIED ORIGINAL / INCORRECT REPLACEMENT / UNKNOWN
+
+SAFE EXACT-CONTENT MIGRATION PATH IDENTIFIED = YES / NO
+APPLICATION SOURCE CHANGED BY 026C = NO
+BROWSER STORAGE CHANGED BY 026C = NO
+DATABASE CHANGED BY 026C = NO
+REPLIT.MD CHANGED BY 026C = NO
+PROJECT MEMORY CHANGED BY 026C = NO
+USER VERIFICATION = NOT REQUESTED YET
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create:
+workflow-reports/PROMPT_026C_REPORT.md
+
+Include:
+1. user-verified ordering
+2. bad-copy source
+3. original-theme source
+4. exact original content recovered
+5. historical-source comparison
+6. why 026B failed
+7. Trails US special findings
+8. migration/correction design
+9. `.agents/memory` audit
+10. evidence ledger
+11. STILL UNKNOWN items
+12. exact next repair scope
+
+============================================================
+ZIP
+============================================================
+
+Create:
+workflow-reports/trailweigh-026C-report.zip
+
+ZIP must contain:
+PROMPT_026C_REPORT.md
+
+Verify:
+- report exists
+- ZIP exists and opens
+- no application code changed
+- no browser storage changed
+- no DB changed
+- no Replit/project memory changed
+- every UNKNOWN identifies exact missing evidence
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+DO NOT repair anything in 026C.
