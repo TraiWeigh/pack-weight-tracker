@@ -1,0 +1,393 @@
+TRAILWEIGH — PROMPT 026I — GOLD STANDARD DIAGNOSTIC ONLY
+COMPARE WORKING THEME STATIC ASSETS VS FAILING SHARE-DEFAULT STATIC ASSET
+
+INTERNAL VERSION ID:
+026I-DIAGNOSE-ACTIVE-PUBLICDIR-PATH-MISMATCH-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Plan/diagnostic-only if possible
+- If runtime inspection requires Build, use Build but DO NOT EDIT FILES
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- App Testing auto-fix OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 8–14 minutes
+- Estimated Agent usage/cost: approximately $0.70–$1.50
+- HARD STOP if this turns into broad source reading or code work
+
+============================================================
+CURRENT USER-VERIFIED TRUTH
+============================================================
+
+026F = PARTIAL.
+
+USER-VERIFIED PASS:
+1. Share/Review can render a saved Locker-file background after that Locker file is opened.
+2. Owner quantity changes → Save → Share refresh updates quantities.
+3. Reviewer background changes/saves do not mutate the logged-in owner's background.
+
+USER-VERIFIED FAIL:
+4. Fresh Share first load opens with NO permanent hiker-and-Dutch background.
+5. Safari Private Window fresh Share also opens with NO permanent hiker-and-Dutch background.
+
+026G diagnostic found:
+- React background state was intended as:
+  `{ type:'preset', id:'share-default' }`
+- active resolver produced:
+  `/themes/share-default/TrailWeigh-Share-Default-Background.png`
+- exact PNG existed somewhere in the project and hash matched
+- browser request returned HTTP 200 `text/html` SPA fallback instead of `image/png`
+- existing permanent theme asset URL such as:
+  `/themes/psychedelic/01.png`
+  returned `image/png`
+
+026H attempted only a web-workflow/dev-server restart.
+
+USER LIVE RESULT AFTER 026H:
+NO CHANGE.
+
+Therefore:
+
+THE "RESTART VITE AND IT WILL SERVE THE NEW PUBLIC ASSET" HYPOTHESIS IS
+DISPROVEN BY USER LIVE EVIDENCE.
+
+026H report was not produced/found.
+Do NOT spend this prompt trying to recreate 026H paperwork.
+
+Record:
+026H USER RESULT = FAIL
+026H REPORT = MISSING
+
+============================================================
+MANDATORY RULE — DIAGNOSTIC ONLY
+============================================================
+
+DO NOT MODIFY APPLICATION CODE OR ASSETS.
+
+DO NOT:
+- copy/move/rename files
+- edit Vite config
+- edit React/TypeScript
+- edit localStorage
+- change DB data/schema
+- change auth/share tokens
+- modify replit.md
+- modify .replit
+- restart workflows again
+- Publish/Republish
+- Resume production
+- use App Testing auto-fix
+- apply unrelated Ready tasks
+
+The purpose is to identify why ONE static PNG path falls through to SPA HTML while known theme PNG paths work.
+
+============================================================
+PRIMARY DIAGNOSTIC QUESTION
+============================================================
+
+What exact filesystem/config/routing difference exists between:
+
+WORKING:
+`/themes/psychedelic/01.png`
+
+and
+
+FAILING:
+`/themes/share-default/TrailWeigh-Share-Default-Background.png`
+
+that causes the working asset to return `image/png` and the failing asset to return SPA `text/html`?
+
+Find the FIRST CONCRETE DIFFERENCE.
+
+============================================================
+MANDATORY ACTIVE SERVER / VITE CONFIG TRACE
+============================================================
+
+Do not infer project root from repository layout.
+
+Identify CURRENT RUNNING web process:
+
+1. exact command
+2. exact process working directory (cwd)
+3. exact package/app directory being served
+4. exact Vite config file actually loaded
+5. Vite `root`
+6. Vite `publicDir`
+7. whether `publicDir` is default or overridden
+8. any middleware/proxy/static-serving layer before Vite
+9. any SPA fallback middleware/order relevant to `/themes/*`
+
+Report absolute paths where possible.
+
+============================================================
+WORKING-ASSET FILESYSTEM TRACE
+============================================================
+
+For the exact working URL:
+
+`/themes/psychedelic/01.png`
+
+determine:
+
+1. exact absolute filesystem path of the bytes actually being served
+2. file exists = YES/NO
+3. file size
+4. SHA-256
+5. whether it is:
+   - in active Vite publicDir
+   - imported/bundled from src
+   - served by Express/static middleware
+   - copied/generated elsewhere
+6. HTTP status
+7. Content-Type
+8. response byte length
+
+Do not assume its location based on source references.
+
+============================================================
+FAILING-ASSET FILESYSTEM TRACE
+============================================================
+
+For:
+
+`/themes/share-default/TrailWeigh-Share-Default-Background.png`
+
+determine:
+
+1. every filesystem copy of that exact filename in the project/worktree
+2. absolute path of each copy
+3. file size of each
+4. SHA-256 of each
+5. whether ANY copy is inside the ACTIVE publicDir determined above
+6. whether the path's parent directory is visible to the active dev server
+7. file permissions/readability
+8. capitalization/path exactness
+9. HTTP status
+10. Content-Type
+11. response byte length
+12. whether response body begins as PNG signature or HTML
+
+Expected authoritative image SHA-256:
+`b9f06e9fd4b022c13a4df8b533ac6b278c7eb59ca35ac6533e53cb075e8d2811`
+
+Expected authoritative image size:
+3,206,670 bytes
+
+============================================================
+DIRECT SIBLING COMPARISON
+============================================================
+
+Compare the ACTUAL working asset and failing asset side by side.
+
+Report:
+
+A. active publicDir absolute path
+B. working asset relative path from publicDir
+C. failing asset relative path from publicDir
+D. working asset exists inside active publicDir = YES/NO
+E. failing asset exists inside active publicDir = YES/NO
+F. same filesystem/worktree = YES/NO
+G. same owner/permissions class = YES/NO
+H. same serving mechanism = YES/NO
+I. any symlink/worktree/artifact-copy difference
+J. any filename/path case difference
+K. any Vite exclusion/ignore rule affecting `share-default`
+L. any static middleware rule affecting only this path
+
+This side-by-side comparison is the center of the prompt.
+Do not broaden into unrelated Share architecture if the difference is found here.
+
+============================================================
+HTTP / ROUTING TRACE
+============================================================
+
+For BOTH URLs, capture:
+
+1. request URL
+2. response status
+3. Content-Type
+4. response length
+5. response first bytes/signature
+6. serving handler/middleware if observable
+7. whether SPA fallback handled the request
+
+If failing URL returns HTML:
+identify WHY the static layer considered the file absent/unservable.
+
+Do not stop at "SPA fallback happened."
+Explain the condition that caused static lookup to miss.
+
+============================================================
+CHECK FOR WRONG WORKTREE / WRONG APP ROOT
+============================================================
+
+Specifically test the possibility that 026F installed the PNG into a repository path that is
+NOT the active dev server's publicDir.
+
+Compare:
+- repository root
+- artifacts/pack-checklist
+- current process cwd
+- active Vite root
+- active publicDir
+- any Agent/background-task worktree
+- any generated/copy directories
+
+If the authoritative PNG exists in a non-active path while the working Psychedelic PNG exists
+under the active publicDir, state that explicitly.
+
+Do NOT move it in this diagnostic prompt.
+
+============================================================
+CHECK FOR STATIC DIRECTORY SNAPSHOT/COPY PIPELINE
+============================================================
+
+If both files appear under what looks like the same public tree, determine whether the running app
+actually serves from a copied/generated snapshot directory.
+
+Examples to inspect only if evidence points there:
+- build output
+- artifact staging directory
+- generated static tree
+- symlinked public tree
+- workflow-specific copy step
+
+Compare whether `psychedelic/01.png` exists in that served snapshot and `share-default/...png` does not.
+
+Again: diagnosis only.
+
+============================================================
+DO NOT RE-DIAGNOSE THESE WORKING AREAS
+============================================================
+
+Unless current evidence contradicts a USER PASS, do not spend time on:
+
+- quantity live-share reseed
+- reviewer-to-owner isolation
+- permanent theme image correctness
+- 40 legacy photo mappings
+- Locker file saved-background rendering
+- main category accordion
+- right sidebar accordion
+
+============================================================
+ROOT-CAUSE QUALITY BAR
+============================================================
+
+A valid root cause must be concrete enough to support ONE small repair.
+
+Good examples:
+
+- "The active Vite publicDir is X, but 026F placed the PNG at Y, outside X."
+- "The running workflow serves a generated static snapshot Z; existing themes were copied there, share-default was not."
+- "A specific static middleware rule excludes this directory."
+- "The filename/path case differs between resolver and disk."
+
+Not sufficient:
+
+- "Vite isn't serving it."
+- "Probably caching."
+- "Maybe Replit."
+- "SPA fallback issue."
+
+============================================================
+REPORT
+============================================================
+
+Create BEFORE diagnosis:
+
+workflow-reports/PROMPT_026I_REPORT.md
+
+At completion include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. USER live evidence
+4. 026H restart hypothesis = DISPROVEN
+5. 026H report = MISSING
+6. running web command
+7. process cwd
+8. active Vite root
+9. active Vite publicDir
+10. Vite config file
+11. working Psychedelic filesystem path
+12. working Psychedelic HTTP result
+13. every Share-default filesystem copy
+14. Share-default HTTP result
+15. side-by-side path/config comparison
+16. SPA fallback reason
+17. FIRST CONCRETE DIFFERENCE
+18. ROOT CAUSE
+19. smallest recommended repair
+20. exact expected repair files/paths for NEXT prompt
+21. risks/regressions
+22. elapsed time
+23. Agent actions
+24. lines read
+25. Agent cost/usage if shown
+26. USER VERIFICATION = NOT APPLICABLE — DIAGNOSTIC ONLY
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+026H USER RESULT = FAIL
+026H REPORT = MISSING
+RESTART HYPOTHESIS = DISPROVEN
+
+ACTIVE WEB COMMAND = <exact>
+ACTIVE PROCESS CWD = <exact>
+ACTIVE VITE ROOT = <exact>
+ACTIVE VITE PUBLICDIR = <exact>
+
+WORKING PSYCHEDELIC FILE PATH = <exact>
+WORKING PSYCHEDELIC HTTP STATUS = <exact>
+WORKING PSYCHEDELIC CONTENT-TYPE = <exact>
+
+SHARE-DEFAULT FILE COPIES FOUND = <count>
+SHARE-DEFAULT ACTIVE-PUBLICDIR COPY EXISTS = YES / NO
+SHARE-DEFAULT ACTIVE-PUBLICDIR PATH = <exact or NONE>
+SHARE-DEFAULT HASH MATCH = YES / NO / MULTIPLE
+SHARE-DEFAULT HTTP STATUS = <exact>
+SHARE-DEFAULT CONTENT-TYPE = <exact>
+
+SAME SERVING MECHANISM = YES / NO
+SPA FALLBACK REASON IDENTIFIED = YES / NO
+FIRST CONCRETE DIFFERENCE IDENTIFIED = YES / NO
+ROOT CAUSE IDENTIFIED = YES / NO
+
+CODE CHANGED = NO
+STATIC ASSETS CHANGED = NO
+DATABASE DATA CHANGED = NO
+DATABASE SCHEMA CHANGED = NO
+REPLIT.MD CHANGED = NO
+DEPLOYMENT/PUBLISHING CHANGED = NO
+
+============================================================
+HARD STOP
+============================================================
+
+STOP after diagnosis + report.
+
+DO NOT implement the repair.
+
+Do not proceed to:
+- Share Locker file-open repair
+- Main Category Accordion request
+- any other waiting task
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+workflow-reports/trailweigh-026I-report.zip
+
+ZIP must contain only:
+PROMPT_026I_REPORT.md
+
+Verify ZIP opens successfully.
