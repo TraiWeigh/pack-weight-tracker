@@ -1,0 +1,316 @@
+TRAILWEIGH — PROMPT 026A
+PRODUCTION DEPLOYMENT SECRET / DATABASE FORENSIC CHECK
+USE REPLIT'S DOCUMENTED DATABASE_URL DIAGNOSTIC — NO CHANGES
+
+INTERNAL VERSION ID:
+026A-PROD-SECRET-FORENSICS-2026-08-12-R1
+
+RECOMMENDED REPLIT MODE:
+ECONOMY
+
+PURPOSE:
+Continue the learning phase only.
+DO NOT repair TrailWeigh.
+DO NOT Resume or Republish.
+
+CURRENT USER-VERIFIED PROJECT FACTS:
+- A paused Public Autoscale production deployment exists.
+- A `replit.app` production URL exists.
+- Replit All Databases currently lists ONLY Development Database.
+- No current Production Database is listed.
+- Publishing → Adjust settings → Production database currently shows:
+  `Create production database` = CHECKED.
+- `Set up your production database with your current development data` = UNCHECKED.
+- Production app secrets show 3 Clerk-related secrets out of sync.
+- User does not remember intentionally publishing TrailWeigh.
+- Historical deployment database source remains UNKNOWN.
+
+CURRENT OFFICIAL REPLIT MANUAL FACT:
+Replit's shared-database migration documentation specifically instructs users to
+inspect the PUBLISHED APP's Publishing → Adjust Settings → Secrets → DATABASE_URL
+to determine whether an older published app still points to legacy Neon/shared DB.
+
+THIS PROMPT MUST USE THAT DOCUMENTED CHECK.
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+DO NOT:
+- change source
+- change replit.md
+- change .replit
+- change packages
+- change deployment settings
+- change Secrets
+- add/remove/sync a Secret
+- reveal any Secret value
+- reveal DATABASE_URL
+- create Production Database
+- copy Development data
+- Resume
+- Publish/Republish
+- modify DB rows/schema
+- run migrations
+- invoke App Testing
+- apply unrelated Ready tasks
+
+AUTHORIZED WRITES ONLY:
+workflow-reports/PROMPT_026A_REPORT.md
+workflow-reports/trailweigh-026A-report.zip
+
+============================================================
+SECRET-SAFETY RULE
+============================================================
+
+NEVER print, log, save, quote, copy, or expose:
+- full DATABASE_URL
+- hostname if it contains credentials/private identifiers beyond the provider classification
+- passwords
+- tokens
+- Clerk secret values
+- connection strings
+
+For DATABASE_URL report ONLY:
+
+PRODUCTION DATABASE_URL SECRET:
+PRESENT / ABSENT / INACCESSIBLE
+
+PROVIDER CLASS:
+LEGACY NEON (`neon.tech`)
+CURRENT REPLIT/HELIUM
+OTHER
+UNKNOWN
+
+Do not output the URL itself.
+
+============================================================
+VERSION GATE
+============================================================
+
+Verify:
+026A-PROD-SECRET-FORENSICS-2026-08-12-R1
+and Questions 1, 10, 20, 30.
+
+If any missing:
+STOP.
+Report:
+WRONG 026A VERSION LOADED
+
+============================================================
+PART A — DOCUMENTED DATABASE_URL CHECK
+============================================================
+
+1. Confirm current Replit official shared-database migration docs instruct checking
+   Publishing → Adjust Settings → Secrets → DATABASE_URL.
+
+2. Can Agent inspect the CURRENT production deployment Secret NAMES read-only?
+
+3. Is `DATABASE_URL` present in the production deployment environment/Secrets?
+
+4. If present, can Agent classify its provider WITHOUT printing the value?
+
+5. Report provider only:
+   LEGACY NEON / CURRENT REPLIT-HELIUM / OTHER / UNKNOWN.
+
+6. If Agent cannot inspect the secret safely, mark INACCESSIBLE.
+
+7. Do not infer provider from Development DATABASE_URL.
+
+8. Is a `NEON_DATABASE_URL` production secret present?
+Report name presence only.
+
+9. Is there evidence the old paused deployment still points to a legacy/shared Neon DB?
+
+10. Is there evidence it points to current Replit production DB infrastructure?
+
+============================================================
+PART B — CURRENT PRODUCTION DB ATTACHMENT
+============================================================
+
+11. Current UI says Create production database is checked for NEXT Publish.
+
+12. Current All Databases lists no Production Database.
+
+13. Is any current production-database attachment/reference present in deployment metadata?
+
+14. Is any injected production DATABASE_URL available to the PAUSED deployment independently
+    of user-visible Secrets?
+
+15. If yes, classify provider only.
+
+16. If no evidence exists, state:
+CURRENT PRODUCTION DB ATTACHMENT = NOT EVIDENCED.
+
+17. Does current UI strongly indicate a NEW production DB would be created on next Publish?
+
+18. Does the unchecked copy-data option mean Development DATA is not currently selected for copy?
+
+19. Does Replit documentation say schema is prepared from Development by default for a newly
+    created production DB?
+
+20. State exact expected next-Publish DB behavior based on CURRENT UI + current docs.
+
+============================================================
+PART C — OLD DEPLOYMENT SNAPSHOT / VERSION
+============================================================
+
+21. Replit docs say publishing creates a snapshot of app files/dependencies.
+
+22. Can Agent inspect any read-only metadata for the currently paused deployment snapshot?
+
+Look for safe metadata such as:
+- deployment ID (do not expose if considered sensitive)
+- build/version identifier
+- snapshot timestamp
+- source commit/checkpoint reference
+- creation/update timestamp
+
+23. Is there a timestamp for the deployed snapshot?
+
+24. Can it be mapped to Git/checkpoint/project history?
+
+25. Does deployed snapshot appear to predate server/database code?
+
+26. Does it appear to include current database-dependent server code?
+
+27. Can this be proven from metadata, not inferred?
+
+28. If no metadata is accessible, mark:
+DEPLOYED SNAPSHOT DATE = STILL UNKNOWN.
+
+============================================================
+PART D — PRODUCTION CLERK SECRET STATE
+============================================================
+
+29. User screenshot shows three Clerk-related production secrets are out of sync.
+
+30. Reconfirm the NAMES only of missing/out-of-sync Clerk production secrets.
+
+31. Do not print values.
+
+32. Does current Replit documentation say Project Editor secrets do NOT automatically
+    carry over to published app secrets?
+
+33. Would missing production Clerk secrets likely break production sign-in/auth?
+
+34. Does this independently justify keeping production paused until reviewed?
+
+35. State:
+PRODUCTION AUTH CONFIG READY = YES / NO / UNKNOWN.
+
+============================================================
+PART E — HISTORICAL DEPLOYMENT DATABASE CONCLUSION
+============================================================
+
+36. Combine evidence from:
+- production DATABASE_URL provider classification
+- current DB list
+- current publishing DB settings
+- deployment snapshot metadata
+- project history
+- official Replit docs
+
+37. Classify old deployment database:
+
+A. LEGACY NEON/SHARED DB — VERIFIED
+B. SEPARATE PRODUCTION DB — VERIFIED
+C. DEVELOPMENT DB — VERIFIED
+D. NO FUNCTIONAL DB / PRE-DB SNAPSHOT — VERIFIED
+E. STILL UNKNOWN
+
+38. Do not choose A-D without direct evidence.
+
+39. If STILL UNKNOWN, state exactly why.
+
+40. Does this historical unknown block ordinary Development work?
+
+41. Does it block Resume/Republish?
+
+============================================================
+PART F — SUPPORT FALLBACK
+============================================================
+
+42. If historical source remains UNKNOWN after using Replit's documented DATABASE_URL check
+and deployment metadata:
+
+Is Replit Support now the only realistic authoritative source?
+YES / NO.
+
+43. If YES, write ONE concise Support message asking Replit to determine:
+
+- when the paused Autoscale deployment was first created;
+- when it was last successfully published;
+- whether it ever had a Production Database;
+- what database environment/provider its last successful snapshot used;
+- whether a Production Database was later removed;
+- whether Replit can identify what initiated the original deployment;
+- why current All Databases lists only Development Database;
+- whether next Publish will create a new Helium Production Database.
+
+44. Do not include secret values in the Support message.
+
+============================================================
+FINAL REQUIRED OUTPUT
+============================================================
+
+A. EXECUTIVE RESULT
+B. DOCUMENTED DATABASE_URL CHECK RESULT
+C. CURRENT PRODUCTION DB ATTACHMENT
+D. DEPLOYED SNAPSHOT METADATA
+E. PRODUCTION CLERK SECRET READINESS
+F. HISTORICAL DEPLOYMENT DATABASE — FINAL STATUS
+G. WHAT THIS BLOCKS
+H. EXACT REPLIT SUPPORT MESSAGE IF NEEDED
+
+============================================================
+NO-CHANGE VERIFICATION
+============================================================
+
+Report exactly:
+
+APPLICATION SOURCE CHANGED BY 026A = NONE
+APPLICATION CONFIG CHANGED BY 026A = NONE
+REPLIT.MD CHANGED BY 026A = NONE
+DATABASE DATA CHANGED BY 026A = NONE
+DATABASE SCHEMA CHANGED BY 026A = NONE
+SECRETS CHANGED BY 026A = NONE
+SECRET VALUES EXPOSED BY 026A = NONE
+DEPLOYMENT SETTINGS CHANGED BY 026A = NONE
+PRODUCTION RESUMED BY 026A = NO
+PRODUCTION DATABASE CREATED BY 026A = NO
+DEVELOPMENT DATA COPIED BY 026A = NO
+APP TESTING INVOKED BY 026A = NO
+UNRELATED TASKS APPLIED BY 026A = NONE
+
+============================================================
+MANDATORY REPORT + ZIP
+============================================================
+
+Create:
+workflow-reports/PROMPT_026A_REPORT.md
+
+Create:
+workflow-reports/trailweigh-026A-report.zip
+
+ZIP must contain:
+PROMPT_026A_REPORT.md
+
+Verify:
+1. report exists
+2. ZIP exists and opens
+3. all 44 questions are accounted for
+4. no Secret value or connection string appears
+5. every UNKNOWN names the missing evidence
+6. no unauthorized changes occurred
+
+============================================================
+FINAL STOP RULE
+============================================================
+
+STOP after the report + ZIP.
+
+DO NOT repair TrailWeigh.
+DO NOT Resume.
+DO NOT Publish/Republish.
+DO NOT create or copy a Production Database.
