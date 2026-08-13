@@ -30,12 +30,19 @@ description: Pointer to 025T report — the permanent comprehensive reference fo
 - **Express body limit = 12MB** (`express.json({ limit: '12mb' })`). Import upload = **20MB** (multer). 025U's "no size limit" was wrong.
 - **Token collision → HTTP 500 to one request, NOT a process crash.** Express 5 async error handling routes rejection to default error handler. Process survives.
 - **SESSION_SECRET = UNUSED/LEGACY.** `express-session` not in dependencies. No session middleware. Auth = Clerk-only.
-- **SyncStatusPanel IS rendered** inside LockerPanel. Shows sync status for completed saves. Cannot detect unsaved local changes (no dirty flag).
+- **SyncStatusPanel IS rendered** inside LockerPanel. Shows "Synced [time]" from last SAVE even when newer local edits exist. Cannot detect unsaved local changes (no dirty flag). Classification: technically accurate but potentially misleading.
 - **userId NOT indexed** on `locker_entries` (confirmed by pg_indexes catalog query). Urgency: low at 3 rows; add before public launch.
 - **locker_entries: 3 rows; share_links: 82 rows** (as of 2026-08-13 dev DB).
-- **Pack data key = user-namespaced** (`pack-checklist-v5-${uid}`). Safe across accounts. Global keys (unit pref, background, bar*) are device-global — cross-user contamination risk on shared devices.
+- **Pack data key = user-namespaced** (`pack-checklist-v5-${uid}`). Safe across accounts. Global keys (unit pref, background, bar*, `trailweigh:photoCollections`) are device-global.
+- **Custom photo IndexedDB = NOT userId-namespaced.** DB='trailweigh', store='bgPhotos', keyPath='photoId' only. User B on shared device inherits User A's custom photo blobs. EXPOSURE OF PERSONAL UPLOADED PHOTOS on shared devices.
 - **SharedPackView (/shared) = ACTIVE** legacy route for hash-encoded share links. SharedChecklistPage = dead import (not routed).
-- **CSRF is wrong category for frozen POST** — no victim auth state. Correct: anonymous write surface.
+- **CSRF is wrong category for frozen POST** — no victim auth state. Correct: anonymous write surface. CSRF on Locker writes = EFFECTIVELY MITIGATED by Clerk SameSite=Lax.
+- **API calls use `credentials: 'include'` (cookie auth, not bearer).** No Authorization header constructed by frontend. Same-origin relative URLs (/api/locker).
+- **LIVE TOKEN RETURNS ALL RETAINED FILES AFTER ACCOUNT DELETION** (not empty list — 025V was WRONG). locker_entries survive because no webhook deletes them; resolver queries DB directly without Clerk verification.
+- **Delete Account page = STATIC INFO ONLY.** No API calls, no automated deletion. Users must contact team. No /api/user endpoint. Deletion is a future feature.
+- **Privacy Policy outdated:** Section 3 claims "server stores only share-link snapshots" — FALSE since Locker sync added. Section 6 does not disclose that locker_entries survive account deletion.
+- **Safari 7-day eviction:** ALL script-writable storage (localStorage + IndexedDB) after 7 days of Safari use without site interaction. Tracker classification NOT required (025V was wrong about this). Regular TrailWeigh use resets timer. Home Screen apps have first-party exemption.
+- **CORS broad:** `credentials: true, origin: true` — permissive but SameSite=Lax prevents CSRF under current config. Design risk if Lax ever changes.
 
 ## Replit platform facts (from official docs, HIGH confidence)
 

@@ -1,0 +1,587 @@
+TRAILWEIGH — PROMPT 025W
+FINAL TARGETED CONFIDENCE CLOSURE AFTER 025V
+ACCOUNT-DELETION SHARE PRIVACY + CLERK AUTH + EVIDENCE-LEDGER CONSISTENCY
+
+INTERNAL VERSION ID:
+025W-CONFIDENCE-CLOSURE-2026-08-12-R1
+
+RECOMMENDED REPLIT MODE:
+ECONOMY
+
+PURPOSE:
+Continue the learning phase only.
+DO NOT repair TrailWeigh.
+
+025V improved the evidence base but still failed the near-100% standard because:
+- it contains an internal 35/37 vs 34/37 evidence-count contradiction;
+- it contains a material logical contradiction about account deletion and live share;
+- some external browser/auth statements were still provisional or incorrectly framed.
+
+025W is deliberately NARROW.
+Do not re-audit the whole application.
+
+============================================================
+REQUIRED USER EVIDENCE ATTACHMENT
+============================================================
+
+Before starting, check whether the user attached a CURRENT screenshot of the
+Replit Publishing/Deploy panel.
+
+The screenshot must show enough of the panel to determine:
+- whether TrailWeigh is currently published/deployed;
+- whether a production URL/domain is shown;
+- whether a Production Database is shown or referenced.
+
+DO NOT ask the user to click:
+Publish
+Deploy
+Redeploy
+Create database
+Connect database
+Rollback
+Apply Changes
+
+If the screenshot is missing:
+DO NOT STOP the whole audit.
+Complete all code/doc evidence questions.
+Mark publishing-status questions STILL UNKNOWN — USER EVIDENCE REQUIRED.
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+DO NOT MODIFY:
+- application source
+- replit.md
+- package/dependency files
+- database rows/data
+- database schema
+- localStorage/sessionStorage/IndexedDB
+- authentication
+- Clerk settings
+- secrets/environment variables
+- routes
+- deployment/publishing settings
+- owner files
+- share records
+- Review sandbox state
+
+DO NOT:
+- invoke App Testing
+- publish/republish
+- restore checkpoints
+- apply task changes
+- enable Auto-apply
+- run migrations
+- create/delete/rename files in Locker
+- send test webhooks
+- perform destructive SQL
+
+AUTHORIZED WRITES ONLY:
+workflow-reports/PROMPT_025W_REPORT.md
+workflow-reports/trailweigh-025W-report.zip
+optional safe evidence files under workflow-reports/
+
+READ-ONLY SQL ONLY:
+SELECT
+SHOW
+safe catalog/schema inspection
+
+============================================================
+VERSION GATE
+============================================================
+
+Verify:
+025W-CONFIDENCE-CLOSURE-2026-08-12-R1
+Question 1
+Question 25
+Question 50
+Question 75
+
+If any are missing:
+STOP.
+Report:
+WRONG 025W VERSION LOADED
+
+============================================================
+READ FIRST
+============================================================
+
+Read:
+workflow-reports/PROMPT_025R_REPORT.md
+workflow-reports/PROMPT_025S_REPORT.md
+workflow-reports/PROMPT_025T_REPORT.md
+workflow-reports/PROMPT_025U_REPORT.md
+workflow-reports/PROMPT_025V_REPORT.md
+
+============================================================
+CURRENT PRIMARY-SOURCE BASELINE FROM CHATGPT
+============================================================
+
+Treat the following as external primary-source baseline unless THIS project's
+configuration provides contrary evidence.
+
+WEBKIT:
+1. WebKit documents a 7-day cap on ALL script-writable website storage after
+   seven days of Safari use WITHOUT USER INTERACTION ON THE SITE.
+2. The affected storage list explicitly includes LocalStorage and IndexedDB.
+3. Do NOT require “the domain is classified as a tracker” as a universal
+   prerequisite for this 2020 all-script-writable-storage rule.
+4. Home Screen web applications have separate behavior and an explicit first-party
+   exemption described by WebKit.
+5. Safari Private Browsing uses ephemeral state: storage is not persistent and is
+   removed with the private session/browser lifecycle.
+6. Do NOT claim current Private Browsing simply has no IndexedDB.
+7. Lockdown Mode is separate and can disable IndexedDB.
+
+CLERK:
+1. Current Clerk Express `clerkMiddleware()` checks BOTH cookies and headers for
+   a session JWT.
+2. Current Clerk docs say SAME-ORIGIN requests automatically carry the session
+   token in a cookie.
+3. CROSS-ORIGIN authenticated requests use an Authorization Bearer token.
+4. Current Clerk cookie docs say Clerk uses `SameSite=Lax`.
+5. Clerk supports `user.deleted` webhook events so an app can delete or tombstone
+   its own application DB records.
+
+EXPRESS 5:
+Rejected promises/errors from async route handlers are forwarded automatically
+to Express error handling.
+
+If project evidence conflicts:
+report PLATFORM/PROJECT CONFIG CONFLICT with exact evidence.
+
+============================================================
+CONFIDENCE RULE
+============================================================
+
+Every material fact:
+VERIFIED — TWO-FACTOR
+VERIFIED — DIRECT AUTHORITATIVE
+PROVISIONAL
+STILL UNKNOWN
+DISPROVEN / SUPERSEDED
+
+No fake percentage probability.
+
+============================================================
+PART A — FIX 025V'S INTERNAL CONSISTENCY
+============================================================
+
+1. Recompute the final 025V material evidence ledger from the actual rows.
+
+2. Count VERIFIED rows.
+
+3. Count PROVISIONAL rows.
+
+4. Count STILL UNKNOWN rows.
+
+5. Count DISPROVEN/SUPERSEDED rows if represented.
+
+6. Why does Section A say 35 VERIFIED / 37 = 95%?
+
+7. Why does Section S say 34 VERIFIED / 37 = 92%?
+
+8. Which number is mathematically and semantically correct?
+
+9. Identify the exact row that caused the mismatch.
+
+10. Does the final “31/37/34/35” counting methodology mix old 025U rows with new 025V facts?
+
+11. Rebuild ONE clean material ledger from scratch.
+
+12. Every material unknown in Section Q must either:
+   a. appear in the material ledger; OR
+   b. be explicitly labeled NON-MATERIAL with rationale.
+
+13. List all NON-MATERIAL unknowns separately.
+
+14. Are any contradictions left after this cleanup?
+
+15. If YES, 025W cannot be COMPLETE.
+
+============================================================
+PART B — CRITICAL ACCOUNT-DELETION / LIVE-SHARE CONTRADICTION
+============================================================
+
+025V states BOTH:
+A. Clerk account deletion does NOT delete `locker_entries`; rows survive with userId.
+B. A live-locker token after account deletion would return an empty file list
+   because no locker_entries match.
+
+Those statements appear mutually inconsistent.
+
+16. Trace current `user.deleted` behavior again.
+
+17. Confirm whether there is NO handler.
+
+18. Confirm no DB FK/cascade/trigger deletes locker_entries.
+
+19. Confirm locker_entries rows therefore remain after Clerk user deletion.
+
+20. Trace live-locker GET resolution from share token to ownerId.
+
+21. Show the exact query/filter used to load locker entries.
+
+22. Does the query require a currently existing Clerk user?
+
+23. Does it call Clerk to verify owner existence?
+
+24. Or does it query `locker_entries WHERE userId = savedOwnerId` directly?
+
+25. If rows survive, do they still match that ownerId after Clerk account deletion?
+
+26. Therefore would the live share still return those retained files?
+
+27. Resolve this explicitly:
+AFTER CLERK ACCOUNT DELETION, LIVE TOKEN RETURNS:
+- ALL RETAINED FILES
+- EMPTY FILE LIST
+- ERROR
+- STILL UNKNOWN
+
+28. Provide TWO evidence classes:
+source path + schema/query logic, and read-only logical/data evidence if possible.
+
+29. What happens to frozen-snapshot tokens after account deletion?
+
+30. Are frozen payloads still retrievable unchanged?
+
+31. Does this mean public shared data can remain accessible after account deletion?
+
+32. Does this contradict current intended TrailWeigh permanent-deletion behavior?
+
+33. Does it contradict current Privacy Policy wording?
+
+34. Quote/summarize exact relevant policy language.
+
+35. What exact safe privacy wording is truthful TODAY?
+
+============================================================
+PART C — DELETE ACCOUNT VS DELETE DATA PATHS
+============================================================
+
+36. Does TrailWeigh have a user-facing Delete Account control?
+
+37. Exact component/file.
+
+38. What does it call?
+
+39. Does it delete Clerk account only?
+
+40. Does it delete locker_entries before/after Clerk deletion?
+
+41. Does it delete share_links?
+
+42. Does it delete browser localStorage?
+
+43. Does it delete IndexedDB custom-photo blobs?
+
+44. Does it revoke share tokens?
+
+45. Does “Delete Account / Data” currently mean one operation or separate operations?
+
+46. Are there any server endpoints intended to delete all user data?
+
+47. If YES, trace them.
+
+48. If NO, state that explicitly.
+
+49. Which deletion paths are USER initiated today?
+
+50. Which cleanup paths do not exist?
+
+============================================================
+PART D — CLERK SAME-ORIGIN AUTH + CSRF FINAL CLASSIFICATION
+============================================================
+
+51. Are TrailWeigh frontend and `/api/*` server requests SAME ORIGIN in normal Preview?
+
+52. Are Locker calls made with relative URLs such as `/api/locker`?
+
+53. Does current client code manually attach Authorization Bearer tokens?
+
+54. Or does it rely on browser cookie authentication for same-origin calls?
+
+55. Is `clerkMiddleware()` globally installed?
+
+56. Is any custom Clerk `proxyUrl`, `domain`, `isSatellite`,
+   `satelliteAutoSync`, or other cross-origin/satellite configuration present?
+
+57. Is Clerk's default SameSite=Lax behavior overridden anywhere in THIS project?
+
+58. If not overridden, apply current Clerk primary-source baseline:
+SameSite=Lax.
+
+59. For normal cross-site fetch/XHR/form POST to TrailWeigh, would Clerk's
+SameSite=Lax session cookie normally be sent?
+
+60. Can a third-party site silently issue an authenticated PUT/PATCH/DELETE
+to Locker with the Clerk cookie under default SameSite=Lax?
+
+61. Is ordinary CSRF therefore a confirmed vulnerability,
+a potential edge case, or effectively mitigated by Clerk defaults?
+
+62. Are top-level GET routes state-changing anywhere?
+
+63. Do any state-changing Owner routes accept GET?
+
+64. Is there any custom CORS policy that broadens credentialed cross-origin access?
+
+65. Rebuild the authenticated-write CSRF classification.
+
+============================================================
+PART E — WEBKIT STORAGE RULE CORRECTION
+============================================================
+
+66. Explicitly supersede 025V Q143 if it says tracker classification is required
+for the general 7-day all-script-writable-storage rule.
+
+67. Final correct rule for Safari LocalStorage.
+
+68. Final correct rule for Safari IndexedDB.
+
+69. What user interaction resets the timer according to WebKit?
+
+70. Does direct recurring use of TrailWeigh reduce the risk?
+
+71. Could a user who does not interact with TrailWeigh for more than seven days of
+Safari use lose browser-only script-writable data?
+
+72. Which TrailWeigh data would be at risk?
+
+73. Which data can be restored from server Locker?
+
+74. Which cannot be restored?
+
+75. Are Custom Theme photo blobs a material backup risk?
+
+76. Is guest-only pack data a material backup risk?
+
+77. What is the correct Private Browsing rule?
+
+78. Does Private Browsing persist TrailWeigh IndexedDB across private-session end?
+
+79. Does Lockdown Mode change IndexedDB availability?
+
+80. State final browser-storage guidance for future prompts.
+
+============================================================
+PART F — SHARED-DEVICE / CROSS-USER CUSTOM PHOTO PRIVACY
+============================================================
+
+81. Reconfirm pack data keys are userId-namespaced.
+
+82. Reconfirm appearance/unit keys that are global.
+
+83. Trace Custom Theme collection metadata storage.
+
+84. Is Custom Theme metadata userId-namespaced?
+
+85. Trace IndexedDB photo store keying.
+
+86. Is IndexedDB photo storage userId-namespaced?
+
+87. If User A signs out and User B signs in on the SAME browser/device,
+can User B's normal UI enumerate User A's Custom Theme collection metadata?
+
+88. Can User B resolve/display User A's custom photo Blob?
+
+89. Does normal UI hide it because of account state, or is there no account gate?
+
+90. Classify:
+- harmless shared-device preference
+- privacy contamination
+- exposure of personal uploaded photos
+
+91. Does this block strong “account data is private between users” wording?
+
+92. What exact future test would prove live behavior without risking photos?
+
+============================================================
+PART G — SYNCSTATUSPANEL USER-TRUTH
+============================================================
+
+93. Reconfirm SyncStatusPanel can show "Synced [time]" after newer unsaved edits.
+
+94. What exact UI wording/icon remains visible?
+
+95. Could a reasonable user interpret this as “my current changes are saved”?
+
+96. Does the visible Save confirmation toast distinguish server Save from local auto-state?
+
+97. Is there any other UI signal of pending unsaved changes?
+
+98. Final classification:
+- accurate
+- technically accurate but potentially misleading
+- misleading
+
+99. Does this deserve a future dedicated UX/persistence repair prompt?
+
+============================================================
+PART H — USER-ONLY PUBLISHING EVIDENCE
+============================================================
+
+100. If Publishing/Deploy screenshot is attached, determine:
+- published YES/NO
+- production URL/domain
+- Production DB visible YES/NO/UNKNOWN
+- deployment type if visible
+
+101. Do not change anything.
+
+102. If no screenshot:
+mark STILL UNKNOWN — USER EVIDENCE REQUIRED.
+
+103. Does official Replit documentation imply that a deployed app would show
+Monitoring/deployment status separately from Development?
+
+104. Does THIS screenshot match that model?
+
+105. What facts about publishing can now be promoted to VERIFIED?
+
+106. What remains unknown?
+
+============================================================
+PART I — REMAINING NON-BLOCKING UNKNOWNS
+============================================================
+
+107. App Testing browser-storage isolation:
+material now or safely deferred?
+
+108. Replit platform ingress rate limiting:
+material now or safely deferred?
+
+109. Whether `.replit.dev` remains reachable after publish:
+material now or safely deferred?
+
+110. Owner Retro/Psychedelic/Topo runtime collections:
+material now or safely deferred?
+
+111. ZIP-bomb exploitability:
+material now or safely deferred?
+
+112. Theme-removal commit SHA:
+material now or safely deferred?
+
+For each, classify:
+BLOCKING / IMPORTANT-LATER / DEFER.
+
+============================================================
+PART J — FINAL EVIDENCE LEDGER
+============================================================
+
+113. Build a fresh ledger containing ONLY material facts needed for:
+- ordinary repairs
+- persistence/data repairs
+- Share/Review/privacy repairs
+- publishing
+
+114. No inherited counts from 025U/025V.
+
+115. Each row:
+Fact
+Classification
+Evidence A
+Evidence B
+Confidence
+Blocks ordinary repair?
+Blocks persistence?
+Blocks privacy/security?
+Blocks publishing?
+
+116. Count VERIFIED.
+
+117. Count PROVISIONAL.
+
+118. Count STILL UNKNOWN.
+
+119. List all blocking unknowns.
+
+120. List all non-blocking unknowns.
+
+121. List all superseded claims.
+
+122. Are there ANY contradictions?
+
+123. If yes, do not mark COMPLETE.
+
+124. Report:
+EVIDENCE COVERAGE = VERIFIED MATERIAL FACTS / TOTAL MATERIAL FACTS
+
+Do not convert this fraction into a fake probability of correctness.
+
+============================================================
+FINAL REQUIRED REPORT SECTIONS
+============================================================
+
+A. EXECUTIVE RESULT
+B. 025V CONSISTENCY CORRECTION
+C. ACCOUNT-DELETION / LIVE-SHARE FINAL RULE
+D. DELETE ACCOUNT / DELETE DATA PATH MAP
+E. CLERK AUTH TRANSPORT + CSRF FINAL RULE
+F. WEBKIT STORAGE FINAL RULE
+G. SHARED-DEVICE CUSTOM PHOTO PRIVACY
+H. SYNCSTATUSPANEL USER-TRUTH
+I. PUBLISHING EVIDENCE
+J. DEFERRED NON-MATERIAL UNKNOWNS
+K. FINAL MATERIAL EVIDENCE LEDGER
+L. BLOCKING UNKNOWNS
+M. SUPERSEDED CLAIMS
+N. SAFE STANDING RULES FOR FUTURE REPLIT PROMPTS
+
+============================================================
+NO-CHANGE VERIFICATION
+============================================================
+
+Before completion report exactly:
+
+APPLICATION SOURCE CHANGED BY 025W = NONE
+APPLICATION CONFIG CHANGED BY 025W = NONE
+REPLIT.MD CHANGED BY 025W = NONE
+DATABASE DATA CHANGED BY 025W = NONE
+DATABASE SCHEMA CHANGED BY 025W = NONE
+OWNER DATA CHANGED BY 025W = NONE
+BROWSER STORAGE CHANGED BY 025W = NONE
+AUTH/CLERK CONFIG CHANGED BY 025W = NONE
+SECRETS CHANGED BY 025W = NONE
+DEPLOYMENT/PUBLISHING CHANGED BY 025W = NONE
+APP TESTING INVOKED BY 025W = NO
+UNRELATED TASKS APPLIED BY 025W = NONE
+
+Run git status/diff and separate pre-existing changes from report artifacts.
+
+============================================================
+MANDATORY REPORT + ZIP
+============================================================
+
+Create:
+workflow-reports/PROMPT_025W_REPORT.md
+
+Create:
+workflow-reports/trailweigh-025W-report.zip
+
+ZIP must contain:
+PROMPT_025W_REPORT.md
+
+Verify:
+1. report exists
+2. ZIP exists
+3. ZIP opens successfully
+4. all 124 questions accounted for
+5. no material contradiction remains hidden
+6. every UNKNOWN names exact evidence needed
+7. no secrets included
+8. no unauthorized change occurred
+
+============================================================
+FINAL STOP RULE
+============================================================
+
+STOP after report + ZIP.
+
+DO NOT REPAIR TRAILWEIGH.
+
+If blocking evidence still remains below the user's standard, recommend only the
+smallest next learning step required to close it.
