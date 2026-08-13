@@ -1,27 +1,81 @@
 ---
-name: Built-in theme architecture — permanent theme parity
-description: How the 5 permanent TrailWeigh background themes are structured so all of them work in Share/Review.
+name: Built-in theme architecture
+description: How the 5 permanent TrailWeigh themes are defined, stored, and resolved — after 026D repair.
 ---
 
+# Built-in theme architecture (post-026D)
+
 ## Rule
-Permanent built-in themes (Landscape, Psychedelic, Retro-Outdoors, Topo, Trails US) MUST be stored as `{ type: 'preset', id: 'stable-id' }`, not `{ type: 'custom', photoId }`. Only preset-type backgrounds pass through `ReviewPage.seedFromLiveFiles` (line 358: `if (bg?.type === 'preset')`).
 
-**Why:** ReviewPage explicitly discards `type: 'custom'` backgrounds to prevent exposing owner-only IndexedDB blobs to reviewers. A custom-type background can only render in the owner's own browser — it cannot be forwarded to any viewer.
+ALL 5 permanent themes use `{ type: 'preset', id }` as the Background value. This is the only form that passes the ReviewPage guard (`bg?.type === 'preset'`). Custom-type backgrounds are discarded for privacy in Review/Share.
 
-## How to apply
-- All built-in theme photo grids call `onBackgroundChange({ type: 'preset', id: p.id })`.
-- Custom user-uploaded themes continue to use `{ type: 'custom', photoId }` and correctly do NOT appear in Share/Review.
-- New permanent themes belong in `BUILTIN_THEMES` in `BackgroundPicker.tsx`, not in user `collections`.
+## Theme structure
 
-## Key symbols (BackgroundPicker.tsx)
-- `BUILTIN_THEMES` — ordered registry of all 5 built-in themes, each with `{ id, label, presets[] }`.
-- `ALL_BUILTIN_PRESETS` — flat array of every built-in preset across all themes. Export this for cross-theme preset resolution.
-- `PRESETS` — still exported for backwards-compat; it is the Landscape presets array and is included in `ALL_BUILTIN_PRESETS`.
+Defined in `BackgroundPicker.tsx`:
 
-## Key symbol (Checklist.tsx)
-- `bgImageUrl` resolver: `ALL_BUILTIN_PRESETS.find(p => p.id === background.id)?.photoId` — searches all 5 theme preset arrays.
-- Do NOT use `PRESETS.find(...)` here — that only covers the 10 Landscape photos and will silently return empty for other themes.
+```ts
+export const BUILTIN_THEMES = [
+  { id: 'landscapes',     label: 'Landscape',      presets: PRESETS              },
+  { id: 'psychedelic',    label: 'Psychedelic',    presets: PSYCHEDELIC_PRESETS  },
+  { id: 'retro-outdoors', label: 'Retro-Outdoors', presets: RETRO_PRESETS        },
+  { id: 'topo',           label: 'Topo',           presets: TOPO_PRESETS         },
+  { id: 'trails-us',      label: 'Trails US',      presets: TRAILS_PRESETS       },
+];
+```
 
-## Unsplash photo IDs
-- Each theme has 6 photos. Photo IDs were chosen to be thematically appropriate but should be user-verified in the browser (broken images show as empty thumbnails with no functional impact on the architecture).
-- The photoId format is the Unsplash photo URL timestamp segment: `https://images.unsplash.com/photo-{photoId}?...`
+Use `ALL_BUILTIN_PRESETS` (not `PRESETS`) for cross-theme ID resolution.
+
+## Preset types
+
+`BuiltinPreset` interface allows optional `photoId` (Unsplash) OR `photoPath` (static):
+
+```ts
+interface BuiltinPreset {
+  id: string;
+  label?: string;
+  photoId?: string;   // Landscape (Unsplash)
+  photoPath?: string; // 026D static assets
+}
+```
+
+- **Landscape** (10 presets): `{ id, label, photoId }` → Unsplash via `getFullUrl(photoId)`
+- **Psychedelic / Retro-Outdoors / Topo / Trails US** (10 presets each): `{ id, photoPath }` → Vite static asset at `/themes/<slug>/01.png`…`10.png`
+
+## Static assets
+
+Installed at `artifacts/pack-checklist/public/themes/`:
+- `psychedelic/01.png`…`10.png` — exact recovered original PNGs (from `TrailWeigh-Original-Themes-Recovery-Package.zip`)
+- `retro-outdoors/01.png`…`10.png`
+- `topo/01.png`…`10.png`
+- `trails-us/01.png`…`10.png`
+
+Canonical preset IDs: `psychedelic-01`…`psychedelic-10`, `retro-outdoors-01`…`10`, `topo-01`…`10`, `trails-us-01`…`10`.
+
+## URL resolution
+
+```ts
+getPresetFullUrl(preset) // → photoPath if present, else getFullUrl(photoId)
+resolvePresetUrl(id)     // → looks up in ALL_BUILTIN_PRESETS, calls getPresetFullUrl
+```
+
+Checklist.tsx uses `resolvePresetUrl(background.id)` for the bgImageUrl.
+
+## Duplicate suppression
+
+Four original browser-local collections (same names as built-ins) are filtered from the dropdown by exact UUID (`SUPPRESSED_LEGACY_COLLECTION_IDS`). The underlying localStorage/IndexedDB data is NOT deleted.
+
+Original collection UUIDs:
+- Psychedelic: `d79067cd-baff-4945-ad0e-d0e9d76ecd77`
+- Retro-Outdoors: `13ed57b7-c050-43b6-bd85-05a7c0fe102a`
+- Topo: `0452da5c-3bbe-4255-994d-02065c67bbec`
+- Trails US: `77d40288-102c-41e6-8927-184eb55b073d`
+
+## Legacy photo ID compatibility (ReviewPage)
+
+`LEGACY_PHOTO_ID_MAP` (40 entries) in `BackgroundPicker.tsx` maps original `photoId` UUIDs → canonical preset IDs. `ReviewPage.seedFromLiveFiles` uses this to normalize old `{ type:'custom', photoId }` saves from the original browser collections into `{ type:'preset', id }` so the correct static image is displayed in Review/Share.
+
+**Why:** The four non-Landscape themes were originally stored as user custom collections (browser-local, `{ type:'custom', photoId }`). After 026D they are permanent built-ins (`{ type:'preset', id }`). Saved pack files created before 026D need the mapping to resolve correctly in Review.
+
+## 026B warning (superseded)
+
+026B introduced invented Unsplash photo IDs for these 4 themes. All 026B-invented arrays have been replaced by the static-path arrays above. Do not re-introduce Unsplash IDs for Psychedelic/Retro-Outdoors/Topo/Trails US.

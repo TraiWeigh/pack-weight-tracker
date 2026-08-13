@@ -26,6 +26,7 @@ import { useParams } from 'wouter';
 import { UnitProvider } from '../context/UnitContext';
 import { ChecklistContent } from './Checklist';
 import { useToast } from '../hooks/use-toast';
+import { LEGACY_PHOTO_ID_MAP } from '../components/BackgroundPicker';
 
 // ── Review-namespace key helpers ───────────────────────────────────────────────
 
@@ -353,12 +354,21 @@ function seedFromLiveFiles(
     //
     // Custom backgrounds ({type:'custom',photoId}) reference blobs in the
     // OWNER'S IndexedDB — not available in the reviewer's browser.  Only preset
-    // backgrounds (bundled Unsplash images) are safe to apply globally.
-    const bg = primary.background as { type?: string } | null;
+    // backgrounds (bundled static assets) are safe to apply globally.
+    //
+    // 026D: The four permanent non-Landscape themes were previously stored as
+    // { type:'custom', photoId } because they lived as browser-local collections.
+    // LEGACY_PHOTO_ID_MAP converts those 40 known photo UUIDs to canonical
+    // { type:'preset', id } entries so the correct static image is shown in Review.
+    const bg = primary.background as { type?: string; id?: string; photoId?: string } | null;
     if (bg?.type === 'preset') {
       localStorage.setItem('trailweigh:background', JSON.stringify(primary.background));
+    } else if (bg?.type === 'custom' && bg.photoId && LEGACY_PHOTO_ID_MAP[bg.photoId]) {
+      // Known recovered theme photo — normalise to canonical built-in preset.
+      const canonicalBg = { type: 'preset', id: LEGACY_PHOTO_ID_MAP[bg.photoId] };
+      localStorage.setItem('trailweigh:background', JSON.stringify(canonicalBg));
     } else {
-      // Custom or null — do not expose private owner blobs; clear to no-background.
+      // Unknown custom photo — discard (preserves arbitrary-photo privacy).
       localStorage.removeItem('trailweigh:background');
     }
     localStorage.setItem('trailweigh:bgFade', String(primary.bgFade ?? 1));

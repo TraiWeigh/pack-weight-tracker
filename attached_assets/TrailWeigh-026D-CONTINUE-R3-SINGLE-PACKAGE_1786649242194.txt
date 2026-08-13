@@ -1,0 +1,365 @@
+TRAILWEIGH — 026D CONTINUATION R3
+AUTHORITATIVE SINGLE RECOVERY PACKAGE — NEW SOURCE-ZIP COMPARISON EVIDENCE
+
+IMPORTANT NEW EVIDENCE BEFORE THE R2 TEXT BELOW:
+
+The user supplied the four older/source theme ZIP folders for independent comparison
+against the browser-recovered images.
+
+Direct decoded-pixel comparison established:
+
+- Psychedelic: all 10 source images are PIXEL-IDENTICAL to the corresponding 10
+  browser-recovered images, although their PNG file bytes / ZIP hashes differ.
+- Retro-Outdoors: all 10 source images are PIXEL-IDENTICAL to the corresponding 10
+  browser-recovered images, although their PNG file bytes / ZIP hashes differ.
+- Trails US: all 10 source images are PIXEL-IDENTICAL to the corresponding 10
+  browser-recovered images, although their PNG file bytes / ZIP hashes differ.
+- Topo: the supplied older/source Topo ZIP is NOT the same image set as the
+  browser-recovered Topo theme. Its files are mostly roughly square ~1000x1000
+  topographic-pattern images, whereas the browser-recovered Topo images are
+  landscape 1672x941 / 1920x1080 images. Do NOT substitute the older/source Topo
+  folder for the browser-recovered Topo set.
+
+Therefore revise the R2 wording as follows:
+
+1. The earlier explanation that PNG encoding could have changed is now SUPPORTED for
+   Psychedelic, Retro-Outdoors, and Trails US at the decoded-pixel level.
+2. It is NOT a sufficient explanation for Topo, because that ZIP contains a genuinely
+   different image set.
+3. The single browser-derived
+   `TrailWeigh-Original-Themes-Recovery-Package.zip`
+   remains the ONLY AUTHORITATIVE installation source for ALL FOUR themes because it
+   represents the exact images that existed in TrailWeigh browser storage at recovery time.
+4. Do not use the four older/source ZIP folders as implementation assets.
+5. Do not require byte/hash equality between those older/source ZIPs and the recovered
+   browser PNGs. The only required integrity checks are against the authoritative single
+   recovery package and its internal manifest.
+
+In the final report, state this precisely rather than saying all four prior ZIPs were
+simply "wrong":
+- three source ZIPs contained the same decoded imagery but different PNG encodings;
+- the Topo source ZIP contained a different image set;
+- the browser-recovered master package is canonical for the migration.
+
+ALL OTHER R2 REQUIREMENTS BELOW REMAIN IN FORCE.
+
+============================================================
+R2 CONTINUATION TEXT — APPLY WITH THE CORRECTION ABOVE
+============================================================
+
+TRAILWEIGH — 026D CONTINUATION R2
+USE THE SINGLE AUTHORITATIVE RECOVERY PACKAGE
+IGNORE THE FOUR WRONG ZIP FILES FROM THE PREVIOUS ATTEMPT
+
+INTERNAL VERSION ID:
+026D-CONTINUE-SINGLE-AUTHORITATIVE-PACKAGE-2026-08-13-R2
+
+RECOMMENDED REPLIT SETTINGS:
+- Economy
+- Build
+- SAME 026D Agent thread if practical
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+============================================================
+IMPORTANT CORRECTION TO THE PRIOR 026D REPORT
+============================================================
+
+The previous continuation received FOUR DIFFERENT ZIP FILES than the exact recovery ZIPs
+generated from the user's IndexedDB export.
+
+Evidence:
+- Their file sizes did not match the authoritative ZIPs.
+- Their internal filenames/folder structure did not match the authoritative ZIPs.
+- Their outer SHA-256 values did not match.
+- Their PNG SHA-256 values did not match.
+
+Therefore, the previous report's theory that a browser download or macOS Finder
+"re-encoded" the exact authoritative PNGs is NOT established and must not be treated as fact.
+
+Mark that explanation:
+
+SUPERSEDED / UNSUPPORTED EARLIER INFERENCE
+
+The actual proven fact is simply:
+
+THE WRONG FOUR ZIP FILES WERE UPLOADED TO REPLIT.
+
+Do not inspect or use those four wrong ZIP files further.
+
+============================================================
+AUTHORITATIVE FILE FOR THIS CONTINUATION
+============================================================
+
+The user is now attaching exactly ONE recovery package:
+
+TrailWeigh-Original-Themes-Recovery-Package.zip
+
+Expected size:
+140,793,872 bytes
+
+Expected SHA-256:
+46d6859e187cc5aa3eddfb6850cfc2f561a299b0c681b147d7e4cbf019f0ad73
+
+Expected contents:
+- README.txt
+- manifest.json
+- psychedelic/ — 10 exact PNGs
+- retro-outdoors/ — 10 exact PNGs
+- topo/ — 10 exact PNGs
+- trails-us/ — 10 exact PNGs
+
+Expected total:
+42 files in archive:
+- 40 PNGs
+- 1 manifest.json
+- 1 README.txt
+
+This single package was created directly from the user's uploaded browser recovery JSON
+containing the exact IndexedDB image bytes.
+
+THIS PACKAGE IS THE ONLY AUTHORITATIVE ASSET SOURCE FOR 026D.
+
+============================================================
+MANDATORY GATE BEFORE ANY APPLICATION CODE CHANGE
+============================================================
+
+1. Locate the newly attached:
+   TrailWeigh-Original-Themes-Recovery-Package.zip
+
+2. Compute its size.
+Expected exactly:
+140793872 bytes
+
+3. Compute SHA-256.
+Expected exactly:
+46d6859e187cc5aa3eddfb6850cfc2f561a299b0c681b147d7e4cbf019f0ad73
+
+4. If EITHER size or hash differs:
+STOP.
+DO NOT CHANGE APPLICATION CODE.
+Report the exact actual value.
+
+5. If both match:
+extract to temporary staging.
+
+6. Verify archive contains:
+- README.txt
+- manifest.json
+- exactly 40 PNGs
+- exactly 10 PNGs in each theme folder
+
+7. Read manifest.json from INSIDE THIS PACKAGE.
+Do not rely on a separately uploaded manifest if they differ.
+
+8. Verify every PNG SHA-256 against this package's manifest.
+
+9. Verify:
+- 4 themes
+- 10 images per theme
+- 40 images total
+- exact collection IDs
+- exact original photo IDs
+- exact image order
+
+Only if ALL integrity checks pass:
+
+RECOVERY ATTACHMENT GATE = PASS
+
+Then proceed.
+
+============================================================
+CONTINUE THE ORIGINAL 026D GOLD-STANDARD REPAIR
+============================================================
+
+Do NOT redesign the repair.
+
+Continue exactly as specified by:
+- the original 026D Gold Standard prompt
+- the existing PROMPT_026D_REPORT.md implementation plan
+- the prior 026C findings
+- this correction
+
+Required user-facing result:
+
+Permanent themes shown exactly once:
+
+Landscape
+Psychedelic
+Retro-Outdoors
+Topo
+Trails US
+
+The four recovered themes must use ONLY the 40 exact PNGs from the authoritative package,
+10 per theme, in manifest order.
+
+Remove all 026B-invented imagery.
+
+Preserve Landscape.
+
+Suppress the four legacy browser-local duplicate collections by EXACT collection UUID only.
+Do NOT delete the underlying localStorage/IndexedDB data.
+
+Map ONLY the exact 40 legacy original photo UUIDs to canonical built-in preset IDs.
+
+Known original collection UUIDs:
+
+Psychedelic:
+d79067cd-baff-4945-ad0e-d0e9d76ecd77
+
+Retro-Outdoors:
+13ed57b7-c050-43b6-bd85-05a7c0fe102a
+
+Topo:
+0452da5c-3bbe-4255-994d-02065c67bbec
+
+Trails US:
+77d40288-102c-41e6-8927-184eb55b073d
+
+Preserve:
+- arbitrary Custom Theme behavior
+- arbitrary custom-photo privacy
+- current custom-photo Share guard
+- all unrelated USER-VERIFIED PASS behavior
+
+Do NOT change the separate Share/Review Locker file-open defect.
+
+============================================================
+STATIC ASSET RULE
+============================================================
+
+Use the exact PNG bytes unchanged.
+
+Do NOT:
+- resize
+- recompress
+- optimize
+- crop
+- recolor
+- regenerate
+- convert format
+- substitute images
+
+Install using the project's existing Vite/public static-asset convention.
+
+If ~134 MB of exact static assets creates a real documented project/build/platform blocker:
+STOP and report the exact blocker.
+
+Do not silently compress or replace images.
+
+============================================================
+NO BROADENING
+============================================================
+
+DO NOT:
+- add Object Storage
+- add upload APIs
+- create a migration UI
+- change database schema
+- bulk rewrite database data
+- change authentication
+- change share-token architecture
+- modify replit.md
+- modify .replit
+- Resume
+- Publish/Republish
+- apply unrelated Ready tasks
+- use App Testing auto-fix
+
+============================================================
+REPORT
+============================================================
+
+Update the SAME:
+
+workflow-reports/PROMPT_026D_REPORT.md
+
+Preserve:
+- first attachment-gate failure
+- second wrong-ZIP gate failure
+
+Append:
+
+## CONTINUATION R2 — AUTHORITATIVE SINGLE PACKAGE
+
+Explicitly state:
+
+PREVIOUS "BROWSER/FINDER RE-ENCODING" THEORY =
+SUPERSEDED / UNSUPPORTED
+
+WRONG FOUR ZIPS FROM SECOND ATTEMPT USED =
+NO
+
+AUTHORITATIVE PACKAGE SIZE =
+(actual)
+
+AUTHORITATIVE PACKAGE SHA-256 =
+(actual)
+
+AUTHORITATIVE PACKAGE HASH MATCH =
+YES / NO
+
+ALL 40 PNG HASHES MATCH MANIFEST =
+YES / NO
+
+Then document:
+- files expected to change
+- files actually changed
+- asset install paths
+- canonical preset IDs
+- 40-ID compatibility mapping location
+- duplicate suppression logic
+- Share resolver logic
+- tests run/results
+- regressions
+- rollback
+- elapsed time/actions/lines/cost
+- final self-audit
+- USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Use all mandatory final status lines from the original 026D prompt.
+
+At minimum include:
+
+RECOVERY ATTACHMENT GATE = PASS / FAIL
+PSYCHEDELIC EXACT ASSETS = PASS / FAIL
+RETRO-OUTDOORS EXACT ASSETS = PASS / FAIL
+TOPO EXACT ASSETS = PASS / FAIL
+TRAILS US EXACT ASSETS = PASS / FAIL
+DUPLICATE LEGACY THEME ENTRIES VISIBLE = YES / NO
+LEGACY LOCAL DATA DELETED = YES / NO
+EXACT 40 LEGACY PHOTO IDS MAPPED = YES / NO
+UNKNOWN CUSTOM PHOTO PRIVACY CHANGED = YES / NO
+GENUINE CUSTOM THEME BEHAVIOR CHANGED = YES / NO
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Recreate:
+
+workflow-reports/trailweigh-026D-report.zip
+
+ZIP contains ONLY the updated report unless the original 026D prompt required otherwise.
+
+Verify ZIP opens successfully.
+
+============================================================
+STOP
+============================================================
+
+STOP after updated report + ZIP.
+
+Do not proceed to the separate Share Locker file-open repair.

@@ -86,7 +86,16 @@ function contrastRatio(c1: string, c2: string): number {
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
 
-export const PRESETS = [
+/** Common shape for all built-in preset entries.
+ *  Landscape presets use photoId (Unsplash); 026D static-asset presets use photoPath. */
+export interface BuiltinPreset {
+  id: string;
+  label?: string;
+  photoId?: string;
+  photoPath?: string;
+}
+
+export const PRESETS: BuiltinPreset[] = [
   { id: 'rocky-mountains',  label: 'Rocky Mountains',  photoId: '1464822759023-fed622ff2c3b' },
   { id: 'swiss-alps',       label: 'Swiss Alps',        photoId: '1506905925346-21bda4d32df4' },
   { id: 'forest',           label: 'Pine Forest',       photoId: '1448375240586-882707db888b' },
@@ -102,41 +111,31 @@ export const PRESETS = [
 // ── Permanent built-in themes — use { type:'preset', id } so they are fully ──
 // portable through Share/Review without requiring the owner's IndexedDB blobs.
 
-export const PSYCHEDELIC_PRESETS = [
-  { id: 'psychedelic-aurora',    label: 'Northern Lights',  photoId: '1531366936-c1ca7eefd24e' },
-  { id: 'psychedelic-neon',      label: 'Neon City',        photoId: '1557683311-eac922347aa1' },
-  { id: 'psychedelic-bloom',     label: 'Wildflowers',      photoId: '1465146344425-f00d5f5c8f07' },
-  { id: 'psychedelic-lava',      label: 'Lava Flow',        photoId: '1497578195034-75dded7eda09' },
-  { id: 'psychedelic-milkyway',  label: 'Milky Way',        photoId: '1462331940-2c93fd22c667' },
-  { id: 'psychedelic-prism',     label: 'Light Prism',      photoId: '1513151233558-d860c5398176' },
-];
+/** 026D: Exact recovered original photos installed as Vite static assets.
+ *  10 PNGs per theme, served from /themes/<slug>/01.png … 10.png. */
+export const PSYCHEDELIC_PRESETS: BuiltinPreset[] = Array.from({ length: 10 }, (_, i) => ({
+  id: `psychedelic-${String(i + 1).padStart(2, '0')}`,
+  photoPath: `/themes/psychedelic/${String(i + 1).padStart(2, '0')}.png`,
+  label: `Photo ${i + 1}`,
+}));
 
-export const RETRO_PRESETS = [
-  { id: 'retro-campfire',  label: 'Campfire',       photoId: '1534447677432-56d382f07ffc' },
-  { id: 'retro-cabin',     label: 'Log Cabin',      photoId: '1470770841591-52abcf45de23' },
-  { id: 'retro-trail',     label: 'Dusty Trail',    photoId: '1464207687429-7505649dae38' },
-  { id: 'retro-tent',      label: 'Tent Camp',      photoId: '1532339142463-fd0a8e7bb9f0' },
-  { id: 'retro-canoe',     label: 'River Canoe',    photoId: '1523987329168-b2ca43e98d4e' },
-  { id: 'retro-summit',    label: 'Rocky Summit',   photoId: '1486870591958-2fde7b1e1e43' },
-];
+export const RETRO_PRESETS: BuiltinPreset[] = Array.from({ length: 10 }, (_, i) => ({
+  id: `retro-outdoors-${String(i + 1).padStart(2, '0')}`,
+  photoPath: `/themes/retro-outdoors/${String(i + 1).padStart(2, '0')}.png`,
+  label: `Photo ${i + 1}`,
+}));
 
-export const TOPO_PRESETS = [
-  { id: 'topo-salt',    label: 'Salt Flats',    photoId: '1509610449-d3e99c1dc9e4' },
-  { id: 'topo-dunes',   label: 'Sand Patterns', photoId: '1530789253388-582c481ef399' },
-  { id: 'topo-fields',  label: 'Crop Fields',   photoId: '1500076656116-558758f991c1' },
-  { id: 'topo-canyon',  label: 'Canyon Strata', photoId: '1474044159687-1ee9f3a51722' },
-  { id: 'topo-glacier', label: 'Ice Fractures', photoId: '1502126199040-3e9b72b0c7c4' },
-  { id: 'topo-delta',   label: 'River Delta',   photoId: '1507501336603-6c0049da8bbc' },
-];
+export const TOPO_PRESETS: BuiltinPreset[] = Array.from({ length: 10 }, (_, i) => ({
+  id: `topo-${String(i + 1).padStart(2, '0')}`,
+  photoPath: `/themes/topo/${String(i + 1).padStart(2, '0')}.png`,
+  label: `Photo ${i + 1}`,
+}));
 
-export const TRAILS_PRESETS = [
-  { id: 'trails-yosemite',    label: 'Yosemite',       photoId: '1472214103451-9374bd1c798e' },
-  { id: 'trails-zion',        label: 'Zion Canyon',    photoId: '1469854523086-cc02fe5d8800' },
-  { id: 'trails-olympic',     label: 'Olympic Coast',  photoId: '1454496522488-7a8e488e8606' },
-  { id: 'trails-rainier',     label: 'Mt. Rainier',    photoId: '1433086966628-ab1c5087a33d' },
-  { id: 'trails-forest',      label: 'Forest Path',    photoId: '1483185406765-2e05d1b4a2bf' },
-  { id: 'trails-mesa',        label: 'High Desert',    photoId: '1476514525535-07fb3b4ae5f1' },
-];
+export const TRAILS_PRESETS: BuiltinPreset[] = Array.from({ length: 10 }, (_, i) => ({
+  id: `trails-us-${String(i + 1).padStart(2, '0')}`,
+  photoPath: `/themes/trails-us/${String(i + 1).padStart(2, '0')}.png`,
+  label: `Photo ${i + 1}`,
+}));
 
 /** Ordered registry of every built-in theme. */
 export const BUILTIN_THEMES = [
@@ -147,10 +146,70 @@ export const BUILTIN_THEMES = [
   { id: 'trails-us',      label: 'Trails US',      presets: TRAILS_PRESETS       },
 ];
 
-/** Flat list of every built-in preset across all themes. Used by Checklist.tsx
- *  to resolve any preset ID → Unsplash photoId without knowing its parent theme.
- *  Import this instead of PRESETS when you need cross-theme resolution. */
-export const ALL_BUILTIN_PRESETS = BUILTIN_THEMES.flatMap(t => t.presets);
+/** Flat list of every built-in preset across all themes. Used to resolve any
+ *  preset ID → display URL without knowing its parent theme. */
+export const ALL_BUILTIN_PRESETS: BuiltinPreset[] = BUILTIN_THEMES.flatMap(t => t.presets);
+
+/** 026D: Legacy browser-local photo UUIDs → canonical built-in preset IDs.
+ *  The four original custom collections were saved as { type:'custom', photoId }
+ *  in the owner's localStorage. ReviewPage uses this map to normalise those
+ *  saves to { type:'preset', id } so the correct static asset is shown in Review. */
+export const LEGACY_PHOTO_ID_MAP: Record<string, string> = {
+  // Psychedelic (original collection d79067cd-baff-4945-ad0e-d0e9d76ecd77)
+  '3e332c40-c9f0-47ae-81a9-b8c935edbb6f': 'psychedelic-01',
+  '0b24e918-fbb1-41b1-bc98-d9536ac1b51e': 'psychedelic-02',
+  '333224d7-35fa-4c46-9dd5-6018478f6f5b': 'psychedelic-03',
+  'a259f90c-d276-441b-9e0a-b67b0b348805': 'psychedelic-04',
+  '4d5c2b91-91b5-43e6-91a8-4df2203a310c': 'psychedelic-05',
+  '029d55db-70c7-40f3-a593-0bd8c285da5a': 'psychedelic-06',
+  'efc60681-a786-470a-a90a-02ebb7c799bc': 'psychedelic-07',
+  '331425c9-7950-46c9-83ca-d22e8b0db75d': 'psychedelic-08',
+  '1fa4bb40-8029-4d05-bf8b-c705165c1880': 'psychedelic-09',
+  '16b077e2-fd86-4012-926c-0df1ec92d46b': 'psychedelic-10',
+  // Retro-Outdoors (original collection 13ed57b7-c050-43b6-bd85-05a7c0fe102a)
+  '2440d098-98e0-41d7-9809-1e35811a30ce': 'retro-outdoors-01',
+  '4998c2db-c344-4210-85fd-aa5673f25e83': 'retro-outdoors-02',
+  'f050f6c4-a3e4-4601-b9f8-518d000432ec': 'retro-outdoors-03',
+  '31ac6cb8-b02a-4df5-8561-69305a992949': 'retro-outdoors-04',
+  '44b4390d-0c8a-4849-84d5-6f1a3130ecd6': 'retro-outdoors-05',
+  '112b45c3-9a3f-4d5b-a789-c7fbf7517818': 'retro-outdoors-06',
+  '35883452-6967-419d-9d2c-27fb52bdcb46': 'retro-outdoors-07',
+  '9854e28b-58cc-4dd8-b186-e8e2e0f23be7': 'retro-outdoors-08',
+  'f0fccc20-5841-4635-9cd5-3303ac6a1894': 'retro-outdoors-09',
+  '701cc0ea-4912-416c-b08e-0c747381668c': 'retro-outdoors-10',
+  // Topo (original collection 0452da5c-3bbe-4255-994d-02065c67bbec)
+  '86ab16d2-a9b3-402e-b1c4-a9ef087bfaf3': 'topo-01',
+  '5bcea54b-8af5-4f96-8235-66ef2e1f689b': 'topo-02',
+  'd7e61aeb-ba47-46a4-97a9-bd52e60e1431': 'topo-03',
+  'a6cee42d-b3ce-4d33-8423-95b0a678f80d': 'topo-04',
+  'ddf5749c-e1f8-4be3-af3a-fd81ebcb3802': 'topo-05',
+  'eb6c7fe1-49f4-40bf-9fa3-4745cdc6966a': 'topo-06',
+  '1b386681-19cb-421e-afe9-ce3e2c374990': 'topo-07',
+  '85bc06d6-35f3-4fbc-b94c-32f02099585f': 'topo-08',
+  'e0ec1f6b-bdc8-4dd1-95b1-8ddcba03e049': 'topo-09',
+  '9cd855ca-f2e1-46b7-a39e-5ddfd605e137': 'topo-10',
+  // Trails US (original collection 77d40288-102c-41e6-8927-184eb55b073d)
+  '65e1d32d-25ec-4d41-96c7-dd6e60f85f43': 'trails-us-01',
+  '3cf3b624-94a7-4c89-a904-08c536c58bcd': 'trails-us-02',
+  'dba3311b-adb5-46f0-a438-bc404842b01a': 'trails-us-03',
+  '36f04b32-80e5-43c7-b57f-c98a31c7e34d': 'trails-us-04',
+  '7eea6590-6d18-4785-bb1f-2578724ac108': 'trails-us-05',
+  '611631b5-ff36-4dc1-81a2-10c11577c987': 'trails-us-06',
+  '33c6e859-3cf9-43ac-ab22-fb473598631f': 'trails-us-07',
+  '615f101e-afa2-4aed-b88c-c95136573092': 'trails-us-08',
+  '79e6f628-9ca5-47c8-b2d8-f18021c2d8ef': 'trails-us-09',
+  '944a1a61-6037-483a-8600-c498bf2e0978': 'trails-us-10',
+};
+
+/** 026D: Suppress the four original browser-local duplicate collections by
+ *  exact UUID. Filter-only — the underlying localStorage/IndexedDB data is
+ *  NOT deleted. Never filter by name; only exact UUID. */
+const SUPPRESSED_LEGACY_COLLECTION_IDS = new Set([
+  'd79067cd-baff-4945-ad0e-d0e9d76ecd77', // Psychedelic
+  '13ed57b7-c050-43b6-bd85-05a7c0fe102a', // Retro-Outdoors
+  '0452da5c-3bbe-4255-994d-02065c67bbec', // Topo
+  '77d40288-102c-41e6-8927-184eb55b073d', // Trails US
+]);
 
 export function getFullUrl(photoId: string) {
   return `https://images.unsplash.com/photo-${photoId}?w=1920&q=85&fit=crop`;
@@ -158,6 +217,27 @@ export function getFullUrl(photoId: string) {
 
 function getThumbUrl(photoId: string) {
   return `https://images.unsplash.com/photo-${photoId}?w=400&h=260&fit=crop&q=70`;
+}
+
+/** Resolve the full-size display URL for any built-in preset.
+ *  Landscape presets use Unsplash (photoId); 026D themes use Vite static assets (photoPath). */
+export function getPresetFullUrl(preset: { photoId?: string; photoPath?: string }): string {
+  if (preset.photoPath) return preset.photoPath;
+  if (preset.photoId) return getFullUrl(preset.photoId);
+  return '';
+}
+
+/** Resolve thumbnail URL for a built-in preset (static presets reuse the full image). */
+function getPresetThumbUrl(preset: { photoId?: string; photoPath?: string }): string {
+  if (preset.photoPath) return preset.photoPath;
+  if (preset.photoId) return getThumbUrl(preset.photoId);
+  return '';
+}
+
+/** Resolve the full-size URL for a preset ID, for use in Checklist / ReviewPage. */
+export function resolvePresetUrl(id: string): string {
+  const p = ALL_BUILTIN_PRESETS.find(q => q.id === id);
+  return p ? getPresetFullUrl(p) : '';
 }
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
@@ -466,8 +546,9 @@ export function BackgroundPickerPanel({
     Object.values(thumbnailUrlsRef.current).forEach(revokePhotoObjectUrl);
     thumbnailUrlsRef.current = {};
 
-    // Skip custom-thumbnail loading for built-in themes and add-form
-    if (!open || activeThemeId === 'landscapes' || isAddingTheme) {
+    // Skip custom-thumbnail loading for all built-in themes (they use static URLs) and add-form
+    const BUILTIN_IDS = new Set(BUILTIN_THEMES.map(t => t.id));
+    if (!open || BUILTIN_IDS.has(activeThemeId) || isAddingTheme) {
       setThumbnailUrls({});
       return;
     }
@@ -1408,8 +1489,10 @@ export function BackgroundPickerPanel({
                 >{theme.label}</button>
               ))}
 
-              {/* 023B/C — Custom themes: display exact user-entered name, no "Theme " prefix; always last */}
-              {collections.map(col => (
+              {/* 023B/C — Custom themes: display exact user-entered name, no "Theme " prefix; always last.
+                  026D: filter out the four original browser-local collections by exact UUID so they
+                  no longer appear as duplicates alongside the new permanent built-in themes. */}
+              {collections.filter(col => !SUPPRESSED_LEGACY_COLLECTION_IDS.has(col.id)).map(col => (
                 <button
                   key={col.id}
                   role="option"
@@ -1471,12 +1554,12 @@ export function BackgroundPickerPanel({
                       <button
                         onClick={() => onBackgroundChange({ type: 'preset', id: p.id })}
                         aria-pressed={isActive}
-                        aria-label={p.label}
+                        aria-label={p.label ?? p.id}
                         className={`absolute inset-0 overflow-hidden rounded-lg group ${
                           isActive ? 'ring-2 ring-primary ring-offset-1' : 'hover:ring-2 hover:ring-foreground/30 hover:ring-offset-1'
                         }`}
                       >
-                        <img src={getThumbUrl(p.photoId)} alt={p.label} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                        <img src={getPresetThumbUrl(p)} alt={p.label ?? p.id} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 pointer-events-none">
                           <span className="text-[10px] font-semibold text-white leading-none">{p.label}</span>
                         </div>
