@@ -344,15 +344,132 @@ USER VERIFICATION = NOT REQUESTED YET
 
 ---
 
-## NEXT STEP FOR USER
+---
 
-Please upload the four theme ZIP files to continue:
+## CONTINUATION AFTER RECOVERY ZIP UPLOAD
 
-1. `TrailWeigh-Theme-psychedelic.zip`
-2. `TrailWeigh-Theme-retro-outdoors.zip`
-3. `TrailWeigh-Theme-topo.zip`
-4. `TrailWeigh-Theme-trails-us.zip`
+*026D-CONTINUE-AFTER-ASSET-UPLOAD-2026-08-13-R1 — second gate attempt*
 
-Or upload the single recovery package: `TrailWeigh-Original-Themes-Recovery-Package.zip` (~134 MB) if the individual ZIPs are not available separately.
+---
 
-Once the files are uploaded and SHA-256 hashes are verified, the implementation can proceed immediately using the plan documented in Section 6 above.
+### C.1 — Files received
+
+| File (Replit upload name) | Size | ZIP outer SHA-256 (actual) |
+|---|---|---|
+| `TrailWeigh-Theme-psychedelic_1786647470827.zip` | 32 MB | `33fe45b5e2ffb571c56387e9eef298bc859999898363da675023141342f1991b` |
+| `TrailWeigh-Theme-retro-outdoors_1786647470827.zip` | 27 MB | `9e6513575430ff5440106d15ee3cbf621d18667830e04419854dc3eb953230d2` |
+| `TrailWeigh-Theme-topo_1786647470826.zip` | 909 KB | `b2bf80d651527a61ed41770b8b952a7f4d03702e848769d73c5ba2c7f803fbf9` |
+| `TrailWeigh-Theme-trails-us_1786647470826.zip` | 27 MB | `9ed305717e22853f94544dfd830ca6247891c2b2f083f8cdd168b06e0fa22bf0` |
+
+All four ZIPs were found and extracted successfully. Each contained 10 PNG files (40 total). File counts: ✅ 4 themes × 10 PNGs = 40.
+
+---
+
+### C.2 — ZIP outer hash comparison
+
+| Theme | Expected SHA-256 | Actual SHA-256 | Match |
+|---|---|---|---|
+| Psychedelic | `93a1b56244f3abf800750651dbb03c2918ae83cb5e2acdf897ec4b02ddc0c6f4` | `33fe45b5e2ffb571c56387e9eef298bc859999898363da675023141342f1991b` | ❌ FAIL |
+| Retro-Outdoors | `15595c540a8dbb6d94f035677b892fd3ed52ba35f8b5ad3418b089cb389a7388` | `9e6513575430ff5440106d15ee3cbf621d18667830e04419854dc3eb953230d2` | ❌ FAIL |
+| Topo | `62cee8c75165410f90382ec1da3d807dbbe2bca017f85f0d188a232a4e0a63ae` | `b2bf80d651527a61ed41770b8b952a7f4d03702e848769d73c5ba2c7f803fbf9` | ❌ FAIL |
+| Trails US | `d0982741dad2f07a5698b0b3a31681fefd1eb10a04d4e70eeedd4ec7ede19b90` | `9ed305717e22853f94544dfd830ca6247891c2b2f083f8cdd168b06e0fa22bf0` | ❌ FAIL |
+
+All four ZIP outer hashes fail.
+
+---
+
+### C.3 — PNG inner hash comparison (all 40)
+
+The manifest expects files named `psychedelic/01_3e332c40-c9f0-47ae-81a9-b8c935edbb6f.png` etc. (UUID-in-filename format from the original export tool). The uploaded ZIPs contain files with a different naming convention: `Psychedelic/Psychedelic-01.png`, `Retro-Trail/Retro-Trail-01.png`, etc., plus two anomalously named Retro files (`image-gen-2(7)(1).png`, `image-gen-9(2).png`). This confirms the ZIPs were created by a separate re-packaging step (macOS Finder, based on `__MACOSX/` metadata folders), not extracted from the original `TrailWeigh-Original-Themes-Recovery-Package.zip`.
+
+**Psychedelic — actual vs. manifest SHA-256:**
+
+| Order | Manifest expected SHA-256 | Actual SHA-256 | Match |
+|---|---|---|---|
+| 01 | `8ee79dc3b67a70145bd4c02830deb937207d9e1b02c6e4254c53efb7e2221d8b` | `6ad2fe716981962430826b6689f60c60fd57a74acd4396a1ce412852551cddec` | ❌ |
+| 02 | `f4de0d89a6a19b86e4128a38739d29fdbb513ad82aa93ac869a5644431556a54` | `feda2e53e63b455d2b86d987ecabbe86bc6aabfbcb2bdb382925fdb094e50af7` | ❌ |
+| 03 | `ea37df6f5e139352457d16a94f35dcbbe188932ebdc1ba730278a443a720c1f1` | `00101d63f70f4bbe8cdcd3ae7e7507452cc907dc317216c41300866ffd59e8ee` | ❌ |
+| 04 | `e70c22d55f1e5f7698ef0996c35ac137d7edbcd115779ae249d9bd95167b1986` | `d61ee5491ba6bd9ec8f6269a7b51a9471b5c5b0005947085a6325111dccdabcc` | ❌ |
+| 05 | `006990728b80d286e9db79aa21e0b404e49e80077b3dfac16b16e8c79a00b17c` | `de97d904dc3b81ebe6bffd3b7f4eb28159297168f84c15f4dfa00a3eef948538` | ❌ |
+| 06 | `8c7a0672b3b922cd01be34b5b5774db0a89f2e9e91691d953a953d493faf6aed` | `cf4410b03b135760c7f1cfca8bc88f755ec1ef98a88be7231d4dd7abe05f6ab1` | ❌ |
+| 07 | `71ffa17ec6697561c8d90d6723c00fbdc5c2b365306fc9d7dd98f64d8c6e63d5` | `b9a46b9348fed577b8cd0ae3ba24f022f15f427f5390a8151cdb5d369753545a` | ❌ |
+| 08 | `d82a820041358669a9c739dd85188d9808ffe262a51eb93e13976c009b907c94` | `86a4a94c9e6075838dbd3a329c1961409cbd3e791ce03b0baaa4cc0cbb3ad459` | ❌ |
+| 09 | `9a710fa30541a1a16edda8914b980decc47e875920e212c9e5d1fa2cf9579630` | `27e8d910e9f1f4def05c254a45c84ffb4250e8ac2e82cc0132b03697c1e6ca0a` | ❌ |
+| 10 | `c5d0a5bb18dc081e8d148551f2e30d4af19c34dcaea3dd82cf553774e8d5e2b9` | `8a487f1655db3d886c743318a1a2250d1430bd5cd31051e03b9f4664bf85a305` | ❌ |
+
+Retro-Outdoors, Topo, and Trails US: all 30 remaining PNGs also fail — every hash mismatches. (Detailed tables omitted for length; all 40 PNG hashes are mismatched.)
+
+**Result: 0 of 40 PNG hashes match the manifest. Gate fails.**
+
+---
+
+### C.4 — Root Cause Analysis
+
+The manifest's SHA-256 values were computed by the TrailWeigh export tool directly from the raw IndexedDB `Blob` bytes as it extracted them — the exact binary content as stored in the browser. 
+
+The uploaded ZIPs were created separately: the user saved the images from the browser to disk (which re-encodes them via browser download, potentially altering PNG chunk metadata, creation timestamps, or compression parameters) and then created ZIPs using macOS Finder. This process changes the binary content of the PNG files even if the visual pixels are identical. Hence every hash differs.
+
+**The original `TrailWeigh-Original-Themes-Recovery-Package.zip` (~134 MB, SHA-256: `46d6859e187cc5aa3eddfb6850cfc2f561a299b0c681b147d7e4cbf019f0ad73`) is the only archive whose contents will produce the manifest-matching hashes**, because it was created by the same export tool in the same operation that generated the manifest.
+
+---
+
+### C.5 — GATE RESULT (continuation attempt)
+
+```
+RECOVERY ATTACHMENT GATE = FAIL (second attempt)
+```
+
+**Reason:** All 4 ZIP outer hashes fail. All 40 PNG inner hashes fail. The ZIPs were re-packaged manually from browser-downloaded copies, not extracted from the original recovery package. The PNG bytes differ from what the manifest recorded.
+
+**NO APPLICATION CODE HAS BEEN CHANGED.**
+
+---
+
+### C.6 — PATH FORWARD
+
+Two options, in order of preference:
+
+**Option A (preferred): Upload the original large recovery package**
+
+Upload `TrailWeigh-Original-Themes-Recovery-Package.zip` (~134 MB). Expected SHA-256:
+```
+46d6859e187cc5aa3eddfb6850cfc2f561a299b0c681b147d7e4cbf019f0ad73
+```
+This is the original single-archive output of the export tool, whose contents match the manifest exactly. Once this arrives and its SHA-256 is verified, the agent can extract all 40 PNGs directly from it and proceed with the repair immediately.
+
+**Option B: Re-export from the browser using the original TrailWeigh export tool**
+
+If the original `TrailWeigh-Original-Themes-Recovery-Package.zip` is no longer available on disk:
+
+1. Open the TrailWeigh app in the same browser where the original collections still live in IndexedDB (positions 6–9 in the dropdown).
+2. Re-run the same export tool that originally produced the manifest (the one that creates files named `{slug}/{NN}_{uuid}.png`).
+3. Upload the resulting ZIP(s) — the PNG bytes extracted directly from IndexedDB will produce the same hashes as the manifest.
+
+**Do NOT:** re-save the images from the browser download dialog or re-zip them with Finder. That path produces a third set of SHA-256 values and will fail the gate again.
+
+---
+
+### C.7 — MANDATORY FINAL STATUS (continuation attempt)
+
+```
+RECOVERY ATTACHMENT GATE = FAIL (second attempt — re-packaged ZIPs, all 40 PNG hashes mismatch)
+
+PSYCHEDELIC EXACT ASSETS = FAIL (10/10 PNG hashes mismatch manifest)
+RETRO-OUTDOORS EXACT ASSETS = FAIL (10/10 PNG hashes mismatch manifest)
+TOPO EXACT ASSETS = FAIL (10/10 PNG hashes mismatch manifest)
+TRAILS US EXACT ASSETS = FAIL (10/10 PNG hashes mismatch manifest)
+
+DUPLICATE LEGACY THEME ENTRIES VISIBLE = YES (unchanged — no code change made)
+LEGACY LOCAL DATA DELETED = NO
+EXACT 40 LEGACY PHOTO IDS MAPPED = NO (gate blocked)
+UNKNOWN CUSTOM PHOTO PRIVACY CHANGED = NO
+GENUINE CUSTOM THEME BEHAVIOR CHANGED = NO
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = NO
+DATABASE DATA CHANGED = NO
+DATABASE SCHEMA CHANGED = NO
+REPLIT.MD CHANGED = NO
+DEPLOYMENT/PUBLISHING CHANGED = NO
+UNRELATED FILES CHANGED = NO
+
+USER VERIFICATION = PENDING
+```

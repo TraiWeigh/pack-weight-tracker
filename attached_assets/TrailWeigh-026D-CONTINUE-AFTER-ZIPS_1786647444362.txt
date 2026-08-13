@@ -1,0 +1,218 @@
+TRAILWEIGH — 026D CONTINUATION AFTER ATTACHMENT-GATE FAIL
+CONTINUE THE EXISTING 026D TASK ONLY AFTER VERIFYING THE FOUR RECOVERY ZIP FILES
+
+INTERNAL VERSION ID:
+026D-CONTINUE-AFTER-ASSET-UPLOAD-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS:
+- Economy
+- Build
+- SAME 026D Agent thread if practical, because the prior 026D report already contains the root-cause analysis and implementation plan
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+============================================================
+WHY THIS FOLLOW-UP EXISTS
+============================================================
+
+The prior 026D run correctly STOPPED because the four required recovery ZIP files were not actually uploaded into Replit.
+
+That prior run made:
+- NO application-code changes
+- NO database changes
+- NO deployment changes
+
+Its report already documented the intended implementation plan.
+
+This continuation exists ONLY to:
+1. verify the four newly attached recovery ZIPs,
+2. pass the 026D attachment/integrity gate,
+3. continue the ORIGINAL 026D repair exactly as previously specified,
+4. complete and replace/update the 026D report + ZIP.
+
+Do NOT redesign the repair from scratch.
+Do NOT invent new theme content.
+Do NOT broaden scope.
+
+============================================================
+REQUIRED ATTACHMENTS
+============================================================
+
+The user is attaching these exact four files now:
+
+1. TrailWeigh-Theme-psychedelic.zip
+Expected SHA-256:
+93a1b56244f3abf800750651dbb03c2918ae83cb5e2acdf897ec4b02ddc0c6f4
+
+2. TrailWeigh-Theme-retro-outdoors.zip
+Expected SHA-256:
+15595c540a8dbb6d94f035677b892fd3ed52ba35f8b5ad3418b089cb389a7388
+
+3. TrailWeigh-Theme-topo.zip
+Expected SHA-256:
+62cee8c75165410f90382ec1da3d807dbbe2bca017f85f0d188a232a4e0a63ae
+
+4. TrailWeigh-Theme-trails-us.zip
+Expected SHA-256:
+d0982741dad2f07a5698b0b3a31681fefd1eb10a04d4e70eeedd4ec7ede19b90
+
+The manifest from the prior run is already present:
+TrailWeigh-Original-Themes-Manifest.json
+
+============================================================
+MANDATORY START
+============================================================
+
+Before any application code change:
+
+1. Read current replit.md READ-ONLY.
+2. Read the existing workflow-reports/PROMPT_026D_REPORT.md.
+3. Verify this continuation version ID.
+4. Locate the four NEWLY ATTACHED ZIP files.
+5. Compute SHA-256 for all four.
+6. Compare every hash to the expected value above.
+7. Extract to temporary staging only.
+8. Verify:
+   - 4 themes
+   - 10 PNGs per theme
+   - 40 PNGs total
+   - every PNG hash matches the manifest
+   - collection IDs and order match manifest
+9. Verify current source state still matches the assumptions recorded in the existing 026D report.
+10. Confirm no unrelated code changes occurred since the 026D gate-fail run that materially alter this repair.
+
+If ANY required ZIP is missing or any hash fails:
+STOP.
+DO NOT EDIT APPLICATION CODE.
+Update report with exact failure.
+
+============================================================
+CONTINUE ORIGINAL 026D — DO NOT REDESIGN
+============================================================
+
+If and only if the recovery gate passes:
+
+Continue the exact 026D Gold Standard repair already specified.
+
+The required user outcome remains:
+
+- Landscape
+- Psychedelic
+- Retro-Outdoors
+- Topo
+- Trails US
+
+shown exactly once each as permanent themes.
+
+Psychedelic / Retro-Outdoors / Topo / Trails US must use the EXACT recovered original 10 PNGs per theme.
+
+Do not use any 026B-invented replacement imagery.
+
+Preserve:
+- original local browser data
+- genuine custom-theme behavior
+- arbitrary custom-photo privacy
+- Landscape
+- Share custom-photo privacy guard
+- all unrelated USER-VERIFIED PASS behavior
+
+Suppress legacy duplicate local collections by exact collection UUID only.
+
+Map only the exact 40 recovered legacy photo IDs to canonical permanent preset IDs.
+
+Do not change the separate Share Locker file-open defect.
+
+============================================================
+SCOPE / SAFETY
+============================================================
+
+DO NOT:
+- change database schema
+- bulk rewrite DB rows
+- add Object Storage
+- add upload endpoints
+- add migration UI
+- change auth
+- change share tokens
+- Resume
+- Publish/Republish
+- modify replit.md
+- apply unrelated Ready tasks
+- use App Testing auto-fix
+- invent or substitute images
+- recompress/resize/crop recovered PNGs
+
+If the static-asset strategy encounters a real platform/build blocker:
+STOP and report the exact blocker rather than changing architecture.
+
+============================================================
+REPORT COMPLETION
+============================================================
+
+Update the SAME report:
+
+workflow-reports/PROMPT_026D_REPORT.md
+
+Preserve the original gate-fail section and append a clearly labeled:
+
+## CONTINUATION AFTER RECOVERY ZIP UPLOAD
+
+Include:
+- all four ZIP hashes
+- all 40 PNG integrity results
+- files expected to change
+- files actually changed
+- exact implementation
+- exact asset install paths
+- exact compatibility mapping location
+- duplicate suppression logic
+- Share/public resolver behavior
+- regression tests
+- tests not run
+- rollback guidance
+- elapsed time/actions/lines/cost for continuation
+- final self-audit
+- USER VERIFICATION = PENDING
+
+Recreate:
+
+workflow-reports/trailweigh-026D-report.zip
+
+ZIP must contain the UPDATED PROMPT_026D_REPORT.md.
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+Use the exact final-status lines required by the original 026D prompt.
+
+Most important:
+
+RECOVERY ATTACHMENT GATE = PASS / FAIL
+PSYCHEDELIC EXACT ASSETS = PASS / FAIL
+RETRO-OUTDOORS EXACT ASSETS = PASS / FAIL
+TOPO EXACT ASSETS = PASS / FAIL
+TRAILS US EXACT ASSETS = PASS / FAIL
+DUPLICATE LEGACY THEME ENTRIES VISIBLE = YES / NO
+LEGACY LOCAL DATA DELETED = YES / NO
+EXACT 40 LEGACY PHOTO IDS MAPPED = YES / NO
+UNKNOWN CUSTOM PHOTO PRIVACY CHANGED = YES / NO
+GENUINE CUSTOM THEME BEHAVIOR CHANGED = YES / NO
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+Replit internal PASS is NOT final USER PASS.
+
+============================================================
+STOP RULE
+============================================================
+
+STOP after the updated report + ZIP.
+
+Do not proceed to the separate Share Locker file-open repair.
