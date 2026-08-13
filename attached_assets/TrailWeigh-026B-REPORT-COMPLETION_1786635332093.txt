@@ -1,0 +1,302 @@
+TRAILWEIGH — 026B REPORT-COMPLETION AUDIT ONLY
+DETERMINE WHAT 026B ACTUALLY CHANGED AND COMPLETE THE MISSING FINAL REPORT
+DO NOT MAKE ANY NEW TRAILWEIGH CHANGES
+
+INTERNAL VERSION ID:
+026B-REPORT-COMPLETION-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS:
+- Agent mode: Economy
+- Work mode: Build
+- Use the SAME project state produced by 026B
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE:
+3–7 minutes
+Estimated Agent usage/cost: approximately $0.30–$0.90.
+
+============================================================
+WHY THIS FOLLOW-UP IS REQUIRED
+============================================================
+
+The ZIP created for 026B contains `PROMPT_026B_REPORT.md`, but that report is NOT
+a completed post-implementation report.
+
+The existing report ends with:
+
+"Root-cause gate passed — proceeding to implementation."
+
+It includes the pre-implementation diagnosis and expected files, but it does NOT include
+the mandatory final sections/results required by Prompt 026B R3, including:
+
+- files actually changed
+- exact patch actually applied
+- post-change built-in theme registry
+- save/load test results
+- Share/Review resolution test results
+- regression results
+- rollback guidance
+- final self-audit
+- final mandatory PASS/FAIL lines
+- actual elapsed time/actions/lines/cost
+- USER VERIFICATION = PENDING
+
+Therefore we cannot yet determine whether 026B actually implemented the repair,
+partially implemented it, or stopped after diagnosis.
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+THIS FOLLOW-UP IS AUDIT + REPORT COMPLETION ONLY.
+
+DO NOT:
+- edit application source
+- continue or finish the theme repair
+- change replit.md
+- change .replit
+- change packages
+- change database data/schema
+- change Locker/share data
+- change themes
+- clear localStorage or IndexedDB
+- Resume
+- Publish/Republish
+- run migrations
+- invoke App Testing auto-fix
+- apply unrelated Ready tasks
+
+AUTHORIZED WRITES ONLY:
+- workflow-reports/PROMPT_026B_REPORT.md
+- workflow-reports/trailweigh-026B-report.zip
+
+If application code is not already fully changed as part of the original 026B run,
+DO NOT change it now. Report that 026B implementation is incomplete.
+
+============================================================
+MANDATORY CONTEXT REVIEW
+============================================================
+
+Before deciding anything:
+
+1. Read the current `workflow-reports/PROMPT_026B_REPORT.md`.
+2. Read current `replit.md` READ-ONLY.
+3. Inspect Git diff / Replit checkpoint diff / current working tree READ-ONLY.
+4. Identify every file changed by the original 026B run.
+5. Verify whether the expected 026B theme changes actually exist in CURRENT active source.
+6. Verify the changed files are on the CURRENT active render/save/share path.
+7. Reconcile against the original 026B R3 requirements.
+
+Evidence priority:
+1. current Git/working-tree diff and active source
+2. runtime/test evidence already produced by 026B
+3. Replit task/checkpoint evidence
+4. existing 026B report
+5. inference
+
+Do NOT invent tests that were not actually run.
+
+============================================================
+QUESTION 1 — DID 026B ACTUALLY IMPLEMENT THE REPAIR?
+============================================================
+
+Classify exactly one:
+
+A. IMPLEMENTED COMPLETELY
+B. IMPLEMENTED PARTIALLY
+C. DIAGNOSIS ONLY — NO APPLICATION CHANGE
+D. CANNOT DETERMINE
+
+Provide direct evidence.
+
+============================================================
+QUESTION 2 — WHAT FILES ACTUALLY CHANGED?
+============================================================
+
+List every file changed by original 026B.
+
+For each:
+- file path
+- whether change belongs to 026B
+- concise description
+- whether on active code path
+
+If an unrelated file changed:
+report it.
+DO NOT modify/revert it in this audit.
+
+============================================================
+QUESTION 3 — WHAT CODE ACTUALLY EXISTS NOW?
+============================================================
+
+Read-only verify whether CURRENT active source now contains:
+
+- built-in permanent Landscape
+- built-in permanent Psychedelic
+- built-in permanent Retro-Outdoors
+- built-in permanent Topo
+- built-in permanent Trails US
+
+For each report:
+- stable theme ID/key
+- source registry
+- background representation (`preset` or other)
+- public/bundled image source path
+- whether owner save/load can resolve it
+- whether Share/Review resolver recognizes it
+
+Do not claim runtime PASS from source inspection alone.
+
+============================================================
+QUESTION 4 — WHAT TESTS WERE ACTUALLY RUN?
+============================================================
+
+Recover only tests/evidence actually generated during original 026B.
+
+For each test required by R3, classify:
+
+- ACTUALLY RUN + PASS
+- ACTUALLY RUN + FAIL
+- NOT RUN
+- UNKNOWN
+
+Required areas:
+1. all five themes visible
+2. Landscape remains working
+3. Psychedelic built-in resolution
+4. Retro-Outdoors built-in resolution
+5. Topo built-in resolution
+6. Trails US built-in resolution
+7. Save serialization parity
+8. saved-file load resolution parity
+9. Share/Review resolution parity
+10. Light mode regression
+11. Dark mode regression
+12. Fit/Fill regression
+13. fade regression
+14. Bar Color regression
+15. Font regression
+16. Text Color regression
+17. Transparency regression
+18. Custom Theme unchanged
+19. Share Locker file-open defect unchanged
+
+Do not run new destructive tests.
+Safe read-only inspection is allowed.
+If a non-destructive existing test command is needed ONLY to verify current build/typecheck,
+you may run it, but do not auto-fix anything.
+
+============================================================
+QUESTION 5 — FINAL 026B STATUS
+============================================================
+
+Based strictly on evidence, classify original 026B:
+
+PASS
+PARTIAL
+FAIL
+INCOMPLETE / NOT ENOUGH EVIDENCE
+
+Remember:
+USER VERIFICATION has not yet occurred.
+
+Even if Replit internal tests pass:
+USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY REPORT COMPLETION
+============================================================
+
+Update the existing:
+
+workflow-reports/PROMPT_026B_REPORT.md
+
+DO NOT replace the original root-cause analysis.
+Preserve it and append a clearly labeled:
+
+## POST-IMPLEMENTATION AUDIT / FINAL COMPLETION
+
+Include:
+
+1. implementation status
+2. files actually changed
+3. exact patch actually present
+4. current built-in theme registry
+5. actual tests run and evidence
+6. tests NOT run
+7. regression evidence
+8. rollback guidance
+9. unresolved issues
+10. superseded/disproven findings
+11. final self-audit
+12. elapsed time/actions/lines/cost if recoverable
+13. USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL LINES
+============================================================
+
+Use only evidence-backed PASS/FAIL/NOT RUN/UNKNOWN:
+
+LANDSCAPE SAVE/LOAD = PASS / FAIL / NOT RUN / UNKNOWN
+LANDSCAPE SHARE RESOLUTION = PASS / FAIL / NOT RUN / UNKNOWN
+
+PSYCHEDELIC SAVE/LOAD = PASS / FAIL / NOT RUN / UNKNOWN
+PSYCHEDELIC SHARE RESOLUTION = PASS / FAIL / NOT RUN / UNKNOWN
+
+RETRO-OUTDOORS SAVE/LOAD = PASS / FAIL / NOT RUN / UNKNOWN
+RETRO-OUTDOORS SHARE RESOLUTION = PASS / FAIL / NOT RUN / UNKNOWN
+
+TOPO SAVE/LOAD = PASS / FAIL / NOT RUN / UNKNOWN
+TOPO SHARE RESOLUTION = PASS / FAIL / NOT RUN / UNKNOWN
+
+TRAILS US SAVE/LOAD = PASS / FAIL / NOT RUN / UNKNOWN
+TRAILS US SHARE RESOLUTION = PASS / FAIL / NOT RUN / UNKNOWN
+
+CUSTOM THEME BEHAVIOR CHANGED = YES / NO / UNKNOWN
+SHARE LOCKER FILE-OPEN DEFECT CHANGED = YES / NO / UNKNOWN
+DATABASE DATA CHANGED = YES / NO / UNKNOWN
+DATABASE SCHEMA CHANGED = YES / NO / UNKNOWN
+REPLIT.MD CHANGED = YES / NO / UNKNOWN
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO / UNKNOWN
+UNRELATED FILES CHANGED = YES / NO / UNKNOWN
+
+ORIGINAL 026B IMPLEMENTATION STATUS = COMPLETE / PARTIAL / DIAGNOSIS ONLY / UNKNOWN
+ORIGINAL 026B INTERNAL RESULT = PASS / PARTIAL / FAIL / INCOMPLETE
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Recreate:
+
+workflow-reports/trailweigh-026B-report.zip
+
+ZIP must contain the UPDATED:
+
+PROMPT_026B_REPORT.md
+
+Verify:
+1. updated report exists
+2. ZIP exists
+3. ZIP opens
+4. updated report is inside
+5. report includes POST-IMPLEMENTATION AUDIT / FINAL COMPLETION
+6. no application code was changed by THIS follow-up
+
+============================================================
+FINAL NO-CHANGE VERIFICATION
+============================================================
+
+APPLICATION SOURCE CHANGED BY REPORT-COMPLETION FOLLOW-UP = NONE
+APPLICATION CONFIG CHANGED BY REPORT-COMPLETION FOLLOW-UP = NONE
+DATABASE DATA CHANGED BY REPORT-COMPLETION FOLLOW-UP = NONE
+DATABASE SCHEMA CHANGED BY REPORT-COMPLETION FOLLOW-UP = NONE
+REPLIT.MD CHANGED BY REPORT-COMPLETION FOLLOW-UP = NONE
+DEPLOYMENT/PUBLISHING CHANGED BY REPORT-COMPLETION FOLLOW-UP = NONE
+
+STOP after the updated report + ZIP.
+
+DO NOT continue the 026B repair in this follow-up.
