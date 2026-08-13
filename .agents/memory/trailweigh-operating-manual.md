@@ -17,12 +17,16 @@ description: Pointer to 025T report — the permanent comprehensive reference fo
 ## Key confirmed facts (quick reference)
 
 - Share token: `randomBytes(5).hex()` = 10 chars, 40-bit, no expiry, no rate limit
-- sourceVersion: JSON fingerprint of `{i,n,t}` per locker row — SAVED changes update it; UNSAVED do not
-- Unit pref: `localStorage['tw-unit-system']` — global, not per-file, not in DB
+- sourceVersion: JSON fingerprint of `{i,n,t}` per locker row — SAVED changes update it; UNSAVED do not; RENAME changes `n:` only (PATCH does NOT update savedAt)
+- Unit pref: `localStorage['tw-unit-system']` — global, not per-file, **NOT in DB** (DB SELECT confirmed NULL for all rows — 025T Q132 was WRONG; 025U corrects it)
 - Background UUID (Sample List Live Test): `701cc0ea-4912-416c-b08e-0c747381668c`, type:custom → correctly invisible in Review
-- Built-in themes: Landscape only (10 presets). Retro-Outdoors/Psychedelic/Topo = owner private localStorage collections
+- Built-in themes: Landscape only (10 presets). Retro-Outdoors/Psychedelic/Topo = removed in 023D (were built-in at 023C); owner has as private browser collections
 - No `user.deleted` webhook → orphaned DB rows on account deletion
 - No FK between share_links and locker_entries
+- DATABASE = HELIUM (host segment confirmed; no neon.tech; NEON_DATABASE_URL absent)
+- **NEW (025U):** Unauthenticated `POST /api/links` frozen-snapshot path (links.ts:50-53) — no auth check, stores arbitrary JSON. BLOCKING security gap for public launch.
+- **NEW (025U):** Review seedFromLiveFiles writes 5 GLOBAL appearance keys (trailweigh:background/bgFade/bgTone/bgSize/chartPalette) — two review tokens in same browser contaminate each other's appearance.
+- Payload fields in server: store, background, bgFade, bgTone, bgSize, chartPaletteKey, barColor, barFont, barTextColor, barTransparency. **unitSystem is NEVER included.**
 
 ## Replit platform facts (from official docs, HIGH confidence)
 

@@ -1,0 +1,1177 @@
+TRAILWEIGH — PROMPT 025U
+FINAL REVISED AFTER CURRENT REPLIT MANUAL REVIEW
+EVIDENCE-CLOSURE + BLIND-SPOT LEARNING AUDIT
+
+INTERNAL VERSION ID:
+025U-MANUAL-VERIFIED-2026-08-12-R2
+
+RECOMMENDED REPLIT MODE:
+ECONOMY
+
+IMPORTANT:
+THIS IS STILL A LEARNING / DIAGNOSTIC PROMPT.
+IT IS NOT A TRAILWEIGH REPAIR PROMPT.
+
+============================================================
+WHY THIS 025U IS DIFFERENT
+============================================================
+
+ChatGPT has now reviewed Replit's current official documentation corpus, including
+the current manuals for Agent, tasks, Plan/Build modes, context management,
+replit.md, App Testing, Preview, checkpoints/rollbacks, databases,
+development vs production, publishing, billing, security, and recent changelogs.
+
+Therefore:
+
+DO NOT spend credits re-explaining platform facts that the current official Replit
+manuals already settle.
+
+Instead, use this prompt to determine:
+
+1. EXACTLY how those documented Replit rules apply to THIS TrailWeigh project.
+2. Which TrailWeigh facts from 025R / 025S / 025T remain unproven.
+3. Which contradictions still exist.
+4. What evidence closes them.
+5. What important questions ChatGPT still has not asked.
+6. Whether any material fact needed for a future repair remains below the required
+   confidence level.
+
+The target is AS CLOSE TO 100% CONFIDENCE AS REASONABLY POSSIBLE.
+
+Do not fake certainty.
+
+============================================================
+OFFICIAL REPLIT PLATFORM BASELINE — DO NOT RE-LITIGATE WITHOUT
+PROJECT-SPECIFIC CONTRARY EVIDENCE
+============================================================
+
+Treat the following as the current official Replit platform baseline:
+
+A. PLAN MODE
+- Plan mode reads the project and answers/plans without modifying project files.
+- It is intended for questions, architecture, tradeoffs, and planning.
+- Plan mode is still billable.
+
+B. BUILD MODE
+- Build mode can write/modify project files and implement changes.
+
+C. TASKS
+- Background tasks execute in isolated copies of the project.
+- A Ready background task does not affect the main version until changes are applied.
+- "Apply changes to main version" merges the task work into main.
+- Auto-apply exists and can bypass the normal manual review step if selected.
+
+D. CONTEXT
+- Long/noisy conversations can cause old or irrelevant context to interfere.
+- Replit recommends a fresh thread when old constraints keep leaking in.
+- Important retained context should be summarized into the fresh thread.
+- `replit.md` is official persistent project context and Agent reads it automatically.
+- Replit documentation says Agent can update `replit.md`.
+
+E. CHECKPOINTS / ROLLBACK
+- Checkpoints capture project state and database checkpoint state.
+- Ordinary rollback restores project state.
+- Development database rollback is OPTIONAL and occurs when Database is selected
+  in Additional rollback options.
+- Production database is not automatically restored by ordinary project rollback.
+
+F. DATABASE ENVIRONMENTS
+- Current Replit database infrastructure uses separate Development and Production DBs.
+- Current development DB infrastructure is Helium.
+- Legacy Neon projects are an exception and must be identified explicitly.
+- The current manuals explain that `DATABASE_URL` containing `neon.tech` means legacy
+  Neon; current infrastructure is identifiable as Helium.
+- Publishing creates/uses a Production database separate from Development on current
+  infrastructure.
+- Agent cannot directly modify the Production database through normal development Agent work.
+
+G. APP TESTING
+- App Testing uses a real browser.
+- App Testing can identify problems AND automatically fix issues it finds.
+- Therefore App Testing is NOT appropriate for this no-change diagnostic unless
+  explicitly authorized.
+
+H. PREVIEW DEVTOOLS
+- Preview Devtools can inspect console, DOM, network, localStorage,
+  sessionStorage, and cookies.
+- Preview Devtools also contain destructive clear/delete controls.
+- This prompt authorizes READ-ONLY inspection only.
+
+I. COST
+- Replit Agent uses effort-based billing.
+- Long/complex context can cost more.
+- Economy is the cost-conscious default.
+- Focused evidence requests are preferred to broad repeated rereads.
+
+J. SECURITY
+- Replit now performs automatic security checks on files Agent changes during builds.
+- A full Security Agent scan is a separate capability and is not a replacement for
+  application-specific security verification.
+
+If current project evidence genuinely contradicts any baseline above:
+DO NOT silently override it.
+Report:
+PLATFORM-BASELINE CONFLICT
+and show the exact evidence.
+
+============================================================
+CRITICAL SAFETY SETUP
+============================================================
+
+BEFORE INVESTIGATION:
+
+1. Verify this exact internal version ID exists:
+   025U-MANUAL-VERIFIED-2026-08-12-R2
+
+2. Verify Questions 1, 25, 50, 75, 100, 125, and 150 exist.
+
+If not:
+STOP.
+Report:
+WRONG 025U VERSION LOADED
+
+3. Confirm AUTO-APPLY is OFF for this task if task controls expose it.
+
+If Auto-apply is ON:
+STOP.
+Tell the user to turn it OFF.
+Do not continue.
+
+4. DO NOT invoke App Testing during this diagnostic.
+Official Replit documentation states App Testing may automatically fix issues.
+That would violate the no-change requirement.
+
+5. If this work is running as a background task:
+KEEP IT ISOLATED.
+DO NOT APPLY CHANGES TO MAIN.
+
+6. The ONLY authorized file writes are:
+   workflow-reports/PROMPT_025U_REPORT.md
+   workflow-reports/trailweigh-025U-report.zip
+   and optional diagnostic evidence files INSIDE workflow-reports/
+
+No other writes are authorized.
+
+============================================================
+ABSOLUTE NO-CHANGE RULE
+============================================================
+
+DO NOT MODIFY:
+
+- application source
+- configuration
+- package/dependency files
+- `replit.md`
+- database rows
+- database schema
+- authentication
+- Clerk configuration
+- routes
+- localStorage
+- sessionStorage
+- IndexedDB
+- themes
+- owner files
+- Review sandbox state
+- Secrets
+- environment variables
+- deployment settings
+- publishing settings
+- task auto-apply settings
+- production database
+- development database
+
+DO NOT:
+
+- run migrations
+- publish or republish
+- restore a checkpoint
+- apply a Ready task
+- clear browser storage
+- create test accounts
+- create/delete/rename Locker files
+- run App Testing
+- automatically repair anything discovered
+
+DATABASE COMMAND RULE:
+Allowed database investigation is READ-ONLY only.
+
+Allowed when needed:
+- SELECT
+- SHOW
+
+Not allowed:
+- INSERT
+- UPDATE
+- DELETE
+- UPSERT
+- ALTER
+- CREATE
+- DROP
+- TRUNCATE
+- GRANT
+- REVOKE
+- VACUUM FULL
+- destructive scripts
+- migration commands
+
+Never print database credentials or secret values.
+
+============================================================
+READ PRIOR REPORTS
+============================================================
+
+Read:
+
+workflow-reports/PROMPT_025R_REPORT.md
+workflow-reports/PROMPT_025S_REPORT.md
+workflow-reports/PROMPT_025T_REPORT.md
+
+Do not blindly trust their final summaries.
+
+For every prior material claim, distinguish:
+
+- detailed evidence-backed answer
+- final-summary wording
+- later correction
+- contradiction
+- inference
+- still-unknown fact
+
+Known authoritative correction that MUST remain in force:
+
+SOURCEVERSION:
+- UNSAVED changes do not affect sourceVersion.
+- SAVED changes that update savedAt do affect sourceVersion.
+- Rename affects sourceVersion because filename is part of the fingerprint.
+
+Any broad prior statement saying:
+"sourceVersion does not track appearance changes"
+is SUPERSEDED.
+
+============================================================
+CONFIDENCE STANDARD
+============================================================
+
+Do NOT use a fake numerical probability.
+
+Use these evidence classes:
+
+VERIFIED — TWO-FACTOR EVIDENCE
+Material fact supported by TWO independent strong evidence classes whenever practical.
+
+VERIFIED — DIRECT SINGLE-SOURCE
+Direct authoritative evidence where a second evidence class is genuinely not available
+or unnecessary, with the limitation explained.
+
+PROVISIONAL
+Evidence exists but is incomplete or indirect.
+
+STILL UNKNOWN
+Evidence is insufficient.
+
+DISPROVEN / SUPERSEDED
+Stronger evidence replaced the prior claim.
+
+For TrailWeigh implementation facts, preferred pair:
+SOURCE + RUNTIME/DB/API
+
+For persistence facts:
+SOURCE/API + DB/BROWSER
+
+For user-visible behavior:
+USER LIVE + SOURCE/RUNTIME
+
+For Replit platform facts:
+OFFICIAL REPLIT DOCS + PROJECT/UI OBSERVATION when project-specific applicability matters.
+
+============================================================
+MANDATORY QUESTION FORMAT
+============================================================
+
+For EVERY numbered question provide:
+
+STATUS:
+VERIFIED / PROVISIONAL / STILL UNKNOWN / DISPROVEN / NOT APPLICABLE
+
+DIRECT ANSWER
+
+EVIDENCE A:
+source class + exact location/value
+
+EVIDENCE B:
+source class + exact location/value
+OR explain why a second independent source is impossible/unnecessary.
+
+CONFIDENCE:
+HIGH / MEDIUM / LOW
+
+CONTRADICTIONS:
+NONE
+OR exact contradiction and resolution.
+
+IF STILL UNKNOWN:
+- exact missing evidence
+- who can supply it:
+  USER / SAFE DB SELECT / PREVIEW DEVTOOLS / OFFICIAL REPLIT DOCS /
+  REPLIT SUPPORT / CONTROLLED FUTURE TEST
+- whether it blocks:
+  NEXT REPAIR / PUBLISHING / PRIVACY-SECURITY CLAIM / NONE
+
+============================================================
+PART A — PRIOR LEARNING AUDIT
+============================================================
+
+1. List every 025R answer that is still materially unresolved today.
+
+2. List every 025S answer still materially unresolved today.
+
+3. List every 025T answer still materially unresolved today.
+
+4. List every contradiction within 025R.
+
+5. List every contradiction within 025S.
+
+6. List every contradiction within 025T.
+
+7. List every contradiction BETWEEN the three reports.
+
+8. For every contradiction, identify the highest-ranked evidence.
+
+9. Which prior claims are now safe standing TrailWeigh rules?
+
+10. Which prior claims must NOT be used in a future repair prompt?
+
+11. Which prior platform claims are already settled by current official Replit manuals?
+
+12. Which prior platform claims still require THIS-project verification?
+
+13. Which answers were source-only and still lack runtime/DB evidence?
+
+14. Which answers were Agent inference rather than evidence?
+
+15. Create one consolidated unresolved-facts register.
+
+============================================================
+PART B — CURRENT REPLIT PROJECT CONTEXT
+============================================================
+
+16. Does the project root contain `replit.md`?
+
+17. Read it without changing it.
+
+18. Summarize every persistent project rule in it.
+
+19. Identify any stale/superseded TrailWeigh instruction in it.
+
+20. Identify any instruction that conflicts with the current user-verified TrailWeigh state.
+
+21. Identify any instruction that could cause Agent to repeat old behavior.
+
+22. Identify any instruction that could cause broad/unrelated edits.
+
+23. Does current source/project contain any other Agent-instruction file?
+
+24. Is `.agents/memory/MEMORY.md` present?
+
+25. If present, what role does THIS project appear to give it?
+
+26. Do not call it an official Replit platform feature unless official docs support that claim.
+
+27. Does any project instruction contain old prompt numbers or stale repair goals?
+
+28. Does any instruction tell Agent to auto-fix/test in a way that conflicts with diagnostic-only prompts?
+
+29. What persistent context should ChatGPT know about before future prompts?
+
+30. What persistent context is better restated in each focused prompt rather than stored globally?
+
+============================================================
+PART C — CURRENT DATABASE INFRASTRUCTURE
+============================================================
+
+31. Determine whether THIS TrailWeigh Development database is current Helium or legacy Neon.
+
+32. Do NOT print DATABASE_URL.
+
+33. Report only:
+   HELIUM / LEGACY NEON / OTHER / UNKNOWN.
+
+34. What exact safe evidence proves the classification?
+
+35. Is `NEON_DATABASE_URL` present as a legacy-reference secret?
+Do not print its value.
+
+36. Does its presence imply TrailWeigh was migrated from Neon?
+
+37. Is current active DATABASE_URL actually the Helium/current DB?
+
+38. Does this project currently have a Production database?
+
+39. If YES, how can existence be proven read-only?
+
+40. If NO/UNKNOWN, state why.
+
+41. Has TrailWeigh already been published in the current project?
+
+42. What exact project/publishing evidence proves this?
+
+43. Is the current public-looking development URL actually a `.replit.dev` development URL?
+
+44. Is there any `.replit.app` production URL configured?
+
+45. Based on THIS project's infrastructure, what will happen to data on first Publish?
+
+46. Would Development Locker rows automatically be copied into Production,
+or only if an explicit copy/seed option is selected?
+
+47. What production-data risk exists if Development data is copied during publishing?
+
+48. What should be verified before TrailWeigh's first production database is created/seeded?
+
+49. What database backup exists now?
+
+50. What database backup does NOT exist now?
+
+============================================================
+PART D — UNIT PERSISTENCE — RESOLVE 025T CONTRADICTION
+============================================================
+
+51. Identify the exact React/state mechanism controlling Imperial/Metric.
+
+52. Identify the exact browser-storage key.
+
+53. Is unit preference included in PackStore?
+
+54. Is it included in the local Locker object?
+
+55. Is it included in server LockerEntry payload type/schema?
+
+56. Is it serialized by server POST create?
+
+57. Is it serialized by PUT replace/save?
+
+58. Is it returned by GET Locker APIs?
+
+59. Is it included in public Review DTO?
+
+60. Is it included in Review seeding?
+
+61. Is units per-file, per-account, per-device, or browser-global?
+
+62. Does switching saved files change units?
+
+63. Does clicking Save write units into server DB?
+
+64. Use current source to answer.
+
+65. Use a READ-ONLY SELECT against one known Locker row to independently verify payload keys.
+
+66. Do not alter the row.
+
+67. Reconcile Q132 vs Q213/Q214 from 025T explicitly.
+
+68. State ONE final unit-persistence rule.
+
+69. State what happens on another browser/device.
+
+70. State what happens in signed-out Review.
+
+============================================================
+PART E — SAVE / LOCAL / SERVER TRUTH
+============================================================
+
+71. Reconfirm exact existing-file Save handler chain.
+
+72. Reconfirm first Save / Save As handler chain.
+
+73. Reconfirm Rename handler chain.
+
+74. Reconfirm whether Save updates savedAt.
+
+75. Reconfirm whether Rename updates savedAt.
+
+76. Reconfirm exactly which visible gear fields are persisted server-side.
+
+77. Reconfirm appearance fields persisted server-side.
+
+78. Reconfirm whether active-file identity is browser-only or server-persisted.
+
+79. Reconfirm explicit dirty/unsaved flag existence or absence.
+
+80. Can browser-local state look current while server Locker remains older?
+
+81. What exact safe test proves server persistence without modifying anything now?
+
+82. What future user workflow most reliably distinguishes local restoration from server Save?
+
+83. Are there any other browser-local values that can give the illusion of server persistence?
+
+84. List them.
+
+85. Which of those matter enough to include in future repair prompts?
+
+============================================================
+PART F — BUILT-IN THEMES: CURRENT TRUTH + HISTORY
+============================================================
+
+86. Enumerate every permanent built-in theme group in CURRENT source.
+
+87. Provide exact source registry/file for each.
+
+88. Enumerate every permanent built-in image/preset ID.
+
+89. Search CURRENT source for:
+Retro-Outdoors
+Psychedelic
+Topo
+Topo 1
+
+90. Search relevant prior report files for 023B.
+
+91. Search relevant prior report files for 023C.
+
+92. Search relevant prior report files for 023D.
+
+93. If Git/checkpoint history is locally inspectable read-only, search it too.
+
+94. Were Retro-Outdoors / Psychedelic / Topo ever committed as built-in theme groups?
+
+95. If YES, when and where?
+
+96. Were they later removed?
+
+97. If YES, what exact evidence proves removal?
+
+98. Were they converted to private browser-local Custom collections?
+
+99. If so, what exact source/history proves that conversion?
+
+100. Do matching assets still exist in project files?
+
+101. Could Owner runtime show browser-local collections not present in source?
+
+102. What exact USER evidence would be needed to prove Owner currently sees them?
+
+103. State current-source truth separately from historical/product-intent truth.
+
+104. Do not overwrite product intent based only on current source.
+
+105. State which theme facts are still UNKNOWN.
+
+============================================================
+PART G — CUSTOM BACKGROUND UUID
+============================================================
+
+Known saved UUID:
+701cc0ea-4912-416c-b08e-0c747381668c
+
+106. Reconfirm DB saves it as background type `custom`.
+
+107. Reconfirm server DB stores UUID/reference but not Blob.
+
+108. Reconfirm actual Blob resolution path uses IndexedDB.
+
+109. Can source/history identify how this exact UUID was created?
+
+110. Can Owner-browser metadata be read by Replit Agent from this task?
+
+111. If not, do not pretend it can.
+
+112. Does IndexedDB metadata include original filename/source/date?
+
+113. Can Preview Devtools read that metadata without clearing/modifying storage?
+
+114. What exact USER read-only check would close provenance?
+
+115. Does unknown provenance affect the established fact that signed-out Review lacks the owner's IndexedDB Blob?
+
+116. Does provenance block any immediate repair?
+
+117. Does it block future public custom-photo sharing design?
+
+============================================================
+PART H — SHARE / REVIEW SECURITY AND PRIVACY
+============================================================
+
+118. Reconfirm exact live token generation source.
+
+119. Reconfirm token length and entropy.
+
+120. Reconfirm whether public GET has application rate limiting.
+
+121. Reconfirm whether tokens expire.
+
+122. Reconfirm whether Owner can revoke tokens.
+
+123. Reconfirm whether Owner can list tokens.
+
+124. Reconfirm whether one live token exposes entire current Locker.
+
+125. Reconfirm whether future newly saved Locker files enter same live share automatically.
+
+126. Reconfirm public DTO allowlist fields.
+
+127. Reconfirm whether userId is publicly returned.
+
+128. Reconfirm whether custom photo Blob is public.
+
+129. Reconfirm whether custom photo UUID/reference is public.
+
+130. Reconfirm whether anonymous Review has any Owner write path.
+
+131. Identify every server-side authorization check protecting Owner writes.
+
+132. Reconfirm current account-deletion webhook behavior.
+
+133. Is `user.deleted` handled anywhere?
+
+134. If not, list server data that would survive account deletion.
+
+135. Which findings block a strong privacy claim?
+
+136. Which findings block public launch?
+
+137. Which findings deserve future dedicated repair prompts?
+
+============================================================
+PART I — LEGACY SHARE PATHS
+============================================================
+
+138. Is `/shared` still a reachable route in current code?
+
+139. Is old hash/payload parsing still active?
+
+140. Can current UI create a new giant embedded-payload link?
+
+141. Can an old existing giant link still be opened?
+
+142. Are frozen DB-backed links still supported?
+
+143. What exact dispatch determines:
+legacy hash / frozen snapshot / live-locker?
+
+144. Which legacy code is required for backward compatibility?
+
+145. Which appears dead?
+
+146. Do not remove any of it.
+
+147. Does uncertainty here block the next unrelated repair?
+
+============================================================
+PART J — REVIEW SANDBOX ISOLATION
+============================================================
+
+148. List every token-namespaced Review storage key.
+
+149. List every appearance/state key that remains global.
+
+150. Can two Review tokens contaminate appearance in one browser?
+
+151. Can Owner and Review contaminate appearance in one browser?
+
+152. What source evidence proves each answer?
+
+153. What parts need USER live verification?
+
+154. When sourceVersion is unchanged, what reviewer edits persist?
+
+155. When sourceVersion changes, what reviewer edits are discarded?
+
+156. Is there a warning before reseed?
+
+157. Is there any merge?
+
+158. Can Review ever issue an authenticated Owner write request?
+
+159. What exact safeguards prevent that?
+
+============================================================
+PART K — APP TESTING / PREVIEW LIMITS
+============================================================
+
+160. Official docs establish App Testing uses a real browser and can auto-fix.
+Do not invoke it here.
+
+161. Does official documentation explicitly say App Testing browser storage is isolated
+from the user's Safari/Chrome storage?
+
+162. If not, keep browser-storage isolation STILL UNKNOWN.
+
+163. Could that be proven later with a safe dedicated test?
+
+164. What exact test would prove it without touching Owner data?
+
+165. Which TrailWeigh behaviors should still require USER live testing even if App Testing passes?
+
+166. Which behaviors can Preview Devtools inspect read-only?
+
+167. What Preview Devtools controls must the user avoid because they clear/delete storage?
+
+============================================================
+PART L — REPLIT TASK / CONTEXT SAFETY FOR THIS PROJECT
+============================================================
+
+168. Is this 025U running in main thread or a background task?
+
+169. If background task, confirm main remains untouched unless Apply is used.
+
+170. Is Auto-apply OFF?
+
+171. Are there unrelated Ready tasks visible/currently pending?
+
+172. Do not apply them.
+
+173. Can any old task's pending changes affect main before Apply?
+
+174. Does this project contain stale Agent context beyond current thread and replit.md?
+
+175. Can the exact prior 025R stale-prompt incident be conclusively attributed to one mechanism?
+
+176. If not, keep cause UNKNOWN rather than guessing.
+
+177. What future prompt-file/version-gate process best prevents recurrence?
+
+178. Should materially revised instructions ever reuse the same internal version ID?
+
+179. Create the recommended immutable prompt-version convention.
+
+============================================================
+PART M — REPORT FILE / DEPLOYMENT SAFETY
+============================================================
+
+180. Are `workflow-reports/` files inside the repository/project tree?
+
+181. Does current app build configuration include them in runtime/public bundles?
+
+182. What exact build config proves the answer?
+
+183. Could report ZIPs be accidentally served publicly?
+
+184. Are reports committed into checkpoint/Git history?
+
+185. What is the safest location for future Agent diagnostic reports?
+
+186. Can Replit surface the final ZIP as a downloadable task attachment without applying
+background-task changes to main?
+
+187. If UNKNOWN, state the exact user workflow required.
+
+============================================================
+PART N — BACKUP / RECOVERY READINESS
+============================================================
+
+188. What server-side Locker backup/export capability exists TODAY?
+
+189. What browser Custom Theme/photo backup exists TODAY?
+
+190. Can database rows be exported read-only without app-code changes?
+
+191. What format would preserve `locker_entries` and `share_links` safely?
+
+192. Would that preserve IndexedDB Blob photos?
+
+193. What separate browser export would be needed for those?
+
+194. What minimum backup should exist before future schema migration?
+
+195. What minimum backup should exist before account-deletion work?
+
+196. What minimum backup should exist before public launch?
+
+197. Do not build backup capability now.
+
+============================================================
+PART O — PUBLISHING READINESS, WITHOUT PUBLISHING
+============================================================
+
+198. Determine current deployment/publishing status read-only.
+
+199. Determine current deployment type if one exists.
+
+200. Determine whether Production DB exists.
+
+201. Determine whether production Clerk environment is configured/expected.
+
+202. Do not reveal Clerk secrets.
+
+203. Does current source assume environment-specific URLs anywhere?
+
+204. Does Share URL generation depend on development origin?
+
+205. Could moving from `.replit.dev` to `.replit.app` break stored/share URLs?
+
+206. Which OAuth/auth callback URLs depend on origin?
+
+207. Which localStorage/IndexedDB state will NOT transfer automatically to a new origin?
+
+208. Does Custom Theme/photo device-local storage therefore require special migration/user expectation?
+
+209. What publishing risks should be resolved before first public launch?
+
+============================================================
+PART P — SECURITY BLIND-SPOT DISCOVERY
+============================================================
+
+Do not run a remediation scan.
+Read-only source inspection only.
+
+210. What material authorization risk has prior learning not asked about?
+
+211. What CSRF/XSS/input-validation risk has prior learning not asked about?
+
+212. What data-exposure/logging risk has prior learning not asked about?
+
+213. What share-link abuse risk has prior learning not asked about?
+
+214. What auth/webhook-verification risk has prior learning not asked about?
+
+215. What file-upload/import security risk has prior learning not asked about?
+
+216. What database integrity/concurrency risk has prior learning not asked about?
+
+217. What secrets/configuration risk has prior learning not asked about?
+
+218. Which discovered risks are directly evidenced?
+
+219. Which are only potential risks requiring a future dedicated audit?
+
+220. Do not label potential risks as confirmed vulnerabilities.
+
+============================================================
+PART Q — PERFORMANCE / RELIABILITY BLIND SPOTS
+============================================================
+
+221. What large localStorage payload risks exist?
+
+222. What IndexedDB Blob lifecycle/memory risks exist?
+
+223. What Review reseed performance risks exist as Locker grows?
+
+224. What entire-Locker share payload scaling risks exist?
+
+225. What database query/index risks exist for Locker/share lookups?
+
+226. What external Unsplash/background reliability risks remain?
+
+227. What third-party Clerk/network failure behavior remains untested?
+
+228. What mobile Safari-specific persistence/browser limits matter?
+
+229. Which are directly evidenced now?
+
+230. Which require future measurement?
+
+============================================================
+PART R — ACCESSIBILITY / DATA-LOSS / UX BLIND SPOTS
+============================================================
+
+231. What destructive action lacks adequate confirmation?
+
+232. What unsaved-data workflow can cause accidental loss?
+
+233. What user-visible state is not clearly identified as local vs server-saved?
+
+234. What accessibility issue has not been tested recently?
+
+235. What keyboard/focus behavior has not been tested?
+
+236. What mobile interaction remains dependent on browser-specific behavior?
+
+237. Which of these matter to the next repair?
+
+238. Which should be future standalone prompts?
+
+============================================================
+PART S — WHAT ELSE HAVE CHATGPT AND REPLIT FAILED TO ASK?
+============================================================
+
+This section is mandatory.
+
+239. Identify important TrailWeigh architecture questions absent from 025R/S/T/U.
+
+240. Identify important Replit-workflow questions absent from prior prompts.
+
+241. Identify important persistence questions absent from prior prompts.
+
+242. Identify important privacy/security questions absent from prior prompts.
+
+243. Identify important publishing questions absent from prior prompts.
+
+244. Identify important backup/recovery questions absent from prior prompts.
+
+245. Identify important cost/scaling questions absent from prior prompts.
+
+246. Identify important browser/device questions absent from prior prompts.
+
+247. For every newly discovered question, classify:
+BLOCKING / IMPORTANT-LATER / LOW-PRIORITY.
+
+248. Answer it now if evidence is available read-only.
+
+249. Otherwise put it into the final STILL UNKNOWN ledger.
+
+============================================================
+PART T — NEAR-100% CONFIDENCE PROMPT RULES FOR CHATGPT
+============================================================
+
+250. Based on all current evidence, what should ChatGPT ALWAYS establish before a visual prompt?
+
+251. Before behavior prompt?
+
+252. Before persistence prompt?
+
+253. Before DB/schema prompt?
+
+254. Before Share/Review prompt?
+
+255. Before auth/privacy prompt?
+
+256. Before importer/parser prompt?
+
+257. Before publishing prompt?
+
+258. What evidence should make Replit STOP before editing?
+
+259. What contradictions should block editing?
+
+260. When is source inspection alone insufficient?
+
+261. When is USER LIVE verification mandatory?
+
+262. When is DB evidence mandatory?
+
+263. When should official Replit docs be cited instead of asking Agent to explain platform behavior?
+
+264. When should a fresh thread be used?
+
+265. When should a background task be preferred?
+
+266. When must Auto-apply be OFF?
+
+267. When should App Testing be ON?
+
+268. When should App Testing be OFF?
+
+269. What exact changed-file rule should every repair prompt use?
+
+270. What exact data-change rule should every repair prompt use?
+
+271. What exact checkpoint warning should every risky prompt use?
+
+272. Create a final reusable:
+"NEAR-100% CONFIDENCE PRE-EDIT GATE"
+
+============================================================
+PART U — PLAIN-LANGUAGE USER OPERATING RULES
+============================================================
+
+Write this section for a non-programmer.
+
+273. Before sending a code-change prompt, what should the user Save?
+
+274. How should the user prove the server Locker has the Save?
+
+275. What screenshot should the user take?
+
+276. When should a checkpoint be created?
+
+277. When should Database rollback remain UNCHECKED?
+
+278. When might Database rollback be deliberately selected?
+
+279. What should the user do with unrelated Ready tasks?
+
+280. What should the user do if Auto-apply is enabled?
+
+281. What should the user do if Replit loads an old prompt?
+
+282. What should the user do if a diagnostic starts modifying code?
+
+283. What should the user do before running SQL?
+
+284. What SQL words should immediately cause the user to STOP and ask ChatGPT?
+
+285. What should the user do before Publish/Republish?
+
+286. What should the user send ChatGPT after each prompt?
+
+============================================================
+FINAL CONFIDENCE LEDGER
+============================================================
+
+287. Create a master ledger of every MATERIAL rule needed for future TrailWeigh work.
+
+Each row must include:
+
+- Rule / fact
+- Classification:
+  VERIFIED PLATFORM FACT
+  VERIFIED TRAILWEIGH FACT
+  VERIFIED USER FACT
+  PROVISIONAL
+  STILL UNKNOWN
+  DISPROVEN / SUPERSEDED
+- Evidence A
+- Evidence B
+- Confidence HIGH/MEDIUM/LOW
+- Blocks next repair? YES/NO
+- Blocks publishing? YES/NO
+- Blocks privacy/security claim? YES/NO
+
+288. Count material VERIFIED facts.
+
+289. Count PROVISIONAL facts.
+
+290. Count STILL UNKNOWN facts.
+
+291. List every blocking UNKNOWN.
+
+292. List every non-blocking UNKNOWN.
+
+293. Are ANY material contradictions unresolved?
+
+294. If YES:
+STATUS MUST NOT BE COMPLETE.
+
+295. If NO contradictions remain, state that explicitly.
+
+296. Do NOT report a fake percentage probability.
+
+297. Instead state:
+EVIDENCE COVERAGE = [verified material facts] / [all material facts audited]
+
+298. State whether evidence coverage is sufficient for:
+- next ordinary UI repair
+- persistence work
+- database work
+- Share/privacy work
+- publishing
+
+============================================================
+FINAL REQUIRED REPORT SECTIONS
+============================================================
+
+Create these exact final sections in this order:
+
+A. EXECUTIVE FINDINGS
+B. OFFICIAL REPLIT BASELINE APPLIED TO TRAILWEIGH
+C. 025R / 025S / 025T CONTRADICTION RESOLUTION
+D. CURRENT REPLIT PROJECT CONTEXT
+E. CURRENT DATABASE INFRASTRUCTURE
+F. UNIT PERSISTENCE — FINAL AUTHORITATIVE RULE
+G. SAVE / LOCAL / SERVER TRUTH
+H. BUILT-IN THEME HISTORY — CURRENT + HISTORICAL TRUTH
+I. CUSTOM BACKGROUND UUID — PROVEN FACTS + UNKNOWN PROVENANCE
+J. SHARE / REVIEW SECURITY AND PRIVACY
+K. LEGACY SHARE PATHS
+L. REVIEW SANDBOX ISOLATION
+M. APP TESTING / PREVIEW LIMITS
+N. REPLIT TASK / CONTEXT SAFETY
+O. REPORT / DEPLOYMENT SAFETY
+P. BACKUP / RECOVERY READINESS
+Q. PUBLISHING READINESS
+R. NEW SECURITY BLIND SPOTS
+S. NEW PERFORMANCE / RELIABILITY BLIND SPOTS
+T. NEW ACCESSIBILITY / DATA-LOSS / UX BLIND SPOTS
+U. QUESTIONS CHATGPT STILL HAD NOT ASKED
+V. NEAR-100% CONFIDENCE PRE-EDIT GATE
+W. PLAIN-LANGUAGE USER OPERATING RULES
+X. FINAL CONFIDENCE LEDGER
+Y. STILL UNKNOWN MASTER LIST
+Z. QUESTIONS BLOCKING NEXT REPAIR / PUBLISHING / PRIVACY CLAIMS
+
+============================================================
+REPORT-WRITING RULE
+============================================================
+
+Because Plan mode is officially read-only and cannot modify files, this prompt is
+authorized to write ONLY its report artifacts.
+
+If Agent needs write capability solely to generate the report:
+the only authorized paths are under:
+
+workflow-reports/
+
+No application/configuration/source write is authorized.
+
+Do not interpret creation of the report files as permission to edit TrailWeigh.
+
+============================================================
+NO-CHANGE VERIFICATION
+============================================================
+
+Before completion:
+
+1. Run git status/diff.
+2. Identify any PRE-EXISTING changes separately.
+3. Verify 025U created/changed ONLY authorized workflow-reports artifacts.
+4. If any application/config file changed because of 025U:
+   STOP.
+   Revert it if safely possible without affecting pre-existing work.
+   Report the incident.
+
+Report exactly:
+
+APPLICATION SOURCE CHANGED BY 025U = NONE
+APPLICATION CONFIG CHANGED BY 025U = NONE
+REPLIT.MD CHANGED BY 025U = NONE
+DATABASE DATA CHANGED BY 025U = NONE
+DATABASE SCHEMA CHANGED BY 025U = NONE
+OWNER DATA CHANGED BY 025U = NONE
+BROWSER STORAGE CHANGED BY 025U = NONE
+AUTH/CLERK CONFIG CHANGED BY 025U = NONE
+SECRETS CHANGED BY 025U = NONE
+DEPLOYMENT/PUBLISHING CHANGED BY 025U = NONE
+UNRELATED TASKS APPLIED BY 025U = NONE
+APP TESTING INVOKED BY 025U = NO
+
+============================================================
+MANDATORY REPORT + ZIP
+============================================================
+
+Create:
+
+workflow-reports/PROMPT_025U_REPORT.md
+
+Create:
+
+workflow-reports/trailweigh-025U-report.zip
+
+ZIP must contain:
+- PROMPT_025U_REPORT.md
+
+Optional evidence files must be under workflow-reports/ and contain NO secrets.
+
+Verify:
+
+1. report exists
+2. ZIP exists
+3. ZIP > 0 bytes
+4. ZIP lists/opens successfully
+5. report is inside ZIP
+6. every numbered question is accounted for
+7. every STILL UNKNOWN states exact evidence needed
+8. every material claim appears in confidence ledger
+9. no unresolved contradiction is hidden in the final synthesis
+10. no secrets appear in report/ZIP
+11. no app/data/config changes occurred
+
+If possible, surface the ZIP directly as a downloadable Agent result so the user
+does not have to Apply unrelated/background task changes to main.
+
+============================================================
+FINAL STOP RULE
+============================================================
+
+STOP after the verified report and ZIP.
+
+DO NOT REPAIR TRAILWEIGH.
+
+If any material fact needed for future work remains below the required evidence
+standard, recommend another TARGETED LEARNING PROMPT.
+
+Do not guess.
+Do not silently broaden scope.
+Do not apply changes.
