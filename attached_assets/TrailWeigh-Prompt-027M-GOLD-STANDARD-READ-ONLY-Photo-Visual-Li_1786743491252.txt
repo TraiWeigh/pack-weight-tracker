@@ -1,0 +1,912 @@
+TRAILWEIGH — PROMPT 027M — GOLD STANDARD READ-ONLY DIAGNOSTIC
+PHOTO CONTROL + VISUAL LIBRARY / LOCKER ARCHITECTURE AND MOBILE PLACEMENT
+NO IMPLEMENTATION
+
+INTERNAL VERSION ID:
+027M-PHOTO-VISUAL-LIBRARY-MOBILE-ARCHITECTURE-DIAGNOSTIC-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- DO NOT edit application code
+
+ESTIMATED SCOPE
+- 8–15 minutes
+- approximately $0.60–$1.40 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+SEQUENCE / BASELINE
+============================================================
+
+027L is CLOSED by USER live visual verification.
+
+027L approved:
+- category icon itself = category accordion open/close control
+- category text unobstructed
+- whole-category six-dot reorder handle around the three-quarter region
+- selected category weight at far right
+- no category accordion chevron
+- no item drag dots
+- item `Move` remains
+- Toiletries = toothbrush icon
+- Hydration = water-drop icon
+
+027L report measured handle ratios:
+- 375px = 0.735
+- 390px = 0.746
+- 430px = 0.771
+
+Do NOT reopen 027L.
+
+============================================================
+WHY 027M EXISTS
+============================================================
+
+USER wants the next major phase to wire ALL approved mobile controls.
+
+However, before that wiring pass, USER explicitly identified one unresolved
+mobile architecture question:
+
+WHERE AND HOW SHOULD:
+1. the PHOTO control
+2. the PHOTO / VISUAL LIBRARY
+
+live in the approved V3 mobile experience?
+
+This must be resolved BEFORE comprehensive control wiring so the phone
+navigation does not need to be rearranged afterward.
+
+027M is READ-ONLY DIAGNOSTIC ONLY.
+
+============================================================
+LATEST USER PHOTO-PLACEMENT DECISIONS — AUTHORITATIVE
+============================================================
+
+These placement decisions are ALREADY MADE.
+Do NOT re-open them as design questions.
+
+1. CATEGORY BAR
+- NO camera/photo icon on the category bar.
+- Keep the approved category bar clean.
+
+2. EXISTING ITEM
+- Each item panel should have a small CAMERA or PICTURE icon/control.
+- That control is for the photo(s) of THAT specific item.
+- It should allow the user to view/add/manage the item's photo(s).
+
+3. ADD NEW ITEM
+- The Add New Item flow must include a PHOTO option.
+- The user should be able to:
+  - Take Photo
+  - Choose Photo
+  - Skip Photo / create item without photo
+- A photo may also be added later from the item's camera/photo control.
+
+4. PHOTO MEANING
+- Item photo controls apply to individual items.
+- Do NOT mix them with category controls.
+- Do NOT confuse them with Theme/Background decorative photos.
+
+027M should diagnose the architecture needed to support these fixed decisions,
+not debate whether a camera belongs on the category bar.
+
+============================================================
+USER PRODUCT DIRECTION TO PRESERVE
+============================================================
+
+TrailWeigh is broader than backpacking.
+
+Future/current product direction includes:
+- travel / vacation lists
+- business travel
+- emergency kits
+- household/general inventory
+- reusable storage locations
+- moving / relocation workflows
+- Visual Locker concepts
+- individual item photos
+- storage-location/container photos
+- finding what the user owns and where it is stored
+
+Important existing concept distinctions:
+
+A. ITEM PHOTO
+A photo associated with an individual item/belonging.
+
+B. STORAGE-LOCATION PHOTO
+A photo associated with a reusable named storage location/container,
+for example:
+- Garage Gear Cabinet
+- Bedroom Hiking Closet
+- Blue Bin #3
+- moving box/container
+
+C. VISUAL LIBRARY / VISUAL LOCKER
+A broader way to browse/find visual item and storage information.
+
+D. BACKGROUND / THEME PHOTOS
+Existing decorative theme/background photos are a SEPARATE concept.
+Do NOT automatically treat theme photos as item/storage photos.
+
+============================================================
+CURRENT MOBILE DESIGN CONSTRAINTS
+============================================================
+
+The approved V3 category bar must remain clean.
+
+Do NOT add or recommend:
+- camera buttons
+- photo buttons
+- photo thumbnails
+- photo-library buttons
+
+directly in the category bar.
+
+The USER has already rejected category-bar photo controls in favor of
+item-level photo controls.
+
+The category bar remains focused on:
+- category icon / accordion
+- category name + count/subtitle
+- category reorder handle
+- selected category weight
+
+USER rejected an additional Sort control because it would clutter the bar.
+
+Therefore any Photo/Library recommendation should prioritize:
+- low clutter
+- obvious discoverability
+- thumb-friendly mobile use
+- future extensibility
+
+============================================================
+FIXED VS UNRESOLVED
+============================================================
+
+FIXED:
+- item photo control belongs on the individual item panel
+- Add New Item includes Take Photo / Choose Photo / Skip Photo
+- no category-bar camera icon
+
+UNRESOLVED — DIAGNOSE:
+- exact item-panel placement/interaction pattern
+- whether the item panel shows camera icon only, thumbnail + camera, or another
+  existing low-clutter pattern
+- whether v1 should support one photo or multiple photos
+- durable media backend architecture
+- Visual Library / Visual Locker home
+- storage-location/container photo model
+- relationship between Locker and Visual Library
+- scanner/theme infrastructure reuse
+- review/share/privacy implications
+
+============================================================
+STANDING MOBILE RULE
+============================================================
+
+For mobile layout/control uncertainty:
+TRACE CURRENT ACTIVE ARCHITECTURE FIRST.
+
+Do not guess:
+- route ownership
+- data persistence
+- file/image storage
+- upload APIs
+- camera support
+- Locker architecture
+- modal/sheet availability
+- cross-device behavior
+
+If evidence is incomplete:
+write UNKNOWN / NOT PRESENT.
+
+============================================================
+PRIMARY PURPOSE
+============================================================
+
+Determine the SMALLEST, CLEANEST future architecture for:
+
+1. adding/attaching photos to items
+2. taking a new photo on a phone
+3. choosing an existing photo
+4. viewing/replacing/removing an item's photo(s)
+5. storage-location/container photos
+6. a Visual Library / Visual Locker browsing surface
+7. how these fit into the approved mobile navigation
+8. what can reuse current TrailWeigh infrastructure
+9. what requires genuinely new backend/data work
+
+DO NOT IMPLEMENT ANY OF IT.
+
+============================================================
+AUDIT A — CURRENT ITEM DATA MODEL
+============================================================
+
+Trace the ACTIVE item model used by `/checklist`.
+
+Identify:
+- exact TypeScript type/interface/schema for an item
+- item ID
+- name/type fields
+- qty
+- weight
+- checked/selected state
+- category relationship
+- any metadata/timestamp fields
+- any existing image/photo/media field
+- any arbitrary metadata field that could theoretically hold photo metadata
+- persistence path:
+  local state
+  localStorage
+  API
+  DB
+
+Answer:
+- DOES THE CURRENT ITEM MODEL SUPPORT PHOTOS? YES / NO
+- If NO, what exact model/API/schema changes would eventually be required?
+  Report only; do not edit.
+
+============================================================
+AUDIT B — CURRENT LOCKER ARCHITECTURE
+============================================================
+
+Trace the ACTIVE Locker implementation.
+
+Identify:
+- exact component(s)
+- state
+- current purpose
+- current UI container: panel / modal / drawer / page / accordion
+- how saved lists are displayed
+- current mobile behavior
+- whether Locker already has tabs/subviews
+- whether Locker could cleanly host a future:
+  `Visual Library`
+  or
+  `Photos`
+  subview without breaking current behavior
+
+Determine whether:
+A. Visual Library inside Locker is architecturally natural
+B. Visual Library should instead be a separate destination
+C. current architecture is too limited and requires a future Locker redesign
+
+Do NOT choose based on aesthetics alone.
+Ground in active code.
+
+============================================================
+AUDIT C — CURRENT PHOTO / IMAGE INFRASTRUCTURE
+============================================================
+
+Search current active code for:
+
+- `<input type="file">`
+- `accept="image/*"`
+- `capture=`
+- FileReader
+- Blob
+- object URL
+- base64/data URLs
+- image resizing/compression
+- canvas image processing
+- IndexedDB image/blob storage
+- upload endpoints
+- multipart/form-data
+- object storage
+- cloud file storage
+- signed URLs
+- image deletion
+- photo metadata
+- EXIF handling
+- camera-specific browser code
+
+For every relevant path:
+identify exact file/component/function.
+
+Separate:
+1. decorative Theme/Background images
+2. Scan Gear List/file import
+3. any item/media infrastructure
+4. any other unrelated file upload
+
+============================================================
+AUDIT D — THEME/BACKGROUND PHOTO STORAGE
+============================================================
+
+TrailWeigh already has custom-theme/background-photo behavior.
+
+Trace it exactly.
+
+Determine:
+- where image bytes are stored
+- whether storage is local/device-only
+- IndexedDB use
+- photo IDs/metadata
+- image optimization/compression
+- deletion
+- device sync behavior
+- server persistence or lack thereof
+
+Answer:
+
+WHAT PARTS, IF ANY, ARE SAFE TO REUSE FOR ITEM/STORAGE PHOTOS?
+
+Examples:
+- image resize helper
+- blob helper
+- preview component
+- file picker
+
+Also answer:
+
+WHAT MUST NOT BE REUSED?
+
+For example, if theme photos are intentionally device-local,
+do NOT recommend silently using that persistence model for item photos
+if item photos are expected to be available with the user's Locker data.
+
+============================================================
+AUDIT E — SCAN GEAR LIST / FILE INPUT
+============================================================
+
+The comprehensive mobile control-wiring phase MUST include:
+`Scan Gear List / Scanner`.
+
+Trace current Scan Gear List file selection/import architecture.
+
+Identify:
+- component
+- accepted file types
+- whether images/photos are accepted
+- whether mobile camera capture is currently possible
+- whether file input is reusable
+- whether scanner/upload UI already uses a Sheet/Dialog/Drawer
+- whether its picker could inform the Photo-control UX
+
+Do NOT change Scanner behavior.
+
+============================================================
+AUDIT F — SERVER / STORAGE CAPABILITY
+============================================================
+
+Read current server/API/storage architecture.
+
+Determine whether the project currently has a real place for durable
+user-owned image files.
+
+Look for:
+- object/blob storage
+- uploads directory
+- Replit object storage
+- S3-compatible storage
+- DB blob/binary fields
+- server file endpoints
+- authenticated media routes
+- deletion lifecycle
+
+Answer explicitly:
+
+DURABLE ITEM-PHOTO BACKEND EXISTS = YES / NO / UNCLEAR
+
+CROSS-DEVICE PHOTO ACCESS EXISTS = YES / NO / UNCLEAR
+
+If NO:
+identify the smallest plausible future architecture,
+but DO NOT implement or add dependencies.
+
+Do not assume local IndexedDB = cross-device persistence.
+
+============================================================
+AUDIT G — EXISTING MOBILE UI PRIMITIVES
+============================================================
+
+Audit installed/active primitives that could support Photo UX:
+
+- Sheet
+- Drawer
+- Dialog
+- Popover
+- DropdownMenu
+- Tabs
+- Carousel
+- ScrollArea
+- native file input
+- existing bottom sheet patterns
+
+Prefer existing project primitives.
+Do NOT recommend a new UI package unless current primitives genuinely cannot
+support the required flow.
+
+============================================================
+AUDIT H — ITEM-PHOTO CONTROL IMPLEMENTATION WITHIN ITEM PANEL
+============================================================
+
+The USER has already decided the photo control belongs on the ITEM PANEL.
+
+Do NOT compare category-bar placement or bottom-nav placement.
+
+Evaluate the cleanest implementation INSIDE the item panel:
+
+OPTION A:
+small camera/picture icon on the collapsed item row
+
+OPTION B:
+small camera/picture icon within the expanded item detail panel
+
+OPTION C:
+collapsed-row indicator when a photo exists + full photo actions in expanded details
+
+OPTION D:
+another existing item-panel pattern supported by current code
+
+For each option report:
+- discoverability
+- clutter
+- touch target
+- interaction conflicts
+- accessibility
+- whether a thumbnail is useful or too visually heavy
+- whether it scales from zero photos to one/multiple photos
+- implementation complexity
+- future AI-image compatibility
+
+Recommend ONE item-panel implementation that best preserves the approved V3
+visual hierarchy.
+
+Do NOT move the photo control outside the item panel.
+
+============================================================
+AUDIT I — ITEM PHOTO ACTION FLOW
+============================================================
+
+Determine the cleanest mobile flow using existing primitives.
+
+Required actions to support conceptually:
+
+EXISTING ITEM:
+- Take Photo
+- Choose Photo
+- View Photo
+- Replace Photo
+- Remove Photo
+
+ADD NEW ITEM:
+- Take Photo
+- Choose Photo
+- Skip Photo / continue without photo
+
+FUTURE / OPTIONAL:
+- Add Another Photo
+- multiple-photo gallery
+
+Do NOT assume multiple photos are required for v1.
+
+Report:
+- safest minimum v1
+- future extensibility
+- whether mobile browser camera can be invoked with current dependencies
+- iOS/Android browser caveats visible from current architecture
+
+Do not implement.
+
+============================================================
+AUDIT J — VISUAL LIBRARY / VISUAL LOCKER PLACEMENT
+============================================================
+
+Evaluate these possibilities:
+
+A. Locker contains a `Visual` / `Photos` / `Visual Library` subview
+B. Locker itself evolves into a combined list + visual storage hub
+C. `Catalog` destination hosts user photos
+D. `More` contains Photo Library
+E. dedicated bottom-navigation destination
+F. another route/pattern supported by current architecture
+
+Consider:
+- bottom nav already approved as:
+  `List | Locker | Catalog | Summary | More`
+- USER does not want unnecessary clutter
+- future storage locations
+- future moving mode
+- general household inventory
+- current Locker semantics
+- discoverability
+- room for future AI visual features
+
+Recommend ONE primary home.
+
+Also recommend how the user reaches it from:
+- an item's camera/photo control
+- Locker
+- storage location
+- possibly Search later
+
+Do NOT route item-photo creation through a category-bar control.
+
+No implementation.
+
+============================================================
+AUDIT K — STORAGE LOCATION / CONTAINER PHOTO MODEL
+============================================================
+
+Future product direction includes reusable named storage locations
+and moving boxes/containers.
+
+Determine:
+- whether any current Storage Location entity/model exists
+- whether `Move` currently means category relocation only
+- whether storage/location is represented anywhere else
+- whether a future storage-location photo should be:
+  1. a property of a Storage Location entity
+  2. an item photo
+  3. a Visual Library record
+  4. another model
+
+Recommend a clean relational model at a high level.
+
+Do NOT create schema.
+
+============================================================
+AUDIT L — PHOTO TYPES MUST REMAIN DISTINCT
+============================================================
+
+Explicitly propose how TrailWeigh should distinguish metadata for:
+
+- Item Photo
+- Storage Location Photo
+- Moving Box/Container Photo
+- Theme/Background Photo
+
+Do NOT blend decorative theme images into user inventory photos.
+
+Recommend whether one generalized Media asset model with typed relationships
+would eventually be cleaner than separate unrelated implementations.
+
+This is architecture recommendation only.
+
+============================================================
+AUDIT M — DELETE / PRIVACY IMPLICATIONS
+============================================================
+
+USER's intended deletion behavior is permanent deletion, not a visible trash/archive.
+
+For future photo architecture, identify:
+- what must be deleted when an item photo is removed
+- orphan-file risk
+- account deletion implications
+- storage-location deletion implications
+- backup/log retention questions that would need defined policy
+
+Do NOT write legal copy.
+Do NOT implement deletion.
+
+============================================================
+AUDIT N — REVIEW / SHARE IMPLICATIONS
+============================================================
+
+Current Review sandbox is isolated from owner data.
+
+Determine future implications of item photos for:
+- shared/review view
+- whether photos would display by default
+- whether reviewer sandbox changes could ever affect owner media
+- whether shared media URLs require token authorization
+
+Report risks only.
+No implementation.
+
+============================================================
+AUDIT O — FUTURE AI / VISUAL INTELLIGENCE COMPATIBILITY
+============================================================
+
+TrailWeigh may later support visual intelligence such as:
+- item recognition
+- clothing/outfit recognition
+- storage/box recognition
+- locating belongings visually
+
+Do NOT implement AI.
+
+Simply state whether the recommended media architecture would:
+- support future AI analysis cleanly
+- require rework
+- expose privacy/security concerns
+
+============================================================
+MOBILE NAVIGATION PROTECTION
+============================================================
+
+Bottom navigation is currently planned as:
+
+1. List
+2. Locker
+3. Catalog
+4. Summary
+5. More
+
+Do NOT add a sixth tab in 027M.
+
+The diagnostic must determine whether Photo/Visual Library fits naturally
+inside this system.
+
+============================================================
+LARGE PLUS PROTECTION
+============================================================
+
+USER decision:
+
+Large prominent + in the upper-right green header
+= dedicated Create New List control.
+
+Do NOT recommend repurposing that + for:
+- Add Photo
+- Take Photo
+- Add Item
+- Add Category
+
+unless the report explicitly labels it as conflicting with USER decision
+and does NOT recommend it.
+
+============================================================
+FULL CONTROL-WIRING PHASE — PENDING
+============================================================
+
+After Photo/Visual Library placement is resolved, USER wants the comprehensive
+mobile control-wiring phase.
+
+That future phase must include:
+
+HEADER / GLOBAL
+- hamburger/menu
+- large upper-right + = Create New List
+- Search
+
+BOTTOM NAV
+- List
+- Locker
+- Catalog
+- Summary
+- More
+
+CURRENT REAL FUNCTIONS
+- Scan Gear List / Scanner
+- Share
+- Print
+- Save
+- Undo
+- Redo
+- Reset
+- Imperial / Metric
+- Light / Dark when authorized
+- Checklist
+- Pack Summary
+- Weight Distribution
+- Locker
+- Help / About
+
+CATEGORY
+- category icon accordion
+- category reorder
+- Add Category
+
+ITEM
+- checkbox
+- expand/collapse
+- Weight
+- Quantity
+- Total
+- Move
+- Add Item / +Base
+- item camera/photo control
+- Add New Item photo option:
+  - Take Photo
+  - Choose Photo
+  - Skip Photo
+
+Do NOT wire these in 027M.
+
+============================================================
+REQUIRED REPORT — MAPPING TABLE
+============================================================
+
+Create a table with columns:
+
+FEATURE / QUESTION
+CURRENT ACTIVE COMPONENT OR DATA PATH
+CURRENT SUPPORT = YES / NO / PARTIAL
+REUSABLE INFRASTRUCTURE
+NEW DATA/BACKEND REQUIRED?
+BEST MOBILE HOME
+VISUAL CHANGE REQUIRED?
+RISK
+CONFIDENCE
+
+Rows must include at minimum:
+
+- item photo
+- take photo
+- choose photo
+- view photo
+- replace/remove photo
+- multiple item photos
+- storage-location photo
+- moving-box photo
+- Visual Library
+- Locker integration
+- Scanner/file picker reuse
+- Theme photo infrastructure reuse
+- durable backend
+- cross-device media
+- Review/shared media
+- deletion/orphan cleanup
+
+============================================================
+REQUIRED FINAL RECOMMENDATION
+============================================================
+
+End with ONE recommended future architecture, using plain language:
+
+1. HOW the already-approved item-panel camera/photo control should be implemented
+2. WHAT tapping it should open
+3. HOW Add New Item should support Take Photo / Choose Photo / Skip Photo
+4. WHERE the Visual Library should live
+5. HOW Locker should relate to Visual Library
+6. HOW storage-location photos fit
+7. WHETHER current photo infrastructure can be reused
+8. WHAT new backend/data work is actually required
+9. WHETHER the comprehensive control-wiring prompt can proceed in ONE prompt
+   after USER decides the remaining questions
+
+============================================================
+ONLY MATERIAL USER DECISIONS
+============================================================
+
+At the very end, list ONLY decisions that genuinely require USER choice.
+
+Do not ask questions Replit can answer from code.
+
+Aim for no more than 3 material user decisions.
+
+If architecture is clear enough to recommend defaults:
+give the recommendation and mark the question as:
+`RECOMMENDED DEFAULT — USER MAY OVERRIDE`
+
+============================================================
+STRICT READ-ONLY SCOPE
+============================================================
+
+027M may create ONLY:
+
+`workflow-reports/PROMPT_027M_REPORT.md`
+
+Do NOT modify:
+- `src/`
+- `server/`
+- shared schema
+- database
+- API
+- auth
+- package files
+- V3 prototypes
+- `/checklist`
+- Scanner
+- Locker
+- Theme/Background
+- `replit.md`
+- `.agents/memory`
+- deployment
+
+No migrations.
+No packages.
+No implementation.
+
+============================================================
+PRE-DIAGNOSTIC CHECK
+============================================================
+
+Before investigation:
+
+1. Read `replit.md` READ-ONLY.
+2. Read `workflow-reports/PROMPT_027L_REPORT.md`.
+3. Verify active route/component paths rather than legacy code.
+4. Record preflight git status.
+5. Keep CURRENT FACTS separate from RECOMMENDATIONS.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+
+`workflow-reports/PROMPT_027M_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files/components inspected
+5. active item model
+6. current Locker architecture
+7. current theme/photo infrastructure
+8. current Scanner/file-input infrastructure
+9. current server/media capability
+10. existing UI primitives
+11. item-photo placement comparison
+12. recommended item-photo placement
+13. recommended item-photo action flow
+14. Visual Library placement comparison
+15. recommended Visual Library home
+16. Locker relationship
+17. storage-location/container-photo architecture
+18. photo/media type separation
+19. deletion/orphan implications
+20. Review/share implications
+21. AI-compatibility implications
+22. complete mapping table
+23. smallest safe future implementation sequence
+24. whether full mobile control wiring can follow in one prompt
+25. ONLY material user decisions
+26. tests NOT RUN
+27. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027M READ-ONLY DIAGNOSTIC = PASS / FAIL
+
+APPLICATION CODE CHANGED = YES / NO
+V3 CHANGED = YES / NO
+/CHECKLIST CHANGED = YES / NO
+SCANNER CHANGED = YES / NO
+LOCKER CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+
+CURRENT ITEM PHOTO SUPPORT = YES / NO / PARTIAL
+DURABLE ITEM-PHOTO BACKEND EXISTS = YES / NO / UNCLEAR
+CROSS-DEVICE PHOTO ACCESS EXISTS = YES / NO / UNCLEAR
+THEME PHOTO INFRASTRUCTURE REUSABLE = YES / PARTIAL / NO
+SCANNER FILE PICKER REUSABLE = YES / PARTIAL / NO
+LOCKER CAN HOST VISUAL LIBRARY = YES / PARTIAL / NO
+CATEGORY-BAR CAMERA RECOMMENDED = NO
+ADD-NEW-ITEM PHOTO FLOW SUPPORTABLE = YES / PARTIAL / NO
+
+PREFERRED ITEM-PANEL PHOTO IMPLEMENTATION = [answer]
+PREFERRED VISUAL-LIBRARY HOME = [answer]
+PREFERRED STORAGE-LOCATION PHOTO MODEL = [answer]
+
+FULL MOBILE CONTROL-WIRING READY AFTER USER DECISIONS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+`workflow-reports/trailweigh-027M-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027M_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report.
+
+Do NOT implement photos.
+Do NOT alter mobile layout.
+Do NOT wire controls.
+Do NOT proceed to 027N.
