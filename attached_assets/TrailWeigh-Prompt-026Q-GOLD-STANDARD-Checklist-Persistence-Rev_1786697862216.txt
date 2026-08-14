@@ -1,0 +1,437 @@
+TRAILWEIGH — PROMPT 026Q — GOLD STANDARD
+026P FINAL REGRESSION CLEANUP:
+PERSIST CHECKLIST PROGRESS + RESTORE REVIEW ADD CATEGORY
+
+INTERNAL VERSION ID:
+026Q-CHECKLIST-PERSISTENCE-REVIEW-ADD-CATEGORY-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 4–8 minutes
+- approximately $0.35–$0.90 Agent usage
+- STOP before broadening
+
+============================================================
+AUTHORITATIVE 026P R4 BASELINE
+============================================================
+
+026P R4 is the current baseline.
+
+PRESERVE its successful behavior:
+
+1. Normal TrailWeigh remains the editable owner list.
+2. Obsolete owner View/Edit/Done mode remains removed.
+3. User-facing `Preview` is now `Checklist`.
+4. Category-item checkboxes determine WHICH category items appear in Checklist.
+5. Checklist shows ONLY selected category items.
+6. Unselected category items do NOT appear in Checklist.
+7. Checklist-use checkboxes are separate from category-item selection.
+8. Clear resets Checklist-use checkmarks only.
+9. Clear does NOT change category-item selection.
+10. Print operates only on the filtered Checklist.
+11. Share uses the existing Review/Share architecture.
+12. Desktop geometry/layout must remain unchanged.
+13. Mobile wedge redesign is NOT part of this prompt.
+
+USER evidence outranks source-only PASS.
+
+============================================================
+TWO PROVEN 026P REGRESSIONS TO CORRECT
+============================================================
+
+DEFECT A — CHECKLIST PROGRESS IS RESET ON EVERY OPEN
+
+026P R4 report states the Checklist open action runs:
+
+`setChecklistUse({})`
+
+This means:
+- user checks several Checklist-use boxes
+- closes Checklist
+- reopens Checklist
+- progress is erased
+
+AUTHORITATIVE USER DECISION:
+
+Checklist-use checkmarks MUST remain when Checklist is closed and reopened.
+
+They remain until the user deliberately presses:
+`Clear`
+
+Opening Checklist must NOT automatically clear/reset progress.
+
+IMPORTANT SCOPE:
+- Persist across closing/reopening Checklist within the current list/app session.
+- Do NOT add server sync, localStorage architecture, cross-device sync, Last Synced, polling, offline queue, or conflict resolution in 026Q.
+- Do NOT change category-item selection semantics.
+
+DEFECT B — REVIEW ADD CATEGORY WAS UNINTENTIONALLY DISABLED
+
+026P R4 report says Add Category was changed to:
+
+`{!isReview && ...}`
+
+This removes Add Category from Review mode.
+
+That violates the established Review sandbox behavior.
+
+AUTHORITATIVE REVIEW REQUIREMENT:
+
+A reviewer in the public Review sandbox may:
+- add categories
+- rename/edit categories
+- delete categories
+- reorder categories/items
+- add/edit/delete/reorder items
+
+All Review changes remain isolated from the owner's original data.
+
+Restore Add Category in Review mode without changing Review isolation.
+
+============================================================
+PRE-EDIT REQUIREMENTS
+============================================================
+
+Before editing:
+
+1. Read current `replit.md` READ-ONLY.
+2. Inspect the current 026P R4 source.
+3. Locate:
+   - `checklistUse` state
+   - every `setChecklistUse(...)` call
+   - Checklist open/close control
+   - Clear control
+   - Add Category rendering/handler
+   - Review isolation/storage path
+4. Confirm the exact current file(s) required.
+5. Record preflight git status.
+6. Create:
+   `workflow-reports/PROMPT_026Q_REPORT.md`
+
+Do not make unrelated cleanup/refactors.
+
+============================================================
+IMPLEMENTATION A — CHECKLIST PROGRESS
+============================================================
+
+Required behavior:
+
+- Opening Checklist does NOT reset `checklistUse`.
+- Closing Checklist does NOT reset `checklistUse`.
+- Reopening Checklist restores the same Checklist-use checkmarks from the current session state.
+- Pressing Clear DOES reset all Checklist-use checkmarks.
+- Clear remains the intentional reset control.
+
+Example:
+
+Category items selected:
+- Tent
+- Stakes
+- Stove
+
+Open Checklist:
+- ☐ Tent
+- ☐ Stakes
+- ☐ Stove
+
+User checks:
+- ☑ Tent
+- ☑ Stakes
+- ☐ Stove
+
+Close Checklist.
+
+Reopen Checklist:
+- ☑ Tent
+- ☑ Stakes
+- ☐ Stove
+
+Press Clear:
+- ☐ Tent
+- ☐ Stakes
+- ☐ Stove
+
+Category-item selection must remain:
+- Tent selected
+- Stakes selected
+- Stove selected
+
+Do NOT merge Checklist-use state with category-item `checked` state.
+
+============================================================
+IMPLEMENTATION B — REVIEW ADD CATEGORY
+============================================================
+
+Restore Add Category for Review mode.
+
+Required:
+- owner can add category
+- reviewer can add category
+- Review addition stays in Review sandbox
+- owner original remains unchanged
+- no server-owner mutation is introduced from Review
+- existing Review isolation architecture remains intact
+
+Use existing Review mutation/storage mechanisms.
+Do not invent a new Review path.
+
+============================================================
+CHANGED-FILE SCOPE
+============================================================
+
+Expected application scope:
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+If another application file is required:
+STOP and explain why before changing it.
+
+Do NOT change:
+- GearRow.tsx
+- GearCategory.tsx
+unless current source proves one of the two defects cannot be repaired correctly without it.
+
+No changes to:
+- DB/schema
+- API
+- auth
+- deployment
+- package files
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+
+============================================================
+PROTECTED BEHAVIOR
+============================================================
+
+Do NOT change:
+
+- filtered Checklist membership
+- category-item selection behavior
+- Checklist-use checkbox independence
+- Clear semantics except removing unintended open-reset
+- Print filtering
+- Share behavior
+- Review sandbox isolation
+- Locker
+- Save / Save As
+- 026K main-category accordion behavior
+- sidebar accordion behavior
+- themes/backgrounds
+- Keep It Simple
+- desktop layout
+- phone layout
+- current toolbar geometry
+- importer/catalog
+- owner editability
+- removal of obsolete Edit/Done mode
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- wedge mobile UI
+- category color/icon redesign
+- list templates
+- optional Weight architecture
+- cross-device Checklist sync
+- Last Synced
+- localStorage persistence redesign
+- server Checklist persistence
+- WebSockets/SSE/polling
+- offline queue
+- conflict resolution
+- Print redesign
+- Share redesign
+- unrelated Review changes
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+SOURCE INSPECTION ALONE IS NOT PASS.
+
+TEST 1 — CHECKLIST PERSISTENCE
+
+- select several category items
+- open Checklist
+- check at least two Checklist-use boxes
+- close Checklist
+- reopen Checklist
+
+EXPECTED:
+- same selected category items still appear
+- prior Checklist-use checkmarks remain
+- no extra unselected category items appear
+
+TEST 2 — CLEAR
+
+- with several Checklist-use boxes checked
+- click Clear
+
+EXPECTED:
+- Checklist-use boxes all become unchecked
+- selected category items remain selected
+- no category item disappears
+- no structural data changes
+
+TEST 3 — REOPEN AFTER CLEAR
+
+- close Checklist after Clear
+- reopen Checklist
+
+EXPECTED:
+- Checklist-use boxes remain empty
+- filtered membership remains correct
+
+TEST 4 — CATEGORY-ITEM INDEPENDENCE
+
+- check/uncheck Checklist-use boxes
+- return to normal editable list
+
+EXPECTED:
+- category-item inclusion selection has not changed
+
+TEST 5 — REVIEW ADD CATEGORY
+
+In Review sandbox:
+- add a category
+- confirm it appears and is editable within Review
+
+EXPECTED:
+- succeeds in Review
+- owner original is unchanged
+
+TEST 6 — OWNER ADD CATEGORY
+
+In owner list:
+- add category
+
+EXPECTED:
+- existing owner behavior still works
+
+TEST 7 — DESKTOP/MOBILE REGRESSION
+
+Expected:
+- no layout changes
+- no Edit/Done reappears
+- Checklist remains reachable
+- no new overflow/toolbar regression
+
+TEST 8 — CONSOLE
+
+Expected:
+- no new 026Q errors
+
+If login/auth prevents a test:
+mark NOT RUN.
+Do not claim PASS from code audit.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026Q_REPORT.md`
+
+Include:
+1. internal version
+2. usage/time/actions/lines
+3. preflight git status
+4. files inspected
+5. exact Checklist reset cause
+6. exact change made
+7. exact Review Add Category cause
+8. exact change made
+9. expected changed files
+10. actual changed files
+11. Checklist persistence runtime result
+12. Clear runtime result
+13. category-item independence result
+14. Review Add Category runtime result
+15. owner Add Category result
+16. desktop/mobile regression result
+17. tests NOT RUN
+18. console result
+19. rollback guidance
+20. unresolved issues
+21. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+CHECKLIST OPEN AUTO-RESET REMOVED = PASS / FAIL / NOT RUN
+CHECKLIST PROGRESS SURVIVES CLOSE/REOPEN = PASS / FAIL / NOT RUN
+CLEAR RESETS CHECKLIST-USE CHECKMARKS = PASS / FAIL / NOT RUN
+CLEAR ALTERS CATEGORY-ITEM SELECTION = YES / NO / NOT RUN
+CHECKLIST CHECKS ALTER CATEGORY-ITEM SELECTION = YES / NO / NOT RUN
+FILTERED CHECKLIST MEMBERSHIP CHANGED = YES / NO / NOT RUN
+REVIEW ADD CATEGORY RESTORED = PASS / FAIL / NOT RUN
+REVIEW ISOLATION CHANGED = YES / NO / NOT RUN
+OWNER ADD CATEGORY REGRESSION = YES / NO / NOT RUN
+EDIT/DONE REINTRODUCED = YES / NO / NOT RUN
+DESKTOP VISUAL REGRESSION = YES / NO / NOT RUN
+MOBILE VISUAL REGRESSION = YES / NO / NOT RUN
+PRINT BEHAVIOR CHANGED = YES / NO / NOT RUN
+SHARE BEHAVIOR CHANGED = YES / NO / NOT RUN
+DATABASE/API/AUTH CHANGED = YES / NO
+SYNC/LAST-SYNCED ADDED = YES / NO
+WEDGE UI CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Did I remove ONLY the unintended Checklist-open reset?
+2. Does Clear remain the deliberate reset?
+3. Did I keep Checklist-use state separate from category-item selection?
+4. Did filtered Checklist membership remain unchanged?
+5. Did I restore Review Add Category?
+6. Did Review remain isolated from owner data?
+7. Did I preserve owner Add Category?
+8. Did I avoid layout changes?
+9. Did I avoid Print/Share redesign?
+10. Did I avoid sync/database/auth/deployment work?
+11. Did I runtime-test instead of using SOURCE PASS?
+12. Did I review every changed file?
+
+If material uncertainty remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026Q-report.zip`
+
+ZIP must contain only:
+`PROMPT_026Q_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to wedge/mobile redesign.
+Do not proceed to 026R.

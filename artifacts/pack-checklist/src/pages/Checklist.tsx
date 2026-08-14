@@ -2484,7 +2484,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   Hide
                 </button>
                 <button
-                  onClick={() => { setChecklistUse({}); setShowPreview(true); }}
+                  onClick={() => setShowPreview(true)}
                   aria-label="Open checklist"
                   className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                   style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
@@ -2817,7 +2817,6 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
               ))}
 
               {/* ── Add Category ── */}
-              {!isReview && (
               <div className="mt-2">
                 {addingCat ? (
                   <div className="flex items-center gap-2 p-3 bg-card border border-primary/40 rounded-lg shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
@@ -2856,7 +2855,6 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   </button>
                 )}
               </div>
-              )}
             </div>
 
             {/* Scrollable sidebar content */}
@@ -2982,7 +2980,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                       Hide
                     </button>
                     <button
-                      onClick={() => { setChecklistUse({}); setShowPreview(true); }}
+                      onClick={() => setShowPreview(true)}
                       aria-label="Open checklist"
                       className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                       style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
