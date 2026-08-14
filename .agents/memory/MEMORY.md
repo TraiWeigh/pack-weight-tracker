@@ -6,3 +6,4 @@
 - [pdf-parse v2 API](pdf-parse-v2-api.md) — v2.4.5 exports a class not a default fn; use `new PDFParse({ data: buffer, verbosity: 0 })` then `await inst.getText()`.
 - [TrailWeigh PDF parser regex](trailweigh-pdf-regex.md) — greedy `(.+)` not lazy `(.+?)` in PDF_ROW_RE; lazy grabs model numbers (e.g. "Wapta 30") as the weight instead of the real value.
 - [016C PDF 502 root cause](016c-pdf-502-root-cause.md) — API server NOT_STARTED → Vite proxy returns 502 HTML → frontend throws "unexpected response format"; fix: start server + add 30s timeout + destroy().
+- [026N/O owner-mode removed in 026P](026p-owner-mode-removal.md) — ownerMode/viewMode/startupRestoredRef fully removed; Preview→Checklist renamed; PreviewModal now interactive (all items, checkboxes, Clear); PrintLayout shows all items with true state.
