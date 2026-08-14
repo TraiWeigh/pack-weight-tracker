@@ -1,0 +1,451 @@
+TRAILWEIGH — PROMPT 027I — GOLD STANDARD
+SURGICAL V3 DRAG-HANDLE PLACEMENT PARITY CORRECTION
+REMOVE ITEM DOTS + PUT CATEGORY HANDLE IN CATEGORY BAR CENTER AREA
+
+INTERNAL VERSION ID:
+027I-V3-DRAG-HANDLE-PLACEMENT-PARITY-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 4–8 minutes
+- approximately $0.30–$0.80 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+AUTHORITATIVE USER LIVE EVIDENCE
+============================================================
+
+USER supplied a live screenshot showing `/mobile-design-v3`.
+
+The screenshot proves:
+- six-dot drag handles are still shown at the FAR RIGHT of ITEM rows
+  (example: Toothbrush)
+- there is no category-level six-dot handle visible in the category bar
+  in that V3 visual master
+
+USER explicitly says:
+`dots are still in the wrong place`
+
+USER live evidence outranks report/source claims.
+
+============================================================
+WHY THIS MISMATCH EXISTS
+============================================================
+
+027H intentionally created a separate route:
+`/mobile-functional-v3`
+
+027H did NOT change:
+`/mobile-design-v3`
+
+027H report states the functional preview has a category handle centered
+between the category information and the right-side control, while item drag
+handles are absent there.
+
+However, the USER is still using `/mobile-design-v3` as the approved visual
+master, and that route still shows the OLD item-level dots.
+
+027I exists ONLY to synchronize the approved V3 visual master with the latest
+USER decision and verify parity with the functional preview.
+
+============================================================
+LATEST USER DECISION — AUTHORITATIVE
+============================================================
+
+ITEMS:
+- NO six-dot drag handle
+- NO mobile item drag-and-drop
+- KEEP `Move` in expanded item details for moving an item between categories
+
+CATEGORIES:
+- KEEP one six-dot drag/reorder handle for the WHOLE CATEGORY
+- place that handle in the CENTER AREA of the CATEGORY BAR
+- it must visually mean:
+  `move/reorder this whole category`
+
+ACCORDION:
+- tapping the CATEGORY WEDGE / CATEGORY ICON remains the primary category
+  open/close control
+- do NOT turn the drag handle into the accordion trigger
+- do NOT turn the category name into the primary accordion trigger
+
+============================================================
+PRIMARY PURPOSE
+============================================================
+
+Make the SMALLEST visual correction necessary so BOTH:
+
+1. `/mobile-design-v3`
+2. `/mobile-functional-v3`
+
+show the SAME approved drag-handle placement rule.
+
+DO NOT redesign anything else.
+
+============================================================
+SCOPE A — REMOVE ALL ITEM-LEVEL DOTS
+============================================================
+
+On `/mobile-design-v3`:
+
+Remove every item-level:
+- six-dot handle
+- GripVertical icon
+- drag-grip placeholder
+- drag affordance
+
+Examples include the dots currently visible at the far right of:
+- Toothbrush
+- Travel Toothpaste
+- any other item row
+
+After 027I:
+NO item row may display six drag/reorder dots.
+
+Also inspect `/mobile-functional-v3` and verify the same.
+If item dots are already absent there, DO NOT make unnecessary changes.
+
+Do NOT remove:
+- item checkbox
+- item quantity
+- item detail chevron
+- expanded `Move` row
+
+============================================================
+SCOPE B — CATEGORY-LEVEL SIX-DOT HANDLE
+============================================================
+
+Each CATEGORY BAR should show ONE six-dot category reorder handle.
+
+Placement:
+- in the CENTER AREA of the category bar
+- visually between the category name/subtitle block and the right-side
+  chevron / right-side data region
+- vertically centered within the category header
+- clearly separated from the wedge/icon
+- clearly separated from the category chevron
+- clearly applies to the whole category
+
+DO NOT put the handle:
+- inside an item row
+- at the far-right edge beside item quantity
+- inside the wedge/icon
+- on top of the category name
+- where it makes the wedge/icon harder to tap
+
+The handle should use the same six-dot visual language already present
+unless a simpler existing icon is required to preserve V3 fidelity.
+
+============================================================
+SCOPE C — /mobile-design-v3
+============================================================
+
+Update:
+`src/pages/MobileDesignPrototypeV3.tsx`
+
+This is an explicitly authorized exception to the prior visual freeze.
+
+ONLY authorized visual change:
+- item dots removed
+- category handle added/moved to center area of category bar
+
+Preserve EXACTLY:
+- header
+- TrailWeigh wordmark
+- search circle
+- green plus
+- title/subtitle
+- mountain/topographic artwork
+- summary card
+- category colors
+- wedge geometry
+- typography
+- category heights
+- expanded item card geometry
+- Weight / Quantity / Total / Move rows
+- bottom navigation
+- spacing except tiny adjustments strictly required to fit the category handle
+
+Do not make any unrelated polish.
+
+============================================================
+SCOPE D — /mobile-functional-v3 PARITY
+============================================================
+
+Inspect:
+`src/pages/MobileFunctionalV3.tsx`
+
+027H report claims:
+- item drag handles absent
+- category six-dot handle present
+- category handle centered in category bar
+
+VISUALLY VERIFY.
+
+If already correct:
+- leave it unchanged
+- report PASS
+
+If it differs from the USER-approved rule:
+- make only the minimum matching adjustment
+
+Do NOT change:
+- sandbox behavior
+- item checkbox behavior
+- item expand/collapse
+- Weight
+- Quantity
+- Total
+- Move
+- list summary semantics
+- bottom navigation
+- other handlers
+
+============================================================
+CATEGORY REORDER FUNCTIONALITY — NOT THIS PROMPT
+============================================================
+
+027H diagnosed:
+`CATEGORY TOUCH REORDER = BLOCKED — SEPARATE IMPLEMENTATION REQUIRED`
+
+027I is a PLACEMENT/PARITY correction only.
+
+DO NOT:
+- install `@dnd-kit`
+- install any drag library
+- invent touch drag code
+- wire HTML5 desktop drag to mobile and call it PASS
+- change backend/state architecture
+
+The category handle may remain nonfunctional in the functional preview
+until the separate touch-reorder implementation is authorized.
+
+Do not misreport visual placement as functional reorder.
+
+============================================================
+ACCORDION PROTECTION
+============================================================
+
+Preserve the standing mobile rule:
+
+CATEGORY WEDGE / CATEGORY ICON = PRIMARY ACCORDION CONTROL.
+
+Verify:
+- tapping wedge/icon opens/closes category in functional preview
+- category handle does NOT open/close category
+- category name does NOT become primary accordion trigger
+
+No changes to:
+- single-open
+- zero-open
+- Expand All
+- Collapse All
+
+============================================================
+MOVE PROTECTION
+============================================================
+
+`Move` stays in expanded ITEM details.
+
+Do NOT confuse:
+- `Move` = relocate one item to another category
+with
+- category six-dot handle = reorder the whole category
+
+Both concepts remain separate.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Preferred:
+1. `src/pages/MobileDesignPrototypeV3.tsx`
+2. `src/pages/MobileFunctionalV3.tsx` ONLY IF parity correction is actually needed
+
+Maximum:
+2 application files.
+
+Do NOT edit:
+- `Checklist.tsx`
+- `MobileWedgeCategory.tsx`
+- desktop components
+- API
+- database
+- auth
+- `replit.md`
+- `.agents/memory`
+- deployment
+- package dependencies
+
+If broader changes appear necessary:
+STOP and report.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read `workflow-reports/PROMPT_027H_REPORT.md`.
+3. Inspect:
+   `src/pages/MobileDesignPrototypeV3.tsx`
+4. Inspect:
+   `src/pages/MobileFunctionalV3.tsx`
+5. Locate every current `GripVertical`, six-dot icon, drag handle, or
+   drag placeholder in BOTH files.
+6. Record which route currently has which handle.
+7. Record preflight git status.
+8. Create:
+   `workflow-reports/PROMPT_027I_REPORT.md`
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+TEST 1 — /mobile-design-v3 AT 390
+PASS only if:
+- NO item row has six-dot handle
+- each category bar has ONE category handle
+- category handle is in center area
+- item rows remain otherwise visually unchanged
+- no horizontal overflow
+
+TEST 2 — OPEN TOILETRIES ON /mobile-design-v3
+PASS only if visible static/open sample confirms:
+- Toothbrush = no dots
+- Travel Toothpaste = no dots
+- Sunscreen SPF 50 = no dots
+- expanded item still ends with Move
+- category-level handle remains in Toiletries CATEGORY BAR
+
+TEST 3 — /mobile-functional-v3 AT 390
+PASS only if:
+- no item dots
+- category handle is centered in category bar
+- V3 geometry still matches master
+
+TEST 4 — ACCORDION IN FUNCTIONAL PREVIEW
+- tap wedge/icon = open/close
+- category handle does not toggle
+- category name is not primary toggle
+
+TEST 5 — ITEM MOVE
+- expanded item still has `Move`
+- no drag dots were reintroduced
+
+TEST 6 — RESPONSIVE
+375 / 390 / 430:
+- no horizontal overflow
+- no clipping
+- centered category handle does not collide with category title/subtitle,
+  weight/data, chevron, or wedge
+
+TEST 7 — PRODUCTION SAFETY
+- `/checklist` unchanged
+- desktop unchanged
+
+============================================================
+VISUAL EVIDENCE REQUIRED
+============================================================
+
+Provide separate screenshots:
+1. `/mobile-design-v3` at 390 with several category bars visible
+2. `/mobile-design-v3` with Toiletries open showing item rows with NO dots
+3. `/mobile-functional-v3` with an open category
+4. close crop / clear screenshot showing category handle in center area
+
+Do not embed screenshots inside report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027I_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. exact cause of mismatch
+6. every item-level handle location found
+7. every category-level handle location found
+8. `/mobile-design-v3` changes
+9. `/mobile-functional-v3` changes or confirmation no change required
+10. item-dot removal result
+11. category-handle placement result
+12. wedge/icon accordion protection
+13. Move protection
+14. 375 result
+15. 390 result
+16. 430 result
+17. production `/checklist` result
+18. desktop result
+19. tests NOT RUN
+20. unresolved issue:
+    category touch reorder still BLOCKED unless separately implemented
+21. rollback
+22. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027I SURGICAL PARITY CORRECTION = PASS / FAIL / NOT RUN
+
+/MOBILE-DESIGN-V3:
+ITEM SIX-DOT HANDLES PRESENT = YES / NO
+CATEGORY SIX-DOT HANDLE PRESENT = YES / NO
+CATEGORY HANDLE CENTER AREA = PASS / FAIL / NOT RUN
+MOVE ROW PRESERVED = PASS / FAIL / NOT RUN
+
+/MOBILE-FUNCTIONAL-V3:
+ITEM SIX-DOT HANDLES PRESENT = YES / NO
+CATEGORY SIX-DOT HANDLE PRESENT = YES / NO
+CATEGORY HANDLE CENTER AREA = PASS / FAIL / NOT RUN
+WEDGE/ICON PRIMARY ACCORDION CONTROL = PASS / FAIL / NOT RUN
+MOVE WIRED/PRESERVED = PASS / FAIL / NOT RUN
+
+CATEGORY TOUCH REORDER FUNCTIONAL = PASS / BLOCKED / NOT RUN
+NEW DRAG DEPENDENCY ADDED = YES / NO
+
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027I-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027I_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after the report and evidence.
+
+Do NOT:
+- implement category touch reorder
+- wire secondary navigation
+- change Create New List
+- add Dark mode
+- cut over production mobile
+- proceed to 027J

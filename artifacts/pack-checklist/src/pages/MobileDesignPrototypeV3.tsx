@@ -315,8 +315,22 @@ function CategoryHeader({
             {cat.items} {cat.items === 1 ? 'item' : 'items'} • {cat.packed} packed
           </div>
         </div>
+
+        {/* SIX-DOT CATEGORY REORDER HANDLE — centered between name/subtitle and chevron.
+            Inert visual: reorder functionality requires a separate touch-DnD implementation. */}
+        <div
+          aria-hidden="true"
+          style={{
+            display: 'flex', alignItems: 'center',
+            padding: '6px 4px', opacity: 0.28,
+            cursor: 'not-allowed', flexShrink: 0,
+          }}
+        >
+          <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
+        </div>
+
         {isOpen
-          ? <ChevronUp size={18} color={MUTED} strokeWidth={2}/>
+          ? <ChevronUp   size={18} color={MUTED} strokeWidth={2}/>
           : <ChevronDown size={18} color={MUTED} strokeWidth={2}/>}
       </div>
     </div>
@@ -380,10 +394,10 @@ function ItemRow({ item, isLast }: { item: ItemData; isLast?: boolean }) {
           marginRight: 8,
         }}>{item.qty}</span>
 
-        {/* Grip / Chevron */}
+        {/* Expand / collapse chevron */}
         {item.expanded
-          ? <ChevronUp size={16} color={MUTED} strokeWidth={2}/>
-          : <GripVertical size={16} color={MUTED} strokeWidth={1.8}/>}
+          ? <ChevronUp   size={16} color={MUTED} strokeWidth={2}/>
+          : <ChevronDown size={16} color={MUTED} strokeWidth={2}/>}
       </div>
 
       {/* Expanded detail section */}
