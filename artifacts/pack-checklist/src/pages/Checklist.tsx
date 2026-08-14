@@ -2784,6 +2784,138 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
 
           </div>{/* end toolbar group */}
 
+          {/* ── 026Z: Mobile-only toolbar — moved above categories.
+               TWO-ROW layout preserved from 026W. Relocated from the sidebar so
+               controls appear before the category list, not buried after Locker.
+               Row 1: Open/Close (left) · Hide · Checklist · Light/Dark (right)
+               Row 2: Imperial/Metric (centred — 026W width-safe arrangement preserved)
+               lg:hidden ensures zero desktop render. ── */}
+          <div className="lg:hidden flex flex-col gap-1 pt-2 pb-1">
+
+            {/* ── ROW 1: Open/Close · Hide · Checklist · Light/Dark ── */}
+            <div className="flex items-center justify-between gap-2">
+              {/* Open / Close — left */}
+              <div
+                className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+                style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
+              >
+                <button
+                  onClick={() => { setOpenCatIds(new Set(categoryOrder)); setCatSeq(s => s + 1); }}
+                  aria-label="Open all categories"
+                  title="Open all categories"
+                  className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                    allCatsOpen && !barColor
+                      ? 'bg-card text-foreground shadow-sm'
+                      : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                  }`}
+                  style={barColor
+                    ? allCatsOpen
+                      ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                      : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                    : barFont ? { fontFamily: barFont } : undefined}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => { setOpenCatIds(new Set<string>()); setCatSeq(s => s + 1); }}
+                  aria-label="Close all categories"
+                  title="Close all categories"
+                  className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
+                    allCatsClosed && !barColor
+                      ? 'bg-card text-foreground shadow-sm'
+                      : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                  }`}
+                  style={barColor
+                    ? allCatsClosed
+                      ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                      : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                    : barFont ? { fontFamily: barFont } : undefined}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </button>
+              </div>
+              {/* Right: Hide · Checklist · Light/Dark */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
+                  disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
+                  aria-label="Hide interface and show background view"
+                  title={
+                    showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
+                      ? 'Finish the current action first'
+                      : 'Hide the interface'
+                  }
+                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                >
+                  Hide
+                </button>
+                <button
+                  onClick={() => setShowPreview(true)}
+                  aria-label="Open checklist"
+                  className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                  style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                >
+                  Checklist
+                </button>
+                {/* 026U: Standalone mobile Light/Dark toggle (026Z: moved above categories) */}
+                <div
+                  className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+                  style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
+                  role="group"
+                  aria-label="Light/Dark mode"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleBgToneChange('light')}
+                    aria-label="Switch to Light mode"
+                    aria-pressed={bgTone === 'light'}
+                    title="Light mode"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors touch-manipulation ${
+                      bgTone === 'light' && !barColor
+                        ? 'bg-card text-foreground shadow-sm'
+                        : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                    }`}
+                    style={barColor
+                      ? bgTone === 'light'
+                        ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                        : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                      : barFont ? { fontFamily: barFont } : undefined}
+                  >
+                    <Sun className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleBgToneChange('dark')}
+                    aria-label="Switch to Dark mode"
+                    aria-pressed={bgTone === 'dark'}
+                    title="Dark mode"
+                    className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors touch-manipulation ${
+                      bgTone === 'dark' && !barColor
+                        ? 'bg-card text-foreground shadow-sm'
+                        : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                    }`}
+                    style={barColor
+                      ? bgTone === 'dark'
+                        ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                        : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                      : barFont ? { fontFamily: barFont } : undefined}
+                  >
+                    <Moon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ── ROW 2: Imperial / Metric ──
+                Own row gives UnitToggle the full viewport width; no clip risk at any
+                phone size. Centred so it reads as a standalone control. */}
+            <div className="flex justify-center">
+              <UnitToggle />
+            </div>
+
+          </div>
+
           {/* ── Content area ── */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_365px] gap-8 lg:gap-4 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
 
@@ -2886,7 +3018,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
             </div>
 
             {/* Scrollable sidebar content */}
-            <div className="order-first lg:order-last lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
+            <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 lg:pl-1 lg:pr-5 lg:[scrollbar-gutter:stable]">
               <div className="pt-3 lg:pt-0 flex flex-col gap-1.5 pb-8">
                 <WeightSummary
                   data={data}
@@ -2945,143 +3077,8 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                     onSyncNow: handleSyncNow,
                   } : undefined}
                 />
-
-                {/* ── 026W: Lower Phone Toolbar — TWO-ROW mobile layout ──
-                    Row 1: Open/Close (left) · Hide · Checklist · Light/Dark (right)
-                    Row 2: Imperial/Metric (own full-width row, centred)
-                    Mobile-only (lg:hidden). On desktop this div does not render.
-                    Two rows eliminate the 026U horizontal overflow: Row 1 fits ~288 px
-                    comfortably; Row 2 UnitToggle (~146 px) has the full viewport to itself. */}
-                <div className="lg:hidden flex flex-col gap-1 pt-1">
-
-                  {/* ── ROW 1: Open/Close · Hide · Checklist · Light/Dark ── */}
-                  <div className="flex items-center justify-between gap-2">
-                    {/* Open / Close — left */}
-                    <div
-                      className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
-                      style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
-                    >
-                      <button
-                        onClick={() => { setOpenCatIds(new Set(categoryOrder)); setCatSeq(s => s + 1); }}
-                        aria-label="Open all categories"
-                        title="Open all categories"
-                        className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                          allCatsOpen && !barColor
-                            ? 'bg-card text-foreground shadow-sm'
-                            : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
-                        }`}
-                        style={barColor
-                          ? allCatsOpen
-                            ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
-                            : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
-                          : barFont ? { fontFamily: barFont } : undefined}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => { setOpenCatIds(new Set<string>()); setCatSeq(s => s + 1); }}
-                        aria-label="Close all categories"
-                        title="Close all categories"
-                        className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors ${
-                          allCatsClosed && !barColor
-                            ? 'bg-card text-foreground shadow-sm'
-                            : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
-                        }`}
-                        style={barColor
-                          ? allCatsClosed
-                            ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
-                            : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
-                          : barFont ? { fontFamily: barFont } : undefined}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </button>
-                    </div>
-                    {/* Right: Hide · Checklist · Light/Dark */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
-                        disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
-                        aria-label="Hide interface and show background view"
-                        title={
-                          showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus
-                            ? 'Finish the current action first'
-                            : 'Hide the interface'
-                        }
-                        className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
-                      >
-                        Hide
-                      </button>
-                      <button
-                        onClick={() => setShowPreview(true)}
-                        aria-label="Open checklist"
-                        className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-                        style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
-                      >
-                        Checklist
-                      </button>
-                      {/* 026U: Standalone mobile Light/Dark toggle.
-                          Mobile-only (parent is lg:hidden). Reuses existing bgTone state +
-                          handleBgToneChange + trailweigh:bgTone persistence.
-                          Does NOT open BackgroundPickerPanel. Does NOT leak to desktop. */}
-                      <div
-                        className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
-                        style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
-                        role="group"
-                        aria-label="Light/Dark mode"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => handleBgToneChange('light')}
-                          aria-label="Switch to Light mode"
-                          aria-pressed={bgTone === 'light'}
-                          title="Light mode"
-                          className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors touch-manipulation ${
-                            bgTone === 'light' && !barColor
-                              ? 'bg-card text-foreground shadow-sm'
-                              : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
-                          }`}
-                          style={barColor
-                            ? bgTone === 'light'
-                              ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
-                              : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
-                            : barFont ? { fontFamily: barFont } : undefined}
-                        >
-                          <Sun className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleBgToneChange('dark')}
-                          aria-label="Switch to Dark mode"
-                          aria-pressed={bgTone === 'dark'}
-                          title="Dark mode"
-                          className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors touch-manipulation ${
-                            bgTone === 'dark' && !barColor
-                              ? 'bg-card text-foreground shadow-sm'
-                              : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
-                          }`}
-                          style={barColor
-                            ? bgTone === 'dark'
-                              ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
-                              : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
-                            : barFont ? { fontFamily: barFont } : undefined}
-                        >
-                          <Moon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ── ROW 2: Imperial / Metric ──
-                      Own row gives UnitToggle the full viewport width; no clip risk at any
-                      phone size. Centred so it reads as a standalone control. */}
-                  <div className="flex justify-center">
-                    <UnitToggle />
-                  </div>
-
-                </div>
-              </div>
             </div>
+          </div>
 
           </div>{/* end content area */}
         </main>

@@ -1,0 +1,665 @@
+TRAILWEIGH — PROMPT 026Z — GOLD STANDARD
+PHONE-ONLY STRUCTURE / HEADER CLEANUP
+CATEGORIES FIRST + MOBILE CONTROLS ABOVE CATEGORIES
+STRICT DESKTOP ISOLATION
+
+INTERNAL VERSION ID:
+026Z-PHONE-STRUCTURE-HEADER-CATEGORIES-FIRST-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 6–12 minutes
+- approximately $0.50–$1.20 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE BASELINE
+============================================================
+
+026W is USER VERIFIED PASS.
+
+026Y R2 was a READ-ONLY visual/layout audit and made NO application changes.
+
+026Y established:
+- current phone layout is functionally sound but visually fragmented
+- mobile categories are the primary TrailWeigh experience and should appear before utility/sidebar panels
+- the current lower phone toolbar is mobile-only
+- `MobileWedgeCategory` is mobile-only
+- desktop category presentation is separately rendered and protected
+- the shared top header is the highest desktop-leakage-risk area
+- implementation should be split into two prompts:
+  1. phone structure/header cleanup
+  2. wedge/item visual polish later
+
+026Z is ONLY Prompt 1.
+
+============================================================
+AUTHORITATIVE USER DECISIONS
+============================================================
+
+MOBILE / CELL-PHONE ONLY:
+
+1. CATEGORY ITEMS COME FIRST.
+   The user should reach the TrailWeigh categories before:
+   - Pack Summary
+   - Weight Distribution
+   - Scan Gear List
+   - Locker
+
+2. The mobile controls that are needed while using the categories should remain near the top, ABOVE the categories.
+
+3. Preserve ALL current phone functions.
+
+4. DO NOT remove Undo or Redo.
+   The 026Y diagnostic suggested hiding them on portrait phones.
+   That recommendation is NOT authorized.
+
+5. DO NOT remove:
+   - New
+   - Undo
+   - Redo
+   - Save
+   - Reset
+   - Open/Close
+   - Hide
+   - Checklist
+   - Light/Dark
+   - Imperial/Metric
+
+6. The current two-row mobile controls arrangement that eliminated horizontal overflow must remain width-safe.
+
+7. Desktop website must remain visually and functionally unchanged.
+
+8. Create New List work remains paused.
+
+============================================================
+SEPARATE VISUAL REFERENCE TOOLS
+============================================================
+
+The user will separately attach:
+
+CURRENT PHONE REFERENCES:
+- `026Z-Current-Mobile-1.png`
+- `026Z-Current-Mobile-2.png`
+- `026Z-Current-Mobile-3.png`
+- `026Z-Current-Mobile-4.png`
+
+TARGET MOBILE DESIGN REFERENCE:
+- `026Z-Mobile-Target-Reference.png`
+
+DO NOT embed these images into this prompt or report.
+
+USE THEM ACTIVELY as visual reference tools.
+
+Current screenshots show:
+- current top/header hierarchy
+- current mobile control grouping
+- current category placement
+- current clean light/dark surfaces
+- current wedge/category presentation
+
+Target reference guides:
+- cleaner hierarchy
+- more intentional spacing
+- stronger category-first composition
+- more polished mobile visual rhythm
+
+DO NOT copy mockup-only:
+- bottom navigation
+- fake search/add controls
+- fake summary/dashboard cards
+- travel-specific fields
+- app-shell elements not currently in TrailWeigh
+
+026Z is structural cleanup, NOT the wedge/item polish prompt.
+
+============================================================
+TARGET MOBILE PAGE ORDER
+============================================================
+
+At phone/mobile widths, the intended top-to-bottom structure is:
+
+1. TrailWeigh header / account row
+2. Existing header action controls:
+   - New
+   - Undo
+   - Redo
+   - Save
+   - Reset
+3. Active filename pill/label when present
+4. MOBILE CONTROLS:
+   ROW 1:
+   - main-category Open/Close
+   - Hide
+   - Checklist
+   - Light/Dark
+
+   ROW 2:
+   - Imperial / Metric
+
+5. MAIN CATEGORY ITEMS / MOBILE WEDGES
+6. Pack Summary
+7. Weight Distribution
+8. Scan Gear List
+9. Locker
+10. remaining existing mobile-only sidebar content, if any
+
+The mobile controls must NOT remain buried after Pack Summary / Weight Distribution / Scan / Locker.
+
+There must be only ONE rendered mobile controls toolbar.
+Do not duplicate controls.
+
+============================================================
+A. MOVE MOBILE CONTROLS ABOVE CATEGORIES
+============================================================
+
+Current 026Y finding:
+- mobile toolbar is inside the sidebar column after LockerPanel
+- sidebar currently renders before categories on mobile
+
+Required:
+- relocate the existing mobile-only toolbar rendering so it appears immediately after the filename area and before the category list
+- preserve the exact existing controls and handlers
+- preserve the 026W two-row arrangement
+- preserve the width-safe behavior that eliminated horizontal page shifting
+- remove the old mobile toolbar rendering from its previous location so there is no duplicate
+
+Prefer moving/reusing the existing JSX rather than creating a second state/control implementation.
+
+============================================================
+B. CATEGORIES BEFORE UTILITY PANELS
+============================================================
+
+At mobile widths:
+- main category list comes before:
+  - Pack Summary
+  - Weight Distribution
+  - Scan Gear List
+  - Locker
+
+At desktop:
+- existing two-column desktop layout/order remains unchanged
+
+Use the smallest responsive-order change that guarantees this.
+
+026Y identified the current shared sidebar order class as:
+`order-first lg:order-last`
+
+Re-inspect current source before editing.
+
+If current source still matches the audit:
+- remove/change only the MOBILE ordering behavior
+- retain desktop right-column behavior
+
+Do NOT duplicate Pack Summary / Weight Distribution / Scan / Locker.
+
+============================================================
+C. PHONE HEADER VISUAL CLEANUP
+============================================================
+
+The shared header is HIGH RISK for desktop leakage.
+
+Goal:
+make the portrait phone header/action area feel more intentional WITHOUT removing controls.
+
+PRESERVE:
+- logo/TrailWeigh branding
+- account/sign-in control
+- New
+- Undo
+- Redo
+- Save
+- Reset
+
+DO NOT hide Undo/Redo.
+
+Allowed phone-only refinement:
+- improve portrait alignment
+- improve grouping
+- use a compact, consistent action cluster
+- reduce awkward floating-center appearance
+- preserve readable/tappable controls
+- reduce unnecessary visual fragmentation
+
+Do NOT:
+- alter desktop header geometry
+- remove functions
+- change button meaning
+- change existing tooltip text
+- add a new header/navigation system
+- copy target mockup app shell
+
+Use breakpoint-qualified classes for portrait/mobile changes.
+
+If the existing 5 controls cannot be visually cleaned up safely without risking overflow or desktop leakage:
+PRESERVE THEM AS-IS and limit 026Z to the page-order/control-location repair.
+Do not improvise a larger redesign.
+
+============================================================
+D. NO HORIZONTAL OVERFLOW REGRESSION
+============================================================
+
+026W is USER VERIFIED PASS.
+
+At mobile:
+- no whole-page horizontal panning
+- no white strip outside app
+- no clipped controls
+- two-row category toolbar remains width-safe
+- header actions must also remain within viewport
+
+DO NOT add blanket `overflow-x:hidden` as a masking fix.
+
+============================================================
+E. CATEGORY WEDGE / ITEM POLISH IS OUT OF SCOPE
+============================================================
+
+DO NOT change in 026Z:
+- wedge width
+- wedge point depth
+- icon size
+- category card height
+- category title/item-count typography
+- rename pencil
+- + Base size
+- detail-row label size
+- expanded-item spacing
+- wedge/icon tap behavior
+
+Those belong to the NEXT separate mobile polish prompt after 026Z is verified.
+
+Preserve current wedge behavior exactly for now.
+
+============================================================
+F. CATEGORY OPEN/CLOSE PREFERENCE — PROTECT FOR NEXT PROMPT
+============================================================
+
+Standing mobile preference:
+- category accordion should open/close primarily by tapping the category icon/wedge
+- category name should not be the main accordion trigger
+- rename/edit remains separate
+
+DO NOT implement this in 026Z.
+Do not make changes that make that later repair harder.
+
+============================================================
+G. TOOLTIP / HELP PROTECTION
+============================================================
+
+Standing rules:
+- preserve all existing tooltip text exactly unless explicitly revised
+- fill only gaps in later tooltip work
+- keyboard help preserved
+- touch help preserved where already implemented
+
+026Z rearranges existing controls.
+It should NOT rewrite tooltip/help content.
+
+If moving an existing control:
+preserve its current tooltip/help/accessibility props unchanged.
+
+============================================================
+STRICT DESKTOP ISOLATION
+============================================================
+
+DESKTOP IS PROTECTED.
+
+At desktop/lg+:
+- header unchanged
+- header action controls unchanged
+- toolbar unchanged
+- sidebar stays in existing right column
+- categories stay in existing main column
+- Pack Summary unchanged
+- Weight Distribution unchanged
+- Scan Gear List unchanged
+- Locker unchanged
+- category bars unchanged
+- category item rows unchanged
+- Background/Themes unchanged
+- no mobile controls appear in desktop content area
+- spacing/geometry unchanged
+
+Before claiming PASS:
+compare desktop before/after.
+
+============================================================
+PROTECTED FUNCTIONAL BEHAVIOR
+============================================================
+
+Do NOT change:
+- owner editability
+- Save / Save As
+- Locker behavior
+- category-item selection
+- Checklist filtering
+- Checklist-use persistence until Clear
+- Clear semantics
+- Print
+- Share / Review isolation
+- Review Add Category
+- Light/Dark state/persistence
+- Imperial/Metric behavior
+- Open/Close behavior
+- Hide behavior
+- 026K main-category accordion rules
+- wedge styling
+- vertical item details
+- mobile background removal
+- mobile Background editing remains removed
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- Create New List
+- template/list-type flow
+- Track Weight
+- tooltip rewrite
+- new touch-help system
+- wedge polish
+- item-card polish
+- category tap-target change
+- Keep It Simple
+- cross-device Checklist sync
+- Last Synced
+- database/schema/API/auth changes
+- Print redesign
+- Share redesign
+- Locker redesign
+- native app architecture
+- package/dependency changes
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+- deployment/publishing
+- unrelated refactors
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Re-check 026Y findings against current source.
+3. Confirm:
+   - shared header structure
+   - portrait header action row
+   - filename mobile-only block
+   - current mobile toolbar JSX
+   - current mobile toolbar location
+   - current sidebar order classes
+   - current category-list wrapper
+   - `lg:hidden` / `hidden lg:block` boundaries
+4. Confirm 026W two-row toolbar is still present.
+5. Record preflight git status.
+6. Create:
+   `workflow-reports/PROMPT_026Z_REPORT.md`
+
+If current source materially differs from 026Y/026W:
+STOP and explain before editing.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Expected application file:
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+No other application file should be needed.
+
+If another file is required:
+STOP and explain before broadening.
+
+Do NOT change:
+- `MobileWedgeCategory.tsx`
+- `GearCategory.tsx`
+- `GearRow.tsx`
+unless current source proves the authorized page-order/header repair cannot be completed without it.
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+SOURCE INSPECTION ALONE IS NOT PASS.
+
+TEST 1 — 390 PX PAGE HIERARCHY
+Expected top-to-bottom:
+- header
+- header actions
+- filename
+- mobile two-row controls
+- categories
+- Pack Summary
+- Weight Distribution
+- Scan Gear
+- Locker
+
+TEST 2 — MOBILE TOOLBAR LOCATION
+Expected:
+- toolbar visible before categories
+- toolbar appears only once
+- all controls work
+- two-row structure preserved
+
+TEST 3 — CATEGORIES FIRST
+At 320 / 375 / 390 / 430:
+Expected:
+- first category appears before utility panels
+- no duplicated panels
+- no missing panels
+
+TEST 4 — HEADER CONTROLS
+Expected:
+- New works
+- Undo works
+- Redo works
+- Save works
+- Reset works
+- none removed
+- no horizontal overflow
+
+TEST 5 — 026W OVERFLOW REGRESSION
+Expected:
+- no whole-page side-to-side pan
+- no white strip
+- all toolbar controls visible
+
+TEST 6 — WEDGE REGRESSION
+Expected:
+- wedge shape unchanged
+- colors/icons unchanged
+- expanded item details unchanged
+
+TEST 7 — CHECKLIST REGRESSION
+Expected:
+- filtered Checklist membership unchanged
+- Checklist progress persists until Clear
+- Clear works
+
+TEST 8 — LIGHT/DARK + UNITS
+Expected:
+- mobile Light/Dark works
+- Imperial/Metric works
+- no mobile Background editor reappears
+
+TEST 9 — UTILITY PANELS
+Expected:
+- Pack Summary works
+- Weight Distribution works
+- Scan Gear works
+- Locker works
+- now appear after categories on mobile
+
+TEST 10 — DESKTOP ISOLATION
+At desktop:
+Expected:
+- header unchanged
+- all 5 header action controls unchanged
+- sidebar remains right column
+- categories remain main column
+- toolbar unchanged
+- no mobile ordering change visible
+
+TEST 11 — REVIEW
+Expected:
+- Review isolation unchanged
+- Review Add Category unchanged
+
+TEST 12 — CONSOLE
+Expected:
+- no new 026Z errors
+
+If auth prevents runtime test:
+mark NOT RUN.
+Do not substitute source audit for PASS.
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide as separate evidence files:
+- phone screenshot showing header + mobile controls + first categories
+- phone screenshot further down proving utility panels are after categories
+- desktop screenshot proving desktop layout unchanged
+
+Do not embed screenshots in the text prompt or report.
+
+============================================================
+REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026Z_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. old mobile content order
+6. new mobile content order
+7. old toolbar location
+8. new toolbar location
+9. header change, if any
+10. confirmation Undo retained
+11. confirmation Redo retained
+12. expected changed files
+13. actual changed files
+14. 320 result
+15. 375 result
+16. 390 result
+17. 430 result
+18. horizontal-overflow regression
+19. wedge regression
+20. Checklist regression
+21. utility-panel result
+22. desktop isolation result
+23. Review result
+24. tests NOT RUN
+25. console result
+26. rollback guidance
+27. unresolved issues
+28. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+MOBILE CONTROLS ABOVE CATEGORIES = PASS / FAIL / NOT RUN
+MOBILE TOOLBAR DUPLICATED = YES / NO / NOT RUN
+CATEGORIES BEFORE PACK SUMMARY = PASS / FAIL / NOT RUN
+CATEGORIES BEFORE WEIGHT DISTRIBUTION = PASS / FAIL / NOT RUN
+CATEGORIES BEFORE SCAN GEAR = PASS / FAIL / NOT RUN
+CATEGORIES BEFORE LOCKER = PASS / FAIL / NOT RUN
+
+NEW REMOVED = YES / NO
+UNDO REMOVED = YES / NO
+REDO REMOVED = YES / NO
+SAVE REMOVED = YES / NO
+RESET REMOVED = YES / NO
+
+MOBILE WHOLE-PAGE HORIZONTAL PAN = YES / NO / NOT RUN
+MOBILE WHITE STRIP = YES / NO / NOT RUN
+MOBILE TWO-ROW TOOLBAR CHANGED FUNCTIONALLY = YES / NO / NOT RUN
+MOBILE WEDGE CHANGED = YES / NO / NOT RUN
+MOBILE ITEM DETAILS CHANGED = YES / NO / NOT RUN
+
+CHECKLIST SEMANTICS CHANGED = YES / NO / NOT RUN
+CHECKLIST PERSISTENCE CHANGED = YES / NO / NOT RUN
+LIGHT/DARK CHANGED FUNCTIONALLY = YES / NO / NOT RUN
+IMPERIAL/METRIC CHANGED FUNCTIONALLY = YES / NO / NOT RUN
+LOCKER/SAVE CHANGED = YES / NO / NOT RUN
+REVIEW ISOLATION CHANGED = YES / NO / NOT RUN
+
+DESKTOP HEADER CHANGED = YES / NO / NOT RUN
+DESKTOP TOOLBAR CHANGED = YES / NO / NOT RUN
+DESKTOP SIDEBAR POSITION CHANGED = YES / NO / NOT RUN
+DESKTOP CATEGORY LAYOUT CHANGED = YES / NO / NOT RUN
+DESKTOP SPACING/GEOMETRY CHANGED = YES / NO / NOT RUN
+
+EXISTING TOOLTIP TEXT CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+PACKAGE FILES CHANGED = YES / NO
+CREATE-NEW-LIST FLOW CHANGED = YES / NO
+SYNC/LAST-SYNCED ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Are categories now before utility panels on phone?
+2. Are mobile controls above categories?
+3. Is the toolbar rendered exactly once?
+4. Are New/Undo/Redo/Save/Reset all retained?
+5. Is the 026W no-overflow fix preserved?
+6. Did I leave wedge/item visual polish untouched?
+7. Did I preserve Checklist?
+8. Did I preserve Light/Dark and units?
+9. Did I preserve Locker/Save/Review?
+10. Is desktop visually and functionally unchanged?
+11. Did I avoid Create New List work?
+12. Did I inspect the full diff?
+13. Did I runtime-test rather than claim source-only PASS?
+
+If material uncertainty remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026Z-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026Z_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to the wedge/item polish prompt.
+Do not proceed to Create New List.
+Do not perform unrelated TrailWeigh work.
