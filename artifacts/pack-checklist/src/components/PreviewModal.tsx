@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, Printer, Share2 } from 'lucide-react';
-import { PackState, CategoryMeta } from '../hooks/usePackData';
+import { X, Printer, Share2, Eraser } from 'lucide-react';
+import { PackState, CategoryMeta, GearItem } from '../hooks/usePackData';
 import { UnitSystem, calcTotalOz, formatWeight, largeUnit, smallUnit } from '../lib/weightUtils';
 
 export interface PreviewBodyProps {
@@ -8,18 +8,22 @@ export interface PreviewBodyProps {
   system: UnitSystem;
   categoryOrder: string[];
   categoryMeta: Record<string, CategoryMeta>;
+  /** When provided, checkboxes are interactive. */
+  onUpdateItem?: (category: string, id: string, checked: boolean) => void;
 }
 
 /**
- * Shared rendering body used by both PreviewModal (on-screen modal) and
+ * Shared rendering body used by both PreviewModal (on-screen Checklist) and
  * SharedPackListContent (standalone shared-link page).
  * Contains TrailWeigh header, weight summary strip, category/item table, footer.
- * Renders only checked items, matching the print layout.
+ * Shows ALL items — checked items contribute to weights; checkboxes are interactive
+ * when onUpdateItem is provided.
  */
-export function PreviewBody({ data, system, categoryOrder, categoryMeta }: PreviewBodyProps) {
+export function PreviewBody({ data, system, categoryOrder, categoryMeta, onUpdateItem }: PreviewBodyProps) {
   const lu = largeUnit(system);
   const su = smallUnit(system);
 
+  // Weight summary uses only checked items
   let baseOz = 0;
   const nonBaseTotals: { name: string; oz: number }[] = [];
 
@@ -35,7 +39,9 @@ export function PreviewBody({ data, system, categoryOrder, categoryMeta }: Previ
   });
 
   const grandOz = baseOz + nonBaseTotals.reduce((s, c) => s + c.oz, 0);
-  const hasCheckedItems = categoryOrder.some(cat => (data[cat] || []).some(i => i.checked));
+
+  // Check whether there are any items at all (not just checked)
+  const hasAnyItems = categoryOrder.some(cat => (data[cat] || []).length > 0);
 
   const date = new Date().toLocaleDateString('en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -47,10 +53,10 @@ export function PreviewBody({ data, system, categoryOrder, categoryMeta }: Previ
     { label: 'Grand Total', oz: grandOz },
   ];
 
-  if (!hasCheckedItems) {
+  if (!hasAnyItems) {
     return (
       <p className="text-center text-gray-500 py-10 text-sm">
-        No items are checked for preview.
+        No items in this list yet.
       </p>
     );
   }
@@ -69,7 +75,7 @@ export function PreviewBody({ data, system, categoryOrder, categoryMeta }: Previ
         <p style={{ fontSize: 8.5, color: '#999', margin: 0 }}>{date}</p>
       </div>
 
-      {/* Weight summary strip — mirrors print-summary */}
+      {/* Weight summary strip — mirrors print-summary; based on checked items */}
       <div style={{
         display: 'flex', alignItems: 'center', flexWrap: 'wrap',
         background: '#f4f8f4', border: '1px solid #c5d8c5',
@@ -99,9 +105,9 @@ export function PreviewBody({ data, system, categoryOrder, categoryMeta }: Previ
         ))}
       </div>
 
-      {/* Category blocks — mirrors print-category */}
+      {/* Category blocks — all items shown; checked state interactive */}
       {categoryOrder.map(cat => {
-        const items = (data[cat] || []).filter(i => i.checked);
+        const items = data[cat] || [];
         if (items.length === 0) return null;
         return (
           <div key={cat} style={{ marginBottom: 10 }}>
@@ -132,20 +138,40 @@ export function PreviewBody({ data, system, categoryOrder, categoryMeta }: Previ
               <span style={{ width: 64, flexShrink: 0, textAlign: 'right' }}>Weight</span>
             </div>
 
-            {/* Item rows */}
-            {items.map((item, idx) => (
+            {/* Item rows — all items, interactive checkboxes */}
+            {items.map((item: GearItem, idx) => (
               <div key={item.id} style={{
                 display: 'flex', alignItems: 'center',
                 fontSize: 12, padding: '3px 4px',
                 borderBottom: '1px solid #f0f0f0',
                 background: idx % 2 === 0 ? '#f8fbf8' : undefined,
+                opacity: item.checked ? 1 : 0.5,
               }}>
-                {/* Empty checkbox — same as print-check */}
+                {/* Checkbox */}
                 <span style={{ width: 22, flexShrink: 0, display: 'flex', alignItems: 'center' }}>
-                  <span style={{
-                    display: 'inline-block', width: 16, height: 16,
-                    border: '2px solid #333', borderRadius: 2, flexShrink: 0,
-                  }} />
+                  {onUpdateItem ? (
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
+                      onChange={() => onUpdateItem(cat, item.id, !item.checked)}
+                      style={{ width: 14, height: 14, cursor: 'pointer', accentColor: '#2d5a27' }}
+                    />
+                  ) : (
+                    <span style={{
+                      display: 'inline-block', width: 16, height: 16,
+                      border: '2px solid #333', borderRadius: 2, flexShrink: 0,
+                      background: item.checked ? '#2d5a27' : 'transparent',
+                      position: 'relative',
+                    }}>
+                      {item.checked && (
+                        <span style={{
+                          position: 'absolute', inset: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 11, fontWeight: 900, lineHeight: 1,
+                        }}>✓</span>
+                      )}
+                    </span>
+                  )}
                 </span>
                 <span style={{ width: 90, flexShrink: 0, fontWeight: 700, color: '#666', fontSize: 11 }}>
                   {item.sub}
@@ -182,20 +208,24 @@ interface PreviewModalProps {
   categoryMeta: Record<string, CategoryMeta>;
   onClose: () => void;
   onPrint: () => void;
+  /** When provided, enables the Clear button (uncheck all items). */
+  onClear?: () => void;
+  /** When provided, checkboxes inside the Checklist modal are interactive. */
+  onUpdateItem?: (category: string, id: string, checked: boolean) => void;
   /** When provided, adds "Share Pack List" button left of Print in the modal toolbar. */
   onSharePackList?: () => void;
 }
 
-export function PreviewModal({ data, system, categoryOrder, categoryMeta, onClose, onPrint, onSharePackList }: PreviewModalProps) {
+export function PreviewModal({ data, system, categoryOrder, categoryMeta, onClose, onPrint, onClear, onUpdateItem, onSharePackList }: PreviewModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 overflow-y-auto py-8 px-4 screen-only">
       {/* Backdrop */}
       <div className="absolute inset-0" onClick={onClose} />
 
       <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-auto">
-        {/* Modal toolbar: [Share Pack List] [Print] [Close] */}
+        {/* Modal toolbar: [Share] [Clear] [Print] [Close] */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-900">Pack List Preview</h2>
+          <h2 className="text-sm font-semibold text-gray-900">Checklist</h2>
           <div className="flex items-center gap-2">
             {onSharePackList && (
               <button
@@ -204,6 +234,16 @@ export function PreviewModal({ data, system, categoryOrder, categoryMeta, onClos
               >
                 <Share2 className="w-3.5 h-3.5" />
                 Share Pack List
+              </button>
+            )}
+            {onClear && (
+              <button
+                onClick={onClear}
+                className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
+                title="Uncheck all items"
+              >
+                <Eraser className="w-3.5 h-3.5" />
+                Clear
               </button>
             )}
             <button
@@ -230,6 +270,7 @@ export function PreviewModal({ data, system, categoryOrder, categoryMeta, onClos
             system={system}
             categoryOrder={categoryOrder}
             categoryMeta={categoryMeta}
+            onUpdateItem={onUpdateItem}
           />
         </div>
       </div>

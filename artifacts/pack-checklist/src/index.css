@@ -302,6 +302,29 @@
     border-radius: 2px;
     flex-shrink: 0;
   }
+  /* Filled checkbox — used for checked items in PrintLayout */
+  .print-check-filled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #2d5a27;
+    border-radius: 2px;
+    flex-shrink: 0;
+    background: #2d5a27;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .print-check-filled::after {
+    content: '✓';
+  }
+  /* Dim unchecked rows slightly in print */
+  .print-item-unchecked {
+    opacity: 0.55;
+  }
   .print-type {
     font-weight: 700;
     color: #666;
