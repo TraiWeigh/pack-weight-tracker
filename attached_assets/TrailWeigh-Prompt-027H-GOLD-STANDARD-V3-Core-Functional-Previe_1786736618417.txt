@@ -1,0 +1,717 @@
+TRAILWEIGH — PROMPT 027H — GOLD STANDARD
+V3 CORE FUNCTIONAL PREVIEW
+WIRE CATEGORY + ITEM CONTROLS IN AN ISOLATED MOBILE TEST ROUTE
+DO NOT CUT OVER PRODUCTION MOBILE YET
+
+INTERNAL VERSION ID:
+027H-V3-CORE-FUNCTIONAL-PREVIEW-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 10–18 minutes
+- approximately $0.75–$1.70 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE BASELINE
+============================================================
+
+027F = USER VISUAL PASS.
+
+The approved Light mobile visual master is:
+`/mobile-design-v3`
+
+027G = READ-ONLY DIAGNOSTIC PASS.
+Read:
+`workflow-reports/PROMPT_027G_REPORT.md`
+
+USER LIVE EVIDENCE also supplied the current production phone UI.
+
+USER live evidence outranks source/report claims.
+
+============================================================
+WHY 027H IS AN ISOLATED FUNCTIONAL PREVIEW
+============================================================
+
+The V3 Light design is approved, but:
+- Dark V3 is not yet designed/approved
+- secondary navigation/control destinations are still being staged
+- production `/checklist` must not lose existing functionality during integration
+
+Therefore 027H MUST NOT replace production mobile yet.
+
+Create an isolated functional route:
+
+`/mobile-functional-v3`
+
+This route is where the approved V3 design gets its FIRST real
+category/item interactions.
+
+Keep:
+- `/mobile-design-v3` = frozen visual master
+- `/checklist` = existing production mobile/desktop
+- desktop = unchanged
+
+============================================================
+APPROVED DESIGN FREEZE
+============================================================
+
+The new functional preview must visually match the approved V3 master.
+
+DO NOT change:
+- header height
+- logo/wordmark
+- search-circle geometry
+- green-plus geometry
+- trip/list identity geometry
+- summary-card geometry
+- category wedge/card geometry
+- typography
+- category colors
+- expanded-item geometry
+- bottom-nav geometry
+
+Only real data and interaction state may replace static sample content.
+
+If wiring requires visual geometry changes:
+STOP and report.
+
+============================================================
+LATEST USER CONTROL DECISIONS — AUTHORITATIVE
+============================================================
+
+1. MOBILE CATEGORY ACCORDION
+- Tap the CATEGORY WEDGE / CATEGORY ICON to open/close.
+- Wedge/icon is the PRIMARY accordion control.
+- Category name primarily identifies/renames the category.
+- Do NOT make the whole category name area the primary accordion trigger.
+- Preserve:
+  - single-open normal behavior
+  - zero-open allowed
+  - Expand All
+  - Collapse All
+  - return to normal single-open after individual interaction following Expand All
+
+2. ITEMS
+- NO six-dot drag handle on items.
+- NO mobile item drag-and-drop.
+- KEEP the existing `Move` control for moving an item to another category.
+
+3. CATEGORIES
+- KEEP a six-dot drag/reorder handle for WHOLE-CATEGORY reordering.
+- Place it in the CENTER AREA of the category bar.
+- It must visually and semantically apply to the whole category.
+
+4. ITEM DETAIL ROWS
+Keep:
+- Weight
+- Quantity
+- Total
+- Move
+
+5. CATEGORY ITEM CHECKBOX SEMANTICS
+- Main-list item checkbox = whether the item is INCLUDED in Checklist.
+- It is NOT packing-progress state.
+- Do NOT label main-list checked items as “Packed.”
+
+6. CHECKLIST
+- Checklist has its own separate checklist-use checkboxes.
+- Checklist progress persists until Clear.
+- Clear resets Checklist-use progress only.
+- Do not alter these semantics.
+
+7. MOBILE DRAG
+- Item drag: NO.
+- Category reorder: YES.
+
+============================================================
+IMPORTANT CORRECTION TO 027G SUMMARY WORDING
+============================================================
+
+027G suggested mapping main-list `item.checked` to “Packed / Remaining.”
+
+DO NOT DO THAT.
+
+That would violate current TrailWeigh semantics.
+
+For the main list V3 summary card use truthful real-data labels:
+
+SUMMARY LABEL:
+`LIST SUMMARY`
+
+PRIMARY:
+`[total item count] items`
+
+SECONDARY:
+`[selected count] Selected`
+`[not-selected count] Not Selected`
+
+Where:
+- Selected = item.checked === true
+- Not Selected = total - selected
+
+Do NOT use:
+- Packed
+- Remaining
+for the owner/main list summary.
+
+Those concepts belong to Checklist-use progress, not category-item selection.
+
+============================================================
+REAL LIST IDENTITY
+============================================================
+
+Replace static:
+`Italy Adventure Trip`
+
+with the current active TrailWeigh list/file name.
+
+For the smaller second line beneath it:
+use a truthful derived value that already exists, preferably:
+`[N] categories`
+
+Do NOT invent:
+- dates
+- trip metadata
+- list types
+- sync timestamps
+
+If current active source does not provide a stable category count:
+STOP and report rather than inventing another subtitle.
+
+============================================================
+FUNCTIONAL PREVIEW DATA SAFETY
+============================================================
+
+Preferred:
+- use the same real data shapes/handlers identified in 027G
+- but isolate functional-preview mutations from the owner’s production list
+
+Use an existing safe storage-key override / review-style sandbox pattern
+if available.
+
+The user must be able to test:
+- check/uncheck
+- weight
+- quantity
+- move
+- category open/close
+- category reorder
+
+WITHOUT modifying the production owner list during 027H testing.
+
+If the existing architecture cannot create a safe isolated functional
+sandbox without broad changes:
+STOP and explain before implementation.
+
+Do NOT invent new backend/schema infrastructure.
+
+============================================================
+SCOPE A — V3 REAL CATEGORY DATA
+============================================================
+
+Replace static V3 categories/items in `/mobile-functional-v3` with
+TrailWeigh-shaped test data using the same active data model as production.
+
+Preferred seed:
+- clone/snapshot current active list into the functional-preview sandbox
+OR
+- use a safe local copy of current production data
+
+Do not mutate owner production data.
+
+Preserve category:
+- real name
+- real item count
+- real selected count
+- real category weight
+- existing mobile color/icon mapping
+
+============================================================
+SCOPE B — WEDGE/ICON ACCORDION
+============================================================
+
+Wire wedge/icon to the existing category toggle path identified in 027G.
+
+Requirements:
+- wedge/icon is keyboard-focusable
+- `aria-expanded`
+- clear accessible name, e.g. `Open Backpack category`
+- tap/click wedge toggles
+- category name does NOT become the primary open/close target
+- category chevron may mirror state visually
+- single-open/zero-open/Expand All/Collapse All rules preserved
+
+Do not broaden to full-row tap.
+
+============================================================
+SCOPE C — CATEGORY REORDER HANDLE
+============================================================
+
+Before editing:
+TRACE the exact current ACTIVE category-reorder path.
+
+027G did not fully document a touch-safe category reorder implementation.
+
+Required preflight:
+- identify current category-order state
+- identify current reorder handler
+- identify whether current category drag works on touch
+- identify whether it uses HTML5 drag-and-drop
+
+If a touch-safe existing category reorder path already exists:
+- reuse it
+- place the six-dot handle in the CENTER AREA of the category bar
+- ensure only the handle initiates category reorder
+
+If the current implementation is HTML5 mouse drag only and NOT touch-safe:
+- DO NOT install a new dependency in 027H
+- DO NOT fake PASS
+- leave the category handle visually present but non-destructive in the
+  functional preview
+- mark:
+  `CATEGORY TOUCH REORDER = BLOCKED — SEPARATE IMPLEMENTATION REQUIRED`
+- continue the other 027H core mappings if safe
+
+No item drag handles anywhere.
+
+============================================================
+SCOPE D — ITEM ROWS
+============================================================
+
+Use real item data.
+
+Collapsed item:
+- main-list inclusion checkbox
+- item name
+- real quantity
+- real displayed weight where V3 design shows it
+- detail chevron
+
+NO item drag dots.
+
+Checkbox:
+reuse real:
+`updateItem(category, item.id, { checked: ... })`
+against sandbox data.
+
+============================================================
+SCOPE E — ITEM EXPAND/COLLAPSE
+============================================================
+
+Add local per-item expanded state as recommended by 027G.
+
+Requirements:
+- one item may be expanded at a time within the current category unless
+  current implementation makes zero/multiple safer
+- zero-open allowed
+- chevron reflects state
+- no structural-data mutation just from expanding/collapsing
+- preserve approved V3 geometry
+
+============================================================
+SCOPE F — WEIGHT
+============================================================
+
+Use real TrailWeigh field:
+`item.weightOz`
+
+Use existing unit conversion/formatting.
+
+Expanded Weight row:
+- show real value
+- allow existing mobile-friendly edit path
+- update sandbox item only
+
+Do not change storage units.
+
+============================================================
+SCOPE G — QUANTITY
+============================================================
+
+Use:
+`item.qty`
+
+Reuse existing quantity edit path / native select if practical.
+
+Update sandbox only.
+
+============================================================
+SCOPE H — TOTAL
+============================================================
+
+Use existing derived:
+`calcTotalOz(item.weightOz, item.qty)`
+
+Read-only display.
+
+Do not store a second total field.
+
+============================================================
+SCOPE I — MOVE ITEM
+============================================================
+
+KEEP Move.
+
+Use existing:
+`moveItem(sourceCategory, destinationCategory, item.id)`
+
+Requirements:
+- native touch-friendly select/sheet using existing primitives
+- no item drag
+- exclude current category from destinations
+- hide/disable Move if no other category exists
+- sandbox only
+
+============================================================
+SCOPE J — CATEGORY ITEM COUNT / WEIGHT
+============================================================
+
+Use real category values.
+
+Category subtitle:
+`[item count] items • [selected count] selected`
+
+Do NOT say packed.
+
+Right-side category weight:
+use existing category total semantics from production.
+
+Do not change calculation logic.
+
+============================================================
+SCOPE K — SUMMARY CARD
+============================================================
+
+Use real sandbox-list values:
+
+`LIST SUMMARY`
+
+Primary:
+`[total items] items`
+
+Secondary:
+`[selected] Selected`
+`[not selected] Not Selected`
+
+Do not add weight metrics in 027H.
+Do not alter summary geometry.
+
+============================================================
+SCOPE L — HEADER / BOTTOM NAV IN 027H
+============================================================
+
+027H is CORE CATEGORY/ITEM FUNCTIONALITY ONLY.
+
+Keep visually present but DO NOT wire yet:
+- hamburger
+- search
+- green plus
+- title chevron
+- Locker nav
+- Catalog nav
+- Summary nav
+- More nav
+
+Bottom-nav labels should reflect the user-approved future system:
+
+`List | Locker | Catalog | Summary | More`
+
+For 027H:
+- List = visually active/current
+- other four = visible but inert/aria-disabled in this functional preview
+
+Search:
+- visible
+- inert
+- no fake function
+
+Green plus:
+- visible
+- inert in 027H
+
+This prevents secondary-control scope from contaminating the core test.
+
+============================================================
+APPROVED BOTTOM-NAV PRODUCT DIRECTION
+============================================================
+
+Future destinations are now:
+
+1. List
+2. Locker
+3. Catalog
+4. Summary
+5. More
+
+027H may update ONLY the static labels/icons to this approved set
+if required in the functional preview.
+
+Do NOT wire those destinations yet.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement in 027H:
+- production cutover
+- real hamburger menu
+- New/Undo/Redo/Save/Reset/Share wiring
+- green-plus Add sheet
+- Search
+- Locker navigation
+- Catalog feature
+- Summary overlay/navigation
+- More menu
+- Print
+- Light/Dark
+- Imperial/Metric menu relocation
+- Create New List
+- cross-device sync
+- Last Synced
+- tooltip rewrite
+- database/schema/API changes
+- item drag/reorder
+- new drag-and-drop dependency
+- Dark V3 design
+- desktop changes
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Preferred:
+- new functional-preview page/component based on approved V3
+- minimal route addition
+- reuse/adapt existing mobile category interaction code where safe
+
+Expected maximum:
+3 application files.
+
+If broader changes are required:
+STOP and explain.
+
+Do NOT change production `MobileWedgeCategory.tsx` merely to make the
+preview work if an isolated preview component is safer.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read `workflow-reports/PROMPT_027G_REPORT.md`.
+3. Inspect approved:
+   `src/pages/MobileDesignPrototypeV3.tsx`
+4. Inspect current production:
+   `src/pages/Checklist.tsx`
+   `src/components/MobileWedgeCategory.tsx`
+5. Trace category-reorder active path.
+6. Confirm safe sandbox/storage-key strategy.
+7. Record preflight git status.
+8. Create:
+   `workflow-reports/PROMPT_027H_REPORT.md`
+
+If sandbox isolation is unsafe:
+STOP before edits.
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+TEST 1 — VISUAL FREEZE
+At 390:
+- `/mobile-functional-v3` visually matches approved V3
+- no geometry drift
+
+TEST 2 — PRODUCTION SAFETY
+- normal `/checklist` unchanged
+- owner data unchanged after preview interactions
+
+TEST 3 — WEDGE ACCORDION
+- tap wedge/icon opens
+- tap same wedge/icon closes
+- category name is not primary toggle
+- single-open works
+- zero-open works
+
+TEST 4 — ITEM CHECKBOX
+- checkbox updates sandbox selection
+- main summary selected/not-selected updates
+- no Checklist-use progress affected
+
+TEST 5 — ITEM EXPAND
+- chevron opens/closes detail panel
+- Weight/Quantity/Total/Move visible
+
+TEST 6 — WEIGHT
+- edit works
+- units/calculation remain correct
+- sandbox only
+
+TEST 7 — QUANTITY
+- edit works
+- total recalculates
+- sandbox only
+
+TEST 8 — MOVE
+- item moves to selected destination category
+- no item drag handle
+- sandbox only
+
+TEST 9 — CATEGORY REORDER
+If touch-safe existing path:
+- six-dot category handle centered in category bar
+- reorder works on phone/touch
+- wedge tap still works independently
+
+If not touch-safe:
+- mark BLOCKED
+- no new dependency
+- no fake PASS
+
+TEST 10 — RESPONSIVE
+375 / 390 / 430:
+- no horizontal overflow
+- no clipped detail rows
+- bottom nav stable
+
+TEST 11 — DESKTOP
+- unchanged
+
+TEST 12 — REVIEW/OWNER SAFETY
+- no owner API mutation from preview
+- no Review behavior changed
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate:
+- 390 functional preview screenshot
+- open category screenshot
+- expanded item screenshot showing Weight/Quantity/Total/Move
+- category-handle screenshot
+- production `/checklist` screenshot proving unchanged
+- desktop screenshot proving unchanged
+
+Do not embed screenshots in report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027H_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. 027G findings applied
+6. sandbox strategy
+7. files changed
+8. production safety
+9. real list/title mapping
+10. summary semantics
+11. wedge tap mapping
+12. category name behavior
+13. category reorder path finding
+14. category touch-reorder result
+15. item checkbox result
+16. item expand result
+17. Weight result
+18. Quantity result
+19. Total result
+20. Move result
+21. item drag removed/absent confirmation
+22. bottom-nav label update
+23. 375 result
+24. 390 result
+25. 430 result
+26. desktop result
+27. tests NOT RUN
+28. unresolved issues
+29. rollback
+30. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027H FUNCTIONAL PREVIEW CREATED = PASS / FAIL / NOT RUN
+APPROVED V3 GEOMETRY PRESERVED = PASS / FAIL / NOT RUN
+PRODUCTION /CHECKLIST CHANGED = YES / NO
+OWNER DATA CHANGED BY PREVIEW = YES / NO
+DESKTOP CHANGED = YES / NO
+
+REAL LIST NAME MAPPED = PASS / FAIL / NOT RUN
+REAL CATEGORY COUNT SUBTITLE MAPPED = PASS / FAIL / NOT RUN
+LIST SUMMARY USES ITEMS/SELECTED/NOT SELECTED = PASS / FAIL / NOT RUN
+PACKED/REMAINING USED FOR MAIN-LIST SELECTION = YES / NO
+
+WEDGE/ICON PRIMARY ACCORDION CONTROL = PASS / FAIL / NOT RUN
+CATEGORY NAME PRIMARY ACCORDION CONTROL = YES / NO
+SINGLE-OPEN PRESERVED = PASS / FAIL / NOT RUN
+ZERO-OPEN PRESERVED = PASS / FAIL / NOT RUN
+
+ITEM CHECKBOX WIRED = PASS / FAIL / NOT RUN
+ITEM DRAG HANDLE PRESENT = YES / NO
+ITEM DRAG/REORDER IMPLEMENTED = YES / NO
+ITEM EXPAND/COLLAPSE WIRED = PASS / FAIL / NOT RUN
+WEIGHT WIRED = PASS / FAIL / NOT RUN
+QUANTITY WIRED = PASS / FAIL / NOT RUN
+TOTAL DERIVED CORRECTLY = PASS / FAIL / NOT RUN
+MOVE WIRED = PASS / FAIL / NOT RUN
+
+CATEGORY SIX-DOT HANDLE PRESENT = YES / NO
+CATEGORY HANDLE CENTERED IN BAR = PASS / FAIL / NOT RUN
+CATEGORY TOUCH REORDER = PASS / FAIL / BLOCKED / NOT RUN
+NEW DRAG DEPENDENCY ADDED = YES / NO
+
+BOTTOM NAV LABELS = LIST / LOCKER / CATALOG / SUMMARY / MORE = YES / NO
+HAMBURGER WIRED = YES / NO
+SEARCH WIRED = YES / NO
+GREEN PLUS WIRED = YES / NO
+LOCKER NAV WIRED = YES / NO
+CATALOG NAV WIRED = YES / NO
+SUMMARY NAV WIRED = YES / NO
+MORE NAV WIRED = YES / NO
+
+DATABASE/API/AUTH CHANGED = YES / NO
+CREATE-NEW-LIST CHANGED = YES / NO
+DARK V3 WORK ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027H-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027H_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do not cut over production mobile.
+Do not wire secondary navigation.
+Do not create Dark mode.
+Do not proceed to 027I.
