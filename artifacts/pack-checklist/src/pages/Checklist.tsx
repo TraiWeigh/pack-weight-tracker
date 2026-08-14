@@ -220,6 +220,17 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
   const [showPreview, setShowPreview] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !!userId && !hasSeenMailingPrompt(userId));
+
+  // ── 026N: Owner View / Edit mode ─────────────────────────────────────────
+  // Presentation/permission state only — never written to Store or DB.
+  // 'view'  → safe checklist-use mode: checkboxes work, structural edits blocked.
+  // 'edit'  → full edit mode: existing behavior, all controls active.
+  // Initialise: if a saved file is already in sessionStorage this is a Locker open
+  // (remount or savedListId tab) → start in View.  Otherwise (new/blank) → Edit.
+  const [ownerMode, setOwnerMode] = useState<'view' | 'edit'>(
+    () => readActiveLockerFileFromSS() ? 'view' : 'edit'
+  );
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [backgroundPickerOpen, setBackgroundPickerOpen] = useState(false);
   const bgPickerContainerRef = useRef<HTMLDivElement>(null);
@@ -1165,6 +1176,23 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
   const handleReset = () => { resetToDefaults(); setShowResetConfirm(false); };
   const handlePrint  = () => window.print();
 
+  // ── 026N: View-mode guarded update — allows only checked patches in View ──
+  // Defense in depth: the UI hides structural controls, AND this guard ensures
+  // that even if a hidden control fires, structural patches are silently dropped.
+  const viewGuardedUpdateItem = React.useCallback(
+    (category: string, id: string, updates: Parameters<typeof updateItem>[2]) => {
+      if (!isReview && ownerMode === 'view') {
+        // Only 'checked' state changes are allowed in View mode
+        if ('checked' in updates) {
+          updateItem(category, id, { checked: (updates as { checked: boolean }).checked });
+        }
+        return;
+      }
+      updateItem(category, id, updates);
+    },
+    [isReview, ownerMode, updateItem]
+  );
+
   const handleShare = () => {
     setSharing(true);
     try {
@@ -1248,12 +1276,16 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       if (isInput) return;
       const meta = e.ctrlKey || e.metaKey;
       if (!meta) return;
+      // 026N: block undo/redo in owner View mode (could revert structural edits)
+      if (!isReview && ownerMode === 'view') return;
       if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
       if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [undo, redo]);
+  // ownerMode and isReview added so the closure captures fresh values
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [undo, redo, ownerMode, isReview]);
 
   // ── Locker ────────────────────────────────────────────────────────────────
 
@@ -1539,6 +1571,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       const active: ActiveLockerFile = { id: entryId, name: entryName ?? '' };
       writeActiveLockerFileToSS(active);
       setActiveLockerFile(active);
+      setOwnerMode('view'); // 026N: savedListId tab opens a saved file → View mode
       // 022G: fork tab opened an existing Locker file — update last-active so
       // the next fresh open returns to this file rather than the opener's file.
       if (userId) writeLastActiveFileToLS(userId, active);
@@ -1632,6 +1665,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
     const activeFile: ActiveLockerFile = { id: entry.id, name: entry.name };
     writeActiveLockerFileToSS(activeFile);
     setActiveLockerFile(activeFile);
+    setOwnerMode('view'); // 026N: startup restoration loaded a saved file → View mode
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount only
 
@@ -1919,6 +1953,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       const newActiveFile: ActiveLockerFile = { id: entry.id, name: entry.name };
       writeActiveLockerFileToSS(newActiveFile);
       setActiveLockerFile(newActiveFile);
+      setOwnerMode('view'); // 026N: in-place Locker open → View mode
       // 022G: in-place open (primary tab) — update last-active.
       if (userId) writeLastActiveFileToLS(userId, newActiveFile);
       // Stay in the same tab — no window.open.
@@ -2288,7 +2323,8 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
               {/* Divider — hidden on portrait to save horizontal space */}
               <div className="hidden sm:block w-px h-5 bg-border mx-1 flex-shrink-0" />
 
-              {/* ── Reset ───────────────────────────────────────── */}
+              {/* ── Reset ── 026N: hidden in View mode (structural mutation) */}
+              {(isReview || ownerMode === 'edit') && (
               <div className="relative flex-shrink-0">
                 {showResetConfirm ? (
                   <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
@@ -2306,6 +2342,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   </button>
                 )}
               </div>
+              )}
 
               {/* ── User menu / guest CTA — sm+ only (portrait version is in logo row) ── */}
               <div className="hidden sm:flex items-center flex-shrink-0">
@@ -2455,9 +2492,21 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
               {/* Row C (mobile): removed in 023B — Hide moved to Lower Phone Toolbar,
                   Preview moved to Phone Row 1. Desktop right group unchanged. */}
 
-              {/* ── Desktop-only right group: ml-auto → [Hide][Preview][UnitToggle] ──
+              {/* ── Desktop-only right group: ml-auto → [Edit/Done][Hide][Preview][UnitToggle] ──
                   Hidden on mobile (handled by rows above). */}
               <div className="hidden lg:flex items-center gap-3 ml-auto flex-shrink-0">
+                {/* 026N: Edit / Done mode-switch control — owner only, not shown in Review */}
+                {!isReview && (
+                  <button
+                    onClick={() => setOwnerMode(m => m === 'view' ? 'edit' : 'view')}
+                    aria-label={ownerMode === 'view' ? 'Switch to edit mode' : 'Return to view mode'}
+                    title={ownerMode === 'view' ? 'Switch to edit mode' : 'Return to view mode'}
+                    className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                  >
+                    {ownerMode === 'view' ? 'Edit' : 'Done'}
+                  </button>
+                )}
                 <button
                   onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
                   disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}
@@ -2774,38 +2823,44 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
 
             {/* Scrollable categories */}
             <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 space-y-1 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              {categoryOrder.map((category) => (
-                <GearCategory
-                  key={category}
-                  name={category}
-                  items={data[category] || []}
-                  meta={categoryMeta[category] ?? { countsToBase: true }}
-                  forceOpen={openCatIds.has(category)}
-                  forceOpenSeq={catSeq}
-                  onToggle={nowOpen => handleCategoryToggle(category, nowOpen)}
-                  order={categoryOrder}
-                  updateItem={updateItem}
-                  removeItem={removeItem}
-                  moveItem={moveItem}
-                  addItem={addItem}
-                  onUpdateMeta={updates => updateCategoryMeta(category, updates)}
-                  onDelete={() => deleteCategory(category)}
-                  onRename={newName => renameCategory(category, newName)}
-                  isDragOver={overCat === category && dragCat !== category}
-                  onDragStart={() => setDragCat(category)}
-                  onDragEnd={() => { setDragCat(null); setOverCat(null); }}
-                  onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
-                  onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
-                  onDrop={e => {
-                    e.preventDefault();
-                    if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
-                    setDragCat(null);
-                    setOverCat(null);
-                  }}
-                />
-              ))}
+              {/* 026N: ownerViewMode — true when owner is in View mode (not Review) */}
+              {(() => {
+                const ownerViewMode = !isReview && ownerMode === 'view';
+                return categoryOrder.map((category) => (
+                  <GearCategory
+                    key={category}
+                    name={category}
+                    items={data[category] || []}
+                    meta={categoryMeta[category] ?? { countsToBase: true }}
+                    forceOpen={openCatIds.has(category)}
+                    forceOpenSeq={catSeq}
+                    onToggle={nowOpen => handleCategoryToggle(category, nowOpen)}
+                    order={categoryOrder}
+                    updateItem={viewGuardedUpdateItem}
+                    removeItem={removeItem}
+                    moveItem={moveItem}
+                    addItem={addItem}
+                    onUpdateMeta={updates => updateCategoryMeta(category, updates)}
+                    onDelete={() => deleteCategory(category)}
+                    onRename={newName => renameCategory(category, newName)}
+                    viewMode={ownerViewMode}
+                    isDragOver={!ownerViewMode && overCat === category && dragCat !== category}
+                    onDragStart={ownerViewMode ? undefined : () => setDragCat(category)}
+                    onDragEnd={ownerViewMode ? undefined : () => { setDragCat(null); setOverCat(null); }}
+                    onDragOver={ownerViewMode ? undefined : (e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); })}
+                    onDragLeave={ownerViewMode ? undefined : (() => setOverCat(prev => prev === category ? null : prev))}
+                    onDrop={ownerViewMode ? undefined : (e => {
+                      e.preventDefault();
+                      if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
+                      setDragCat(null);
+                      setOverCat(null);
+                    })}
+                  />
+                ));
+              })()}
 
-              {/* ── Add Category ── */}
+              {/* ── Add Category — 026N: hidden in owner View mode */}
+              {(isReview || ownerMode === 'edit') && (
               <div className="mt-2">
                 {addingCat ? (
                   <div className="flex items-center gap-2 p-3 bg-card border border-primary/40 rounded-lg shadow-sm animate-in fade-in slide-in-from-top-2 duration-200">
@@ -2844,6 +2899,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   </button>
                 )}
               </div>
+              )}
             </div>
 
             {/* Scrollable sidebar content */}
@@ -2872,16 +2928,19 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   forceOpen={sidebarForce.import.open}
                   forceOpenSeq={sidebarForce.import.seq}
                   onToggle={nowOpen => handleSidebarPanelToggle('import', nowOpen)}
-                  onAddItem={(category, prefill) => {
-                    // Re-resolve against the live order so alias variants
-                    // (e.g. 'Shelter' → 'Shelter System') are honoured and
-                    // no duplicate category tab is created.
-                    const resolved = resolveDestination(category, categoryOrder);
-                    if (!categoryOrder.includes(resolved)) {
-                      addCategory(resolved);
-                    }
-                    addItem(resolved, prefill);
-                  }}
+                  onAddItem={(!isReview && ownerMode === 'view')
+                    ? () => { /* 026N: import blocked in owner View mode */ }
+                    : (category, prefill) => {
+                        // Re-resolve against the live order so alias variants
+                        // (e.g. 'Shelter' → 'Shelter System') are honoured and
+                        // no duplicate category tab is created.
+                        const resolved = resolveDestination(category, categoryOrder);
+                        if (!categoryOrder.includes(resolved)) {
+                          addCategory(resolved);
+                        }
+                        addItem(resolved, prefill);
+                      }
+                  }
                 />
                 {/* 025L: Review mode label — clarifies local-only storage to reviewer */}
                 {isReview && (
@@ -2952,11 +3011,23 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                       <ChevronUp className="h-4 w-4" />
                     </button>
                   </div>
-                  {/* 026L: RIGHT GROUP — Hide, Preview, UnitToggle together.
-                      Restores 022X programmed grouping: Preview was stranded in
-                      Phone Row 1 (top); Hide was isolated as a solo center item.
-                      Now both sit in a single right-zone group, matching desktop order. */}
+                  {/* 026L: RIGHT GROUP — Edit/Done, Hide, Preview, UnitToggle together.
+                      026N adds Edit/Done before Hide. Restores 022X programmed grouping:
+                      Preview was stranded in Phone Row 1 (top); Hide was isolated as a
+                      solo center item. Now all sit in a single right-zone group. */}
                   <div className="flex items-center gap-2">
+                    {/* 026N: Edit / Done mode-switch — owner only, not shown in Review */}
+                    {!isReview && (
+                      <button
+                        onClick={() => setOwnerMode(m => m === 'view' ? 'edit' : 'view')}
+                        aria-label={ownerMode === 'view' ? 'Switch to edit mode' : 'Return to view mode'}
+                        title={ownerMode === 'view' ? 'Switch to edit mode' : 'Return to view mode'}
+                        className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                        style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
+                      >
+                        {ownerMode === 'view' ? 'Edit' : 'Done'}
+                      </button>
+                    )}
                     <button
                       onClick={() => { setBackgroundPickerOpen(false); triggerShowcase(); }}
                       disabled={showResetConfirm || showShareMenu || showPreview || dragCat !== null || hasInputFocus}

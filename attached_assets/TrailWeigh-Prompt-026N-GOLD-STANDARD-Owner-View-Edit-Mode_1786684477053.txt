@@ -1,0 +1,905 @@
+TRAILWEIGH — PROMPT 026N — GOLD STANDARD
+OWNER VIEW / EDIT MODE — SAVED LISTS OPEN SAFE, NEW LISTS OPEN EDITABLE
+
+INTERNAL VERSION ID:
+026N-OWNER-VIEW-EDIT-MODE-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 10–18 minutes
+- Estimated Agent usage/cost: approximately $0.75–$1.75
+- HARD STOP if materially exceeding 18 minutes / ~$1.75 before root cause and active paths are understood
+
+============================================================
+MANDATORY STANDING TRAILWEIGH / REPLIT GOLD STANDARD
+============================================================
+
+Before any diagnosis, recommendation, edit, or test:
+
+1. Apply all relevant prior TrailWeigh/Replit lessons and current USER decisions.
+2. USER live evidence outranks report claims, source inference, and prior assumptions.
+3. If current evidence contradicts an earlier finding, mark it:
+   SUPERSEDED / DISPROVEN EARLIER FINDING.
+4. Read current `replit.md` READ-ONLY. Do not modify it.
+5. Verify the exact ACTIVE render/interaction/state paths before editing.
+6. Root cause before edit.
+7. Reuse current working TrailWeigh patterns/components/state architecture where appropriate.
+8. Use the smallest reversible patch.
+9. Preserve all unrelated USER-VERIFIED PASS behavior.
+10. Do not modify `.agents/memory`, project-wide instructions, package versions, database schema/data,
+    auth, publishing, or deployment.
+11. Replit internal PASS is NOT final USER PASS.
+12. Separate USER-decided facts, current-source findings, assumptions, and recommendations.
+13. Do not guess when architecture differs from the diagnostic.
+14. Before final status, self-audit:
+    “Am I applying everything we have learned that is relevant to this decision?”
+15. If any material ambiguity, contradiction, or required scope expansion remains:
+    STOP and report it. Do not improvise.
+
+============================================================
+PRIOR PROMPT STATUS — 026M DIAGNOSTIC
+============================================================
+
+026M was READ-ONLY and completed successfully.
+
+Authoritative 026M findings to verify against current source before editing:
+
+- Active checkbox render:
+  `artifacts/pack-checklist/src/components/GearRow.tsx`
+- Checkbox state:
+  `GearItem.checked: boolean`
+  in `artifacts/pack-checklist/src/hooks/usePackData.ts`
+- Active owner path:
+  `ChecklistContent` -> `GearCategory` -> `GearRow`
+- There is currently NO dedicated owner View mode.
+- Normal owner Home currently allows checkbox interaction AND structural editing simultaneously.
+- Review uses the shared ChecklistContent path but has separate sandbox/storage semantics.
+- Saved-list server persistence is whole-list JSONB and is explicit-save only.
+- 026M changed ZERO application code.
+- 026L mobile toolbar work is the immediate accepted source baseline and must not be reopened.
+- 026M found NO direct 026L conflict.
+
+If current source materially differs from these findings:
+- document the exact difference BEFORE editing
+- STOP if that difference changes the intended implementation scope
+
+============================================================
+USER DECISION — AUTHORITATIVE MODE BEHAVIOR
+============================================================
+
+The USER has decided:
+
+1. SAVED OWNER LIST
+   - A saved list opened from the universal Locker opens in VIEW mode by default.
+
+2. NEW OWNER LIST
+   - A brand-new list starts in EDIT mode because the user is building it.
+
+3. VIEW MODE
+   View mode is a SAFE checklist-use mode.
+
+   The user MAY:
+   - check/uncheck checklist boxes
+   - expand/collapse main categories
+   - use main-category Expand All / Collapse All
+   - expand/collapse item detail sections if currently supported
+   - print / preview
+   - share
+   - navigate
+   - use existing non-structural display controls unless explicitly prohibited below
+   - use current manual Save behavior
+
+   The user MAY NOT structurally change list content.
+
+4. EDIT MODE
+   - A clear `Edit` control switches a saved owner list from View -> Edit.
+   - While in Edit mode, the control becomes `Done`.
+   - `Done` returns Edit -> View.
+   - Switching modes MUST NOT itself save, discard, revert, or alter list data.
+
+5. SAVE SEMANTICS
+   - Current explicit Save / Save As behavior remains unchanged in 026N.
+   - 026N does NOT implement checkbox autosave or cross-device sync.
+   - If a user manually saves while in View, current checked state may be included exactly as today.
+   - Saving does not force a mode change.
+
+6. REOPEN SEMANTICS
+   - Opening a saved owner list from Locker must enter View, even if the user had previously edited that list.
+   - Starting `New` must enter Edit.
+   - Do not persist View/Edit mode into the saved list payload.
+
+============================================================
+IMPORTANT DEFINITION — STRUCTURAL EDITS
+============================================================
+
+VIEW MODE must block ALL list-content structural mutations, including the active equivalents of:
+
+ITEM-LEVEL:
+- item name / description
+- type / subcategory
+- weight
+- quantity
+- expendable/consumable status if editable
+- move item to another category
+- reorder / drag item
+- delete item
+- duplicate item if such an action exists
+- add item
+- any overflow-menu action that changes item data or position
+
+CATEGORY-LEVEL:
+- add category
+- rename category
+- delete category
+- reorder category
+- move category
+- category metadata changes that alter list structure
+
+OTHER CONTENT MUTATIONS:
+- bulk content edits
+- import/scan insertion into the currently viewed list if that directly mutates it
+- any other active control that changes `store.items`, `store.order`, category membership,
+  item structural fields, or list content organization
+
+CHECKBOX EXCEPTION:
+- `checked` is NOT considered a structural edit.
+- Checkbox toggle must remain enabled in View.
+- Preserve existing exclusive-group checkbox behavior exactly.
+- A checkbox action may change `checked` values only; it must not unlock unrelated fields.
+
+NON-STRUCTURAL / PRESENTATION:
+Do NOT broadly disable presentation-only controls merely because View is active unless current architecture
+requires it. Preserve current behavior for themes/backgrounds, units/display, accordion state, Hide,
+Preview, Share, Locker navigation, etc., unless a control actually performs a structural content mutation.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Create an OWNER View/Edit interaction mode using the smallest safe shared-state/control change.
+
+This prompt is NOT a redesign.
+
+The goal is:
+- saved owner list opened from Locker -> View
+- new owner list -> Edit
+- View permits checklist checking and normal viewing
+- View blocks structural content changes
+- `Edit` enters Edit mode
+- `Done` returns to View
+- Review/Share behavior remains unchanged
+
+============================================================
+ACTIVE-PATH / ROOT-CAUSE TRACE BEFORE EDIT
+============================================================
+
+Before changing code, trace and record the CURRENT active paths for:
+
+A. OWNER LIST OPEN
+- exact handler used when a saved Locker entry is opened
+- where `activeLockerFile` or equivalent active-file identity is set
+- where payload is loaded into current state
+- exact point where View mode can safely be entered
+
+B. NEW LIST
+- exact New action handler
+- exact point where a fresh list/store is created/reset
+- exact point where Edit mode can safely be entered
+
+C. OWNER MODE STATE
+- determine the narrowest location for a session/UI state:
+  `view` | `edit`
+- this mode is presentation/permission state, NOT saved list data
+- do not add it to database payload
+- do not add schema fields
+
+D. STRUCTURAL MUTATIONS
+Trace ALL active structural mutation entry points used by owner Home:
+- GearRow controls
+- GearCategory controls
+- category controls
+- item add/delete/move/reorder
+- category add/delete/rename/reorder
+- import/scan controls if they directly mutate current list
+- any active overflow menus or keyboard/action handlers
+
+E. CHECKBOX
+Verify the current checkbox still calls the active checked-state path and can remain enabled in View.
+
+F. REVIEW / SHARE
+Verify how:
+- `isReview`
+- `reviewToken`
+- guest/review rendering
+- frozen shared rendering
+interact with the shared ChecklistContent path.
+
+Do NOT accidentally force reviewer sandboxes into owner View mode.
+
+Write the exact root cause/current behavior and active paths into the report BEFORE editing.
+
+============================================================
+IMPLEMENTATION PRINCIPLES
+============================================================
+
+1. CENTRAL MODE STATE
+Prefer one clear owner interaction mode in the active ChecklistContent path:
+- `view`
+- `edit`
+
+Do not create separate competing flags such as `isView`, `isEdit`, `readOnly`, `locked` unless current
+architecture proves a single mode is impractical.
+
+2. OWNER-ONLY DEFAULTING
+The mode behavior in this prompt is for OWNER lists.
+
+Required:
+- owner opens saved Locker file -> View
+- owner creates New -> Edit
+
+Review/Share paths must preserve their existing behavior and sandbox isolation.
+
+3. DEFENSE IN DEPTH
+Do not rely solely on visual hiding.
+
+For structural edit actions:
+- disable/hide edit-only controls appropriately AND
+- ensure the active mutation handlers cannot perform a structural owner mutation from View
+
+Checkbox toggling is the explicit exception.
+
+If the current architecture uses one generic mutation function for both `checked` and structural item patches,
+use the smallest safe guard that allows `checked`-only patches in View while rejecting structural patches.
+Do not rewrite usePackData broadly unless necessary.
+
+4. NO DATA-MODEL POLLUTION
+View/Edit mode is UI/session state.
+Do NOT:
+- add it to `GearItem`
+- add it to Store payload
+- add it to Locker JSONB
+- add DB columns
+- add API fields
+
+5. NO AUTO-SAVE
+026N must NOT add:
+- checkbox autosave
+- debounced server save
+- polling
+- WebSockets
+- SSE
+- offline queue
+- conflict resolution
+- Last Synced UI
+
+Those will be separate prompts.
+
+6. NO WEDGE REDESIGN
+The USER has an approved future elegant mobile wedge direction, but 026N is NOT the wedge implementation prompt.
+
+Do NOT redesign:
+- mobile category headers
+- desktop category headers
+- summary cards
+- item visual layout
+- category colors/icons
+
+Only make the minimum UI addition needed for the View/Edit control and safe-mode behavior.
+
+============================================================
+VIEW / EDIT CONTROL — USER-VISIBLE UX
+============================================================
+
+Use one compact, clearly labeled control in the current owner toolbar/file-context area.
+
+Required states:
+
+VIEW MODE:
+- control label: `Edit`
+- clicking -> Edit mode
+
+EDIT MODE:
+- same control location
+- control label: `Done`
+- clicking -> View mode
+
+Placement:
+- choose the least disruptive location in the existing current toolbar/file-name context
+- preserve 026L phone-toolbar geometry
+- no overlapping/clipped pills
+- no new horizontal page scroll
+- desktop must remain clean
+
+If current toolbar architecture makes this placement materially unsafe:
+STOP and report before inventing another layout.
+
+Do NOT use icons without text for this mode switch.
+The words `Edit` and `Done` must be visible.
+
+============================================================
+VIEW MODE VISUAL / INTERACTION RULES
+============================================================
+
+The user must be able to tell they are in safe View mode without a large redesign.
+
+Preferred:
+- editing-only affordances are hidden or visibly disabled
+- checkbox remains normal and interactive
+- list text remains legible
+- categories/items retain current accepted appearance
+- no giant banner/modal
+- no dimming the entire list
+- no pointer-events:none on the page
+- no overlay that blocks checklist use
+
+Do not use Showcase/Hide behavior as the implementation model because Showcase blocks all pointer interaction.
+
+============================================================
+MODE TRANSITION RULES
+============================================================
+
+TESTABLE REQUIRED BEHAVIOR:
+
+A. OPEN SAVED LIST
+1. Open Locker.
+2. Open an existing saved owner list.
+3. Expected:
+   - list opens in View
+   - `Edit` control visible
+   - checkbox works
+   - structural editing blocked
+
+B. ENTER EDIT
+1. From View click `Edit`.
+2. Expected:
+   - mode becomes Edit
+   - control changes to `Done`
+   - current item/category editing functions work exactly as before
+
+C. RETURN TO VIEW
+1. From Edit click `Done`.
+2. Expected:
+   - mode becomes View
+   - control returns to `Edit`
+   - structural controls become unavailable
+   - no list data is changed merely by switching mode
+
+D. NEW
+1. Click New.
+2. Expected:
+   - fresh/new list starts in Edit
+   - control says `Done`
+   - normal build/edit actions available
+
+E. SAVE
+- Save / Save As does not automatically switch mode
+- existing explicit-save behavior unchanged
+
+F. REOPEN
+- after saving/closing/reopening that saved list from Locker:
+  View is the default again
+
+G. CHECKBOX IN VIEW
+- check and uncheck multiple items
+- preserve exclusive checkbox group behavior
+- no structural field becomes editable because of checkbox interaction
+
+============================================================
+MANDATORY STRUCTURAL-BLOCK TEST MATRIX
+============================================================
+
+In VIEW mode attempt every active structural operation found in the pre-edit trace.
+
+At minimum test the current equivalents of:
+
+1. Edit item name/description
+2. Edit type/subcategory
+3. Edit weight
+4. Edit quantity
+5. Change expendable/consumable state if exposed
+6. Move item between categories
+7. Drag/reorder item
+8. Delete item
+9. Add item
+10. Add category
+11. Rename category
+12. Delete category
+13. Reorder category
+14. Any overflow-menu content mutation
+15. Any keyboard/shortcut structural mutation if currently supported
+16. Any import/scan action that can directly mutate the active list
+
+EXPECTED:
+- structural mutation cannot occur in View
+- no silent data change
+- no console error
+- no accidental mode escape
+
+If a listed operation does not exist in the current UI:
+record `NOT APPLICABLE`.
+
+============================================================
+MANDATORY CHECKBOX / ACCORDION REGRESSION TESTS
+============================================================
+
+In VIEW:
+- checkbox check works
+- checkbox uncheck works
+- existing exclusive-group checkbox semantics preserved
+- main category single-open preserved
+- zero-open preserved
+- Expand All preserved
+- first individual click after Expand All returns to single-open
+- Collapse All preserved
+- sidebar accordion behavior preserved
+- main/sidebar independence preserved
+
+In EDIT:
+- checkbox still works exactly as before
+- all existing structural edit controls still work
+
+============================================================
+OWNER / REVIEW / SHARE ISOLATION
+============================================================
+
+MANDATORY.
+
+Preserve:
+
+1. OWNER
+- new View/Edit mode as specified
+
+2. LIVE-LOCKER REVIEW
+- existing reviewer sandbox interaction behavior
+- existing token-scoped localStorage isolation
+- no owner server writes from reviewer actions
+- do NOT force owner View default onto Review
+
+3. FROZEN SHARED LIST
+- preserve existing current behavior and isolation
+
+4. READ-ONLY SHARED PACK LIST
+- preserve existing current read-only PreviewBody path
+
+Do NOT fork a new GearRow implementation for owner View if the behavior can be controlled through the existing shared component safely.
+
+If a shared prop is needed:
+- keep it narrow
+- default it so Review/Share current behavior is preserved
+
+============================================================
+026L MOBILE TOOLBAR PROTECTION
+============================================================
+
+026L changed current PHONE toolbar/pill arrangement.
+
+026N must NOT reopen or redesign 026L.
+
+At minimum verify phone-responsive widths:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+Expected:
+- Edit/Done reachable
+- no overlap
+- no clipped label
+- no toolbar-caused horizontal page scroll
+- Hide/Preview/Unit controls remain reachable
+- current grouping remains intact except the minimal authorized Edit/Done addition
+
+Also verify:
+- tablet/desktop no regression
+
+Real-device USER verification remains final authority for mobile interaction.
+
+============================================================
+OUT OF SCOPE — ABSOLUTE
+============================================================
+
+DO NOT change:
+
+- checkbox cross-device auto-sync
+- checkbox server autosave
+- polling
+- WebSockets
+- SSE
+- offline queues
+- conflict resolution
+- Last Synced / Last Saved UI
+- Print View behavior
+- PreviewBody filtering
+- Clear Checkmarks for Print
+- mobile wedge redesign
+- category colors/icons
+- New list-type/template chooser
+- optional Weight architecture
+- universal Locker architecture
+- Share/Review ownership rules
+- share-token architecture
+- permanent themes
+- Custom Theme
+- Background/Themes behavior
+- Keep It Simple behavior except preserving compatibility
+- category accordion semantics
+- sidebar accordion semantics
+- 026L toolbar redesign
+- importer/parser behavior
+- catalog
+- database schema
+- database data model
+- API contracts/routes
+- auth
+- production/publishing/deployment
+- package versions
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+
+No opportunistic refactor.
+No unrelated formatting sweep.
+Do not run App Testing auto-fix.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before editing create:
+
+`workflow-reports/PROMPT_026N_REPORT.md`
+
+Record BEFORE edits:
+- current root cause
+- exact saved-Locker-open handler
+- exact New handler
+- exact current mutation paths
+- expected changed files
+- preflight git status
+- pre-existing unrelated changes
+- risk areas
+- rollback plan
+
+Expected application files should be limited to the active mode/render path, likely:
+
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+
+`artifacts/pack-checklist/src/hooks/usePackData.ts`
+may be changed ONLY if a mutation-level guard is genuinely required for safe View behavior.
+
+If additional application files are required:
+- STOP before broadening
+- explain exactly why
+- do not proceed until scope is justified in the report
+
+After edits:
+- list ALL actually changed files
+- inspect git diff
+- revert accidental/unrelated changes only
+- do not disturb unrelated pre-existing work
+
+============================================================
+CHECKPOINT / ROLLBACK
+============================================================
+
+Before edits:
+- confirm normal Agent checkpoint/recoverable state if exposed
+
+No DB migration is authorized.
+
+Rollback must identify only the exact 026N application files changed.
+
+Do not use broad reset/clean commands that could destroy unrelated user work.
+
+============================================================
+MANDATORY RUNTIME TEST MATRIX
+============================================================
+
+Use the CURRENT rendered UI, not source reasoning alone.
+
+TEST 1 — SAVED OWNER LIST DEFAULT
+- open saved Locker list
+EXPECTED: View + Edit control
+
+TEST 2 — VIEW CHECKBOX
+- check/uncheck
+EXPECTED: works
+
+TEST 3 — VIEW STRUCTURAL BLOCK
+- run full structural-block matrix
+EXPECTED: no structural mutation possible
+
+TEST 4 — EDIT ENTRY
+- click Edit
+EXPECTED: Edit mode + Done control
+
+TEST 5 — EDIT FUNCTIONS
+- perform representative existing structural edits
+EXPECTED: existing behavior works
+
+TEST 6 — DONE
+- click Done
+EXPECTED: View; no save/discard/data mutation caused solely by mode switch
+
+TEST 7 — NEW
+- create New list
+EXPECTED: Edit mode
+
+TEST 8 — SAVE SEMANTICS
+- Save/Save As from current modes as appropriate
+EXPECTED: current save behavior; no forced mode switch
+
+TEST 9 — REOPEN
+- reopen saved list from Locker
+EXPECTED: View
+
+TEST 10 — 026K ACCORDION REGRESSION
+EXPECTED:
+- single-open
+- zero-open
+- Expand All
+- post-Expand-All single-open
+- Collapse All
+- group independence
+
+TEST 11 — SIDEBAR REGRESSION
+EXPECTED: unchanged
+
+TEST 12 — OWNER/REVIEW ISOLATION
+EXPECTED:
+- owner gets View/Edit mode
+- Review current sandbox behavior preserved
+- no owner mutation from reviewer
+
+TEST 13 — SHARE REGRESSION
+EXPECTED: current shared paths unchanged
+
+TEST 14 — MOBILE RESPONSIVE
+- 320 / 375 / 390 / 430 widths
+EXPECTED:
+- Edit/Done reachable
+- no overlap
+- no clipping
+- no horizontal page scroll caused by toolbar
+
+TEST 15 — DESKTOP/TABLET
+EXPECTED: no regression
+
+TEST 16 — CONSOLE
+EXPECTED: no new error/warning caused by 026N
+
+Do not mark interaction tests PASS from source inspection alone.
+
+============================================================
+EVIDENCE REQUIREMENT
+============================================================
+
+Because 026N changes interaction and permission behavior:
+
+Provide:
+- exact browser test steps/results
+- screenshots showing View and Edit states on:
+  - one mobile responsive viewport
+  - desktop
+- if Replit can produce interaction recording/video, prefer it for:
+  saved-open -> View -> Edit -> Done -> View
+- structural mutation test results must be documented explicitly
+- Review isolation test must be documented explicitly
+
+Source analysis alone is insufficient for internal interaction PASS.
+
+USER live verification remains final authority.
+
+============================================================
+USER LIVE VERIFICATION PLAN
+============================================================
+
+After Replit completes, USER VERIFICATION = PENDING.
+
+USER will verify:
+
+1. Open a saved list from Locker.
+   Expected: View; `Edit` visible.
+
+2. Check/uncheck an item.
+   Expected: works.
+
+3. Try to change item name/weight/qty or move/delete/reorder.
+   Expected: cannot structurally edit.
+
+4. Click `Edit`.
+   Expected: structural edits become available; button says `Done`.
+
+5. Click `Done`.
+   Expected: returns to safe View; no data disappears.
+
+6. Click New.
+   Expected: new list starts in Edit.
+
+7. Reopen a saved list.
+   Expected: View again.
+
+8. Confirm category accordion behavior is unchanged.
+
+9. Confirm phone toolbar has no overlap/clipping.
+
+============================================================
+COST / SCOPE STOP RULE
+============================================================
+
+STOP before broadening if:
+
+- active saved-Locker-open path cannot be identified
+- active New path cannot be identified
+- structural mutations cannot be comprehensively guarded without broad refactor
+- View/Edit would require database/API/schema changes
+- Review/Share isolation cannot be preserved
+- implementation requires a forked duplicate owner GearRow/GearCategory architecture
+- 026L toolbar would require redesign rather than a minimal control addition
+- more than the directly relevant files are required
+- estimated work materially exceeds 18 minutes / ~$1.75
+- any DB/auth/deployment/package change appears necessary
+
+Report the blocker instead of improvising.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Complete:
+
+`workflow-reports/PROMPT_026N_REPORT.md`
+
+Include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. elapsed time
+4. Agent actions
+5. lines read
+6. Agent cost/usage if shown
+7. preflight git status
+8. pre-existing unrelated changes
+9. exact files inspected
+10. saved-Locker-open active path
+11. New active path
+12. owner mode-state location
+13. root cause/current behavior
+14. structural mutation inventory
+15. checkbox active path confirmation
+16. Review/Share path confirmation
+17. expected changed files
+18. actual changed files
+19. exact implementation
+20. View default behavior
+21. New/Edit default behavior
+22. Edit/Done control implementation and placement
+23. structural mutation guards
+24. checkbox exception behavior
+25. exclusive-checkbox regression result
+26. accordion regression result
+27. sidebar regression result
+28. Save/Save As regression result
+29. Review isolation result
+30. Share regression result
+31. mobile responsive results
+32. desktop/tablet results
+33. console result
+34. screenshots/video evidence
+35. tests not run
+36. rollback guidance
+37. unresolved issues
+38. final self-audit
+39. USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+Return this exact status block:
+
+ROOT CAUSE IDENTIFIED = YES / NO
+SAVED OWNER LIST OPENS VIEW = PASS / FAIL / NOT RUN
+NEW OWNER LIST OPENS EDIT = PASS / FAIL / NOT RUN
+VIEW EDIT CONTROL PRESENT = PASS / FAIL / NOT RUN
+EDIT DONE CONTROL PRESENT = PASS / FAIL / NOT RUN
+VIEW CHECKBOX INTERACTIVE = PASS / FAIL / NOT RUN
+VIEW STRUCTURAL EDITS BLOCKED = PASS / FAIL / NOT RUN
+EDIT STRUCTURAL FUNCTIONS PRESERVED = PASS / FAIL / NOT RUN
+MODE SWITCH CHANGES DATA BY ITSELF = YES / NO / NOT RUN
+SAVE SEMANTICS CHANGED = YES / NO
+CHECKBOX EXCLUSIVE-GROUP BEHAVIOR CHANGED = YES / NO / NOT RUN
+MAIN CATEGORY ACCORDION CHANGED = YES / NO / NOT RUN
+RIGHT SIDEBAR ACCORDION CHANGED = YES / NO / NOT RUN
+REVIEW BEHAVIOR CHANGED = YES / NO / NOT RUN
+SHARE BEHAVIOR CHANGED = YES / NO / NOT RUN
+026L PHONE TOOLBAR REGRESSION = PASS / FAIL / NOT RUN
+DESKTOP/TABLET REGRESSION = PASS / FAIL / NOT RUN
+CHECKBOX AUTO-SYNC ADDED = YES / NO
+PRINT VIEW CHANGED = YES / NO
+WEDGE UI CHANGED = YES / NO
+DATABASE DATA MODEL CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+API CONTRACT/ROUTE CHANGED = YES / NO
+AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before claiming internal PASS:
+
+1. Did I verify the exact saved Locker open path?
+2. Did I verify the exact New path?
+3. Does saved owner open in View?
+4. Does New start in Edit?
+5. Is Edit/Done one clear mode switch?
+6. Does mode switching avoid save/discard/mutation side effects?
+7. Does View preserve checkbox interaction?
+8. Are ALL active structural mutation paths blocked in View?
+9. Are structural edits restored in Edit?
+10. Did I guard behavior, not just cosmetically hide controls?
+11. Did I preserve exclusive checkbox groups?
+12. Did I preserve 026K main-category accordion behavior?
+13. Did I preserve sidebar behavior?
+14. Did I preserve current Save/Save As semantics?
+15. Did I preserve Review sandbox behavior?
+16. Did I preserve Share behavior?
+17. Did I avoid checkbox autosave/sync work?
+18. Did I avoid Print View work?
+19. Did I avoid wedge/mobile redesign work?
+20. Did I avoid DB/API/auth/deployment/package changes?
+21. Did I preserve 026L phone toolbar without overlap/clipping?
+22. Did I review every changed file?
+23. Did I revert accidental/unrelated changes?
+24. Did I stay inside scope/cost?
+25. Is any material uncertainty unresolved?
+
+If any answer exposes a material unresolved issue:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+`workflow-reports/trailweigh-026N-report.zip`
+
+ZIP must contain only:
+
+`PROMPT_026N_REPORT.md`
+
+Verify:
+- report exists
+- ZIP exists
+- ZIP opens
+- no unrelated files are included
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not implement Print changes.
+Do not implement checkbox cross-device sync.
+Do not implement Last Synced.
+Do not implement wedge redesign.
+Do not proceed to 026O.
+Do not perform any other waiting TrailWeigh task.

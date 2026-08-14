@@ -23,6 +23,9 @@ interface GearCategoryProps {
   onRename?: (newName: string) => void;
   /** 026K: called with the new open/closed state when the header is clicked manually. */
   onToggle?: (isNowOpen: boolean) => void;
+  /** 026N: when true the category is in owner View mode — structural controls are hidden;
+   *  accordion, weight display, and checkbox interaction are unaffected. */
+  viewMode?: boolean;
   // Drag-to-reorder
   isDragOver?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
@@ -158,7 +161,7 @@ function EditableCategoryTitle({
 export function GearCategory({
   name, items, meta, forceOpen, forceOpenSeq,
   order, updateItem, removeItem, moveItem, addItem,
-  onUpdateMeta, onDelete, onRename, onToggle,
+  onUpdateMeta, onDelete, onRename, onToggle, viewMode = false,
   isDragOver, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
 }: GearCategoryProps) {
   // 022G: start collapsed — each category is closed on every fresh open/refresh
@@ -191,6 +194,9 @@ export function GearCategory({
   // 023F: font cascades to both the bar header AND the expanded panel body
   const fontWrapStyle = barFontStyle(barStyle);
 
+  // 026N: in view mode, category title is non-editable (pass undefined as onRename)
+  const effectiveOnRename = viewMode ? undefined : onRename;
+
   return (
     <div
       className={`mb-1.5 bg-card border rounded-lg overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md ${
@@ -213,7 +219,8 @@ export function GearCategory({
             ? <ChevronUp   className="w-5 h-5 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />
             : <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" style={barFgStyle(barStyle)} />}
           <div onClick={stopProp} className="min-w-0">
-            <EditableCategoryTitle name={name} onRename={onRename} />
+            {/* 026N: onRename is undefined in view mode → title is non-editable */}
+            <EditableCategoryTitle name={name} onRename={effectiveOnRename} />
           </div>
           {/* 023F: text color cascades from barFgStyle so packed count follows text color */}
           <span className="text-xs font-normal text-muted-foreground bg-black/5 px-2 py-0.5 rounded-full ml-2 flex-shrink-0" style={barFgStyle(barStyle)}>
@@ -224,61 +231,64 @@ export function GearCategory({
         {/* Right: controls + weight */}
         <div className="flex items-center gap-2 flex-shrink-0 ml-3" onClick={stopProp}>
           {/* ── Category controls ── */}
-          {confirmDelete ? (
-            <div className="flex items-center gap-1.5 animate-in fade-in duration-100">
-              <span className="text-xs text-destructive font-medium hidden sm:inline">Delete?</span>
-              <button
-                onClick={() => { onDelete(); setConfirmDelete(false); }}
-                className="text-[10px] font-semibold bg-destructive text-destructive-foreground px-2 py-1 rounded"
-              >
-                Yes
-              </button>
-              <button
-                onClick={() => setConfirmDelete(false)}
-                className="text-[10px] font-semibold bg-muted text-muted-foreground px-2 py-1 rounded"
-              >
-                No
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1">
-              {/* Drag handle — 023F: follows text color */}
-              <div
-                draggable
-                onDragStart={e => { e.stopPropagation(); onDragStart?.(e); }}
-                onDragEnd={e => { e.stopPropagation(); onDragEnd?.(e); }}
-                title="Drag to reorder"
-                className="p-1 rounded cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors touch-none"
-                style={barFgStyle(barStyle)}
-              >
-                <GripVertical className="w-3.5 h-3.5" />
+          {/* 026N: structural controls (drag, +Base, delete) are hidden in view mode */}
+          {!viewMode && (
+            confirmDelete ? (
+              <div className="flex items-center gap-1.5 animate-in fade-in duration-100">
+                <span className="text-xs text-destructive font-medium hidden sm:inline">Delete?</span>
+                <button
+                  onClick={() => { onDelete(); setConfirmDelete(false); }}
+                  className="text-[10px] font-semibold bg-destructive text-destructive-foreground px-2 py-1 rounded"
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="text-[10px] font-semibold bg-muted text-muted-foreground px-2 py-1 rounded"
+                >
+                  No
+                </button>
               </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                {/* Drag handle — 023F: follows text color */}
+                <div
+                  draggable
+                  onDragStart={e => { e.stopPropagation(); onDragStart?.(e); }}
+                  onDragEnd={e => { e.stopPropagation(); onDragEnd?.(e); }}
+                  title="Drag to reorder"
+                  className="p-1 rounded cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors touch-none"
+                  style={barFgStyle(barStyle)}
+                >
+                  <GripVertical className="w-3.5 h-3.5" />
+                </div>
 
-              {/* Base weight toggle — 023F: participates in bar color system.
-                  023O: uses barBasePillStyle so +Base follows Transparency. */}
-              <button
-                title={meta.countsToBase ? 'Counts toward base weight — click to exclude' : 'Not counted in base weight — click to include'}
-                onClick={() => onUpdateMeta({ countsToBase: !meta.countsToBase })}
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors hidden sm:inline-flex items-center gap-1 ${
-                  meta.countsToBase
-                    ? 'border-primary/40 bg-primary/10 text-primary'
-                    : 'border-border bg-muted/40 text-muted-foreground'
-                }`}
-                style={barBasePillStyle(barStyle, meta.countsToBase)}
-              >
-                {meta.countsToBase ? '+ Base' : '— Base'}
-              </button>
+                {/* Base weight toggle — 023F: participates in bar color system.
+                    023O: uses barBasePillStyle so +Base follows Transparency. */}
+                <button
+                  title={meta.countsToBase ? 'Counts toward base weight — click to exclude' : 'Not counted in base weight — click to include'}
+                  onClick={() => onUpdateMeta({ countsToBase: !meta.countsToBase })}
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border transition-colors hidden sm:inline-flex items-center gap-1 ${
+                    meta.countsToBase
+                      ? 'border-primary/40 bg-primary/10 text-primary'
+                      : 'border-border bg-muted/40 text-muted-foreground'
+                  }`}
+                  style={barBasePillStyle(barStyle, meta.countsToBase)}
+                >
+                  {meta.countsToBase ? '+ Base' : '— Base'}
+                </button>
 
-              {/* Delete — 023F: follows text color */}
-              <button
-                title="Delete category"
-                onClick={() => setConfirmDelete(true)}
-                className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                style={barFgStyle(barStyle)}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
+                {/* Delete — 023F: follows text color */}
+                <button
+                  title="Delete category"
+                  onClick={() => setConfirmDelete(true)}
+                  className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                  style={barFgStyle(barStyle)}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )
           )}
 
           {/* Weight display — 023F: weight/unit values follow text color */}
@@ -347,17 +357,21 @@ export function GearCategory({
                 updateItem={updateItem}
                 removeItem={removeItem}
                 moveItem={moveItem}
+                viewMode={viewMode}
               />
             ))}
           </div>
 
-          <button
-            onClick={() => addItem(name)}
-            className="mt-3 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-foreground hover:bg-primary px-3 py-1.5 rounded-md transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add Item
-          </button>
+          {/* 026N: Add Item button hidden in view mode */}
+          {!viewMode && (
+            <button
+              onClick={() => addItem(name)}
+              className="mt-3 flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary-foreground hover:bg-primary px-3 py-1.5 rounded-md transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add Item
+            </button>
+          )}
         </div>
       )}
     </div>
