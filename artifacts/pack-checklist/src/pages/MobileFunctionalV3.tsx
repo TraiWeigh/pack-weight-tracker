@@ -1,50 +1,64 @@
 /**
- * MobileFunctionalV3.tsx — 027H
- * Isolated functional preview at /mobile-functional-v3.
- * Real TrailWeigh category/item interactions on a SANDBOXED copy of owner data.
- * Visual master: MobileDesignPrototypeV3 (approved in 027F).
+ * MobileFunctionalV3.tsx — 027O
+ * Comprehensive V3 mobile control wiring at /mobile-functional-v3.
  *
  * SANDBOX ISOLATION:
  *   Reads production localStorage ONCE on mount → clones into local React state.
- *   ALL mutations (check, weight, qty, move) apply to local state only.
- *   No writes to owner production localStorage at any time.
+ *   ALL mutations apply to sandbox state only — no writes to owner's active
+ *   production store key (`pack-checklist-v5-*`).
+ *   Exception: Save creates a NEW Locker entry (additive only — does NOT
+ *   overwrite the owner's active production data).
  *
- * CATEGORY TOUCH REORDER: BLOCKED
- *   Production uses HTML5 DnD only — not touch-safe and no DnD library is installed.
- *   Six-dot category handle is visually present (centered in bar) but inert.
- *   A separate implementation prompt is required for touch-safe category reorder.
+ * 027O WIRING SUMMARY:
+ *   Real + wired  : hamburger menu, unit toggle, undo/redo, reset, save (new
+ *                   locker entry), print (PDF via jsPDF), share (PDF download),
+ *                   checklist overlay (PreviewBody, separate checklistUse),
+ *                   category accordion (icon tap), category reorder (Pointer
+ *                   Events on handle), item checkbox (inclusion), weight input,
+ *                   quantity select, total (derived), move (category swap),
+ *                   add item, add category, scanner/import (ImportGearPanel),
+ *                   locker browse + load-into-sandbox, summary overlay
+ *                   (WeightSummary + WeightDistribution), expand/collapse all.
+ *   Pending/future: guided Create New List flow, global search, Catalog tab,
+ *                   item photo row backend, Dark V3 design.
  *
- * DESIGN FREEZE:
- *   Header height, typography, wedge geometry, summary, bottom-nav — all match
- *   the approved V3 master. No geometry changes from the frozen visual spec.
- *
- * V3 visual constants (unchanged from 027F):
- *   app-bar:  52px     summary-card: radius 16px   category-card: radius 14px
- *   wedge-w:  72px     wedge-point:  17px           card-h:        68px
- *   item-row: 44px     detail-row:   42px           bottom-nav:    58px
+ * PRODUCTION SAFETY: /checklist, desktop layout, API, DB, auth — all untouched.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@clerk/react';
 import {
-  Menu, Search, Plus, ChevronDown,
-  Check, GripVertical, MoreHorizontal,
+  Menu, Search, Plus, Check, GripVertical, MoreHorizontal,
   Backpack, Folder, Grid3X3, BarChart2,
-  Hash, PackageOpen, ArrowRightLeft, Luggage,
+  Hash, PackageOpen, ArrowRightLeft, Luggage, Camera,
+  Save, Undo2, Redo2, RotateCcw, Share2, Printer,
+  Tent, HelpCircle, X, ChevronLeft, Layers,
+  Scale, Coins, LayoutList, AlertCircle,
 } from 'lucide-react';
-import type { GearItem, CategoryMeta } from '../hooks/usePackData';
-import { getCategoryTheme } from '../lib/mobileCategoryTheme';
 import {
-  calcTotalOz, formatWeight, smallUnit, gramsToOz,
-} from '../lib/weightUtils';
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
+} from '../components/ui/sheet';
+import { BarStyleProvider } from '../context/BarStyleContext';
+import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
+import { PreviewBody } from '../components/PreviewModal';
+import { ImportGearPanel } from '../components/ImportGearPanel';
+import { generatePackPDF, sharePackList } from '../lib/exportPDF';
+import { resolveDestination } from '../lib/categoryAliases';
+import type { GearItem, CategoryMeta } from '../hooks/usePackData';
+import { LOCKER_KEY } from '../hooks/usePackData';
+import type { LockerEntry } from '../components/LockerPanel';
+import { getCategoryTheme } from '../lib/mobileCategoryTheme';
+import { calcTotalOz, formatWeight, smallUnit, gramsToOz } from '../lib/weightUtils';
 import { useUnit, UnitProvider } from '../context/UnitContext';
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 type PackState = { [category: string]: GearItem[] };
 type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta> };
+type ActiveNav = 'list' | 'locker' | 'catalog' | 'summary';
 
-// ─── DEMO SEED (used when owner localStorage is empty / unauthenticated) ────────
-// Realistic GearItem data matching production data shape for functional testing.
+const HISTORY_LIMIT = 30;
+
+// ─── DEMO SEED ──────────────────────────────────────────────────────────────────
 const DEMO_SEED: SandboxStore = {
   order: ['Backpack', 'Clothing', 'Toiletries', 'Electronics', 'Shelter', 'Kitchen'],
   meta: {
@@ -57,42 +71,42 @@ const DEMO_SEED: SandboxStore = {
   },
   items: {
     Backpack: [
-      { id: 'b1', sub: 'Backpack', desc: 'Osprey Atmos 65',      weightOz: 68.0,  qty: 1, checked: true,  expendable: false },
-      { id: 'b2', sub: 'Backpack', desc: 'Pack Rain Cover',       weightOz: 4.5,   qty: 1, checked: true,  expendable: false },
-      { id: 'b3', sub: 'Backpack', desc: 'Dry Bags',              weightOz: 3.2,   qty: 2, checked: false, expendable: false },
+      { id: 'b1', sub: 'Backpack', desc: 'Osprey Atmos 65',       weightOz: 68.0,  qty: 1, checked: true,  expendable: false },
+      { id: 'b2', sub: 'Backpack', desc: 'Pack Rain Cover',        weightOz: 4.5,   qty: 1, checked: true,  expendable: false },
+      { id: 'b3', sub: 'Backpack', desc: 'Dry Bags',               weightOz: 3.2,   qty: 2, checked: false, expendable: false },
     ],
     Clothing: [
-      { id: 'c1', sub: 'Clothing', desc: 'Merino Wool Base Layer', weightOz: 6.8,  qty: 1, checked: true,  expendable: false },
-      { id: 'c2', sub: 'Clothing', desc: 'Hiking Pants',           weightOz: 12.0, qty: 2, checked: true,  expendable: false },
-      { id: 'c3', sub: 'Clothing', desc: 'Rain Jacket',            weightOz: 11.5, qty: 1, checked: true,  expendable: false },
-      { id: 'c4', sub: 'Clothing', desc: 'Fleece Mid-Layer',       weightOz: 14.0, qty: 1, checked: false, expendable: false },
-      { id: 'c5', sub: 'Clothing', desc: 'Hiking Socks',           weightOz: 2.8,  qty: 3, checked: true,  expendable: false },
+      { id: 'c1', sub: 'Clothing', desc: 'Merino Wool Base Layer', weightOz: 6.8,   qty: 1, checked: true,  expendable: false },
+      { id: 'c2', sub: 'Clothing', desc: 'Hiking Pants',           weightOz: 12.0,  qty: 2, checked: true,  expendable: false },
+      { id: 'c3', sub: 'Clothing', desc: 'Rain Jacket',            weightOz: 11.5,  qty: 1, checked: true,  expendable: false },
+      { id: 'c4', sub: 'Clothing', desc: 'Fleece Mid-Layer',       weightOz: 14.0,  qty: 1, checked: false, expendable: false },
+      { id: 'c5', sub: 'Clothing', desc: 'Hiking Socks',           weightOz: 2.8,   qty: 3, checked: true,  expendable: false },
     ],
     Toiletries: [
-      { id: 't1', sub: 'Toiletries', desc: 'Toothbrush',         weightOz: 0.6,  qty: 1, checked: true,  expendable: true },
-      { id: 't2', sub: 'Toiletries', desc: 'Travel Toothpaste',  weightOz: 1.2,  qty: 1, checked: false, expendable: true },
-      { id: 't3', sub: 'Toiletries', desc: 'Sunscreen SPF 50',   weightOz: 3.4,  qty: 1, checked: false, expendable: true },
-      { id: 't4', sub: 'Toiletries', desc: 'Biodegradable Soap', weightOz: 2.0,  qty: 1, checked: true,  expendable: true },
+      { id: 't1', sub: 'Toiletries', desc: 'Toothbrush',           weightOz: 0.6,   qty: 1, checked: true,  expendable: true },
+      { id: 't2', sub: 'Toiletries', desc: 'Travel Toothpaste',    weightOz: 1.2,   qty: 1, checked: false, expendable: true },
+      { id: 't3', sub: 'Toiletries', desc: 'Sunscreen SPF 50',     weightOz: 3.4,   qty: 1, checked: false, expendable: true },
+      { id: 't4', sub: 'Toiletries', desc: 'Biodegradable Soap',   weightOz: 2.0,   qty: 1, checked: true,  expendable: true },
     ],
     Electronics: [
-      { id: 'e1', sub: 'Electronics', desc: 'Headlamp',          weightOz: 3.2,  qty: 1, checked: true,  expendable: false },
-      { id: 'e2', sub: 'Electronics', desc: 'Power Bank',        weightOz: 6.4,  qty: 1, checked: true,  expendable: false },
-      { id: 'e3', sub: 'Electronics', desc: 'GPS Watch',         weightOz: 4.8,  qty: 1, checked: true,  expendable: false },
+      { id: 'e1', sub: 'Electronics', desc: 'Headlamp',            weightOz: 3.2,   qty: 1, checked: true,  expendable: false },
+      { id: 'e2', sub: 'Electronics', desc: 'Power Bank',          weightOz: 6.4,   qty: 1, checked: true,  expendable: false },
+      { id: 'e3', sub: 'Electronics', desc: 'GPS Watch',           weightOz: 4.8,   qty: 1, checked: true,  expendable: false },
     ],
     Shelter: [
-      { id: 's1', sub: 'Shelter', desc: 'Tent (Nemo Hornet 2P)', weightOz: 42.0, qty: 1, checked: true,  expendable: false },
-      { id: 's2', sub: 'Shelter', desc: 'Sleeping Bag',          weightOz: 32.0, qty: 1, checked: true,  expendable: false },
-      { id: 's3', sub: 'Shelter', desc: 'Sleeping Pad',          weightOz: 16.0, qty: 1, checked: true,  expendable: false },
+      { id: 's1', sub: 'Shelter', desc: 'Tent (Nemo Hornet 2P)',   weightOz: 42.0,  qty: 1, checked: true,  expendable: false },
+      { id: 's2', sub: 'Shelter', desc: 'Sleeping Bag',            weightOz: 32.0,  qty: 1, checked: true,  expendable: false },
+      { id: 's3', sub: 'Shelter', desc: 'Sleeping Pad',            weightOz: 16.0,  qty: 1, checked: true,  expendable: false },
     ],
     Kitchen: [
-      { id: 'k1', sub: 'Kitchen', desc: 'Jetboil Stove',         weightOz: 13.1, qty: 1, checked: true,  expendable: false },
-      { id: 'k2', sub: 'Kitchen', desc: 'Titanium Spork',        weightOz: 0.6,  qty: 1, checked: true,  expendable: false },
-      { id: 'k3', sub: 'Kitchen', desc: 'Freeze Dried Meals',    weightOz: 4.5,  qty: 5, checked: false, expendable: true },
+      { id: 'k1', sub: 'Kitchen', desc: 'Jetboil Stove',           weightOz: 13.1,  qty: 1, checked: true,  expendable: false },
+      { id: 'k2', sub: 'Kitchen', desc: 'Titanium Spork',          weightOz: 0.6,   qty: 1, checked: true,  expendable: false },
+      { id: 'k3', sub: 'Kitchen', desc: 'Freeze Dried Meals',      weightOz: 4.5,   qty: 5, checked: false, expendable: true },
     ],
   },
 };
 
-// ─── TOOTHBRUSH ICON (inline SVG — lucide-react has no Toothbrush) ─────────────
+// ─── TOOTHBRUSH ICON ────────────────────────────────────────────────────────────
 function ToothbrushIcon({ size = 26, color = 'rgba(255,255,255,0.93)', strokeWidth = 1.5 }: {
   size?: number; color?: string; strokeWidth?: number;
 }) {
@@ -113,13 +127,13 @@ function isToiletriesCategory(name: string): boolean {
   return ['toilet', 'hygiene', 'grooming', 'personal care', 'wash', 'beauty', 'soap'].some(kw => l.includes(kw));
 }
 
-// ─── CONSTANTS ─────────────────────────────────────────────────────────────────
+// ─── CONSTANTS ──────────────────────────────────────────────────────────────────
 const QTY_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
 const WEDGE_W     = 72;
 const WEDGE_POINT = 17;
 const CARD_H      = 68;
 
-// ─── TOKENS (matches approved V3 master) ──────────────────────────────────────
+// ─── TOKENS ─────────────────────────────────────────────────────────────────────
 const SERIF        = "Georgia, 'Palatino Linotype', Palatino, 'Book Antiqua', ui-serif, serif";
 const SANS         = "'Inter', system-ui, -apple-system, sans-serif";
 const PAGE_BG      = '#F2EDE4';
@@ -141,8 +155,10 @@ const CB_CHECKED   = '#4E7D5C';
 const CB_UNCHECKED = 'rgba(0,0,0,0.18)';
 const DETAIL_BG    = '#F5F0E8';
 const DETAIL_BDR   = 'rgba(0,0,0,0.06)';
+const OVERLAY_BG   = '#F2EDE4';
+const TOAST_BG     = '#2A5740';
 
-// ─── LOGO MARK (unchanged from V3 master) ─────────────────────────────────────
+// ─── LOGO MARK ──────────────────────────────────────────────────────────────────
 function LogoMark({ size = 24 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
@@ -154,7 +170,7 @@ function LogoMark({ size = 24 }: { size?: number }) {
   );
 }
 
-// ─── LANDSCAPE DECORATION (unchanged from V3 master — 027F art) ───────────────
+// ─── LANDSCAPE DECORATION ────────────────────────────────────────────────────────
 function LandscapeDecoration() {
   return (
     <svg
@@ -198,16 +214,352 @@ function LandscapeDecoration() {
   );
 }
 
-// ─── BOTTOM NAV ────────────────────────────────────────────────────────────────
-// Labels per 027H approved product direction: List | Locker | Catalog | Summary | More
-function BottomNav() {
-  const tabs = [
-    { Icon: Backpack,       label: 'List',    active: true  },
-    { Icon: Folder,         label: 'Locker',  active: false },
-    { Icon: Grid3X3,        label: 'Catalog', active: false },
-    { Icon: BarChart2,      label: 'Summary', active: false },
-    { Icon: MoreHorizontal, label: 'More',    active: false },
-  ];
+// ─── LOCKER HELPERS (localStorage LOCKER_KEY — reads for browse, writes for save) ──
+function readLockerEntries(): LockerEntry[] {
+  try {
+    const raw = localStorage.getItem(LOCKER_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function appendLockerEntry(entry: LockerEntry): void {
+  const entries = readLockerEntries();
+  localStorage.setItem(LOCKER_KEY, JSON.stringify([...entries, entry]));
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────────
+function Toast({ message }: { message: string }) {
+  return (
+    <div style={{
+      position: 'fixed', bottom: 76, left: '50%', transform: 'translateX(-50%)',
+      background: TOAST_BG, color: '#fff', borderRadius: 10, padding: '10px 18px',
+      fontSize: 13.5, fontFamily: SANS, fontWeight: 500, zIndex: 9999,
+      whiteSpace: 'nowrap', boxShadow: '0 4px 16px rgba(0,0,0,0.32)',
+      pointerEvents: 'none',
+    }}>
+      {message}
+    </div>
+  );
+}
+
+// ─── CHECKLIST OVERLAY ───────────────────────────────────────────────────────────
+interface ChecklistOverlayProps {
+  sandbox: SandboxStore;
+  system: string;
+  checklistUse: Record<string, boolean>;
+  onToggle: (id: string) => void;
+  onClear: () => void;
+  onPrint: () => void;
+  onShare: () => void;
+  onClose: () => void;
+}
+
+function ChecklistOverlay({
+  sandbox, system, checklistUse, onToggle, onClear, onPrint, onShare, onClose,
+}: ChecklistOverlayProps) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
+    }}>
+      {/* Header */}
+      <div style={{
+        height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
+        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0,
+      }}>
+        <button
+          onClick={onClose}
+          aria-label="Close checklist"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
+        </button>
+        <span style={{ flex: 1, fontSize: 17, fontWeight: 600, color: PRIMARY, fontFamily: SERIF }}>
+          Checklist
+        </span>
+        <button
+          onClick={onClear}
+          aria-label="Clear all checklist progress"
+          title="Clear check progress (does not change your gear selection)"
+          style={{ background: 'none', border: 'none', padding: '4px 8px', cursor: 'pointer',
+            fontSize: 12.5, color: SECONDARY, borderRadius: 6, fontFamily: SANS }}
+        >
+          Clear
+        </button>
+        <button
+          onClick={onPrint}
+          aria-label="Print checklist"
+          title="Print pack list"
+          style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <Printer size={18} color={SECONDARY} strokeWidth={1.8}/>
+        </button>
+        <button
+          onClick={onShare}
+          aria-label="Download PDF"
+          title="Download PDF"
+          style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <Share2 size={18} color={SECONDARY} strokeWidth={1.8}/>
+        </button>
+      </div>
+
+      {/* Note banner */}
+      <div style={{
+        background: 'rgba(42,87,64,0.08)', borderBottom: `1px solid rgba(42,87,64,0.12)`,
+        padding: '7px 16px', fontSize: 12, color: SECONDARY, flexShrink: 0,
+      }}>
+        Showing your selected items. Tick boxes track trail progress separately.
+      </div>
+
+      {/* PreviewBody */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+        <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
+          <PreviewBody
+            data={sandbox.items}
+            system={system as 'imperial' | 'metric'}
+            categoryOrder={sandbox.order}
+            categoryMeta={sandbox.meta}
+            filterToChecked={true}
+            checklistUse={checklistUse}
+            onToggle={onToggle}
+          />
+        </BarStyleProvider>
+      </div>
+    </div>
+  );
+}
+
+// ─── SUMMARY OVERLAY ─────────────────────────────────────────────────────────────
+interface SummaryOverlayProps {
+  sandbox: SandboxStore;
+  onClose: () => void;
+}
+
+function SummaryOverlay({ sandbox, onClose }: SummaryOverlayProps) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
+    }}>
+      {/* Header */}
+      <div style={{
+        height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
+        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0,
+      }}>
+        <button
+          onClick={onClose}
+          aria-label="Back to list"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
+        </button>
+        <span style={{ flex: 1, fontSize: 17, fontWeight: 600, color: PRIMARY, fontFamily: SERIF }}>
+          Summary
+        </span>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
+          <WeightSummary
+            data={sandbox.items}
+            categoryOrder={sandbox.order}
+            categoryMeta={sandbox.meta}
+            forceOpen={true}
+            forceOpenSeq={1}
+          />
+          <WeightDistribution
+            data={sandbox.items}
+            categoryOrder={sandbox.order}
+            categoryMeta={sandbox.meta}
+            paletteKey="trail"
+            onPaletteChange={() => {}}
+            forceOpen={true}
+            forceOpenSeq={1}
+          />
+        </BarStyleProvider>
+      </div>
+    </div>
+  );
+}
+
+// ─── LOCKER OVERLAY ──────────────────────────────────────────────────────────────
+interface LockerOverlayProps {
+  onLoad: (store: SandboxStore) => void;
+  onSave: () => void;
+  onClose: () => void;
+}
+
+function LockerOverlay({ onLoad, onSave, onClose }: LockerOverlayProps) {
+  const [entries, setEntries] = useState<LockerEntry[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    setEntries(readLockerEntries());
+  }, [refreshKey]);
+
+  const handleSaveAndRefresh = () => {
+    onSave();
+    setTimeout(() => setRefreshKey(k => k + 1), 500);
+  };
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
+    }}>
+      {/* Header */}
+      <div style={{
+        height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
+        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0,
+      }}>
+        <button
+          onClick={onClose}
+          aria-label="Back to list"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
+        </button>
+        <span style={{ flex: 1, fontSize: 17, fontWeight: 600, color: PRIMARY, fontFamily: SERIF }}>
+          Locker
+        </span>
+        <button
+          onClick={handleSaveAndRefresh}
+          aria-label="Save current list to Locker"
+          title="Save current sandbox list as a new Locker entry"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: NAV_ACTIVE, color: '#fff', border: 'none',
+            borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
+            fontSize: 13, fontWeight: 600, fontFamily: SANS,
+          }}
+        >
+          <Save size={14} strokeWidth={2}/> Save
+        </button>
+      </div>
+
+      {/* Note */}
+      <div style={{
+        background: 'rgba(42,87,64,0.08)', borderBottom: `1px solid rgba(42,87,64,0.12)`,
+        padding: '7px 16px', fontSize: 12, color: SECONDARY, flexShrink: 0,
+      }}>
+        Loading a list replaces the sandbox preview. Save creates a new Locker entry.
+      </div>
+
+      {/* Entries */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {entries.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '40px 24px', color: MUTED, fontSize: 14 }}>
+            <Folder size={32} color={MUTED} strokeWidth={1.4} style={{ margin: '0 auto 8px', display: 'block' }}/>
+            No saved lists yet.
+          </div>
+        )}
+        {[...entries].reverse().map(entry => {
+          const itemCount = Object.values(entry.store?.items ?? {}).flat().length;
+          const catCount  = entry.store?.order?.length ?? 0;
+          const date = new Date(entry.savedAt).toLocaleDateString(undefined, {
+            month: 'short', day: 'numeric', year: 'numeric',
+          });
+          return (
+            <div key={entry.id} style={{
+              background: CARD_BG, borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
+              boxShadow: CARD_SHADOW, padding: '14px 16px',
+              display: 'flex', alignItems: 'center', gap: 12,
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, marginBottom: 2,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {entry.name}
+                </div>
+                <div style={{ fontSize: 12, color: MUTED }}>
+                  {date} · {catCount} categories · {itemCount} items
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if (entry.store) {
+                    onLoad({
+                      items: entry.store.items ?? {},
+                      order: entry.store.order ?? [],
+                      meta:  entry.store.meta ?? {},
+                    });
+                    onClose();
+                  }
+                }}
+                aria-label={`Load ${entry.name} into preview`}
+                style={{
+                  background: 'rgba(42,87,64,0.09)', color: NAV_ACTIVE,
+                  border: 'none', borderRadius: 8, padding: '6px 14px',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, flexShrink: 0,
+                }}
+              >
+                Load
+              </button>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── SCANNER OVERLAY ─────────────────────────────────────────────────────────────
+interface ScannerOverlayProps {
+  categoryOrder: string[];
+  onAddItem: (category: string, prefill: Partial<GearItem>) => void;
+  onClose: () => void;
+}
+
+function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayProps) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
+    }}>
+      {/* Header */}
+      <div style={{
+        height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
+        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0,
+      }}>
+        <button
+          onClick={onClose}
+          aria-label="Close scanner"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
+        </button>
+        <span style={{ flex: 1, fontSize: 17, fontWeight: 600, color: PRIMARY, fontFamily: SERIF }}>
+          Scan Gear List
+        </span>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
+        <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
+          <ImportGearPanel
+            categoryOrder={categoryOrder}
+            onAddItem={onAddItem}
+            defaultOpen={true}
+            forceOpen={true}
+            forceOpenSeq={1}
+          />
+        </BarStyleProvider>
+      </div>
+    </div>
+  );
+}
+
+// ─── BOTTOM NAV (interactive) ────────────────────────────────────────────────────
+interface BottomNavBarProps {
+  active: ActiveNav;
+  onSelect: (tab: ActiveNav) => void;
+  onMore: () => void;
+}
+
+function BottomNavBar({ active, onSelect, onMore }: BottomNavBarProps) {
   return (
     <div style={{
       position: 'sticky', bottom: 0, left: 0, right: 0,
@@ -215,26 +567,359 @@ function BottomNav() {
       display: 'flex', justifyContent: 'space-around', alignItems: 'center',
       paddingTop: 8, paddingBottom: 10, zIndex: 20, height: 58, boxSizing: 'border-box',
     }}>
-      {tabs.map(({ Icon, label, active }) => (
-        <div
-          key={label}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 52, cursor: active ? 'default' : 'not-allowed' }}
-          aria-disabled={!active}
-          aria-current={active ? 'page' : undefined}
-        >
-          <Icon size={22} color={active ? NAV_ACTIVE : NAV_INACTIVE} strokeWidth={active ? 2 : 1.6}/>
-          <span style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? NAV_ACTIVE : NAV_INACTIVE, letterSpacing: active ? '0.1px' : 0 }}>
-            {label}
-          </span>
-        </div>
-      ))}
+      {/* List */}
+      <NavTab
+        Icon={Backpack} label="List" active={active === 'list'}
+        onClick={() => onSelect('list')}
+        aria-label="List — current gear list"
+      />
+      {/* Locker */}
+      <NavTab
+        Icon={Folder} label="Locker" active={active === 'locker'}
+        onClick={() => onSelect('locker')}
+        aria-label="Locker — browse and load saved lists"
+      />
+      {/* Catalog — FUTURE */}
+      <NavTabDisabled
+        Icon={Grid3X3} label="Catalog"
+        aria-label="Catalog — coming soon"
+        title="Catalog — future feature"
+      />
+      {/* Summary */}
+      <NavTab
+        Icon={BarChart2} label="Summary" active={active === 'summary'}
+        onClick={() => onSelect('summary')}
+        aria-label="Summary — pack weight and distribution"
+      />
+      {/* More */}
+      <NavTab
+        Icon={MoreHorizontal} label="More" active={false}
+        onClick={onMore}
+        aria-label="More — settings and tools"
+      />
     </div>
   );
 }
 
-// ─── MAIN PAGE ─────────────────────────────────────────────────────────────────
-// Wrapped with UnitProvider so this isolated route is fully self-contained
-// without requiring App.tsx to know about the UnitContext dependency.
+function NavTab({ Icon, label, active, onClick, 'aria-label': ariaLabel }: {
+  Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+  label: string; active: boolean; onClick: () => void; 'aria-label'?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={ariaLabel ?? label}
+      aria-current={active ? 'page' : undefined}
+      style={{
+        background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 52,
+      }}
+    >
+      <Icon size={22} color={active ? NAV_ACTIVE : NAV_INACTIVE} strokeWidth={active ? 2 : 1.6}/>
+      <span style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? NAV_ACTIVE : NAV_INACTIVE, letterSpacing: active ? '0.1px' : 0 }}>
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function NavTabDisabled({ Icon, label, 'aria-label': ariaLabel, title }: {
+  Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+  label: string; 'aria-label'?: string; title?: string;
+}) {
+  return (
+    <div
+      aria-disabled="true"
+      aria-label={ariaLabel ?? label}
+      title={title ?? label}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+        minWidth: 52, cursor: 'not-allowed', opacity: 0.45,
+      }}
+    >
+      <Icon size={22} color={NAV_INACTIVE} strokeWidth={1.6}/>
+      <span style={{ fontSize: 10, fontWeight: 400, color: NAV_INACTIVE }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// ─── HAMBURGER MENU SHEET (slides from left) ─────────────────────────────────────
+interface HamburgerMenuProps {
+  open: boolean;
+  onClose: () => void;
+  system: string;
+  setSystem: (s: 'imperial' | 'metric') => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  onReset: () => void;
+  onSave: () => void;
+  onPrint: () => void;
+  onShare: () => void;
+  onChecklist: () => void;
+  onExpandAll: () => void;
+  onCollapseAll: () => void;
+  onHelp: () => void;
+  isAuthenticated: boolean;
+}
+
+function HamburgerMenu({
+  open, onClose, system, setSystem, canUndo, canRedo,
+  onUndo, onRedo, onReset, onSave, onPrint, onShare, onChecklist,
+  onExpandAll, onCollapseAll, onHelp, isAuthenticated,
+}: HamburgerMenuProps) {
+  const menuItem = (
+    icon: React.ReactNode,
+    label: string,
+    onClick: () => void,
+    disabled = false,
+    sublabel?: string,
+  ) => (
+    <button
+      key={label}
+      onClick={() => { if (!disabled) { onClick(); onClose(); } }}
+      disabled={disabled}
+      aria-label={sublabel ? `${label} — ${sublabel}` : label}
+      title={sublabel}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
+        background: 'none', border: 'none', padding: '13px 4px', cursor: disabled ? 'not-allowed' : 'pointer',
+        textAlign: 'left', borderBottom: '1px solid rgba(0,0,0,0.06)',
+        opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
+        {sublabel && <div style={{ fontSize: 11.5, color: MUTED, marginTop: 1 }}>{sublabel}</div>}
+      </div>
+    </button>
+  );
+
+  return (
+    <Sheet open={open} onOpenChange={v => !v && onClose()}>
+      <SheetContent side="left" style={{ width: 280, maxWidth: '85vw', padding: '24px 20px', overflowY: 'auto' }}>
+        <SheetHeader>
+          <SheetTitle style={{ fontFamily: SERIF, fontSize: 18, color: PRIMARY, marginBottom: 4 }}>
+            TrailWeigh
+          </SheetTitle>
+          <div style={{ fontSize: 12, color: MUTED, marginBottom: 16 }}>V3 Preview — sandboxed</div>
+        </SheetHeader>
+
+        {/* File section */}
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>File</div>
+          {menuItem(<Save size={17} strokeWidth={1.8}/>, 'Save', onSave, false, 'Save current list as new Locker entry')}
+          {menuItem(<Undo2 size={17} strokeWidth={1.8}/>, 'Undo', onUndo, !canUndo)}
+          {menuItem(<Redo2 size={17} strokeWidth={1.8}/>, 'Redo', onRedo, !canRedo)}
+          {menuItem(<RotateCcw size={17} strokeWidth={1.8}/>, 'Reset', onReset, false, 'Re-load from your saved data')}
+        </div>
+
+        {/* Actions section */}
+        <div style={{ marginBottom: 4, marginTop: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>Actions</div>
+          {menuItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', onChecklist, false, 'Trail checklist for selected items')}
+          {menuItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share / Download PDF', onShare)}
+          {menuItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', onPrint)}
+        </div>
+
+        {/* View section */}
+        <div style={{ marginBottom: 4, marginTop: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>View</div>
+          {menuItem(<Layers size={17} strokeWidth={1.8}/>, 'Expand All', onExpandAll)}
+          {menuItem(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', onCollapseAll)}
+        </div>
+
+        {/* Units section */}
+        <div style={{ marginBottom: 4, marginTop: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['imperial', 'metric'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setSystem(s)}
+                aria-pressed={system === s}
+                style={{
+                  flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600,
+                  border: `1.5px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
+                  background: system === s ? NAV_ACTIVE : CARD_BG,
+                  color: system === s ? '#fff' : SECONDARY, cursor: 'pointer', fontFamily: SANS,
+                  textTransform: 'capitalize',
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Info section */}
+        <div style={{ marginTop: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>Info</div>
+          {menuItem(<HelpCircle size={17} strokeWidth={1.8}/>, 'Help / About', onHelp)}
+        </div>
+
+        {isAuthenticated && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: MUTED, padding: '8px 4px' }}>
+              Sign out available in the main app (/checklist).
+            </div>
+          </div>
+        )}
+
+        {/* Dark mode note */}
+        <div style={{
+          marginTop: 16, padding: '10px 12px', background: 'rgba(0,0,0,0.04)', borderRadius: 8,
+          fontSize: 12, color: MUTED,
+        }}>
+          V3 Dark Design = PENDING USER DESIGN APPROVAL. Light mode only.
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// ─── PLUS CREATION SHEET (slides from bottom) ────────────────────────────────────
+interface PlusSheetProps {
+  open: boolean;
+  onClose: () => void;
+  onScanGearList: () => void;
+}
+
+function PlusSheet({ open, onClose, onScanGearList }: PlusSheetProps) {
+  return (
+    <Sheet open={open} onOpenChange={v => !v && onClose()}>
+      <SheetContent side="bottom" style={{ padding: '24px 24px 36px', borderRadius: '20px 20px 0 0' }}>
+        <SheetHeader>
+          <SheetTitle style={{ fontFamily: SERIF, fontSize: 16, color: PRIMARY, textAlign: 'left', marginBottom: 4 }}>
+            Start / Create
+          </SheetTitle>
+        </SheetHeader>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+          {/* Create New List — guided flow PENDING */}
+          <div
+            aria-disabled="true"
+            title="CREATE NEW LIST GUIDED FLOW = NOT YET IMPLEMENTED"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 4px',
+              borderBottom: `1px solid ${DIVIDER}`, opacity: 0.4, cursor: 'not-allowed',
+            }}
+          >
+            <div style={{
+              width: 40, height: 40, borderRadius: 10, background: 'rgba(0,0,0,0.06)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Plus size={20} color={SECONDARY} strokeWidth={2}/>
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>Create New List</div>
+              <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>Guided setup — coming soon</div>
+            </div>
+          </div>
+
+          {/* Scan Gear List — REAL */}
+          <button
+            onClick={() => { onScanGearList(); onClose(); }}
+            aria-label="Scan Gear List — import from PDF or DOCX file"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 4px',
+              background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%',
+            }}
+          >
+            <div style={{
+              width: 40, height: 40, borderRadius: 10, background: 'rgba(42,87,64,0.10)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Scale size={20} color={NAV_ACTIVE} strokeWidth={1.8}/>
+            </div>
+            <div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>Scan Gear List</div>
+              <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>Import from PDF or Word document</div>
+            </div>
+          </button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// ─── MORE SHEET (slides from bottom) ─────────────────────────────────────────────
+interface MoreSheetProps {
+  open: boolean;
+  onClose: () => void;
+  onHelp: () => void;
+  system: string;
+  setSystem: (s: 'imperial' | 'metric') => void;
+  onExpandAll: () => void;
+  onCollapseAll: () => void;
+}
+
+function MoreSheet({
+  open, onClose, onHelp, system, setSystem, onExpandAll, onCollapseAll,
+}: MoreSheetProps) {
+  const btn = (icon: React.ReactNode, label: string, onClick: () => void, sublabel?: string) => (
+    <button
+      key={label}
+      onClick={() => { onClick(); onClose(); }}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
+        background: 'none', border: 'none', padding: '13px 0', cursor: 'pointer',
+        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
+      }}
+    >
+      <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
+        {sublabel && <div style={{ fontSize: 11.5, color: MUTED }}>{sublabel}</div>}
+      </div>
+    </button>
+  );
+
+  return (
+    <Sheet open={open} onOpenChange={v => !v && onClose()}>
+      <SheetContent side="bottom" style={{ padding: '24px 24px 40px', borderRadius: '20px 20px 0 0' }}>
+        <SheetHeader>
+          <SheetTitle style={{ fontFamily: SERIF, fontSize: 16, color: PRIMARY, textAlign: 'left', marginBottom: 8 }}>
+            More
+          </SheetTitle>
+        </SheetHeader>
+
+        {/* Units */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {(['imperial', 'metric'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setSystem(s)}
+                aria-pressed={system === s}
+                style={{
+                  flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 14, fontWeight: 600,
+                  border: `1.5px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
+                  background: system === s ? NAV_ACTIVE : CARD_BG,
+                  color: system === s ? '#fff' : SECONDARY, cursor: 'pointer', fontFamily: SANS,
+                  textTransform: 'capitalize',
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {btn(<Layers size={17} strokeWidth={1.8}/>, 'Expand All Categories', onExpandAll)}
+        {btn(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All Categories', onCollapseAll)}
+        {btn(<HelpCircle size={17} strokeWidth={1.8}/>, 'Help / About', onHelp)}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// ─── MAIN PAGE ───────────────────────────────────────────────────────────────────
 export default function MobileFunctionalV3() {
   return (
     <UnitProvider>
@@ -245,57 +930,97 @@ export default function MobileFunctionalV3() {
 
 function MobileFunctionalV3Inner() {
   const { userId, isLoaded } = useAuth();
-  const { system } = useUnit();
+  const { system, setSystem } = useUnit();
 
-  // ── Sandbox state — cloned from production localStorage, never written back ──
+  // ── Sandbox state ─────────────────────────────────────────────────────────────
   const [sandbox, setSandbox] = useState<SandboxStore>({ items: {}, order: [], meta: {} });
   const [sandboxReady, setSandboxReady] = useState(false);
   const [listName, setListName] = useState('My Pack List');
 
-  // ── UI state ──
-  const [openCatName, setOpenCatName] = useState<string | null>(null); // single-open
+  // Undo/redo history
+  const [undoHistory, setUndoHistory] = useState<SandboxStore[]>([]);
+  const [redoHistory, setRedoHistory] = useState<SandboxStore[]>([]);
+  const sandboxRef = useRef(sandbox);
+  sandboxRef.current = sandbox;
+  const originalSeedRef = useRef<SandboxStore | null>(null);
+
+  // ── UI state ─────────────────────────────────────────────────────────────────
+  const [activeNav, setActiveNav] = useState<ActiveNav>('list');
+  const [openSheet, setOpenSheet] = useState<null | 'hamburger' | 'plus' | 'more'>(null);
+  const [showChecklist, setShowChecklist] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+
+  // Category accordion
+  const [openCatName, setOpenCatName] = useState<string | null>(null);
+  const [allExpanded, setAllExpanded] = useState(false);
   const [expandedItem, setExpandedItem] = useState<{ cat: string; id: string } | null>(null);
 
-  // ── Seed sandbox from production localStorage (read-once on auth ready) ──
+  // Add category UI
+  const [showAddCat, setShowAddCat] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const newCatInputRef = useRef<HTMLInputElement>(null);
+
+  // Checklist-use state (separate from item.checked — tracks trail progress only)
+  const [checklistUse, setChecklistUse] = useState<Record<string, boolean>>({});
+
+  // Toast
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Category reorder via Pointer Events
+  const catListRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ catIdx: number; origOrder: string[]; containerTop: number; catHeight: number } | null>(null);
+  const [dragSrcIdx, setDragSrcIdx] = useState<number | null>(null);
+  const [dragDstIdx, setDragDstIdx] = useState<number | null>(null);
+
+  // ── Helpers ───────────────────────────────────────────────────────────────────
+
+  const showToast = useCallback((msg: string, ms = 3000) => {
+    setToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), ms);
+  }, []);
+
+  /** Push current sandbox to undo, then apply updater.  Uses ref to avoid stale closures. */
+  const mutateSandbox = useCallback((updater: (prev: SandboxStore) => SandboxStore) => {
+    const current = sandboxRef.current;
+    setUndoHistory(prev => [...prev.slice(-(HISTORY_LIMIT - 1)), current]);
+    setRedoHistory([]);
+    setSandbox(updater);
+  }, []);
+
+  // ── Seed sandbox from production localStorage (read-once on auth ready) ───────
   useEffect(() => {
     if (!isLoaded) return;
-    const key = userId
-      ? `pack-checklist-v5-${userId}`
-      : 'pack-checklist-v5-guest';
+    const key = userId ? `pack-checklist-v5-${userId}` : 'pack-checklist-v5-guest';
     let seeded = false;
+    let seed: SandboxStore = DEMO_SEED;
     try {
       const raw = localStorage.getItem(key);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && parsed.items && Array.isArray(parsed.order) && parsed.order.length > 0) {
-          setSandbox({
-            items:  parsed.items  as PackState,
-            order:  parsed.order  as string[],
-            meta:   (parsed.meta  ?? {}) as Record<string, CategoryMeta>,
-          });
+        if (parsed?.items && Array.isArray(parsed.order) && parsed.order.length > 0) {
+          seed = {
+            items: parsed.items as PackState,
+            order: parsed.order as string[],
+            meta:  (parsed.meta ?? {}) as Record<string, CategoryMeta>,
+          };
           seeded = true;
         }
       }
-    } catch {
-      // Parsing failed — fall through to demo seed
-    }
-    // Fall back to demo seed when owner localStorage has no data
-    // (e.g. unauthenticated, new user, or guest session)
-    if (!seeded) {
-      setSandbox(DEMO_SEED);
-      setListName('Demo Pack List');
-    }
-    // Active list name from sessionStorage (set by Locker when a file is opened)
+    } catch { /* parsing failed — fall through */ }
+    if (!seeded) { seed = DEMO_SEED; setListName('Demo Pack List'); }
     const savedName = sessionStorage.getItem('tw-savedlist-entry-name');
     if (savedName) setListName(savedName);
-
+    setSandbox(seed);
+    originalSeedRef.current = seed;
     setSandboxReady(true);
   }, [isLoaded, userId]);
 
-  // ── Sandbox mutations — local state only, no localStorage writes ──────────────
+  // ── Sandbox mutations ─────────────────────────────────────────────────────────
 
   const updateItem = useCallback((category: string, id: string, updates: Partial<GearItem>) => {
-    setSandbox(prev => ({
+    mutateSandbox(prev => ({
       ...prev,
       items: {
         ...prev.items,
@@ -304,10 +1029,10 @@ function MobileFunctionalV3Inner() {
         ),
       },
     }));
-  }, []);
+  }, [mutateSandbox]);
 
   const moveItem = useCallback((src: string, dst: string, id: string) => {
-    setSandbox(prev => {
+    mutateSandbox(prev => {
       const srcItems = prev.items[src] ?? [];
       const item = srcItems.find(i => i.id === id);
       if (!item) return prev;
@@ -320,39 +1045,268 @@ function MobileFunctionalV3Inner() {
         },
       };
     });
-    // Collapse expanded panel after move (item is now in a different category)
+    setExpandedItem(null);
+  }, [mutateSandbox]);
+
+  const addItem = useCallback((category: string, prefill?: Partial<GearItem>) => {
+    const newItem: GearItem = {
+      id: crypto.randomUUID(),
+      sub:        prefill?.sub ?? '',
+      desc:       prefill?.desc ?? '',
+      weightOz:   prefill?.weightOz ?? 0,
+      qty:        prefill?.qty ?? 1,
+      checked:    prefill?.checked ?? true,
+      expendable: prefill?.expendable ?? false,
+    };
+    mutateSandbox(prev => ({
+      ...prev,
+      items: {
+        ...prev.items,
+        [category]: [...(prev.items[category] ?? []), newItem],
+      },
+    }));
+  }, [mutateSandbox]);
+
+  const addCategory = useCallback((name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed || sandbox.order.includes(trimmed)) return false;
+    mutateSandbox(prev => ({
+      ...prev,
+      order: [...prev.order, trimmed],
+      items: { ...prev.items, [trimmed]: [] },
+      meta:  { ...prev.meta, [trimmed]: { countsToBase: true } },
+    }));
+    return true;
+  }, [sandbox.order, mutateSandbox]);
+
+  // ── Undo / Redo ───────────────────────────────────────────────────────────────
+
+  const handleUndo = useCallback(() => {
+    if (undoHistory.length === 0) return;
+    const prev = undoHistory[undoHistory.length - 1];
+    setRedoHistory(r => [...r, sandboxRef.current]);
+    setUndoHistory(u => u.slice(0, -1));
+    setSandbox(prev);
+  }, [undoHistory]);
+
+  const handleRedo = useCallback(() => {
+    if (redoHistory.length === 0) return;
+    const next = redoHistory[redoHistory.length - 1];
+    setUndoHistory(u => [...u, sandboxRef.current]);
+    setRedoHistory(r => r.slice(0, -1));
+    setSandbox(next);
+  }, [redoHistory]);
+
+  // ── Reset ─────────────────────────────────────────────────────────────────────
+
+  const handleReset = useCallback(() => {
+    const seed = originalSeedRef.current ?? DEMO_SEED;
+    setUndoHistory(prev => [...prev.slice(-(HISTORY_LIMIT - 1)), sandboxRef.current]);
+    setRedoHistory([]);
+    setSandbox(seed);
+    setOpenCatName(null);
+    setAllExpanded(false);
+    setExpandedItem(null);
+    showToast('Reset to original data');
+  }, [showToast]);
+
+  // ── Save (creates a new Locker entry — additive, does not overwrite active store) ──
+
+  const handleSave = useCallback(() => {
+    const now = new Date();
+    const name = `${listName} — ${now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
+    const entry: LockerEntry = {
+      id: crypto.randomUUID(),
+      name,
+      savedAt: Date.now(),
+      store: {
+        items: sandboxRef.current.items,
+        order: sandboxRef.current.order,
+        meta:  sandboxRef.current.meta,
+        // LockerEntry.store also has Background fields — not relevant here
+      } as LockerEntry['store'],
+      background:  null,
+      bgFade:      0.3,
+      bgTone:      'light',
+    };
+    appendLockerEntry(entry);
+    showToast(`Saved as "${name}"`);
+  }, [listName, showToast]);
+
+  // ── Share (downloads PDF of sandbox data) ────────────────────────────────────
+
+  const handleShare = useCallback(() => {
+    try {
+      sharePackList(
+        sandboxRef.current.items,
+        system,
+        sandboxRef.current.order,
+        sandboxRef.current.meta,
+      );
+      showToast('PDF downloaded');
+    } catch {
+      showToast('PDF generation failed');
+    }
+  }, [system, showToast]);
+
+  // ── Print (downloads PDF and opens browser print) ────────────────────────────
+
+  const handlePrint = useCallback(() => {
+    try {
+      generatePackPDF(
+        sandboxRef.current.items,
+        system,
+        sandboxRef.current.order,
+        sandboxRef.current.meta,
+      );
+      showToast('Print: download PDF then print from your device');
+    } catch {
+      showToast('Print failed');
+    }
+    // Also trigger browser print for the current page (the overlay shows filtered list)
+    window.print();
+  }, [system, showToast]);
+
+  // ── Checklist handlers ────────────────────────────────────────────────────────
+
+  const handleChecklistToggle = useCallback((id: string) => {
+    setChecklistUse(prev => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  const handleChecklistClear = useCallback(() => setChecklistUse({}), []);
+
+  // ── Category accordion ────────────────────────────────────────────────────────
+
+  const handleCatToggle = useCallback((catName: string) => {
+    if (allExpanded) {
+      // Exit expand-all; the tapped category stays open (single-open mode resumes)
+      setAllExpanded(false);
+      setOpenCatName(catName);
+      setExpandedItem(prev => prev?.cat !== catName ? null : prev);
+    } else {
+      const closing = openCatName === catName;
+      setOpenCatName(closing ? null : catName);
+      if (closing) setExpandedItem(prev => prev?.cat === catName ? null : prev);
+    }
+  }, [allExpanded, openCatName]);
+
+  const handleExpandAll = useCallback(() => {
+    setAllExpanded(true);
+    setOpenCatName(null);
+  }, []);
+
+  const handleCollapseAll = useCallback(() => {
+    setAllExpanded(false);
+    setOpenCatName(null);
     setExpandedItem(null);
   }, []);
 
-  // ── Category accordion — single-open, zero-open allowed ──────────────────────
+  const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
-  const handleCatToggle = useCallback((catName: string) => {
-    setOpenCatName(prev => {
-      const closing = prev === catName;
-      return closing ? null : catName;
-    });
-    // Collapse any expanded item when its category closes
-    setExpandedItem(prev => (prev?.cat === catName ? null : prev));
-  }, []);
-
-  // ── Item expand/collapse — single item open at a time ────────────────────────
+  // ── Item expand/collapse ──────────────────────────────────────────────────────
 
   const handleItemToggle = useCallback((cat: string, id: string) => {
-    setExpandedItem(prev =>
-      prev?.cat === cat && prev?.id === id ? null : { cat, id }
-    );
+    setExpandedItem(prev => prev?.cat === cat && prev?.id === id ? null : { cat, id });
   }, []);
 
-  // ── Derived summary metrics (sandbox-scoped) ─────────────────────────────────
+  // ── Add category ──────────────────────────────────────────────────────────────
 
-  const allItems   = sandbox.order.flatMap(cat => sandbox.items[cat] ?? []);
-  const totalItems = allItems.length;
-  const selectedCount    = allItems.filter(i => i.checked).length;
+  const handleAddCategoryConfirm = useCallback(() => {
+    const ok = addCategory(newCatName);
+    if (ok) {
+      setNewCatName('');
+      setShowAddCat(false);
+      showToast(`Category "${newCatName.trim()}" added`);
+    } else {
+      showToast('Category name already exists or is empty');
+    }
+  }, [addCategory, newCatName, showToast]);
+
+  // ── Scanner: resolve category alias then addItem to sandbox ──────────────────
+
+  const handleScannerAddItem = useCallback((category: string, prefill: Partial<GearItem>) => {
+    // resolveDestination finds the best matching existing category
+    const resolved = resolveDestination(category, sandboxRef.current.order) ?? category;
+    // If the resolved category doesn't exist yet, create it
+    if (!sandboxRef.current.order.includes(resolved)) {
+      mutateSandbox(prev => ({
+        ...prev,
+        order: [...prev.order, resolved],
+        items: { ...prev.items, [resolved]: [] },
+        meta:  { ...prev.meta, [resolved]: { countsToBase: true } },
+      }));
+    }
+    addItem(resolved, prefill);
+  }, [addItem, mutateSandbox]);
+
+  // ── Category reorder via Pointer Events ──────────────────────────────────────
+
+  const handleGripPointerDown = useCallback((e: React.PointerEvent, catIdx: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    const containerRect = catListRef.current?.getBoundingClientRect();
+    const totalCats = sandboxRef.current.order.length;
+    dragRef.current = {
+      catIdx,
+      origOrder: [...sandboxRef.current.order],
+      containerTop: containerRect?.top ?? 0,
+      catHeight: totalCats > 0 ? ((containerRect?.height ?? 600) / totalCats) : 76,
+    };
+    setDragSrcIdx(catIdx);
+    setDragDstIdx(catIdx);
+  }, []);
+
+  const handleGripPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const { containerTop, catHeight, origOrder } = dragRef.current;
+    const relY = e.clientY - containerTop;
+    const newIdx = Math.max(0, Math.min(origOrder.length - 1, Math.floor(relY / catHeight)));
+    setDragDstIdx(newIdx);
+  }, []);
+
+  const handleGripPointerUp = useCallback((_e: React.PointerEvent) => {
+    if (!dragRef.current || dragDstIdx === null) {
+      setDragSrcIdx(null); setDragDstIdx(null); dragRef.current = null; return;
+    }
+    const { catIdx, origOrder } = dragRef.current;
+    if (catIdx !== dragDstIdx) {
+      const newOrder = [...origOrder];
+      const [moved] = newOrder.splice(catIdx, 1);
+      newOrder.splice(dragDstIdx, 0, moved);
+      mutateSandbox(prev => ({ ...prev, order: newOrder }));
+      showToast('Category order saved');
+    }
+    setDragSrcIdx(null); setDragDstIdx(null); dragRef.current = null;
+  }, [dragDstIdx, mutateSandbox, showToast]);
+
+  // Visible order during drag reorder
+  const visibleOrder: string[] = (dragSrcIdx !== null && dragDstIdx !== null && dragRef.current)
+    ? (() => {
+        const order = [...dragRef.current.origOrder];
+        const [moved] = order.splice(dragSrcIdx, 1);
+        order.splice(dragDstIdx, 0, moved);
+        return order;
+      })()
+    : sandbox.order;
+
+  // ── Help / About ──────────────────────────────────────────────────────────────
+
+  const handleHelp = useCallback(() => {
+    const basePath = import.meta.env.BASE_URL?.replace(/\/$/, '') ?? '';
+    window.open(`${basePath}/help`, '_blank', 'noopener');
+  }, []);
+
+  // ── Derived summary metrics ───────────────────────────────────────────────────
+
+  const allItems       = sandbox.order.flatMap(cat => sandbox.items[cat] ?? []);
+  const totalItems     = allItems.length;
+  const selectedCount  = allItems.filter(i => i.checked).length;
   const notSelectedCount = totalItems - selectedCount;
-  const catCount   = sandbox.order.length;
-  const su         = smallUnit(system);
+  const catCount       = sandbox.order.length;
+  const su             = smallUnit(system);
 
-  // ── Loading state ────────────────────────────────────────────────────────────
+  // ── Loading state ─────────────────────────────────────────────────────────────
 
   if (!sandboxReady) {
     return (
@@ -362,14 +1316,16 @@ function MobileFunctionalV3Inner() {
     );
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────────────────────────────────────
 
   return (
     <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
       <div style={{
         width: '100%', maxWidth: 430, height: '100dvh',
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
-        fontFamily: SANS, overflow: 'hidden', position: 'relative',
+        fontFamily: SANS, position: 'relative',
       }}>
 
         {/* ── APP BAR ── */}
@@ -378,10 +1334,11 @@ function MobileFunctionalV3Inner() {
           display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
           flexShrink: 0, zIndex: 10,
         }}>
-          {/* Hamburger — inert in 027H */}
+          {/* Hamburger */}
           <button
-            aria-label="Menu"
-            aria-disabled="true"
+            aria-label="Open menu"
+            aria-expanded={openSheet === 'hamburger'}
+            onClick={() => setOpenSheet('hamburger')}
             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}
           >
             <Menu size={22} color={SECONDARY} strokeWidth={1.8}/>
@@ -395,40 +1352,42 @@ function MobileFunctionalV3Inner() {
             </span>
           </div>
 
-          {/* Search circle — inert in 027H */}
+          {/* Search circle — FUTURE FUNCTION */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div
-              aria-label="Search"
+              aria-label="Search (not yet available)"
               aria-disabled="true"
+              title="GLOBAL SEARCH = FUTURE FUNCTION — no current search implemented"
               style={{
                 width: 34, height: 34, borderRadius: 17, background: '#FFFFFF',
                 boxShadow: '0 1px 4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.04)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'not-allowed', flexShrink: 0,
+                cursor: 'not-allowed', flexShrink: 0, opacity: 0.5,
               }}
             >
               <Search size={17} color={SECONDARY} strokeWidth={1.8}/>
             </div>
 
-            {/* FAB — inert in 027H */}
-            <div
-              aria-label="Add"
-              aria-disabled="true"
+            {/* FAB — opens + creation sheet */}
+            <button
+              aria-label="Create or import — Start / Create"
+              aria-expanded={openSheet === 'plus'}
+              onClick={() => setOpenSheet('plus')}
               style={{
                 width: 34, height: 34, borderRadius: 17, background: NAV_ACTIVE,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'not-allowed', flexShrink: 0,
+                cursor: 'pointer', flexShrink: 0, border: 'none',
               }}
             >
               <Plus size={18} color="#fff" strokeWidth={2.4}/>
-            </div>
+            </button>
           </div>
         </div>
 
         {/* ── SCROLLABLE CONTENT ── */}
-        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
 
-          {/* ── LIST IDENTITY with landscape decoration ── */}
+          {/* ── LIST IDENTITY ── */}
           <div style={{ position: 'relative', padding: '11px 16px 10px', overflow: 'hidden' }}>
             <LandscapeDecoration/>
             <div style={{ position: 'relative', zIndex: 1 }}>
@@ -436,8 +1395,7 @@ function MobileFunctionalV3Inner() {
                 <span style={{ fontSize: 16.5, fontWeight: 500, color: PRIMARY, letterSpacing: '0px' }}>
                   {listName}
                 </span>
-                {/* Title chevron — inert in 027H */}
-                <ChevronDown size={16} color={SECONDARY} strokeWidth={2} aria-hidden="true"/>
+                {/* No accordion chevron — Locker bottom nav is the list-switch action */}
               </div>
               <div style={{ fontSize: 12.5, color: MUTED }}>
                 {catCount} {catCount === 1 ? 'category' : 'categories'}
@@ -452,25 +1410,19 @@ function MobileFunctionalV3Inner() {
               padding: '16px 16px 16px 14px', display: 'flex', alignItems: 'center',
               gap: 16, boxShadow: '0 2px 10px rgba(42,87,64,0.28)',
             }}>
-              {/* Icon box */}
               <div style={{
                 width: 66, height: 66, borderRadius: 14, background: 'rgba(0,0,0,0.20)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
                 <Luggage size={34} color="rgba(255,255,255,0.90)" strokeWidth={1.4}/>
               </div>
-
-              {/* Right content */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                {/* Label — LIST SUMMARY (not "TRIP SUMMARY") */}
                 <div style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: '1.1px',
                   color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase', marginBottom: 3,
                 }}>
                   LIST SUMMARY
                 </div>
-
-                {/* Item count */}
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 9, lineHeight: 1 }}>
                   <span style={{ fontSize: 40, fontWeight: 800, color: SUMMARY_TEXT, letterSpacing: '-1.5px', lineHeight: 1 }}>
                     {totalItems}
@@ -479,8 +1431,7 @@ function MobileFunctionalV3Inner() {
                     items
                   </span>
                 </div>
-
-                {/* Selected / Not Selected — NOT "Packed / Remaining" */}
+                {/* Selected / Not Selected (Checklist inclusion — NOT packed/remaining) */}
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <div style={{
@@ -506,30 +1457,37 @@ function MobileFunctionalV3Inner() {
           </div>
 
           {/* ── CATEGORY STACK ── */}
-          <div style={{ padding: '4px 16px 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {sandbox.order.map((catName, catIdx) => {
+          <div
+            ref={catListRef}
+            style={{ padding: '4px 16px 8px', display: 'flex', flexDirection: 'column', gap: 8 }}
+          >
+            {visibleOrder.map((catName, catIdx) => {
               const items   = sandbox.items[catName] ?? [];
-              const isOpen  = openCatName === catName;
+              const isOpen  = isCatOpen(catName);
               const theme   = getCategoryTheme(catName, catIdx);
+              const isDragging = dragSrcIdx === catIdx;
 
-              // Category metrics — selected items only
               const selectedInCat = items.filter(i => i.checked).length;
-              const catTotalOz    = items
+              const catTotalOz = items
                 .filter(i => i.checked)
                 .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
-              // catTotalOz is displayed on the RIGHT of the category bar (not in subtitle)
 
               return (
                 <div key={catName} style={{
                   borderRadius: 14, overflow: 'hidden',
                   background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
-                  boxShadow: CARD_SHADOW,
+                  boxShadow: isDragging
+                    ? '0 6px 24px rgba(0,0,0,0.22), 0 0 0 2px rgba(42,87,64,0.25)'
+                    : CARD_SHADOW,
+                  opacity: isDragging ? 0.85 : 1,
+                  transform: isDragging ? 'scale(1.01)' : 'none',
+                  transition: 'box-shadow 0.1s, opacity 0.1s, transform 0.1s',
                 }}>
 
                   {/* ── CATEGORY HEADER ── */}
                   <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H }}>
 
-                    {/* WEDGE / ICON — PRIMARY ACCORDION TOGGLE */}
+                    {/* WEDGE / ICON — PRIMARY ACCORDION TRIGGER */}
                     <button
                       onClick={() => handleCatToggle(catName)}
                       aria-expanded={isOpen}
@@ -545,18 +1503,12 @@ function MobileFunctionalV3Inner() {
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
                       onBlur={e => { e.currentTarget.style.outline = 'none'; }}
                     >
-                      {/* Toothbrush overrides Heart/Droplets for Toiletries category */}
                       {isToiletriesCategory(catName)
                         ? <ToothbrushIcon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>
                         : <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>}
                     </button>
 
-                    {/* CONTENT — four-column grid: [text] [handle-slot] [gap] [weight]
-                        Col 1 (minmax 0,1fr):     name + subtitle — protected.
-                        Col 2 (32px):             six-dot handle — ~75% of full bar.
-                        Col 3 (18px gap):         breathing space; calibrates handle.
-                        Col 4 (minmax 44px,auto): weight — normalised min-width for
-                                                  stable handle position across weights. */}
+                    {/* CONTENT grid: [text] [handle-slot 32px] [gap 18px] [weight minmax(44px,auto)] */}
                     <div style={{
                       flex: 1, minWidth: 0,
                       display: 'grid',
@@ -576,22 +1528,34 @@ function MobileFunctionalV3Inner() {
                           {catName}
                         </div>
                         <div style={{ fontSize: 12.5, color: MUTED }}>
-                          {items.length} {items.length === 1 ? 'item' : 'items'} • {selectedInCat} selected
+                          {items.length} {items.length === 1 ? 'item' : 'items'} · {selectedInCat} selected
                         </div>
                       </div>
 
-                      {/* Col 2 — six-dot handle; inert (no DnD installed) */}
-                      <div aria-hidden="true" style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        opacity: 0.28,
-                      }}>
+                      {/* Col 2 — six-dot category reorder handle (Pointer Events) */}
+                      <button
+                        aria-label={`Drag to reorder ${catName} category`}
+                        aria-grabbed={dragSrcIdx === catIdx ? 'true' : 'false'}
+                        title="Hold and drag to reorder category"
+                        onPointerDown={e => handleGripPointerDown(e, catIdx)}
+                        onPointerMove={handleGripPointerMove}
+                        onPointerUp={handleGripPointerUp}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'none', border: 'none', padding: 0,
+                          cursor: 'grab', touchAction: 'none',
+                          opacity: dragSrcIdx === catIdx ? 0.8 : 0.38,
+                        }}
+                        onFocus={e => { e.currentTarget.style.opacity = '0.8'; }}
+                        onBlur={e => { e.currentTarget.style.opacity = dragSrcIdx === catIdx ? '0.8' : '0.38'; }}
+                      >
                         <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
-                      </div>
+                      </button>
 
-                      {/* Col 3 — breathing-space gap between handle and weight */}
+                      {/* Col 3 — gap */}
                       <div aria-hidden="true"/>
 
-                      {/* Col 4 — selected-weight, right-aligned, live via calcTotalOz */}
+                      {/* Col 4 — selected-weight */}
                       <div style={{
                         textAlign: 'right',
                         fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
@@ -613,13 +1577,12 @@ function MobileFunctionalV3Inner() {
                   {isOpen && items.length > 0 && (
                     <div style={{ borderTop: `1px solid ${DIVIDER}` }}>
                       {items.map((item, itemIdx) => {
-                        const isExpanded = expandedItem?.cat === catName && expandedItem?.id === item.id;
-                        const isLast     = itemIdx === items.length - 1;
-                        const totalOz    = calcTotalOz(item.weightOz, item.qty);
-                        const otherCats  = sandbox.order.filter(c => c !== catName);
+                        const isExpanded  = expandedItem?.cat === catName && expandedItem?.id === item.id;
+                        const isLast      = itemIdx === items.length - 1;
+                        const totalOz     = calcTotalOz(item.weightOz, item.qty);
+                        const otherCats   = sandbox.order.filter(c => c !== catName);
                         const displayName = item.desc || item.sub || 'Unnamed item';
 
-                        // Weight display value in current unit system
                         const weightDisplay = system === 'metric'
                           ? +((item.weightOz) * 28.3495).toFixed(1)
                           : +item.weightOz.toFixed(2);
@@ -627,9 +1590,7 @@ function MobileFunctionalV3Inner() {
                         return (
                           <div key={item.id}>
 
-                            {/* ITEM ROW — body tap opens/closes detail panel.
-                                Checkbox stops propagation so it only toggles selection.
-                                No chevron: row body IS the expand/collapse affordance. */}
+                            {/* ITEM ROW — body tap expands detail; checkbox stops propagation */}
                             <div
                               role="button"
                               tabIndex={0}
@@ -644,12 +1605,11 @@ function MobileFunctionalV3Inner() {
                                 background: CARD_BG, cursor: 'pointer',
                               }}
                             >
-
                               {/* Main-list inclusion checkbox — stopPropagation prevents row expand */}
                               <div
                                 role="checkbox"
                                 aria-checked={item.checked}
-                                aria-label={`${displayName} ${item.checked ? 'selected' : 'not selected'}`}
+                                aria-label={`${displayName} ${item.checked ? 'selected for checklist' : 'not selected'}`}
                                 tabIndex={-1}
                                 onClick={e => { e.stopPropagation(); updateItem(catName, item.id, { checked: !item.checked }); }}
                                 onKeyDown={e => { e.stopPropagation(); if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); updateItem(catName, item.id, { checked: !item.checked }); } }}
@@ -741,11 +1701,11 @@ function MobileFunctionalV3Inner() {
                                   </select>
                                 </div>
 
-                                {/* Total (derived — not stored) */}
+                                {/* Total (derived) */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
                                   padding: '0 14px', height: 42, gap: 10,
-                                  borderBottom: otherCats.length > 0 ? `1px solid ${DETAIL_BDR}` : 'none',
+                                  borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <Check size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
                                   <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Total</div>
@@ -754,20 +1714,19 @@ function MobileFunctionalV3Inner() {
                                   </div>
                                 </div>
 
-                                {/* Move — only shown when other categories exist */}
+                                {/* Move */}
                                 {otherCats.length > 0 && (
                                   <div style={{
                                     display: 'flex', alignItems: 'center',
                                     padding: '0 14px', height: 42, gap: 10,
+                                    borderBottom: `1px solid ${DETAIL_BDR}`,
                                   }}>
                                     <ArrowRightLeft size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
                                     <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Move</div>
                                     <select
                                       value=""
                                       aria-label={`Move ${displayName} to another category`}
-                                      onChange={e => {
-                                        if (e.target.value) moveItem(catName, e.target.value, item.id);
-                                      }}
+                                      onChange={e => { if (e.target.value) moveItem(catName, e.target.value, item.id); }}
                                       style={{
                                         fontSize: 13.5, fontWeight: 500, color: PRIMARY,
                                         border: `1px solid ${CARD_BORDER}`, borderRadius: 6,
@@ -781,34 +1740,235 @@ function MobileFunctionalV3Inner() {
                                   </div>
                                 )}
 
+                                {/* Photo row — BELOW Move — visual reservation (disabled, pending backend) */}
+                                <div
+                                  aria-disabled="true"
+                                  title="Photos not enabled yet — item photo backend pending implementation"
+                                  style={{
+                                    display: 'flex', alignItems: 'center',
+                                    padding: '0 14px', height: 42, gap: 10,
+                                    opacity: 0.4, cursor: 'not-allowed',
+                                  }}
+                                >
+                                  <Camera size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
+                                  <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Photo</div>
+                                  <div style={{ fontSize: 12, color: MUTED, fontStyle: 'italic' }}>
+                                    Photos not enabled yet
+                                  </div>
+                                </div>
+
                               </div>
                             )}
                           </div>
                         );
                       })}
+
+                      {/* Add Item button — contextual within open category */}
+                      <div style={{ borderTop: `1px solid ${DIVIDER}`, padding: '8px 14px' }}>
+                        <button
+                          onClick={() => {
+                            addItem(catName);
+                            // Open the new item for editing (last item)
+                            setExpandedItem({ cat: catName, id: '' }); // will be set after state update
+                          }}
+                          aria-label={`Add item to ${catName}`}
+                          title="Add a new item to this category"
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 8,
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500,
+                            padding: '4px 0', fontFamily: SANS,
+                          }}
+                        >
+                          <Plus size={15} color={NAV_ACTIVE} strokeWidth={2.2}/>
+                          Add Item
+                        </button>
+                      </div>
                     </div>
                   )}
-
                 </div>
               );
             })}
 
-            {/* Empty state — sandbox had no categories */}
+            {/* Empty state */}
             {sandbox.order.length === 0 && (
               <div style={{ textAlign: 'center', padding: '40px 24px', color: MUTED, fontSize: 14 }}>
                 <div style={{ marginBottom: 8, fontSize: 22 }}>📋</div>
                 <div>No list data found.</div>
-                <div style={{ fontSize: 12.5, marginTop: 4 }}>Open your list in the main app first, then return here.</div>
+                <div style={{ fontSize: 12.5, marginTop: 4 }}>Your gear list will appear here.</div>
               </div>
             )}
+
+            {/* Add Category — contextual, below category stack */}
+            <div style={{ marginTop: 4 }}>
+              {showAddCat ? (
+                <div style={{
+                  background: CARD_BG, borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
+                  boxShadow: CARD_SHADOW, padding: '12px 14px',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}>
+                  <input
+                    ref={newCatInputRef}
+                    type="text"
+                    value={newCatName}
+                    placeholder="Category name…"
+                    aria-label="New category name"
+                    onChange={e => setNewCatName(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') handleAddCategoryConfirm();
+                      if (e.key === 'Escape') { setShowAddCat(false); setNewCatName(''); }
+                    }}
+                    autoFocus
+                    style={{
+                      flex: 1, fontSize: 14, color: PRIMARY, fontFamily: SANS,
+                      border: `1px solid ${CARD_BORDER}`, borderRadius: 8, padding: '7px 10px',
+                      background: PAGE_BG, outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={handleAddCategoryConfirm}
+                    aria-label="Confirm add category"
+                    style={{
+                      background: NAV_ACTIVE, color: '#fff', border: 'none',
+                      borderRadius: 8, padding: '7px 14px', cursor: 'pointer',
+                      fontSize: 13.5, fontWeight: 600, fontFamily: SANS,
+                    }}
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => { setShowAddCat(false); setNewCatName(''); }}
+                    aria-label="Cancel add category"
+                    style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                  >
+                    <X size={18} color={MUTED} strokeWidth={1.8}/>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setShowAddCat(true);
+                    setTimeout(() => newCatInputRef.current?.focus(), 50);
+                  }}
+                  aria-label="Add a new category to this list"
+                  title="Add new category"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    background: 'none', border: `1.5px dashed ${MUTED}`,
+                    borderRadius: 12, padding: '12px 14px', cursor: 'pointer', width: '100%',
+                    fontSize: 13.5, color: MUTED, fontFamily: SANS,
+                  }}
+                >
+                  <Plus size={15} color={MUTED} strokeWidth={2}/>
+                  Add Category
+                </button>
+              )}
+            </div>
+
+            {/* Bottom padding */}
+            <div style={{ height: 24 }}/>
           </div>
 
         </div>{/* end scrollable */}
 
-        {/* ── BOTTOM NAV (List | Locker | Catalog | Summary | More) ── */}
-        <BottomNav/>
+        {/* ── BOTTOM NAV ── */}
+        <BottomNavBar
+          active={activeNav}
+          onSelect={tab => setActiveNav(tab)}
+          onMore={() => setOpenSheet('more')}
+        />
 
-      </div>
+        {/* ── OVERLAYS (rendered as absolute children of the phone frame) ── */}
+
+        {/* Locker overlay */}
+        {activeNav === 'locker' && (
+          <LockerOverlay
+            onLoad={newStore => {
+              mutateSandbox(() => newStore);
+              setActiveNav('list');
+            }}
+            onSave={handleSave}
+            onClose={() => setActiveNav('list')}
+          />
+        )}
+
+        {/* Summary overlay */}
+        {activeNav === 'summary' && (
+          <SummaryOverlay
+            sandbox={sandbox}
+            onClose={() => setActiveNav('list')}
+          />
+        )}
+
+        {/* Checklist overlay */}
+        {showChecklist && (
+          <ChecklistOverlay
+            sandbox={sandbox}
+            system={system}
+            checklistUse={checklistUse}
+            onToggle={handleChecklistToggle}
+            onClear={handleChecklistClear}
+            onPrint={handlePrint}
+            onShare={handleShare}
+            onClose={() => setShowChecklist(false)}
+          />
+        )}
+
+        {/* Scanner overlay */}
+        {showScanner && (
+          <ScannerOverlay
+            categoryOrder={sandbox.order}
+            onAddItem={handleScannerAddItem}
+            onClose={() => setShowScanner(false)}
+          />
+        )}
+
+        {/* Toast */}
+        {toast && <Toast message={toast}/>}
+
+      </div>{/* end phone frame */}
+
+      {/* ── SHEETS (rendered outside phone frame — full viewport) ── */}
+
+      {/* Hamburger */}
+      <HamburgerMenu
+        open={openSheet === 'hamburger'}
+        onClose={() => setOpenSheet(null)}
+        system={system}
+        setSystem={setSystem}
+        canUndo={undoHistory.length > 0}
+        canRedo={redoHistory.length > 0}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        onReset={handleReset}
+        onSave={() => { handleSave(); }}
+        onPrint={handlePrint}
+        onShare={handleShare}
+        onChecklist={() => setShowChecklist(true)}
+        onExpandAll={handleExpandAll}
+        onCollapseAll={handleCollapseAll}
+        onHelp={handleHelp}
+        isAuthenticated={!!userId}
+      />
+
+      {/* Plus creation sheet */}
+      <PlusSheet
+        open={openSheet === 'plus'}
+        onClose={() => setOpenSheet(null)}
+        onScanGearList={() => setShowScanner(true)}
+      />
+
+      {/* More sheet */}
+      <MoreSheet
+        open={openSheet === 'more'}
+        onClose={() => setOpenSheet(null)}
+        onHelp={handleHelp}
+        system={system}
+        setSystem={setSystem}
+        onExpandAll={handleExpandAll}
+        onCollapseAll={handleCollapseAll}
+      />
+
     </div>
   );
 }

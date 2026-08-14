@@ -1,0 +1,1167 @@
+TRAILWEIGH — PROMPT 027O — GOLD STANDARD
+COMPREHENSIVE V3 MOBILE CONTROL WIRING
+ISOLATED FUNCTIONAL PREVIEW — DO NOT CUT OVER /CHECKLIST YET
+
+INTERNAL VERSION ID:
+027O-V3-COMPREHENSIVE-MOBILE-CONTROL-WIRING-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 18–35 minutes
+- approximately $1.50–$3.50 Agent usage
+- HARD STOP rather than broaden into new backend/product systems
+
+============================================================
+AUTHORITATIVE BASELINE
+============================================================
+
+027L = USER VISUAL PASS / CLOSED.
+
+Approved V3 mobile visual rules include:
+- approved V3 Light design
+- category icon itself = category accordion trigger
+- NO category accordion chevron
+- category name/count unobstructed
+- six-dot whole-category reorder handle calibrated around 72–78% of full bar
+- selected category weight at far right
+- no item drag dots
+- item `Move` remains
+- Toiletries = toothbrush icon
+- Hydration = water-drop icon
+- bottom navigation direction:
+  List | Locker | Catalog | Summary | More
+
+027M = READ-ONLY photo/Visual Library diagnostic PASS.
+
+027N = READ-ONLY Master List identity diagnostic PASS.
+
+IMPORTANT 027N FACT:
+Current active code does NOT yet contain a distinct reusable Master Item registry
+with `masterItemId`/provenance. Do NOT invent that system inside 027O.
+
+IMPORTANT CURRENT CHECKBOX SEMANTICS:
+Main-list item checkbox = whether that category item is INCLUDED in Checklist.
+It is NOT Checklist-use packing progress.
+
+Checklist-use checkboxes remain separate.
+
+USER live evidence outranks report/source claims.
+
+============================================================
+027O PURPOSE
+============================================================
+
+Wire the approved V3 mobile layout to the EXISTING REAL TrailWeigh handlers
+and functions in one comprehensive isolated functional pass.
+
+Target route remains:
+
+`/mobile-functional-v3`
+
+DO NOT replace production `/checklist` yet.
+
+USER will test `/mobile-functional-v3` on a phone first.
+
+If USER later approves:
+a separate production-cutover prompt will replace the old mobile presentation.
+
+============================================================
+CRITICAL PRINCIPLE — REAL FUNCTIONS ONLY
+============================================================
+
+027O has TWO classes of controls:
+
+A. REAL CURRENT FUNCTIONS
+Wire these fully to their existing active handlers/state.
+
+B. FUTURE FUNCTIONS THAT DO NOT YET EXIST
+Show the approved visual affordance only when necessary, but DO NOT fake
+completed functionality, silently call the wrong legacy behavior, or build
+a large new product subsystem in 027O.
+
+For any future-only function:
+- preserve the visual control if required by approved design
+- mark it truthfully as unavailable / pending
+- report what implementation is still required
+
+============================================================
+LARGE + — LATEST USER DECISION
+============================================================
+
+The large upper-right `+` means:
+START / CREATE.
+
+Tap it to open a compact mobile creation Sheet/Drawer/Menu with AT LEAST:
+
+1. `Create New List`
+2. `Scan Gear List`
+
+DO NOT put:
+- Add Item
+- Add Category
+
+inside this global + menu.
+
+Those remain contextual inside the active list.
+
+------------------------------------------------------------
+CREATE NEW LIST ENTRY
+------------------------------------------------------------
+
+The USER's intended future Create New List flow is a guided setup.
+
+Existing legacy `New` / `handleNew()` blank-list behavior is NOT the final
+guided flow.
+
+027O MUST NOT silently relabel legacy blank-list creation as if the guided
+Create New List feature were complete.
+
+Therefore:
+
+- show `Create New List` in the + creation sheet
+- if a current truthful guided flow already exists, wire it
+- otherwise present it as a clearly pending/disabled option in the isolated
+  functional preview and report:
+  `CREATE NEW LIST GUIDED FLOW = NOT YET IMPLEMENTED`
+
+Do NOT create the future template/domain/Track Weight flow in 027O.
+
+------------------------------------------------------------
+SCAN GEAR LIST ENTRY
+------------------------------------------------------------
+
+`Scan Gear List` IS a current real TrailWeigh function.
+
+Wire it from the + creation sheet to the existing active Scan Gear List
+import workflow.
+
+Preserve all existing Scanner/import behavior:
+- file types
+- preview
+- importer fixes
+- category routing
+- Type/Name rules
+- quantity/weight handling
+- no item loss
+
+Do not duplicate Scanner implementation.
+
+============================================================
+HEADER CONTROLS
+============================================================
+
+Approved header visual elements:
+
+- hamburger menu
+- TrailWeigh logo/wordmark
+- search circle
+- large green +
+- current list identity below/within approved V3 composition
+
+------------------------------------------------------------
+HAMBURGER
+------------------------------------------------------------
+
+Use an existing Sheet/Drawer/DropdownMenu primitive.
+
+Wire current real secondary/global functions into a clean menu.
+
+Required real functions to account for:
+- Save
+- Undo
+- Redo
+- Reset
+- Share
+- Print
+- Checklist
+- Imperial / Metric
+- Help / About
+
+Also inspect whether any existing current account/settings/sign-out functions
+belong here.
+
+Do NOT remove a currently-real function merely because it is not named above.
+
+Group logically; do not create a giant flat wall of controls if existing
+Sheet sections/submenus can keep it readable.
+
+Preserve every function's existing behavior.
+
+------------------------------------------------------------
+SEARCH CIRCLE
+------------------------------------------------------------
+
+027G found no current real general Search function to map.
+
+027N also confirms the future reusable Master Item picker/search architecture
+is not yet implemented.
+
+Therefore:
+- keep the approved Search circle visually
+- DO NOT fake global search
+- DO NOT open Google
+- DO NOT repurpose it as Scanner
+- use an accessible disabled/pending state in the isolated preview if no real
+  current search exists
+- report:
+  `GLOBAL SEARCH = FUTURE FUNCTION`
+
+If current source now contains a real active search that 027G did not have:
+trace it and report before wiring.
+
+============================================================
+ACTIVE LIST IDENTITY
+============================================================
+
+Use the current active real list/file name.
+
+Do not invent travel dates.
+
+Second line:
+use truthful existing metadata only.
+
+Preferred:
+`[N] categories`
+if current active category count is already available.
+
+Do not invent list type/domain/date.
+
+If existing Locker/list chooser can be cleanly opened from the title area
+WITHOUT adding an accordion chevron:
+make the list identity area accessible as a list-switch action.
+
+If not:
+Locker bottom navigation is sufficient; do not invent a title chevron.
+
+============================================================
+SUMMARY CARD
+============================================================
+
+Preserve truthful main-list semantics.
+
+Use:
+`LIST SUMMARY`
+
+Primary:
+`[total items] items`
+
+Secondary:
+`[selected] Selected`
+`[not selected] Not Selected`
+
+Where Selected = category item inclusion in Checklist.
+
+DO NOT use:
+- Packed
+- Remaining
+
+for main-list item selection.
+
+Do not confuse with Checklist-use progress.
+
+============================================================
+CATEGORY BAR
+============================================================
+
+Preserve USER-approved visual structure:
+
+[ CATEGORY ICON / WEDGE ]
+[ CATEGORY NAME + ITEM COUNT / SUBTITLE ]
+[ SIX-DOT CATEGORY REORDER HANDLE around approved 72–78% region ]
+[ SELECTED CATEGORY WEIGHT at far right ]
+
+NO category accordion chevron.
+
+------------------------------------------------------------
+CATEGORY ACCORDION
+------------------------------------------------------------
+
+The CATEGORY ICON ITSELF is the primary open/close trigger.
+
+Not:
+- category name
+- entire bar
+- dots
+- weight
+
+Preserve:
+- single-open normal behavior
+- zero-open allowed
+- Expand All
+- Collapse All
+- after Expand All, individual interaction returns to normal single-open logic
+
+Accessible:
+- button semantics
+- keyboard focus
+- aria-expanded
+- useful accessible name
+
+------------------------------------------------------------
+CATEGORY REORDER
+------------------------------------------------------------
+
+The six-dot handle is for reordering WHOLE CATEGORIES.
+
+Current earlier diagnostics found mobile touch reorder blocked.
+
+027O MAY implement touch-safe category reordering because this is now the
+comprehensive wiring phase.
+
+MANDATORY PRECHECK:
+1. trace the current active category order state/handler
+2. inspect installed dependencies
+3. determine whether an already-installed pointer/touch sortable primitive
+   can be reused
+
+PREFERRED:
+- reuse existing dependency/code if already installed
+
+IF NO safe touch sortable support exists:
+- prefer a small standards-based Pointer Events implementation if it can be
+  done safely and accessibly within existing architecture
+
+ONLY IF that is not reasonable:
+- STOP category-reorder implementation and report it as BLOCKED
+- do NOT install a new dependency without explicit USER authorization
+- continue other 027O wiring if safe
+
+Requirements if implemented:
+- drag begins ONLY from six-dot handle
+- item rows never drag
+- category icon tap still toggles accordion
+- reorder state persists using the same existing list/category persistence path
+- touch scrolling outside the handle remains normal
+- no accidental reorder while tapping icon/weight/text
+- keyboard-accessible alternative if existing architecture has one; otherwise
+  report accessibility limitation rather than faking it
+
+============================================================
+ITEM ROWS
+============================================================
+
+Use real current item data.
+
+Preserve:
+- main-list inclusion checkbox
+- item name
+- quantity/right value
+- item detail expand/collapse
+- no item drag dots
+
+Main item checkbox:
+reuse exact current existing selection handler/state.
+
+DO NOT wire it to Checklist-use packed state.
+
+============================================================
+ITEM DETAIL EXPANSION
+============================================================
+
+Use the approved V3 nested/vertical item panel.
+
+Keep real:
+- Weight
+- Quantity
+- Total
+- Move
+
+The item row/body may be the detail trigger ONLY if current event structure
+can safely prevent checkbox/select interactions from also toggling expansion.
+
+If current implementation already uses a dedicated detail control and removing
+it would reduce accessibility:
+preserve the minimum necessary item-detail affordance.
+
+Do not reintroduce category chevrons.
+
+============================================================
+WEIGHT
+============================================================
+
+Use current real:
+`item.weightOz`
+or exact active equivalent.
+
+Preserve:
+- existing storage unit
+- Imperial/Metric conversion
+- existing rounding/formatting
+- category selected-weight reactivity
+
+============================================================
+QUANTITY
+============================================================
+
+Use current real:
+`item.qty`
+or exact active equivalent.
+
+Preserve current allowed values/edit behavior.
+
+============================================================
+TOTAL
+============================================================
+
+Derived/read-only.
+
+Use current active total calculation.
+
+Do not store a duplicate total field.
+
+============================================================
+MOVE
+============================================================
+
+KEEP item `Move`.
+
+Meaning:
+move one item to another list category.
+
+It is NOT:
+- storage location
+- category reorder
+- drag-and-drop
+
+Use existing active move handler.
+
+============================================================
+PHOTO ROW — APPROVED VISUAL/UX RESERVATION
+============================================================
+
+USER has decided:
+
+A dedicated photo row belongs DIRECTLY BELOW `Move`.
+
+If no photo:
+[Camera icon] `Add Photo`
+
+If photo attached:
+[Camera/photo icon] `View`
+
+Add Photo future actions:
+- Take Photo
+- Choose Photo
+
+View future actions:
+- View
+- Replace
+- Remove
+
+Add New Item future flow:
+- Take Photo
+- Choose Photo
+- Skip Photo
+
+HOWEVER 027M/027N confirmed:
+- current GearItem has no photo/media field
+- no durable server media backend exists
+- no cross-device media exists
+
+Therefore 027O MUST NOT implement fake/local-final photo persistence.
+
+In the isolated functional preview:
+- preserve a compact Photo row location BELOW Move
+- if there is no real item-photo architecture, show it as disabled/pending
+  with concise accessible help:
+  `Photos not enabled yet`
+- DO NOT write photos into Background Theme IndexedDB as if that were the
+  final item-photo system
+- DO NOT create a second inventory database
+- DO NOT use category-bar camera
+
+This visual reservation prevents later layout rework.
+
+============================================================
+ADD ITEM / +BASE
+============================================================
+
+Wire current real Add Item / +Base behavior contextually within the active list.
+
+Do NOT put it in the global header + creation menu.
+
+Use a clear mobile affordance in the list/category context.
+
+Preserve current underlying behavior.
+
+Do NOT yet add the future Master Item picker unless it already exists.
+
+============================================================
+ADD CATEGORY
+============================================================
+
+Wire current real Add Category behavior contextually within the active list.
+
+Do NOT put it in the global header + creation menu.
+
+============================================================
+BOTTOM NAVIGATION
+============================================================
+
+Approved labels:
+
+1. List
+2. Locker
+3. Catalog
+4. Summary
+5. More
+
+------------------------------------------------------------
+LIST
+------------------------------------------------------------
+
+Active/current screen.
+
+Tap returns to active list surface if another bottom-nav destination is open.
+
+------------------------------------------------------------
+LOCKER
+------------------------------------------------------------
+
+Wire to the existing current Locker.
+
+Preserve:
+- saved-list browse/select behavior
+- save/load/delete behavior
+- current review/ownership rules
+
+027M/027N future direction:
+Locker may later evolve to:
+- Lists
+- Items / Visual Library
+- Locations
+
+DO NOT build that new data system in 027O.
+
+------------------------------------------------------------
+CATALOG
+------------------------------------------------------------
+
+TrailWeigh Catalog is conceptually separate from the user's personal
+Master Item/Visual Library.
+
+If a real active Catalog UI/route exists:
+wire it.
+
+If not:
+- keep the approved bottom-nav Catalog item
+- clearly disabled/pending in isolated preview
+- do NOT repurpose Locker or Google search and call it Catalog
+- report:
+  `CATALOG UI = FUTURE FUNCTION`
+
+------------------------------------------------------------
+SUMMARY
+------------------------------------------------------------
+
+Wire to the existing:
+- Pack Summary
+- Weight Distribution
+
+Use one clean mobile Summary destination/sheet/view containing both existing
+summary functions.
+
+Preserve their calculations exactly.
+
+------------------------------------------------------------
+MORE
+------------------------------------------------------------
+
+Use More for secondary mobile functions that do not need to remain visible
+on the main list.
+
+Account for:
+- Help / About
+- Light/Dark control placement recommendation
+- Imperial / Metric if not in hamburger
+- other existing less-frequent controls
+
+Do not duplicate the same control unnecessarily in both hamburger and More.
+Choose one logical home for each secondary function and report the mapping.
+
+IMPORTANT:
+Dark-mode V3 visual design has NOT been separately approved.
+
+If current Light/Dark control changes the V3 design into an unapproved state:
+do NOT implement a new Dark V3 theme here.
+Keep Light as the approved visual state and report Dark V3 as pending.
+
+Do not remove the existing production Dark functionality from `/checklist`.
+
+============================================================
+CHECKLIST
+============================================================
+
+Wire current real Checklist.
+
+Preserve current authoritative semantics:
+
+- category-item selection determines which items are included
+- Checklist shows only selected category items
+- Checklist has its OWN separate checklist-use checkboxes
+- Checklist-use progress persists when Checklist closes/reopens
+- Clear resets ONLY Checklist-use checkmarks
+- Clear does NOT alter main-list item selection
+- Print and Share operate on filtered Checklist as currently intended
+
+Do NOT merge main-list checked state with Checklist-use progress.
+
+============================================================
+SHARE / REVIEW
+============================================================
+
+Wire existing Share.
+
+Preserve:
+- owner original protection
+- review sandbox isolation
+- no owner-data mutation by reviewer
+- current token/auth behavior
+- current no-login review behavior if active
+
+Do NOT add photo/share media behavior in 027O.
+
+============================================================
+PRINT
+============================================================
+
+Wire existing Print behavior.
+
+Do not redesign print layout in 027O.
+
+============================================================
+SAVE / UNDO / REDO / RESET
+============================================================
+
+Wire existing active handlers exactly.
+
+Do not invent autosave or sync-status behavior.
+
+No `Last synced` implementation here.
+
+============================================================
+IMPERIAL / METRIC
+============================================================
+
+Wire existing current unit toggle.
+
+Preserve:
+- underlying oz storage if that is current architecture
+- conversion
+- category selected-weight display
+- item Weight / Total
+- summary calculations
+
+============================================================
+LIGHT / DARK
+============================================================
+
+Production has a current Light/Dark control.
+
+Approved V3 is Light-only so far.
+
+027O:
+- identify logical menu location
+- DO NOT invent an unapproved Dark V3 visual system
+- if the current V3 functional preview already safely supports current dark
+  without visual breakage, document evidence before enabling
+- otherwise leave V3 functional preview in approved Light state and report:
+  `V3 DARK DESIGN = PENDING USER DESIGN APPROVAL`
+
+============================================================
+SCAN GEAR LIST / SCANNER
+============================================================
+
+Must be explicitly present in 027O.
+
+Primary access:
+Header + → `Scan Gear List`
+
+Wire to existing active Scanner/import workflow.
+
+Optionally a secondary access point may remain in More ONLY if the existing
+product already needs it and duplication is useful; do not clutter by default.
+
+============================================================
+LOCKER + MASTER LIST / VISUAL LIBRARY PROTECTION
+============================================================
+
+027N found no distinct reusable Master Item registry yet.
+
+Do NOT:
+- invent a second inventory database
+- pretend current Locker lists are a reusable item registry
+- repurpose Catalog as the user's personal Master List
+- implement domains
+- implement Visual Library
+- implement storage-location entities
+
+Reserve architecture for future:
+Locker
+→ Lists
+→ Items / Visual Library
+→ Locations
+
+but do not fake those functions.
+
+============================================================
+TOOLTIPS / TOUCH HELP
+============================================================
+
+Standing requirement:
+every interactive control needs concise help.
+
+Preserve all existing tooltip/help text unless explicitly changed.
+
+For NEW mobile controls introduced by 027O:
+- accessible name
+- keyboard focus where applicable
+- touch-accessible help equivalent
+- do NOT depend on hover only
+
+Do not rewrite unrelated existing tooltips.
+
+============================================================
+NO VISUAL REDESIGN
+============================================================
+
+027O is wiring, NOT a new visual design prompt.
+
+Preserve:
+- V3 header geometry
+- mountain/topographic art
+- summary geometry
+- wedge/card geometry
+- typography
+- category colors
+- approved handle position
+- weight position
+- bottom nav geometry
+- item-detail layout
+- spacing
+
+Only tiny changes necessary to make a real control touch-safe are allowed.
+
+If a real function requires major visual redesign:
+STOP that function and report.
+
+============================================================
+ISOLATED DATA / SAFETY
+============================================================
+
+Preferred:
+wire `/mobile-functional-v3` to the same active production handlers/state
+in a way that can be safely tested without destructive owner-data mutation.
+
+For editing tests:
+use a safe test list / sandbox clone if current architecture supports it.
+
+DO NOT accidentally mutate the user's important production list while proving
+the new UI works.
+
+If full real-handler testing cannot be sandboxed:
+report the limitation and use the smallest safe test data.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Likely:
+- `src/pages/MobileFunctionalV3.tsx`
+- possibly a small V3 mobile menu/sheet component
+- minimal support wiring if existing handlers must be passed in
+- route only if already needed
+
+Preferred maximum:
+4 application files.
+
+Do NOT broadly rewrite:
+- desktop layout
+- production `/checklist`
+- API
+- DB/schema
+- auth
+- Scanner internals
+- Locker internals
+- Review internals
+
+unless an exact existing handler must be exposed through a tiny reusable prop/helper.
+
+If scope expands beyond 4 application files:
+STOP and explain before continuing.
+
+============================================================
+PRE-EDIT AUDIT — MANDATORY
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read:
+   `workflow-reports/PROMPT_027L_REPORT.md`
+   `workflow-reports/PROMPT_027M_REPORT.md`
+   `workflow-reports/PROMPT_027N_REPORT.md`
+3. Inspect current:
+   `MobileFunctionalV3.tsx`
+   `MobileDesignPrototypeV3.tsx`
+   `Checklist.tsx`
+   active hooks/components found in 027G/027N
+4. Re-trace EVERY handler before wiring.
+5. Confirm current production route remains untouched.
+6. Record preflight git status.
+7. Create:
+   `workflow-reports/PROMPT_027O_REPORT.md`
+
+============================================================
+MANDATORY CONTROL MAPPING TABLE
+============================================================
+
+Before edits, create a working map:
+
+V3 CONTROL
+REAL CURRENT HANDLER / COMPONENT
+CURRENT FUNCTION EXISTS?
+WIRED IN 027O?
+PENDING?
+WHY
+TEST METHOD
+
+Rows at minimum:
+- hamburger
+- Search
+- +
+- Create New List
+- Scan Gear List
+- active list identity
+- Summary card
+- category icon
+- category reorder dots
+- item checkbox
+- item expansion
+- Weight
+- Quantity
+- Total
+- Move
+- Photo row
+- Add Item / +Base
+- Add Category
+- List nav
+- Locker nav
+- Catalog nav
+- Summary nav
+- More nav
+- Save
+- Undo
+- Redo
+- Reset
+- Share
+- Print
+- Checklist
+- Imperial/Metric
+- Light/Dark
+- Pack Summary
+- Weight Distribution
+- Help/About
+
+Do not wire from assumptions.
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+PHONE VIEWPORTS:
+375 / 390 / 430
+
+TEST A — VISUAL FREEZE
+- no horizontal overflow
+- approved V3 geometry preserved
+- handle remains in approved region
+- selected weight stays far right
+
+TEST B — HEADER +
+- tap + opens creation sheet
+- Create New List entry visible
+- Scan Gear List entry visible
+- Add Item NOT there
+- Add Category NOT there
+- Scan Gear List launches real Scanner
+- Create New List does not silently call wrong legacy behavior
+
+TEST C — HAMBURGER
+Each wired real menu action opens/runs the correct current handler.
+
+TEST D — CATEGORY ACCORDION
+- tap icon opens/closes
+- no category chevron
+- name does not toggle
+- dots do not toggle
+- single-open/zero-open preserved
+
+TEST E — CATEGORY REORDER
+If implemented:
+- touch drag from dots works
+- scrolling outside dots works
+- order persists
+- item rows do not drag
+
+If blocked:
+report BLOCKED truthfully.
+
+TEST F — ITEM CHECKBOX
+- toggles Checklist inclusion
+- Summary Selected/Not Selected updates
+- does NOT alter Checklist-use progress
+
+TEST G — ITEM DETAILS
+- expand/collapse
+- Weight works
+- Quantity works
+- Total correct
+- Move works
+- Photo row appears BELOW Move as pending if backend absent
+- no item drag dots
+
+TEST H — ADD ITEM
+- current real Add Item works
+- does not go through global +
+
+TEST I — ADD CATEGORY
+- current real Add Category works
+- does not go through global +
+
+TEST J — LOCKER
+- bottom Locker opens real Locker
+- switch/load behavior works without corrupting current list
+
+TEST K — SUMMARY
+- Pack Summary and Weight Distribution accessible
+- calculations unchanged
+
+TEST L — MORE
+- mapped secondary functions accessible
+- no duplicate clutter
+
+TEST M — SHARE
+- current Share path works
+
+TEST N — PRINT
+- current Print path works
+
+TEST O — SAVE / UNDO / REDO / RESET
+- all real handlers work correctly
+
+TEST P — IMPERIAL / METRIC
+- item/category/summary units update correctly
+
+TEST Q — CHECKLIST
+- only selected main-list items appear
+- Checklist-use checkboxes separate
+- Clear resets Checklist-use progress only
+
+TEST R — SCANNER
+- + → Scan Gear List opens real scanner/import
+- existing importer behavior remains intact
+
+TEST S — BOTTOM NAV
+- List
+- Locker
+- Summary
+- More
+work as mapped
+- Catalog only if real current UI exists; otherwise pending/disabled truthfully
+
+TEST T — SEARCH
+- real current search only if it exists
+- otherwise pending/disabled truthfully
+
+TEST U — PRODUCTION SAFETY
+- `/checklist` unchanged
+- desktop unchanged
+- review behavior unchanged
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate screenshots / interaction evidence for:
+
+1. 390 main functional V3
+2. + creation sheet showing Create New List + Scan Gear List
+3. hamburger/menu
+4. open category
+5. expanded item with Weight / Quantity / Total / Move / Photo row
+6. Locker destination
+7. Summary destination
+8. More destination
+9. Scanner opened from +
+10. production `/checklist` unchanged
+11. desktop unchanged
+
+For touch category reorder:
+video or equivalent interaction evidence is preferred if available.
+
+Do not embed evidence inside report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027O_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files/components inspected
+5. complete control mapping table
+6. files changed
+7. handler reuse summary
+8. + creation sheet implementation
+9. Create New List status
+10. Scanner wiring
+11. hamburger mapping
+12. Search status
+13. active list identity
+14. summary card semantics
+15. category icon accordion
+16. category reorder result
+17. item checkbox result
+18. item detail result
+19. Weight
+20. Quantity
+21. Total
+22. Move
+23. Photo row reservation
+24. Add Item
+25. Add Category
+26. List nav
+27. Locker nav
+28. Catalog nav/status
+29. Summary nav
+30. More nav
+31. Save
+32. Undo
+33. Redo
+34. Reset
+35. Share
+36. Print
+37. Checklist
+38. Imperial/Metric
+39. Light/Dark status
+40. Pack Summary
+41. Weight Distribution
+42. Help/About
+43. tooltip/touch-help coverage
+44. 375 result
+45. 390 result
+46. 430 result
+47. production `/checklist` result
+48. desktop result
+49. review result
+50. tests NOT RUN
+51. unresolved/future functions
+52. rollback
+53. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027O COMPREHENSIVE MOBILE WIRING = PASS / PARTIAL / FAIL
+
+/MOBILE-FUNCTIONAL-V3 ONLY = YES / NO
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+REVIEW CHANGED = YES / NO
+
+PLUS CREATION SHEET = PASS / FAIL / NOT RUN
+CREATE NEW LIST ENTRY VISIBLE = YES / NO
+CREATE NEW LIST GUIDED FLOW = REAL / PENDING / NOT RUN
+SCAN GEAR LIST WIRED FROM + = PASS / FAIL / NOT RUN
+
+HAMBURGER WIRED = PASS / PARTIAL / FAIL / NOT RUN
+GLOBAL SEARCH = REAL / FUTURE / NOT RUN
+
+LIST NAV = PASS / FAIL / NOT RUN
+LOCKER NAV = PASS / FAIL / NOT RUN
+CATALOG NAV = REAL / FUTURE / NOT RUN
+SUMMARY NAV = PASS / FAIL / NOT RUN
+MORE NAV = PASS / FAIL / NOT RUN
+
+CATEGORY ICON PRIMARY ACCORDION CONTROL = PASS / FAIL / NOT RUN
+CATEGORY CHEVRON PRESENT = YES / NO
+CATEGORY TOUCH REORDER = PASS / BLOCKED / NOT RUN
+HANDLE POSITION PRESERVED = PASS / FAIL / NOT RUN
+
+ITEM CHECKBOX = PASS / FAIL / NOT RUN
+CHECKBOX SEMANTICS = CHECKLIST INCLUSION / WRONG
+ITEM DRAG DOTS PRESENT = YES / NO
+ITEM EXPAND/COLLAPSE = PASS / FAIL / NOT RUN
+WEIGHT = PASS / FAIL / NOT RUN
+QUANTITY = PASS / FAIL / NOT RUN
+TOTAL = PASS / FAIL / NOT RUN
+MOVE = PASS / FAIL / NOT RUN
+PHOTO ROW BELOW MOVE = PASS / FAIL / NOT RUN
+PHOTO BACKEND IMPLEMENTED = YES / NO
+
+ADD ITEM = PASS / FAIL / NOT RUN
+ADD CATEGORY = PASS / FAIL / NOT RUN
+
+SAVE = PASS / FAIL / NOT RUN
+UNDO = PASS / FAIL / NOT RUN
+REDO = PASS / FAIL / NOT RUN
+RESET = PASS / FAIL / NOT RUN
+SHARE = PASS / FAIL / NOT RUN
+PRINT = PASS / FAIL / NOT RUN
+CHECKLIST = PASS / FAIL / NOT RUN
+IMPERIAL/METRIC = PASS / FAIL / NOT RUN
+PACK SUMMARY = PASS / FAIL / NOT RUN
+WEIGHT DISTRIBUTION = PASS / FAIL / NOT RUN
+HELP/ABOUT = PASS / FAIL / NOT RUN
+
+V3 DARK DESIGN IMPLEMENTED = YES / NO
+MASTER ITEM REGISTRY IMPLEMENTED = YES / NO
+DOMAIN TAXONOMY IMPLEMENTED = YES / NO
+VISUAL LIBRARY IMPLEMENTED = YES / NO
+DURABLE ITEM PHOTO BACKEND IMPLEMENTED = YES / NO
+
+DATABASE/API/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027O-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027O_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do NOT cut over production `/checklist`.
+Do NOT deploy/publish.
+Do NOT implement Master Item registry.
+Do NOT implement domains.
+Do NOT implement durable photo backend.
+Do NOT implement Visual Library.
+Do NOT implement final guided Create New List flow.
+Do NOT proceed to 027P.
