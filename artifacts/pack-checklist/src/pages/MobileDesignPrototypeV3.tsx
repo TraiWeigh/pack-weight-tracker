@@ -1,13 +1,13 @@
 /**
- * MobileDesignPrototypeV3.tsx — 027D
+ * MobileDesignPrototypeV3.tsx — 027E
  * Isolated visual prototype at /mobile-design-v3
  * Static LIGHT mode only — no real control wiring.
- * Reference: 027D-AUTHORITATIVE-MOBILE-TARGET.png
+ * 027E polish: display/serif typography, refined mountain art, fine spacing.
  *
- * Derived 390px measurements:
+ * Derived 390px measurements (unchanged from 027D):
  *   app-bar height:       52px
  *   outer h-padding:      16px
- *   trip-identity height: ~52px
+ *   trip-identity height: ~50px
  *   summary-card height:  ~118px  radius: 16px
  *   category-card height: ~68px   radius: 14px
  *   wedge width:          70px    point:  16px
@@ -27,13 +27,19 @@ import {
   Hash, Luggage, PackageOpen, ArrowRightLeft,
 } from 'lucide-react';
 
+// ─── FONTS ─────────────────────────────────────────────────────────────────────
+// Display serif — used for wordmark and category titles (no new dependency)
+const SERIF  = "Georgia, 'Palatino Linotype', Palatino, 'Book Antiqua', ui-serif, serif";
+// Body sans — used for all supporting text
+const SANS   = "'Inter', system-ui, -apple-system, sans-serif";
+
 // ─── TOKENS ────────────────────────────────────────────────────────────────────
 
 const PAGE_BG      = '#F2EDE4';
 const CARD_BG      = '#FFFFFF';
 const HEADER_BG    = '#FFFFFF';
 const HEADER_BDR   = 'rgba(0,0,0,0.07)';
-const CARD_SHADOW  = '0 1px 5px rgba(0,0,0,0.09)';
+const CARD_SHADOW  = '0 1px 6px rgba(0,0,0,0.10), 0 0 1px rgba(0,0,0,0.04)';
 const CARD_BORDER  = 'rgba(0,0,0,0.06)';
 const PRIMARY      = '#1A2920';
 const SECONDARY    = '#4A5D54';
@@ -46,8 +52,8 @@ const NAV_ACTIVE   = '#2A5740';
 const NAV_INACTIVE = '#A0ADA8';
 const CB_CHECKED   = '#4E7D5C';
 const CB_UNCHECKED = 'rgba(0,0,0,0.18)';
-const DETAIL_BG    = '#F8F6F2';
-const DETAIL_BDR   = 'rgba(0,0,0,0.07)';
+const DETAIL_BG    = '#F5F0E8';
+const DETAIL_BDR   = 'rgba(0,0,0,0.06)';
 
 // ─── CATEGORY DATA ─────────────────────────────────────────────────────────────
 
@@ -76,49 +82,73 @@ function LogoMark({ size = 24 }: { size?: number }) {
 }
 
 // ─── LANDSCAPE DECORATION ──────────────────────────────────────────────────────
-// Subtle mountain/forest SVG sitting behind the trip-identity row.
-// Pale tones on cream background — must not impair text.
+// 027E: Refined multi-layer mountain/forest SVG matching target more closely.
+// 4 depth layers + snow highlights + organic pine row + left-side opacity fade.
 
 function LandscapeDecoration() {
-  // Matches target: subtle pale sage mountains concentrated in upper-right,
-  // fading naturally into cream page background.
-  const RIDGE_FAR  = '#C2D4C7';
-  const RIDGE_NEAR = '#B0C9B6';
-  const TREE       = '#A8C2AF';
-
   return (
     <svg
-      viewBox="0 0 390 90"
+      viewBox="0 0 500 110"
       preserveAspectRatio="xMaxYMax meet"
       aria-hidden="true"
       style={{
         position: 'absolute',
         top: 0, right: 0,
-        width: '72%',
-        height: '90px',
+        width: '78%',
+        height: '110px',
         pointerEvents: 'none',
         zIndex: 0,
-        opacity: 0.60,
       }}
     >
-      {/* Far ridge — spans most of SVG */}
-      <path d="M0,90 L60,38 L110,60 L160,20 L210,44 L250,15 L310,38 L350,22 L390,35 L390,90 Z"
-            fill={RIDGE_FAR} opacity="0.55"/>
-      {/* Near ridge — right-weighted */}
-      <path d="M120,90 L195,42 L240,62 L285,28 L330,50 L370,18 L390,30 L390,90 Z"
-            fill={RIDGE_NEAR} opacity="0.60"/>
-      {/* Snow caps */}
-      <path d="M250,15 L243,30 L257,30 Z" fill={RIDGE_FAR} opacity="0.95"/>
-      <path d="M370,18 L364,30 L376,30 Z" fill={RIDGE_FAR} opacity="0.85"/>
-      {/* Tree line (bottom of SVG) */}
-      {[140,155,168,180,194,208,224,238,252,266,282,298,314,330,346,362,378].map((x,i) => {
-        const h = 14 + (i % 4) * 2;
-        return (
+      <defs>
+        {/* Left-to-right fade: transparent on left, opaque on right */}
+        <linearGradient id="mtnFade" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="white" stopOpacity="1"/>
+          <stop offset="35%"  stopColor="white" stopOpacity="0"/>
+        </linearGradient>
+        <mask id="leftFade">
+          <rect width="500" height="110" fill="white"/>
+          <rect width="500" height="110" fill="url(#mtnFade)"/>
+        </mask>
+      </defs>
+
+      <g mask="url(#leftFade)">
+        {/* Layer 1 — distant pale peaks (tallest, lightest) */}
+        <path
+          d="M0,110 L50,55 L90,72 L140,30 L185,55 L220,22 L265,50 L295,18 L340,45 L375,12 L415,38 L455,20 L500,32 L500,110 Z"
+          fill="#C8D8CC" opacity="0.45"/>
+
+        {/* Snow caps on distant peaks */}
+        <path d="M295,18 L289,32 L301,32 Z" fill="#DAE8DD" opacity="0.80"/>
+        <path d="M375,12 L369,26 L381,26 Z" fill="#DAE8DD" opacity="0.80"/>
+        <path d="M455,20 L450,32 L460,32 Z" fill="#DAE8DD" opacity="0.70"/>
+        <path d="M220,22 L215,34 L225,34 Z" fill="#DAE8DD" opacity="0.65"/>
+
+        {/* Layer 2 — mid-ground ridge */}
+        <path
+          d="M80,110 L155,52 L200,68 L248,36 L290,58 L330,32 L370,55 L405,28 L445,50 L480,24 L500,38 L500,110 Z"
+          fill="#BAD0BF" opacity="0.50"/>
+
+        {/* Layer 3 — nearer rolling ridge (lower, darker) */}
+        <path
+          d="M200,110 L265,62 L310,78 L350,50 L390,68 L425,40 L460,60 L490,42 L500,50 L500,110 Z"
+          fill="#AABFB0" opacity="0.55"/>
+
+        {/* Layer 4 — forest treeline (pines, organic heights) */}
+        {([
+          [240,110,7,18],[250,110,6,22],[260,110,8,16],[271,110,6,20],
+          [281,110,7,24],[292,110,6,18],[302,110,8,22],[313,110,6,16],
+          [323,110,7,20],[334,110,6,24],[345,110,8,18],[356,110,6,22],
+          [366,110,7,16],[377,110,6,20],[388,110,8,22],[399,110,6,18],
+          [410,110,7,24],[421,110,6,20],[432,110,8,16],[443,110,7,22],
+          [454,110,6,18],[465,110,8,24],[476,110,7,20],[487,110,6,22],
+          [497,110,6,18],
+        ] as [number,number,number,number][]).map(([x,y,w,h], i) => (
           <polygon key={i}
-            points={`${x},90 ${x-6},${90-h} ${x+6},${90-h}`}
-            fill={TREE} opacity={0.45 + (i % 3) * 0.05}/>
-        );
-      })}
+            points={`${x},${y} ${x-w},${y-h} ${x+w},${y-h}`}
+            fill="#9BB5A4" opacity={0.42 + (i % 4) * 0.03}/>
+        ))}
+      </g>
     </svg>
   );
 }
@@ -266,11 +296,12 @@ function CategoryHeader({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontSize: 16,
-            fontWeight: 600,
+            fontWeight: 500,
             color: PRIMARY,
             lineHeight: 1.25,
             marginBottom: 2,
-            letterSpacing: '-0.1px',
+            letterSpacing: '0px',
+            fontFamily: SERIF,
           }}>
             {cat.name}
           </div>
@@ -518,10 +549,11 @@ export default function MobileDesignPrototypeV3() {
           }}>
             <LogoMark size={24}/>
             <span style={{
-              fontSize: 18,
-              fontWeight: 700,
+              fontSize: 19,
+              fontWeight: 600,
               color: PRIMARY,
-              letterSpacing: '-0.3px',
+              letterSpacing: '0.1px',
+              fontFamily: SERIF,
             }}>
               TrailWeigh
             </span>
@@ -556,7 +588,7 @@ export default function MobileDesignPrototypeV3() {
           {/* ── TRIP IDENTITY with landscape decoration ── */}
           <div style={{
             position: 'relative',
-            padding: '14px 16px 14px',
+            padding: '11px 16px 10px',
             overflow: 'hidden',
           }}>
             {/* Mountain decoration behind the text */}
@@ -571,10 +603,10 @@ export default function MobileDesignPrototypeV3() {
                 marginBottom: 3,
               }}>
                 <span style={{
-                  fontSize: 17,
-                  fontWeight: 600,
+                  fontSize: 16.5,
+                  fontWeight: 500,
                   color: PRIMARY,
-                  letterSpacing: '-0.2px',
+                  letterSpacing: '0px',
                 }}>
                   Italy Adventure Trip
                 </span>

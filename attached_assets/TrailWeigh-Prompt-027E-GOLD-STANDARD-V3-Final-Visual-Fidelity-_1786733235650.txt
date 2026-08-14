@@ -1,0 +1,570 @@
+TRAILWEIGH — PROMPT 027E — GOLD STANDARD
+V3 AUTHORITATIVE TARGET — FINAL VISUAL FIDELITY POLISH
+TYPOGRAPHY + MOUNTAIN ART + FINE SPACING ONLY
+NO REAL CONTROL WIRING
+
+INTERNAL VERSION ID:
+027E-V3-FINAL-VISUAL-FIDELITY-POLISH-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 6–12 minutes
+- approximately $0.45–$1.10 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE STATUS
+============================================================
+
+027D created `/mobile-design-v3`.
+
+USER LIVE RESULT:
+The user opened V3 and said:
+“much better”
+
+Interpretation:
+- V3 overall composition/direction is approved
+- V3 is NOT yet final visual approval
+- remaining work is VISUAL FIDELITY POLISH ONLY
+
+DO NOT:
+- redesign the structure
+- start over
+- revert to V2
+- revert to production mobile
+- add real controls
+
+============================================================
+AUTHORITATIVE VISUAL SPECIFICATION
+============================================================
+
+The supplied image:
+
+`027E-AUTHORITATIVE-MOBILE-TARGET.png`
+
+remains the SOLE AUTHORITATIVE VISUAL SPECIFICATION.
+
+The supplied current screenshot:
+
+`027E-CURRENT-V3.png`
+
+is NOT a competing design reference.
+
+Use it only to identify:
+- what V3 currently looks like
+- where V3 still differs from the authoritative target
+
+If V3 and target differ:
+TARGET WINS.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Make `/mobile-design-v3` visually closer to the target through ONLY:
+
+1. typography fidelity
+2. mountain/topographic decorative fidelity
+3. fine spacing/alignment/proportion adjustments
+4. subtle surface/shadow/border refinement
+
+Preserve the V3 structure and sample content.
+
+============================================================
+027D REPORT FACTS TO PRESERVE
+============================================================
+
+027D reported:
+- V3 route isolated at `/mobile-design-v3`
+- production `/checklist` unchanged
+- desktop unchanged
+- no real control wiring
+- no Dark mode work
+- target sample content reproduced
+- 375 / 390 / 430 no horizontal overflow
+- header approximately 52px
+- category cards approximately 68px
+- wedges approximately 70px wide
+- bottom nav approximately 58px
+
+027D itself identified remaining differences:
+1. mountain decoration is an SVG approximation
+2. target has more refined serif-adjacent/display typography
+3. current prototype uses Inter throughout
+
+027E should address those visible differences.
+
+============================================================
+1. TYPOGRAPHY — HIGHEST PRIORITY
+============================================================
+
+The target image clearly uses a more refined display/serif treatment for:
+- TrailWeigh wordmark
+- category titles
+- possibly trip/list title depending on closest visual match
+
+Current V3 looks too uniformly sans-serif.
+
+Required:
+- inspect fonts already available in the project/browser stack
+- choose the closest existing serif/display family WITHOUT adding a package dependency
+- use that display/serif family where the target visibly uses it
+- keep body/subtitle/detail text in clean sans-serif
+
+Target visual hierarchy:
+DISPLAY/SERIF:
+- TrailWeigh
+- Luggage
+- Clothing
+- Toiletries
+- Documents
+- Electronics
+- Medication
+- Shoes
+- Beach / Activities
+
+SANS-SERIF:
+- item counts
+- packed counts
+- detail rows
+- dates
+- summary labels
+- item names/body text where target appears sans
+
+Do not use a decorative font that changes readability.
+
+Do not increase font sizes just because the font changes.
+
+Match target:
+- weight
+- line-height
+- letter spacing
+- vertical centering
+
+============================================================
+2. TRAILWEIGH WORDMARK
+============================================================
+
+Current V3 wordmark must be tuned to more closely match target:
+- refined serif/display presence
+- similar visual width
+- similar baseline relative to logo mark
+- compact header preserved
+- no increase in app-bar height
+
+Do not modify header structure.
+
+============================================================
+3. CATEGORY TITLE TYPOGRAPHY
+============================================================
+
+Category titles should look more like target:
+- refined serif/display style
+- stronger visual identity than subtitle
+- not overly bold
+- vertically centered precisely
+
+Keep:
+- same category data
+- same wedge/card structure
+- same subtitle format
+- same chevron
+
+Do not change category card height unless a 1–3px adjustment is needed for optical alignment.
+
+============================================================
+4. MOUNTAIN / FOREST / TOPOGRAPHIC DECORATION
+============================================================
+
+Current V3 uses an SVG approximation.
+
+Refine it to resemble the target more closely:
+- pale layered mountain silhouettes
+- strongest detail concentrated toward upper-right
+- subtle forest/tree-line impression if achievable with CSS/SVG
+- very low contrast
+- smooth fade into cream page
+- must remain behind content
+- must not reduce text legibility
+
+Do NOT:
+- use TrailWeigh photo themes
+- add a photographic background
+- create a large visual distraction
+- increase the header/identity section height materially
+
+Preferred:
+- improve existing inline SVG/CSS
+- no new raster asset unless already available in supplied target bundle and safe to reuse
+
+If the target image itself cannot be legally/technically extracted as a background asset, approximate it with vector/CSS only.
+
+============================================================
+5. TRIP IDENTITY SPACING
+============================================================
+
+Compare target vs V3 carefully.
+
+Tune only as needed:
+- hamburger/header-to-trip gap
+- trip title baseline
+- date gap
+- trip identity-to-summary gap
+- mountain artwork vertical placement
+
+Goal:
+content should align vertically like target.
+
+Do not add production-only metadata.
+
+============================================================
+6. SUMMARY CARD FINE FIDELITY
+============================================================
+
+Preserve:
+- 48 items
+- 31 Packed
+- 17 Remaining
+- suitcase icon box
+- dark forest-green card
+
+Only fine-tune against target:
+- internal top/bottom padding
+- icon-box vertical alignment
+- 48/items baseline
+- status-pill spacing
+- card shadow strength
+- radius
+- status-circle size
+
+Do not structurally redesign the card.
+
+============================================================
+7. CATEGORY CARD / WEDGE FINE FIDELITY
+============================================================
+
+Preserve V3 geometry unless target comparison shows small mismatch.
+
+Tune only:
+- wedge point depth ±2px
+- wedge width ±3px
+- icon optical size/alignment
+- category title left offset
+- subtitle spacing
+- right chevron inset
+- card shadow/border
+- category gap
+
+Avoid broad changes.
+
+============================================================
+8. EXPANDED TOILETRIES / SUNSCREEN POLISH
+============================================================
+
+Preserve static open/expanded states.
+
+Fine-tune:
+- divider opacity
+- item row padding
+- detail icon alignment
+- label/value baselines
+- detail background warmth
+- drag-row alignment
+
+Do not add behavior.
+
+Do not change the content.
+
+============================================================
+9. BOTTOM NAV FIDELITY
+============================================================
+
+Preserve:
+- 5 tabs
+- Pack List selected
+- labels/icons
+- fixed/sticky visual treatment
+
+Tune:
+- icon size
+- label size
+- selected green
+- spacing
+- top divider/shadow
+- nav height only if target comparison requires a small adjustment
+
+Do not wire navigation.
+
+============================================================
+10. LIGHT MODE ONLY
+============================================================
+
+027E remains LIGHT MODE ONLY.
+
+Do not create Dark mode yet.
+
+The approved Light geometry becomes the basis for future Dark mode.
+
+============================================================
+NO FUNCTIONAL WORK
+============================================================
+
+DO NOT wire:
+- hamburger
+- search
+- plus
+- category chevrons
+- checkboxes
+- drag/reorder
+- bottom nav
+- any production controls
+
+Static prototype only.
+
+============================================================
+STRICT PRODUCTION PROTECTION
+============================================================
+
+DO NOT modify:
+- production `/checklist`
+- current production mobile
+- desktop
+- `/mobile-preview`
+- `/mobile-design-v2`
+- production data/state
+- Checklist logic
+- Locker
+- Save
+- Share/Review
+- Print
+- Background/Themes
+- API
+- database
+- auth
+
+Only V3 prototype-specific presentation code may change.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Expected:
+- `src/pages/MobileDesignPrototypeV3.tsx`
+
+Optional:
+- V3-specific CSS/module if it already exists
+
+App routing should NOT need change.
+
+Maximum:
+2 application files.
+
+If another file is required:
+STOP and explain before broadening.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Open `/mobile-design-v3` at 390px.
+3. Inspect:
+   `027E-AUTHORITATIVE-MOBILE-TARGET.png`
+4. Inspect:
+   `027E-CURRENT-V3.png`
+5. List exact visible differences.
+6. Confirm only V3-specific files need edits.
+7. Record preflight git status.
+8. Create:
+   `workflow-reports/PROMPT_027E_REPORT.md`
+
+If the authoritative target image is unavailable:
+STOP.
+Do not guess.
+
+============================================================
+MANDATORY VISUAL COMPARISON PASSES
+============================================================
+
+PASS 1 — TYPOGRAPHY
+- change display/serif typography
+- render 390
+- compare target
+
+PASS 2 — ART / SPACING
+- refine mountain/topo artwork
+- tune spacing/proportions
+- render 390
+- compare target
+
+PASS 3 — FINAL OPTICAL POLISH
+- make only small remaining adjustments
+- render final 390
+- compare target
+
+At least 3 distinct visual-review renders are required.
+
+============================================================
+MANDATORY TESTS
+============================================================
+
+TEST 1 — 390 FINAL
+Expected:
+- visibly closer to target than 027D V3
+- refined wordmark/category typography
+- closer mountain artwork
+- no structural regression
+
+TEST 2 — 375
+Expected:
+- no clipping
+- no overflow
+
+TEST 3 — 430
+Expected:
+- stable proportions
+- no excessive gaps
+
+TEST 4 — PRODUCTION MOBILE
+Expected:
+- unchanged
+
+TEST 5 — DESKTOP
+Expected:
+- unchanged
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate files:
+- 390 final V3 screenshot
+- 375 screenshot
+- 430 screenshot
+- target + final V3 side-by-side if practical
+
+Do not place screenshots in report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027E_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. files changed
+6. exact target-vs-current differences identified before edit
+7. font families already available
+8. chosen display/serif treatment
+9. wordmark change
+10. category typography change
+11. mountain/topographic change
+12. spacing changes
+13. summary fine-tuning
+14. wedge/card fine-tuning
+15. expanded section fine-tuning
+16. bottom nav fine-tuning
+17. visual pass 1 result
+18. visual pass 2 result
+19. visual pass 3 result
+20. 375 result
+21. 390 result
+22. 430 result
+23. horizontal overflow result
+24. production mobile safety
+25. desktop safety
+26. remaining visible differences
+27. USER VISUAL APPROVAL = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+V3 STRUCTURE PRESERVED = YES / NO
+AUTHORITATIVE TARGET USED = YES / NO
+DISPLAY/SERIF TYPOGRAPHY ADDED = PASS / FAIL / NOT RUN
+TRAILWEIGH WORDMARK CLOSER TO TARGET = PASS / FAIL / NOT RUN
+CATEGORY TITLES CLOSER TO TARGET = PASS / FAIL / NOT RUN
+MOUNTAIN ART CLOSER TO TARGET = PASS / FAIL / NOT RUN
+TRIP IDENTITY SPACING CLOSER TO TARGET = PASS / FAIL / NOT RUN
+SUMMARY CARD FIDELITY IMPROVED = PASS / FAIL / NOT RUN
+WEDGE/CARD FIDELITY IMPROVED = PASS / FAIL / NOT RUN
+EXPANDED SECTION FIDELITY IMPROVED = PASS / FAIL / NOT RUN
+BOTTOM NAV FIDELITY IMPROVED = PASS / FAIL / NOT RUN
+THREE VISUAL REVIEW PASSES COMPLETED = YES / NO
+HORIZONTAL OVERFLOW = YES / NO / NOT RUN
+
+REAL CONTROL WIRING ADDED = YES / NO
+DARK MODE WORK ADDED = YES / NO
+PRODUCTION MOBILE CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+CHECKLIST LOGIC CHANGED = YES / NO
+LOCKER LOGIC CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+CREATE-NEW-LIST CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VISUAL APPROVAL = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Did I preserve the V3 composition the user liked?
+2. Did I use the target as the source of truth?
+3. Did I improve the wordmark typography?
+4. Did I improve category-title typography?
+5. Did I improve mountain/topographic fidelity?
+6. Did I avoid unnecessary structural changes?
+7. Did I make only fine spacing/proportion adjustments?
+8. Did I perform 3 visual review renders?
+9. Is 375 clean?
+10. Is 390 clean?
+11. Is 430 clean?
+12. Is production mobile unchanged?
+13. Is desktop unchanged?
+14. Did I avoid all real control wiring?
+15. Did I avoid Dark mode?
+
+If not:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027E-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027E_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do not wire controls.
+Do not create Dark mode.
+Do not replace production mobile.
+Do not proceed to another TrailWeigh feature.
