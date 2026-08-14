@@ -1,0 +1,465 @@
+TRAILWEIGH — PROMPT 027K — GOLD STANDARD
+SURGICAL CATEGORY-REORDER-HANDLE POSITION FIX
+DEDICATED RIGHT-SIDE HANDLE COLUMN BEFORE SELECTED WEIGHT
+
+INTERNAL VERSION ID:
+027K-CATEGORY-HANDLE-RIGHT-SIDE-SLOT-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 3–7 minutes
+- approximately $0.25–$0.65 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+AUTHORITATIVE USER LIVE EVIDENCE
+============================================================
+
+The USER supplied a live screenshot after 027J.
+
+USER verdict:
+- the six-dot CATEGORY reorder handle is still in the wrong place
+- the current 50% placement interferes visually with category name and item count
+- the dots should be farther right
+- the correct design is a dedicated right-side handle slot immediately BEFORE the selected category-weight area
+
+USER live evidence outranks the 027J report's internal PASS claims.
+
+============================================================
+ROOT CAUSE FROM 027J
+============================================================
+
+027J intentionally used:
+
+`position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%)`
+
+That creates a mathematically centered handle, but the USER has now rejected
+that layout because the handle competes with category-name/subtitle space.
+
+The 50% rule is therefore SUPERSEDED.
+
+Do NOT preserve it.
+
+============================================================
+AUTHORITATIVE MOBILE CATEGORY-BAR RULE
+============================================================
+
+LEFT TO RIGHT:
+
+[ CATEGORY ICON / WEDGE ]
+[ CATEGORY NAME + ITEM COUNT / SUBTITLE — FLEXIBLE TEXT AREA ]
+[ SIX-DOT CATEGORY REORDER HANDLE — DEDICATED FIXED SLOT ]
+[ SELECTED CATEGORY WEIGHT — RIGHT-ALIGNED ]
+
+IMPORTANT:
+- the handle is NOT at 50%
+- the handle is NOT absolutely positioned over the text region
+- the handle is NOT placed by remaining flex-space coincidence
+- the handle gets its OWN reserved column/slot
+- that slot sits directly before the selected-weight column
+- the selected weight remains at the far right
+- long category names/item counts must never run underneath the handle
+
+The visual result should naturally place the handle around the right-side /
+roughly three-quarter region on common phone widths, WITHOUT hard-coding 75%.
+
+============================================================
+CATEGORY ACCORDION RULE — PRESERVE
+============================================================
+
+The CATEGORY ICON ITSELF is the category accordion trigger.
+
+Not:
+- category name
+- whole category bar
+- six-dot handle
+- weight
+- chevron
+
+There should be NO category accordion chevron.
+
+============================================================
+ITEM RULES — PRESERVE
+============================================================
+
+- NO item six-dot drag handles
+- NO mobile item drag-and-drop
+- KEEP `Move` in expanded item details
+- no changes to item Weight / Quantity / Total / Move
+- no changes to item checkbox semantics
+
+============================================================
+PRIMARY PURPOSE
+============================================================
+
+Change ONLY the category-handle layout in:
+
+1. `/mobile-design-v3`
+2. `/mobile-functional-v3`
+
+Do not wire new functionality yet.
+
+============================================================
+SCOPE A — REPLACE 50% ABSOLUTE POSITIONING
+============================================================
+
+In BOTH V3 files:
+
+REMOVE the current category-handle positioning pattern based on:
+- `position: absolute`
+- `left: 50%`
+- `transform: translate(-50%, -50%)`
+
+Replace it with a true STRUCTURAL layout.
+
+Preferred implementation:
+- CSS grid or equivalent deterministic layout
+- category content area should have:
+  `minmax(0, 1fr)` for text
+  a fixed/reserved handle column
+  an auto/fixed-min weight column
+
+Conceptually:
+
+`[text minmax(0,1fr)] [handle 28–36px] [weight auto]`
+
+Use existing inline/Tailwind styling conventions already present.
+Do not introduce a new layout library.
+
+============================================================
+SCOPE B — TEXT PROTECTION
+============================================================
+
+The category name + subtitle/item count area must have its own flexible column.
+
+Requirements:
+- no overlap with handle
+- no text rendered underneath handle
+- no overlap with weight
+- preserve current two-line name/subtitle hierarchy
+- use `min-width: 0` / equivalent where required
+- if extremely long category names require truncation or wrapping, preserve
+  readability and existing row height as closely as possible
+
+Do NOT solve overlap by:
+- shrinking font excessively
+- hiding item count
+- moving weight below the bar
+- reducing wedge size
+- restoring chevrons
+
+============================================================
+SCOPE C — HANDLE SLOT
+============================================================
+
+The handle slot:
+- sits immediately before selected weight
+- is vertically centered
+- has a stable width
+- is visually separate from both text and weight
+- does not shift into the text region on 375 / 390 / 430 widths
+- remains present in every category bar
+
+For `/mobile-design-v3`:
+- visual only is acceptable
+
+For `/mobile-functional-v3`:
+- preserve current nonfunctional/inert status if category touch reorder is still blocked
+- DO NOT install a drag library in 027K
+- DO NOT fake functional reorder
+
+Do not use `pointerEvents: none` as a reason to overlay it on text.
+The placement must be structurally correct.
+
+============================================================
+SCOPE D — WEIGHT SLOT
+============================================================
+
+Selected category total weight remains:
+- at far right
+- right aligned
+- based on selected items only
+- using existing current V3 formatting
+- no change to weight math, units, rounding, or reactivity
+
+The weight column must not be pushed offscreen by long category names.
+
+============================================================
+SCOPE E — TOILETRIES ICON
+============================================================
+
+Preserve the 027J correction:
+- Toiletries = toothbrush
+- Hydration = water drop
+
+No icon redesign in 027K.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Preferred and maximum:
+1. `src/pages/MobileDesignPrototypeV3.tsx`
+2. `src/pages/MobileFunctionalV3.tsx`
+
+Do NOT edit:
+- `Checklist.tsx`
+- `MobileWedgeCategory.tsx`
+- production `/checklist`
+- desktop components
+- `App.tsx`
+- API
+- DB/schema
+- auth
+- dependencies
+- `replit.md`
+- `.agents/memory`
+- deployment
+
+If more than these two application files are required:
+STOP and explain.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read `workflow-reports/PROMPT_027J_REPORT.md`.
+3. Inspect both V3 files.
+4. Locate the current 50%-absolute handle code in each file.
+5. Confirm category text and selected-weight layout containers.
+6. Record preflight git status.
+7. Create:
+   `workflow-reports/PROMPT_027K_REPORT.md`
+
+============================================================
+MANDATORY VISUAL TESTS
+============================================================
+
+TEST 1 — 390 WIDTH
+On `/mobile-design-v3`:
+- handle is clearly to the RIGHT of category text
+- handle is directly BEFORE selected weight
+- handle does not visually interfere with category name
+- handle does not interfere with item count/subtitle
+- weight remains far right
+- no category chevron
+
+TEST 2 — LONG CATEGORY NAME
+Use visible:
+`Beach / Activities`
+or another long category.
+
+PASS only if:
+- text remains readable
+- handle remains in its reserved slot
+- weight remains at right
+- no overlap
+
+TEST 3 — SHORT CATEGORY NAME
+Use:
+`Shoes`
+or another short category.
+
+PASS only if:
+- handle stays in SAME right-side structural column
+- it does not drift toward center merely because text is short
+
+TEST 4 — DIFFERENT WEIGHT WIDTHS
+Verify categories with:
+- ounce display
+- pound display
+- wider/narrower values
+
+PASS only if:
+- handle remains immediately before weight
+- text remains protected
+
+TEST 5 — RESPONSIVE
+At 375 / 390 / 430:
+- no horizontal overflow
+- no text/handle overlap
+- no handle/weight overlap
+- no clipping
+
+TEST 6 — FUNCTIONAL PREVIEW
+On `/mobile-functional-v3`:
+- same category-bar layout
+- icon tap still opens/closes category
+- handle does NOT toggle accordion
+- weight reactivity unchanged
+
+TEST 7 — ITEM DETAILS
+- item rows still have no drag dots
+- expanded item still has Move
+- Weight / Quantity / Total remain intact
+
+TEST 8 — PRODUCTION SAFETY
+- `/checklist` unchanged
+- desktop unchanged
+
+============================================================
+VISUAL EVIDENCE REQUIRED
+============================================================
+
+Provide separate screenshots:
+1. `/mobile-design-v3` at 390 with Luggage / Clothing / Toiletries visible
+2. same route with `Beach / Activities` visible
+3. `/mobile-functional-v3` at 390
+4. close crop clearly showing:
+   category text | dedicated dots slot | selected weight
+
+Do not embed screenshots in the report ZIP.
+
+============================================================
+ACCEPTANCE CRITERIA
+============================================================
+
+PASS only if the USER can visually see:
+
+- category name + item count have a clear uninterrupted text region
+- six-dot handle is farther right than the rejected 50% position
+- six-dot handle occupies a dedicated slot immediately before weight
+- selected weight remains at the far right
+- no category chevron
+- category icon remains the accordion trigger
+- no item drag dots
+- Move remains for items
+
+Do NOT call PASS merely because CSS compiles.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027K_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. exact rejected 50% code found
+6. exact replacement layout
+7. handle-column width/spacing used
+8. text-column protection
+9. weight-column protection
+10. 375 result
+11. 390 result
+12. 430 result
+13. long-name result
+14. short-name result
+15. weight-width result
+16. functional-preview accordion protection
+17. item Move protection
+18. production `/checklist` result
+19. desktop result
+20. tests NOT RUN
+21. unresolved issues
+22. rollback
+23. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027K HANDLE PLACEMENT FIX = PASS / FAIL / NOT RUN
+
+50% ABSOLUTE HANDLE POSITION REMOVED = YES / NO
+DEDICATED HANDLE COLUMN PRESENT = YES / NO
+HANDLE IMMEDIATELY BEFORE WEIGHT = PASS / FAIL / NOT RUN
+CATEGORY TEXT OVERLAPS HANDLE = YES / NO
+ITEM COUNT OVERLAPS HANDLE = YES / NO
+HANDLE OVERLAPS WEIGHT = YES / NO
+SELECTED WEIGHT REMAINS FAR RIGHT = PASS / FAIL / NOT RUN
+
+CATEGORY ICON ONLY PRIMARY ACCORDION TRIGGER = PASS / FAIL / NOT RUN
+CATEGORY CHEVRON PRESENT = YES / NO
+
+ITEM DRAG HANDLE PRESENT = YES / NO
+ITEM MOVE PRESERVED = PASS / FAIL / NOT RUN
+
+TOILETRIES TOOTHBRUSH PRESERVED = PASS / FAIL / NOT RUN
+HYDRATION WATER DROP PRESERVED = PASS / FAIL / NOT RUN
+
+CATEGORY TOUCH REORDER FUNCTIONAL = PASS / BLOCKED / NOT RUN
+NEW DRAG DEPENDENCY ADDED = YES / NO
+
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+NEXT PHASE — DO NOT START
+============================================================
+
+After USER visually verifies 027K, the next prompt will be the comprehensive
+mobile control-wiring phase.
+
+That future phase must explicitly include:
+- hamburger/menu
+- large upper-right + = Create New List
+- Search
+- List
+- Locker
+- Catalog
+- Summary
+- More
+- Scan Gear List / Scanner
+- Share
+- Print
+- Save
+- Undo
+- Redo
+- Reset
+- Imperial / Metric
+- Light / Dark when authorized
+- category accordion/icon control
+- category reorder
+- Add Category
+- Add Item / +Base
+- item checkbox
+- item detail expansion
+- Weight
+- Quantity
+- Total
+- Move
+- Checklist
+- Pack Summary
+- Weight Distribution
+- Help / About
+- review-mode implications
+
+DO NOT wire those controls in 027K.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027K-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027K_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do NOT proceed to full control wiring until USER live-verifies the handle fix.

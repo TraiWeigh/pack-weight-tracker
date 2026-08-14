@@ -290,10 +290,7 @@ function CategoryHeader({ cat }: { cat: typeof CATEGORIES[0] }) {
     : '';
 
   return (
-    <div style={{
-      display: 'flex', alignItems: 'stretch', minHeight: CARD_H,
-      position: 'relative', // anchor for absolute-centered handle
-    }}>
+    <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H }}>
       {/* ── WEDGE / ICON ── */}
       <div style={{
         width: WEDGE_W, minHeight: CARD_H, background: cat.color,
@@ -301,18 +298,25 @@ function CategoryHeader({ cat }: { cat: typeof CATEGORIES[0] }) {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0, paddingRight: WEDGE_POINT / 2,
       }}>
-        {/* Toothbrush overrides Droplets for Toiletries */}
         {cat.id === 'toiletries'
           ? <ToothbrushIcon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>
           : <cat.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>}
       </div>
 
-      {/* ── CONTENT — name left, selected weight right; no chevron ── */}
+      {/* ── CONTENT — three-column grid: [text] [handle-slot] [weight] ──
+          Column 1 (minmax 0,1fr): name + subtitle — flexible, never overlaps.
+          Column 2 (32px fixed):   six-dot handle — dedicated structural slot.
+          Column 3 (auto):         selected weight — far right, never clipped. */}
       <div style={{
-        flex: 1, display: 'flex', alignItems: 'center',
-        padding: '10px 12px', minWidth: 0,
+        flex: 1, minWidth: 0,
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 1fr) 32px auto',
+        alignItems: 'center',
+        padding: '10px 12px',
+        columnGap: 0,
       }}>
-        <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
+        {/* Col 1 — name + subtitle */}
+        <div style={{ minWidth: 0 }}>
           <div style={{
             fontSize: 17, fontWeight: 500, color: PRIMARY,
             lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
@@ -326,27 +330,23 @@ function CategoryHeader({ cat }: { cat: typeof CATEGORIES[0] }) {
           </div>
         </div>
 
-        {/* Selected-item total weight — right side */}
-        {weightStr && (
-          <div style={{
-            flexShrink: 0, textAlign: 'right',
-            fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
-          }}>
-            {weightStr}
-          </div>
-        )}
-      </div>
+        {/* Col 2 — six-dot handle in its own reserved slot; inert visual */}
+        <div aria-hidden="true" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          opacity: 0.28,
+        }}>
+          <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
+        </div>
 
-      {/* ── SIX-DOT CATEGORY HANDLE — absolute center of FULL bar ──
-          left: 50% of the category bar (wedge + content combined).
-          pointerEvents: none prevents blocking wedge or weight taps. */}
-      <div aria-hidden="true" style={{
-        position: 'absolute', left: '50%', top: '50%',
-        transform: 'translate(-50%, -50%)',
-        pointerEvents: 'none', opacity: 0.28,
-        display: 'flex', alignItems: 'center',
-      }}>
-        <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
+        {/* Col 3 — selected-weight, right-aligned */}
+        <div style={{
+          textAlign: 'right',
+          fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
+          whiteSpace: 'nowrap',
+          visibility: weightStr ? 'visible' : 'hidden',
+        }}>
+          {weightStr || '—'}
+        </div>
       </div>
     </div>
   );

@@ -527,7 +527,7 @@ function MobileFunctionalV3Inner() {
                 }}>
 
                   {/* ── CATEGORY HEADER ── */}
-                  <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, position: 'relative' }}>
+                  <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H }}>
 
                     {/* WEDGE / ICON — PRIMARY ACCORDION TOGGLE */}
                     <button
@@ -551,12 +551,20 @@ function MobileFunctionalV3Inner() {
                         : <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>}
                     </button>
 
-                    {/* CONTENT — name/subtitle left, selected weight right; NO chevron */}
+                    {/* CONTENT — three-column grid: [text] [handle-slot] [weight]
+                        Col 1 (minmax 0,1fr): name + subtitle — protected, never overlaps.
+                        Col 2 (32px fixed):   six-dot handle — dedicated structural slot.
+                        Col 3 (auto):         selected weight — far right, never clipped. */}
                     <div style={{
-                      flex: 1, display: 'flex', alignItems: 'center',
-                      padding: '10px 12px', minWidth: 0,
+                      flex: 1, minWidth: 0,
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0, 1fr) 32px auto',
+                      alignItems: 'center',
+                      padding: '10px 12px',
+                      columnGap: 0,
                     }}>
-                      <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
+                      {/* Col 1 — name + subtitle */}
+                      <div style={{ minWidth: 0 }}>
                         <div style={{
                           fontSize: 17, fontWeight: 500, color: PRIMARY,
                           lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
@@ -570,27 +578,23 @@ function MobileFunctionalV3Inner() {
                         </div>
                       </div>
 
-                      {/* Selected-item total weight — right side, reacts to checkbox/qty/weight/move */}
-                      {catTotalOz > 0 && (
-                        <div style={{
-                          flexShrink: 0, textAlign: 'right',
-                          fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
-                        }}>
-                          {formatWeight(catTotalOz, system, 'small')} {su}
-                        </div>
-                      )}
-                    </div>
+                      {/* Col 2 — six-dot handle in reserved structural slot; inert (no DnD installed) */}
+                      <div aria-hidden="true" style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        opacity: 0.28,
+                      }}>
+                        <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
+                      </div>
 
-                    {/* SIX-DOT HANDLE — TRUE CENTER of full bar via absolute positioning.
-                        left: 50% of (wedge + content) combined width.
-                        pointerEvents: none — never blocks wedge tap or weight display. */}
-                    <div aria-hidden="true" style={{
-                      position: 'absolute', left: '50%', top: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      pointerEvents: 'none', opacity: 0.28,
-                      display: 'flex', alignItems: 'center',
-                    }}>
-                      <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
+                      {/* Col 3 — selected-weight, right-aligned, live via calcTotalOz */}
+                      <div style={{
+                        textAlign: 'right',
+                        fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
+                        whiteSpace: 'nowrap',
+                        visibility: catTotalOz > 0 ? 'visible' : 'hidden',
+                      }}>
+                        {catTotalOz > 0 ? `${formatWeight(catTotalOz, system, 'small')} ${su}` : '—'}
+                      </div>
                     </div>
                   </div>
 
