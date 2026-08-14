@@ -1,16 +1,17 @@
 /**
- * MobileDesignPrototypeV3.tsx — 027E
+ * MobileDesignPrototypeV3.tsx — 027F
  * Isolated visual prototype at /mobile-design-v3
  * Static LIGHT mode only — no real control wiring.
- * 027E polish: display/serif typography, refined mountain art, fine spacing.
+ * 027F: search circle button, mountain depth, category title bump,
+ *       summary/wedge fine-tune, drag-to-reorder removed.
  *
- * Derived 390px measurements (unchanged from 027D):
+ * Derived 390px measurements:
  *   app-bar height:       52px
  *   outer h-padding:      16px
  *   trip-identity height: ~50px
- *   summary-card height:  ~118px  radius: 16px
+ *   summary-card height:  ~122px  radius: 16px
  *   category-card height: ~68px   radius: 14px
- *   wedge width:          70px    point:  16px
+ *   wedge width:          72px    point:  17px
  *   category gap:         8px
  *   item-row height:      44px
  *   detail-row height:    42px
@@ -115,38 +116,43 @@ function LandscapeDecoration() {
       <g mask="url(#leftFade)">
         {/* Layer 1 — distant pale peaks (tallest, lightest) */}
         <path
-          d="M0,110 L50,55 L90,72 L140,30 L185,55 L220,22 L265,50 L295,18 L340,45 L375,12 L415,38 L455,20 L500,32 L500,110 Z"
-          fill="#C8D8CC" opacity="0.45"/>
+          d="M0,110 L40,62 L80,78 L130,35 L175,58 L215,20 L255,48 L290,14 L335,42 L370,8 L410,34 L450,16 L490,28 L500,24 L500,110 Z"
+          fill="#C4D6CA" opacity="0.50"/>
 
-        {/* Snow caps on distant peaks */}
-        <path d="M295,18 L289,32 L301,32 Z" fill="#DAE8DD" opacity="0.80"/>
-        <path d="M375,12 L369,26 L381,26 Z" fill="#DAE8DD" opacity="0.80"/>
-        <path d="M455,20 L450,32 L460,32 Z" fill="#DAE8DD" opacity="0.70"/>
-        <path d="M220,22 L215,34 L225,34 Z" fill="#DAE8DD" opacity="0.65"/>
+        {/* Snow caps on distant peaks — stronger */}
+        <path d="M290,14 L283,30 L297,30 Z" fill="#E0EEEA" opacity="0.88"/>
+        <path d="M370,8  L362,26 L378,26 Z" fill="#E0EEEA" opacity="0.90"/>
+        <path d="M450,16 L444,30 L456,30 Z" fill="#E0EEEA" opacity="0.78"/>
+        <path d="M215,20 L209,33 L221,33 Z" fill="#DAE8DD" opacity="0.72"/>
+        <path d="M490,28 L486,38 L494,38 Z" fill="#DAE8DD" opacity="0.65"/>
 
-        {/* Layer 2 — mid-ground ridge */}
+        {/* Layer 2 — mid-ground ridge, shifted right + stronger */}
         <path
-          d="M80,110 L155,52 L200,68 L248,36 L290,58 L330,32 L370,55 L405,28 L445,50 L480,24 L500,38 L500,110 Z"
-          fill="#BAD0BF" opacity="0.50"/>
+          d="M120,110 L190,48 L235,64 L278,30 L318,54 L355,26 L393,50 L428,22 L465,44 L490,20 L500,30 L500,110 Z"
+          fill="#B5CCBA" opacity="0.56"/>
+
+        {/* Layer 2b — secondary mid ridge for extra depth */}
+        <path
+          d="M220,110 L275,58 L308,72 L342,44 L375,62 L408,36 L440,56 L468,38 L490,50 L500,44 L500,110 Z"
+          fill="#A8BFB0" opacity="0.48"/>
 
         {/* Layer 3 — nearer rolling ridge (lower, darker) */}
         <path
-          d="M200,110 L265,62 L310,78 L350,50 L390,68 L425,40 L460,60 L490,42 L500,50 L500,110 Z"
-          fill="#AABFB0" opacity="0.55"/>
+          d="M280,110 L320,68 L352,82 L382,56 L412,72 L440,46 L468,64 L490,50 L500,56 L500,110 Z"
+          fill="#9CB2A4" opacity="0.60"/>
 
-        {/* Layer 4 — forest treeline (pines, organic heights) */}
+        {/* Layer 4 — forest treeline (pines, organic heights, denser right) */}
         {([
-          [240,110,7,18],[250,110,6,22],[260,110,8,16],[271,110,6,20],
-          [281,110,7,24],[292,110,6,18],[302,110,8,22],[313,110,6,16],
-          [323,110,7,20],[334,110,6,24],[345,110,8,18],[356,110,6,22],
-          [366,110,7,16],[377,110,6,20],[388,110,8,22],[399,110,6,18],
-          [410,110,7,24],[421,110,6,20],[432,110,8,16],[443,110,7,22],
-          [454,110,6,18],[465,110,8,24],[476,110,7,20],[487,110,6,22],
-          [497,110,6,18],
+          [290,110,5,14],[299,110,6,18],[308,110,5,13],[317,110,7,20],
+          [327,110,5,16],[336,110,6,22],[346,110,5,15],[355,110,7,19],
+          [365,110,5,17],[374,110,6,23],[384,110,5,14],[393,110,7,21],
+          [403,110,5,18],[412,110,6,24],[422,110,5,16],[431,110,7,20],
+          [441,110,5,18],[450,110,6,22],[460,110,5,15],[469,110,7,21],
+          [479,110,5,17],[488,110,6,23],[497,110,5,16],
         ] as [number,number,number,number][]).map(([x,y,w,h], i) => (
           <polygon key={i}
             points={`${x},${y} ${x-w},${y-h} ${x+w},${y-h}`}
-            fill="#9BB5A4" opacity={0.42 + (i % 4) * 0.03}/>
+            fill="#8BA898" opacity={0.44 + (i % 5) * 0.04}/>
         ))}
       </g>
     </svg>
@@ -161,11 +167,11 @@ function TripSummaryCard() {
       margin: '0 16px',
       borderRadius: 16,
       background: SUMMARY_BG,
-      padding: '14px 16px 14px 14px',
+      padding: '16px 16px 16px 14px',
       display: 'flex',
       alignItems: 'center',
-      gap: 14,
-      boxShadow: '0 2px 8px rgba(42,87,64,0.25)',
+      gap: 16,
+      boxShadow: '0 2px 10px rgba(42,87,64,0.28)',
     }}>
       {/* Luggage icon box */}
       <div style={{
@@ -252,8 +258,8 @@ function TripSummaryCard() {
 
 // ─── WEDGE CATEGORY CARD ───────────────────────────────────────────────────────
 
-const WEDGE_W     = 70;
-const WEDGE_POINT = 16;
+const WEDGE_W     = 72;
+const WEDGE_POINT = 17;
 const CARD_H      = 68;
 
 function CategoryHeader({
@@ -295,12 +301,12 @@ function CategoryHeader({
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: 16,
+            fontSize: 17,
             fontWeight: 500,
             color: PRIMARY,
-            lineHeight: 1.25,
+            lineHeight: 1.2,
             marginBottom: 2,
-            letterSpacing: '0px',
+            letterSpacing: '-0.1px',
             fontFamily: SERIF,
           }}>
             {cat.name}
@@ -415,18 +421,7 @@ function ItemRow({ item, isLast }: { item: ItemData; isLast?: boolean }) {
               </div>
             </div>
           ))}
-          {/* Drag to reorder */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            height: 38,
-            borderTop: `1px solid ${DETAIL_BDR}`,
-          }}>
-            <GripVertical size={14} color={MUTED} strokeWidth={1.8}/>
-            <span style={{ fontSize: 12, color: MUTED }}>Drag to reorder</span>
-          </div>
+          {/* Drag to reorder — removed per 027F user decision */}
         </div>
       )}
     </div>
@@ -560,8 +555,23 @@ export default function MobileDesignPrototypeV3() {
           </div>
 
           {/* Search + FAB */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Search size={20} color={SECONDARY} strokeWidth={1.8} style={{ cursor: 'pointer' }}/>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Search — white circle button matching + button size */}
+            <div style={{
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              background: '#FFFFFF',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.04)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}>
+              <Search size={17} color={SECONDARY} strokeWidth={1.8}/>
+            </div>
+            {/* FAB */}
             <div style={{
               width: 34,
               height: 34,

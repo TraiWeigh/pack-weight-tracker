@@ -1,0 +1,530 @@
+TRAILWEIGH — PROMPT 027F — GOLD STANDARD
+V3 FINAL FIDELITY CORRECTIONS
+TARGET-MATCH POLISH + REMOVE MOBILE DRAG ROW
+NO REAL CONTROL WIRING
+
+INTERNAL VERSION ID:
+027F-V3-FINAL-FIDELITY-CORRECTIONS-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 5–10 minutes
+- approximately $0.35–$0.90 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE STATUS
+============================================================
+
+027D created `/mobile-design-v3`.
+
+027E refined V3 typography, mountain artwork, spacing, summary,
+expanded section, and bottom navigation.
+
+USER LIVE RESULT AFTER 027E:
+- V3 is now very close to the authoritative target.
+- Overall structure is approved.
+- Header height is now correct and must NOT grow again.
+- Final visual approval is still pending.
+
+027F is a SMALL FINAL-FIDELITY CORRECTION ONLY.
+
+DO NOT:
+- redesign structure
+- start over
+- revert to V2
+- change production mobile
+- change desktop
+- wire real controls
+- add Dark mode
+
+============================================================
+AUTHORITATIVE TARGET + ONE USER OVERRIDE
+============================================================
+
+The supplied image:
+
+`027F-AUTHORITATIVE-MOBILE-TARGET.png`
+
+remains the authoritative visual specification.
+
+EXCEPT FOR ONE EXPLICIT USER OVERRIDE:
+
+REMOVE MOBILE DRAG-AND-DROP UI.
+
+Specifically:
+- remove the drag-grip icon
+- remove the `Drag to reorder` row
+- do NOT implement touch drag-and-drop
+- keep the existing `Move` row as the mobile-friendly relocation method
+
+This override supersedes the target image only for drag/reorder.
+
+Everything else should continue moving closer to the target.
+
+============================================================
+CURRENT V3 REFERENCE
+============================================================
+
+The user will also supply:
+
+`027F-CURRENT-V3.png`
+
+Use this only to identify remaining differences.
+
+If current V3 and target differ:
+TARGET WINS,
+except for the explicit Drag-to-reorder removal above.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Make only these final visual corrections:
+
+1. Search button closer to target
+2. Mountain/forest artwork closer to target
+3. Category-title prominence closer to target
+4. Summary card slightly closer to target proportions
+5. Wedge/card proportions slightly closer to target
+6. Remove Drag-to-reorder row + grip
+7. Keep Move row
+8. Preserve current correct header height
+
+No other redesign.
+
+============================================================
+1. SEARCH BUTTON
+============================================================
+
+Current V3:
+search is visually too plain compared with target.
+
+Target:
+- search icon inside a distinct white circular button
+- subtle shadow
+- balanced size relative to green plus button
+- vertically centered in compact header
+
+Required:
+- add/refine circular white search button
+- match target diameter and spacing as closely as practical
+- preserve compact header height
+- do not wire search behavior
+
+Do NOT enlarge the app bar.
+
+============================================================
+2. HEADER HEIGHT — PRESERVE
+============================================================
+
+USER LIVE RESULT:
+Header height now looks right.
+
+Therefore:
+- do NOT make header taller
+- do NOT increase top/bottom padding materially
+- do NOT increase logo height materially
+- do NOT shift trip identity downward
+
+Only optical alignment changes are allowed.
+
+============================================================
+3. MOUNTAIN / FOREST ARTWORK
+============================================================
+
+Current V3:
+much improved but still flatter/simpler than target.
+
+Refine existing CSS/SVG approximation:
+- slightly more layered mountain depth
+- stronger concentration toward upper-right
+- subtle forest/tree-line suggestion
+- retain pale cream/green opacity
+- retain readability
+- retain current section height
+
+Do NOT:
+- add photo background
+- change overall page composition
+- create distracting artwork
+- add external dependency
+
+============================================================
+4. CATEGORY TITLE PROMINENCE
+============================================================
+
+Current serif category titles are improved.
+
+Target titles are still slightly more visually prominent.
+
+Refine only:
+- size by approximately +0.5 to +1.5px if needed
+- weight/line-height
+- optical vertical centering
+- left inset from wedge
+
+Do NOT:
+- make them heavy/bold
+- change body font
+- change category card height substantially
+
+============================================================
+5. SUMMARY CARD FINE PROPORTION
+============================================================
+
+Current summary is slightly more compressed than target.
+
+Allow a SMALL adjustment only:
+- modestly increase internal breathing room
+- suitcase icon box alignment
+- `48 items` baseline
+- Packed / Remaining pill spacing
+
+Do NOT:
+- restore an oversized summary
+- change content
+- increase summary height more than needed
+
+Target should still enter categories quickly.
+
+============================================================
+6. WEDGE / CARD FINE PROPORTION
+============================================================
+
+Current V3 is very close.
+
+Allow only small fidelity corrections:
+- wedge width +0 to +3px
+- wedge point depth +0 to +2px
+- icon optical size/alignment
+- category-card vertical padding
+- category gap
+- chevron inset
+
+Do NOT:
+- change color palette
+- change category order
+- change card architecture
+- change expanded-state architecture
+
+============================================================
+7. REMOVE DRAG-TO-REORDER
+============================================================
+
+USER DECISION:
+Mobile drag-and-drop is not needed.
+
+Required in V3 prototype:
+- remove bottom drag-grip icon
+- remove `Drag to reorder` text/row
+- remove empty vertical space created by that row
+- close expanded Sunscreen card naturally after the `Move` row
+
+KEEP:
+- `Move`
+- its icon
+- `Toiletry Bag`
+- existing visual hierarchy
+
+Do not add replacement drag UI.
+
+Do not add touch-drag implementation.
+
+============================================================
+8. EXPANDED SUNSCREEN CARD AFTER DRAG REMOVAL
+============================================================
+
+After removing drag row:
+- expanded card should end cleanly after Move
+- bottom padding should match target-style card rhythm
+- no awkward blank space
+- rounded bottom corners should remain balanced
+- no divider after Move unless visually needed
+
+============================================================
+9. NO OTHER TARGET EXCEPTIONS
+============================================================
+
+Do NOT remove or change target-like elements merely because they are
+not yet mapped to production functions.
+
+027F is still VISUAL DESIGN.
+
+Control assignment comes later.
+
+============================================================
+10. LIGHT MODE ONLY
+============================================================
+
+027F remains LIGHT MODE ONLY.
+
+Do not create/refine Dark mode.
+
+============================================================
+NO FUNCTIONAL WORK
+============================================================
+
+DO NOT wire:
+- hamburger
+- search
+- plus
+- category chevrons
+- checkboxes
+- bottom nav
+- Move
+- any real TrailWeigh action
+
+Static prototype only.
+
+============================================================
+STRICT PRODUCTION PROTECTION
+============================================================
+
+DO NOT modify:
+- production `/checklist`
+- current production mobile
+- desktop
+- `/mobile-preview`
+- `/mobile-design-v2`
+- real TrailWeigh data/state
+- Checklist
+- Locker
+- Save
+- Share/Review
+- Print
+- Background/Themes
+- API
+- database
+- auth
+
+Only V3 prototype-specific presentation code may change.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Expected:
+- `src/pages/MobileDesignPrototypeV3.tsx`
+
+Optional:
+- existing V3-specific CSS/module only if already used
+
+Maximum:
+2 application files.
+
+App routing should NOT need change.
+
+If another file is required:
+STOP and explain before broadening.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Open `/mobile-design-v3` at 390 px.
+3. Inspect:
+   `027F-AUTHORITATIVE-MOBILE-TARGET.png`
+4. Inspect:
+   `027F-CURRENT-V3.png`
+5. Confirm header height is already correct.
+6. Confirm Drag row exists and identify exact prototype markup.
+7. Confirm only V3-specific files need edits.
+8. Record preflight git status.
+9. Create:
+   `workflow-reports/PROMPT_027F_REPORT.md`
+
+If target image is unavailable:
+STOP.
+
+============================================================
+MANDATORY VISUAL PASSES
+============================================================
+
+PASS 1 — TARGET FIDELITY
+- search circle
+- mountain artwork
+- category title prominence
+- summary/wedge fine-tune
+- render 390
+- compare against target
+
+PASS 2 — DRAG REMOVAL / OPTICAL CLEANUP
+- remove drag row/grip
+- close expanded card cleanly after Move
+- render 390
+- compare against target with the explicit drag exception
+
+At least 2 visual-review renders are required.
+
+============================================================
+MANDATORY TESTS
+============================================================
+
+TEST 1 — 390 FINAL
+Expected:
+- closer to target than 027E
+- correct compact header preserved
+- search circle matches target better
+- mountain art improved
+- category titles slightly stronger
+- drag row absent
+- Move row present
+- no awkward blank space
+
+TEST 2 — 375
+Expected:
+- no clipping
+- no overflow
+
+TEST 3 — 430
+Expected:
+- stable proportions
+- no excessive gaps
+
+TEST 4 — PRODUCTION MOBILE
+Expected:
+- unchanged
+
+TEST 5 — DESKTOP
+Expected:
+- unchanged
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate files:
+- 390 final V3 screenshot
+- expanded Sunscreen close-up proving Drag row is gone and Move remains
+- 375 screenshot
+- 430 screenshot
+- target + final side-by-side if practical
+
+Do not put screenshots in the report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027F_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. files changed
+6. target-vs-current differences before edit
+7. search-button change
+8. header-height preservation confirmation
+9. mountain-art change
+10. category-title change
+11. summary change
+12. wedge/card change
+13. Drag-to-reorder removal
+14. Move-row preservation
+15. expanded-card bottom cleanup
+16. visual pass 1 result
+17. visual pass 2 result
+18. 375 result
+19. 390 result
+20. 430 result
+21. horizontal overflow result
+22. production mobile safety
+23. desktop safety
+24. remaining visible differences
+25. USER VISUAL APPROVAL = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+V3 STRUCTURE PRESERVED = YES / NO
+AUTHORITATIVE TARGET USED = YES / NO
+HEADER HEIGHT PRESERVED = PASS / FAIL / NOT RUN
+SEARCH BUTTON CLOSER TO TARGET = PASS / FAIL / NOT RUN
+MOUNTAIN ART CLOSER TO TARGET = PASS / FAIL / NOT RUN
+CATEGORY TITLES CLOSER TO TARGET = PASS / FAIL / NOT RUN
+SUMMARY CARD FIDELITY IMPROVED = PASS / FAIL / NOT RUN
+WEDGE/CARD FIDELITY IMPROVED = PASS / FAIL / NOT RUN
+
+DRAG GRIP REMOVED = YES / NO
+DRAG TO REORDER ROW REMOVED = YES / NO
+MOVE ROW PRESERVED = YES / NO
+EXPANDED CARD CLOSES CLEANLY AFTER MOVE = PASS / FAIL / NOT RUN
+
+TWO VISUAL REVIEW PASSES COMPLETED = YES / NO
+HORIZONTAL OVERFLOW = YES / NO / NOT RUN
+
+REAL CONTROL WIRING ADDED = YES / NO
+TOUCH DRAG/REORDER ADDED = YES / NO
+DARK MODE WORK ADDED = YES / NO
+PRODUCTION MOBILE CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+CHECKLIST LOGIC CHANGED = YES / NO
+LOCKER LOGIC CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+CREATE-NEW-LIST CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VISUAL APPROVAL = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Did I preserve the V3 structure?
+2. Did I keep the header compact?
+3. Did I improve the search button?
+4. Did I improve mountain artwork?
+5. Did I modestly improve category title prominence?
+6. Did I only fine-tune summary/wedges?
+7. Did I remove the drag grip?
+8. Did I remove `Drag to reorder`?
+9. Did I keep `Move`?
+10. Does the expanded card end cleanly after Move?
+11. Did I avoid real control wiring?
+12. Did I avoid Dark mode?
+13. Is production mobile unchanged?
+14. Is desktop unchanged?
+
+If not:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027F-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027F_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do not wire controls.
+Do not create Dark mode.
+Do not replace production mobile.
+Do not proceed to another TrailWeigh feature.
