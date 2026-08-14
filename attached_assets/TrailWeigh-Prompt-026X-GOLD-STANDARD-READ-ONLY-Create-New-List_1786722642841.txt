@@ -1,0 +1,384 @@
+TRAILWEIGH — PROMPT 026X — GOLD STANDARD READ-ONLY DIAGNOSTIC
+CREATE NEW LIST FLOW + TOOLTIP/HELP ARCHITECTURE
+NO APPLICATION CODE CHANGES
+
+INTERNAL VERSION ID:
+026X-CREATE-NEW-LIST-TOOLTIP-DIAGNOSTIC-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose / Read-only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 4–8 minutes
+- approximately $0.30–$0.80 Agent usage
+
+============================================================
+AUTHORITATIVE USER REQUIREMENTS
+============================================================
+
+Standing TrailWeigh decisions:
+
+1. Rename the existing user-facing `New` control to:
+   `Create New List`
+
+2. Clicking `Create New List` should go DIRECTLY into the guided questions/options.
+   Do NOT open a redundant modal/page heading that repeats:
+   `Create New List`
+
+3. Add a tooltip/help explanation to EVERY interactive control.
+
+4. PRESERVE ALL EXISTING TOOLTIPS EXACTLY unless the user explicitly revises one later.
+
+5. New tooltip/help work should fill ONLY current gaps.
+   Do not rewrite existing tooltip text merely for consistency.
+
+6. Tooltip/help must be available by keyboard focus.
+
+7. Mobile/touch users need an equivalent help mechanism because hover is unavailable.
+
+8. Every saved list continues to live in the SAME universal Locker.
+
+9. List purpose/type is separate from categories inside the list.
+
+10. Weight is not required for every TrailWeigh list.
+
+11. The guided setup is expected to include:
+    `Track Weight? — Yes / No`
+    after list purpose/type selection.
+
+============================================================
+APPROVED CREATE-NEW-LIST DIRECTION
+============================================================
+
+The approved product direction includes an elegant list-purpose/template chooser such as:
+
+- Backpacking
+- Travel / Vacation
+- Business Trip
+- Road Trip
+- Emergency Kit
+- Blank / Custom
+
+Potential later expansion may include more templates via:
+- `View all templates`
+
+IMPORTANT FOR THIS DIAGNOSTIC:
+Do NOT implement these cards or templates yet.
+
+First identify what the CURRENT code already supports and the smallest safe integration path.
+
+============================================================
+MANDATORY READ-ONLY RULE
+============================================================
+
+DO NOT EDIT APPLICATION CODE.
+
+DO NOT:
+- rename New yet
+- create modal/cards
+- add templates
+- add Track Weight
+- add tooltips
+- alter Locker
+- alter mobile layout
+- alter desktop layout
+- modify database/API/auth
+- modify package files
+- modify replit.md
+- modify .agents/memory
+- publish/deploy
+
+This prompt is diagnostic only.
+
+============================================================
+QUESTIONS TO ANSWER
+============================================================
+
+1. CURRENT `NEW` CONTROL — DESKTOP
+
+Identify:
+- exact file/component
+- exact visible label
+- click handler
+- tooltip/help currently attached, including exact text
+- whether it is shared with mobile or desktop-only
+- what function/state is called when clicked
+
+2. CURRENT `NEW` CONTROL — MOBILE
+
+Identify:
+- exact file/component
+- whether the same `New` control is reused
+- whether mobile has a separate render branch
+- current responsive classes/breakpoint
+- click handler
+- current tooltip/help text
+- whether changing the mobile control could affect desktop
+
+If there is any ambiguity about the phone path:
+STOP and answer it before proposing implementation.
+
+3. CURRENT NEW-LIST FLOW
+
+Trace the COMPLETE current path after the user clicks New.
+
+Identify:
+- modal/panel/page component
+- first screen/question
+- current fields/options
+- default list/category creation
+- when data is committed
+- when the list gets a Locker identity
+- Save / Save As relationship
+- cancel/back behavior
+- any current title/heading shown
+
+4. CURRENT LIST-TYPE / TEMPLATE ARCHITECTURE
+
+Does current source already contain:
+- Backpacking template
+- Travel template
+- Business Trip template
+- Road Trip template
+- Emergency Kit template
+- Custom/Blank template
+- template registry/config
+- default category sets
+- list-purpose/type field
+- per-list metadata describing type
+
+For each existing capability:
+- exact file/state/schema
+- whether it is currently used
+
+If none exists:
+say so explicitly.
+
+5. CURRENT WEIGHT ARCHITECTURE
+
+Does current source support a list-level:
+- Track Weight yes/no
+- weight hidden/disabled mode
+- optional weight display
+- list-level weight preference
+
+Identify:
+- exact state/schema if present
+- whether category/item weight data can remain stored while hidden
+- whether current summaries assume weight always exists
+
+Do NOT implement anything.
+
+6. LOCKER / SAVED-LIST INTEGRATION
+
+Trace how a newly created list becomes a Locker entry.
+
+Identify:
+- exact functions/files
+- when ID/name/store are created
+- whether all list types can safely share this same pathway
+- whether adding a `listType` or `trackWeight` metadata field later would require DB/API/schema work
+
+7. CURRENT TOOLTIP SYSTEM
+
+Inventory the tooltip/help architecture.
+
+Identify:
+- tooltip component/library
+- exact file(s)
+- whether `title` attributes are used
+- whether custom tooltip/popover components exist
+- whether tooltips open on hover
+- whether they open on keyboard focus
+- whether there is a touch/mobile mechanism
+- whether aria-describedby or equivalent is used
+- whether tooltip text is centralized or inline
+
+Do NOT rewrite or normalize any text.
+
+8. EXISTING TOOLTIP PRESERVATION
+
+Determine the safest way to guarantee:
+- existing tooltip text remains byte-for-byte unchanged where already present
+- new tooltip/help is added only where no current help exists
+
+Explain how the later implementation can distinguish:
+- existing tooltip
+- missing tooltip
+
+9. INTERACTIVE-CONTROL GAP AUDIT
+
+For the CURRENT Create New List / New flow only, list every interactive control and whether it currently has help.
+
+Include:
+- New / Create New List trigger
+- close
+- cancel
+- back
+- list-purpose cards/options
+- View all templates if already present
+- Track Weight Yes/No if already present
+- create/continue/confirm controls
+- any icon-only controls
+
+Do NOT perform a whole-site tooltip rewrite in this prompt.
+
+10. KEYBOARD ACCESS
+
+For current tooltip/help:
+- can keyboard focus reveal/expose help?
+- if YES, exact mechanism
+- if NO, exact missing behavior
+
+For the current New flow:
+- tab order
+- focus trap if modal
+- Escape behavior
+- Enter/Space activation
+- focus return when closed
+
+11. TOUCH HELP
+
+Does current source have a reusable mobile/touch help mechanism?
+
+Examples might include:
+- tap-trigger tooltip
+- info icon/popover
+- long-press help
+- accessible disclosure
+- help sheet
+
+Report exact existing mechanism.
+
+If NONE exists:
+state the smallest architecture that could provide touch help later without rewriting the whole tooltip system.
+
+Do NOT implement it.
+
+12. RESPONSIVE / DESKTOP ISOLATION
+
+Map which Create New List presentation pieces are:
+- shared between phone and desktop
+- phone-only
+- desktop-only
+- shared state/logic
+
+Identify the exact breakpoint(s).
+
+State how the future Create New List flow can maintain:
+- same behavior/data
+- responsive presentation
+- no accidental phone→desktop layout leakage
+
+13. SMALLEST IMPLEMENTATION PLAN
+
+Based on current source, propose the smallest safe implementation sequence.
+
+Prefer separating concerns if needed, for example:
+A. rename trigger + guided-flow shell
+B. list-type cards
+C. Track Weight choice
+D. tooltip gap fill/touch-help support
+
+Do NOT combine everything if that would be high-risk.
+
+Identify expected file set for the FIRST implementation prompt only.
+
+============================================================
+REQUIRED RESPONSE FORMAT
+============================================================
+
+A. CURRENT NEW CONTROL
+- desktop:
+- mobile:
+- shared?:
+- current tooltip/help:
+
+B. CURRENT NEW-LIST FLOW
+- component:
+- first screen:
+- heading:
+- creation path:
+- Locker path:
+
+C. TEMPLATE/LIST-TYPE SUPPORT
+- exists? YES/NO
+- existing types:
+- registry/config:
+- metadata:
+
+D. TRACK WEIGHT SUPPORT
+- exists? YES/NO
+- exact implementation:
+- current assumptions:
+
+E. TOOLTIP/HELP ARCHITECTURE
+- system:
+- hover:
+- keyboard:
+- touch:
+- centralized/inline:
+
+F. CURRENT CREATE-FLOW TOOLTIP GAPS
+- control -> existing help / missing
+
+G. RESPONSIVE ARCHITECTURE
+- mobile branch:
+- desktop branch:
+- breakpoint:
+- leakage risks:
+
+H. MINIMUM SAFE IMPLEMENTATION SEQUENCE
+- Prompt 1:
+- Prompt 2:
+- later items:
+
+I. FIRST IMPLEMENTATION FILE SCOPE
+- exact files:
+
+J. MATERIAL UNCERTAINTY
+- YES/NO
+- exact unanswered issue if YES
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_026X_REPORT.md`
+
+Include:
+- internal version
+- time/actions/lines/cost from Replit report
+- files inspected
+- all answers above
+- exact current tooltip text where relevant
+- preflight/final git status
+- confirmation that NO application code changed
+- material uncertainty
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026X-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026X_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not implement Create New List.
+Do not add tooltips.
+Do not proceed to 026Y.
+Do not perform unrelated TrailWeigh work.
