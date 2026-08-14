@@ -1590,26 +1590,40 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
   //   2. Not a fork/newseed tab (no tw-fork-id in sessionStorage)
   //   3. No active file already in sessionStorage (tab remount → skip)
   //   4. No tw-savedlist-entry-id pending (that mount effect runs just above)
+  //
+  // 026O: the ref prevents a re-run after restoration completes.  The effect
+  // dep includes lockerEntries so it re-fires once the server sync populates the
+  // list (on devices where localStorage cache was empty at mount).
+  const startupRestoredRef = React.useRef(false);
   useEffect(() => {
+    if (startupRestoredRef.current) return;
     if (!userId) return;
     // Fork tabs manage their own restoration via ?savedListId= / ?newseed=
     const forkId = sessionStorage.getItem('tw-fork-id');
-    if (forkId) return;
+    if (forkId) { startupRestoredRef.current = true; return; }
     // Tab remount (e.g. Clerk token refresh) — active file already loaded
-    if (sessionStorage.getItem(ACTIVE_LOCKER_FILE_SS_KEY)) return;
+    if (sessionStorage.getItem(ACTIVE_LOCKER_FILE_SS_KEY)) { startupRestoredRef.current = true; return; }
     // The savedlist-entry mount effect above will handle this case
-    if (sessionStorage.getItem('tw-savedlist-entry-id')) return;
+    if (sessionStorage.getItem('tw-savedlist-entry-id')) { startupRestoredRef.current = true; return; }
 
     const lastActive = readLastActiveFileFromLS(userId);
-    if (!lastActive) return;
+    if (!lastActive) { startupRestoredRef.current = true; return; }
+
+    // 026O: lockerEntries may still be empty while the server sync is in flight.
+    // Return without clearing lastActive so the effect retries when the list
+    // populates.  Only mark the entry as gone once we have a non-empty list.
+    if (lockerEntries.length === 0) return;
 
     // Verify the entry still exists in the user's Locker
     const entry = lockerEntries.find(e => e.id === lastActive.id);
     if (!entry) {
       // File was deleted — clear the stale reference and fall back to normal startup
+      startupRestoredRef.current = true;
       writeLastActiveFileToLS(userId, null);
       return;
     }
+
+    startupRestoredRef.current = true;
 
     // ── Restore appearance (mirrors the in-place Locker-load non-fork path) ──────
     const restoredPalette = entry.chartPaletteKey ?? 'trail';
@@ -1667,7 +1681,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
     setActiveLockerFile(activeFile);
     setOwnerMode('view'); // 026N: startup restoration loaded a saved file → View mode
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount only
+  }, [lockerEntries]); // 026O: re-fires when lockerEntries populates after server sync
 
   /**
    * "Save" chosen from the Save menu.

@@ -1,0 +1,519 @@
+TRAILWEIGH — PROMPT 026O — GOLD STANDARD DIAGNOSE + REPAIR
+026N PHONE VIEW-MODE FAILURE — SAVED LIST STILL STRUCTURALLY EDITABLE
+
+INTERNAL VERSION ID:
+026O-026N-PHONE-VIEW-MODE-REPAIR-2026-08-13-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- 8–15 minutes
+- approximately $0.60–$1.50 Agent usage
+- HARD STOP before broadening beyond this defect
+
+============================================================
+AUTHORITATIVE USER LIVE EVIDENCE
+============================================================
+
+026N is NOT USER-PASS.
+
+On the user's PHONE, after opening a saved list, the supposed View mode still allows ALL of these:
+1. change an item name
+2. change weight or quantity
+3. add items/categories
+4. reorder or otherwise structurally edit the list
+
+Therefore:
+- the intended safe owner View mode is not active/effective on the tested phone path
+- this USER live evidence overrides 026N's source-only PASS claims
+- do NOT treat 026N as complete until this defect is repaired and runtime-tested
+
+============================================================
+026N SOURCE BASELINE TO VERIFY, NOT ASSUME
+============================================================
+
+026N report says it changed only:
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+
+Reported intended implementation:
+- `ownerMode: 'view' | 'edit'` in `ChecklistContent`
+- saved owner lists -> `view`
+- New lists -> `edit`
+- `Edit` / `Done` control
+- `viewMode` passed to category/item rendering
+- structural controls hidden/blocked in View
+- checkbox remains interactive
+- Review excluded from owner guards
+
+026N report claimed three saved-list open paths:
+A1. startup restoration
+A2. `?savedListId=` fork tab
+A3. in-place Locker open for an empty current list
+
+026N report did NOT perform the required real runtime interaction proof.
+It marked interaction tests SOURCE PASS, which is not acceptable evidence for this defect.
+
+============================================================
+GOLD STANDARD RULE
+============================================================
+
+Before editing:
+1. Read current `replit.md` READ-ONLY.
+2. Reproduce the failure in the CURRENT active runtime.
+3. Trace the exact active phone/small-screen saved-list open path.
+4. Verify the current served runtime is actually using the 026N source.
+5. Root cause before edit.
+6. Use the smallest reversible patch.
+7. Preserve all unrelated USER-VERIFIED behavior.
+8. If the failure is caused by stale/wrong runtime, route, or build rather than code logic:
+   DO NOT make speculative application edits.
+9. If current architecture materially differs from the 026N report:
+   document it and STOP before broadening.
+10. USER live evidence outranks source assumptions.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+When an OWNER opens an EXISTING SAVED LIST from Locker on a phone/small-screen runtime:
+
+EXPECTED:
+- list enters safe View mode
+- `Edit` control is visible/reachable
+- checkbox remains interactive
+- structural editing is unavailable
+- clicking `Edit` enters Edit mode
+- clicking `Done` returns to View
+
+New list behavior remains:
+- New -> Edit
+
+Do NOT redesign the interface.
+
+============================================================
+DIAGNOSE THE ACTUAL FAILURE FIRST
+============================================================
+
+A. VERIFY CURRENT SERVED CODE
+
+Before changing anything:
+- confirm current development runtime is serving the source containing the 026N ownerMode implementation
+- confirm no stale bundle, alternate artifact, alternate route, or older published/runtime path is being tested
+- identify the exact active route/component tree rendered at phone width
+- record evidence in the report
+
+If the active runtime does NOT contain 026N:
+- report exact reason
+- do NOT patch unrelated code to compensate
+- STOP unless a safe runtime-refresh/restart within normal Replit development behavior resolves it
+
+B. REPRODUCE AT PHONE WIDTH
+
+Use the CURRENT rendered app at:
+- 390 px portrait minimum
+- also inspect 375 px if practical
+
+Open a SAVED OWNER list from Locker using the same user-visible path a phone user uses.
+
+Immediately verify:
+- is `Edit` visible?
+- is `Done` visible?
+- what is the effective ownerMode?
+- are item name/weight/qty controls inputs/selects or read-only spans?
+- is Add Item visible?
+- is Add Category visible?
+- can category reorder occur?
+- can item/category structural mutation occur?
+
+Do NOT infer these from source. Actually interact with the rendered app.
+
+C. TRACE ALL SAVED-LIST OPEN PATHS
+
+The 026N report may have missed an active path.
+
+Search the CURRENT source for every relevant path/call, including:
+- every `setActiveLockerFile`
+- every `replaceStore`
+- every Locker item open/click callback
+- every `window.open` for saved lists
+- every `savedListId`
+- every sessionStorage/localStorage saved-list handoff
+- every phone/mobile-specific Locker render/callback
+- every branch based on `totalItems`, current-file state, viewport, route, or fork mode
+- every path that can load a saved list without calling `setOwnerMode('view')`
+
+Specifically test opening a saved list when:
+1. current list is empty
+2. current list already contains items
+3. saved list opens in-place
+4. saved list opens in a new/forked tab if that behavior exists
+5. page refresh/restoration reopens the saved list
+
+Identify the EXACT phone path that failed.
+
+D. TRACE MODE PROPAGATION
+
+For the failing runtime path verify end-to-end:
+
+`ownerMode`
+-> owner `isReview` condition
+-> `GearCategory` view/read-only prop
+-> `GearRow` view/read-only prop
+-> rendered structural controls
+-> guarded mutation handlers
+
+Determine where the chain breaks.
+
+============================================================
+LIKELY ROOT-CAUSE CLASSES — INVESTIGATE, DO NOT ASSUME
+============================================================
+
+Check whether failure is caused by one of these or another proven cause:
+
+- missing fourth saved-list open path
+- ownerMode remains `edit`
+- ownerMode is reset after being set to `view`
+- saved-list fork/new-tab initialization incorrectly resolves to Edit
+- phone Locker uses a different callback/path than desktop
+- `viewMode` prop is not passed through the active phone render path
+- `isReview`/ownership condition incorrectly bypasses guards
+- alternate/dead component was edited in 026N
+- runtime serving stale/older source
+- another effect overwrites ownerMode
+- structural controls use an unguarded alternate render path
+
+Do not patch until exact cause is proven.
+
+============================================================
+AUTHORIZED REPAIR
+============================================================
+
+ONLY after reproducing and proving root cause:
+
+Repair the smallest exact cause so ALL saved-owner-list open paths enter View.
+
+Preferred principles:
+- keep one ownerMode state
+- do not persist mode into list/store/database
+- do not add a second mobile-only mode system
+- do not fork phone and desktop behavior
+- do not duplicate GearRow/GearCategory
+- preserve Review/Share behavior
+- preserve checkbox interaction in View
+- preserve New -> Edit
+- preserve Edit -> Done -> View
+
+If a missing saved-list load path is the cause:
+- add the View transition at the authoritative common load point if safely possible
+- avoid scattering more one-off `setOwnerMode('view')` calls if a single common owner saved-list-open path can handle it safely
+
+If a state-reset/race is the cause:
+- repair that exact transition deterministically
+- do not add timers or fragile delays
+
+============================================================
+REQUIRED VIEW BEHAVIOR AFTER REPAIR
+============================================================
+
+In saved-list View, OWNER may:
+- check/uncheck
+- expand/collapse
+- use category Expand All / Collapse All
+- Preview/Print
+- Share
+- navigate
+- use non-structural display controls
+
+OWNER may NOT:
+- edit item name/type
+- edit weight
+- edit quantity
+- Move/Delete item
+- Add Item
+- Add Category
+- rename/delete/reorder category
+- reorder structural content
+- Reset/import directly into active list if that mutates structure
+- use keyboard/other structural mutation paths
+
+`Edit` must switch to Edit.
+`Done` must switch back to View.
+
+============================================================
+MANDATORY RUNTIME TEST MATRIX
+============================================================
+
+Do NOT mark PASS from source inspection alone.
+
+TEST 1 — PHONE SAVED LIST / EMPTY CURRENT LIST
+Open saved owner list.
+Expected:
+- View
+- Edit visible
+- structural edits blocked
+- checkbox works
+
+TEST 2 — PHONE SAVED LIST / NONEMPTY CURRENT LIST
+Open a different saved owner list while current list contains items.
+Expected:
+- whatever current Locker workflow does, resulting saved owner list is in View
+- no structurally editable saved-list state
+
+TEST 3 — PHONE REFRESH / RESTORE
+Refresh/reopen saved owner list.
+Expected: View
+
+TEST 4 — VIEW STRUCTURAL BLOCK
+Actually attempt:
+- name edit
+- weight edit
+- qty edit
+- Add Item
+- Add Category
+- category reorder
+Expected: all blocked/unavailable
+
+TEST 5 — VIEW CHECKBOX
+Check and uncheck.
+Expected: works
+
+TEST 6 — EDIT / DONE
+View -> Edit -> perform harmless structural edit -> Done.
+Expected:
+- Edit enables current editing
+- Done returns to safe View
+- no mode-switch data loss
+
+TEST 7 — NEW
+New list.
+Expected: Edit
+
+TEST 8 — DESKTOP REGRESSION
+Open saved owner list on desktop.
+Expected:
+- same safe View semantics
+- no regression
+
+TEST 9 — REVIEW / SHARE REGRESSION
+Expected:
+- existing Review sandbox behavior unchanged
+- shared/read-only behavior unchanged
+
+TEST 10 — 026K / 026L REGRESSION
+Expected:
+- main-category accordion behavior unchanged
+- sidebar behavior unchanged
+- phone toolbar no new overlap/clipping/horizontal scroll
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide real runtime evidence, not SOURCE PASS.
+
+Required:
+- exact reproduction steps
+- exact root cause
+- before/after runtime result
+- screenshot of saved list in View at ~390 px
+- screenshot of same list in Edit at ~390 px
+- screenshot or runtime evidence showing structural fields unavailable in View
+- desktop sanity result
+- exact tests NOT RUN, if any
+
+If interaction testing is unavailable:
+- do NOT claim PASS
+- mark relevant tests NOT RUN
+- report blocker
+
+============================================================
+STRICT SCOPE
+============================================================
+
+Expected changed files:
+- only the minimum subset of the 026N files actually required
+
+Likely:
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+Only change `GearCategory.tsx` or `GearRow.tsx` if runtime tracing proves the defect is there.
+
+DO NOT change:
+- database/schema/data
+- API/auth
+- deployment/publishing
+- package versions
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+- checkbox cross-device sync
+- Last Synced
+- Print behavior
+- wedge/mobile redesign
+- category colors/icons
+- New list-type/template system
+- Share/Review architecture
+- themes/backgrounds
+- importer/catalog
+- unrelated 026L toolbar layout
+
+No opportunistic refactor.
+No App Testing auto-fix.
+
+============================================================
+CHANGED-FILE / ROLLBACK CONTROL
+============================================================
+
+Before edits:
+- create `workflow-reports/PROMPT_026O_REPORT.md`
+- record preflight git status
+- record root-cause evidence
+- record expected changed files
+- record rollback plan
+
+After edits:
+- list every changed file
+- inspect git diff
+- revert accidental/unrelated changes only
+- do not disturb pre-existing user work
+
+Rollback:
+- identify only exact 026O files
+- no broad reset/clean
+- no DB migration/checkpoint changes
+
+============================================================
+STOP RULE
+============================================================
+
+STOP and report instead of improvising if:
+- current runtime does not contain 026N
+- active phone path cannot be reproduced
+- exact ownerMode failure point cannot be identified
+- repair requires broad state architecture rewrite
+- repair requires DB/API/auth/deployment changes
+- Review/Share isolation cannot be preserved
+- work materially exceeds 15 minutes / ~$1.50
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026O_REPORT.md`
+
+Include:
+1. INTERNAL VERSION ID
+2. Agent mode
+3. elapsed time/actions/lines/cost
+4. preflight git status
+5. exact files inspected
+6. runtime/build served-code verification
+7. exact phone reproduction
+8. all saved-list open paths found
+9. failing active path
+10. ownerMode value/transition on failing path
+11. mode-propagation trace
+12. exact root cause
+13. expected changed files
+14. actual changed files
+15. exact repair
+16. phone runtime test results
+17. structural-block runtime results
+18. checkbox result
+19. Edit/Done result
+20. New result
+21. desktop regression result
+22. Review/Share regression result
+23. 026K/026L regression result
+24. screenshots/evidence
+25. tests not run
+26. rollback guidance
+27. unresolved issues
+28. final self-audit
+29. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return exactly:
+
+ROOT CAUSE IDENTIFIED = YES / NO
+CURRENT RUNTIME CONTAINS 026N = YES / NO
+FAILING PHONE PATH IDENTIFIED = YES / NO
+SAVED OWNER LIST OPENS VIEW ON PHONE = PASS / FAIL / NOT RUN
+VIEW EDIT CONTROL VISIBLE ON PHONE = PASS / FAIL / NOT RUN
+VIEW ITEM NAME EDIT BLOCKED = PASS / FAIL / NOT RUN
+VIEW WEIGHT/QTY EDIT BLOCKED = PASS / FAIL / NOT RUN
+VIEW ADD ITEM/CATEGORY BLOCKED = PASS / FAIL / NOT RUN
+VIEW REORDER BLOCKED = PASS / FAIL / NOT RUN
+VIEW CHECKBOX INTERACTIVE = PASS / FAIL / NOT RUN
+EDIT MODE STRUCTURAL EDITING = PASS / FAIL / NOT RUN
+DONE RETURNS TO VIEW = PASS / FAIL / NOT RUN
+NEW OPENS EDIT = PASS / FAIL / NOT RUN
+DESKTOP VIEW REGRESSION = PASS / FAIL / NOT RUN
+REVIEW/SHARE BEHAVIOR CHANGED = YES / NO / NOT RUN
+026K ACCORDION BEHAVIOR CHANGED = YES / NO / NOT RUN
+026L PHONE TOOLBAR REGRESSION = PASS / FAIL / NOT RUN
+DATABASE/API/AUTH CHANGED = YES / NO
+PRINT/SYNC/WEDGE WORK CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before internal PASS:
+1. Did I reproduce the phone failure in runtime?
+2. Did I prove the current served code contains 026N?
+3. Did I identify the exact saved-list path the user is hitting?
+4. Did I trace ownerMode end-to-end?
+5. Did I prove root cause before editing?
+6. Did I make the smallest repair?
+7. Did I runtime-test the four structural failures the USER reported?
+8. Did I verify checkbox still works?
+9. Did I verify Edit/Done/New?
+10. Did I preserve desktop, Review/Share, 026K and 026L?
+11. Did I avoid sync/Print/wedge/new-template work?
+12. Did I avoid DB/API/auth/deployment/package changes?
+13. Did I review every changed file?
+14. Did I stay inside scope/cost?
+15. Is any material uncertainty unresolved?
+
+If YES to unresolved uncertainty:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026O-report.zip`
+
+ZIP must contain only:
+`PROMPT_026O_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to the mobile wedge redesign.
+Do not proceed to 026P.
+Do not perform other waiting TrailWeigh work.
