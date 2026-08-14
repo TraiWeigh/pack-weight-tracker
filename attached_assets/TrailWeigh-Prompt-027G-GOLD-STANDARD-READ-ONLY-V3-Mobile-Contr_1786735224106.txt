@@ -1,0 +1,772 @@
+TRAILWEIGH — PROMPT 027G — GOLD STANDARD READ-ONLY DIAGNOSTIC
+APPROVED V3 MOBILE CONTROL-MAPPING AUDIT
+NO UI CHANGES / NO CONTROL WIRING
+
+INTERNAL VERSION ID:
+027G-V3-MOBILE-CONTROL-MAPPING-DIAGNOSTIC-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 6–12 minutes
+- approximately $0.45–$1.10 Agent usage
+- HARD STOP if material uncertainty remains
+
+============================================================
+AUTHORITATIVE STATUS
+============================================================
+
+027F = USER VISUAL PASS.
+
+The user has explicitly approved the Light-mode design at:
+
+`/mobile-design-v3`
+
+This V3 LIGHT DESIGN IS NOW FROZEN.
+
+DO NOT:
+- change its layout
+- change spacing
+- change typography
+- change wedge geometry
+- change summary composition
+- change header height
+- change bottom-nav geometry
+- change expanded-item layout
+- add Dark mode
+- wire controls
+
+027G is READ-ONLY DIAGNOSTIC ONLY.
+
+============================================================
+PRIMARY PURPOSE
+============================================================
+
+Map TrailWeigh’s EXISTING REAL MOBILE FUNCTIONS into the APPROVED V3
+visual affordances before any implementation.
+
+Answer:
+
+1. What real production functions already exist?
+2. Where do their current active handlers/state live?
+3. Which approved V3 visual element is the safest/most intuitive target?
+4. Which V3 visual elements have no existing real function yet?
+5. Which real production controls have no obvious V3 home yet?
+6. Which mappings can be implemented without changing the approved V3 geometry?
+7. Which mappings need a USER PRODUCT DECISION before implementation?
+8. What is the smallest safe implementation sequence after this audit?
+
+DO NOT IMPLEMENT ANYTHING.
+
+============================================================
+AUTHORITATIVE USER DECISIONS
+============================================================
+
+Preserve these decisions:
+
+A. DESIGN FREEZE
+- `/mobile-design-v3` Light design is visually approved.
+- Treat it as the mobile visual master.
+- Control integration must adapt to the design, not redesign it.
+
+B. CATEGORY OPEN/CLOSE
+- On mobile, the WEDGE / CATEGORY ICON is the primary category
+  open/close tap target.
+- Category name primarily identifies the category.
+- Rename/edit remains separate.
+- Existing accordion rules must remain:
+  - normal manual use = single-open
+  - zero-open allowed
+  - Expand All
+  - Collapse All
+  - after Expand All, individual interaction returns to normal behavior
+
+C. MOBILE ITEM DETAILS
+- Expanded item details remain vertically stacked.
+- Existing real data concepts:
+  - Weight
+  - Quantity
+  - Total
+  - Move
+
+D. NO MOBILE DRAG-AND-DROP
+- Do not map any drag grip.
+- Do not implement touch drag/reorder.
+- `Move` is the intended mobile relocation method.
+
+E. CHECKLIST MODEL
+- Category-item checkboxes determine which items are INCLUDED in Checklist.
+- Checklist itself uses separate checklist-use checkboxes.
+- Checklist progress persists when Checklist closes/reopens until Clear.
+- Clear resets only Checklist-use checkmarks.
+- Clear does not alter category-item selection or structural list data.
+
+F. OWNER MODE
+- Normal owner/main list stays directly editable.
+- No owner View/Edit/Done mode.
+
+G. BACKGROUND
+- Mobile has no photographic/theme background.
+- Mobile has no Background editing panel.
+- Mobile still needs Light/Dark capability eventually.
+- Dark visual design is NOT authorized for implementation in 027G.
+
+H. CREATE NEW LIST
+- Create New List/template/Track Weight work is PAUSED.
+- Do not redesign or implement that flow here.
+- Existing production `New` function may be mapped only as the CURRENT
+  function; do not silently convert it into the future guided flow.
+
+I. TOOLTIP/HELP
+- Preserve existing tooltip text exactly.
+- Do not rewrite tooltip architecture here.
+
+============================================================
+APPROVED V3 VISUAL ELEMENTS TO AUDIT
+============================================================
+
+Audit each of these APPROVED visual elements:
+
+HEADER:
+1. hamburger
+2. TrailWeigh logo/wordmark
+3. search circle
+4. green plus circle
+
+LIST IDENTITY:
+5. list/trip title area
+6. title chevron
+
+SUMMARY:
+7. summary card
+8. main summary metric
+9. secondary summary metrics
+
+CATEGORY:
+10. wedge/icon
+11. category title
+12. category subtitle
+13. right chevron
+14. category color/icon
+15. open category body
+
+ITEM:
+16. category-item checkbox
+17. item name
+18. item quantity/right-side value
+19. item detail chevron
+20. expanded detail rows:
+    - Weight
+    - Quantity
+    - Total
+    - Move
+
+BOTTOM NAV:
+21. Pack List
+22. Summary
+23. Gear
+24. Trips
+25. More
+
+============================================================
+CURRENT REAL PRODUCTION FUNCTIONS TO TRACE
+============================================================
+
+Trace the CURRENT ACTIVE production mobile paths for:
+
+FILE / LIST ACTIONS:
+- New
+- Undo
+- Redo
+- Save
+- Reset
+- Share
+
+LIST VIEW ACTIONS:
+- Expand All
+- Collapse All
+- Hide
+- Checklist
+- Light/Dark
+- Imperial/Metric
+
+CATEGORY:
+- category open/close
+- category rename/edit
+- category delete
+- Add Category
+
+ITEM:
+- category-item selection checkbox
+- item expand/collapse
+- item name/type edit
+- Weight
+- Quantity
+- Total calculation/display
+- Move
+- item delete
+- Add Item / +Base if present
+- reorder behavior currently present, but DO NOT recommend touch drag
+
+UTILITY:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+
+OTHER:
+- any active search function
+- any active catalog/gear search
+- any active account/menu action relevant to mobile
+- Print entry point
+- any Help/About entry point accessible from current mobile UI
+
+============================================================
+ACTIVE-PATH TRACE — REQUIRED
+============================================================
+
+For EVERY real function above, record:
+
+- exact active component/file
+- exact handler/function name
+- state/hook source
+- whether it is mobile-only or shared
+- whether it mutates:
+  - local React state
+  - localStorage
+  - server/API
+  - database
+- whether it depends on owner/review/auth state
+- whether it currently has tooltip/accessibility props
+- whether moving the trigger would be presentation-only or could affect behavior
+
+Distinguish:
+- ACTIVE production code
+- prototype-only code
+- dead/legacy code
+
+Do not cite dead code as the implementation path.
+
+============================================================
+MAPPING MATRIX — REQUIRED
+============================================================
+
+Create a mapping matrix with columns:
+
+1. APPROVED V3 ELEMENT
+2. EXISTING REAL FUNCTION CANDIDATE
+3. CURRENT HANDLER/STATE PATH
+4. MAPPING CONFIDENCE = HIGH / MEDIUM / LOW
+5. VISUAL CHANGE REQUIRED = YES / NO
+6. USER DECISION REQUIRED = YES / NO
+7. NOTES / RISKS
+
+============================================================
+SPECIFIC MAPPING QUESTIONS
+============================================================
+
+A. HAMBURGER
+Determine whether this can safely become the home for currently
+secondary/file/utility controls such as:
+- New
+- Undo
+- Redo
+- Save
+- Reset
+- Share
+- Light/Dark
+- Imperial/Metric
+- Help/About
+without changing approved header geometry.
+
+Do NOT assume it should.
+Recommend based on current architecture.
+
+B. SEARCH CIRCLE
+Determine whether TrailWeigh currently has a real function that should
+map here:
+- catalog search
+- Locker search
+- gear search
+- no current search
+
+If no real active search exists:
+state clearly:
+`NO CURRENT REAL SEARCH FUNCTION TO MAP`
+
+Do not invent one.
+
+C. GREEN PLUS CIRCLE
+Audit all existing add/create functions:
+- current New
+- Add Category
+- Add Item
+- +Base
+- any other add action
+
+Recommend the most coherent mapping, but do NOT assign it definitively
+if multiple meanings remain plausible.
+
+Create New List future flow is paused, so do not assume plus = future
+Create New List.
+
+D. LIST TITLE CHEVRON
+Determine whether current production has any real list chooser/dropdown
+that can map here:
+- Locker list selection
+- file-name chooser
+- no equivalent
+
+Do not invent behavior.
+
+E. SUMMARY CARD
+Determine which real current production summary values could populate
+this V3 summary card without changing geometry.
+
+Audit:
+- Base Weight
+- Total Weight
+- Worn Weight
+- item count
+- selected count
+- other current Pack Summary values
+
+Recommend the safest data mapping for BACKPACKING lists.
+
+Also identify whether summary content must vary by future list type.
+Do not implement future list types.
+
+F. CATEGORY WEDGE/ICON
+Confirm safest way to make wedge/icon the primary open/close target while:
+- preserving rename target
+- preserving chevron if needed
+- preserving keyboard accessibility
+- preserving Expand All/Collapse All behavior
+- preserving zero-open/single-open rules
+
+G. CATEGORY ITEM CHECKBOX
+Confirm exact active handler/state for selection membership and whether it
+can be reused directly in V3 item rows.
+
+H. ITEM DETAIL CHEVRON
+Confirm exact expand/collapse state path and whether the V3 static expanded
+item can reuse it without changing structural editing behavior.
+
+I. WEIGHT / QUANTITY / TOTAL / MOVE
+Trace each real handler/calculation.
+Confirm:
+- Weight editable path
+- Quantity editable path
+- Total derived calculation
+- Move current behavior/path
+- whether Move works on touch today
+
+J. BOTTOM NAV — DO NOT GUESS
+For each:
+- Pack List
+- Summary
+- Gear
+- Trips
+- More
+
+Determine whether a CURRENT real TrailWeigh destination/function exists.
+
+Examples to investigate:
+- Pack List → current checklist/list page
+- Summary → Pack Summary / Weight Distribution
+- Gear → Locker or catalog?
+- Trips → saved lists/Locker?
+- More → secondary controls/utilities?
+
+These are QUESTIONS, not authorized mappings.
+
+If label meaning is ambiguous:
+mark USER DECISION REQUIRED.
+
+Do not create new product architecture in the diagnostic.
+
+============================================================
+REAL CONTROLS THAT MAY HAVE NO V3 HOME
+============================================================
+
+Explicitly identify any current production function with no obvious
+approved V3 affordance, including:
+
+- Undo
+- Redo
+- Save
+- Reset
+- Share
+- Expand All
+- Collapse All
+- Hide
+- Checklist
+- Light/Dark
+- Imperial/Metric
+- category delete
+- Add Category
+- item delete
+- Add Item
+- Scan Gear
+- Locker
+- Print
+
+For each:
+recommend ONE of:
+- hamburger/menu
+- bottom nav destination
+- contextual category/item action
+- summary/secondary utility section
+- keep existing hidden/contextual control
+- USER DECISION REQUIRED
+
+============================================================
+VISUAL FREEZE RISK CHECK
+============================================================
+
+For every recommended mapping, state whether it can be done with:
+- event-handler wiring only
+- content/data substitution only
+- hidden menu/sheet/popover only
+- small icon-state substitution
+- geometry/layout change
+
+ANY recommendation requiring geometry/layout change must be flagged.
+
+The preferred implementation must preserve:
+- header height
+- search-circle position
+- plus-circle position
+- list identity geometry
+- summary geometry
+- category card/wedge geometry
+- expanded item geometry
+- bottom-nav geometry
+
+============================================================
+MOBILE MENU / SHEET AUDIT
+============================================================
+
+If hamburger is recommended to open a menu/sheet:
+inspect current dependencies/components for an existing:
+- Sheet
+- Drawer
+- Dialog
+- Popover
+- DropdownMenu
+- Radix primitive
+that can be reused.
+
+Do not install a new package.
+
+Recommend the safest existing primitive.
+
+Also state:
+- whether it traps focus correctly
+- whether touch/keyboard access is already supported
+- whether it can render without changing main-screen geometry
+
+============================================================
+LIGHT/DARK FUTURE PLACEMENT
+============================================================
+
+Do not implement Dark mode.
+
+But determine where the EXISTING Light/Dark control could be mapped in
+the approved V3 design later, without changing geometry.
+
+Possible homes to evaluate:
+- hamburger/menu
+- More
+- another existing approved affordance
+
+Recommend one and explain why.
+
+============================================================
+IMPERIAL/METRIC FUTURE PLACEMENT
+============================================================
+
+Determine the best mapping for existing Imperial/Metric without changing
+the V3 main-screen geometry.
+
+Evaluate:
+- hamburger/menu
+- More
+- Summary
+- contextual setting
+
+Recommend one.
+
+============================================================
+SHARE / PRINT
+============================================================
+
+Trace exact current Share and Print entry points.
+
+Recommend where each belongs in V3:
+- hamburger/menu
+- More
+- list-title actions
+- another existing approved affordance
+
+Do not implement.
+
+============================================================
+REVIEW / SHARED MODE
+============================================================
+
+Determine whether the approved mobile V3 control mapping can be reused
+in Review without violating:
+- sandbox isolation
+- owner-data protection
+- Review Add Category behavior
+- existing public no-login review rules
+
+Report mapping differences if any.
+
+Do not change Review.
+
+============================================================
+IMPLEMENTATION SEQUENCING — REQUIRED
+============================================================
+
+Recommend the FEWEST safe implementation prompts.
+
+Prefer:
+- one mobile control-wiring implementation prompt
+IF architecture is clear and mappings are user-approved
+
+Split only if truly necessary.
+
+Possible split if required:
+A. navigation/menu/file actions
+B. category/item interactions + real data
+
+But do not split automatically.
+
+State:
+`ONE IMPLEMENTATION PROMPT RECOMMENDED`
+or
+`TWO IMPLEMENTATION PROMPTS RECOMMENDED`
+
+and explain why.
+
+============================================================
+USER DECISION QUESTIONS — REQUIRED
+============================================================
+
+At the end of the report, provide ONLY the material decisions the USER
+must make before implementation.
+
+Do not ask questions that source inspection can answer.
+
+Likely areas:
+- meaning of green plus
+- meaning of Gear / Trips / More
+- whether search maps to a real function
+- menu grouping if multiple equally valid options remain
+
+If no user decision is required:
+state:
+`NO MATERIAL USER DECISIONS REQUIRED`
+
+============================================================
+STRICT READ-ONLY RULE
+============================================================
+
+027G IS DIAGNOSTIC ONLY.
+
+DO NOT:
+- edit application code
+- edit prototype code
+- edit CSS
+- wire handlers
+- create menus
+- create routes
+- change labels
+- change Dark mode
+- change production UI
+- change desktop
+- change DB/API/auth
+- change package files
+- change replit.md
+- change .agents/memory
+- deploy/publish
+
+Only the required workflow report may be created.
+
+============================================================
+FILES TO INSPECT
+============================================================
+
+At minimum inspect the active versions of:
+- `src/App.tsx`
+- `src/pages/Checklist.tsx`
+- `src/pages/MobileDesignPrototypeV3.tsx`
+- mobile category/item components
+- `usePackData` or active equivalent
+- summary/weight-distribution components
+- Locker component
+- Scan Gear component
+- Share/Review components
+- current menu/dropdown/sheet/dialog primitives
+- relevant hooks/state modules
+
+Use exact current paths from the project.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027G_REPORT.md`
+
+Include:
+1. internal version
+2. Agent mode
+3. elapsed time/actions/lines/cost if available
+4. preflight git status
+5. exact files inspected
+6. V3 visual freeze confirmation
+7. current real mobile control inventory
+8. active handler/state trace
+9. V3 mapping matrix
+10. hamburger recommendation
+11. search recommendation
+12. green-plus recommendation
+13. list-title chevron recommendation
+14. summary-card real-data recommendation
+15. category wedge/open-close mapping
+16. category-item checkbox mapping
+17. item detail mapping
+18. Weight mapping
+19. Quantity mapping
+20. Total mapping
+21. Move mapping
+22. bottom-nav mapping:
+    - Pack List
+    - Summary
+    - Gear
+    - Trips
+    - More
+23. current controls with no obvious V3 home
+24. menu/sheet primitive audit
+25. Light/Dark placement recommendation
+26. Imperial/Metric placement recommendation
+27. Share placement recommendation
+28. Print placement recommendation
+29. Review-mode implications
+30. visual-freeze risks
+31. recommended implementation sequence
+32. expected files for implementation
+33. expected DB/API/auth impact
+34. material USER decisions required
+35. observed facts vs recommendations vs unknowns
+36. source-only vs runtime-observed distinction
+37. USER VERIFICATION = NOT APPLICABLE — DIAGNOSTIC ONLY
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+027G DIAGNOSTIC COMPLETE = YES / NO
+APPLICATION CODE CHANGED = YES / NO
+PROTOTYPE CODE CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+PACKAGE FILES CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+V3 VISUAL FREEZE CONFIRMED = YES / NO
+REAL MOBILE CONTROL INVENTORY COMPLETE = YES / NO
+ACTIVE HANDLER PATHS IDENTIFIED = YES / NO
+V3 MAPPING MATRIX COMPLETE = YES / NO
+
+HAMBURGER MAPPING RECOMMENDED = YES / NO / USER DECISION
+SEARCH MAPPING IDENTIFIED = YES / NO / NO CURRENT FUNCTION / USER DECISION
+GREEN PLUS MAPPING IDENTIFIED = YES / NO / USER DECISION
+LIST TITLE CHEVRON MAPPING IDENTIFIED = YES / NO / USER DECISION
+SUMMARY REAL-DATA MAPPING IDENTIFIED = YES / NO
+CATEGORY WEDGE MAPPING IDENTIFIED = YES / NO
+CATEGORY CHECKBOX MAPPING IDENTIFIED = YES / NO
+ITEM DETAIL MAPPING IDENTIFIED = YES / NO
+WEIGHT PATH IDENTIFIED = YES / NO
+QUANTITY PATH IDENTIFIED = YES / NO
+TOTAL PATH IDENTIFIED = YES / NO
+MOVE PATH IDENTIFIED = YES / NO
+
+PACK LIST NAV MAPPING = IDENTIFIED / USER DECISION / NO CURRENT FUNCTION
+SUMMARY NAV MAPPING = IDENTIFIED / USER DECISION / NO CURRENT FUNCTION
+GEAR NAV MAPPING = IDENTIFIED / USER DECISION / NO CURRENT FUNCTION
+TRIPS NAV MAPPING = IDENTIFIED / USER DECISION / NO CURRENT FUNCTION
+MORE NAV MAPPING = IDENTIFIED / USER DECISION / NO CURRENT FUNCTION
+
+LIGHT/DARK FUTURE PLACEMENT IDENTIFIED = YES / NO / USER DECISION
+IMPERIAL/METRIC PLACEMENT IDENTIFIED = YES / NO / USER DECISION
+SHARE PLACEMENT IDENTIFIED = YES / NO / USER DECISION
+PRINT PLACEMENT IDENTIFIED = YES / NO / USER DECISION
+
+MOBILE DRAG/REORDER RECOMMENDED = NO
+MOVE PRESERVED AS MOBILE RELOCATION = YES / NO
+
+ONE IMPLEMENTATION PROMPT RECOMMENDED = YES / NO
+TWO IMPLEMENTATION PROMPTS RECOMMENDED = YES / NO
+MATERIAL USER DECISIONS REQUIRED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = NOT APPLICABLE — DIAGNOSTIC ONLY
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before completion:
+
+1. Did I make ZERO application/prototype edits?
+2. Did I preserve the approved V3 design freeze?
+3. Did I trace ACTIVE code only?
+4. Did I identify every existing real mobile control?
+5. Did I map every approved V3 affordance?
+6. Did I avoid inventing Search/Trips/Gear meanings?
+7. Did I preserve the no-drag decision?
+8. Did I preserve Checklist semantics?
+9. Did I preserve owner direct editing?
+10. Did I preserve Review isolation?
+11. Did I separate facts from recommendations?
+12. Did I ask only material user decisions?
+13. Did I recommend the fewest safe implementation prompts?
+
+If material uncertainty remains:
+report it and STOP.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027G-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027G_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not wire controls.
+Do not modify V3.
+Do not create Dark mode.
+Do not change production mobile.
+Do not proceed to implementation.
