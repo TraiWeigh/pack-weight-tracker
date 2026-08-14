@@ -1,0 +1,757 @@
+TRAILWEIGH — PROMPT 026R — GOLD STANDARD
+MOBILE-ONLY ELEGANT WEDGE CATEGORY LAYOUT
+STRICT DESKTOP ISOLATION
+
+INTERNAL VERSION ID:
+026R-MOBILE-WEDGE-STRICT-DESKTOP-ISOLATION-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 10–20 minutes
+- approximately $0.80–$1.80 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE USER DECISION
+============================================================
+
+Implement the new elegant mobile wedge layout.
+
+CRITICAL:
+THIS IS A MOBILE-ONLY PRESENTATION CHANGE.
+
+The normal desktop TrailWeigh website is a protected baseline and must remain visually and functionally unchanged unless this prompt explicitly says otherwise.
+
+USER requirement:
+“keep it isolated from the website”
+
+Interpretation:
+- mobile changes must be isolated behind responsive/mobile-only rendering or styling
+- desktop must not inherit mobile wedge markup/layout/styling
+- shared data/state logic may remain shared
+- desktop presentation must not be redesigned
+- do not make “one shared layout that happens to wrap differently”
+- use an intentional mobile presentation branch/breakpoint where needed
+
+============================================================
+CURRENT VERIFIED BASELINE TO PRESERVE
+============================================================
+
+026Q is USER VERIFIED PASS.
+
+Preserve:
+- normal TrailWeigh owner list is editable
+- obsolete owner View/Edit/Done mode remains removed
+- Checklist is the separate checkable-list experience
+- category-item checkboxes determine which category items appear in Checklist
+- Checklist shows only selected category items
+- Checklist-use checkmarks persist until Clear
+- Clear does not alter category-item selection
+- Print/Share operate on the filtered Checklist
+- Review sandbox isolation
+- Review Add Category restored
+- 026K main-category accordion behavior
+- sidebar accordion behavior
+- Locker
+- Save / Save As
+- themes/backgrounds
+- Keep It Simple
+- desktop toolbar/layout/spacing/geometry
+
+
+============================================================
+AUTHORITATIVE VISUAL REFERENCES
+============================================================
+
+Three screenshots are supplied with this prompt.
+
+1. `Mobile-Wedge-Primary-Reference.png`
+   PRIMARY MOBILE DESIGN REFERENCE.
+
+   Use this as the main visual direction for:
+   - elegant left-side category wedge
+   - category icon inside the wedge
+   - refined card proportions/radius/shadow
+   - category title + compact summary
+   - expanded category treatment
+   - vertically stacked item identity/details
+   - Weight / Quantity / Total / Move stacked inside the expanded item
+   - overall polished, calm, premium mobile feel
+
+   This is the closest reference to the user's intended mobile layout.
+
+2. `Mobile-Wedge-Secondary-Reference.png`
+   SECONDARY STYLE REFERENCE ONLY.
+
+   Useful for:
+   - wedge silhouette
+   - category-card spacing
+   - collapsed-category proportions
+   - icon scale/alignment
+   - visual rhythm across multiple categories
+
+   IMPORTANT:
+   The horizontal ITEM / QTY / WEIGHT table shown inside the expanded category in this secondary image is NOT the required item-detail layout.
+   The user prefers the vertically stacked expanded-item presentation from the PRIMARY reference.
+   Do not introduce horizontal scrolling merely to imitate the secondary screenshot.
+
+3. `Desktop-Editable-Baseline.png`
+   PROTECTED DESKTOP BASELINE.
+
+   This screenshot documents the normal editable desktop site after the obsolete owner View/Edit gating is out of the way.
+
+   026R must NOT redesign this desktop presentation.
+   Use this screenshot for before/after comparison and desktop-isolation evidence.
+
+============================================================
+HOW TO INTERPRET THE SCREENSHOTS
+============================================================
+
+The mobile screenshots are DESIGN REFERENCES, not instructions to replace the entire TrailWeigh application shell.
+
+DO copy/adapt:
+- wedge category visual language
+- icon-in-wedge treatment
+- elegant card construction
+- vertical mobile item-detail organization
+- compact category summaries
+- polished mobile spacing and touch-friendly proportions
+
+DO NOT automatically copy:
+- mockup-only bottom navigation
+- mockup search button
+- mockup plus button
+- mockup header structure
+- mockup Base Weight dashboard card
+- any control or data field that TrailWeigh does not currently have
+- any behavior that conflicts with current verified TrailWeigh functionality
+
+Preserve TrailWeigh's actual controls, data, and workflows.
+The screenshots guide presentation only.
+
+If the screenshot conflicts with an explicit requirement in this prompt:
+THE WRITTEN REQUIREMENT WINS.
+
+If PRIMARY and SECONDARY references conflict:
+THE PRIMARY REFERENCE WINS.
+
+============================================================
+PRIMARY VISUAL DIRECTION
+============================================================
+
+For MOBILE only, use the elegant wedge category design.
+
+The preferred direction is shown in `Mobile-Wedge-Primary-Reference.png`.
+
+The preferred direction is:
+- polished
+- compact
+- visually elegant
+- category-driven
+- easy to use one-handed
+- category colors/icons help identify sections quickly
+
+MOBILE CATEGORY HEADER:
+
+Each main category becomes a refined wedge-style accordion header.
+
+Required visual content:
+- category icon
+- category name or identifying text where space allows
+- compact selected/packed count or equivalent existing category summary
+- category weight summary if that category currently shows one
+- open/close chevron or equivalent accordion affordance
+
+The wedge should feel like one integrated control, not a collection of floating buttons.
+
+============================================================
+CATEGORY COLORS + ICONS
+============================================================
+
+Normal/Creative mobile mode:
+- each category may have its own distinct category color
+- category icon should visually correspond to category
+- use color + icon + text/label where practical
+- do not rely on color alone for meaning
+
+The icon system must NOT be backpacking-only.
+
+It must be extensible to general TrailWeigh list use, including examples such as:
+- backpack
+- tent/shelter
+- sleep
+- clothing
+- water/hydration
+- electronics
+- toiletries
+- med kit
+- repair kit
+- food/consumables later
+- suitcase/luggage
+- documents
+- car/road-trip
+- business
+- home/general
+- custom categories
+
+Do not create the full future list-template system in 026R.
+Only ensure the mobile category icon architecture is not hardcoded to hiking-only categories.
+
+============================================================
+KEEP IT SIMPLE
+============================================================
+
+Keep It Simple remains an accessibility/display mode.
+
+On MOBILE in Keep It Simple:
+- do NOT use decorative colored wedges
+- preserve the established plain treatment:
+  - white background
+  - black text
+  - flat controls
+  - minimal borders/dividers
+  - no decorative shadows/gradients/textures/background art
+- accordion behavior remains the same
+- mobile structure may still be compact/stacked, but visually simple
+
+Do not alter desktop Keep It Simple.
+
+============================================================
+MOBILE CATEGORY ACCORDION BEHAVIOR
+============================================================
+
+Preserve the established main-category accordion rules:
+
+Normal manual interaction:
+- only one category open at a time
+- opening one closes another open category
+- zero-open is allowed
+- tapping an open category closes it
+
+Preserve the existing main-category joined Open/Close control:
+- down arrow = Expand All / Open All
+- up arrow = Collapse All / Close All
+- acts only on main categories
+- remains independent from sidebar Open/Close control
+
+Do not alter desktop accordion behavior or desktop control placement.
+
+============================================================
+EXPANDED MOBILE CATEGORY CONTENT
+============================================================
+
+When a mobile category opens, its category items should use a compact mobile-first layout rather than the desktop horizontal row.
+
+Preferred structure:
+- item identity/name prominent
+- item type/sub-type below or adjacent where appropriate
+- Weight
+- Quantity
+- Total
+- Move/category action where currently supported
+- delete/edit controls as appropriate for normal editable owner list
+- category-item selection checkbox remains available
+
+The identifying/item information should be STACKED vertically rather than forced into the desktop horizontal row.
+
+Avoid horizontal page scrolling.
+
+If an existing field is not needed on phone:
+- do not delete its underlying data
+- hide/reposition only when explicitly justified by mobile usability
+- preserve desktop field display
+
+============================================================
+MOBILE ITEM DETAILS
+============================================================
+
+Use a compact nested-detail or accordion treatment for item metadata if needed.
+
+Goal:
+- category item remains easy to scan
+- common item identity is visible immediately
+- less-common fields can expand vertically
+- touch targets are comfortable
+- no tiny desktop-form controls squeezed into phone width
+
+Do not invent new data fields.
+
+============================================================
+MOBILE TOOLBAR / TOP AREA
+============================================================
+
+Preserve current mobile functionality while adapting presentation cleanly.
+
+Do not remove:
+- Checklist
+- unit controls
+- Background
+- Share
+- Locker access
+- Scan Gear List
+- Pack Summary
+- Weight Distribution
+- existing Open/Close controls
+
+Do not reintroduce Edit/Done.
+
+Do not alter desktop toolbar.
+
+If mobile controls must be repositioned for the wedge composition:
+- change mobile-only layout
+- preserve functionality
+- do not duplicate actions unnecessarily
+
+============================================================
+TOOLTIPS / HELP FOR NEW MOBILE CONTROLS
+============================================================
+
+Standing TrailWeigh requirement:
+
+- preserve ALL existing tooltips exactly
+- do not rewrite existing tooltip text
+- any NEW interactive control introduced by 026R must receive a help/tooltip explanation
+- keyboard-focus users must be able to access the help
+- mobile/touch users need an equivalent because hover is unavailable
+- do not launch a global tooltip rewrite in 026R
+
+If current tooltip infrastructure already supports this:
+reuse it.
+
+If it does not:
+limit work to the new/changed 026R controls and document any broader gap for later.
+
+============================================================
+STRICT DESKTOP ISOLATION
+============================================================
+
+THIS SECTION IS MANDATORY.
+
+DESKTOP IS PROTECTED.
+
+At desktop breakpoint:
+- category headers remain in current desktop form
+- category rows remain in current desktop form
+- toolbar remains in current desktop form
+- sidebar remains in current desktop form
+- widths remain unchanged
+- spacing remains unchanged
+- typography remains unchanged
+- controls remain unchanged
+- no wedge graphics
+- no mobile stacked rows
+- no mobile icon/color treatment leaks into desktop
+- no mobile-specific reordering of sections
+- no desktop behavior changes
+
+Implementation guidance:
+- prefer an explicit mobile render branch or mobile-specific component layer where necessary
+- if shared components are used, isolate presentation through breakpoint-scoped classes/props with zero desktop impact
+- do not alter shared base CSS selectors in a way that changes desktop
+- do not rely on broad selector overrides that affect all viewports
+
+If a proposed implementation cannot guarantee desktop isolation:
+STOP and report before editing.
+
+============================================================
+RESPONSIVE TARGET
+============================================================
+
+Mobile behavior applies across supported mobile operating systems.
+
+Do NOT use:
+- iOS-only logic
+- Android-only logic
+- user-agent sniffing
+
+Use responsive viewport/layout logic.
+
+Test representative widths:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+At >= existing desktop/lg breakpoint:
+- desktop baseline must render unchanged
+
+Use the existing shared URL.
+Do NOT create a separate mobile URL.
+
+============================================================
+TOUCH BEHAVIOR
+============================================================
+
+Current HTML5 drag-and-drop is not reliable for touch devices.
+
+026R may improve MOBILE item/category reordering only if it can be done safely and within scope.
+
+If adding a touch-compatible reorder interaction would materially broaden the task:
+- do NOT implement it
+- preserve existing behavior
+- document as a separate future task
+
+Do not change desktop drag-and-drop behavior.
+
+============================================================
+CHECKLIST PROTECTION
+============================================================
+
+Do not change Checklist semantics.
+
+026R is a visual mobile layout prompt, not a Checklist architecture prompt.
+
+Preserve:
+- category-item selection controls
+- filtered Checklist membership
+- separate Checklist-use checkmarks
+- persistence-until-Clear
+- Print filtering
+- Share filtering
+
+If mobile Checklist itself requires only responsive styling to remain usable:
+that is allowed.
+
+Do not change its data/state model.
+
+============================================================
+REVIEW / SHARE PROTECTION
+============================================================
+
+Preserve Review sandbox behavior.
+
+The same mobile responsive presentation may be used in Review if it naturally uses the shared ChecklistContent architecture, but:
+- owner data must remain isolated
+- reviewer mutations must remain sandboxed
+- Review Add Category remains available
+- do not fork a separate Review data architecture
+
+Desktop Review presentation must not be changed by the mobile wedge work.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- Create New List guided questions
+- Backpack / Custom list-type flow
+- optional Weight architecture
+- future travel/business templates
+- global tooltip rewrite
+- cross-device Checklist sync
+- Last Synced
+- server Checklist persistence
+- polling/WebSockets/SSE
+- database/schema/API/auth changes
+- Share architecture redesign
+- Print redesign
+- Locker redesign
+- desktop wedge design
+- desktop category color redesign
+- desktop toolbar redesign
+- unrelated refactors
+- package changes
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+- deployment/publishing
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Inspect current desktop and mobile render path.
+3. Identify:
+   - main category header component
+   - GearCategory
+   - GearRow
+   - mobile toolbar/render branch
+   - desktop breakpoint rules
+   - Keep It Simple presentation
+   - existing category icon mapping, if any
+4. Determine whether mobile/desktop currently share identical markup.
+5. Choose the smallest architecture that guarantees desktop isolation.
+6. Record expected changed files before editing.
+7. Record preflight git status.
+8. Create:
+   `workflow-reports/PROMPT_026R_REPORT.md`
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Expected application files should be the minimum subset of:
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+- `artifacts/pack-checklist/src/components/GearCategory.tsx`
+- `artifacts/pack-checklist/src/components/GearRow.tsx`
+- one mobile-specific component/style file if needed
+
+Prefer creating a mobile-specific presentation component over destabilizing the desktop component if that is safer.
+
+If more application files are required:
+STOP and explain before broadening.
+
+After edits:
+- list every changed file
+- inspect full diff
+- verify no desktop-only selectors/classes were unintentionally changed
+- revert unrelated changes only
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+SOURCE AUDIT ALONE IS NOT PASS.
+
+TEST 1 — MOBILE 375 PX
+Expected:
+- wedge category headers visible
+- category colors/icons present in Creative mode
+- single-open accordion works
+- zero-open works
+- category items stack vertically
+- no horizontal page scroll
+- touch controls reachable
+
+TEST 2 — MOBILE 390 PX
+Expected:
+- same behavior
+- no clipping/overlap
+- toolbar usable
+- sidebar/panels usable
+
+TEST 3 — MOBILE 320 PX
+Expected:
+- graceful narrow-phone behavior
+- no destructive overlap
+- category identity remains understandable
+
+TEST 4 — MOBILE 430 PX
+Expected:
+- layout remains mobile
+- no premature desktop layout
+- no excessive unused space
+
+TEST 5 — KEEP IT SIMPLE MOBILE
+Expected:
+- simple flat white/black presentation
+- no decorative category color wedges
+- same accordion behavior
+- usable stacked category-item layout
+
+TEST 6 — DESKTOP BASELINE
+At desktop width:
+Expected:
+- NO wedge layout
+- category headers unchanged
+- category rows unchanged
+- toolbar unchanged
+- sidebar unchanged
+- spacing unchanged
+- no mobile icon/color leakage
+
+Use `Desktop-Editable-Baseline.png` as the protected desktop reference for before/after screenshot comparison.
+
+TEST 7 — DESKTOP FUNCTIONAL
+Expected:
+- owner editing works
+- Add Item/Add Category works
+- drag/reorder behavior unchanged
+- Checklist works
+- Locker/Save works
+
+TEST 8 — CHECKLIST MOBILE
+Expected:
+- category-item selection still determines filtered Checklist
+- Checklist-use marks persist until Clear
+- Clear works
+- no state-model regression
+
+TEST 9 — REVIEW MOBILE
+Expected:
+- mobile wedge presentation works if shared
+- Review Add Category still works
+- owner original unchanged
+
+TEST 10 — TOOLTIP/HELP
+For any NEW 026R interactive control:
+Expected:
+- pointer/hover help where applicable
+- keyboard-focus access
+- mobile/touch equivalent
+- existing tooltip text unchanged
+
+TEST 11 — CONSOLE
+Expected:
+- no new errors caused by 026R
+
+If any runtime test cannot be performed:
+mark NOT RUN.
+Do not claim PASS from source inspection.
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide:
+- mobile screenshot at 375 or 390 px with several categories, compared against `Mobile-Wedge-Primary-Reference.png`
+- mobile screenshot with one category expanded
+- mobile Keep It Simple screenshot
+- desktop screenshot proving unchanged desktop baseline
+- optional short video for accordion/touch interaction if easy
+- exact list of changed files
+
+The desktop screenshot is mandatory evidence for isolation.
+
+============================================================
+STOP CONDITIONS
+============================================================
+
+STOP instead of improvising if:
+- mobile implementation requires broad desktop component rewrite
+- desktop visual changes appear
+- shared CSS causes desktop leakage
+- Keep It Simple requires unrelated redesign
+- touch reordering requires major new library/dependency
+- package changes become necessary
+- Checklist state model would need changes
+- Review isolation would need changes
+- work materially exceeds 20 minutes / ~$1.80
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026R_REPORT.md`
+
+Include:
+1. internal version
+2. Replit mode
+3. time/actions/lines/cost
+4. preflight git status
+5. files inspected
+6. current mobile/desktop render architecture
+7. chosen isolation strategy
+8. expected changed files
+9. actual changed files
+10. mobile wedge implementation
+11. category color/icon implementation
+12. mobile item stacking implementation
+13. Keep It Simple mobile behavior
+14. tooltip/help treatment for new controls
+15. 320 px result
+16. 375 px result
+17. 390 px result
+18. 430 px result
+19. desktop screenshot/result
+20. desktop functional regression result
+21. Checklist regression result
+22. Review regression result
+23. tests NOT RUN
+24. console result
+25. rollback guidance
+26. unresolved issues
+27. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+MOBILE WEDGE LAYOUT IMPLEMENTED = PASS / FAIL / NOT RUN
+MOBILE CATEGORY COLORS/ICONS = PASS / FAIL / NOT RUN
+MOBILE CATEGORY SINGLE-OPEN = PASS / FAIL / NOT RUN
+MOBILE ZERO-OPEN = PASS / FAIL / NOT RUN
+MOBILE EXPAND/COLLAPSE ALL = PASS / FAIL / NOT RUN
+MOBILE ITEM DETAILS STACKED = PASS / FAIL / NOT RUN
+MOBILE HORIZONTAL PAGE SCROLL = YES / NO / NOT RUN
+KEEP IT SIMPLE MOBILE PRESERVED = PASS / FAIL / NOT RUN
+
+DESKTOP WEDGE UI PRESENT = YES / NO / NOT RUN
+DESKTOP CATEGORY LAYOUT CHANGED = YES / NO / NOT RUN
+DESKTOP TOOLBAR CHANGED = YES / NO / NOT RUN
+DESKTOP SIDEBAR CHANGED = YES / NO / NOT RUN
+DESKTOP SPACING/GEOMETRY CHANGED = YES / NO / NOT RUN
+DESKTOP FUNCTIONAL REGRESSION = YES / NO / NOT RUN
+
+CHECKLIST SEMANTICS CHANGED = YES / NO / NOT RUN
+CHECKLIST PERSISTENCE CHANGED = YES / NO / NOT RUN
+REVIEW ISOLATION CHANGED = YES / NO / NOT RUN
+REVIEW ADD CATEGORY REGRESSION = YES / NO / NOT RUN
+LOCKER/SAVE BEHAVIOR CHANGED = YES / NO / NOT RUN
+
+EXISTING TOOLTIP TEXT CHANGED = YES / NO
+NEW INTERACTIVE CONTROLS HAVE HELP = YES / NO / NOT RUN
+KEYBOARD HELP ACCESS = PASS / FAIL / NOT RUN
+MOBILE TOUCH HELP ACCESS = PASS / FAIL / NOT RUN
+
+DATABASE/API/AUTH CHANGED = YES / NO
+SYNC/LAST-SYNCED ADDED = YES / NO
+CREATE-NEW-LIST FLOW CHANGED = YES / NO
+PACKAGE FILES CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Is the wedge UI truly mobile-only?
+2. Did desktop remain visually identical?
+3. Did desktop behavior remain identical?
+4. Did I avoid broad shared-CSS leakage?
+5. Did category accordion behavior remain correct?
+6. Are mobile category items vertically organized?
+7. Are category colors/icons accessible and extensible?
+8. Is Keep It Simple still simple?
+9. Did I preserve Checklist semantics?
+10. Did I preserve Review isolation?
+11. Did I preserve Locker/Save?
+12. Did I preserve existing tooltip text exactly?
+13. Did new controls receive keyboard + touch-accessible help?
+14. Did I avoid Create New List/template/sync work?
+15. Did I avoid DB/API/auth/package/deployment changes?
+16. Did I runtime-test desktop isolation?
+17. Did I inspect every changed file?
+18. Is any material uncertainty unresolved?
+
+If unresolved:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026R-report.zip`
+
+ZIP must contain only:
+`PROMPT_026R_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to Create New List.
+Do not proceed to 026S.
+Do not perform other waiting TrailWeigh work.

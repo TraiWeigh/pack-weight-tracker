@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useUser, useClerk } from '@clerk/react';
 import { usePackData } from '../hooks/usePackData';
 import { GearCategory } from '../components/GearCategory';
+import { MobileWedgeCategory } from '../components/MobileWedgeCategory';
 import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
 import { PrintLayout } from '../components/PrintLayout';
 import { PreviewModal } from '../components/PreviewModal';
@@ -2785,35 +2786,59 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
 
             {/* Scrollable categories */}
             <div className="lg:h-full lg:overflow-y-auto lg:min-h-0 space-y-1 pb-8 lg:pr-3 lg:[scrollbar-gutter:stable]">
-              {categoryOrder.map((category) => (
-                <GearCategory
-                  key={category}
-                  name={category}
-                  items={data[category] || []}
-                  meta={categoryMeta[category] ?? { countsToBase: true }}
-                  forceOpen={openCatIds.has(category)}
-                  forceOpenSeq={catSeq}
-                  onToggle={nowOpen => handleCategoryToggle(category, nowOpen)}
-                  order={categoryOrder}
-                  updateItem={updateItem}
-                  removeItem={removeItem}
-                  moveItem={moveItem}
-                  addItem={addItem}
-                  onUpdateMeta={updates => updateCategoryMeta(category, updates)}
-                  onDelete={() => deleteCategory(category)}
-                  onRename={newName => renameCategory(category, newName)}
-                  isDragOver={overCat === category && dragCat !== category}
-                  onDragStart={() => setDragCat(category)}
-                  onDragEnd={() => { setDragCat(null); setOverCat(null); }}
-                  onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
-                  onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
-                  onDrop={e => {
-                    e.preventDefault();
-                    if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
-                    setDragCat(null);
-                    setOverCat(null);
-                  }}
-                />
+              {categoryOrder.map((category, categoryIdx) => (
+                <div key={category}>
+                  {/* ── Desktop (lg+): existing GearCategory — pixel-identical, unchanged ── */}
+                  <div className="hidden lg:block">
+                    <GearCategory
+                      name={category}
+                      items={data[category] || []}
+                      meta={categoryMeta[category] ?? { countsToBase: true }}
+                      forceOpen={openCatIds.has(category)}
+                      forceOpenSeq={catSeq}
+                      onToggle={nowOpen => handleCategoryToggle(category, nowOpen)}
+                      order={categoryOrder}
+                      updateItem={updateItem}
+                      removeItem={removeItem}
+                      moveItem={moveItem}
+                      addItem={addItem}
+                      onUpdateMeta={updates => updateCategoryMeta(category, updates)}
+                      onDelete={() => deleteCategory(category)}
+                      onRename={newName => renameCategory(category, newName)}
+                      isDragOver={overCat === category && dragCat !== category}
+                      onDragStart={() => setDragCat(category)}
+                      onDragEnd={() => { setDragCat(null); setOverCat(null); }}
+                      onDragOver={e => { e.preventDefault(); if (dragCat && dragCat !== category) setOverCat(category); }}
+                      onDragLeave={() => setOverCat(prev => prev === category ? null : prev)}
+                      onDrop={e => {
+                        e.preventDefault();
+                        if (dragCat && dragCat !== category) reorderCategory(dragCat, category);
+                        setDragCat(null);
+                        setOverCat(null);
+                      }}
+                    />
+                  </div>
+                  {/* ── Mobile (< lg): new MobileWedgeCategory — 026R elegant wedge layout ── */}
+                  <div className="lg:hidden">
+                    <MobileWedgeCategory
+                      name={category}
+                      categoryIndex={categoryIdx}
+                      items={data[category] || []}
+                      meta={categoryMeta[category] ?? { countsToBase: true }}
+                      forceOpen={openCatIds.has(category)}
+                      forceOpenSeq={catSeq}
+                      onToggle={nowOpen => handleCategoryToggle(category, nowOpen)}
+                      order={categoryOrder}
+                      updateItem={updateItem}
+                      removeItem={removeItem}
+                      moveItem={moveItem}
+                      addItem={addItem}
+                      onUpdateMeta={updates => updateCategoryMeta(category, updates)}
+                      onDelete={() => deleteCategory(category)}
+                      onRename={newName => renameCategory(category, newName)}
+                    />
+                  </div>
+                </div>
               ))}
 
               {/* ── Add Category ── */}

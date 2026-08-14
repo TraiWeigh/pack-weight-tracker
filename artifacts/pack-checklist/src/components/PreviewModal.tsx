@@ -260,12 +260,16 @@ interface PreviewModalProps {
   categoryMeta: Record<string, CategoryMeta>;
   onClose: () => void;
   onPrint: () => void;
-  /** Checklist-use checkbox state — separate from source item.checked. */
-  checklistUse: Record<string, boolean>;
-  /** Called when a checklist-use checkbox is toggled. */
-  onToggle: (itemId: string) => void;
-  /** Called when Clear is clicked — should reset checklistUse in the parent. */
-  onClear: () => void;
+  /**
+   * Checklist-use checkbox state — separate from source item.checked.
+   * Optional: when absent the modal renders in read-only display mode
+   * (no interactive checkboxes, no Clear button).
+   */
+  checklistUse?: Record<string, boolean>;
+  /** Called when a checklist-use checkbox is toggled. Optional — see checklistUse. */
+  onToggle?: (itemId: string) => void;
+  /** Called when Clear is clicked. Optional — Clear button hidden when absent. */
+  onClear?: () => void;
   /** When provided, adds "Share Pack List" button in the modal toolbar. */
   onSharePackList?: () => void;
 }
@@ -295,14 +299,16 @@ export function PreviewModal({
                 Share Pack List
               </button>
             )}
-            <button
-              onClick={onClear}
-              className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
-              title="Uncheck all checklist boxes"
-            >
-              <Eraser className="w-3.5 h-3.5" />
-              Clear
-            </button>
+            {onClear && (
+              <button
+                onClick={onClear}
+                className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
+                title="Uncheck all checklist boxes"
+              >
+                <Eraser className="w-3.5 h-3.5" />
+                Clear
+              </button>
+            )}
             <button
               onClick={onPrint}
               className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-colors"
@@ -328,7 +334,7 @@ export function PreviewModal({
             categoryOrder={categoryOrder}
             categoryMeta={categoryMeta}
             filterToChecked={true}
-            checklistUse={checklistUse}
+            checklistUse={checklistUse ?? {}}
             onToggle={onToggle}
           />
         </div>

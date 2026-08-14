@@ -7,3 +7,4 @@
 - [TrailWeigh PDF parser regex](trailweigh-pdf-regex.md) — greedy `(.+)` not lazy `(.+?)` in PDF_ROW_RE; lazy grabs model numbers (e.g. "Wapta 30") as the weight instead of the real value.
 - [016C PDF 502 root cause](016c-pdf-502-root-cause.md) — API server NOT_STARTED → Vite proxy returns 502 HTML → frontend throws "unexpected response format"; fix: start server + add 30s timeout + destroy().
 - [026N/O owner-mode removed in 026P](026p-owner-mode-removal.md) — ownerMode/viewMode/startupRestoredRef fully removed; Preview→Checklist renamed; PreviewModal now interactive (all items, checkboxes, Clear); PrintLayout shows all items with true state.
+- [Mobile wedge architecture](mobile-wedge-architecture.md) — MobileWedgeCategory in lg:hidden beside unchanged GearCategory in hidden lg:block; mobileCategoryTheme.ts for icons/colors; KIS mode absent from codebase.

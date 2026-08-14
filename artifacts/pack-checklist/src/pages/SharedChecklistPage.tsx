@@ -694,6 +694,7 @@ function SharedChecklistContent({
       // No lockerFiles — checkable list is single-file, focused view
     };
     const url = await buildShareURL(payload);
+    if (!url) return;
     const title = snapshot.name ? `${snapshot.name} — Packing List` : 'TrailWeigh Packing List';
     try {
       if (navigator.share) {

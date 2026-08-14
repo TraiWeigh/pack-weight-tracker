@@ -26,7 +26,7 @@ function resolveBgUrl(bg: Background | null | undefined): string | null {
   if (!bg) return null;
   if (bg.type === 'preset' && bg.id) {
     const preset = PRESETS.find(p => p.id === bg.id);
-    return preset ? getFullUrl(preset.photoId) : null;
+    return preset?.photoId ? getFullUrl(preset.photoId) : null;
   }
   if (bg.type === 'custom') {
     // Custom photo blobs are stored in IndexedDB (per-device).
