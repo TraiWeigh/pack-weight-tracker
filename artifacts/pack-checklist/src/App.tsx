@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import Checklist from './pages/Checklist';
 import MobileDesignPrototype from './pages/MobileDesignPrototype';
+import MobileDesignPrototypeV2 from './pages/MobileDesignPrototypeV2';
 import LandingPage from './pages/LandingPage';
 import AdminPage from './pages/AdminPage';
 import SharedPackView from './pages/SharedPackView';
@@ -236,6 +237,8 @@ function ClerkProviderWithRoutes() {
           <Route path="/accessibility" component={AccessibilityPage} />
           {/* 027A: Isolated mobile design prototype — dev-only preview route */}
           <Route path="/mobile-preview" component={MobileDesignPrototype} />
+          {/* 027B: V2 mobile design prototype — dev-only preview route */}
+          <Route path="/mobile-design-v2" component={MobileDesignPrototypeV2} />
           <Route component={NotFound} />
         </Switch>
         <Toaster />
