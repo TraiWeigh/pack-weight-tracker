@@ -1,0 +1,420 @@
+TRAILWEIGH — PROMPT 026V — GOLD STANDARD READ-ONLY DIAGNOSTIC
+MOBILE ARCHITECTURE AUDIT + HORIZONTAL OVERFLOW / WHITE-SPACE PAN
+NO APPLICATION CODE CHANGES
+
+INTERNAL VERSION ID:
+026V-MOBILE-ARCHITECTURE-AND-HORIZONTAL-OVERFLOW-DIAGNOSTIC-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose / Read-only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 3–6 minutes
+- approximately $0.20–$0.60 Agent usage
+
+============================================================
+AUTHORITATIVE USER LIVE EVIDENCE
+============================================================
+
+026U removed the mobile photo/theme background and added a standalone mobile Light/Dark control.
+
+The user’s CURRENT phone screenshots now prove a separate regression:
+
+- the mobile app does NOT stay constrained to the phone viewport width
+- the entire page can be moved/panned side-to-side
+- white space becomes visible outside the app on the right
+- some lower-toolbar content appears wider than the viewport / clipped
+- the defect occurs both with collapsed categories and with an expanded category
+
+The intended mobile behavior is:
+
+- TrailWeigh fills the available phone viewport width
+- NO whole-page horizontal panning
+- NO white strip outside the app
+- NO control may force the document wider than the viewport
+- internal controls may adapt, wrap, shrink, or reorganize as needed
+- desktop must remain unchanged
+
+============================================================
+SEPARATE USER SCREENSHOTS
+============================================================
+
+The user will attach these as separate files:
+
+1. `026V-Mobile-Overflow-Full.png`
+   Shows the mobile page with a white strip visible at the right edge.
+
+2. `026V-Mobile-Overflow-Shifted.png`
+   Shows the page shifted sideways, proving whole-document horizontal panning.
+
+3. `026V-Mobile-Overflow-Expanded.png`
+   Shows the same issue while a category/item section is expanded.
+
+These are USER LIVE EVIDENCE.
+
+Do not embed screenshots in this prompt or report.
+Do not treat browser chrome as part of TrailWeigh.
+
+============================================================
+MANDATORY READ-ONLY RULE
+============================================================
+
+DO NOT EDIT APPLICATION CODE.
+
+DO NOT:
+- add overflow-x:hidden
+- change widths
+- change toolbar layout
+- change UnitToggle
+- change wedge components
+- change CSS
+- change desktop
+- modify DB/API/auth
+- modify packages
+- modify replit.md
+- modify .agents/memory
+- publish/deploy
+
+This prompt is diagnostic only.
+
+
+============================================================
+ONE-TIME MOBILE ARCHITECTURE AUDIT
+============================================================
+
+In addition to diagnosing the horizontal overflow, map the CURRENT TrailWeigh mobile/desktop architecture so future phone-layout work can be safely isolated.
+
+This audit is intended to answer one foundational question:
+
+CAN THE PHONE PRESENTATION CONTINUE TO EVOLVE WITHOUT CHANGING THE DESKTOP WEBSITE?
+
+Prove the answer from current source.
+
+For each major area below, identify whether it is:
+
+A. MOBILE-ONLY RENDER BRANCH
+B. DESKTOP-ONLY RENDER BRANCH
+C. SHARED COMPONENT WITH RESPONSIVE CSS
+D. SHARED STATE / SHARED LOGIC ONLY
+E. SHARED PRESENTATION THAT COULD LEAK CHANGES ACROSS VIEWPORTS
+
+Audit these areas:
+
+1. Top application header / toolbar
+2. Main lower phone toolbar
+3. Main category accordion headers
+4. Category item rows / expanded item details
+5. Pack Summary
+6. Weight Distribution
+7. Scan Gear List
+8. Locker
+9. Checklist
+10. Share / Review
+11. Imperial / Metric control
+12. Light / Dark control
+13. Background / Themes
+14. Main page/root containers
+15. Any global/shared CSS affecting layout
+
+For each area report:
+- exact component/file
+- mobile render path
+- desktop render path
+- responsive breakpoint/classes
+- shared state/logic used
+- whether visual changes can be made mobile-only safely
+- if NOT safe, what shared dependency creates leakage risk
+
+============================================================
+BREAKPOINT MAP
+============================================================
+
+Document the CURRENT responsive breakpoint architecture.
+
+Report:
+- exact Tailwind/CSS breakpoints used by TrailWeigh
+- which breakpoint currently switches mobile → desktop
+- whether `lg` is consistently used or if multiple breakpoints are mixed
+- any components that switch at a different width
+- any risky range where both mobile and desktop markup could render
+- whether viewport meta configuration is correct for mobile browsers
+
+Do not assume defaults; inspect the current project configuration/source.
+
+============================================================
+SAFE MOBILE CHANGE RULES
+============================================================
+
+Based on the current source, produce a short implementation rulebook for future TrailWeigh mobile work.
+
+State specifically:
+
+1. Which files/components are SAFE for mobile-only visual changes.
+2. Which files/components are SHARED and should not receive phone-only presentation changes.
+3. Which shared state/hooks are safe to reuse because they contain data/behavior rather than presentation.
+4. Which CSS selectors are global/shared and high-risk for desktop leakage.
+5. Whether a stronger dedicated mobile layout component boundary is already present or should be considered later.
+6. Whether future phone work should prefer:
+   - mobile-specific components,
+   - responsive props/classes,
+   - or a dedicated mobile layout shell.
+
+Do NOT implement any architectural refactor in 026V.
+
+============================================================
+MOBILE WEB CONSTRAINTS CHECK
+============================================================
+
+Inspect whether current mobile rendering correctly accounts for basic responsive-web constraints:
+
+- viewport meta tag
+- width: 100% vs 100vw usage
+- min-width constraints
+- fixed-width controls
+- safe-area handling where relevant
+- flex items that cannot shrink
+- horizontal no-wrap groups
+- absolute/fixed elements extending layout width
+- body/root width constraints
+
+This is a source/runtime audit only.
+
+Do not add native-app architecture.
+TrailWeigh remains a responsive web application in this prompt.
+
+============================================================
+ROOT-CAUSE REQUIREMENT
+============================================================
+
+Do NOT propose a cosmetic masking fix before identifying the exact element that creates document overflow.
+
+A blanket:
+`overflow-x: hidden`
+on html/body/root is NOT an acceptable diagnosis.
+
+First prove:
+- viewport/client width
+- document scroll width
+- exact element(s) whose bounding box exceeds the viewport
+- exact CSS/layout reason each element exceeds it
+
+============================================================
+QUESTIONS / TESTS
+============================================================
+
+1. MEASURE THE OVERFLOW
+
+At representative mobile widths:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+Report:
+- `window.innerWidth`
+- `document.documentElement.clientWidth`
+- `document.documentElement.scrollWidth`
+- `document.body.scrollWidth`
+
+Confirm whether document-level horizontal overflow exists at each width.
+
+2. IDENTIFY EVERY OFFENDING ELEMENT
+
+Using the current runtime/source, identify every rendered element whose:
+- `getBoundingClientRect().right > viewport width`
+or
+- width/min-width/margin/transform causes document scrollWidth to exceed clientWidth
+
+For each offender give:
+- exact component
+- exact file
+- relevant class/style
+- measured left/right/width
+- why it overflows
+
+Do NOT stop after the first offender if multiple elements contribute.
+
+3. LOWER PHONE TOOLBAR
+
+Inspect the current lower phone toolbar added/modified across 026L/026U.
+
+Specifically inspect:
+- Expand/Collapse control
+- Hide
+- Checklist
+- standalone Light/Dark segmented control
+- Imperial/Metric UnitToggle
+- gaps/padding
+- `flex`, `flex-nowrap`, `min-width`, `shrink-0`, fixed widths, margins
+
+Determine whether this toolbar is forcing document width beyond the viewport.
+
+The screenshots suggest the right side of Imperial/Metric may be clipped; verify rather than assume.
+
+4. MOBILE WEDGE / CATEGORY HEADER
+
+Inspect:
+- MobileWedgeCategory outer width
+- wedge clip-path box
+- category card padding/margins
+- weight/chevron/delete controls
+- any fixed/min widths
+
+Determine whether the wedge/category list contributes to page overflow.
+
+5. EXPANDED MOBILE ITEM
+
+Inspect:
+- Weight
+- Qty
+- Total
+- Move To
+- select/input widths
+- padding/margins
+- nested wrappers
+
+Determine whether expanded items contribute to page overflow.
+
+6. ROOT / SCREEN CONTAINERS
+
+Inspect:
+- html
+- body
+- root mount element
+- `.screen-only`
+- main page wrappers
+- mobile grid/flex parents
+
+Report any:
+- width: 100vw issues
+- min-width
+- negative margins
+- translate/transform
+- fixed widths
+- padding added on top of 100vw/100%
+- absolutely positioned content extending the scroll area
+
+7. EXACT ROOT CAUSE
+
+State the proven primary root cause and any secondary contributors.
+
+Do NOT answer with “likely.”
+Use current runtime measurement + source evidence.
+
+8. SMALLEST SAFE REPAIR
+
+Describe the smallest implementation that will:
+- keep the entire mobile document within viewport width
+- preserve every mobile function
+- preserve the Light/Dark control
+- preserve Imperial/Metric
+- preserve Checklist
+- preserve wedges and vertical item details
+- eliminate whole-page side-to-side panning
+- eliminate visible white space outside app
+- leave desktop unchanged
+
+Prefer fixing the actual overflowing layout rather than globally hiding overflow.
+
+9. DESKTOP ISOLATION
+
+Identify the exact responsive breakpoint/component boundary that lets the repair be mobile-only.
+
+Confirm what must NOT change on desktop.
+
+============================================================
+REQUIRED RESPONSE FORMAT
+============================================================
+
+A. MEASUREMENTS
+- 320:
+- 375:
+- 390:
+- 430:
+
+B. OFFENDING ELEMENTS
+For each:
+- component:
+- file:
+- class/style:
+- measured overflow:
+- reason:
+
+C. PRIMARY ROOT CAUSE
+- exact cause:
+
+D. SECONDARY CONTRIBUTORS
+- exact causes or NONE:
+
+E. MINIMUM REPAIR
+- file(s):
+- exact strategy:
+- why it fixes root cause:
+- why it does not mask the defect:
+- desktop isolation:
+
+F. MOBILE/DESKTOP ARCHITECTURE MAP
+- mobile-only components:
+- desktop-only components:
+- shared presentation components:
+- shared state/logic:
+- high-risk shared CSS/selectors:
+- current mobile→desktop breakpoint:
+- can future phone presentation be isolated safely? YES/NO + why
+
+G. SAFE MOBILE CHANGE RULEBOOK
+- safe mobile-only files/components:
+- shared files/components to protect:
+- recommended future pattern:
+- architecture refactor needed now? YES/NO
+
+H. MATERIAL UNCERTAINTY
+- YES / NO
+- if YES, exact unanswered item
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_026V_REPORT.md`
+
+Include:
+- internal version
+- time/actions/lines/cost
+- files inspected
+- runtime width measurements
+- exact offending element(s)
+- root cause
+- minimum repair scope
+- full mobile/desktop architecture map
+- breakpoint map
+- safe mobile change rulebook
+- confirmation that NO application code changed
+- preflight/final git status
+- material uncertainty
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026V-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026V_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not implement the fix.
+Do not proceed to 026W.
+Do not perform Create New List work.
