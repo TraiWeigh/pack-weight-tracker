@@ -1,0 +1,912 @@
+TRAILWEIGH — PROMPT 027N — GOLD STANDARD READ-ONLY DIAGNOSTIC
+MASTER LIST ITEM IDENTITY + COPY/REFERENCE PATH + FUTURE DOMAIN TAXONOMY
+CUSTOM-LIST ACCESS + PHOTO/STORAGE FOUNDATION
+NO IMPLEMENTATION
+
+INTERNAL VERSION ID:
+027N-MASTER-LIST-IDENTITY-DOMAINS-CUSTOM-LIST-DIAGNOSTIC-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- DO NOT edit application code
+
+ESTIMATED SCOPE
+- 8–16 minutes
+- approximately $0.60–$1.50 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+SEQUENCE / BASELINE
+============================================================
+
+027L = USER VISUAL PASS / CLOSED.
+
+027M R2 = READ-ONLY DIAGNOSTIC PASS.
+
+027M established:
+- current `GearItem` has no photo/media field
+- current durable item-photo backend does NOT exist
+- cross-device photo access does NOT exist
+- theme/background image helpers are partially reusable
+- Scanner multipart upload is a useful reference
+- Locker can naturally host a future Photos/Visual Library subview
+- Drawer/Tabs primitives already exist
+- no application code changed
+
+Do NOT reopen 027L or 027M.
+
+============================================================
+WHY 027N EXISTS
+============================================================
+
+USER clarified a critical product fact AFTER 027M:
+
+TrailWeigh ALREADY HAS A MASTER LIST OF ITEMS
+from which the user chooses items to create other lists.
+
+Therefore:
+- DO NOT invent a second reusable-item / inventory database
+- DO NOT assume every list item should become a new standalone inventory record
+- the existing Master List must be traced and treated as the likely reusable-item foundation
+
+Before implementing photos, storage locations, domains, Visual Library,
+or comprehensive mobile control wiring, Replit must answer:
+
+WHEN AN ITEM IS CHOSEN FROM THE MASTER LIST AND ADDED TO ANOTHER LIST,
+DOES TRAILWEIGH:
+A. reference the original master item by stable ID
+OR
+B. copy/clone its fields into a new list item
+OR
+C. use another mechanism?
+
+This is the central 027N question.
+
+============================================================
+LATEST USER PRODUCT DECISIONS — AUTHORITATIVE
+============================================================
+
+1. MASTER LIST IS THE FOUNDATION
+- TrailWeigh already has a Master List of reusable items.
+- Do NOT create a parallel inventory-item system if the existing Master List
+  can serve that role.
+
+2. FUTURE TOP-LEVEL DOMAINS
+The Master List should eventually support broad top-level domains such as:
+- Backpacking Gear
+- Clothing
+- Tools
+- Travel
+- Electronics
+- Household
+- Emergency
+- Outdoor / Sports
+- Documents
+- Other / Custom
+
+These are examples / future taxonomy direction, NOT an implementation list
+to hard-code in 027N.
+
+3. DOMAIN -> CATEGORY -> ITEM
+Long-term conceptual hierarchy:
+Master List
+→ Top-Level Domain
+→ Category
+→ Reusable Item
+
+Example:
+Backpacking Gear → Shelter → Tent → Zpacks Duplex
+Clothing → Jackets → Patagonia Nano Puff
+Tools → Hand Tools → Wrench → 10-inch wrench
+
+4. CUSTOM LIST ACCESS
+A user creating ANY Custom List should be able to:
+- browse the ENTIRE Master List
+- search across ALL domains
+- filter by domain/category
+- select items from multiple domains into one list
+
+A Custom List must NOT be restricted to one domain.
+
+5. ITEM PHOTO LOCATION
+NO camera/photo icon on category bars.
+
+Expanded item panel has a dedicated row BELOW `Move`.
+
+If NO photo:
+[Camera icon] Add Photo
+
+If photo exists:
+[Camera/photo icon] View
+
+Add Photo should support:
+- Take Photo
+- Choose Photo
+
+View should support the item's photo and later:
+- Replace
+- Remove
+
+6. ADD NEW ITEM PHOTO
+Add New Item includes:
+- Take Photo
+- Choose Photo
+- Skip Photo
+
+Photo can also be added later from the item's dedicated photo row.
+
+7. PHOTO OWNERSHIP DIRECTION
+The USER expects the reusable Master List item to be the natural home for
+persistent item identity and photo/storage information.
+
+DO NOT implement this assumption.
+TRACE whether the current architecture can support it.
+
+============================================================
+CRITICAL DISTINCTION TO PRESERVE
+============================================================
+
+MASTER ITEM DATA = data about the reusable real-world item itself.
+
+Likely examples:
+- name
+- brand/model/subtitle
+- permanent/reference weight if appropriate
+- photo
+- storage location
+- notes
+- domain/category
+- date added
+
+LIST INSTANCE DATA = data about how that item is used in ONE particular list.
+
+Likely examples:
+- quantity in that list
+- selected/not-selected for Checklist inclusion
+- packed/checklist-use state
+- possibly list-specific weight override
+- possibly list-specific notes
+
+027N must determine what TrailWeigh CURRENTLY does.
+Do not force this conceptual split onto code without evidence.
+
+============================================================
+PRIMARY PURPOSE
+============================================================
+
+READ-ONLY.
+
+Determine:
+1. what the current Master List actually is
+2. where it lives
+3. how users select items from it
+4. whether added items are referenced or copied
+5. whether master items have stable identity
+6. whether list entries retain provenance back to their master item
+7. what changes would eventually be needed so photos/storage metadata can be
+   attached once and reused everywhere
+8. how future top-level domains can fit without breaking current lists
+9. how Custom Lists can access the entire Master List
+10. whether this foundation is ready for the comprehensive mobile wiring phase
+
+NO implementation.
+
+============================================================
+AUDIT A — LOCATE THE ACTUAL MASTER LIST
+============================================================
+
+Search ACTIVE code and data for all concepts matching:
+
+- Master List
+- Master Gear List
+- master list
+- master gear
+- catalog
+- gear library
+- saved items
+- reusable items
+- built-in items
+- templates
+- source list
+- item picker
+- item selection
+- add from list
+- add from catalog
+- base items
+- `+Base`
+- any Locker entry specially treated as a master list
+
+Identify EXACTLY:
+- component(s)
+- route/view/panel
+- state/hooks
+- localStorage key(s)
+- server/API persistence
+- database table/payload
+- item picker UI
+- how the Master List is created
+- whether it is user-specific
+- whether it is preinstalled/built-in
+- whether it is editable
+- whether it is stored in Locker
+
+If the user's "Master List" maps to a feature with a different code name,
+state the exact code name and user-facing name.
+
+If multiple concepts exist:
+distinguish them.
+
+============================================================
+AUDIT B — MASTER ITEM TYPE / IDENTITY
+============================================================
+
+Identify the exact item type used in the Master List.
+
+For each Master item determine:
+- `id`
+- whether ID is stable across sessions
+- whether ID is stable across saves
+- whether ID is stable when inserted into a destination list
+- whether there is a source/master ID
+- whether category/domain identity is stored
+- whether creation date exists
+- whether custom metadata survives
+- whether item provenance exists
+
+Answer:
+
+MASTER ITEM HAS STABLE ID = YES / NO / PARTIAL
+
+DESTINATION LIST ITEM RETAINS MASTER ITEM ID = YES / NO / PARTIAL
+
+PROVENANCE FROM LIST ITEM BACK TO MASTER ITEM = YES / NO / PARTIAL
+
+============================================================
+AUDIT C — EXACT ADD-TO-LIST PATH
+============================================================
+
+Trace the full active path when user chooses a Master List item and adds it
+to another list.
+
+Required trace:
+1. UI control
+2. handler
+3. source item
+4. transformation/copy function
+5. ID creation/reuse
+6. destination category choice
+7. destination item insert
+8. local persistence
+9. Save/Locker/server persistence
+
+Record exact files, functions, hooks, and relevant line ranges.
+
+Classify the current architecture as ONE of:
+
+A. TRUE REFERENCE
+Destination list stores stable reference to Master item.
+
+B. COPY WITH PROVENANCE
+Destination gets copied fields but retains `masterItemId` or equivalent.
+
+C. FULL COPY / CLONE
+Destination gets copied fields with no durable link back.
+
+D. OTHER
+Explain.
+
+Do NOT infer from names alone.
+Trace runtime-active code.
+
+============================================================
+AUDIT D — WHAT CHANGES PROPAGATE TODAY?
+============================================================
+
+Using source inspection, determine:
+
+If a Master item changes AFTER it has already been added to another list:
+
+- name change propagates?
+- subtitle/brand/model propagates?
+- weight change propagates?
+- category change propagates?
+- deletion propagates?
+- any other field propagates?
+
+Also determine the reverse:
+If destination list item changes:
+- does Master List change?
+- does only that list instance change?
+
+If no propagation exists:
+say so plainly.
+
+============================================================
+AUDIT E — LIST-SPECIFIC VS MASTER-SPECIFIC FIELDS
+============================================================
+
+Based on current code, classify existing fields:
+
+- `id`
+- `sub`
+- `desc`
+- `weightOz`
+- `qty`
+- `checked`
+- `expendable`
+- category assignment
+- any type/status fields
+- any custom fields found
+
+Table columns:
+
+FIELD
+CURRENT LOCATION
+CURRENT SEMANTICS
+SHARED/MASTER-SPECIFIC?
+LIST-INSTANCE-SPECIFIC?
+AMBIGUOUS?
+RECOMMENDED FUTURE HOME
+WHY
+
+Do NOT change anything.
+
+============================================================
+AUDIT F — PHOTO ATTACHMENT FOUNDATION
+============================================================
+
+Using 027M findings plus the current Master List trace, answer:
+
+If one reusable Master List item is used in five lists,
+what is the cleanest architecture for ONE persistent photo to appear with it
+everywhere?
+
+Compare ONLY:
+
+1. photo reference stored on Master item
+2. photo reference copied into each destination list item
+3. photo relationship resolved through `masterItemId` / provenance
+4. another current architecture found in code
+
+Recommend the smallest future-compatible option.
+
+Important:
+- do NOT invent a second inventory database
+- do NOT implement server media
+- do NOT change schema
+
+============================================================
+AUDIT G — STORAGE LOCATION FOUNDATION
+============================================================
+
+USER future direction includes reusable storage locations, such as:
+- Home
+- Garage
+- Cabinet
+- Shelf
+- Bin
+- Closet
+- Box
+
+Potential hierarchy:
+Home → Garage → Cabinet → Bin 3
+
+Determine whether ANY current field/entity already represents:
+- storage location
+- bag/location
+- container
+- move destination
+- category-only relocation
+
+Important:
+The current item `Move` function may only move between LIST CATEGORIES.
+Do NOT assume it is storage-location functionality.
+
+Report:
+- current meaning of Move
+- any current Bag/Location field/path
+- whether storage-location metadata belongs naturally on the Master item
+- whether a separate reusable StorageLocation entity will eventually be needed
+
+No implementation.
+
+============================================================
+AUDIT H — FUTURE TOP-LEVEL DOMAIN TAXONOMY
+============================================================
+
+Determine how current categories are modeled.
+
+Answer:
+- are categories flat?
+- are there parent categories?
+- are category IDs stable?
+- is category name the identifier?
+- are categories per-list or global?
+- is any taxonomy already present?
+
+Then recommend the smallest future model that could support:
+
+Master List
+→ Domain
+→ Category
+→ Item
+
+WITHOUT forcing existing lists to immediately adopt domains.
+
+Evaluate whether a backward-compatible optional field such as:
+- `domainId`
+- `domain`
+- another existing mechanism
+
+would be enough initially.
+
+Do NOT create the field.
+
+============================================================
+AUDIT I — CUSTOM LIST ACROSS ALL DOMAINS
+============================================================
+
+Trace current list-creation / item-selection flows.
+
+Determine whether a Custom List can currently:
+- browse all Master items
+- search all Master items
+- filter by category
+- select across categories
+- select across future domains
+- add an item not already in Master List
+- save a new custom item back to Master List
+
+For each:
+CURRENT = YES / NO / PARTIAL / NOT PRESENT
+
+Then recommend the smallest future picker architecture that supports:
+
+`All Domains`
+plus filters:
+- domain
+- category
+- search
+
+and allows selecting items from any combination of domains into one Custom List.
+
+No implementation.
+
+============================================================
+AUDIT J — MASTER LIST VS CATALOG
+============================================================
+
+TrailWeigh also has / plans a broad product Catalog.
+
+Do NOT conflate:
+- user's Master List / owned or reusable items
+with
+- TrailWeigh product Catalog / manufacturer product data
+
+Trace whether these are currently separate concepts.
+
+Report a clean future relationship, for example:
+
+Catalog item
+→ user adds/selects it
+→ creates or enriches a Master List item
+→ Master item is then reusable in Custom Lists
+
+OR whatever existing architecture actually supports.
+
+No implementation.
+
+============================================================
+AUDIT K — ADD NEW ITEM FLOW
+============================================================
+
+Trace current Add Item / +Base / new item creation behavior.
+
+Determine:
+- where a new user-created item is stored
+- whether it automatically becomes part of the Master List
+- whether it only exists in the current list
+- whether there is any existing "save to master" behavior
+
+User future direction:
+A user should be able to create a new custom item while building a list and
+optionally save it to the Master List for future reuse.
+
+Report what exists today and the smallest compatible future behavior.
+
+Also preserve the already-decided future photo step:
+- Take Photo
+- Choose Photo
+- Skip Photo
+
+No implementation.
+
+============================================================
+AUDIT L — DELETE / EDIT SEMANTICS WITH REUSABLE MASTER ITEMS
+============================================================
+
+Determine implications if a Master item is:
+- renamed
+- photo replaced
+- storage location changed
+- deleted
+
+when destination lists already contain that item.
+
+Recommend future behavior that avoids:
+- broken lists
+- dangling references
+- accidental deletion of historical list data
+
+Compare:
+- live reference
+- snapshot/copy with provenance
+- hybrid inheritance/override
+
+Choose ONE recommended architecture for TrailWeigh.
+
+No implementation.
+
+============================================================
+AUDIT M — RECOMMENDED IDENTITY MODEL
+============================================================
+
+Based on current architecture, recommend ONE of:
+
+A. LIVE REFERENCE
+List instance reads reusable fields directly from Master item.
+
+B. SNAPSHOT + MASTER ID
+List instance stores a snapshot of reusable fields plus stable `masterItemId`.
+Master updates may be selectively re-synced.
+
+C. PURE COPY
+No link.
+
+D. OTHER
+
+The recommendation must explicitly address:
+- photos
+- storage location
+- weight
+- item name/model
+- list-specific quantity
+- selected/not-selected state
+- Checklist packed/use progress
+- deletion safety
+- offline/local behavior
+- cross-device future
+
+Do NOT implement.
+
+============================================================
+AUDIT N — MOBILE VISUAL LIBRARY RELATIONSHIP
+============================================================
+
+027M recommended:
+Locker → Photos / Visual Library.
+
+Now refine this in light of the existing Master List.
+
+Determine whether the better conceptual model is:
+
+Locker
+- Lists
+- Visual Library / Items
+- Locations (future)
+
+or:
+
+Locker
+- Files
+- Photos
+
+or another architecture.
+
+Important:
+The Visual Library should browse the SAME reusable Master items,
+not create a duplicate photo-only item database.
+
+Recommend one mobile information architecture.
+
+No implementation.
+
+============================================================
+AUDIT O — COMPREHENSIVE MOBILE CONTROL WIRING READINESS
+============================================================
+
+USER wants the next major implementation phase to wire the full approved
+mobile V3 controls.
+
+Audit whether the control-wiring phase can proceed BEFORE implementing the
+full Master List/domain/photo backend architecture.
+
+Separate:
+
+A. SAFE TO WIRE NOW
+Existing handlers/functions that can be mapped without changing data model.
+
+B. SHOULD WAIT
+Controls whose correct implementation depends on Master item identity,
+server media, Visual Library, or new taxonomy.
+
+C. CAN BE WIRED AS PLACEHOLDER / NAVIGATION ONLY
+Only if truthful and explicitly labelled; do not fake completed features.
+
+The future wiring scope includes at least:
+
+HEADER / GLOBAL
+- hamburger/menu
+- large upper-right + = Create New List
+- Search
+
+BOTTOM NAV
+- List
+- Locker
+- Catalog
+- Summary
+- More
+
+CURRENT REAL FUNCTIONS
+- Scan Gear List / Scanner
+- Share
+- Print
+- Save
+- Undo
+- Redo
+- Reset
+- Imperial / Metric
+- Checklist
+- Pack Summary
+- Weight Distribution
+- Help / About
+
+CATEGORY
+- category icon accordion
+- category reorder
+- Add Category
+
+ITEM
+- checkbox
+- expand/collapse
+- Weight
+- Quantity
+- Total
+- Move
+- Add Item / +Base
+- photo row below Move:
+  - no photo = Camera + Add Photo
+  - has photo = Camera + View
+
+Do NOT wire any of these in 027N.
+
+============================================================
+REQUIRED ARCHITECTURE TABLE
+============================================================
+
+Create a table:
+
+CONCEPT
+CURRENT ACTIVE MODEL
+CURRENT IDENTITY
+COPY OR REFERENCE?
+CURRENT PERSISTENCE
+CROSS-DEVICE?
+FUTURE MASTER-LIST HOME
+LIST-INSTANCE HOME
+PHOTO IMPACT
+STORAGE IMPACT
+CHANGE REQUIRED?
+CONFIDENCE
+
+Rows at minimum:
+- Master item
+- destination list item
+- category
+- future domain
+- user-created custom item
+- Catalog product
+- item photo
+- storage location
+- Checklist-use state
+- quantity
+- weight
+- selected/not-selected state
+
+============================================================
+REQUIRED END-TO-END EXAMPLE
+============================================================
+
+Use one hypothetical item:
+
+`Blue Patagonia Jacket`
+
+Show CURRENT behavior, based on code:
+1. exists in Master List
+2. user adds to Backpacking list
+3. user adds to Italy Travel list
+4. user changes Master item
+5. user changes quantity in Italy list
+
+Then show RECOMMENDED FUTURE behavior:
+- where master identity lives
+- where photo lives
+- where storage location lives
+- where list-specific quantity lives
+- whether name/weight/photo changes propagate
+- what happens if Master item is deleted
+
+Clearly label:
+CURRENT FACT
+vs
+RECOMMENDED FUTURE
+
+============================================================
+ONLY MATERIAL USER DECISIONS
+============================================================
+
+At the very end, list ONLY decisions the USER genuinely must make.
+
+Do not ask the USER questions that code inspection can answer.
+
+Aim for 0–3 decisions.
+
+For each:
+- explain the tradeoff in one short paragraph
+- give a recommended default
+
+============================================================
+STRICT READ-ONLY SCOPE
+============================================================
+
+027N may create ONLY:
+
+`workflow-reports/PROMPT_027N_REPORT.md`
+
+Do NOT modify:
+- `src/`
+- `server/`
+- database/schema
+- API
+- auth
+- package files
+- V3 prototypes
+- `/checklist`
+- Master List
+- Locker
+- Catalog
+- Scanner
+- photo code
+- `replit.md`
+- `.agents/memory`
+- deployment
+
+No migrations.
+No packages.
+No implementation.
+
+============================================================
+PRE-DIAGNOSTIC CHECK
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read:
+   `workflow-reports/PROMPT_027M_REPORT.md`
+3. Verify active code paths, not dead/legacy code.
+4. Search exact terms AND architecture by behavior.
+5. Record preflight git status.
+6. Keep:
+   USER DECISION
+   CURRENT FACT
+   REPLIT FINDING
+   RECOMMENDATION
+   clearly separate.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+
+`workflow-reports/PROMPT_027N_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files/components inspected
+5. exact Master List implementation
+6. Master item type/ID
+7. add-to-list active path
+8. copy/reference classification
+9. current propagation behavior
+10. field ownership table
+11. photo foundation recommendation
+12. storage-location foundation
+13. current category model
+14. future domain compatibility
+15. Custom List all-domain capability
+16. Master List vs Catalog relationship
+17. Add New Item behavior
+18. delete/edit semantics
+19. recommended identity model
+20. Visual Library relationship
+21. mobile control-wiring readiness
+22. complete architecture table
+23. Blue Patagonia Jacket end-to-end example
+24. smallest safe future implementation sequence
+25. ONLY material user decisions
+26. tests NOT RUN
+27. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027N READ-ONLY DIAGNOSTIC = PASS / FAIL
+
+APPLICATION CODE CHANGED = YES / NO
+MASTER LIST CHANGED = YES / NO
+V3 CHANGED = YES / NO
+/CHECKLIST CHANGED = YES / NO
+LOCKER CHANGED = YES / NO
+CATALOG CHANGED = YES / NO
+SCANNER CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+
+MASTER LIST FOUND = YES / NO / MULTIPLE CONCEPTS
+MASTER ITEM STABLE ID = YES / NO / PARTIAL
+DESTINATION ITEM RETAINS MASTER ID = YES / NO / PARTIAL
+CURRENT ADD MODEL = TRUE REFERENCE / COPY WITH PROVENANCE / FULL COPY / OTHER
+MASTER-TO-LIST FIELD PROPAGATION EXISTS = YES / NO / PARTIAL
+
+CURRENT CATEGORY MODEL = FLAT / HIERARCHICAL / OTHER
+CURRENT DOMAIN MODEL EXISTS = YES / NO / PARTIAL
+CUSTOM LIST CAN ACCESS ENTIRE MASTER LIST = YES / NO / PARTIAL
+
+PHOTO CAN ATTACH ONCE TO MASTER ID CLEANLY = YES / NO / PARTIAL
+STORAGE LOCATION CAN ATTACH TO MASTER ID CLEANLY = YES / NO / PARTIAL
+
+RECOMMENDED IDENTITY MODEL = [answer]
+RECOMMENDED VISUAL LIBRARY / LOCKER MODEL = [answer]
+
+FULL MOBILE CONTROL-WIRING CAN PROCEED NEXT = YES / PARTIAL / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+`workflow-reports/trailweigh-027N-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027N_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report.
+
+Do NOT:
+- implement a new Master List
+- implement domains
+- implement photos
+- implement storage locations
+- wire mobile controls
+- change Create New List
+- change Scanner
+- proceed to 027O
