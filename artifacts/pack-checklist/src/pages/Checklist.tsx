@@ -218,6 +218,9 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showNewConfirm,   setShowNewConfirm]   = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  // Separate ephemeral checklist-use state — does NOT touch item.checked (source-selection).
+  // Resets to {} on every Checklist open; Clear also resets it.
+  const [checklistUse, setChecklistUse] = useState<Record<string, boolean>>({});
   const [sharing, setSharing] = useState(false);
   const [showMailingModal, setShowMailingModal] = useState(() => !isGuest && !!userId && !hasSeenMailingPrompt(userId));
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -1164,13 +1167,13 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
 
   const handleReset = () => { resetToDefaults(); setShowResetConfirm(false); };
   const handlePrint  = () => window.print();
-  const handleClearChecks = React.useCallback(() => {
-    categoryOrder.forEach(cat => {
-      (data[cat] || []).filter(i => i.checked).forEach(item => {
-        updateItem(cat, item.id, { checked: false });
-      });
-    });
-  }, [categoryOrder, data, updateItem]);
+  // Reset only the checklist-use tick boxes — does NOT touch source item.checked
+  const handleChecklistClear = React.useCallback(() => setChecklistUse({}), []);
+  // Toggle a single checklist-use tick — does NOT touch source item.checked
+  const handleChecklistToggle = React.useCallback(
+    (itemId: string) => setChecklistUse(prev => ({ ...prev, [itemId]: !prev[itemId] })),
+    []
+  );
 
   const handleShare = () => {
     setSharing(true);
@@ -2481,7 +2484,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                   Hide
                 </button>
                 <button
-                  onClick={() => setShowPreview(true)}
+                  onClick={() => { setChecklistUse({}); setShowPreview(true); }}
                   aria-label="Open checklist"
                   className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                   style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
@@ -2979,7 +2982,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                       Hide
                     </button>
                     <button
-                      onClick={() => setShowPreview(true)}
+                      onClick={() => { setChecklistUse({}); setShowPreview(true); }}
                       aria-label="Open checklist"
                       className="flex items-center bg-muted rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
                       style={barCombinedStyle({ barColor, barFont, barTextColor, barTransparency })}
@@ -3014,8 +3017,9 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
       {showPreview && (
         <PreviewModal
           onPrint={handlePrint}
-          onClear={handleClearChecks}
-          onUpdateItem={(cat, id, checked) => updateItem(cat, id, { checked })}
+          onClear={handleChecklistClear}
+          checklistUse={checklistUse}
+          onToggle={handleChecklistToggle}
           data={data}
           system={system}
           categoryOrder={categoryOrder}
@@ -3034,6 +3038,7 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
         system={system}
         categoryOrder={categoryOrder}
         categoryMeta={categoryMeta}
+        checklistUse={checklistUse}
       />
     </>
     </BarStyleProvider>

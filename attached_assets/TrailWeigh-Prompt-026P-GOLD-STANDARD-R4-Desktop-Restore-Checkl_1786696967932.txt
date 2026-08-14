@@ -1,0 +1,563 @@
+TRAILWEIGH — PROMPT 026P — GOLD STANDARD R2
+RESTORE DESKTOP BASELINE + REMOVE OBSOLETE VIEW/EDIT + PREVIEW → CHECKLIST
+
+INTERNAL VERSION ID:
+026P-DESKTOP-RESTORE-CHECKLIST-CORRECTION-2026-08-14-R4
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 8–15 minutes
+- approximately $0.60–$1.50 Agent usage
+- STOP before broadening
+
+============================================================
+AUTHORITATIVE USER LIVE EVIDENCE
+============================================================
+
+The desktop website has been unintentionally changed by the 026N/026O phone/View-mode work.
+
+USER live desktop evidence:
+- an unwanted `Edit` control now appears in the desktop toolbar
+- phone-targeted owner View/Edit behavior leaked into the desktop website
+
+This is a regression.
+
+USER decision:
+- normal TrailWeigh category items remains editable
+- there is NO owner View/Edit/Done workflow
+- user clicks `Checklist` for the checkable-list experience
+- future mobile-only redesigns must NOT change desktop unless explicitly authorized
+
+USER live evidence outranks prior Replit source-only PASS claims.
+
+
+============================================================
+NEW USER LIVE EVIDENCE — NARROWS THE REPAIR
+============================================================
+
+USER has now confirmed:
+
+- On desktop, clicking the unwanted `Edit` control makes the normal editable website controls/content come back.
+
+Interpretation:
+- the underlying desktop working-list UI/layout is likely still intact
+- the primary regression is the obsolete 026N/026O owner View/Edit gating/default and Edit/Done control
+- this is NOT evidence that the desktop layout needs to be reconstructed
+
+Therefore:
+
+DO NOT:
+- rebuild desktop layout
+- recreate toolbar/category/sidebar geometry
+- broadly revert Checklist.tsx/GearCategory.tsx/GearRow.tsx
+- use old screenshots as instructions to redesign desktop
+
+INSTEAD:
+- remove the obsolete owner View/Edit gating
+- remove Edit/Done controls
+- make the normal editable working-list rendering the default/always-available owner state again
+- preserve the CURRENT desktop geometry exactly as it appears after the user clicks Edit
+- then apply only the authorized Preview -> Checklist / Checklist behavior changes
+
+The desired desktop baseline is the CURRENT editable state revealed by clicking Edit, minus the Edit/Done control itself.
+
+============================================================
+SUPERSEDED 026N / 026O MODEL
+============================================================
+
+REMOVE the owner View/Edit system introduced by 026N/026O.
+
+Superseded behavior includes:
+- `ownerMode = view/edit` as an owner workflow
+- saved list opening into protected View
+- New list forcing Edit
+- Edit / Done buttons
+- structural edit blocking on the normal owner category items
+- owner viewMode/read-only guards added only for this workflow
+- mode-specific Add Item / Add Category / Reset restrictions
+- mode-specific keyboard/mutation restrictions
+- startup/Locker mode transitions whose sole purpose is enforcing owner View mode
+
+Do NOT blindly revert entire files.
+
+Use git diff/history/checkpoints to remove only 026N/026O owner-mode additions while preserving unrelated valid fixes.
+
+============================================================
+AUTHORITATIVE PRODUCT MODEL
+============================================================
+
+A. NORMAL WORKING LIST
+
+The normal TrailWeigh website is the category items.
+
+Owner may normally:
+- edit item name/type
+- edit weight/quantity
+- add/delete/move/reorder items
+- add/rename/delete/reorder categories
+- use current working-list controls
+- check/uncheck boxes as already supported
+
+There is NO Edit/Done toggle.
+
+B. PREVIEW IS RENAMED
+
+User-facing label:
+`Preview` → `Checklist`
+
+Internal component names may remain unchanged if renaming them adds risk.
+
+C. WORKING-LIST CHECKBOXES = CHECKLIST SELECTION
+
+The normal editable category-item checkboxes determine WHICH ITEMS belong in Checklist.
+
+Required:
+- checked/selected category item -> INCLUDED in Checklist
+- unchecked category item -> EXCLUDED from Checklist
+- Checklist must NOT show every item in the category items
+
+These source-selection checkboxes are separate from the checkboxes used inside Checklist.
+
+D. CHECKLIST
+
+Checklist is the dedicated checkable-list experience.
+
+When Checklist opens:
+- show ONLY items currently checked/selected in the working-list categories
+- excluded/unchecked category items must not appear
+- each included Checklist item displays a checklist-use checkbox
+- checklist-use boxes start EMPTY for a fresh Checklist session/state
+- checking/unchecking inside Checklist must NOT change category-item selection
+- no structural editing controls appear in Checklist
+
+Checklist actions:
+- Check
+- Uncheck
+- Clear
+- Print
+- Share
+
+E. CLEAR
+
+`Clear`:
+- clears/unchecks the checklist-use boxes
+- does NOT unselect category items in the category items
+- does NOT remove items from Checklist selection
+- does NOT delete or restructure anything
+- is NOT print-only
+- is NOT Edit/Done
+
+F. PRINT
+
+Print operates on the FILTERED Checklist only:
+- include only items selected/checked in the category items
+- preserve the current Checklist-use checked/unchecked state
+- do not add excluded category items
+- do not auto-clear
+
+If the user wants an unchecked print:
+- use Clear first
+
+G. SHARE
+
+Share operates on the FILTERED Checklist only.
+Reuse the existing Share implementation and preserve current isolation.
+Do not create a new sharing architecture.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+1. Restore the desktop website to the normal editable state already revealed when the user clicks Edit; do not reconstruct the layout.
+2. Remove obsolete View/Edit/Done behavior everywhere.
+3. Rename user-facing Preview to Checklist.
+4. Make Checklist support Check/Uncheck, Clear, Print, Share.
+5. Do NOT redesign desktop or mobile layout in this prompt.
+
+============================================================
+PRE-EDIT TRACE — REQUIRED
+============================================================
+
+Before editing:
+
+1. Read current `replit.md` READ-ONLY.
+2. Inspect git history/diff for 026N and 026O.
+3. Identify every owner-mode addition from those prompts in:
+   - Checklist.tsx
+   - GearCategory.tsx
+   - GearRow.tsx
+   - any other file actually changed
+4. Identify exact current Preview/Checklist path.
+5. Identify exact current Print path.
+6. Identify exact current Share path.
+7. Identify exact checkbox state path.
+8. Record expected changed files before editing.
+
+Do not assume every current difference is wrong.
+Remove only the owner View/Edit additions and the exact behavior superseded above.
+
+============================================================
+DESKTOP RESTORATION — MANDATORY
+============================================================
+
+Desktop must return to the accepted pre-026N/026O working-list behavior.
+
+At desktop width:
+- NO Edit button
+- NO Done button
+- normal structural editing available
+- normal toolbar grouping preserved
+- no new toolbar spacing/layout changes
+- no category/header geometry change
+- no sidebar geometry change
+- no new responsive/mobile treatment applied to desktop
+
+Do not redesign desktop.
+
+============================================================
+RESPONSIVE ISOLATION RULE — STANDING
+============================================================
+
+This prompt itself does NOT implement the future wedge UI.
+
+But preserve this architectural rule:
+
+Any future mobile-only UI must be scoped to mobile responsive breakpoints/branches so that:
+- phone/mobile visual changes do not alter desktop
+- desktop markup/layout/spacing/controls remain unchanged unless explicitly authorized
+- shared data/behavior may remain shared, but presentation differences must be responsive and intentional
+
+Do not implement wedge UI now.
+
+============================================================
+CHECKLIST REQUIREMENTS
+============================================================
+
+When user clicks `Checklist`:
+
+Required:
+- ONLY category items currently checked/selected in their categories appear
+- category items not selected must be excluded
+- every included item gets a separate checklist-use checkbox
+- for a fresh Checklist session/state, those checklist-use boxes are empty
+- check/uncheck inside Checklist is interactive
+- Checklist-use checkmarks must not alter category-item selection
+- Clear is visible/reachable
+- Print is visible/reachable
+- Share is visible/reachable
+- no owner structural editing UI inside Checklist
+
+Do not convert Checklist into the normal category items.
+Do not display unselected category items.
+
+============================================================
+PRINT REQUIREMENT
+============================================================
+
+Current Print must be checked.
+
+Expected:
+- Print contains ONLY items included in the filtered Checklist
+- items excluded in the category items must not appear
+- current Checklist-use checked item prints checked
+- current Checklist-use unchecked item prints unchecked
+- Clear beforehand produces all unchecked Checklist-use boxes
+- Print must not change category-item category-item selection
+
+============================================================
+PROTECTED BEHAVIOR
+============================================================
+
+Preserve:
+- 026K main-category accordion behavior
+- sidebar accordion behavior
+- Locker behavior
+- Save / Save As
+- Review/Share isolation
+- themes/backgrounds
+- Keep It Simple
+- importer/catalog
+- auth/database/API/deployment
+- current desktop visual geometry exactly as shown in the editable state revealed by clicking Edit, except Preview→Checklist label and removal of Edit/Done
+- current phone layout except removal of obsolete Edit/Done and Preview→Checklist label
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- wedge redesign
+- category colors/icons
+- travel/general-list templates
+- New list-type chooser
+- optional Weight architecture
+- cross-device checkbox sync
+- Last Synced
+- polling/WebSockets/SSE
+- offline queue
+- conflict resolution
+- database/schema/API/auth changes
+- Share architecture redesign
+- unrelated refactors
+- package changes
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+- publishing/deployment
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before edits create:
+`workflow-reports/PROMPT_026P_REPORT.md`
+
+Expected application files:
+- minimum subset of:
+  - `artifacts/pack-checklist/src/pages/Checklist.tsx`
+  - `artifacts/pack-checklist/src/components/GearCategory.tsx`
+  - `artifacts/pack-checklist/src/components/GearRow.tsx`
+  - active Preview/Print component only if required
+
+If another application file is required:
+STOP and explain why before broadening.
+
+After edits:
+- list all changed files
+- inspect git diff
+- revert accidental/unrelated changes only
+- do not disturb pre-existing user work
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+Do NOT use SOURCE PASS for interaction tests.
+
+TEST 1 — DESKTOP BASELINE
+At desktop width:
+- no Edit/Done
+- item name editable
+- weight/qty editable
+- Add Item/Add Category available
+- move/reorder/edit behavior normal
+- toolbar/category/sidebar geometry unchanged
+
+TEST 2 — MOBILE NORMAL WORKING LIST
+At 375/390 px:
+- no Edit/Done
+- normal working-list editing available
+- no regression caused by cleanup
+
+TEST 3 — CHECKLIST FILTER
+In the category items:
+- select/check several items across categories
+- leave several other items unchecked
+Click Checklist.
+Expected:
+- ONLY selected category items appear
+- unselected category items do NOT appear
+- included Checklist-use boxes are empty for a fresh Checklist session/state
+- no structural edit controls
+
+TEST 4 — CHECK / UNCHECK
+Inside Checklist:
+- check and uncheck several Checklist-use boxes
+EXPECTED:
+- both work
+- category-item selection does NOT change
+- existing source checkbox/exclusive-group behavior remains intact
+
+TEST 5 — CLEAR
+Check several Checklist-use boxes, click Clear.
+Expected:
+- all Checklist-use boxes become unchecked
+- selected category items remain selected in the category items
+- no item disappears merely because Clear was used
+- no structural data change
+
+TEST 6 — PRINT
+Use a filtered Checklist with mixed Checklist-use checked/unchecked state.
+Expected:
+- Print contains only selected category items
+- excluded category items do not appear
+- Print mirrors Checklist-use state
+- no automatic clear
+
+TEST 7 — SHARE
+Use Share from Checklist.
+Expected:
+- existing Share behavior works
+- owner isolation unchanged
+
+TEST 8 — ACCORDION/SIDEBAR
+Expected:
+- 026K behavior unchanged
+- sidebar behavior unchanged
+
+TEST 9 — DESKTOP VISUAL REGRESSION
+Compare current desktop after fix against pre-026N/026O structure.
+Expected:
+- only intentional differences:
+  - Edit/Done removed
+  - Preview label becomes Checklist
+
+TEST 10 — CONSOLE
+Expected:
+- no new error caused by 026P
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide:
+- desktop screenshot after restoration
+- mobile screenshot
+- editable category items showing a mix of selected and unselected category items
+- Checklist proving only selected category items appear
+- Checklist with mixed checklist-use check state
+- Checklist after Clear
+- Print result proving excluded category items remain excluded
+- Share result
+
+If a runtime test is unavailable:
+mark NOT RUN.
+Do not claim PASS from source inspection.
+
+USER verification remains final authority.
+
+============================================================
+STOP RULE
+============================================================
+
+STOP instead of improvising if:
+- 026N/026O changes cannot be cleanly separated from unrelated work
+- restoring desktop requires broad redesign
+- Checklist path differs materially from assumptions
+- Print requires DB/API/schema work
+- Share isolation would require redesign
+- work materially exceeds 15 minutes / ~$1.50
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026P_REPORT.md`
+
+Include:
+1. internal version
+2. usage/time/actions/lines
+3. preflight git status
+4. 026N/026O changes identified
+5. exact obsolete code removed
+6. any 026O logic retained and why
+7. files inspected
+8. expected changed files
+9. actual changed files
+10. desktop restoration result
+11. mobile working-list result
+12. Preview→Checklist result
+13. Checklist source-filter result
+14. Checklist-use checkbox independence result
+15. Clear result
+16. Print result
+17. Share result
+17. accordion/sidebar regressions
+18. screenshots/evidence
+19. tests not run
+20. rollback
+21. unresolved issues
+22. final self-audit
+23. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+DESKTOP PRE-026N/026O EDITABLE BASELINE RESTORED = PASS / FAIL / NOT RUN
+EDIT/DONE REMOVED FROM DESKTOP = PASS / FAIL / NOT RUN
+EDIT/DONE REMOVED FROM MOBILE = PASS / FAIL / NOT RUN
+NORMAL OWNER EDITING RESTORED = PASS / FAIL / NOT RUN
+PREVIEW RENAMED CHECKLIST = PASS / FAIL / NOT RUN
+CHECKLIST SHOWS ONLY SOURCE-SELECTED ITEMS = PASS / FAIL / NOT RUN
+CHECKLIST EXCLUDES UNSELECTED SOURCE ITEMS = PASS / FAIL / NOT RUN
+FRESH CHECKLIST-USE BOXES EMPTY = PASS / FAIL / NOT RUN
+CHECKLIST CHECK/UNCHECK = PASS / FAIL / NOT RUN
+CHECKLIST CHECKS ALTER SOURCE SELECTION = YES / NO / NOT RUN
+CLEAR UNCHECKS CHECKLIST-USE BOXES = PASS / FAIL / NOT RUN
+CLEAR ALTERS SOURCE SELECTION = YES / NO / NOT RUN
+CLEAR STRUCTURAL DATA CHANGE = YES / NO / NOT RUN
+PRINT CONTAINS ONLY FILTERED CHECKLIST ITEMS = PASS / FAIL / NOT RUN
+PRINT MIRRORS CHECKLIST-USE STATE = PASS / FAIL / NOT RUN
+SHARE FROM FILTERED CHECKLIST = PASS / FAIL / NOT RUN
+026K ACCORDION CHANGED = YES / NO / NOT RUN
+SIDEBAR BEHAVIOR CHANGED = YES / NO / NOT RUN
+LOCKER/SAVE BEHAVIOR CHANGED = YES / NO / NOT RUN
+REVIEW/SHARE ARCHITECTURE CHANGED = YES / NO / NOT RUN
+DESKTOP UNAUTHORIZED VISUAL CHANGES REMAIN = YES / NO / NOT RUN
+MOBILE UNAUTHORIZED VISUAL CHANGES REMAIN = YES / NO / NOT RUN
+DATABASE/API/AUTH CHANGED = YES / NO
+SYNC/LAST-SYNCED WORK ADDED = YES / NO
+WEDGE UI CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before internal PASS:
+1. Did I restore desktop rather than redesign it?
+2. Did I remove all obsolete Edit/Done owner-mode UI?
+3. Is normal owner editing restored?
+4. Did I remove only 026N/026O owner-mode behavior?
+5. Is Preview now Checklist?
+6. Does Checklist show ONLY selected category items?
+7. Are unselected category items excluded?
+8. Are Checklist-use checkboxes separate from source-selection checkboxes?
+9. Does a fresh Checklist start with empty checklist-use boxes?
+10. Does Clear reset only Checklist-use checkmarks?
+11. Does Print contain only filtered Checklist items and mirror Checklist-use state?
+12. Does Share reuse the existing architecture on the filtered Checklist?
+13. Did I preserve 026K/sidebar/Locker/Save behavior?
+14. Did I avoid wedge/sync/template work?
+15. Did I avoid DB/API/auth/deployment changes?
+16. Did I runtime-test desktop and mobile?
+17. Did I review every changed file?
+18. Is any material uncertainty unresolved?
+
+If unresolved:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026P-report.zip`
+
+ZIP must contain only:
+`PROMPT_026P_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to the mobile wedge redesign.
+Do not proceed to 026Q.
