@@ -27,7 +27,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/react';
 import {
-  Menu, Search, Plus, ChevronDown, ChevronUp,
+  Menu, Search, Plus, ChevronDown,
   Check, GripVertical, MoreHorizontal,
   Backpack, Folder, Grid3X3, BarChart2,
   Hash, PackageOpen, ArrowRightLeft, Luggage,
@@ -91,6 +91,27 @@ const DEMO_SEED: SandboxStore = {
     ],
   },
 };
+
+// ─── TOOTHBRUSH ICON (inline SVG — lucide-react has no Toothbrush) ─────────────
+function ToothbrushIcon({ size = 26, color = 'rgba(255,255,255,0.93)', strokeWidth = 1.5 }: {
+  size?: number; color?: string; strokeWidth?: number;
+}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      <path d="M3 21L14 10"/>
+      <path d="M12 8L16 4L21 9L17 13Z"/>
+      <path d="M14 6L19 11"/>
+    </svg>
+  );
+}
+
+/** True when the category name matches toiletries/hygiene keywords. */
+function isToiletriesCategory(name: string): boolean {
+  const l = name.toLowerCase();
+  return ['toilet', 'hygiene', 'grooming', 'personal care', 'wash', 'beauty', 'soap'].some(kw => l.includes(kw));
+}
 
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────────
 const QTY_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -491,14 +512,12 @@ function MobileFunctionalV3Inner() {
               const isOpen  = openCatName === catName;
               const theme   = getCategoryTheme(catName, catIdx);
 
-              // Category subtitle metrics
+              // Category metrics — selected items only
               const selectedInCat = items.filter(i => i.checked).length;
               const catTotalOz    = items
                 .filter(i => i.checked)
                 .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
-              const catWeightStr  = catTotalOz > 0
-                ? ` • ${formatWeight(catTotalOz, system, 'small')} ${su}`
-                : '';
+              // catTotalOz is displayed on the RIGHT of the category bar (not in subtitle)
 
               return (
                 <div key={catName} style={{
@@ -508,9 +527,9 @@ function MobileFunctionalV3Inner() {
                 }}>
 
                   {/* ── CATEGORY HEADER ── */}
-                  <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H }}>
+                  <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, position: 'relative' }}>
 
-                    {/* WEDGE / ICON — PRIMARY ACCORDION TOGGLE (user decision B) */}
+                    {/* WEDGE / ICON — PRIMARY ACCORDION TOGGLE */}
                     <button
                       onClick={() => handleCatToggle(catName)}
                       aria-expanded={isOpen}
@@ -521,23 +540,23 @@ function MobileFunctionalV3Inner() {
                         clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0, paddingRight: WEDGE_POINT / 2,
-                        border: 'none', cursor: 'pointer',
-                        /* Focus ring without disrupting clip-path visual */
-                        outline: 'none',
-                        boxShadow: 'none',
+                        border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
                       }}
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
                       onBlur={e => { e.currentTarget.style.outline = 'none'; }}
                     >
-                      <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>
+                      {/* Toothbrush overrides Heart/Droplets for Toiletries category */}
+                      {isToiletriesCategory(catName)
+                        ? <ToothbrushIcon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>
+                        : <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>}
                     </button>
 
-                    {/* CENTER CONTENT — name (rename target, NOT accordion) + subtitle */}
+                    {/* CONTENT — name/subtitle left, selected weight right; NO chevron */}
                     <div style={{
                       flex: 1, display: 'flex', alignItems: 'center',
-                      padding: '10px 10px 10px 12px', minWidth: 0, gap: 4,
+                      padding: '10px 12px', minWidth: 0,
                     }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
                         <div style={{
                           fontSize: 17, fontWeight: 500, color: PRIMARY,
                           lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
@@ -547,29 +566,31 @@ function MobileFunctionalV3Inner() {
                           {catName}
                         </div>
                         <div style={{ fontSize: 12.5, color: MUTED }}>
-                          {items.length} {items.length === 1 ? 'item' : 'items'} • {selectedInCat} selected{catWeightStr}
+                          {items.length} {items.length === 1 ? 'item' : 'items'} • {selectedInCat} selected
                         </div>
                       </div>
 
-                      {/* SIX-DOT CATEGORY REORDER HANDLE — centered in bar
-                          BLOCKED: HTML5 DnD only; not touch-safe; no DnD lib installed.
-                          Visually present per user decision; wiring deferred to separate prompt. */}
-                      <div
-                        aria-hidden="true"
-                        title="Category reorder — coming soon"
-                        style={{
-                          display: 'flex', alignItems: 'center',
-                          padding: '6px 4px', opacity: 0.28,
-                          cursor: 'not-allowed', flexShrink: 0,
-                        }}
-                      >
-                        <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
-                      </div>
+                      {/* Selected-item total weight — right side, reacts to checkbox/qty/weight/move */}
+                      {catTotalOz > 0 && (
+                        <div style={{
+                          flexShrink: 0, textAlign: 'right',
+                          fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
+                        }}>
+                          {formatWeight(catTotalOz, system, 'small')} {su}
+                        </div>
+                      )}
+                    </div>
 
-                      {/* Chevron — mirrors isOpen state visually */}
-                      {isOpen
-                        ? <ChevronUp   size={18} color={MUTED} strokeWidth={2} aria-hidden="true"/>
-                        : <ChevronDown size={18} color={MUTED} strokeWidth={2} aria-hidden="true"/>}
+                    {/* SIX-DOT HANDLE — TRUE CENTER of full bar via absolute positioning.
+                        left: 50% of (wedge + content) combined width.
+                        pointerEvents: none — never blocks wedge tap or weight display. */}
+                    <div aria-hidden="true" style={{
+                      position: 'absolute', left: '50%', top: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      pointerEvents: 'none', opacity: 0.28,
+                      display: 'flex', alignItems: 'center',
+                    }}>
+                      <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
                     </div>
                   </div>
 
@@ -597,22 +618,32 @@ function MobileFunctionalV3Inner() {
                         return (
                           <div key={item.id}>
 
-                            {/* COLLAPSED ITEM ROW */}
-                            <div style={{
-                              display: 'flex', alignItems: 'center',
-                              padding: '0 14px', height: 44, gap: 10,
-                              borderBottom: (isLast && !isExpanded) ? 'none' : `1px solid ${DIVIDER}`,
-                              background: CARD_BG,
-                            }}>
+                            {/* ITEM ROW — body tap opens/closes detail panel.
+                                Checkbox stops propagation so it only toggles selection.
+                                No chevron: row body IS the expand/collapse affordance. */}
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              aria-expanded={isExpanded}
+                              aria-label={`${displayName} — ${isExpanded ? 'collapse' : 'expand'} details`}
+                              onClick={() => handleItemToggle(catName, item.id)}
+                              onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleItemToggle(catName, item.id); } }}
+                              style={{
+                                display: 'flex', alignItems: 'center',
+                                padding: '0 14px', height: 44, gap: 10,
+                                borderBottom: (isLast && !isExpanded) ? 'none' : `1px solid ${DIVIDER}`,
+                                background: CARD_BG, cursor: 'pointer',
+                              }}
+                            >
 
-                              {/* Main-list inclusion checkbox (NOT Checklist-use progress) */}
+                              {/* Main-list inclusion checkbox — stopPropagation prevents row expand */}
                               <div
                                 role="checkbox"
                                 aria-checked={item.checked}
                                 aria-label={`${displayName} ${item.checked ? 'selected' : 'not selected'}`}
-                                tabIndex={0}
-                                onClick={() => updateItem(catName, item.id, { checked: !item.checked })}
-                                onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); updateItem(catName, item.id, { checked: !item.checked }); } }}
+                                tabIndex={-1}
+                                onClick={e => { e.stopPropagation(); updateItem(catName, item.id, { checked: !item.checked }); }}
+                                onKeyDown={e => { e.stopPropagation(); if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); updateItem(catName, item.id, { checked: !item.checked }); } }}
                                 style={{
                                   width: 20, height: 20, borderRadius: 5,
                                   border: `1.5px solid ${item.checked ? CB_CHECKED : CB_UNCHECKED}`,
@@ -632,25 +663,10 @@ function MobileFunctionalV3Inner() {
                                 {displayName}
                               </div>
 
-                              {/* Quantity (right-side value in collapsed row) */}
-                              <span style={{ fontSize: 14, color: SECONDARY, marginRight: 4 }}>
+                              {/* Quantity */}
+                              <span style={{ fontSize: 14, color: SECONDARY }}>
                                 {item.qty}
                               </span>
-
-                              {/* Item expand/collapse chevron */}
-                              <button
-                                onClick={() => handleItemToggle(catName, item.id)}
-                                aria-expanded={isExpanded}
-                                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for ${displayName}`}
-                                style={{
-                                  background: 'none', border: 'none', cursor: 'pointer',
-                                  padding: 0, display: 'flex', alignItems: 'center',
-                                }}
-                              >
-                                {isExpanded
-                                  ? <ChevronUp   size={16} color={MUTED} strokeWidth={2}/>
-                                  : <ChevronDown size={16} color={MUTED} strokeWidth={2}/>}
-                              </button>
                             </div>
 
                             {/* EXPANDED DETAIL PANEL */}

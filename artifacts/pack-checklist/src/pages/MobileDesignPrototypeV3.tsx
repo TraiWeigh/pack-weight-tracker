@@ -20,13 +20,31 @@
 import React from 'react';
 import {
   Menu, Search, Plus,
-  ChevronDown, ChevronUp,
+  ChevronDown,
   Check, GripVertical,
   MoreHorizontal,
-  Briefcase, Shirt, Droplets, Globe, Monitor, Pill, Footprints, Waves,
+  Briefcase, Shirt, Globe, Monitor, Pill, Footprints, Waves,
   Backpack, LayoutList, Box, Map,
   Hash, Luggage, PackageOpen, ArrowRightLeft,
 } from 'lucide-react';
+
+// ─── TOOTHBRUSH ICON (inline SVG — lucide-react has no Toothbrush) ─────────────
+function ToothbrushIcon({ size = 26, color = 'rgba(255,255,255,0.93)', strokeWidth = 1.5 }: {
+  size?: number; color?: string; strokeWidth?: number;
+}) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+      stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"
+      aria-hidden="true">
+      {/* Handle */}
+      <path d="M3 21L14 10"/>
+      {/* Brush head — rotated parallelogram */}
+      <path d="M12 8L16 4L21 9L17 13Z"/>
+      {/* Bristle line through head */}
+      <path d="M14 6L19 11"/>
+    </svg>
+  );
+}
 
 // ─── FONTS ─────────────────────────────────────────────────────────────────────
 // Display serif — used for wordmark and category titles (no new dependency)
@@ -58,15 +76,16 @@ const DETAIL_BDR   = 'rgba(0,0,0,0.06)';
 
 // ─── CATEGORY DATA ─────────────────────────────────────────────────────────────
 
+// selectedWeightOz = total oz for packed/selected items (illustrative static values)
 const CATEGORIES = [
-  { id: 'luggage',    name: 'Luggage',           color: '#5B7FA6', Icon: Briefcase,  items: 3,  packed: 3,  open: false },
-  { id: 'clothing',   name: 'Clothing',           color: '#C97841', Icon: Shirt,      items: 18, packed: 12, open: false },
-  { id: 'toiletries', name: 'Toiletries',         color: '#3A9E8A', Icon: Droplets,   items: 8,  packed: 4,  open: true  },
-  { id: 'documents',  name: 'Documents',           color: '#7B5BB0', Icon: Globe,      items: 6,  packed: 6,  open: false },
-  { id: 'electronics',name: 'Electronics',         color: '#4068A0', Icon: Monitor,    items: 6,  packed: 5,  open: false },
-  { id: 'medication', name: 'Medication',          color: '#C45050', Icon: Pill,       items: 3,  packed: 2,  open: false },
-  { id: 'shoes',      name: 'Shoes',               color: '#C99535', Icon: Footprints, items: 3,  packed: 2,  open: false },
-  { id: 'beach',      name: 'Beach / Activities',  color: '#2BADA4', Icon: Waves,      items: 1,  packed: 1,  open: false },
+  { id: 'luggage',    name: 'Luggage',          color: '#5B7FA6', Icon: Briefcase,  items: 3,  packed: 3,  open: false, selectedWeightOz: 48.0  },
+  { id: 'clothing',   name: 'Clothing',         color: '#C97841', Icon: Shirt,      items: 18, packed: 12, open: false, selectedWeightOz: 112.0 },
+  { id: 'toiletries', name: 'Toiletries',       color: '#3A9E8A', Icon: Briefcase,  items: 8,  packed: 4,  open: true,  selectedWeightOz: 20.5  },
+  { id: 'documents',  name: 'Documents',        color: '#7B5BB0', Icon: Globe,      items: 6,  packed: 6,  open: false, selectedWeightOz: 8.0   },
+  { id: 'electronics',name: 'Electronics',      color: '#4068A0', Icon: Monitor,    items: 6,  packed: 5,  open: false, selectedWeightOz: 32.0  },
+  { id: 'medication', name: 'Medication',       color: '#C45050', Icon: Pill,       items: 3,  packed: 2,  open: false, selectedWeightOz: 4.5   },
+  { id: 'shoes',      name: 'Shoes',            color: '#C99535', Icon: Footprints, items: 3,  packed: 2,  open: false, selectedWeightOz: 40.0  },
+  { id: 'beach',      name: 'Beach / Activities',color:'#2BADA4', Icon: Waves,      items: 1,  packed: 1,  open: false, selectedWeightOz: 12.5  },
 ];
 
 // ─── LOGO MARK ─────────────────────────────────────────────────────────────────
@@ -262,52 +281,43 @@ const WEDGE_W     = 72;
 const WEDGE_POINT = 17;
 const CARD_H      = 68;
 
-function CategoryHeader({
-  cat,
-  isOpen,
-}: {
-  cat: typeof CATEGORIES[0];
-  isOpen: boolean;
-}) {
+function CategoryHeader({ cat }: { cat: typeof CATEGORIES[0] }) {
+  // Format selected weight: lb when ≥ 16 oz, oz otherwise
+  const weightStr = cat.selectedWeightOz > 0
+    ? cat.selectedWeightOz >= 16
+      ? `${(cat.selectedWeightOz / 16).toFixed(1)} lb`
+      : `${cat.selectedWeightOz.toFixed(1)} oz`
+    : '';
+
   return (
     <div style={{
-      display: 'flex',
-      alignItems: 'stretch',
-      minHeight: CARD_H,
+      display: 'flex', alignItems: 'stretch', minHeight: CARD_H,
+      position: 'relative', // anchor for absolute-centered handle
     }}>
-      {/* Wedge */}
+      {/* ── WEDGE / ICON ── */}
       <div style={{
-        width: WEDGE_W,
-        minHeight: CARD_H,
-        background: cat.color,
+        width: WEDGE_W, minHeight: CARD_H, background: cat.color,
         clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        paddingRight: WEDGE_POINT / 2,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, paddingRight: WEDGE_POINT / 2,
       }}>
-        <cat.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>
+        {/* Toothbrush overrides Droplets for Toiletries */}
+        {cat.id === 'toiletries'
+          ? <ToothbrushIcon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>
+          : <cat.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>}
       </div>
 
-      {/* Content */}
+      {/* ── CONTENT — name left, selected weight right; no chevron ── */}
       <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        padding: '10px 12px 10px 12px',
-        minWidth: 0,
-        gap: 6,
+        flex: 1, display: 'flex', alignItems: 'center',
+        padding: '10px 12px', minWidth: 0,
       }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
           <div style={{
-            fontSize: 17,
-            fontWeight: 500,
-            color: PRIMARY,
-            lineHeight: 1.2,
-            marginBottom: 2,
-            letterSpacing: '-0.1px',
+            fontSize: 17, fontWeight: 500, color: PRIMARY,
+            lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
             fontFamily: SERIF,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {cat.name}
           </div>
@@ -316,22 +326,27 @@ function CategoryHeader({
           </div>
         </div>
 
-        {/* SIX-DOT CATEGORY REORDER HANDLE — centered between name/subtitle and chevron.
-            Inert visual: reorder functionality requires a separate touch-DnD implementation. */}
-        <div
-          aria-hidden="true"
-          style={{
-            display: 'flex', alignItems: 'center',
-            padding: '6px 4px', opacity: 0.28,
-            cursor: 'not-allowed', flexShrink: 0,
-          }}
-        >
-          <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
-        </div>
+        {/* Selected-item total weight — right side */}
+        {weightStr && (
+          <div style={{
+            flexShrink: 0, textAlign: 'right',
+            fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
+          }}>
+            {weightStr}
+          </div>
+        )}
+      </div>
 
-        {isOpen
-          ? <ChevronUp   size={18} color={MUTED} strokeWidth={2}/>
-          : <ChevronDown size={18} color={MUTED} strokeWidth={2}/>}
+      {/* ── SIX-DOT CATEGORY HANDLE — absolute center of FULL bar ──
+          left: 50% of the category bar (wedge + content combined).
+          pointerEvents: none prevents blocking wedge or weight taps. */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', left: '50%', top: '50%',
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none', opacity: 0.28,
+        display: 'flex', alignItems: 'center',
+      }}>
+        <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
       </div>
     </div>
   );
@@ -387,17 +402,8 @@ function ItemRow({ item, isLast }: { item: ItemData; isLast?: boolean }) {
           {item.name}
         </div>
 
-        {/* Qty */}
-        <span style={{
-          fontSize: 14,
-          color: SECONDARY,
-          marginRight: 8,
-        }}>{item.qty}</span>
-
-        {/* Expand / collapse chevron */}
-        {item.expanded
-          ? <ChevronUp   size={16} color={MUTED} strokeWidth={2}/>
-          : <ChevronDown size={16} color={MUTED} strokeWidth={2}/>}
+        {/* Qty — no chevron; row body is the expand/collapse trigger */}
+        <span style={{ fontSize: 14, color: SECONDARY }}>{item.qty}</span>
       </div>
 
       {/* Expanded detail section */}
@@ -665,7 +671,7 @@ export default function MobileDesignPrototypeV3() {
                     border: `1px solid ${CARD_BORDER}`,
                     boxShadow: CARD_SHADOW,
                   }}>
-                    <CategoryHeader cat={cat} isOpen={true}/>
+                    <CategoryHeader cat={cat}/>
                     <div style={{ borderTop: `1px solid ${DIVIDER}` }}>
                       {TOILETRIES_ITEMS.map((item, i) => (
                         <ItemRow
@@ -688,7 +694,7 @@ export default function MobileDesignPrototypeV3() {
                   border: `1px solid ${CARD_BORDER}`,
                   boxShadow: CARD_SHADOW,
                 }}>
-                  <CategoryHeader cat={cat} isOpen={false}/>
+                  <CategoryHeader cat={cat}/>
                 </div>
               );
             })}

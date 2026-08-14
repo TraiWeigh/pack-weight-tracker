@@ -1,0 +1,588 @@
+TRAILWEIGH — PROMPT 027J — GOLD STANDARD
+MOBILE V3 CATEGORY-BAR CLEANUP
+REMOVE REDUNDANT ACCORDION ARROWS + SHOW SELECTED CATEGORY WEIGHT + FIX TOILETRIES ICON
+
+INTERNAL VERSION ID:
+027J-V3-CATEGORY-BAR-CLEANUP-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 5–10 minutes
+- approximately $0.40–$0.90 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+AUTHORITATIVE USER LIVE EVIDENCE
+============================================================
+
+USER supplied current V3 screenshots and explicitly requested:
+
+1. Toiletries icon should be a TOOTHBRUSH.
+2. The water-drop icon belongs to HYDRATION.
+3. Accordion arrows/chevrons are unnecessary because the accordions open/close by tapping.
+4. The CATEGORY TOTAL WEIGHT FOR SELECTED ITEMS should be shown on the RIGHT SIDE of the category bar.
+5. The six-dot CATEGORY reorder handle is STILL in the wrong place.
+6. "Center" means the TRUE HORIZONTAL CENTER of the ENTIRE CATEGORY BAR — approximately the 50% horizontal midpoint of the bar itself — NOT merely somewhere between the category text and the right-side weight/controls.
+
+USER live evidence outranks prior report/source claims.
+
+============================================================
+AUTHORITATIVE MOBILE INTERACTION RULES TO PRESERVE
+============================================================
+
+CATEGORY ACCORDION:
+- Tap CATEGORY WEDGE / CATEGORY ICON = primary open/close control.
+- Category name = identification/rename territory.
+- Do NOT make category chevron the control.
+- Do NOT make the category name the primary accordion control.
+- Preserve single-open normal behavior.
+- Preserve zero-open allowed.
+- Preserve Expand All / Collapse All behavior in the real production architecture.
+
+ITEM ACCORDION:
+- No item drag handle.
+- No mobile item drag-and-drop.
+- KEEP item `Move` for relocating an item to another category.
+- Item detail expansion must remain accessible/touch-friendly.
+
+CATEGORY REORDER:
+- KEEP one six-dot category reorder handle.
+- The handle must sit at the TRUE HORIZONTAL CENTER of the ENTIRE CATEGORY BAR.
+- Treat the bar's full left-to-right width as the reference box.
+- The visual center of the six-dot handle should align approximately with the bar's 50% horizontal midpoint.
+- Do NOT interpret "center" as "between the category text and the right-side weight."
+- Do NOT let changing category-name length or weight-text width push the handle left or right.
+- Keep the handle vertically centered.
+- Do NOT move it back to item rows.
+- Category touch reorder itself remains a separate implementation issue unless already safely available.
+
+============================================================
+PRIMARY PURPOSE
+============================================================
+
+Make the SMALLEST visual/interaction cleanup necessary in BOTH:
+
+1. `/mobile-design-v3`
+2. `/mobile-functional-v3`
+
+Do NOT cut over production `/checklist`.
+
+============================================================
+SCOPE A — FIX TOILETRIES ICON
+============================================================
+
+TOILETRIES:
+- Replace the current water-drop / hydration-style icon with a clear TOOTHBRUSH icon.
+
+HYDRATION:
+- Keep the water-drop icon for Hydration.
+- Do not reuse the Toiletries icon for Hydration.
+
+Preferred implementation:
+- Use the existing installed icon set if it already contains a suitable toothbrush icon.
+- If the installed icon set lacks one, use a small inline SVG toothbrush icon.
+- DO NOT install a new icon package.
+
+Preserve:
+- wedge geometry
+- icon size
+- stroke weight
+- alignment
+- category color
+
+============================================================
+SCOPE B — REMOVE REDUNDANT CATEGORY ACCORDION CHEVRONS
+============================================================
+
+Remove the up/down accordion chevron from the RIGHT SIDE of every category bar in:
+- `/mobile-design-v3`
+- `/mobile-functional-v3`
+
+Reason:
+the category wedge/icon already controls accordion open/close.
+
+After removal:
+- wedge/icon remains the category accordion control
+- category six-dot reorder handle remains centered
+- right side is freed for selected-item category weight
+
+Do NOT replace the chevron with another open/close icon.
+
+============================================================
+SCOPE C — ITEM ACCORDION ARROWS / CHEVRONS
+============================================================
+
+USER asked to clear up the redundant arrows.
+
+For ITEM ROWS:
+- remove the item expand/collapse up/down chevrons IF the item row itself can safely be made the item-detail accordion trigger without interfering with checkbox, quantity, or other controls.
+- preferred behavior: tapping the non-control body of the item row opens/closes its detail panel.
+- checkbox tap must only toggle selection, not expand/collapse.
+- quantity or other explicit controls must not accidentally toggle the item accordion.
+
+Accessibility:
+- item row/body trigger must be keyboard-focusable
+- `aria-expanded`
+- clear accessible label
+
+IF current functional architecture cannot safely make the row/body the trigger without event conflicts:
+- do NOT guess
+- keep the minimum necessary item chevron
+- report exactly why item-chevron removal is blocked
+
+Do NOT remove:
+- dropdown/select indicators that represent actual field selection
+- Move destination selector indicators
+- any arrow that communicates a different real action rather than accordion state
+
+============================================================
+SCOPE D — CATEGORY SELECTED-ITEM TOTAL WEIGHT ON RIGHT
+============================================================
+
+Use the RIGHT SIDE of each category bar for the category's total weight
+of CURRENTLY SELECTED ITEMS.
+
+CRITICAL:
+- reuse the exact existing TrailWeigh production calculation/semantics
+- do NOT invent a new weight calculation
+- do NOT sum unselected items
+- do NOT confuse selected item count with Checklist-use progress
+- selected means the current main-list item-selection state
+
+Before editing:
+TRACE the existing active category-weight calculation used in production
+mobile `/checklist`.
+
+Use the same:
+- item inclusion state
+- quantity treatment
+- unit conversion
+- formatting
+- rounding
+- Imperial/Metric semantics
+
+If current production shows:
+primary active-unit value + secondary converted value,
+preserve that same semantic formatting IF it fits the approved V3 geometry
+without overflow.
+
+If both values do NOT fit:
+- prefer the active-unit category total on one line
+- do not shrink category text excessively
+- report the exact formatting choice
+
+Examples are illustrative only:
+`42.50 oz`
+or
+`42.50 oz`
+`2.66 lbs`
+
+Do NOT hard-code example values.
+
+============================================================
+SCOPE E — CATEGORY BAR LAYOUT
+============================================================
+
+The CATEGORY BAR has FOUR independent visual zones:
+
+LEFT:
+[ WEDGE / CATEGORY ICON ]
+
+LEFT-CONTENT:
+[ CATEGORY NAME + SUBTITLE ]
+
+ABSOLUTE CENTER:
+[ SIX-DOT CATEGORY REORDER HANDLE ]
+
+RIGHT:
+[ SELECTED CATEGORY WEIGHT ]
+
+CRITICAL PLACEMENT RULE:
+- The six-dot handle is anchored to the TRUE HORIZONTAL CENTER of the
+  ENTIRE category bar.
+- Use the full category-bar rectangle as the positioning reference.
+- Target the handle's visual center at approximately 50% of the bar width.
+- The handle's x-position must NOT be calculated from:
+  - remaining flex space
+  - the end of the category text
+  - the beginning of the selected weight
+  - a `justify-between` gap
+- Longer/shorter category names must NOT move the handle.
+- Wider/narrower weight labels must NOT move the handle.
+- The handle should remain visually centered at 375, 390, and 430 widths.
+- A positioned/overlay approach inside the category bar is acceptable if
+  needed, provided it does not block taps on other controls.
+- Preserve an adequate touch target if/when reorder becomes functional.
+
+NO category accordion chevron.
+
+RIGHT-SIDE SELECTED WEIGHT:
+- right aligned
+- vertically centered or stacked cleanly if using two-line production formatting
+- readable
+- no overlap with the center handle
+- no horizontal overflow
+
+CATEGORY ICON:
+- tapping the CATEGORY ICON ITSELF is the category accordion control
+- not the category name
+- not the whole category bar
+- not the six-dot handle
+- no category chevron
+
+Preserve approved wedge/card height unless a tiny, unavoidable adjustment is required.
+
+============================================================
+SCOPE F — V3 VISUAL MASTER
+============================================================
+
+Update:
+`src/pages/MobileDesignPrototypeV3.tsx`
+
+Allowed changes ONLY:
+- Toiletries icon correction
+- category chevron removal
+- item accordion-chevron cleanup as safely applicable
+- selected category-weight display on right
+- tiny spacing adjustment required by those changes
+
+Preserve:
+- header
+- logo
+- search
+- green plus
+- title/subtitle
+- mountain artwork
+- summary card
+- category colors
+- wedge geometry
+- typography
+- category reorder handle
+- expanded item card
+- Weight / Quantity / Total / Move
+- bottom nav
+
+Do NOT redesign.
+
+============================================================
+SCOPE G — FUNCTIONAL PREVIEW
+============================================================
+
+Update:
+`src/pages/MobileFunctionalV3.tsx`
+
+Apply the same visual rules using REAL sandbox data:
+- Toiletries toothbrush
+- category chevrons removed
+- selected-item category total weight on right
+- item accordion-chevron cleanup if safely supported
+- wedge/icon remains category toggle
+- category handle remains separate/inert if touch reorder still blocked
+
+Do NOT alter:
+- sandbox isolation
+- main-list checkbox semantics
+- Weight
+- Quantity
+- Total
+- Move
+- summary semantics
+- bottom nav
+- owner data
+- backend
+
+============================================================
+SELECTED CATEGORY WEIGHT REACTIVITY
+============================================================
+
+In `/mobile-functional-v3`, verify:
+
+1. Select an unselected item:
+   category selected-item total weight updates immediately.
+
+2. Unselect a selected item:
+   category selected-item total weight updates immediately.
+
+3. Change selected item's quantity:
+   category selected-item total weight updates.
+
+4. Change selected item's weight:
+   category selected-item total weight updates.
+
+5. Move a selected item to another category:
+   source category selected weight decreases
+   destination category selected weight increases
+
+Do not store a duplicate category-total field.
+Derive from existing item state/calculation.
+
+============================================================
+ARROW DEFINITION FOR THIS PROMPT
+============================================================
+
+REMOVE:
+- category accordion up/down chevrons
+- redundant item accordion up/down chevrons if safe row/body triggering is possible
+
+KEEP:
+- true dropdown/select indicators
+- Move destination selector indicator
+- navigation arrows that do NOT represent accordion state
+- browser/system UI is irrelevant
+
+Do not indiscriminately delete every arrow-shaped icon in the application.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Preferred:
+1. `src/pages/MobileDesignPrototypeV3.tsx`
+2. `src/pages/MobileFunctionalV3.tsx`
+
+Maximum:
+2 application files.
+
+Do NOT edit:
+- production `/checklist`
+- `Checklist.tsx`
+- `MobileWedgeCategory.tsx`
+- desktop components
+- API
+- database/schema
+- auth
+- packages/dependencies
+- `replit.md`
+- `.agents/memory`
+- deployment
+
+If broader changes are required:
+STOP and report.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read `workflow-reports/PROMPT_027I_REPORT.md`.
+3. Inspect:
+   `src/pages/MobileDesignPrototypeV3.tsx`
+4. Inspect:
+   `src/pages/MobileFunctionalV3.tsx`
+5. Trace existing production category selected-weight calculation READ-ONLY.
+6. Identify exact function(s) used for:
+   - selected item filtering
+   - quantity multiplication
+   - unit conversion
+   - category total display
+7. Identify every accordion chevron in both V3 files.
+8. Distinguish accordion chevrons from true dropdown/select indicators.
+9. Record preflight git status.
+10. Create:
+   `workflow-reports/PROMPT_027J_REPORT.md`
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+TEST 1 — TOILETRIES ICON
+At 390:
+- Toiletries = toothbrush
+- Hydration retains water-drop icon
+- no duplicate/misassigned hydration icon
+
+TEST 2 — CATEGORY BAR
+At 390:
+- no category accordion chevron
+- six-dot category handle's VISUAL CENTER is at the TRUE HORIZONTAL
+  MIDPOINT of the ENTIRE category bar
+- selected category weight visible on right
+- changing category-name length does not move the handle
+- changing displayed weight width does not move the handle
+- no overlap
+- no horizontal overflow
+
+TEST 3 — WEDGE ACCORDION
+Functional preview:
+- tap wedge/icon opens/closes
+- category name not primary trigger
+- category handle does not toggle
+
+TEST 4 — ITEM ACCORDION
+If item chevrons removed:
+- tapping safe item-row/body region opens/closes
+- checkbox does NOT open/close
+- row is accessible/keyboard-operable
+
+If blocked:
+- keep minimum necessary chevron
+- report BLOCKED, do not fake PASS
+
+TEST 5 — SELECTED CATEGORY WEIGHT
+Functional preview:
+- checkbox selection changes category weight
+- quantity changes category weight
+- weight edit changes category weight
+- Move changes source/destination totals correctly
+
+TEST 6 — ITEM DETAILS
+- Weight
+- Quantity
+- Total
+- Move
+all remain intact
+
+TEST 7 — RESPONSIVE
+375 / 390 / 430:
+- no horizontal overflow
+- selected weight readable
+- category handle remains at approximately 50% of the FULL BAR width
+- the handle does not drift based on category-name or weight-label width
+- category title/subtitle remains readable
+
+TEST 8 — PRODUCTION SAFETY
+- `/checklist` unchanged
+- desktop unchanged
+
+============================================================
+VISUAL EVIDENCE REQUIRED
+============================================================
+
+Provide separate screenshots:
+1. `/mobile-design-v3` at 390 showing several category bars
+2. close screenshot of Toiletries with toothbrush icon
+3. category bar showing:
+   name/subtitle + six-dot handle at the TRUE HORIZONTAL CENTER of the
+   FULL BAR + selected weight, NO chevron
+4. include either an overlay/measurement or a clearly centered crop that
+   demonstrates the handle is at the bar's actual midpoint, not merely in
+   the flexible space between text and weight
+5. `/mobile-functional-v3` showing same structure
+6. open item screenshot proving detail behavior and Move preserved
+
+Do not embed screenshots inside report ZIP.
+
+============================================================
+MANDATORY CENTER-PLACEMENT SELF-CHECK
+============================================================
+
+Before declaring PASS, answer all four:
+
+1. Is the six-dot handle's center approximately at 50% of the FULL category
+   bar width?
+2. Does the handle stay in the same centered x-position when category names
+   have different lengths?
+3. Does the handle stay centered when selected-weight text has different
+   widths?
+4. Is the handle independent from the category icon tap target and the
+   right-side selected weight?
+
+If ANY answer is NO:
+027J = FAIL.
+Do not call it "close enough."
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027J_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. exact production category-weight path traced
+6. selected-item semantics used
+7. unit/rounding formatting reused
+8. Toiletries icon change
+9. Hydration icon protection
+10. category chevrons removed
+11. item chevrons removed OR blocked reason
+12. item accordion replacement trigger behavior
+13. category handle placement
+14. selected category-weight placement
+15. selected category-weight reactivity tests
+16. Move reactivity
+17. 375 result
+18. 390 result
+19. 430 result
+20. production `/checklist` result
+21. desktop result
+22. tests NOT RUN
+23. unresolved issues
+24. rollback
+25. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027J CATEGORY-BAR CLEANUP = PASS / FAIL / NOT RUN
+
+TOILETRIES TOOTHBRUSH ICON = PASS / FAIL / NOT RUN
+HYDRATION WATER-DROP PRESERVED = PASS / FAIL / NOT RUN
+
+CATEGORY ACCORDION CHEVRONS PRESENT = YES / NO
+WEDGE/ICON PRIMARY CATEGORY ACCORDION CONTROL = PASS / FAIL / NOT RUN
+
+ITEM ACCORDION CHEVRONS PRESENT = YES / NO
+ITEM ROW/BODY SAFE ACCORDION TRIGGER = PASS / FAIL / BLOCKED / NOT RUN
+CHECKBOX DOES NOT TOGGLE ITEM ACCORDION = PASS / FAIL / NOT RUN
+
+CATEGORY SIX-DOT HANDLE PRESENT = YES / NO
+CATEGORY HANDLE TRUE HORIZONTAL CENTER OF FULL BAR = PASS / FAIL / NOT RUN
+
+SELECTED CATEGORY TOTAL WEIGHT ON RIGHT = PASS / FAIL / NOT RUN
+USES EXISTING PRODUCTION WEIGHT SEMANTICS = YES / NO
+UNSELECTED ITEMS EXCLUDED = PASS / FAIL / NOT RUN
+QUANTITY INCLUDED CORRECTLY = PASS / FAIL / NOT RUN
+WEIGHT EDIT REACTIVITY = PASS / FAIL / NOT RUN
+MOVE REACTIVITY = PASS / FAIL / NOT RUN
+
+ITEM MOVE PRESERVED = PASS / FAIL / NOT RUN
+ITEM DRAG HANDLE PRESENT = YES / NO
+ITEM DRAG/REORDER IMPLEMENTED = YES / NO
+
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027J-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027J_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do NOT:
+- implement category touch reorder
+- wire hamburger/search/green-plus
+- change Create New List
+- add Dark mode
+- cut over production mobile
+- proceed to 027K
