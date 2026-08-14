@@ -1,0 +1,550 @@
+TRAILWEIGH — PROMPT 026S — GOLD STANDARD
+MOBILE WEDGE REPAIR — REAL WEDGE + VERTICAL ITEM DETAILS + TOUCH HELP + KIS
+STRICT DESKTOP ISOLATION
+
+INTERNAL VERSION ID:
+026S-MOBILE-WEDGE-REPAIR-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 6–12 minutes
+- approximately $0.50–$1.20 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE BASELINE
+============================================================
+
+026Q is USER VERIFIED PASS.
+
+026R is NOT PASS.
+
+Preserve the useful 026R architecture where it is correct:
+- mobile presentation is isolated from desktop
+- mobile component/path is behind mobile-only responsive rendering
+- desktop GearCategory/GearRow presentation remains separate
+- current shared accordion state/behavior may be reused
+- current category icon/color mapping may be reused if it is structurally sound
+
+DO NOT roll back the entire 026R implementation.
+
+============================================================
+PROVEN 026R DEFECTS
+============================================================
+
+USER live screenshot and report review prove these defects:
+
+1. NO REAL WEDGE
+Current mobile category header uses a flat rectangular left color strip.
+It does NOT visually form the elegant angled wedge shown in the primary reference.
+
+2. EXPANDED ITEM DETAILS ARE NOT STACKED
+Weight / Quantity / Total / Move are currently rendered in a horizontal/flex-wrap arrangement.
+The required mobile design stacks these details vertically.
+
+3. MOBILE TOUCH HELP IS NOT PROVEN
+`title` and `aria-label` alone are not a visible touch equivalent to hover help.
+Any NEW/CHANGED mobile-only interactive control introduced by 026R/026S must have a usable touch-accessible help mechanism.
+
+4. KEEP IT SIMPLE MOBILE IS NOT CORRECTLY HANDLED
+026R report says KIS was not found/implemented in the mobile component.
+The new mobile wedge presentation must respect the existing Keep It Simple state if it exists in the current app path.
+
+5. 026R REPORT/EVIDENCE WAS NONCOMPLIANT
+- runtime evidence was incomplete
+- desktop isolation was not user-proven
+- ZIP contained files beyond the required report
+
+026S must correct this reporting/evidence problem too.
+
+============================================================
+VISUAL REFERENCE RULE
+============================================================
+
+Use the SEPARATELY SUPPLIED image:
+
+`Mobile-Wedge-Primary-Reference.png`
+
+as the authoritative mobile visual direction.
+
+DO NOT embed images into this prompt.
+DO NOT copy mockup-only controls or app shell.
+
+Use the reference specifically for:
+- angled wedge silhouette
+- icon placement inside wedge
+- refined category-card proportions
+- category title/summary placement
+- vertically stacked expanded item details
+- overall elegant, compact mobile feel
+
+Written requirements win over the image if anything conflicts.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Repair the existing mobile-only 026R implementation so that:
+
+A. category headers have a REAL angled wedge
+B. expanded mobile item details stack vertically
+C. new/changed mobile controls have usable touch help
+D. Keep It Simple mobile removes decorative wedge/color treatment
+E. desktop remains unchanged
+
+Do NOT redesign unrelated mobile areas.
+
+============================================================
+A. REAL MOBILE WEDGE
+============================================================
+
+The left category color/icon area must be a genuine wedge shape.
+
+Required:
+- rectangular left base with a visible angled/pointed right edge
+- wedge visually integrated into the category header card
+- icon centered inside wedge
+- wedge height aligns cleanly with the category header
+- no detached triangle floating beside the card
+- no plain rectangular strip pretending to be a wedge
+
+Allowed implementation examples:
+- CSS `clip-path: polygon(...)`
+- pseudo-element angled point
+- another simple CSS-only approach
+
+Do NOT add a new graphics library.
+
+The wedge must remain mobile-only.
+
+============================================================
+B. VERTICAL EXPANDED ITEM DETAILS
+============================================================
+
+For an expanded category item on mobile:
+
+Show item identity first, then stack details vertically.
+
+Required vertical order:
+- Weight
+- Quantity
+- Total
+- Move
+
+Each row should:
+- have clear label
+- have current value/control aligned cleanly
+- use full available mobile width
+- avoid horizontal page scrolling
+- preserve current underlying behavior and data
+
+Do NOT place these four fields in a horizontal flex row.
+
+Do NOT alter desktop GearRow layout.
+
+============================================================
+C. TOUCH-ACCESSIBLE HELP
+============================================================
+
+Standing TrailWeigh rule:
+- preserve ALL existing tooltip text exactly
+- fill only gaps
+- keyboard-focus users need help access
+- mobile/touch users need an equivalent to hover
+
+For NEW/CHANGED mobile-only controls from 026R/026S:
+
+A visible touch interaction must expose help, for example:
+- tap/focus info affordance
+- existing accessible popover/help pattern
+- existing tooltip system if it already supports touch
+
+Do NOT:
+- rewrite existing tooltip text
+- launch a global tooltip refactor
+- count `title` alone as mobile touch help
+- count `aria-label` alone as visible touch help
+
+If the app already has a touch-help pattern:
+reuse it.
+
+If no safe touch-help infrastructure exists:
+STOP and report the smallest follow-up required rather than inventing a broad system.
+
+============================================================
+D. KEEP IT SIMPLE MOBILE
+============================================================
+
+First inspect how current Keep It Simple state is actually represented.
+
+If current source contains an active KIS state/flag:
+- pass/reuse that state in the mobile presentation
+- KIS mobile must remove decorative colored wedges
+- use plain white background
+- black text
+- flat/simple category headers
+- minimal borders/dividers
+- no decorative shadows/gradients/textures/background art
+- preserve mobile accordion behavior and vertical item stacking
+
+If current source truly has no usable KIS state in this render path:
+DO NOT invent a parallel KIS architecture.
+STOP and document the exact gap.
+
+Do NOT change desktop Keep It Simple.
+
+============================================================
+STRICT DESKTOP ISOLATION
+============================================================
+
+DESKTOP IS PROTECTED.
+
+At desktop breakpoint:
+- no wedge appears
+- no mobile stacked item layout appears
+- no category icon/color changes leak in
+- no toolbar changes
+- no sidebar changes
+- no spacing/geometry changes
+- no typography changes
+- no behavior changes
+
+Use the existing isolated mobile render/component strategy wherever possible.
+
+Do not modify broad shared CSS selectors that affect desktop.
+
+============================================================
+PROTECTED FUNCTIONAL BEHAVIOR
+============================================================
+
+Preserve:
+- category-item selection
+- Checklist filtering
+- Checklist-use state persistence until Clear
+- Clear semantics
+- Print behavior
+- Share/Review isolation
+- Review Add Category
+- Locker
+- Save / Save As
+- 026K main-category accordion behavior
+- sidebar accordion behavior
+- current owner editability
+- removal of obsolete Edit/Done
+- current desktop drag/reorder behavior
+- current mobile toolbar functionality
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- Create New List guided flow
+- list-type templates
+- optional Weight architecture
+- global tooltip rewrite
+- cross-device Checklist sync
+- Last Synced
+- database/schema/API/auth changes
+- Print redesign
+- Share redesign
+- Locker redesign
+- desktop wedge UI
+- desktop category color redesign
+- touch drag/reorder library
+- package/dependency changes
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+- deployment/publishing
+- unrelated refactors
+
+
+============================================================
+MANDATORY MOBILE-UNCERTAINTY GATE
+============================================================
+
+If ANY question, ambiguity, uncertainty, contradiction, or missing information exists about:
+- the current cell-phone/mobile layout
+- the current responsive render path
+- phone-only controls
+- breakpoint behavior
+- the current mobile component structure
+- how a requested mobile change should integrate with existing behavior
+- whether a shared component/style could affect desktop
+- how an existing control behaves on phone
+
+STOP BEFORE IMPLEMENTING.
+
+Ask a focused READ-ONLY clarification/diagnostic question first and return the answer.
+
+Do NOT:
+- guess
+- infer from desktop behavior
+- invent a mobile structure
+- broaden the task to investigate unrelated areas
+- make code changes while a material mobile-layout question remains unanswered
+
+USER live evidence remains authoritative and outranks conflicting Replit assumptions.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Inspect current 026R code.
+3. Identify exact mobile component(s) added by 026R.
+4. Identify current wedge/left-strip implementation.
+5. Identify current expanded item detail layout.
+6. Identify current tooltip/help infrastructure.
+7. Identify actual Keep It Simple state/flag and how it reaches this page.
+8. Confirm desktop and mobile render branches.
+9. Record preflight git status.
+10. Create:
+   `workflow-reports/PROMPT_026S_REPORT.md`
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Expected changed files:
+- the mobile-specific component created/used by 026R
+- `Checklist.tsx` only if needed to pass an existing KIS/help prop/state
+- one existing mobile-specific style file only if necessary
+
+Avoid touching:
+- desktop GearCategory/GearRow presentation
+- unrelated shared styles
+
+If more than 3 application files are required:
+STOP and explain before broadening.
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+SOURCE AUDIT ALONE IS NOT PASS.
+
+TEST 1 — REAL WEDGE AT 390 PX
+Expected:
+- clear angled wedge shape
+- not a rectangle
+- icon centered
+- category text/summaries remain readable
+
+TEST 2 — EXPANDED ITEM AT 390 PX
+Expected:
+- Weight
+- Quantity
+- Total
+- Move
+appear as four vertical rows
+- no horizontal page scroll
+
+TEST 3 — 320 PX
+Expected:
+- wedge remains legible
+- text does not destructively overlap
+- item details remain vertical
+- no horizontal page scroll
+
+TEST 4 — 430 PX
+Expected:
+- mobile layout remains intentional
+- no premature desktop switch
+
+TEST 5 — ACCORDION
+Expected:
+- single-open manual behavior preserved
+- zero-open preserved
+- Expand All / Collapse All preserved
+
+TEST 6 — CHECKLIST REGRESSION
+Expected:
+- category-item selection still filters Checklist
+- Checklist progress persists until Clear
+- Clear works
+
+TEST 7 — REVIEW REGRESSION
+Expected:
+- Review Add Category still works
+- Review remains isolated
+
+TEST 8 — TOUCH HELP
+On a mobile/touch emulation or real touch-capable runtime:
+Expected:
+- help for new/changed mobile interactive controls can be intentionally opened without hover
+- existing tooltip text was not rewritten
+
+TEST 9 — KEYBOARD HELP
+Expected:
+- new/changed control help reachable by keyboard focus
+
+TEST 10 — KEEP IT SIMPLE MOBILE
+If active KIS state exists:
+Expected:
+- colored decorative wedges disappear
+- simple flat white/black treatment
+- vertical item details remain usable
+
+If no usable KIS state exists:
+mark NOT RUN and explain exact source gap.
+Do NOT fake PASS.
+
+TEST 11 — DESKTOP ISOLATION
+At desktop width:
+Expected:
+- desktop appearance remains unchanged
+- no wedge
+- no stacked mobile rows
+- no toolbar/sidebar/spacing changes
+
+Capture desktop screenshot evidence.
+
+TEST 12 — CONSOLE
+Expected:
+- no new 026S errors
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide:
+- 390 px mobile screenshot showing several REAL wedges
+- 390 px screenshot with one item expanded showing vertical Weight/Quantity/Total/Move
+- narrow mobile screenshot if materially different
+- Keep It Simple mobile screenshot if KIS test can run
+- desktop screenshot proving isolation
+- short interaction evidence for touch help if feasible
+
+============================================================
+REPORT COMPLIANCE
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026S_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost
+3. preflight git status
+4. files inspected
+5. exact 026R wedge defect
+6. exact wedge repair
+7. exact item-layout defect
+8. exact vertical-stack repair
+9. touch-help infrastructure found
+10. touch-help implementation/result
+11. KIS state found and path
+12. KIS implementation/result
+13. expected changed files
+14. actual changed files
+15. 320 px result
+16. 390 px result
+17. 430 px result
+18. accordion regression result
+19. Checklist regression result
+20. Review regression result
+21. desktop isolation result
+22. tests NOT RUN
+23. console result
+24. rollback guidance
+25. unresolved issues
+26. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+REAL ANGLED MOBILE WEDGE = PASS / FAIL / NOT RUN
+FLAT RECTANGLE WEDGE REMAINS = YES / NO / NOT RUN
+WEDGE ICON ALIGNMENT = PASS / FAIL / NOT RUN
+VERTICAL WEIGHT/QTY/TOTAL/MOVE = PASS / FAIL / NOT RUN
+MOBILE HORIZONTAL PAGE SCROLL = YES / NO / NOT RUN
+MOBILE SINGLE-OPEN = PASS / FAIL / NOT RUN
+MOBILE ZERO-OPEN = PASS / FAIL / NOT RUN
+EXPAND/COLLAPSE ALL = PASS / FAIL / NOT RUN
+
+TOUCH-ACCESSIBLE HELP = PASS / FAIL / NOT RUN
+KEYBOARD HELP ACCESS = PASS / FAIL / NOT RUN
+EXISTING TOOLTIP TEXT CHANGED = YES / NO
+
+KIS STATE FOUND = YES / NO
+KIS MOBILE SIMPLE TREATMENT = PASS / FAIL / NOT RUN
+
+DESKTOP WEDGE PRESENT = YES / NO / NOT RUN
+DESKTOP CATEGORY LAYOUT CHANGED = YES / NO / NOT RUN
+DESKTOP TOOLBAR CHANGED = YES / NO / NOT RUN
+DESKTOP SIDEBAR CHANGED = YES / NO / NOT RUN
+DESKTOP SPACING/GEOMETRY CHANGED = YES / NO / NOT RUN
+
+CHECKLIST SEMANTICS CHANGED = YES / NO / NOT RUN
+CHECKLIST PERSISTENCE CHANGED = YES / NO / NOT RUN
+REVIEW ISOLATION CHANGED = YES / NO / NOT RUN
+REVIEW ADD CATEGORY REGRESSION = YES / NO / NOT RUN
+LOCKER/SAVE CHANGED = YES / NO / NOT RUN
+
+DATABASE/API/AUTH CHANGED = YES / NO
+PACKAGE FILES CHANGED = YES / NO
+CREATE-NEW-LIST FLOW CHANGED = YES / NO
+SYNC/LAST-SYNCED ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Is the wedge visibly angled, not rectangular?
+2. Are Weight/Quantity/Total/Move truly vertical?
+3. Is desktop still isolated and unchanged?
+4. Did I avoid broad shared CSS changes?
+5. Did accordion behavior remain intact?
+6. Did Checklist behavior remain intact?
+7. Did Review isolation remain intact?
+8. Is touch help genuinely usable without hover?
+9. Did I preserve existing tooltip text exactly?
+10. Did I correctly use existing KIS state or stop if none exists?
+11. Did I avoid new dependencies?
+12. Did I runtime-test rather than claim source-only PASS?
+13. Did I inspect every changed file?
+
+If material uncertainty remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026S-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026S_REPORT.md`
+
+Verify ZIP opens and contains no source files, screenshots, or extras.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to 026T.
+Do not proceed to Create New List.
+Do not perform unrelated TrailWeigh work.

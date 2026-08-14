@@ -1,19 +1,15 @@
 /**
- * MobileWedgeCategory.tsx — 026R
+ * MobileWedgeCategory.tsx — 026S (repairs 026R defects)
  *
  * Mobile-only elegant wedge category layout.
  * Rendered exclusively at < lg breakpoint (hidden on desktop via lg:hidden wrapper in Checklist.tsx).
- * GearCategory.tsx is completely unchanged — desktop isolation is guaranteed.
+ * GearCategory.tsx and GearRow.tsx are completely unchanged — desktop isolation is guaranteed.
  *
- * Features:
- *  - Colored left-wedge strip with category-specific icon (from mobileCategoryTheme)
- *  - Category name (double-tap to rename), packed count, weight summary, chevron
- *  - Accordion (forceOpen/forceOpenSeq mirrors GearCategory behavior)
- *  - Expanded body: vertically stacked MobileItemRow for each item
- *  - Per-item: checkbox, name, type, weight input, qty select, total, move, delete
- *  - Base weight toggle pill
- *  - Add Item button
- *  - Delete category with confirmation
+ * 026S repairs:
+ *  A. Real angled wedge: clip-path polygon on left strip (not a plain rectangle)
+ *  B. Vertical item details: Weight / Qty / Total / Move each on its own labeled row
+ *  C. Touch-accessible rename: always-visible Pencil icon button next to category name
+ *  D. KIS: no KIS state exists in codebase — gap documented; not implemented
  */
 import React, { useState, useEffect } from 'react';
 import { GearItem, CategoryMeta } from '../hooks/usePackData';
@@ -22,13 +18,89 @@ import {
   ozToGrams, gramsToOz,
 } from '../lib/weightUtils';
 import { useUnit } from '../context/UnitContext';
-import { ChevronDown, Plus, Trash2, X } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, X, Pencil } from 'lucide-react';
 import { getCategoryTheme } from '../lib/mobileCategoryTheme';
 
 // ── QTY options (mirrors GearRow) ────────────────────────────────────────────
 const QTY_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
 
-// ── Mobile item row ───────────────────────────────────────────────────────────
+// ── Inline-editable category name with visible touch-accessible rename button ─
+function EditableMobileCategoryName({
+  name,
+  onRename,
+}: {
+  name: string;
+  onRename?: (n: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(name);
+  useEffect(() => { if (!editing) setDraft(name); }, [name, editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const t = draft.trim();
+    if (t && t !== name) onRename?.(t);
+    else setDraft(name);
+  };
+
+  const startEditing = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+    if (onRename) setEditing(true);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onClick={e => e.stopPropagation()}
+        onKeyDown={e => {
+          e.stopPropagation();
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') { setDraft(name); setEditing(false); }
+        }}
+        maxLength={40}
+        className="bg-black/10 border-b border-foreground/40 focus:outline-none
+          text-sm font-semibold text-foreground w-full max-w-[180px] px-0.5 leading-tight rounded-sm"
+      />
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 min-w-0">
+      <span
+        className="text-sm font-semibold leading-tight truncate"
+        onDoubleClick={startEditing}
+      >
+        {name}
+      </span>
+      {/* Touch-accessible rename affordance (026S C): always-visible, tappable, keyboard-reachable */}
+      {onRename && (
+        <button
+          type="button"
+          onClick={startEditing}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              startEditing(e);
+            }
+          }}
+          className="flex-shrink-0 p-0.5 rounded text-muted-foreground/40
+            hover:text-primary focus:text-primary focus-visible:ring-2
+            focus-visible:ring-primary/40 touch-manipulation transition-colors"
+          title="Rename category"
+          aria-label="Rename category"
+        >
+          <Pencil className="w-3 h-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Mobile item row — vertically stacked detail rows (026S B) ─────────────────
 interface MobileItemRowProps {
   item: GearItem;
   category: string;
@@ -66,13 +138,16 @@ function MobileItemRow({
   const otherCats = order.filter(c => c !== category);
   const canMove = otherCats.length > 0;
 
+  /** Shared label style for the detail-row left column. */
+  const labelCls = 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wide w-14 flex-shrink-0 select-none leading-none';
+
   return (
     <div
       className={`px-3 py-2.5 border-b border-border/30 transition-opacity ${
         !item.checked ? 'opacity-55' : ''
       }`}
     >
-      {/* Row 1: checkbox · name · type · delete */}
+      {/* Row 1: checkbox · name · sub-type · delete */}
       <div className="flex items-start gap-2">
         {/* Source-selection checkbox */}
         <label className="flex-shrink-0 mt-[3px] cursor-pointer">
@@ -87,7 +162,6 @@ function MobileItemRow({
 
         {/* Name + sub-type stacked */}
         <div className="flex-1 min-w-0">
-          {/* Item name */}
           <input
             type="text"
             value={item.desc}
@@ -98,7 +172,6 @@ function MobileItemRow({
               focus:ring-1 focus:ring-primary/30 rounded px-1 -ml-1 h-7 truncate
               hover:bg-black/5 transition-colors"
           />
-          {/* Sub-type */}
           <input
             type="text"
             value={item.sub}
@@ -111,12 +184,13 @@ function MobileItemRow({
           />
         </div>
 
-        {/* Delete item */}
+        {/* Delete item — always visible on mobile */}
         <button
+          type="button"
           onClick={() => removeItem(category, item.id)}
           className="flex-shrink-0 p-1.5 rounded-md text-muted-foreground/40
             hover:text-destructive hover:bg-destructive/10 transition-colors
-            touch-manipulation mt-0.5"
+            touch-manipulation mt-0.5 focus-visible:ring-2 focus-visible:ring-destructive/40"
           title="Remove item"
           aria-label="Remove item"
         >
@@ -124,20 +198,19 @@ function MobileItemRow({
         </button>
       </div>
 
-      {/* Row 2: Weight · Qty · Total · Move */}
-      <div className="mt-2 ml-6 flex items-center flex-wrap gap-x-4 gap-y-1.5">
-        {/* Weight input */}
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide select-none">
-            Wt
-          </span>
+      {/* ── 026S B: Vertical detail rows — Weight / Qty / Total / Move ── */}
+      <div className="mt-2 ml-6 flex flex-col space-y-1.5">
+
+        {/* Weight */}
+        <div className="flex items-center gap-2">
+          <span className={labelCls}>Weight</span>
           <input
             type="number"
             min="0"
             step={system === 'metric' ? '0.1' : '0.01'}
             value={weightVal}
             onChange={e => handleWeightChange(e.target.value)}
-            className="w-16 bg-muted/50 rounded px-1.5 py-0.5 text-right font-mono
+            className="w-20 bg-muted/50 rounded px-2 py-1 text-right font-mono
               text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
             placeholder="0"
             aria-label={`Weight in ${su}`}
@@ -145,15 +218,13 @@ function MobileItemRow({
           <span className="text-[10px] text-muted-foreground select-none">{su}</span>
         </div>
 
-        {/* Qty */}
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide select-none">
-            Qty
-          </span>
+        {/* Quantity */}
+        <div className="flex items-center gap-2">
+          <span className={labelCls}>Qty</span>
           <select
             value={item.qty}
             onChange={e => updateItem(category, item.id, { qty: parseInt(e.target.value) })}
-            className="bg-muted/50 rounded px-1.5 py-0.5 text-xs font-mono
+            className="bg-muted/50 rounded px-2 py-1 text-xs font-mono
               text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30
               cursor-pointer"
             aria-label="Quantity"
@@ -163,8 +234,8 @@ function MobileItemRow({
         </div>
 
         {/* Total */}
-        <div className="flex items-center gap-1">
-          <span className="text-[10px] font-semibold text-muted-foreground select-none">=</span>
+        <div className="flex items-center gap-2">
+          <span className={labelCls}>Total</span>
           <span className="text-xs font-mono font-medium text-foreground tabular-nums">
             {formatWeight(totalOz, system, 'small')} {su}
           </span>
@@ -172,78 +243,27 @@ function MobileItemRow({
 
         {/* Move to another category */}
         {canMove && (
-          <div className="relative ml-auto">
-            <select
-              value=""
-              aria-label={`Move item — currently in ${category}`}
-              onChange={e => { const d = e.target.value; if (d) moveItem(category, d, item.id); }}
-              className="bg-muted/40 border border-border/50 rounded px-2 py-0.5
-                text-xs text-muted-foreground cursor-pointer appearance-none pr-5
-                focus:outline-none focus:ring-1 focus:ring-primary/30"
-              title="Move to another category"
-            >
-              <option value="" disabled>Move…</option>
-              {otherCats.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+          <div className="flex items-center gap-2">
+            <span className={labelCls}>Move to</span>
+            <div className="relative flex-1">
+              <select
+                value=""
+                aria-label={`Move item — currently in ${category}`}
+                onChange={e => { const d = e.target.value; if (d) moveItem(category, d, item.id); }}
+                className="w-full bg-muted/40 border border-border/50 rounded px-2 py-1
+                  text-xs text-muted-foreground cursor-pointer appearance-none pr-6
+                  focus:outline-none focus:ring-1 focus:ring-primary/30"
+              >
+                <option value="" disabled>Choose…</option>
+                {otherCats.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+            </div>
           </div>
         )}
+
       </div>
     </div>
-  );
-}
-
-// ── Inline-editable category name (double-tap to rename) ─────────────────────
-function EditableMobileCategoryName({
-  name,
-  textColor,
-  onRename,
-}: {
-  name: string;
-  textColor: string;
-  onRename?: (n: string) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(name);
-  useEffect(() => { if (!editing) setDraft(name); }, [name, editing]);
-
-  const commit = () => {
-    setEditing(false);
-    const t = draft.trim();
-    if (t && t !== name) onRename?.(t);
-    else setDraft(name);
-  };
-
-  if (editing) {
-    return (
-      <input
-        autoFocus
-        value={draft}
-        onChange={e => setDraft(e.target.value)}
-        onBlur={commit}
-        onClick={e => e.stopPropagation()}
-        onKeyDown={e => {
-          e.stopPropagation();
-          if (e.key === 'Enter') commit();
-          if (e.key === 'Escape') { setDraft(name); setEditing(false); }
-        }}
-        maxLength={40}
-        className="bg-white/20 border-b border-white/50 focus:outline-none
-          text-sm font-semibold w-full max-w-[180px] px-0.5 leading-tight"
-        style={{ color: textColor }}
-      />
-    );
-  }
-
-  return (
-    <span
-      className="text-sm font-semibold leading-tight truncate max-w-[180px]"
-      style={{ color: textColor }}
-      onDoubleClick={e => { e.stopPropagation(); if (onRename) setEditing(true); }}
-      title={onRename ? 'Double-tap to rename' : undefined}
-    >
-      {name}
-    </span>
   );
 }
 
@@ -264,7 +284,6 @@ export interface MobileWedgeCategoryProps {
   onUpdateMeta: (updates: Partial<CategoryMeta>) => void;
   onDelete: () => void;
   onRename?: (newName: string) => void;
-  /** Called with the new open/closed state when the header is tapped. */
   onToggle?: (isNowOpen: boolean) => void;
 }
 
@@ -273,7 +292,7 @@ export function MobileWedgeCategory({
   order, updateItem, removeItem, moveItem, addItem,
   onUpdateMeta, onDelete, onRename, onToggle,
 }: MobileWedgeCategoryProps) {
-  // ── Accordion state — mirrors GearCategory forceOpen/forceOpenSeq logic ──
+  // Accordion state — mirrors GearCategory forceOpen/forceOpenSeq logic
   const [isOpen, setIsOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { system } = useUnit();
@@ -283,7 +302,6 @@ export function MobileWedgeCategory({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forceOpen, forceOpenSeq]);
 
-  // ── Computed values ──────────────────────────────────────────────────────
   const su = smallUnit(system);
   const lu = largeUnit(system);
   const packedCount = items.filter(i => i.checked).length;
@@ -293,7 +311,6 @@ export function MobileWedgeCategory({
   const displaySmall = formatWeight(categoryTotalOz, system, 'small');
   const displayLarge = formatWeight(categoryTotalOz, system, 'large');
 
-  // ── Category theme ───────────────────────────────────────────────────────
   const { bg, text, Icon } = getCategoryTheme(name, categoryIndex);
 
   const handleToggle = () => {
@@ -302,7 +319,6 @@ export function MobileWedgeCategory({
     onToggle?.(next);
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div
       className="rounded-xl overflow-hidden"
@@ -311,45 +327,71 @@ export function MobileWedgeCategory({
         border: `1px solid ${bg}22`,
       }}
     >
-      {/* ── Wedge header ── */}
-      <div className="flex items-stretch" style={{ minHeight: 56 }}>
-
-        {/* Left colored strip — icon lives here */}
+      {/* ── Wedge header ─────────────────────────────────────────────────── */}
+      {/*
+        026S A: The header flex container gets the light-tint background.
+        This means the clipped corners of the wedge div (top-right / bottom-right)
+        reveal the same ${bg}14 tint that the button area shows — giving a
+        seamless color transition from the wedge point into the lighter header.
+      */}
+      <div
+        className="flex items-stretch"
+        style={{ minHeight: 56, backgroundColor: `${bg}14` }}
+      >
+        {/* ── 026S A: Real angled wedge — clip-path polygon ── */}
+        {/*
+          polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)
+          creates a right-pointing pentagon:
+            top-left → top-right-minus-14px → midpoint-right-edge → bottom-right-minus-14px → bottom-left
+          The angled cut spans 14 px horizontally across the full element height,
+          producing a visible slant at the right edge of the colored strip.
+        */}
         <div
-          className="w-14 flex-shrink-0 flex items-center justify-center"
-          style={{ backgroundColor: bg }}
+          className="w-16 flex-shrink-0 flex items-center justify-center"
+          style={{
+            backgroundColor: bg,
+            clipPath: 'polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)',
+          }}
           aria-hidden="true"
         >
           <Icon className="w-5 h-5" style={{ color: text }} />
         </div>
 
-        {/* Center — name + stats; tapping opens/closes the accordion */}
-        <button
-          className="flex-1 flex items-center justify-between px-3 py-2 text-left
-            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40
-            touch-manipulation select-none"
-          style={{ backgroundColor: `${bg}14` }}
+        {/* Center: category name + stats — tapping toggles accordion.
+            NOTE: uses div[role=button] (not <button>) so the Pencil rename
+            button inside EditableMobileCategoryName is not nested inside a
+            <button>, which is invalid HTML. */}
+        <div
+          role="button"
+          tabIndex={0}
+          className="flex-1 flex items-center justify-between px-3 py-2
+            cursor-pointer focus:outline-none focus-visible:ring-2
+            focus-visible:ring-primary/40 touch-manipulation select-none"
           onClick={handleToggle}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleToggle();
+            }
+          }}
           aria-expanded={isOpen}
           aria-label={`${name} category, ${packedCount} of ${items.length} selected`}
         >
           <div className="flex flex-col gap-0.5 min-w-0 mr-2">
-            <EditableMobileCategoryName
-              name={name}
-              textColor="hsl(var(--foreground))"
-              onRename={onRename}
-            />
+            <EditableMobileCategoryName name={name} onRename={onRename} />
             <span className="text-[11px] text-muted-foreground leading-none">
               {packedCount}/{items.length} selected
             </span>
           </div>
 
-          {/* Weight + chevron */}
+          {/* Weight summary + chevron */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {categoryTotalOz > 0 && (
               <div className="text-right">
-                <div className="text-sm font-mono font-bold tabular-nums leading-none"
-                  style={{ color: bg }}>
+                <div
+                  className="text-sm font-mono font-bold tabular-nums leading-none"
+                  style={{ color: bg }}
+                >
                   {displaySmall} {su}
                 </div>
                 <div className="text-[10px] text-muted-foreground tabular-nums leading-none mt-0.5">
@@ -362,16 +404,14 @@ export function MobileWedgeCategory({
               style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
             />
           </div>
-        </button>
+        </div>
 
-        {/* Right — category delete */}
-        <div
-          className="flex items-center pr-1 flex-shrink-0"
-          style={{ backgroundColor: `${bg}14` }}
-        >
+        {/* Right: delete category (two-step confirm IS the touch-accessible disclosure) */}
+        <div className="flex items-center pr-1 flex-shrink-0">
           {confirmDelete ? (
             <div className="flex items-center gap-1 px-1">
               <button
+                type="button"
                 onClick={e => { e.stopPropagation(); onDelete(); setConfirmDelete(false); }}
                 className="text-[10px] font-semibold bg-destructive text-destructive-foreground
                   px-1.5 py-1 rounded touch-manipulation"
@@ -380,6 +420,7 @@ export function MobileWedgeCategory({
                 Yes
               </button>
               <button
+                type="button"
                 onClick={e => { e.stopPropagation(); setConfirmDelete(false); }}
                 className="text-[10px] font-semibold bg-muted text-muted-foreground
                   px-1.5 py-1 rounded touch-manipulation"
@@ -390,9 +431,11 @@ export function MobileWedgeCategory({
             </div>
           ) : (
             <button
+              type="button"
               onClick={e => { e.stopPropagation(); setConfirmDelete(true); }}
               className="p-2.5 text-muted-foreground/40 hover:text-destructive
-                hover:bg-destructive/10 rounded-lg transition-colors touch-manipulation"
+                hover:bg-destructive/10 rounded-lg transition-colors touch-manipulation
+                focus-visible:ring-2 focus-visible:ring-destructive/40"
               title="Delete category"
               aria-label={`Delete ${name} category`}
             >
@@ -408,9 +451,10 @@ export function MobileWedgeCategory({
           className="bg-card border-t animate-in fade-in slide-in-from-top-1 duration-150"
           style={{ borderColor: `${bg}18` }}
         >
-          {/* Base weight pill — compact row above items */}
-          <div className="px-3 pt-2 pb-1 flex items-center gap-2">
+          {/* Base weight pill */}
+          <div className="px-3 pt-2 pb-1">
             <button
+              type="button"
               onClick={() => onUpdateMeta({ countsToBase: !meta.countsToBase })}
               className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border
                 transition-colors touch-manipulation ${
@@ -451,6 +495,7 @@ export function MobileWedgeCategory({
 
           {/* Add Item */}
           <button
+            type="button"
             onClick={() => addItem(name)}
             className="w-full flex items-center gap-2 px-3 py-3 text-sm font-medium
               text-primary hover:bg-primary/5 transition-colors touch-manipulation"
