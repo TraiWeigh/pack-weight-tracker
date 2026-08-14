@@ -6,6 +6,7 @@ import { Switch, Route, useLocation, Router as WouterRouter, Redirect } from 'wo
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import Checklist from './pages/Checklist';
+import MobileDesignPrototype from './pages/MobileDesignPrototype';
 import LandingPage from './pages/LandingPage';
 import AdminPage from './pages/AdminPage';
 import SharedPackView from './pages/SharedPackView';
@@ -233,6 +234,8 @@ function ClerkProviderWithRoutes() {
           <Route path="/delete-account" component={DeleteAccountPage} />
           <Route path="/affiliate" component={AffiliatePage} />
           <Route path="/accessibility" component={AccessibilityPage} />
+          {/* 027A: Isolated mobile design prototype — dev-only preview route */}
+          <Route path="/mobile-preview" component={MobileDesignPrototype} />
           <Route component={NotFound} />
         </Switch>
         <Toaster />

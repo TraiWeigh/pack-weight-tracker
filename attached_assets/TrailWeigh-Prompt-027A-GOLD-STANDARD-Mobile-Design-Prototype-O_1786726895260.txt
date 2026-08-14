@@ -1,0 +1,811 @@
+TRAILWEIGH — PROMPT 027A — GOLD STANDARD
+MOBILE VISUAL DESIGN PROTOTYPE ONLY
+NO CONTROL WIRING / NO FUNCTIONAL BEHAVIOR CHANGES
+
+INTERNAL VERSION ID:
+027A-MOBILE-DESIGN-FIRST-PROTOTYPE-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 10–20 minutes
+- approximately $0.80–$1.80 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE PRODUCT DECISION
+============================================================
+
+TrailWeigh mobile redesign now follows a DESIGN-FIRST workflow.
+
+PHASE 1 — THIS PROMPT:
+- create and refine the mobile PHONE VISUAL DESIGN ONLY
+- do NOT assign/reassign real control behavior
+- do NOT alter existing functional logic
+- do NOT replace the current working mobile interface yet
+- user must approve the visual design first
+
+PHASE 2 — LATER PROMPT:
+- after user approval, map the real TrailWeigh controls/actions into the approved mobile design
+- wire buttons, wedges, toggles, edit actions, Checklist, Locker, Share, etc.
+
+This separation is intentional.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Create an ISOLATED MOBILE-ONLY VISUAL PROTOTYPE that closely matches the supplied target mobile design language while using TrailWeigh’s actual information structure.
+
+The prototype should visually answer:
+
+“What should the TrailWeigh phone interface look like?”
+
+It should NOT answer yet:
+
+“What does each control do?”
+
+============================================================
+STRICT ISOLATION
+============================================================
+
+DO NOT replace the current working mobile interface.
+
+DO NOT alter the desktop website.
+
+The visual prototype must be isolated from both.
+
+Preferred safe implementation:
+- create a dedicated mobile-only prototype component/view
+- expose it only through a temporary DEVELOPMENT-ONLY preview path or query parameter
+- example:
+  `?mobileDesignPreview=1`
+  or another equally isolated dev-only mechanism already compatible with current routing
+
+The prototype must:
+- be reachable for user visual review on phone
+- not affect normal TrailWeigh behavior when preview mode is absent
+- not change production desktop presentation
+- not change current functional mobile presentation outside preview mode
+
+If current routing architecture makes a query-param preview unsafe:
+STOP and explain the safest isolated preview method before implementing.
+
+============================================================
+NO CONTROL WIRING
+============================================================
+
+This prompt is VISUAL ONLY.
+
+Buttons/icons/toggles in the prototype may be:
+- visual placeholders
+- non-functional presentation elements
+- inert buttons with `type="button"`
+- static state examples
+
+DO NOT connect them to:
+- Save
+- New
+- Undo
+- Redo
+- Reset
+- Checklist
+- Locker
+- Share
+- Print
+- Background
+- Light/Dark persistence
+- Imperial/Metric state
+- Add Item
+- Add Category
+- Delete
+- Rename
+- Move
+- drag/reorder
+- database/API/auth
+- server persistence
+
+DO NOT change the behavior of the existing working UI.
+
+============================================================
+SEPARATE VISUAL REFERENCE FILES
+============================================================
+
+The user will attach the images separately.
+
+DO NOT embed screenshots/images inside this prompt or report.
+
+PRIMARY TARGET REFERENCE:
+`027A-Mobile-Target-Primary.png`
+
+Use this as the AUTHORITATIVE visual direction.
+
+SECONDARY TARGET REFERENCE:
+`027A-Mobile-Target-Secondary.png`
+
+Use only as secondary support for:
+- wedge silhouette
+- spacing rhythm
+- card proportions
+- icon scale/alignment
+
+CURRENT MOBILE REFERENCES:
+- `027A-Current-Mobile-1.png`
+- `027A-Current-Mobile-2.png`
+
+Use these only to understand:
+- current TrailWeigh data/content
+- actual category names
+- current information that must eventually map into the new design
+
+Do NOT preserve the old phone visual layout merely because it already exists.
+
+============================================================
+IMPORTANT COMMUNICATION RULE
+============================================================
+
+The supplied target mobile reference is the visual target.
+
+Do NOT interpret the task as:
+“Keep the current phone layout and add wedges.”
+
+Instead interpret it as:
+
+“Recreate the TrailWeigh PHONE PRESENTATION so it closely follows the target design language and composition, while using TrailWeigh’s real information structure.”
+
+Preserve functionality/data conceptually, but DO NOT preserve the old phone layout visually.
+
+============================================================
+DESIGN TARGET — OVERALL
+============================================================
+
+The prototype should feel:
+- elegant
+- intentional
+- modern
+- compact but not cramped
+- highly readable
+- touch-friendly
+- visually related to desktop TrailWeigh
+- clearly designed for a phone rather than a stacked desktop website
+
+Use a clean mobile surface.
+
+NO photographic/theme background.
+
+Provide:
+- LIGHT prototype
+- DARK prototype
+
+Dark mode must have proper contrast:
+- category names readable
+- secondary text readable
+- icons readable
+- card/surface separation clear
+
+============================================================
+MOBILE HEADER DESIGN
+============================================================
+
+Design a refined phone header inspired by the target reference.
+
+Include visual placeholders for:
+- TrailWeigh logo/name
+- current list filename/name area
+- existing core actions represented compactly
+
+DO NOT create:
+- fake native bottom navigation
+- fake search feature
+- fake FAB/+ feature
+unless those controls already exist and are only being visually represented
+
+Keep branding strong but reduce wasted vertical height.
+
+Goal:
+- TrailWeigh identity immediately visible
+- list identity visible
+- actions visually organized
+- no old stacked desktop-header feeling
+
+============================================================
+SUMMARY / STATUS DESIGN
+============================================================
+
+The target reference uses a prominent summary card.
+
+Create a TrailWeigh-appropriate summary treatment using existing TrailWeigh concepts only.
+
+For backpacking sample content, appropriate visual data can include:
+- Base Weight
+- Total Items
+- Worn Weight
+or existing equivalent summary values
+
+This is STATIC/READ-ONLY prototype content only.
+
+Do NOT create new data fields.
+
+Do NOT wire to Pack Summary logic.
+
+The purpose is to establish:
+- visual hierarchy
+- card proportions
+- spacing
+- typography
+
+============================================================
+CATEGORY WEDGE DESIGN
+============================================================
+
+This is a central part of the design.
+
+Create polished category cards with:
+
+- TRUE angled wedge on the left
+- distinct category color
+- clear category icon centered inside wedge
+- category title
+- compact item/selection summary
+- category weight summary where appropriate
+- clear open/close chevron presentation
+- consistent card radius
+- subtle border/shadow treatment
+- consistent vertical spacing
+
+Use sample TrailWeigh categories such as:
+- Backpack
+- Sleep System
+- Clothing Packed
+- Shelter System
+- Kitchen Gear
+- Hydration
+- Electronics
+- Toiletries
+- Med Kit
+- Repair Kit
+
+The design must also visually support non-backpacking category families later.
+
+============================================================
+CATEGORY TAP TARGET VISUAL LANGUAGE
+============================================================
+
+Standing user preference for the later functional phase:
+
+On mobile:
+- the WEDGE / CATEGORY ICON should be the primary accordion open/close tap target
+- category name should primarily identify the category
+- rename/edit should remain visually separate
+
+In this design-only prototype:
+- visually communicate the wedge/icon as the obvious interaction affordance
+- do not wire the actual accordion behavior yet
+
+============================================================
+EXPANDED CATEGORY DESIGN
+============================================================
+
+Show at least one category in an EXPANDED VISUAL STATE.
+
+Inside it, show at least 3 sample items.
+
+The expanded category must feel like a purpose-designed mobile card, not a desktop form.
+
+For each item show:
+
+PRIMARY IDENTITY:
+- checkbox/select marker
+- item name
+- item type/subtype
+- concise displayed weight
+
+For one EXPANDED ITEM, show vertically stacked detail rows:
+- Weight
+- Quantity
+- Total
+- Move
+
+Each row should have:
+- clear label
+- clear value/control region
+- comfortable vertical rhythm
+- clean dividers if useful
+- no horizontal scrolling
+- no tiny desktop input look
+
+Show visual placeholders for edit/delete where appropriate.
+
+Do NOT wire them.
+
+============================================================
+ITEM DESIGN HIERARCHY
+============================================================
+
+Collapsed item:
+- easy to scan
+- name dominates
+- type/secondary info subordinate
+- weight visible but not overpowering
+- chevron/action affordance clear
+
+Expanded item:
+- more generous spacing
+- vertically stacked details
+- visually nested inside category
+- obvious relationship to parent category
+
+============================================================
+TOOLBAR / CONTROL AREA — VISUAL ONLY
+============================================================
+
+Current mobile control concepts that will eventually need mapping:
+- Open/Close
+- Hide
+- Checklist
+- Light/Dark
+- Imperial/Metric
+- New
+- Undo
+- Redo
+- Save
+- Reset
+- Share
+
+In the prototype:
+- design a visually coherent way these could live on phone
+- preserve recognizability
+- do not assign behavior
+- do not remove controls just for visual simplicity
+- do not create horizontal overflow
+- do not force every control into one row
+
+It is acceptable to:
+- group related controls
+- use compact icon + label patterns
+- use segmented controls
+- use two visual tiers/rows
+- create a menu-looking visual placeholder
+
+But:
+DO NOT wire any of it.
+
+============================================================
+UTILITY PANELS
+============================================================
+
+Current utility concepts:
+- Pack Summary
+- Weight Distribution
+- Scan Gear List
+- Locker
+
+In the prototype:
+- position these AFTER the category list
+- visually simplify them so they feel like secondary utilities
+- do not let them dominate the main list experience
+
+Do NOT wire their real behavior.
+
+============================================================
+FOOTER
+============================================================
+
+The mobile footer currently consumes significant vertical space.
+
+Create a visually compact mobile footer treatment using existing content only.
+
+Do NOT change actual production footer behavior.
+
+The prototype should establish:
+- hierarchy
+- spacing
+- readability
+- compactness
+
+============================================================
+LIGHT MODE DESIGN
+============================================================
+
+Light prototype:
+- clean off-white / neutral background
+- readable dark text
+- elegant card surfaces
+- category colors remain distinct
+- no theme photo background
+- clear hierarchy without excessive gray blocks
+
+============================================================
+DARK MODE DESIGN
+============================================================
+
+Dark prototype:
+- clean near-black / charcoal background
+- category names MUST be bright/readable
+- secondary text lighter than current implementation
+- cards clearly separated from background
+- icons/chevrons/edit/delete readable
+- category color accents remain rich
+- avoid black text on dark cards
+- avoid muddy gray-on-gray surfaces
+
+============================================================
+RESPONSIVE TARGETS
+============================================================
+
+Prototype should look intentional at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+No horizontal scrolling.
+
+No clipped cards/controls.
+
+No white strip outside app.
+
+Do not switch to desktop layout before the existing desktop breakpoint.
+
+============================================================
+DESIGN MEASUREMENTS
+============================================================
+
+Choose and document consistent target values for:
+- page horizontal padding
+- header height
+- category-card height
+- wedge width
+- wedge point depth
+- icon size
+- category title size
+- summary text size
+- category gap
+- expanded item padding
+- detail-row height
+- section spacing
+
+Do not optimize for one screenshot only.
+
+The goal is a reusable mobile design system.
+
+============================================================
+DESIGN SYSTEM OUTPUT
+============================================================
+
+The implementation should define reusable mobile visual tokens/components for the prototype where practical:
+
+Examples:
+- mobile page spacing
+- surface/card radius
+- category wedge size
+- category icon size
+- title/subtitle sizes
+- detail row spacing
+- light/dark surface tokens
+
+Do not refactor the existing production app broadly.
+
+Keep prototype-specific design code isolated.
+
+============================================================
+DESKTOP PROTECTION
+============================================================
+
+Desktop must remain completely unchanged.
+
+The prototype:
+- must not render at desktop unless explicitly opened in preview mode
+- must not modify desktop components
+- must not modify desktop CSS selectors
+- must not change Background/Themes
+- must not alter desktop category rows
+- must not alter desktop toolbar/sidebar
+- must not alter desktop spacing/typography
+
+============================================================
+CURRENT MOBILE PROTECTION
+============================================================
+
+The current working phone UI must also remain available and functional outside preview mode.
+
+Do NOT:
+- replace it
+- remove it
+- rewire it
+- break it
+
+The user must be able to compare:
+CURRENT WORKING MOBILE
+vs
+NEW DESIGN PROTOTYPE
+
+============================================================
+ACCESSIBILITY — DESIGN STAGE
+============================================================
+
+Although controls are not wired yet, visually design for:
+- comfortable touch targets
+- visible focus-capable shapes later
+- adequate contrast
+- non-color-only identification
+- icon + label where appropriate
+
+Do NOT implement a new global tooltip/help system in this design prompt.
+
+Standing tooltip rules remain for later control wiring.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- real control wiring
+- actual accordion logic changes
+- Save/New/Undo/Redo behavior
+- Create New List flow
+- Track Weight
+- list templates
+- Checklist logic changes
+- Locker changes
+- Review changes
+- database/schema/API/auth changes
+- server persistence
+- touch drag/reorder
+- global tooltip rewrite
+- native app architecture
+- PWA conversion
+- package/dependency changes unless absolutely required for existing stack
+- replit.md
+- .agents/memory
+- deployment/publishing
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Confirm current mobile/desktop isolation architecture.
+3. Identify safest preview-only insertion point.
+4. Confirm current working mobile UI can remain untouched.
+5. Confirm desktop remains untouched.
+6. Identify reusable existing icons/fonts/styles that can be used in prototype.
+7. Record preflight git status.
+8. Create:
+   `workflow-reports/PROMPT_027A_REPORT.md`
+
+If a safe isolated prototype cannot be created:
+STOP and explain before editing.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Prefer:
+- one new mobile prototype component file
+- one prototype-specific style/module file if needed
+- minimal `Checklist.tsx` or route/query-param hook only to expose preview mode
+
+Expected maximum:
+3 application files
+
+If more are required:
+STOP and explain before broadening.
+
+Do NOT alter:
+- GearCategory.tsx
+- GearRow.tsx
+- MobileWedgeCategory.tsx
+unless absolutely necessary to reuse read-only presentation code without changing behavior.
+
+Prefer copying/adapting presentation into prototype-specific components rather than destabilizing working UI.
+
+============================================================
+MANDATORY VISUAL TESTS
+============================================================
+
+TEST 1 — 390 PX LIGHT
+Expected:
+- visually close to target reference
+- clean hierarchy
+- polished header
+- summary treatment
+- elegant wedge cards
+- at least one expanded category
+- at least one expanded item
+- no horizontal overflow
+
+TEST 2 — 390 PX DARK
+Expected:
+- high contrast
+- readable category names
+- readable secondary text
+- elegant dark surfaces
+- wedges remain vivid
+
+TEST 3 — 320 PX
+Expected:
+- still intentional
+- no clipped text/cards
+- no horizontal overflow
+
+TEST 4 — 430 PX
+Expected:
+- balanced spacing
+- no oversized empty areas
+
+TEST 5 — CURRENT MOBILE SAFETY
+Without preview flag:
+Expected:
+- current working phone UI unchanged and functional
+
+TEST 6 — DESKTOP SAFETY
+Without preview flag:
+Expected:
+- desktop unchanged
+
+TEST 7 — PREVIEW ISOLATION
+Expected:
+- prototype appears only in explicit preview mode
+- normal app never accidentally enters prototype
+
+============================================================
+VISUAL COMPARISON REQUIREMENT
+============================================================
+
+Before internal PASS:
+
+Compare prototype against:
+`027A-Mobile-Target-Primary.png`
+
+Report specifically:
+- what now matches the target design language
+- what intentionally differs because TrailWeigh has different real content
+- what still needs user visual decision
+
+Do NOT claim PASS merely because wedges exist.
+
+The entire mobile composition must be evaluated.
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide as separate evidence files:
+- 390 px Light prototype screenshot
+- 390 px Dark prototype screenshot
+- 320 or 375 px prototype screenshot
+- current working mobile screenshot proving unchanged
+- desktop screenshot proving unchanged
+
+Do NOT embed screenshots inside the prompt or report.
+
+============================================================
+REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_027A_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. preview isolation strategy
+6. files created/changed
+7. target visual measurements/tokens
+8. header design
+9. summary design
+10. category wedge design
+11. expanded category/item design
+12. toolbar/control-area visual design
+13. utility-panel design
+14. footer design
+15. Light mode design
+16. Dark mode design
+17. 320 result
+18. 375 result
+19. 390 result
+20. 430 result
+21. current mobile unchanged result
+22. desktop unchanged result
+23. current-vs-target visual comparison
+24. unresolved visual decisions
+25. tests NOT RUN
+26. console result
+27. rollback guidance
+28. USER VISUAL APPROVAL = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+ISOLATED MOBILE DESIGN PROTOTYPE CREATED = PASS / FAIL / NOT RUN
+CURRENT MOBILE UI REPLACED = YES / NO
+CURRENT MOBILE FUNCTIONALITY CHANGED = YES / NO
+DESKTOP PRESENTATION CHANGED = YES / NO
+
+LIGHT DESIGN CREATED = PASS / FAIL / NOT RUN
+DARK DESIGN CREATED = PASS / FAIL / NOT RUN
+DARK CATEGORY TEXT READABLE = PASS / FAIL / NOT RUN
+MOBILE HORIZONTAL OVERFLOW = YES / NO / NOT RUN
+
+HEADER REDESIGNED VISUALLY = PASS / FAIL / NOT RUN
+SUMMARY TREATMENT CREATED = PASS / FAIL / NOT RUN
+CATEGORY WEDGE SYSTEM CREATED = PASS / FAIL / NOT RUN
+EXPANDED CATEGORY DESIGN CREATED = PASS / FAIL / NOT RUN
+EXPANDED ITEM DESIGN CREATED = PASS / FAIL / NOT RUN
+UTILITY PANELS SECONDARY = PASS / FAIL / NOT RUN
+FOOTER REFINED = PASS / FAIL / NOT RUN
+
+REAL CONTROL WIRING ADDED = YES / NO
+ACCORDION LOGIC CHANGED = YES / NO
+CHECKLIST LOGIC CHANGED = YES / NO
+LOCKER LOGIC CHANGED = YES / NO
+SHARE/REVIEW LOGIC CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+CREATE-NEW-LIST FLOW CHANGED = YES / NO
+PACKAGE FILES CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VISUAL APPROVAL = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Did I create a real phone design prototype rather than another patch?
+2. Did I use the target image as the visual target?
+3. Did I avoid preserving the old phone layout merely because it exists?
+4. Did I keep current working phone functionality untouched?
+5. Did I keep desktop untouched?
+6. Did I avoid wiring real controls?
+7. Did I create both Light and Dark designs?
+8. Is Dark mode readable?
+9. Do categories/wedges look intentional and polished?
+10. Does expanded item design look mobile-native rather than desktop-form-like?
+11. Are utility panels visually secondary?
+12. Is there no horizontal overflow?
+13. Is the preview isolated?
+14. Is user approval still required before control wiring?
+
+If material uncertainty remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027A-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027A_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + visual evidence.
+
+Do not wire controls.
+Do not replace the working mobile UI.
+Do not proceed to 027B.
+Do not perform Create New List work.
