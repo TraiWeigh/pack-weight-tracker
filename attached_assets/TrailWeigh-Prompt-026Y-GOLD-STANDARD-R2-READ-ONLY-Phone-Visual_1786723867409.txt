@@ -1,0 +1,562 @@
+TRAILWEIGH — PROMPT 026Y — GOLD STANDARD READ-ONLY DIAGNOSTIC
+PHONE-ONLY VISUAL / LAYOUT AUDIT
+COORDINATED MOBILE REDESIGN PLAN — NO CODE CHANGES
+
+INTERNAL VERSION ID:
+026Y-PHONE-VISUAL-LAYOUT-AUDIT-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose / Read-only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 5–10 minutes
+- approximately $0.40–$1.00 Agent usage
+
+============================================================
+AUTHORITATIVE CURRENT STATUS
+============================================================
+
+026W is USER VERIFIED PASS.
+
+Current mobile behavior that must be preserved:
+- no whole-page horizontal shifting
+- no white strip outside the app
+- two-row mobile toolbar fits within viewport
+- Row 1 contains Open/Close + Hide + Checklist + Light/Dark
+- Row 2 contains Imperial/Metric
+- mobile photo/theme background is removed
+- mobile Background editing is removed
+- standalone Light/Dark remains available
+- real angled category wedges exist
+- vertical Weight / Qty / Total / Move item details exist
+- category-item selection and Checklist semantics remain intact
+- Checklist progress persists until Clear
+- Review isolation remains intact
+- desktop remains isolated from phone presentation
+
+============================================================
+AUTHORITATIVE USER GOAL
+============================================================
+
+The phone layout is FUNCTIONAL but still looks visually poor / unpolished.
+
+The next goal is NOT another isolated bug repair.
+
+The goal is a coordinated MOBILE-ONLY visual refinement so the phone feels like a purpose-designed TrailWeigh interface while remaining the same product as desktop.
+
+Important:
+- desktop must remain visually and functionally unchanged
+- same data/state/behavior can remain shared
+- phone presentation may be substantially reorganized
+- do NOT redesign desktop
+- do NOT create a native-app architecture
+- TrailWeigh remains a responsive web app
+
+============================================================
+SEPARATE VISUAL REFERENCES
+============================================================
+
+The user will attach separate current-phone screenshots and one separate target reference.
+
+CURRENT PHONE EVIDENCE:
+- `026Y-Current-Mobile-1.png`
+- `026Y-Current-Mobile-2.png`
+- `026Y-Current-Mobile-3.png`
+- `026Y-Current-Mobile-4.png`
+
+TARGET VISUAL DIRECTION:
+- `026Y-Mobile-Target-Reference.png`
+
+DO NOT embed screenshots inside this prompt or report.
+
+Use current screenshots to identify what looks visually wrong NOW.
+
+Use the target reference only for presentation direction such as:
+- cleaner visual hierarchy
+- more elegant wedge/category proportions
+- stronger spacing rhythm
+- better icon/category balance
+- cleaner expanded item cards
+- more intentional mobile composition
+
+DO NOT copy mockup-only:
+- bottom navigation
+- fake search/add controls
+- mockup-only summary/dashboard cards
+- travel-specific fields
+- app-shell elements TrailWeigh does not currently use
+
+Written requirements always win over the image.
+
+
+============================================================
+MANDATORY USE OF SUPPLIED IMAGES AS REFERENCE TOOLS
+============================================================
+
+The separately supplied images are not optional decoration.
+
+USE THEM ACTIVELY as reference tools during this audit.
+
+CURRENT-STATE REFERENCES:
+- `026Y-Current-Mobile-1.png`
+- `026Y-Current-Mobile-2.png`
+- `026Y-Current-Mobile-3.png`
+- `026Y-Current-Mobile-4.png`
+
+Use these four current phone screenshots to:
+- identify the actual current visual hierarchy
+- identify spacing/proportion problems
+- identify awkward toolbar grouping
+- identify category/wedge sizing issues
+- identify expanded-item visual problems
+- identify where the current phone layout looks patched together rather than intentional
+
+TARGET-DIRECTION REFERENCE:
+- `026Y-Mobile-Target-Reference.png`
+
+Use this image as a VISUAL REFERENCE TOOL for the desired polish level and mobile design language, especially:
+- wedge proportions
+- category-card rhythm
+- icon placement
+- typography hierarchy
+- compact summary placement
+- expanded item-card refinement
+- vertical spacing
+- overall elegant mobile composition
+
+Do NOT merely mention the filenames in the report.
+Actually compare CURRENT screenshots against the TARGET reference and explain:
+- what should remain
+- what should change
+- what visual differences matter
+- what TrailWeigh-specific adaptations are required
+
+The target reference is not a literal implementation spec.
+
+Do NOT copy mockup-only:
+- bottom navigation
+- fake search/add buttons
+- fake dashboard cards
+- travel-specific fields
+- controls/data that do not exist in TrailWeigh
+
+Use the images to guide the real TrailWeigh phone presentation.
+
+Written requirements in this prompt remain authoritative.
+
+============================================================
+KNOWN USER VISUAL CONCERNS
+============================================================
+
+From current live phone evidence, audit these areas carefully:
+
+1. TOP / HEADER AREA
+- logo/header scale
+- vertical height
+- filename placement
+- balance between branding and controls
+- whether too much space is consumed before categories begin
+
+2. MOBILE TOOLBAR
+- current two-row layout solved overflow
+- now assess visual grouping, hierarchy, alignment, spacing, and control weight
+- determine whether it looks intentional or patched together
+- preserve every existing function
+
+3. LIGHT / DARK + IMPERIAL / METRIC
+- current placement and visual prominence
+- whether these controls dominate too much
+- whether their grouping can feel cleaner without losing clarity
+
+4. CATEGORY WEDGES
+- wedge height/width
+- icon size and vertical centering
+- category-name typography
+- selected/item-count summary
+- weight placement
+- chevron placement
+- spacing between categories
+- card radius/shadow/border balance
+- color strength and consistency
+
+5. CATEGORY HEADER ACTIONS
+- + Base
+- delete
+- rename/edit
+- any action that currently feels disconnected from the category card
+
+6. EXPANDED CATEGORY / ITEM CARD
+- item name prominence
+- item type/subtype
+- Weight / Qty / Total / Move hierarchy
+- input/select sizing
+- spacing between rows
+- action control placement
+- whether the expanded item still feels like a desktop form squeezed into mobile
+
+7. OVERALL VERTICAL RHYTHM
+- top padding
+- section gaps
+- category-to-category spacing
+- item-card padding
+- footer/utility spacing
+- unnecessary empty areas
+
+8. TYPOGRAPHY
+- header size
+- category title size/weight
+- secondary summary text
+- item title
+- field labels/values
+- consistency across mobile
+
+9. COLOR / SURFACE SYSTEM
+- clean neutral Light surface
+- clean Dark surface
+- category colors remain distinct
+- adequate contrast
+- no photographic/theme background
+- no mobile Background editor
+
+10. TOUCH TARGETS
+- wedge/icon tap target
+- chevrons
+- delete/edit
+- + Base
+- toolbar controls
+- Checklist / Light-Dark / Imperial-Metric
+- ensure controls are comfortably tappable without making layout bulky
+
+============================================================
+MOBILE CATEGORY OPEN/CLOSE INTERACTION
+============================================================
+
+Standing user preference:
+
+On MOBILE, the category accordion should open/close primarily by tapping the CATEGORY ICON/WEDGE.
+
+The category name should not be the primary accordion trigger.
+
+Audit the current implementation and report:
+- exact current click target(s)
+- exact file/component
+- whether tapping only the wedge/icon can become the primary trigger safely
+- how keyboard activation can remain accessible
+- how rename/edit of category name can remain separate
+
+Do NOT implement yet.
+
+============================================================
+MANDATORY READ-ONLY RULE
+============================================================
+
+DO NOT EDIT APPLICATION CODE.
+
+DO NOT:
+- change layout
+- change CSS
+- change wedge sizes
+- move toolbar controls
+- alter typography
+- alter mobile tap targets
+- alter desktop
+- add/remove controls
+- alter Checklist
+- alter Locker
+- alter Review
+- modify DB/API/auth
+- modify package files
+- modify replit.md
+- modify .agents/memory
+- publish/deploy
+
+This prompt is diagnostic only.
+
+============================================================
+ARCHITECTURE QUESTIONS
+============================================================
+
+For each visual area below, identify exact component/file and whether it is:
+- MOBILE-ONLY presentation
+- DESKTOP-ONLY presentation
+- SHARED presentation
+- SHARED state/logic only
+
+Audit:
+1. top app header
+2. filename pill/label
+3. lower phone toolbar
+4. Light/Dark
+5. Imperial/Metric
+6. MobileWedgeCategory
+7. category header actions
+8. expanded item content
+9. Pack Summary
+10. Weight Distribution
+11. Locker / Scan Gear List section
+12. Checklist mobile presentation
+13. root mobile page/container
+14. mobile typography/styles
+15. mobile spacing styles
+
+For any shared presentation:
+- identify desktop leakage risk
+- state safest isolation strategy
+
+============================================================
+VISUAL MEASUREMENT AUDIT
+============================================================
+
+At 390 px width, report current approximate/measured:
+- header height
+- filename block height
+- toolbar row 1 height
+- toolbar row 2 height
+- gap before first category
+- category collapsed height
+- category-to-category gap
+- wedge width
+- wedge point depth
+- icon size
+- category title font size/weight
+- summary font size
+- category weight font size
+- expanded item card padding
+- Weight / Qty / Total / Move row heights
+- vertical gap between those rows
+
+Use runtime measurement where possible.
+If auth wall prevents runtime measurement:
+report exact source-derived CSS values and label them SOURCE VALUES.
+
+Do not invent measurements.
+
+============================================================
+VISUAL PROBLEM LIST
+============================================================
+
+Return a prioritized visual problem list.
+
+Use:
+P0 = usability/blocking
+P1 = strong visual problem
+P2 = polish/refinement
+
+For each issue:
+- exact location
+- user-visible symptom
+- exact component/file
+- likely visual cause
+- recommended mobile-only adjustment
+- desktop risk
+
+Do not list hypothetical issues unsupported by screenshots/source.
+
+============================================================
+COORDINATED MOBILE REDESIGN PLAN
+============================================================
+
+Propose one coherent mobile-only refinement plan.
+
+It should answer:
+
+A. HEADER
+- what stays
+- what shrinks/repositions
+- target hierarchy
+
+B. TOOLBAR
+- exact grouping
+- exact row structure
+- spacing/alignment
+- how to make it look intentional while preserving 026W no-overflow behavior
+
+C. CATEGORY HEADER
+- target wedge proportions
+- icon scale
+- category title placement
+- summary placement
+- weight/chevron placement
+- action placement
+
+D. EXPANDED ITEM
+- target card structure
+- exact field order
+- label/value alignment
+- spacing
+- control sizing
+
+E. CATEGORY TAP TARGET
+- make wedge/icon primary open/close trigger
+- preserve rename/edit separately
+
+F. LIGHT/DARK
+- preserve clean neutral surfaces
+- preserve category color system
+
+G. RESPONSIVE SAFETY
+- 320 / 375 / 390 / 430 behavior
+- no horizontal overflow
+- no desktop leakage
+
+============================================================
+DO NOT OVER-DESIGN
+============================================================
+
+The plan must preserve TrailWeigh's actual functions.
+
+Do not propose:
+- bottom navigation
+- fake app tabs
+- floating action buttons unless already present
+- new data fields
+- native-app navigation
+- new template flow
+- Create New List work
+- unrelated feature additions
+
+The goal is:
+SAME TRAILWEIGH + BETTER PHONE PRESENTATION.
+
+============================================================
+IMPLEMENTATION BOUNDARY
+============================================================
+
+Based on current source, recommend whether the coordinated redesign should be:
+
+OPTION A:
+one focused implementation prompt touching only existing mobile-only components/styles
+
+OPTION B:
+split into two implementation prompts, for example:
+1. header/toolbar
+2. category/expanded-item polish
+
+Choose the SAFER option.
+
+State:
+- expected file set
+- expected desktop leakage risk
+- whether any shared component must be changed
+- whether a new mobile-only wrapper/component is justified
+
+Do NOT implement.
+
+============================================================
+TOOLTIP / HELP PROTECTION
+============================================================
+
+Standing TrailWeigh rules remain active:
+
+- preserve all existing tooltip text exactly unless explicitly revised
+- fill only tooltip/help gaps
+- keyboard users need accessible help
+- touch users need equivalent help
+
+026Y is NOT a tooltip implementation prompt.
+
+Simply identify whether the proposed visual changes would introduce any NEW interactive control requiring help later.
+
+============================================================
+REQUIRED RESPONSE FORMAT
+============================================================
+
+A. CURRENT MOBILE VISUAL ARCHITECTURE
+- header:
+- toolbar:
+- category:
+- expanded item:
+- shared risks:
+
+B. IMAGE-BASED COMPARISON
+- current screenshots vs target reference:
+- what should remain:
+- what should change:
+- TrailWeigh-specific adaptations:
+
+C. CURRENT MEASUREMENTS
+- values:
+- runtime vs source-derived:
+
+D. PRIORITIZED VISUAL PROBLEMS
+- P0:
+- P1:
+- P2:
+
+E. CATEGORY OPEN/CLOSE
+- current trigger:
+- safe wedge/icon-primary strategy:
+- accessibility:
+
+F. COORDINATED MOBILE REFINEMENT PLAN
+- header:
+- toolbar:
+- category:
+- expanded item:
+- typography:
+- spacing:
+- color/surfaces:
+
+G. RESPONSIVE SAFETY
+- 320:
+- 375:
+- 390:
+- 430:
+- desktop isolation:
+
+H. IMPLEMENTATION RECOMMENDATION
+- one prompt or two:
+- exact expected files:
+- why:
+
+I. MATERIAL UNCERTAINTY
+- YES / NO
+- exact question if YES
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_026Y_REPORT.md`
+
+Include:
+- internal version
+- time/actions/lines/cost if available
+- files inspected
+- screenshot/reference filenames used
+- architecture map
+- explicit current-vs-target image comparison
+- current measurements
+- prioritized visual problem list
+- coordinated mobile redesign plan
+- implementation boundary recommendation
+- preflight/final git status
+- confirmation that NO application code changed
+- material uncertainty
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026Y-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026Y_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not implement the redesign.
+Do not proceed to 026Z.
+Do not proceed to Create New List.
+Do not perform unrelated TrailWeigh work.
