@@ -1,0 +1,459 @@
+TRAILWEIGH — PROMPT 026W — GOLD STANDARD
+MOBILE-ONLY TWO-ROW TOOLBAR REPAIR
+ELIMINATE HORIZONTAL OVERFLOW / WHITE-SPACE PAN
+
+INTERNAL VERSION ID:
+026W-MOBILE-TWO-ROW-TOOLBAR-OVERFLOW-REPAIR-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 4–8 minutes
+- approximately $0.35–$0.90 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE DIAGNOSTIC BASELINE
+============================================================
+
+026V R2 is a READ-ONLY diagnostic PASS.
+
+026V proved:
+
+1. TrailWeigh CAN continue to evolve its phone presentation without changing the desktop website.
+
+2. The main phone category presentation is already isolated:
+   - mobile uses `MobileWedgeCategory`
+   - mobile branch is behind `lg:hidden`
+   - desktop uses a separate `hidden lg:block` path
+   - primary mobile → desktop breakpoint is 1024 px
+
+3. The mobile wedges and expanded item-detail layout are NOT the root cause of the whole-page horizontal overflow.
+
+4. The proven root cause is the LOWER PHONE TOOLBAR:
+   - the right-hand controls are in a non-wrapping horizontal flex row
+   - current controls include:
+     - Hide
+     - Checklist
+     - Light / Dark
+     - Imperial / Metric
+   - combined with the Open/Close control and page padding, the toolbar requires more width than the phone viewport
+   - at representative phone widths this forces document-level horizontal overflow
+   - user live screenshots confirm the whole page can pan side-to-side and expose white space
+
+5. A blanket `overflow-x: hidden` would only mask the defect and is NOT the correct repair.
+
+============================================================
+AUTHORITATIVE USER REQUIREMENT
+============================================================
+
+MOBILE / CELL-PHONE ONLY:
+
+- TrailWeigh must fill the available phone viewport width
+- NO whole-page horizontal panning
+- NO white strip outside the app
+- NO clipped right-side toolbar controls
+- preserve all current mobile controls
+- preserve labels where practical
+- preserve current mobile wedge layout
+- preserve current standalone Light/Dark control
+- preserve Imperial/Metric
+- preserve Checklist
+- preserve Open/Close
+- preserve Hide
+- desktop remains completely unchanged
+
+============================================================
+PRIMARY IMPLEMENTATION
+============================================================
+
+Replace the current too-wide lower phone toolbar arrangement with a deliberate TWO-ROW mobile layout.
+
+Required mobile arrangement:
+
+ROW 1:
+- existing main-category Open/Close joined control
+- Hide
+- Checklist
+- Light / Dark
+
+ROW 2:
+- Imperial / Metric
+
+The exact alignment may use grid/flex as needed, but:
+
+- both rows must stay inside the viewport
+- controls must remain touch-friendly
+- labels must remain readable
+- no whole-page horizontal scrolling
+- do not solve by shrinking controls to unusable sizes
+- do not make the Imperial/Metric segmented control clip
+- preserve existing control behavior and state
+
+============================================================
+LAYOUT RULES
+============================================================
+
+At mobile widths:
+- use available width responsibly
+- controls may grow/shrink within reason
+- use `min-width: 0` where needed on flex/grid children
+- avoid fixed widths that exceed the available row
+- avoid non-shrinking groups unless mathematically safe
+- avoid negative margins/transforms that extend document width
+- avoid `100vw` plus padding combinations that create overflow
+
+Do NOT add:
+- document-level `overflow-x:hidden`
+- body-level clipping as a substitute for fixing layout
+- hidden overflow around the toolbar as a masking workaround
+
+Fix the toolbar’s real sizing/layout.
+
+============================================================
+STRICT DESKTOP ISOLATION
+============================================================
+
+DESKTOP IS PROTECTED.
+
+026W must remain inside the existing mobile-only branch.
+
+At `lg` / desktop:
+- desktop toolbar unchanged
+- desktop Imperial/Metric unchanged
+- desktop Background/Themes unchanged
+- desktop Light/Dark behavior unchanged
+- desktop categories unchanged
+- desktop sidebar unchanged
+- desktop spacing/geometry unchanged
+- no new two-row toolbar appears
+
+If any shared style change could affect desktop:
+STOP and isolate it before proceeding.
+
+============================================================
+PROTECTED MOBILE BEHAVIOR
+============================================================
+
+Do NOT change:
+- real angled wedge shape
+- category colors/icons
+- vertical Weight / Qty / Total / Move item details
+- mobile photo/theme background removal
+- mobile clean Light/Dark surfaces
+- mobile Background editing remains removed
+- standalone mobile Light/Dark state/persistence
+- category accordion behavior
+- 026K single-open / zero-open / Expand All / Collapse All behavior
+- category-item selection
+- Checklist filtering
+- Checklist-use progress persistence until Clear
+- Clear semantics
+- Print
+- Share / Review isolation
+- Review Add Category
+- Locker
+- Save / Save As
+- owner editability
+
+============================================================
+TOOLTIP / HELP PROTECTION
+============================================================
+
+Standing TrailWeigh rules:
+
+- preserve ALL existing tooltip text exactly
+- do not rewrite existing tooltips
+- new tooltip/help work is not required unless 026W creates a genuinely new interactive control
+- keyboard and touch help behavior already established for current controls must remain intact
+
+026W should REARRANGE existing controls, not reinvent them.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- Create New List guided flow
+- list templates
+- optional Weight architecture
+- Keep It Simple
+- global tooltip rewrite
+- new icons
+- wedge redesign
+- category redesign
+- touch drag/reorder
+- cross-device Checklist sync
+- Last Synced
+- server Checklist persistence
+- database/schema/API/auth changes
+- Print redesign
+- Share redesign
+- Locker redesign
+- desktop toolbar redesign
+- package/dependency changes
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+- deployment/publishing
+- unrelated refactors
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Re-open the current lower phone toolbar source identified by 026V.
+3. Confirm:
+   - mobile-only `lg:hidden` boundary
+   - current Open/Close control
+   - Hide control
+   - Checklist control
+   - Light/Dark segmented control
+   - Imperial/Metric UnitToggle
+   - current flex/grid classes
+4. Confirm no current source has materially changed since 026V.
+5. Record preflight git status.
+6. Create:
+   `workflow-reports/PROMPT_026W_REPORT.md`
+
+If the toolbar structure differs materially from 026V:
+STOP and report before editing.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Expected application file:
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+
+If a mobile-specific CSS rule is genuinely required:
+- `artifacts/pack-checklist/src/index.css` may be used only for a tightly scoped mobile rule
+
+Do NOT change `MobileWedgeCategory.tsx` unless current source proves it is necessary.
+
+If more than 2 application files are required:
+STOP and explain why before broadening.
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+SOURCE INSPECTION ALONE IS NOT PASS.
+
+TEST 1 — 320 PX
+Expected:
+- two-row phone toolbar
+- Row 1 controls fully visible
+- Row 2 Imperial/Metric fully visible
+- no whole-page horizontal scrolling
+- no white strip
+- no clipped controls
+
+TEST 2 — 375 PX
+Expected:
+- same
+- no side-to-side document movement
+
+TEST 3 — 390 PX
+Expected:
+- same
+- toolbar visually balanced
+- Light/Dark usable
+- Imperial/Metric usable
+
+TEST 4 — 430 PX
+Expected:
+- same
+- mobile layout remains mobile
+- no unnecessary extra horizontal row expansion
+
+TEST 5 — DOCUMENT WIDTH
+At each tested mobile width verify:
+- `document.documentElement.scrollWidth <= document.documentElement.clientWidth`
+or exact equality within normal browser rounding
+- `document.body.scrollWidth` does not force document overflow
+
+Do not claim PASS only because white space is visually hidden.
+
+TEST 6 — CONTROL FUNCTION
+Verify:
+- Open All works
+- Close All works
+- Hide works
+- Checklist opens
+- Light/Dark toggles and persists
+- Imperial/Metric toggles
+
+TEST 7 — WEDGE REGRESSION
+Expected:
+- wedge shape unchanged
+- category cards unchanged
+- vertical item details unchanged
+
+TEST 8 — CHECKLIST REGRESSION
+Expected:
+- category-item selection still filters Checklist
+- Checklist-use progress persists until Clear
+- Clear works
+
+TEST 9 — DESKTOP ISOLATION
+At desktop width:
+Expected:
+- desktop toolbar unchanged
+- no two-row phone toolbar
+- desktop categories/sidebar unchanged
+- Background/Themes unchanged
+
+Capture desktop screenshot evidence.
+
+TEST 10 — CONSOLE
+Expected:
+- no new 026W errors
+
+If auth prevents a runtime test:
+mark NOT RUN.
+Do not substitute SOURCE PASS.
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide task-specific UI evidence:
+- 320 or 375 px mobile screenshot showing both toolbar rows
+- 390 px mobile screenshot showing full-width app with no white strip
+- desktop screenshot proving unchanged desktop toolbar/layout
+
+Do not embed screenshots in the prompt.
+Screenshots may be separate evidence attachments.
+
+============================================================
+REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026W_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost from Replit report
+3. preflight git status
+4. files inspected
+5. confirmed 026V root cause
+6. exact old toolbar structure
+7. exact new two-row structure
+8. expected changed files
+9. actual changed files
+10. 320 px result
+11. 375 px result
+12. 390 px result
+13. 430 px result
+14. scrollWidth/clientWidth result at each width
+15. Open/Close result
+16. Hide result
+17. Checklist result
+18. Light/Dark result
+19. Imperial/Metric result
+20. wedge regression result
+21. Checklist regression result
+22. desktop isolation result
+23. tests NOT RUN
+24. console result
+25. rollback guidance
+26. unresolved issues
+27. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+MOBILE TWO-ROW TOOLBAR = PASS / FAIL / NOT RUN
+ROW 1 FULLY FITS 320 PX = PASS / FAIL / NOT RUN
+ROW 2 IMPERIAL/METRIC FULLY FITS 320 PX = PASS / FAIL / NOT RUN
+WHOLE-PAGE HORIZONTAL PAN = YES / NO / NOT RUN
+WHITE SPACE OUTSIDE APP = YES / NO / NOT RUN
+DOCUMENT SCROLLWIDTH EXCEEDS CLIENTWIDTH = YES / NO / NOT RUN
+
+OPEN/CLOSE CHANGED = YES / NO / NOT RUN
+HIDE CHANGED = YES / NO / NOT RUN
+CHECKLIST CONTROL CHANGED = YES / NO / NOT RUN
+LIGHT/DARK FUNCTION CHANGED = YES / NO / NOT RUN
+IMPERIAL/METRIC FUNCTION CHANGED = YES / NO / NOT RUN
+
+MOBILE WEDGE CHANGED = YES / NO / NOT RUN
+MOBILE ITEM DETAIL LAYOUT CHANGED = YES / NO / NOT RUN
+CHECKLIST SEMANTICS CHANGED = YES / NO / NOT RUN
+CHECKLIST PERSISTENCE CHANGED = YES / NO / NOT RUN
+REVIEW ISOLATION CHANGED = YES / NO / NOT RUN
+LOCKER/SAVE CHANGED = YES / NO / NOT RUN
+
+DESKTOP TOOLBAR CHANGED = YES / NO / NOT RUN
+DESKTOP CATEGORY LAYOUT CHANGED = YES / NO / NOT RUN
+DESKTOP SIDEBAR CHANGED = YES / NO / NOT RUN
+DESKTOP BACKGROUND/THEMES CHANGED = YES / NO / NOT RUN
+
+BLANKET OVERFLOW-X HIDDEN ADDED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+PACKAGE FILES CHANGED = YES / NO
+CREATE-NEW-LIST FLOW CHANGED = YES / NO
+SYNC/LAST-SYNCED ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Is the toolbar deliberately two rows on mobile?
+2. Does 320 px fit without document overflow?
+3. Are all controls fully visible and usable?
+4. Did I fix the actual toolbar sizing rather than mask overflow?
+5. Did I preserve Light/Dark?
+6. Did I preserve Imperial/Metric?
+7. Did I preserve Checklist/Open/Close/Hide?
+8. Did I leave wedges and item details unchanged?
+9. Did I preserve Checklist semantics?
+10. Did desktop remain unchanged?
+11. Did I avoid broad shared CSS?
+12. Did I avoid unrelated work?
+13. Did I runtime-test document width?
+14. Did I inspect every changed file?
+
+If material uncertainty remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026W-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026W_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to 026X.
+Do not proceed to Create New List.
+Do not perform unrelated TrailWeigh work.
