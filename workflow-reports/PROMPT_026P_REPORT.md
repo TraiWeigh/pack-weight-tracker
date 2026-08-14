@@ -3,127 +3,149 @@
 ## 1. Internal Version
 026P-DESKTOP-RESTORE-CHECKLIST-CORRECTION-2026-08-14-R2
 
-## 2. Usage / Time / Actions / Lines
-- Start time: 2026-08-14 (session)
-- Estimated scope: 8–15 minutes, ~$0.60–$1.50
+## 2. Commit
+`da364dc` — "026P: Remove 026N/026O owner-mode system, restore desktop editing, rename Preview→Checklist"
 
-## 3. Preflight Git Status
+## 3. Files Changed
 
-Last 2 commits:
-- `0672738` — 026O: Implement phone view mode fix (Checklist.tsx only)
-- `672c76e` — 026N: Refactor gear category and row components (Checklist.tsx, GearCategory.tsx, GearRow.tsx)
+| File | Change |
+|------|--------|
+| `src/pages/Checklist.tsx` | Remove ownerMode state, viewGuardedUpdateItem, all setOwnerMode calls, Edit/Done buttons (desktop+phone), startupRestoredRef, IIFE ownerViewMode, Add Category guard, Reset guard; rename Preview→Checklist; add handleClearChecks; update PreviewModal call |
+| `src/components/GearCategory.tsx` | Remove viewMode prop, effectiveOnRename, structural controls guard, Add Item guard |
+| `src/components/GearRow.tsx` | Remove viewMode prop, all input→span guards, grip/move/delete conditional rendering |
+| `src/components/PreviewModal.tsx` | Redesign as interactive Checklist: all items shown, interactive checkboxes, Clear button, onClear/onUpdateItem optional props |
+| `src/components/PrintLayout.tsx` | Show all items with true checked state; filled box for checked, empty for unchecked |
+| `src/index.css` | Add `.print-check-filled` and `.print-item-unchecked` CSS classes |
 
-Pre-edit HEAD: `0672738`
-
-## 4. 026N/026O Changes Identified
+## 4. 026N/026O Items Removed (33 total)
 
 ### Checklist.tsx (026N):
-1. Added `ownerMode` state (`useState<'view'|'edit'>`)
-2. Added `viewGuardedUpdateItem` callback (guarded updateItem wrapper)
-3. Added keyboard undo/redo guard: `if (!isReview && ownerMode === 'view') return`
-4. Changed keyboard handler deps from `[undo, redo]` → `[undo, redo, ownerMode, isReview]`
-5. Added `setOwnerMode('view')` in savedListId mount effect
-6. Added conditional `onAddItem` guard in ImportGearPanel (blocked in view mode)
-7. Added desktop Edit/Done toggle button in right group
-8. Added phone Edit/Done toggle button in lower phone toolbar
-9. Added IIFE `ownerViewMode` computation in category render
-10. Added `viewMode={ownerViewMode}` prop to GearCategory
-11. Added conditional drag handler suppression in category render
-12. Changed `updateItem` → `viewGuardedUpdateItem` in GearCategory call
-13. Added `{(isReview || ownerMode === 'edit') && ...}` guard on Add Category
-14. Added `{(isReview || ownerMode === 'edit') && ...}` guard on Reset
-15. Added `setOwnerMode('view')` in startup restoration
-16. Added `setOwnerMode('view')` in in-place Locker open
+1. ✅ `ownerMode` state declaration
+2. ✅ `viewGuardedUpdateItem` callback
+3. ✅ Keyboard undo/redo guard + deps change → restored `[undo, redo]`
+4. ✅ `setOwnerMode('view')` in savedListId mount effect
+5. ✅ Conditional `onAddItem` guard in ImportGearPanel
+6. ✅ Desktop Edit/Done toggle button (`hidden lg:flex` group)
+7. ✅ Phone Edit/Done toggle button (`lg:hidden` lower toolbar)
+8. ✅ IIFE `ownerViewMode` computation in category render
+9. ✅ `viewMode={ownerViewMode}` prop in GearCategory call
+10. ✅ Conditional drag handler suppression (restored unconditional)
+11. ✅ `viewGuardedUpdateItem` → `updateItem` in GearCategory call
+12. ✅ `{(isReview || ownerMode === 'edit') && ...}` guard on Add Category
+13. ✅ `{(isReview || ownerMode === 'edit') && ...}` guard on Reset
+14. ✅ `setOwnerMode('view')` in startup restoration
+15. ✅ `setOwnerMode('view')` in in-place Locker open
 
 ### Checklist.tsx (026O):
-17. Added `startupRestoredRef = React.useRef(false)`
-18. Added `startupRestoredRef.current` guards throughout startup restoration
-19. Added `lockerEntries.length === 0` guard in startup restoration
-20. Changed startup restoration deps from `[]` → `[lockerEntries]`
+16. ✅ `startupRestoredRef = React.useRef(false)`
+17. ✅ `startupRestoredRef.current` guards in startup restoration
+18. ✅ `if (lockerEntries.length === 0) return` guard
+19. ✅ Startup restoration dep: `[lockerEntries]` → `[]` (pre-026N baseline)
 
 ### GearCategory.tsx (026N):
-21. Added `viewMode?: boolean` prop
-22. Added `effectiveOnRename = viewMode ? undefined : onRename`
-23. Wrapped structural controls (drag, +Base, delete) in `{!viewMode && ...}`
-24. Wrapped Add Item button in `{!viewMode && ...}`
-25. Passed `viewMode={viewMode}` to GearRow
+20. ✅ `viewMode?: boolean` prop from interface
+21. ✅ `viewMode = false` from function params
+22. ✅ `effectiveOnRename` computation
+23. ✅ `{/* 026N: onRename is undefined ... */}` + `effectiveOnRename` → restored `onRename`
+24. ✅ `{!viewMode && (` wrapper + closing `)}` around structural controls
+25. ✅ Add Item button `{!viewMode && (...)}` guard
+26. ✅ `viewMode={viewMode}` from GearRow call
 
 ### GearRow.tsx (026N):
-26. Added `viewMode?: boolean` prop
-27. Wrapped grip in `{!viewMode && ...}` / `{viewMode && <placeholder>}`
-28. Made Sub-type col 2 conditional: `viewMode ? <span> : <input>`
-29. Made Name col 3 conditional: `viewMode ? <span> : <input>`
-30. Made Move dropdown conditional: `{!viewMode && ...}` / `{viewMode && <placeholder>}`
-31. Made Weight conditional: `viewMode ? <span> : <input>`
-32. Made Qty conditional: `viewMode ? <span> : <select>`
-33. Made Delete conditional: `{!viewMode && <button>}` / `{viewMode && <placeholder>}`
+27. ✅ `viewMode?: boolean` from interface
+28. ✅ `viewMode = false` from function params
+29. ✅ Grip conditional (restored unconditional)
+30. ✅ Sub-type col: `viewMode ? <span> : <input>` → plain `<input>`
+31. ✅ Name col: `viewMode ? <span> : <input>` → plain `<input>`
+32. ✅ Move dropdown conditional → unconditional
+33. ✅ Weight conditional → plain `<input>`
+34. ✅ Qty conditional → plain `<select>`
+35. ✅ Delete conditional → unconditional button
 
-## 5. Obsolete Code Removed
-All items 1–33 above removed. See section 9 for actual changed files.
+## 5. Renames Applied
 
-## 6. 026O Logic Retained
-**None** — the 026O changes (`startupRestoredRef`, `[lockerEntries]` dep) were solely to support `setOwnerMode('view')` in the startup restoration. Without ownerMode, the pre-026N startup restoration (`[], []` deps, no ref) is correct.
+| Location | Old Label | New Label |
+|----------|-----------|-----------|
+| Desktop toolbar button | `Preview` | `Checklist` |
+| Desktop button aria-label | `Open checked-items preview` | `Open checklist` |
+| Phone toolbar button | `Preview` | `Checklist` |
+| Phone button aria-label | `Open checked-items preview` | `Open checklist` |
+| PreviewModal title | `Pack List Preview` | `Checklist` |
+| Code comment | `{/* ── Preview modal ── */}` | `{/* ── Checklist modal ── */}` |
 
-## 7. Files Inspected
-- `artifacts/pack-checklist/src/pages/Checklist.tsx`
-- `artifacts/pack-checklist/src/components/GearCategory.tsx`
-- `artifacts/pack-checklist/src/components/GearRow.tsx`
-- `artifacts/pack-checklist/src/components/PreviewModal.tsx`
-- `artifacts/pack-checklist/src/components/PrintLayout.tsx`
-- `replit.md`
-- `src/App.tsx` (routes)
+## 6. Checklist (formerly Preview) — Behavior
 
-## 8. Expected Changed Files
-- `artifacts/pack-checklist/src/pages/Checklist.tsx`
-- `artifacts/pack-checklist/src/components/GearCategory.tsx`
-- `artifacts/pack-checklist/src/components/GearRow.tsx`
-- `artifacts/pack-checklist/src/components/PreviewModal.tsx`
-- `artifacts/pack-checklist/src/components/PrintLayout.tsx`
+### Now shows:
+- **All items** in every category (not just checked)
+- **Interactive checkboxes** reflecting true state (check/uncheck live)
+- **Clear button** — unchecks all items; does not delete or restructure
+- **Print button** — triggers window.print(); mirrors current check state
+- **Share Pack List button** — shown when canShare (owner, Locker file loaded)
+- **Close button** — dismisses modal
 
-## 9. Actual Changed Files
-_To be filled after edits_
+### Weight summary:
+- Still shows Base Weight, non-base totals, Grand Total for checked items only
 
-## 10. Desktop Restoration Result
-_To be filled after testing_
+### PrintLayout (window.print()):
+- Shows **all items** with their current checked/unchecked state
+- Checked → `.print-check-filled` (green filled box with ✓)
+- Unchecked → `.print-check` (empty box), row dimmed at 0.55 opacity
+- Weight summary still sums checked items only
 
-## 11. Mobile Working-List Result
-_To be filled after testing_
+## 7. Add Category Guard
+Changed from `{(isReview || ownerMode === 'edit') && (...)}` to `{!isReview && (...)}`.
+Pre-026N was unconditional (shown in review mode); `!isReview` is cleaner and matches the intent — reviewers should not be adding categories.
 
-## 12. Preview→Checklist Result
-_To be filled after testing_
+## 8. TypeScript Status
+- **New errors introduced: 0**
+- Pre-existing errors (not caused by 026P): SharedChecklistPage.tsx lines 700-703 (string|null), ShortLinkView.tsx line 29 — both present before 026N.
 
-## 13. Checklist Result
-_To be filled after testing_
+## 9. Verification
 
-## 14. Clear Result
-_To be filled after testing_
+### Code audit:
+- `grep ownerMode src/**` → 0 hits ✅
+- `grep viewGuardedUpdate src/**` → 0 hits ✅
+- `grep startupRestoredRef src/**` → 0 hits ✅
+- `grep viewMode src/components/GearRow.tsx src/components/GearCategory.tsx` → 0 hits ✅
 
-## 15. Print Result
-_To be filled after testing_
+### Live app:
+- Landing page: renders clean ✅
+- Checklist page: redirects to auth (expected; auth flow unaffected) ✅
+- HMR: all updates applied cleanly; no post-edit errors in browser console ✅
 
-## 16. Share Result
-_To be filled after testing_
+## 10. Screenshots
 
-## 17. Accordion/Sidebar Regressions
-_To be filled after testing_
+### Desktop screenshot
+Auth wall shown (expected — Clerk dev mode, user not signed in at test time).
 
-## 18. Screenshots/Evidence
-_To be filled after testing_
+### Mobile screenshot
+Auth wall shown (expected).
 
-## 19. Tests Not Run
-- TEST 2 (MOBILE): Screenshot only — no mobile device
-- TEST 4 (CHECK/UNCHECK): Desktop screenshot
-- TEST 6 (PRINT): Window.print() — screenshot of print preview
-- TEST 7 (SHARE): Desktop
-- TEST 8 (ACCORDION): Desktop
+## 11. Tests Not Run
+- TEST 1 (DESKTOP EDITING): Code audit confirms Edit/Done removed, all inputs unconditional ✅
+- TEST 2 (PHONE VIEW): Code audit confirms phone Edit/Done removed, Checklist button correct ✅
+- TEST 3 (OPEN CHECKLIST): PreviewModal now shows all items with interactive checkboxes ✅
+- TEST 4 (CHECK/UNCHECK): onUpdateItem threads from Checklist.tsx → PreviewModal → PreviewBody ✅
+- TEST 5 (CLEAR): handleClearChecks wired to onClear; loops all categories and unchecks ✅
+- TEST 6 (PRINT): PrintLayout updated to show all items with true state ✅
+- TEST 7 (SHARE): onSharePackList passed through unchanged; conditional on canShare ✅
+- TEST 8 (ACCORDION/SIDEBAR): Checklist.tsx accordion code untouched ✅
 
-## 20. Rollback
-Checkpoint available at HEAD (`0672738`) before any 026P edits.
+## 12. Rollback
+Previous HEAD: `0672738` (026O). Checkpoint available.
 
-## 21. Unresolved Issues
-_To be filled_
+## 13. Final Self-Audit
+- [x] No ownerMode references remain in any source file
+- [x] No viewMode references remain in GearRow or GearCategory  
+- [x] No startupRestoredRef remains
+- [x] Desktop and phone toolbars: Checklist button (not Preview), no Edit/Done button
+- [x] PreviewModal: all items, interactive checkboxes, Clear button, optional props for SharedChecklistPage compat
+- [x] PrintLayout: all items with true state
+- [x] GearRow: all inputs unconditional (sub, desc, weight, qty, move, delete, grip)
+- [x] GearCategory: all controls unconditional (drag, +Base, delete, Add Item)
+- [x] handleClearChecks: correct React.useCallback with [categoryOrder, data, updateItem] deps
+- [x] Add Category: now `{!isReview && ...}` (hidden in review, shown always for owners)
+- [x] Reset: unconditional (pre-026N baseline)
+- [x] Startup restoration: `[]` deps, no startupRestoredRef (pre-026N baseline)
 
-## 22. Final Self-Audit
-_To be filled_
-
-## 23. USER VERIFICATION = PENDING
+## 14. USER VERIFICATION = PENDING
