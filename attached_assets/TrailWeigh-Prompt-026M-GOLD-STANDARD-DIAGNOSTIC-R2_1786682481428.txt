@@ -1,0 +1,663 @@
+TRAILWEIGH — PROMPT 026M — GOLD STANDARD DIAGNOSTIC
+VIEW CHECKBOXES + CROSS-DEVICE SYNC + LAST SYNCED + PRINT CHECKMARK STATE
+
+INTERNAL VERSION ID:
+026M-VIEW-CHECKBOX-SYNC-PRINT-DIAGNOSTIC-2026-08-13-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+- DO NOT edit application code in this prompt
+- DO NOT apply unrelated Ready tasks
+
+ESTIMATED SCOPE
+- Estimated time: 6–12 minutes
+- Estimated Agent usage/cost: approximately $0.50–$1.25
+- HARD STOP if materially exceeding this estimate before the active architecture is understood
+
+
+============================================================
+PRIOR PROMPT STATUS / BASELINE — 026L
+============================================================
+
+026L is the immediately preceding TrailWeigh prompt.
+
+026L report facts to preserve:
+- 026L modified only:
+  `artifacts/pack-checklist/src/pages/Checklist.tsx`
+- 026L rearranged PHONE toolbar/pill placement only.
+- 026L report states no DB, schema, auth, deployment, replit.md, .agents/memory,
+  category-bar, or 026K accordion-state changes.
+- 026L report states real-iPhone interaction verification remained PENDING.
+- USER has explicitly decided that the pending 026L phone-only verification does NOT block
+  this 026M diagnostic.
+
+IMPORTANT:
+- Do not reopen, repair, redesign, or "finish" 026L during 026M.
+- Treat current source as the baseline to inspect.
+- If 026M discovers a direct architectural conflict with 026L that materially affects the
+  proposed View/sync/Print feature, REPORT it only. Do not change 026L code.
+
+============================================================
+OBSERVED FACTS / USER DECISIONS / UNKNOWNS
+============================================================
+
+OBSERVED / USER-DECIDED:
+- View should allow checklist check/uncheck while structural editing remains blocked.
+- Checked/unchecked state should sync across devices for the same signed-in user's same list.
+- A visible sync-status indicator is desired.
+- Print View should preserve current checkmarks by default.
+- A clean unchecked print requires an explicit user action first.
+- Clearing for print must be print-only and non-destructive.
+- The elegant wedge-accordion mobile direction is already decided.
+- That mobile direction applies across ALL supported mobile operating systems, not only iOS.
+
+UNKNOWN — MUST BE DIAGNOSED, NOT ASSUMED:
+- whether checkbox state currently persists
+- whether it already syncs
+- whether the current save model is whole-list or item-level
+- whether server timestamps can truthfully represent "Last synced"
+- whether an offline retry/queue exists
+- whether multi-device overwrite conflicts are possible
+- whether Print View shares live state or clones/transforms data
+- whether any schema/API change is required
+
+Keep OBSERVED FACTS, USER DECISIONS, REPLIT FINDINGS, and RECOMMENDATIONS clearly separated
+in the report.
+
+============================================================
+MANDATORY STANDING TRAILWEIGH / REPLIT RULE
+============================================================
+
+Before any recommendation:
+
+1. Apply all relevant prior TrailWeigh/Replit lessons and current USER decisions.
+2. USER live evidence outranks report claims, source inference, and prior assumptions.
+3. Read current `replit.md` READ-ONLY. Do not modify it.
+4. Verify the exact ACTIVE render/state/persistence paths before proposing implementation.
+5. Do not assume checkbox state is currently persisted, synced, or local-only.
+6. Do not assume View and Print use separate components.
+7. Do not assume a database/schema change is required.
+8. Do not make any application edits in 026M.
+9. Do not modify `.agents/memory`, project-wide instructions, package versions, database schema/data,
+   auth, publishing, or deployment.
+10. Replit internal conclusions are diagnostic evidence only; they do not authorize implementation.
+11. Before final status, self-audit:
+    “Am I applying everything we have learned that is relevant to this decision?”
+12. Distinguish current active code from dead/legacy code before citing architecture.
+13. Cite exact file paths plus function/component/hook names for every material architecture claim.
+14. If evidence is incomplete, write UNKNOWN/UNCLEAR rather than guessing.
+15. If findings create a material question, contradiction, or architectural uncertainty,
+    document it and STOP after the diagnostic report. Do not draft or implement 026N.
+
+============================================================
+USER-AUTHORIZED PRODUCT BEHAVIOR TO ANALYZE
+============================================================
+
+The USER has approved the following intended behavior:
+
+A. VIEW MODE CHECKBOXES
+- View mode should allow the user to check and uncheck checklist item boxes.
+- View mode must remain non-structural:
+  - no editing item names
+  - no editing weights
+  - no editing quantities
+  - no editing categories
+  - no reordering
+  - no structural list edits
+- Checking/unchecking is checklist progress, not a structural list edit.
+
+B. CROSS-DEVICE SYNC
+- Checked/unchecked state should sync between devices for the same signed-in user/list.
+- Example:
+  - check an item on iPhone
+  - open the same list on Mac/tablet
+  - that item should appear checked there after sync
+
+C. VISIBLE SYNC STATUS
+- Show a visible sync-status indicator so the user knows whether checkbox state is current.
+- Desired user-facing states include:
+  - `Last synced: Today at 9:28 PM`
+  - `Syncing…`
+  - `Offline — changes waiting to sync`
+- Exact placement is NOT authorized yet; diagnostic should identify the best existing UI location/pattern.
+- Prefer a location near the current file-name/toolbar area if that fits the active design without clutter.
+
+D. PRINT VIEW
+- Print View should inherit the current synced checked/unchecked state by default.
+- Print View must NOT automatically clear checkmarks.
+- If the user wants an unchecked/clean print, they must explicitly choose a clear option first.
+- Working label concept:
+  `Clear Checkmarks for Print`
+- The clear-for-print action must be NON-DESTRUCTIVE:
+  - it affects only the print representation/session
+  - it must NOT uncheck the actual saved/synced TrailWeigh checklist
+  - it must NOT overwrite the synced checkbox state
+- Closing/exiting Print View should leave the real checklist state unchanged.
+
+============================================================
+AUTHORITATIVE MOBILE UI DIRECTION — ALREADY DECIDED
+============================================================
+
+The prior "Elegant UI Design" work is the authoritative future MOBILE visual direction.
+
+IMPORTANT:
+- This is NOT iPhone/iOS-only.
+- Apply this mobile design direction consistently across ALL supported mobile operating systems,
+  including iOS/iPhone and Android, and any other supported mobile OS/browser environment.
+- Treat this as a mobile/responsive UI rule, not a platform-specific iOS treatment.
+- Desktop/tablet-desktop layouts are not automatically redesigned by this rule unless their
+  responsive breakpoint uses the mobile layout.
+
+MOBILE DESIGN DIRECTION:
+- Main categories use the elegant WEDGE ACCORDION treatment.
+- Each main-category header includes a wedge-shaped category-icon area.
+- The category icon visually identifies the category on the wedge.
+- Category identifying information is organized/stacked for the narrower mobile layout.
+- The wedge/header remains the main-category accordion control.
+- Existing main-category accordion behavior must be preserved:
+  single-open during normal manual use, zero-open allowed, Expand All, Collapse All, and
+  return to single-open after an individual category interaction following Expand All.
+- Expanded mobile item details use the vertically stacked / nested-accordion treatment:
+  item/type icon and item description identify the item, and opening the item reveals
+  Weight, Quantity, Total, and Move in a vertical mobile-friendly arrangement.
+- Preserve existing item functions, calculations, data, themes, accessibility behavior,
+  Keep It Simple behavior, and ownership/persistence rules.
+
+AUTHORITATIVE VISUAL REFERENCES TO USE IF SUPPLIED WITH THIS PROMPT:
+1. `ChatGPT Image Aug 13, 2026 at 08_58_10 PM.png`
+2. `ChatGPT Image Aug 13, 2026 at 08_35_38 PM(1).png`
+
+Interpretation already decided by USER:
+- The wedge/category-icon mobile design is authoritative.
+- Expanded mobile item details use the vertically stacked/nested-accordion direction.
+- Do NOT reinterpret the second mockup as an independently authorized "View mode" layout.
+- Do NOT invent a third unrelated mobile layout.
+
+ATTACHMENT RULE:
+- If the visual-reference images are available to Replit, inspect them before making UI-placement
+  recommendations.
+- If they are NOT available, state `MOBILE VISUAL REFERENCES NOT AVAILABLE` in the report.
+- Do not pretend to have visually verified an unavailable image.
+- The diagnostic can still trace architecture without the images, but any visual-placement
+  recommendation must be marked provisional if the visual references were unavailable.
+
+026M remains DIAGNOSTIC ONLY:
+- inspect how the current View, checkbox, sync, and Print paths would integrate with this
+  already-decided mobile direction
+- identify any conflicts with the current mobile implementation
+- do NOT implement the wedge UI or any other UI changes in 026M
+
+============================================================
+PRIMARY PURPOSE OF 026M
+============================================================
+
+DIAGNOSTIC ONLY.
+
+Determine the exact current architecture needed to implement the above behavior safely and with the smallest reversible future patch.
+
+DO NOT IMPLEMENT IT YET.
+
+The diagnostic must answer:
+
+1. Where item checkbox state currently lives.
+2. Whether checkbox state already persists.
+3. Whether checkbox state already syncs across devices.
+4. Whether checkbox state is stored with each item, with each file/list, or in another state object.
+5. Whether changing a checkbox currently triggers:
+   - local state only
+   - localStorage
+   - server/API persistence
+   - database mutation
+   - autosave/debounce
+   - another path
+6. How View mode is currently enforced.
+7. Whether View mode currently blocks checkbox interaction and exactly where.
+8. How Print View is currently rendered.
+9. Whether Print View consumes the same item/check-state data or creates a separate copy.
+10. Whether an existing sync-status / save-status / autosave indicator already exists and can be reused.
+11. Whether cross-device checkbox sync can be implemented with the existing schema/API.
+12. Whether any database schema change is actually required.
+13. Whether Share/Review has checkbox interaction and, if so, whether it must remain isolated from owner data.
+14. Whether offline behavior already exists for item/list edits.
+15. What the smallest safe implementation scope should be for 026N.
+16. How the future interactive checkbox in View fits the already-decided wedge mobile layout
+    without re-enabling structural edits.
+17. Whether Last Synced can fit the existing mobile/desktop toolbar architecture without undoing
+    the 026L layout.
+18. Whether Print View currently has a safe place for the explicit clear-for-print control.
+
+============================================================
+ACTIVE-PATH TRACE — REQUIRED
+============================================================
+
+Trace the CURRENT active paths and record exact files/components/hooks/functions.
+
+A. CHECKBOX RENDERING / INTERACTION
+Identify:
+- component that renders each item checkbox
+- checkbox checked-state source
+- checkbox onChange/click handler
+- all guards based on mode/ownership/view/review
+- whether checkbox state is derived from item data or separate state
+
+B. VIEW MODE
+Identify:
+- exact View mode state/flag
+- component(s) that enforce non-editable behavior
+- controls disabled in View
+- whether checkbox is currently disabled in View
+- whether View is a visual mode, permission mode, or both
+
+C. LIST PERSISTENCE
+Identify:
+- active list/item state hook(s)
+- autosave logic
+- debounce logic if present
+- API endpoint(s)
+- mutation function(s)
+- server route(s)
+- database table/field(s), if applicable
+- localStorage or other client persistence
+- conflict/version handling if present
+
+D. CROSS-DEVICE SYNC
+Identify:
+- how a signed-in user's list changes currently become available on another device
+- whether the app polls, refetches, reloads, uses realtime events, versioning, timestamps, or another approach
+- whether checkbox changes would naturally ride the same path if persisted
+- whether a fresh device load already receives checkbox state if that state is part of persisted item data
+
+E. SAVE / SYNC STATUS
+Identify:
+- any existing `saving`, `saved`, `dirty`, `pending`, `lastSaved`, `updatedAt`, network/offline, or sync-status state
+- any existing user-facing status indicator
+- best reusable source for:
+  - Syncing…
+  - Last synced: [time]
+  - Offline — changes waiting to sync
+- whether a trustworthy "Last synced" time can be shown from existing client/server data
+- distinguish:
+  - last local change
+  - last successful server save
+  - last server fetch
+  - true cross-device sync evidence
+Do NOT falsely label a local timestamp as cross-device sync.
+
+F. PRINT VIEW
+Identify:
+- Print View component/path
+- source data used by Print View
+- whether it renders the live list state or clones/transforms it
+- checkbox rendering in Print View
+- print stylesheet / print-specific UI
+- best non-destructive way to add a local print-only "clear checkmarks" override
+
+G. SHARE / REVIEW
+Identify:
+- whether shared/review lists use the same checkbox component/state
+- whether reviewer checkbox changes are owner-isolated
+- whether the intended new View behavior should apply to owner View only, Review View, or both based on current architecture
+- DO NOT change Share/Review behavior in 026M
+
+============================================================
+IMPORTANT DATA-MODEL QUESTION
+============================================================
+
+The intended feature is cross-device synced checkbox state.
+
+Determine whether the existing persisted item/list model ALREADY includes checked/completed state.
+
+If YES:
+- cite the exact field/property
+- trace it end-to-end from UI -> state -> persistence -> reload
+- explain whether cross-device sync is mostly already available and View merely needs permission to toggle it
+
+If NO:
+- determine whether checkbox state can be safely added using an existing generic item payload or JSON structure WITHOUT schema change
+- if schema change would be required, state exactly why
+- DO NOT perform the schema change in 026M
+
+============================================================
+SYNC SEMANTICS — RECOMMENDATION REQUIRED
+============================================================
+
+Recommend the safest behavior for simultaneous or near-simultaneous changes on two devices.
+
+At minimum discuss:
+- Device A checks item
+- Device B has stale copy open
+- Device B changes another checkbox
+- what current save architecture would do
+- whether whole-list saves could overwrite newer checkbox state
+- whether per-item mutations/version checks exist
+- whether implementation needs conflict protection
+
+Do not invent a new complex sync engine if existing architecture is adequate.
+
+============================================================
+OFFLINE SEMANTICS — RECOMMENDATION REQUIRED
+============================================================
+
+Determine what CURRENT architecture supports.
+
+Desired UX concept:
+- online change -> `Syncing…` -> `Last synced: [time]`
+- offline change -> checkbox responds locally, status says `Offline — changes waiting to sync`
+- reconnect -> pending change syncs -> status becomes `Last synced: [time]`
+
+But:
+- do NOT promise this behavior if current architecture cannot safely support it
+- identify whether offline queue/retry already exists
+- if no offline queue exists, recommend the smallest honest first version
+
+============================================================
+PRINT CLEAR SEMANTICS — REQUIRED
+============================================================
+
+Recommend a NON-DESTRUCTIVE implementation.
+
+Preferred concept:
+- Print View normally receives actual synced checked state.
+- `Clear Checkmarks for Print` toggles a print-only local override.
+- The underlying list/item objects remain unchanged.
+- No server save is triggered.
+- No owner state is mutated.
+- Exiting Print View discards the override.
+- Optional ability to restore actual checkmarks before printing should be considered if trivial.
+
+Do NOT recommend clearing real checkboxes and then restoring them after print.
+That approach is unsafe and not authorized.
+
+============================================================
+PLACEMENT / UI TRACE
+============================================================
+
+Without redesigning anything, identify current candidate locations for:
+
+1. `Last synced: ...`
+2. `Clear Checkmarks for Print`
+
+Use current UI architecture and established TrailWeigh toolbar patterns.
+
+Do not authorize layout edits yet.
+
+Report:
+- preferred location
+- fallback location
+- why
+- mobile implications
+- desktop implications
+- whether either location conflicts with 026L phone toolbar work
+
+============================================================
+READ-ONLY CHANGED-FILE CONTROL
+============================================================
+
+EXPECTED APPLICATION FILES CHANGED BY 026M:
+- NONE
+
+AUTHORIZED NEW/CHANGED REPORT ARTIFACT:
+- `workflow-reports/PROMPT_026M_REPORT.md`
+
+Before diagnosis:
+- inspect git status
+- record whether unrelated pre-existing changes are present
+- do NOT revert, clean, format, or alter unrelated user work
+
+After diagnosis:
+- inspect git status/diff again
+- application source diff attributable to 026M must be EMPTY
+- if any application file changed accidentally, revert ONLY the accidental 026M change before finishing
+- do not disturb unrelated pre-existing changes
+
+If creating the report causes a tracked report-file change, list it separately from application code.
+
+============================================================
+EVIDENCE STANDARD
+============================================================
+
+For every material finding, provide evidence sufficient for the next prompt to rely on it:
+- exact active file path
+- exact component/function/hook/route/schema field name
+- relevant line/range if practical
+- what was READ versus what was RUNTIME-OBSERVED
+- whether the path is active or legacy/dead
+- exact evidence for any claim that checkbox state persists or syncs
+
+Do not claim cross-device sync merely because data is saved locally or sent to a server.
+Do not claim "Last synced" is trustworthy unless the timestamp/event actually represents a
+successful server persistence/synchronization event.
+
+Because 026M is diagnostic-only:
+- no visual PASS is required
+- no user interaction PASS is required
+- source/runtime inspection may be used to trace architecture
+- any behavior not actually runtime-tested must be labeled NOT RUN or SOURCE-ONLY
+
+============================================================
+FOLLOW-UP GATE BEFORE 026N
+============================================================
+
+026N must NOT be assumed ready merely because 026M finishes.
+
+If the report reveals:
+- ambiguous checkbox ownership
+- uncertain persistence behavior
+- whole-list overwrite risk
+- unclear Share/Review isolation
+- uncertain schema/API requirements
+- unreliable Last Synced timestamp semantics
+- offline behavior that conflicts with the desired UX
+- any conflict with the decided mobile wedge layout
+- any other material contradiction or missing information
+
+then:
+1. list the exact unresolved questions
+2. recommend the minimum follow-up investigation/questions
+3. STOP
+4. do NOT implement
+5. do NOT draft 026N inside Replit
+
+The USER + ChatGPT will review the 026M report before any 026N prompt is written.
+
+============================================================
+OUT OF SCOPE — ABSOLUTE
+============================================================
+
+DO NOT:
+- edit application code
+- change View mode behavior
+- enable checkboxes yet
+- add Last Synced UI yet
+- alter Print View yet
+- alter Share/Review behavior
+- change database data
+- change database schema
+- add migrations
+- change auth
+- change API contracts
+- change deployment/publishing
+- alter themes/backgrounds
+- alter accordion behavior
+- alter mobile toolbar layout
+- modify replit.md
+- modify .replit
+- modify `.agents/memory`
+- update packages
+- refactor unrelated code
+- run App Testing auto-fix
+
+026M IS READ-ONLY DIAGNOSTIC.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create:
+
+workflow-reports/PROMPT_026M_REPORT.md
+
+Include:
+
+1. INTERNAL VERSION ID
+2. Agent mode
+3. preflight git status / pre-existing unrelated changes
+4. exact files inspected
+4. current checkbox render path
+5. current checkbox state source
+6. current checkbox handler
+7. current View-mode enforcement path
+8. current checkbox behavior in View
+9. current persistence path
+10. localStorage usage if any
+11. server/API persistence path
+12. database field/schema findings
+13. whether checked state already persists
+14. whether checked state already cross-device syncs
+15. current autosave/debounce behavior
+16. current multi-device conflict behavior
+17. current offline behavior
+18. existing save/sync status signals
+19. trustworthy source for Last Synced time
+20. Print View render/data path
+21. safest print-only clear design
+22. Share/Review checkbox path and isolation
+23. whether existing schema is sufficient
+24. whether any schema change would be required
+25. recommended 026N implementation scope
+26. expected files for 026N
+27. expected database/API impact for 026N
+28. implementation risks
+29. rollback considerations
+30. unresolved questions
+31. elapsed time
+32. Agent actions
+33. lines read
+34. Agent cost/usage if shown
+35. final self-audit
+36. observed facts vs assumptions/unknowns
+37. 026L conflict check
+38. mobile visual references available = YES / NO
+39. exact visual-reference findings if available
+40. source-only vs runtime-observed distinction
+41. material follow-up questions before 026N
+
+============================================================
+MANDATORY FINAL STATUS
+============================================================
+
+Return this exact summary block in the report:
+
+026M DIAGNOSTIC COMPLETE = YES / NO
+APPLICATION CODE CHANGED = YES / NO
+DATABASE DATA CHANGED = YES / NO
+DATABASE SCHEMA CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+CHECKBOX ACTIVE COMPONENT IDENTIFIED = YES / NO
+CHECKBOX STATE SOURCE IDENTIFIED = YES / NO
+VIEW MODE ENFORCEMENT IDENTIFIED = YES / NO
+CURRENT CHECKBOX VIEW BEHAVIOR IDENTIFIED = YES / NO
+PERSISTENCE PATH IDENTIFIED = YES / NO
+CROSS-DEVICE PATH IDENTIFIED = YES / NO
+EXISTING CHECKED STATE PERSISTENCE = YES / NO / UNCLEAR
+EXISTING CROSS-DEVICE CHECKBOX SYNC = YES / NO / UNCLEAR
+DATABASE SCHEMA CHANGE REQUIRED = YES / NO / UNCLEAR
+SAVE/SYNC STATUS SOURCE IDENTIFIED = YES / NO
+TRUSTWORTHY LAST-SYNCED SOURCE IDENTIFIED = YES / NO
+OFFLINE BEHAVIOR IDENTIFIED = YES / NO
+MULTI-DEVICE CONFLICT RISK IDENTIFIED = YES / NO
+PRINT VIEW PATH IDENTIFIED = YES / NO
+NON-DESTRUCTIVE PRINT-CLEAR DESIGN IDENTIFIED = YES / NO
+SHARE/REVIEW CHECKBOX PATH IDENTIFIED = YES / NO
+026N IMPLEMENTATION SCOPE RECOMMENDED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+026L DIRECT CONFLICT FOUND = YES / NO
+MOBILE VISUAL REFERENCES AVAILABLE = YES / NO
+APPLICATION SOURCE DIFF ATTRIBUTABLE TO 026M = EMPTY / NOT EMPTY
+FOLLOW-UP QUESTIONS REQUIRED BEFORE 026N = YES / NO
+
+USER VERIFICATION = NOT APPLICABLE — DIAGNOSTIC ONLY
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before finishing:
+
+1. Did I make zero application edits?
+2. Did I identify the active checkbox path rather than a dead/legacy path?
+3. Did I trace View mode exactly?
+4. Did I trace checkbox persistence end-to-end?
+5. Did I verify whether checked state already persists?
+6. Did I verify whether it already crosses devices?
+7. Did I distinguish last local edit from last successful server sync?
+8. Did I inspect current offline/retry behavior?
+9. Did I identify overwrite/conflict risk between devices?
+10. Did I trace Print View to its actual data source?
+11. Is the proposed print clear truly non-destructive?
+12. Did I inspect Share/Review isolation without changing it?
+13. Did I avoid assuming a schema change?
+14. Did I identify the smallest safe 026N scope?
+15. Did I avoid all unrelated work?
+16. Is any material uncertainty clearly documented?
+17. Did I separate USER-decided facts from Replit findings and recommendations?
+18. Did I preserve 026L instead of reopening its phone-layout task?
+19. Did I inspect the supplied mobile mockups if available, and explicitly say if unavailable?
+20. Did I avoid treating a local/save timestamp as true cross-device sync without evidence?
+21. Is the application source diff attributable to 026M empty?
+22. Did I list any material follow-up questions that must be answered before 026N?
+
+If any answer exposes unresolved architecture:
+report it clearly.
+Do not improvise an implementation.
+
+============================================================
+CHECKPOINT / ROLLBACK
+============================================================
+
+026M authorizes no application changes, so no application rollback should be necessary.
+
+If an accidental application edit occurs:
+- revert only that accidental 026M edit
+- confirm the application source diff attributable to 026M is empty
+- do not use broad reset/clean commands that could destroy unrelated user work
+
+Do not create or alter DB checkpoints/migrations.
+Do not publish/deploy.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+workflow-reports/trailweigh-026M-report.zip
+
+ZIP must contain only:
+
+PROMPT_026M_REPORT.md
+
+Verify:
+- report exists
+- ZIP exists
+- ZIP opens
+- no unrelated files are included
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+
+Do not implement the feature.
+Do not proceed to 026N.
+Do not perform any other waiting TrailWeigh task.
+Do not resolve material uncertainty by guessing.
+Return the report + ZIP only.
