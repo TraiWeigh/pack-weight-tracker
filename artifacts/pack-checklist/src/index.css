@@ -352,6 +352,18 @@
   }
 }
 
+/* 026U: Mobile-only — suppress photo/theme background on narrow viewports.
+   !important is required to override the inline style set on .screen-only in Checklist.tsx.
+   max-width: 1023px matches the Tailwind lg breakpoint (1024 px) lower bound exactly,
+   so desktop (≥ 1024 px) is completely unaffected. The background state is never
+   mutated; the image is only visually hidden on mobile. */
+@media (max-width: 1023px) {
+  .screen-only {
+    background-image: none !important;
+    background-size:  auto !important;
+  }
+}
+
 /* Dark background mode — toggled via Background panel */
 .screen-dark {
   --foreground:           0 0% 93%;

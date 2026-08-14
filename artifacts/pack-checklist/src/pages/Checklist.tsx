@@ -34,6 +34,7 @@ import { useToast } from '../hooks/use-toast';
 import {
   RotateCcw, Tent, Share2, Link, FileDown, LogOut,
   User, Shield, Plus, Check, X, ChevronsUpDown, Printer, ChevronDown, ChevronUp,
+  Sun, Moon,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -2557,7 +2558,9 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                 </div>
                 {/* BgEdit + Share — grouped so they stay together on the right */}
                 <div className="flex items-center gap-2 ml-auto">
-                <div ref={bgPickerContainerRef}>
+                {/* 026U: BackgroundPickerButton hidden on mobile — photo/theme editing is desktop-only.
+                    lg:block restores it at ≥1024 px; desktop behavior is unchanged. */}
+                <div ref={bgPickerContainerRef} className="hidden lg:block">
                   <BackgroundPickerButton
                     onClick={() => setBackgroundPickerOpen(o => !o)}
                     active={!!background}
@@ -3012,6 +3015,55 @@ export function ChecklistContent({ userId, userEmail, isGuest = false, reviewTok
                     >
                       Checklist
                     </button>
+                    {/* 026U: Standalone mobile Light/Dark toggle.
+                        Mobile-only (parent is lg:hidden). Reuses existing bgTone state +
+                        handleBgToneChange + trailweigh:bgTone persistence.
+                        Does NOT open BackgroundPickerPanel. Does NOT leak to desktop. */}
+                    <div
+                      className="flex items-center bg-muted rounded-lg p-0.5 gap-0.5"
+                      style={barBgStyle({ barColor, barFont, barTextColor, barTransparency })}
+                      role="group"
+                      aria-label="Light/Dark mode"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleBgToneChange('light')}
+                        aria-label="Switch to Light mode"
+                        aria-pressed={bgTone === 'light'}
+                        title="Light mode"
+                        className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors touch-manipulation ${
+                          bgTone === 'light' && !barColor
+                            ? 'bg-card text-foreground shadow-sm'
+                            : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                        }`}
+                        style={barColor
+                          ? bgTone === 'light'
+                            ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                            : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                          : barFont ? { fontFamily: barFont } : undefined}
+                      >
+                        <Sun className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleBgToneChange('dark')}
+                        aria-label="Switch to Dark mode"
+                        aria-pressed={bgTone === 'dark'}
+                        title="Dark mode"
+                        className={`flex items-center justify-center px-2 py-1.5 rounded-md transition-colors touch-manipulation ${
+                          bgTone === 'dark' && !barColor
+                            ? 'bg-card text-foreground shadow-sm'
+                            : !barColor ? 'text-muted-foreground hover:text-foreground' : ''
+                        }`}
+                        style={barColor
+                          ? bgTone === 'dark'
+                            ? { backgroundColor: 'rgba(255,255,255,0.22)', color: barTextColor || 'white', fontFamily: barFont || undefined }
+                            : { color: barTextColor ? `${barTextColor}99` : 'rgba(255,255,255,0.6)', fontFamily: barFont || undefined }
+                          : barFont ? { fontFamily: barFont } : undefined}
+                      >
+                        <Moon className="h-4 w-4" />
+                      </button>
+                    </div>
                     <UnitToggle />
                   </div>
                 </div>

@@ -1,0 +1,512 @@
+TRAILWEIGH — PROMPT 026U — GOLD STANDARD
+MOBILE-ONLY BACKGROUND REMOVAL + STANDALONE LIGHT/DARK CONTROL
+STRICT DESKTOP ISOLATION
+
+INTERNAL VERSION ID:
+026U-MOBILE-BACKGROUND-REMOVAL-DARK-MODE-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 5–10 minutes
+- approximately $0.40–$1.00 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE BASELINE
+============================================================
+
+026Q is USER VERIFIED PASS.
+
+026S mobile wedge repair is the current mobile presentation baseline:
+- real angled wedges present
+- vertically stacked Weight / Qty / Total / Move present
+- desktop remains separately rendered/protected
+- current category icon/color mapping preserved
+- Checklist behavior preserved
+
+026T was READ-ONLY and produced no visual changes.
+
+026T proved:
+- the photographic/theme background is applied by a shared inline `backgroundImage` on the `.screen-only` root in `Checklist.tsx`
+- the visible Background control is currently shared rather than mobile-only
+- real Light/Dark mode already exists
+- Dark mode uses `bgTone: 'light' | 'dark'`
+- it persists via `trailweigh:bgTone`
+- `.screen-dark` CSS variables already exist
+- the current Light/Dark toggle lives inside the BackgroundPickerPanel
+- the smallest safe repair is limited to:
+  - `src/pages/Checklist.tsx`
+  - `src/index.css`
+
+============================================================
+AUTHORITATIVE USER REQUIREMENT
+============================================================
+
+MOBILE / CELL-PHONE ONLY:
+
+1. NO photographic/theme background behind the mobile interface.
+2. NO Background editing button/control/panel on mobile.
+3. Mobile uses a clean solid/neutral surface.
+4. Mobile MUST retain Light/Dark (Night) mode.
+5. Light/Dark must be available without opening Background editing.
+6. Desktop Background/Themes behavior remains exactly unchanged.
+7. Desktop background images/themes remain exactly unchanged.
+8. Do not alter the mobile wedge/category design beyond what is necessary for this background/dark-mode repair.
+
+This supersedes the earlier idea that desktop theme/photo backgrounds should visually carry through to mobile.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Implement the smallest safe mobile-only repair:
+
+A. suppress photographic/theme backgrounds on mobile
+B. remove/hide Background editing on mobile
+C. add a standalone mobile Light/Dark control reusing the existing `bgTone` state
+D. preserve desktop Background/Themes exactly
+E. preserve all 026S wedge behavior and Checklist behavior
+
+============================================================
+A. REMOVE PHOTO/THEME BACKGROUND ON MOBILE ONLY
+============================================================
+
+At mobile widths below the existing desktop/lg breakpoint:
+
+- `.screen-only` must NOT display the selected photographic/theme `background-image`
+- use a clean solid/neutral surface appropriate to current Light/Dark state
+- Light mode = clean light neutral surface
+- Dark mode = clean dark neutral surface using existing dark variables/tokens where possible
+
+At desktop/lg+:
+- selected Background/Themes image behavior must remain unchanged
+
+Implementation must be mobile-only.
+
+Preferred strategy from 026T:
+- use a mobile media query / breakpoint-scoped CSS rule in `src/index.css`
+- suppress only the visual background image on mobile
+- do not mutate or clear the saved theme/background state
+- do not remove desktop theme data
+
+IMPORTANT:
+Changing mobile presentation must NOT erase or alter a user's desktop-selected theme.
+
+============================================================
+B. REMOVE MOBILE BACKGROUND EDITING CONTROL
+============================================================
+
+On phone/mobile:
+- hide/remove the `Background` button/control
+- mobile user must not be able to open the photo/theme BackgroundPickerPanel
+- do not expose theme/photo selection from the mobile toolbar
+
+On desktop:
+- Background button/control remains exactly where it is
+- BackgroundPickerPanel behavior remains unchanged
+- existing tooltip/help text remains unchanged
+
+Prefer responsive render isolation in `Checklist.tsx`.
+
+Do not delete BackgroundPickerPanel globally.
+
+============================================================
+C. ADD STANDALONE MOBILE LIGHT/DARK CONTROL
+============================================================
+
+Mobile must retain Night/Dark mode after Background editing is removed.
+
+Reuse the existing:
+- `bgTone`
+- `handleBgToneChange`
+- persistence key `trailweigh:bgTone`
+- `.screen-dark` styling system
+
+Do NOT create a second dark-mode state.
+
+Add one mobile-only Light/Dark control in the existing lower phone toolbar/mobile controls area.
+
+Required behavior:
+- visible/reachable on mobile
+- toggles Light ↔ Dark
+- persists exactly as current bgTone persistence already does
+- does NOT open BackgroundPickerPanel
+- does NOT alter selected desktop background/theme
+- does NOT appear on desktop if desktop already has its own existing control path
+
+Label/icon may be compact, but must be understandable.
+
+Examples:
+- `Light` / `Dark`
+- sun/moon icon with accessible label
+- current-state segmented/toggle control
+
+Choose the smallest treatment that fits current mobile toolbar without redesigning it.
+
+============================================================
+D. TOOLTIP / HELP REQUIREMENT
+============================================================
+
+Standing TrailWeigh rule:
+
+- preserve ALL existing tooltip text exactly
+- new controls fill only current gaps
+- keyboard-focus users need help
+- touch/mobile users need a usable equivalent to hover
+
+For the NEW standalone mobile Light/Dark control:
+- add accessible label
+- add keyboard-focus help if current infrastructure supports it
+- add touch-accessible help using the existing safe help/tooltip pattern if one exists
+
+Do not launch a global tooltip refactor.
+
+If no safe touch-help pattern exists in the current code:
+- do not invent a large system
+- use the smallest existing accessible pattern available
+- document the limitation honestly
+
+============================================================
+E. KEEP IT SIMPLE
+============================================================
+
+026T confirmed Keep It Simple state is not present in the current code path.
+
+Do NOT implement KIS in 026U.
+
+The clean mobile neutral background requirement is independent of KIS.
+
+Do not change desktop KIS-related code or future plans.
+
+============================================================
+STRICT DESKTOP ISOLATION
+============================================================
+
+DESKTOP IS PROTECTED.
+
+At desktop/lg+:
+- selected photo/theme background still displays
+- Background button still displays
+- BackgroundPickerPanel still works
+- Light/Dark behavior remains unchanged
+- toolbar placement unchanged
+- category layout unchanged
+- sidebar unchanged
+- spacing/geometry unchanged
+- no mobile Light/Dark control leaks into desktop
+
+Do not modify broad shared selectors in a way that changes desktop.
+
+If any implementation path risks changing desktop:
+STOP and report before broadening.
+
+============================================================
+PROTECTED BEHAVIOR
+============================================================
+
+Do NOT change:
+- mobile wedge shape
+- category colors/icons
+- vertical item details
+- category accordion rules
+- 026K main-category accordion behavior
+- sidebar accordion behavior
+- category-item selection
+- Checklist filtering
+- Checklist-use persistence until Clear
+- Clear semantics
+- Print behavior
+- Share/Review isolation
+- Review Add Category
+- Locker
+- Save / Save As
+- owner editability
+- desktop drag/reorder
+- mobile category data/weights/counts
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT implement:
+- Create New List guided flow
+- list templates
+- optional Weight architecture
+- Keep It Simple
+- global tooltip rewrite
+- cross-device Checklist sync
+- Last Synced
+- server Checklist persistence
+- database/schema/API/auth changes
+- Print redesign
+- Share redesign
+- Locker redesign
+- wedge redesign
+- category icon redesign
+- touch drag/reorder library
+- package/dependency changes
+- `replit.md`
+- `.replit`
+- `.agents/memory`
+- deployment/publishing
+- unrelated refactors
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Re-read the 026T findings against current source.
+3. Confirm:
+   - shared `.screen-only` background source
+   - exact inline backgroundImage location
+   - exact mobile Background control render path
+   - exact `bgTone` state
+   - `handleBgToneChange`
+   - `trailweigh:bgTone`
+   - `.screen-dark` variables
+4. Confirm the existing mobile toolbar insertion point.
+5. Record preflight git status.
+6. Create:
+   `workflow-reports/PROMPT_026U_REPORT.md`
+
+If current source materially differs from 026T:
+STOP and report before editing.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Expected application files:
+- `artifacts/pack-checklist/src/pages/Checklist.tsx`
+- `artifacts/pack-checklist/src/index.css`
+
+If any additional application file is required:
+STOP and explain why before broadening.
+
+Do not touch MobileWedgeCategory unless current source proves it is necessary.
+The wedge itself is not the target of 026U.
+
+============================================================
+MANDATORY RUNTIME TESTS
+============================================================
+
+SOURCE AUDIT ALONE IS NOT PASS.
+
+TEST 1 — MOBILE LIGHT MODE
+At 390 px:
+Expected:
+- no photographic/theme background visible
+- clean light neutral surface
+- wedges/cards readable
+- Background button absent
+- standalone Light/Dark control present
+
+TEST 2 — MOBILE DARK MODE
+Toggle Dark.
+Expected:
+- clean dark neutral surface
+- no photo/theme background appears
+- text/cards remain readable
+- wedge/category data remains usable
+
+TEST 3 — DARK PERSISTENCE
+- set Dark
+- reload/reopen
+Expected:
+- Dark remains according to existing `trailweigh:bgTone` behavior
+
+TEST 4 — MOBILE BACKGROUND CONTROL
+Expected:
+- Background editing control not visible
+- BackgroundPickerPanel cannot be opened from mobile UI
+
+TEST 5 — DESKTOP BACKGROUND
+At desktop width:
+Expected:
+- selected photo/theme background still displays
+- Background button still present
+- BackgroundPickerPanel opens/works
+- desktop Light/Dark behavior unchanged
+
+TEST 6 — DESKTOP VISUAL ISOLATION
+Expected:
+- no mobile Dark toggle appears
+- toolbar unchanged
+- categories/sidebar/spacing unchanged
+
+TEST 7 — MOBILE WEDGE REGRESSION
+Expected:
+- real angled wedges unchanged
+- vertical Weight/Qty/Total/Move unchanged
+- category colors/icons unchanged
+
+TEST 8 — CHECKLIST REGRESSION
+Expected:
+- filtered Checklist membership unchanged
+- Checklist-use progress still persists until Clear
+- Clear still works
+
+TEST 9 — REVIEW REGRESSION
+Expected:
+- Review remains isolated
+- Review Add Category still works
+
+TEST 10 — HELP/ACCESSIBILITY
+New mobile Light/Dark control:
+Expected:
+- accessible label
+- keyboard focusable
+- help behavior uses existing safe pattern where available
+
+TEST 11 — CONSOLE
+Expected:
+- no new 026U errors
+
+If auth wall prevents a runtime test:
+mark NOT RUN.
+Do not convert code audit into PASS.
+
+============================================================
+EVIDENCE
+============================================================
+
+For this UI change, provide:
+- mobile Light screenshot
+- mobile Dark screenshot
+- desktop screenshot proving Background/Themes unchanged
+
+These are task-specific visual verification artifacts.
+Do not place screenshots inside the text prompt.
+
+============================================================
+REPORT
+============================================================
+
+Complete:
+`workflow-reports/PROMPT_026U_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost
+3. preflight git status
+4. files inspected
+5. exact mobile background source
+6. exact mobile suppression strategy
+7. exact mobile Background-control change
+8. exact standalone Light/Dark implementation
+9. bgTone/persistence reuse confirmation
+10. expected changed files
+11. actual changed files
+12. mobile Light result
+13. mobile Dark result
+14. Dark persistence result
+15. desktop Background/Themes result
+16. desktop isolation result
+17. wedge regression result
+18. Checklist regression result
+19. Review regression result
+20. accessibility/help result
+21. tests NOT RUN
+22. console result
+23. rollback guidance
+24. unresolved issues
+25. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+Return:
+
+MOBILE PHOTO/THEME BACKGROUND REMOVED = PASS / FAIL / NOT RUN
+MOBILE CLEAN LIGHT SURFACE = PASS / FAIL / NOT RUN
+MOBILE CLEAN DARK SURFACE = PASS / FAIL / NOT RUN
+MOBILE BACKGROUND CONTROL REMOVED = PASS / FAIL / NOT RUN
+MOBILE BACKGROUND PANEL ACCESSIBLE = YES / NO / NOT RUN
+
+STANDALONE MOBILE LIGHT/DARK CONTROL = PASS / FAIL / NOT RUN
+DARK MODE PERSISTS = PASS / FAIL / NOT RUN
+EXISTING BGTONE STATE REUSED = YES / NO
+
+DESKTOP PHOTO/THEME BACKGROUND CHANGED = YES / NO / NOT RUN
+DESKTOP BACKGROUND BUTTON CHANGED = YES / NO / NOT RUN
+DESKTOP BACKGROUNDPICKER CHANGED = YES / NO / NOT RUN
+DESKTOP TOOLBAR CHANGED = YES / NO / NOT RUN
+DESKTOP CATEGORY/SIDEBAR CHANGED = YES / NO / NOT RUN
+
+MOBILE WEDGE CHANGED = YES / NO / NOT RUN
+MOBILE VERTICAL ITEM DETAILS CHANGED = YES / NO / NOT RUN
+CHECKLIST SEMANTICS CHANGED = YES / NO / NOT RUN
+CHECKLIST PERSISTENCE CHANGED = YES / NO / NOT RUN
+REVIEW ISOLATION CHANGED = YES / NO / NOT RUN
+REVIEW ADD CATEGORY REGRESSION = YES / NO / NOT RUN
+LOCKER/SAVE CHANGED = YES / NO / NOT RUN
+
+EXISTING TOOLTIP TEXT CHANGED = YES / NO
+NEW DARK CONTROL KEYBOARD ACCESS = PASS / FAIL / NOT RUN
+NEW DARK CONTROL TOUCH HELP = PASS / FAIL / NOT RUN
+
+DATABASE/API/AUTH CHANGED = YES / NO
+PACKAGE FILES CHANGED = YES / NO
+CREATE-NEW-LIST FLOW CHANGED = YES / NO
+SYNC/LAST-SYNCED ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+MATERIAL UNCERTAINTY REMAINS = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Is mobile photo/theme background truly gone?
+2. Is Background editing truly absent on mobile?
+3. Is standalone Light/Dark present and usable?
+4. Did I reuse existing bgTone/persistence?
+5. Did I preserve desktop Background/Themes exactly?
+6. Did I preserve desktop layout/controls?
+7. Did I preserve the mobile wedge implementation?
+8. Did I preserve Checklist behavior?
+9. Did I preserve Review isolation?
+10. Did I preserve existing tooltip text?
+11. Did I avoid KIS/Create New List/sync work?
+12. Did I avoid DB/API/auth/package/deployment changes?
+13. Did I runtime-test rather than claim source-only PASS?
+14. Did I inspect every changed file?
+
+If material uncertainty remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026U-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026U_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + ZIP.
+Do not proceed to 026V.
+Do not proceed to Create New List.
+Do not perform unrelated TrailWeigh work.
