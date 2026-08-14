@@ -1,0 +1,277 @@
+TRAILWEIGH — PROMPT 026T — GOLD STANDARD READ-ONLY DIAGNOSTIC
+MOBILE BACKGROUND REMOVAL + DARK/NIGHT MODE PRESERVATION
+NO APPLICATION CODE CHANGES
+
+INTERNAL VERSION ID:
+026T-MOBILE-BACKGROUND-DARK-MODE-DIAGNOSTIC-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Ask / Diagnose / Read-only
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 3–6 minutes
+- approximately $0.20–$0.60 Agent usage
+
+============================================================
+AUTHORITATIVE USER REQUIREMENT
+============================================================
+
+MOBILE / CELL-PHONE ONLY:
+
+1. There should be NO photographic/theme background behind the mobile interface.
+2. There should be NO Background editing control/panel on mobile.
+3. Mobile should use a clean solid/neutral background.
+4. EXCEPTION: mobile must still support Night/Dark mode.
+5. Desktop Background/Themes behavior must remain completely unchanged.
+6. Desktop visual layout/controls/behavior must remain unchanged.
+
+This supersedes the earlier assumption that desktop theme/photo backgrounds should carry through to mobile.
+
+IMPORTANT:
+“isolated from the website” means the MOBILE presentation/control path must be technically isolated from desktop, while still looking like TrailWeigh.
+
+============================================================
+CURRENT USER LIVE EVIDENCE
+============================================================
+
+Current phone screenshots show:
+- real angled category wedges now present
+- vertical Weight / Qty / Total / Move details present
+- photographic theme background still visible behind mobile wedges/items
+- a `Background` control is still present in the mobile toolbar
+
+Those two mobile background behaviors are now unwanted.
+
+Do NOT diagnose the wedge again unless needed to answer the background question.
+
+
+============================================================
+SEPARATE USER LIVE-EVIDENCE SCREENSHOTS
+============================================================
+
+The user will separately attach these current phone screenshots:
+
+1. `TrailWeigh · Gear Tracker 2(1).png`
+   Shows an expanded mobile category with:
+   - real angled wedge
+   - vertically stacked Weight / Qty / Total / Move
+   - photographic/theme background still visible behind the mobile UI
+
+2. `TrailWeigh · Gear Tracker(7).png`
+   Shows the collapsed mobile category list with:
+   - multiple colored wedges
+   - photographic/theme background still visible
+   - current mobile toolbar area where Background editing is still part of the phone experience
+
+These screenshots are USER LIVE EVIDENCE.
+
+Use them only to confirm the CURRENT phone behavior described in this diagnostic.
+
+Do NOT:
+- embed them in the report
+- treat them as instructions to redesign the wedge layout
+- copy any browser chrome
+- alter desktop based on these screenshots
+
+USER live evidence outranks conflicting source assumptions.
+
+============================================================
+MANDATORY READ-ONLY RULE
+============================================================
+
+DO NOT EDIT APPLICATION CODE.
+
+DO NOT:
+- change CSS
+- hide controls
+- alter components
+- add Dark mode
+- remove Background
+- modify desktop
+- modify mobile
+- change DB/API/auth
+- modify package files
+- modify replit.md
+- modify .agents/memory
+- publish/deploy
+
+This prompt is diagnostic only.
+
+============================================================
+QUESTIONS TO ANSWER FROM CURRENT SOURCE
+============================================================
+
+Answer all questions precisely with exact files/components/state/props/classes where possible.
+
+1. CURRENT MOBILE BACKGROUND SOURCE
+
+Where is the photographic/theme background currently applied to the phone/mobile page?
+
+Identify:
+- exact file(s)
+- exact component/container
+- exact state/context/prop used
+- whether it is inline style, CSS class, pseudo-element, background component, or other mechanism
+- whether desktop and mobile currently share that same background source
+
+2. CURRENT MOBILE `Background` CONTROL
+
+Where is the visible `Background` control on the phone rendered?
+
+Identify:
+- exact file/component
+- exact responsive branch/classes
+- click handler/panel it opens
+- whether the same control instance is shared with desktop or separately rendered for mobile
+
+3. CURRENT DARK / NIGHT MODE IMPLEMENTATION
+
+Does the CURRENT codebase already contain a real Light/Dark/Night mode?
+
+Do not infer from old requirements.
+
+Search the current source and report:
+- exact state/context/hook/localStorage key if one exists
+- exact controls that switch Light/Dark/Night
+- whether Dark mode changes only UI surfaces/text or is coupled to Background/Themes
+- whether it works on phone today
+- whether it is separate from the photographic Background editor
+
+If no actual Dark/Night mode exists in current source:
+say so explicitly.
+
+4. SMALLEST MOBILE-ONLY WAY TO REMOVE PHOTO BACKGROUND
+
+What is the smallest safe implementation that would:
+- suppress theme/photo background on mobile only
+- use a clean solid/neutral mobile surface
+- preserve desktop photo/theme background exactly
+- preserve current mobile wedge/category presentation
+- avoid broad shared-CSS leakage
+
+Identify the exact file(s) that would need to change.
+
+5. SMALLEST MOBILE-ONLY WAY TO REMOVE `Background` EDITING
+
+What is the smallest safe implementation that would:
+- hide/remove the Background button/panel entry on mobile
+- leave desktop Background/Themes button/panel unchanged
+- not remove Night/Dark mode
+
+Identify exact conditional/render branch.
+
+6. DARK MODE PRESERVATION
+
+Assuming a Dark/Night mode exists:
+what exact mobile surface(s) should it control after photographic backgrounds are removed?
+
+Identify current classes/state already available that can be reused.
+
+If Dark/Night mode does NOT exist:
+identify the minimum architecture required for a future mobile Light/Dark toggle, but DO NOT implement it.
+
+7. DESKTOP ISOLATION RISK
+
+Could any proposed mobile-background removal affect desktop through:
+- shared style objects
+- shared context
+- shared CSS selectors
+- shared parent containers
+
+Identify the exact isolation point that prevents desktop leakage.
+
+8. KEEP IT SIMPLE RELATIONSHIP
+
+026S reported that no KIS state exists in current source.
+
+Verify whether that remains true.
+
+Explain whether the mobile clean neutral background requirement can be implemented independently of KIS.
+
+Do NOT add KIS in this diagnostic.
+
+9. EXACT MINIMUM REPAIR SCOPE
+
+State the smallest safe file set for the later implementation.
+
+If more than 2–3 application files would be needed:
+explain why.
+
+============================================================
+REQUIRED RESPONSE FORMAT
+============================================================
+
+Return:
+
+A. MOBILE PHOTO BACKGROUND
+- source:
+- state/context:
+- desktop shared? YES/NO
+- exact mobile isolation point:
+
+B. MOBILE BACKGROUND CONTROL
+- source:
+- responsive branch:
+- handler/panel:
+- desktop shared? YES/NO
+
+C. DARK/NIGHT MODE
+- exists in current code? YES/NO
+- exact implementation:
+- mobile control:
+- coupled to theme/photo backgrounds? YES/NO
+
+D. MINIMUM MOBILE-ONLY REPAIR
+- file(s):
+- exact strategy:
+- desktop risk:
+- mitigation:
+
+E. KIS
+- current KIS state exists? YES/NO
+- relevant to this repair? YES/NO + explanation
+
+F. MATERIAL UNCERTAINTY
+- YES/NO
+- if YES, exact unanswered question
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_026T_REPORT.md`
+
+The report must include:
+- internal version
+- time/actions/lines/cost
+- files inspected
+- exact answers above
+- confirmation that NO application code changed
+- preflight/final git status
+- material uncertainty
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-026T-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_026T_REPORT.md`
+
+Verify the ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after the read-only report + ZIP.
+
+Do not implement the repair.
+Do not proceed to 026U.
+Do not perform Create New List work.
