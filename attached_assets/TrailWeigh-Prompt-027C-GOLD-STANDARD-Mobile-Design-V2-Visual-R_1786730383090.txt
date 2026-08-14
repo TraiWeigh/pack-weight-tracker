@@ -1,0 +1,671 @@
+TRAILWEIGH — PROMPT 027C — GOLD STANDARD
+MOBILE DESIGN V2 VISUAL REFINEMENT ONLY
+REFINE APPROVED DIRECTION / NO REAL CONTROL WIRING
+
+INTERNAL VERSION ID:
+027C-MOBILE-DESIGN-V2-VISUAL-REFINEMENT-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 8–16 minutes
+- approximately $0.60–$1.50 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE STATUS
+============================================================
+
+027A = USER VISUAL FAIL.
+
+027B = GENERAL VISUAL DIRECTION APPROVED BY USER.
+
+IMPORTANT:
+027B is NOT final visual approval.
+The user approved the overall direction and wants this exact V2 prototype refined before any real controls are assigned.
+
+USER LIVE EVIDENCE:
+The user successfully opened:
+`/mobile-design-v2`
+
+The visible V2 direction now includes:
+- compact mobile header
+- prominent summary area
+- tiered mobile controls
+- wedge category cards
+- right-aligned category weights
+- expanded category/item presentation
+- bottom mobile navigation concept
+
+This is finally visually distinct from the old stacked TrailWeigh mobile layout.
+
+027C MUST REFINE THIS EXACT V2 DESIGN.
+DO NOT START OVER.
+DO NOT FALL BACK TO CURRENT PRODUCTION MOBILE.
+
+============================================================
+PRIMARY GOAL
+============================================================
+
+Refine `/mobile-design-v2` until it feels more elegant, balanced, readable, and intentionally mobile.
+
+This is still DESIGN PHASE ONLY.
+
+Do NOT:
+- wire real TrailWeigh controls
+- replace production mobile
+- change desktop
+- connect prototype controls to real data/state/actions
+
+============================================================
+SEPARATE VISUAL REFERENCES
+============================================================
+
+The user will attach these separately.
+
+CURRENT V2 USER-VIEW SCREENSHOT:
+`027C-Current-V2.png`
+
+PRIMARY TARGET:
+`027C-Mobile-Target-Primary.png`
+
+SECONDARY TARGET:
+`027C-Mobile-Target-Secondary.png`
+
+Use them actively.
+
+Hierarchy:
+1. Current V2 screenshot = exact prototype being refined
+2. Primary target = visual quality/composition reference
+3. Secondary target = wedge/card proportion support
+
+DO NOT embed images inside prompt or report.
+
+============================================================
+USER-APPROVED DIRECTION TO PRESERVE
+============================================================
+
+Preserve the V2 design language:
+- compact mobile-app header
+- clean light surface
+- TrailWeigh-specific summary card
+- colorful wedge category cards
+- category title + compact summary + right-aligned weight
+- expanded category directly under its wedge/header
+- mobile-first item cards
+- secondary utilities after category content
+- compact bottom navigation concept
+- no photographic background
+- Light + Dark prototype support
+
+Do NOT revert to:
+- old production phone header
+- stacked desktop-style toolbar
+- oversized gray utility panels
+- production mobile category rows
+- old website-like composition
+
+============================================================
+REFINEMENT 1 — REDUCE SUMMARY VISUAL WEIGHT
+============================================================
+
+Current V2 issue:
+The large green summary section dominates too much of the first viewport.
+
+Refine it so:
+- Base Weight remains the primary metric
+- summary remains visually important
+- vertical height is reduced
+- supporting metrics are more compact
+- decorative mountain treatment is subtler
+- list title and summary feel related but not like one giant block
+
+Target:
+Users should reach the category content sooner.
+
+At 390 px:
+Aim to reduce summary/title-area height by approximately 15–25% compared with current V2, while preserving clarity.
+
+Do not remove the summary concept.
+
+============================================================
+REFINEMENT 2 — CLEANER CONTROL HIERARCHY
+============================================================
+
+Current V2 has two control rows under the summary.
+
+The concept is better than production mobile, but still visually busy.
+
+Refine static control presentation into clear hierarchy:
+
+PRIMARY VIEW / LIST TOOLS:
+- Open All
+- Hide
+- List / Checklist concept
+
+DISPLAY:
+- Imperial / Metric
+
+SECONDARY FILE/ACTION:
+- New
+- Undo
+- Redo
+- Save
+- Reset
+
+Requirements:
+- visually separate PRIMARY from SECONDARY
+- reduce visual clutter
+- preserve all concepts
+- do not force all controls into one visual band
+- avoid tiny cramped labels
+- no horizontal overflow
+- no real wiring
+
+You may:
+- make secondary actions quieter
+- use icon-first compact treatment
+- move them into a clearly secondary strip
+- reduce vertical padding
+
+Do NOT delete controls.
+
+============================================================
+REFINEMENT 3 — CATEGORY CARD BREATHING ROOM
+============================================================
+
+Current V2 category cards are much improved.
+
+Refine:
+- card vertical spacing
+- title alignment
+- subtitle baseline
+- weight/right-side alignment
+- chevron placement
+- wedge/card seam
+- border/shadow restraint
+
+Goal:
+- more breathing room than current V2
+- still compact
+- consistent visual rhythm
+- category list should feel premium, not dense
+
+Suggested:
+- category gap around 8–10 px
+- card height around 68–74 px
+- title around 17–18 px
+- subtitle around 12–13 px
+- weight visually strong but not dominant
+
+Tune against target.
+
+============================================================
+REFINEMENT 4 — WEDGE PROPORTIONS
+============================================================
+
+Refine current wedges:
+- slightly larger icon presence
+- centered icon with consistent optical alignment
+- elegant angle
+- wedge depth proportional to card height
+- avoid wedge feeling too narrow or too blocky
+
+The wedge/icon should visually read as the future main tap target.
+
+Do NOT wire it.
+
+============================================================
+REFINEMENT 5 — EXPANDED CATEGORY
+============================================================
+
+Preserve one expanded category in V2.
+
+Refine:
+- connection between header and expanded body
+- body padding
+- item spacing
+- nested hierarchy
+- section background/surface
+- border/radius continuity
+
+Expanded body should feel like part of the same category card system.
+
+Avoid:
+- detached panel look
+- desktop table feel
+- excessive lines/borders
+
+============================================================
+REFINEMENT 6 — EXPANDED ITEM IS CRITICAL
+============================================================
+
+Show one clearly expanded item in the user-visible prototype.
+
+It must visibly show all four rows:
+
+- Weight
+- Quantity
+- Total
+- Move
+
+Do NOT let only the first detail row be visible in the design proof.
+
+Refine expanded item so it feels elegant and mobile-native:
+
+HEADER:
+- item name
+- type/subtype
+- displayed weight
+- detail chevron/affordance
+
+DETAIL BODY:
+1. Weight
+2. Quantity
+3. Total
+4. Move
+
+Each detail row:
+- full width
+- clear label
+- clear value/static control area
+- consistent height
+- subtle divider
+- comfortable vertical spacing
+
+No horizontal form/table layout.
+
+STATIC ONLY.
+
+============================================================
+REFINEMENT 7 — ITEM ROW VISUAL HIERARCHY
+============================================================
+
+Collapsed item:
+- checkbox marker
+- type/icon tile if useful
+- item name
+- subtype
+- weight
+- chevron
+
+Refine:
+- name prominence
+- subtype contrast
+- right-side weight alignment
+- row height
+- touch-target proportions
+- checkbox/icon spacing
+
+Avoid over-compression.
+
+============================================================
+REFINEMENT 8 — LIGHT MODE
+============================================================
+
+Light mode should:
+- feel warm/neutral, not stark
+- keep card surfaces distinct
+- use dark readable text
+- use restrained borders/shadows
+- let category colors carry visual identity
+- avoid excessive gray blocks
+
+============================================================
+REFINEMENT 9 — DARK MODE
+============================================================
+
+Dark prototype must be a first-class design.
+
+Requirements:
+- bright readable category names
+- readable secondary text
+- dark cards clearly separated from page background
+- vivid wedges
+- visible chevrons/icons
+- no black/dark-green text on dark surfaces
+- no muddy gray-on-gray utilities
+- summary card remains elegant but less visually heavy than current V2
+
+============================================================
+REFINEMENT 10 — BOTTOM NAVIGATION
+============================================================
+
+The V2 bottom navigation is accepted as part of the GENERAL visual direction for now.
+
+Refine only visually.
+
+Do NOT wire it.
+
+Use TrailWeigh-relevant conceptual labels/icons.
+
+Keep:
+- compact height
+- clear selected state
+- adequate touch-target proportions
+- subtle separation from content
+
+Do not let it obscure content.
+
+============================================================
+REFINEMENT 11 — UTILITIES + FOOTER
+============================================================
+
+Keep:
+- Pack Summary
+- Weight Distribution
+- Scan Gear
+- Locker
+
+AFTER category content.
+
+Refine them to remain secondary:
+- compact cards
+- restrained headers
+- smaller visual footprint
+- no oversized gray slabs
+
+Footer:
+- compact
+- low visual priority
+- readable
+
+============================================================
+RESPONSIVE TARGETS
+============================================================
+
+Refine/test at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+Requirements:
+- no horizontal overflow
+- no clipped labels
+- no white strip
+- category weight remains visible
+- summary remains proportional
+- bottom nav does not cover content
+- expanded item rows remain readable
+
+============================================================
+PROTOTYPE INTERACTION LIMIT
+============================================================
+
+027C is VISUAL ONLY.
+
+The existing local-only V2 prototype interactions may remain if already present.
+
+DO NOT add new real interaction work.
+
+Do NOT connect anything to production state.
+
+Do NOT spend material Agent time improving accordion behavior, persistence, toggles, or routing beyond what is needed to view the prototype.
+
+============================================================
+STRICT PRODUCTION PROTECTION
+============================================================
+
+DO NOT change:
+- normal mobile TrailWeigh
+- `/checklist`
+- desktop TrailWeigh
+- Checklist logic
+- Locker logic
+- Save/New/Undo/Redo real behavior
+- Share/Review
+- Print
+- Background/Themes
+- auth
+- API
+- database/schema
+- production CSS selectors
+
+Only V2 prototype files + minimal isolated route support may change.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT:
+- assign real controls
+- replace production mobile
+- change desktop
+- implement Create New List
+- implement Track Weight
+- implement templates
+- implement cross-device sync
+- implement Last Synced
+- implement tooltip system
+- implement drag/reorder
+- deploy/publish
+- change package dependencies unless absolutely unavoidable
+- change replit.md
+- change .agents/memory
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+Before editing:
+
+1. Read `replit.md` READ-ONLY.
+2. Open `/mobile-design-v2`.
+3. Compare it against:
+   - `027C-Current-V2.png`
+   - `027C-Mobile-Target-Primary.png`
+4. Identify only V2-specific files.
+5. Confirm production mobile/desktop remain isolated.
+6. Record preflight git status.
+7. Create:
+   `workflow-reports/PROMPT_027C_REPORT.md`
+
+If the current V2 route/source materially differs from the user screenshot:
+STOP and explain before editing.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Expected:
+- `MobileDesignPrototypeV2.tsx`
+- optional V2-specific CSS/module
+
+App route file should NOT need change unless current source requires it.
+
+Maximum:
+3 application files
+
+If more:
+STOP and explain.
+
+============================================================
+MANDATORY VISUAL TESTS
+============================================================
+
+TEST 1 — 390 LIGHT
+Expected:
+- noticeably more refined than current V2
+- summary less dominant
+- cleaner control hierarchy
+- polished wedges
+- more breathing room
+- expanded category visible
+- expanded item visible with Weight/Quantity/Total/Move
+
+TEST 2 — 390 DARK
+Expected:
+- equivalent polish
+- high contrast
+- category names readable
+- secondary text readable
+
+TEST 3 — 320
+Expected:
+- no clipped `Hide` or other labels
+- no horizontal overflow
+
+TEST 4 — 375
+Expected:
+- directly test
+- no clipping
+- balanced
+
+TEST 5 — 430
+Expected:
+- no oversized gaps
+- proportions remain balanced
+
+TEST 6 — CURRENT PRODUCTION MOBILE
+Expected:
+- unchanged
+
+TEST 7 — DESKTOP
+Expected:
+- unchanged
+
+============================================================
+TARGET COMPARISON
+============================================================
+
+Before claiming PASS:
+compare refined V2 side-by-side against target.
+
+Report:
+- what moved closer to target
+- what remains intentionally TrailWeigh-specific
+- any visual questions still requiring user choice
+
+USER live visual approval remains required.
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate screenshots:
+- 390 Light
+- 390 Dark
+- 375
+- expanded item close-up showing all four detail rows
+- production mobile unchanged
+- desktop unchanged
+
+Do NOT embed screenshots in prompt/report.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027C_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. files changed
+6. summary before/after
+7. controls hierarchy before/after
+8. category card before/after
+9. wedge before/after
+10. expanded category before/after
+11. expanded item before/after
+12. Light result
+13. Dark result
+14. 320 result
+15. 375 result
+16. 390 result
+17. 430 result
+18. horizontal overflow result
+19. production mobile safety
+20. desktop safety
+21. target comparison
+22. unresolved visual questions
+23. USER VISUAL APPROVAL = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+V2 REFINED = PASS / FAIL / NOT RUN
+GENERAL 027B DESIGN DIRECTION PRESERVED = YES / NO
+SUMMARY VISUAL WEIGHT REDUCED = PASS / FAIL / NOT RUN
+CONTROL HIERARCHY CLEANER = PASS / FAIL / NOT RUN
+CATEGORY SPACING IMPROVED = PASS / FAIL / NOT RUN
+WEDGE PROPORTIONS IMPROVED = PASS / FAIL / NOT RUN
+EXPANDED CATEGORY IMPROVED = PASS / FAIL / NOT RUN
+EXPANDED ITEM SHOWS ALL FOUR DETAIL ROWS = PASS / FAIL / NOT RUN
+LIGHT DESIGN = PASS / FAIL / NOT RUN
+DARK DESIGN = PASS / FAIL / NOT RUN
+DARK TEXT CONTRAST = PASS / FAIL / NOT RUN
+375 DIRECTLY TESTED = YES / NO
+HORIZONTAL OVERFLOW = YES / NO / NOT RUN
+
+REAL CONTROL WIRING ADDED = YES / NO
+PRODUCTION MOBILE CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+CHECKLIST LOGIC CHANGED = YES / NO
+LOCKER LOGIC CHANGED = YES / NO
+SHARE/REVIEW CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+CREATE-NEW-LIST CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VISUAL APPROVAL = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Did I refine V2 rather than start over?
+2. Is summary less dominant?
+3. Is control hierarchy cleaner?
+4. Are category cards more polished?
+5. Is the wedge visually stronger?
+6. Is one category clearly expanded?
+7. Is one item clearly expanded?
+8. Are Weight/Quantity/Total/Move all visible?
+9. Is Light polished?
+10. Is Dark equally polished?
+11. Did I directly test 375?
+12. Is there no horizontal overflow?
+13. Did production mobile remain unchanged?
+14. Did desktop remain unchanged?
+15. Did I avoid real control wiring?
+
+If material uncertainty remains:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027C-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027C_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + visual evidence.
+
+Do not wire controls.
+Do not replace production mobile.
+Do not proceed to control mapping.
+Do not perform Create New List work.
