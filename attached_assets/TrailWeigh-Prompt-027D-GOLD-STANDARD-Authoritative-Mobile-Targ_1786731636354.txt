@@ -1,0 +1,836 @@
+TRAILWEIGH — PROMPT 027D — GOLD STANDARD
+AUTHORITATIVE MOBILE TARGET REPRODUCTION
+MATCH THE SUPPLIED IMAGE AS CLOSELY AS TECHNICALLY PRACTICAL
+STATIC LIGHT-MODE DESIGN ONLY — NO REAL CONTROL WIRING
+
+INTERNAL VERSION ID:
+027D-AUTHORITATIVE-MOBILE-TARGET-REPRODUCTION-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 10–20 minutes
+- approximately $0.75–$1.75 Agent usage
+- STOP rather than broaden
+
+============================================================
+AUTHORITATIVE USER DECISION
+============================================================
+
+The supplied image:
+
+`027D-AUTHORITATIVE-MOBILE-TARGET.png`
+
+is now the AUTHORITATIVE MOBILE VISUAL SPECIFICATION.
+
+It is NOT:
+- inspiration
+- a loose direction
+- one reference among several
+- something to blend with the current prototype
+
+MATCH IT AS CLOSELY AS TECHNICALLY PRACTICAL.
+
+If the current V2 prototype differs from the supplied image:
+THE SUPPLIED IMAGE WINS.
+
+Do not preserve existing V2 proportions, spacing, header height,
+toolbar layout, card geometry, typography, or composition merely
+because they already exist.
+
+============================================================
+WHY THIS PROMPT EXISTS
+============================================================
+
+Previous attempts preserved too much of the existing TrailWeigh phone
+layout and interpreted the target too loosely.
+
+The user has now explicitly clarified:
+
+THE PHONE DESIGN NEEDS TO LOOK LIKE THE SUPPLIED IMAGE.
+
+Therefore 027D is a clean visual-fidelity exercise.
+
+Do not redesign the design.
+Do not reinterpret the design.
+Do not improve the design in a different direction.
+
+REPRODUCE IT.
+
+============================================================
+DESIGN-FIRST RULE
+============================================================
+
+This is still PHASE 1: VISUAL DESIGN ONLY.
+
+DO NOT wire real TrailWeigh controls.
+
+DO NOT connect:
+- New
+- Save
+- Undo
+- Redo
+- Reset
+- Share
+- Checklist
+- Locker
+- Scan
+- Light/Dark
+- Imperial/Metric
+- accordion state
+- item selection
+- database/API/auth
+- production data
+
+Use STATIC content.
+
+Functional control assignment comes only AFTER USER VISUAL APPROVAL.
+
+============================================================
+NEW ISOLATED ROUTE
+============================================================
+
+Create a NEW isolated preview route:
+
+`/mobile-design-v3`
+
+Do not replace or modify:
+- normal `/checklist`
+- current production mobile
+- desktop
+- `/mobile-preview`
+- `/mobile-design-v2`
+
+The user must be able to compare safely.
+
+============================================================
+ONE REFERENCE ONLY
+============================================================
+
+The user will supply ONE image:
+
+`027D-AUTHORITATIVE-MOBILE-TARGET.png`
+
+USE THAT IMAGE ACTIVELY.
+
+No other design image is authoritative for 027D.
+
+Do not use old screenshots as competing visual guidance.
+
+Before editing:
+1. inspect the target image carefully
+2. identify its visual measurements and ratios
+3. document your derived values
+4. reproduce those values in the new V3 prototype
+
+============================================================
+USE THE SAME SAMPLE CONTENT AS THE TARGET
+============================================================
+
+To make visual comparison one-to-one, DO NOT substitute JMT,
+backpacking, current-list, or production TrailWeigh data.
+
+Use the same static sample content shown in the target image.
+
+HEADER:
+- TrailWeigh
+- hamburger icon
+- search icon
+- plus icon
+
+LIST/TRIP:
+- Italy Adventure Trip
+- May 24 – Jun 6, 2025
+
+SUMMARY:
+- TRIP SUMMARY
+- 48 items
+- 31 Packed
+- 17 Remaining
+
+CATEGORIES:
+1. Luggage
+   - 3 items • 3 packed
+
+2. Clothing
+   - 18 items • 12 packed
+
+3. Toiletries
+   - 8 items • 4 packed
+   - OPEN in the static prototype
+
+TOILETRIES ITEMS:
+- Toothbrush
+  - checked
+  - quantity 1
+
+- Travel Toothpaste
+  - unchecked
+  - quantity 1
+
+- Sunscreen SPF 50
+  - unchecked
+  - quantity 1
+  - EXPANDED in the static prototype
+
+SUNSCREEN DETAIL ROWS:
+- Quantity ........ 1
+- Bag / Location .. Carry-On
+- Packed .......... No
+- Move ............ Toiletry Bag
+- Drag to reorder
+
+4. Documents
+   - 6 items • 6 packed
+
+5. Electronics
+   - 6 items • 5 packed
+
+6. Medication
+   - 3 items • 2 packed
+
+7. Shoes
+   - 3 items • 2 packed
+
+8. Beach / Activities
+   - 1 item • 1 packed
+
+BOTTOM NAV:
+- Pack List
+- Summary
+- Gear
+- Trips
+- More
+
+Pack List appears selected as in the target.
+
+This content is STATIC and exists only to make the design comparison exact.
+
+============================================================
+LIGHT MODE ONLY FOR 027D
+============================================================
+
+DO NOT create or refine Dark mode in this prompt.
+
+The authoritative target is Light mode.
+
+First:
+MATCH THE LIGHT DESIGN.
+
+Dark mode will be derived from the approved geometry later.
+
+Do not spend Agent time on Dark mode before Light visual approval.
+
+============================================================
+OVERALL COMPOSITION
+============================================================
+
+Reproduce the target's overall composition:
+
+- warm/off-white phone canvas
+- compact header
+- subtle topographic/mountain decorative treatment
+- trip identity directly below header
+- green Trip Summary card
+- stacked wedge category cards
+- Toiletries visibly open
+- one item visibly expanded
+- bottom navigation anchored at bottom
+- elegant, compact vertical rhythm
+- no production-style toolbar rows
+- no large empty areas
+- no oversized header
+
+The V3 screen should immediately resemble the supplied target image.
+
+============================================================
+HEADER — HIGH PRIORITY
+============================================================
+
+The current V2 header is too large.
+
+MATCH THE TARGET HEADER.
+
+Required visual characteristics:
+- compact vertical height
+- hamburger at left
+- TrailWeigh mark/title centered-left
+- search and plus on right
+- logo/title not oversized
+- controls vertically centered
+- tight but comfortable padding
+- trip title starts soon below the app bar
+- no large empty header block
+
+Do not use the current V2 header dimensions as a baseline.
+
+TARGET IMAGE IS THE BASELINE.
+
+============================================================
+TOP DECORATIVE LANDSCAPE
+============================================================
+
+Reproduce the subtle pale mountain/forest/topographic visual treatment
+behind the upper content as closely as practical using CSS/simple
+existing assets.
+
+Requirements:
+- subtle
+- low contrast
+- does not impair text
+- visually similar placement to target
+- fades naturally into the page
+
+Do not add a photographic TrailWeigh Background theme.
+
+This is prototype artwork only.
+
+If exact artwork cannot be reproduced without a new image asset,
+use a restrained CSS/vector approximation and report the difference.
+
+============================================================
+TRIP IDENTITY
+============================================================
+
+Match target:
+- Italy Adventure Trip
+- small down-chevron
+- date immediately below
+- compact spacing
+- left aligned
+- typography scale close to target
+
+Do not add "Unsaved changes."
+Do not add production file-status text.
+
+============================================================
+TRIP SUMMARY CARD
+============================================================
+
+Match the target card closely:
+
+- same approximate width relative to viewport
+- same approximate vertical height
+- rounded corners
+- dark forest-green background
+- suitcase/backpack icon box on left
+- "TRIP SUMMARY" label
+- large "48"
+- smaller "items"
+- two lower status pills/regions:
+  - 31 Packed
+  - 17 Remaining
+
+Do not substitute:
+- Base Weight
+- Worn Weight
+- ounces
+- backpacking metrics
+
+The purpose is exact visual comparison with the target.
+
+============================================================
+CATEGORY CARD GEOMETRY
+============================================================
+
+Match target category cards closely.
+
+Each category card:
+- warm white/light surface
+- subtle shadow/border
+- rounded rectangle
+- LEFT colored wedge
+- true angled wedge point
+- outlined white category icon
+- category title
+- item/packed subtitle
+- chevron on far right
+
+The colored wedge should visually match the target's:
+- width
+- angle
+- height
+- icon size
+- relationship to card radius
+
+Do not reuse current V2 wedge values automatically.
+
+Derive from target.
+
+============================================================
+CATEGORY COLORS
+============================================================
+
+Match the target palette approximately:
+
+- Luggage: muted blue
+- Clothing: warm orange
+- Toiletries: teal
+- Documents: purple
+- Electronics: blue
+- Medication: coral/red
+- Shoes: golden yellow
+- Beach / Activities: aqua/teal
+
+Keep saturation/elegance close to target.
+
+Do not impose a uniform forest-green category system.
+
+============================================================
+TYPOGRAPHY
+============================================================
+
+Match the target's hierarchy.
+
+Important:
+- TrailWeigh brand has a refined serif-like presence
+- category titles have a refined serif-like display treatment
+- secondary labels/body remain clean sans-serif
+- summary number is prominent
+- subtitles are clearly subordinate
+
+Use existing available fonts if possible.
+
+Do not install a new dependency solely for a font.
+
+If exact font is unavailable:
+choose the closest already-available system/project font pairing.
+
+============================================================
+TOILETRIES — STATIC OPEN STATE
+============================================================
+
+Toiletries must appear OPEN exactly for visual demonstration.
+
+Do NOT implement accordion behavior.
+
+Show:
+- wedge/header
+- item rows directly below
+- coherent shared container
+- subtle dividers
+- spacing close to target
+
+============================================================
+ITEM ROWS
+============================================================
+
+Match target item-row styling.
+
+Each row:
+LEFT:
+- checkbox
+
+CENTER:
+- item name
+
+RIGHT:
+- quantity "1"
+- drag/grip or chevron affordance as shown
+
+Rows:
+- Toothbrush = checked
+- Travel Toothpaste = unchecked
+- Sunscreen SPF 50 = unchecked and expanded
+
+Do not wire checkbox behavior.
+
+============================================================
+SUNSCREEN EXPANDED ITEM
+============================================================
+
+Match the target's expanded Sunscreen treatment.
+
+Header:
+- checkbox
+- Sunscreen SPF 50
+- quantity 1
+- up-chevron
+
+Detail rows:
+- Quantity / 1
+- Bag / Location / Carry-On
+- Packed / No
+- Move / Toiletry Bag
+
+Then:
+- centered drag-grip
+- "Drag to reorder"
+
+Use small supporting icons on the left of detail labels as shown.
+
+Everything is STATIC.
+
+Do not implement drag/reorder.
+
+============================================================
+BOTTOM NAVIGATION
+============================================================
+
+Match target closely.
+
+Five evenly distributed entries:
+- Pack List
+- Summary
+- Gear
+- Trips
+- More
+
+Requirements:
+- compact fixed/sticky-looking bottom bar
+- selected Pack List in green
+- icons above labels
+- white/light surface
+- subtle top border/shadow
+- same general height/proportions as target
+
+Do not wire navigation.
+
+============================================================
+NO EXTRA PROTOTYPE CONTROLS
+============================================================
+
+027D should NOT show controls that are absent from the target.
+
+Do NOT add visible:
+- Imperial / Metric
+- Open All
+- Hide
+- Checklist button
+- New / Undo / Redo / Save / Reset strip
+- Light/Dark toggle
+- Share
+- production toolbar
+
+Those real TrailWeigh functions will be mapped into the approved design
+AFTER the visual structure is accepted.
+
+For 027D:
+VISUAL FIDELITY TO TARGET OVERRIDES CONTROL-MAPPING CONCERNS.
+
+============================================================
+PIXEL/PROPORTION DISCIPLINE
+============================================================
+
+Do not eyeball once and stop.
+
+Before implementation:
+derive approximate target measurements for a 390 px-wide viewport:
+
+- outer horizontal page padding
+- app-bar height
+- logo/title size
+- trip-title top/bottom gaps
+- summary-card height
+- summary internal padding
+- category-card height
+- wedge width
+- wedge point depth
+- category gap
+- item-row height
+- expanded-detail row height
+- bottom-nav height
+
+Record these in the report.
+
+Then implement.
+
+Then take a 390 px screenshot and compare against the target.
+
+Perform at least TWO visual-adjustment passes after the first render
+unless the first render is already exceptionally close.
+
+============================================================
+MANDATORY SIDE-BY-SIDE VISUAL CHECK
+============================================================
+
+Before claiming PASS:
+
+1. Render `/mobile-design-v3` at 390 px.
+2. Place the rendered screenshot beside
+   `027D-AUTHORITATIVE-MOBILE-TARGET.png`.
+3. Compare:
+   - header height
+   - content start position
+   - summary size
+   - category-card height
+   - wedge geometry
+   - typography scale
+   - expanded Toiletries height
+   - Sunscreen detail layout
+   - bottom-nav height
+   - overall density
+
+If a major region is visibly different:
+ADJUST IT before finishing.
+
+Do not claim PASS from source inspection.
+
+============================================================
+RESPONSIVE CHECK
+============================================================
+
+Primary visual fidelity target:
+390 px phone width.
+
+Also confirm at:
+- 375 px
+- 430 px
+
+Requirements:
+- no horizontal overflow
+- no clipped labels
+- no white strip
+- bottom nav fits
+- wedge proportions remain stable
+
+Do not distort the 390 design merely to optimize unusual widths.
+
+============================================================
+STRICT PRODUCTION PROTECTION
+============================================================
+
+DO NOT modify:
+- production `/checklist`
+- current working phone UI
+- desktop UI
+- 027A prototype
+- 027B/V2 prototype
+- real TrailWeigh data/state
+- Checklist logic
+- Locker logic
+- Save
+- Share/Review
+- Print
+- Background/Themes
+- API
+- database
+- auth
+
+027D is isolated prototype-only work.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Preferred:
+- NEW `MobileDesignPrototypeV3.tsx`
+- optional V3-specific CSS/module
+- minimal route registration in `App.tsx`
+
+Maximum:
+3 application files.
+
+Do not edit current production mobile components.
+
+If more files are required:
+STOP and explain before broadening.
+
+============================================================
+OUT OF SCOPE
+============================================================
+
+DO NOT:
+- wire real controls
+- implement Dark mode
+- implement real accordion behavior
+- implement real checkbox behavior
+- implement drag/reorder
+- implement Create New List
+- implement templates
+- implement Track Weight
+- implement sync
+- implement Last Synced
+- implement tooltip/help architecture
+- modify package dependencies unless unavoidable
+- modify replit.md
+- modify .agents/memory
+- deploy/publish
+- perform unrelated work
+
+============================================================
+PRE-EDIT
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Inspect the target image.
+3. Derive target measurements.
+4. Confirm safe `/mobile-design-v3` isolation.
+5. Record preflight git status.
+6. Create:
+   `workflow-reports/PROMPT_027D_REPORT.md`
+
+If the target image is unavailable:
+STOP.
+Write:
+`AUTHORITATIVE TARGET IMAGE NOT AVAILABLE`
+Do not substitute another image from memory.
+
+============================================================
+MANDATORY VISUAL TESTS
+============================================================
+
+TEST 1 — 390 PX TARGET MATCH
+Expected:
+- whole composition closely resembles target
+- compact header
+- same sample content
+- Trip Summary card
+- matching wedge stack
+- Toiletries open
+- Sunscreen expanded
+- bottom nav
+
+TEST 2 — HEADER
+Expected:
+- clearly much shorter than V2
+- close to target proportions
+
+TEST 3 — 375 PX
+Expected:
+- no clipping/overflow
+
+TEST 4 — 430 PX
+Expected:
+- no distorted spacing
+
+TEST 5 — PRODUCTION MOBILE SAFETY
+Expected:
+- `/checklist` unchanged
+
+TEST 6 — DESKTOP SAFETY
+Expected:
+- desktop unchanged
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate evidence files:
+- 390 px V3 screenshot
+- target + V3 side-by-side comparison screenshot if practical
+- 375 px V3 screenshot
+- production mobile unchanged screenshot
+- desktop unchanged screenshot
+
+Do not embed screenshots in the report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027D_REPORT.md`
+
+Include:
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. files changed
+6. target image available = YES/NO
+7. derived 390 px design measurements
+8. first-render differences
+9. visual adjustment pass 1
+10. visual adjustment pass 2
+11. final header comparison
+12. final summary-card comparison
+13. final wedge/card comparison
+14. final Toiletries comparison
+15. final expanded Sunscreen comparison
+16. final bottom-nav comparison
+17. 375 result
+18. 390 result
+19. 430 result
+20. horizontal overflow result
+21. production mobile safety
+22. desktop safety
+23. remaining visible differences from target
+24. USER VISUAL APPROVAL = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+AUTHORITATIVE TARGET USED = YES / NO
+V3 ISOLATED PROTOTYPE CREATED = PASS / FAIL / NOT RUN
+SAME STATIC SAMPLE CONTENT AS TARGET = YES / NO
+
+390 COMPOSITION CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+HEADER CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+TRIP IDENTITY CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+SUMMARY CARD CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+WEDGE GEOMETRY CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+CATEGORY TYPOGRAPHY CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+TOILETRIES OPEN STATE CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+SUNSCREEN EXPANDED STATE CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+BOTTOM NAV CLOSELY MATCHES TARGET = PASS / FAIL / NOT RUN
+TWO VISUAL ADJUSTMENT PASSES COMPLETED = YES / NO
+HORIZONTAL OVERFLOW = YES / NO / NOT RUN
+
+REAL CONTROL WIRING ADDED = YES / NO
+DARK MODE WORK ADDED = YES / NO
+PRODUCTION MOBILE CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+CHECKLIST LOGIC CHANGED = YES / NO
+LOCKER LOGIC CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+CREATE-NEW-LIST CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VISUAL APPROVAL = PENDING
+
+============================================================
+SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Did I use ONLY the supplied image as the visual specification?
+2. Did I use the SAME sample content as the image?
+3. Did I avoid substituting current TrailWeigh/JMT data?
+4. Is the header as compact as the target?
+5. Does the Trip Summary resemble the target?
+6. Do wedge geometry and category cards resemble the target?
+7. Is Toiletries statically open?
+8. Is Sunscreen statically expanded with the same detail concepts?
+9. Does the bottom nav resemble the target?
+10. Did I make at least two comparison/refinement passes?
+11. Did I avoid real control wiring?
+12. Did I avoid Dark-mode work?
+13. Is production mobile unchanged?
+14. Is desktop unchanged?
+15. Is user approval still pending?
+
+If a major region visibly differs:
+DO NOT claim PASS.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027D-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027D_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + visual evidence.
+
+Do not wire controls.
+Do not create Dark mode.
+Do not replace production mobile.
+Do not proceed to another TrailWeigh feature.
