@@ -303,14 +303,18 @@ function CategoryHeader({ cat }: { cat: typeof CATEGORIES[0] }) {
           : <cat.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>}
       </div>
 
-      {/* ── CONTENT — three-column grid: [text] [handle-slot] [weight] ──
-          Column 1 (minmax 0,1fr): name + subtitle — flexible, never overlaps.
-          Column 2 (32px fixed):   six-dot handle — dedicated structural slot.
-          Column 3 (auto):         selected weight — far right, never clipped. */}
+      {/* ── CONTENT — four-column grid: [text] [handle-slot] [gap] [weight] ──
+          Col 1 (minmax 0,1fr):     name + subtitle — protected, flexible.
+          Col 2 (32px):             six-dot handle — dedicated structural slot.
+          Col 3 (18px gap):         breathing space; calibrates handle to ~75%.
+          Col 4 (minmax 44px,auto): weight — normalised min-width so handle
+                                    position is stable across weight-string lengths.
+          Geometry at 390px: bar=358, wedge=72, pad=24, grid=262
+            text≈184, handle-center≈200, bar-X≈284 → ratio≈0.749 */}
       <div style={{
         flex: 1, minWidth: 0,
         display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) 32px auto',
+        gridTemplateColumns: 'minmax(0, 1fr) 32px 18px minmax(44px, auto)',
         alignItems: 'center',
         padding: '10px 12px',
         columnGap: 0,
@@ -330,15 +334,18 @@ function CategoryHeader({ cat }: { cat: typeof CATEGORIES[0] }) {
           </div>
         </div>
 
-        {/* Col 2 — six-dot handle in its own reserved slot; inert visual */}
-        <div aria-hidden="true" style={{
+        {/* Col 2 — six-dot handle; inert visual (no DnD installed) */}
+        <div aria-hidden="true" data-measure="handle" style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           opacity: 0.28,
         }}>
           <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
         </div>
 
-        {/* Col 3 — selected-weight, right-aligned */}
+        {/* Col 3 — breathing-space gap between handle and weight */}
+        <div aria-hidden="true"/>
+
+        {/* Col 4 — selected-weight, right-aligned */}
         <div style={{
           textAlign: 'right',
           fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
@@ -687,7 +694,7 @@ export default function MobileDesignPrototypeV3() {
 
               // Collapsed categories
               return (
-                <div key={cat.id} style={{
+                <div key={cat.id} data-catbar style={{
                   borderRadius: 14,
                   overflow: 'hidden',
                   background: CARD_BG,

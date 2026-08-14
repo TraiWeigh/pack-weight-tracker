@@ -551,14 +551,16 @@ function MobileFunctionalV3Inner() {
                         : <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>}
                     </button>
 
-                    {/* CONTENT — three-column grid: [text] [handle-slot] [weight]
-                        Col 1 (minmax 0,1fr): name + subtitle — protected, never overlaps.
-                        Col 2 (32px fixed):   six-dot handle — dedicated structural slot.
-                        Col 3 (auto):         selected weight — far right, never clipped. */}
+                    {/* CONTENT — four-column grid: [text] [handle-slot] [gap] [weight]
+                        Col 1 (minmax 0,1fr):     name + subtitle — protected.
+                        Col 2 (32px):             six-dot handle — ~75% of full bar.
+                        Col 3 (18px gap):         breathing space; calibrates handle.
+                        Col 4 (minmax 44px,auto): weight — normalised min-width for
+                                                  stable handle position across weights. */}
                     <div style={{
                       flex: 1, minWidth: 0,
                       display: 'grid',
-                      gridTemplateColumns: 'minmax(0, 1fr) 32px auto',
+                      gridTemplateColumns: 'minmax(0, 1fr) 32px 18px minmax(44px, auto)',
                       alignItems: 'center',
                       padding: '10px 12px',
                       columnGap: 0,
@@ -578,7 +580,7 @@ function MobileFunctionalV3Inner() {
                         </div>
                       </div>
 
-                      {/* Col 2 — six-dot handle in reserved structural slot; inert (no DnD installed) */}
+                      {/* Col 2 — six-dot handle; inert (no DnD installed) */}
                       <div aria-hidden="true" style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         opacity: 0.28,
@@ -586,7 +588,10 @@ function MobileFunctionalV3Inner() {
                         <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
                       </div>
 
-                      {/* Col 3 — selected-weight, right-aligned, live via calcTotalOz */}
+                      {/* Col 3 — breathing-space gap between handle and weight */}
+                      <div aria-hidden="true"/>
+
+                      {/* Col 4 — selected-weight, right-aligned, live via calcTotalOz */}
                       <div style={{
                         textAlign: 'right',
                         fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',

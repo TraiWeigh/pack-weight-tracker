@@ -1,0 +1,508 @@
+TRAILWEIGH — PROMPT 027L — GOLD STANDARD
+FINAL CATEGORY-HANDLE POSITION CALIBRATION
+TARGET ~75% OF FULL CATEGORY BAR WITHOUT TEXT OVERLAP
+
+INTERNAL VERSION ID:
+027L-CATEGORY-HANDLE-75-PERCENT-CALIBRATION-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 3–6 minutes
+- approximately $0.20–$0.55 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+AUTHORITATIVE USER LIVE EVIDENCE
+============================================================
+
+027K REPORT internally marked the new handle placement PASS.
+
+USER live screenshot after 027K shows otherwise.
+
+USER verdict:
+- the overlap with category text is improved
+- BUT the six-dot CATEGORY reorder handle is now too far to the RIGHT
+- it looks closer to ~80–85% of the category bar
+- USER wants it approximately THREE-QUARTERS of the way across the FULL
+  category bar from the left
+
+Therefore:
+
+027K SOURCE/REPORT PASS ≠ USER VISUAL PASS.
+
+USER live evidence wins.
+
+============================================================
+LATEST AUTHORITATIVE PLACEMENT RULE
+============================================================
+
+The six-dot CATEGORY reorder handle should visually sit at approximately:
+
+75% of the FULL CATEGORY BAR width from the bar's LEFT edge.
+
+TARGET RANGE:
+- preferred center ratio: 0.75
+- acceptable visual calibration range: 0.72–0.78
+
+This is measured against the ENTIRE category bar:
+including the wedge/icon region.
+
+DO NOT measure only the post-wedge content region.
+
+The handle must ALSO:
+- never overlap category name
+- never overlap item-count/subtitle text
+- never overlap selected category weight
+- stay vertically centered
+- remain visually stable across different category-name lengths
+- remain visually stable across different weight-string widths
+
+============================================================
+DO NOT RETURN TO THE REJECTED 50% MODEL
+============================================================
+
+Do NOT restore:
+- `left: 50%`
+- mathematical center
+- overlay on text
+
+The 50% design was rejected because it interfered with category name/subtitle.
+
+============================================================
+DO NOT KEEP THE 027K FAR-RIGHT RESULT
+============================================================
+
+027K changed the content region to:
+
+`minmax(0, 1fr) 32px auto`
+
+This structurally protected text, but because the handle sits immediately
+before the far-right weight column, USER live evidence shows the dots are
+too far right.
+
+That visual result is rejected.
+
+============================================================
+PRIMARY PURPOSE
+============================================================
+
+Make ONE surgical layout calibration in BOTH:
+
+1. `/mobile-design-v3`
+2. `/mobile-functional-v3`
+
+Move the category six-dot handle LEFT from its 027K position until its
+visual center measures approximately 75% of the FULL category-bar width.
+
+Do not change anything else.
+
+============================================================
+RECOMMENDED STRUCTURAL APPROACH
+============================================================
+
+Preserve the 027K principle that text, handle, and weight have separate
+layout regions.
+
+Do NOT solve this by overlaying the handle over the text.
+
+A safe approach is to keep a structural grid but add a RESERVED GAP / SPACER
+between the handle and the selected-weight column so the handle shifts left.
+
+Conceptually:
+
+[WEDGE]
+[TEXT minmax(0,1fr)]
+[HANDLE fixed slot]
+[RESERVED GAP]
+[WEIGHT auto]
+
+The exact gap width should be calibrated from runtime measurements so the
+handle center lands near 75% of the FULL bar.
+
+Do NOT blindly hard-code an arbitrary spacer and call it PASS.
+
+Alternative structural approaches are acceptable if they:
+- preserve separate text/handle/weight regions
+- do not overlap
+- meet the measured 72–78% full-bar target
+- work at 375 / 390 / 430 widths
+
+NO new dependency.
+
+============================================================
+MANDATORY RUNTIME MEASUREMENT
+============================================================
+
+For at least ONE visible category at EACH viewport width:
+
+375
+390
+430
+
+Measure with `getBoundingClientRect()` or equivalent:
+
+- full category bar left
+- full category bar width
+- six-dot handle center X
+
+Calculate:
+
+`ratio = (handleCenterX - barLeft) / barWidth`
+
+PASS only if ratio is between:
+
+0.72 and 0.78
+
+Record the actual measured ratio for each viewport in the report.
+
+Example format:
+- 375: 0.748
+- 390: 0.752
+- 430: 0.756
+
+Do NOT invent measurements.
+Use actual runtime DOM geometry.
+
+============================================================
+TEXT-PROTECTION REQUIREMENT
+============================================================
+
+At 375 / 390 / 430:
+
+The category text region must end BEFORE the handle slot.
+
+Test:
+- Clothing
+- Toiletries
+- Documents
+- Beach / Activities or another longest available category name
+
+PASS only if:
+- category name never renders underneath dots
+- subtitle/item count never renders underneath dots
+- truncation is clean if needed
+- no text is hidden unnecessarily when space is available
+
+============================================================
+WEIGHT-PROTECTION REQUIREMENT
+============================================================
+
+Selected category weight stays at the far right.
+
+PASS only if:
+- dots do not touch weight
+- there is a visible breathing-space gap between dots and weight
+- weight remains right aligned
+- wider/narrower weight strings do not materially move the handle
+- weight math/units/rounding are unchanged
+
+============================================================
+CATEGORY BAR TARGET
+============================================================
+
+LEFT TO RIGHT:
+
+[ CATEGORY ICON / WEDGE ]
+[ CATEGORY NAME + ITEM COUNT / SUBTITLE ]
+[ SIX-DOT HANDLE AROUND 75% OF FULL BAR ]
+[ BREATHING SPACE ]
+[ SELECTED CATEGORY WEIGHT AT FAR RIGHT ]
+
+NO category accordion chevron.
+
+============================================================
+PRESERVE EXACT INTERACTION RULES
+============================================================
+
+CATEGORY ACCORDION:
+- tapping the CATEGORY ICON ITSELF opens/closes the category
+- NOT the category name
+- NOT the whole bar
+- NOT the six-dot handle
+- NOT the weight
+- NO category chevron
+
+CATEGORY REORDER:
+- six-dot handle represents WHOLE-CATEGORY reorder
+- actual touch reorder remains BLOCKED unless separately implemented
+- do not install a drag library in 027L
+
+ITEMS:
+- NO item drag dots
+- NO mobile item drag-and-drop
+- KEEP `Move`
+- KEEP Weight
+- KEEP Quantity
+- KEEP Total
+- preserve item accordion behavior from current V3
+
+ICONS:
+- Toiletries = toothbrush
+- Hydration = water drop
+
+============================================================
+FILES — STRICT SCOPE
+============================================================
+
+Preferred and maximum application files:
+
+1. `src/pages/MobileDesignPrototypeV3.tsx`
+2. `src/pages/MobileFunctionalV3.tsx`
+
+Do NOT edit:
+- `Checklist.tsx`
+- `MobileWedgeCategory.tsx`
+- `App.tsx`
+- production `/checklist`
+- desktop
+- database
+- API
+- auth
+- dependencies
+- `replit.md`
+- `.agents/memory`
+- deployment
+
+If broader scope is needed:
+STOP and explain.
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read `workflow-reports/PROMPT_027K_REPORT.md`.
+3. Inspect both V3 category-bar implementations.
+4. Confirm current 027K grid:
+   `minmax(0, 1fr) 32px auto`
+   or exact current equivalent.
+5. Record preflight git status.
+6. Create:
+   `workflow-reports/PROMPT_027L_REPORT.md`
+
+============================================================
+MANDATORY TESTS
+============================================================
+
+TEST 1 — 375
+- actual handle ratio = 0.72–0.78
+- no text overlap
+- no weight overlap
+- no horizontal overflow
+
+TEST 2 — 390
+- actual handle ratio = 0.72–0.78
+- no text overlap
+- no weight overlap
+- no horizontal overflow
+
+TEST 3 — 430
+- actual handle ratio = 0.72–0.78
+- no text overlap
+- no weight overlap
+- no horizontal overflow
+
+TEST 4 — LONG NAME
+- longest available category stays readable
+- dots remain in their calibrated slot
+- weight stays far right
+
+TEST 5 — SHORT NAME
+- dots do not drift because name is short
+
+TEST 6 — DIFFERENT WEIGHT WIDTHS
+- dots do not materially drift
+- weight remains right aligned
+
+TEST 7 — FUNCTIONAL PREVIEW
+- category icon still opens/closes
+- dots do not toggle accordion
+- weight reactivity unchanged
+
+TEST 8 — ITEM DETAILS
+- no item drag dots
+- Move remains
+- Weight / Quantity / Total remain
+
+TEST 9 — PRODUCTION SAFETY
+- `/checklist` unchanged
+- desktop unchanged
+
+============================================================
+VISUAL EVIDENCE REQUIRED
+============================================================
+
+Provide separate screenshots:
+
+1. `/mobile-design-v3` at 390
+2. close crop showing:
+   category text | dots | gap | selected weight
+3. long category name example
+4. `/mobile-functional-v3` at 390
+
+Also include the three ACTUAL DOM measurement ratios in the report.
+
+Do not embed screenshots inside the report ZIP.
+
+============================================================
+ACCEPTANCE CRITERIA
+============================================================
+
+PASS only if ALL are true:
+
+- dots visibly moved left from the 027K screenshot
+- dots look approximately three-quarters across the FULL bar
+- measured ratio is 0.72–0.78 at 375 / 390 / 430
+- dots do not interfere with category name
+- dots do not interfere with item count/subtitle
+- dots do not interfere with weight
+- selected weight stays far right
+- category icon remains the accordion control
+- no category chevron
+- no item drag dots
+- item Move remains
+
+Do NOT call PASS from source inspection alone.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+`workflow-reports/PROMPT_027L_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. 027K layout found
+6. exact 027L layout change
+7. exact handle slot width
+8. exact spacer/gap width or equivalent positioning logic
+9. 375 measured ratio
+10. 390 measured ratio
+11. 430 measured ratio
+12. Clothing result
+13. Toiletries result
+14. long-name result
+15. short-name result
+16. different-weight-width result
+17. category icon accordion test
+18. item Move protection
+19. `/checklist` result
+20. desktop result
+21. tests NOT RUN
+22. unresolved issues
+23. rollback
+24. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027L HANDLE CALIBRATION = PASS / FAIL / NOT RUN
+
+375 HANDLE RATIO = [actual value]
+390 HANDLE RATIO = [actual value]
+430 HANDLE RATIO = [actual value]
+
+ALL RATIOS BETWEEN 0.72 AND 0.78 = YES / NO
+
+CATEGORY NAME OVERLAPS DOTS = YES / NO
+ITEM COUNT OVERLAPS DOTS = YES / NO
+DOTS OVERLAP WEIGHT = YES / NO
+WEIGHT REMAINS FAR RIGHT = PASS / FAIL / NOT RUN
+
+CATEGORY ICON ONLY PRIMARY ACCORDION TRIGGER = PASS / FAIL / NOT RUN
+CATEGORY CHEVRON PRESENT = YES / NO
+
+ITEM DRAG DOTS PRESENT = YES / NO
+ITEM MOVE PRESERVED = PASS / FAIL / NOT RUN
+
+TOILETRIES TOOTHBRUSH PRESERVED = PASS / FAIL / NOT RUN
+HYDRATION WATER DROP PRESERVED = PASS / FAIL / NOT RUN
+
+CATEGORY TOUCH REORDER FUNCTIONAL = PASS / BLOCKED / NOT RUN
+NEW DEPENDENCY ADDED = YES / NO
+
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+DATABASE/API/AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+NEXT PHASE — AFTER USER VISUAL PASS ONLY
+============================================================
+
+After USER verifies 027L visually, proceed to the comprehensive V3 mobile
+control-wiring phase.
+
+That next phase must explicitly account for ALL approved/existing controls,
+including:
+
+- hamburger/menu
+- large upper-right + = Create New List
+- Search
+- List
+- Locker
+- Catalog
+- Summary
+- More
+- Scan Gear List / Scanner
+- Share
+- Print
+- Save
+- Undo
+- Redo
+- Reset
+- Imperial / Metric
+- Light / Dark only if separately authorized
+- category icon accordion control
+- category reorder
+- Add Category
+- Add Item / +Base
+- item checkbox
+- item detail expansion
+- Weight
+- Quantity
+- Total
+- Move
+- Checklist
+- Pack Summary
+- Weight Distribution
+- Help / About
+- Review-mode implications
+
+Do NOT wire these in 027L.
+
+============================================================
+ZIP
+============================================================
+
+Create:
+`workflow-reports/trailweigh-027L-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027L_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do NOT proceed to full control wiring until USER live-verifies 027L.
