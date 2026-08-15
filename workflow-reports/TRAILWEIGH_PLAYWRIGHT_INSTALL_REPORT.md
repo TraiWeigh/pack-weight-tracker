@@ -1,6 +1,21 @@
 # TRAILWEIGH PLAYWRIGHT INSTALLATION RESULT
 
-Date: 2026-08-15
+Date: 2026-08-15 (updated after post-report hardening + final verification run)
+
+## Post-report hardening changes (verified current state)
+
+Two hardening changes were applied after the initial report, following an internal code review; both were re-verified with a fresh `pnpm test:e2e` run:
+
+1. **`playwright.config.ts` — webServer fail-fast.** `webServer.command` no longer contains the Vite dev command. It is now an `echo "ERROR: TrailWeigh dev server is not running..." && exit 1` guard. With `reuseExistingServer: true`, Playwright reuses the Replit-managed dev server when `http://localhost:80/pack-checklist/` responds; if the server is down, the command fails fast (15s timeout) with a clear message instead of ever cold-starting Vite without its required Replit-injected PORT/BASE_PATH environment.
+2. **`tests/e2e/smoke.spec.ts` — bounded post-render settle.** After the two visibility assertions and proof screenshot, the test waits for `networkidle` plus a fixed 1,000 ms settle before asserting that zero `pageerror` events were collected, so late startup errors are also caught. The wait is bounded and deterministic.
+
+## Final verification run (current state)
+
+- Command: `pnpm test:e2e`
+- Result: **1 passed** (exactly 1 test; 3.8s test, 10.3s total)
+- Uncaught page/JavaScript errors: **NONE**
+- TrailWeigh application source: **unchanged** (`git diff` over `artifacts/` is empty; the only file touched by the run was the regenerated `playwright-report/index.html`)
+- Database/user data: **none modified** (unauthenticated demo route; sessionStorage only, in a discarded test browser context)
 
 ## Overall result
 **PASS**
