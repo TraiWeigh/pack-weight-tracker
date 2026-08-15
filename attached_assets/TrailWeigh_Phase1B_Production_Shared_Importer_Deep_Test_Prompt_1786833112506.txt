@@ -1,0 +1,880 @@
+TRAILWEIGH — PLAYWRIGHT DEEP TESTING PHASE 1B
+PRODUCTION-SHARED FUNCTIONALITY + IMPORTERS + COVERAGE GAPS
+
+MODE: Power
+PLAN MODE: OFF
+APP TESTING: OFF WHILE PLAYWRIGHT IS RUNNING
+
+PURPOSE
+
+Extend TrailWeigh's permanent Playwright regression system beyond the isolated
+/mobile-functional-v3 sandbox and into production-shared functionality that can
+be tested safely WITHOUT using a real owner's account or modifying real user data.
+
+This Phase 1B exists because the post-Phase-1 capability audit proved that
+/mobile-functional-v3 is a useful isolated sandbox, but it does NOT represent
+all real TrailWeigh production behavior.
+
+This prompt must:
+- test production-shared logic where safe,
+- close the most important Phase 1 coverage gaps,
+- test importers using safe local fixtures,
+- test Review/shared behavior with mocked/disposable data where possible,
+- test failure handling,
+- FIND and DOCUMENT bugs,
+- NOT repair application bugs.
+
+==================================================
+0. CRITICAL STANDING RULES
+==================================================
+
+DO NOT:
+- modify TrailWeigh application source code,
+- repair TW-P1-001, TW-P1-002, TW-P1-003,
+- weaken existing tests to turn failures green,
+- use the user's real TrailWeigh account,
+- use production credentials,
+- create persistent real-owner data,
+- create real public shares unless a separate safe test architecture already exists,
+- modify database/schema/authentication,
+- install Firefox or WebKit,
+- add Axe/Lighthouse/Sentry/security tooling,
+- begin visual regression,
+- change playwright.config.ts without stopping and asking first,
+- run Replit App Testing concurrently with Playwright.
+
+IMPORTANT RESOURCE RULES:
+- Playwright worker count: 1.
+- Run tests in foreground.
+- Split long execution into deterministic chunks intended to finish in roughly 4 minutes or less.
+- Do not use nohup/background execution for the actual audit.
+- Do not start multiple Playwright runs simultaneously.
+- Avoid unnecessary repeated source scans.
+- Reuse evidence already established by the capability audit.
+- Be surgical with file reading and actions.
+
+If a test area cannot be tested safely under these rules:
+classify it as BLOCKED / NEEDS AUTHENTICATED TEST ARCHITECTURE and continue with independent safe areas.
+
+==================================================
+1. PRE-FLIGHT
+==================================================
+
+Before creating/modifying test files:
+
+1. Confirm:
+   - @playwright/test@1.62.1 remains pinned.
+   - Chromium remains installed.
+   - playwright.config.ts exists and is unchanged.
+   - existing smoke test exists.
+   - Phase 1A core suite exists.
+   - current worker configuration is 1 or the run command explicitly forces 1 worker.
+2. Run ONLY the existing smoke test.
+3. If smoke fails:
+   STOP.
+   Report the foundation failure.
+4. Confirm git diff over TrailWeigh application source.
+5. Create/confirm a checkpoint before adding Phase 1B test files.
+6. Record pre-flight state.
+
+==================================================
+2. TEST TARGET STRATEGY
+==================================================
+
+Use the post-Phase-1 capability audit findings.
+
+Phase 1B must distinguish:
+
+A. SANDBOX-ONLY
+B. PRODUCTION-SHARED COMPONENT/LOGIC
+C. REAL OWNER ROUTE REQUIRING AUTH
+D. REVIEW ROUTE
+E. IMPORTER/PARSER LOGIC
+F. NETWORK-MOCKED BEHAVIOR
+
+Do not claim that a passing sandbox test proves the Owner route works.
+
+For every new test, identify in comments or report:
+- target route/component,
+- whether it is production-shared,
+- whether backend/network is mocked,
+- whether auth is required,
+- whether data is disposable.
+
+==================================================
+3. REQUIRED PHASE 1B TEST AREAS
+==================================================
+
+Build safe Playwright coverage for every feasible area below.
+
+--------------------------------------------------
+A. REVIEW / SHARED PAGE — SAFE MOCKED COVERAGE
+--------------------------------------------------
+
+Test the real Review/shared page code path using controlled mocked share data
+or another read-only/disposable mechanism already supported by the app.
+
+Do NOT create real shares on real accounts.
+
+Cover where safely possible:
+
+1. Review route loads.
+2. Shared list data is rendered.
+3. File/list name is shown.
+4. Categories render.
+5. Items render.
+6. Main category accordion behavior.
+7. Expand All / Collapse All.
+8. Sidebar/panel behavior if present.
+9. Unit display/switching if available.
+10. Editing in Review sandbox does not invoke owner-mutating API calls.
+11. Local Review edits remain within Review sandbox.
+12. Reload behavior matches current Review design.
+13. Owner-only controls/data are absent/inaccessible.
+14. No owner Locker/files are exposed.
+15. Failed share fetch produces safe user-facing behavior.
+16. 404/invalid token behavior.
+17. 500 behavior.
+18. Slow response behavior.
+19. Dropped request behavior.
+
+If mocking the Review route would require changing production source:
+STOP that sub-area and report the blocker.
+
+--------------------------------------------------
+B. PRODUCTION-SHARED ITEM EDITING / CALCULATIONS
+--------------------------------------------------
+
+Where the real ChecklistContent or production-shared components can be mounted
+or reached safely without a real account, test:
+
+1. Item name edit.
+2. Item Type edit if current product supports it.
+3. Quantity edit.
+4. Weight edit.
+5. Unit switch.
+6. Selected/not-selected state if applicable.
+7. Category totals.
+8. Overall/list totals.
+9. Repeated unit conversion and return.
+10. Decimal weights.
+11. Qty > 1.
+12. Zero weight where allowed.
+13. Invalid negative attempt.
+14. No NaN / Infinity / undefined displayed.
+15. Editing one item does not mutate another.
+16. Move item between categories if the Move control is available and safe.
+
+Where authenticated persistence blocks safe testing:
+test the production-shared UI/state logic without persisting to the backend,
+or classify the backend portion separately as NEEDS AUTHENTICATED TEST ARCHITECTURE.
+
+--------------------------------------------------
+C. ITEM MOVE
+--------------------------------------------------
+
+Phase 1A did not actually exercise the visible Move control.
+
+Test, where safe:
+
+1. Move item from Category A to Category B.
+2. Item disappears from A.
+3. Item appears in B.
+4. Item data remains unchanged.
+5. Counts/totals update correctly.
+6. Moving back works.
+7. Invalid/no-op selection does not duplicate the item.
+8. Move does not create a second copy.
+9. Undo/Redo behavior if Move currently participates in history.
+
+If the Move control exists only in sandbox or differs in Owner code:
+test each safe implementation separately and label them accurately.
+
+--------------------------------------------------
+D. CATEGORY REORDER / DRAG FEASIBILITY
+--------------------------------------------------
+
+Phase 1A inventoried reorder but did not test it.
+
+First perform a TESTABILITY check without app changes.
+
+Determine whether the current reorder interaction can be automated reliably with:
+- mouse drag,
+- pointer events,
+- keyboard alternative if available,
+- existing accessible controls.
+
+If reliable:
+test bounded category reorder:
+1. move one category,
+2. verify new order,
+3. verify category contents remain attached,
+4. verify totals unchanged,
+5. reload/persistence only where safe and expected.
+
+If unreliable:
+do NOT create a brittle test merely to claim coverage.
+Report:
+NOT RELIABLY AUTOMATABLE YET
+and exact reason.
+
+--------------------------------------------------
+E. PRINT
+--------------------------------------------------
+
+Test the current Print control if safely reachable.
+
+Cover:
+1. control exists and is enabled where expected,
+2. triggering Print calls the browser print path / print event or equivalent,
+3. it does not navigate away or corrupt state,
+4. no JS/page error,
+5. Print action can be intercepted/stubbed so no real printer dialog blocks the test.
+
+Do NOT perform visual print-layout comparison in Phase 1B.
+
+--------------------------------------------------
+F. TOOLTIPS / HELP / KEYBOARD
+--------------------------------------------------
+
+For a representative cross-section of CURRENT interactive controls:
+
+1. keyboard focus reaches the control,
+2. Enter/Space activates where appropriate,
+3. tooltip/help appears on hover/focus where current product supports it,
+4. tooltip does not block activation,
+5. accessible name exists,
+6. icon-only controls can be understood through accessible name/tooltip,
+7. Escape closes temporary overlay/popup where expected,
+8. Tab order does not get trapped in a basic core workflow.
+
+Do not attempt full WCAG testing here; Axe comes later.
+
+Record any control that is impossible to target reliably due to missing accessible labeling.
+
+--------------------------------------------------
+G. PDF IMPORTER
+--------------------------------------------------
+
+Use SAFE LOCAL FIXTURES only.
+
+Search the repository/workflow test assets for an existing known 77-item PDF regression fixture.
+Do NOT download replacement fixtures from the internet.
+
+If the exact known 77-item fixture exists:
+test:
+1. import starts,
+2. parser completes,
+3. exact item count = 77,
+4. category totals/counts match the known regression expectations if those expectations are available in repository reports/fixtures,
+5. no item loss,
+6. no duplicate rows,
+7. no Big Three/Bits regression where applicable,
+8. Description→Name behavior where represented,
+9. Worn routing where represented,
+10. preview loads,
+11. no uncaught page error.
+
+If the exact fixture is not available:
+state BLOCKED — FIXTURE NOT PRESENT.
+Do not fabricate the expected 77-item file.
+
+Also test small safe PDFs if existing fixtures are available.
+
+--------------------------------------------------
+H. CSV IMPORTER
+--------------------------------------------------
+
+Use local fixture files under test-only fixture directories.
+
+Cover representative cases:
+1. normal valid CSV,
+2. accepted heading variants if existing behavior supports them,
+3. Category,
+4. Type,
+5. Description/Name,
+6. Qty,
+7. Weight,
+8. Worn status if supported,
+9. missing optional field,
+10. empty file,
+11. malformed row,
+12. Unicode item name,
+13. duplicate names,
+14. zero quantity attempt if accepted,
+15. invalid numeric weight,
+16. preview behavior,
+17. row count preservation,
+18. no uncaught error.
+
+Do not redefine parser business rules.
+Use current code/reports as truth.
+
+--------------------------------------------------
+I. DOCX IMPORTER
+--------------------------------------------------
+
+Use local fixture files only.
+
+Cover existing supported behavior:
+1. Heading 1/2 category context,
+2. plain bold Normal headings if existing fixtures exist,
+3. bullet-list-only DOCX if fixture exists,
+4. Description→Name behavior,
+5. category routing,
+6. malformed/empty DOCX where safely testable,
+7. Unicode,
+8. no silent row loss,
+9. no uncaught exception.
+
+If fixture coverage is unavailable:
+report exact missing fixture rather than inventing expected behavior.
+
+--------------------------------------------------
+J. IMPORTER MALFORMED / FAILURE HANDLING
+--------------------------------------------------
+
+For PDF/CSV/DOCX where safe:
+
+Test:
+- empty file,
+- wrong extension/content mismatch where reasonable,
+- malformed content,
+- unsupported columns/headings,
+- parser error,
+- oversized-but-reasonable test file only if existing fixture exists,
+- cancelled import if UI supports cancel,
+- failed network request if importer uses backend API.
+
+Expected:
+- no app crash,
+- no frozen overlay,
+- clear error/warning,
+- user can recover,
+- no partial persistent owner mutation.
+
+--------------------------------------------------
+K. NETWORK / ERROR INJECTION
+--------------------------------------------------
+
+Use Playwright route interception only.
+Do not damage real backend services.
+
+Simulate representative:
+- offline,
+- timeout,
+- HTTP 400,
+- 401,
+- 403,
+- 404,
+- 429,
+- 500,
+- slow response,
+- aborted/dropped request.
+
+Prioritize:
+- Review fetch,
+- safe catalog/search request if available,
+- importer backend request if applicable,
+- other read-only core API fetches.
+
+Verify:
+- no uncaught crash,
+- safe user-facing state,
+- retry/recovery where supported,
+- no infinite spinner,
+- no destructive mutation.
+
+--------------------------------------------------
+L. CREATE NEW LIST / EDIT VIEW / THEMES — COVERAGE CLASSIFICATION
+--------------------------------------------------
+
+The audit said these were not available in the Phase 1 sandbox.
+
+For each:
+- Create New List,
+- guided setup,
+- Track Weight Yes/No,
+- Edit View,
+- Keep it Simple,
+- Be Creative,
+- Light/Dark,
+- built-in themes,
+- Custom Theme,
+
+determine whether there is NOW a safe unauthenticated or mockable production-shared path.
+
+If YES:
+test non-persistent UI behavior safely.
+
+If NO:
+do NOT use a real account.
+Classify:
+NEEDS AUTHENTICATED TEST ARCHITECTURE
+or
+NEEDS PHASE-SPECIFIC HARNESS
+
+Do not modify the app to expose them.
+
+==================================================
+4. TEST FILE ORGANIZATION
+==================================================
+
+Create Phase 1B tests under:
+
+tests/e2e/phase1b/
+
+Suggested structure:
+
+- review-mocked.spec.ts
+- production-shared-items.spec.ts
+- move.spec.ts
+- reorder.spec.ts
+- print.spec.ts
+- keyboard-tooltips.spec.ts
+- importer-pdf.spec.ts
+- importer-csv.spec.ts
+- importer-docx.spec.ts
+- importer-errors.spec.ts
+- network-errors.spec.ts
+- coverage-gaps.spec.ts
+
+Create test-only fixtures under:
+
+tests/e2e/fixtures/
+
+ONLY if safe fixture files already exist in repository/workflow assets or can be created as simple synthetic CSV/text-based fixtures without inventing proprietary/unknown expected behavior.
+
+For binary PDF/DOCX regression fixtures:
+reuse existing repository fixtures if available.
+Do not reconstruct unknown source documents.
+
+Test-only helpers may be created under:
+
+tests/e2e/helpers/
+
+Do not modify Phase 1A tests unless a proven test-infrastructure defect makes that unavoidable.
+If unavoidable:
+STOP and report before changing them.
+
+==================================================
+5. TEST OBSERVABILITY
+==================================================
+
+Every Phase 1B test must capture/observe:
+
+- pageerror,
+- requestfailed,
+- unexpected HTTP 5xx,
+- relevant console.error.
+
+For failures:
+retain screenshot and trace.
+Video: retain on failure only if current config already provides it.
+
+Never include:
+- secrets,
+- cookies,
+- auth headers,
+- tokens,
+- private user data.
+
+==================================================
+6. FAILURE HANDLING
+==================================================
+
+Do not stop the whole audit after one independent app defect.
+
+For each failed test:
+
+1. rerun that single test once in isolation,
+2. classify:
+   - REPRODUCIBLE APPLICATION DEFECT
+   - TEST INFRASTRUCTURE
+   - ENVIRONMENT
+   - POSSIBLY FLAKY
+   - PRODUCT REQUIREMENT UNCERTAIN
+3. do not repair application code,
+4. do not weaken the assertion merely to pass.
+
+If the test itself is demonstrably incorrect:
+you may fix TEST CODE only,
+document the correction,
+rerun,
+and continue.
+
+==================================================
+7. DEFECT IDS
+==================================================
+
+Assign new defects:
+
+TW-P1B-001
+TW-P1B-002
+TW-P1B-003
+...
+
+For each:
+- title,
+- severity,
+- route/component,
+- production-shared vs sandbox vs importer,
+- test name,
+- reproduction,
+- expected,
+- actual,
+- evidence,
+- reproducibility,
+- page/console/network evidence,
+- suspected code location only if evidence supports it,
+- confidence,
+- whether authenticated production behavior remains unverified.
+
+Do not reuse TW-P1A IDs.
+
+==================================================
+8. COST / ACTION CONTROL
+==================================================
+
+This task should be rigorous but surgical.
+
+DO:
+- reuse findings from existing capability audit,
+- inspect only files needed for a specific test area,
+- batch related source reads,
+- avoid repeatedly rereading unchanged files,
+- avoid repeatedly running full suites,
+- use targeted reruns for failed tests,
+- run deterministic chunks.
+
+DO NOT:
+- perform another general architecture audit,
+- reread the entire repository,
+- run the same passing chunk repeatedly,
+- use Power actions merely to summarize already-known evidence.
+
+In the final report include:
+- Replit work time,
+- action count,
+- lines read,
+- Agent usage cost if Replit exposes it,
+- test execution time separately from Agent work time.
+
+==================================================
+9. EXECUTION CHUNKS
+==================================================
+
+Run with 1 worker.
+
+Use foreground chunks, for example:
+
+CHUNK A:
+Review + production-shared items
+
+CHUNK B:
+Move + reorder + print + keyboard/tooltips
+
+CHUNK C:
+PDF + CSV
+
+CHUNK D:
+DOCX + malformed imports
+
+CHUNK E:
+network/error injection + coverage classification
+
+Adjust grouping so each foreground run is reasonably bounded and preferably under about 4 minutes.
+
+Maintain a CHUNK MANIFEST:
+
+For each chunk:
+- exact command,
+- test files included,
+- start/end,
+- passed,
+- failed,
+- skipped,
+- completed YES/NO.
+
+The final report MUST NOT claim Phase 1B complete unless every required chunk is marked COMPLETED or explicitly BLOCKED with a reason.
+
+==================================================
+10. ALLOWED FILE SCOPE
+==================================================
+
+Allowed CREATE/MODIFY:
+
+- tests/e2e/phase1b/**
+- tests/e2e/helpers/** only for new Phase 1B test helpers
+- tests/e2e/fixtures/** only safe test fixtures
+- package.json ONLY if adding a Phase 1B convenience script
+- workflow-reports/TRAILWEIGH_PHASE1B_PRODUCTION_SHARED_IMPORTER_REPORT.md
+- workflow-reports/trailweigh-phase1b-production-shared-importer-report.zip
+- workflow-reports/phase1b-*.txt/csv small evidence summaries
+- normal playwright-report/test-results output
+
+Preferred optional package script:
+
+"test:e2e:phase1b": "pnpm exec playwright test tests/e2e/phase1b --workers=1"
+
+Preserve all existing scripts.
+
+DO NOT MODIFY:
+
+- artifacts/pack-checklist/src/**
+- backend/server application source
+- database/schema
+- auth configuration
+- replit.nix
+- playwright.config.ts
+- existing production configuration
+- deployment configuration
+
+No new dependency is authorized.
+
+==================================================
+11. REQUIRED COVERAGE MATRIX
+==================================================
+
+Create a matrix containing at least:
+
+- Review route
+- Review load
+- Review category behavior
+- Review local edit isolation
+- Review failed fetch
+- production-shared item name
+- Type
+- Qty
+- Weight
+- unit switch
+- calculations
+- Move
+- category reorder
+- Print
+- keyboard
+- tooltips
+- PDF importer
+- known 77-item PDF
+- CSV importer
+- DOCX importer
+- malformed import
+- offline
+- 400
+- 401
+- 403
+- 404
+- 429
+- 500
+- timeout
+- dropped request
+- Create New List
+- Track Weight Yes/No
+- Edit View
+- KIS
+- Be Creative
+- Light/Dark
+- built-in themes
+- Custom Theme
+
+For each classify:
+- PASS
+- FAIL
+- BLOCKED
+- NOT PRESENT
+- NEEDS AUTH TEST ARCHITECTURE
+- NEEDS FIXTURE
+- NOT RELIABLY AUTOMATABLE
+
+==================================================
+12. REQUIRED FINAL REPORT
+==================================================
+
+Create:
+
+workflow-reports/TRAILWEIGH_PHASE1B_PRODUCTION_SHARED_IMPORTER_REPORT.md
+
+Required sections:
+
+# TRAILWEIGH PHASE 1B — PRODUCTION-SHARED + IMPORTER REGRESSION
+
+## Executive Summary
+- Overall: PASS / PASS WITH DEFECTS / BLOCKED
+- Playwright version
+- Browser
+- Worker count
+- Total Phase 1B tests
+- Passed
+- Failed
+- Skipped
+- Blocked areas
+- Reproducible application defects
+- Product-requirement-uncertain findings
+- Environment/test-infrastructure findings
+- Application source modified: must be NONE
+
+## Pre-flight
+
+## Route / Component Targets
+
+## Chunk Manifest
+
+## Complete Coverage Matrix
+
+## Review / Shared Results
+
+## Production-Shared Item / Calculation Results
+
+## Move Results
+
+## Reorder Feasibility / Results
+
+## Print Results
+
+## Keyboard / Tooltip Results
+
+## PDF Importer Results
+
+## Known 77-Item Regression Result
+State:
+PASS / FAIL / BLOCKED — FIXTURE NOT PRESENT
+
+## CSV Importer Results
+
+## DOCX Importer Results
+
+## Malformed Import Results
+
+## Network / Error Injection Results
+
+## Deferred Authenticated Areas
+
+## Defects
+One subsection per TW-P1B-###.
+
+## Flaky / Environment / Test Infrastructure
+
+## Page / Console / Network Error Summary
+
+## Testability Findings
+
+## Files Created
+
+## Files Modified
+
+## Application Source Diff Check
+
+## Data Safety Verification
+
+## Runtime / Cost
+- Agent work time
+- Replit actions
+- lines read
+- Agent usage cost if available
+- Playwright execution time
+- per-chunk runtimes
+
+## Recommended Next Controlled Step
+
+Explicitly answer:
+
+KEEP PHASE 1B SUITE?
+YES / NO
+
+ARE CRITICAL PRODUCTION-SHARED FUNCTIONAL GAPS STILL UNTESTED?
+YES / NO
+
+READY FOR VISUAL REGRESSION?
+YES / NO
+
+READY FOR AUTHENTICATED TEST ARCHITECTURE DESIGN?
+YES / NO
+
+SHOULD ANY APP BUG BE REPAIRED BEFORE PHASE 2?
+YES / NO
+If YES, rank the defect IDs.
+
+==================================================
+13. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-phase1b-production-shared-importer-report.zip
+
+Include:
+- report MD
+- all Phase 1B spec files
+- Phase 1B helper files
+- small fixture files created/used where legally/safely appropriate
+- chunk manifest
+- coverage matrix
+- plain-text test run summaries
+- failure screenshots
+- failure traces
+- failure videos if generated and reasonably sized
+
+Do NOT include:
+- node_modules
+- browser binaries
+- credentials
+- auth state
+- cookies
+- tokens
+- private user data
+- unrelated workflow reports
+
+Verify ZIP non-corrupt and list contents.
+
+==================================================
+14. FINAL SELF-REVIEW
+==================================================
+
+Before completion answer:
+
+1. Did I keep workers = 1?
+2. Did I avoid concurrent Replit App Testing?
+3. Did I avoid real owner/account data?
+4. Did I avoid app-source changes?
+5. Did I separate sandbox vs production-shared conclusions?
+6. Did I rerun failures once?
+7. Did I avoid weakening assertions?
+8. Did I test Move?
+9. Did I address reorder feasibility?
+10. Did I test Print?
+11. Did I test representative keyboard/tooltips?
+12. Did I test Review safely?
+13. Did I test available importer fixtures?
+14. Did I explicitly state whether the 77-item fixture was present?
+15. Did I test network/error handling safely?
+16. Did every execution chunk complete or receive an explicit BLOCKED classification?
+17. Did I avoid claiming authenticated Owner behavior was tested when it was not?
+18. Did I remain within authorized file scope?
+
+==================================================
+15. STOP CONDITION
+==================================================
+
+When Phase 1B report and ZIP are complete:
+
+STOP.
+
+DO NOT:
+- fix discovered app defects,
+- repair TW-P1-001/002/003,
+- begin Phase 2 visual regression,
+- build authenticated test account architecture,
+- install Firefox/WebKit,
+- add Axe,
+- run Lighthouse,
+- run security scans,
+- add Sentry,
+- change production code.
+
+Return:
+1. concise Phase 1B summary,
+2. report,
+3. ZIP,
+4. exact recommended next step.
+
+Wait for explicit authorization.

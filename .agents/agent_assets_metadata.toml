@@ -224,3 +224,17 @@ uri = "file://workflow-reports/trailweigh-playwright-replit-capability-coverage-
 type = "unspecified"
 title = "Capability Audit Bundle (ZIP)"
 description = "Report, environment summary, config evidence copy, test-file list, coverage-gap matrix CSV"
+
+[[outputs]]
+id = "wdCGaeNwJcw8TTAfsZ3u0"
+uri = "file://workflow-reports/TRAILWEIGH_PHASE1B_PRODUCTION_SHARED_IMPORTER_REPORT.md"
+type = "text"
+title = "Phase 1B Report — Production-Shared + Importers + Coverage Gaps"
+description = "106 tests · 106 passed · 0 failed · 10 spec files · 4 fixture files"
+
+[[outputs]]
+id = "JZj5nXswacaiJxGDBdxS5"
+uri = "file://workflow-reports/trailweigh-phase1b-production-shared-importer-report.zip"
+type = "unspecified"
+title = "Phase 1B ZIP — Specs + Fixtures + Report"
+description = "32 KB · non-corrupt verified · 17 files"
