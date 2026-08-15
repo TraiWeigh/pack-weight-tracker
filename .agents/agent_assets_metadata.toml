@@ -182,3 +182,17 @@ uri = "file://workflow-reports/trailweigh-025H-report.zip"
 type = "unspecified"
 title = "Prompt 025H Report"
 description = "PROMPT_025H_REPORT.md — Shared-link viewer sidebar accordion parity with home screen"
+
+[[outputs]]
+id = "9rwvO1uU1sJ0piI_ZLO-g"
+uri = "file://workflow-reports/TRAILWEIGH_PLAYWRIGHT_INSTALL_REPORT.md"
+type = "text"
+title = "TrailWeigh Playwright Install Report"
+description = "Full installation report: pinned Playwright 1.62.1, Chromium-only, 1 passing smoke test, scope verification, and rollback procedure."
+
+[[outputs]]
+id = "Tjqe4SOvTj0I_o_gR-NjC"
+uri = "file://workflow-reports/trailweigh-playwright-install-report.zip"
+type = "unspecified"
+title = "Playwright Install Report ZIP"
+description = "Report plus smoke-test proof screenshot."
