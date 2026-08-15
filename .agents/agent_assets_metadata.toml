@@ -196,3 +196,17 @@ uri = "file://workflow-reports/trailweigh-playwright-install-report.zip"
 type = "unspecified"
 title = "Playwright Install Report ZIP (updated)"
 description = "Report, playwright.config.ts, smoke.spec.ts, and proof screenshot."
+
+[[outputs]]
+id = "Jzm4zM2E8UyXaOR6Kc6Bq"
+uri = "file://workflow-reports/TRAILWEIGH_PHASE1_CORE_REGRESSION_REPORT.md"
+type = "text"
+title = "Phase 1 Core Regression Report"
+description = "71 tests, 68 passed, 3 reproducible defects (TW-P1-001..003)"
+
+[[outputs]]
+id = "8YcAoD2JYNc-Th_5oK0o7"
+uri = "file://workflow-reports/trailweigh-phase1-core-regression-report.zip"
+type = "unspecified"
+title = "Phase 1 Report Bundle (ZIP)"
+description = "Report, full test suite, run summary, and failure evidence (screenshots/videos/traces)"

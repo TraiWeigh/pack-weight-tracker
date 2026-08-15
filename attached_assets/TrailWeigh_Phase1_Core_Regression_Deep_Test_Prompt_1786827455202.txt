@@ -1,0 +1,747 @@
+TRAILWEIGH — DEEP TESTING PHASE 1
+CORE FUNCTIONAL REGRESSION + BUG HUNT
+
+MODE: Power
+APP TESTING: ON
+PLAN MODE: OFF
+
+PURPOSE
+
+Build and run TrailWeigh's first rigorous Playwright regression suite focused on CORE FUNCTIONAL BEHAVIOR.
+
+This is not a smoke test.
+This phase should actively try to uncover bugs, regressions, state problems, edge-case failures, and inconsistent control behavior in the current TrailWeigh UI.
+
+IMPORTANT:
+- FIND bugs.
+- DOCUMENT bugs.
+- DO NOT repair TrailWeigh application bugs in this prompt.
+- DO NOT modify TrailWeigh application source code.
+- DO NOT touch authenticated owner data.
+- DO NOT use production credentials.
+- DO NOT begin visual-regression, cross-browser, accessibility, security, importer torture, or Review/account-isolation phases yet. Those are separate phases.
+
+The Playwright Foundation is already installed and verified:
+- @playwright/test@1.62.1 pinned
+- Chromium installed
+- playwright.config.ts present
+- tests/e2e/smoke.spec.ts present
+- pnpm test:e2e works
+- smoke test passes
+- unauthenticated demo testing uses a discarded browser context and does not modify database/user data
+
+PRIMARY GOAL
+
+Create a durable Phase 1 Playwright suite that rigorously exercises the CURRENT core TrailWeigh interface and reports every reproducible defect found.
+
+Do not assume future/planned controls exist.
+Inventory the CURRENT UI first and test what is actually present.
+
+==================================================
+1. SAFETY / PRE-FLIGHT
+==================================================
+
+Before changing test files:
+
+1. Confirm the current main workspace is healthy.
+2. Confirm:
+   - @playwright/test is still pinned to 1.62.1
+   - Chromium is installed
+   - playwright.config.ts exists
+   - tests/e2e/smoke.spec.ts exists
+   - pnpm test:e2e still passes
+3. Run the existing smoke test once before creating new tests.
+4. Record the pre-Phase-1 result in the report.
+5. Create/confirm a Replit checkpoint before adding Phase 1 test infrastructure.
+6. Do not change TrailWeigh application source files.
+
+If the existing smoke test fails before Phase 1 work begins:
+STOP.
+Report the failure.
+Do not build the Phase 1 suite on top of a broken foundation.
+
+==================================================
+2. SAFE TEST ENVIRONMENT
+==================================================
+
+Use ONLY a safe, isolated testing state.
+
+Preferred target:
+- the same unauthenticated TrailWeigh demo/runtime path already proven by the smoke test, provided it remains isolated and disposable.
+
+Requirements:
+
+- Use a fresh Playwright BrowserContext for destructive workflow tests.
+- Do not log into a real account.
+- Do not use production credentials.
+- Do not use an owner's saved files.
+- Do not create persistent server/database records.
+- Do not send email.
+- Do not publish or share anything.
+- Do not create public Review/share links.
+- Do not alter production data.
+- Do not expose cookies, session tokens, API keys, auth headers, or secrets in reports.
+
+Before running destructive operations such as add/rename/delete:
+verify that the current route/state is isolated and disposable.
+
+If ANY tested action persists to a real backend or owner account:
+STOP destructive testing immediately.
+Document exactly what action caused the persistence concern.
+
+==================================================
+3. INVENTORY THE CURRENT CORE UI FIRST
+==================================================
+
+Before writing the full tests, inspect the actual current TrailWeigh interface.
+
+Create a CURRENT CORE CONTROL INVENTORY covering all visible core interactive controls available in the safe test route.
+
+For each control record:
+- user-visible label/name
+- control type
+- accessible role/name if available
+- where it appears
+- what it is supposed to do based on current behavior/code
+- whether it is safe to test in the isolated context
+- planned Playwright locator
+- whether an existing tooltip/help behavior is present
+- whether the control appears disabled or conditional
+
+Do not classify a future/planned feature as broken merely because it does not exist.
+
+Use stable locators in this priority order:
+1. getByRole
+2. getByLabel
+3. getByPlaceholder
+4. getByText when stable
+5. existing stable test ID only if one already exists
+
+Avoid:
+- brittle nth-child chains
+- pixel-position selectors
+- styling-only selectors
+- implementation-detail selectors when an accessible locator exists
+
+DO NOT add data-testid attributes to application code in this phase.
+
+If a core control cannot be reliably selected using the existing DOM/accessibility structure:
+report that as a TESTABILITY / ACCESSIBILITY finding.
+Do not modify the app to make the test pass.
+
+==================================================
+4. REQUIRED CORE FUNCTIONAL TEST AREAS
+==================================================
+
+Build tests for every CURRENTLY AVAILABLE and SAFE core behavior in the categories below.
+
+Skip only controls that do not exist in the current UI.
+For every skipped item, state why.
+
+A. APPLICATION STARTUP / BASIC NAVIGATION
+
+Test:
+- app/demo route loads successfully
+- expected TrailWeigh identity/header appears
+- core content renders
+- no fatal startup error
+- no unexpected redirect
+- initial document request succeeds
+- page does not enter an infinite loading state
+- primary navigation controls that exist respond correctly
+- returning to the main list view works where applicable
+
+Capture:
+- uncaught page errors
+- failed requests
+- unexpected HTTP 5xx responses
+- unexpected console errors
+
+Do not automatically fail on known harmless console warnings unless they indicate broken behavior.
+Record them separately.
+
+B. LIST / FILE CORE BEHAVIOR
+
+Test every current safe list/file action that is actually available in the isolated route, such as:
+- selecting/opening a list
+- current list/file name display
+- Create New List if present and safe
+- guided create flow if present and safe
+- cancel/back behavior
+- Track Weight Yes/No if currently present
+- blank/custom flow if currently present
+- rename if present and isolated
+- duplicate/copy if present and isolated
+- delete if present and isolated
+- confirmation behavior
+- fallback/untitled naming behavior if applicable
+- zero-list / empty-state behavior if safely reachable
+
+Do not test authenticated cloud-save behavior in Phase 1.
+
+C. CATEGORY CORE BEHAVIOR
+
+Test all current category actions that exist:
+- category renders
+- open category
+- close currently open category
+- zero-open state if supported
+- single-open accordion behavior during normal manual interaction
+- Expand All / Open All
+- Collapse All / Close All
+- independence of main-category Open/Close control from sidebar Open/Close control if both are present
+- category count updates correctly after safe mutations if available
+- add category if safe
+- rename category if safe
+- delete category if safe
+- cancel deletion if confirmation exists
+- reorder category if safe and reliably testable
+
+Check for:
+- duplicate visual state
+- two categories incorrectly staying open during single-open mode
+- category unexpectedly reopening
+- stale counts
+- controls affecting the wrong accordion group
+- state lost after unrelated action
+
+D. ITEM CORE BEHAVIOR
+
+For current item controls that exist and are safe:
+- add item
+- edit item/name
+- edit Type if available in main list
+- edit quantity
+- edit weight
+- switch weight units if available
+- selected/not-selected or packed/unpacked behavior if present
+- delete item
+- cancel deletion if applicable
+- reorder item if safely testable
+- item stays in correct category after edit
+- calculations update after quantity/weight change
+- list/category totals update correctly
+- changing one item does not mutate another item
+
+Use small isolated test data created only inside the disposable browser context.
+
+E. WEIGHT / QUANTITY CALCULATION
+
+Where weight tracking exists, test representative arithmetic:
+
+- Qty 1
+- Qty 2+
+- zero where the UI permits it
+- decimal weight
+- unit changes
+- selected vs not selected totals if applicable
+- category total
+- overall total
+- summary total
+
+Check that:
+- displayed totals mathematically agree with underlying item data
+- unit conversion does not silently change the physical value
+- switching units and switching back preserves the original value within reasonable display precision
+- non-weight list mode does not unexpectedly require weight
+
+Do not guess business rules.
+Derive expected calculations from current code/UI behavior and document them.
+
+F. SIDEBAR / PANEL CORE BEHAVIOR
+
+For each current sidebar/panel control:
+- open
+- close
+- switch to another panel
+- verify expected single-open behavior if that is current behavior
+- Expand All / Collapse All if present
+- verify main-category accordion controls do not control sidebar panels
+- verify sidebar controls do not control main categories
+- Pack Summary
+- Weight Distribution
+- any other current panel that is part of the core list view
+
+Check:
+- stale panel content
+- duplicate-open state
+- panel content mismatch
+- unexpected scroll jump
+- controls operating on wrong group
+
+G. EDIT VIEW / DISPLAY MODE CORE FUNCTIONALITY
+
+If present in the current UI, test FUNCTIONAL behavior only:
+- open Edit View
+- close Edit View
+- Keep it Simple selection if present
+- Be Creative selection if present
+- Light mode
+- Dark mode
+- switching modes repeatedly
+- mode controls remain usable
+- no crash or stuck state
+- core list remains operable after mode changes
+
+Do NOT perform pixel-perfect visual comparison in Phase 1.
+Visual regression is Phase 2.
+
+H. UNDO / REDO
+
+If currently available:
+- perform one safe reversible mutation
+- Undo
+- verify prior state restored
+- Redo
+- verify mutation restored
+- verify repeated Undo/Redo does not corrupt state
+- verify unrelated control actions do not incorrectly enter Undo history if current design says they should not
+
+I. RELOAD / IN-SESSION PERSISTENCE
+
+Within the isolated disposable test environment:
+- make a safe mutation
+- reload where current behavior is expected to preserve it
+- verify state matches current design
+- open a fresh BrowserContext and verify session-isolated state does NOT leak if that is expected
+- verify one test does not contaminate another
+
+Do not assert persistence beyond what current TrailWeigh actually implements.
+
+==================================================
+5. EDGE-CASE / TORTURE INPUTS — CORE ONLY
+==================================================
+
+Within safe isolated state, probe representative boundary inputs for current editable text/number controls.
+
+Use cases where accepted by the UI:
+- empty string
+- whitespace-only
+- leading/trailing spaces
+- very long item/list/category name
+- punctuation
+- apostrophe
+- quotation marks
+- ampersand
+- slash
+- emoji
+- accented/Unicode characters
+- duplicate names
+- Qty 0
+- Qty 1
+- large but reasonable Qty
+- decimal weight
+- zero weight
+- negative weight attempt
+- unusually large but reasonable weight
+
+Expected behavior:
+- no crash
+- no corrupted neighboring data
+- no malformed layout state that blocks core use
+- invalid values are rejected or normalized consistently
+- no NaN/Infinity/undefined visible to user
+- no uncaught exception
+
+Do not use absurdly huge payloads intended as a denial-of-service test.
+Security/abuse stress testing is a later phase.
+
+==================================================
+6. RAPID / REPEATED INTERACTION TESTS
+==================================================
+
+For safe controls, test a small number of realistic repeated actions:
+
+- double-click where accidental double-click is plausible
+- quickly open/close an accordion
+- quickly switch between two panels
+- repeated mode toggles
+- repeated add/cancel if available
+- repeated unit switch if available
+
+Check for:
+- duplicate items
+- duplicate categories
+- stuck overlays
+- stale state
+- race-condition-like visible behavior
+- double execution of one user action
+- uncaught errors
+
+Keep these bounded and realistic.
+
+==================================================
+7. ERROR / NETWORK OBSERVATION
+==================================================
+
+For every Phase 1 test:
+
+Collect:
+- pageerror events
+- requestfailed events
+- unexpected HTTP 5xx responses
+- relevant console.error output
+
+Do not expose sensitive values.
+
+Classify each observed error as:
+- APPLICATION DEFECT
+- EXPECTED/KNOWN NON-FATAL
+- TEST INFRASTRUCTURE
+- ENVIRONMENT
+- UNKNOWN
+
+A pageerror during normal core behavior should normally fail the affected test.
+
+==================================================
+8. TEST ARCHITECTURE
+==================================================
+
+Create a maintainable Phase 1 suite under:
+
+tests/e2e/core/
+
+Recommended organization, adapting only if the actual UI structure makes another split clearer:
+
+- startup-navigation.spec.ts
+- lists.spec.ts
+- categories.spec.ts
+- items.spec.ts
+- weights.spec.ts
+- sidebar.spec.ts
+- display-modes.spec.ts
+- undo-redo.spec.ts
+- persistence.spec.ts
+- edge-cases.spec.ts
+
+You may create:
+
+tests/e2e/helpers/
+
+for test-only helpers/fixtures if that materially reduces duplication.
+
+Do NOT modify TrailWeigh application source.
+
+Do NOT delete or weaken:
+tests/e2e/smoke.spec.ts
+
+The existing smoke test must continue to pass.
+
+==================================================
+9. PACKAGE SCRIPTS
+==================================================
+
+Add convenient scripts only if needed.
+
+Preferred:
+
+"test:e2e:core": "pnpm exec playwright test tests/e2e/core"
+"test:e2e:smoke": "pnpm exec playwright test tests/e2e/smoke.spec.ts"
+
+Preserve the existing:
+
+"test:e2e": "pnpm exec playwright test"
+
+Do not remove or rename existing scripts.
+
+No unrelated dependency changes.
+
+==================================================
+10. TEST EXECUTION STRATEGY
+==================================================
+
+After writing the suite:
+
+1. Run the existing smoke test.
+2. Run the full Phase 1 core suite in Chromium.
+3. Do not stop at the first application defect.
+4. Continue independent safe tests so the audit finds as many defects as practical.
+5. If one broken state contaminates later tests, isolate/reset the BrowserContext and continue.
+
+For every failing test:
+- rerun that specific test once in isolation
+- if it fails again, classify as REPRODUCIBLE
+- if it passes on rerun, classify as POSSIBLY FLAKY and retain evidence
+- do not "fix" the application
+- do not weaken the assertion merely to turn red into green
+
+If the test itself is proven incorrect:
+you may repair TEST CODE only, rerun it, and document that adjustment.
+
+==================================================
+11. BUG CLASSIFICATION
+==================================================
+
+Every reproducible application defect must receive a unique ID:
+
+TW-P1-001
+TW-P1-002
+TW-P1-003
+...
+
+For each defect record:
+
+- ID
+- title
+- severity:
+  - CRITICAL
+  - HIGH
+  - MEDIUM
+  - LOW
+- area
+- exact test name
+- exact reproduction steps
+- expected result
+- actual result
+- reproducibility
+- screenshot path
+- trace path if generated
+- video path if generated
+- console/page error evidence
+- network evidence if relevant
+- suspected component/file only if evidence supports it
+- confidence level
+- whether the defect existed before Phase 1 test creation
+
+Severity guidance:
+
+CRITICAL:
+data loss/cross-user exposure/security-like destructive core failure/app unusable
+
+HIGH:
+major core workflow broken or consistent incorrect calculations/state corruption
+
+MEDIUM:
+important behavior incorrect but workaround exists
+
+LOW:
+minor functional inconsistency that does not block core use
+
+Do not inflate severity.
+
+==================================================
+12. EVIDENCE
+==================================================
+
+For failures, retain useful Playwright evidence:
+
+- screenshot
+- trace
+- video when configured/generated
+- relevant error output
+
+For passing tests, do not create excessive screenshots unless useful for the final report.
+
+Do not include secrets/private data in artifacts.
+
+==================================================
+13. DO NOT FIX APPLICATION BUGS
+==================================================
+
+This is critical.
+
+If Phase 1 finds TrailWeigh defects:
+
+DO NOT:
+- modify app components
+- modify CSS
+- change handlers
+- change storage logic
+- change calculations
+- change labels
+- change accessibility markup
+- refactor app code
+- change server/API behavior
+- change database code
+
+The purpose is to establish an unbiased bug baseline.
+
+Test-infrastructure fixes are allowed only when the failure is demonstrably in the new test code.
+
+==================================================
+14. ALLOWED FILE SCOPE
+==================================================
+
+Allowed CREATE/MODIFY scope:
+
+- tests/e2e/core/**
+- tests/e2e/helpers/** if needed
+- package.json only for test scripts
+- pnpm-lock.yaml ONLY if an authorized test-only dependency is unexpectedly required; do not add any dependency without explaining it first
+- workflow-reports/TRAILWEIGH_PHASE1_CORE_REGRESSION_REPORT.md
+- workflow-reports/trailweigh-phase1-core-regression-report.zip
+- normal Playwright-generated test-results / playwright-report artifacts
+
+Do not modify:
+- artifacts/pack-checklist/src/**
+- backend/server application source
+- database schema
+- authentication
+- production configuration
+- deployment configuration
+- replit.nix
+- playwright.config.ts unless a truly necessary test-only change is identified; if so, STOP and explain before changing it
+
+No new third-party dependency is authorized in this prompt.
+
+==================================================
+15. REQUIRED SELF-REVIEW
+==================================================
+
+Before finalizing, answer:
+
+1. Did existing smoke test still pass?
+2. Did I test the CURRENT UI rather than future/planned features?
+3. Did I avoid authenticated/owner/production data?
+4. Did I avoid modifying application source?
+5. Did I keep each test isolated?
+6. Did I capture page errors and relevant network failures?
+7. Did I rerun each failure once before calling it reproducible?
+8. Did I avoid weakening tests simply to obtain PASS?
+9. Did I preserve evidence for every reproducible defect?
+10. Did I test every safely testable current core control discovered in the inventory?
+11. Did I clearly list any current core control that could NOT be safely or reliably tested?
+12. Did I stay inside Phase 1 scope?
+
+==================================================
+16. REQUIRED FINAL REPORT
+==================================================
+
+Create:
+
+workflow-reports/TRAILWEIGH_PHASE1_CORE_REGRESSION_REPORT.md
+
+The report must contain:
+
+# TRAILWEIGH PHASE 1 — CORE FUNCTIONAL REGRESSION
+
+## Executive Summary
+- Overall result: PASS / PASS WITH DEFECTS / BLOCKED
+- Date/time
+- Playwright version
+- Browser
+- Base route tested
+- Total test count
+- Passed
+- Failed
+- Skipped
+- Flaky/suspected flaky
+- Reproducible TrailWeigh defects found
+- Critical count
+- High count
+- Medium count
+- Low count
+- Uncaught page errors
+- Unexpected 5xx responses
+- Application source files modified: must be NONE
+
+## Pre-flight Foundation Verification
+
+## Current Core Control Inventory
+Include every current core control inspected and whether tested.
+
+## Test Matrix
+For every test:
+- test ID/name
+- area
+- what it verifies
+- result
+- evidence if failed
+
+## Defects Found
+One full subsection per TW-P1-### defect.
+
+## Flaky / Environment / Test-Infrastructure Findings
+
+## Untestable or Unsafe Core Areas
+Explain why each was not tested.
+
+## Console / Page Error Summary
+
+## Network Failure Summary
+
+## Files Created
+
+## Files Modified
+
+## Application Source Diff Check
+Explicitly show whether artifacts/application source changed.
+
+## Data Safety Verification
+
+## Test Runtime
+- smoke runtime
+- Phase 1 runtime
+- total runtime
+
+## Recommended Next Actions
+Do not repair defects.
+Rank defects by severity and recommend which should be handled first in separate repair prompts.
+
+## PHASE 1 COMPLETION STATUS
+
+Answer:
+
+SAFE TO KEEP THIS PHASE 1 REGRESSION SUITE:
+YES / NO
+
+READY FOR PHASE 2 VISUAL REGRESSION:
+YES / NO
+
+If NO, explain exactly what blocks progress.
+
+==================================================
+17. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-phase1-core-regression-report.zip
+
+Include:
+- TRAILWEIGH_PHASE1_CORE_REGRESSION_REPORT.md
+- all Phase 1 test files created
+- any Phase 1 helper files created
+- package.json excerpt or copy sufficient to show test scripts
+- failure screenshots
+- failure traces
+- failure videos when generated and reasonably sized
+- a plain-text test run summary
+
+Do not include:
+- node_modules
+- browser binaries
+- secrets
+- credentials
+- private user data
+- huge unrelated artifacts
+
+Verify the ZIP is non-corrupt and list its contents in the report.
+
+==================================================
+18. STOP CONDITION
+==================================================
+
+When Phase 1 testing, evidence collection, report, and ZIP are complete:
+
+STOP.
+
+Do NOT:
+- repair any discovered TrailWeigh bug
+- begin Phase 2 visual regression
+- add Firefox
+- add WebKit
+- add mobile/tablet projects
+- add Axe
+- run Lighthouse
+- perform security scans
+- perform importer torture testing
+- perform Review/share/account isolation testing
+- modify application source
+
+Return:
+1. concise final PASS/FAIL summary
+2. report
+3. ZIP
+
+Wait for explicit authorization before any next phase or repair work.
