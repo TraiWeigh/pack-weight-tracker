@@ -1,0 +1,71 @@
+TRAILWEIGH — 027R CLARIFICATION ONLY
+READ-ONLY REPORT CONTRADICTION CHECK
+NO APPLICATION CHANGES
+DO NOT PROCEED TO 027S
+
+Purpose:
+Resolve one contradiction in the corrected 027R report.
+
+The report states that the only changed application files were:
+- AboutPage.tsx
+- HelpPage.tsx
+- HowItWorksPage.tsx
+- SourcesModal.tsx
+- MobileFunctionalV3.tsx
+
+But the FINAL STATUS also says:
+
+`.AGENTS/MEMORY CHANGED = YES`
+
+This must be clarified before 027R is formally closed.
+
+INSTRUCTIONS
+
+1. Do NOT make any application changes.
+2. Do NOT modify:
+   - src/
+   - server/
+   - database/schema
+   - API/auth
+   - /checklist
+   - /mobile-functional-v3
+   - Review
+   - Scanner
+   - Locker
+   - Catalog
+   - deployment
+3. Inspect the actual git diff/status/history relevant to Prompt 027R.
+4. Determine whether any file under `.agents/memory` actually changed during 027R.
+5. If YES:
+   - identify the exact `.agents/memory` file
+   - explain exactly what changed
+   - explain why it changed
+   - state whether Prompt 027R caused the change
+   - state whether it affects TrailWeigh runtime/application behavior
+   - do not alter it unless explicitly required to correct the report itself
+6. If NO:
+   - state that `.AGENTS/MEMORY CHANGED = YES` was a report error
+   - correct the final status field to:
+     `.AGENTS/MEMORY CHANGED = NO`
+7. Update ONLY:
+   `workflow-reports/PROMPT_027R_REPORT.md`
+   if a report correction is necessary.
+8. Recreate:
+   `workflow-reports/trailweigh-027R-report.zip`
+   containing ONLY:
+   `PROMPT_027R_REPORT.md`
+9. Verify the ZIP opens and contains only that markdown file.
+10. Do NOT claim any new runtime testing.
+11. Do NOT proceed to 027S.
+
+FINAL RESPONSE MUST INCLUDE
+
+- `.agents/memory file actually changed during 027R = YES / NO`
+- exact file path if YES
+- exact reason if YES
+- affects TrailWeigh runtime behavior = YES / NO
+- report field corrected = YES / NO
+- application code changed during this clarification = YES / NO
+- ZIP contains only PROMPT_027R_REPORT.md = YES / NO
+
+STOP after the clarification/report correction.
