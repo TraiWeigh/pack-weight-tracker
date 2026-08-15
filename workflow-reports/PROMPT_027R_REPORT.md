@@ -594,3 +594,54 @@ REPORT ZIP CONTAINS ONLY REPORT MARKDOWN = YES
 REAL PHYSICAL PHONE TEST STILL REQUIRED = YES
 USER VERIFICATION = PENDING
 ```
+
+---
+
+## 39. Clarification — .agents/memory Changes During 027R
+
+**Issued:** 2026-08-15 — per clarification request after initial report submission.
+
+### Did any .agents/memory file actually change during 027R?
+
+**YES.**
+
+Git command used:
+
+```
+git log --oneline 29e6af1..HEAD -- .agents/memory/
+```
+
+Result: commit `f88c042` ("Refactor MobileFunctionalV3 component and update sources modal functionality") touched `.agents/memory/`.
+
+### Exact files changed
+
+| File | Change |
+|------|--------|
+| `.agents/memory/MEMORY.md` | 1 line added — index pointer for the new topic file |
+| `.agents/memory/content-extraction-pattern.md` | New file, 32 lines |
+
+### Exact content added
+
+**`.agents/memory/MEMORY.md` — line added:**
+```
+- [Content extraction pattern](content-extraction-pattern.md) — AboutContent/HelpContent/HowItWorksContent/SourcesContent exported; V3 uses navigate+onOpenSources props; 'sources' is a screen stack entry not a modal.
+```
+
+**`.agents/memory/content-extraction-pattern.md` — new file (full content):**
+Documents the rule that each large info page exports a `*Content` component alongside its desktop shell; describes the `navigate` and `onOpenSources` prop contract; records why `SourcesModal` (position:fixed portal) was replaced by a stack-push (`pushScreen({ screen:'sources' })`); lists the four files that follow this pattern (`AboutPage.tsx`, `HelpPage.tsx`, `HowItWorksPage.tsx`, `SourcesModal.tsx`).
+
+### Why did it change?
+
+At the end of the 027R implementation session the agent recorded the content-extraction architecture as a durable lesson so future sessions would not need to rediscover the pattern or repeat the same analysis.
+
+### Did Prompt 027R cause the change?
+
+**YES.** The memory write was committed in `f88c042`, the same commit that contains the 027R application changes and the initial `PROMPT_027R_REPORT.md`.
+
+### Does it affect TrailWeigh runtime or application behavior?
+
+**NO.** `.agents/memory/` files are agent documentation only. They are never imported, bundled, served, or executed by the application. No user-facing behavior is affected in any environment.
+
+### Report field status
+
+`.AGENTS/MEMORY CHANGED = YES` in the FINAL STATUS block above was **already correct**. No correction to that field is required.
