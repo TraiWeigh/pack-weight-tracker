@@ -1306,7 +1306,7 @@ function MobileFunctionalV3Inner() {
   // ── Sandbox state ─────────────────────────────────────────────────────────────
   const [sandbox, setSandbox] = useState<SandboxStore>({ items: {}, order: [], meta: {} });
   const [sandboxReady, setSandboxReady] = useState(false);
-  const [listName, setListName] = useState('My Pack List');
+  const [listName, setListName] = useState('Untitled List');
 
   // Undo/redo history
   const [undoHistory, setUndoHistory] = useState<SandboxStore[]>([]);
@@ -1837,76 +1837,84 @@ function MobileFunctionalV3Inner() {
         {/* ── SCROLLABLE CONTENT ── */}
         <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
 
-          {/* ── LIST IDENTITY ── */}
-          <div style={{ position: 'relative', padding: '11px 16px 10px', overflow: 'hidden' }}>
-            <LandscapeDecoration/>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 3 }}>
-                <span style={{ fontSize: 16.5, fontWeight: 500, color: PRIMARY, letterSpacing: '0px' }}>
-                  {listName}
-                </span>
-                {/* No accordion chevron — Locker bottom nav is the list-switch action */}
-              </div>
-              <div style={{ fontSize: 12.5, color: MUTED }}>
-                {catCount} {catCount === 1 ? 'category' : 'categories'}
-              </div>
-            </div>
-          </div>
+          {/* ── STICKY HEADER: FILE NAME BAR + PACK SUMMARY (027U) ── */}
+          <div style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
 
-          {/* ── LIST SUMMARY CARD (027S: compact, right-stacked status) ── */}
-          <div style={{ paddingBottom: 12 }}>
-            <div style={{
-              margin: '0 16px', borderRadius: 16, background: SUMMARY_BG,
-              padding: '10px 14px 10px 14px', display: 'flex', alignItems: 'center',
-              gap: 14, boxShadow: '0 2px 10px rgba(42,87,64,0.28)',
-            }}>
-              {/* Icon tile — unchanged */}
-              <div style={{
-                width: 66, height: 66, borderRadius: 14, background: 'rgba(0,0,0,0.20)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              }}>
-                <Luggage size={34} color="rgba(255,255,255,0.90)" strokeWidth={1.4}/>
-              </div>
-              {/* Left: label + total count */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: '1.1px',
-                  color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase', marginBottom: 2,
-                }}>
-                  LIST SUMMARY
-                </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, lineHeight: 1 }}>
-                  <span style={{ fontSize: 40, fontWeight: 800, color: SUMMARY_TEXT, letterSpacing: '-1.5px', lineHeight: 1 }}>
-                    {totalItems}
+            {/* ── FILE NAME BAR (027U: compact, actual name, no category count) ── */}
+            <div style={{ position: 'relative', padding: '6px 16px 6px', overflow: 'hidden' }}>
+              <LandscapeDecoration/>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 16.5, fontWeight: 500, color: PRIMARY, letterSpacing: '0px' }}>
+                    {listName || 'Untitled List'}
                   </span>
-                  <span style={{ fontSize: 17, fontWeight: 500, color: 'rgba(255,255,255,0.78)' }}>
-                    items
-                  </span>
-                </div>
-              </div>
-              {/* Right: Selected / Not Selected stacked vertically (027S) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0, alignSelf: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{
-                    width: 18, height: 18, borderRadius: 9,
-                    background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.50)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    <Check size={9} color="rgba(255,255,255,0.92)" strokeWidth={2.5}/>
-                  </div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT, whiteSpace: 'nowrap' }}>
-                    {selectedCount} Selected
-                  </span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div style={{ width: 18, height: 18, borderRadius: 9, border: '1.5px solid rgba(255,255,255,0.38)', background: 'transparent', flexShrink: 0 }}/>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.78)', whiteSpace: 'nowrap' }}>
-                    {notSelectedCount} Not Selected
-                  </span>
+                  {/* No accordion chevron — Locker bottom nav is the list-switch action */}
                 </div>
               </div>
             </div>
-          </div>
+
+            {/* ── PACK SUMMARY CARD (027U: category count added above Selected) ── */}
+            <div style={{ paddingBottom: 10 }}>
+              <div style={{
+                margin: '0 16px', borderRadius: 16, background: SUMMARY_BG,
+                padding: '10px 14px 10px 14px', display: 'flex', alignItems: 'center',
+                gap: 14, boxShadow: '0 2px 10px rgba(42,87,64,0.28)',
+              }}>
+                {/* Icon tile — unchanged */}
+                <div style={{
+                  width: 66, height: 66, borderRadius: 14, background: 'rgba(0,0,0,0.20)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <Luggage size={34} color="rgba(255,255,255,0.90)" strokeWidth={1.4}/>
+                </div>
+                {/* Left: label + total count */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 10, fontWeight: 700, letterSpacing: '1.1px',
+                    color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase', marginBottom: 2,
+                  }}>
+                    LIST SUMMARY
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, lineHeight: 1 }}>
+                    <span style={{ fontSize: 40, fontWeight: 800, color: SUMMARY_TEXT, letterSpacing: '-1.5px', lineHeight: 1 }}>
+                      {totalItems}
+                    </span>
+                    <span style={{ fontSize: 17, fontWeight: 500, color: 'rgba(255,255,255,0.78)' }}>
+                      items
+                    </span>
+                  </div>
+                </div>
+                {/* Right: categories / selected / not selected stacked (027U) */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
+                  {/* Category count — top of right stack */}
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.58)', whiteSpace: 'nowrap', letterSpacing: '0.2px' }}>
+                    {catCount} {catCount === 1 ? 'category' : 'categories'}
+                  </span>
+                  {/* Selected */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{
+                      width: 18, height: 18, borderRadius: 9,
+                      background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.50)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <Check size={9} color="rgba(255,255,255,0.92)" strokeWidth={2.5}/>
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT, whiteSpace: 'nowrap' }}>
+                      {selectedCount} Selected
+                    </span>
+                  </div>
+                  {/* Not Selected */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: 9, border: '1.5px solid rgba(255,255,255,0.38)', background: 'transparent', flexShrink: 0 }}/>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.78)', whiteSpace: 'nowrap' }}>
+                      {notSelectedCount} Not Selected
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>{/* end sticky header (027U) */}
 
           {/* ── CATEGORY STACK ── */}
           <div

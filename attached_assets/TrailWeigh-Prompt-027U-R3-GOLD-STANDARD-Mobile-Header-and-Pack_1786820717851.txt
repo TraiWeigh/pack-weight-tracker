@@ -1,0 +1,127 @@
+DO NOT USE TRAILWEIGH
+
+TrailWeigh Prompt 027U — GOLD STANDARD — Mobile V3 Header + List Summary Layout Fix
+
+Mode: Economy
+Goal: Make one focused visual/layout repair in the Mobile V3 experience only.
+
+IMPORTANT
+- Work ONLY on the Mobile V3 route / mobile-functional-v3.
+- Do NOT redesign the app.
+- Do NOT start new features beyond the scope below.
+- Keep desktop behavior unchanged.
+- Keep existing working Mobile V3 behavior unchanged except where this prompt explicitly changes it.
+- Stop when done and create the required report + ZIP.
+
+CONTEXT
+The current Mobile V3 top section wastes vertical space and shows a generic title area that is not as useful as it should be.
+
+Current issues:
+1. The top list-identity area shows “My Pack List” instead of the actual file/list name.
+2. The “13 categories” count is taking space in the header area.
+3. The top section has too much vertical padding.
+4. The user wants the file-name bar and the Pack Summary card locked/sticky while the category list scrolls beneath them.
+5. The category count should move into the Pack Summary card and appear above the Selected count.
+
+REQUESTED CHANGE
+Make the following exact changes in Mobile V3:
+
+A. FILE NAME BAR
+- Replace the generic text “My Pack List” with the ACTUAL active file/list name only.
+- Do not prepend “My” or any generic label.
+- Show only the actual file/list name.
+- If there is no real file/list name available, use a truthful fallback such as “Untitled List”.
+- Reduce the vertical padding of this file-name bar so it is more compact.
+- Remove the separate category-count line from this bar.
+
+B. CATEGORY COUNT RELOCATION
+- Move the category count (example: “13 categories”) out of the file-name area.
+- Put the category count inside the green Pack Summary card.
+- Place it ABOVE the Selected count in the right-side information stack.
+
+C. PACK SUMMARY CARD LAYOUT
+Preserve the current overall green card look and general structure, but adjust the content layout so it reads more efficiently and uses the space better.
+
+Required information structure:
+LEFT / MAIN AREA
+- suitcase icon
+- large total item count (example: “0 items” or “77 items”)
+
+RIGHT STACK
+- category count at top (example: “13 categories”)
+- Selected count below it (example: “0 Selected” / “37 Selected”)
+- Not Selected count below that (example: “0 Not Selected” / “40 Not Selected”)
+
+Important:
+- Keep the total item count as the main emphasis.
+- Keep the card visually compact.
+- Reduce top/bottom vertical padding so the card is shorter than before.
+- Do not make the card wider.
+- Preserve visual style, colors, and TrailWeigh character.
+
+D. LOCK / STICKY BEHAVIOR
+Lock the following while the category list scrolls:
+1. The file-name bar
+2. The Pack Summary card
+
+Interpretation:
+- These two elements should remain visible at the top of the phone viewport while the category list scrolls underneath them.
+- They should behave like sticky in-app mobile UI sections.
+- Do NOT pin unrelated desktop chrome.
+- Do NOT break the main app header/navigation above them.
+
+E. KEEP EVERYTHING ELSE STABLE
+- Do not change category-card styling.
+- Do not change bottom navigation.
+- Do not change icon mapping work except as needed to preserve current behavior.
+- Do not change data behavior beyond what is required to show the actual active file/list name and moved category count.
+- Do not modify desktop /checklist behavior.
+
+ACCEPTANCE CRITERIA
+1. In Mobile V3, the old generic “My Pack List” label is gone.
+2. The top identity bar shows only the actual active file/list name, or “Untitled List” if no true name exists, and keeps the file/list name in its current alignment/position.
+3. The separate category-count line is removed from the header area.
+4. The category count now appears inside the Pack Summary card, above Selected.
+5. The Pack Summary card still shows total items prominently and Selected / Not Selected correctly.
+6. The file-name area and Pack Summary card are both visually more compact vertically.
+7. While scrolling the category list, the file-name bar and Pack Summary card remain visible/sticky at the top of the phone viewport.
+8. No horizontal overflow at 375 px, 390 px, or 430 px widths.
+9. Desktop remains unchanged.
+10. No regressions to existing working Mobile V3 features.
+
+TESTING REQUIRED
+Test and report results for:
+- 375 px width
+- 390 px width
+- 430 px width
+
+Verify:
+- sticky behavior works
+- no overlap/glitching between sticky sections and scrolling content
+- correct active file/list name shown in its current alignment/position
+- category count is in Pack Summary
+- compact vertical spacing
+- no horizontal overflow
+
+DELIVERABLES REQUIRED
+Create:
+1. workflow-reports/PROMPT_027U_REPORT.md
+2. workflow-reports/trailweigh-027U-report.zip
+
+ZIP RULE
+The ZIP must contain:
+- PROMPT_027U_REPORT.md
+- Any screenshots you used as evidence for this prompt
+
+REPORT CONTENT
+Include:
+- What files were changed
+- Root cause / implementation notes
+- Exact sticky approach used
+- Source of the active file/list name
+- Screenshot evidence at 375 / 390 / 430
+- Test results
+- Any known limitations
+
+STOP CONDITION
+After creating the report and ZIP, stop. Do not begin another prompt.
