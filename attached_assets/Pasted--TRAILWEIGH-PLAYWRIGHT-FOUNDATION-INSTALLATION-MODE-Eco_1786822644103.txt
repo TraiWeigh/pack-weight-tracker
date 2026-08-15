@@ -1,0 +1,497 @@
+## TRAILWEIGH — PLAYWRIGHT FOUNDATION INSTALLATION
+
+**MODE: Economy**
+**APP TESTING: ON**
+
+This is a tightly scoped infrastructure/testing change.
+
+The previous Playwright audit has been completed. Proceed with installation using the findings from that audit.
+
+### PRIMARY OBJECTIVE
+
+Safely add Playwright end-to-end testing to TrailWeigh and prove it works with **ONE harmless Chromium smoke test**.
+
+Do NOT build the larger TrailWeigh regression suite yet.
+
+Do NOT change TrailWeigh features or appearance.
+
+---
+
+# 1. SAFETY FIRST
+
+Before modifying anything:
+
+1. Confirm the current project state is healthy.
+2. Confirm the package manager is still **pnpm**, as identified in the audit.
+3. Confirm the existing development/start command and development URL/port from the audit.
+4. Create/confirm a Replit checkpoint before the installation changes.
+5. Record the pre-change state in your report.
+
+If any material project condition differs from the previous audit, STOP and report the difference before modifying anything.
+
+---
+
+# 2. CONFIRM PLAYWRIGHT VERSION
+
+Do NOT use the previously suggested Playwright 1.49.1.
+
+First perform a read-only registry check:
+
+`npm view @playwright/test version`
+
+Also determine the publication date/time of that exact stable version.
+
+Requirements:
+
+* Use the current stable release.
+* Do NOT use beta, alpha, canary, next, RC, or prerelease versions.
+* The selected release must be at least 24 hours old.
+* Record the exact selected version in the report.
+
+If the current stable version is less than 24 hours old, use the newest stable non-prerelease version that is more than 24 hours old.
+
+After selecting the version, PIN THE EXACT VERSION.
+
+Example structure only:
+
+`pnpm add -D @playwright/test@<confirmed-version>`
+
+Do NOT leave the dependency as an unpinned `@latest` installation if the exact version has already been established.
+
+---
+
+# 3. INSTALL PLAYWRIGHT
+
+Install ONLY the Playwright test package required for this setup.
+
+Use:
+
+`pnpm add -D @playwright/test@<confirmed-version>`
+
+Do not add unrelated packages.
+
+Do not upgrade unrelated dependencies.
+
+Do not run a general dependency update.
+
+Do not modify dependency versions unrelated to Playwright.
+
+After installation, inspect the resulting dependency and lockfile changes and verify they are limited to what the Playwright installation requires.
+
+---
+
+# 4. INSTALL CHROMIUM ONLY
+
+For this initial setup install:
+
+**Chromium only**
+
+Use:
+
+`pnpm exec playwright install chromium`
+
+Do NOT install Firefox yet.
+
+Do NOT install WebKit yet.
+
+Do NOT install additional browser engines.
+
+If Chromium installation fails because additional operating-system dependencies or privileged system changes are required:
+
+**STOP.**
+
+Do not use sudo or perform broad system modifications without reporting the exact issue first.
+
+---
+
+# 5. CREATE PLAYWRIGHT CONFIGURATION
+
+Create at the workspace root:
+
+`playwright.config.ts`
+
+Use the development command, URL, and port established by the audit.
+
+Do NOT guess these values.
+
+Configure the smallest practical initial setup.
+
+Use:
+
+* test directory: `tests/e2e`
+* Chromium only
+* appropriate `baseURL`
+* appropriate `webServer.command`
+* appropriate `webServer.url`
+* reuse an existing development server when safe
+* reasonable timeout
+* screenshots retained on failure
+* traces retained on failure
+* video retained on failure
+* list/console reporter
+* HTML report available but do not automatically open it
+
+Do not add mobile/tablet projects yet.
+
+Do not add Firefox.
+
+Do not add WebKit.
+
+Do not add CI configuration yet.
+
+---
+
+# 6. CREATE ONE TEST FILE
+
+Create:
+
+`tests/e2e/smoke.spec.ts`
+
+This must be the ONLY E2E test added during this prompt.
+
+The smoke test must be NON-DESTRUCTIVE.
+
+It should:
+
+1. Start or connect to the TrailWeigh development server using the approved Playwright configuration.
+2. Open the safe TrailWeigh entry route identified during the audit.
+3. Wait for the application to reach a stable loaded state.
+4. Verify TrailWeigh actually rendered.
+5. Verify ONE stable TrailWeigh UI element identified during the audit.
+6. Prefer accessible Playwright locators such as:
+
+   * `getByRole`
+   * `getByLabel`
+   * `getByText`
+
+over fragile CSS positioning selectors.
+7. Capture uncaught page/JavaScript errors.
+8. Fail if the application itself produces an uncaught page error during the smoke test.
+9. Do NOT treat harmless console warnings as automatic failures.
+10. Verify the initial page/document request succeeds.
+11. Capture a proof screenshot after successful rendering.
+12. Cleanly close when complete.
+
+Use Playwright's normal test output location for generated testing evidence.
+
+---
+
+# 7. DO NOT MODIFY TRAILWEIGH TO MAKE THE TEST PASS
+
+The smoke test must test the existing application.
+
+DO NOT:
+
+* redesign anything
+* change layouts
+* change CSS
+* change components
+* change labels
+* add new user-facing controls
+* change accordion behavior
+* change toolbars
+* change themes
+* change import behavior
+* change Review mode
+* change authentication
+* change database behavior
+* change API behavior
+* change storage behavior
+* add a test ID to production code merely to make the test easier
+* refactor existing TrailWeigh application code
+
+If no safe/stable existing locator is available, STOP and report that finding rather than altering the application.
+
+---
+
+# 8. DATA SAFETY
+
+The smoke test must NOT intentionally:
+
+* create a user
+* log into a real user's account
+* modify owner data
+* create permanent lists
+* delete lists
+* add categories
+* delete categories
+* add items
+* modify items
+* import files
+* create database records
+* delete database records
+* modify production data
+* send emails
+* publish anything
+* create share/review links
+
+Do not use production credentials or secrets in the test.
+
+Do not print credentials, tokens, session values, cookies, API keys, or private data into test output.
+
+If merely loading the selected route causes expected application-local initialization such as harmless localStorage initialization, document it in the report.
+
+If loading the route causes unexpected persistent server/database mutation, STOP and report it.
+
+---
+
+# 9. ADD TEST SCRIPT
+
+Modify the root `package.json` scripts to add:
+
+`"test:e2e": "pnpm exec playwright test"`
+
+Preserve all existing scripts exactly unless a change is strictly necessary for Playwright.
+
+Do not rename or remove existing scripts.
+
+---
+
+# 10. EXPECTED FILE SCOPE
+
+The intended application-level file scope is:
+
+### CREATE
+
+`playwright.config.ts`
+
+`tests/e2e/smoke.spec.ts`
+
+### MODIFY
+
+`package.json`
+
+`pnpm-lock.yaml`
+
+The Playwright/Chromium installation may also create normal package-manager/browser-cache artifacts outside application source.
+
+Do NOT modify unrelated TrailWeigh source files.
+
+If additional repository files need modification, STOP and explain why before expanding scope.
+
+---
+
+# 11. RUN THE SMOKE TEST
+
+After installation/configuration is complete, run:
+
+`pnpm test:e2e`
+
+Record:
+
+* command
+* Playwright version
+* browser
+* number of tests
+* PASS/FAIL
+* runtime
+* any page errors
+* any relevant console errors
+* screenshot location
+* trace location if generated
+* video location if generated
+* HTML report location
+
+Expected result:
+
+**1 passed**
+
+If the test fails:
+
+1. Investigate the failure.
+2. Determine whether the failure is:
+
+   * Playwright configuration
+   * browser installation
+   * server startup
+   * locator/test design
+   * actual TrailWeigh application defect
+3. You may repair ONLY Playwright configuration or the smoke-test file when the problem is clearly in the newly added test infrastructure.
+4. Do NOT repair or modify TrailWeigh application code under this prompt.
+5. If an actual application defect is discovered, document it and STOP.
+
+---
+
+# 12. VERIFY TRAILWEIGH REMAINS UNCHANGED
+
+After the smoke test:
+
+Confirm that the Playwright installation did NOT alter:
+
+* TrailWeigh UI
+* list behavior
+* category behavior
+* sidebar behavior
+* themes
+* Light/Dark mode
+* Edit View
+* Keep it Simple
+* importers
+* Review mode
+* authentication
+* database behavior
+* user storage behavior
+* deployment configuration
+
+Run Replit App Testing only as a basic confirmation that TrailWeigh still launches.
+
+Do not use App Testing as permission to repair unrelated issues.
+
+---
+
+# 13. SELF-REVIEW THE CHANGE
+
+Before declaring success, answer:
+
+1. Did I modify any TrailWeigh application code?
+
+Expected: **NO**
+
+2. Did I install only the required Playwright package and Chromium?
+
+Expected: **YES**
+
+3. Is Playwright pinned to the exact approved stable version?
+
+Expected: **YES**
+
+4. Does `pnpm test:e2e` run successfully?
+
+Expected: **YES**
+
+5. Does exactly one harmless smoke test pass?
+
+Expected: **YES**
+
+6. Did TrailWeigh's existing functionality remain unchanged?
+
+Expected: **YES**
+
+7. Did I stay within the authorized file scope?
+
+Expected: **YES**
+
+If any expected answer is not achieved, do not report full success.
+
+---
+
+# 14. REQUIRED REPORT
+
+Produce a clear Markdown report named:
+
+`TRAILWEIGH_PLAYWRIGHT_INSTALL_REPORT.md`
+
+Use the normal Replit reporting/export mechanism so the user can retrieve the report and report ZIP in the usual way if available.
+
+The report must include:
+
+## PLAYWRIGHT INSTALLATION RESULT
+
+**Overall result:**
+PASS / FAIL / PARTIAL
+
+**Checkpoint created:**
+YES / NO
+
+**Package manager:**
+[answer]
+
+**Playwright version installed:**
+[exact version]
+
+**Version publication age checked:**
+YES / NO
+
+**Browser installed:**
+Chromium
+
+**playwright.config.ts created:**
+YES / NO
+
+**Smoke test created:**
+YES / NO
+
+**Smoke test result:**
+PASS / FAIL
+
+**Test count:**
+[answer]
+
+**Test command:**
+[answer]
+
+**Development server command:**
+[answer]
+
+**Test base URL:**
+[answer]
+
+**Stable UI element tested:**
+[answer]
+
+**Page/JavaScript errors:**
+NONE or list
+
+**Application source files modified:**
+NONE or list
+
+**Files created:**
+[list]
+
+**Files modified:**
+[list]
+
+**Screenshot evidence:**
+[path/location]
+
+**Trace evidence:**
+[path/location or NOT GENERATED]
+
+**Video evidence:**
+[path/location or NOT GENERATED]
+
+**HTML Playwright report:**
+[path/location]
+
+**TrailWeigh functionality changed:**
+NO / YES — explain
+
+**Data/database changes caused by test:**
+NONE or explain
+
+**Problems encountered:**
+NONE or list
+
+**Rollback procedure:**
+[exact procedure]
+
+**SAFE TO BEGIN BUILDING THE TRAILWEIGH REGRESSION SUITE:**
+YES / NO
+
+If NO, explain why.
+
+---
+
+# 15. STOP CONDITION
+
+When the Playwright foundation and ONE smoke test are complete:
+
+**STOP.**
+
+Do NOT proceed to:
+
+* additional Playwright tests
+* visual regression tests
+* accessibility/Axe
+* Lighthouse
+* security scanning
+* Sentry
+* Firefox
+* WebKit
+* mobile emulation
+* regression-suite creation
+* fixing unrelated TrailWeigh defects
+
+Those will be separate controlled tasks.
+
+Return the final report and wait for explicit authorization.

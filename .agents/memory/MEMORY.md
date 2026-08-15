@@ -1,3 +1,4 @@
+- [pnpm/npm I/O stall wedge](pnpm-io-stall.md) — if pnpm commands freeze in D-state with 0% CPU, don't retry; only a workspace restart clears it.
 - [TrailWeigh operating manual](trailweigh-operating-manual.md) — 025U/025V corrections applied: 12MB body limit, 9 global Review keys, token collision=HTTP 500 (not crash), SESSION_SECRET unused, SyncStatusPanel exists.
 - [Built-in theme architecture](builtin-theme-architecture.md) — 5 permanent themes: Landscape=Unsplash photoId; 4 others=static PNGs at /themes/<slug>/01-10.png; use resolvePresetUrl(id) in Checklist, LEGACY_PHOTO_ID_MAP in ReviewPage.
 - [sourceVersion correction](sourceversion-correction.md) — 025S wording superseded: UNSAVED changes invisible; SAVED changes (updatedAt) DO change sourceVersion; rename always changes it.
