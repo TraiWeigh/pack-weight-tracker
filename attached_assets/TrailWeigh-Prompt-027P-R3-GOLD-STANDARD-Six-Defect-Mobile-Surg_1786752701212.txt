@@ -1,0 +1,1023 @@
+TRAILWEIGH — PROMPT 027P R3 — GOLD STANDARD SURGICAL REPAIR
+V3 MOBILE FUNCTIONAL PARITY — SIX DEFECTS / MISSING CONTROLS ONLY
+NO VISUAL REDESIGN — NO PRODUCTION CUTOVER
+
+INTERNAL VERSION ID:
+027P-V3-MOBILE-SIX-DEFECT-SURGICAL-REPAIR-2026-08-14-R3
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 15–30 minutes
+- approximately $1.25–$3.00 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+SEQUENCE / BASELINE
+============================================================
+
+027L = USER VISUAL PASS / CLOSED.
+027M = READ-ONLY PHOTO / VISUAL LIBRARY DIAGNOSTIC PASS.
+027N = READ-ONLY MASTER LIST IDENTITY DIAGNOSTIC PASS.
+027O = COMPREHENSIVE V3 MOBILE WIRING IMPLEMENTED, BUT USER LIVE TEST = PARTIAL / REPAIR REQUIRED.
+
+TARGET ROUTE:
+`/mobile-functional-v3`
+
+PRODUCTION `/checklist` MUST REMAIN UNCHANGED.
+
+============================================================
+USER LIVE VERIFICATION — AUTHORITATIVE
+============================================================
+
+USER said the mobile V3 looks really good.
+
+THEREFORE:
+THE CURRENT V3 VISUAL DESIGN IS FROZEN.
+
+Do NOT redesign:
+- header
+- + button
+- mountain/topographic art
+- summary card
+- category colors
+- category wedge/icon geometry
+- category handle placement
+- category selected-weight placement
+- item row styling
+- item detail stacking
+- bottom navigation
+- typography
+- spacing
+- card radii/shadows
+- overall composition
+
+Only the minimum visual change strictly required for a functional repair is permitted. The USER has explicitly authorized two small management additions: Category Options from the category name/text, and a compact item trash-can icon immediately after Qty on each item bar/row.
+
+USER live evidence outranks source/report PASS claims.
+
+============================================================
+027O LIVE PASSES TO PROTECT
+============================================================
+
+These behaviors were demonstrated and must NOT regress:
+
+1. Header green `+` opens Start / Create sheet.
+2. `Create New List` entry is visible and correctly not pretending the final guided flow exists.
+3. `Scan Gear List` opens the REAL Scanner/import flow.
+4. Known test scan still finds/imports all 77 items.
+5. Add Item and Add Category are NOT placed in global + menu.
+6. Category icon opens/closes the category.
+7. No category accordion chevron should return.
+8. Item drag dots remain absent.
+9. Item detail layout order is:
+   Weight
+   Quantity
+   Total
+   Move
+   Photo
+10. Quantity editing works.
+11. Move works for an individual item.
+12. Checklist selection/inclusion semantics remain separate from Checklist-use progress.
+13. Locker opens.
+14. Summary opens and contains Pack Summary + Weight Distribution.
+15. More opens.
+16. Imperial/Metric changes displayed weights.
+17. Print reaches the system print path.
+18. Reset works.
+19. Overall V3 visual design looks good to USER.
+20. Category icon remains accordion-only.
+21. Six-dot handle remains reorder-only.
+22. No permanent CATEGORY trash icon should be added. ITEM rows must now show the authorized trash-can icon immediately after Qty.
+
+DO NOT disturb these passing behaviors.
+
+============================================================
+SIX DEFECTS / MISSING CONTROLS — ONLY IMPLEMENTATION SCOPE
+============================================================
+
+DEFECT 1:
+WHOLE-CATEGORY TOUCH DRAG / REORDER DOES NOT WORK PROPERLY ON PHONE.
+
+DEFECT 2:
+ITEM WEIGHT CHANGE DOES NOT WORK.
+Quantity change DOES work.
+
+DEFECT 3:
+HELP / ABOUT IS WRONG.
+It opens in an external web browser and only shows:
+`Help & How To`
+
+Required:
+- remain inside TrailWeigh
+- expose BOTH:
+  - Help & How-To
+  - About TrailWeigh
+
+DEFECT 4:
+SHARE IS WRONG.
+Tapping Share automatically downloads a PDF.
+
+Required:
+Share must invoke TrailWeigh's REAL public share / review-link workflow.
+PDF export/download is NOT Share.
+
+
+DEFECT 5:
+CATEGORY MANAGEMENT IS INCOMPLETE.
+Categories are NOT permanent, but the current V3 mobile interface has no
+clear way to rename/delete them.
+
+Required:
+- tap category NAME / category text area → `Category Options`
+- options:
+  - Rename Category
+  - Delete Category
+- category ICON remains accordion open/close ONLY
+- six-dot handle remains whole-category reorder ONLY
+- selected weight remains display-only
+- do NOT restore permanent trash icons to every category bar
+
+DELETE SAFETY:
+If category is empty:
+- confirm before deletion
+- Cancel / Delete Category
+
+If category contains items:
+- confirmation must show category name
+- confirmation must show exact contained-item count
+- warning must state that deleting the category will also permanently delete
+  those items FROM THIS LIST
+- never silently delete contained items
+
+Example:
+`Delete "Kitchen Gear"?`
+`This category contains 10 items. Deleting the category will permanently
+delete those items from this list.`
+
+DEFECT 6:
+ITEM MANAGEMENT IS INCOMPLETE.
+There is no clear mobile way to delete an individual item.
+
+LATEST USER PLACEMENT DECISION — AUTHORITATIVE:
+Add a trash-can icon directly on EACH ITEM BAR/ROW,
+IMMEDIATELY AFTER the Qty display/control.
+
+Required item-bar order on the right side:
+`Qty` → `Trash Can`
+
+The trash can is the delete control.
+
+Required:
+- trash icon must be visually compact and consistent with the approved V3 design
+- tapping trash MUST NOT change Qty
+- tapping trash MUST NOT expand/collapse the item
+- tapping trash opens a delete confirmation naming the item
+- deletion removes ONLY that list-item instance from the current list
+- it must NOT delete a Catalog product
+- it must NOT delete any future reusable Master Item record
+- preserve Undo behavior if the current production item-delete handler is undoable
+- do NOT add a second redundant `Delete Item` row below Photo
+
+============================================================
+STRICT SCOPE
+============================================================
+
+Repair ONLY those six defects / missing controls.
+
+Do NOT implement:
+- production cutover
+- Master Item registry
+- domains
+- Visual Library
+- durable photo backend
+- final Create New List guided flow
+- Catalog backend/UI
+- global Search
+- new Dark V3 design
+- auto-sync
+- Last Synced
+- new database schema
+- new API unless the CURRENT real Share workflow already requires an existing endpoint
+- unrelated cleanup/refactors
+
+No broad rewrites.
+
+============================================================
+MANDATORY ROOT-CAUSE-FIRST RULE
+============================================================
+
+For EACH defect:
+
+1. reproduce or trace the failure
+2. identify exact active handler/state/component
+3. state root cause in the report
+4. fix only after root cause is understood
+5. verify runtime behavior
+
+Do NOT:
+- guess
+- replace a working production handler with a new parallel implementation
+- mark PASS from source inspection alone
+
+============================================================
+DEFECT 1 — CATEGORY TOUCH REORDER
+============================================================
+
+USER LIVE RESULT:
+The six-dot category drag/reorder does NOT work properly on the phone.
+
+The category handle remains visually approved and must stay around the current approved 72–78% full-bar region.
+
+------------------------------------------------------------
+PRE-FIX DIAGNOSTIC
+------------------------------------------------------------
+
+Trace the exact current 027O implementation:
+- pointerdown / touchstart / drag start
+- pointer capture if used
+- pointermove
+- pointerup / pointercancel
+- threshold logic
+- coordinate calculation
+- target-index calculation
+- scroll interaction
+- touch-action CSS
+- passive/non-passive listeners
+- event propagation
+- state update
+- persistence
+
+Inspect whether:
+- Safari/iOS touch behavior differs
+- scroll gesture is stealing pointer movement
+- pointer capture is missing or released incorrectly
+- target rectangles are stale
+- index calculation uses page/client coordinates incorrectly
+- re-render destroys the active target
+- category icon/name/weight intercept events
+- `touch-action` is wrong
+- drag threshold is too large/small
+- reorder updates visually but not persistently
+- scroll locks during drag
+- accidental tap occurs instead of drag
+
+------------------------------------------------------------
+REPAIR REQUIREMENTS
+------------------------------------------------------------
+
+The six-dot category handle must reorder the WHOLE category on a real phone.
+
+Requirements:
+- drag starts ONLY from six-dot handle
+- category icon remains accordion trigger
+- category name does not become drag target
+- category weight does not become drag target
+- item rows never become draggable
+- normal page scrolling remains natural outside the handle
+- touching/dragging the handle must not accidentally toggle the accordion
+- clear visual feedback while moving is allowed ONLY if minimal and consistent with current V3
+- order must persist using the existing V3 list/category persistence path
+- no new drag dependency unless absolutely necessary
+
+PREFERRED:
+reuse installed/current code and Pointer Events correctly.
+
+IF a new dependency appears necessary:
+STOP this defect and report why.
+DO NOT install without USER authorization.
+
+------------------------------------------------------------
+TOUCH TEST REQUIREMENT
+------------------------------------------------------------
+
+A desktop mouse drag is NOT sufficient.
+
+Must test at mobile emulation AND, if Replit can expose reliable touch/pointer simulation, use it.
+
+Report explicitly:
+`REAL PHYSICAL PHONE TEST STILL REQUIRED = YES`
+
+because USER is the final authority.
+
+============================================================
+DEFECT 2 — ITEM WEIGHT EDITING
+============================================================
+
+USER LIVE RESULT:
+Quantity editing works.
+Weight editing does NOT.
+
+This distinction is important.
+
+------------------------------------------------------------
+PRE-FIX DIAGNOSTIC
+------------------------------------------------------------
+
+Trace:
+- displayed Weight field
+- controlled/uncontrolled input state
+- onChange/onInput/onBlur
+- string -> numeric parsing
+- decimal handling
+- empty intermediate state
+- Imperial/Metric conversion
+- oz canonical storage
+- item update handler
+- derived Total
+- category selected weight
+- Summary calculations
+- persistence
+
+Compare Weight field implementation DIRECTLY against the working Quantity field.
+
+Inspect for:
+- readOnly/disabled state
+- formatted display value fed back into input
+- parser rejecting intermediate values
+- unit suffix embedded in input value
+- `Number("")` / NaN handling
+- immediate normalization preventing typing
+- stale closure
+- state update writing to wrong field
+- derived value overwriting the edit
+- onBlur not firing on mobile
+- keyboard/inputMode mismatch
+
+------------------------------------------------------------
+REPAIR REQUIREMENTS
+------------------------------------------------------------
+
+Weight must be editable on phone.
+
+Preserve current TrailWeigh weight semantics:
+- canonical storage remains current existing format, normally oz if that is active architecture
+- Imperial/Metric display conversion remains correct
+- decimals supported
+- user can type a normal weight without the field fighting the input
+- temporary empty/intermediate typing state is handled safely
+- invalid values do not corrupt data
+- Total updates correctly
+- category selected weight updates correctly
+- Summary updates correctly
+- changing weight does NOT alter Qty
+- Qty behavior remains working
+
+Do NOT redesign the Weight row.
+
+============================================================
+DEFECT 3 — HELP / ABOUT IN-APP
+============================================================
+
+USER LIVE RESULT:
+Help/About opens an external web browser and shows only `Help & How To`.
+
+That is wrong.
+
+Required mobile behavior:
+- stay inside TrailWeigh
+- expose BOTH:
+  - Help & How-To
+  - About TrailWeigh
+
+------------------------------------------------------------
+PRE-FIX DIAGNOSTIC
+------------------------------------------------------------
+
+Trace the current production/source-of-truth implementations for:
+- Help & How-To
+- About TrailWeigh
+- any Help page
+- About component/page/accordion
+- Help/About route(s)
+- external link behavior
+- current desktop in-app behavior if present
+
+Do NOT duplicate large blocks of Help/About content if reusable current components exist.
+
+------------------------------------------------------------
+REPAIR REQUIREMENTS
+------------------------------------------------------------
+
+From the mobile V3 More/menu:
+tap Help/About and open an IN-APP mobile surface.
+
+Preferred existing primitive:
+- Sheet
+- Drawer
+- Dialog
+- internal route
+whichever best reuses the current app architecture without visual redesign.
+
+The surface must provide BOTH destinations/content areas:
+1. Help & How-To
+2. About TrailWeigh
+
+If current source already has separate Help and About sections:
+reuse them.
+
+If they are two existing internal routes:
+present two in-app choices.
+
+Do NOT:
+- launch Safari/external browser
+- open only Help & How-To
+- invent replacement About copy
+- remove existing production Help/About behavior
+
+Use current actual TrailWeigh content.
+
+============================================================
+DEFECT 4 — SHARE MUST USE REAL REVIEW-LINK WORKFLOW
+============================================================
+
+USER LIVE RESULT:
+Tapping Share automatically downloads a PDF.
+
+That is WRONG.
+
+TrailWeigh already has a public Share / Review architecture.
+
+027O must not substitute PDF export for Share.
+
+------------------------------------------------------------
+MANDATORY TRACE
+------------------------------------------------------------
+
+Before editing, locate and trace the ACTIVE real Share workflow used by the current production owner interface.
+
+Trace:
+- Share control
+- Share dropdown/panel
+- handler
+- token creation/reuse
+- server/API call
+- public URL creation
+- ReviewPage or equivalent
+- copy-link behavior
+- native share behavior if current
+- revoke/disable behavior if current
+- owner-auth gating
+- review sandbox isolation
+- no-login public access
+- any Save Copy behavior
+
+Also trace:
+- Print/PDF path
+
+Clearly separate:
+`SHARE / REVIEW LINK`
+from
+`PRINT / PDF`
+
+------------------------------------------------------------
+REPAIR REQUIREMENTS
+------------------------------------------------------------
+
+The V3 Share control must invoke the SAME real TrailWeigh share/review-link path as the current production owner UI.
+
+Reuse the existing handler/component if possible.
+
+Required:
+- Share does NOT automatically download PDF
+- user can obtain/use the real public review/share link according to current TrailWeigh behavior
+- existing token/auth behavior preserved
+- reviewer remains isolated from owner original
+- no-login review behavior preserved if current active architecture supports it
+- do not weaken permissions
+- do not invent a second share system
+
+PDF remains under:
+- Print
+- existing PDF/export function
+as currently appropriate.
+
+------------------------------------------------------------
+REVIEW SAFETY
+------------------------------------------------------------
+
+Do NOT modify:
+- ReviewPage isolation model
+- review localStorage namespace
+- owner mutation gates
+- auth rules
+unless an exact tiny compatibility exposure is required to CALL the existing Share component/handler.
+
+If the V3 functional preview cannot create a real share token because it is deliberately sandboxed/no-login:
+report the limitation explicitly and reuse the production Share component only in a safe authenticated test context.
+
+Do NOT fake a URL.
+
+============================================================
+DEFECT 5 — CATEGORY OPTIONS / RENAME / DELETE
+============================================================
+
+USER PRODUCT RULE:
+Categories are list-specific/user-manageable. They are NOT permanent.
+
+------------------------------------------------------------
+MANDATORY TRACE
+------------------------------------------------------------
+
+Trace the current production/source-of-truth behavior for:
+- Rename Category
+- Delete Category
+- confirmation behavior
+- contained-item deletion behavior
+- category state update
+- persistence
+- Undo support, if current
+
+Reuse the existing production handlers/components if available.
+
+------------------------------------------------------------
+REPAIR REQUIREMENTS
+------------------------------------------------------------
+
+Use category NAME / text area as the mobile management entry point.
+
+Tap category name/text:
+open an IN-APP `Category Options` surface with:
+
+1. Rename Category
+2. Delete Category
+
+Role separation is strict:
+- category icon = accordion open/close ONLY
+- category name/text = Category Options
+- six-dot handle = whole-category reorder ONLY
+- selected weight = display only
+
+Do NOT:
+- add a category chevron
+- add a permanent trash icon to category bars
+- make the whole category bar clickable
+- make the drag handle open options
+- make the category icon open options
+
+RENAME:
+- current name prefilled
+- Cancel leaves unchanged
+- Rename/Save updates only that category
+- no accidental accordion toggle
+- no accidental reorder
+
+DELETE:
+If EMPTY:
+- confirm category name
+- Cancel
+- Delete Category
+
+If CONTAINS ITEMS:
+- confirm category name
+- show exact item count
+- explicitly warn that those list items will also be deleted from THIS LIST
+- Cancel must preserve everything
+- Delete Category removes only the selected category and its contained list items
+
+Deletion must NOT:
+- delete Catalog products
+- delete future reusable Master Items
+- alter unrelated categories/items
+
+Use safe test data.
+
+============================================================
+DEFECT 6 — ITEM DELETE
+============================================================
+
+USER PRODUCT RULE:
+Individual list items are user-manageable and must be deletable.
+
+------------------------------------------------------------
+MANDATORY TRACE
+------------------------------------------------------------
+
+Trace current production/source-of-truth item deletion:
+- delete control
+- handler
+- state mutation
+- confirmation
+- persistence
+- Undo support
+- category total/summary recalculation
+- Checklist inclusion cleanup
+- Checklist-use cleanup if applicable
+
+Reuse the existing handler if possible.
+
+------------------------------------------------------------
+REPAIR REQUIREMENTS
+------------------------------------------------------------
+
+In the expanded mobile item-detail panel preserve this order:
+
+Weight
+Quantity
+Total
+Move
+Photo
+Delete Item
+
+`Delete Item` must be the LAST row/action.
+
+Do NOT:
+- add a trash icon to every collapsed item row
+- make item name itself destructive
+- delete on a single accidental tap without confirmation
+- change Qty when the user intends full item deletion
+
+On tap:
+open an in-app confirmation naming the item.
+
+Example:
+`Delete "Titanium Pot"?`
+`This will permanently remove this item from the current list.`
+
+Buttons:
+- Cancel
+- Delete Item
+
+Deletion semantics:
+- remove only the selected list-item instance
+- current category remains
+- other items remain
+- summary totals update
+- category selected weight updates
+- Checklist inclusion/state for that deleted item is removed
+- preserve Undo behavior if current production item deletion supports it
+- do NOT delete Catalog product records
+- do NOT delete future reusable Master Items
+- do NOT alter other lists
+
+Use safe test data.
+
+
+============================================================
+VISUAL FREEZE
+============================================================
+
+The USER said the current V3 looks really good.
+
+Therefore these are protected:
+
+- header geometry
+- green +
+- logo/wordmark
+- summary card
+- mountain/topographic art
+- category bar height
+- category icon wedge
+- category names/count
+- category color palette
+- six-dot handle position
+- selected weight position
+- no category chevrons
+- no item drag dots
+- item detail vertical arrangement
+- Photo row position
+- bottom navigation
+- mobile spacing
+
+No visual polish task is authorized.
+
+============================================================
+PASSING FUNCTION PROTECTION TESTS
+============================================================
+
+After fixes, re-check at minimum:
+
+A. + CREATION SHEET
+- Create New List visible
+- Scan Gear List visible
+- Scanner opens
+- Add Item/Add Category absent from global +
+
+B. SCANNER
+- known test still returns 77 items if test asset available
+- no importer regression
+
+C. CATEGORY ICON
+- icon opens/closes
+- no category chevron
+- drag handle does NOT toggle
+
+D. QUANTITY
+- still editable
+
+E. MOVE
+- still moves one item to another category
+
+F. CHECKLIST
+- main-list selected state = Checklist inclusion
+- Checklist-use progress remains separate
+
+G. LOCKER
+- still opens
+
+H. SUMMARY
+- Pack Summary + Weight Distribution still open
+
+I. UNITS
+- Imperial/Metric still works
+
+J. PRINT
+- still invokes print/PDF path
+- Share no longer invokes that path
+
+============================================================
+PHONE VIEWPORTS
+============================================================
+
+Verify:
+- 375
+- 390
+- 430
+
+No horizontal overflow.
+No visual drift.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Preferred:
+1–4 application files.
+
+Potential files may include:
+- `src/pages/MobileFunctionalV3.tsx`
+- a small existing Share component exposure/import
+- existing Help/About reusable component wiring
+- minimal exposure/reuse of existing category/item delete handlers if necessary
+
+Do NOT rewrite production components merely for styling parity.
+
+If more than 5 application files become necessary:
+STOP and explain why before continuing.
+
+============================================================
+PRE-EDIT CHECK
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read:
+   `workflow-reports/PROMPT_027O_REPORT.md`
+3. Inspect current V3 functional route.
+4. Trace production Share implementation BEFORE touching Share.
+5. Trace Help/About source BEFORE touching Help/About.
+6. Compare working Qty input with broken Weight input.
+7. Trace category reorder events before editing.
+8. Record preflight git status.
+
+============================================================
+MANDATORY DEFECT TABLE
+============================================================
+
+Include in report:
+
+DEFECT
+USER LIVE FAILURE
+ROOT CAUSE
+FILE/FUNCTION
+FIX
+RUNTIME TEST
+RESULT
+REGRESSION RISK
+
+Rows:
+1. Category touch reorder
+2. Weight editing
+3. Help/About
+4. Share
+5. Category Options / Rename / Delete
+6. Item Delete
+
+============================================================
+MANDATORY RUNTIME ACCEPTANCE
+============================================================
+
+DEFECT 1 — CATEGORY REORDER
+- six-dot handle starts reorder
+- whole category moves
+- icon still toggles
+- page scroll works outside handle
+- order persists
+- no item drag
+
+DEFECT 2 — WEIGHT
+- edit weight on mobile-sized viewport
+- decimal entry works
+- Total recalculates
+- category selected weight recalculates
+- unit toggle remains correct
+- Qty still works
+
+DEFECT 3 — HELP/ABOUT
+- tap Help/About
+- stays inside TrailWeigh
+- Help & How-To accessible
+- About TrailWeigh accessible
+- no external browser
+
+DEFECT 4 — SHARE
+- tap Share
+- no automatic PDF download
+- invokes existing real Share/review-link UI/path
+- public/review-link mechanism matches production
+- Print still handles PDF/print separately
+
+
+DEFECT 5 — CATEGORY OPTIONS / RENAME / DELETE
+- tap category NAME/text
+- Category Options opens in-app
+- Rename Category available and works
+- Delete Category available
+- category icon still only toggles accordion
+- six-dot handle still only reorders
+- empty-category delete confirms before deletion
+- populated-category delete warning shows exact item count
+- Cancel preserves category/items
+- Delete Category removes only that category + contained list items
+- no permanent trash icon appears on category bar
+
+DEFECT 6 — ITEM DELETE
+- item bar shows trash-can icon immediately after Qty
+- tapping Qty does not delete
+- tapping trash does not alter Qty
+- tapping trash does not expand/collapse item
+- tapping trash opens confirmation naming the item
+- Cancel preserves item
+- Delete Item removes only that current-list item
+- category remains
+- category/summary totals recalculate
+- expanded item panel does NOT gain a redundant second Delete Item row
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate evidence for:
+
+1. category reorder before/after state
+2. Weight changed + Total recalculated
+3. Help/About in-app surface showing BOTH Help and About access
+4. Share real review-link surface/path
+5. Print still separate
+6. 390 main V3 after repairs
+7. production `/checklist` unchanged
+8. desktop unchanged
+9. Category Options opened from category name showing Rename + Delete
+10. populated-category delete confirmation showing exact item count
+11. item bar showing Qty followed immediately by trash-can icon
+12. item-delete confirmation
+
+Do not put images/video inside report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+
+`workflow-reports/PROMPT_027P_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. files changed
+6. defect table
+7. category reorder root cause
+8. category reorder fix
+9. category reorder runtime evidence
+10. Weight root cause
+11. Weight fix
+12. Weight runtime evidence
+13. Help/About root cause
+14. Help/About fix
+15. Help/About source reused
+16. Share root cause
+17. Share production handler/component traced
+18. Share fix
+19. Share runtime evidence
+20. Print/PDF separation confirmation
+21. Category Options root cause
+22. Category rename/delete fix
+23. Category populated-delete confirmation behavior
+24. Category management runtime evidence
+25. Item-delete root cause
+26. Item-delete fix
+27. Item-delete runtime evidence
+28. passing-function regression checks
+29. 375 result
+30. 390 result
+31. 430 result
+32. `/checklist` unchanged result
+33. desktop unchanged result
+34. review behavior unchanged result
+35. tests NOT RUN
+36. rollback
+37. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027P R2 SIX-DEFECT SURGICAL REPAIR = PASS / PARTIAL / FAIL
+
+V3 VISUAL DESIGN CHANGED = YES / NO
+/MOBILE-FUNCTIONAL-V3 CHANGED = YES / NO
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+REVIEW ARCHITECTURE CHANGED = YES / NO
+
+CATEGORY TOUCH REORDER = PASS / FAIL / BLOCKED / NOT RUN
+CATEGORY HANDLE POSITION PRESERVED = PASS / FAIL / NOT RUN
+CATEGORY ICON ACCORDION = PASS / FAIL / NOT RUN
+ITEM DRAG DOTS PRESENT = YES / NO
+
+WEIGHT EDITING = PASS / FAIL / NOT RUN
+QUANTITY EDITING = PASS / FAIL / NOT RUN
+TOTAL RECALCULATION = PASS / FAIL / NOT RUN
+CATEGORY WEIGHT RECALCULATION = PASS / FAIL / NOT RUN
+
+HELP/ABOUT STAYS IN APP = PASS / FAIL / NOT RUN
+HELP & HOW-TO AVAILABLE = YES / NO
+ABOUT TRAILWEIGH AVAILABLE = YES / NO
+EXTERNAL BROWSER LAUNCHED = YES / NO
+
+SHARE INVOKES REAL REVIEW-LINK WORKFLOW = PASS / FAIL / NOT RUN
+SHARE AUTO-DOWNLOADS PDF = YES / NO
+PRINT/PDF STILL SEPARATE = PASS / FAIL / NOT RUN
+
+
+CATEGORY OPTIONS FROM NAME/TEXT = PASS / FAIL / NOT RUN
+RENAME CATEGORY = PASS / FAIL / NOT RUN
+DELETE EMPTY CATEGORY = PASS / FAIL / NOT RUN
+DELETE POPULATED CATEGORY WITH ITEM-COUNT WARNING = PASS / FAIL / NOT RUN
+PERMANENT CATEGORY TRASH ICON PRESENT = YES / NO
+
+ITEM TRASH CAN IMMEDIATELY AFTER QTY = PASS / FAIL / NOT RUN
+ITEM TRASH TAP DOES NOT CHANGE QTY = PASS / FAIL / NOT RUN
+ITEM TRASH TAP DOES NOT TOGGLE EXPANSION = PASS / FAIL / NOT RUN
+ITEM DELETE CONFIRMATION = PASS / FAIL / NOT RUN
+ITEM DELETE AFFECTS ONLY CURRENT LIST ITEM = PASS / FAIL / NOT RUN
+REDUNDANT DELETE ROW BELOW PHOTO PRESENT = YES / NO
+
+PLUS/SCANNER REGRESSION = PASS / FAIL / NOT RUN
+CHECKLIST REGRESSION = PASS / FAIL / NOT RUN
+LOCKER REGRESSION = PASS / FAIL / NOT RUN
+SUMMARY REGRESSION = PASS / FAIL / NOT RUN
+UNITS REGRESSION = PASS / FAIL / NOT RUN
+MOVE REGRESSION = PASS / FAIL / NOT RUN
+
+DATABASE/SCHEMA CHANGED = YES / NO
+API/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+REAL PHYSICAL PHONE TEST STILL REQUIRED = YES
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+`workflow-reports/trailweigh-027P-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027P_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+This R3 supersedes 027P R2 and 027P R1. Do not execute R1 or R2.
+
+Do NOT:
+- cut over `/checklist`
+- deploy/publish
+- redesign V3
+- implement Master Items
+- implement domains
+- implement Visual Library
+- implement durable photos
+- implement guided Create New List
+- implement Catalog
+- implement Search
+- proceed to 027Q

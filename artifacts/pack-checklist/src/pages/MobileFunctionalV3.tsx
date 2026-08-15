@@ -33,7 +33,8 @@ import {
   Hash, PackageOpen, ArrowRightLeft, Luggage, Camera,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
   Tent, HelpCircle, X, ChevronLeft, Layers,
-  Scale, Coins, LayoutList, AlertCircle,
+  Scale, Coins, LayoutList, AlertCircle, Trash2, Copy, Link2,
+  BookOpen, Info, Pencil,
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
@@ -42,7 +43,9 @@ import { BarStyleProvider } from '../context/BarStyleContext';
 import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
 import { PreviewBody } from '../components/PreviewModal';
 import { ImportGearPanel } from '../components/ImportGearPanel';
-import { generatePackPDF, sharePackList } from '../lib/exportPDF';
+import { generatePackPDF } from '../lib/exportPDF';
+import { buildShareURL } from '../lib/shareLink';
+import type { SharePayload } from '../lib/shareLink';
 import { resolveDestination } from '../lib/categoryAliases';
 import type { GearItem, CategoryMeta } from '../hooks/usePackData';
 import { LOCKER_KEY } from '../hooks/usePackData';
@@ -658,7 +661,7 @@ interface HamburgerMenuProps {
   onReset: () => void;
   onSave: () => void;
   onPrint: () => void;
-  onShare: () => void;
+  onShare: () => Promise<void>;
   onChecklist: () => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
@@ -722,7 +725,7 @@ function HamburgerMenu({
         <div style={{ marginBottom: 4, marginTop: 8 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>Actions</div>
           {menuItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', onChecklist, false, 'Trail checklist for selected items')}
-          {menuItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share / Download PDF', onShare)}
+          {menuItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share (get review link)', () => { void onShare(); })}
           {menuItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', onPrint)}
         </div>
 
@@ -969,9 +972,30 @@ function MobileFunctionalV3Inner() {
 
   // Category reorder via Pointer Events
   const catListRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ catIdx: number; origOrder: string[]; containerTop: number; catHeight: number } | null>(null);
+  const dragRef = useRef<{ catIdx: number; origOrder: string[] } | null>(null);
   const [dragSrcIdx, setDragSrcIdx] = useState<number | null>(null);
   const [dragDstIdx, setDragDstIdx] = useState<number | null>(null);
+
+  // D2 — weight input local edit state (prevents intermediate value snapping)
+  const [weightInputs, setWeightInputs] = useState<Record<string, string>>({});
+
+  // D3 — help/about in-app sheet
+  const [showHelpSheet, setShowHelpSheet] = useState(false);
+
+  // D4 — share real link
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [shareLoading, setShareLoading] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  // D5 — category options
+  const [catOptionsFor, setCatOptionsFor] = useState<string | null>(null);
+  const [catRenaming, setCatRenaming] = useState(false);
+  const [catRenameValue, setCatRenameValue] = useState('');
+  const [catDeleteConfirm, setCatDeleteConfirm] = useState(false);
+
+  // D6 — item delete confirmation
+  const [deleteItemConfirm, setDeleteItemConfirm] = useState<{ cat: string; id: string; name: string } | null>(null);
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1133,21 +1157,28 @@ function MobileFunctionalV3Inner() {
     showToast(`Saved as "${name}"`);
   }, [listName, showToast]);
 
-  // ── Share (downloads PDF of sandbox data) ────────────────────────────────────
+  // ── Share — D4 FIX: invoke real review-link workflow (buildShareURL) ──────────
 
-  const handleShare = useCallback(() => {
-    try {
-      sharePackList(
-        sandboxRef.current.items,
-        system,
-        sandboxRef.current.order,
-        sandboxRef.current.meta,
-      );
-      showToast('PDF downloaded');
-    } catch {
-      showToast('PDF generation failed');
+  const handleShare = useCallback(async () => {
+    setShareLoading(true);
+    setOpenSheet(null);
+    const payload: SharePayload = {
+      type: 'pack-list',
+      data: sandboxRef.current.items,
+      categoryOrder: sandboxRef.current.order,
+      categoryMeta: sandboxRef.current.meta,
+      unit: system,
+      name: listName,
+    };
+    const url = await buildShareURL(payload);
+    setShareLoading(false);
+    if (url) {
+      setShareLink(url);
+      setShowShareSheet(true);
+    } else {
+      showToast('Share failed — sign in required or server unavailable');
     }
-  }, [system, showToast]);
+  }, [system, listName, showToast]);
 
   // ── Print (downloads PDF and opens browser print) ────────────────────────────
 
@@ -1245,23 +1276,27 @@ function MobileFunctionalV3Inner() {
     e.preventDefault();
     e.stopPropagation();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    const containerRect = catListRef.current?.getBoundingClientRect();
-    const totalCats = sandboxRef.current.order.length;
     dragRef.current = {
       catIdx,
       origOrder: [...sandboxRef.current.order],
-      containerTop: containerRect?.top ?? 0,
-      catHeight: totalCats > 0 ? ((containerRect?.height ?? 600) / totalCats) : 76,
     };
     setDragSrcIdx(catIdx);
     setDragDstIdx(catIdx);
   }, []);
 
+  // D1 FIX: use actual element midpoints instead of fixed catHeight
+  // This handles mixed-height categories (expanded vs collapsed) correctly
   const handleGripPointerMove = useCallback((e: React.PointerEvent) => {
     if (!dragRef.current) return;
-    const { containerTop, catHeight, origOrder } = dragRef.current;
-    const relY = e.clientY - containerTop;
-    const newIdx = Math.max(0, Math.min(origOrder.length - 1, Math.floor(relY / catHeight)));
+    const container = catListRef.current;
+    if (!container) return;
+    const children = Array.from(container.children) as HTMLElement[];
+    let newIdx = 0;
+    for (let i = 0; i < children.length; i++) {
+      const rect = children[i].getBoundingClientRect();
+      if (e.clientY >= rect.top + rect.height / 2) newIdx = i;
+    }
+    newIdx = Math.max(0, Math.min(dragRef.current.origOrder.length - 1, newIdx));
     setDragDstIdx(newIdx);
   }, []);
 
@@ -1290,12 +1325,58 @@ function MobileFunctionalV3Inner() {
       })()
     : sandbox.order;
 
-  // ── Help / About ──────────────────────────────────────────────────────────────
+  // ── Help / About — D3 FIX: in-app sheet with both Help & About ───────────────
 
   const handleHelp = useCallback(() => {
-    const basePath = import.meta.env.BASE_URL?.replace(/\/$/, '') ?? '';
-    window.open(`${basePath}/help`, '_blank', 'noopener');
+    setOpenSheet(null);
+    setShowHelpSheet(true);
   }, []);
+
+  // ── D5 — Sandbox category mutations ──────────────────────────────────────────
+
+  const sandboxDeleteCategory = useCallback((name: string) => {
+    mutateSandbox(prev => {
+      const newItems = { ...prev.items };
+      delete newItems[name];
+      const newMeta = { ...prev.meta };
+      delete newMeta[name];
+      return { items: newItems, meta: newMeta, order: prev.order.filter(c => c !== name) };
+    });
+    // Close any open accordion for deleted category
+    setOpenCatName(prev => prev === name ? null : prev);
+    setExpandedItem(prev => prev?.cat === name ? null : prev);
+  }, [mutateSandbox]);
+
+  const sandboxRenameCategory = useCallback((oldName: string, newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed === oldName) return;
+    mutateSandbox(prev => {
+      if (prev.order.includes(trimmed)) { showToast('Category name already exists'); return prev; }
+      const order = prev.order.map(c => c === oldName ? trimmed : c);
+      const newItems: PackState = {};
+      const newMeta: Record<string, CategoryMeta> = {};
+      prev.order.forEach(cat => {
+        const key = cat === oldName ? trimmed : cat;
+        newItems[key] = prev.items[cat] ?? [];
+        newMeta[key]  = prev.meta[cat] ?? { countsToBase: true };
+      });
+      return { items: newItems, order, meta: newMeta };
+    });
+    setOpenCatName(prev => prev === oldName ? trimmed : prev);
+    setExpandedItem(prev => prev?.cat === oldName ? { ...prev, cat: trimmed } : prev);
+    showToast(`Renamed to "${trimmed}"`);
+  }, [mutateSandbox, showToast]);
+
+  // ── D6 — Sandbox item remove ──────────────────────────────────────────────────
+
+  const sandboxRemoveItem = useCallback((cat: string, id: string) => {
+    mutateSandbox(prev => ({
+      ...prev,
+      items: { ...prev.items, [cat]: (prev.items[cat] ?? []).filter(i => i.id !== id) },
+    }));
+    setChecklistUse(prev => { const next = { ...prev }; delete next[id]; return next; });
+    setExpandedItem(prev => (prev?.cat === cat && prev?.id === id) ? null : prev);
+  }, [mutateSandbox]);
 
   // ── Derived summary metrics ───────────────────────────────────────────────────
 
@@ -1517,16 +1598,26 @@ function MobileFunctionalV3Inner() {
                       padding: '10px 12px',
                       columnGap: 0,
                     }}>
-                      {/* Col 1 — name + subtitle */}
+                      {/* Col 1 — name + subtitle (tap name → Category Options) */}
                       <div style={{ minWidth: 0 }}>
-                        <div style={{
-                          fontSize: 17, fontWeight: 500, color: PRIMARY,
-                          lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
-                          fontFamily: SERIF,
-                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        }}>
-                          {catName}
-                        </div>
+                        <button
+                          onClick={e => { e.stopPropagation(); setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(false); setCatRenameValue(catName); }}
+                          aria-label={`Category options for ${catName}`}
+                          title="Tap for category options (rename/delete)"
+                          style={{
+                            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                            textAlign: 'left', width: '100%', maxWidth: '100%',
+                          }}
+                        >
+                          <div style={{
+                            fontSize: 17, fontWeight: 500, color: PRIMARY,
+                            lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
+                            fontFamily: SERIF,
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          }}>
+                            {catName}
+                          </div>
+                        </button>
                         <div style={{ fontSize: 12.5, color: MUTED }}>
                           {items.length} {items.length === 1 ? 'item' : 'items'} · {selectedInCat} selected
                         </div>
@@ -1633,9 +1724,25 @@ function MobileFunctionalV3Inner() {
                               </div>
 
                               {/* Quantity */}
-                              <span style={{ fontSize: 14, color: SECONDARY }}>
+                              <span style={{ fontSize: 14, color: SECONDARY, flexShrink: 0 }}>
                                 {item.qty}
                               </span>
+
+                              {/* D6 — Trash icon immediately after Qty */}
+                              <button
+                                onClick={e => { e.stopPropagation(); setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName }); }}
+                                onPointerDown={e => e.stopPropagation()}
+                                aria-label={`Delete ${displayName}`}
+                                title={`Delete "${displayName}" from this list`}
+                                style={{
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                  padding: '4px 2px', flexShrink: 0, lineHeight: 1,
+                                  display: 'flex', alignItems: 'center',
+                                  color: '#c0392b', opacity: 0.55,
+                                }}
+                              >
+                                <Trash2 size={14} strokeWidth={1.8}/>
+                              </button>
                             </div>
 
                             {/* EXPANDED DETAIL PANEL */}
@@ -1645,7 +1752,7 @@ function MobileFunctionalV3Inner() {
                                 borderBottom: isLast ? 'none' : `1px solid ${DIVIDER}`,
                               }}>
 
-                                {/* Weight */}
+                                {/* Weight — D2 FIX: local edit state prevents intermediate-value snapping */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
                                   padding: '0 14px', height: 42, gap: 10,
@@ -1655,17 +1762,29 @@ function MobileFunctionalV3Inner() {
                                   <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Weight</div>
                                   <input
                                     type="number"
+                                    inputMode="decimal"
                                     min={0}
                                     step={system === 'metric' ? 1 : 0.1}
-                                    value={weightDisplay}
+                                    value={item.id in weightInputs ? weightInputs[item.id] : weightDisplay.toString()}
                                     aria-label={`Weight of ${displayName} in ${su}`}
+                                    onFocus={() => {
+                                      setWeightInputs(prev => ({ ...prev, [item.id]: weightDisplay.toString() }));
+                                    }}
                                     onChange={e => {
-                                      const num = parseFloat(e.target.value);
+                                      // Store raw string — allow empty / decimal in-progress (e.g. "1." or "")
+                                      setWeightInputs(prev => ({ ...prev, [item.id]: e.target.value }));
+                                    }}
+                                    onBlur={e => {
+                                      // Commit on blur — parse and write to sandbox
+                                      const raw = e.target.value;
+                                      const num = parseFloat(raw);
                                       if (!isNaN(num) && num >= 0) {
                                         updateItem(catName, item.id, {
                                           weightOz: system === 'metric' ? gramsToOz(num) : num,
                                         });
                                       }
+                                      // Clear local edit state — revert to derived display value
+                                      setWeightInputs(prev => { const n = { ...prev }; delete n[item.id]; return n; });
                                     }}
                                     style={{
                                       width: 72, textAlign: 'right', fontSize: 13.5,
@@ -1968,6 +2087,298 @@ function MobileFunctionalV3Inner() {
         onExpandAll={handleExpandAll}
         onCollapseAll={handleCollapseAll}
       />
+
+      {/* ── D3: Help / About in-app sheet ── */}
+      <Sheet open={showHelpSheet} onOpenChange={v => setShowHelpSheet(v)}>
+        <SheetContent side="bottom" style={{ maxHeight: '60vh', fontFamily: SANS, padding: '20px 20px 32px' }}>
+          <SheetHeader>
+            <SheetTitle style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
+              Help &amp; About
+            </SheetTitle>
+          </SheetHeader>
+          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Help & How-To */}
+            <button
+              onClick={() => { setShowHelpSheet(false); const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, ''); window.location.assign(`${base}/help`); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                padding: '14px 16px', cursor: 'pointer', textAlign: 'left', width: '100%',
+                boxShadow: CARD_SHADOW,
+              }}
+            >
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <BookOpen size={18} color="#fff" strokeWidth={1.8}/>
+              </div>
+              <div>
+                <div style={{ fontSize: 15.5, fontWeight: 600, color: PRIMARY, marginBottom: 2 }}>Help &amp; How-To</div>
+                <div style={{ fontSize: 12.5, color: MUTED }}>Instructions, tips, and feature guide</div>
+              </div>
+            </button>
+            {/* About TrailWeigh */}
+            <button
+              onClick={() => { setShowHelpSheet(false); const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, ''); window.location.assign(`${base}/about`); }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                padding: '14px 16px', cursor: 'pointer', textAlign: 'left', width: '100%',
+                boxShadow: CARD_SHADOW,
+              }}
+            >
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: '#5e6ad2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Info size={18} color="#fff" strokeWidth={1.8}/>
+              </div>
+              <div>
+                <div style={{ fontSize: 15.5, fontWeight: 600, color: PRIMARY, marginBottom: 2 }}>About TrailWeigh</div>
+                <div style={{ fontSize: 12.5, color: MUTED }}>Mission, philosophy, and creator info</div>
+              </div>
+            </button>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* ── D4: Share link sheet ── */}
+      <Sheet open={showShareSheet} onOpenChange={v => { setShowShareSheet(v); if (!v) { setShareLink(null); setShareCopied(false); } }}>
+        <SheetContent side="bottom" style={{ maxHeight: '55vh', fontFamily: SANS, padding: '20px 20px 32px' }}>
+          <SheetHeader>
+            <SheetTitle style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
+              Share This List
+            </SheetTitle>
+          </SheetHeader>
+          {shareLink ? (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 13, color: SECONDARY, marginBottom: 8 }}>
+                Anyone with this link can view your pack list (read-only):
+              </div>
+              <div style={{
+                background: PAGE_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 8,
+                padding: '10px 12px', fontSize: 12.5, color: PRIMARY, wordBreak: 'break-all',
+                marginBottom: 12, fontFamily: 'monospace',
+              }}>
+                {shareLink}
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => { void navigator.clipboard.writeText(shareLink).then(() => setShareCopied(true)); }}
+                  style={{
+                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    background: shareCopied ? '#16a34a' : NAV_ACTIVE, color: '#fff', border: 'none',
+                    borderRadius: 10, padding: '12px 0', fontSize: 14.5, fontWeight: 600, cursor: 'pointer',
+                  }}
+                >
+                  <Copy size={16} strokeWidth={2}/>
+                  {shareCopied ? 'Copied!' : 'Copy Link'}
+                </button>
+                {typeof navigator.share === 'function' && (
+                  <button
+                    onClick={() => { void navigator.share({ title: 'My Pack List', url: shareLink }); }}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                      background: CARD_BG, color: PRIMARY, border: `1px solid ${CARD_BORDER}`,
+                      borderRadius: 10, padding: '12px 0', fontSize: 14.5, fontWeight: 600, cursor: 'pointer',
+                    }}
+                  >
+                    <Link2 size={16} strokeWidth={2}/>
+                    Share…
+                  </button>
+                )}
+              </div>
+              <div style={{ marginTop: 12, fontSize: 12, color: MUTED, textAlign: 'center' }}>
+                Reviewers cannot edit your list. This link is a read-only snapshot.
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 24, textAlign: 'center', color: MUTED, fontSize: 14 }}>
+              {shareLoading ? 'Generating share link…' : 'No link generated.'}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* ── D5: Category Options sheet ── */}
+      <Sheet open={catOptionsFor !== null} onOpenChange={v => { if (!v) { setCatOptionsFor(null); setCatRenaming(false); setCatDeleteConfirm(false); } }}>
+        <SheetContent side="bottom" style={{ maxHeight: '70vh', fontFamily: SANS, padding: '20px 20px 32px' }}>
+          <SheetHeader>
+            <SheetTitle style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
+              Category Options
+            </SheetTitle>
+            {catOptionsFor && !catRenaming && !catDeleteConfirm && (
+              <div style={{ fontSize: 13.5, color: SECONDARY, marginTop: 2 }}>"{catOptionsFor}"</div>
+            )}
+          </SheetHeader>
+
+          {catOptionsFor && !catRenaming && !catDeleteConfirm && (
+            <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* Rename */}
+              <button
+                onClick={() => { setCatRenaming(true); setCatRenameValue(catOptionsFor); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                  padding: '14px 16px', cursor: 'pointer', textAlign: 'left', width: '100%',
+                  boxShadow: CARD_SHADOW,
+                }}
+              >
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#4f87c4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Pencil size={17} color="#fff" strokeWidth={1.8}/>
+                </div>
+                <div style={{ fontSize: 15.5, fontWeight: 600, color: PRIMARY }}>Rename Category</div>
+              </button>
+              {/* Delete */}
+              <button
+                onClick={() => setCatDeleteConfirm(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                  padding: '14px 16px', cursor: 'pointer', textAlign: 'left', width: '100%',
+                  boxShadow: CARD_SHADOW,
+                }}
+              >
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Trash2 size={17} color="#fff" strokeWidth={1.8}/>
+                </div>
+                <div style={{ fontSize: 15.5, fontWeight: 600, color: '#dc2626' }}>Delete Category</div>
+              </button>
+            </div>
+          )}
+
+          {/* Rename sub-view */}
+          {catOptionsFor && catRenaming && (
+            <div style={{ marginTop: 20 }}>
+              <div style={{ fontSize: 13.5, color: SECONDARY, marginBottom: 10 }}>New name for "{catOptionsFor}":</div>
+              <input
+                autoFocus
+                type="text"
+                value={catRenameValue}
+                onChange={e => setCatRenameValue(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && catRenameValue.trim()) {
+                    sandboxRenameCategory(catOptionsFor, catRenameValue);
+                    setCatOptionsFor(null); setCatRenaming(false);
+                  }
+                  if (e.key === 'Escape') { setCatRenaming(false); }
+                }}
+                placeholder="Category name…"
+                style={{
+                  width: '100%', fontSize: 15, color: PRIMARY, fontFamily: SANS,
+                  border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '10px 12px',
+                  background: PAGE_BG, outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button
+                  onClick={() => setCatRenaming(false)}
+                  style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 14.5, fontWeight: 600, color: SECONDARY, cursor: 'pointer' }}
+                >Cancel</button>
+                <button
+                  disabled={!catRenameValue.trim() || catRenameValue.trim() === catOptionsFor}
+                  onClick={() => {
+                    sandboxRenameCategory(catOptionsFor, catRenameValue);
+                    setCatOptionsFor(null); setCatRenaming(false);
+                  }}
+                  style={{
+                    flex: 1, padding: '11px 0', borderRadius: 10,
+                    background: catRenameValue.trim() && catRenameValue.trim() !== catOptionsFor ? NAV_ACTIVE : MUTED,
+                    border: 'none', fontSize: 14.5, fontWeight: 600, color: '#fff',
+                    cursor: catRenameValue.trim() && catRenameValue.trim() !== catOptionsFor ? 'pointer' : 'not-allowed',
+                  }}
+                >Rename</button>
+              </div>
+            </div>
+          )}
+
+          {/* Delete confirmation sub-view */}
+          {catOptionsFor && catDeleteConfirm && (() => {
+            const itemCount = (sandbox.items[catOptionsFor] ?? []).length;
+            return (
+              <div style={{ marginTop: 20 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: '#dc2626', marginBottom: 10 }}>
+                  Delete "{catOptionsFor}"?
+                </div>
+                {itemCount === 0 ? (
+                  <div style={{ fontSize: 14, color: SECONDARY, marginBottom: 20 }}>
+                    This category is empty. It will be permanently removed from this list.
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 14, color: SECONDARY, marginBottom: 20, lineHeight: 1.5 }}>
+                    This category contains <strong>{itemCount} {itemCount === 1 ? 'item' : 'items'}</strong>. Deleting the category will also permanently delete{' '}
+                    {itemCount === 1 ? 'that item' : 'those items'} from this list.
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => setCatDeleteConfirm(false)}
+                    style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 14.5, fontWeight: 600, color: SECONDARY, cursor: 'pointer' }}
+                  >Cancel</button>
+                  <button
+                    onClick={() => { sandboxDeleteCategory(catOptionsFor); setCatOptionsFor(null); setCatDeleteConfirm(false); showToast(`Deleted "${catOptionsFor}"`); }}
+                    style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 14.5, fontWeight: 600, color: '#fff', cursor: 'pointer' }}
+                  >Delete Category</button>
+                </div>
+              </div>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
+
+      {/* ── D6: Item delete confirmation ── */}
+      {deleteItemConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Delete item confirmation"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setDeleteItemConfirm(null)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500,
+              background: '#fff', borderRadius: '16px 16px 0 0',
+              padding: '24px 20px 36px', fontFamily: SANS,
+              boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#dc2626', marginBottom: 8 }}>
+              Delete "{deleteItemConfirm.name}"?
+            </div>
+            <div style={{ fontSize: 14, color: SECONDARY, marginBottom: 24, lineHeight: 1.5 }}>
+              This will permanently remove this item from the current list. Other lists are not affected.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setDeleteItemConfirm(null)}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer' }}
+              >Cancel</button>
+              <button
+                onClick={() => { sandboxRemoveItem(deleteItemConfirm.cat, deleteItemConfirm.id); setDeleteItemConfirm(null); showToast(`Deleted "${deleteItemConfirm.name}"`); }}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer' }}
+              >Delete Item</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share loading indicator */}
+      {shareLoading && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.35)',
+        }}>
+          <div style={{
+            background: '#fff', borderRadius: 14, padding: '20px 28px',
+            fontFamily: SANS, fontSize: 15, color: PRIMARY, fontWeight: 600,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+          }}>
+            Generating share link…
+          </div>
+        </div>
+      )}
 
     </div>
   );
