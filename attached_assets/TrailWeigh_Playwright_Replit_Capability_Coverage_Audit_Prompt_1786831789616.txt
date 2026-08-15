@@ -1,0 +1,1032 @@
+TRAILWEIGH — PLAYWRIGHT / REPLIT CAPABILITY & COVERAGE AUDIT
+POST-PHASE-1 DIAGNOSTIC ONLY
+
+MODE: Power
+APP TESTING: ON
+PLAN MODE: OFF
+
+PURPOSE
+
+Perform a diagnostic-only audit of TrailWeigh's current Playwright/Replit testing environment AFTER completion of Phase 1 Core Functional Regression.
+
+This audit exists to answer:
+1. what Playwright can safely and reliably test in this Replit workspace,
+2. what Phase 1 did and did not actually cover,
+3. which Phase 1 findings are confirmed application defects versus test assumptions,
+4. what testing architecture should be used before expanding into Phase 2+,
+5. what resource, isolation, browser, reporting, visual-regression, and authenticated-testing constraints must be respected.
+
+IMPORTANT:
+- DO NOT repair application bugs.
+- DO NOT modify TrailWeigh application source.
+- DO NOT add new Phase 2 tests.
+- DO NOT add Firefox/WebKit yet.
+- DO NOT add Axe/Lighthouse/Sentry/security tooling.
+- DO NOT modify Playwright configuration unless explicitly authorized in a later prompt.
+- DO NOT change existing Phase 1 tests.
+- DO NOT create authenticated test accounts.
+- DO NOT touch real owner data.
+- DO NOT apply fixes for TW-P1-001, TW-P1-002, or TW-P1-003.
+- ANSWER WITH EVIDENCE ONLY.
+
+The audit should use:
+- current repository source,
+- current Playwright configuration,
+- existing Phase 1 test files,
+- existing Phase 1 report/evidence,
+- current Replit runtime behavior,
+- read-only inspection commands where needed.
+
+If any answer cannot be proven, say:
+UNKNOWN — NEEDS CONTROLLED EXPERIMENT
+
+Do not guess.
+
+==================================================
+1. PRE-FLIGHT / CURRENT STATE
+==================================================
+
+Before analysis:
+
+1. Confirm current Playwright version.
+2. Confirm current configured browser(s).
+3. Confirm current worker/retry settings.
+4. Confirm current test directories and scripts.
+5. Confirm current baseURL/test route(s).
+6. Confirm existing smoke test still exists.
+7. Confirm Phase 1 core suite still exists.
+8. Confirm no application-source changes are required for this audit.
+9. Confirm current git diff for TrailWeigh application source before starting.
+10. Record the current workspace state in the report.
+
+Do not run the full Phase 1 suite unless a specific diagnostic experiment requires it.
+Prefer read-only inspection.
+
+==================================================
+2. PHASE 1 ROUTE / REPRESENTATIVENESS AUDIT
+==================================================
+
+Phase 1 primarily tested:
+
+/pack-checklist/mobile-functional-v3
+
+Determine exactly what this route is.
+
+Answer:
+
+Q1. Is /pack-checklist/mobile-functional-v3:
+- production code,
+- a demo/sandbox,
+- a test harness,
+- a legacy route,
+- a development-only route,
+- or another category?
+
+Q2. Which React components, hooks, providers, stores, utilities, and backend services are SHARED between:
+- mobile-functional-v3,
+- the real owner/main checklist route,
+- Review/shared route,
+- other production checklist routes?
+
+Q3. Which Phase 1 behaviors therefore exercise the SAME production logic as the real Owner app?
+
+Q4. Which Phase 1 behaviors exercise demo-only or sandbox-specific code?
+
+Q5. For each Phase 1 defect:
+- TW-P1-001
+- TW-P1-002
+- TW-P1-003
+
+state whether the defect is:
+A. proven in shared production code,
+B. proven only in mobile-functional-v3,
+C. likely shared but not yet proven,
+D. demo-only,
+E. unknown.
+
+Provide:
+- exact file paths,
+- component/function names,
+- state/hook path,
+- evidence.
+
+Q6. Does mobile-functional-v3 behave differently from the real Owner route in any way that materially limits Phase 1 conclusions?
+
+List every known difference relevant to testing.
+
+Q7. Should mobile-functional-v3 continue to be used as:
+- smoke-test target only,
+- safe destructive sandbox target,
+- core functional regression target,
+- or not at all?
+
+Explain the recommended role.
+
+==================================================
+3. VALIDATE THE THREE PHASE 1 FAILURES
+==================================================
+
+Do NOT fix anything.
+
+TW-P1-001 — category close after Expand All
+
+Q8. Confirm the exact expected product behavior for:
+- manual open/close,
+- zero-open state,
+- Expand All,
+- Collapse All,
+- closing one category after Expand All.
+
+Use:
+- current code,
+- existing documented behavior/comments if present,
+- current UI design.
+
+Q9. Is TW-P1-001 definitely an application defect?
+YES / NO / UNCERTAIN
+
+Provide the first proven divergence and exact code path.
+
+--------------------------------------------------
+
+TW-P1-002 — newly added item auto-expand expectation
+
+Q10. Does current TrailWeigh product logic explicitly intend that a newly added item automatically expands/opens?
+
+Do not infer from the test alone.
+
+Find evidence in:
+- source code,
+- comments,
+- handlers,
+- state transitions,
+- prior implementation behavior,
+- current UI.
+
+Q11. If auto-expand is intended:
+identify the exact intended state transition and why the test failed.
+
+Q12. If auto-expand is NOT an explicit requirement:
+state that TW-P1-002 is a TEST ASSUMPTION, not a confirmed app defect.
+
+Q13. If evidence is ambiguous:
+state UNCERTAIN and specify the minimum user/product decision required.
+
+--------------------------------------------------
+
+TW-P1-003 — unnamed item cannot be renamed
+
+Q14. Confirm whether a newly added item in the tested route is intended to allow the user to set/edit the item name.
+
+Q15. Identify the exact current UI/input path for editing an item's name on:
+- mobile-functional-v3,
+- real Owner mobile view,
+- real Owner desktop/web view if different.
+
+Q16. Is TW-P1-003:
+- a real shared production defect,
+- demo-route defect,
+- intentionally limited demo behavior,
+- or unknown?
+
+Provide evidence.
+
+==================================================
+4. PHASE 1 COVERAGE GAP AUDIT
+==================================================
+
+Build a complete table of CURRENT TrailWeigh controls/features and classify each as:
+
+- TESTED IN PHASE 1
+- PARTIALLY TESTED
+- NOT TESTED — SAFE TO AUTOMATE NOW
+- NOT TESTED — REQUIRES AUTHENTICATED TEST ENVIRONMENT
+- NOT TESTED — REQUIRES FILE FIXTURES
+- NOT TESTED — REQUIRES MULTI-CONTEXT/MULTI-USER SETUP
+- NOT TESTED — UNSAFE WITH CURRENT ENVIRONMENT
+- NOT AUTOMATABLE RELIABLY YET
+- NOT PRESENT IN CURRENT PRODUCT
+- OUT OF PHASE 1 SCOPE
+
+At minimum explicitly audit:
+
+Q17. Category reorder / drag-and-drop.
+Q18. Item Move dropdown / moving item between categories.
+Q19. Print.
+Q20. Successful Share flow.
+Q21. Create New List.
+Q22. Guided list creation.
+Q23. Track Weight Yes/No.
+Q24. Edit View.
+Q25. Keep it Simple.
+Q26. Be Creative.
+Q27. Light mode.
+Q28. Dark mode.
+Q29. Built-in themes.
+Q30. Custom Theme.
+Q31. Undo/Redo across representative mutations.
+Q32. Search.
+Q33. Catalog.
+Q34. Locker.
+Q35. PDF import.
+Q36. CSV import.
+Q37. DOCX import.
+Q38. Review/shared page.
+Q39. Owner vs Review isolation.
+Q40. Save/persistence to account.
+Q41. Sign-in/sign-out.
+Q42. Account deletion/data deletion behavior.
+Q43. Tooltip/help behavior.
+Q44. keyboard interaction.
+Q45. touch/mobile interaction.
+Q46. mobile swipe actions if present.
+Q47. quantity/weight calculations across real production route.
+Q48. unit switching.
+Q49. list/file rename/delete/duplicate.
+Q50. sidebar panels.
+Q51. category Expand/Collapse All.
+Q52. successful reload/persistence.
+Q53. storage sync/custom-theme device sync if present.
+
+For every NOT TESTED item:
+state WHY it was not covered in Phase 1 and what is required to test it safely.
+
+==================================================
+5. PHASE 1B DECISION
+==================================================
+
+Q54. Is a Phase 1B Core Functional Coverage phase required BEFORE visual regression?
+
+Answer:
+YES / NO
+
+If YES:
+list the exact functional areas that belong in Phase 1B.
+
+Do not write the Phase 1B tests now.
+
+Q55. Which currently untested functional workflows are important enough that moving directly to visual regression would be premature?
+
+Rank:
+CRITICAL / HIGH / MEDIUM / LOW.
+
+==================================================
+6. REPLIT RESOURCE / WORKER CAPABILITY
+==================================================
+
+The Playwright installation previously encountered high system load and a wedged pnpm environment.
+The first Phase 1 run also experienced a workspace restart / foreground execution constraints.
+
+Investigate the current environment.
+
+Q56. What worker count was used during Phase 1?
+
+Q57. Is workers: 1 currently the safest default in this Replit workspace?
+
+Q58. What evidence supports 1 worker versus 2+ workers?
+
+Q59. What happens if 2 workers are used?
+Do not run a large destructive experiment.
+A tiny controlled benchmark is permitted ONLY if it is clearly safe and does not modify application state.
+
+Q60. What practical CPU/memory/process constraints are observable in this Replit workspace?
+
+Q61. Is there a Replit-documented or environment-visible hard memory limit?
+
+Q62. Is there a practical process limit relevant to Playwright browsers/workers?
+
+Q63. Could multiple simultaneous Chromium workers reproduce the earlier high-load/stall condition?
+
+Q64. Recommend:
+- smoke worker count,
+- quick regression worker count,
+- deep audit worker count.
+
+==================================================
+7. REPLIT APP TESTING VS PLAYWRIGHT
+==================================================
+
+Q65. Can Replit App Testing and Playwright execute concurrently?
+
+Q66. If yes, do they compete for:
+- CPU,
+- memory,
+- browser processes,
+- network,
+- workspace resources?
+
+Q67. Is it safer to run:
+A. App Testing before Playwright,
+B. Playwright before App Testing,
+C. concurrently,
+D. only one for a given task?
+
+Q68. What should our standing TrailWeigh rule be?
+
+Explain what App Testing adds that Playwright does not, and vice versa.
+
+==================================================
+8. LONG-RUN / BACKGROUND EXECUTION RELIABILITY
+==================================================
+
+Q69. Why did background/long-running test execution behave unreliably during Phase 1?
+
+Q70. Does Replit terminate background shell processes when:
+- Agent command execution ends,
+- shell session closes,
+- task times out,
+- workspace idles,
+- compute restarts?
+
+Q71. What is the most reliable way to run:
+- 5-minute suite,
+- 15-minute suite,
+- 30-minute suite,
+- 60+ minute Deep Audit?
+
+Q72. Should large suites be split into deterministic chunks?
+
+Q73. What maximum chunk duration do you recommend?
+
+Q74. How should we prevent partial/incomplete Deep Audit results from being misreported as full completion?
+
+==================================================
+9. TEST SERVER STRATEGY
+==================================================
+
+Current config reuses the Replit-managed development server and fails fast if it is absent.
+
+Q75. Is this still the best long-term strategy for hundreds of tests?
+
+Q76. What are the pros/cons of:
+- reusing the Replit-managed dev server,
+- starting a dedicated Vite test server,
+- testing a preview build,
+- testing a deployed staging environment?
+
+Q77. Which is most reproducible?
+
+Q78. Which is safest for destructive sandbox testing?
+
+Q79. Which best matches real production behavior?
+
+Q80. Should different suites use different server targets?
+
+Recommend an architecture.
+
+==================================================
+10. AUTHENTICATED TESTING / TEST ACCOUNT
+==================================================
+
+Do not create anything.
+
+Q81. Can TrailWeigh safely support a dedicated automated-test account?
+
+Q82. What current authentication system is used?
+
+Q83. What risks exist in using a test account in the current environment?
+
+Q84. Can Playwright save/use authenticated storageState safely?
+
+Q85. Where would auth-state files live?
+
+Q86. How should secrets be protected so they never enter:
+- git,
+- reports,
+- screenshots,
+- traces,
+- videos,
+- console logs?
+
+Q87. Can a dedicated test account be isolated from real user data?
+
+Q88. Can we create a dedicated TEST namespace/flag/database scope?
+
+Q89. Is there an existing non-production database or staging backend?
+
+Q90. If no staging backend exists, what is the safest architecture for account-level automated tests?
+
+==================================================
+11. BACKEND RESET / TEST DATA LIFECYCLE
+==================================================
+
+Q91. How can authenticated Playwright tests create disposable data?
+
+Q92. How can every test cleanly reset:
+- lists,
+- items,
+- categories,
+- Locker data,
+- themes,
+- shares,
+- uploads,
+- account preferences?
+
+Q93. Is there an existing API or internal function that can safely create/reset test data?
+
+Q94. Would a dedicated test-only cleanup endpoint be required?
+
+Do not add one now.
+
+Q95. Could database transactions or namespace-based cleanup work?
+
+Q96. What happens if a test crashes before cleanup?
+
+Q97. Recommend a fail-safe cleanup architecture.
+
+==================================================
+12. MULTI-USER / OWNER-REVIEW ISOLATION
+==================================================
+
+Q98. Can Playwright safely run two or more BrowserContexts representing:
+- Owner,
+- signed-out Review visitor,
+- signed-in viewer?
+
+Q99. Can these contexts interact with the same test share without touching real user data?
+
+Q100. What is required to test:
+- owner creates share,
+- viewer opens share,
+- viewer edits sandbox,
+- owner original remains unchanged,
+- viewer saves copy,
+- account isolation?
+
+Q101. Is multi-context testing safe with workers: 1?
+
+Q102. What additional resource cost should we expect?
+
+==================================================
+13. STORAGE ISOLATION / RESET
+==================================================
+
+Q103. List every client-side storage mechanism TrailWeigh currently uses:
+- localStorage,
+- sessionStorage,
+- IndexedDB,
+- cookies,
+- Cache Storage,
+- service worker caches,
+- other.
+
+Q104. Which are automatically isolated by a fresh BrowserContext?
+
+Q105. Which require explicit cleanup?
+
+Q106. Does the current app use any browser-persistent storage that survives context closure?
+
+Q107. What standing reset procedure should every Playwright test use?
+
+==================================================
+14. VISUAL REGRESSION STABILITY
+==================================================
+
+Before Phase 2, determine whether screenshot baselines will be deterministic.
+
+Q108. What OS/browser/font/rendering environment will generate screenshots in Replit?
+
+Q109. Is that environment stable across:
+- workspace restarts,
+- Agent runs,
+- compute changes,
+- package rebuilds?
+
+Q110. Can font rendering vary between runs?
+
+Q111. Can device scale factor vary?
+
+Q112. Can animation/transitions cause screenshot noise?
+
+Q113. Can remote background images/Unsplash assets cause nondeterminism?
+
+Q114. Can timestamps, generated IDs, counts, or asynchronous data cause visual diffs?
+
+Q115. Should visual baselines be generated and compared ONLY inside the same Replit environment?
+
+Q116. What normalization should be used before screenshots:
+- disable animations,
+- fixed viewport,
+- fixed locale,
+- fixed timezone,
+- fixed reduced-motion setting,
+- wait for fonts,
+- wait for network,
+- mock remote images,
+- mask dynamic elements?
+
+Q117. Recommend exact visual-regression baseline policy.
+
+Do not create baselines now.
+
+==================================================
+15. FIREFOX / WEBKIT FEASIBILITY
+==================================================
+
+Do not install them.
+
+Q118. Can current Replit Linux environment reliably run Playwright Firefox?
+
+Q119. Can it reliably run Playwright WebKit?
+
+Q120. What additional system packages are required?
+
+Q121. Approximate additional disk footprint.
+
+Q122. Approximate additional memory/process cost.
+
+Q123. Any known Replit sandbox restrictions likely to affect them?
+
+Q124. Should we add:
+- Firefox next,
+- WebKit next,
+- both later,
+- neither until staging/CI?
+
+Explain.
+
+==================================================
+16. MOBILE / DEVICE EMULATION
+==================================================
+
+Q125. Can current Chromium testing reliably emulate:
+- iPhone viewport,
+- Android viewport,
+- tablet viewport,
+- touch,
+- device scale factor,
+- orientation?
+
+Q126. What does emulation NOT reproduce compared with a real iPhone/Safari device?
+
+Q127. Which TrailWeigh mobile behaviors can be trusted under Chromium emulation?
+
+Q128. Which require WebKit or real-device testing later?
+
+==================================================
+17. FILE UPLOAD / IMPORTER TESTING
+==================================================
+
+Q129. Can Playwright safely upload local fixtures in Replit?
+
+Q130. Recommend a dedicated fixture directory.
+
+Q131. Can tests safely include:
+- PDF,
+- CSV,
+- DOCX,
+- PNG/JPEG,
+- malformed files,
+- large but reasonable files?
+
+Q132. What fixture-size limit should we use?
+
+Q133. How do we ensure fixture imports never write to real owner storage/database?
+
+Q134. Can the known 77-item PDF regression fixture be automated safely?
+
+Q135. What additional test harness is required, if any?
+
+==================================================
+18. NETWORK / OFFLINE / ERROR INJECTION
+==================================================
+
+Q136. Can Playwright safely simulate:
+- offline,
+- request timeout,
+- HTTP 400,
+- HTTP 401,
+- HTTP 403,
+- HTTP 404,
+- HTTP 429,
+- HTTP 500,
+- slow response,
+- dropped request?
+
+Q137. Can this be done entirely through Playwright route interception without affecting real backend services?
+
+Q138. Which TrailWeigh API flows should be tested this way?
+
+Q139. Can service-worker/cache behavior interfere with mocked responses?
+
+==================================================
+19. RETRIES / FLAKY TEST POLICY
+==================================================
+
+Current retries are 0.
+
+Q140. Should normal TrailWeigh development tests keep retries at 0?
+
+Q141. Should Deep Audit use retries = 1 ONLY for classification?
+
+Q142. How should a test be labeled:
+- reproducible failure,
+- flaky,
+- environment failure,
+- test-infrastructure failure?
+
+Q143. Can current Playwright version fail a run when flaky tests are detected?
+
+Q144. Recommend the standing retry/flaky policy.
+
+Important:
+Retries must never hide real defects.
+
+==================================================
+20. TRACE / VIDEO / SCREENSHOT / REPORT RETENTION
+==================================================
+
+Q145. Where are current:
+- traces,
+- videos,
+- screenshots,
+- HTML reports,
+- test-results
+stored?
+
+Q146. How much disk space is currently available?
+
+Q147. How large can a Deep Audit artifact set realistically become?
+
+Q148. At what point could storage/artifact size become a Replit problem?
+
+Q149. Recommend retention rules for:
+- passing tests,
+- failing tests,
+- flaky tests,
+- full-release audits.
+
+Q150. Can trace ZIPs always be exported in the workflow-report ZIP?
+
+Q151. Are there file-size limits that would prevent export/download?
+
+Q152. Should video be:
+- always on,
+- retain-on-failure,
+- off except targeted debugging?
+
+Recommend.
+
+==================================================
+21. NETWORKIDLE / READINESS STRATEGY
+==================================================
+
+Current smoke test uses networkidle plus a bounded 1-second settle.
+
+Q153. Is networkidle reliable for TrailWeigh long-term?
+
+Q154. Does TrailWeigh have:
+- polling,
+- background requests,
+- analytics,
+- websocket,
+- service worker,
+- lazy network traffic
+that could make networkidle unreliable?
+
+Q155. What is the most deterministic readiness condition for:
+- initial page load,
+- list loaded,
+- category opened,
+- import completed,
+- Review page initialized?
+
+Q156. Should tests prefer UI-state assertions over networkidle?
+
+Recommend standing rules.
+
+==================================================
+22. PLAYWRIGHT AGENT / CLI VALUE
+==================================================
+
+Q157. Does Playwright's agent-oriented CLI or planner/generator/healer tooling add meaningful value inside Replit Agent?
+
+Q158. Would it duplicate Replit's existing browser/App Testing capabilities?
+
+Q159. Could it reduce test-authoring effort?
+
+Q160. Could it introduce unnecessary complexity or resource usage?
+
+Q161. Recommend:
+- USE NOW,
+- EVALUATE LATER,
+- DO NOT USE.
+
+Explain.
+
+==================================================
+23. TESTABILITY / APPLICATION ARCHITECTURE GAPS
+==================================================
+
+This is a critical section.
+
+Q162. What current TrailWeigh behaviors cannot be rigorously automated without application changes?
+
+For each, state:
+- feature/control,
+- why automation is unreliable,
+- whether the blocker is:
+  - unstable selector,
+  - missing accessible name,
+  - timing ambiguity,
+  - tightly coupled state,
+  - backend dependency,
+  - missing deterministic test data,
+  - canvas/drag/touch behavior,
+  - browser limitation,
+  - other.
+
+Q163. Which controls lack reliable accessible locators?
+
+Q164. Which interactions currently require brittle selectors?
+
+Q165. Which testability problems are ALSO accessibility problems?
+
+Q166. Which minimal future app changes would improve testability?
+
+DO NOT make the changes.
+
+Classify each suggested testability change:
+- REQUIRED
+- RECOMMENDED
+- OPTIONAL
+
+==================================================
+24. SECURITY / PRIVACY OF TEST ARTIFACTS
+==================================================
+
+Q167. Could Playwright traces or videos capture:
+- emails,
+- names,
+- private lists,
+- tokens,
+- cookies,
+- auth headers,
+- uploaded files?
+
+Q168. What masking/redaction policy should TrailWeigh use for authenticated tests?
+
+Q169. What should NEVER be included in workflow-report ZIPs?
+
+Q170. Can authenticated test reports be made safe for review/export?
+
+==================================================
+25. COST / EFFICIENCY STRATEGY
+==================================================
+
+Q171. Which tasks genuinely benefit from Replit Power mode?
+
+Q172. Which stable test reruns could use Economy without reducing test quality?
+
+Q173. Recommend a mode policy for:
+- authoring tests,
+- debugging failed tests,
+- routine smoke,
+- routine core regression,
+- Deep Audit,
+- visual baseline generation,
+- accessibility tests,
+- security investigations.
+
+Q174. What suite organization will minimize repeated setup/runtime cost?
+
+==================================================
+26. RECOMMENDED COMPLETE TRAILWEIGH TEST ARCHITECTURE
+==================================================
+
+Based on all findings, design the recommended future structure without implementing it.
+
+Cover:
+
+- smoke
+- core functional
+- Phase 1B if required
+- visual regression
+- desktop/tablet/mobile
+- Chromium/Firefox/WebKit
+- authenticated Owner
+- Review/share isolation
+- importers
+- accessibility/Axe
+- network/error injection
+- performance/Lighthouse
+- security audit
+- full Deep Audit
+
+For each suite recommend:
+- route/environment
+- authentication state
+- browser
+- viewport/device
+- worker count
+- retry policy
+- evidence policy
+- expected runtime range
+- whether Power or Economy is recommended for authoring/debugging/rerun
+
+==================================================
+27. REQUIRED DECISION SUMMARY
+==================================================
+
+Provide explicit answers:
+
+A. KEEP CURRENT PHASE 1 SUITE?
+YES / NO
+
+B. IS PHASE 1B REQUIRED?
+YES / NO
+
+C. READY FOR VISUAL REGRESSION AFTER PHASE 1A?
+YES / NO
+
+D. SAFE DEFAULT WORKER COUNT?
+[number]
+
+E. SHOULD APP TESTING RUN CONCURRENTLY WITH PLAYWRIGHT?
+YES / NO
+
+F. SAFE PATH TO AUTHENTICATED TESTING EXISTS?
+YES / NO / NEEDS ARCHITECTURE
+
+G. SAFE MULTI-USER OWNER/REVIEW TESTING PATH EXISTS?
+YES / NO / NEEDS ARCHITECTURE
+
+H. REPLIT ENVIRONMENT SUITABLE FOR VISUAL BASELINES?
+YES / NO / WITH CONTROLS
+
+I. FIREFOX FEASIBLE?
+YES / NO / UNKNOWN
+
+J. WEBKIT FEASIBLE?
+YES / NO / UNKNOWN
+
+K. PLAYWRIGHT AGENT/CLI RECOMMENDATION?
+USE NOW / EVALUATE LATER / DO NOT USE
+
+L. ANY APPLICATION TESTABILITY CHANGES REQUIRED BEFORE DEEP AUDIT?
+YES / NO
+
+M. NEXT RECOMMENDED TESTING STEP?
+[answer]
+
+==================================================
+28. REQUIRED REPORT
+==================================================
+
+Create:
+
+workflow-reports/TRAILWEIGH_PLAYWRIGHT_REPLIT_CAPABILITY_COVERAGE_AUDIT.md
+
+The report must include:
+
+# TRAILWEIGH PLAYWRIGHT / REPLIT CAPABILITY & COVERAGE AUDIT
+
+## Executive Summary
+
+## Current Environment
+
+## Phase 1 Route Representativeness
+
+## Phase 1 Defect Validation
+- TW-P1-001
+- TW-P1-002
+- TW-P1-003
+
+## Complete Coverage Gap Matrix
+
+## Phase 1B Decision
+
+## Worker / Resource Findings
+
+## App Testing vs Playwright
+
+## Long-Run Execution Findings
+
+## Test Server Recommendation
+
+## Authenticated Testing Architecture
+
+## Backend Reset Strategy
+
+## Multi-User / Review Testing
+
+## Storage Isolation
+
+## Visual Regression Stability
+
+## Firefox / WebKit Feasibility
+
+## Mobile Emulation Limits
+
+## Importer Fixture Strategy
+
+## Network / Failure Injection
+
+## Retry / Flaky Policy
+
+## Artifact Retention
+
+## Readiness / networkidle Strategy
+
+## Playwright Agent/CLI Evaluation
+
+## Testability Gaps
+
+## Security / Privacy of Test Evidence
+
+## Replit Mode / Cost Strategy
+
+## Recommended Full Testing Architecture
+
+## Required Decision Summary
+
+For every answer:
+- cite file path/function/config/evidence where possible,
+- clearly separate PROVEN FACT from INFERENCE,
+- state UNKNOWN where evidence is insufficient.
+
+==================================================
+29. REQUIRED ZIP
+==================================================
+
+Create:
+
+workflow-reports/trailweigh-playwright-replit-capability-coverage-audit.zip
+
+Include:
+- TRAILWEIGH_PLAYWRIGHT_REPLIT_CAPABILITY_COVERAGE_AUDIT.md
+- plain-text environment/config summary
+- current playwright.config.ts COPY for evidence
+- list of current test files
+- Phase 1 coverage-gap matrix in CSV or Markdown
+- any small read-only diagnostic output used to support conclusions
+
+Do NOT include:
+- node_modules
+- browser binaries
+- credentials
+- auth-state files
+- cookies
+- tokens
+- private user data
+- giant logs
+- unrelated reports
+
+Verify the ZIP is non-corrupt.
+
+==================================================
+30. STRICT FILE / CHANGE SCOPE
+==================================================
+
+This audit should modify ONLY:
+
+- workflow-reports/TRAILWEIGH_PLAYWRIGHT_REPLIT_CAPABILITY_COVERAGE_AUDIT.md
+- workflow-reports/trailweigh-playwright-replit-capability-coverage-audit.zip
+- optional small diagnostic evidence files inside workflow-reports/
+
+DO NOT modify:
+- artifacts/pack-checklist/src/**
+- backend application source
+- package.json
+- pnpm-lock.yaml
+- playwright.config.ts
+- tests/e2e/**
+- replit.nix
+- database/schema
+- authentication configuration
+- deployment configuration
+
+If any diagnostic requires a code/config change:
+STOP and report what would be required.
+Do not make it.
+
+==================================================
+31. STOP CONDITION
+==================================================
+
+After the report and ZIP are complete:
+
+STOP.
+
+Do NOT:
+- repair TW-P1-001
+- repair TW-P1-002
+- repair TW-P1-003
+- create Phase 1B
+- begin visual regression
+- install Firefox
+- install WebKit
+- add Axe
+- run Lighthouse
+- add Sentry
+- modify application code
+- modify test code
+- create test accounts
+
+Return:
+1. concise audit summary,
+2. report,
+3. ZIP,
+4. explicit recommendation for the next controlled step.
+
+Wait for explicit authorization.

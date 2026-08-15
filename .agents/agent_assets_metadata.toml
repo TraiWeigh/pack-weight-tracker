@@ -210,3 +210,17 @@ uri = "file://workflow-reports/trailweigh-phase1-core-regression-report.zip"
 type = "unspecified"
 title = "Phase 1 Report Bundle (ZIP)"
 description = "Report, full test suite, run summary, and failure evidence (screenshots/videos/traces)"
+
+[[outputs]]
+id = "dhNsQcXakJf2N2peKbDnq"
+uri = "file://workflow-reports/TRAILWEIGH_PLAYWRIGHT_REPLIT_CAPABILITY_COVERAGE_AUDIT.md"
+type = "text"
+title = "Playwright/Replit Capability & Coverage Audit"
+description = "Diagnostic-only audit: route representativeness, defect validation, coverage gaps, environment limits, and full test-architecture recommendation"
+
+[[outputs]]
+id = "zcSI2kAQfAbtJI40hfLgC"
+uri = "file://workflow-reports/trailweigh-playwright-replit-capability-coverage-audit.zip"
+type = "unspecified"
+title = "Capability Audit Bundle (ZIP)"
+description = "Report, environment summary, config evidence copy, test-file list, coverage-gap matrix CSV"
