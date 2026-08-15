@@ -1,0 +1,225 @@
+DO NOT MODIFY THE PROJECT.
+
+This is a diagnostic audit only.
+
+Inspect the current TrailWeigh project and report exactly what is required to safely add Playwright end-to-end browser testing.
+
+DO NOT:
+
+* install Playwright
+* install or remove any packages
+* modify package.json
+* modify any lockfile
+* create test files
+* create playwright.config.ts
+* modify Replit configuration
+* modify TrailWeigh UI
+* modify TrailWeigh functionality
+* modify authentication
+* modify database behavior
+* modify localStorage or sessionStorage behavior
+* modify deployment configuration
+* refactor unrelated code
+
+Report the following:
+
+1. What package manager is currently used:
+
+   * npm
+   * pnpm
+   * yarn
+   * bun
+   * other
+
+2. What file proves which package manager is being used.
+
+3. Location of the main package.json.
+
+4. Current relevant scripts in package.json.
+
+5. Exact command currently used to start TrailWeigh in development.
+
+6. Development framework/server being used.
+
+7. Development server port.
+
+8. Development URL Playwright would need to open.
+
+9. Whether any automated testing framework is already installed, including:
+
+   * Playwright
+   * @playwright/test
+   * Cypress
+   * Vitest
+   * Jest
+   * React Testing Library
+   * Puppeteer
+   * Selenium
+   * anything else
+
+10. Identify all current test directories, test files, test scripts, test configuration, or CI testing configuration.
+
+11. Determine whether adding Playwright could conflict with:
+
+* package manager
+* current dependencies
+* Node version
+* Replit runtime
+* development server
+* build process
+* deployment
+* authentication
+* database/API services
+* localStorage/sessionStorage
+* existing tests
+
+For each concern, report:
+
+Issue → Why it matters → Safest solution
+
+12. Determine the exact installation command that should later be used to add @playwright/test to THIS project.
+
+Do not run the command.
+
+13. Determine whether the first setup can safely use Chromium only.
+
+Report whether Firefox or WebKit are technically required immediately.
+
+Do not install any browser during this audit.
+
+14. Recommend the future Playwright configuration, including:
+
+* testDir
+* baseURL
+* webServer.command
+* webServer.url
+* reuseExistingServer
+* timeout
+* screenshot behavior
+* trace behavior
+* video behavior
+* retries
+* reporter
+
+15. Recommend the test directory.
+
+Prefer:
+
+tests/e2e/
+
+unless the existing project structure makes another location safer or more appropriate.
+
+16. Recommend an easy command for running the tests later.
+
+Preferred script name:
+
+test:e2e
+
+Use the project's actual package manager.
+
+17. Design ONE harmless initial smoke test that would:
+
+* start or connect to TrailWeigh
+* open TrailWeigh in Chromium
+* wait for the application to load
+* verify a reliable TrailWeigh UI element is visible
+* capture uncaught JavaScript/page errors
+* detect failed initial page loading
+* save a screenshot
+* exit
+* report PASS or FAIL
+
+The test must NOT:
+
+* delete data
+* create permanent user data
+* modify owner data
+* intentionally modify the database
+* alter production data
+* change TrailWeigh source code
+
+18. Identify the specific stable UI element or selector that should be used to verify TrailWeigh loaded successfully.
+
+Avoid fragile selectors based only on CSS styling or page position.
+
+19. Examine whether simply loading TrailWeigh automatically:
+
+* modifies account data
+* writes to localStorage
+* seeds sample files
+* contacts backend services
+* triggers authentication/session changes
+* creates database records
+
+Report any safety concern.
+
+Do not create a test account or test data during this audit.
+
+20. List exactly which files a later Playwright installation would likely:
+
+CREATE
+
+and which existing files it would likely:
+
+MODIFY
+
+Explain why each file is required.
+
+21. Explain how to completely roll back the Playwright installation if necessary.
+
+22. Finish with exactly this summary:
+
+PLAYWRIGHT AUDIT RESULT
+
+Current package manager:
+[answer]
+
+Development command:
+[answer]
+
+Development URL/port:
+[answer]
+
+Existing test framework(s):
+[answer]
+
+Playwright already installed:
+YES / NO
+
+Chromium-only first setup recommended:
+YES / NO
+
+Recommended test directory:
+[answer]
+
+Recommended test command:
+[answer]
+
+Files that would be created:
+[list]
+
+Files that would be modified:
+[list]
+
+Potential conflicts:
+[list or NONE]
+
+Data-safety concerns:
+[list or NONE]
+
+Recommended first smoke test:
+[short description]
+
+Installation recommendation:
+[exact proposed procedure]
+
+SAFE TO PROCEED WITH PLAYWRIGHT INSTALLATION:
+YES / NO
+
+If NO, explain exactly what must be resolved first.
+
+STOP AFTER THE REPORT.
+
+DO NOT install anything.
+DO NOT modify anything.
+Wait for explicit authorization.
