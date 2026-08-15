@@ -1,0 +1,346 @@
+TRAILWEIGH — PROMPT 027S — GOLD STANDARD VISUAL-ONLY REFINEMENT
+COMPACT MOBILE LIST SUMMARY CARD
+STACK SELECTED / NOT SELECTED ON RIGHT
+NO FUNCTIONAL CHANGES — NO PRODUCTION CUTOVER
+
+INTERNAL VERSION ID:
+027S-V3-COMPACT-LIST-SUMMARY-CARD-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 5–12 minutes
+- approximately $0.40–$1.00 Agent usage
+
+============================================================
+BASELINE
+============================================================
+
+027R = USER LIVE PASS / CLOSED.
+
+TARGET ROUTE:
+`/mobile-functional-v3`
+
+PRODUCTION `/checklist` MUST REMAIN UNCHANGED.
+
+The USER says the current V3 mobile design looks really good.
+
+Therefore:
+THE CURRENT V3 VISUAL DESIGN IS FROZEN EXCEPT FOR THE LIST SUMMARY CARD CHANGE BELOW.
+
+A current screenshot is included in this ZIP for visual reference.
+
+============================================================
+027S PURPOSE
+============================================================
+
+Make ONE visual refinement to the green `LIST SUMMARY` card.
+
+CURRENT:
+- large total item count is on the left/center-left
+- `Selected` and `Not Selected` are arranged horizontally below it
+- the card has more vertical whitespace than necessary
+
+REQUIRED:
+- keep the large total item count block on the LEFT
+- move the two selection-status lines to the RIGHT
+- stack them vertically:
+  `37 Selected`
+  `40 Not Selected`
+- reduce top/bottom padding so the entire green card is SHORTER vertically
+- use the previously empty right-side space more efficiently
+
+============================================================
+AUTHORITATIVE LAYOUT
+============================================================
+
+LEFT SIDE:
+- existing icon block stays
+- existing large total count stays
+- existing `items` label stays with the total
+- do NOT move the large total to the top or center
+- do NOT stack Selected/Not Selected underneath the total
+
+RIGHT SIDE:
+- first line: `[selected quantity] Selected`
+- second line: `[not selected quantity] Not Selected`
+- align the two status rows cleanly as one vertical status block
+- keep existing selected / not-selected circle/check icon semantics
+
+Conceptual layout:
+
+[ ICON ]   [ 77 items ]        [ ✓ 37 Selected       ]
+                               [ ○ 40 Not Selected   ]
+
+The exact pixel alignment may follow the existing responsive card geometry,
+but the LEFT/RIGHT relationship above is mandatory.
+
+============================================================
+COMPACT HEIGHT
+============================================================
+
+Reduce vertical whitespace by:
+- reducing top padding
+- reducing bottom padding
+- tightening internal vertical gaps only where needed
+
+Goal:
+the card should be noticeably SHORTER than the current screenshot while still
+feeling balanced and easy to read.
+
+Do NOT:
+- reduce horizontal width
+- make text cramped
+- shrink the large item count significantly
+- shrink tap targets elsewhere
+- alter the card radius
+- alter the card green color
+- alter the icon tile style
+- alter typography hierarchy unnecessarily
+
+============================================================
+PRESERVE ALL EXISTING SEMANTICS
+============================================================
+
+No logic changes.
+
+Keep:
+- total items calculation
+- selected count calculation
+- not-selected count calculation
+- main-list checkbox semantics
+- live count updates
+- Imperial/Metric behavior elsewhere
+- Scanner/import behavior
+- category behavior
+- item behavior
+- footer/navigation behavior
+- Share
+- Locker
+- Summary
+- More
+- Hamburger
+
+The List Summary remains a display-only summary.
+
+============================================================
+RESPONSIVE REQUIREMENTS
+============================================================
+
+Verify at:
+- 375 px
+- 390 px
+- 430 px
+
+Required:
+- no horizontal overflow
+- `Selected` text does not collide with total count
+- `Not Selected` remains on one line if reasonably possible
+- status block does not clip at right edge
+- icon tile remains fully visible
+- large total remains visually dominant
+- card remains shorter than before at all three widths
+
+If 375 px requires a tiny spacing/font adjustment to prevent clipping:
+make the smallest possible adjustment ONLY inside the summary card.
+
+============================================================
+STRICT VISUAL FREEZE
+============================================================
+
+Do NOT change:
+- header
+- green +
+- mountain/topographic art
+- list title/subtitle
+- category cards
+- category colors
+- category icons
+- category handle
+- item rows
+- Qty/trash
+- item detail panel
+- bottom navigation
+- footer
+- Hamburger/Menu
+- Share
+- any other screen
+
+============================================================
+STRICT FILE SCOPE
+============================================================
+
+Preferred:
+- `src/pages/MobileFunctionalV3.tsx` only
+
+If the summary card is isolated in a dedicated component:
+that component may be changed instead.
+
+Preferred maximum:
+1 application file.
+
+If more than 2 application files are needed:
+STOP and explain before continuing.
+
+Do NOT modify:
+- `/checklist`
+- desktop styles
+- API
+- DB/schema
+- auth
+- Review
+- Scanner
+- Locker persistence
+- replit.md
+- `.agents/memory`
+- deployment
+
+============================================================
+PRE-EDIT CHECK
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Inspect current `/mobile-functional-v3` summary-card markup/styles.
+3. Compare against the included screenshot.
+4. Record preflight git status.
+5. Identify exact current padding/gap/layout values before editing.
+
+============================================================
+RUNTIME ACCEPTANCE
+============================================================
+
+TEST A — LAYOUT
+- large total remains on LEFT
+- Selected/Not Selected appear on RIGHT
+- Selected above Not Selected
+
+TEST B — HEIGHT
+- card is visibly shorter than current screenshot
+- top/bottom padding reduced
+- no cramped/clipped content
+
+TEST C — LIVE COUNTS
+- selecting/deselecting items still updates all three counts correctly
+
+TEST D — 375
+- no overlap
+- no clipping
+- no overflow
+
+TEST E — 390
+- no overlap
+- no clipping
+- no overflow
+
+TEST F — 430
+- no overlap
+- no clipping
+- no overflow
+
+TEST G — REGRESSION
+- main V3 list unchanged outside summary card
+- Hamburger still works
+- More/Footer still works
+- Share still works
+- categories/items unchanged
+
+TEST H — PRODUCTION SAFETY
+- `/checklist` unchanged
+- desktop unchanged
+
+============================================================
+EVIDENCE
+============================================================
+
+Provide separate screenshots outside the report ZIP for:
+- 375
+- 390
+- 430
+- production `/checklist` unchanged
+
+Do NOT put screenshots inside the report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+
+`workflow-reports/PROMPT_027S_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. file(s) inspected
+5. file(s) changed
+6. exact before/after summary-card layout
+7. exact before/after vertical padding/gap values
+8. 375 result
+9. 390 result
+10. 430 result
+11. live-count result
+12. regression checks
+13. `/checklist` unchanged
+14. desktop unchanged
+15. tests NOT RUN
+16. rollback
+17. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027S COMPACT LIST SUMMARY = PASS / PARTIAL / FAIL
+
+TOTAL COUNT REMAINS LEFT = PASS / FAIL / NOT RUN
+SELECTED STACKED ABOVE NOT SELECTED ON RIGHT = PASS / FAIL / NOT RUN
+CARD VERTICAL HEIGHT REDUCED = PASS / FAIL / NOT RUN
+CARD WIDTH CHANGED = YES / NO
+SUMMARY LOGIC CHANGED = YES / NO
+
+375 = PASS / FAIL / NOT RUN
+390 = PASS / FAIL / NOT RUN
+430 = PASS / FAIL / NOT RUN
+
+V3 OUTSIDE SUMMARY CHANGED = YES / NO
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+API/DB/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+`workflow-reports/trailweigh-027S-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027S_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + external evidence.
+
+Do NOT:
+- cut over `/checklist`
+- deploy/publish
+- redesign any other V3 element
+- proceed to 027T

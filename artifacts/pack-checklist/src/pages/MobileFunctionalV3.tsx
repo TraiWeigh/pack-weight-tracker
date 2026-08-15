@@ -1874,27 +1874,29 @@ function MobileFunctionalV3Inner() {
             </div>
           </div>
 
-          {/* ── LIST SUMMARY CARD ── */}
+          {/* ── LIST SUMMARY CARD (027S: compact, right-stacked status) ── */}
           <div style={{ paddingBottom: 12 }}>
             <div style={{
               margin: '0 16px', borderRadius: 16, background: SUMMARY_BG,
-              padding: '16px 16px 16px 14px', display: 'flex', alignItems: 'center',
-              gap: 16, boxShadow: '0 2px 10px rgba(42,87,64,0.28)',
+              padding: '10px 14px 10px 14px', display: 'flex', alignItems: 'center',
+              gap: 14, boxShadow: '0 2px 10px rgba(42,87,64,0.28)',
             }}>
+              {/* Icon tile — unchanged */}
               <div style={{
                 width: 66, height: 66, borderRadius: 14, background: 'rgba(0,0,0,0.20)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}>
                 <Luggage size={34} color="rgba(255,255,255,0.90)" strokeWidth={1.4}/>
               </div>
+              {/* Left: label + total count */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: '1.1px',
-                  color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase', marginBottom: 3,
+                  color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase', marginBottom: 2,
                 }}>
                   LIST SUMMARY
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 9, lineHeight: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, lineHeight: 1 }}>
                   <span style={{ fontSize: 40, fontWeight: 800, color: SUMMARY_TEXT, letterSpacing: '-1.5px', lineHeight: 1 }}>
                     {totalItems}
                   </span>
@@ -1902,26 +1904,26 @@ function MobileFunctionalV3Inner() {
                     items
                   </span>
                 </div>
-                {/* Selected / Not Selected (Checklist inclusion — NOT packed/remaining) */}
-                <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{
-                      width: 19, height: 19, borderRadius: 10,
-                      background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.50)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <Check size={10} color="rgba(255,255,255,0.92)" strokeWidth={2.5}/>
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT }}>
-                      {selectedCount} Selected
-                    </span>
+              </div>
+              {/* Right: Selected / Not Selected stacked vertically (027S) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0, alignSelf: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: 9,
+                    background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.50)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <Check size={9} color="rgba(255,255,255,0.92)" strokeWidth={2.5}/>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 19, height: 19, borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.38)', background: 'transparent' }}/>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.78)' }}>
-                      {notSelectedCount} Not Selected
-                    </span>
-                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT, whiteSpace: 'nowrap' }}>
+                    {selectedCount} Selected
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 18, height: 18, borderRadius: 9, border: '1.5px solid rgba(255,255,255,0.38)', background: 'transparent', flexShrink: 0 }}/>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.78)', whiteSpace: 'nowrap' }}>
+                    {notSelectedCount} Not Selected
+                  </span>
                 </div>
               </div>
             </div>
