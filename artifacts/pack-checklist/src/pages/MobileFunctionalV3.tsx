@@ -1,6 +1,6 @@
 /**
- * MobileFunctionalV3.tsx — 027O
- * Comprehensive V3 mobile control wiring at /mobile-functional-v3.
+ * MobileFunctionalV3.tsx — 027Q
+ * Full-screen mobile navigation repair at /mobile-functional-v3.
  *
  * SANDBOX ISOLATION:
  *   Reads production localStorage ONCE on mount → clones into local React state.
@@ -32,13 +32,14 @@ import {
   Backpack, Folder, Grid3X3, BarChart2,
   Hash, PackageOpen, ArrowRightLeft, Luggage, Camera,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
-  Tent, HelpCircle, X, ChevronLeft, Layers,
+  Tent, HelpCircle, X, ChevronLeft, ChevronRight, Layers,
   Scale, Coins, LayoutList, AlertCircle, Trash2, Copy, Link2,
-  BookOpen, Info, Pencil,
+  BookOpen, Info, Pencil, Mail, Tag, FileText, Shield,
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
 } from '../components/ui/sheet';
+import SourcesModal from '../components/SourcesModal';
 import { BarStyleProvider } from '../context/BarStyleContext';
 import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
 import { PreviewBody } from '../components/PreviewModal';
@@ -58,6 +59,14 @@ import { useUnit, UnitProvider } from '../context/UnitContext';
 type PackState = { [category: string]: GearItem[] };
 type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta> };
 type ActiveNav = 'list' | 'locker' | 'catalog' | 'summary';
+
+// ─── MOBILE NAVIGATION TYPES (027Q) ────────────────────────────────────────────
+type MobileScreen = 'list' | 'menu' | 'footer' | 'footer-page' | 'share';
+type FooterPageId =
+  | 'about' | 'how-it-works' | 'sources' | 'help'
+  | 'report-problem' | 'contact' | 'privacy' | 'terms'
+  | 'delete-account' | 'affiliate' | 'accessibility';
+interface ScreenEntry { screen: MobileScreen; footerPageId?: FooterPageId; }
 
 const HISTORY_LIMIT = 30;
 
@@ -648,10 +657,9 @@ function NavTabDisabled({ Icon, label, 'aria-label': ariaLabel, title }: {
   );
 }
 
-// ─── HAMBURGER MENU SHEET (slides from left) ─────────────────────────────────────
-interface HamburgerMenuProps {
-  open: boolean;
-  onClose: () => void;
+// ─── FULL-SCREEN MENU VIEW (027Q — replaces Sheet side="left" hamburger) ─────────
+interface FullScreenMenuProps {
+  onBack: () => void;
   system: string;
   setSystem: (s: 'imperial' | 'metric') => void;
   canUndo: boolean;
@@ -661,19 +669,18 @@ interface HamburgerMenuProps {
   onReset: () => void;
   onSave: () => void;
   onPrint: () => void;
-  onShare: () => Promise<void>;
+  onNavigateToShare: () => void;
   onChecklist: () => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
-  onHelp: () => void;
   isAuthenticated: boolean;
 }
 
-function HamburgerMenu({
-  open, onClose, system, setSystem, canUndo, canRedo,
-  onUndo, onRedo, onReset, onSave, onPrint, onShare, onChecklist,
-  onExpandAll, onCollapseAll, onHelp, isAuthenticated,
-}: HamburgerMenuProps) {
+function FullScreenMenu({
+  onBack, system, setSystem, canUndo, canRedo,
+  onUndo, onRedo, onReset, onSave, onPrint, onNavigateToShare, onChecklist,
+  onExpandAll, onCollapseAll, isAuthenticated,
+}: FullScreenMenuProps) {
   const menuItem = (
     icon: React.ReactNode,
     label: string,
@@ -683,15 +690,14 @@ function HamburgerMenu({
   ) => (
     <button
       key={label}
-      onClick={() => { if (!disabled) { onClick(); onClose(); } }}
+      onClick={() => { if (!disabled) onClick(); }}
       disabled={disabled}
       aria-label={sublabel ? `${label} — ${sublabel}` : label}
       title={sublabel}
       style={{
         display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        background: 'none', border: 'none', padding: '13px 4px', cursor: disabled ? 'not-allowed' : 'pointer',
-        textAlign: 'left', borderBottom: '1px solid rgba(0,0,0,0.06)',
-        opacity: disabled ? 0.4 : 1,
+        background: 'none', border: 'none', padding: '14px 0', cursor: disabled ? 'not-allowed' : 'pointer',
+        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`, opacity: disabled ? 0.4 : 1,
       }}
     >
       <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
@@ -703,41 +709,49 @@ function HamburgerMenu({
   );
 
   return (
-    <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent side="left" style={{ width: 280, maxWidth: '85vw', padding: '24px 20px', overflowY: 'auto' }}>
-        <SheetHeader>
-          <SheetTitle style={{ fontFamily: SERIF, fontSize: 18, color: PRIMARY, marginBottom: 4 }}>
-            TrailWeigh
-          </SheetTitle>
-          <div style={{ fontSize: 12, color: MUTED, marginBottom: 16 }}>V3 Preview — sandboxed</div>
-        </SheetHeader>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+      {/* Sticky back bar */}
+      <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
+        <button
+          onClick={onBack}
+          aria-label="Back to list"
+          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
+        >
+          <ChevronLeft size={20} strokeWidth={2.5}/> Back
+        </button>
+      </div>
 
-        {/* File section */}
-        <div style={{ marginBottom: 4 }}>
+      {/* Scrollable content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
+        <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: PRIMARY, marginBottom: 4 }}>Menu</div>
+        <div style={{ fontSize: 12, color: MUTED, marginBottom: 20 }}>V3 Preview — sandboxed</div>
+
+        {/* File */}
+        <div style={{ marginBottom: 8 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>File</div>
-          {menuItem(<Save size={17} strokeWidth={1.8}/>, 'Save', onSave, false, 'Save current list as new Locker entry')}
-          {menuItem(<Undo2 size={17} strokeWidth={1.8}/>, 'Undo', onUndo, !canUndo)}
-          {menuItem(<Redo2 size={17} strokeWidth={1.8}/>, 'Redo', onRedo, !canRedo)}
-          {menuItem(<RotateCcw size={17} strokeWidth={1.8}/>, 'Reset', onReset, false, 'Re-load from your saved data')}
+          {menuItem(<Save size={17} strokeWidth={1.8}/>, 'Save', () => { onSave(); onBack(); }, false, 'Save current list as new Locker entry')}
+          {menuItem(<Undo2 size={17} strokeWidth={1.8}/>, 'Undo', () => { onUndo(); onBack(); }, !canUndo)}
+          {menuItem(<Redo2 size={17} strokeWidth={1.8}/>, 'Redo', () => { onRedo(); onBack(); }, !canRedo)}
+          {menuItem(<RotateCcw size={17} strokeWidth={1.8}/>, 'Reset', () => { onReset(); onBack(); }, false, 'Re-load from your saved data')}
         </div>
 
-        {/* Actions section */}
-        <div style={{ marginBottom: 4, marginTop: 8 }}>
+        {/* Actions */}
+        <div style={{ marginBottom: 8, marginTop: 8 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>Actions</div>
-          {menuItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', onChecklist, false, 'Trail checklist for selected items')}
-          {menuItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share (get review link)', () => { void onShare(); })}
-          {menuItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', onPrint)}
+          {menuItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', () => { onChecklist(); onBack(); }, false, 'Trail checklist for selected items')}
+          {menuItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share (get review link)', () => { onNavigateToShare(); })}
+          {menuItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', () => { onPrint(); onBack(); })}
         </div>
 
-        {/* View section */}
-        <div style={{ marginBottom: 4, marginTop: 8 }}>
+        {/* View */}
+        <div style={{ marginBottom: 8, marginTop: 8 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>View</div>
-          {menuItem(<Layers size={17} strokeWidth={1.8}/>, 'Expand All', onExpandAll)}
-          {menuItem(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', onCollapseAll)}
+          {menuItem(<Layers size={17} strokeWidth={1.8}/>, 'Expand All', () => { onExpandAll(); onBack(); })}
+          {menuItem(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', () => { onCollapseAll(); onBack(); })}
         </div>
 
-        {/* Units section */}
-        <div style={{ marginBottom: 4, marginTop: 8 }}>
+        {/* Units */}
+        <div style={{ marginBottom: 8, marginTop: 8 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
           <div style={{ display: 'flex', gap: 8 }}>
             {(['imperial', 'metric'] as const).map(s => (
@@ -746,7 +760,7 @@ function HamburgerMenu({
                 onClick={() => setSystem(s)}
                 aria-pressed={system === s}
                 style={{
-                  flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600,
+                  flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600,
                   border: `1.5px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
                   background: system === s ? NAV_ACTIVE : CARD_BG,
                   color: system === s ? '#fff' : SECONDARY, cursor: 'pointer', fontFamily: SANS,
@@ -759,29 +773,13 @@ function HamburgerMenu({
           </div>
         </div>
 
-        {/* Info section */}
-        <div style={{ marginTop: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>Info</div>
-          {menuItem(<HelpCircle size={17} strokeWidth={1.8}/>, 'Help / About', onHelp)}
-        </div>
-
         {isAuthenticated && (
-          <div style={{ marginTop: 12 }}>
-            <div style={{ fontSize: 12, color: MUTED, padding: '8px 4px' }}>
-              Sign out available in the main app (/checklist).
-            </div>
+          <div style={{ marginTop: 16, fontSize: 12, color: MUTED, padding: '8px 0' }}>
+            Sign out available in the main app (/checklist).
           </div>
         )}
-
-        {/* Dark mode note */}
-        <div style={{
-          marginTop: 16, padding: '10px 12px', background: 'rgba(0,0,0,0.04)', borderRadius: 8,
-          fontSize: 12, color: MUTED,
-        }}>
-          V3 Dark Design = PENDING USER DESIGN APPROVAL. Light mode only.
-        </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </div>
   );
 }
 
@@ -850,75 +848,468 @@ function PlusSheet({ open, onClose, onScanGearList }: PlusSheetProps) {
   );
 }
 
-// ─── MORE SHEET (slides from bottom) ─────────────────────────────────────────────
-interface MoreSheetProps {
-  open: boolean;
-  onClose: () => void;
-  onHelp: () => void;
-  system: string;
-  setSystem: (s: 'imperial' | 'metric') => void;
-  onExpandAll: () => void;
-  onCollapseAll: () => void;
+// ─── FULL-SCREEN FOOTER VIEW (027Q — replaces MoreSheet; footer links only) ──────
+interface FullScreenFooterProps {
+  onBack: () => void;
+  onNavigateToPage: (pageId: FooterPageId) => void;
+  isAuthenticated: boolean;
 }
 
-function MoreSheet({
-  open, onClose, onHelp, system, setSystem, onExpandAll, onCollapseAll,
-}: MoreSheetProps) {
-  const btn = (icon: React.ReactNode, label: string, onClick: () => void, sublabel?: string) => (
+function FullScreenFooter({ onBack, onNavigateToPage, isAuthenticated }: FullScreenFooterProps) {
+  const footerRow = (label: string, pageId: FooterPageId) => (
     <button
       key={label}
-      onClick={() => { onClick(); onClose(); }}
+      onClick={() => onNavigateToPage(pageId)}
       style={{
-        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        background: 'none', border: 'none', padding: '13px 0', cursor: 'pointer',
-        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        width: '100%', background: 'none', border: 'none', padding: '15px 0',
+        cursor: 'pointer', textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
+        fontFamily: SANS,
       }}
     >
-      <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
-      <div>
-        <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
-        {sublabel && <div style={{ fontSize: 11.5, color: MUTED }}>{sublabel}</div>}
-      </div>
+      <span style={{ fontSize: 15, color: PRIMARY, fontWeight: 400 }}>{label}</span>
+      <ChevronRight size={16} color={MUTED} strokeWidth={1.8}/>
     </button>
   );
 
   return (
-    <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent side="bottom" style={{ padding: '24px 24px 40px', borderRadius: '20px 20px 0 0' }}>
-        <SheetHeader>
-          <SheetTitle style={{ fontFamily: SERIF, fontSize: 16, color: PRIMARY, textAlign: 'left', marginBottom: 8 }}>
-            More
-          </SheetTitle>
-        </SheetHeader>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+      {/* Sticky back bar */}
+      <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
+        <button
+          onClick={onBack}
+          aria-label="Back to list"
+          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
+        >
+          <ChevronLeft size={20} strokeWidth={2.5}/> Back
+        </button>
+      </div>
 
-        {/* Units */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {(['imperial', 'metric'] as const).map(s => (
-              <button
-                key={s}
-                onClick={() => setSystem(s)}
-                aria-pressed={system === s}
-                style={{
-                  flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 14, fontWeight: 600,
-                  border: `1.5px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
-                  background: system === s ? NAV_ACTIVE : CARD_BG,
-                  color: system === s ? '#fff' : SECONDARY, cursor: 'pointer', fontFamily: SANS,
-                  textTransform: 'capitalize',
-                }}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+      {/* Scrollable footer content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
+        <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: PRIMARY, marginBottom: 20 }}>More</div>
+
+        {/* TrailWeigh section */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 2 }}>TrailWeigh</div>
+          {footerRow('About TrailWeigh', 'about')}
+          {footerRow('How It Works', 'how-it-works')}
+          {footerRow('Sources & References', 'sources')}
         </div>
 
-        {btn(<Layers size={17} strokeWidth={1.8}/>, 'Expand All Categories', onExpandAll)}
-        {btn(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All Categories', onCollapseAll)}
-        {btn(<HelpCircle size={17} strokeWidth={1.8}/>, 'Help / About', onHelp)}
-      </SheetContent>
-    </Sheet>
+        {/* Help section */}
+        <div style={{ marginBottom: 8, marginTop: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 2 }}>Help</div>
+          {footerRow('Help & How-To', 'help')}
+          {footerRow('Report a Problem', 'report-problem')}
+          {footerRow('Contact Us', 'contact')}
+        </div>
+
+        {/* Account & Privacy section */}
+        <div style={{ marginBottom: 8, marginTop: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 2 }}>Account &amp; Privacy</div>
+          {footerRow('Privacy Policy', 'privacy')}
+          {footerRow('Terms of Use', 'terms')}
+          {isAuthenticated && footerRow('Delete Account / Data', 'delete-account')}
+          {footerRow('Affiliate Disclosure', 'affiliate')}
+          {footerRow('Accessibility', 'accessibility')}
+        </div>
+
+        {/* Copyright */}
+        <div style={{ borderTop: `1px solid ${DIVIDER}`, paddingTop: 16, marginTop: 12, textAlign: 'center' }}>
+          <p style={{ fontSize: 12, color: MUTED, fontFamily: SANS }}>© 2026 TrailWeigh · All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── FOOTER PAGE CONTENT (027Q — inline full-screen content for each footer page) ─
+interface FooterPageViewProps {
+  pageId: FooterPageId;
+  onBack: () => void;
+  isAuthenticated: boolean;
+  onOpenSources: () => void;
+}
+
+function FooterPageView({ pageId, onBack, isAuthenticated, onOpenSources }: FooterPageViewProps) {
+  // Shared prose block style
+  const prose: React.CSSProperties = { fontSize: 14, color: SECONDARY, lineHeight: 1.65, marginBottom: 12 };
+  const h2: React.CSSProperties = { fontSize: 15, fontWeight: 700, color: PRIMARY, marginBottom: 6, marginTop: 16 };
+  const card: React.CSSProperties = { background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12, padding: '16px 16px', marginBottom: 12, boxShadow: CARD_SHADOW };
+  const ul: React.CSSProperties = { paddingLeft: 16, marginBottom: 0 };
+  const li: React.CSSProperties = { fontSize: 13.5, color: SECONDARY, lineHeight: 1.6, marginBottom: 6 };
+
+  const pageTitles: Record<FooterPageId, string> = {
+    about: 'About TrailWeigh', 'how-it-works': 'How It Works',
+    sources: 'Sources & References', help: 'Help & How-To',
+    'report-problem': 'Report a Problem', contact: 'Contact Us',
+    privacy: 'Privacy Policy', terms: 'Terms of Use',
+    'delete-account': 'Delete Account / Data', affiliate: 'Affiliate Disclosure',
+    accessibility: 'Accessibility',
+  };
+
+  const renderContent = () => {
+    switch (pageId) {
+
+      case 'about':
+        return (
+          <>
+            <p style={prose}>
+              TrailWeigh is a pack-weight calculator for hikers, backpackers, and long-distance trail travellers.
+              It helps you understand what you're carrying before you carry it — so you can make better decisions
+              about what earns its place on the trail.
+            </p>
+            <p style={prose}>
+              Hikers who pay attention to pack weight tend to move faster, feel better, recover quicker, and
+              enjoy the trail more. TrailWeigh is built around that idea: lighter doesn't just mean easier — it
+              often means more time for the things you actually came to do.
+            </p>
+            <h2 style={h2}>Philosophy</h2>
+            <div style={card}>
+              <p style={{ ...prose, marginBottom: 0 }}>
+                There is no right answer about what to carry. The goal of TrailWeigh is to make your choices
+                visible — not to make them for you. A piece of gear that seems unnecessary to one person may be
+                one of the things another person values most about the trip.
+              </p>
+            </div>
+            <h2 style={h2}>Topics covered in the full About page</h2>
+            <ul style={ul}>
+              {["Remember Why We're Here", 'Mental & emotional benefits of hiking', 'Physical benefits',
+                'Awe, connection & meaning', 'Hike your own hike (HYOH)', 'Ultralight philosophy',
+                'The Ray-Way', 'Where TrailWeigh fits in', 'About the Creator'].map(t => (
+                <li key={t} style={li}>• {t}</li>
+              ))}
+            </ul>
+            <button
+              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/about'); }}
+              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
+            >
+              Open full About page
+            </button>
+          </>
+        );
+
+      case 'how-it-works':
+        return (
+          <>
+            <p style={prose}>
+              TrailWeigh is designed to work in three steps: get your gear list in, organise it,
+              then use it on the trail.
+            </p>
+            <h2 style={h2}>1. Create / Upload</h2>
+            <div style={card}>
+              <p style={{ ...prose, marginBottom: 6 }}>Start with an existing list or scan a document:</p>
+              <ul style={ul}>
+                <li style={li}>• Type or paste items directly into a category</li>
+                <li style={li}>• Scan a PDF or Word document gear list using AI import</li>
+                <li style={li}>• Load a previously saved list from your Locker</li>
+              </ul>
+            </div>
+            <h2 style={h2}>2. Add / Organise</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Add categories and items within each category</li>
+                <li style={li}>• Set weight and quantity per item</li>
+                <li style={li}>• Reorder items and categories by dragging</li>
+                <li style={li}>• Mark items for inclusion in your trail Checklist</li>
+              </ul>
+            </div>
+            <h2 style={h2}>3. Save / Preview / Print / Share</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Save the list to your Locker for later</li>
+                <li style={li}>• View pack summary and weight distribution</li>
+                <li style={li}>• Print a PDF for offline use</li>
+                <li style={li}>• Share a review link — reviewers see a snapshot, can make temporary changes, but cannot alter your original</li>
+              </ul>
+            </div>
+          </>
+        );
+
+      case 'sources':
+        return (
+          <>
+            <p style={prose}>
+              Sources &amp; References lists the research, books, and studies referenced in the About TrailWeigh section.
+            </p>
+            <button
+              onClick={() => { onBack(); onOpenSources(); }}
+              style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', border: 'none', borderRadius: 10, padding: '13px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
+            >
+              <BookOpen size={17} strokeWidth={1.8}/> Open Sources &amp; References
+            </button>
+          </>
+        );
+
+      case 'help':
+        return (
+          <>
+            <p style={prose}>
+              TrailWeigh is a pack-weight calculator. The core workflow is: add categories, add items with weights,
+              view your total, save or share.
+            </p>
+            <h2 style={h2}>Adding items</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Tap a category name to open Category Options (rename / delete)</li>
+                <li style={li}>• Tap the category icon to expand the category and see its items</li>
+                <li style={li}>• Tap an item to expand its edit panel (weight, qty, move, photo)</li>
+                <li style={li}>• Tap the trash icon on an item row to delete that item</li>
+              </ul>
+            </div>
+            <h2 style={h2}>Saving & the Locker</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Tap Menu → Save to save the current list as a new Locker entry</li>
+                <li style={li}>• Tap the Locker tab to browse and load saved lists</li>
+                <li style={li}>• Each Save creates a new entry; no existing entries are overwritten</li>
+              </ul>
+            </div>
+            <h2 style={h2}>Sharing</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Tap Menu → Share to generate a review link</li>
+                <li style={li}>• The link captures a snapshot of your list at that moment</li>
+                <li style={li}>• Recipients can make temporary changes but cannot alter your original</li>
+              </ul>
+            </div>
+            <h2 style={h2}>Units</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Switch between Imperial and Metric in Menu → Units</li>
+                <li style={li}>• All weights recalculate automatically when you switch</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/help'); }}
+              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
+            >
+              Open full Help page
+            </button>
+          </>
+        );
+
+      case 'report-problem':
+        return (
+          <>
+            <p style={prose}>
+              Use this page when TrailWeigh is not behaving as expected — something isn't working,
+              a result looks wrong, or you've encountered an error.
+            </p>
+            <div style={card}>
+              <h2 style={{ ...h2, marginTop: 0 }}>What to include in your report</h2>
+              <ul style={ul}>
+                <li style={li}>• What you were doing and which part of TrailWeigh you were using</li>
+                <li style={li}>• What happened — exact result or error message</li>
+                <li style={li}>• What you expected to happen</li>
+                <li style={li}>• Your device and browser (e.g. "iPhone 15, Safari")</li>
+                <li style={li}>• Whether the problem is repeatable</li>
+              </ul>
+            </div>
+            <p style={{ ...prose, fontSize: 13 }}>
+              Use Contact Us to send your report. A built-in problem-reporting tool will be available in a future update.
+            </p>
+          </>
+        );
+
+      case 'contact':
+        return (
+          <>
+            <p style={prose}>
+              TrailWeigh support contact information will be available here.
+            </p>
+            <div style={card}>
+              <p style={{ ...prose, marginBottom: 8 }}>
+                If you have encountered a bug, the Report a Problem page describes what to include in your report.
+              </p>
+              <p style={{ ...prose, marginBottom: 0, fontSize: 13 }}>
+                For questions about your account or data, see Privacy Policy or Delete Account / Data.
+              </p>
+            </div>
+            <div style={{ background: 'rgba(42,87,64,0.07)', border: `1px solid rgba(42,87,64,0.18)`, borderRadius: 12, padding: '14px 16px', marginTop: 12 }}>
+              <p style={{ fontSize: 13, color: SECONDARY, marginBottom: 10 }}>
+                Contact information will be published here. To send a message now, tap the button below.
+              </p>
+              <a
+                href="mailto:hello@trailweigh.com"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '11px 18px', fontSize: 14, fontWeight: 600, fontFamily: SANS }}
+              >
+                <Mail size={16} strokeWidth={2}/> Email TrailWeigh
+              </a>
+            </div>
+          </>
+        );
+
+      case 'privacy':
+        return (
+          <>
+            <p style={prose}>
+              TrailWeigh is designed to store as little personal data as possible. Here is a summary of how your data is handled.
+            </p>
+            <h2 style={h2}>Your browser (local storage)</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Your current working gear list lives in your browser's local storage, tied to your account identifier</li>
+                <li style={li}>• Saved Locker lists are stored in your browser's local storage on the device and browser you are using</li>
+                <li style={li}>• Background photo selections are stored in your browser's IndexedDB</li>
+                <li style={li}>• This local data does not automatically sync to other devices</li>
+              </ul>
+            </div>
+            <h2 style={h2}>TrailWeigh servers</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• When you Share a list, a snapshot is stored on TrailWeigh's server, associated with a randomly generated link ID — not directly with your account</li>
+                <li style={li}>• The server does not maintain a user database of your gear lists or personal profile beyond what Clerk manages for authentication</li>
+              </ul>
+            </div>
+            <h2 style={h2}>Authentication</h2>
+            <div style={card}>
+              <p style={{ ...prose, marginBottom: 0 }}>
+                TrailWeigh uses Clerk for authentication. Clerk manages your account credentials. TrailWeigh does not store your password.
+              </p>
+            </div>
+            <button
+              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/privacy'); }}
+              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: CARD_BG, color: PRIMARY, border: `1px solid ${CARD_BORDER}`, borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
+            >
+              <Shield size={16} strokeWidth={1.8}/> Open full Privacy Policy
+            </button>
+          </>
+        );
+
+      case 'terms':
+        return (
+          <>
+            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px', marginBottom: 14, fontSize: 13, color: '#92400e' }}>
+              <strong>Draft — not yet finalized.</strong> These Terms of Use describe TrailWeigh's current expectations and practices in plain language. They will be reviewed by qualified legal counsel before being treated as binding terms.
+            </div>
+            <p style={prose}>
+              By using TrailWeigh you agree to use it lawfully and not to attempt to harm, misuse, or gain unauthorized access to the service or other users' data.
+            </p>
+            <h2 style={h2}>Key points</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• TrailWeigh is provided as-is with no warranty of fitness for any particular purpose</li>
+                <li style={li}>• Weight information from AI scanning is approximate — always verify gear weights from official product sources</li>
+                <li style={li}>• Your account and data remain yours; TrailWeigh does not claim ownership of your gear lists</li>
+                <li style={li}>• TrailWeigh may update these terms; continued use constitutes acceptance</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/terms'); }}
+              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: CARD_BG, color: PRIMARY, border: `1px solid ${CARD_BORDER}`, borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
+            >
+              <FileText size={16} strokeWidth={1.8}/> Open full Terms of Use
+            </button>
+          </>
+        );
+
+      case 'delete-account':
+        return (
+          <>
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '12px 14px', marginBottom: 14, fontSize: 13, color: '#991b1b' }}>
+              <strong>Account deletion is permanent and cannot be undone.</strong>
+            </div>
+            <h2 style={{ ...h2, marginTop: 0 }}>What deletion removes</h2>
+            <div style={card}>
+              <ul style={ul}>
+                <li style={li}>• Your TrailWeigh account credentials and sign-in access</li>
+                <li style={li}>• All saved gear lists stored in your Locker</li>
+                <li style={li}>• Any shared links you have created</li>
+                <li style={li}>• All other data associated with your account on TrailWeigh's servers</li>
+              </ul>
+            </div>
+            <h2 style={h2}>Local browser data</h2>
+            <div style={card}>
+              <p style={{ ...prose, marginBottom: 0 }}>
+                TrailWeigh stores your current working gear list and background photo selections locally in your browser. This browser-local data is separate from your account and is not automatically removed when you delete your account. To remove it, clear your browser's site data for TrailWeigh after your account has been deleted.
+              </p>
+            </div>
+            <h2 style={h2}>How to delete your account</h2>
+            <div style={card}>
+              <p style={{ ...prose, marginBottom: 0 }}>
+                Account deletion is handled through the main TrailWeigh settings at /checklist. If you need assistance, contact TrailWeigh support before proceeding.
+              </p>
+            </div>
+          </>
+        );
+
+      case 'affiliate':
+        return (
+          <>
+            <div style={card}>
+              <p style={{ ...prose, marginBottom: 8 }}>
+                TrailWeigh may earn a commission from qualifying purchases made through retailer links at no additional cost to you.
+              </p>
+              <p style={{ ...prose, marginBottom: 8, fontSize: 13 }}>
+                Affiliate relationships, if any, will be disclosed specifically here once those arrangements are established. This disclosure will be updated to identify the programmes and retailers involved.
+              </p>
+              <p style={{ ...prose, marginBottom: 0, fontSize: 13 }}>
+                Any affiliate relationships that may exist do not influence TrailWeigh's gear-tracking features, weight data, or application behavior.
+              </p>
+            </div>
+            <p style={{ fontSize: 13, color: MUTED, marginTop: 8 }}>Questions? Use Contact Us.</p>
+          </>
+        );
+
+      case 'accessibility':
+        return (
+          <>
+            <p style={prose}>
+              TrailWeigh is committed to being usable by as many people as possible. We do not claim formal accessibility certification or full compliance with a specific accessibility standard at this time.
+            </p>
+            <h2 style={h2}>Current accessibility features</h2>
+            {[
+              { label: 'Keyboard-accessible controls', desc: 'Core controls are operable using a keyboard.' },
+              { label: 'Readable text sizes', desc: 'Text sizes are intended to be readable at standard screen resolutions. Browser-level text-size adjustments are respected.' },
+              { label: 'Colour contrast', desc: 'Text and interactive elements use colour combinations intended to maintain readability.' },
+              { label: 'Labels and titles', desc: 'Icon-only controls include descriptive title attributes available to assistive technology.' },
+              { label: 'Responsive layout', desc: 'The interface adapts to different screen sizes including tablet and mobile.' },
+            ].map(({ label, desc }) => (
+              <div key={label} style={{ ...card, display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 14px', marginBottom: 8 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: NAV_ACTIVE, flexShrink: 0, marginTop: 5 }}/>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: PRIMARY, marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 13, color: SECONDARY, lineHeight: 1.5 }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+            <h2 style={h2}>Encountered an accessibility barrier?</h2>
+            <div style={{ ...card, marginBottom: 0 }}>
+              <p style={{ ...prose, marginBottom: 0 }}>
+                If something in TrailWeigh is preventing you from using it effectively, please use Contact Us or Report a Problem. Accessibility barriers are treated as bugs.
+              </p>
+            </div>
+          </>
+        );
+
+      default:
+        return <p style={prose}>Content not available.</p>;
+    }
+  };
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+      {/* Sticky back bar */}
+      <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
+        <button
+          onClick={onBack}
+          aria-label="Back to More"
+          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
+        >
+          <ChevronLeft size={20} strokeWidth={2.5}/> Back
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
+        <h1 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
+          {pageTitles[pageId] ?? pageId}
+        </h1>
+        {renderContent()}
+      </div>
+    </div>
   );
 }
 
@@ -949,9 +1340,16 @@ function MobileFunctionalV3Inner() {
 
   // ── UI state ─────────────────────────────────────────────────────────────────
   const [activeNav, setActiveNav] = useState<ActiveNav>('list');
-  const [openSheet, setOpenSheet] = useState<null | 'hamburger' | 'plus' | 'more'>(null);
+  // 027Q: full-screen navigation stack (replaces openSheet for hamburger/more/help/share)
+  const [screenStack, setScreenStack] = useState<ScreenEntry[]>([{ screen: 'list' }]);
+  const [showPlusSheet, setShowPlusSheet] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+
+  // 027Q navigation helpers
+  const currentScreen = screenStack[screenStack.length - 1];
+  const pushScreen = useCallback((entry: ScreenEntry) => setScreenStack(prev => [...prev, entry]), []);
+  const popScreen = useCallback(() => setScreenStack(prev => prev.length > 1 ? prev.slice(0, -1) : prev), []);
 
   // Category accordion
   const [openCatName, setOpenCatName] = useState<string | null>(null);
@@ -979,14 +1377,13 @@ function MobileFunctionalV3Inner() {
   // D2 — weight input local edit state (prevents intermediate value snapping)
   const [weightInputs, setWeightInputs] = useState<Record<string, string>>({});
 
-  // D3 — help/about in-app sheet
-  const [showHelpSheet, setShowHelpSheet] = useState(false);
-
-  // D4 — share real link
+  // D4 — share link state (showShareSheet replaced by screenStack 'share')
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [shareLoading, setShareLoading] = useState(false);
-  const [showShareSheet, setShowShareSheet] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+
+  // 027Q — Sources & References modal (for footer More → Sources row)
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   // D5 — category options
   const [catOptionsFor, setCatOptionsFor] = useState<string | null>(null);
@@ -1157,11 +1554,13 @@ function MobileFunctionalV3Inner() {
     showToast(`Saved as "${name}"`);
   }, [listName, showToast]);
 
-  // ── Share — D4 FIX: invoke real review-link workflow (buildShareURL) ──────────
+  // ── Share — 027Q: navigate to full-screen Share view, then generate link ─────
 
-  const handleShare = useCallback(async () => {
+  const navigateToShare = useCallback(() => {
+    setShareLink(null);
+    setShareCopied(false);
     setShareLoading(true);
-    setOpenSheet(null);
+    setScreenStack(prev => [...prev, { screen: 'share' }]);
     const payload: SharePayload = {
       type: 'pack-list',
       data: sandboxRef.current.items,
@@ -1170,14 +1569,14 @@ function MobileFunctionalV3Inner() {
       unit: system,
       name: listName,
     };
-    const url = await buildShareURL(payload);
-    setShareLoading(false);
-    if (url) {
-      setShareLink(url);
-      setShowShareSheet(true);
-    } else {
-      showToast('Share failed — sign in required or server unavailable');
-    }
+    void buildShareURL(payload).then(url => {
+      setShareLoading(false);
+      if (url) {
+        setShareLink(url);
+      } else {
+        showToast('Share failed — sign in required or server unavailable');
+      }
+    });
   }, [system, listName, showToast]);
 
   // ── Print (downloads PDF and opens browser print) ────────────────────────────
@@ -1325,12 +1724,8 @@ function MobileFunctionalV3Inner() {
       })()
     : sandbox.order;
 
-  // ── Help / About — D3 FIX: in-app sheet with both Help & About ───────────────
-
-  const handleHelp = useCallback(() => {
-    setOpenSheet(null);
-    setShowHelpSheet(true);
-  }, []);
+  // ── Help / About — 027Q: navigate to More (footer) which contains Help link ──
+  // handleHelp removed; Help accessible via More → Footer → Help & How-To
 
   // ── D5 — Sandbox category mutations ──────────────────────────────────────────
 
@@ -1418,8 +1813,8 @@ function MobileFunctionalV3Inner() {
           {/* Hamburger */}
           <button
             aria-label="Open menu"
-            aria-expanded={openSheet === 'hamburger'}
-            onClick={() => setOpenSheet('hamburger')}
+            aria-expanded={currentScreen.screen === 'menu'}
+            onClick={() => pushScreen({ screen: 'menu' })}
             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}
           >
             <Menu size={22} color={SECONDARY} strokeWidth={1.8}/>
@@ -1452,8 +1847,8 @@ function MobileFunctionalV3Inner() {
             {/* FAB — opens + creation sheet */}
             <button
               aria-label="Create or import — Start / Create"
-              aria-expanded={openSheet === 'plus'}
-              onClick={() => setOpenSheet('plus')}
+              aria-expanded={showPlusSheet}
+              onClick={() => setShowPlusSheet(true)}
               style={{
                 width: 34, height: 34, borderRadius: 17, background: NAV_ACTIVE,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1994,7 +2389,7 @@ function MobileFunctionalV3Inner() {
         <BottomNavBar
           active={activeNav}
           onSelect={tab => setActiveNav(tab)}
-          onMore={() => setOpenSheet('more')}
+          onMore={() => pushScreen({ screen: 'footer' })}
         />
 
         {/* ── OVERLAYS (rendered as absolute children of the phone frame) ── */}
@@ -2028,7 +2423,7 @@ function MobileFunctionalV3Inner() {
             onToggle={handleChecklistToggle}
             onClear={handleChecklistClear}
             onPrint={handlePrint}
-            onShare={handleShare}
+            onShare={navigateToShare}
             onClose={() => setShowChecklist(false)}
           />
         )}
@@ -2045,155 +2440,144 @@ function MobileFunctionalV3Inner() {
         {/* Toast */}
         {toast && <Toast message={toast}/>}
 
-      </div>{/* end phone frame */}
+        {/* ── 027Q: FULL-SCREEN OVERLAYS (inside phone frame — constrained to 430px) ── */}
 
-      {/* ── SHEETS (rendered outside phone frame — full viewport) ── */}
+        {/* Hamburger Menu */}
+        {currentScreen.screen === 'menu' && (
+          <FullScreenMenu
+            onBack={popScreen}
+            system={system}
+            setSystem={setSystem}
+            canUndo={undoHistory.length > 0}
+            canRedo={redoHistory.length > 0}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onReset={handleReset}
+            onSave={() => { handleSave(); }}
+            onPrint={handlePrint}
+            onNavigateToShare={() => { popScreen(); navigateToShare(); }}
+            onChecklist={() => { popScreen(); setShowChecklist(true); }}
+            onExpandAll={handleExpandAll}
+            onCollapseAll={handleCollapseAll}
+            isAuthenticated={!!userId}
+          />
+        )}
 
-      {/* Hamburger */}
-      <HamburgerMenu
-        open={openSheet === 'hamburger'}
-        onClose={() => setOpenSheet(null)}
-        system={system}
-        setSystem={setSystem}
-        canUndo={undoHistory.length > 0}
-        canRedo={redoHistory.length > 0}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onReset={handleReset}
-        onSave={() => { handleSave(); }}
-        onPrint={handlePrint}
-        onShare={handleShare}
-        onChecklist={() => setShowChecklist(true)}
-        onExpandAll={handleExpandAll}
-        onCollapseAll={handleCollapseAll}
-        onHelp={handleHelp}
-        isAuthenticated={!!userId}
-      />
+        {/* More / Footer */}
+        {currentScreen.screen === 'footer' && (
+          <FullScreenFooter
+            onBack={popScreen}
+            onNavigateToPage={(id: FooterPageId) => {
+              if (id === 'sources') {
+                setSourcesOpen(true);
+              } else {
+                pushScreen({ screen: 'footer-page', footerPageId: id });
+              }
+            }}
+            isAuthenticated={!!userId}
+          />
+        )}
 
-      {/* Plus creation sheet */}
-      <PlusSheet
-        open={openSheet === 'plus'}
-        onClose={() => setOpenSheet(null)}
-        onScanGearList={() => setShowScanner(true)}
-      />
+        {/* Footer page */}
+        {currentScreen.screen === 'footer-page' && currentScreen.footerPageId && (
+          <FooterPageView
+            pageId={currentScreen.footerPageId}
+            onBack={popScreen}
+            isAuthenticated={!!userId}
+            onOpenSources={() => { popScreen(); setSourcesOpen(true); }}
+          />
+        )}
 
-      {/* More sheet */}
-      <MoreSheet
-        open={openSheet === 'more'}
-        onClose={() => setOpenSheet(null)}
-        onHelp={handleHelp}
-        system={system}
-        setSystem={setSystem}
-        onExpandAll={handleExpandAll}
-        onCollapseAll={handleCollapseAll}
-      />
-
-      {/* ── D3: Help / About in-app sheet ── */}
-      <Sheet open={showHelpSheet} onOpenChange={v => setShowHelpSheet(v)}>
-        <SheetContent side="bottom" style={{ maxHeight: '60vh', fontFamily: SANS, padding: '20px 20px 32px' }}>
-          <SheetHeader>
-            <SheetTitle style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
-              Help &amp; About
-            </SheetTitle>
-          </SheetHeader>
-          <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* Help & How-To */}
-            <button
-              onClick={() => { setShowHelpSheet(false); const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, ''); window.location.assign(`${base}/help`); }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
-                padding: '14px 16px', cursor: 'pointer', textAlign: 'left', width: '100%',
-                boxShadow: CARD_SHADOW,
-              }}
-            >
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <BookOpen size={18} color="#fff" strokeWidth={1.8}/>
-              </div>
-              <div>
-                <div style={{ fontSize: 15.5, fontWeight: 600, color: PRIMARY, marginBottom: 2 }}>Help &amp; How-To</div>
-                <div style={{ fontSize: 12.5, color: MUTED }}>Instructions, tips, and feature guide</div>
-              </div>
-            </button>
-            {/* About TrailWeigh */}
-            <button
-              onClick={() => { setShowHelpSheet(false); const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, ''); window.location.assign(`${base}/about`); }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
-                padding: '14px 16px', cursor: 'pointer', textAlign: 'left', width: '100%',
-                boxShadow: CARD_SHADOW,
-              }}
-            >
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: '#5e6ad2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Info size={18} color="#fff" strokeWidth={1.8}/>
-              </div>
-              <div>
-                <div style={{ fontSize: 15.5, fontWeight: 600, color: PRIMARY, marginBottom: 2 }}>About TrailWeigh</div>
-                <div style={{ fontSize: 12.5, color: MUTED }}>Mission, philosophy, and creator info</div>
-              </div>
-            </button>
+        {/* Share */}
+        {currentScreen.screen === 'share' && (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 50,
+            background: PAGE_BG, display: 'flex', flexDirection: 'column',
+            fontFamily: SANS,
+          }}>
+            {/* Back bar */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '14px 16px 12px', borderBottom: `1px solid ${CARD_BORDER}`,
+              background: '#fff', flexShrink: 0,
+            }}>
+              <button
+                aria-label="Back"
+                onClick={() => { popScreen(); setShareLink(null); setShareCopied(false); }}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: NAV_ACTIVE, fontSize: 15, fontWeight: 600, fontFamily: SANS }}
+              >
+                <ChevronLeft size={20} strokeWidth={2.2}/> Back
+              </button>
+              <div style={{ flex: 1 }}/>
+              <span style={{ fontSize: 16, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>Share This List</span>
+              <div style={{ flex: 1 }}/>
+            </div>
+            {/* Content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 32px' }}>
+              {shareLoading ? (
+                <div style={{ textAlign: 'center', paddingTop: 48, color: MUTED, fontSize: 14 }}>
+                  <div style={{ marginBottom: 12, fontSize: 28 }}>⏳</div>
+                  Generating share link…
+                </div>
+              ) : shareLink ? (
+                <>
+                  <p style={{ fontSize: 13.5, color: SECONDARY, marginBottom: 16, lineHeight: 1.55 }}>
+                    Reviewers can make temporary changes in their own review session. Your original list is not changed.
+                  </p>
+                  <div style={{
+                    background: '#f5f7f5', border: `1px solid ${CARD_BORDER}`, borderRadius: 10,
+                    padding: '12px 14px', fontSize: 12.5, color: PRIMARY, wordBreak: 'break-all',
+                    marginBottom: 16, fontFamily: 'monospace',
+                  }}>
+                    {shareLink}
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, flexDirection: 'column' }}>
+                    <button
+                      onClick={() => { void navigator.clipboard.writeText(shareLink).then(() => setShareCopied(true)); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        background: shareCopied ? '#16a34a' : NAV_ACTIVE, color: '#fff', border: 'none',
+                        borderRadius: 12, padding: '14px 0', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                      }}
+                    >
+                      <Copy size={16} strokeWidth={2}/>
+                      {shareCopied ? 'Copied!' : 'Copy Link'}
+                    </button>
+                    {typeof navigator.share === 'function' && (
+                      <button
+                        onClick={() => { void navigator.share({ title: 'My Pack List', url: shareLink }); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                          background: CARD_BG, color: PRIMARY, border: `1px solid ${CARD_BORDER}`,
+                          borderRadius: 12, padding: '14px 0', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+                        }}
+                      >
+                        <Link2 size={16} strokeWidth={2}/>
+                        Share via…
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div style={{ textAlign: 'center', paddingTop: 48, color: MUTED, fontSize: 14 }}>
+                  Share link could not be generated. Sign in and try again.
+                </div>
+              )}
+            </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        )}
 
-      {/* ── D4: Share link sheet ── */}
-      <Sheet open={showShareSheet} onOpenChange={v => { setShowShareSheet(v); if (!v) { setShareLink(null); setShareCopied(false); } }}>
-        <SheetContent side="bottom" style={{ maxHeight: '55vh', fontFamily: SANS, padding: '20px 20px 32px' }}>
-          <SheetHeader>
-            <SheetTitle style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
-              Share This List
-            </SheetTitle>
-          </SheetHeader>
-          {shareLink ? (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 13, color: SECONDARY, marginBottom: 8 }}>
-                Anyone with this link can view your pack list (read-only):
-              </div>
-              <div style={{
-                background: PAGE_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 8,
-                padding: '10px 12px', fontSize: 12.5, color: PRIMARY, wordBreak: 'break-all',
-                marginBottom: 12, fontFamily: 'monospace',
-              }}>
-                {shareLink}
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={() => { void navigator.clipboard.writeText(shareLink).then(() => setShareCopied(true)); }}
-                  style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    background: shareCopied ? '#16a34a' : NAV_ACTIVE, color: '#fff', border: 'none',
-                    borderRadius: 10, padding: '12px 0', fontSize: 14.5, fontWeight: 600, cursor: 'pointer',
-                  }}
-                >
-                  <Copy size={16} strokeWidth={2}/>
-                  {shareCopied ? 'Copied!' : 'Copy Link'}
-                </button>
-                {typeof navigator.share === 'function' && (
-                  <button
-                    onClick={() => { void navigator.share({ title: 'My Pack List', url: shareLink }); }}
-                    style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                      background: CARD_BG, color: PRIMARY, border: `1px solid ${CARD_BORDER}`,
-                      borderRadius: 10, padding: '12px 0', fontSize: 14.5, fontWeight: 600, cursor: 'pointer',
-                    }}
-                  >
-                    <Link2 size={16} strokeWidth={2}/>
-                    Share…
-                  </button>
-                )}
-              </div>
-              <div style={{ marginTop: 12, fontSize: 12, color: MUTED, textAlign: 'center' }}>
-                Reviewers cannot edit your list. This link is a read-only snapshot.
-              </div>
-            </div>
-          ) : (
-            <div style={{ marginTop: 24, textAlign: 'center', color: MUTED, fontSize: 14 }}>
-              {shareLoading ? 'Generating share link…' : 'No link generated.'}
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+        {/* Sources & References modal (triggered from More footer) */}
+        <SourcesModal isOpen={sourcesOpen} onClose={() => setSourcesOpen(false)}/>
+
+        {/* Plus creation sheet — kept as bottom Sheet (small utility panel, not primary nav) */}
+        <PlusSheet
+          open={showPlusSheet}
+          onClose={() => setShowPlusSheet(false)}
+          onScanGearList={() => { setShowPlusSheet(false); setShowScanner(true); }}
+        />
+
+      </div>{/* end phone frame */}
 
       {/* ── D5: Category Options sheet ── */}
       <Sheet open={catOptionsFor !== null} onOpenChange={v => { if (!v) { setCatOptionsFor(null); setCatRenaming(false); setCatDeleteConfirm(false); } }}>

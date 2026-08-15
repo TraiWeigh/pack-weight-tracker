@@ -1,0 +1,942 @@
+TRAILWEIGH — PROMPT 027Q — GOLD STANDARD SURGICAL REPAIR
+FULL-SCREEN MOBILE NAVIGATION
+HAMBURGER MENU + MORE/FOOTER + FOOTER PAGES + HELP/ABOUT + SHARE
+NO SIDE DRAWERS FOR PRIMARY MOBILE NAV — NO VISUAL REDESIGN — NO PRODUCTION CUTOVER
+
+INTERNAL VERSION ID:
+027Q-V3-FULLSCREEN-MOBILE-NAV-FOOTER-SHARE-2026-08-14-R2
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 15–30 minutes
+- approximately $1.25–$3.00 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+SEQUENCE / BASELINE
+============================================================
+
+027L = USER VISUAL PASS / CLOSED.
+027M = READ-ONLY PHOTO / VISUAL LIBRARY DIAGNOSTIC PASS.
+027N = READ-ONLY MASTER LIST IDENTITY DIAGNOSTIC PASS.
+027O = COMPREHENSIVE V3 MOBILE WIRING — PARTIAL.
+027P R3 = SIX-DEFECT SURGICAL REPAIR IMPLEMENTED.
+
+027P R3 report ZIP has been received and reviewed.
+
+TARGET ROUTE:
+`/mobile-functional-v3`
+
+PRODUCTION `/checklist` MUST REMAIN UNCHANGED.
+
+============================================================
+AUTHORITATIVE USER LIVE FINDINGS
+============================================================
+
+The USER says the current V3 design looks really good.
+
+Therefore:
+THE CURRENT V3 VISUAL DESIGN IS FROZEN.
+
+USER then identified these remaining mobile navigation defects:
+
+1. `More` must contain ONLY the entire TrailWeigh footer.
+2. `More` must NOT contain Imperial/Metric or other operational controls.
+3. More must open as a FULL-SCREEN in-app phone view.
+4. Footer links must open as FULL-SCREEN in-app phone views.
+5. Every full-screen footer/destination view must have a clear Back control at top.
+6. Help & How-To must remain inside the TrailWeigh phone screen.
+7. Share must remain inside the TrailWeigh phone screen.
+8. The hamburger currently opens as a side/off-canvas sheet relative to the preview box.
+   This is WRONG.
+9. Hamburger must instead open as a FULL-SCREEN in-app mobile Menu view,
+   filling the phone screen, with a Back control.
+10. Share wording must accurately reflect Review sandbox behavior:
+    reviewers may make temporary isolated changes, but cannot alter the owner's original.
+
+USER live evidence outranks source/report PASS claims.
+
+============================================================
+MASTER MOBILE NAVIGATION RULE — AUTHORITATIVE
+============================================================
+
+For V3 mobile, major navigation surfaces use:
+
+FULL-SCREEN INTERNAL VIEW + TOP BACK CONTROL
+
+This rule applies to:
+
+- Hamburger Menu
+- More / Footer
+- Footer destination pages
+- Help & How-To
+- About TrailWeigh
+- Share This List
+- other footer information pages
+
+Do NOT use:
+- off-canvas side drawers
+- desktop side sheets
+- panels opening outside the phone viewport
+- external browser navigation for TrailWeigh-hosted information
+- browser Back as the only way to return
+
+A standard top-left:
+`← Back`
+or equivalent mobile back icon + accessible label
+is REQUIRED.
+
+============================================================
+027P R3 PASSES TO PROTECT
+============================================================
+
+DO NOT regress:
+
+- approved V3 visual composition
+- header green +
+- + → Create New List entry
+- + → Scan Gear List
+- 77-item Scanner/import behavior
+- category icon = accordion control
+- no category chevrons
+- category name = Category Options
+- Rename Category
+- Delete Category with exact populated-item warning
+- six-dot category handle geometry
+- item Qty → trash-can placement
+- item delete confirmation
+- item Weight editing
+- Quantity editing
+- Total recalculation
+- Move
+- Photo row position below Move
+- main-list checkbox = Checklist inclusion
+- separate Checklist-use progress
+- Locker
+- Summary
+- Pack Summary
+- Weight Distribution
+- Print/PDF path
+- Save/Undo/Redo/Reset behavior already present
+- no item drag dots
+
+CATEGORY TOUCH REORDER:
+USER physical-phone verification remains authoritative.
+Do NOT alter the 027P reorder code in 027Q unless this prompt introduces a regression.
+
+============================================================
+027Q PURPOSE
+============================================================
+
+Repair ONLY the mobile navigation/presentation architecture for:
+
+A. Hamburger Menu
+B. More / Footer
+C. Footer destination pages
+D. Help & How-To / About TrailWeigh
+E. Share This List
+
+NO broader redesign.
+
+============================================================
+DEFECT 1 — HAMBURGER MUST BE FULL-SCREEN IN APP
+============================================================
+
+CURRENT USER-OBSERVED FAILURE:
+Hamburger opens from the side of the Replit preview box / off-canvas.
+
+That is not acceptable mobile behavior.
+
+------------------------------------------------------------
+MANDATORY TRACE
+------------------------------------------------------------
+
+Trace the current 027P hamburger implementation:
+- component primitive
+- Sheet/Drawer/Dialog usage
+- portal target
+- fixed/absolute positioning
+- width constraints
+- preview-container relationship
+- z-index
+- open/close state
+- menu action handlers
+
+Identify why it renders as a side panel instead of a true phone-screen view.
+
+------------------------------------------------------------
+REPAIR REQUIREMENTS
+------------------------------------------------------------
+
+Tap hamburger:
+→ FULL-SCREEN MOBILE MENU VIEW inside TrailWeigh.
+
+Required:
+- fills the mobile content viewport
+- stays inside `/mobile-functional-v3`
+- top-left Back control
+- no side drawer
+- no off-canvas panel
+- no portion rendered outside the phone screen
+- no browser navigation
+- no desktop-width sheet behavior
+
+Back:
+→ returns to the prior TrailWeigh mobile screen.
+
+The Menu should contain the operational controls currently assigned to hamburger,
+for example the currently-real functions already mapped there, such as:
+- Save
+- Undo
+- Redo
+- Reset
+- Share
+- Print
+- Checklist
+- Imperial / Metric
+and any other CURRENT operational controls already intentionally mapped there.
+
+DO NOT add footer links to Hamburger.
+Footer belongs under More.
+
+Do NOT move Imperial/Metric into More.
+
+============================================================
+DEFECT 2 — MORE = ENTIRE FOOTER ONLY
+============================================================
+
+LATEST USER RULE:
+
+`More` = MOBILE FOOTER ONLY.
+
+It must NOT contain:
+- Imperial / Metric
+- Light / Dark
+- Save
+- Undo
+- Redo
+- Reset
+- Scanner
+- Share
+- Print
+- Checklist
+- Locker
+- Summary
+- other operational controls
+
+More's content is:
+THE ENTIRE CURRENT PRODUCTION FOOTER.
+
+Nothing else unless it is literally part of the active production footer.
+
+------------------------------------------------------------
+MANDATORY FOOTER INVENTORY
+------------------------------------------------------------
+
+BEFORE editing:
+Locate the CURRENT ACTIVE production TrailWeigh footer implementation.
+
+Identify:
+- component(s)
+- exact section headings
+- exact link labels
+- exact link order/grouping
+- exact routes/actions
+- bottom copyright/legal line
+- conditional links by auth/account state
+
+DO NOT rely only on remembered requirements.
+The ACTIVE footer source is authoritative.
+
+Expected current concepts include, if still present in active source:
+
+TRAILWEIGH
+- About TrailWeigh
+- How It Works
+
+HELP
+- Help / FAQ or Help & How-To
+- Report a Problem
+- Contact Us
+
+ACCOUNT & PRIVACY
+- Privacy Policy
+- Terms of Use
+- Delete Account / Data
+
+LEGAL / OTHER
+- Affiliate Disclosure
+- Accessibility
+
+BOTTOM LINE
+- © 2026 TrailWeigh · All rights reserved.
+
+If active footer contains additional current links:
+include them.
+
+If an expected item above is absent from active source:
+report the discrepancy rather than inventing duplicate content.
+
+============================================================
+MORE — FULL-SCREEN FOOTER VIEW
+============================================================
+
+Tap bottom-nav `More`:
+→ FULL-SCREEN MOBILE FOOTER VIEW inside TrailWeigh.
+
+Required:
+- fills phone screen/content viewport
+- remains inside `/mobile-functional-v3`
+- top-left Back control
+- no small bottom sheet
+- no off-canvas drawer
+- no external browser
+- no `window.open`
+- no desktop footer crammed into narrow columns
+
+Preferred mobile formatting:
+- section headings
+- full-width link rows
+- compact dividers
+- comfortable tap targets
+- vertical scroll
+- copyright/legal line at bottom
+
+Back:
+→ returns to prior V3 screen, normally List.
+
+============================================================
+DEFECT 3 — FOOTER LINKS OPEN FULL-SCREEN IN APP
+============================================================
+
+Every footer destination must open as a:
+
+FULL-SCREEN IN-APP MOBILE VIEW.
+
+Required:
+- top Back control
+- stays inside TrailWeigh
+- no new tab
+- no browser escape
+- no standalone desktop page presentation
+- mobile-safe scroll
+- current actual TrailWeigh content reused
+
+Preferred architecture:
+reuse current destination content/components inside a shared mobile full-screen
+content host.
+
+If current page is tightly coupled to a route:
+extract/reuse the content component minimally rather than duplicating all copy.
+
+Do NOT paste/rewrite entire Help/About/legal content into `MobileFunctionalV3.tsx`
+if reusable components already exist.
+
+============================================================
+BACK NAVIGATION RULE
+============================================================
+
+Visible top Back control is mandatory.
+
+Expected stack behavior:
+
+List
+→ More/Footer
+→ Help
+→ Back → Footer
+→ Back → List
+
+List
+→ Hamburger Menu
+→ Back → List
+
+List
+→ Hamburger
+→ Share
+→ Back → Hamburger or previous screen, depending on actual navigation stack
+
+The Back control must return to the immediately previous IN-APP mobile view.
+
+Do NOT rely solely on Safari/Chrome browser Back.
+
+Browser history may be used internally if safe, but visible Back remains required.
+
+============================================================
+DEFECT 4 — HELP & HOW-TO / ABOUT MUST STAY IN APP
+============================================================
+
+027P used same-tab route navigation such as `/help` or `/about`.
+
+USER confirms this is still not the desired phone behavior.
+
+Required:
+
+More
+→ Footer
+→ Help & How-To
+→ FULL-SCREEN in-app Help content
+→ Back → Footer
+
+and:
+
+More
+→ Footer
+→ About TrailWeigh
+→ FULL-SCREEN in-app About content
+→ Back → Footer
+
+Do NOT:
+- open Safari/Chrome
+- open new tab
+- navigate to a separate desktop-style page
+- show only Help while omitting About
+- invent replacement copy
+
+Reuse current actual TrailWeigh content.
+
+============================================================
+DEFECT 5 — ALL FOOTER LINKS USE SAME IN-APP PATTERN
+============================================================
+
+Do NOT special-case only Help/About.
+
+Every current footer item must be classified and handled:
+
+A. CONTENT PAGE
+Render inside full-screen mobile content host.
+
+B. ACCOUNT/ACTION FLOW
+Open appropriate in-app confirmation/form/surface.
+
+C. GENUINELY EXTERNAL DESTINATION
+Do NOT immediately leave TrailWeigh from the footer row.
+First show an in-app full-screen destination/explanation.
+Only an explicit user action such as `Open external site` may leave TrailWeigh.
+
+Prefer TrailWeigh-hosted content wherever available.
+
+============================================================
+DELETE ACCOUNT / DATA SAFETY
+============================================================
+
+If footer includes Delete Account / Data:
+
+- reuse existing current flow
+- preserve confirmations/auth requirements
+- footer link opens inside phone UI
+- do not execute deletion in testing
+- final destructive action remains explicit
+
+Do NOT implement new account deletion logic.
+
+============================================================
+REPORT A PROBLEM / CONTACT US
+============================================================
+
+If current footer routes to:
+- contact form
+- support page
+- mailto
+
+Prefer in-app mobile content first.
+
+If only `mailto:` exists:
+open a full-screen in-app Contact view first, then provide an explicit contact/email action.
+
+Do not launch mail/browser merely from tapping the footer row.
+
+============================================================
+DEFECT 6 — SHARE MUST BE FULL-SCREEN IN APP
+============================================================
+
+027P corrected Share semantics from PDF to review-link generation.
+KEEP that correction.
+
+But USER says Share still does not open in the desired phone-screen experience.
+
+Required:
+
+Tap Share
+→ FULL-SCREEN in-app `Share This List` view
+→ real review link shown/generated
+→ Copy Link
+→ optional explicit `Share…`
+→ ONLY THEN may native iPhone/Android share sheet open
+
+Required:
+- top Back control
+- no automatic PDF
+- no automatic browser
+- no automatic native share sheet
+- no navigation outside V3
+- no fake URL
+
+============================================================
+SHARE REVIEW WORDING — FIX
+============================================================
+
+Do NOT say:
+`Reviewers cannot edit your list. This link is a read-only snapshot.`
+
+That conflicts with TrailWeigh Review behavior.
+
+Approved meaning:
+- reviewer cannot modify OWNER original
+- reviewer may make temporary/sandbox edits
+- reviewer edits remain isolated
+
+Use concise truthful wording such as:
+
+`Reviewers can make temporary changes in their own review session. Your original list is not changed.`
+
+Exact wording may be refined for clarity.
+
+Do NOT change Review architecture itself.
+
+============================================================
+SHARE AUTH / TOKEN BEHAVIOR
+============================================================
+
+027P report was internally inconsistent about sign-in.
+
+Trace the ACTIVE current Share implementation again.
+
+Determine:
+- whether owner must be signed in to create share link
+- token/API path
+- `buildShareURL` behavior
+- unsigned-in preview behavior
+- `/s/:id` creation rules
+
+Do not guess.
+
+If sign-in required:
+show truthful in-app status/action.
+
+If link can be created:
+show actual link in full-screen Share view.
+
+Do not weaken auth or sandbox isolation.
+
+============================================================
+IMPERIAL / METRIC PLACEMENT
+============================================================
+
+USER says More does NOT need Imperial/Metric.
+
+Therefore:
+- remove Imperial/Metric from More if present
+- preserve Imperial/Metric in its operational mobile location
+- preferred location is Hamburger Menu if already mapped there
+- do not duplicate
+
+============================================================
+FULL-SCREEN MOBILE VIEW IMPLEMENTATION
+============================================================
+
+Prefer a small explicit internal view/navigation state, for example:
+
+`list`
+`menu`
+`footer`
+`footer-page`
+`share`
+
+or equivalent.
+
+Requirements:
+- deterministic transitions
+- Back works
+- no full page reload to open Help/About/Footer
+- list/imported state remains intact
+- Checklist state remains intact
+- no accidental item/category mutation
+- no route escape required for TrailWeigh-hosted content
+
+Do NOT create an unnecessary second router.
+
+============================================================
+VISUAL FREEZE
+============================================================
+
+This is NOT a redesign.
+
+Preserve:
+- V3 header geometry
+- green +
+- logo/wordmark
+- summary card
+- mountain/topographic art
+- category bars
+- category colors
+- icon wedges
+- handle position
+- selected weight position
+- item row geometry
+- Qty/trash placement
+- item detail layout
+- bottom nav geometry
+- typography
+- spacing
+
+The new full-screen views should use the existing V3 visual language:
+- clean light surface
+- current typography
+- standard mobile margins
+- full-width rows
+- normal scroll
+- clear Back bar
+- no decorative redesign
+
+============================================================
+STRICT SCOPE
+============================================================
+
+Preferred:
+1–4 application files.
+
+Likely:
+- `src/pages/MobileFunctionalV3.tsx`
+- current Footer content/component if a small reusable extraction is needed
+- existing content components for Help/About/legal pages if needed
+
+Do NOT modify:
+- `/checklist`
+- desktop layout styling
+- Review isolation behavior
+- Scanner internals
+- Locker persistence
+- database/schema
+- auth policy
+- Catalog
+- Master Item architecture
+- photo architecture
+
+If more than 5 application files are required:
+STOP and explain before continuing.
+
+============================================================
+PRE-EDIT AUDIT — MANDATORY
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read:
+   `workflow-reports/PROMPT_027P_REPORT.md`
+3. Inspect current hamburger primitive/portal/layout.
+4. Locate active production Footer.
+5. Inventory EVERY footer link.
+6. Trace Help/About content components.
+7. Trace Privacy/Terms/Affiliate/Accessibility/etc.
+8. Trace Report a Problem / Contact Us.
+9. Trace Delete Account / Data flow.
+10. Trace current Share auth/token/review-link path.
+11. Record preflight git status.
+
+============================================================
+MANDATORY FOOTER PARITY TABLE
+============================================================
+
+Create:
+
+PRODUCTION FOOTER SECTION
+PRODUCTION LABEL
+CURRENT TARGET/ACTION
+MOBILE MORE INCLUDED?
+MOBILE DESTINATION TYPE
+OPENS FULL-SCREEN IN APP?
+BACK CONTROL?
+NOTES
+
+Include EVERY active footer item.
+
+No omissions.
+
+============================================================
+MANDATORY NAVIGATION TABLE
+============================================================
+
+CONTROL
+FROM
+TO
+FULL SCREEN?
+IN APP?
+BACK RETURNS TO
+EXTERNAL BROWSER?
+TEST RESULT
+
+Rows at minimum:
+- Hamburger
+- Menu Back
+- More
+- Footer Back
+- About TrailWeigh
+- How It Works
+- Help & How-To / Help / FAQ
+- Report a Problem
+- Contact Us
+- Privacy Policy
+- Terms of Use
+- Delete Account / Data
+- Affiliate Disclosure
+- Accessibility
+- every additional current footer item
+- Share
+- Share Back
+- Copy Link
+- Share…
+
+============================================================
+RUNTIME ACCEPTANCE TESTS
+============================================================
+
+TEST A — HAMBURGER
+- tap Hamburger
+- FULL-SCREEN Menu fills phone viewport
+- no side drawer
+- no off-preview rendering
+- Back visible
+- Back returns to List
+- current operational menu actions remain available
+
+TEST B — MORE
+- tap More
+- FULL-SCREEN Footer opens in app
+- entire production footer present
+- NO Imperial/Metric
+- no unrelated app controls
+- Back visible
+
+TEST C — FOOTER BACK
+- Back returns to previous V3 screen
+- list state unchanged
+
+TEST D — HELP
+- More → Help & How-To
+- full screen
+- inside V3
+- no browser
+- Back → Footer
+
+TEST E — ABOUT
+- More → About TrailWeigh
+- full screen
+- inside V3
+- Back → Footer
+
+TEST F — EVERY FOOTER LINK
+- opens inside phone screen
+- correct current content/action
+- Back visible
+- no accidental external navigation
+
+TEST G — SHARE
+- tap Share
+- full-screen Share This List inside V3
+- no PDF download
+- no automatic native share sheet
+- Back visible
+- real review-link flow preserved
+
+TEST H — SHARE WORDING
+- accurately states temporary reviewer changes are isolated
+- does NOT say read-only snapshot
+
+TEST I — COPY LINK
+- copies actual share URL if creation succeeds
+
+TEST J — SHARE…
+- only explicit Share… may invoke native device share sheet
+
+TEST K — IMPERIAL / METRIC
+- remains available outside More
+- absent from More
+
+TEST L — REGRESSION
+- + still opens Create/Scan sheet
+- Scanner still works
+- Weight still edits
+- Qty still edits
+- item trash still works
+- Category Options still works
+- Checklist still works
+- Locker still works
+- Summary still works
+- Print remains separate from Share
+
+============================================================
+PHONE VIEWPORTS
+============================================================
+
+Verify:
+- 375
+- 390
+- 430
+
+Requirements:
+- no horizontal overflow
+- full-screen views stay within phone viewport
+- Back control never clips
+- safe-area top spacing acceptable
+- content scrolls vertically
+- footer link targets are comfortable
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate evidence for:
+
+1. Hamburger full-screen Menu
+2. Hamburger Back → List
+3. More full-screen Footer
+4. Footer scrolled to bottom
+5. Help & How-To full-screen with Back
+6. About TrailWeigh full-screen with Back
+7. Privacy Policy full-screen with Back
+8. one Contact/Help-style footer destination
+9. Share full-screen in-app view
+10. corrected Share wording
+11. Copy Link state
+12. 390 List after Back — state preserved
+13. `/checklist` unchanged
+14. desktop unchanged
+
+Do not put screenshots/video inside report ZIP.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+
+`workflow-reports/PROMPT_027Q_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. hamburger root cause
+6. hamburger full-screen implementation
+7. active production footer source
+8. complete footer parity table
+9. complete navigation table
+10. files changed
+11. More before/after
+12. Imperial/Metric preservation/location
+13. full-screen Footer implementation
+14. Back-control implementation
+15. Help & How-To implementation
+16. About implementation
+17. all other footer destinations
+18. Report a Problem / Contact behavior
+19. Delete Account/Data safety
+20. Share full-screen implementation
+21. Share auth/token behavior
+22. corrected Share wording
+23. Copy Link result
+24. Share… result
+25. state preservation on Back
+26. 375 result
+27. 390 result
+28. 430 result
+29. regression checks
+30. `/checklist` unchanged
+31. desktop unchanged
+32. Review architecture unchanged
+33. tests NOT RUN
+34. rollback
+35. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027Q FULL-SCREEN MOBILE NAVIGATION REPAIR = PASS / PARTIAL / FAIL
+
+V3 VISUAL DESIGN REDESIGNED = YES / NO
+/MOBILE-FUNCTIONAL-V3 CHANGED = YES / NO
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+REVIEW ARCHITECTURE CHANGED = YES / NO
+
+HAMBURGER FULL-SCREEN IN APP = PASS / FAIL / NOT RUN
+HAMBURGER SIDE DRAWER PRESENT = YES / NO
+HAMBURGER BACK CONTROL = PASS / FAIL / NOT RUN
+
+MORE = FULL FOOTER ONLY = PASS / FAIL / NOT RUN
+MORE CONTAINS IMPERIAL/METRIC = YES / NO
+FULL PRODUCTION FOOTER PARITY = PASS / FAIL / NOT RUN
+MORE FULL-SCREEN IN APP = PASS / FAIL / NOT RUN
+FOOTER BACK CONTROL = PASS / FAIL / NOT RUN
+
+HELP & HOW-TO FULL-SCREEN IN APP = PASS / FAIL / NOT RUN
+ABOUT TRAILWEIGH FULL-SCREEN IN APP = PASS / FAIL / NOT RUN
+FOOTER LINKS OPEN EXTERNAL BROWSER = YES / NO
+
+SHARE FULL-SCREEN IN APP = PASS / FAIL / NOT RUN
+SHARE AUTO-DOWNLOADS PDF = YES / NO
+SHARE AUTO-OPENS NATIVE SHARE SHEET = YES / NO
+SHARE REVIEW WORDING CORRECT = PASS / FAIL / NOT RUN
+COPY LINK = PASS / FAIL / NOT RUN
+PRINT/PDF STILL SEPARATE = PASS / FAIL / NOT RUN
+
+PLUS/SCANNER REGRESSION = PASS / FAIL / NOT RUN
+WEIGHT REGRESSION = PASS / FAIL / NOT RUN
+QTY REGRESSION = PASS / FAIL / NOT RUN
+ITEM DELETE REGRESSION = PASS / FAIL / NOT RUN
+CATEGORY OPTIONS REGRESSION = PASS / FAIL / NOT RUN
+CHECKLIST REGRESSION = PASS / FAIL / NOT RUN
+LOCKER REGRESSION = PASS / FAIL / NOT RUN
+SUMMARY REGRESSION = PASS / FAIL / NOT RUN
+UNITS REGRESSION = PASS / FAIL / NOT RUN
+
+DATABASE/SCHEMA CHANGED = YES / NO
+API/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+REAL PHYSICAL PHONE TEST STILL REQUIRED = YES
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+`workflow-reports/trailweigh-027Q-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027Q_REPORT.md`
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + evidence.
+
+Do NOT:
+- cut over `/checklist`
+- deploy/publish
+- redesign V3
+- change Review sandbox architecture
+- implement Master Items
+- implement domains
+- implement Visual Library
+- implement durable photos
+- implement guided Create New List
+- implement Catalog
+- implement Search
+- proceed to 027R
