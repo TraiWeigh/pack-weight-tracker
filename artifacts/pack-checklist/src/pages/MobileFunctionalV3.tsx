@@ -39,7 +39,10 @@ import {
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
 } from '../components/ui/sheet';
-import SourcesModal from '../components/SourcesModal';
+import { SourcesContent } from '../components/SourcesModal';
+import { AboutContent } from './info/AboutPage';
+import { HelpContent } from './info/HelpPage';
+import { HowItWorksContent } from './info/HowItWorksPage';
 import { BarStyleProvider } from '../context/BarStyleContext';
 import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
 import { PreviewBody } from '../components/PreviewModal';
@@ -61,7 +64,7 @@ type SandboxStore = { items: PackState; order: string[]; meta: Record<string, Ca
 type ActiveNav = 'list' | 'locker' | 'catalog' | 'summary';
 
 // ─── MOBILE NAVIGATION TYPES (027Q) ────────────────────────────────────────────
-type MobileScreen = 'list' | 'menu' | 'footer' | 'footer-page' | 'share';
+type MobileScreen = 'list' | 'menu' | 'footer' | 'footer-page' | 'share' | 'sources';
 type FooterPageId =
   | 'about' | 'how-it-works' | 'sources' | 'help'
   | 'report-problem' | 'contact' | 'privacy' | 'terms'
@@ -924,21 +927,39 @@ function FullScreenFooter({ onBack, onNavigateToPage, isAuthenticated }: FullScr
   );
 }
 
-// ─── FOOTER PAGE CONTENT (027Q — inline full-screen content for each footer page) ─
+// ─── FOOTER PAGE CONTENT (027R — full production content, no escape buttons) ──────
 interface FooterPageViewProps {
   pageId: FooterPageId;
   onBack: () => void;
   isAuthenticated: boolean;
-  onOpenSources: () => void;
+  /** In-app navigation: path like '/help' → push footer-page screen. */
+  navigate: (path: string) => void;
+  /** Open the Sources screen (or scroll to a specific ref). */
+  onOpenSources: (refId?: string) => void;
 }
 
-function FooterPageView({ pageId, onBack, isAuthenticated, onOpenSources }: FooterPageViewProps) {
-  // Shared prose block style
-  const prose: React.CSSProperties = { fontSize: 14, color: SECONDARY, lineHeight: 1.65, marginBottom: 12 };
-  const h2: React.CSSProperties = { fontSize: 15, fontWeight: 700, color: PRIMARY, marginBottom: 6, marginTop: 16 };
-  const card: React.CSSProperties = { background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12, padding: '16px 16px', marginBottom: 12, boxShadow: CARD_SHADOW };
-  const ul: React.CSSProperties = { paddingLeft: 16, marginBottom: 0 };
-  const li: React.CSSProperties = { fontSize: 13.5, color: SECONDARY, lineHeight: 1.6, marginBottom: 6 };
+function FooterPageView({ pageId, onBack, isAuthenticated, navigate, onOpenSources }: FooterPageViewProps) {
+  // ── Local Tailwind helpers matching production page styles ──────────────────
+  function H2({ children }: { children: React.ReactNode }) {
+    return <h2 className="text-base font-bold text-foreground mt-8 mb-3">{children}</h2>;
+  }
+  function P({ children }: { children: React.ReactNode }) {
+    return <p className="text-sm text-foreground/80 leading-relaxed mb-3">{children}</p>;
+  }
+  /** In-app link — navigates to another footer page via the screen stack. */
+  function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
+    return (
+      <button
+        onClick={() => navigate(to)}
+        className="underline underline-offset-2 hover:text-foreground font-medium"
+      >
+        {children}
+      </button>
+    );
+  }
+
+  // Pages whose h1 is rendered by the content component itself (do not add a wrapper h1)
+  const contentOwnsTitle = new Set(['about', 'help', 'how-it-works']);
 
   const pageTitles: Record<FooterPageId, string> = {
     about: 'About TrailWeigh', 'how-it-works': 'How It Works',
@@ -952,340 +973,314 @@ function FooterPageView({ pageId, onBack, isAuthenticated, onOpenSources }: Foot
   const renderContent = () => {
     switch (pageId) {
 
+      // ── Complex pages: render full extracted content components ─────────────
       case 'about':
-        return (
-          <>
-            <p style={prose}>
-              TrailWeigh is a pack-weight calculator for hikers, backpackers, and long-distance trail travellers.
-              It helps you understand what you're carrying before you carry it — so you can make better decisions
-              about what earns its place on the trail.
-            </p>
-            <p style={prose}>
-              Hikers who pay attention to pack weight tend to move faster, feel better, recover quicker, and
-              enjoy the trail more. TrailWeigh is built around that idea: lighter doesn't just mean easier — it
-              often means more time for the things you actually came to do.
-            </p>
-            <h2 style={h2}>Philosophy</h2>
-            <div style={card}>
-              <p style={{ ...prose, marginBottom: 0 }}>
-                There is no right answer about what to carry. The goal of TrailWeigh is to make your choices
-                visible — not to make them for you. A piece of gear that seems unnecessary to one person may be
-                one of the things another person values most about the trip.
-              </p>
-            </div>
-            <h2 style={h2}>Topics covered in the full About page</h2>
-            <ul style={ul}>
-              {["Remember Why We're Here", 'Mental & emotional benefits of hiking', 'Physical benefits',
-                'Awe, connection & meaning', 'Hike your own hike (HYOH)', 'Ultralight philosophy',
-                'The Ray-Way', 'Where TrailWeigh fits in', 'About the Creator'].map(t => (
-                <li key={t} style={li}>• {t}</li>
-              ))}
-            </ul>
-            <button
-              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/about'); }}
-              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
-            >
-              Open full About page
-            </button>
-          </>
-        );
-
-      case 'how-it-works':
-        return (
-          <>
-            <p style={prose}>
-              TrailWeigh is designed to work in three steps: get your gear list in, organise it,
-              then use it on the trail.
-            </p>
-            <h2 style={h2}>1. Create / Upload</h2>
-            <div style={card}>
-              <p style={{ ...prose, marginBottom: 6 }}>Start with an existing list or scan a document:</p>
-              <ul style={ul}>
-                <li style={li}>• Type or paste items directly into a category</li>
-                <li style={li}>• Scan a PDF or Word document gear list using AI import</li>
-                <li style={li}>• Load a previously saved list from your Locker</li>
-              </ul>
-            </div>
-            <h2 style={h2}>2. Add / Organise</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Add categories and items within each category</li>
-                <li style={li}>• Set weight and quantity per item</li>
-                <li style={li}>• Reorder items and categories by dragging</li>
-                <li style={li}>• Mark items for inclusion in your trail Checklist</li>
-              </ul>
-            </div>
-            <h2 style={h2}>3. Save / Preview / Print / Share</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Save the list to your Locker for later</li>
-                <li style={li}>• View pack summary and weight distribution</li>
-                <li style={li}>• Print a PDF for offline use</li>
-                <li style={li}>• Share a review link — reviewers see a snapshot, can make temporary changes, but cannot alter your original</li>
-              </ul>
-            </div>
-          </>
-        );
-
-      case 'sources':
-        return (
-          <>
-            <p style={prose}>
-              Sources &amp; References lists the research, books, and studies referenced in the About TrailWeigh section.
-            </p>
-            <button
-              onClick={() => { onBack(); onOpenSources(); }}
-              style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', border: 'none', borderRadius: 10, padding: '13px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
-            >
-              <BookOpen size={17} strokeWidth={1.8}/> Open Sources &amp; References
-            </button>
-          </>
-        );
+        return <AboutContent onOpenSources={onOpenSources} navigate={navigate} />;
 
       case 'help':
-        return (
-          <>
-            <p style={prose}>
-              TrailWeigh is a pack-weight calculator. The core workflow is: add categories, add items with weights,
-              view your total, save or share.
-            </p>
-            <h2 style={h2}>Adding items</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Tap a category name to open Category Options (rename / delete)</li>
-                <li style={li}>• Tap the category icon to expand the category and see its items</li>
-                <li style={li}>• Tap an item to expand its edit panel (weight, qty, move, photo)</li>
-                <li style={li}>• Tap the trash icon on an item row to delete that item</li>
-              </ul>
-            </div>
-            <h2 style={h2}>Saving & the Locker</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Tap Menu → Save to save the current list as a new Locker entry</li>
-                <li style={li}>• Tap the Locker tab to browse and load saved lists</li>
-                <li style={li}>• Each Save creates a new entry; no existing entries are overwritten</li>
-              </ul>
-            </div>
-            <h2 style={h2}>Sharing</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Tap Menu → Share to generate a review link</li>
-                <li style={li}>• The link captures a snapshot of your list at that moment</li>
-                <li style={li}>• Recipients can make temporary changes but cannot alter your original</li>
-              </ul>
-            </div>
-            <h2 style={h2}>Units</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Switch between Imperial and Metric in Menu → Units</li>
-                <li style={li}>• All weights recalculate automatically when you switch</li>
-              </ul>
-            </div>
-            <button
-              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/help'); }}
-              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
-            >
-              Open full Help page
-            </button>
-          </>
-        );
+        return <HelpContent navigate={navigate} />;
+
+      case 'how-it-works':
+        return <HowItWorksContent navigate={navigate} />;
+
+      // ── Simple pages: verbatim production content, Links → NavLink ──────────
 
       case 'report-problem':
         return (
-          <>
-            <p style={prose}>
-              Use this page when TrailWeigh is not behaving as expected — something isn't working,
-              a result looks wrong, or you've encountered an error.
-            </p>
-            <div style={card}>
-              <h2 style={{ ...h2, marginTop: 0 }}>What to include in your report</h2>
-              <ul style={ul}>
-                <li style={li}>• What you were doing and which part of TrailWeigh you were using</li>
-                <li style={li}>• What happened — exact result or error message</li>
-                <li style={li}>• What you expected to happen</li>
-                <li style={li}>• Your device and browser (e.g. "iPhone 15, Safari")</li>
-                <li style={li}>• Whether the problem is repeatable</li>
-              </ul>
+          <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-5">
+            <P>
+              Use this page when TrailWeigh is not behaving as expected — something isn't
+              working, a result looks wrong, or you've encountered an error.
+            </P>
+            <div>
+              <h2 className="font-semibold text-foreground mb-2">What to include in your report</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                A clear description helps us identify and fix the problem quickly. When you
+                contact us, please include:
+              </p>
+              <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside ml-1">
+                <li><strong className="text-foreground">What you were doing</strong> — which part of TrailWeigh you were using and what action you took.</li>
+                <li><strong className="text-foreground">What happened</strong> — the exact result, error message, or unexpected behavior you observed.</li>
+                <li><strong className="text-foreground">What you expected to happen</strong> — what the correct behavior should have been.</li>
+                <li><strong className="text-foreground">Your device and browser</strong> — for example, "iPhone 15, Safari" or "Windows 11, Chrome 125."</li>
+                <li><strong className="text-foreground">Whether the problem is repeatable</strong> — does it happen every time or only occasionally?</li>
+              </ol>
             </div>
-            <p style={{ ...prose, fontSize: 13 }}>
-              Use Contact Us to send your report. A built-in problem-reporting tool will be available in a future update.
-            </p>
-          </>
+            <div className="border-t border-border pt-5">
+              <h2 className="font-semibold text-foreground mb-2">How to report</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Use the <NavLink to="/contact">Contact Us</NavLink> page
+                to send your report. A built-in problem-reporting tool will be available in a future
+                TrailWeigh update.
+              </p>
+            </div>
+            <div className="border-t border-border pt-5">
+              <button
+                onClick={() => navigate('/contact')}
+                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors text-sm"
+              >
+                Go to Contact Us
+              </button>
+            </div>
+          </div>
         );
 
       case 'contact':
         return (
-          <>
-            <p style={prose}>
+          <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4">
+            <p className="text-foreground/80 leading-relaxed">
               TrailWeigh support contact information will be available here.
             </p>
-            <div style={card}>
-              <p style={{ ...prose, marginBottom: 8 }}>
-                If you have encountered a bug, the Report a Problem page describes what to include in your report.
-              </p>
-              <p style={{ ...prose, marginBottom: 0, fontSize: 13 }}>
-                For questions about your account or data, see Privacy Policy or Delete Account / Data.
-              </p>
-            </div>
-            <div style={{ background: 'rgba(42,87,64,0.07)', border: `1px solid rgba(42,87,64,0.18)`, borderRadius: 12, padding: '14px 16px', marginTop: 12 }}>
-              <p style={{ fontSize: 13, color: SECONDARY, marginBottom: 10 }}>
-                Contact information will be published here. To send a message now, tap the button below.
-              </p>
-              <a
-                href="mailto:hello@trailweigh.com"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: NAV_ACTIVE, color: '#fff', textDecoration: 'none', borderRadius: 10, padding: '11px 18px', fontSize: 14, fontWeight: 600, fontFamily: SANS }}
-              >
-                <Mail size={16} strokeWidth={2}/> Email TrailWeigh
-              </a>
-            </div>
-          </>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              If you have encountered a bug or something isn't working as expected, the{' '}
+              <NavLink to="/report-problem">Report a Problem</NavLink>{' '}
+              page describes what to include in your report.
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              For questions about your account or data, see{' '}
+              <NavLink to="/privacy">Privacy Policy</NavLink>{' '}
+              or{' '}
+              <NavLink to="/delete-account">Delete Account / Data</NavLink>.
+            </p>
+          </div>
         );
 
       case 'privacy':
         return (
           <>
-            <p style={prose}>
-              TrailWeigh is designed to store as little personal data as possible. Here is a summary of how your data is handled.
+            <div className="bg-amber-50 border border-amber-200/60 rounded-xl px-5 py-4 mb-8 text-sm text-amber-700/80 leading-relaxed">
+              <strong className="font-semibold">Draft — not yet finalized.</strong> This policy
+              describes TrailWeigh's current data practices to the best of our knowledge.
+              It will be reviewed by qualified legal counsel before it is treated as a
+              binding privacy statement. Check back for updates.
+            </div>
+            <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm">
+              <P>This Privacy Policy describes what information TrailWeigh collects, how it is used, and the choices available to you.</P>
+              <H2>1. Information you provide</H2>
+              <P><strong>Account information.</strong> When you create a TrailWeigh account, you provide an email address. Account creation, sign-in, and session management are handled by <strong>Clerk</strong>, a third-party authentication service. TrailWeigh does not independently store your password. Clerk's own privacy policy governs the handling of your authentication credentials and session data.</P>
+              <P><strong>Gear list content.</strong> The gear lists, categories, item names, descriptions, weights, and quantities you enter in TrailWeigh are your own content. TrailWeigh stores this content so the application can function.</P>
+              <H2>2. How TrailWeigh stores your data</H2>
+              <P><strong>Browser storage (your device).</strong> Your current working gear list — including all items, categories, and settings — is stored in your browser's <strong>local storage</strong>, tied to your account identifier. This data lives on the device and browser you are using. It is not automatically synced to another device. Signing out of TrailWeigh does not automatically clear this local data.</P>
+              <P><strong>Background images.</strong> If you select a background photo, any photo files associated with custom theme slots are stored in your browser's <strong>IndexedDB</strong> (a local browser database on your device). Preset background photos provided by TrailWeigh are hosted externally by Unsplash and are loaded over the network, not stored locally.</P>
+              <P><strong>Saved gear lists (Locker).</strong> Gear lists you explicitly save to the Locker are stored in your browser's local storage under your account ID. They are accessible from the same browser and device where you saved them.</P>
+              <P><strong>Shared links.</strong> When you use the Share feature, a snapshot of your gear list at that moment — including items, categories, weights, list name, unit preference, and background settings — is stored in TrailWeigh's server database. This snapshot is associated with a randomly generated link ID, not directly with your account. Anyone who has the link can access this snapshot.</P>
+              <P><strong>Scan credits.</strong> AI scan credits are tracked in your browser's local storage. No credit or payment information is stored on TrailWeigh's servers.</P>
+              <H2>3. Server-side data</H2>
+              <P>TrailWeigh's server database stores only share-link snapshots (as described above). It does not maintain a user database of your gear lists, personal profile, or account details beyond what Clerk manages for authentication purposes.</P>
+              <P>Server logs record standard HTTP request information (request method, URL path, response status, and a request identifier) for operational purposes. These logs do not contain gear list content or personal information beyond what is in standard web server logs.</P>
+              <H2>4. Third-party services</H2>
+              <P>TrailWeigh uses the following external services:</P>
+              <ul className="text-sm text-foreground/80 leading-relaxed list-disc list-inside space-y-2 mb-3 ml-1">
+                <li><strong>Clerk</strong> — account creation, authentication, and session management. Clerk handles your email address and sign-in credentials.</li>
+                <li><strong>OpenAI</strong> — powers the Scan Gear List AI feature. When you use Scan Gear List, the content of the file you submit is sent to OpenAI's API for processing. OpenAI's privacy policy governs how that data is handled.</li>
+                <li><strong>Unsplash</strong> — provides preset background photos. Selecting a preset photo loads it directly from Unsplash's servers.</li>
+              </ul>
+              <P>TrailWeigh does not use advertising networks, behavioral tracking, or third-party analytics services.</P>
+              <H2>5. How your information is used</H2>
+              <P>Information collected by TrailWeigh is used solely to provide and improve the TrailWeigh gear-tracking service — specifically to operate your gear lists, enable saving and sharing, and authenticate your account. It is not sold to third parties.</P>
+              <H2>6. Data retention and deletion</H2>
+              <P><strong>Browser-local data</strong> (your working list, Locker, background photos) persists in your browser until you clear your browser's site data for TrailWeigh, or until the browser itself removes it as part of storage management.</P>
+              <P><strong>Share-link snapshots</strong> on the server are retained to support shared links. TrailWeigh does not currently associate share-link snapshots with a user account for deletion purposes.</P>
+              <P><strong>Account deletion.</strong> To request deletion of your TrailWeigh account and associated data, see the <NavLink to="/delete-account">Delete Account / Data</NavLink> page.</P>
+              <H2>7. Security</H2>
+              <P>TrailWeigh takes reasonable steps to protect the information it handles, including using established third-party services for authentication and hosting. No specific security certifications or guarantees are claimed here.</P>
+              <H2>8. Children</H2>
+              <P>TrailWeigh is not directed at children under 13. We do not knowingly collect personal information from children under 13.</P>
+              <H2>9. Changes to this policy</H2>
+              <P>This Privacy Policy may be updated as TrailWeigh's features and data practices evolve. Material changes will be noted on this page. Continued use of TrailWeigh after an update constitutes acceptance of the revised policy.</P>
+              <H2>10. Contact</H2>
+              <P>Questions about this Privacy Policy or your data can be directed through the <NavLink to="/contact">Contact Us</NavLink> page.</P>
+            </div>
+            <p className="mt-8 text-sm text-muted-foreground">
+              See also:{' '}
+              <NavLink to="/terms">Terms of Use</NavLink>{' · '}
+              <NavLink to="/delete-account">Delete Account / Data</NavLink>
             </p>
-            <h2 style={h2}>Your browser (local storage)</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Your current working gear list lives in your browser's local storage, tied to your account identifier</li>
-                <li style={li}>• Saved Locker lists are stored in your browser's local storage on the device and browser you are using</li>
-                <li style={li}>• Background photo selections are stored in your browser's IndexedDB</li>
-                <li style={li}>• This local data does not automatically sync to other devices</li>
-              </ul>
-            </div>
-            <h2 style={h2}>TrailWeigh servers</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• When you Share a list, a snapshot is stored on TrailWeigh's server, associated with a randomly generated link ID — not directly with your account</li>
-                <li style={li}>• The server does not maintain a user database of your gear lists or personal profile beyond what Clerk manages for authentication</li>
-              </ul>
-            </div>
-            <h2 style={h2}>Authentication</h2>
-            <div style={card}>
-              <p style={{ ...prose, marginBottom: 0 }}>
-                TrailWeigh uses Clerk for authentication. Clerk manages your account credentials. TrailWeigh does not store your password.
-              </p>
-            </div>
-            <button
-              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/privacy'); }}
-              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: CARD_BG, color: PRIMARY, border: `1px solid ${CARD_BORDER}`, borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
-            >
-              <Shield size={16} strokeWidth={1.8}/> Open full Privacy Policy
-            </button>
           </>
         );
 
       case 'terms':
         return (
           <>
-            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '12px 14px', marginBottom: 14, fontSize: 13, color: '#92400e' }}>
-              <strong>Draft — not yet finalized.</strong> These Terms of Use describe TrailWeigh's current expectations and practices in plain language. They will be reviewed by qualified legal counsel before being treated as binding terms.
+            <div className="bg-amber-50 border border-amber-200/60 rounded-xl px-5 py-4 mb-8 text-sm text-amber-700/80 leading-relaxed">
+              <strong className="font-semibold">Draft — not yet finalized.</strong> These Terms
+              of Use describe TrailWeigh's current expectations and practices in plain language.
+              They will be reviewed by qualified legal counsel before being treated as a
+              binding legal agreement. Check back for updates.
             </div>
-            <p style={prose}>
-              By using TrailWeigh you agree to use it lawfully and not to attempt to harm, misuse, or gain unauthorized access to the service or other users' data.
-            </p>
-            <h2 style={h2}>Key points</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• TrailWeigh is provided as-is with no warranty of fitness for any particular purpose</li>
-                <li style={li}>• Weight information from AI scanning is approximate — always verify gear weights from official product sources</li>
-                <li style={li}>• Your account and data remain yours; TrailWeigh does not claim ownership of your gear lists</li>
-                <li style={li}>• TrailWeigh may update these terms; continued use constitutes acceptance</li>
+            <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm">
+              <P>By using TrailWeigh you agree to these Terms of Use. Please read them before using the service.</P>
+              <H2>1. Using TrailWeigh</H2>
+              <P>TrailWeigh is a gear-list and pack-weight planning application provided for personal use by hikers and backpackers. You may use TrailWeigh to create, manage, save, and share gear lists for your own trips and planning purposes.</P>
+              <H2>2. Account responsibility</H2>
+              <P>You are responsible for maintaining the security of your account credentials. You are responsible for all activity that occurs under your account. If you believe your account has been compromised, contact us promptly.</P>
+              <P>You must be at least 13 years old to create a TrailWeigh account.</P>
+              <H2>3. Acceptable use</H2>
+              <P>You agree not to use TrailWeigh to:</P>
+              <ul className="text-sm text-foreground/80 leading-relaxed list-disc list-inside space-y-1.5 mb-3 ml-1">
+                <li>Violate any applicable law or regulation.</li>
+                <li>Attempt to gain unauthorized access to TrailWeigh's systems or another user's data.</li>
+                <li>Use automated tools to scrape, overload, or otherwise interfere with the service.</li>
+                <li>Engage in any use that disrupts or harms TrailWeigh or its users.</li>
               </ul>
+              <H2>4. Your gear-list content</H2>
+              <P>The gear-list content you create in TrailWeigh — item names, descriptions, weights, and other information you enter — is yours. TrailWeigh stores and processes it only to provide the service to you.</P>
+              <P>When you use the <strong>Share</strong> feature, you choose to make a snapshot of your gear list accessible to anyone with the link. You are responsible for deciding what to share and with whom.</P>
+              <H2>5. TrailWeigh intellectual property</H2>
+              <P>TrailWeigh and its associated software, design, interface, and content (other than your own gear-list content) are the property of TrailWeigh's creators. You may not copy, modify, distribute, or create derivative works from TrailWeigh's application code or design without permission.</P>
+              <H2>6. Shared links</H2>
+              <P>Shared links contain a snapshot of your gear list at the time the link was created. Anyone with the link can view that snapshot. Share links are not password-protected. Consider this before sharing a link to a list that contains information you do not want to be broadly accessible.</P>
+              <H2>7. Service availability</H2>
+              <P>TrailWeigh is provided on an as-available basis. We do not guarantee uninterrupted access. The service may be updated, modified, or temporarily unavailable from time to time.</P>
+              <H2>8. Changes to features</H2>
+              <P>TrailWeigh's features may change over time. Features may be added, modified, or removed. Where practical, significant changes will be communicated in advance.</P>
+              <H2>9. Account termination</H2>
+              <P>We reserve the right to suspend or terminate accounts that violate these Terms or that engage in behavior harmful to other users or to the service. You may also choose to delete your account at any time — see the <NavLink to="/delete-account">Delete Account / Data</NavLink> page for how to do so.</P>
+              <H2>10. Disclaimers</H2>
+              <P>TrailWeigh is a planning and organizational tool. It is provided for informational and planning purposes only. TrailWeigh does not provide outdoor safety advice, fitness guidance, or recommendations about what to bring on any specific trip. You are responsible for your own safety and preparedness in the outdoors.</P>
+              <P>TrailWeigh is provided without warranties of any kind, express or implied, to the extent permitted by applicable law.</P>
+              <H2>11. Limitation of liability</H2>
+              <P>To the extent permitted by applicable law, TrailWeigh's liability for any claim arising from your use of the service is limited. TrailWeigh is not liable for indirect, incidental, or consequential damages.</P>
+              <P><em>Note: The specific limits, jurisdiction, and governing law for this section require legal review and will be defined in the final Terms of Use.</em></P>
+              <H2>12. Changes to these Terms</H2>
+              <P>These Terms of Use may be updated as the service evolves. Continued use of TrailWeigh after an update constitutes acceptance of the revised Terms. Material changes will be noted on this page.</P>
+              <H2>13. Contact</H2>
+              <P>Questions about these Terms can be directed through the <NavLink to="/contact">Contact Us</NavLink> page.</P>
             </div>
-            <button
-              onClick={() => { window.location.assign((import.meta.env.BASE_URL || '/').replace(/\/$/, '') + '/terms'); }}
-              style={{ marginTop: 20, display: 'flex', alignItems: 'center', gap: 8, background: CARD_BG, color: PRIMARY, border: `1px solid ${CARD_BORDER}`, borderRadius: 10, padding: '12px 20px', fontSize: 14.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS }}
-            >
-              <FileText size={16} strokeWidth={1.8}/> Open full Terms of Use
-            </button>
+            <p className="mt-8 text-sm text-muted-foreground">
+              See also:{' '}
+              <NavLink to="/privacy">Privacy Policy</NavLink>
+            </p>
           </>
         );
 
       case 'delete-account':
         return (
           <>
-            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '12px 14px', marginBottom: 14, fontSize: 13, color: '#991b1b' }}>
-              <strong>Account deletion is permanent and cannot be undone.</strong>
+            <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-5 mb-6">
+              <div>
+                <h2 className="font-semibold text-foreground mb-2">What deletion removes</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                  Deleting your TrailWeigh account permanently removes:
+                </p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1.5 ml-1">
+                  <li>Your TrailWeigh account credentials and sign-in access</li>
+                  <li>All saved gear lists stored in your Locker</li>
+                  <li>Any shared links you have created</li>
+                  <li>All other data associated with your account on TrailWeigh's servers</li>
+                </ul>
+              </div>
+              <div className="border-t border-border pt-5">
+                <h2 className="font-semibold text-foreground mb-2">Local browser data</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  TrailWeigh stores your current working gear list and background photo selections
+                  locally in your browser. This browser-local data is separate from your account
+                  and is not automatically removed when you delete your account. To remove it,
+                  you can clear your browser's site data for TrailWeigh after your account has
+                  been deleted.
+                </p>
+              </div>
+              <div className="border-t border-border pt-5">
+                <h2 className="font-semibold text-foreground mb-2">Deletion is permanent</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Account deletion cannot be undone. Gear lists removed during deletion are
+                  not recoverable.
+                </p>
+              </div>
             </div>
-            <h2 style={{ ...h2, marginTop: 0 }}>What deletion removes</h2>
-            <div style={card}>
-              <ul style={ul}>
-                <li style={li}>• Your TrailWeigh account credentials and sign-in access</li>
-                <li style={li}>• All saved gear lists stored in your Locker</li>
-                <li style={li}>• Any shared links you have created</li>
-                <li style={li}>• All other data associated with your account on TrailWeigh's servers</li>
-              </ul>
+            <div className="bg-amber-50 border border-amber-200/60 rounded-xl px-5 py-4 text-sm text-amber-700/80 leading-relaxed mb-6">
+              <strong className="font-semibold">How to request deletion:</strong> A self-service
+              account deletion option will be available in a future TrailWeigh update. In the
+              meantime, please{' '}
+              <button onClick={() => navigate('/contact')} className="underline underline-offset-2 hover:text-amber-900 font-medium">
+                Contact Us
+              </button>{' '}
+              to request account and data deletion.
             </div>
-            <h2 style={h2}>Local browser data</h2>
-            <div style={card}>
-              <p style={{ ...prose, marginBottom: 0 }}>
-                TrailWeigh stores your current working gear list and background photo selections locally in your browser. This browser-local data is separate from your account and is not automatically removed when you delete your account. To remove it, clear your browser's site data for TrailWeigh after your account has been deleted.
-              </p>
-            </div>
-            <h2 style={h2}>How to delete your account</h2>
-            <div style={card}>
-              <p style={{ ...prose, marginBottom: 0 }}>
-                Account deletion is handled through the main TrailWeigh settings at /checklist. If you need assistance, contact TrailWeigh support before proceeding.
-              </p>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              See also:{' '}
+              <NavLink to="/privacy">Privacy Policy</NavLink>
+            </p>
           </>
         );
 
       case 'affiliate':
         return (
           <>
-            <div style={card}>
-              <p style={{ ...prose, marginBottom: 8 }}>
-                TrailWeigh may earn a commission from qualifying purchases made through retailer links at no additional cost to you.
+            <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4 text-foreground/80 leading-relaxed">
+              <p>
+                TrailWeigh may earn a commission from qualifying purchases made through retailer
+                links at no additional cost to you.
               </p>
-              <p style={{ ...prose, marginBottom: 8, fontSize: 13 }}>
-                Affiliate relationships, if any, will be disclosed specifically here once those arrangements are established. This disclosure will be updated to identify the programmes and retailers involved.
+              <p className="text-sm text-muted-foreground">
+                Affiliate relationships, if any, will be disclosed specifically here once those
+                arrangements are established. This disclosure will be updated to identify the
+                programmes and retailers involved.
               </p>
-              <p style={{ ...prose, marginBottom: 0, fontSize: 13 }}>
-                Any affiliate relationships that may exist do not influence TrailWeigh's gear-tracking features, weight data, or application behavior.
+              <p className="text-sm text-muted-foreground">
+                Any affiliate relationships that may exist do not influence TrailWeigh's
+                gear-tracking features, weight data, or application behavior.
               </p>
             </div>
-            <p style={{ fontSize: 13, color: MUTED, marginTop: 8 }}>Questions? Use Contact Us.</p>
+            <p className="mt-8 text-sm text-muted-foreground">
+              Questions?{' '}
+              <NavLink to="/contact">Contact Us</NavLink>
+            </p>
           </>
         );
 
       case 'accessibility':
         return (
           <>
-            <p style={prose}>
-              TrailWeigh is committed to being usable by as many people as possible. We do not claim formal accessibility certification or full compliance with a specific accessibility standard at this time.
-            </p>
-            <h2 style={h2}>Current accessibility features</h2>
-            {[
-              { label: 'Keyboard-accessible controls', desc: 'Core controls are operable using a keyboard.' },
-              { label: 'Readable text sizes', desc: 'Text sizes are intended to be readable at standard screen resolutions. Browser-level text-size adjustments are respected.' },
-              { label: 'Colour contrast', desc: 'Text and interactive elements use colour combinations intended to maintain readability.' },
-              { label: 'Labels and titles', desc: 'Icon-only controls include descriptive title attributes available to assistive technology.' },
-              { label: 'Responsive layout', desc: 'The interface adapts to different screen sizes including tablet and mobile.' },
-            ].map(({ label, desc }) => (
-              <div key={label} style={{ ...card, display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 14px', marginBottom: 8 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: NAV_ACTIVE, flexShrink: 0, marginTop: 5 }}/>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: PRIMARY, marginBottom: 2 }}>{label}</div>
-                  <div style={{ fontSize: 13, color: SECONDARY, lineHeight: 1.5 }}>{desc}</div>
+            <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm space-y-4 text-foreground/80 leading-relaxed mb-6">
+              <p>
+                TrailWeigh is committed to making its application usable by as many people as
+                possible, including people with disabilities. We are continually working to
+                improve the accessibility of the application.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                We do not claim formal accessibility certification or full compliance with
+                a specific accessibility standard at this time.
+              </p>
+            </div>
+            <h2 className="font-bold text-foreground mb-4">Current accessibility features</h2>
+            <div className="space-y-3 mb-8">
+              {[
+                { label: 'Keyboard-accessible controls', desc: 'Core application controls — including toolbar buttons, category expand/collapse, gear-item fields, save dialogs, and the Locker panel — are operable using a keyboard.' },
+                { label: 'Readable text sizes', desc: 'TrailWeigh uses text sizes intended to be readable at standard screen resolutions. Browser-level text-size adjustments are respected.' },
+                { label: 'Colour contrast', desc: 'Text and interactive elements use colour combinations intended to maintain readability. The dark-mode and light-mode options allow users to choose the display that works best for them.' },
+                { label: 'Labels and titles', desc: 'Icon-only controls include descriptive title attributes that surface in browser tooltips and are available to assistive technology.' },
+                { label: 'Responsive layout', desc: 'The TrailWeigh interface adapts to different screen sizes, including tablet and mobile widths.' },
+              ].map(({ label, desc }) => (
+                <div key={label} className="flex gap-4 bg-card border border-card-border rounded-xl p-4 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0 mt-2" />
+                  <div>
+                    <p className="font-medium text-foreground text-sm">{label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-            <h2 style={h2}>Encountered an accessibility barrier?</h2>
-            <div style={{ ...card, marginBottom: 0 }}>
-              <p style={{ ...prose, marginBottom: 0 }}>
-                If something in TrailWeigh is preventing you from using it effectively, please use Contact Us or Report a Problem. Accessibility barriers are treated as bugs.
+              ))}
+            </div>
+            <h2 className="font-bold text-foreground mb-4">Planned improvements</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+              TrailWeigh is actively improving keyboard navigation, screen-reader support,
+              and contrast across all parts of the application. Specific improvement details
+              will be documented here as they are completed.
+            </p>
+            <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
+              <h2 className="font-semibold text-foreground mb-1">Encountered an accessibility barrier?</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                If something in TrailWeigh is preventing you from using it effectively, please{' '}
+                <NavLink to="/contact">Contact Us</NavLink>{' '}
+                or{' '}
+                <NavLink to="/report-problem">Report a Problem</NavLink>. Accessibility barriers are treated as bugs and addressed as a priority.
               </p>
             </div>
           </>
         );
 
       default:
-        return <p style={prose}>Content not available.</p>;
+        return <p className="text-sm text-foreground/80">Content not available.</p>;
     }
   };
 
@@ -1295,7 +1290,7 @@ function FooterPageView({ pageId, onBack, isAuthenticated, onOpenSources }: Foot
       <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
         <button
           onClick={onBack}
-          aria-label="Back to More"
+          aria-label="Back"
           style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
         >
           <ChevronLeft size={20} strokeWidth={2.5}/> Back
@@ -1304,9 +1299,12 @@ function FooterPageView({ pageId, onBack, isAuthenticated, onOpenSources }: Foot
 
       {/* Scrollable content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
-        <h1 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
-          {pageTitles[pageId] ?? pageId}
-        </h1>
+        {/* For about/help/how-it-works, the content component renders its own h1 */}
+        {!contentOwnsTitle.has(pageId) && (
+          <h1 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
+            {pageTitles[pageId] ?? pageId}
+          </h1>
+        )}
         {renderContent()}
       </div>
     </div>
@@ -1381,9 +1379,6 @@ function MobileFunctionalV3Inner() {
   const [shareLink, setShareLink] = useState<string | null>(null);
   const [shareLoading, setShareLoading] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
-
-  // 027Q — Sources & References modal (for footer More → Sources row)
-  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   // D5 — category options
   const [catOptionsFor, setCatOptionsFor] = useState<string | null>(null);
@@ -2469,7 +2464,7 @@ function MobileFunctionalV3Inner() {
             onBack={popScreen}
             onNavigateToPage={(id: FooterPageId) => {
               if (id === 'sources') {
-                setSourcesOpen(true);
+                pushScreen({ screen: 'sources' });
               } else {
                 pushScreen({ screen: 'footer-page', footerPageId: id });
               }
@@ -2484,7 +2479,11 @@ function MobileFunctionalV3Inner() {
             pageId={currentScreen.footerPageId}
             onBack={popScreen}
             isAuthenticated={!!userId}
-            onOpenSources={() => { popScreen(); setSourcesOpen(true); }}
+            navigate={(path) => {
+              const id = path.replace(/^\//, '') as FooterPageId;
+              pushScreen({ screen: 'footer-page', footerPageId: id });
+            }}
+            onOpenSources={(_refId) => pushScreen({ screen: 'sources' })}
           />
         )}
 
@@ -2567,8 +2566,28 @@ function MobileFunctionalV3Inner() {
           </div>
         )}
 
-        {/* Sources & References modal (triggered from More footer) */}
-        <SourcesModal isOpen={sourcesOpen} onClose={() => setSourcesOpen(false)}/>
+        {/* Sources & References — full-screen in-app page (027R) */}
+        {currentScreen.screen === 'sources' && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+            {/* Sticky back bar */}
+            <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
+              <button
+                onClick={popScreen}
+                aria-label="Back"
+                style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
+              >
+                <ChevronLeft size={20} strokeWidth={2.5}/> Back
+              </button>
+            </div>
+            {/* Scrollable content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
+              <h1 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
+                Sources &amp; References
+              </h1>
+              <SourcesContent />
+            </div>
+          </div>
+        )}
 
         {/* Plus creation sheet — kept as bottom Sheet (small utility panel, not primary nav) */}
         <PlusSheet

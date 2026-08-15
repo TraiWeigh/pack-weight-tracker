@@ -103,6 +103,19 @@ export default function SourcesModal({ isOpen, onClose, scrollToRef }: SourcesMo
 
         {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-5 py-5 space-y-7 text-sm text-muted-foreground leading-relaxed">
+          <SourcesContent />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Standalone scrollable body ────────────────────────────────────────────────
+// Exported so V3 mobile can render it inline (full-screen, no modal chrome).
+
+export function SourcesContent() {
+  return (
+    <div className="space-y-7 text-sm text-muted-foreground leading-relaxed">
 
           {/* Introduction */}
           <p className="text-foreground/80">
@@ -626,8 +639,6 @@ export default function SourcesModal({ isOpen, onClose, scrollToRef }: SourcesMo
             </div>
           </section>
 
-        </div>{/* end scrollable body */}
-      </div>
     </div>
   );
 }

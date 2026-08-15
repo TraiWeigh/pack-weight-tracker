@@ -122,27 +122,17 @@ function UL({ children }: { children: React.ReactNode }) {
   return <ul className="list-disc list-inside space-y-1.5 ml-1">{children}</ul>;
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+// ── Shared content component ─────────────────────────────────────────────────
 
-export default function HelpPage() {
+export interface HelpContentProps {
+  navigate: (path: string) => void;
+}
+
+export function HelpContent({ navigate }: HelpContentProps) {
   const { toggle, isOpen } = useAccordion();
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col">
-      <header className="px-6 py-4 border-b border-border">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-lg text-primary">
-            <Tent className="w-5 h-5" />
-          </div>
-          <span className="font-bold text-foreground text-lg">TrailWeigh</span>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back
-        </Link>
-
+    <>
         <h1 className="text-3xl font-black text-foreground mb-2">Help &amp; How-To</h1>
         <p className="text-muted-foreground mb-8">
           Select any topic to expand it. All sections start collapsed.
@@ -747,12 +737,40 @@ export default function HelpPage() {
           <p>
             <strong className="text-foreground">Still stuck?</strong>{' '}
             If something isn't working the way you expect, visit{' '}
-            <Link to="/report-problem" className="underline underline-offset-2 hover:text-foreground font-medium">
+            <button
+              onClick={() => navigate('/report-problem')}
+              className="underline underline-offset-2 hover:text-foreground font-medium"
+            >
               Report a Problem
-            </Link>{' '}
+            </button>{' '}
             for guidance on what to include when you get in touch.
           </p>
         </div>
+    </>
+  );
+}
+
+// ── Desktop page shell ────────────────────────────────────────────────────────
+
+export default function HelpPage() {
+  const basePath = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
+  return (
+    <div className="min-h-[100dvh] bg-background flex flex-col">
+      <header className="px-6 py-4 border-b border-border">
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <div className="bg-primary/10 p-2 rounded-lg text-primary">
+            <Tent className="w-5 h-5" />
+          </div>
+          <span className="font-bold text-foreground text-lg">TrailWeigh</span>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back
+        </Link>
+
+        <HelpContent navigate={(path) => window.location.assign(basePath + path)} />
       </main>
 
       <Footer />

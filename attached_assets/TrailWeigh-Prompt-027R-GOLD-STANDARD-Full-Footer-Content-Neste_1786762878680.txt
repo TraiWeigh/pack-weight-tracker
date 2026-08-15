@@ -1,0 +1,884 @@
+TRAILWEIGH — PROMPT 027R — GOLD STANDARD SURGICAL REPAIR
+FULL FOOTER DESTINATION CONTENT + NESTED IN-APP MOBILE NAVIGATION
+REMOVE PARTIAL SUMMARIES / "OPEN FULL PAGE" ESCAPES / OFF-CANVAS SOURCES
+NO VISUAL REDESIGN — NO PRODUCTION CUTOVER
+
+INTERNAL VERSION ID:
+027R-V3-FULL-FOOTER-CONTENT-NESTED-MOBILE-NAV-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 12–25 minutes
+- approximately $1.00–$2.50 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+SEQUENCE / BASELINE
+============================================================
+
+027L = USER VISUAL PASS / CLOSED.
+027M = READ-ONLY PHOTO / VISUAL LIBRARY DIAGNOSTIC PASS.
+027N = READ-ONLY MASTER LIST IDENTITY DIAGNOSTIC PASS.
+027O = COMPREHENSIVE V3 MOBILE WIRING — PARTIAL.
+027P R3 = SIX-DEFECT SURGICAL REPAIR IMPLEMENTED.
+027Q R2 = FULL-SCREEN MOBILE NAVIGATION IMPLEMENTED — USER LIVE TEST PARTIAL.
+
+TARGET ROUTE:
+`/mobile-functional-v3`
+
+PRODUCTION `/checklist` MUST REMAIN UNCHANGED.
+
+============================================================
+USER LIVE VERIFICATION — AUTHORITATIVE
+============================================================
+
+The USER live-tested 027Q and confirmed:
+
+PASS:
+1. Hamburger opens full-screen inside TrailWeigh.
+2. More opens full-screen inside TrailWeigh.
+3. Share This List works full-screen inside TrailWeigh.
+
+FAIL:
+4. About TrailWeigh opens only a partial/summary mobile page.
+5. Links inside About are not functioning correctly.
+6. `Open full About page` opens in an OFF-CANVAS SIDE DRAWER.
+7. `Sources & References` opens in an OFF-CANVAS SIDE DRAWER.
+8. This violates the USER rule that footer destinations must contain their
+   actual full content inside the TrailWeigh phone screen.
+
+USER live evidence outranks source/report PASS claims.
+
+============================================================
+027Q IMPLEMENTATION FACTS FROM REPORT
+============================================================
+
+027Q report states:
+
+- `FooterPageView` renders inline summary/highlight content for footer pages.
+- About, How It Works, Help, Privacy, and Terms include `Open full page`
+  buttons using `window.location.assign()`.
+- Sources & References triggers existing `<SourcesModal>`.
+- Those choices were deliberate in 027Q, but USER live verification has
+  now rejected them.
+
+Therefore 027R MUST supersede those implementation choices.
+
+============================================================
+027R PURPOSE
+============================================================
+
+Repair ONLY the footer destination CONTENT and NESTED NAVIGATION behavior.
+
+The desired pattern is:
+
+List
+→ More
+→ Full Footer
+→ Full Footer Destination
+→ nested TrailWeigh destination if tapped
+→ Back
+→ previous full-screen in-app view
+
+Examples:
+
+List
+→ More
+→ About TrailWeigh
+→ Sources & References
+→ Back → About TrailWeigh
+→ Back → Footer
+→ Back → List
+
+and:
+
+List
+→ More
+→ Help & How-To
+→ full actual Help content
+→ Back → Footer
+
+NO:
+- summary-only substitute
+- `Open full page` button
+- off-canvas side drawer
+- external browser for TrailWeigh-hosted content
+- separate desktop page escape
+- dead internal links
+
+============================================================
+STRICT PASSING-BEHAVIOR PROTECTION
+============================================================
+
+DO NOT alter unless a regression is directly caused by 027R:
+
+- approved V3 main-list visual design
+- hamburger full-screen Menu
+- hamburger Back behavior
+- More full-screen Footer
+- More = footer only
+- Share full-screen in-app behavior
+- Share review-link semantics
+- corrected Share reviewer wording
+- + Create/Scan sheet
+- Scanner/import
+- category behavior
+- Weight
+- Qty
+- item trash
+- Category Options
+- Checklist
+- Locker
+- Summary
+- Print
+- Imperial/Metric placement
+- Save/Undo/Redo/Reset
+- Review sandbox architecture
+
+027R is NOT a hamburger, More, or Share redesign prompt.
+
+============================================================
+DEFECT 1 — PARTIAL FOOTER PAGE SUMMARIES ARE NOT ACCEPTABLE
+============================================================
+
+CURRENT 027Q BEHAVIOR:
+`FooterPageView` contains shortened summaries/highlights for larger pages.
+
+Examples from 027Q report:
+- About = mission intro + highlights
+- How It Works = step summary
+- Help = feature highlights + FAQs
+- Privacy = summary
+- Terms = summary
+
+USER requires the ACTUAL FULL DESTINATION CONTENT.
+
+------------------------------------------------------------
+MANDATORY TRACE
+------------------------------------------------------------
+
+For EVERY current footer destination:
+
+1. Identify the production route/page/component.
+2. Identify the component that contains the actual content.
+3. Identify whether the page wrapper mixes:
+   - header
+   - footer
+   - routing
+   - desktop layout
+   with the reusable content body.
+4. Determine the smallest safe way to reuse the actual content body in V3.
+
+Do NOT rewrite or paraphrase the existing page content.
+
+Do NOT create a second abbreviated mobile copy.
+
+============================================================
+FULL CONTENT REUSE RULE
+============================================================
+
+For TrailWeigh-hosted footer destinations:
+
+The full mobile destination must render the SAME substantive content as the
+current production destination.
+
+Allowed differences:
+- mobile margins
+- typography scaling where already responsive
+- vertical layout
+- hiding duplicate desktop header/footer chrome
+- replacing desktop-only navigation chrome with the mobile Back bar
+
+Not allowed:
+- summaries
+- highlights-only versions
+- shortened legal text
+- missing accordions/sections
+- missing citations/references
+- missing internal links
+- duplicated manually rewritten content if reusable source exists
+
+Preferred architecture:
+extract/reuse a shared `...Content` component if current page wrapper cannot
+be embedded directly.
+
+Example pattern only:
+- `AboutPage.tsx` → page shell + `<AboutContent />`
+- V3 footer page → `<AboutContent />`
+
+Do not force this exact naming.
+Use the existing architecture where possible.
+
+============================================================
+DEFECT 2 — REMOVE ALL "OPEN FULL PAGE" ESCAPE BUTTONS
+============================================================
+
+027Q added buttons such as:
+- Open full About page
+- Open full Help page
+- Open full How It Works page
+- similar buttons for larger pages
+
+These are no longer allowed for TrailWeigh-hosted footer destinations.
+
+REMOVE them from the V3 footer destination experience.
+
+There must be no need to "open the full page" because the full page content is
+already present inside the full-screen mobile view.
+
+Search for:
+- `Open full`
+- `window.location.assign`
+- route escape handlers
+- equivalent labels/handlers
+
+Remove only the V3 footer-destination escape behavior.
+
+Do NOT break production desktop routes.
+
+============================================================
+DEFECT 3 — ABOUT TRAILWEIGH MUST BE THE FULL ACTUAL ABOUT CONTENT
+============================================================
+
+USER specifically tested About.
+
+Required:
+
+More
+→ Footer
+→ About TrailWeigh
+→ ACTUAL FULL ABOUT TRAILWEIGH CONTENT inside the full-screen mobile view.
+
+All existing About sections/content currently present in production must be
+available.
+
+Do NOT substitute the 027Q summary.
+
+Do NOT require `Open full About page`.
+
+============================================================
+DEFECT 4 — INTERNAL LINKS INSIDE FOOTER PAGES MUST WORK IN APP
+============================================================
+
+USER reports links inside About do not work correctly.
+
+Trace ALL links/actions inside the reused footer-page content.
+
+Classify each:
+
+A. TRAILWEIGH INTERNAL CONTENT DESTINATION
+Examples may include:
+- Sources & References
+- Help
+- How It Works
+- Privacy
+- Terms
+- other internal TrailWeigh informational pages
+
+Required:
+push another full-screen V3 content view onto the in-app navigation stack.
+
+B. IN-PAGE ANCHOR / ACCORDION
+Required:
+work normally inside the current mobile page.
+
+C. EXPLICIT EXTERNAL RESOURCE
+May only leave TrailWeigh if the user deliberately taps that external-resource
+link/action and current product behavior requires it.
+
+For TrailWeigh internal links:
+NO off-canvas drawers.
+NO browser route escape.
+NO `window.location.assign`.
+NO dead links.
+
+============================================================
+DEFECT 5 — SOURCES & REFERENCES MUST BE A FULL-SCREEN IN-APP PAGE
+============================================================
+
+CURRENT FAILURE:
+027Q uses existing `<SourcesModal>`, which opens as an off-canvas side drawer.
+
+USER rejects this.
+
+Required:
+
+About TrailWeigh
+→ tap Sources & References
+→ FULL-SCREEN in-app Sources & References view
+→ top Back
+→ Back returns to About TrailWeigh
+
+Also, if Sources & References is tapped directly from Footer:
+→ full-screen Sources & References
+→ Back returns to Footer.
+
+------------------------------------------------------------
+MANDATORY SOURCE TRACE
+------------------------------------------------------------
+
+Trace:
+- current `<SourcesModal>`
+- actual Sources & References content source
+- whether content is embedded in the modal or imported from reusable data/component
+- current internal/external links inside Sources
+
+Preferred:
+reuse/extract the Sources content body into the standard V3 full-screen content host.
+
+Do NOT:
+- keep SourcesModal for V3
+- open side drawer
+- manually duplicate long source lists if a reusable content source exists
+
+Production desktop may continue using its existing modal if desired.
+
+============================================================
+DEFECT 6 — APPLY FULL-CONTENT RULE TO EVERY FOOTER DESTINATION
+============================================================
+
+Do NOT fix only About and Sources.
+
+Audit EVERY current footer destination and ensure each one is either:
+
+A. FULL ACTUAL CONTENT INSIDE V3
+or
+B. EXISTING SAFE IN-APP ACTION FLOW for an action-oriented destination.
+
+At minimum audit all active footer entries found in production, including any
+current equivalents of:
+
+TRAILWEIGH
+- About TrailWeigh
+- How It Works
+
+HELP
+- Help & How-To / Help / FAQ
+- Report a Problem
+- Contact Us
+
+ACCOUNT & PRIVACY
+- Privacy Policy
+- Terms of Use
+- Delete Account / Data
+
+LEGAL / OTHER
+- Affiliate Disclosure
+- Accessibility
+- Sources & References
+
+Do not assume this list is complete.
+The active production Footer remains authoritative.
+
+============================================================
+ACTION-ORIENTED FOOTER ITEMS
+============================================================
+
+Some footer destinations may not be static content pages.
+
+Examples:
+- Report a Problem
+- Contact Us
+- Delete Account / Data
+
+For those:
+
+1. Open a full-screen in-app TrailWeigh view first.
+2. Reuse current actual instructions/forms/actions.
+3. Final explicit external/native/destructive action may occur only when the
+   user deliberately chooses it.
+4. Preserve all existing auth/confirmation protections.
+
+Do NOT execute destructive actions during testing.
+
+============================================================
+SHARED FULL-SCREEN CONTENT HOST
+============================================================
+
+Prefer using the 027Q navigation stack already built.
+
+Do NOT build another navigation system.
+
+Extend the existing stack so it can represent nested full-screen content pages.
+
+Conceptually:
+
+`list`
+`menu`
+`footer`
+`footer-page: about`
+`footer-page: sources`
+`footer-page: help`
+etc.
+
+The exact implementation may differ.
+
+Required:
+- each pushed page knows its previous view
+- Back pops exactly one screen
+- page reload not required
+- list state preserved
+- nested internal links can push another footer/content page
+- no route escape for internal TrailWeigh content
+
+============================================================
+BACK BEHAVIOR — MUST BE EXACT
+============================================================
+
+Test these stacks:
+
+A.
+List
+→ More
+→ About
+→ Sources
+→ Back = About
+→ Back = Footer
+→ Back = List
+
+B.
+List
+→ More
+→ Help
+→ Back = Footer
+→ Back = List
+
+C.
+List
+→ More
+→ Privacy
+→ Back = Footer
+
+D.
+List
+→ Hamburger
+→ Back = List
+
+027R must not break D.
+
+============================================================
+NO OFF-CANVAS CONTENT IN V3
+============================================================
+
+Search V3 footer/content paths for:
+- Sheet
+- Drawer
+- Dialog side modes
+- SourcesModal
+- modal portals
+- right/left side panels
+
+For footer destination CONTENT:
+do not use off-canvas presentations.
+
+A small confirmation dialog for an explicit destructive action can remain if
+that is the existing safe pattern.
+
+But informational destination pages must use the full-screen in-app content host.
+
+============================================================
+NO VISUAL REDESIGN
+============================================================
+
+Preserve current approved V3 visual language.
+
+Full-content pages may:
+- scroll
+- use current page headings
+- render accordions
+- render lists
+- render citations
+- render links
+- render legal sections
+
+Keep:
+- top Back bar
+- mobile-safe margins
+- readable line length
+- full width
+- existing content hierarchy
+
+Do not visually reinvent About/Help/Privacy/Terms.
+
+============================================================
+STRICT FILE SCOPE
+============================================================
+
+Because actual production content may need extraction into reusable components,
+027R may require more than the previous single-file V3 changes.
+
+Preferred:
+2–5 application files.
+
+Allowed only if necessary:
+up to 7 application files, PROVIDED each changed file is directly required
+to expose/reuse existing full footer content.
+
+If more than 7 application files are required:
+STOP and explain before continuing.
+
+Do NOT modify:
+- database/schema
+- API/auth
+- Scanner internals
+- Locker persistence
+- Review architecture
+- main list business logic
+- Catalog
+- Master Item architecture
+- photo architecture
+- production `/checklist` behavior
+- desktop visual presentation
+
+If extracting shared content from an existing production page:
+desktop must render the same content after extraction.
+
+============================================================
+PRE-EDIT AUDIT — MANDATORY
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read:
+   `workflow-reports/PROMPT_027Q_REPORT.md`
+3. Inspect `MobileFunctionalV3.tsx`.
+4. Locate active production Footer.
+5. Locate every footer destination route/page/component.
+6. Locate About actual full content.
+7. Locate SourcesModal and its actual content source.
+8. Locate Help & How-To actual full content.
+9. Locate How It Works actual full content.
+10. Locate Privacy actual full content.
+11. Locate Terms actual full content.
+12. Locate Affiliate and Accessibility actual full content.
+13. Locate Report a Problem / Contact / Delete Account flows.
+14. Record preflight git status.
+
+============================================================
+MANDATORY CONTENT PARITY TABLE
+============================================================
+
+Create a table:
+
+FOOTER DESTINATION
+PRODUCTION SOURCE FILE/COMPONENT
+PRODUCTION CONTENT TYPE
+027Q MOBILE IMPLEMENTATION
+027R IMPLEMENTATION
+FULL CONTENT PARITY?
+INTERNAL LINKS WORK IN APP?
+OFF-CANVAS USED?
+BACK TARGET
+NOTES
+
+Include EVERY active footer destination.
+
+============================================================
+MANDATORY INTERNAL LINK TABLE
+============================================================
+
+For every link/action inside reusable footer-page content that is visible in V3:
+
+SOURCE PAGE
+LINK LABEL
+DESTINATION
+INTERNAL/EXTERNAL/ACTION
+027R BEHAVIOR
+FULL-SCREEN?
+BACK RETURNS TO
+TEST RESULT
+
+At minimum include:
+- About → Sources & References
+- any other internal About links
+- Help internal links
+- legal-page internal links
+- Sources internal links
+
+============================================================
+RUNTIME ACCEPTANCE TESTS
+============================================================
+
+TEST A — ABOUT FULL CONTENT
+- More → About TrailWeigh
+- actual full production About content present
+- no summary-only substitute
+- no `Open full About page`
+- stays inside V3
+- Back → Footer
+
+TEST B — ABOUT INTERNAL LINKS
+- tap each internal TrailWeigh link visible in About
+- destination opens full-screen inside V3
+- no dead links
+- no side drawer
+- Back returns to About
+
+TEST C — SOURCES
+- About → Sources & References
+- full-screen in-app
+- no SourcesModal/off-canvas
+- full source content present
+- Back → About
+
+TEST D — SOURCES DIRECT FROM FOOTER
+- Footer → Sources & References
+- full-screen in-app
+- Back → Footer
+
+TEST E — HELP
+- full actual Help & How-To content
+- no `Open full Help page`
+- internal links work in app
+- Back → Footer
+
+TEST F — HOW IT WORKS
+- full actual content
+- no `Open full page`
+- Back → Footer
+
+TEST G — PRIVACY
+- full actual Privacy Policy
+- no summary
+- no `Open full page`
+- Back → Footer
+
+TEST H — TERMS
+- full actual Terms
+- no summary
+- no `Open full page`
+- Back → Footer
+
+TEST I — AFFILIATE / ACCESSIBILITY
+- full current production content
+- full-screen in-app
+- Back → Footer
+
+TEST J — ACTION ITEMS
+- Report a Problem
+- Contact Us
+- Delete Account/Data
+open correct in-app first-stage view
+- no accidental external/destructive action on row tap
+
+TEST K — BACK STACK
+List → Footer → About → Sources
+Back → About
+Back → Footer
+Back → List
+
+TEST L — PASSING 027Q REGRESSION
+- Hamburger still full-screen
+- Hamburger Back still works
+- More still full-screen Footer
+- Share still full-screen and works
+- Share wording remains correct
+- no Imperial/Metric in More
+
+TEST M — MAIN FUNCTION REGRESSION
+- + still works
+- Scanner still works
+- Weight/Qty still work
+- item trash still works
+- Category Options still work
+- Checklist/Locker/Summary/Print still accessible
+
+============================================================
+PHONE VIEWPORTS
+============================================================
+
+Verify:
+- 375
+- 390
+- 430
+
+Requirements:
+- no horizontal overflow
+- long content scrolls vertically
+- Back bar remains reachable
+- accordions/links remain usable
+- no content clipped under bottom nav/browser-safe areas
+- off-canvas footer informational views = ZERO
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Provide separate evidence for:
+
+1. About full-screen at top
+2. About scrolled deeper showing substantive full content
+3. About → Sources & References full-screen
+4. Sources scrolled deeper
+5. Back from Sources → About
+6. Help full actual content
+7. Privacy full actual content
+8. Terms full actual content
+9. Footer view
+10. Hamburger still full-screen
+11. Share still full-screen
+12. 390 List after Back stack — list state preserved
+13. production `/checklist` unchanged
+14. desktop destination page unchanged after any shared-content extraction
+
+IMPORTANT:
+Evidence files must remain OUTSIDE the report ZIP.
+
+============================================================
+REPORT ZIP COMPLIANCE — IMPORTANT
+============================================================
+
+027Q ZIP was noncompliant because screenshots were placed inside the report ZIP.
+
+027R MUST create:
+
+`workflow-reports/trailweigh-027R-report.zip`
+
+The ZIP MUST contain ONLY:
+
+`PROMPT_027R_REPORT.md`
+
+NO:
+- screenshots folder
+- JPG
+- PNG
+- video
+- source files
+- JSON
+- other markdown
+
+Verify ZIP contents explicitly before stop.
+
+============================================================
+REPORT
+============================================================
+
+Create:
+
+`workflow-reports/PROMPT_027R_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. files inspected
+5. root cause of partial-summary architecture
+6. root cause of About internal-link failure
+7. root cause of Sources off-canvas behavior
+8. production full-content sources identified
+9. complete content parity table
+10. complete internal link table
+11. files changed
+12. shared-content extraction/reuse approach
+13. About full-content implementation
+14. About internal-link implementation
+15. Sources full-screen implementation
+16. Help implementation
+17. How It Works implementation
+18. Privacy implementation
+19. Terms implementation
+20. Affiliate implementation
+21. Accessibility implementation
+22. Report a Problem implementation
+23. Contact Us implementation
+24. Delete Account/Data safety
+25. Back-stack implementation
+26. removal of `Open full page` buttons
+27. removal of V3 SourcesModal/off-canvas usage
+28. 375 result
+29. 390 result
+30. 430 result
+31. 027Q passing-behavior regression checks
+32. `/checklist` unchanged
+33. desktop content parity after extraction
+34. Review unchanged
+35. tests NOT RUN
+36. rollback
+37. ZIP contents verification
+38. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027R FULL FOOTER CONTENT / NESTED NAV REPAIR = PASS / PARTIAL / FAIL
+
+V3 VISUAL DESIGN REDESIGNED = YES / NO
+/MOBILE-FUNCTIONAL-V3 CHANGED = YES / NO
+/CHECKLIST CHANGED = YES / NO
+DESKTOP VISUAL PRESENTATION CHANGED = YES / NO
+REVIEW ARCHITECTURE CHANGED = YES / NO
+
+ABOUT FULL PRODUCTION CONTENT IN APP = PASS / FAIL / NOT RUN
+ABOUT SUMMARY-ONLY VERSION REMAINS = YES / NO
+OPEN FULL ABOUT BUTTON REMAINS = YES / NO
+ABOUT INTERNAL LINKS WORK IN APP = PASS / FAIL / NOT RUN
+
+SOURCES FULL-SCREEN IN APP = PASS / FAIL / NOT RUN
+SOURCES OFF-CANVAS MODAL USED IN V3 = YES / NO
+SOURCES BACK → ABOUT = PASS / FAIL / NOT RUN
+SOURCES DIRECT BACK → FOOTER = PASS / FAIL / NOT RUN
+
+HELP FULL PRODUCTION CONTENT IN APP = PASS / FAIL / NOT RUN
+HOW IT WORKS FULL CONTENT IN APP = PASS / FAIL / NOT RUN
+PRIVACY FULL CONTENT IN APP = PASS / FAIL / NOT RUN
+TERMS FULL CONTENT IN APP = PASS / FAIL / NOT RUN
+AFFILIATE FULL CONTENT IN APP = PASS / FAIL / NOT RUN
+ACCESSIBILITY FULL CONTENT IN APP = PASS / FAIL / NOT RUN
+
+OPEN FULL PAGE BUTTONS REMAIN IN V3 FOOTER DESTINATIONS = YES / NO
+TRAILWEIGH INTERNAL FOOTER LINKS USE WINDOW.LOCATION.ASSIGN = YES / NO
+OFF-CANVAS INFORMATIONAL FOOTER VIEWS REMAIN = YES / NO
+
+HAMBURGER REGRESSION = PASS / FAIL / NOT RUN
+MORE REGRESSION = PASS / FAIL / NOT RUN
+SHARE REGRESSION = PASS / FAIL / NOT RUN
+SHARE WORDING REGRESSION = PASS / FAIL / NOT RUN
+UNITS-IN-MORE REGRESSION = PASS / FAIL / NOT RUN
+
+PLUS/SCANNER REGRESSION = PASS / FAIL / NOT RUN
+WEIGHT/QTY REGRESSION = PASS / FAIL / NOT RUN
+ITEM DELETE REGRESSION = PASS / FAIL / NOT RUN
+CATEGORY OPTIONS REGRESSION = PASS / FAIL / NOT RUN
+CHECKLIST REGRESSION = PASS / FAIL / NOT RUN
+LOCKER REGRESSION = PASS / FAIL / NOT RUN
+SUMMARY REGRESSION = PASS / FAIL / NOT RUN
+
+DATABASE/SCHEMA CHANGED = YES / NO
+API/AUTH CHANGED = YES / NO
+NEW DEPENDENCY ADDED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+REPORT ZIP CONTAINS ONLY REPORT MARKDOWN = YES / NO
+
+REAL PHYSICAL PHONE TEST STILL REQUIRED = YES
+USER VERIFICATION = PENDING
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + external evidence.
+
+Do NOT:
+- cut over `/checklist`
+- deploy/publish
+- redesign V3
+- alter working Hamburger/More/Share architecture
+- change Review sandbox architecture
+- implement Master Items
+- implement domains
+- implement Visual Library
+- implement durable photos
+- implement guided Create New List
+- implement Catalog
+- implement Search
+- proceed to 027S

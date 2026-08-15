@@ -130,27 +130,25 @@ function SubHead({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+// ── Shared content component ─────────────────────────────────────────────────
+// Used by the desktop AboutPage shell AND the V3 mobile FooterPageView.
 
-export default function AboutPage() {
+export interface AboutContentProps {
+  /** Called when the user taps a citation or the Sources & References link. */
+  onOpenSources: (refId?: string) => void;
+  /** Called when the user taps an internal TrailWeigh link (e.g. /help, /contact). */
+  navigate: (path: string) => void;
+}
+
+export function AboutContent({ onOpenSources, navigate }: AboutContentProps) {
   const { toggle, isOpen } = useAccordion();
-
-  // Sources & References modal state (page-level; footer has its own)
-  const [sourcesOpen, setSourcesOpen]   = useState(false);
-  const [scrollToRef, setScrollToRef]   = useState<string | null>(null);
-
-  /** Open the Sources modal and optionally scroll to a specific reference. */
-  function openSources(refId?: string) {
-    setScrollToRef(refId ?? null);
-    setSourcesOpen(true);
-  }
 
   /** Clickable inline citation marker  e.g. [1] */
   function Cite({ n }: { n: number }) {
     return (
       <sup>
         <button
-          onClick={() => openSources(`ref-${n}`)}
+          onClick={() => onOpenSources(`ref-${n}`)}
           className="text-[11px] text-primary hover:underline ml-0.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary rounded"
           title={`Reference ${n} — click to view sources`}
           aria-label={`Reference ${n}`}
@@ -162,21 +160,7 @@ export default function AboutPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col">
-      <header className="px-6 py-4 border-b border-border">
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-lg text-primary">
-            <Tent className="w-5 h-5" />
-          </div>
-          <span className="font-bold text-foreground text-lg">TrailWeigh</span>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
-          <ArrowLeft className="w-3.5 h-3.5" /> Back
-        </Link>
-
+    <>
         {/* ── Always-visible introduction ────────────────────────────────── */}
         <h1 className="text-3xl font-black text-foreground mb-5">About TrailWeigh</h1>
 
@@ -1123,7 +1107,7 @@ export default function AboutPage() {
         {/* ── Sources & References link ───────────────────────────────────── */}
         <div className="mt-6 px-1">
           <button
-            onClick={() => openSources()}
+            onClick={() => onOpenSources()}
             className="text-[13px] text-primary underline underline-offset-2 hover:text-primary/80
                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
                        focus-visible:ring-offset-2 rounded"
@@ -1136,20 +1120,62 @@ export default function AboutPage() {
         <div className="mt-4 bg-card border border-card-border rounded-xl p-5 shadow-sm text-sm text-muted-foreground leading-relaxed">
           <p>
             For step-by-step instructions on using any feature, visit{' '}
-            <Link to="/help" className="underline underline-offset-2 hover:text-foreground font-medium">
+            <button
+              onClick={() => navigate('/help')}
+              className="underline underline-offset-2 hover:text-foreground font-medium text-left"
+            >
               Help &amp; How-To
-            </Link>.
+            </button>.
             To report a problem or get in touch, see{' '}
-            <Link to="/contact" className="underline underline-offset-2 hover:text-foreground font-medium">
+            <button
+              onClick={() => navigate('/contact')}
+              className="underline underline-offset-2 hover:text-foreground font-medium text-left"
+            >
               Contact Us
-            </Link>.
+            </button>.
           </p>
         </div>
+    </>
+  );
+}
+
+// ── Desktop page shell ────────────────────────────────────────────────────────
+
+export default function AboutPage() {
+  const [sourcesOpen, setSourcesOpen]   = useState(false);
+  const [scrollToRef, setScrollToRef]   = useState<string | null>(null);
+
+  function openSources(refId?: string) {
+    setScrollToRef(refId ?? null);
+    setSourcesOpen(true);
+  }
+
+  const basePath = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
+
+  return (
+    <div className="min-h-[100dvh] bg-background flex flex-col">
+      <header className="px-6 py-4 border-b border-border">
+        <div className="max-w-3xl mx-auto flex items-center gap-3">
+          <div className="bg-primary/10 p-2 rounded-lg text-primary">
+            <Tent className="w-5 h-5" />
+          </div>
+          <span className="font-bold text-foreground text-lg">TrailWeigh</span>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-10">
+        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back
+        </Link>
+
+        <AboutContent
+          onOpenSources={openSources}
+          navigate={(path) => window.location.assign(basePath + path)}
+        />
       </main>
 
       <Footer />
 
-      {/* Sources & References modal (page-level; Footer has its own independent instance) */}
       <SourcesModal
         isOpen={sourcesOpen}
         onClose={() => setSourcesOpen(false)}

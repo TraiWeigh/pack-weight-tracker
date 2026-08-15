@@ -8,3 +8,4 @@
 - [016C PDF 502 root cause](016c-pdf-502-root-cause.md) — API server NOT_STARTED → Vite proxy returns 502 HTML → frontend throws "unexpected response format"; fix: start server + add 30s timeout + destroy().
 - [026N/O owner-mode removed in 026P](026p-owner-mode-removal.md) — ownerMode/viewMode/startupRestoredRef fully removed; Preview→Checklist renamed; PreviewModal now interactive (all items, checkboxes, Clear); PrintLayout shows all items with true state.
 - [Mobile wedge architecture](mobile-wedge-architecture.md) — MobileWedgeCategory in lg:hidden beside unchanged GearCategory in hidden lg:block; mobileCategoryTheme.ts for icons/colors; KIS mode absent from codebase.
+- [Content extraction pattern](content-extraction-pattern.md) — AboutContent/HelpContent/HowItWorksContent/SourcesContent exported; V3 uses navigate+onOpenSources props; 'sources' is a screen stack entry not a modal.
