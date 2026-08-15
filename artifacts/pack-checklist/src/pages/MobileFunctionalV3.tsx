@@ -121,27 +121,6 @@ const DEMO_SEED: SandboxStore = {
   },
 };
 
-// ─── TOOTHBRUSH ICON ────────────────────────────────────────────────────────────
-function ToothbrushIcon({ size = 26, color = 'rgba(255,255,255,0.93)', strokeWidth = 1.5 }: {
-  size?: number; color?: string; strokeWidth?: number;
-}) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-      stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"
-      aria-hidden="true">
-      <path d="M3 21L14 10"/>
-      <path d="M12 8L16 4L21 9L17 13Z"/>
-      <path d="M14 6L19 11"/>
-    </svg>
-  );
-}
-
-/** True when the category name matches toiletries/hygiene keywords. */
-function isToiletriesCategory(name: string): boolean {
-  const l = name.toLowerCase();
-  return ['toilet', 'hygiene', 'grooming', 'personal care', 'wash', 'beauty', 'soap'].some(kw => l.includes(kw));
-}
-
 // ─── CONSTANTS ──────────────────────────────────────────────────────────────────
 const QTY_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
 const WEDGE_W     = 72;
@@ -1976,9 +1955,7 @@ function MobileFunctionalV3Inner() {
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
                       onBlur={e => { e.currentTarget.style.outline = 'none'; }}
                     >
-                      {isToiletriesCategory(catName)
-                        ? <ToothbrushIcon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>
-                        : <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>}
+                      <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>
                     </button>
 
                     {/* CONTENT grid: [text] [handle-slot 32px] [gap 18px] [weight minmax(44px,auto)] */}

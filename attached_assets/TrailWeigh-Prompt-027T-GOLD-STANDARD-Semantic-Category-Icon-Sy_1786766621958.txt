@@ -1,0 +1,1133 @@
+TRAILWEIGH — PROMPT 027T — GOLD STANDARD
+TRAILWEIGH-WIDE SEMANTIC CATEGORY ICON SYSTEM
+DISTINCT CATEGORY SYMBOLS + KEYWORD MAPPING + DUPLICATE AVOIDANCE
+V3 MOBILE FIRST — REUSABLE FOUNDATION — NO PRODUCTION CUTOVER
+
+INTERNAL VERSION ID:
+027T-V3-SEMANTIC-CATEGORY-ICON-TAXONOMY-2026-08-14-R1
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Fresh Agent thread recommended
+- Auto-apply OFF
+
+ESTIMATED SCOPE
+- 12–25 minutes
+- approximately $1.00–$2.50 Agent usage
+- HARD STOP rather than broaden
+
+============================================================
+BASELINE
+============================================================
+
+027R = USER LIVE PASS / CLOSED.
+027S = USER LIVE PASS / CLOSED.
+
+TARGET ROUTE:
+`/mobile-functional-v3`
+
+PRODUCTION `/checklist` MUST REMAIN UNCHANGED.
+
+The USER says the current V3 mobile design looks really good.
+
+Therefore:
+THE V3 VISUAL DESIGN IS FROZEN EXCEPT FOR CATEGORY ICON SYMBOL SELECTION.
+
+============================================================
+USER REQUIREMENT — AUTHORITATIVE
+============================================================
+
+Current V3 repeats the same category icon for multiple different categories.
+
+USER wants:
+
+1. Each category to use a DISTINCTIVE icon that represents that category as well as possible.
+2. Avoid reusing the same icon across different categories when a clearer meaningful alternative exists.
+3. The icon system must support ALL CURRENT AND PLANNED TRAILWEIGH CAPABILITIES,
+   not only backpacking.
+4. Future Custom Lists must be able to use the same semantic icon system across
+   all Master List domains/categories.
+5. Category/domain icons must remain conceptually separate from action/navigation icons.
+
+The category icon remains the CATEGORY ACCORDION OPEN/CLOSE control.
+Only the symbol-selection system changes.
+
+============================================================
+CRITICAL DISTINCTION — CATEGORY ICONS VS ACTION ICONS
+============================================================
+
+CATEGORY/DOMAIN ICONS describe WHAT a category represents.
+
+Examples:
+- Backpack
+- Tent
+- Shirt
+- Pot
+- Toothbrush
+- Wrench
+- Suitcase
+- Dog
+- Document
+
+ACTION/NAVIGATION ICONS describe WHAT AN ACTION DOES.
+
+Examples:
+- Trash = Delete
+- Pencil = Rename/Edit
+- Six dots = Reorder
+- Camera = Photo
+- Plus = Start/Create
+- Back arrow = Back
+- Share = Share
+- Printer = Print
+- Search = Search
+- Folder = Locker
+- Chart = Summary
+
+DO NOT casually reuse action icons as category identity icons when a meaningful
+category symbol exists.
+
+============================================================
+MANDATORY ICON-LIBRARY AUDIT BEFORE EDITING
+============================================================
+
+DO NOT invent icon component names.
+
+Before changing code:
+
+1. Identify the exact icon library/libraries currently installed and actively used.
+2. Determine the package/version if available.
+3. Inventory suitable AVAILABLE icons for the semantic categories below.
+4. Record exact component/icon names.
+5. Reuse the installed library.
+6. DO NOT add a new icon dependency unless absolutely necessary.
+7. If the current library cannot cover the needed taxonomy reasonably:
+   STOP and report the exact gaps before installing anything.
+
+No new package without USER authorization.
+
+============================================================
+DESIGN GOAL
+============================================================
+
+Create ONE reusable semantic category-icon resolver/mapping system.
+
+It should be capable of receiving a category name and returning the best
+available icon deterministically.
+
+Conceptually:
+
+`getCategoryIcon(categoryName, context?)`
+
+Exact name/implementation may differ.
+
+Requirements:
+- deterministic
+- semantic
+- extensible
+- readable
+- does not scatter hard-coded icon decisions throughout V3 markup
+- easy to add synonyms later
+- supports existing categories and future custom categories
+
+============================================================
+NORMALIZATION / MATCHING
+============================================================
+
+Normalize category names before semantic matching.
+
+Account for:
+- capitalization
+- extra spaces
+- punctuation
+- singular/plural
+- common abbreviations
+- combined names using `&`, `/`, `+`
+- user-created wording variations
+
+Examples:
+- `Med Kit`
+- `Medical`
+- `First Aid`
+- `First-Aid Kit`
+should resolve into the same medical semantic family.
+
+Examples:
+- `Electronics`
+- `Tech`
+- `Devices`
+- `Chargers & Cables`
+should resolve into suitable electronics-specific symbols.
+
+Do not require exact-string matching only.
+
+============================================================
+KEYWORD / SYNONYM MODEL
+============================================================
+
+Use a maintainable keyword/synonym mapping.
+
+Examples:
+
+BACKPACK:
+backpack, pack, rucksack, daypack
+
+SHELTER:
+shelter, tent, tarp, bivy, hammock
+
+SLEEP:
+sleep, sleeping, quilt, sleeping bag, pad, bedding
+
+CLOTHING:
+clothing, clothes, apparel, garments
+
+KITCHEN / COOKING:
+kitchen, cook, cooking, cookware, stove, pot
+
+HYDRATION:
+water, hydration, bottle, reservoir, filter
+
+ELECTRONICS:
+electronics, tech, device, charger, cable, battery
+
+TOILETRIES:
+toiletries, hygiene, bathroom, toothbrush, grooming
+
+MEDICAL:
+medical, med, first aid, medicine, medication
+
+REPAIR:
+repair, tools, fix, maintenance
+
+This prompt provides semantic direction.
+Replit should expand intelligently using actual available icons.
+
+============================================================
+TRAILWEIGH-WIDE SEMANTIC TAXONOMY
+============================================================
+
+The system should be broad enough for current and future TrailWeigh uses.
+
+------------------------------------------------------------
+A. BACKPACKING / OUTDOOR GEAR
+------------------------------------------------------------
+
+Support distinct semantics for categories such as:
+
+- Backpack / Pack
+- Shelter / Tent
+- Sleep System
+- Sleeping Bag / Quilt
+- Sleeping Pad
+- Clothing Packed
+- Clothing Worn
+- Rain Gear
+- Cold Weather / Insulation
+- Footwear
+- Kitchen / Cookware
+- Stove / Fuel
+- Hydration / Water
+- Water Treatment
+- Food / Meals / Snacks — future catalog expansion
+- Consumables / Expendables
+- Electronics
+- Navigation
+- Lighting
+- First Aid / Medical
+- Toiletries / Hygiene
+- Repair Kit
+- Trekking Poles
+- Bear / Food Storage
+- Safety / Emergency
+- Miscellaneous / Accessories
+
+Prefer distinctive symbols rather than repeatedly using backpack/heart/etc.
+
+------------------------------------------------------------
+B. TRAVEL / VACATION
+------------------------------------------------------------
+
+Support:
+
+- Suitcase / Luggage
+- Carry-on
+- Personal Item
+- Passport / Documents
+- Tickets / Reservations
+- Air Travel
+- Train
+- Car / Road Trip
+- Hotel / Lodging
+- Clothing
+- Shoes
+- Toiletries
+- Medications
+- Electronics
+- Chargers
+- Camera / Photography
+- Beach
+- Pool / Swim
+- Activities
+- Maps / Navigation
+- Money / Wallet
+- Keys
+- Gifts / Souvenirs
+
+------------------------------------------------------------
+C. CLOTHING / WARDROBE
+------------------------------------------------------------
+
+Support:
+
+- Shirts / Tops
+- Pants / Bottoms
+- Jackets / Outerwear
+- Dresses
+- Underwear
+- Socks
+- Shoes
+- Boots
+- Hats
+- Gloves
+- Scarves
+- Sunglasses
+- Swimwear
+- Formal wear
+- Business clothing
+- Laundry
+- Seasonal / Winter
+- Seasonal / Summer
+
+------------------------------------------------------------
+D. TOOLS / WORKSHOP
+------------------------------------------------------------
+
+Support:
+
+- Toolbox
+- Hand Tools
+- Wrench
+- Screwdriver
+- Hammer
+- Pliers
+- Drill / Power Tools
+- Saw
+- Measuring
+- Hardware / Fasteners
+- Electrical Tools
+- Plumbing
+- Automotive Tools
+- Garden Tools
+- Repair / Maintenance
+- Safety Equipment / PPE
+
+------------------------------------------------------------
+E. HOUSEHOLD / HOME
+------------------------------------------------------------
+
+Support:
+
+- Home
+- Kitchen
+- Bathroom
+- Bedroom
+- Living Room
+- Office
+- Garage
+- Laundry
+- Cleaning
+- Furniture
+- Appliances
+- Linens
+- Decor
+- Supplies
+- Pantry
+- Utilities
+
+------------------------------------------------------------
+F. MOVING / STORAGE / LOCATIONS
+------------------------------------------------------------
+
+Support:
+
+- Moving
+- Moving Box
+- Bin / Tote
+- Container
+- Shelf
+- Closet
+- Cabinet
+- Drawer
+- Garage
+- Basement
+- Attic
+- Storage Unit / Warehouse
+- Room
+- Location / Map Pin
+- Label / Tag
+- Truck
+- Packed
+- Unpacked
+
+These future location/container semantics must remain distinct from:
+`Move Item` action in an active list.
+
+------------------------------------------------------------
+G. EMERGENCY / PREPAREDNESS
+------------------------------------------------------------
+
+Support:
+
+- Emergency Kit
+- First Aid
+- Medications
+- Flashlight
+- Radio
+- Battery
+- Water
+- Food
+- Fire / Fire Extinguisher
+- Shelter
+- Emergency Documents
+- Communications
+- Power
+- Evacuation Bag
+- Roadside Emergency
+- Safety / Warning
+- Protective Gear
+
+------------------------------------------------------------
+H. ELECTRONICS / TECHNOLOGY
+------------------------------------------------------------
+
+Support:
+
+- Phone
+- Laptop
+- Tablet
+- Camera
+- Video Camera
+- Headphones
+- Earbuds
+- Watch
+- GPS
+- Charger
+- Plug / Adapter
+- Cable
+- Battery / Power Bank
+- Memory / Storage
+- Gaming
+- Radio
+- Computer accessories
+
+------------------------------------------------------------
+I. DOCUMENTS / IMPORTANT ITEMS
+------------------------------------------------------------
+
+Support:
+
+- Documents
+- Passport
+- ID
+- Driver License
+- Tickets
+- Reservations
+- Insurance
+- Medical Records
+- Certificates
+- Folder
+- Wallet
+- Money
+- Credit Cards
+- Keys
+
+------------------------------------------------------------
+J. TOILETRIES / PERSONAL CARE
+------------------------------------------------------------
+
+Support:
+
+- Toothbrush / Dental
+- Soap
+- Shower
+- Shampoo
+- Razor / Shaving
+- Hair / Comb
+- Cosmetics
+- Towel
+- Toilet Paper
+- Sunscreen
+- Insect Repellent
+- Hygiene
+- Feminine / Personal care where appropriate
+
+------------------------------------------------------------
+K. HEALTH / MEDICAL
+------------------------------------------------------------
+
+Support:
+
+- First Aid Kit
+- Medical
+- Medication
+- Prescription/medicine container symbolism without implying commerce
+- Bandages
+- Thermometer
+- Glasses
+- Contacts
+- Medical Device
+- Mobility / Accessibility aid
+- PPE / Mask
+
+------------------------------------------------------------
+L. FOOD / CONSUMABLES — FUTURE
+------------------------------------------------------------
+
+Support:
+
+- Food
+- Meals
+- Snacks
+- Drinks
+- Coffee / Tea
+- Groceries
+- Cooking
+- Water
+- Fuel
+- Batteries
+- Cleaning consumables
+- Repair consumables
+
+Food is still a future catalog expansion, but the icon architecture should support it.
+
+------------------------------------------------------------
+M. VEHICLES / ROAD TRIP
+------------------------------------------------------------
+
+Support:
+
+- Car
+- Truck
+- RV / Camper
+- Motorcycle
+- Bicycle
+- Fuel
+- Charging / EV
+- Tire
+- Roadside Tools
+- Navigation
+- Documents
+- Emergency
+- Camping vehicle gear
+
+------------------------------------------------------------
+N. SPORTS / ACTIVITIES
+------------------------------------------------------------
+
+Support:
+
+- Hiking
+- Running
+- Cycling
+- Climbing
+- Skiing / Snow
+- Swimming
+- Surfing
+- Fishing
+- Paddling / Kayak
+- Gym / Fitness
+- Camping
+- Team sports
+- Games / Recreation
+
+------------------------------------------------------------
+O. BEACH / RECREATION
+------------------------------------------------------------
+
+Support:
+
+- Beach
+- Umbrella
+- Towel
+- Swimwear
+- Sunscreen
+- Sunglasses
+- Surf
+- Snorkel
+- Cooler
+- Water activities
+
+------------------------------------------------------------
+P. FAMILY / KIDS / BABY
+------------------------------------------------------------
+
+Support:
+
+- Family
+- Child / Kids
+- Baby
+- Stroller
+- Diaper / Baby supplies
+- Toys
+- School
+- Backpack
+- Books
+- Child clothing
+- Feeding
+
+------------------------------------------------------------
+Q. PETS
+------------------------------------------------------------
+
+Support:
+
+- Dog
+- Cat
+- Pet
+- Leash
+- Collar
+- Food Bowl
+- Pet Food
+- Carrier
+- Pet Medication
+- Pet Toys
+- Waste bags / cleanup
+
+------------------------------------------------------------
+R. WORK / BUSINESS
+------------------------------------------------------------
+
+Support:
+
+- Briefcase
+- Laptop
+- Documents
+- Badge / ID
+- Presentation
+- Office Supplies
+- Meeting
+- Phone
+- Charger
+- Business Clothing
+- Travel Documents
+
+------------------------------------------------------------
+S. VISUAL LOCKER / PHOTO INVENTORY
+------------------------------------------------------------
+
+Support future concepts:
+
+- Photo
+- Camera
+- Gallery / Images
+- Inventory
+- Storage Location
+- Container
+- Shelf
+- Closet
+- Cabinet
+- Box / Bin
+- Visual Library
+
+These should be available for future domains/categories, but do not confuse
+them with the existing Camera ACTION used to add an item photo.
+
+------------------------------------------------------------
+T. CUSTOM / OTHER
+------------------------------------------------------------
+
+Fallback semantics may use:
+
+- Tag
+- Star
+- Package
+- Box
+- Shapes
+- Grid
+- Circle / generic category
+
+Generic fallback is LAST RESORT only.
+
+============================================================
+CURRENT BACKPACKING CATEGORIES — REQUIRED DISTINCTIVE RESULTS
+============================================================
+
+For current/common categories, aim for unique semantic symbols.
+
+At minimum:
+
+- Backpack → Backpack
+- Shelter → Tent
+- Sleep / Sleep System → Moon / Bed / Sleeping-related symbol
+- Clothing Packed → Shirt / clothing-specific symbol
+- Clothing Worn → Person / Shirt variant / footwear/clothing symbol distinct from Packed
+- Kitchen / Kitchen Gear → Pot / cooking symbol
+- Hydration → Water Drop / Bottle
+- Electronics → Lightning / Device
+- Toiletries → Toothbrush
+- Med Kit / Medical → Medical Cross / First Aid
+- Repair Kit → Wrench / Tools
+- Expendables / Consumables → Package / Flame / consumable-appropriate symbol
+- Navigation → Compass / Map
+- Lighting → Flashlight / Lamp
+- Rain Gear → Cloud Rain / Umbrella
+- Footwear → Shoe / Boot
+
+DO NOT use the same backpack symbol for:
+Backpack + Clothing Packed + unrelated categories.
+
+DO NOT use the same heart symbol for:
+Kitchen + Toiletries + unrelated categories.
+
+============================================================
+DUPLICATE-AVOIDANCE RULE
+============================================================
+
+Within one visible list:
+
+1. Prefer the best semantic icon.
+2. If two different categories resolve to the SAME icon:
+   - check whether an equally meaningful alternative exists for one category
+   - use the alternative where practical
+3. Do not sacrifice semantic clarity merely to force uniqueness.
+4. If no meaningful alternative exists:
+   - duplicate is allowed
+   - report the conflict
+
+Example:
+`Electronics` and `Chargers & Cables` should not both be forced to Lightning
+if Plug/Cable is available for the latter.
+
+============================================================
+STABILITY RULE
+============================================================
+
+A category should not randomly change icons between renders.
+
+Icon selection must be deterministic for the same category name and context.
+
+Renaming a category may intentionally cause semantic remapping.
+
+If user creates:
+`Dog Gear`
+it should resolve consistently to a dog/paw/pet symbol.
+
+If renamed:
+`Electronics`
+it should resolve consistently to electronics.
+
+============================================================
+FUTURE DOMAIN SUPPORT
+============================================================
+
+027T does NOT implement the future Domain data model.
+
+However, the icon resolver should be capable of accepting optional future context,
+such as domain/category type, without requiring a rewrite.
+
+Do not create:
+- Master Item registry
+- Domain database/schema
+- Catalog implementation
+
+Only keep the resolver extensible.
+
+============================================================
+CUSTOM CATEGORY BEHAVIOR
+============================================================
+
+When a user creates a custom category:
+
+- semantic matching should happen automatically from its name
+- use keyword/synonym mapping
+- use best meaningful available icon
+- avoid duplicate visible-list icons where a good alternative exists
+- use neutral fallback only when unmatched
+
+Do NOT add an icon-picker UI in 027T unless one already exists and is trivial to reuse.
+
+This prompt is about AUTOMATIC semantic icon selection.
+
+============================================================
+ICON COLOR
+============================================================
+
+Do NOT change category bar/wedge colors in 027T.
+
+Icon glyph should continue using the existing approved contrast/color treatment.
+
+Only the symbol changes.
+
+============================================================
+CATEGORY ICON INTERACTION — PROTECT
+============================================================
+
+The category icon itself remains:
+
+CATEGORY ACCORDION OPEN/CLOSE CONTROL.
+
+Do NOT change:
+- tap target geometry
+- wedge size
+- icon size unless absolutely necessary for optical consistency
+- aria-expanded behavior
+- single-open accordion behavior
+- zero-open behavior
+- category name management behavior
+- six-dot reorder handle behavior
+
+No category chevrons should return.
+
+============================================================
+ACCESSIBILITY
+============================================================
+
+For each category icon trigger:
+
+- keep button semantics
+- keep/update accessible label based on category name
+- icon itself remains decorative if button label already conveys meaning
+- do not rely on icon alone for screen readers
+- maintain keyboard/touch behavior
+
+============================================================
+IMPLEMENTATION ARCHITECTURE
+============================================================
+
+Preferred:
+a dedicated semantic mapping module/helper, for example:
+
+`src/lib/categoryIcons.ts`
+or equivalent.
+
+Potential structure:
+- normalized keyword families
+- primary icon
+- alternate icon(s)
+- generic fallback
+- resolver
+
+V3 then consumes the resolver.
+
+Do NOT embed hundreds of conditionals directly inside JSX.
+
+Keep the mapping readable and maintainable.
+
+============================================================
+EXPECTED FILE SCOPE
+============================================================
+
+Preferred:
+1. one reusable icon mapping/helper file
+2. `src/pages/MobileFunctionalV3.tsx`
+
+Maximum:
+3 application files.
+
+If more than 3 application files are required:
+STOP and explain before continuing.
+
+Do NOT modify:
+- `/checklist`
+- desktop layout
+- API
+- DB/schema
+- auth
+- Review
+- Scanner
+- Locker persistence
+- footer content
+- Share
+- List Summary layout
+- replit.md
+- `.agents/memory`
+- deployment
+
+============================================================
+PRE-EDIT AUDIT
+============================================================
+
+1. Read `replit.md` READ-ONLY.
+2. Read:
+   `workflow-reports/PROMPT_027S_REPORT.md`
+3. Identify installed icon package(s).
+4. Inspect current V3 category-icon mapping.
+5. Record every repeated icon currently visible in the standard backpacking list.
+6. Build an AVAILABLE-ICON audit table.
+7. Record preflight git status.
+8. Do not edit until actual icon names are confirmed.
+
+============================================================
+MANDATORY AVAILABLE-ICON AUDIT TABLE
+============================================================
+
+Include in report:
+
+SEMANTIC FAMILY
+PREFERRED AVAILABLE ICON
+ALTERNATE AVAILABLE ICON(S)
+CURRENT LIBRARY COMPONENT NAME(S)
+AVAILABLE = YES/NO
+NOTES
+
+Cover at least:
+- backpack
+- tent/shelter
+- sleep
+- shirt/clothing
+- kitchen/cooking
+- water/hydration
+- electronics
+- toothbrush/hygiene
+- medical
+- repair/tools
+- suitcase/travel
+- documents/passport
+- home
+- moving/box/storage
+- emergency
+- car/road trip
+- sports
+- beach
+- kids/baby
+- pets
+- work/business
+- photo/gallery
+- custom fallback
+
+============================================================
+MANDATORY CURRENT-CATEGORY MAPPING TABLE
+============================================================
+
+CURRENT CATEGORY
+NORMALIZED SEMANTIC FAMILY
+OLD ICON
+NEW ICON
+DUPLICATE WITH ANOTHER CATEGORY?
+ALTERNATE USED?
+RESULT
+
+Include every current category in the V3 standard/test list.
+
+============================================================
+MANDATORY TAXONOMY COVERAGE TABLE
+============================================================
+
+DOMAIN / CAPABILITY
+REPRESENTATIVE CATEGORY
+RESOLVER KEYWORDS
+PRIMARY ICON
+ALTERNATES
+COVERED?
+NOTES
+
+Include all major TrailWeigh domains from A–T above.
+
+============================================================
+RUNTIME ACCEPTANCE TESTS
+============================================================
+
+TEST A — CURRENT LIST DISTINCTIVENESS
+Load a representative backpacking list.
+
+Verify:
+- Backpack distinct
+- Shelter distinct
+- Sleep distinct
+- Clothing distinct
+- Kitchen distinct
+- Hydration distinct
+- Electronics distinct
+- Toiletries distinct
+- Medical distinct
+- Repair distinct
+
+No obvious unrelated duplicates where alternatives exist.
+
+TEST B — ICON SEMANTICS
+Each icon visually makes sense for its category.
+
+TEST C — ACCORDION
+Tap each icon:
+- opens/closes correct category
+- no interaction regression
+
+TEST D — CUSTOM KEYWORDS
+Temporarily test categories such as:
+- Dog Gear
+- Chargers & Cables
+- Winter Clothes
+- Beach Stuff
+- Garage Tools
+- Travel Documents
+- Baby Supplies
+- Moving Boxes
+
+Verify each maps to an appropriate available icon.
+
+Use safe temporary/test data only.
+
+TEST E — DUPLICATE AVOIDANCE
+Create two semantically related but distinct categories where alternatives exist,
+for example:
+- Electronics
+- Chargers & Cables
+
+Verify meaningful distinct symbols when supported.
+
+TEST F — FALLBACK
+Create one nonsense/unmatched category name.
+Verify deterministic neutral fallback.
+
+TEST G — RENAME
+Rename a safe test category from one semantic family to another.
+Verify icon remaps deterministically.
+
+TEST H — 375 / 390 / 430
+No clipping or geometry change.
+
+TEST I — VISUAL FREEZE
+- summary unchanged
+- category bars unchanged except icon glyphs
+- item rows unchanged
+- bottom nav unchanged
+
+TEST J — PRODUCTION SAFETY
+- `/checklist` unchanged
+- desktop unchanged
+
+============================================================
+EVIDENCE REQUIRED
+============================================================
+
+Keep evidence OUTSIDE the report ZIP.
+
+Provide:
+1. representative V3 list showing distinctive icons
+2. screenshot including Backpack/Shelter/Sleep/Clothing/Kitchen
+3. screenshot including Hydration/Electronics/Toiletries/Medical/Repair if available
+4. custom-category semantic test
+5. 390 main V3
+6. `/checklist` unchanged
+
+============================================================
+REPORT
+============================================================
+
+Create:
+
+`workflow-reports/PROMPT_027T_REPORT.md`
+
+Include:
+
+1. internal version
+2. time/actions/lines/cost if available
+3. preflight git status
+4. icon library/package identified
+5. icon library version if available
+6. files inspected
+7. repeated-icon defects found
+8. complete available-icon audit table
+9. resolver architecture
+10. normalization rules
+11. keyword/synonym rules
+12. duplicate-avoidance logic
+13. fallback logic
+14. files changed
+15. complete current-category mapping table
+16. complete taxonomy coverage table
+17. custom-category tests
+18. rename/remap test
+19. accordion regression
+20. 375 result
+21. 390 result
+22. 430 result
+23. visual-freeze result
+24. `/checklist` unchanged
+25. desktop unchanged
+26. tests NOT RUN
+27. unresolved icon-library gaps
+28. rollback
+29. USER VERIFICATION = PENDING
+
+============================================================
+FINAL STATUS
+============================================================
+
+027T SEMANTIC CATEGORY ICON SYSTEM = PASS / PARTIAL / FAIL
+
+INSTALLED ICON LIBRARY AUDITED = YES / NO
+NEW ICON DEPENDENCY ADDED = YES / NO
+
+CURRENT BACKPACK DISTINCT = PASS / FAIL / NOT RUN
+CURRENT SHELTER DISTINCT = PASS / FAIL / NOT RUN
+CURRENT SLEEP DISTINCT = PASS / FAIL / NOT RUN
+CURRENT CLOTHING DISTINCT = PASS / FAIL / NOT RUN
+CURRENT KITCHEN DISTINCT = PASS / FAIL / NOT RUN
+CURRENT HYDRATION DISTINCT = PASS / FAIL / NOT RUN
+CURRENT ELECTRONICS DISTINCT = PASS / FAIL / NOT RUN
+CURRENT TOILETRIES DISTINCT = PASS / FAIL / NOT RUN
+CURRENT MEDICAL DISTINCT = PASS / FAIL / NOT RUN
+CURRENT REPAIR DISTINCT = PASS / FAIL / NOT RUN
+
+CUSTOM CATEGORY SEMANTIC MATCHING = PASS / FAIL / NOT RUN
+VISIBLE-LIST DUPLICATE AVOIDANCE = PASS / FAIL / NOT RUN
+DETERMINISTIC FALLBACK = PASS / FAIL / NOT RUN
+RENAME REMAPS ICON = PASS / FAIL / NOT RUN
+
+CATEGORY ICON STILL ACCORDION CONTROL = PASS / FAIL / NOT RUN
+CATEGORY BAR GEOMETRY CHANGED = YES / NO
+SUMMARY CARD CHANGED = YES / NO
+ITEM ROWS CHANGED = YES / NO
+BOTTOM NAV CHANGED = YES / NO
+
+375 = PASS / FAIL / NOT RUN
+390 = PASS / FAIL / NOT RUN
+430 = PASS / FAIL / NOT RUN
+
+/CHECKLIST CHANGED = YES / NO
+DESKTOP CHANGED = YES / NO
+API/DB/AUTH CHANGED = YES / NO
+REVIEW CHANGED = YES / NO
+SCANNER CHANGED = YES / NO
+LOCKER CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED FILES CHANGED = YES / NO
+
+USER VERIFICATION = PENDING
+
+============================================================
+ZIP
+============================================================
+
+Create:
+
+`workflow-reports/trailweigh-027T-report.zip`
+
+ZIP MUST contain ONLY:
+`PROMPT_027T_REPORT.md`
+
+Evidence screenshots stay outside the report ZIP.
+
+Verify ZIP opens.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after report + external evidence.
+
+Do NOT:
+- cut over `/checklist`
+- deploy/publish
+- redesign V3
+- implement an icon-picker UI
+- implement Master Items
+- implement Domains
+- implement Catalog
+- implement durable photos
+- implement Search
+- proceed to 027U
