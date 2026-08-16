@@ -1,0 +1,252 @@
+R001 — TrailWeigh Mobile Organic Drawer Diagnostic Audit
+REPORT ID: R001
+MODE: Economy recommended
+SCOPE: DIAGNOSTIC ONLY — DO NOT MODIFY TRAILWEIGH APPLICATION CODE
+
+PURPOSE
+Inspect the current mobile implementation in artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx after the Three-Slider Redesign. Determine exactly how to convert the current visible/gutter-based sliders into the finalized organic mobile drawer system with the smallest safe implementation change.
+
+ABSOLUTE NO-CHANGE RULE
+This prompt is diagnostic only.
+- Do not change TrailWeigh application source code.
+- Do not refactor, reformat, rename, clean up, or “improve” unrelated code.
+- Do not alter UI, behavior, styles, tests, configuration, dependencies, package files, or data.
+- Do not create a checkpoint that contains application-source changes.
+- If a controlled Playwright experiment requires temporary test-only code or an isolated throwaway harness, keep it outside production application code and clearly identify it in the report.
+- If you believe an application change is required to answer a question, STOP and report the blocker instead of making the change.
+
+FINALIZED TARGET BEHAVIOR TO AUDIT AGAINST
+1. Side drawers overlay the list. They must not reserve permanent horizontal gutters or reduce category width.
+2. The approximately 1/2-inch left/right invisible gesture regions may overlap category headers/wedges. They are not visible layout columns.
+3. A normal category tap always remains a category tap.
+4. Normal vertical movement remains list scrolling.
+5. A side drawer captures only after deliberate horizontal movement crosses an intent threshold. When capture occurs, cancel the pending category tap.
+6. Once captured, the drawer follows the thumb continuously and approximately 1:1, can reverse immediately without release, preserves release velocity, and settles with restrained spring/magnetic behavior.
+7. Visible drawer icons remain tap/click alternatives and should not require hand repositioning.
+8. Only one side drawer owns horizontal interaction at a time.
+9. The bottom utility/Search panel is separate from the side-drawer gesture system:
+   - tap the bottom bar to toggle;
+   - touch/press on the bottom bar and drag vertically to move it;
+   - dragging may reverse before release;
+   - release position and velocity determine settling.
+10. The bottom panel must not capture vertical gestures that begin outside the bottom bar.
+11. Drawers/panels must preserve underlying category width, accordion state, scroll position, item state, and selection state.
+12. Haptics must be restrained:
+   - no continuous vibration;
+   - use only subtle meaningful detent/snap feedback around capture/snap/open/closed events;
+   - respect platform/OS capability and user settings;
+   - do not fake unsupported haptics.
+13. Reduced-motion and keyboard/accessibility alternatives must remain functional.
+14. Controls that require their own horizontal interaction, text editing/selection, sliders, reorder interactions, or similar behavior must not have their gestures stolen by a global drawer recognizer.
+
+AUDIT TASKS
+
+A. CURRENT IMPLEMENTATION MAP
+Inspect the current MobileFunctionalV3.tsx and identify:
+- the exact components/functions/state used by the left drawer, right drawer, bottom panel, title band, app bar, bottom navigation, and category/list area;
+- every constant that controls side-bar width, visible rail width, drawer width, bottom-handle height, title/app-bar height, and panel dimensions;
+- every style/layout rule that currently reserves width for side sliders, including padding/margin/width calculations;
+- every event handler related to pointer, mouse, touch, drag, click, keydown, Escape, open/close, snap, resize, reduced motion, and focus;
+- current open/closed/dragging state representation;
+- whether current animation is CSS transition, spring, manual transform, requestAnimationFrame, or another mechanism;
+- whether release velocity is currently measured and used;
+- whether drag reversal works before release;
+- whether current tap/click handling can coexist with intent detection.
+
+For every important finding, include exact function/component names and line ranges.
+
+B. REUSE VS REPLACE
+For each existing Three-Slider subsystem, classify it:
+- KEEP AS-IS
+- REUSE WITH SMALL CHANGE
+- REWRITE REQUIRED
+
+Do this separately for:
+- left drawer content;
+- left drawer movement logic;
+- right drawer content;
+- right drawer movement logic;
+- visible left/right rails/caps;
+- list padding/gutters;
+- bottom panel content;
+- bottom panel drag logic;
+- bottom bar/handle;
+- keyboard/Escape behavior;
+- reduced-motion behavior;
+- accessibility labels/roles;
+- resize/dimension calculations.
+
+Explain why.
+
+C. FULL-WIDTH CATEGORY RESTORATION
+Determine the smallest safe change needed to remove permanent left/right content gutters while preserving drawer overlay behavior.
+Report:
+- the current effective content width at 320, 375, 390, and 430 px;
+- the expected effective content width after removing the permanent gutters;
+- every rule that must change;
+- any z-index, pointer-event, overflow, clipping, sticky-header, or safe-area risk created by allowing categories to extend beneath invisible gesture zones;
+- whether category wedges/chevrons currently occupy the side regions and what conflicts may result.
+
+DO NOT implement this change.
+
+D. GESTURE-INTENT ARBITRATION DESIGN
+Using the current code architecture, propose the smallest robust state machine for distinguishing:
+- tap;
+- vertical scroll;
+- horizontal side-drawer gesture;
+- bottom-bar vertical drag;
+- protected-control interaction.
+
+The report must describe:
+1. touch/pointer start;
+2. pending/undecided state;
+3. movement threshold;
+4. horizontal-vs-vertical direction decision;
+5. how a pending category tap is cancelled after horizontal capture;
+6. how vertical scrolling remains native;
+7. how gesture ownership stays locked after capture;
+8. how reversal works;
+9. how release position and velocity are evaluated;
+10. how the interaction resets on cancel/lost pointer;
+11. how left vs right drawer ownership is chosen;
+12. how an already-open drawer closes without simultaneously opening the opposite drawer.
+
+Do not invent arbitrary final threshold numbers unless the existing code or platform guidance supports them. If a threshold needs tuning, identify it as a tunable constant and recommend a controlled calibration range.
+
+E. PROTECTED INTERACTIVE AREAS
+Inventory the current MobileFunctionalV3 UI for controls that should prevent side-drawer capture, including where applicable:
+- inputs/textareas/contenteditable;
+- sliders/range controls;
+- horizontal scrollers;
+- reorder/drag handles;
+- color controls;
+- text selection areas;
+- controls using pointer capture;
+- any other horizontal gesture.
+
+Recommend the least fragile exclusion method. Prefer semantic/role/data-attribute based exclusion over brittle CSS selectors.
+
+F. HAPTIC CAPABILITY AUDIT
+Determine what haptic feedback is realistically available in the current TrailWeigh delivery environment (web/PWA/browser).
+Report:
+- what APIs are available in the current code/runtime;
+- iOS/Safari limitations;
+- Android/Chromium behavior;
+- whether navigator.vibrate or another API is supported/reliable for the intended subtle detent/snap behavior;
+- whether haptic behavior should be progressive enhancement only;
+- how to respect unsupported devices and user/browser settings;
+- how automated tests can verify that a haptic request was attempted without pretending to verify physical feel.
+
+Do not add dependencies or implement haptics.
+
+G. CONTROLLED PLAYWRIGHT GESTURE EXPERIMENT
+Run a small, isolated experiment against the CURRENT mobile slider implementation to determine what the existing Playwright environment can reliably automate.
+
+Test, if technically possible without production-code changes:
+1. pointer/touch down;
+2. incremental horizontal movement;
+3. reading drawer position during a partial drag;
+4. reversal before release;
+5. pointer/touch release;
+6. slow vs faster movement;
+7. vertical vs horizontal movement from the same starting region;
+8. category tap vs horizontal drag beginning on a category header/wedge;
+9. bottom-handle vertical drag;
+10. Escape/tap alternative behavior.
+
+For each experiment, report:
+- exact API/method used;
+- whether it was deterministic;
+- whether it worked in current Chromium mobile emulation;
+- whether it is suitable for permanent regression tests;
+- any limitation that requires real-device verification.
+
+Do not claim iOS/Safari physical gesture equivalence from Chromium emulation.
+
+H. TEST PLAN FOR THE FUTURE IMPLEMENTATION
+Produce a proposed permanent Playwright regression matrix covering at minimum:
+- category tap remains category tap;
+- imperfect vertical scroll never opens drawer;
+- horizontal gesture crosses threshold and captures;
+- below-threshold movement does not capture;
+- partial drawer tracking;
+- reversal before release;
+- release near closed;
+- release near open;
+- velocity-sensitive settling if feasible;
+- only one drawer owns gestures;
+- protected controls are not hijacked;
+- bottom-panel drag only starts on bottom bar;
+- tap alternatives;
+- Escape/keyboard;
+- reduced motion;
+- drawer overlay does not alter category width;
+- scroll position preserved;
+- expanded category preserved;
+- item/selection state preserved;
+- 320, 375, 390, 430 px viewport checks;
+- light/dark theme where relevant.
+
+Clearly separate what Playwright CAN prove from what still requires a real-phone acceptance test.
+
+I. FAILURE/RISK REVIEW
+Before recommending implementation, identify likely failure modes, including:
+- accidental drawer opening while scrolling;
+- delayed-feeling category taps;
+- click firing after a drag;
+- pointer-capture bugs;
+- stuck dragging state;
+- multi-touch edge cases;
+- OS/browser back-edge gesture conflict;
+- scroll lock not released;
+- text-field interference;
+- z-index/pointer-events mistakes;
+- drawer causing content reflow;
+- stale dimension calculations after orientation/resize;
+- reduced-motion behavior becoming effectively instantaneous but broken;
+- haptic spam;
+- opposing drawers opening simultaneously.
+
+J. MINIMAL IMPLEMENTATION PLAN
+End with the smallest recommended implementation sequence.
+Do NOT write implementation code.
+State:
+- exact existing code that should be retained;
+- exact code that should be removed or changed;
+- whether the organic side-drawer and bottom-panel update can safely be done in ONE focused implementation prompt;
+- if not, explain the minimum safe split and why.
+
+REQUIRED VERIFICATION
+- Run TypeScript/typecheck only if it can be done without modifying source.
+- Record browser-console findings if relevant.
+- Do not use screenshots as proof of gesture physics.
+- Do not claim PASS for behavior that was not directly tested.
+- Clearly label OBSERVED FACT, CONTROLLED TEST RESULT, INFERENCE, and RECOMMENDATION.
+
+REQUIRED REPORT OUTPUT
+Create:
+- R001.md — full diagnostic report
+- R001.zip — R001.md plus any small Playwright experiment files/logs/evidence created for this diagnostic
+
+Keep filenames short.
+Do not include unrelated old reports in R001.zip.
+
+At the very top of R001.md include:
+- Report ID: R001
+- Mode used
+- Time worked
+- Actions/work done
+- Lines/items read
+- Agent usage/cost
+- Checkpoint status
+- Files changed (must say NONE for TrailWeigh application source)
+- Test-only/temporary files created, if any
+
+FINAL RESPONSE TO USER
+Return only a concise summary containing:
+- R001 complete
+- whether any TrailWeigh application source changed
+- key findings
+- whether the controlled Playwright gesture experiment succeeded
+- whether one implementation prompt is recommended
+- links/attachments for R001.md and R001.zip
