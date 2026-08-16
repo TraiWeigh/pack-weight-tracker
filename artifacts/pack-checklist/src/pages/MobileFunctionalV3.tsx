@@ -274,6 +274,76 @@ function Toast({ message }: { message: string }) {
   );
 }
 
+// ─── PREVIEW OVERLAY ─────────────────────────────────────────────────────────────
+// R0072 §10 — Preview opens ONLY the pack-list checklist preview (selected items).
+// Opening Preview does NOT auto-print. A separate Print button inside allows the
+// user to deliberately start printing. Print is reachable only after Preview is open.
+interface PreviewOverlayProps {
+  sandbox: SandboxStore;
+  system: string;
+  onPrint: () => void;
+  onClose: () => void;
+}
+
+function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayProps) {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
+    }}>
+      {/* Header */}
+      <div style={{
+        height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
+        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0,
+      }}>
+        <button
+          onClick={onClose}
+          aria-label="Close preview"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
+        </button>
+        <span style={{ flex: 1, fontSize: 17, fontWeight: 600, color: PRIMARY, fontFamily: SERIF }}>
+          Preview
+        </span>
+        {/* Deliberate Print control — R0072 §10: user must tap this to print */}
+        <button
+          onClick={onPrint}
+          aria-label="Print gear list"
+          title="Print pack list"
+          data-testid="preview-print-btn"
+          style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <Printer size={18} color={SECONDARY} strokeWidth={1.8}/>
+        </button>
+      </div>
+
+      {/* Note banner */}
+      <div style={{
+        background: 'rgba(42,87,64,0.08)', borderBottom: `1px solid rgba(42,87,64,0.12)`,
+        padding: '7px 16px', fontSize: 12, color: SECONDARY, flexShrink: 0,
+      }}>
+        Your selected gear — tap the printer icon to print or download.
+      </div>
+
+      {/* Preview body — all pack-list items (PDF-style checklist preview) */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+        <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
+          <PreviewBody
+            data={sandbox.items}
+            system={system as 'imperial' | 'metric'}
+            categoryOrder={sandbox.order}
+            categoryMeta={sandbox.meta}
+            filterToChecked={false}
+            checklistUse={{}}
+            onToggle={() => {}}
+          />
+        </BarStyleProvider>
+      </div>
+    </div>
+  );
+}
+
 // ─── CHECKLIST OVERLAY ───────────────────────────────────────────────────────────
 interface ChecklistOverlayProps {
   sandbox: SandboxStore;
@@ -1693,6 +1763,7 @@ function MobileFunctionalV3Inner() {
 
   const [showSummary, setShowSummary] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
   // 027Q navigation helpers
@@ -2641,31 +2712,16 @@ function MobileFunctionalV3Inner() {
     {
       id: 'list-actions',
       title: 'List Actions',
-      subtitle: 'Save, undo, reset, views',
+      subtitle: 'Save and trail checklist',
       icon: <Save size={18} strokeWidth={1.8}/>,
       render: () => (
         <div style={{ padding: '4px 0 8px' }}>
-          {deckAction(<Save size={17} strokeWidth={1.8}/>,       'Save',         runAndClose(handleSave), false, 'Save current list as a new Locker entry')}
-          {deckAction(<Undo2 size={17} strokeWidth={1.8}/>,      'Undo',         runAndClose(handleUndo), undoHistory.length === 0)}
-          {deckAction(<Redo2 size={17} strokeWidth={1.8}/>,      'Redo',         runAndClose(handleRedo), redoHistory.length === 0)}
-          {deckAction(<RotateCcw size={17} strokeWidth={1.8}/>,  'Reset',        runAndClose(handleReset), false, 'Reload from your saved data (undoable)')}
-          {deckAction(<Tent size={17} strokeWidth={1.8}/>,       'Checklist',    runAndClose(() => setShowChecklist(true)), false, 'Trail checklist for selected items')}
-          {/* R006 Part 8 — View / Print routes to the EXISTING print/view flow
-              (PDF download + browser print); flat flush row like its siblings.
-              R006 Part 7 — Expand All / Collapse All / Summary rows removed. */}
-          {deckAction(<Printer size={17} strokeWidth={1.8}/>,    'View / Print', runAndClose(handlePrint), false, 'View and print your gear list')}
-        </div>
-      ),
-    },
-    {
-      id: 'share-print',
-      title: 'Share & Print',
-      subtitle: 'Review links and printable lists',
-      icon: <Share2 size={18} strokeWidth={1.8}/>,
-      render: () => (
-        <div style={{ padding: '4px 0 8px' }}>
-          {deckAction(<Share2 size={17} strokeWidth={1.8}/>,  'Share', runAndClose(navigateToShare), false, 'Get a review link for this list')}
-          {deckAction(<Printer size={17} strokeWidth={1.8}/>, 'Print', runAndClose(handlePrint), false, 'Print your gear list')}
+          {deckAction(<Save size={17} strokeWidth={1.8}/>,  'Save',      runAndClose(handleSave), false, 'Save current list as a new Locker entry')}
+          {deckAction(<Tent size={17} strokeWidth={1.8}/>,  'Checklist', runAndClose(() => setShowChecklist(true)), false, 'Trail checklist for selected items')}
+          {/* R0072 §10 No Duplicate Control: Undo/Redo/Reset moved to Group 2 bottom box.
+              R0072 §10 No Duplicate Control: View/Print moved to Preview bottom box (Group 3).
+              R0072 §10 No Duplicate Control: Share/Print moved to Share/Preview bottom boxes.
+              These duplicate deck controls have been removed per R0072 §1. */}
         </div>
       ),
     },
@@ -3374,7 +3430,7 @@ function MobileFunctionalV3Inner() {
           onReset={handleReset}
           onCamera={handleCamera}
           onPhotos={handlePhotos}
-          onPreview={handlePrint}
+          onPreview={() => setShowPreview(true)}
           onShare={navigateToShare}
           onMore={()  => openDeck('more')}
         />
@@ -3444,7 +3500,7 @@ function MobileFunctionalV3Inner() {
           />
         )}
 
-        {/* Checklist overlay */}
+        {/* Checklist overlay — trail progress tracking (separate from Preview) */}
         {showChecklist && (
           <ChecklistOverlay
             sandbox={sandbox}
@@ -3455,6 +3511,17 @@ function MobileFunctionalV3Inner() {
             onPrint={handlePrint}
             onShare={navigateToShare}
             onClose={() => setShowChecklist(false)}
+          />
+        )}
+
+        {/* Preview overlay — R0072 §10: PDF-style checklist preview of selected items.
+            Opening does NOT auto-print. Print button inside is the deliberate trigger. */}
+        {showPreview && (
+          <PreviewOverlay
+            sandbox={sandbox}
+            system={system}
+            onPrint={handlePrint}
+            onClose={() => setShowPreview(false)}
           />
         )}
 
