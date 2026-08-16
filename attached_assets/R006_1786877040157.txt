@@ -1,0 +1,554 @@
+R006 — TRAILWEIGH V3 MOBILE GESTURE / MORE / OVERFLOW REFINEMENT
+
+REPORT NUMBER
+R006
+
+PURPOSE
+Apply ONLY the approved post-R005 refinements listed below.
+
+STARTING POINT
+Treat the current R005 implementation as the working baseline.
+
+IMPORTANT REVIEW NOTE
+The submitted R005.zip contained only R005.md even though the report said source/test files were included.
+Do NOT repeat that packaging failure in R006.
+R006.zip must include every file actually changed by R006 plus the relevant R006 tests/report.
+
+STRICT SCOPE
+- V3 phone experience only.
+- Prefer changing ONLY MobileFunctionalV3.tsx for application source.
+- Do NOT modify Checklist.tsx.
+- Do NOT modify desktop.
+- Do NOT modify database/schema.
+- Do NOT modify authentication.
+- Do NOT publish/redeploy.
+- Do NOT change production or development database state.
+- Do NOT perform unrelated cleanup/refactors.
+- Test/report files may be added/updated as needed.
+- If another application source/style file is genuinely required, STOP BEFORE editing it and report exactly why.
+
+PRESERVE R005 BEHAVIOR
+Do not regress:
+- Locker | Summary | Add | Search | More bottom navigation;
+- top-right Search removal;
+- no blank gap below top header;
+- no blank gap between list/categories and bottom nav;
+- static UI text-selection suppression while editable fields remain selectable;
+- Category Options Add Item;
+- single-panel Weight Distribution;
+- full Pack Summary content;
+- slide-to-delete for categories/items;
+- Locker long-deck scrolling;
+- safe-area behavior;
+- Inter Variable;
+- closed-deck pointer safety;
+- Undo/Redo behavior;
+- responsive layout.
+
+============================================================
+1. REMOVE SIX-DOT CATEGORY REORDER HANDLES
+============================================================
+
+The six-dot category reorder control is no longer wanted.
+
+REQUIRED RESULT
+- Remove the visible six-dot reorder handles from every category.
+- Remove the permanent layout column/space reserved for those handles.
+- Reclaim that horizontal space for the category row.
+- Do not leave an empty gap where the dots were.
+- Preserve category wedges, names, counts, weights, and accordion behavior.
+- Do not add another visible reorder icon.
+
+This supersedes the prior requirement to align six-dot handles.
+
+============================================================
+2. CATEGORY REORDER — TAP, HOLD, MOVE, RELEASE
+============================================================
+
+Replace the six-dot reorder initiation with direct category-bar long-press reordering.
+
+INTERACTION MODEL
+
+A. QUICK TAP
+- A normal quick tap on the category retains the existing category open/close accordion behavior.
+- A quick tap must NOT start reorder.
+
+B. TAP + HOLD
+- Press and hold directly on the category bar to enter reorder mode.
+- Use a native-feeling long-press threshold appropriate for mobile (roughly 350–450 ms is acceptable; choose one stable value and document it).
+- Do not require a visible reorder handle.
+- Once the hold threshold is reached, the category visibly rises/floats and reorder mode becomes active.
+- If appropriate and genuinely supported, one subtle haptic may acknowledge entry into reorder mode; do not fake unsupported haptics.
+
+C. BEFORE HOLD ACTIVATES
+- If the user begins a meaningful vertical scroll before the long-press threshold, normal list scrolling wins and reorder must not activate.
+- If the user begins the approved right-edge-to-left delete swipe before long-press activation, slide-to-delete wins and reorder must not activate.
+- A small amount of finger jitter must not accidentally cancel a legitimate hold, but meaningful movement should disambiguate toward scroll/swipe.
+
+D. WHILE REORDERING
+- The floating category follows the finger directly through the full vertical drag distance.
+- Stable category identity must be used so the floating style never jumps to the wrong category.
+- The category remains visually above the stack.
+- Preserve its wedge, color, text, counts, and weight.
+- The valid reorder target dims slightly.
+- Only one valid target dims at a time.
+- Previous target undims immediately when the dragged category moves away.
+- The user may reverse drag direction naturally.
+
+E. RELEASE
+- Releasing the finger commits the category into the indicated new position.
+- The category settles smoothly and FLUSH into the category stack.
+- All dimming/elevation/temporary transforms clear.
+- If the long press activates but the category is released without crossing a valid reorder boundary, keep it in its original position and settle cleanly.
+
+F. CANCEL / INTERRUPTION
+Cancel the drag safely without committing if:
+- pointer/touch is cancelled;
+- app/window loses focus;
+- document becomes hidden;
+- another gesture legitimately takes over.
+
+No category may remain floating/stuck.
+
+============================================================
+3. CATEGORY REORDER MOTION MUST BE SMOOTHER
+============================================================
+
+The category bars that move out of the way during reorder need smoother motion.
+
+REQUIRED RESULT
+- The dragged category continues to track the finger directly 1:1.
+- OTHER category bars should animate smoothly into their temporary/reordered positions as space opens.
+- No abrupt jumping.
+- No visible jitter.
+- No flicker.
+- No repeated snap-back/snap-forward while crossing a boundary.
+- No slow or exaggerated animation.
+- No springy bounce/overshoot.
+
+TARGET DIMMING
+- Target dimming should transition smoothly but quickly.
+- When the target changes, the old target should return to normal immediately/smoothly and the new target should become subtly dimmed.
+- No multiple dim targets.
+
+RELEASE
+- Final settle into the flush stack should be quick and smooth.
+- Motion should feel native and controlled.
+
+REDUCED MOTION
+- Respect reduced-motion settings by minimizing nonessential transition animation while preserving clear state change.
+
+============================================================
+4. GESTURE PRIORITY — TAP / HOLD / SCROLL / DELETE
+============================================================
+
+Because categories now support:
+- quick tap accordion;
+- tap-hold reorder;
+- vertical list scroll;
+- right-edge-to-left slide-to-delete;
+
+implement clear gesture arbitration.
+
+REQUIRED PRIORITY/OUTCOMES
+
+QUICK TAP:
+- accordion open/close.
+
+VERTICAL MOVE BEFORE LONG-PRESS:
+- normal list scroll.
+- no reorder.
+- no delete reveal.
+
+RIGHT-EDGE-TO-LEFT HORIZONTAL MOVE:
+- slide-to-delete.
+- no reorder.
+- no accordion toggle.
+
+STATIONARY HOLD:
+- reorder mode.
+
+AFTER REORDER MODE ACTIVATES:
+- reorder owns the gesture until release/cancel.
+- do not accidentally open accordion or reveal Delete.
+
+TEXT SELECTION
+- long press must not trigger browser/iOS text selection or callout on static category text.
+
+============================================================
+5. DISABLE WHOLE-SCREEN OVERSCROLL / RUBBER-BAND BOUNCE
+============================================================
+
+The user must NOT be able to drag the entire TrailWeigh app/page upward or downward and expose blank space.
+
+REQUIRED APP-SHELL BEHAVIOR
+- Keep the TrailWeigh app shell fixed to the viewport.
+- Top TrailWeigh header stays anchored.
+- Bottom navigation stays anchored.
+- Do not allow page/body-level rubber-band bounce that reveals blank areas above or below the app.
+
+SCROLLING
+- Only the intended list/category content region scrolls vertically between header/summary and bottom nav.
+- Summary/deck areas that need scrolling scroll within their intended region.
+- Preserve normal smooth/momentum scrolling.
+- At the top or bottom boundary, scrolling stops cleanly.
+- No pull-past-boundary blank area.
+- No page-level vertical drift.
+
+DO NOT:
+- break legitimate internal scrolling;
+- break category long-press reorder;
+- break slide-to-delete;
+- create trapped/frozen scrolling.
+
+Test on a mobile/Safari-like viewport and explicitly verify that the shell cannot be pulled off-screen.
+
+============================================================
+6. TRAIL DROPDOWN — OPEN TO THE RIGHT
+============================================================
+
+The Trail dropdown/palette menu shown in Summary is currently clipped on the left.
+
+REQUIRED RESULT
+- Open the Trail dropdown on the RIGHT side of the Trail control.
+- Favor right-side placement.
+- Keep the entire dropdown inside the phone viewport.
+- All option text must be fully visible.
+- No clipping.
+- No horizontal scrolling.
+- No text cut-off.
+- Menu appears above surrounding Summary content.
+- Preserve comfortable touch targets.
+- At narrow widths, shift the menu inward as needed while still favoring the right side.
+- Do not allow the menu to run off the right edge either.
+
+Test at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+============================================================
+7. MORE → LIST ACTIONS CLEANUP
+============================================================
+
+In More → List Actions:
+
+REMOVE:
+- Expand All
+- Collapse All
+- Summary
+
+REASON
+- Summary already has its own permanent bottom navigation area.
+- Expand/Collapse are no longer wanted in this More/List Actions presentation.
+
+KEEP
+Keep the remaining existing List Actions that were not explicitly removed, including where currently present:
+- Reset
+- Checklist
+- other existing approved actions not named for removal.
+
+Do not remove unrelated More task families.
+
+============================================================
+8. ADD “VIEW / PRINT” BAR
+============================================================
+
+Add a new action bar labeled exactly:
+
+View / Print
+
+PLACEMENT
+- Place it within More → List Actions as a clear action row/bar.
+- Prefer placement after Checklist unless current existing ordering makes a nearby equivalent more logical.
+- Do not make it a permanent bottom-navigation item.
+
+BEHAVIOR
+- Route View / Print to the existing safe V3 view/print functionality.
+- Reuse existing print/view behavior rather than inventing a new print engine.
+- If there are two existing modes/actions that need a small chooser after tapping View / Print, use the smallest existing pattern possible.
+- Do not duplicate unrelated Share controls.
+- Do not publish or invoke external side effects during automated tests.
+
+VISUAL
+- Match the flat/flush More/List Actions row style.
+- No rounded floating card.
+- Clear icon and text if the current pattern uses icons.
+
+============================================================
+9. RESPONSIVE ACCEPTANCE
+============================================================
+
+Test at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+At EVERY width verify:
+
+CATEGORY ROWS
+- six-dot handles absent;
+- no empty handle column remains;
+- category content uses reclaimed space;
+- quick tap toggles accordion;
+- long press enters reorder;
+- vertical move before hold scrolls;
+- right-edge-left swipe reveals Delete;
+- reorder floats correct category;
+- target dimming correct;
+- other bars move smoothly;
+- release settles flush.
+
+APP SHELL
+- whole page does not rubber-band/bounce vertically;
+- no blank area exposed above/below app;
+- intended content regions still scroll;
+- header and bottom nav remain anchored.
+
+TRAIL DROPDOWN
+- opens to right side;
+- fully inside viewport;
+- all labels readable;
+- no clipping.
+
+MORE
+- Expand All absent;
+- Collapse All absent;
+- Summary absent from List Actions;
+- View / Print present;
+- Reset and Checklist remain.
+
+============================================================
+10. AUTOMATED TESTING REQUIRED
+============================================================
+
+At minimum run:
+
+1. TypeScript/typecheck.
+2. Browser runtime console check.
+3. Existing R005 regression suite where compatible.
+4. Six-dot reorder controls absent.
+5. No reserved six-dot column remains.
+6. Quick category tap still toggles accordion.
+7. Long press starts reorder only after threshold.
+8. Meaningful vertical move before threshold scrolls and does not reorder.
+9. Right-edge-left swipe before threshold reveals Delete and does not reorder.
+10. Long press does not trigger static text selection.
+11. Floating category follows full finger travel.
+12. Stable dragged identity after crossing multiple rows.
+13. Other bars transition smoothly without abrupt geometry jumps.
+14. Valid target dims.
+15. Previous target undims.
+16. One target only.
+17. Release commits correct order and settles flush.
+18. Release without crossing keeps original order.
+19. Pointer/touch cancel leaves order unchanged and clears floating state.
+20. Window blur/document hidden cancels safely.
+21. Whole-screen overscroll/bounce is blocked.
+22. Internal list scrolling still works top-to-bottom.
+23. Summary/deck internal scrolling still works.
+24. Trail dropdown opens on right.
+25. Trail dropdown stays in viewport at 320/375/390/430.
+26. Trail dropdown labels are not clipped.
+27. Expand All absent from More/List Actions.
+28. Collapse All absent from More/List Actions.
+29. Summary absent from More/List Actions.
+30. View / Print present.
+31. Reset remains.
+32. Checklist remains.
+33. View / Print reaches existing view/print workflow safely.
+34. No horizontal overflow.
+35. Safe-area regression.
+36. Slide-to-delete regression.
+37. Locker long-scroll regression.
+38. Closed-overlay pointer regression.
+39. Reduced-motion regression.
+40. Accessibility regression.
+
+No critical test may pass without asserting the actual expected state.
+
+============================================================
+11. CHANGED-FILE DISCIPLINE
+============================================================
+
+Application source:
+- Prefer MobileFunctionalV3.tsx ONLY.
+
+If another application source/style file is required:
+STOP BEFORE EDITING IT.
+Report:
+- exact file;
+- exact reason;
+- exact R006 requirement requiring it.
+
+Testing/report files are allowed.
+
+DO NOT CHANGE:
+- Checklist.tsx;
+- desktop;
+- database/schema;
+- auth;
+- deployment/publishing;
+- unrelated application files.
+
+============================================================
+12. R006 PACKAGING — MANDATORY
+============================================================
+
+The R005 review ZIP was incomplete.
+
+R006.zip MUST contain:
+- R006.md
+- EVERY application source file changed by R006
+- EVERY test file added or changed by R006
+- any config/style/manifest/lockfile changed by R006
+- compact relevant evidence if needed
+
+Before delivering the ZIP:
+1. run git status/diff;
+2. list every changed file in R006.md;
+3. verify every relevant changed file is actually inside R006.zip;
+4. include a ZIP CONTENTS section in R006.md listing the exact filenames packaged.
+
+Do NOT include:
+- node_modules
+- dependency caches
+- huge build folders
+- unrelated generated artifacts
+
+============================================================
+13. REQUIRED R006 REPORT
+============================================================
+
+Create:
+
+R006.md
+
+Use:
+
+# R006 Implementation Report
+
+## Scope
+- every file changed
+- why
+- restricted areas untouched
+
+## Reorder Handle Removal
+PASS/FAIL:
+- six dots removed
+- handle column removed
+- category width reclaimed
+
+## Long-Press Reorder
+PASS/FAIL:
+- quick tap accordion
+- long press threshold
+- pre-hold scroll arbitration
+- delete-swipe arbitration
+- true finger follow
+- stable dragged identity
+- target dim
+- target undim
+- release commit
+- no-cross release
+- cancellation
+- text selection prevented
+
+## Reorder Motion
+PASS/FAIL:
+- surrounding bars move smoothly
+- no jump/jitter/flicker
+- target dim transition
+- flush settle
+- reduced motion
+
+## Overscroll / App Shell
+PASS/FAIL:
+- body/page bounce blocked
+- no blank overscroll above
+- no blank overscroll below
+- list internal scroll works
+- Summary/deck internal scroll works
+- header anchored
+- bottom nav anchored
+
+## Trail Dropdown
+Responsive table:
+320 | 375 | 390 | 430
+Include:
+- right-side placement
+- in viewport
+- text fully visible
+- no horizontal overflow
+
+## More / List Actions
+PASS/FAIL:
+- Expand All removed
+- Collapse All removed
+- Summary removed
+- Reset preserved
+- Checklist preserved
+- View / Print added
+- View / Print functional
+
+## Regression
+PASS/FAIL:
+- Locker
+- Summary
+- Add
+- Search
+- More
+- slide-to-delete
+- Category Options Add Item
+- Inter Variable
+- Pack Summary
+- Weight Distribution
+- long Locker scrolling
+- safe area
+- closed overlays
+- Undo/Redo
+- accessibility
+- reduced motion
+
+## TypeScript
+result
+
+## Browser Console
+result
+
+## Automated Tests
+- total
+- passed
+- failed
+- skipped
+- exact failures
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## ZIP Contents
+Exact list of files actually inside R006.zip.
+
+## Final Scope Confirmation
+Confirm:
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, testing, R006.md, and R006.zip:
+
+STOP.
+
+Do NOT continue to another TrailWeigh change.
+Do NOT publish.
+Do NOT deploy.
+Do NOT change database/auth.
+Wait for user review.

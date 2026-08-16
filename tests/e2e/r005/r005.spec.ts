@@ -58,12 +58,17 @@ function grips(page: Page) {
   return page.getByRole('button', { name: /^Drag to reorder .* category$/ });
 }
 
-async function gripXs(page: Page): Promise<number[]> {
-  const all = grips(page);
-  const n = await all.count();
-  const xs: number[] = [];
-  for (let i = 0; i < n; i++) xs.push((await all.nth(i).boundingBox())!.x);
-  return xs;
+// R006 SUPERSESSION: the six-dot handles were removed; reorder now starts with
+// a 400 ms stationary long press directly on the category bar. All reorder
+// initiations in this suite use this helper (approved spec change).
+async function longPressGrab(page: Page, catName: string) {
+  const bar = page.locator(`[data-swipe-key="cat:${catName}"]`);
+  const b = (await bar.boundingBox())!;
+  const x = b.x + b.width * 0.35, y = b.y + b.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.waitForTimeout(600); // > 400ms threshold
+  return { x, y };
 }
 
 // ─── Part 1: top-right Search removed; bottom Search intact ─────────────────────
@@ -268,12 +273,7 @@ test.describe('R005 reorder finger-follow', () => {
     const cats = page.locator('[data-cat]');
     test.skip(await cats.count() < 4, 'needs 4+ categories');
     const firstName = (await cats.first().getAttribute('data-cat'))!;
-    const grip = page.getByRole('button', { name: `Drag to reorder ${firstName} category` });
-    const gBox = (await grip.boundingBox())!;
-    const startY = gBox.y + gBox.height / 2;
-    const startX = gBox.x + gBox.width / 2;
-    await page.mouse.move(startX, startY);
-    await page.mouse.down();
+    const { x: startX, y: startY } = await longPressGrab(page, firstName);
     // Drag down ~3 rows in steps; at each step the floating card's center must
     // track the pointer (within half a row height).
     for (const dy of [60, 120, 180]) {
@@ -302,12 +302,10 @@ test.describe('R005 reorder finger-follow', () => {
     const cats = page.locator('[data-cat]');
     test.skip(await cats.count() < 3, 'needs 3+ categories');
     const names = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
-    const grip = page.getByRole('button', { name: `Drag to reorder ${names[0]} category` });
-    const gBox = (await grip.boundingBox())!;
     const row1 = (await cats.nth(1).boundingBox())!;
     const row2 = (await cats.nth(2).boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
+    const { x: gX } = await longPressGrab(page, names[0]!);
+    const gBox = { x: gX, width: 0 };
     await page.mouse.move(gBox.x + gBox.width / 2, row1.y + row1.height * 0.8, { steps: 6 });
     await page.waitForTimeout(100);
     let dimmed = page.locator('[data-dimtarget="true"]');
@@ -335,58 +333,30 @@ test.describe('R005 reorder finger-follow', () => {
     await page.waitForTimeout(300);
     await expect(page.locator('[data-swipe-open="true"]')).toHaveCount(1);
     const name = (await row.getAttribute('data-swipe-key'))!.slice(4);
-    const grip = page.getByRole('button', { name: `Drag to reorder ${name} category` });
-    const gBox = (await grip.boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    await page.waitForTimeout(150);
+    await longPressGrab(page, name); // long-press activation closes the reveal
     await expect(page.locator('[data-swipe-open="true"]')).toHaveCount(0);
     await page.mouse.up();
   });
 });
 
-// ─── Part 9: six-dot alignment ───────────────────────────────────────────────────
+// ─── Part 9: six-dot handles — SUPERSEDED BY R006 (handles removed) ─────────────
 
-test.describe('R005 six-dot alignment', () => {
-  test('all handles share one x-position, left of the text, no overlap with weight', async ({ page }) => {
+test.describe('R005 six-dot alignment (superseded: handles removed in R006)', () => {
+  test('no reorder handles exist; reorder still works via long press', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoV3(page);
-    const xs = await gripXs(page);
-    expect(xs.length).toBeGreaterThan(2);
-    for (const x of xs) expect(Math.abs(x - xs[0])).toBeLessThanOrEqual(1);
-    // Farther left than R004 (handle sat mid-row ~250px before; now near the wedge)
-    expect(xs[0]).toBeLessThan(150);
-    // No overlap with weight text (weight is right-aligned)
-    const grip0 = (await grips(page).first().boundingBox())!;
-    const weight = page.getByText(/oz|g$/).first();
-    if (await weight.count() > 0) {
-      const wBox = (await weight.boundingBox())!;
-      expect(grip0.x + grip0.width).toBeLessThanOrEqual(wBox.x);
-    }
-    // Thumb-friendly target
-    expect(grip0.height).toBeGreaterThanOrEqual(40);
-  });
-
-  test('alignment holds with a category expanded and after a reorder', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await gotoV3(page);
-    const firstName = (await page.locator('[data-cat]').first().getAttribute('data-cat'))!;
-    await page.getByRole('button', { name: `Open ${firstName} category` }).click();
-    await page.waitForTimeout(300);
-    let xs = await gripXs(page);
-    for (const x of xs) expect(Math.abs(x - xs[0])).toBeLessThanOrEqual(1);
-    await page.getByRole('button', { name: `Close ${firstName} category` }).click();
-    // Reorder first → second, then re-check
-    const grip = page.getByRole('button', { name: `Drag to reorder ${firstName} category` });
-    const gBox = (await grip.boundingBox())!;
-    const second = (await page.locator('[data-cat]').nth(1).boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(gBox.x + gBox.width / 2, second.y + second.height * 0.8, { steps: 8 });
+    await expect(grips(page)).toHaveCount(0);
+    // Reorder first → second via long press still commits
+    const cats = page.locator('[data-cat]');
+    const names = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
+    const second = (await cats.nth(1).boundingBox())!;
+    const { x } = await longPressGrab(page, names[0]!);
+    await page.mouse.move(x, second.y + second.height * 0.8, { steps: 8 });
     await page.mouse.up();
     await page.waitForTimeout(400);
-    xs = await gripXs(page);
-    for (const x of xs) expect(Math.abs(x - xs[0])).toBeLessThanOrEqual(1);
+    const after = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
+    expect(after[0]).toBe(names[1]);
+    expect(after[1]).toBe(names[0]);
   });
 });
 
@@ -402,9 +372,8 @@ for (const width of [320, 375, 390, 430]) {
     const overflow = await page.evaluate(() =>
       document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(0);
-    // Handles aligned
-    const xs = await gripXs(page);
-    for (const x of xs) expect(Math.abs(x - xs[0])).toBeLessThanOrEqual(1);
+    // R006: handles removed at every width
+    await expect(grips(page)).toHaveCount(0);
     // Last category above the nav
     const cats = page.locator('[data-cat]');
     const lastCat = (await cats.nth(await cats.count() - 1).boundingBox())!;
@@ -424,11 +393,8 @@ test.describe('R005 drag lifecycle hardening', () => {
     const cats = page.locator('[data-cat]');
     test.skip(await cats.count() < 2, 'needs 2+ categories');
     const firstName = (await cats.first().getAttribute('data-cat'))!;
-    const grip = page.getByRole('button', { name: `Drag to reorder ${firstName} category` });
-    const gBox = (await grip.boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + 40, { steps: 4 });
+    const { x, y } = await longPressGrab(page, firstName);
+    await page.mouse.move(x, y + 40, { steps: 4 });
     await expect(page.locator('[data-floating="true"]')).toHaveCount(1);
     // Cancellation for a DIFFERENT pointer, dispatched outside the list
     await page.evaluate(() => {
@@ -441,36 +407,28 @@ test.describe('R005 drag lifecycle hardening', () => {
     await expect(page.locator('[data-floating="true"]')).toHaveCount(0);
   });
 
-  test('a second pointerdown on another handle replaces the drag with the CORRECT category', async ({ page }) => {
+  test('a second pointerdown on another category cannot hijack an active drag (R006: hold is refused mid-drag)', async ({ page }) => {
     await gotoV3(page);
     const cats = page.locator('[data-cat]');
     test.skip(await cats.count() < 3, 'needs 3+ categories');
     const names = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
-    const grip0 = page.getByRole('button', { name: `Drag to reorder ${names[0]} category` });
-    const gBox = (await grip0.boundingBox())!;
     const row1 = (await cats.nth(1).boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    // Cross a row so a live reorder preview is showing (rendered order ≠ data order)
-    await page.mouse.move(gBox.x + gBox.width / 2, row1.y + row1.height * 0.8, { steps: 6 });
+    const { x } = await longPressGrab(page, names[0]!);
+    await page.mouse.move(x, row1.y + row1.height * 0.8, { steps: 6 });
     await page.waitForTimeout(100);
     await expect(page.locator('[data-floating="true"]')).toHaveCount(1);
-    // Second (touch) pointer starts a drag on ANOTHER category's handle
-    await page.getByRole('button', { name: `Drag to reorder ${names[2]} category` })
-      .dispatchEvent('pointerdown', { pointerId: 7, pointerType: 'touch', bubbles: true, clientY: 0 });
-    await page.waitForTimeout(150);
+    // A second (touch) pointer presses ANOTHER category bar mid-drag; the
+    // long-press detector refuses to arm while a drag is active, so the
+    // ORIGINAL drag keeps its identity.
+    await page.locator(`[data-swipe-key="cat:${names[2]}"]`)
+      .dispatchEvent('pointerdown', { pointerId: 7, pointerType: 'touch', isPrimary: true, bubbles: true, clientY: 0 });
+    await page.waitForTimeout(600);
     const floating = page.locator('[data-floating="true"]');
     await expect(floating).toHaveCount(1);
-    expect(await floating.getAttribute('data-cat')).toBe(names[2]); // stable identity, not a slot-index guess
-    // Cancel the replacement drag; original data order intact (no commit happened)
-    await page.evaluate(() => {
-      document.body.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 7, bubbles: true }));
-    });
+    expect(await floating.getAttribute('data-cat')).toBe(names[0]);
     await page.mouse.up();
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
     await expect(page.locator('[data-floating="true"]')).toHaveCount(0);
-    const after = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
-    expect(after).toEqual(names);
   });
 
   test('window blur mid-drag cancels cleanly without committing', async ({ page }) => {
@@ -478,12 +436,9 @@ test.describe('R005 drag lifecycle hardening', () => {
     const cats = page.locator('[data-cat]');
     test.skip(await cats.count() < 2, 'needs 2+ categories');
     const names = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
-    const grip = page.getByRole('button', { name: `Drag to reorder ${names[0]} category` });
-    const gBox = (await grip.boundingBox())!;
     const row1 = (await cats.nth(1).boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(gBox.x + gBox.width / 2, row1.y + row1.height * 0.8, { steps: 6 });
+    const { x } = await longPressGrab(page, names[0]!);
+    await page.mouse.move(x, row1.y + row1.height * 0.8, { steps: 6 });
     await expect(page.locator('[data-floating="true"]')).toHaveCount(1);
     await page.evaluate(() => window.dispatchEvent(new Event('blur')));
     await page.waitForTimeout(200);

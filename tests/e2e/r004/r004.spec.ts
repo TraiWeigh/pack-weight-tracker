@@ -74,6 +74,18 @@ async function firstCatName(page: Page): Promise<string> {
   return key!.slice(4);
 }
 
+// R006 SUPERSESSION: the six-dot handles were removed; reorder now starts with
+// a 400 ms stationary long press directly on the category bar (approved change).
+async function longPressGrab(page: Page, catName: string) {
+  const bar = page.locator(`[data-swipe-key="cat:${catName}"]`);
+  const b = (await bar.boundingBox())!;
+  const x = b.x + b.width * 0.35, y = b.y + b.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.waitForTimeout(600); // > 400ms threshold
+  return { x, y };
+}
+
 /** Open the first category accordion and return its first item swipe row. */
 async function openFirstCategory(page: Page): Promise<string> {
   const cat = await firstCatName(page);
@@ -300,14 +312,11 @@ test.describe('R004 category reorder', () => {
     const cats = page.locator('[data-swipe-key^="cat:"]');
     test.skip(await cats.count() < 2, 'needs 2+ categories');
     const firstName = await firstCatName(page);
-    const grip = page.getByRole('button', { name: `Drag to reorder ${firstName} category` });
-    const gBox = (await grip.boundingBox())!;
     const secondCard = page.locator('[data-cat]').nth(1);
     const sBox = (await secondCard.boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
+    const { x } = await longPressGrab(page, firstName);
     // cross into the second category's territory
-    await page.mouse.move(gBox.x + gBox.width / 2, sBox.y + sBox.height * 0.8, { steps: 10 });
+    await page.mouse.move(x, sBox.y + sBox.height * 0.8, { steps: 10 });
     await page.waitForTimeout(120);
     const floating = page.locator('[data-floating="true"]');
     await expect(floating).toHaveCount(1);
@@ -322,21 +331,18 @@ test.describe('R004 category reorder', () => {
     const cats = page.locator('[data-cat]');
     test.skip(await cats.count() < 2, 'needs 2+ categories');
     const firstName = await firstCatName(page);
-    const grip = page.getByRole('button', { name: `Drag to reorder ${firstName} category` });
-    const gBox = (await grip.boundingBox())!;
     const second = cats.nth(1);
     const sBox = (await second.boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
     const secondName = await second.getAttribute('data-cat');
+    const { x, y } = await longPressGrab(page, firstName);
     // drag deep into the second slot — the DISPLACED category must dim
-    await page.mouse.move(gBox.x + gBox.width / 2, sBox.y + sBox.height * 0.8, { steps: 8 });
+    await page.mouse.move(x, sBox.y + sBox.height * 0.8, { steps: 8 });
     await page.waitForTimeout(120);
     const dimmed = page.locator('[data-dimtarget="true"]');
     await expect(dimmed).toHaveCount(1);
     expect(await dimmed.getAttribute('data-cat')).toBe(secondName);
     // move back to the original slot — the target must undim immediately
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2, { steps: 8 });
+    await page.mouse.move(x, y, { steps: 8 });
     await page.waitForTimeout(120);
     await expect(page.locator('[data-dimtarget="true"]')).toHaveCount(0);
     await page.mouse.up();
@@ -351,15 +357,12 @@ test.describe('R004 category reorder', () => {
     test.skip(await cats.count() < 2, 'needs 2+ categories');
     const beforeOrder = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
     const firstName = beforeOrder[0]!;
-    const grip = page.getByRole('button', { name: `Drag to reorder ${firstName} category` });
-    const gBox = (await grip.boundingBox())!;
     const sBox = (await cats.nth(1).boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(gBox.x + gBox.width / 2, sBox.y + sBox.height * 0.8, { steps: 8 });
+    const { x } = await longPressGrab(page, firstName);
+    await page.mouse.move(x, sBox.y + sBox.height * 0.8, { steps: 8 });
     await expect(page.locator('[data-floating="true"]')).toHaveCount(1);
     // simulate an interrupted gesture (browser gesture takeover, incoming call, …)
-    await grip.dispatchEvent('pointercancel');
+    await page.locator(`[data-swipe-key="cat:${firstName}"]`).dispatchEvent('pointercancel');
     await page.waitForTimeout(250);
     await expect(page.locator('[data-floating="true"]')).toHaveCount(0);
     await expect(page.locator('[data-dimtarget="true"]')).toHaveCount(0);
@@ -374,13 +377,10 @@ test.describe('R004 category reorder', () => {
     test.skip(await cats.count() < 2, 'needs 2+ categories');
     const beforeOrder = await cats.evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
     const firstName = beforeOrder[0]!;
-    const grip = page.getByRole('button', { name: `Drag to reorder ${firstName} category` });
-    const gBox = (await grip.boundingBox())!;
     const second = cats.nth(1);
     const sBox = (await second.boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(gBox.x + gBox.width / 2, sBox.y + sBox.height - 4, { steps: 10 });
+    const { x } = await longPressGrab(page, firstName);
+    await page.mouse.move(x, sBox.y + sBox.height - 4, { steps: 10 });
     await page.mouse.up();
     await page.waitForTimeout(300);
     const afterOrder = await page.locator('[data-cat]').evaluateAll(els => els.map(e => (e as HTMLElement).dataset.cat));
@@ -395,12 +395,9 @@ test.describe('R004 category reorder', () => {
     const row = firstCatRow(page);
     await swipeLeft(page, row);
     await expect(row).toHaveAttribute('data-swipe-open', 'true');
-    const secondName = await cats.nth(1).getAttribute('data-cat');
-    const grip = page.getByRole('button', { name: `Drag to reorder ${secondName} category` });
-    const gBox = (await grip.boundingBox())!;
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + gBox.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(gBox.x + gBox.width / 2, gBox.y + 30, { steps: 4 });
+    const secondName = (await cats.nth(1).getAttribute('data-cat'))!;
+    const { x, y } = await longPressGrab(page, secondName);
+    await page.mouse.move(x, y + 30, { steps: 4 });
     await page.mouse.up();
     await expect(row).toHaveAttribute('data-swipe-open', 'false');
   });

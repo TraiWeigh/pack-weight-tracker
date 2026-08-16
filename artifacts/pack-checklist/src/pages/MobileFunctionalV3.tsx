@@ -31,12 +31,12 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import '@fontsource-variable/inter';
 import { useAuth } from '@clerk/react';
 import {
-  Menu, Search, Plus, Check, GripVertical, MoreHorizontal,
+  Menu, Search, Plus, Check, MoreHorizontal,
   Backpack, Folder, Grid3X3, BarChart2,
   Hash, PackageOpen, ArrowRightLeft, Luggage, Camera,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
   Tent, HelpCircle, X, ChevronLeft, ChevronRight, Layers,
-  Scale, Coins, LayoutList, AlertCircle, Trash2, Copy, Link2,
+  Scale, Coins, AlertCircle, Trash2, Copy, Link2,
   BookOpen, Info, Pencil, Mail, Tag, FileText, Shield,
 } from 'lucide-react';
 import {
@@ -164,6 +164,9 @@ const NAV_H         = 58;   // bottom tab bar fallback height (px); actual heigh
 const BAR_PEEK_H    = 54;   // visible height of an inactive stacked bar (px, category-header scale)
 const DRAG_ACTIVATE = 48;   // upward drag distance that activates a bar (px)
 const TAP_MAX_PX    = 8;    // pointer movement below this = tap
+// R006 Part 2 — long-press reorder tuning (documented stable values)
+const LONG_PRESS_MS = 400;  // stationary hold duration that enters reorder mode
+const HOLD_SLOP_PX  = 10;   // finger jitter tolerated during the hold; beyond it → scroll/swipe wins
 const DRAG_SLOP_PX  = 8;    // movement beyond this locks the gesture mode (scroll vs lift)
 /** Snap-animation duration: near-instant when prefers-reduced-motion is set. */
 const motionDuration = () =>
@@ -468,12 +471,15 @@ const SWIPE_ACTION_W = 88;   // revealed Delete width (px)
 const SWIPE_SLOP_PX  = 8;    // gesture disambiguation slop
 const SWIPE_EDGE_ZONE = 0.4; // gesture must start within right 40% of the row
 
-function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, children }: {
+function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, reorderActive, children }: {
   swipeKey: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onDelete: () => void;
   deleteLabel: string;
+  /** R006 Part 4 — while a category reorder owns the gesture, the swipe
+   *  machinery is inert: it can never reveal Delete mid-reorder. */
+  reorderActive?: boolean;
   children: React.ReactNode;
 }) {
   const [dragX, setDragX] = useState<number | null>(null); // live offset while dragging
@@ -492,6 +498,7 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, c
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    if (reorderActive) { gRef.current = null; setDragX(null); return; }
     const g = gRef.current;
     if (!g) return;
     const dx = e.clientX - g.startX;
@@ -1450,7 +1457,7 @@ function MobileFunctionalV3Inner() {
 
   // Category reorder via Pointer Events
   const catListRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ catIdx: number; dstIdx: number; origOrder: string[]; grabDY: number } | null>(null);
+  const dragRef = useRef<{ catIdx: number; dstIdx: number; origOrder: string[]; grabDY: number; draggedH: number } | null>(null);
   const liftRef = useRef(0); // R005 Part 8 — current applied translateY of the floating card
   const [dragSrcIdx, setDragSrcIdx] = useState<number | null>(null);
   // R004 Part 1 — at most ONE delete reveal open at a time (key: 'cat:<name>' | 'item:<cat>:<id>')
@@ -1709,16 +1716,8 @@ function MobileFunctionalV3Inner() {
     }
   }, [allExpanded, openCatName]);
 
-  const handleExpandAll = useCallback(() => {
-    setAllExpanded(true);
-    setOpenCatName(null);
-  }, []);
-
-  const handleCollapseAll = useCallback(() => {
-    setAllExpanded(false);
-    setOpenCatName(null);
-    setExpandedItem(null);
-  }, []);
+  // (R006 Part 7: handleExpandAll/handleCollapseAll removed with their
+  //  More → List Actions rows; allExpanded state remains for accordion logic.)
 
   // (R002: the left/right/bottom slider gesture handlers were retired with the
   //  slider components — deck interaction lives in CardDeck / DeckInactiveCard.)
@@ -1765,10 +1764,12 @@ function MobileFunctionalV3Inner() {
     const container = catListRef.current;
     if (!container) return;
     const children = Array.from(container.children) as HTMLElement[];
-    const draggedName2 = dragRef.current.origOrder[dragRef.current.catIdx];
-    // R005 Part 8 — the dragged card carries a large translateY (true finger
-    // follow), so for slot detection its UNTRANSFORMED slot position must be
-    // used; otherwise its own rect chases the finger and wedges the scan.
+    // R005 Part 8 / R006 Part 3 — every card can carry a translateY (the dragged
+    // card follows the finger; displaced bars glide by ±draggedH), so slot
+    // detection always uses UNTRANSFORMED midpoints: subtract each card's
+    // currently rendered translateY (computed transform matrix f value).
+    // The DOM order is the ORIGINAL order for the whole drag (R006: no live
+    // re-splicing), so the scan index IS the destination index in origOrder.
     const renderedYOf = (el: HTMLElement): number => {
       const t = getComputedStyle(el).transform;
       if (!t || t === 'none') return 0;
@@ -1778,8 +1779,7 @@ function MobileFunctionalV3Inner() {
     let newIdx = 0;
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
-      const untransformedShift = children[i].dataset.cat === draggedName2 ? renderedYOf(children[i]) : 0;
-      if (clientY >= rect.top + rect.height / 2 - untransformedShift) newIdx = i;
+      if (clientY >= rect.top + rect.height / 2 - renderedYOf(children[i])) newIdx = i;
     }
     newIdx = Math.max(0, Math.min(dragRef.current.origOrder.length - 1, newIdx));
     dragRef.current.dstIdx = newIdx;
@@ -1839,9 +1839,11 @@ function MobileFunctionalV3Inner() {
     setDragCatName(null); setDragTargetName(null); setDragLift(0); liftRef.current = 0;
   }, []);
 
-  const handleGripPointerDown = useCallback((e: React.PointerEvent, catName: string) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // R006 Part 2 — reorder is now started by a LONG PRESS directly on the
+  // category bar (the six-dot handle is gone). `startReorder` contains the
+  // drag machinery shared by any initiation path; the long-press detector
+  // below decides WHEN to call it.
+  const startReorder = useCallback((catName: string, clientY: number, pointerId: number) => {
     // Replacement pointer: fully CANCEL any active drag (state + listeners)
     // before starting a new one — never just drop the listeners.
     if (dragRef.current) {
@@ -1856,13 +1858,14 @@ function MobileFunctionalV3Inner() {
     // R005 Part 8 — true finger-follow: remember the finger's offset from the
     // dragged card's center so the card tracks the finger 1:1 for the whole drag.
     let grabDY = 0;
+    let draggedH = CARD_H;
     const container = catListRef.current;
-    const draggedName = catName;
     if (container) {
       for (const child of Array.from(container.children) as HTMLElement[]) {
-        if (child.dataset.cat === draggedName) {
+        if (child.dataset.cat === catName) {
           const rect = child.getBoundingClientRect();
-          grabDY = e.clientY - (rect.top + rect.height / 2);
+          grabDY = clientY - (rect.top + rect.height / 2);
+          draggedH = rect.height;
           break;
         }
       }
@@ -1873,15 +1876,18 @@ function MobileFunctionalV3Inner() {
       dstIdx: catIdx,
       origOrder: [...sandboxRef.current.order],
       grabDY,
+      draggedH,
     };
     setOpenSwipe(null); // R004: starting reorder closes any open delete reveal
-    setDragCatName(sandboxRef.current.order[catIdx] ?? null); // name-keyed floating style
+    setDragCatName(catName); // name-keyed floating style
     setDragTargetName(null);
     setDragLift(0);
     setDragSrcIdx(catIdx);
     setDragDstIdx(catIdx);
+    // R006 Part 2 — one subtle, genuinely supported haptic on entering reorder
+    // mode; navigator.vibrate is a no-op ONLY where truly unsupported.
+    try { if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') navigator.vibrate(10); } catch { /* no haptics */ }
 
-    const pointerId = e.pointerId;
     const onMove = (ev: PointerEvent) => { if (ev.pointerId === pointerId) gripMoveAt(ev.clientY); };
     const onUp = (ev: PointerEvent) => { if (ev.pointerId === pointerId) { gripFinish(); cleanup(); } };
     // pointercancel is per-pointer: only OUR pointer's cancellation aborts the
@@ -1896,12 +1902,17 @@ function MobileFunctionalV3Inner() {
     // a stuck floating card: cancel without committing.
     const onBlur = () => { handleGripPointerCancel(); cleanup(); };
     const onVisibility = () => { if (document.visibilityState === 'hidden') { handleGripPointerCancel(); cleanup(); } };
+    // R006 — after reorder mode activates, the drag OWNS the gesture: block
+    // native touch scrolling for its duration so the browser cannot take the
+    // pointer away (pointercancel) mid-drag. Registered non-passive on purpose.
+    const onTouchMove = (ev: TouchEvent) => { if (ev.cancelable) ev.preventDefault(); };
     const cleanup = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onCancel);
       window.removeEventListener('blur', onBlur);
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('touchmove', onTouchMove);
       gripCleanupRef.current = null;
     };
     window.addEventListener('pointermove', onMove);
@@ -1909,21 +1920,106 @@ function MobileFunctionalV3Inner() {
     window.addEventListener('pointercancel', onCancel);
     window.addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
     gripCleanupRef.current = cleanup;
   }, [gripMoveAt, gripFinish, handleGripPointerCancel]);
 
   // Unmount safety: drop window listeners if the view unmounts mid-drag
   useEffect(() => () => { gripCleanupRef.current?.(); }, []);
 
-  // Visible order during drag reorder
-  const visibleOrder: string[] = (dragSrcIdx !== null && dragDstIdx !== null && dragRef.current)
-    ? (() => {
-        const order = [...dragRef.current.origOrder];
-        const [moved] = order.splice(dragSrcIdx, 1);
-        order.splice(dragDstIdx, 0, moved);
-        return order;
-      })()
-    : sandbox.order;
+  // ── R006 Part 2/4 — long-press detection on the category bar ─────────────────
+  // One stable threshold: 400 ms stationary hold enters reorder mode.
+  // Gesture arbitration BEFORE the threshold:
+  //   • vertical move beyond the jitter slop   → list scroll wins, hold cancelled;
+  //   • horizontal move beyond the jitter slop → slide-to-delete wins, hold cancelled;
+  //   • ≤ slop movement (finger jitter)        → hold stays alive.
+  // After activation the drag owns the gesture until release/cancel; the click
+  // that follows is swallowed so the accordion never toggles from a reorder.
+  // The hold is a POINTER-ID-OWNED lifecycle: its pre-activation tracking
+  // lives on window/document listeners (not the bar element), so a finger that
+  // leaves the bar, a terminal event delivered elsewhere, blur, or a hidden
+  // tab all tear the hold down atomically — the timer can never fire for a
+  // pointer that is no longer down. Terminal/move events from OTHER pointers
+  // are ignored (no cross-pointer cancellation, no second-pointer takeover).
+  const holdRef = useRef<{ timer: number; pointerId: number; catName: string; startX: number; startY: number; lastY: number; cleanup: () => void } | null>(null);
+  const reorderJustHappenedRef = useRef(false);
+  const clearSwallowTimerRef = useRef<number | null>(null);
+
+  // Swallow exactly the click that trails a reorder, then self-clear: cancel
+  // paths (pointercancel/blur/hidden) produce no click, and the flag must not
+  // eat the NEXT legitimate tap.
+  const armClickSwallow = useCallback(() => {
+    reorderJustHappenedRef.current = true;
+    if (clearSwallowTimerRef.current !== null) window.clearTimeout(clearSwallowTimerRef.current);
+    clearSwallowTimerRef.current = window.setTimeout(() => {
+      reorderJustHappenedRef.current = false;
+      clearSwallowTimerRef.current = null;
+    }, 300);
+  }, []);
+
+  const clearHold = useCallback(() => {
+    const h = holdRef.current;
+    if (h) { holdRef.current = null; window.clearTimeout(h.timer); h.cleanup(); }
+  }, []);
+
+  const handleCatBarPointerDown = useCallback((e: React.PointerEvent, catName: string) => {
+    // One hold at a time; a second pointer never disturbs an armed hold or an
+    // active drag (ownership stays with the first gesture).
+    if (!e.isPrimary || dragRef.current || holdRef.current) return;
+    const pointerId = e.pointerId, startX = e.clientX, startY = e.clientY;
+    const onMove = (ev: PointerEvent) => {
+      const h = holdRef.current;
+      if (!h || ev.pointerId !== h.pointerId) return;
+      h.lastY = ev.clientY;
+      // Meaningful movement before the threshold disambiguates to scroll/swipe.
+      if (Math.abs(ev.clientX - h.startX) > HOLD_SLOP_PX || Math.abs(ev.clientY - h.startY) > HOLD_SLOP_PX) clearHold();
+    };
+    const onEnd = (ev: PointerEvent) => {
+      if (holdRef.current && ev.pointerId === holdRef.current.pointerId) clearHold();
+    };
+    const onBlur = () => clearHold();
+    const onVisibility = () => { if (document.visibilityState === 'hidden') clearHold(); };
+    const cleanup = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onEnd);
+      window.removeEventListener('pointercancel', onEnd);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onEnd);
+    window.addEventListener('pointercancel', onEnd);
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVisibility);
+    const timer = window.setTimeout(() => {
+      const h = holdRef.current;
+      holdRef.current = null;
+      if (!h) return;
+      h.cleanup();
+      armClickSwallow(); // the trailing click belongs to the gesture
+      startReorder(h.catName, h.lastY, h.pointerId);
+    }, LONG_PRESS_MS);
+    holdRef.current = { timer, pointerId, catName, startX, startY, lastY: startY, cleanup };
+  }, [clearHold, armClickSwallow, startReorder]);
+
+  // Unmount safety for a pending hold timer + its window listeners
+  useEffect(() => () => {
+    clearHold();
+    if (clearSwallowTimerRef.current !== null) window.clearTimeout(clearSwallowTimerRef.current);
+  }, [clearHold]);
+
+  // R006 Part 3 — during a drag the DOM order stays FIXED (original order);
+  // displaced bars glide into their temporary positions via translateY
+  // transitions instead of abruptly re-splicing the list. `shiftFor` returns
+  // the current offset for a non-dragged bar at original index i.
+  const visibleOrder: string[] = sandbox.order;
+  const shiftFor = (i: number): number => {
+    const drag = dragRef.current;
+    if (!drag || dragSrcIdx === null || dragDstIdx === null) return 0;
+    if (dragSrcIdx < dragDstIdx && i > dragSrcIdx && i <= dragDstIdx) return -drag.draggedH;
+    if (dragDstIdx < dragSrcIdx && i >= dragDstIdx && i < dragSrcIdx) return drag.draggedH;
+    return 0;
+  };
 
   // ── Help / About — 027Q: navigate to More (footer) which contains Help link ──
   // handleHelp removed; Help accessible via More → Footer → Help & How-To
@@ -2268,7 +2364,7 @@ function MobileFunctionalV3Inner() {
     {
       id: 'list-actions',
       title: 'List Actions',
-      subtitle: 'Save, undo, reset, expand, views',
+      subtitle: 'Save, undo, reset, views',
       icon: <Save size={18} strokeWidth={1.8}/>,
       render: () => (
         <div style={{ padding: '4px 0 8px' }}>
@@ -2276,10 +2372,11 @@ function MobileFunctionalV3Inner() {
           {deckAction(<Undo2 size={17} strokeWidth={1.8}/>,      'Undo',         runAndClose(handleUndo), undoHistory.length === 0)}
           {deckAction(<Redo2 size={17} strokeWidth={1.8}/>,      'Redo',         runAndClose(handleRedo), redoHistory.length === 0)}
           {deckAction(<RotateCcw size={17} strokeWidth={1.8}/>,  'Reset',        runAndClose(handleReset), false, 'Reload from your saved data (undoable)')}
-          {deckAction(<Layers size={17} strokeWidth={1.8}/>,     'Expand All',   runAndClose(handleExpandAll))}
-          {deckAction(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', runAndClose(handleCollapseAll))}
           {deckAction(<Tent size={17} strokeWidth={1.8}/>,       'Checklist',    runAndClose(() => setShowChecklist(true)), false, 'Trail checklist for selected items')}
-          {deckAction(<BarChart2 size={17} strokeWidth={1.8}/>,  'Summary',      runAndClose(() => setShowSummary(true)), false, 'Pack weight and distribution')}
+          {/* R006 Part 8 — View / Print routes to the EXISTING print/view flow
+              (PDF download + browser print); flat flush row like its siblings.
+              R006 Part 7 — Expand All / Collapse All / Summary rows removed. */}
+          {deckAction(<Printer size={17} strokeWidth={1.8}/>,    'View / Print', runAndClose(handlePrint), false, 'View and print your gear list')}
         </div>
       ),
     },
@@ -2400,6 +2497,26 @@ function MobileFunctionalV3Inner() {
           .tw-flat > div{border:none!important;border-radius:0!important;box-shadow:none!important}
           .tw-flat-ps > div > button:first-of-type{display:none!important}
           .tw-flat-wd > div > div:first-child > button:first-child{display:none!important}
+          /* R006 Part 5 — the app shell is pinned to the viewport: no page/body
+             rubber-band bounce, no blank area above/below the app. Only the
+             intended internal regions scroll. */
+          html:has(.tw-v3-root),body:has(.tw-v3-root){
+            overscroll-behavior:none;height:100%;overflow:hidden}
+          .tw-v3-root{overscroll-behavior:none}
+          .tw-v3-root [data-testid="main-scroll"]{overscroll-behavior:contain}
+          /* R006 Part 6 — Trail palette dropdown: the flattened Weight
+             Distribution panel must not clip the menu (the shared card ships
+             overflow-hidden), and the menu is pinned to the panel's right edge
+             so it always favors the right while staying fully inside the
+             viewport at every width (320–430). */
+          .tw-flat-wd > div{overflow:visible!important}
+          .tw-flat-wd .relative > div.absolute{
+            left:auto!important;right:0!important;max-width:calc(100vw - 32px);z-index:60!important}
+          /* R006 Part 3 — reduced motion: nonessential reorder glide/dim
+             transitions are minimized; state changes stay instant and clear. */
+          @media (prefers-reduced-motion: reduce){
+            .tw-v3-root [data-cat]{transition:none!important}
+          }
         `}</style>
 
         {/* ── APP BAR ── */}
@@ -2533,15 +2650,23 @@ function MobileFunctionalV3Inner() {
                       ? '0 8px 26px rgba(0,0,0,0.24), 0 2px 6px rgba(0,0,0,0.14)'
                       : 'none',
                     opacity: isDimTarget ? 0.55 : 1,
-                    transform: isDragging ? `translateY(${dragLift}px) scale(1.015)` : 'none',
+                    // R006 Part 3 — non-dragged bars GLIDE into their temporary
+                    // positions (translateY ± dragged height) while the DOM order
+                    // stays fixed; the dragged card tracks the finger 1:1.
+                    transform: isDragging
+                      ? `translateY(${dragLift}px) scale(1.015)`
+                      : (shiftFor(catIdx) !== 0 ? `translateY(${shiftFor(catIdx)}px)` : 'none'),
                     zIndex: isDragging ? 5 : 'auto',
                     position: 'relative',
-                    transition: isDragging ? 'box-shadow 0.1s' : 'box-shadow 0.15s, opacity 0.12s, transform 0.15s ease-out',
+                    transition: isDragging
+                      ? 'box-shadow 0.1s'
+                      : `box-shadow 0.15s, opacity ${motionDuration()} ease-out, transform ${motionDuration()} ease-out`,
                   }}>
 
                   {/* ── CATEGORY HEADER (R004 — right-edge-to-left slide reveals Delete) ── */}
                   <SwipeDeleteRow
                     swipeKey={`cat:${catName}`}
+                    reorderActive={dragCatName !== null}
                     open={openSwipe === `cat:${catName}`}
                     onOpenChange={o => setOpenSwipe(o ? `cat:${catName}` : null)}
                     deleteLabel={`Delete ${catName} category`}
@@ -2550,7 +2675,22 @@ function MobileFunctionalV3Inner() {
                       setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(true); setCatRenameValue(catName);
                     }}
                   >
-                  <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG }}>
+                  <div
+                    // R006 Part 2/4 — the whole category bar is the long-press
+                    // reorder surface (400 ms stationary hold). Quick tap keeps
+                    // accordion/options behavior; meaningful movement before the
+                    // threshold hands the gesture to scroll or slide-to-delete.
+                    onPointerDown={e => handleCatBarPointerDown(e, catName)}
+                    onClickCapture={e => {
+                      // The click that trails a long-press reorder is part of the
+                      // gesture — it must not toggle the accordion or open options.
+                      if (reorderJustHappenedRef.current) {
+                        reorderJustHappenedRef.current = false;
+                        e.stopPropagation(); e.preventDefault();
+                      }
+                    }}
+                    style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG }}
+                  >
 
                     {/* WEDGE / ICON — PRIMARY ACCORDION TRIGGER */}
                     <button
@@ -2571,42 +2711,19 @@ function MobileFunctionalV3Inner() {
                       <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>
                     </button>
 
-                    {/* CONTENT grid — R005 Part 9: six-dot handle moved to a FIXED
-                        leftmost column (right after the wedge), so every handle
-                        shares one x-position regardless of name/weight length or
-                        expanded state: [handle 36px] [gap 10px] [text] [weight] */}
+                    {/* CONTENT grid — R006 Part 1: the six-dot handle and its
+                        reserved columns are REMOVED; the category text reclaims
+                        the full width: [text 1fr] [weight auto].
+                        Reorder now starts with a long press anywhere on the bar. */}
                     <div style={{
                       flex: 1, minWidth: 0,
                       display: 'grid',
-                      gridTemplateColumns: '36px 10px minmax(0, 1fr) minmax(44px, auto)',
+                      gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
                       alignItems: 'center',
-                      padding: '10px 12px 10px 8px',
-                      columnGap: 0,
+                      padding: '10px 12px',
+                      columnGap: 10,
                     }}>
-                      {/* Col 1 — six-dot reorder handle (R005 Part 9: fixed leftmost
-                          column so all handles align in one straight vertical line) */}
-                      <button
-                        aria-label={`Drag to reorder ${catName} category`}
-                        aria-grabbed={dragCatName === catName ? 'true' : 'false'}
-                        title="Hold and drag to reorder category"
-                        onPointerDown={e => handleGripPointerDown(e, catName)}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'none', border: 'none', padding: 0,
-                          minHeight: 44, // comfortable thumb target despite compact dots
-                          cursor: 'grab', touchAction: 'none',
-                          opacity: dragCatName === catName ? 0.8 : 0.38,
-                        }}
-                        onFocus={e => { e.currentTarget.style.opacity = '0.8'; }}
-                        onBlur={e => { e.currentTarget.style.opacity = dragCatName === catName ? '0.8' : '0.38'; }}
-                      >
-                        <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
-                      </button>
-
-                      {/* Col 2 — gap (clearance between handle and text) */}
-                      <div aria-hidden="true"/>
-
-                      {/* Col 3 — name + subtitle (tap name → Category Options) */}
+                      {/* Col 1 — name + subtitle (tap name → Category Options) */}
                       <div style={{ minWidth: 0 }}>
                         <button
                           onClick={e => { e.stopPropagation(); setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(false); setCatRenameValue(catName); }}
@@ -2670,6 +2787,7 @@ function MobileFunctionalV3Inner() {
                             {/* ITEM ROW (R004 — right-edge-to-left slide reveals Delete) */}
                             <SwipeDeleteRow
                               swipeKey={`item:${catName}:${item.id}`}
+                              reorderActive={dragCatName !== null}
                               open={openSwipe === `item:${catName}:${item.id}`}
                               onOpenChange={o => setOpenSwipe(o ? `item:${catName}:${item.id}` : null)}
                               deleteLabel={`Delete ${displayName}`}
