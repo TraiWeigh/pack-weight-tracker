@@ -966,9 +966,9 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
 
 // ─── CARD DECK (R002 — bottom-rising, vertically overlapping card stack) ─────────
 // Tapping Locker / + / Search / More raises a deck of stacked cards from the bottom.
-// Each inactive card shows its title strip; TAP always activates it, and an upward
-// DRAG (≥ DRAG_ACTIVATE px) is an equivalent optional gesture. The active card
-// expands at the top of the deck ("operational position") and shows its content.
+// Each inactive card shows its title strip; TAP activates it (stacked bars are
+// tap-only — R0073/R0074 removed the drag-lift path). The active card expands at
+// the top of the deck ("operational position") and shows its content.
 // Switching active cards never requires closing the deck. Decks are conditionally
 // rendered — when closed they do not exist in the DOM and cannot intercept input.
 
@@ -998,14 +998,11 @@ interface CardDeckProps {
  *
  *  A1 GESTURE DISAMBIGUATION (scroll vs activation):
  *  Movement below DRAG_SLOP_PX on release = TAP → activate (always available).
- *  Once movement exceeds the slop, the gesture LOCKS into exactly one mode:
- *   - 'scroll' — when the deck overflows (canDeckScroll()), ANY vertical drag
- *     scrolls the deck naturally in BOTH directions (reversible, 1:1, no bounce)
- *     and can never activate the bar on release;
- *   - 'lift'   — only when the deck does NOT overflow: an upward drag lifts the
- *     bar and docks it past DRAG_ACTIVATE px; short lifts spring back.
- *  This removes the R002 conflict where upward drags in a long deck always
- *  activated a bar and scrollTop could never increase via touch. */
+ *  Once movement exceeds the slop, the gesture LOCKS into 'scroll' mode:
+ *   - 'scroll' — ANY vertical drag scrolls an overflowing deck naturally in BOTH
+ *     directions (reversible, 1:1, no bounce) and can never activate on release;
+ *     on a non-overflowing deck the drag is a no-op.
+ *  Stacked bars are TAP-ONLY (R0073/R0074 — lift/drag-activate path removed). */
 function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: {
   card: DeckCardDef;
   index: number;
@@ -1013,33 +1010,28 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: 
   scrollBy: (dy: number) => void;
   canDeckScroll: () => boolean;
 }) {
-  const [lift, setLift] = useState(0);
-  const [settling, setSettling] = useState(false);
   const [focused, setFocused] = useState(false);
-  const dragRef = useRef<{ active: boolean; mode: 'idle' | 'scroll' | 'lift'; startY: number; lastY: number }>(
+  const dragRef = useRef<{ active: boolean; mode: 'idle' | 'scroll'; startY: number; lastY: number }>(
     { active: false, mode: 'idle', startY: 0, lastY: 0 }
   );
 
   const finishDrag = (e: React.PointerEvent) => {
     if (!dragRef.current.active) return;
-    const { mode, startY } = dragRef.current;
+    const { startY } = dragRef.current;
     dragRef.current.active = false;
     dragRef.current.mode = 'idle';
-    const total  = Math.abs(e.clientY - startY);
-    const lifted = startY - e.clientY; // positive = upward
-    if (card.disabled) { setLift(0); return; }
-    if (total < TAP_MAX_PX) { setLift(0); onActivate(); return; }         // tap
-    // R0073: drag-to-dock removed — stacked bars are tap-only
-    setSettling(true); setLift(0);                                        // settle back (scroll mode never activates)
+    const total = Math.abs(e.clientY - startY);
+    if (card.disabled) return;
+    if (total < TAP_MAX_PX) { onActivate(); return; }  // tap
+    // scroll mode on release — no-op (vertical drag never activates)
   };
 
   /** A cancelled gesture (e.g. browser takes over the pointer) must never
-   *  activate the card — it only clears the visual drag state. */
+   *  activate the card — no visual drag state to reset. */
   const cancelDrag = () => {
     if (!dragRef.current.active) return;
     dragRef.current.active = false;
     dragRef.current.mode = 'idle';
-    setSettling(true); setLift(0);
   };
 
   return (
@@ -1057,22 +1049,18 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: 
       onPointerDown={e => {
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
         dragRef.current = { active: true, mode: 'idle', startY: e.clientY, lastY: e.clientY };
-        setSettling(false);
       }}
       onPointerMove={e => {
         const d = dragRef.current;
         if (!d.active) return;
         const totalDy = e.clientY - d.startY;
         if (d.mode === 'idle' && Math.abs(totalDy) > DRAG_SLOP_PX) {
-          // R0073: stacked bars are tap-only — always use scroll mode regardless of deck overflow.
-          // Vertical drag scrolls overflowing decks and is a no-op on non-overflowing ones.
+          // Stacked bars are tap-only (R0073/R0074): always scroll mode.
+          // Overflowing deck → scrolls content 1:1; non-overflowing → no-op.
           d.mode = 'scroll';
         }
         if (d.mode === 'scroll') {
           scrollBy(d.lastY - e.clientY);  // finger up → scrollTop increases; finger down → decreases
-          setLift(0);
-        } else if (d.mode === 'lift') {
-          setLift(Math.max(0, Math.min(d.startY - e.clientY, 120)));
         }
         d.lastY = e.clientY;
       }}
@@ -1080,7 +1068,6 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: 
       onPointerCancel={cancelDrag}
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
-      onTransitionEnd={() => setSettling(false)}
       style={{
         position: 'relative',
         zIndex: index + 1,
@@ -1092,8 +1079,6 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: 
         padding: '0 14px',
         cursor: card.disabled ? 'not-allowed' : 'pointer',
         userSelect: 'none', touchAction: 'none',
-        transform: `translateY(${-lift}px)`,
-        transition: settling ? `transform ${motionDuration()} cubic-bezier(0.4,0,0.2,1)` : 'none',
         outline: focused ? `2px solid ${NAV_ACTIVE}` : 'none',
         outlineOffset: focused ? -2 : undefined,
         flexShrink: 0, boxSizing: 'border-box',

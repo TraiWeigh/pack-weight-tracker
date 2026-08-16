@@ -1,0 +1,482 @@
+R0074 — GOLD STANDARD SURGICAL CLEANUP + VERIFICATION
+REMOVE DORMANT STACKED-BAR LIFT CODE + CORRECT PLAYWRIGHT PROOF
+
+REPORT NUMBER
+R0074
+
+RECOMMENDED REPLIT MODE
+Economy
+
+PURPOSE
+Complete the final Gold Standard cleanup and verification left open after R0073.
+
+This is NOT a redesign.
+This is NOT a broad refactor.
+
+R0073 already fixed the main user-visible defects.
+R0074 must do only these remaining tasks:
+
+1. Remove the now-obsolete stacked-bar lift/drag machinery from the source.
+2. Correct the Playwright test so the category is ACTUALLY OPEN when proving the accordion "+ Add Item" row is gone.
+3. Correctly test an ACTUALLY OVERFLOWING stacked-bar deck if one can be reached without modifying application code.
+4. Preserve all already-working R0073 behavior.
+
+============================================================
+0. CONFIRMED CURRENT STATE
+============================================================
+
+R0073 runtime verification showed:
+
+PASS:
+- category bar height = 68 px
+- stacked bar height = 68 px
+- enabled stacked bar no longer physically moves during 80 px drag
+- large drag/release no longer activates stacked bar
+- normal tap still activates stacked bar
+- Preview now excludes unselected items
+- Preview does not auto-print
+- Print remains a separate control inside Preview
+- accordion "+ Add Item" implementation was removed from source
+- box groups still work
+- category reorder still works
+- slide-to-delete still works
+- Weight Distribution still works
+- Pack Summary still works
+- Share/More still works
+- horizontal-overflow checks still pass
+
+REMAINING GOLD STANDARD ISSUES:
+
+A. DORMANT STACKED-BAR LIFT MACHINERY
+Source still contains obsolete lift-related code such as:
+- a "lift" gesture mode
+- lift state
+- translateY lift transform
+- lift movement branch
+
+R0073 required "no lift mode."
+The user-visible path is currently disabled, but the obsolete mechanism still exists.
+
+B. CATEGORY "+ ADD ITEM" PLAYWRIGHT PROOF
+The R0073 screenshot/test labeled "open category" did not actually show an open category.
+The runtime assertion therefore did not directly prove:
+OPEN CATEGORY -> NO "+ Add Item" ROW.
+
+C. OVERFLOWING-DECK PLAYWRIGHT PROOF
+R0073 did not obtain a genuinely overflowing stacked-bar deck.
+That result should not be treated as PASS unless an actual overflowing deck is exercised.
+
+============================================================
+1. STRICT SCOPE / COST CONTROL
+============================================================
+
+PREFERRED APPLICATION SOURCE:
+MobileFunctionalV3.tsx ONLY.
+
+ALLOWED:
+- targeted R0074 Playwright test file(s)
+- R0074.md
+- compact R0074 evidence
+
+DO NOT:
+- modify desktop
+- modify Checklist.tsx
+- modify database/schema
+- modify auth
+- publish/deploy
+- modify production/development database state
+- investigate bounce/overscroll
+- redesign bottom box groups
+- redesign stacked-bar appearance
+- redesign Preview
+- redesign Weight Distribution
+- redesign Pack Summary
+- redesign header
+- redesign haptics
+- perform unrelated refactoring
+- inspect unrelated project areas
+
+If another APPLICATION source/style file is genuinely required:
+STOP BEFORE EDITING.
+Report exact file + exact reason.
+
+============================================================
+2. REMOVE DORMANT STACKED-BAR LIFT MACHINERY
+============================================================
+
+USER RULE
+Stacked bars are TAP-ONLY controls.
+They must never support lift/finger-follow/drag activation.
+
+R0074 must remove the obsolete lift implementation, not merely keep it unreachable.
+
+REMOVE stacked-bar lift-specific logic, including any now-unused equivalent of:
+- "lift" gesture mode
+- lift state
+- lift offset/state variable
+- lift transform
+- translateY lift style
+- lift activation threshold
+- lift movement branch
+- lift release/docking branch
+- lift-specific pointer/touch handling
+- lift-specific cleanup code
+- lift-specific comments/constants that are no longer true
+
+IMPORTANT
+Do NOT remove or damage:
+- tap activation
+- keyboard activation
+- vertical deck scrolling
+- deck active/inactive state
+- current 68 px stacked-bar height
+- current stacked-bar styling
+- accessibility labels/focus behavior
+
+After cleanup:
+- there should be NO dormant code path capable of making a stacked bar lift/follow the finger or activate from vertical drag.
+
+SOURCE ACCEPTANCE
+Search the edited component for obsolete stacked-bar lift logic.
+
+PASS only if:
+- no stacked-bar "lift" gesture mode remains
+- no stacked-bar translateY lift transform remains
+- no stacked-bar lift-state branch remains
+- no drag-to-activate path remains
+
+Do not remove unrelated uses of the word "lift" if they are clearly unrelated to stacked bars.
+
+============================================================
+3. PLAYWRIGHT — ACTUALLY OPEN A CATEGORY
+============================================================
+
+The R0073 test did not prove the required state.
+
+R0074 must explicitly create and verify this runtime state:
+
+1. Start with a visible category.
+2. Confirm it is initially closed OR record its current state.
+3. Use the normal category open interaction.
+4. PROVE the category is now OPEN before checking Add Item.
+
+OPEN-STATE PROOF
+Use at least one direct runtime indicator such as:
+- category item rows are visible beneath that category
+- open-state ARIA value is true
+- category's known child item becomes visible
+- another existing reliable open-state marker
+
+Then assert:
+- no "+ Add Item" row/control exists inside the open category accordion
+
+Also assert:
+- the dedicated Add workflow still contains Add Item
+
+EVIDENCE REQUIRED
+Screenshot must visibly show:
+- the category header
+- at least one visible category item row beneath it
+- absence of the accordion "+ Add Item" row in the open category
+
+Do NOT label a screenshot "open category" unless the screenshot actually proves it is open.
+
+============================================================
+4. PLAYWRIGHT — GENUINELY OVERFLOWING STACKED-BAR DECK
+============================================================
+
+GOAL
+Prove that when a stacked-bar deck genuinely exceeds its visible height:
+- vertical drag scrolls the deck
+- stacked bars themselves remain stationary relative to the deck content
+- no lift/finger-follow behavior exists
+
+PRECONDITION
+Before the test, record:
+- deck clientHeight
+- deck scrollHeight
+
+OVERFLOWING = PASS PRECONDITION only if:
+scrollHeight > clientHeight + 1 px
+
+If no existing runtime state/deck can be made genuinely overflowing using normal existing app interactions and disposable test state:
+- DO NOT modify application code merely to manufacture overflow
+- mark this specific test NOT RUN
+- explain why
+- do not mark it PASS
+
+IF OVERFLOWING DECK EXISTS
+Test:
+1. record deck scrollTop
+2. record target stacked-bar top position relative to deck content
+3. vertical drag on deck/stacked-bar region
+4. confirm deck scrollTop changes
+5. confirm target bar does not gain lift transform
+6. confirm target bar position relative to the scrolling content remains structurally correct
+7. confirm drag does not activate the stacked bar
+
+PASS:
+- deck scrolls
+- stacked bar does not lift
+- no drag activation
+
+============================================================
+5. TAP-ONLY REGRESSION
+============================================================
+
+Re-run the already-proven enabled non-overflowing stacked-bar behavior after removing the dormant source machinery.
+
+REQUIRED:
+- enabled stacked bar proven
+- normal tap activates
+- reset to inactive
+- 80 px held vertical drag causes <= 1 px stacked-bar lift movement
+- no stacked-bar lift transform
+- release does not activate
+- 100–120 px drag/release does not activate
+
+This verifies the cleanup did not accidentally restore/break behavior.
+
+============================================================
+6. PROTECTED R0073 BEHAVIOR
+============================================================
+
+Do NOT redesign or reopen these systems.
+
+Run only small direct regressions for:
+
+- stacked bar remains 68 px
+- category bar remains 68 px
+- Preview selected-only
+- Preview does not auto-print
+- Print remains inside Preview
+- box groups remain in current order
+- chevrons still work
+- category reorder still works
+- slide-to-delete still reveals Delete
+- Weight Distribution opens
+- Pack Summary opens
+- existing header preserved
+- no horizontal overflow at 390 px
+
+Do NOT rerun every responsive width unless a R0074 change causes a layout failure.
+
+============================================================
+7. PASS / FAIL DISCIPLINE
+============================================================
+
+Use only:
+PASS
+FAIL
+NOT RUN
+NOT APPLICABLE
+
+IMPORTANT:
+- Do not mark overflowing-deck behavior PASS unless the precondition proves actual overflow.
+- Do not mark category Add Item removal PASS unless the category is proven OPEN at runtime.
+- Do not claim source cleanup PASS merely because the lift path is unreachable; the obsolete stacked-bar lift machinery must actually be removed.
+
+A test suite command returning 0 failures does not automatically mean every product requirement is PASS.
+
+Report product requirement status separately from test-run status.
+
+============================================================
+8. TARGETED TESTING ONLY
+============================================================
+
+Run:
+1. TypeScript/typecheck
+2. targeted R0074 Playwright tests
+3. only the direct regressions listed above
+
+Do NOT run broad unrelated project suites unless a targeted failure requires diagnosis.
+
+============================================================
+9. EVIDENCE
+============================================================
+
+Required compact evidence:
+
+1. Open-category screenshot:
+   - category visibly open
+   - item rows visible
+   - "+ Add Item" absent
+
+2. Non-overflowing stacked-bar drag evidence:
+   - before
+   - mid-drag
+   - after release
+   OR one short video plus measurements
+
+3. Overflowing-deck evidence ONLY if the test actually runs:
+   - before scroll
+   - after scroll
+   - measurements showing scrollHeight > clientHeight
+
+Do not generate large evidence bundles.
+
+============================================================
+10. LEARNING QUESTIONS — EXACTLY 3
+============================================================
+
+Answer ONLY from code/files already inspected during R0074.
+
+Do NOT broaden scope or run extra investigation solely for these questions.
+
+QUESTION 1
+What source pattern allowed obsolete stacked-bar gesture machinery to remain after the user-visible lift path was disabled, and what future prompt rule would better ensure obsolete interaction code is actually removed rather than merely made unreachable?
+
+QUESTION 2
+Why did the earlier Playwright category test pass without actually proving the category was open, and what assertion pattern should future TrailWeigh tests use to prove required UI preconditions before testing the final condition?
+
+QUESTION 3
+What should future TrailWeigh reports do when a required runtime precondition—such as a genuinely overflowing deck—cannot be created, so that NOT RUN is not incorrectly presented as PASS?
+
+============================================================
+11. REQUIRED REPORT
+============================================================
+
+Create:
+
+R0074.md
+
+Structure:
+
+# R0074 Implementation Report
+
+## Scope / Cost Discipline
+- exact application files inspected
+- exact application files changed
+- exact test files changed/added
+- whether scope expanded
+- why if expanded
+
+## Dormant Lift Cleanup
+- obsolete gesture mode removed: PASS/FAIL
+- lift state removed: PASS/FAIL
+- lift transform removed: PASS/FAIL
+- drag activation path removed: PASS/FAIL
+- tap preserved: PASS/FAIL
+- keyboard accessibility preserved: PASS/FAIL
+
+## Open Category Add Item Verification
+- category used
+- proof category was open
+- visible child/item used as proof
+- accordion "+ Add Item" absent
+- dedicated Add workflow Add Item present
+- PASS/FAIL
+
+## Overflowing Deck Verification
+- deck used
+- clientHeight
+- scrollHeight
+- overflow precondition PASS/FAIL/NOT RUN
+- deck scroll result
+- stacked-bar lift result
+- drag activation result
+- final PASS/FAIL/NOT RUN
+
+## Tap-Only Regression
+- enabled target
+- normal tap result
+- 80 px drag movement
+- transform
+- large drag/release result
+- PASS/FAIL
+
+## Protected Regressions
+- 68 px heights
+- Preview selected-only
+- no auto-print
+- Print inside Preview
+- box groups
+- chevrons
+- category reorder
+- slide-delete
+- Weight Distribution
+- Pack Summary
+- header
+- horizontal overflow
+
+## TypeScript
+result
+
+## Playwright Run
+- total tests
+- passed
+- failed
+- skipped
+- not run
+- exact failures
+
+## Product Requirement Status
+List each requirement separately.
+Do not equate test command success with requirement PASS.
+
+## Evidence Files
+exact filenames
+
+## Lessons for Future Prompts
+### Learning Question 1
+answer
+
+### Learning Question 2
+answer
+
+### Learning Question 3
+answer
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## ZIP Contents
+Exact filenames actually packaged.
+
+## Final Scope Confirmation
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+- bounce untouched
+
+============================================================
+12. ZIP
+============================================================
+
+Create:
+
+R0074.zip
+
+MUST INCLUDE:
+- R0074.md
+- every application source file changed by R0074
+- every R0074 Playwright test file
+- required compact evidence
+
+Before delivery:
+1. inspect git status/diff
+2. list exact changed files
+3. verify every listed file is actually inside R0074.zip
+4. list/open ZIP to confirm
+
+Do NOT include:
+- node_modules
+- caches
+- build output
+- unrelated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, targeted verification, report, and ZIP:
+
+STOP.
+
+Do NOT begin another TrailWeigh task.
+Do NOT publish.
+Do NOT deploy.
+Do NOT modify database/auth.
+Wait for user review.

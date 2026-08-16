@@ -18,6 +18,20 @@ description: DeckInactiveCard gesture rules, stacked-bar tap-only enforcement, P
 - `filterToChecked={false}` → all items, unchecked at 0.5 opacity. Use for interactive checklists only.
 - **Why:** R0073 confirmed that `PreviewOverlay` was written with `filterToChecked={false}` (show-all) when the requirement was selected-only. The correct pattern was already present in `showChecklist` (line 425) with `filterToChecked={true}`.
 
+## Precondition-proof pattern for Playwright (R0074)
+Every test of a UI state that depends on a prior interaction must prove the precondition before the final assertion:
+1. Assert `aria-expanded === 'true'` on the accordion toggle button.
+2. Assert a known child element is visible beneath it.
+Only then assert the target condition (e.g. absence of a button).
+The accordion toggle is `<button aria-label="Open {catName} category">` (changes to "Close …" when open).
+
+## NOT RUN vs PASS discipline (R0074)
+When a test precondition (e.g. overflowing deck) cannot be satisfied:
+- Log "NOT RUN" + reason + measurements (clientH, scrollH for each deck).
+- Return early from the test body with no failing `expect()`.
+- In the report, list under NOT RUN — never under PASS.
+- Playwright's "N passed" ≠ every product requirement verified.
+
 ## Duplicate-control audit rule (R0073)
 When a function gets a dedicated bottom-box launcher, search the full file for every other invocation path (accordion body, overlay, contextual inline button). Remove all non-canonical launchers simultaneously.
 - **Why:** The category "+ Add Item" button predated the Group 1 Add box and was missed in the R0072 no-duplicate audit because it lived inside the accordion body, not in a deck card.
