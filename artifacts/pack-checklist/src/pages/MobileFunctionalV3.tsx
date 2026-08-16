@@ -63,8 +63,9 @@ type PackState = { [category: string]: GearItem[] };
 type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta> };
 type ActiveNav = 'list' | 'locker' | 'catalog' | 'summary';
 
-// ─── MOBILE NAVIGATION TYPES (027Q) ────────────────────────────────────────────
-type MobileScreen = 'list' | 'menu' | 'footer' | 'footer-page' | 'share' | 'sources';
+// ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
+// 'menu' and 'footer' removed — now handled by navOpen/moreOpen boolean state.
+type MobileScreen = 'list' | 'footer-page' | 'share' | 'sources';
 type FooterPageId =
   | 'about' | 'how-it-works' | 'sources' | 'help'
   | 'report-problem' | 'contact' | 'privacy' | 'terms'
@@ -639,129 +640,86 @@ function NavTabDisabled({ Icon, label, 'aria-label': ariaLabel, title }: {
   );
 }
 
-// ─── FULL-SCREEN MENU VIEW (027Q — replaces Sheet side="left" hamburger) ─────────
-interface FullScreenMenuProps {
-  onBack: () => void;
+// ─── NAV DRAWER (Sheet side="left", ~52vw) — hamburger destination ───────────
+interface NavDrawerProps {
+  open: boolean;
+  onClose: () => void;
   system: string;
   setSystem: (s: 'imperial' | 'metric') => void;
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
-  onReset: () => void;
-  onSave: () => void;
-  onPrint: () => void;
-  onNavigateToShare: () => void;
   onChecklist: () => void;
-  onExpandAll: () => void;
-  onCollapseAll: () => void;
-  isAuthenticated: boolean;
+  onPrint: () => void;
 }
 
-function FullScreenMenu({
-  onBack, system, setSystem, canUndo, canRedo,
-  onUndo, onRedo, onReset, onSave, onPrint, onNavigateToShare, onChecklist,
-  onExpandAll, onCollapseAll, isAuthenticated,
-}: FullScreenMenuProps) {
-  const menuItem = (
+function NavDrawer({ open, onClose, system, setSystem, onChecklist, onPrint }: NavDrawerProps) {
+  const drawerItem = (
     icon: React.ReactNode,
     label: string,
+    sublabel: string,
     onClick: () => void,
-    disabled = false,
-    sublabel?: string,
   ) => (
     <button
       key={label}
-      onClick={() => { if (!disabled) onClick(); }}
-      disabled={disabled}
+      onClick={onClick}
       aria-label={sublabel ? `${label} — ${sublabel}` : label}
-      title={sublabel}
       style={{
         display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        background: 'none', border: 'none', padding: '14px 0', cursor: disabled ? 'not-allowed' : 'pointer',
-        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`, opacity: disabled ? 0.4 : 1,
+        background: 'none', border: 'none', padding: '13px 20px', cursor: 'pointer',
+        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
       }}
     >
       <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
       <div>
-        <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
-        {sublabel && <div style={{ fontSize: 11.5, color: MUTED, marginTop: 1 }}>{sublabel}</div>}
+        <div style={{ fontSize: 14, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
+        {sublabel && <div style={{ fontSize: 11, color: MUTED, marginTop: 1 }}>{sublabel}</div>}
       </div>
     </button>
   );
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
-      {/* Sticky back bar */}
-      <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
-        <button
-          onClick={onBack}
-          aria-label="Back to list"
-          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
-        >
-          <ChevronLeft size={20} strokeWidth={2.5}/> Back
-        </button>
-      </div>
-
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
-        <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: PRIMARY, marginBottom: 4 }}>Menu</div>
-        <div style={{ fontSize: 12, color: MUTED, marginBottom: 20 }}>V3 Preview — sandboxed</div>
-
-        {/* File */}
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>File</div>
-          {menuItem(<Save size={17} strokeWidth={1.8}/>, 'Save', () => { onSave(); onBack(); }, false, 'Save current list as new Locker entry')}
-          {menuItem(<Undo2 size={17} strokeWidth={1.8}/>, 'Undo', () => { onUndo(); onBack(); }, !canUndo)}
-          {menuItem(<Redo2 size={17} strokeWidth={1.8}/>, 'Redo', () => { onRedo(); onBack(); }, !canRedo)}
-          {menuItem(<RotateCcw size={17} strokeWidth={1.8}/>, 'Reset', () => { onReset(); onBack(); }, false, 'Re-load from your saved data')}
+    <Sheet open={open} onOpenChange={v => !v && onClose()}>
+      <SheetContent
+        side="left"
+        style={{ width: '52vw', maxWidth: 240, padding: 0, display: 'flex', flexDirection: 'column' }}
+      >
+        {/* Header */}
+        <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
+          <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: PRIMARY }}>Menu</div>
         </div>
 
-        {/* Actions */}
-        <div style={{ marginBottom: 8, marginTop: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>Actions</div>
-          {menuItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', () => { onChecklist(); onBack(); }, false, 'Trail checklist for selected items')}
-          {menuItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share (get review link)', () => { onNavigateToShare(); })}
-          {menuItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', () => { onPrint(); onBack(); })}
-        </div>
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
 
-        {/* View */}
-        <div style={{ marginBottom: 8, marginTop: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 4 }}>View</div>
-          {menuItem(<Layers size={17} strokeWidth={1.8}/>, 'Expand All', () => { onExpandAll(); onBack(); })}
-          {menuItem(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', () => { onCollapseAll(); onBack(); })}
-        </div>
-
-        {/* Units */}
-        <div style={{ marginBottom: 8, marginTop: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {(['imperial', 'metric'] as const).map(s => (
-              <button
-                key={s}
-                onClick={() => setSystem(s)}
-                aria-pressed={system === s}
-                style={{
-                  flex: 1, padding: '9px 0', borderRadius: 8, fontSize: 13.5, fontWeight: 600,
-                  border: `1.5px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
-                  background: system === s ? NAV_ACTIVE : CARD_BG,
-                  color: system === s ? '#fff' : SECONDARY, cursor: 'pointer', fontFamily: SANS,
-                  textTransform: 'capitalize',
-                }}
-              >
-                {s}
-              </button>
-            ))}
+          {/* Units toggle */}
+          <div style={{ padding: '14px 20px 12px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {(['imperial', 'metric'] as const).map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSystem(s)}
+                  aria-pressed={system === s}
+                  style={{
+                    flex: 1, padding: '7px 0', borderRadius: 7, fontSize: 12, fontWeight: 600,
+                    border: `1.5px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
+                    background: system === s ? NAV_ACTIVE : CARD_BG,
+                    color: system === s ? '#fff' : SECONDARY, cursor: 'pointer', fontFamily: SANS,
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {isAuthenticated && (
-          <div style={{ marginTop: 16, fontSize: 12, color: MUTED, padding: '8px 0' }}>
-            Sign out available in the main app (/checklist).
-          </div>
-        )}
-      </div>
-    </div>
+          <div style={{ height: 1, background: DIVIDER }}/>
+
+          {/* Navigation items */}
+          {drawerItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', 'Trail checklist for selected items', onChecklist)}
+          {drawerItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', 'Print your gear list as PDF', onPrint)}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -830,21 +788,63 @@ function PlusSheet({ open, onClose, onScanGearList }: PlusSheetProps) {
   );
 }
 
-// ─── FULL-SCREEN FOOTER VIEW (027Q — replaces MoreSheet; footer links only) ──────
-interface FullScreenFooterProps {
-  onBack: () => void;
-  onNavigateToPage: (pageId: FooterPageId) => void;
+// ─── MORE SHEET (Sheet side="bottom") — More destination ─────────────────────
+interface MoreSheetProps {
+  open: boolean;
+  onClose: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
+  onSave: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  onReset: () => void;
+  onShare: () => void;
+  onExpandAll: () => void;
+  onCollapseAll: () => void;
   isAuthenticated: boolean;
+  onNavigateToPage: (pageId: FooterPageId) => void;
 }
 
-function FullScreenFooter({ onBack, onNavigateToPage, isAuthenticated }: FullScreenFooterProps) {
-  const footerRow = (label: string, pageId: FooterPageId) => (
+function MoreSheet({
+  open, onClose, canUndo, canRedo,
+  onSave, onUndo, onRedo, onReset, onShare,
+  onExpandAll, onCollapseAll,
+  isAuthenticated, onNavigateToPage,
+}: MoreSheetProps) {
+  const actionItem = (
+    icon: React.ReactNode,
+    label: string,
+    onClick: () => void,
+    disabled = false,
+    sublabel?: string,
+  ) => (
+    <button
+      key={label}
+      onClick={() => { if (!disabled) onClick(); }}
+      disabled={disabled}
+      aria-label={sublabel ? `${label} — ${sublabel}` : label}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
+        background: 'none', border: 'none', padding: '13px 20px',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`, opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
+      <div>
+        <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
+        {sublabel && <div style={{ fontSize: 11.5, color: MUTED, marginTop: 1 }}>{sublabel}</div>}
+      </div>
+    </button>
+  );
+
+  const linkRow = (label: string, pageId: FooterPageId) => (
     <button
       key={label}
       onClick={() => onNavigateToPage(pageId)}
       style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        width: '100%', background: 'none', border: 'none', padding: '15px 0',
+        width: '100%', background: 'none', border: 'none', padding: '14px 20px',
         cursor: 'pointer', textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
         fontFamily: SANS,
       }}
@@ -854,55 +854,64 @@ function FullScreenFooter({ onBack, onNavigateToPage, isAuthenticated }: FullScr
     </button>
   );
 
-  return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
-      {/* Sticky back bar */}
-      <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
-        <button
-          onClick={onBack}
-          aria-label="Back to list"
-          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
-        >
-          <ChevronLeft size={20} strokeWidth={2.5}/> Back
-        </button>
-      </div>
-
-      {/* Scrollable footer content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
-        <div style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 700, color: PRIMARY, marginBottom: 20 }}>More</div>
-
-        {/* TrailWeigh section */}
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 2 }}>TrailWeigh</div>
-          {footerRow('About TrailWeigh', 'about')}
-          {footerRow('How It Works', 'how-it-works')}
-          {footerRow('Sources & References', 'sources')}
-        </div>
-
-        {/* Help section */}
-        <div style={{ marginBottom: 8, marginTop: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 2 }}>Help</div>
-          {footerRow('Help & How-To', 'help')}
-          {footerRow('Report a Problem', 'report-problem')}
-          {footerRow('Contact Us', 'contact')}
-        </div>
-
-        {/* Account & Privacy section */}
-        <div style={{ marginBottom: 8, marginTop: 8 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 2 }}>Account &amp; Privacy</div>
-          {footerRow('Privacy Policy', 'privacy')}
-          {footerRow('Terms of Use', 'terms')}
-          {isAuthenticated && footerRow('Delete Account / Data', 'delete-account')}
-          {footerRow('Affiliate Disclosure', 'affiliate')}
-          {footerRow('Accessibility', 'accessibility')}
-        </div>
-
-        {/* Copyright */}
-        <div style={{ borderTop: `1px solid ${DIVIDER}`, paddingTop: 16, marginTop: 12, textAlign: 'center' }}>
-          <p style={{ fontSize: 12, color: MUTED, fontFamily: SANS }}>© 2026 TrailWeigh · All rights reserved.</p>
-        </div>
-      </div>
+  const sectionLabel = (text: string) => (
+    <div style={{ padding: '10px 20px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase' }}>
+      {text}
     </div>
+  );
+
+  return (
+    <Sheet open={open} onOpenChange={v => !v && onClose()}>
+      <SheetContent
+        side="bottom"
+        style={{ padding: 0, borderRadius: '20px 20px 0 0', maxHeight: '82vh', display: 'flex', flexDirection: 'column' }}
+      >
+        {/* Handle + header */}
+        <div style={{ padding: '12px 20px 12px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: DIVIDER, margin: '0 auto 12px' }}/>
+          <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: PRIMARY }}>More</div>
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+
+          {/* Actions */}
+          {sectionLabel('Actions')}
+          {actionItem(<Save size={17} strokeWidth={1.8}/>, 'Save', onSave, false, 'Save current list as new Locker entry')}
+          {actionItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share', onShare, false, 'Get a review link')}
+          {actionItem(<Undo2 size={17} strokeWidth={1.8}/>, 'Undo', onUndo, !canUndo)}
+          {actionItem(<Redo2 size={17} strokeWidth={1.8}/>, 'Redo', onRedo, !canRedo)}
+          {actionItem(<RotateCcw size={17} strokeWidth={1.8}/>, 'Reset', onReset, false, 'Re-load from your saved data')}
+          {actionItem(<Layers size={17} strokeWidth={1.8}/>, 'Expand All', onExpandAll)}
+          {actionItem(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', onCollapseAll)}
+
+          {/* TrailWeigh */}
+          {sectionLabel('TrailWeigh')}
+          {linkRow('About TrailWeigh', 'about')}
+          {linkRow('How It Works', 'how-it-works')}
+          {linkRow('Sources & References', 'sources')}
+
+          {/* Help */}
+          {sectionLabel('Help')}
+          {linkRow('Help & How-To', 'help')}
+          {linkRow('Report a Problem', 'report-problem')}
+          {linkRow('Contact Us', 'contact')}
+
+          {/* Account & Privacy */}
+          {sectionLabel('Account & Privacy')}
+          {linkRow('Privacy Policy', 'privacy')}
+          {linkRow('Terms of Use', 'terms')}
+          {isAuthenticated && linkRow('Delete Account / Data', 'delete-account')}
+          {linkRow('Affiliate Disclosure', 'affiliate')}
+          {linkRow('Accessibility', 'accessibility')}
+
+          {/* Copyright */}
+          <div style={{ padding: '16px 20px 32px', textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: MUTED, fontFamily: SANS }}>© 2026 TrailWeigh · All rights reserved.</p>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -1317,8 +1326,11 @@ function MobileFunctionalV3Inner() {
 
   // ── UI state ─────────────────────────────────────────────────────────────────
   const [activeNav, setActiveNav] = useState<ActiveNav>('list');
-  // 027Q: full-screen navigation stack (replaces openSheet for hamburger/more/help/share)
+  // Navigation stack (sub-pages only: footer-page, share, sources)
   const [screenStack, setScreenStack] = useState<ScreenEntry[]>([{ screen: 'list' }]);
+  // Drawer / sheet open state
+  const [navOpen, setNavOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [showPlusSheet, setShowPlusSheet] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
@@ -1787,8 +1799,8 @@ function MobileFunctionalV3Inner() {
           {/* Hamburger */}
           <button
             aria-label="Open menu"
-            aria-expanded={currentScreen.screen === 'menu'}
-            onClick={() => pushScreen({ screen: 'menu' })}
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen(true)}
             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}
           >
             <Menu size={22} color={SECONDARY} strokeWidth={1.8}/>
@@ -2371,7 +2383,7 @@ function MobileFunctionalV3Inner() {
         <BottomNavBar
           active={activeNav}
           onSelect={tab => setActiveNav(tab)}
-          onMore={() => pushScreen({ screen: 'footer' })}
+          onMore={() => setMoreOpen(true)}
         />
 
         {/* ── OVERLAYS (rendered as absolute children of the phone frame) ── */}
@@ -2422,43 +2434,41 @@ function MobileFunctionalV3Inner() {
         {/* Toast */}
         {toast && <Toast message={toast}/>}
 
-        {/* ── 027Q: FULL-SCREEN OVERLAYS (inside phone frame — constrained to 430px) ── */}
+        {/* ── DRAWER + SHEET OVERLAYS ── */}
 
-        {/* Hamburger Menu */}
-        {currentScreen.screen === 'menu' && (
-          <FullScreenMenu
-            onBack={popScreen}
-            system={system}
-            setSystem={setSystem}
-            canUndo={undoHistory.length > 0}
-            canRedo={redoHistory.length > 0}
-            onUndo={handleUndo}
-            onRedo={handleRedo}
-            onReset={handleReset}
-            onSave={() => { handleSave(); }}
-            onPrint={handlePrint}
-            onNavigateToShare={() => { popScreen(); navigateToShare(); }}
-            onChecklist={() => { popScreen(); setShowChecklist(true); }}
-            onExpandAll={handleExpandAll}
-            onCollapseAll={handleCollapseAll}
-            isAuthenticated={!!userId}
-          />
-        )}
+        {/* Hamburger nav drawer */}
+        <NavDrawer
+          open={navOpen}
+          onClose={() => setNavOpen(false)}
+          system={system}
+          setSystem={setSystem}
+          onChecklist={() => { setNavOpen(false); setShowChecklist(true); }}
+          onPrint={() => { setNavOpen(false); handlePrint(); }}
+        />
 
-        {/* More / Footer */}
-        {currentScreen.screen === 'footer' && (
-          <FullScreenFooter
-            onBack={popScreen}
-            onNavigateToPage={(id: FooterPageId) => {
-              if (id === 'sources') {
-                pushScreen({ screen: 'sources' });
-              } else {
-                pushScreen({ screen: 'footer-page', footerPageId: id });
-              }
-            }}
-            isAuthenticated={!!userId}
-          />
-        )}
+        {/* More bottom sheet */}
+        <MoreSheet
+          open={moreOpen}
+          onClose={() => setMoreOpen(false)}
+          canUndo={undoHistory.length > 0}
+          canRedo={redoHistory.length > 0}
+          onSave={() => { setMoreOpen(false); handleSave(); }}
+          onUndo={() => { setMoreOpen(false); handleUndo(); }}
+          onRedo={() => { setMoreOpen(false); handleRedo(); }}
+          onReset={() => { setMoreOpen(false); handleReset(); }}
+          onShare={() => { setMoreOpen(false); navigateToShare(); }}
+          onExpandAll={() => { setMoreOpen(false); handleExpandAll(); }}
+          onCollapseAll={() => { setMoreOpen(false); handleCollapseAll(); }}
+          isAuthenticated={!!userId}
+          onNavigateToPage={(id) => {
+            setMoreOpen(false);
+            if (id === 'sources') {
+              pushScreen({ screen: 'sources' });
+            } else {
+              pushScreen({ screen: 'footer-page', footerPageId: id });
+            }
+          }}
+        />
 
         {/* Footer page */}
         {currentScreen.screen === 'footer-page' && currentScreen.footerPageId && (
