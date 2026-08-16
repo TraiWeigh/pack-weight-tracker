@@ -1,31 +1,33 @@
 ---
-name: Bottom card-deck navigation (V3)
-description: R002 architecture that replaced the three-slider model in MobileFunctionalV3 — deck components, interaction rules, test selectors.
+name: Bottom card-deck navigation
+description: DeckInactiveCard gesture rules, stacked-bar tap-only enforcement, PreviewBody filter patterns, and test selector conventions.
 ---
 
-# Bottom card-deck navigation (replaced three-slider model)
+## Deck architecture (R002+)
+- 5-tab bottom box-group bar; non-modal rising decks per button.
+- `DeckInactiveCard` renders inactive cards as stacked bars with `role="button"`, `aria-label="${title} — open card"` (enabled) or `"${title} — not available yet"` (disabled).
+- Active card = expanded content; inactive cards = compact stacked bars below it.
 
-The V3 mobile page uses a 5-tab bottom bar (List, Locker, +, Search, More) plus a
-rising "card deck" per tab instead of edge sliders/drag handles.
+## Stacked-bar tap-only rule (R0073)
+`DeckInactiveCard.onPointerMove` mode-lock MUST always be `d.mode = 'scroll'`.
+- **Why:** The previous conditional `canDeckScroll() ? 'scroll' : (upward + enabled ? 'lift' : 'scroll')` caused enabled bars on non-overflowing decks to physically follow the finger (translateY) and activate on drag ≥ 48 px. This was confirmed by Playwright: 80 px drag → translateY(−80px); 110 px drag → activation.
+- **How to apply:** Never re-introduce a `'lift'` mode branch in `DeckInactiveCard` without an explicit spec requirement and a new diagnostic test. Tap + keyboard = the only activation paths.
 
-**Rules baked into the design:**
-- Decks are conditionally rendered — a closed deck has no DOM presence, so it can
-  never intercept pointers. Backdrop sits below the nav bar (tabs stay usable).
-- Deck container is a NON-modal `role="dialog"` (no `aria-modal`); focus moves to
-  the Close button on open; cards get a visible focus outline via focus state.
-- Card activation: tap (<8px movement) OR upward drag ≥48px; short drags spring
-  back; downward drag scrolls the deck. `onPointerCancel` must ONLY reset drag
-  state — never activate (a review-caught bug pattern).
-- Playwright treats `aria-disabled` elements as non-actionable: tests must use
-  `click({ force: true })` to prove a disabled card does nothing.
-- Deck test selectors: `getByRole('dialog', { name: <Deck> })`, cards
-  `getByRole('button', { name: /^<Title> — open card/ })`, active card
-  `getByRole('group', { name: '<Title> — active card' })`, backdrop testid
-  `deck-backdrop`.
-- Checklist + Summary overlays survived the redesign; they're reached via
-  More deck → List Actions. Search deck is honestly all-disabled (no search exists).
-- Before mouse-drag tests, wait ~450ms for the deck rise animation or the
-  boundingBox is measured mid-flight.
+## PreviewBody filter pattern
+- `filterToChecked={true}` with no `checklistUse` → legacy mode → filters to `item.checked === true`. Use for any selected-items-only / print preview.
+- `filterToChecked={false}` → all items, unchecked at 0.5 opacity. Use for interactive checklists only.
+- **Why:** R0073 confirmed that `PreviewOverlay` was written with `filterToChecked={false}` (show-all) when the requirement was selected-only. The correct pattern was already present in `showChecklist` (line 425) with `filterToChecked={true}`.
 
-**Why:** R002 spec retired the slider model after gesture audits showed poor
-discoverability; the deck keeps all functionality reachable by tap alone.
+## Duplicate-control audit rule (R0073)
+When a function gets a dedicated bottom-box launcher, search the full file for every other invocation path (accordion body, overlay, contextual inline button). Remove all non-canonical launchers simultaneously.
+- **Why:** The category "+ Add Item" button predated the Group 1 Add box and was missed in the R0072 no-duplicate audit because it lived inside the accordion body, not in a deck card.
+
+## Test selector conventions
+- Stacked bars: `getByRole('button', { name: 'CardTitle — open card', exact: true })`
+- Disabled bars: `getByRole('button', { name: 'CardTitle — not available yet', exact: true })`
+- Deck scrollable container: `getByTestId('deck-scroll')`
+- Deck panel: `getByTestId('deck-panel')`
+- Bottom nav: `getByTestId('bottom-nav')`
+- Category bars: `locator('[data-swipe-key]')`
+- Active list name (readiness signal): `getByTestId('active-list-name')`
+- pointer-cancel must never activate: `onPointerCancel` → `cancelDrag` (clears state, does NOT call `onActivate`)

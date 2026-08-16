@@ -163,8 +163,8 @@ const TOAST_BG     = '#2A5740';
 
 // ─── BOTTOM CARD-DECK NAVIGATION CONSTANTS (R002, geometry revised R003) ─────────
 const NAV_H         = 58;   // bottom tab bar fallback height (px); actual height is measured (A4)
-const BAR_PEEK_H    = 54;   // visible height of an inactive stacked bar (px, category-header scale)
-const DRAG_ACTIVATE = 48;   // upward drag distance that activates a bar (px)
+const BAR_PEEK_H    = 68;   // visible height of an inactive stacked bar (matches category-bar height)
+// DRAG_ACTIVATE removed R0073: stacked bars are tap-only, no drag-to-activate
 const TAP_MAX_PX    = 8;    // pointer movement below this = tap
 // R006 Part 2 — long-press reorder tuning (documented stable values)
 const LONG_PRESS_MS = 400;  // stationary hold duration that enters reorder mode
@@ -326,7 +326,7 @@ function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayPro
         Your selected gear — tap the printer icon to print or download.
       </div>
 
-      {/* Preview body — all pack-list items (PDF-style checklist preview) */}
+      {/* Preview body — SELECTED items only (filterToChecked=true, R0073) */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
           <PreviewBody
@@ -334,9 +334,7 @@ function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayPro
             system={system as 'imperial' | 'metric'}
             categoryOrder={sandbox.order}
             categoryMeta={sandbox.meta}
-            filterToChecked={false}
-            checklistUse={{}}
-            onToggle={() => {}}
+            filterToChecked={true}
           />
         </BarStyleProvider>
       </div>
@@ -1031,7 +1029,7 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: 
     const lifted = startY - e.clientY; // positive = upward
     if (card.disabled) { setLift(0); return; }
     if (total < TAP_MAX_PX) { setLift(0); onActivate(); return; }         // tap
-    if (mode === 'lift' && lifted >= DRAG_ACTIVATE) { setLift(0); onActivate(); return; } // drag-dock
+    // R0073: drag-to-dock removed — stacked bars are tap-only
     setSettling(true); setLift(0);                                        // settle back (scroll mode never activates)
   };
 
@@ -1066,10 +1064,9 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: 
         if (!d.active) return;
         const totalDy = e.clientY - d.startY;
         if (d.mode === 'idle' && Math.abs(totalDy) > DRAG_SLOP_PX) {
-          // Lock the gesture mode once: overflowing deck → scroll (both directions);
-          // non-overflowing deck + upward start → lift; otherwise scroll (no-op if nothing to scroll).
-          d.mode = canDeckScroll() ? 'scroll'
-            : (totalDy < 0 && !card.disabled ? 'lift' : 'scroll');
+          // R0073: stacked bars are tap-only — always use scroll mode regardless of deck overflow.
+          // Vertical drag scrolls overflowing decks and is a no-op on non-overflowing ones.
+          d.mode = 'scroll';
         }
         if (d.mode === 'scroll') {
           scrollBy(d.lastY - e.clientY);  // finger up → scrollTop increases; finger down → decreases
@@ -3369,27 +3366,7 @@ function MobileFunctionalV3Inner() {
                         );
                       })}
 
-                      {/* Add Item button — contextual within open category */}
-                      <div style={{ borderTop: `1px solid ${DIVIDER}`, padding: '8px 14px' }}>
-                        <button
-                          onClick={() => {
-                            addItem(catName);
-                            // Open the new item for editing (last item)
-                            setExpandedItem({ cat: catName, id: '' }); // will be set after state update
-                          }}
-                          aria-label={`Add item to ${catName}`}
-                          title="Add a new item to this category"
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: 8,
-                            background: 'none', border: 'none', cursor: 'pointer',
-                            fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500,
-                            padding: '4px 0', fontFamily: SANS,
-                          }}
-                        >
-                          <Plus size={15} color={NAV_ACTIVE} strokeWidth={2.2}/>
-                          Add Item
-                        </button>
-                      </div>
+                      {/* R0073: category "+ Add Item" row removed — use dedicated Add control (Group 1) */}
                     </div>
                   )}
                 </div>
