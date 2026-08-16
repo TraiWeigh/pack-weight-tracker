@@ -104,11 +104,12 @@ test.describe('Accessible names & tooltips', () => {
 
   test('Print button has both aria-label and title attribute', async ({ page, errors }) => {
     // The "Print checklist" button lives inside the MobileChecklist overlay (only
-    // mounted when checklist mode is active). The More-menu "Print" button is always
-    // accessible from the default demo view — test that one for aria-label + title.
+    // mounted when checklist mode is active). R002: the always-reachable Print entry
+    // is in the More deck → "Share & Print" card — test that one for its label.
     await gotoDemo(page);
-    await page.getByRole('button', { name: 'Open menu' }).click();
-    const btn = page.getByRole('button', { name: 'Print', exact: true });
+    await page.getByRole('button', { name: /^More — settings and tools/ }).click();
+    await page.getByRole('button', { name: /^Share & Print — open card/ }).click();
+    const btn = page.getByRole('button', { name: /^Print — Print your gear list/ });
     await expect(btn).toBeVisible({ timeout: 5000 });
     // title attribute: may be on the button or its container — check aria-label at minimum
     const label = await btn.getAttribute('aria-label');

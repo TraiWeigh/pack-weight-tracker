@@ -1,0 +1,237 @@
+R002Q — TRAILWEIGH V3 CARD-DECK DIAGNOSTIC QUESTIONS ONLY
+
+PURPOSE
+Inspect the current R002 V3 implementation and answer the questions below with evidence.
+
+THIS IS DIAGNOSTIC ONLY.
+
+ABSOLUTE NO-CHANGE RULE
+- Do NOT modify TrailWeigh source code.
+- Do NOT modify tests unless a temporary non-persistent diagnostic test is absolutely necessary; if so, do not commit or retain it.
+- Do NOT change visuals.
+- Do NOT change functionality.
+- Do NOT change Checklist.tsx.
+- Do NOT change desktop.
+- Do NOT change database, schema, auth, publishing/deployment, production data, or development database.
+- Do NOT fix anything yet.
+- Do NOT refactor.
+- Do NOT clean up unrelated code.
+- Do NOT create a checkpoint that includes application changes.
+- If you discover an issue, REPORT it only.
+
+CURRENT R002 CONTEXT
+R002 implemented the V3 bottom navigation/card-deck model:
+List | Locker | Add | Search | More
+
+The overall direction is accepted, but R002 is still on HOLD because review found four unresolved issues.
+
+QUESTION 1 — LOCKER DECK TOUCH SCROLLING WITH MANY SAVED LISTS
+Inspect the exact current Locker deck gesture logic.
+
+Determine whether a real touch user can vertically scroll through a Locker deck containing enough saved-list cards to exceed the visible phone height.
+
+Specifically answer:
+1. What happens when the user places a finger on an INACTIVE Locker card and drags upward?
+2. What happens when the user drags downward?
+3. Does the deck's scrollTop actually increase and decrease correctly under normal touch interaction?
+4. Does any touchAction/pointer handling prevent native vertical scrolling?
+5. Can card-activation drag logic capture a gesture that should have been deck scrolling?
+6. With 10, 20, or more Locker cards, can a user reliably reach the later cards using one finger?
+7. Is there a dead direction where scrolling cannot progress?
+8. Does the implementation distinguish:
+   - vertical deck scroll,
+   - card activation drag,
+   - tap?
+9. If there is a bug, identify the root cause precisely but DO NOT FIX IT.
+
+Perform a diagnostic test with enough temporary/mock saved-list cards to force meaningful vertical overflow if this can be done without changing persistent app data. Do not retain mock data after the diagnostic.
+
+Report PASS or FAIL for:
+- long-deck touch scrolling upward through content;
+- scrolling back downward;
+- card activation still working;
+- normal vertical scroll not accidentally activating cards.
+
+QUESTION 2 — ACTIVE LIST TITLE AFTER LOADING FROM LOCKER
+Review the current "Load This List" path.
+
+We have direct visual evidence that:
+- the user selected "Sample List";
+- TrailWeigh displayed a message confirming Loaded "Sample List";
+- the centered active-list title still displayed "Untitled List".
+
+Answer:
+1. What state/value currently drives the centered active-list title?
+2. What state/data changes when "Load This List" runs?
+3. Is the active list-name state updated during this path?
+4. If not, why not?
+5. Does this affect only the displayed title, or can active-list identity elsewhere also remain stale?
+6. What is the narrowest future correction required?
+7. Would that correction be safely isolated to MobileFunctionalV3.tsx?
+8. Identify any risk to Locker storage or current list data if the title is synchronized.
+
+DO NOT FIX IT.
+
+QUESTION 3 — SEARCH DECK CARD OPACITY / BACKGROUND BLEED-THROUGH
+Review the current Search deck.
+
+Video review shows category/list content visibly bleeding through the disabled Search cards, causing overlapping text and poor readability.
+
+Answer:
+1. Is reduced opacity being applied to the entire disabled card surface?
+2. If yes, identify exactly which disabled-state styling causes the card background to become translucent.
+3. Are text/icon opacity and card-surface opacity coupled?
+4. Can the card surface remain fully opaque while only disabled text/icons/status are visually muted?
+5. What is the narrowest future visual correction?
+6. Would the correction affect any enabled card states?
+7. Is this safely isolated to the V3 card component/current source scope?
+
+DO NOT CHANGE THE STYLING YET.
+
+QUESTION 4 — BOTTOM SAFE-AREA / HOME-INDICATOR CLEARANCE
+Inspect the exact current layout math for:
+- bottom navigation bar;
+- card-deck bottom position;
+- backdrop;
+- any fixed pixel offsets;
+- env(safe-area-inset-bottom) use.
+
+Answer:
+1. What is the actual rendered bottom navigation height when safe-area-inset-bottom = 0?
+2. What is the effective height when safe-area-inset-bottom is nonzero?
+3. What bottom offset does the card deck use?
+4. What bottom offset does its backdrop use?
+5. Are those offsets derived from the actual nav height or a fixed constant?
+6. On a device with an iPhone-style home-indicator inset, can any part of the deck sit behind or underneath the bottom nav?
+7. Can the nav itself cover the active card controls?
+8. Is the current R002 "Safe Area PASS" claim actually proven by the existing tests?
+9. If not, what exact test would prove it?
+10. Identify the narrowest future correction if one is required.
+
+DO NOT FIX IT.
+
+QUESTION 5 — R002 STATE-PRESERVATION TEST COVERAGE
+Audit the current R002 automated tests versus what the R002 report claimed.
+
+For each state below, say whether it is:
+A. explicitly asserted in automation,
+B. indirectly likely but not asserted,
+C. not tested.
+
+States:
+- vertical active-list scroll position;
+- category accordion open/closed state;
+- item selected/check state;
+- item quantity;
+- item weight;
+- units;
+- active list identity;
+- active list displayed title;
+- undo history;
+- redo history.
+
+Quote or summarize the exact assertion logic used for each item marked A.
+Do not count an interaction as verified unless the test contains a meaningful assertion proving the expected post-deck state.
+
+QUESTION 6 — CLOSED DECK POINTER EVENTS
+R001 showed a failed bottom-navigation test where supposedly closed More/Add overlays intercepted pointer events.
+
+R002 appears to conditionally remove closed decks from the DOM.
+
+Confirm:
+1. Are closed R002 decks completely unmounted, or merely hidden?
+2. Can a closed deck/backdrop intercept pointer/touch events?
+3. Is there any transition period after close where an invisible element can still block the list/bottom tabs?
+4. Does automated testing explicitly assert this?
+5. If not, propose the exact assertion that should be added in a future correction/test prompt.
+
+DO NOT CHANGE ANYTHING.
+
+QUESTION 7 — TOP SEARCH CONTROL DUPLICATION — INSPECTION ONLY
+There appears to still be an older Search circle/control in the top TrailWeigh header while Search now also exists as a bottom tab.
+
+Do NOT remove it.
+
+Simply report:
+1. Is that top Search control still present?
+2. Is it enabled, disabled, decorative, or functional?
+3. What current function does it perform?
+4. Is it redundant with the new bottom Search tab?
+5. Would removing it require only a visual/control change, or would any functional behavior be lost?
+
+This item requires user approval before any future visual change.
+
+REQUIRED RESPONSE FORMAT
+
+Create a report named:
+R002Q.md
+
+Use this exact structure:
+
+# R002Q Diagnostic Report
+
+## No-Change Confirmation
+- Application source modified: YES/NO
+- Persistent data modified: YES/NO
+- Deployment/database/auth modified: YES/NO
+
+All three must be NO.
+
+## Q1 Locker Long-Deck Touch Scrolling
+- PASS/FAIL/UNCERTAIN
+- Current behavior
+- Root cause if defective
+- Evidence/tests performed
+- Narrowest future correction (description only)
+
+## Q2 Locker Active-Title Synchronization
+- PASS/FAIL
+- Current title state source
+- Load path behavior
+- Root cause
+- Scope/risk of future correction
+
+## Q3 Search Card Readability
+- PASS/FAIL
+- Current styling behavior
+- Root cause
+- Narrowest future correction
+
+## Q4 Safe Area
+- PASS/FAIL/UNPROVEN
+- Current measurements/offset logic
+- Risk on nonzero safe-area inset
+- Existing test adequacy
+- Exact future proof/test needed
+
+## Q5 State-Preservation Coverage
+Provide a table:
+State | Explicitly asserted / Indirect / Not tested | Evidence
+
+## Q6 Closed-Deck Pointer Events
+- PASS/FAIL/UNPROVEN
+- Mount/unmount behavior
+- Transition behavior
+- Current test coverage
+- Recommended future assertion
+
+## Q7 Top Search Control
+- Present: YES/NO
+- Current function/status
+- Redundant with bottom Search: YES/NO/PARTLY
+- Impact if later removed
+
+## Contradictions / Additional Material Findings
+Only include findings directly relevant to R002 card navigation.
+Do not broaden scope.
+
+## Recommendation
+State whether R002 can be accepted as-is or requires a correction prompt.
+Do NOT implement the recommendation.
+
+FINAL STOP
+After writing R002Q.md:
+STOP.
+Do not change TrailWeigh.
+Do not start a fix.
+Do not implement any recommendation.

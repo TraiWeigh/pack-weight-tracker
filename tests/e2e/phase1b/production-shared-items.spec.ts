@@ -35,16 +35,11 @@ test.describe('Item weight & calculation correctness', () => {
   test('unit switch imperial→metric changes displayed weights (not zero, not NaN)', async ({ page, errors }) => {
     await gotoDemo(page);
     // Switch to metric
-    const metricBtn = page.getByRole('button', { name: /metric/i }).first();
-    if (await metricBtn.isVisible()) {
-      await metricBtn.click({ timeout: 3000 }).catch(() => {});
-    } else {
-      // Try via More menu unit toggle
-      await page.getByRole('button', { name: 'Open menu' }).click();
-      const metricMenu = page.getByRole('button', { name: /metric/i });
-      if (await metricMenu.isVisible()) await metricMenu.click();
-      await page.getByRole('button', { name: 'Back to list' }).first().click().catch(() => {});
-    }
+    // R002: units toggle lives in More deck → List Settings card
+    await page.getByRole('button', { name: /^More — settings and tools/ }).click();
+    await page.getByRole('button', { name: /^List Settings — open card/ }).click();
+    await page.getByRole('button', { name: 'Use metric units' }).click();
+    await page.getByRole('button', { name: /^List — current gear list/ }).click();
     const body = await page.content();
     expect(body).not.toContain('NaN');
     expect(body).not.toContain('Infinity');
@@ -57,11 +52,12 @@ test.describe('Item weight & calculation correctness', () => {
     const summaryBefore = await page.locator('text=LIST SUMMARY').first().isVisible();
     expect(summaryBefore).toBe(true);
 
+    // R002: units toggle lives in More deck → List Settings card
     const toggleUnit = async (name: string) => {
-      await page.getByRole('button', { name: 'Open menu' }).click();
-      const btn = page.getByRole('button', { name: new RegExp(name, 'i'), exact: false });
-      if (await btn.isVisible()) await btn.click();
-      await page.getByRole('button', { name: 'Back to list' }).first().click().catch(() => {});
+      await page.getByRole('button', { name: /^More — settings and tools/ }).click();
+      await page.getByRole('button', { name: /^List Settings — open card/ }).click();
+      await page.getByRole('button', { name: `Use ${name} units` }).click();
+      await page.getByRole('button', { name: /^List — current gear list/ }).click();
     };
 
     await toggleUnit('metric');

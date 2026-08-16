@@ -61,10 +61,11 @@ import { useUnit, UnitProvider } from '../context/UnitContext';
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 type PackState = { [category: string]: GearItem[] };
 type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta> };
-type ActiveNav = 'list' | 'locker' | 'catalog' | 'summary';
+// (R002: the old ActiveNav tab type was retired — deck selection uses DeckId below.)
 
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
-// Left drawer: drawerX/drawerSnapping. Right panel: plusX/plusSnapping. More panel: moreY/moreSnapping.
+// R002: bottom card-deck navigation — DeckId selects the raised deck; screenStack
+// carries full-screen sub-pages (footer pages, share, sources).
 type MobileScreen = 'list' | 'footer-page' | 'share' | 'sources';
 type FooterPageId =
   | 'about' | 'how-it-works' | 'sources' | 'help'
@@ -153,18 +154,28 @@ const DETAIL_BDR   = 'rgba(0,0,0,0.06)';
 const OVERLAY_BG   = '#F2EDE4';
 const TOAST_BG     = '#2A5740';
 
-// ─── EDGE-CONTROL CONSTANTS ──────────────────────────────────────────────────────
-const SLIDER_W      = 28;         // touch-target width for each side slider (px)
-const BAR_VIS_W     = 10;         // visual bar width inside the touch zone (px)
-const SLIDER_BG     = '#4E5D58';  // muted slate-green — TrailWeigh slider color
-const APP_BAR_H     = 52;         // logo header height (px)
-const TITLE_BAND_H  = 40;         // list-title band height (px)
-const BOTTOM_HAND_H = 14;         // bottom drag-handle strip height (px)
-const BOTTOM_NAV_H  = 62;         // approximate bottom nav height (px)
+// ─── BOTTOM CARD-DECK NAVIGATION CONSTANTS (R002) ────────────────────────────────
+const TITLE_BAND_H  = 40;   // list-title band height (px)
+const NAV_H         = 58;   // bottom tab bar height (px, excludes safe-area inset)
+const CARD_PEEK_H   = 64;   // visible header height of an inactive stacked card (px)
+const CARD_OVERLAP  = 12;   // vertical overlap between stacked inactive cards (px)
+const DRAG_ACTIVATE = 48;   // upward drag distance that activates a card (px)
+const TAP_MAX_PX    = 8;    // pointer movement below this = tap
 /** Snap-animation duration: near-instant when prefers-reduced-motion is set. */
 const motionDuration = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ? '0.01s' : '0.28s';
+
+/** ONE restrained haptic pulse when a card docks — only where genuinely supported.
+ *  navigator.vibrate is absent on iOS Safari; the call is skipped silently there.
+ *  No continuous vibration, no fake haptics — UI is fully usable without it. */
+function hapticDock() {
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+      navigator.vibrate(10);
+    }
+  } catch { /* no haptic support — ignore */ }
+}
 
 // ─── LOGO MARK ──────────────────────────────────────────────────────────────────
 function LogoMark({ size = 24 }: { size?: number }) {
@@ -395,125 +406,8 @@ function SummaryOverlay({ sandbox, onClose }: SummaryOverlayProps) {
   );
 }
 
-// ─── LOCKER OVERLAY ──────────────────────────────────────────────────────────────
-interface LockerOverlayProps {
-  onLoad: (store: SandboxStore) => void;
-  onSave: () => void;
-  onClose: () => void;
-}
-
-function LockerOverlay({ onLoad, onSave, onClose }: LockerOverlayProps) {
-  const [entries, setEntries] = useState<LockerEntry[]>([]);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  useEffect(() => {
-    setEntries(readLockerEntries());
-  }, [refreshKey]);
-
-  const handleSaveAndRefresh = () => {
-    onSave();
-    setTimeout(() => setRefreshKey(k => k + 1), 500);
-  };
-
-  return (
-    <div style={{
-      position: 'absolute', inset: 0, background: OVERLAY_BG,
-      zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
-    }}>
-      {/* Header */}
-      <div style={{
-        height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
-        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0,
-      }}>
-        <button
-          onClick={onClose}
-          aria-label="Back to list"
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-        >
-          <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
-        </button>
-        <span style={{ flex: 1, fontSize: 17, fontWeight: 600, color: PRIMARY, fontFamily: SERIF }}>
-          Locker
-        </span>
-        <button
-          onClick={handleSaveAndRefresh}
-          aria-label="Save current list to Locker"
-          title="Save current sandbox list as a new Locker entry"
-          style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: NAV_ACTIVE, color: '#fff', border: 'none',
-            borderRadius: 8, padding: '6px 14px', cursor: 'pointer',
-            fontSize: 13, fontWeight: 600, fontFamily: SANS,
-          }}
-        >
-          <Save size={14} strokeWidth={2}/> Save
-        </button>
-      </div>
-
-      {/* Note */}
-      <div style={{
-        background: 'rgba(42,87,64,0.08)', borderBottom: `1px solid rgba(42,87,64,0.12)`,
-        padding: '7px 16px', fontSize: 12, color: SECONDARY, flexShrink: 0,
-      }}>
-        Loading a list replaces the sandbox preview. Save creates a new Locker entry.
-      </div>
-
-      {/* Entries */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {entries.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '40px 24px', color: MUTED, fontSize: 14 }}>
-            <Folder size={32} color={MUTED} strokeWidth={1.4} style={{ margin: '0 auto 8px', display: 'block' }}/>
-            No saved lists yet.
-          </div>
-        )}
-        {[...entries].reverse().map(entry => {
-          const itemCount = Object.values(entry.store?.items ?? {}).flat().length;
-          const catCount  = entry.store?.order?.length ?? 0;
-          const date = new Date(entry.savedAt).toLocaleDateString(undefined, {
-            month: 'short', day: 'numeric', year: 'numeric',
-          });
-          return (
-            <div key={entry.id} style={{
-              background: CARD_BG, borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
-              boxShadow: CARD_SHADOW, padding: '14px 16px',
-              display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, marginBottom: 2,
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {entry.name}
-                </div>
-                <div style={{ fontSize: 12, color: MUTED }}>
-                  {date} · {catCount} categories · {itemCount} items
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  if (entry.store) {
-                    onLoad({
-                      items: entry.store.items ?? {},
-                      order: entry.store.order ?? [],
-                      meta:  entry.store.meta ?? {},
-                    });
-                    onClose();
-                  }
-                }}
-                aria-label={`Load ${entry.name} into preview`}
-                style={{
-                  background: 'rgba(42,87,64,0.09)', color: NAV_ACTIVE,
-                  border: 'none', borderRadius: 8, padding: '6px 14px',
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, flexShrink: 0,
-                }}
-              >
-                Load
-              </button>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+// (R002: the full-screen Locker overlay was retired — saved lists are now presented
+//  as cards in the Locker deck, built inside MobileFunctionalV3Inner.)
 
 // ─── SCANNER OVERLAY ─────────────────────────────────────────────────────────────
 interface ScannerOverlayProps {
@@ -560,49 +454,68 @@ function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayPro
   );
 }
 
-// ─── BOTTOM NAV (interactive) ────────────────────────────────────────────────────
+// ─── BOTTOM TAB BAR (R002 — exactly five tabs: List, Locker, +, Search, More) ─────
+type DeckId = 'locker' | 'add' | 'search' | 'more';
+
 interface BottomNavBarProps {
-  active: ActiveNav;
-  onSelect: (tab: ActiveNav) => void;
-  onMore: () => void;
+  activeDeck: DeckId | null;
+  onList: () => void;
+  onDeck: (deck: DeckId) => void;
 }
 
-function BottomNavBar({ active, onSelect, onMore }: BottomNavBarProps) {
+function BottomNavBar({ activeDeck, onList, onDeck }: BottomNavBarProps) {
   return (
     <div style={{
       position: 'sticky', bottom: 0, left: 0, right: 0,
       background: NAV_BG, borderTop: '1px solid rgba(0,0,0,0.08)',
       display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-      paddingTop: 8, paddingBottom: 10, zIndex: 20, height: 58, boxSizing: 'border-box',
+      paddingTop: 6, paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
+      zIndex: 40, minHeight: NAV_H, boxSizing: 'border-box', flexShrink: 0,
     }}>
-      {/* List */}
+      {/* List — resting state; closes any open deck */}
       <NavTab
-        Icon={Backpack} label="List" active={active === 'list'}
-        onClick={() => onSelect('list')}
+        Icon={Backpack} label="List" active={activeDeck === null}
+        onClick={onList}
         aria-label="List — current gear list"
       />
-      {/* Locker */}
+      {/* Locker deck */}
       <NavTab
-        Icon={Folder} label="Locker" active={active === 'locker'}
-        onClick={() => onSelect('locker')}
-        aria-label="Locker — browse and load saved lists"
+        Icon={Folder} label="Locker" active={activeDeck === 'locker'}
+        onClick={() => onDeck('locker')}
+        aria-label="Locker — saved lists"
       />
-      {/* Catalog — FUTURE */}
-      <NavTabDisabled
-        Icon={Grid3X3} label="Catalog"
-        aria-label="Catalog — coming soon"
-        title="Catalog — future feature"
-      />
-      {/* Summary */}
+      {/* + / Add — prominent center tab, part of the same tab system */}
+      <button
+        onClick={() => onDeck('add')}
+        aria-label="Add — add items, categories, or import a list"
+        aria-current={activeDeck === 'add' ? 'page' : undefined}
+        style={{
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 52,
+        }}
+      >
+        <span style={{
+          width: 40, height: 40, borderRadius: 20, marginTop: -16,
+          background: activeDeck === 'add' ? PRIMARY : NAV_ACTIVE,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(42,87,64,0.35)',
+        }}>
+          <Plus size={22} color="#fff" strokeWidth={2.2}/>
+        </span>
+        <span style={{ fontSize: 10, fontWeight: activeDeck === 'add' ? 600 : 400, color: activeDeck === 'add' ? NAV_ACTIVE : NAV_INACTIVE }}>
+          Add
+        </span>
+      </button>
+      {/* Search deck */}
       <NavTab
-        Icon={BarChart2} label="Summary" active={active === 'summary'}
-        onClick={() => onSelect('summary')}
-        aria-label="Summary — pack weight and distribution"
+        Icon={Search} label="Search" active={activeDeck === 'search'}
+        onClick={() => onDeck('search')}
+        aria-label="Search — find gear"
       />
-      {/* More */}
+      {/* More deck */}
       <NavTab
-        Icon={MoreHorizontal} label="More" active={false}
-        onClick={onMore}
+        Icon={MoreHorizontal} label="More" active={activeDeck === 'more'}
+        onClick={() => onDeck('more')}
         aria-label="More — settings and tools"
       />
     </div>
@@ -631,512 +544,305 @@ function NavTab({ Icon, label, active, onClick, 'aria-label': ariaLabel }: {
   );
 }
 
-function NavTabDisabled({ Icon, label, 'aria-label': ariaLabel, title }: {
-  Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
-  label: string; 'aria-label'?: string; title?: string;
+// ─── CARD DECK (R002 — bottom-rising, vertically overlapping card stack) ─────────
+// Tapping Locker / + / Search / More raises a deck of stacked cards from the bottom.
+// Each inactive card shows its title strip; TAP always activates it, and an upward
+// DRAG (≥ DRAG_ACTIVATE px) is an equivalent optional gesture. The active card
+// expands at the top of the deck ("operational position") and shows its content.
+// Switching active cards never requires closing the deck. Decks are conditionally
+// rendered — when closed they do not exist in the DOM and cannot intercept input.
+
+interface DeckCardDef {
+  id: string;
+  title: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  /** Content rendered when this card is in the active/operational position. */
+  render?: () => React.ReactNode;
+}
+
+interface CardDeckProps {
+  deckLabel: string;
+  cards: DeckCardDef[];
+  activeCardId: string | null;
+  onActivateCard: (id: string) => void;
+  onClose: () => void;
+  emptyNote?: string;
+}
+
+/** One inactive (stacked) card. Tap = activate. Upward drag past threshold = activate;
+ *  short drags spring back. Downward drag scrolls the deck. No destructive swipes. */
+function DeckInactiveCard({ card, index, onActivate, scrollBy }: {
+  card: DeckCardDef;
+  index: number;
+  onActivate: () => void;
+  scrollBy: (dy: number) => void;
 }) {
+  const [lift, setLift] = useState(0);
+  const [settling, setSettling] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const dragRef = useRef<{ active: boolean; startY: number; lastY: number }>({ active: false, startY: 0, lastY: 0 });
+
+  const finishDrag = (e: React.PointerEvent) => {
+    if (!dragRef.current.active) return;
+    dragRef.current.active = false;
+    const total  = Math.abs(e.clientY - dragRef.current.startY);
+    const lifted = dragRef.current.startY - e.clientY; // positive = upward
+    if (card.disabled) { setLift(0); return; }
+    if (total < TAP_MAX_PX)        { setLift(0); onActivate(); return; }  // tap
+    if (lifted >= DRAG_ACTIVATE)   { setLift(0); onActivate(); return; }  // drag-dock
+    setSettling(true); setLift(0);                                        // spring back
+  };
+
+  /** A cancelled gesture (e.g. browser takes over the pointer) must never
+   *  activate the card — it only clears the visual drag state. */
+  const cancelDrag = () => {
+    if (!dragRef.current.active) return;
+    dragRef.current.active = false;
+    setSettling(true); setLift(0);
+  };
+
   return (
     <div
-      aria-disabled="true"
-      aria-label={ariaLabel ?? label}
-      title={title ?? label}
+      role="button"
+      tabIndex={card.disabled ? -1 : 0}
+      aria-disabled={card.disabled || undefined}
+      aria-label={card.disabled
+        ? `${card.title} — not available yet`
+        : `${card.title} — open card`}
+      title={card.disabled ? `${card.title} — not available yet` : card.title}
+      onKeyDown={e => {
+        if (!card.disabled && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onActivate(); }
+      }}
+      onPointerDown={e => {
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        dragRef.current = { active: true, startY: e.clientY, lastY: e.clientY };
+        setSettling(false);
+      }}
+      onPointerMove={e => {
+        if (!dragRef.current.active) return;
+        const up = dragRef.current.startY - e.clientY;
+        if (up >= 0) {
+          if (!card.disabled) setLift(Math.min(up, 120));
+        } else {
+          scrollBy(dragRef.current.lastY - e.clientY);  // downward drag scrolls the deck
+          setLift(0);
+        }
+        dragRef.current.lastY = e.clientY;
+      }}
+      onPointerUp={finishDrag}
+      onPointerCancel={cancelDrag}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onTransitionEnd={() => setSettling(false)}
       style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-        minWidth: 52, cursor: 'not-allowed', opacity: 0.45,
+        position: 'relative',
+        marginTop: index === 0 ? 0 : -CARD_OVERLAP,
+        zIndex: index + 1,
+        background: CARD_BG,
+        borderRadius: 16,
+        border: `1px solid ${CARD_BORDER}`,
+        boxShadow: '0 -3px 14px rgba(0,0,0,0.10)',
+        minHeight: CARD_PEEK_H,
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '0 16px',
+        cursor: card.disabled ? 'not-allowed' : 'pointer',
+        opacity: card.disabled ? 0.45 : 1,
+        userSelect: 'none', touchAction: 'none',
+        transform: `translateY(${-lift}px)`,
+        transition: settling ? `transform ${motionDuration()} cubic-bezier(0.4,0,0.2,1)` : 'none',
+        outline: focused ? `2px solid ${NAV_ACTIVE}` : 'none',
+        outlineOffset: focused ? -2 : undefined,
+        flexShrink: 0, boxSizing: 'border-box',
       }}
     >
-      <Icon size={22} color={NAV_INACTIVE} strokeWidth={1.6}/>
-      <span style={{ fontSize: 10, fontWeight: 400, color: NAV_INACTIVE }}>
-        {label}
-      </span>
+      {card.icon && (
+        <span style={{
+          width: 36, height: 36, borderRadius: 10, background: 'rgba(42,87,64,0.10)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          flexShrink: 0, color: NAV_ACTIVE,
+        }}>
+          {card.icon}
+        </span>
+      )}
+      <div style={{ flex: 1, minWidth: 0, padding: '10px 0' }}>
+        <div style={{
+          fontSize: 15, fontWeight: 600, color: PRIMARY, fontFamily: SERIF,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
+          {card.title}
+        </div>
+        {card.subtitle && (
+          <div style={{
+            fontSize: 11.5, color: MUTED, marginTop: 1,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {card.subtitle}
+          </div>
+        )}
+      </div>
+      {!card.disabled && (
+        <ChevronLeft
+          size={16} color={MUTED} strokeWidth={1.8}
+          style={{ transform: 'rotate(90deg)', flexShrink: 0 }}
+          aria-hidden="true"
+        />
+      )}
     </div>
   );
 }
 
-// drawerW / panelW computed responsively in MobileFunctionalV3Inner (SLIDER_W exposed).
+function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emptyNote }: CardDeckProps) {
+  const [risen, setRisen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
-// ─── LEFT SLIDER ──────────────────────────────────────────────────────────────
-// Hamburger cap (at title-band level) + vertical bar (content-area left gutter).
-// Positioned at left: drawerX — moves 1:1 with drag, snaps on release.
-// drawerW = frameWidth − SLIDER_W so the bar is always exposed when drawer is open.
-interface LeftSliderProps {
-  drawerX: number;
-  drawerW: number;
-  snapping: boolean;
-  onPointerDown: (e: React.PointerEvent) => void;
-  onPointerMove: (e: React.PointerEvent) => void;
-  onPointerUp:   (e: React.PointerEvent) => void;
-  onSnap:        (targetX: number) => void;
-  onClose:       () => void;
-  onTransitionEnd: () => void;
-  system: 'imperial' | 'metric';
-  setSystem: (s: 'imperial' | 'metric') => void;
-  onChecklist: () => void;
-  onPrint: () => void;
-}
-
-function LeftSlider({
-  drawerX, drawerW, snapping,
-  onPointerDown, onPointerMove, onPointerUp,
-  onSnap, onClose, onTransitionEnd,
-  system, setSystem, onChecklist, onPrint,
-}: LeftSliderProps) {
-  const progress = Math.min(1, drawerX / drawerW);
-  const isOpen   = drawerX > 0;
-  const halfOpen = drawerX >= drawerW / 2;
-  const motion   = `${motionDuration()} cubic-bezier(0.4,0,0.2,1)`;
-  const gestures = { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp };
-
+  // Rise from the bottom after mount (motionDuration() → ~instant under reduced motion),
+  // and move keyboard focus into the deck (non-modal: tabs stay reachable).
   useEffect(() => {
-    if (!isOpen) return;
+    const id = requestAnimationFrame(() => setRisen(true));
+    closeBtnRef.current?.focus({ preventScroll: true });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  // Escape closes the deck.
+  useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', h);
     return () => document.removeEventListener('keydown', h);
-  }, [isOpen, onClose]);
+  }, [onClose]);
 
-  const drawerItem = (icon: React.ReactNode, label: string, sub: string, action: () => void) => (
-    <button
-      key={label}
-      onClick={action}
-      aria-label={sub ? `${label} — ${sub}` : label}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        background: 'none', border: 'none', padding: '13px 20px',
-        cursor: 'pointer', textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
-      }}
-    >
-      <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
-      <div>
-        <div style={{ fontSize: 14, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
-        {sub && <div style={{ fontSize: 11, color: MUTED, marginTop: 1 }}>{sub}</div>}
-      </div>
-    </button>
-  );
-
-  return (
-    <>
-      {/* Proportional backdrop */}
-      {isOpen && (
-        <div
-          onClick={onClose}
-          aria-hidden="true"
-          style={{
-            position: 'absolute', inset: 0, zIndex: 200,
-            background: `rgba(0,0,0,${(0.60 * progress).toFixed(3)})`,
-            transition: snapping ? `background ${motion}` : 'none',
-          }}
-        />
-      )}
-
-      {/* Drawer panel — slides in from left, 1:1 with drawerX */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation menu"
-        style={{
-          position: 'absolute', top: 0, left: 0, bottom: 0,
-          width: drawerW, zIndex: 201,
-          background: CARD_BG,
-          transform: `translateX(${drawerX - drawerW}px)`,
-          transition: snapping ? `transform ${motion}` : 'none',
-          touchAction: 'none', userSelect: 'none',
-          display: 'flex', flexDirection: 'column',
-          boxShadow: `4px 0 20px rgba(0,0,0,${(0.22 * progress).toFixed(3)})`,
-        }}
-        onTransitionEnd={onTransitionEnd}
-      >
-        <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
-          <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: PRIMARY }}>Menu</div>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', touchAction: 'pan-y' }}>
-          <div style={{ padding: '14px 20px 12px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {(['imperial', 'metric'] as const).map(s => (
-                <button
-                  key={s}
-                  onClick={() => setSystem(s)}
-                  aria-pressed={system === s}
-                  style={{
-                    flex: 1, padding: '7px 0', borderRadius: 7, fontSize: 12, fontWeight: 600,
-                    border: `1.5px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
-                    background: system === s ? NAV_ACTIVE : CARD_BG,
-                    color: system === s ? '#fff' : SECONDARY, cursor: 'pointer', fontFamily: SANS,
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={{ height: 1, background: DIVIDER }}/>
-          {drawerItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', 'Trail checklist for selected items', onChecklist)}
-          {drawerItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', 'Print your gear list as PDF', onPrint)}
-        </div>
-      </div>
-
-      {/* ── Left slider: hamburger cap + vertical bar ── */}
-      {/* Cap sits at title-band level (top: APP_BAR_H). Bar fills gutter below. */}
-      <div
-        {...gestures}
-        role="button"
-        tabIndex={0}
-        aria-label={halfOpen ? 'Close navigation menu' : 'Open navigation menu'}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onSnap(halfOpen ? 0 : drawerW);
-          }
-        }}
-        style={{
-          position: 'absolute',
-          top: APP_BAR_H,
-          bottom: BOTTOM_HAND_H + BOTTOM_NAV_H,
-          left: drawerX,
-          width: SLIDER_W,
-          zIndex: 202,
-          touchAction: 'none', userSelect: 'none',
-          cursor: halfOpen ? 'w-resize' : 'e-resize',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          transition: snapping ? `left ${motion}` : 'none',
-          outline: 'none',
-        }}
-      >
-        {/* Hamburger cap — sits at title-band level */}
-        <div style={{
-          width: '100%', height: TITLE_BAND_H, flexShrink: 0,
-          background: SLIDER_BG,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          borderRadius: drawerX < 2 ? '0 8px 0 0' : '0',
-        }}>
-          <Menu size={14} color="rgba(255,255,255,0.92)" strokeWidth={2.2}/>
-        </div>
-        {/* Bar — content-area left gutter */}
-        <div style={{
-          flex: 1, width: BAR_VIS_W,
-          background: SLIDER_BG, opacity: 0.72,
-          borderRadius: '0 0 6px 6px',
-        }}/>
-      </div>
-    </>
-  );
-}
-
-// ─── RIGHT SLIDER + PLUS PANEL ───────────────────────────────────────────────
-// Mirrors LeftSlider: + cap at title-band level, bar in content-area right gutter.
-// panelW = frameWidth − SLIDER_W so the bar stays exposed when the panel is open.
-// Dragging LEFT opens the panel (plusX increases); dragging RIGHT closes it.
-interface RightSliderProps {
-  plusX: number;
-  panelW: number;
-  snapping: boolean;
-  onPointerDown: (e: React.PointerEvent) => void;
-  onPointerMove: (e: React.PointerEvent) => void;
-  onPointerUp:   (e: React.PointerEvent) => void;
-  onSnap:        (targetX: number) => void;
-  onClose:       () => void;
-  onTransitionEnd: () => void;
-  onScanGearList: () => void;
-}
-
-function RightSlider({
-  plusX, panelW, snapping,
-  onPointerDown, onPointerMove, onPointerUp,
-  onSnap, onClose, onTransitionEnd,
-  onScanGearList,
-}: RightSliderProps) {
-  const progress = Math.min(1, plusX / panelW);
-  const isOpen   = plusX > 0;
-  const halfOpen = plusX >= panelW / 2;
+  const active   = cards.find(c => c.id === activeCardId) ?? null;
+  const inactive = cards.filter(c => c.id !== activeCardId);
   const motion   = `${motionDuration()} cubic-bezier(0.4,0,0.2,1)`;
-  const gestures = { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp };
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', h);
-    return () => document.removeEventListener('keydown', h);
-  }, [isOpen, onClose]);
+  const scrollBy = (dy: number) => { if (scrollRef.current) scrollRef.current.scrollTop += dy; };
 
   return (
     <>
-      {/* Backdrop */}
-      {isOpen && (
-        <div
-          onClick={onClose}
-          aria-hidden="true"
-          style={{
-            position: 'absolute', inset: 0, zIndex: 200,
-            background: `rgba(0,0,0,${(0.60 * progress).toFixed(3)})`,
-            transition: snapping ? `background ${motion}` : 'none',
-          }}
-        />
-      )}
-
-      {/* Panel — slides in from right, 1:1 with plusX */}
+      {/* Backdrop — covers content above the tab bar; tabs stay usable. Tap closes. */}
+      <div
+        onClick={onClose}
+        aria-hidden="true"
+        data-testid="deck-backdrop"
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: NAV_H,
+          zIndex: 30, background: `rgba(20,28,24,${risen ? 0.45 : 0})`,
+          transition: `background ${motion}`,
+        }}
+      />
+      {/* Deck */}
       <div
         role="dialog"
-        aria-modal="true"
-        aria-label="Add or create"
+        aria-label={deckLabel}
         style={{
-          position: 'absolute', top: 0, right: 0, bottom: 0,
-          width: panelW, zIndex: 201,
-          background: CARD_BG,
-          transform: `translateX(${panelW - plusX}px)`,
-          transition: snapping ? `transform ${motion}` : 'none',
-          touchAction: 'none', userSelect: 'none',
+          position: 'absolute', left: 0, right: 0, bottom: NAV_H,
+          maxHeight: `calc(100% - ${NAV_H + 60}px)`,
+          zIndex: 31,
           display: 'flex', flexDirection: 'column',
-          boxShadow: `-4px 0 20px rgba(0,0,0,${(0.22 * progress).toFixed(3)})`,
+          padding: '0 12px',
+          transform: risen ? 'translateY(0)' : 'translateY(105%)',
+          transition: `transform ${motion}`,
+          boxSizing: 'border-box',
         }}
-        onTransitionEnd={onTransitionEnd}
       >
-        <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
-          <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: PRIMARY }}>Start / Create</div>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {/* Create New List — coming soon */}
-          <div
-            aria-disabled="true"
-            title="CREATE NEW LIST GUIDED FLOW = NOT YET IMPLEMENTED"
-            style={{
-              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 20px',
-              borderBottom: `1px solid ${DIVIDER}`, opacity: 0.4, cursor: 'not-allowed',
-            }}
-          >
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Plus size={20} color={SECONDARY} strokeWidth={2}/>
-            </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>Create New List</div>
-              <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>Guided setup — coming soon</div>
-            </div>
-          </div>
-          {/* Scan Gear List — active */}
+        {/* Deck label row */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px 8px', flexShrink: 0 }}>
+          <span style={{
+            fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: '#fff',
+            textShadow: '0 1px 3px rgba(0,0,0,0.45)',
+          }}>
+            {deckLabel}
+          </span>
+          <div style={{ flex: 1 }}/>
           <button
-            onClick={() => { onScanGearList(); onClose(); }}
-            aria-label="Scan Gear List — import from PDF or DOCX file"
+            ref={closeBtnRef}
+            onClick={onClose}
+            aria-label={`Close ${deckLabel}`}
             style={{
-              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 20px',
-              background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%',
-              borderBottom: `1px solid ${DIVIDER}`,
+              background: 'rgba(255,255,255,0.16)', border: 'none', borderRadius: 14,
+              width: 28, height: 28, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(42,87,64,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <Scale size={20} color={NAV_ACTIVE} strokeWidth={1.8}/>
-            </div>
-            <div>
-              <div style={{ fontSize: 16, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>Scan Gear List</div>
-              <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>Import from PDF or Word document</div>
-            </div>
+            <X size={16} color="#fff" strokeWidth={2}/>
           </button>
         </div>
-      </div>
 
-      {/* ── Right slider: + cap + vertical bar ── */}
-      {/* Positioned at right: plusX (mirrors left slider). */}
-      <div
-        {...gestures}
-        role="button"
-        tabIndex={0}
-        aria-label={halfOpen ? 'Close add panel' : 'Open add / create panel'}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onSnap(halfOpen ? 0 : panelW);
-          }
-        }}
-        style={{
-          position: 'absolute',
-          top: APP_BAR_H,
-          bottom: BOTTOM_HAND_H + BOTTOM_NAV_H,
-          right: plusX,
-          width: SLIDER_W,
-          zIndex: 202,
-          touchAction: 'none', userSelect: 'none',
-          cursor: halfOpen ? 'e-resize' : 'w-resize',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          transition: snapping ? `right ${motion}` : 'none',
-          outline: 'none',
-        }}
-      >
-        {/* + cap — sits at title-band level */}
-        <div style={{
-          width: '100%', height: TITLE_BAND_H, flexShrink: 0,
-          background: SLIDER_BG,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          borderRadius: plusX < 2 ? '8px 0 0 0' : '0',
-        }}>
-          <Plus size={14} color="rgba(255,255,255,0.92)" strokeWidth={2.4}/>
-        </div>
-        {/* Bar — content-area right gutter */}
-        <div style={{
-          flex: 1, width: BAR_VIS_W,
-          background: SLIDER_BG, opacity: 0.72,
-          borderRadius: '0 0 6px 6px',
-        }}/>
-      </div>
-    </>
-  );
-}
-
-// ─── BOTTOM MORE PANEL ───────────────────────────────────────────────────────
-// Custom gesture-driven bottom sheet (replaces Radix MoreSheet).
-// moreY: 0 = closed, morePanelH = fully open.
-// transform: translateY(morePanelH − moreY) — 0 when open, morePanelH when closed.
-interface MorePanelProps {
-  moreY: number;
-  morePanelH: number;
-  snapping: boolean;
-  onClose: () => void;
-  onTransitionEnd: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
-  onSave: () => void;
-  onUndo: () => void;
-  onRedo: () => void;
-  onReset: () => void;
-  onShare: () => void;
-  onExpandAll: () => void;
-  onCollapseAll: () => void;
-  isAuthenticated: boolean;
-  onNavigateToPage: (pageId: FooterPageId) => void;
-}
-
-function BottomMorePanel({
-  moreY, morePanelH, snapping, onClose, onTransitionEnd,
-  canUndo, canRedo,
-  onSave, onUndo, onRedo, onReset, onShare,
-  onExpandAll, onCollapseAll,
-  isAuthenticated, onNavigateToPage,
-}: MorePanelProps) {
-  const progress = Math.min(1, moreY / morePanelH);
-  const isOpen   = moreY > 0;
-  const motion   = `${motionDuration()} cubic-bezier(0.4,0,0.2,1)`;
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', h);
-    return () => document.removeEventListener('keydown', h);
-  }, [isOpen, onClose]);
-
-  const actionItem = (
-    icon: React.ReactNode, label: string, onClick: () => void,
-    disabled = false, sublabel?: string,
-  ) => (
-    <button
-      key={label}
-      onClick={() => { if (!disabled) onClick(); }}
-      disabled={disabled}
-      aria-label={sublabel ? `${label} — ${sublabel}` : label}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        background: 'none', border: 'none', padding: '13px 20px',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`, opacity: disabled ? 0.4 : 1,
-      }}
-    >
-      <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
-      <div>
-        <div style={{ fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
-        {sublabel && <div style={{ fontSize: 11.5, color: MUTED, marginTop: 1 }}>{sublabel}</div>}
-      </div>
-    </button>
-  );
-
-  const linkRow = (label: string, pageId: FooterPageId) => (
-    <button
-      key={label}
-      onClick={() => onNavigateToPage(pageId)}
-      style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        width: '100%', background: 'none', border: 'none', padding: '14px 20px',
-        cursor: 'pointer', textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
-        fontFamily: SANS,
-      }}
-    >
-      <span style={{ fontSize: 15, color: PRIMARY, fontWeight: 400 }}>{label}</span>
-      <ChevronRight size={16} color={MUTED} strokeWidth={1.8}/>
-    </button>
-  );
-
-  const sectionLabel = (text: string) => (
-    <div style={{ padding: '10px 20px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase' }}>
-      {text}
-    </div>
-  );
-
-  return (
-    <>
-      {/* Backdrop */}
-      {isOpen && (
+        {/* Scrollable card stack */}
         <div
-          onClick={onClose}
-          aria-hidden="true"
+          ref={scrollRef}
           style={{
-            position: 'absolute', inset: 0, zIndex: 198,
-            background: `rgba(0,0,0,${(0.50 * progress).toFixed(3)})`,
-            transition: snapping ? `background ${motion}` : 'none',
+            overflowY: 'auto', overflowX: 'hidden',
+            display: 'flex', flexDirection: 'column',
+            paddingBottom: 8, minHeight: 0,
           }}
-        />
-      )}
+        >
+          {/* Active / operational card */}
+          {active && (
+            <div
+              role="group"
+              aria-label={`${active.title} — active card`}
+              style={{
+                background: CARD_BG, borderRadius: 16, border: `1px solid ${CARD_BORDER}`,
+                boxShadow: '0 6px 24px rgba(0,0,0,0.20)',
+                marginBottom: 12, display: 'flex', flexDirection: 'column',
+                overflow: 'hidden', flexShrink: 0,
+              }}
+            >
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 16px', borderBottom: `1px solid ${DIVIDER}`,
+              }}>
+                {active.icon && (
+                  <span style={{
+                    width: 36, height: 36, borderRadius: 10, background: 'rgba(42,87,64,0.10)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0, color: NAV_ACTIVE,
+                  }}>
+                    {active.icon}
+                  </span>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
+                    {active.title}
+                  </div>
+                  {active.subtitle && (
+                    <div style={{ fontSize: 11.5, color: MUTED, marginTop: 1 }}>{active.subtitle}</div>
+                  )}
+                </div>
+              </div>
+              <div style={{ overflowY: 'auto', maxHeight: 300 }}>
+                {active.render?.()}
+              </div>
+            </div>
+          )}
 
-      {/* Panel */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="More options"
-        style={{
-          position: 'absolute',
-          left: 0, right: 0,
-          bottom: BOTTOM_HAND_H + BOTTOM_NAV_H,
-          height: morePanelH,
-          zIndex: 199,
-          background: CARD_BG,
-          borderRadius: '20px 20px 0 0',
-          transform: `translateY(${morePanelH - moreY}px)`,
-          transition: snapping ? `transform ${motion}` : 'none',
-          display: 'flex', flexDirection: 'column',
-          boxShadow: `0 -4px 20px rgba(0,0,0,${(0.18 * progress).toFixed(3)})`,
-        }}
-        onTransitionEnd={onTransitionEnd}
-      >
-        <div style={{ padding: '10px 20px 12px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: DIVIDER, margin: '0 auto 10px' }}/>
-          <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: PRIMARY }}>More</div>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {sectionLabel('Actions')}
-          {actionItem(<Save size={17} strokeWidth={1.8}/>, 'Save', onSave, false, 'Save current list as new Locker entry')}
-          {actionItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share', onShare, false, 'Get a review link')}
-          {actionItem(<Undo2 size={17} strokeWidth={1.8}/>, 'Undo', onUndo, !canUndo)}
-          {actionItem(<Redo2 size={17} strokeWidth={1.8}/>, 'Redo', onRedo, !canRedo)}
-          {actionItem(<RotateCcw size={17} strokeWidth={1.8}/>, 'Reset', onReset, false, 'Re-load from your saved data')}
-          {actionItem(<Layers size={17} strokeWidth={1.8}/>, 'Expand All', onExpandAll)}
-          {actionItem(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', onCollapseAll)}
-          {sectionLabel('TrailWeigh')}
-          {linkRow('About TrailWeigh', 'about')}
-          {linkRow('How It Works', 'how-it-works')}
-          {linkRow('Sources & References', 'sources')}
-          {sectionLabel('Help')}
-          {linkRow('Help & How-To', 'help')}
-          {linkRow('Report a Problem', 'report-problem')}
-          {linkRow('Contact Us', 'contact')}
-          {sectionLabel('Account & Privacy')}
-          {linkRow('Privacy Policy', 'privacy')}
-          {linkRow('Terms of Use', 'terms')}
-          {isAuthenticated && linkRow('Delete Account / Data', 'delete-account')}
-          {linkRow('Affiliate Disclosure', 'affiliate')}
-          {linkRow('Accessibility', 'accessibility')}
-          <div style={{ padding: '16px 20px 32px', textAlign: 'center' }}>
-            <p style={{ fontSize: 12, color: MUTED, fontFamily: SANS }}>© 2026 TrailWeigh · All rights reserved.</p>
-          </div>
+          {/* Inactive stacked cards */}
+          {inactive.map((card, i) => (
+            <DeckInactiveCard
+              key={card.id}
+              card={card}
+              index={i}
+              onActivate={() => onActivateCard(card.id)}
+              scrollBy={scrollBy}
+            />
+          ))}
+
+          {cards.length === 0 && emptyNote && (
+            <div style={{
+              background: CARD_BG, borderRadius: 16, border: `1px solid ${CARD_BORDER}`,
+              padding: '28px 20px', textAlign: 'center', color: MUTED, fontSize: 14, fontFamily: SANS,
+            }}>
+              {emptyNote}
+            </div>
+          )}
         </div>
       </div>
     </>
   );
 }
+
 
 // ─── FOOTER PAGE CONTENT (027R — full production content, no escape buttons) ──────
 interface FooterPageViewProps {
@@ -1548,45 +1254,28 @@ function MobileFunctionalV3Inner() {
   const originalSeedRef = useRef<SandboxStore | null>(null);
 
   // ── UI state ─────────────────────────────────────────────────────────────────
-  const [activeNav, setActiveNav] = useState<ActiveNav>('list');
   // Navigation stack (sub-pages only: footer-page, share, sources)
   const [screenStack, setScreenStack] = useState<ScreenEntry[]>([{ screen: 'list' }]);
-  // Drawer / sheet open state
-  // Slide-tab drawer state: drawerX tracks panel offset (0 = closed, DRAWER_W = open).
-  // drawerSnapping enables CSS transition during snap; off during 1:1 drag.
-  const [drawerX, setDrawerX]             = useState(0);
-  const [drawerSnapping, setDrawerSnapping] = useState(false);
-  const drawerDragRef = useRef<{ active: boolean; startX: number; startOffset: number }>(
-    { active: false, startX: 0, startOffset: 0 },
-  );
-  // ── Edge-slider widths & heights — recomputed on resize ──────────────────────
-  // drawerW / panelW = frame width − SLIDER_W (the bar that stays exposed).
-  // morePanelH = 82 % of viewport height, capped at 560 px.
-  const computeSlideW = () => Math.min(window.innerWidth, 430) - SLIDER_W;
-  const computeMoreH  = () => Math.min(Math.round(window.innerHeight * 0.82), 560);
-  const [drawerW,    setDrawerW]    = useState(computeSlideW);
-  const [panelW,     setPanelW]     = useState(computeSlideW);
-  const [morePanelH, setMorePanelH] = useState(computeMoreH);
-  useEffect(() => {
-    const onResize = () => {
-      const w = computeSlideW(); const h = computeMoreH();
-      setDrawerW(w); setPanelW(w); setMorePanelH(h);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+
+  // ── R002 card-deck navigation state ──────────────────────────────────────────
+  // activeDeck: which deck is raised (null = resting full-width list).
+  // activeCardId: which card in the open deck is docked in the operational position.
+  const [activeDeck, setActiveDeck] = useState<DeckId | null>(null);
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [lockerEntries, setLockerEntries] = useState<LockerEntry[]>([]);
+
+  const openDeck = useCallback((deck: DeckId) => {
+    setActiveDeck(prev => {
+      if (prev === deck) { setActiveCardId(null); return null; }  // re-tap toggles closed
+      if (deck === 'locker') setLockerEntries(readLockerEntries());
+      setActiveCardId(null);
+      return deck;
+    });
   }, []);
-  // Right (plus) panel gesture state
-  const [plusX,        setPlusX]        = useState(0);
-  const [plusSnapping, setPlusSnapping] = useState(false);
-  const plusDragRef = useRef<{ active: boolean; startX: number; startOffset: number }>(
-    { active: false, startX: 0, startOffset: 0 },
-  );
-  // Bottom (more) panel gesture state
-  const [moreY,        setMoreY]        = useState(0);
-  const [moreSnapping, setMoreSnapping] = useState(false);
-  const moreDragRef = useRef<{ active: boolean; startY: number; startOffset: number }>(
-    { active: false, startY: 0, startOffset: 0 },
-  );
+  const closeDeck = useCallback(() => { setActiveDeck(null); setActiveCardId(null); }, []);
+  const activateCard = useCallback((id: string) => { setActiveCardId(id); hapticDock(); }, []);
+
+  const [showSummary, setShowSummary] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
@@ -1636,6 +1325,11 @@ function MobileFunctionalV3Inner() {
   const [deleteItemConfirm, setDeleteItemConfirm] = useState<{ cat: string; id: string; name: string } | null>(null);
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
+
+  // Clear any pending toast timer on unmount (this view can be navigated away from).
+  useEffect(() => () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  }, []);
 
   const showToast = useCallback((msg: string, ms = 3000) => {
     setToast(msg);
@@ -1872,105 +1566,8 @@ function MobileFunctionalV3Inner() {
     setExpandedItem(null);
   }, []);
 
-  // ── Slide-tab drawer gesture handlers ────────────────────────────────────────
-
-  /** Snap the drawer to a target offset and enable CSS transition. */
-  const snapDrawerTo = useCallback((targetX: number) => {
-    setDrawerSnapping(true);
-    setDrawerX(targetX);
-  }, []);
-
-  /** Called by SlideTabDrawer once the snap transition completes. */
-  const handleDrawerTransitionEnd = useCallback(() => {
-    setDrawerSnapping(false);
-  }, []);
-
-  const handleDrawerPointerDown = useCallback((e: React.PointerEvent) => {
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    drawerDragRef.current = { active: true, startX: e.clientX, startOffset: drawerX };
-    setDrawerSnapping(false); // disable transition for 1:1 tracking
-  }, [drawerX]);
-
-  const handleDrawerPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!drawerDragRef.current.active) return;
-    const dx = e.clientX - drawerDragRef.current.startX;
-    setDrawerX(Math.max(0, Math.min(drawerW, drawerDragRef.current.startOffset + dx)));
-  }, []);
-
-  const handleDrawerPointerUp = useCallback((e: React.PointerEvent) => {
-    if (!drawerDragRef.current.active) return;
-    drawerDragRef.current.active = false;
-    const dx = Math.abs(e.clientX - drawerDragRef.current.startX);
-    // <8 px = tap → toggle; otherwise snap by 40 % threshold
-    const targetX = dx < 8
-      ? (drawerX < drawerW / 2 ? drawerW : 0)
-      : (drawerX > drawerW * 0.4 ? drawerW : 0);
-    snapDrawerTo(targetX);
-  }, [drawerX, drawerW, snapDrawerTo]);
-
-  // ── Right (plus) panel gesture handlers ──────────────────────────────────────
-
-  const snapPlusTo = useCallback((targetX: number) => {
-    setPlusSnapping(true);
-    setPlusX(targetX);
-  }, []);
-
-  const handlePlusTransitionEnd = useCallback(() => setPlusSnapping(false), []);
-
-  const handlePlusPointerDown = useCallback((e: React.PointerEvent) => {
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    plusDragRef.current = { active: true, startX: e.clientX, startOffset: plusX };
-    setPlusSnapping(false);
-  }, [plusX]);
-
-  const handlePlusPointerMove = useCallback((e: React.PointerEvent) => {
-    if (!plusDragRef.current.active) return;
-    // Dragging LEFT opens the right panel (startX − currentX positive when pulling left).
-    const dx = plusDragRef.current.startX - e.clientX;
-    setPlusX(Math.max(0, Math.min(panelW, plusDragRef.current.startOffset + dx)));
-  }, [panelW]);
-
-  const handlePlusPointerUp = useCallback((e: React.PointerEvent) => {
-    if (!plusDragRef.current.active) return;
-    plusDragRef.current.active = false;
-    const dx = Math.abs(e.clientX - plusDragRef.current.startX);
-    const targetX = dx < 8
-      ? (plusX < panelW / 2 ? panelW : 0)
-      : (plusX > panelW * 0.4 ? panelW : 0);
-    snapPlusTo(targetX);
-  }, [plusX, panelW, snapPlusTo]);
-
-  // ── Bottom (more) panel gesture handlers ─────────────────────────────────────
-
-  const snapMoreTo = useCallback((targetY: number) => {
-    setMoreSnapping(true);
-    setMoreY(targetY);
-  }, []);
-
-  const handleMoreTransitionEnd = useCallback(() => setMoreSnapping(false), []);
-
-  const handleMorePointerDown = useCallback((e: React.PointerEvent) => {
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    moreDragRef.current = { active: true, startY: e.clientY, startOffset: moreY };
-    setMoreSnapping(false);
-  }, [moreY]);
-
-  const handleMorePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!moreDragRef.current.active) return;
-    // Dragging UP opens the bottom panel (startY − currentY positive when pulling up).
-    const dy = moreDragRef.current.startY - e.clientY;
-    setMoreY(Math.max(0, Math.min(morePanelH, moreDragRef.current.startOffset + dy)));
-  }, [morePanelH]);
-
-  const handleMorePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!moreDragRef.current.active) return;
-    moreDragRef.current.active = false;
-    const dy = Math.abs(e.clientY - moreDragRef.current.startY);
-    const targetY = dy < 8
-      ? (moreY < morePanelH / 2 ? morePanelH : 0)
-      : (moreY > morePanelH * 0.35 ? morePanelH : 0);
-    snapMoreTo(targetY);
-  }, [moreY, morePanelH, snapMoreTo]);
+  // (R002: the left/right/bottom slider gesture handlers were retired with the
+  //  slider components — deck interaction lives in CardDeck / DeckInactiveCard.)
 
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
@@ -2123,6 +1720,331 @@ function MobileFunctionalV3Inner() {
   const catCount       = sandbox.order.length;
   const su             = smallUnit(system);
 
+  // ── R002 deck card definitions ────────────────────────────────────────────────
+
+  /** Close the open deck, then run an existing action (mirrors old panel behavior). */
+  const runAndClose = (fn: () => void) => () => { closeDeck(); fn(); };
+
+  /** Navigate to a footer page / sources screen from a deck card. */
+  const goFooter = (id: FooterPageId | 'sources') => () => {
+    closeDeck();
+    if (id === 'sources') pushScreen({ screen: 'sources' });
+    else pushScreen({ screen: 'footer-page', footerPageId: id });
+  };
+
+  /** Action row inside an active card (existing handlers only). */
+  const deckAction = (icon: React.ReactNode, label: string, onClick: () => void, disabled = false, sublabel?: string) => (
+    <button
+      key={label}
+      onClick={() => { if (!disabled) onClick(); }}
+      disabled={disabled}
+      aria-label={sublabel ? `${label} — ${sublabel}` : label}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
+        background: 'none', border: 'none', padding: '12px 16px',
+        cursor: disabled ? 'not-allowed' : 'pointer', textAlign: 'left',
+        borderTop: `1px solid ${DIVIDER}`, opacity: disabled ? 0.4 : 1, fontFamily: SANS,
+      }}
+    >
+      <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
+      <span>
+        <span style={{ display: 'block', fontSize: 14.5, fontWeight: 500, color: PRIMARY }}>{label}</span>
+        {sublabel && <span style={{ display: 'block', fontSize: 11.5, color: MUTED, marginTop: 1 }}>{sublabel}</span>}
+      </span>
+    </button>
+  );
+
+  /** Link row inside an active card — routes to an existing footer page. */
+  const deckLink = (label: string, pageId: FooterPageId | 'sources') => (
+    <button
+      key={label}
+      onClick={goFooter(pageId)}
+      aria-label={label}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+        background: 'none', border: 'none', padding: '12px 16px',
+        cursor: 'pointer', textAlign: 'left', borderTop: `1px solid ${DIVIDER}`, fontFamily: SANS,
+      }}
+    >
+      <span style={{ flex: 1, fontSize: 14.5, fontWeight: 500, color: PRIMARY }}>{label}</span>
+      <ChevronLeft size={16} color={MUTED} strokeWidth={1.8} style={{ transform: 'rotate(180deg)' }} aria-hidden="true"/>
+    </button>
+  );
+
+  // LOCKER deck — one card per saved list (real metadata; Load via existing mechanism).
+  const lockerCards: DeckCardDef[] = [...lockerEntries].reverse().map(entry => {
+    const store       = entry.store;
+    const entryItems  = Object.values(store?.items ?? {}).flat();
+    const itemCount   = entryItems.length;
+    const entryCats   = store?.order?.length ?? 0;
+    const selCount    = entryItems.filter(i => i.checked).length;
+    const totOz       = entryItems.filter(i => i.checked).reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
+    const dateStr     = new Date(entry.savedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    return {
+      id: entry.id,
+      title: entry.name,
+      subtitle: `${dateStr} · ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`,
+      icon: <Folder size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '12px 16px 16px', fontFamily: SANS }}>
+          <div style={{ fontSize: 12.5, color: SECONDARY, lineHeight: 1.7 }}>
+            <div>Saved: {dateStr}</div>
+            <div>
+              {entryCats} {entryCats === 1 ? 'category' : 'categories'} · {itemCount} {itemCount === 1 ? 'item' : 'items'} · {selCount} selected
+            </div>
+            {totOz > 0 && <div>Selected weight: {formatWeight(totOz, system, 'small')} {su}</div>}
+          </div>
+          <button
+            onClick={() => {
+              if (store) {
+                mutateSandbox(() => ({
+                  items: store.items ?? {},
+                  order: store.order ?? [],
+                  meta:  store.meta ?? {},
+                }));
+                closeDeck();
+                showToast(`Loaded "${entry.name}"`);
+              }
+            }}
+            aria-label={`Load ${entry.name} into the list`}
+            style={{
+              marginTop: 12, width: '100%', background: NAV_ACTIVE, color: '#fff',
+              border: 'none', borderRadius: 10, padding: '11px 0',
+              fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: SANS,
+            }}
+          >
+            Load This List
+          </button>
+        </div>
+      ),
+    };
+  });
+
+  // ADD deck — existing creation workflows only; Create New List is honestly disabled.
+  const addCards: DeckCardDef[] = [
+    {
+      id: 'add-item',
+      title: 'Add Item',
+      subtitle: 'Add a new item to a category',
+      icon: <Plus size={18} strokeWidth={2}/>,
+      render: () => (
+        <div style={{ padding: '4px 0 8px' }}>
+          <div style={{ padding: '8px 16px 4px', fontSize: 12.5, color: SECONDARY, fontFamily: SANS }}>
+            Choose a category for the new item:
+          </div>
+          {sandbox.order.map(cat => (
+            <button
+              key={cat}
+              onClick={() => {
+                addItem(cat);
+                setAllExpanded(false);
+                setOpenCatName(cat);
+                closeDeck();
+                showToast(`Item added to "${cat}"`);
+              }}
+              aria-label={`Add item to ${cat}`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                background: 'none', border: 'none', padding: '11px 16px',
+                cursor: 'pointer', textAlign: 'left', borderTop: `1px solid ${DIVIDER}`,
+                fontSize: 14.5, color: PRIMARY, fontFamily: SANS,
+              }}
+            >
+              <Plus size={14} color={NAV_ACTIVE} strokeWidth={2}/> {cat}
+            </button>
+          ))}
+          {sandbox.order.length === 0 && (
+            <div style={{ padding: '8px 16px', fontSize: 13, color: MUTED, fontFamily: SANS }}>
+              No categories yet — add a category first.
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      id: 'add-category',
+      title: 'Add Category',
+      subtitle: 'Create a new gear category',
+      icon: <Layers size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '12px 16px 16px', display: 'flex', gap: 8 }}>
+          <input
+            type="text"
+            value={newCatName}
+            placeholder="Category name…"
+            aria-label="New category name"
+            onChange={e => setNewCatName(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && newCatName.trim()) {
+                const ok = addCategory(newCatName);
+                if (ok) { showToast(`Category "${newCatName.trim()}" added`); setNewCatName(''); closeDeck(); }
+                else showToast('That category name already exists.');
+              }
+            }}
+            style={{
+              flex: 1, fontSize: 14, color: PRIMARY, fontFamily: SANS,
+              border: `1px solid ${CARD_BORDER}`, borderRadius: 8, padding: '8px 10px',
+              background: PAGE_BG, outline: 'none', minWidth: 0,
+            }}
+          />
+          <button
+            disabled={!newCatName.trim()}
+            onClick={() => {
+              const ok = addCategory(newCatName);
+              if (ok) { showToast(`Category "${newCatName.trim()}" added`); setNewCatName(''); closeDeck(); }
+              else showToast('That category name already exists.');
+            }}
+            aria-label="Confirm add category"
+            style={{
+              background: newCatName.trim() ? NAV_ACTIVE : MUTED, color: '#fff', border: 'none',
+              borderRadius: 8, padding: '8px 14px', cursor: newCatName.trim() ? 'pointer' : 'not-allowed',
+              fontSize: 13.5, fontWeight: 600, fontFamily: SANS, flexShrink: 0,
+            }}
+          >
+            Add
+          </button>
+        </div>
+      ),
+    },
+    {
+      id: 'scan-import',
+      title: 'Scan / Import',
+      subtitle: 'Import gear from a PDF or Word document',
+      icon: <Scale size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '12px 16px 16px', fontFamily: SANS }}>
+          <p style={{ fontSize: 12.5, color: SECONDARY, lineHeight: 1.55, margin: '0 0 12px' }}>
+            Upload a gear list document and TrailWeigh will extract items you can add to your categories.
+          </p>
+          <button
+            onClick={runAndClose(() => setShowScanner(true))}
+            aria-label="Open Scan Gear List"
+            style={{
+              width: '100%', background: NAV_ACTIVE, color: '#fff', border: 'none',
+              borderRadius: 10, padding: '11px 0', fontSize: 14, fontWeight: 600,
+              cursor: 'pointer', fontFamily: SANS,
+            }}
+          >
+            Open Scan Gear List
+          </button>
+        </div>
+      ),
+    },
+    {
+      id: 'create-list',
+      title: 'Create New List',
+      subtitle: 'Guided setup — coming soon',
+      icon: <FileText size={18} strokeWidth={1.8}/>,
+      disabled: true,
+    },
+  ];
+
+  // SEARCH deck — no search exists in V3 yet (global search is a future function),
+  // so every family is presented honestly as unavailable. Nothing is faked.
+  const searchCards: DeckCardDef[] = [
+    { id: 'search-list',    title: 'Search Current List', subtitle: 'Not available yet', icon: <Search size={18} strokeWidth={1.8}/>,  disabled: true },
+    { id: 'search-locker',  title: 'Search Locker',       subtitle: 'Not available yet', icon: <Folder size={18} strokeWidth={1.8}/>,  disabled: true },
+    { id: 'search-catalog', title: 'Search Catalog',      subtitle: 'Future feature',    icon: <Grid3X3 size={18} strokeWidth={1.8}/>, disabled: true },
+  ];
+
+  // MORE deck — task-family cards routing to existing handlers and pages.
+  const moreCards: DeckCardDef[] = [
+    {
+      id: 'list-actions',
+      title: 'List Actions',
+      subtitle: 'Save, undo, reset, expand, views',
+      icon: <Save size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '4px 0 8px' }}>
+          {deckAction(<Save size={17} strokeWidth={1.8}/>,       'Save',         runAndClose(handleSave), false, 'Save current list as a new Locker entry')}
+          {deckAction(<Undo2 size={17} strokeWidth={1.8}/>,      'Undo',         runAndClose(handleUndo), undoHistory.length === 0)}
+          {deckAction(<Redo2 size={17} strokeWidth={1.8}/>,      'Redo',         runAndClose(handleRedo), redoHistory.length === 0)}
+          {deckAction(<RotateCcw size={17} strokeWidth={1.8}/>,  'Reset',        runAndClose(handleReset), false, 'Reload from your saved data (undoable)')}
+          {deckAction(<Layers size={17} strokeWidth={1.8}/>,     'Expand All',   runAndClose(handleExpandAll))}
+          {deckAction(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', runAndClose(handleCollapseAll))}
+          {deckAction(<Tent size={17} strokeWidth={1.8}/>,       'Checklist',    runAndClose(() => setShowChecklist(true)), false, 'Trail checklist for selected items')}
+          {deckAction(<BarChart2 size={17} strokeWidth={1.8}/>,  'Summary',      runAndClose(() => setShowSummary(true)), false, 'Pack weight and distribution')}
+        </div>
+      ),
+    },
+    {
+      id: 'share-print',
+      title: 'Share & Print',
+      subtitle: 'Review links and printable lists',
+      icon: <Share2 size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '4px 0 8px' }}>
+          {deckAction(<Share2 size={17} strokeWidth={1.8}/>,  'Share', runAndClose(navigateToShare), false, 'Get a review link for this list')}
+          {deckAction(<Printer size={17} strokeWidth={1.8}/>, 'Print', runAndClose(handlePrint), false, 'Print your gear list')}
+        </div>
+      ),
+    },
+    {
+      id: 'list-settings',
+      title: 'List Settings',
+      subtitle: `Units: ${system === 'imperial' ? 'Imperial (lb / oz)' : 'Metric (kg / g)'}`,
+      icon: <Scale size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '12px 16px 16px', fontFamily: SANS }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>
+            Units
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(['imperial', 'metric'] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setSystem(s)}
+                aria-pressed={system === s}
+                aria-label={`Use ${s} units`}
+                style={{
+                  flex: 1, padding: '9px 0', borderRadius: 8,
+                  border: `1px solid ${system === s ? NAV_ACTIVE : CARD_BORDER}`,
+                  background: system === s ? 'rgba(42,87,64,0.10)' : '#fff',
+                  color: system === s ? NAV_ACTIVE : SECONDARY,
+                  fontSize: 13.5, fontWeight: 600, cursor: 'pointer',
+                  textTransform: 'capitalize', fontFamily: SANS,
+                }}
+              >
+                {s === 'imperial' ? 'Imperial (lb/oz)' : 'Metric (kg/g)'}
+              </button>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'help-trailweigh',
+      title: 'Help & TrailWeigh',
+      subtitle: 'Guides, about, sources, contact',
+      icon: <HelpCircle size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '4px 0 8px' }}>
+          {deckLink('Help & How-To', 'help')}
+          {deckLink('About TrailWeigh', 'about')}
+          {deckLink('How It Works', 'how-it-works')}
+          {deckLink('Sources & References', 'sources')}
+          {deckLink('Report a Problem', 'report-problem')}
+          {deckLink('Contact Us', 'contact')}
+        </div>
+      ),
+    },
+    {
+      id: 'account-privacy',
+      title: 'Account & Privacy',
+      subtitle: 'Policies and account data',
+      icon: <Shield size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '4px 0 8px' }}>
+          {deckLink('Privacy Policy', 'privacy')}
+          {deckLink('Terms of Use', 'terms')}
+          {!!userId && deckLink('Delete Account / Data', 'delete-account')}
+          {deckLink('Affiliate Disclosure', 'affiliate')}
+          {deckLink('Accessibility', 'accessibility')}
+        </div>
+      ),
+    },
+  ];
+
   // ── Loading state ─────────────────────────────────────────────────────────────
 
   if (!sandboxReady) {
@@ -2176,14 +2098,12 @@ function MobileFunctionalV3Inner() {
           </div>
         </div>
 
-        {/* ── TITLE BAND ── */}
-        {/* Left/right SLIDER_W gutters reserved for the slider caps (absolutely positioned). */}
+        {/* ── TITLE BAND (R002 — full width, no slider gutters) ── */}
         <div style={{
           height: TITLE_BAND_H, flexShrink: 0, display: 'flex', alignItems: 'center',
           background: PAGE_BG, borderBottom: `1px solid ${DIVIDER}`, zIndex: 5,
         }}>
-          <div style={{ width: SLIDER_W, flexShrink: 0 }}/>
-          <div style={{ flex: 1, textAlign: 'center', padding: '0 4px', overflow: 'hidden' }}>
+          <div style={{ flex: 1, textAlign: 'center', padding: '0 16px', overflow: 'hidden' }}>
             <span style={{
               fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS,
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
@@ -2191,11 +2111,10 @@ function MobileFunctionalV3Inner() {
               {listName || 'Untitled List'}
             </span>
           </div>
-          <div style={{ width: SLIDER_W, flexShrink: 0 }}/>
         </div>
 
-        {/* ── SCROLLABLE CONTENT ── */}
-        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative', paddingLeft: SLIDER_W, paddingRight: SLIDER_W }}>
+        {/* ── SCROLLABLE CONTENT (R002 — full width, gutters removed) ── */}
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
 
           {/* ── STICKY HEADER: PACK SUMMARY (list name moved to title band above) ── */}
           <div style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
@@ -2714,57 +2633,60 @@ function MobileFunctionalV3Inner() {
 
         </div>{/* end scrollable */}
 
-        {/* ── BOTTOM HANDLE — drag up/down to open/close More panel ── */}
-        <div
-          role="button"
-          tabIndex={0}
-          aria-label={moreY > morePanelH / 2 ? 'Close More panel' : 'Open More panel'}
-          onPointerDown={handleMorePointerDown}
-          onPointerMove={handleMorePointerMove}
-          onPointerUp={handleMorePointerUp}
-          onPointerCancel={handleMorePointerUp}
-          onKeyDown={e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              snapMoreTo(moreY > morePanelH / 2 ? 0 : morePanelH);
-            }
-          }}
-          style={{
-            flexShrink: 0, height: BOTTOM_HAND_H, background: SLIDER_BG,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'row-resize', userSelect: 'none', touchAction: 'none',
-            outline: 'none', zIndex: 10,
-          }}
-        >
-          <div style={{ width: 44, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.42)' }}/>
-        </div>
-
-        {/* ── BOTTOM NAV (unchanged) ── */}
+        {/* ── BOTTOM TAB BAR (R002 — List, Locker, +, Search, More) ── */}
         <BottomNavBar
-          active={activeNav}
-          onSelect={tab => setActiveNav(tab)}
-          onMore={() => snapMoreTo(morePanelH)}
+          activeDeck={activeDeck}
+          onList={closeDeck}
+          onDeck={openDeck}
         />
 
-        {/* ── OVERLAYS (rendered as absolute children of the phone frame) ── */}
-
-        {/* Locker overlay */}
-        {activeNav === 'locker' && (
-          <LockerOverlay
-            onLoad={newStore => {
-              mutateSandbox(() => newStore);
-              setActiveNav('list');
-            }}
-            onSave={handleSave}
-            onClose={() => setActiveNav('list')}
+        {/* ── CARD DECKS (R002 — conditionally rendered; closed decks do not exist
+              in the DOM and therefore cannot intercept pointer events) ── */}
+        {activeDeck === 'locker' && (
+          <CardDeck
+            deckLabel="Locker"
+            cards={lockerCards}
+            activeCardId={activeCardId}
+            onActivateCard={activateCard}
+            onClose={closeDeck}
+            emptyNote="No saved lists yet. Use More → List Actions → Save to add one."
+          />
+        )}
+        {activeDeck === 'add' && (
+          <CardDeck
+            deckLabel="Add"
+            cards={addCards}
+            activeCardId={activeCardId}
+            onActivateCard={activateCard}
+            onClose={closeDeck}
+          />
+        )}
+        {activeDeck === 'search' && (
+          <CardDeck
+            deckLabel="Search"
+            cards={searchCards}
+            activeCardId={activeCardId}
+            onActivateCard={activateCard}
+            onClose={closeDeck}
+          />
+        )}
+        {activeDeck === 'more' && (
+          <CardDeck
+            deckLabel="More"
+            cards={moreCards}
+            activeCardId={activeCardId}
+            onActivateCard={activateCard}
+            onClose={closeDeck}
           />
         )}
 
-        {/* Summary overlay */}
-        {activeNav === 'summary' && (
+        {/* ── OVERLAYS (rendered as absolute children of the phone frame) ── */}
+
+        {/* Summary overlay — reached via More → List Actions → Summary */}
+        {showSummary && (
           <SummaryOverlay
             sandbox={sandbox}
-            onClose={() => setActiveNav('list')}
+            onClose={() => setShowSummary(false)}
           />
         )}
 
@@ -2793,66 +2715,6 @@ function MobileFunctionalV3Inner() {
 
         {/* Toast */}
         {toast && <Toast message={toast}/>}
-
-        {/* ── EDGE-SLIDER OVERLAYS ── */}
-
-        {/* Left nav slider */}
-        <LeftSlider
-          drawerX={drawerX}
-          drawerW={drawerW}
-          snapping={drawerSnapping}
-          onPointerDown={handleDrawerPointerDown}
-          onPointerMove={handleDrawerPointerMove}
-          onPointerUp={handleDrawerPointerUp}
-          onSnap={snapDrawerTo}
-          onClose={() => snapDrawerTo(0)}
-          onTransitionEnd={handleDrawerTransitionEnd}
-          system={system}
-          setSystem={setSystem}
-          onChecklist={() => { snapDrawerTo(0); setShowChecklist(true); }}
-          onPrint={() => { snapDrawerTo(0); handlePrint(); }}
-        />
-
-        {/* Right plus-panel slider */}
-        <RightSlider
-          plusX={plusX}
-          panelW={panelW}
-          snapping={plusSnapping}
-          onPointerDown={handlePlusPointerDown}
-          onPointerMove={handlePlusPointerMove}
-          onPointerUp={handlePlusPointerUp}
-          onSnap={snapPlusTo}
-          onClose={() => snapPlusTo(0)}
-          onTransitionEnd={handlePlusTransitionEnd}
-          onScanGearList={() => { snapPlusTo(0); setShowScanner(true); }}
-        />
-
-        {/* Bottom More panel */}
-        <BottomMorePanel
-          moreY={moreY}
-          morePanelH={morePanelH}
-          snapping={moreSnapping}
-          onClose={() => snapMoreTo(0)}
-          onTransitionEnd={handleMoreTransitionEnd}
-          canUndo={undoHistory.length > 0}
-          canRedo={redoHistory.length > 0}
-          onSave={() => { snapMoreTo(0); handleSave(); }}
-          onUndo={() => { snapMoreTo(0); handleUndo(); }}
-          onRedo={() => { snapMoreTo(0); handleRedo(); }}
-          onReset={() => { snapMoreTo(0); handleReset(); }}
-          onShare={() => { snapMoreTo(0); navigateToShare(); }}
-          onExpandAll={() => { snapMoreTo(0); handleExpandAll(); }}
-          onCollapseAll={() => { snapMoreTo(0); handleCollapseAll(); }}
-          isAuthenticated={!!userId}
-          onNavigateToPage={(id) => {
-            snapMoreTo(0);
-            if (id === 'sources') {
-              pushScreen({ screen: 'sources' });
-            } else {
-              pushScreen({ screen: 'footer-page', footerPageId: id });
-            }
-          }}
-        />
 
         {/* Footer page */}
         {currentScreen.screen === 'footer-page' && currentScreen.footerPageId && (
@@ -2970,7 +2832,7 @@ function MobileFunctionalV3Inner() {
           </div>
         )}
 
-        {/* Plus creation panel is now the RightSlider above */}
+        {/* (R002: sliders retired — creation lives in the Add deck above) */}
 
       </div>{/* end phone frame */}
 

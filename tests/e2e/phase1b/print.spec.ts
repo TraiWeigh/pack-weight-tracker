@@ -7,14 +7,17 @@
  * Architecture finding: the Print button with aria-label="Print checklist" lives
  * inside the MobileChecklist overlay component, which is only mounted when the
  * user has switched to checklist mode. It is NOT present in the default demo
- * (gear-list) view. The More-menu "Print" button (aria-label "Print") IS accessible
- * from the default view and calls the same handler — all tests use that path.
+ * (gear-list) view. R002: the Print entry now lives in the More deck →
+ * "Share & Print" card. All tests use that path.
  */
 import { test, expect, gotoDemo } from '../helpers/trailweigh';
 
+const PRINT_NAME = /^Print — Print your gear list/;
+
 async function openMoreMenu(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: 'Open menu' }).click();
-  await expect(page.getByRole('button', { name: 'Print', exact: true })).toBeVisible({ timeout: 5000 });
+  await page.getByRole('button', { name: /^More — settings and tools/ }).click();
+  await page.getByRole('button', { name: /^Share & Print — open card/ }).click();
+  await expect(page.getByRole('button', { name: PRINT_NAME })).toBeVisible({ timeout: 5000 });
 }
 
 test.describe('Print control', () => {
@@ -22,7 +25,7 @@ test.describe('Print control', () => {
   test('Print entry exists in More menu with accessible label', async ({ page, errors }) => {
     await gotoDemo(page);
     await openMoreMenu(page);
-    const printBtn = page.getByRole('button', { name: 'Print', exact: true });
+    const printBtn = page.getByRole('button', { name: PRINT_NAME });
     await expect(printBtn).toBeVisible();
     expect(errors.pageErrors).toEqual([]);
   });
@@ -34,7 +37,7 @@ test.describe('Print control', () => {
     });
     await gotoDemo(page);
     await openMoreMenu(page);
-    await page.getByRole('button', { name: 'Print', exact: true }).click();
+    await page.getByRole('button', { name: PRINT_NAME }).click();
     await page.waitForTimeout(300);
     const callCount = await page.evaluate(() => (window as any).__printCallCount);
     expect(callCount, 'window.print called once').toBe(1);
@@ -47,9 +50,10 @@ test.describe('Print control', () => {
       window.print = () => { (window as any).__printCallCount++; };
     });
     await gotoDemo(page);
-    await page.getByRole('button', { name: 'Open menu' }).click();
-    await expect(page.getByRole('button', { name: 'Print', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Print', exact: true }).click();
+    await page.getByRole('button', { name: /^More — settings and tools/ }).click();
+    await page.getByRole('button', { name: /^Share & Print — open card/ }).click();
+    await expect(page.getByRole('button', { name: PRINT_NAME })).toBeVisible();
+    await page.getByRole('button', { name: PRINT_NAME }).click();
     await page.waitForTimeout(300);
     const callCount = await page.evaluate(() => (window as any).__printCallCount);
     expect(callCount, 'window.print called once via menu').toBe(1);
@@ -60,7 +64,7 @@ test.describe('Print control', () => {
     await page.addInitScript(() => { window.print = () => {}; });
     await gotoDemo(page);
     await openMoreMenu(page);
-    await page.getByRole('button', { name: 'Print', exact: true }).click();
+    await page.getByRole('button', { name: PRINT_NAME }).click();
     await page.waitForTimeout(500);
     // LIST SUMMARY must still be visible — page not navigated away
     await expect(page.getByText('LIST SUMMARY')).toBeVisible({ timeout: 5000 });
@@ -71,7 +75,7 @@ test.describe('Print control', () => {
     await page.addInitScript(() => { window.print = () => {}; });
     await gotoDemo(page);
     await openMoreMenu(page);
-    await page.getByRole('button', { name: 'Print', exact: true }).click();
+    await page.getByRole('button', { name: PRINT_NAME }).click();
     await page.waitForTimeout(300);
     expect(errors.pageErrors, 'no uncaught JS errors on print').toEqual([]);
   });

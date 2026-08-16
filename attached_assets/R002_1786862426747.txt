@@ -1,0 +1,343 @@
+R002 — TRAILWEIGH V3 FINALIZED BOTTOM CARD-DECK NAVIGATION
+
+PURPOSE
+Implement the finalized TrailWeigh mobile Bottom Card Deck Navigation System in the isolated V3 phone experience and retire the competing permanent side-slider navigation model.
+
+THIS IS AN APPROVED VISUAL + FUNCTION CHANGE.
+
+STRICT SCOPE
+- V3 phone experience only.
+- Primary source scope: MobileFunctionalV3.tsx only.
+- Do NOT modify Checklist.tsx.
+- Do NOT modify desktop.
+- Do NOT modify database/schema, authentication, publishing/deployment, production data, or development database.
+- Do NOT change unrelated list/category/item behavior.
+- Preserve the current active-list data, scroll behavior, accordion behavior, item selections, weights, and list functions.
+- Test files and the required R002 report may be added/updated, but avoid unrelated generated artifacts.
+- If an existing architecture limitation makes a requirement unsafe, STOP and report it instead of broadening scope.
+
+FINALIZED MOBILE NAVIGATION MODEL
+The resting mobile screen is the active list.
+Use one compact bottom tab bar with exactly these five primary tabs for this implementation:
+
+1. List
+2. Locker
+3. + / Add
+4. Search
+5. More
+
+Do NOT add a permanent Summary tab in R002.
+
+The bottom tabs select a FUNCTION FAMILY.
+Tapping Locker, +, Search, or More raises that area's vertically stacked TrailWeigh card deck from the bottom.
+Tapping List returns to the active list / closes the open deck.
+
+REMOVE / RETIRE COMPETING PRIMARY NAVIGATION
+- Remove the permanent left slide-bar navigation concept from V3.
+- Remove the permanent right slide-bar Add/Create concept from V3.
+- Remove the separate floating hamburger control.
+- Remove the separate floating + control once the bottom + tab replaces it.
+- Retire the old standalone More bottom-sheet interaction where it conflicts with the new More card deck.
+- Do not leave permanent left/right gutters for navigation.
+- Restore the active list/category content to essentially full available phone width.
+- Do not cover category content with permanent side controls.
+
+ACTIVE LIST / RESTING STATE
+When no deck is open:
+- The active list is the primary screen.
+- Preserve the actual active list title.
+- Keep the list title centered horizontally.
+- Preserve the existing logo/header and Pack Summary unless a tiny spacing adjustment is required for the bottom tab system.
+- Preserve active-list scroll position, open/closed category state, item state, and selections when opening and closing any deck.
+- The bottom tab bar remains compact, thumb-reachable, and does not consume unnecessary height.
+- Add only the minimum bottom content padding necessary so the tab bar never blocks the final list rows.
+
+BOTTOM TAB BAR
+- Compact, fixed/sticky to the phone bottom.
+- Five clearly identifiable tabs: List, Locker, +, Search, More.
+- The + / Add tab may be visually central/prominent but must still belong to the same tab system rather than float independently.
+- Use TrailWeigh visual identity; do not imitate Apple branding.
+- Respect safe-area insets.
+- Every tab must have an accessible label.
+- Touch targets must be comfortably sized.
+- Keyboard/focus operation must remain available where supported.
+- Active tab state must be visually clear without excessive decoration.
+
+CARD-DECK VISUAL LANGUAGE
+Each non-List tab opens a vertically overlapping stack of rounded TrailWeigh cards.
+
+Cards must:
+- use modern rounded rectangular proportions;
+- use TrailWeigh colors, typography, and iconography;
+- use restrained elevation/depth;
+- avoid literal banking/payment-card decoration;
+- expose enough of every inactive card's upper section/title to identify it;
+- remain readable in light/dark-compatible styling;
+- feel like selectable objects/task families rather than ordinary menu rows.
+
+STACK BEHAVIOR
+When a deck opens:
+1. The deck rises from the bottom.
+2. Cards appear in a vertically overlapping stack.
+3. Each inactive card leaves its title/top portion visible.
+4. Tapping a card moves it to the operational/active position.
+5. Dragging a card toward the operational position must also work.
+6. Other cards compress into the stack but remain selectable.
+7. Tapping another exposed card transfers the active position directly without requiring the deck to close first.
+8. Back/close returns predictably to the active list.
+
+TAP + DRAG
+- No essential function may require dragging.
+- Tap must always reach the same usable active state.
+- During an active drag, the card should track the finger directly where practical.
+- The user may reverse direction before release.
+- After release, settle smoothly into the active/docked or stacked position.
+- No uncontrolled destructive full-swipe behavior.
+- Respect reduced-motion preferences.
+
+HAPTIC RULE
+When a card reaches its operational/docked position:
+- Provide ONE restrained haptic confirmation only if the platform/browser genuinely supports an appropriate haptic capability.
+- Do not continuously vibrate while dragging.
+- Do not spam haptics.
+- Do not fake unsupported haptics.
+- The interface must remain fully understandable with no haptic support.
+
+LOCKER TAB
+Tapping Locker opens a saved-file/list card deck.
+
+Use the existing V3-accessible saved list/file data only.
+Each saved list/file should be represented as its own card where existing data supports it.
+
+Show useful existing metadata when available, such as:
+- list/file name;
+- list type;
+- created/updated date;
+- destination/trip information;
+- item count;
+- selected/packed progress;
+- total/base weight when Track Weight is enabled.
+
+Do not invent metadata that is not available.
+
+Selecting a Locker file card should use the existing safe V3 mechanism for opening/selecting that list.
+Do not alter owner data architecture or storage behavior.
+
+If actions such as Preview, Rename, Duplicate, Share, or Delete are already available safely in V3, they may appear only within the active file card without cluttering resting cards.
+Do NOT implement new destructive/storage capabilities merely to fill the card.
+
+If the current isolated V3 route has no safe access to saved-file data, STOP and report that limitation rather than inventing a new storage system.
+
+PLUS / ADD TAB
+Tapping + opens an Add deck.
+
+Meaningful card/task families may include:
+- Add Item
+- Add Category
+- Create New List
+- Add from Locker / Master List
+- Scan / Import
+- Template
+
+IMPORTANT:
+- Wire only workflows that actually exist and are safe in the current V3 architecture.
+- Do not pretend unavailable features work.
+- Existing unavailable/incomplete workflows may be visibly disabled and clearly identified as unavailable, or omitted if that produces a cleaner truthful interface.
+- Preserve the currently working Scan Gear List / Scan-Import behavior.
+- Preserve any existing Create New List enabled/disabled truth.
+- Do not implement an unrelated full Create New List redesign in R002.
+- Do not redesign Smart Categories in R002; this prompt only establishes the deck navigation shell and routes existing actions into it.
+
+SEARCH TAB
+Tapping Search opens a Search deck.
+
+Possible task families:
+- Search Current List
+- Search Locker
+- Search Catalog
+- Search Visual Locker
+
+For R002:
+- Wire only search capabilities that already exist.
+- Do not invent a new catalog, Visual Locker, or backend search service.
+- Unavailable future search families may be omitted or clearly disabled.
+- Preserve any existing current-list search functionality.
+
+MORE TAB
+Tapping More opens a More deck.
+Do not make every tiny command its own top-level card.
+
+Use meaningful task-family cards such as:
+
+A. List Actions
+- Save
+- Undo
+- Redo
+- Reset
+- Expand All
+- Collapse All
+
+B. Share & Print
+- Share
+- Print
+
+C. List Settings
+- Units
+- other already-existing list-specific settings only
+
+D. Help & TrailWeigh
+Use the existing destinations/content that are already present, including where applicable:
+- Help & How-To
+- About TrailWeigh
+- How It Works
+- Sources & References
+- Report a Problem
+- Contact Us
+
+E. Account & Privacy
+Use existing destinations only, including where applicable:
+- Privacy
+- Terms
+- Delete Account/Data when appropriate/authenticated
+- Affiliate Disclosure
+- Accessibility
+
+Do not create duplicate navigation paths if an existing action can simply be routed through the appropriate active card.
+
+CARD OPERATIONAL POSITION
+When a task-family card becomes active:
+- it should reveal/use its contained controls or destination cleanly;
+- other cards remain partially visible and selectable;
+- opening another card should not require fully closing the deck;
+- destructive actions require their existing safeguards and must never trigger from a casual card tap/drag.
+
+CLOSING / STATE PRESERVATION
+Closing a deck or selecting List must preserve:
+- active list scroll position;
+- category accordion state;
+- item selection/check state;
+- quantities/weights/units;
+- current active list;
+- any other ordinary V3 list state that already persists during navigation.
+
+No deck interaction may silently reset the list.
+
+SCROLLING
+- Preserve normal vertical list scrolling.
+- Do not add permanent left/right navigation gutters.
+- Do not require a permanently visible browser scrollbar.
+- A transient OS/browser scroll indicator during scrolling is acceptable.
+- Decks may scroll vertically when they contain many cards.
+
+RESPONSIVE REQUIREMENTS
+Verify at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+At every width verify:
+- no horizontal overflow;
+- active list retains essentially full available width;
+- bottom tabs remain usable and do not obscure content;
+- safe-area behavior is correct;
+- card titles remain readable in the stacked state;
+- cards do not become so compressed that inactive cards are unidentifiable;
+- List returns cleanly to the resting state;
+- Locker deck behavior;
+- Add deck behavior;
+- Search deck behavior;
+- More deck behavior;
+- active card switching;
+- tap alternative to drag;
+- closing preserves list scroll + accordion + selection state;
+- keyboard/focus accessibility where supported;
+- reduced-motion behavior;
+- no accidental destructive gesture.
+
+DO NOT MAKE A LITERAL APPLE WALLET COPY
+Use the familiar physical metaphor of a stacked card deck only.
+Do not use:
+- fake card numbers;
+- magnetic stripes;
+- payment-network logos;
+- bank-card artwork;
+- Apple branding.
+
+TESTING
+Perform at minimum:
+- TypeScript/typecheck.
+- Browser runtime console check.
+- Automated Chromium tests for the five bottom tabs.
+- Automated open/close tests for each available deck.
+- Active-card tap switching.
+- Drag activation where feasible in automation.
+- State-preservation test: scroll/open category/select state -> open deck -> close/return List -> state preserved.
+- 320/375/390/430 viewport checks.
+- No horizontal overflow.
+- Accessibility labels for tabs and cards.
+- Reduced-motion test.
+- Verify removed side/floating controls are actually gone and no invisible overlay intercepts category/list touches.
+
+KNOWN DEFECTS FROM R001 THAT MUST NOT BE CARRIED FORWARD
+R001 found:
+- vertical movement on the old side slider could be mistaken for a tap and open the drawer;
+- position-only release logic did not implement velocity;
+- bottom handle testing did not prove the drag function;
+- closed More/Add overlays appeared capable of intercepting pointer events in a failed test.
+
+Because R002 retires the competing side-slider model, do not reproduce those gesture bugs in the card system.
+In particular:
+- vertical list scrolling must never accidentally activate a card/tab;
+- closed decks/overlays must not intercept pointer events;
+- automated tests must assert actual state changes rather than passing without assertions.
+
+CHANGED-FILE DISCIPLINE
+Application source:
+- Prefer MobileFunctionalV3.tsx only.
+- If another application source file is genuinely required, STOP BEFORE editing it and report exactly why.
+
+Testing/report files may be added/updated as needed.
+
+REQUIRED R002 REPORT
+Create a concise report named:
+R002.md
+
+The report must include:
+1. Exact application source files changed.
+2. Exact test/report files added or changed.
+3. What was implemented.
+4. Any requirement not implemented and why.
+5. Pass/fail table for 320, 375, 390, 430.
+6. Pass/fail for:
+   - five bottom tabs;
+   - full-width resting list;
+   - Locker deck;
+   - Add deck;
+   - Search deck;
+   - More deck;
+   - stacked inactive-card title visibility;
+   - tap activation;
+   - drag activation;
+   - active-card switching;
+   - state preservation;
+   - closed overlay pointer-events;
+   - accessibility;
+   - reduced motion;
+   - TypeScript;
+   - runtime console.
+7. Number of automated tests run/passed/failed.
+8. Any remaining defect or uncertainty.
+9. Confirmation that desktop, Checklist.tsx, database, auth, deployment/publishing were untouched.
+
+ZIP
+Provide a short ZIP named:
+R002.zip
+
+Include the R002 report and the relevant changed/test evidence needed for review.
+Do not fill the ZIP with unnecessary dependency/build caches.
+
+STOP CONDITION
+After implementation + verification + R002 report/ZIP:
+STOP.
+Do not continue into another TrailWeigh change.
