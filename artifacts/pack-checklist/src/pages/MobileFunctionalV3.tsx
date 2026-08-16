@@ -827,7 +827,7 @@ function SlideTabDrawer({
   );
 }
 
-// ─── PLUS CREATION SHEET (slides from bottom) ────────────────────────────────────
+// ─── PLUS CREATION SHEET (slides down from top) ──────────────────────────────────
 interface PlusSheetProps {
   open: boolean;
   onClose: () => void;
@@ -837,7 +837,7 @@ interface PlusSheetProps {
 function PlusSheet({ open, onClose, onScanGearList }: PlusSheetProps) {
   return (
     <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent side="bottom" style={{ padding: '24px 24px 36px', borderRadius: '20px 20px 0 0' }}>
+      <SheetContent side="top" style={{ padding: '24px 24px 36px', borderRadius: '0 0 20px 20px' }}>
         <SheetHeader>
           <SheetTitle style={{ fontFamily: SERIF, fontSize: 16, color: PRIMARY, textAlign: 'left', marginBottom: 4 }}>
             Start / Create
@@ -1441,14 +1441,15 @@ function MobileFunctionalV3Inner() {
     { active: false, startX: 0, startOffset: 0 },
   );
   const [moreOpen, setMoreOpen] = useState(false);
-  // Responsive drawer width: 52 % of viewport width, capped at 240 px.
-  // Recomputes on resize so the drawer stays ~half-screen at every phone width.
+  // Drawer width = phone frame width minus the 20 px pull-tab that stays exposed.
+  // Uses Math.min(innerWidth, 430) because the phone frame caps at 430 px maxWidth.
+  // Recomputes on resize so the open drawer always fills the frame except for the tab.
   const [drawerW, setDrawerW] = useState(() =>
-    Math.min(Math.round(window.innerWidth * 0.52), 240),
+    Math.min(window.innerWidth, 430) - 20,
   );
   useEffect(() => {
     const onResize = () =>
-      setDrawerW(Math.min(Math.round(window.innerWidth * 0.52), 240));
+      setDrawerW(Math.min(window.innerWidth, 430) - 20);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
