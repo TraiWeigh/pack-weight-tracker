@@ -12,3 +12,4 @@
 - [Mobile wedge architecture](mobile-wedge-architecture.md) — MobileWedgeCategory in lg:hidden beside unchanged GearCategory in hidden lg:block; mobileCategoryTheme.ts for icons/colors; KIS mode absent from codebase.
 - [Content extraction pattern](content-extraction-pattern.md) — AboutContent/HelpContent/HowItWorksContent/SourcesContent exported; V3 uses navigate+onOpenSources props; 'sources' is a screen stack entry not a modal.
 - [Review page testing patterns](review-page-testing.md) — Welcome modal is the readiness signal; GearCategory header is div not button; CSV names in sub not desc.
+- [Three-slider V3 architecture](three-slider-architecture.md) — LeftSlider/RightSlider/BottomMorePanel replace Radix Sheets; gesture direction conventions, z-index layers, layout structure, 320px note.

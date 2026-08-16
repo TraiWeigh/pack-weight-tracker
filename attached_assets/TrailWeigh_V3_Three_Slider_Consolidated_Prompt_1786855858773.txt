@@ -1,0 +1,126 @@
+TRAILWEIGH — V3 PHONE EDGE-SLIDER REDESIGN — CONSOLIDATED CURRENT REQUIREMENTS
+
+STRICT SCOPE
+- V3 phone experience only.
+- Preserve all currently passing functionality.
+- Do not change Checklist.tsx.
+- Do not change desktop.
+- Do not change database, auth, deployment/publishing, or unrelated behavior.
+- Do not redesign the contents of the existing panels unless explicitly stated below.
+- If any requirement conflicts with existing architecture, STOP and report the conflict rather than broadening scope.
+
+1. TOP / TITLE STRUCTURE
+- Keep the TrailWeigh logo header as its own separate top header.
+- Directly below it, keep the actual active list title centered horizontally in its own title band.
+- The left hamburger cap and right + cap belong on opposite sides of this centered title space.
+- Neither cap/bar may touch or overlap the TrailWeigh logo header above.
+- Neither cap/bar may touch or overlap the Summary bar below.
+- The list title must remain visually centered even with the left and right controls present.
+
+2. LEFT EDGE CONTROL — NAVIGATION
+- Replace the small pull tab with a larger thumb-friendly vertical slide bar.
+- Use a subdued, non-intrusive TrailWeigh-compatible muted slate-green / gray-green color, not red.
+- The visible bar may stay visually slim, but its touch/grab target must be comfortably thumb-sized.
+- The hamburger icon is physically attached to the TOP of the left slide bar as one continuous piece.
+- Hamburger cap and slide bar use the same color; hamburger icon uses high-contrast light/white treatment.
+- The hamburger cap sits beside the centered list-title band, not in the logo header.
+- The left slide bar must not overlap or touch category cards or expanded category/item content.
+- Reduce the list/category content width slightly if necessary to create a deliberate left-side gutter.
+- Dragging the left bar horizontally must move the navigation drawer 1:1 with the user's finger, with no lag or fixed-duration animation while dragging.
+- When fully open, the drawer should travel almost completely across the phone.
+- Leave the left slide bar exposed at the drawer edge so the user can grab the SAME bar and drag the drawer closed.
+- On release, smoothly settle fully open or closed based on drag distance/velocity.
+- No bounce, wobble, or overshoot.
+- Preserve tap activation, keyboard activation, Escape close, backdrop close, focus handling, and reduced-motion behavior.
+- Do not add a separate floating hamburger control.
+
+3. RIGHT EDGE CONTROL — ADD / CREATE
+- Add a matching thumb-friendly vertical slide bar on the right side.
+- Same subdued muted slate-green / gray-green family as the left bar.
+- The + icon is physically attached to the TOP of the right slide bar as one continuous piece.
+- + cap and slide bar use the same color; + icon uses high-contrast light/white treatment.
+- The + cap sits beside the centered list-title band, not in the logo header.
+- The right slide bar must not overlap or touch category cards or expanded category/item content.
+- Reduce the list/category content width slightly if necessary to create a deliberate right-side gutter.
+- The right bar controls the existing Add/Create panel.
+- Preserve the existing Add/Create panel contents, labels, enabled/disabled states, and actions exactly.
+- Dragging the right bar horizontally must move its panel 1:1 with the user's finger.
+- The bar must remain exposed in the open state so it can be grabbed and slid back closed.
+- Tapping the + cap should also open the Add/Create panel.
+- On release, smoothly settle fully open or closed based on drag distance/velocity.
+- No bounce, wobble, or overshoot.
+- Preserve accessibility and reduced-motion behavior.
+- Remove any redundant floating + control once this attached + cap fully replaces it.
+
+4. CATEGORY / CONTENT WIDTH
+- The category area must never sit underneath either side slide bar.
+- Provide intentional left and right gutters if needed.
+- Category cards, category text, checkboxes, controls, expanded items, and item details must remain fully readable and tappable.
+- Test narrow widths carefully so the side controls do not make category content unusably narrow.
+
+5. BOTTOM BAR
+- KEEP THE EXISTING BOTTOM BAR VISUALLY AND FUNCTIONALLY AS IT IS.
+- Do not replace it.
+- Do not redesign its existing icons, labels, contents, height, or current functions.
+- Add a thumb-friendly horizontal slide HANDLE physically attached to the TOP EDGE of the existing bottom bar.
+- The handle and bottom bar should read as one connected component.
+- Use the same subdued muted slate-green / gray-green color family as the side sliders.
+- The visible handle should be restrained, but its touch target must be comfortable for a thumb.
+- Dragging the attached handle upward/downward must control the existing More/task panel 1:1 with the user's finger.
+- The handle must remain exposed and usable so the panel can be slid back closed.
+- Tapping the handle should also open the existing More/task panel.
+- On release, smoothly settle fully open or closed based on drag distance/velocity.
+- No bounce, wobble, or overshoot.
+- Preserve the existing More/task panel contents and actions exactly.
+
+6. SCROLLING
+- Preserve normal vertical scrolling.
+- Do not require a permanently visible right-side scrollbar.
+- A normal temporary OS/browser scroll indicator while actively scrolling is acceptable.
+
+7. MOTION STANDARD
+- While the user is actively dragging any slider, movement must be direct 1:1 finger tracking.
+- No easing or lag during the drag itself.
+- After release, use a quick, smooth native-feeling settle animation.
+- Opening may decelerate smoothly; closing may be slightly faster.
+- No spring bounce or overshoot.
+- Respect prefers-reduced-motion / reduced-motion settings.
+
+8. ACCESSIBILITY
+- All icon caps and slider handles must have meaningful accessible labels.
+- Tap/click must remain available; dragging cannot be the only activation method.
+- Keyboard operation must remain available where applicable.
+- Preserve focus management and Escape/backdrop close behavior for overlays/panels.
+- Touch target size should be thumb-friendly even if the visible bar is slimmer.
+
+9. RESPONSIVE VERIFICATION
+Test at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+Verify at every width:
+- TrailWeigh logo header is untouched by the sliders.
+- Actual list title remains centered.
+- Hamburger cap and + cap sit on opposite sides of the title band.
+- Neither side control touches the logo header or Summary bar.
+- Side bars do not overlap categories/items.
+- Category width remains usable.
+- Left drawer opens/closes with 1:1 drag and leaves its bar exposed.
+- Right Add/Create panel opens/closes with 1:1 drag and leaves its bar exposed.
+- Bottom existing bar remains unchanged except for its attached top slide handle.
+- Bottom handle opens/closes the More/task panel with 1:1 drag.
+- Tapping each control also works.
+- No horizontal overflow.
+- No permanent right scrollbar is introduced.
+
+10. REQUIRED REPORT
+After implementation:
+- Report every file changed and why.
+- Confirm whether only MobileFunctionalV3.tsx changed.
+- Report TypeScript result.
+- Report browser console result.
+- Report pass/fail for 320, 375, 390, and 430 px.
+- Report pass/fail for left slider, right slider, bottom slider, centered title, category clearance, accessibility, and reduced motion.
+- Do not make additional unrelated changes after verification.

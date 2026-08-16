@@ -28,7 +28,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@clerk/react';
 import {
-  Search, Plus, Check, GripVertical, MoreHorizontal,
+  Menu, Search, Plus, Check, GripVertical, MoreHorizontal,
   Backpack, Folder, Grid3X3, BarChart2,
   Hash, PackageOpen, ArrowRightLeft, Luggage, Camera,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
@@ -64,7 +64,7 @@ type SandboxStore = { items: PackState; order: string[]; meta: Record<string, Ca
 type ActiveNav = 'list' | 'locker' | 'catalog' | 'summary';
 
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
-// Hamburger drawer handled by drawerX (0–DRAWER_W) + drawerSnapping; More by moreOpen bool.
+// Left drawer: drawerX/drawerSnapping. Right panel: plusX/plusSnapping. More panel: moreY/moreSnapping.
 type MobileScreen = 'list' | 'footer-page' | 'share' | 'sources';
 type FooterPageId =
   | 'about' | 'how-it-works' | 'sources' | 'help'
@@ -152,6 +152,19 @@ const DETAIL_BG    = '#F5F0E8';
 const DETAIL_BDR   = 'rgba(0,0,0,0.06)';
 const OVERLAY_BG   = '#F2EDE4';
 const TOAST_BG     = '#2A5740';
+
+// ─── EDGE-CONTROL CONSTANTS ──────────────────────────────────────────────────────
+const SLIDER_W      = 28;         // touch-target width for each side slider (px)
+const BAR_VIS_W     = 10;         // visual bar width inside the touch zone (px)
+const SLIDER_BG     = '#4E5D58';  // muted slate-green — TrailWeigh slider color
+const APP_BAR_H     = 52;         // logo header height (px)
+const TITLE_BAND_H  = 40;         // list-title band height (px)
+const BOTTOM_HAND_H = 14;         // bottom drag-handle strip height (px)
+const BOTTOM_NAV_H  = 62;         // approximate bottom nav height (px)
+/** Snap-animation duration: near-instant when prefers-reduced-motion is set. */
+const motionDuration = () =>
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ? '0.01s' : '0.28s';
 
 // ─── LOGO MARK ──────────────────────────────────────────────────────────────────
 function LogoMark({ size = 24 }: { size?: number }) {
@@ -640,97 +653,83 @@ function NavTabDisabled({ Icon, label, 'aria-label': ariaLabel, title }: {
   );
 }
 
-// DRAWER_W is now computed responsively at runtime (52 % of viewport, max 240 px).
-// See drawerW state in MobileFunctionalV3Inner.
+// drawerW / panelW computed responsively in MobileFunctionalV3Inner (SLIDER_W exposed).
 
-// ─── SLIDE TAB DRAWER ─────────────────────────────────────────────────────────
-// Custom gesture drawer with:
-//   • A visible pull-tab pinned to the left edge at exactly 50 % viewport height.
-//   • 1:1 drag tracking (no CSS transition while pointer is active).
-//   • Snap-open / snap-close on pointer release (40 % threshold; <8 px = tap-toggle).
-//   • Proportional backdrop fade driven by drawerX.
-//   • Escape key closes; keyboard Enter/Space on tab toggles.
-interface SlideTabDrawerProps {
+// ─── LEFT SLIDER ──────────────────────────────────────────────────────────────
+// Hamburger cap (at title-band level) + vertical bar (content-area left gutter).
+// Positioned at left: drawerX — moves 1:1 with drag, snaps on release.
+// drawerW = frameWidth − SLIDER_W so the bar is always exposed when drawer is open.
+interface LeftSliderProps {
   drawerX: number;
   drawerW: number;
   snapping: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
   onPointerMove: (e: React.PointerEvent) => void;
   onPointerUp:   (e: React.PointerEvent) => void;
-  onSnap:   (targetX: number) => void;
-  onClose:  () => void;
+  onSnap:        (targetX: number) => void;
+  onClose:       () => void;
   onTransitionEnd: () => void;
-  system: string;
+  system: 'imperial' | 'metric';
   setSystem: (s: 'imperial' | 'metric') => void;
   onChecklist: () => void;
   onPrint: () => void;
 }
 
-function SlideTabDrawer({
+function LeftSlider({
   drawerX, drawerW, snapping,
   onPointerDown, onPointerMove, onPointerUp,
   onSnap, onClose, onTransitionEnd,
   system, setSystem, onChecklist, onPrint,
-}: SlideTabDrawerProps) {
+}: LeftSliderProps) {
+  const progress = Math.min(1, drawerX / drawerW);
   const isOpen   = drawerX > 0;
-  const progress = drawerX / drawerW; // 0–1
+  const halfOpen = drawerX >= drawerW / 2;
+  const motion   = `${motionDuration()} cubic-bezier(0.4,0,0.2,1)`;
+  const gestures = { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp };
 
-  // Escape key
   useEffect(() => {
     if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
   }, [isOpen, onClose]);
 
-  const easing   = 'cubic-bezier(0.4,0,0.2,1)';
-  const duration = '0.28s';
-  const motion   = `${duration} ${easing}`;
-
-  const gestureHandlers = {
-    onPointerDown,
-    onPointerMove,
-    onPointerUp,
-    onPointerCancel: onPointerUp,
-  };
-
-  const drawerItem = (icon: React.ReactNode, label: string, sublabel: string, onClick: () => void) => (
+  const drawerItem = (icon: React.ReactNode, label: string, sub: string, action: () => void) => (
     <button
       key={label}
-      onClick={onClick}
-      aria-label={sublabel ? `${label} — ${sublabel}` : label}
+      onClick={action}
+      aria-label={sub ? `${label} — ${sub}` : label}
       style={{
         display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        background: 'none', border: 'none', padding: '13px 20px', cursor: 'pointer',
-        textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
+        background: 'none', border: 'none', padding: '13px 20px',
+        cursor: 'pointer', textAlign: 'left', borderBottom: `1px solid ${DIVIDER}`,
       }}
     >
       <span style={{ color: SECONDARY, display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
       <div>
         <div style={{ fontSize: 14, fontWeight: 500, color: PRIMARY, fontFamily: SANS }}>{label}</div>
-        {sublabel && <div style={{ fontSize: 11, color: MUTED, marginTop: 1 }}>{sublabel}</div>}
+        {sub && <div style={{ fontSize: 11, color: MUTED, marginTop: 1 }}>{sub}</div>}
       </div>
     </button>
   );
 
   return (
     <>
-      {/* ── Proportional backdrop — only rendered when drawer is partially/fully open ── */}
+      {/* Proportional backdrop */}
       {isOpen && (
         <div
           onClick={onClose}
           aria-hidden="true"
           style={{
             position: 'absolute', inset: 0, zIndex: 200,
-            background: `rgba(0,0,0,${(0.65 * progress).toFixed(3)})`,
+            background: `rgba(0,0,0,${(0.60 * progress).toFixed(3)})`,
             transition: snapping ? `background ${motion}` : 'none',
           }}
         />
       )}
 
-      {/* ── Drawer panel — slides in from left, 1:1 with drawerX ── */}
+      {/* Drawer panel — slides in from left, 1:1 with drawerX */}
       <div
-        {...gestureHandlers}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
@@ -740,21 +739,16 @@ function SlideTabDrawer({
           background: CARD_BG,
           transform: `translateX(${drawerX - drawerW}px)`,
           transition: snapping ? `transform ${motion}` : 'none',
-          touchAction: 'none',
-          userSelect: 'none',
+          touchAction: 'none', userSelect: 'none',
           display: 'flex', flexDirection: 'column',
-          boxShadow: `4px 0 16px rgba(0,0,0,${(0.2 * progress).toFixed(3)})`,
+          boxShadow: `4px 0 20px rgba(0,0,0,${(0.22 * progress).toFixed(3)})`,
         }}
         onTransitionEnd={onTransitionEnd}
       >
-        {/* Header */}
         <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
           <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: PRIMARY }}>Menu</div>
         </div>
-
-        {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: 'auto', touchAction: 'pan-y' }}>
-          {/* Units toggle */}
           <div style={{ padding: '14px 20px 12px' }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -782,82 +776,135 @@ function SlideTabDrawer({
         </div>
       </div>
 
-      {/* ── Slide tab — left edge, vertically centred at exactly 50 % viewport height ── */}
-      {/* The tab tracks drawerX so it moves 1:1 with the panel during drag and snaps with it. */}
+      {/* ── Left slider: hamburger cap + vertical bar ── */}
+      {/* Cap sits at title-band level (top: APP_BAR_H). Bar fills gutter below. */}
       <div
-        {...gestureHandlers}
+        {...gestures}
         role="button"
         tabIndex={0}
-        aria-label={drawerX >= drawerW / 2 ? 'Close navigation drawer' : 'Open navigation drawer'}
-        onKeyDown={(e) => {
+        aria-label={halfOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onSnap(drawerX >= drawerW / 2 ? 0 : drawerW);
+            onSnap(halfOpen ? 0 : drawerW);
           }
         }}
         style={{
           position: 'absolute',
+          top: APP_BAR_H,
+          bottom: BOTTOM_HAND_H + BOTTOM_NAV_H,
           left: drawerX,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          transition: snapping ? `left ${motion}` : 'none',
-          width: 20,
-          height: 52,
+          width: SLIDER_W,
           zIndex: 202,
-          borderRadius: '0 10px 10px 0',
-          background: NAV_ACTIVE,
-          boxShadow: '2px 0 8px rgba(0,0,0,0.22)',
-          cursor: 'grab',
-          touchAction: 'none',
-          userSelect: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          touchAction: 'none', userSelect: 'none',
+          cursor: halfOpen ? 'w-resize' : 'e-resize',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          transition: snapping ? `left ${motion}` : 'none',
           outline: 'none',
         }}
       >
-        {/* Three grip dots — vertical column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4.5, alignItems: 'center', pointerEvents: 'none' }}>
-          {[0, 1, 2].map(i => (
-            <div key={i} style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.75)' }}/>
-          ))}
+        {/* Hamburger cap — sits at title-band level */}
+        <div style={{
+          width: '100%', height: TITLE_BAND_H, flexShrink: 0,
+          background: SLIDER_BG,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: drawerX < 2 ? '0 8px 0 0' : '0',
+        }}>
+          <Menu size={14} color="rgba(255,255,255,0.92)" strokeWidth={2.2}/>
         </div>
+        {/* Bar — content-area left gutter */}
+        <div style={{
+          flex: 1, width: BAR_VIS_W,
+          background: SLIDER_BG, opacity: 0.72,
+          borderRadius: '0 0 6px 6px',
+        }}/>
       </div>
     </>
   );
 }
 
-// ─── PLUS CREATION SHEET (slides down from top) ──────────────────────────────────
-interface PlusSheetProps {
-  open: boolean;
-  onClose: () => void;
+// ─── RIGHT SLIDER + PLUS PANEL ───────────────────────────────────────────────
+// Mirrors LeftSlider: + cap at title-band level, bar in content-area right gutter.
+// panelW = frameWidth − SLIDER_W so the bar stays exposed when the panel is open.
+// Dragging LEFT opens the panel (plusX increases); dragging RIGHT closes it.
+interface RightSliderProps {
+  plusX: number;
+  panelW: number;
+  snapping: boolean;
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp:   (e: React.PointerEvent) => void;
+  onSnap:        (targetX: number) => void;
+  onClose:       () => void;
+  onTransitionEnd: () => void;
   onScanGearList: () => void;
 }
 
-function PlusSheet({ open, onClose, onScanGearList }: PlusSheetProps) {
-  return (
-    <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent side="top" style={{ padding: '24px 24px 36px', borderRadius: '0 0 20px 20px' }}>
-        <SheetHeader>
-          <SheetTitle style={{ fontFamily: SERIF, fontSize: 16, color: PRIMARY, textAlign: 'left', marginBottom: 4 }}>
-            Start / Create
-          </SheetTitle>
-        </SheetHeader>
+function RightSlider({
+  plusX, panelW, snapping,
+  onPointerDown, onPointerMove, onPointerUp,
+  onSnap, onClose, onTransitionEnd,
+  onScanGearList,
+}: RightSliderProps) {
+  const progress = Math.min(1, plusX / panelW);
+  const isOpen   = plusX > 0;
+  const halfOpen = plusX >= panelW / 2;
+  const motion   = `${motionDuration()} cubic-bezier(0.4,0,0.2,1)`;
+  const gestures = { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp };
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
-          {/* Create New List — guided flow PENDING */}
+  useEffect(() => {
+    if (!isOpen) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, [isOpen, onClose]);
+
+  return (
+    <>
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          aria-hidden="true"
+          style={{
+            position: 'absolute', inset: 0, zIndex: 200,
+            background: `rgba(0,0,0,${(0.60 * progress).toFixed(3)})`,
+            transition: snapping ? `background ${motion}` : 'none',
+          }}
+        />
+      )}
+
+      {/* Panel — slides in from right, 1:1 with plusX */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Add or create"
+        style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0,
+          width: panelW, zIndex: 201,
+          background: CARD_BG,
+          transform: `translateX(${panelW - plusX}px)`,
+          transition: snapping ? `transform ${motion}` : 'none',
+          touchAction: 'none', userSelect: 'none',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: `-4px 0 20px rgba(0,0,0,${(0.22 * progress).toFixed(3)})`,
+        }}
+        onTransitionEnd={onTransitionEnd}
+      >
+        <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
+          <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: PRIMARY }}>Start / Create</div>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+          {/* Create New List — coming soon */}
           <div
             aria-disabled="true"
             title="CREATE NEW LIST GUIDED FLOW = NOT YET IMPLEMENTED"
             style={{
-              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 4px',
+              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 20px',
               borderBottom: `1px solid ${DIVIDER}`, opacity: 0.4, cursor: 'not-allowed',
             }}
           >
-            <div style={{
-              width: 40, height: 40, borderRadius: 10, background: 'rgba(0,0,0,0.06)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Plus size={20} color={SECONDARY} strokeWidth={2}/>
             </div>
             <div>
@@ -865,20 +912,17 @@ function PlusSheet({ open, onClose, onScanGearList }: PlusSheetProps) {
               <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>Guided setup — coming soon</div>
             </div>
           </div>
-
-          {/* Scan Gear List — REAL */}
+          {/* Scan Gear List — active */}
           <button
             onClick={() => { onScanGearList(); onClose(); }}
             aria-label="Scan Gear List — import from PDF or DOCX file"
             style={{
-              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 4px',
+              display: 'flex', alignItems: 'center', gap: 16, padding: '15px 20px',
               background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%',
+              borderBottom: `1px solid ${DIVIDER}`,
             }}
           >
-            <div style={{
-              width: 40, height: 40, borderRadius: 10, background: 'rgba(42,87,64,0.10)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(42,87,64,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Scale size={20} color={NAV_ACTIVE} strokeWidth={1.8}/>
             </div>
             <div>
@@ -887,15 +931,65 @@ function PlusSheet({ open, onClose, onScanGearList }: PlusSheetProps) {
             </div>
           </button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+
+      {/* ── Right slider: + cap + vertical bar ── */}
+      {/* Positioned at right: plusX (mirrors left slider). */}
+      <div
+        {...gestures}
+        role="button"
+        tabIndex={0}
+        aria-label={halfOpen ? 'Close add panel' : 'Open add / create panel'}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSnap(halfOpen ? 0 : panelW);
+          }
+        }}
+        style={{
+          position: 'absolute',
+          top: APP_BAR_H,
+          bottom: BOTTOM_HAND_H + BOTTOM_NAV_H,
+          right: plusX,
+          width: SLIDER_W,
+          zIndex: 202,
+          touchAction: 'none', userSelect: 'none',
+          cursor: halfOpen ? 'e-resize' : 'w-resize',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          transition: snapping ? `right ${motion}` : 'none',
+          outline: 'none',
+        }}
+      >
+        {/* + cap — sits at title-band level */}
+        <div style={{
+          width: '100%', height: TITLE_BAND_H, flexShrink: 0,
+          background: SLIDER_BG,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: plusX < 2 ? '8px 0 0 0' : '0',
+        }}>
+          <Plus size={14} color="rgba(255,255,255,0.92)" strokeWidth={2.4}/>
+        </div>
+        {/* Bar — content-area right gutter */}
+        <div style={{
+          flex: 1, width: BAR_VIS_W,
+          background: SLIDER_BG, opacity: 0.72,
+          borderRadius: '0 0 6px 6px',
+        }}/>
+      </div>
+    </>
   );
 }
 
-// ─── MORE SHEET (Sheet side="bottom") — More destination ─────────────────────
-interface MoreSheetProps {
-  open: boolean;
+// ─── BOTTOM MORE PANEL ───────────────────────────────────────────────────────
+// Custom gesture-driven bottom sheet (replaces Radix MoreSheet).
+// moreY: 0 = closed, morePanelH = fully open.
+// transform: translateY(morePanelH − moreY) — 0 when open, morePanelH when closed.
+interface MorePanelProps {
+  moreY: number;
+  morePanelH: number;
+  snapping: boolean;
   onClose: () => void;
+  onTransitionEnd: () => void;
   canUndo: boolean;
   canRedo: boolean;
   onSave: () => void;
@@ -909,18 +1003,27 @@ interface MoreSheetProps {
   onNavigateToPage: (pageId: FooterPageId) => void;
 }
 
-function MoreSheet({
-  open, onClose, canUndo, canRedo,
+function BottomMorePanel({
+  moreY, morePanelH, snapping, onClose, onTransitionEnd,
+  canUndo, canRedo,
   onSave, onUndo, onRedo, onReset, onShare,
   onExpandAll, onCollapseAll,
   isAuthenticated, onNavigateToPage,
-}: MoreSheetProps) {
+}: MorePanelProps) {
+  const progress = Math.min(1, moreY / morePanelH);
+  const isOpen   = moreY > 0;
+  const motion   = `${motionDuration()} cubic-bezier(0.4,0,0.2,1)`;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', h);
+    return () => document.removeEventListener('keydown', h);
+  }, [isOpen, onClose]);
+
   const actionItem = (
-    icon: React.ReactNode,
-    label: string,
-    onClick: () => void,
-    disabled = false,
-    sublabel?: string,
+    icon: React.ReactNode, label: string, onClick: () => void,
+    disabled = false, sublabel?: string,
   ) => (
     <button
       key={label}
@@ -965,21 +1068,45 @@ function MoreSheet({
   );
 
   return (
-    <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent
-        side="bottom"
-        style={{ padding: 0, borderRadius: '20px 20px 0 0', maxHeight: '82vh', display: 'flex', flexDirection: 'column' }}
+    <>
+      {/* Backdrop */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          aria-hidden="true"
+          style={{
+            position: 'absolute', inset: 0, zIndex: 198,
+            background: `rgba(0,0,0,${(0.50 * progress).toFixed(3)})`,
+            transition: snapping ? `background ${motion}` : 'none',
+          }}
+        />
+      )}
+
+      {/* Panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="More options"
+        style={{
+          position: 'absolute',
+          left: 0, right: 0,
+          bottom: BOTTOM_HAND_H + BOTTOM_NAV_H,
+          height: morePanelH,
+          zIndex: 199,
+          background: CARD_BG,
+          borderRadius: '20px 20px 0 0',
+          transform: `translateY(${morePanelH - moreY}px)`,
+          transition: snapping ? `transform ${motion}` : 'none',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: `0 -4px 20px rgba(0,0,0,${(0.18 * progress).toFixed(3)})`,
+        }}
+        onTransitionEnd={onTransitionEnd}
       >
-        {/* Handle + header */}
-        <div style={{ padding: '12px 20px 12px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
-          <div style={{ width: 36, height: 4, borderRadius: 2, background: DIVIDER, margin: '0 auto 12px' }}/>
+        <div style={{ padding: '10px 20px 12px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: DIVIDER, margin: '0 auto 10px' }}/>
           <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: PRIMARY }}>More</div>
         </div>
-
-        {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
-
-          {/* Actions */}
           {sectionLabel('Actions')}
           {actionItem(<Save size={17} strokeWidth={1.8}/>, 'Save', onSave, false, 'Save current list as new Locker entry')}
           {actionItem(<Share2 size={17} strokeWidth={1.8}/>, 'Share', onShare, false, 'Get a review link')}
@@ -988,34 +1115,26 @@ function MoreSheet({
           {actionItem(<RotateCcw size={17} strokeWidth={1.8}/>, 'Reset', onReset, false, 'Re-load from your saved data')}
           {actionItem(<Layers size={17} strokeWidth={1.8}/>, 'Expand All', onExpandAll)}
           {actionItem(<LayoutList size={17} strokeWidth={1.8}/>, 'Collapse All', onCollapseAll)}
-
-          {/* TrailWeigh */}
           {sectionLabel('TrailWeigh')}
           {linkRow('About TrailWeigh', 'about')}
           {linkRow('How It Works', 'how-it-works')}
           {linkRow('Sources & References', 'sources')}
-
-          {/* Help */}
           {sectionLabel('Help')}
           {linkRow('Help & How-To', 'help')}
           {linkRow('Report a Problem', 'report-problem')}
           {linkRow('Contact Us', 'contact')}
-
-          {/* Account & Privacy */}
           {sectionLabel('Account & Privacy')}
           {linkRow('Privacy Policy', 'privacy')}
           {linkRow('Terms of Use', 'terms')}
           {isAuthenticated && linkRow('Delete Account / Data', 'delete-account')}
           {linkRow('Affiliate Disclosure', 'affiliate')}
           {linkRow('Accessibility', 'accessibility')}
-
-          {/* Copyright */}
           <div style={{ padding: '16px 20px 32px', textAlign: 'center' }}>
             <p style={{ fontSize: 12, color: MUTED, fontFamily: SANS }}>© 2026 TrailWeigh · All rights reserved.</p>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </>
   );
 }
 
@@ -1440,20 +1559,34 @@ function MobileFunctionalV3Inner() {
   const drawerDragRef = useRef<{ active: boolean; startX: number; startOffset: number }>(
     { active: false, startX: 0, startOffset: 0 },
   );
-  const [moreOpen, setMoreOpen] = useState(false);
-  // Drawer width = phone frame width minus the 20 px pull-tab that stays exposed.
-  // Uses Math.min(innerWidth, 430) because the phone frame caps at 430 px maxWidth.
-  // Recomputes on resize so the open drawer always fills the frame except for the tab.
-  const [drawerW, setDrawerW] = useState(() =>
-    Math.min(window.innerWidth, 430) - 20,
-  );
+  // ── Edge-slider widths & heights — recomputed on resize ──────────────────────
+  // drawerW / panelW = frame width − SLIDER_W (the bar that stays exposed).
+  // morePanelH = 82 % of viewport height, capped at 560 px.
+  const computeSlideW = () => Math.min(window.innerWidth, 430) - SLIDER_W;
+  const computeMoreH  = () => Math.min(Math.round(window.innerHeight * 0.82), 560);
+  const [drawerW,    setDrawerW]    = useState(computeSlideW);
+  const [panelW,     setPanelW]     = useState(computeSlideW);
+  const [morePanelH, setMorePanelH] = useState(computeMoreH);
   useEffect(() => {
-    const onResize = () =>
-      setDrawerW(Math.min(window.innerWidth, 430) - 20);
+    const onResize = () => {
+      const w = computeSlideW(); const h = computeMoreH();
+      setDrawerW(w); setPanelW(w); setMorePanelH(h);
+    };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
-  const [showPlusSheet, setShowPlusSheet] = useState(false);
+  // Right (plus) panel gesture state
+  const [plusX,        setPlusX]        = useState(0);
+  const [plusSnapping, setPlusSnapping] = useState(false);
+  const plusDragRef = useRef<{ active: boolean; startX: number; startOffset: number }>(
+    { active: false, startX: 0, startOffset: 0 },
+  );
+  // Bottom (more) panel gesture state
+  const [moreY,        setMoreY]        = useState(0);
+  const [moreSnapping, setMoreSnapping] = useState(false);
+  const moreDragRef = useRef<{ active: boolean; startY: number; startOffset: number }>(
+    { active: false, startY: 0, startOffset: 0 },
+  );
   const [showChecklist, setShowChecklist] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
@@ -1775,6 +1908,70 @@ function MobileFunctionalV3Inner() {
     snapDrawerTo(targetX);
   }, [drawerX, drawerW, snapDrawerTo]);
 
+  // ── Right (plus) panel gesture handlers ──────────────────────────────────────
+
+  const snapPlusTo = useCallback((targetX: number) => {
+    setPlusSnapping(true);
+    setPlusX(targetX);
+  }, []);
+
+  const handlePlusTransitionEnd = useCallback(() => setPlusSnapping(false), []);
+
+  const handlePlusPointerDown = useCallback((e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    plusDragRef.current = { active: true, startX: e.clientX, startOffset: plusX };
+    setPlusSnapping(false);
+  }, [plusX]);
+
+  const handlePlusPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!plusDragRef.current.active) return;
+    // Dragging LEFT opens the right panel (startX − currentX positive when pulling left).
+    const dx = plusDragRef.current.startX - e.clientX;
+    setPlusX(Math.max(0, Math.min(panelW, plusDragRef.current.startOffset + dx)));
+  }, [panelW]);
+
+  const handlePlusPointerUp = useCallback((e: React.PointerEvent) => {
+    if (!plusDragRef.current.active) return;
+    plusDragRef.current.active = false;
+    const dx = Math.abs(e.clientX - plusDragRef.current.startX);
+    const targetX = dx < 8
+      ? (plusX < panelW / 2 ? panelW : 0)
+      : (plusX > panelW * 0.4 ? panelW : 0);
+    snapPlusTo(targetX);
+  }, [plusX, panelW, snapPlusTo]);
+
+  // ── Bottom (more) panel gesture handlers ─────────────────────────────────────
+
+  const snapMoreTo = useCallback((targetY: number) => {
+    setMoreSnapping(true);
+    setMoreY(targetY);
+  }, []);
+
+  const handleMoreTransitionEnd = useCallback(() => setMoreSnapping(false), []);
+
+  const handleMorePointerDown = useCallback((e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    moreDragRef.current = { active: true, startY: e.clientY, startOffset: moreY };
+    setMoreSnapping(false);
+  }, [moreY]);
+
+  const handleMorePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!moreDragRef.current.active) return;
+    // Dragging UP opens the bottom panel (startY − currentY positive when pulling up).
+    const dy = moreDragRef.current.startY - e.clientY;
+    setMoreY(Math.max(0, Math.min(morePanelH, moreDragRef.current.startOffset + dy)));
+  }, [morePanelH]);
+
+  const handleMorePointerUp = useCallback((e: React.PointerEvent) => {
+    if (!moreDragRef.current.active) return;
+    moreDragRef.current.active = false;
+    const dy = Math.abs(e.clientY - moreDragRef.current.startY);
+    const targetY = dy < 8
+      ? (moreY < morePanelH / 2 ? morePanelH : 0)
+      : (moreY > morePanelH * 0.35 ? morePanelH : 0);
+    snapMoreTo(targetY);
+  }, [moreY, morePanelH, snapMoreTo]);
+
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
   // ── Item expand/collapse ──────────────────────────────────────────────────────
@@ -1963,57 +2160,47 @@ function MobileFunctionalV3Inner() {
           </div>
 
           {/* Search circle — FUTURE FUNCTION */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div
-              aria-label="Search (not yet available)"
-              aria-disabled="true"
-              title="GLOBAL SEARCH = FUTURE FUNCTION — no current search implemented"
-              style={{
-                width: 34, height: 34, borderRadius: 17, background: '#FFFFFF',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.04)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'not-allowed', flexShrink: 0, opacity: 0.5,
-              }}
-            >
-              <Search size={17} color={SECONDARY} strokeWidth={1.8}/>
-            </div>
-
-            {/* FAB — opens + creation sheet */}
-            <button
-              aria-label="Create or import — Start / Create"
-              aria-expanded={showPlusSheet}
-              onClick={() => setShowPlusSheet(true)}
-              style={{
-                width: 34, height: 34, borderRadius: 17, background: NAV_ACTIVE,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', flexShrink: 0, border: 'none',
-              }}
-            >
-              <Plus size={18} color="#fff" strokeWidth={2.4}/>
-            </button>
+          {/* + is the right-edge slider cap; FAB removed per three-slider spec */}
+          <div
+            aria-label="Search (not yet available)"
+            aria-disabled="true"
+            title="GLOBAL SEARCH = FUTURE FUNCTION — no current search implemented"
+            style={{
+              width: 34, height: 34, borderRadius: 17, background: '#FFFFFF',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.04)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'not-allowed', flexShrink: 0, opacity: 0.5,
+            }}
+          >
+            <Search size={17} color={SECONDARY} strokeWidth={1.8}/>
           </div>
         </div>
 
-        {/* ── SCROLLABLE CONTENT ── */}
-        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
+        {/* ── TITLE BAND ── */}
+        {/* Left/right SLIDER_W gutters reserved for the slider caps (absolutely positioned). */}
+        <div style={{
+          height: TITLE_BAND_H, flexShrink: 0, display: 'flex', alignItems: 'center',
+          background: PAGE_BG, borderBottom: `1px solid ${DIVIDER}`, zIndex: 5,
+        }}>
+          <div style={{ width: SLIDER_W, flexShrink: 0 }}/>
+          <div style={{ flex: 1, textAlign: 'center', padding: '0 4px', overflow: 'hidden' }}>
+            <span style={{
+              fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
+            }}>
+              {listName || 'Untitled List'}
+            </span>
+          </div>
+          <div style={{ width: SLIDER_W, flexShrink: 0 }}/>
+        </div>
 
-          {/* ── STICKY HEADER: FILE NAME BAR + PACK SUMMARY (027U) ── */}
+        {/* ── SCROLLABLE CONTENT ── */}
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative', paddingLeft: SLIDER_W, paddingRight: SLIDER_W }}>
+
+          {/* ── STICKY HEADER: PACK SUMMARY (list name moved to title band above) ── */}
           <div style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
 
-            {/* ── FILE NAME BAR (027U: compact, actual name, no category count) ── */}
-            <div style={{ position: 'relative', padding: '6px 16px 6px', overflow: 'hidden' }}>
-              <LandscapeDecoration/>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ fontSize: 16.5, fontWeight: 500, color: PRIMARY, letterSpacing: '0px' }}>
-                    {listName || 'Untitled List'}
-                  </span>
-                  {/* No accordion chevron — Locker bottom nav is the list-switch action */}
-                </div>
-              </div>
-            </div>
-
-            {/* ── PACK SUMMARY CARD (027U: category count added above Selected) ── */}
+            {/* ── PACK SUMMARY CARD ── */}
             <div style={{ paddingBottom: 10 }}>
               <div style={{
                 margin: '0 16px', borderRadius: 16, background: SUMMARY_BG,
@@ -2527,11 +2714,36 @@ function MobileFunctionalV3Inner() {
 
         </div>{/* end scrollable */}
 
-        {/* ── BOTTOM NAV ── */}
+        {/* ── BOTTOM HANDLE — drag up/down to open/close More panel ── */}
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label={moreY > morePanelH / 2 ? 'Close More panel' : 'Open More panel'}
+          onPointerDown={handleMorePointerDown}
+          onPointerMove={handleMorePointerMove}
+          onPointerUp={handleMorePointerUp}
+          onPointerCancel={handleMorePointerUp}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              snapMoreTo(moreY > morePanelH / 2 ? 0 : morePanelH);
+            }
+          }}
+          style={{
+            flexShrink: 0, height: BOTTOM_HAND_H, background: SLIDER_BG,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'row-resize', userSelect: 'none', touchAction: 'none',
+            outline: 'none', zIndex: 10,
+          }}
+        >
+          <div style={{ width: 44, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.42)' }}/>
+        </div>
+
+        {/* ── BOTTOM NAV (unchanged) ── */}
         <BottomNavBar
           active={activeNav}
           onSelect={tab => setActiveNav(tab)}
-          onMore={() => setMoreOpen(true)}
+          onMore={() => snapMoreTo(morePanelH)}
         />
 
         {/* ── OVERLAYS (rendered as absolute children of the phone frame) ── */}
@@ -2582,10 +2794,10 @@ function MobileFunctionalV3Inner() {
         {/* Toast */}
         {toast && <Toast message={toast}/>}
 
-        {/* ── DRAWER + SHEET OVERLAYS ── */}
+        {/* ── EDGE-SLIDER OVERLAYS ── */}
 
-        {/* Slide-tab nav drawer */}
-        <SlideTabDrawer
+        {/* Left nav slider */}
+        <LeftSlider
           drawerX={drawerX}
           drawerW={drawerW}
           snapping={drawerSnapping}
@@ -2601,22 +2813,39 @@ function MobileFunctionalV3Inner() {
           onPrint={() => { snapDrawerTo(0); handlePrint(); }}
         />
 
-        {/* More bottom sheet */}
-        <MoreSheet
-          open={moreOpen}
-          onClose={() => setMoreOpen(false)}
+        {/* Right plus-panel slider */}
+        <RightSlider
+          plusX={plusX}
+          panelW={panelW}
+          snapping={plusSnapping}
+          onPointerDown={handlePlusPointerDown}
+          onPointerMove={handlePlusPointerMove}
+          onPointerUp={handlePlusPointerUp}
+          onSnap={snapPlusTo}
+          onClose={() => snapPlusTo(0)}
+          onTransitionEnd={handlePlusTransitionEnd}
+          onScanGearList={() => { snapPlusTo(0); setShowScanner(true); }}
+        />
+
+        {/* Bottom More panel */}
+        <BottomMorePanel
+          moreY={moreY}
+          morePanelH={morePanelH}
+          snapping={moreSnapping}
+          onClose={() => snapMoreTo(0)}
+          onTransitionEnd={handleMoreTransitionEnd}
           canUndo={undoHistory.length > 0}
           canRedo={redoHistory.length > 0}
-          onSave={() => { setMoreOpen(false); handleSave(); }}
-          onUndo={() => { setMoreOpen(false); handleUndo(); }}
-          onRedo={() => { setMoreOpen(false); handleRedo(); }}
-          onReset={() => { setMoreOpen(false); handleReset(); }}
-          onShare={() => { setMoreOpen(false); navigateToShare(); }}
-          onExpandAll={() => { setMoreOpen(false); handleExpandAll(); }}
-          onCollapseAll={() => { setMoreOpen(false); handleCollapseAll(); }}
+          onSave={() => { snapMoreTo(0); handleSave(); }}
+          onUndo={() => { snapMoreTo(0); handleUndo(); }}
+          onRedo={() => { snapMoreTo(0); handleRedo(); }}
+          onReset={() => { snapMoreTo(0); handleReset(); }}
+          onShare={() => { snapMoreTo(0); navigateToShare(); }}
+          onExpandAll={() => { snapMoreTo(0); handleExpandAll(); }}
+          onCollapseAll={() => { snapMoreTo(0); handleCollapseAll(); }}
           isAuthenticated={!!userId}
           onNavigateToPage={(id) => {
-            setMoreOpen(false);
+            snapMoreTo(0);
             if (id === 'sources') {
               pushScreen({ screen: 'sources' });
             } else {
@@ -2741,12 +2970,7 @@ function MobileFunctionalV3Inner() {
           </div>
         )}
 
-        {/* Plus creation sheet — kept as bottom Sheet (small utility panel, not primary nav) */}
-        <PlusSheet
-          open={showPlusSheet}
-          onClose={() => setShowPlusSheet(false)}
-          onScanGearList={() => { setShowPlusSheet(false); setShowScanner(true); }}
-        />
+        {/* Plus creation panel is now the RightSlider above */}
 
       </div>{/* end phone frame */}
 
