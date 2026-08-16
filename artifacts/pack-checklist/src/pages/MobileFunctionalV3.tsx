@@ -1450,7 +1450,8 @@ function MobileFunctionalV3Inner() {
 
   // Category reorder via Pointer Events
   const catListRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ catIdx: number; origOrder: string[] } | null>(null);
+  const dragRef = useRef<{ catIdx: number; dstIdx: number; origOrder: string[]; grabDY: number } | null>(null);
+  const liftRef = useRef(0); // R005 Part 8 — current applied translateY of the floating card
   const [dragSrcIdx, setDragSrcIdx] = useState<number | null>(null);
   // R004 Part 1 — at most ONE delete reveal open at a time (key: 'cat:<name>' | 'item:<cat>:<id>')
   const [openSwipe, setOpenSwipe] = useState<string | null>(null);
@@ -1749,35 +1750,39 @@ function MobileFunctionalV3Inner() {
 
   // ── Category reorder via Pointer Events ──────────────────────────────────────
 
-  const handleGripPointerDown = useCallback((e: React.PointerEvent, catIdx: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    dragRef.current = {
-      catIdx,
-      origOrder: [...sandboxRef.current.order],
-    };
-    setOpenSwipe(null); // R004: starting reorder closes any open delete reveal
-    setDragCatName(sandboxRef.current.order[catIdx] ?? null); // name-keyed floating style
-    setDragTargetName(null);
-    setDragLift(0);
-    setDragSrcIdx(catIdx);
-    setDragDstIdx(catIdx);
-  }, []);
+  // R005 Part 8 — drag tracking moved to WINDOW-level pointer listeners.
+  // Why: the live reorder preview moves the dragged card's DOM node, which
+  // makes the browser fire `lostpointercapture` on the grip button mid-drag.
+  // Element-level capture therefore cannot survive a row crossing; window
+  // listeners keep receiving pointermove/up/cancel regardless of DOM moves.
+
+  const gripCleanupRef = useRef<(() => void) | null>(null);
 
   // D1 FIX: use actual element midpoints instead of fixed catHeight
   // This handles mixed-height categories (expanded vs collapsed) correctly
-  const handleGripPointerMove = useCallback((e: React.PointerEvent) => {
+  const gripMoveAt = useCallback((clientY: number) => {
     if (!dragRef.current) return;
     const container = catListRef.current;
     if (!container) return;
     const children = Array.from(container.children) as HTMLElement[];
+    const draggedName2 = dragRef.current.origOrder[dragRef.current.catIdx];
+    // R005 Part 8 — the dragged card carries a large translateY (true finger
+    // follow), so for slot detection its UNTRANSFORMED slot position must be
+    // used; otherwise its own rect chases the finger and wedges the scan.
+    const renderedYOf = (el: HTMLElement): number => {
+      const t = getComputedStyle(el).transform;
+      if (!t || t === 'none') return 0;
+      const m = t.match(/matrix\(([^)]+)\)/);
+      return m ? (parseFloat(m[1].split(',')[5]) || 0) : 0;
+    };
     let newIdx = 0;
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
-      if (e.clientY >= rect.top + rect.height / 2) newIdx = i;
+      const untransformedShift = children[i].dataset.cat === draggedName2 ? renderedYOf(children[i]) : 0;
+      if (clientY >= rect.top + rect.height / 2 - untransformedShift) newIdx = i;
     }
     newIdx = Math.max(0, Math.min(dragRef.current.origOrder.length - 1, newIdx));
+    dragRef.current.dstIdx = newIdx;
     setDragDstIdx(newIdx);
 
     // R004 Part 2 — valid-target dim, computed against the STABLE original order,
@@ -1787,44 +1792,128 @@ function MobileFunctionalV3Inner() {
     const { catIdx, origOrder } = dragRef.current;
     setDragTargetName(newIdx === catIdx ? null : origOrder[newIdx] ?? null);
 
-    // Finger-follow lift: floating card leans toward the pointer within its slot.
+    // R005 Part 8 — true finger-follow: the floating card's translateY keeps the
+    // grab point under the finger across the FULL drag distance (no small clamp).
+    // The measured rect includes whatever transform is CURRENTLY RENDERED (which
+    // can lag the last state update between React renders), so subtract the
+    // rendered translateY — read from the computed transform matrix — to get the
+    // card's untransformed slot center. Using a ref here instead would double-
+    // count deltas whenever several pointermoves land between two renders.
     const draggedName = origOrder[catIdx];
-    let lift = 0;
     for (const child of children) {
       if ((child as HTMLElement).dataset.cat === draggedName) {
         const rect = child.getBoundingClientRect();
-        lift = Math.max(-22, Math.min(22, e.clientY - (rect.top + rect.height / 2)));
+        const renderedY = renderedYOf(child);
+        const slotCenter = rect.top + rect.height / 2 - renderedY;
+        const lift = clientY - slotCenter - dragRef.current.grabDY;
+        liftRef.current = lift;
+        setDragLift(lift);
         break;
       }
     }
-    setDragLift(lift);
   }, []);
 
-  const handleGripPointerUp = useCallback((_e: React.PointerEvent) => {
+  const gripFinish = useCallback(() => {
     // R004: release clears ALL drag visuals immediately — no residual dim/elevation
-    setDragCatName(null); setDragTargetName(null); setDragLift(0);
-    if (!dragRef.current || dragDstIdx === null) {
-      setDragSrcIdx(null); setDragDstIdx(null); dragRef.current = null; return;
-    }
-    const { catIdx, origOrder } = dragRef.current;
-    if (catIdx !== dragDstIdx) {
+    setDragCatName(null); setDragTargetName(null); setDragLift(0); liftRef.current = 0;
+    const drag = dragRef.current;
+    dragRef.current = null;
+    setDragSrcIdx(null); setDragDstIdx(null);
+    if (!drag) return;
+    const { catIdx, origOrder, dstIdx } = drag;
+    if (dstIdx !== catIdx) {
       const newOrder = [...origOrder];
       const [moved] = newOrder.splice(catIdx, 1);
-      newOrder.splice(dragDstIdx, 0, moved);
+      newOrder.splice(dstIdx, 0, moved);
       mutateSandbox(prev => ({ ...prev, order: newOrder }));
       showToast('Category order saved');
     }
-    setDragSrcIdx(null); setDragDstIdx(null); dragRef.current = null;
-  }, [dragDstIdx, mutateSandbox, showToast]);
+  }, [mutateSandbox, showToast]);
 
-  // R004 — idempotent CANCELLATION path (pointercancel / lostpointercapture):
+  // R004 — idempotent CANCELLATION path (pointercancel):
   // clears every drag effect and does NOT commit a reorder.
   const handleGripPointerCancel = useCallback(() => {
     if (!dragRef.current) return; // no-op after a normal pointerup already finalized
     dragRef.current = null;
     setDragSrcIdx(null); setDragDstIdx(null);
-    setDragCatName(null); setDragTargetName(null); setDragLift(0);
+    setDragCatName(null); setDragTargetName(null); setDragLift(0); liftRef.current = 0;
   }, []);
+
+  const handleGripPointerDown = useCallback((e: React.PointerEvent, catName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Replacement pointer: fully CANCEL any active drag (state + listeners)
+    // before starting a new one — never just drop the listeners.
+    if (dragRef.current) {
+      gripCleanupRef.current?.();
+      handleGripPointerCancel();
+    }
+    // Stable identity: resolve the dragged category by NAME against the saved
+    // order — never by rendered slot index, which diverges from the data order
+    // while a live reorder preview is showing.
+    const catIdx = sandboxRef.current.order.indexOf(catName);
+    if (catIdx < 0) return;
+    // R005 Part 8 — true finger-follow: remember the finger's offset from the
+    // dragged card's center so the card tracks the finger 1:1 for the whole drag.
+    let grabDY = 0;
+    const container = catListRef.current;
+    const draggedName = catName;
+    if (container) {
+      for (const child of Array.from(container.children) as HTMLElement[]) {
+        if (child.dataset.cat === draggedName) {
+          const rect = child.getBoundingClientRect();
+          grabDY = e.clientY - (rect.top + rect.height / 2);
+          break;
+        }
+      }
+    }
+    liftRef.current = 0;
+    dragRef.current = {
+      catIdx,
+      dstIdx: catIdx,
+      origOrder: [...sandboxRef.current.order],
+      grabDY,
+    };
+    setOpenSwipe(null); // R004: starting reorder closes any open delete reveal
+    setDragCatName(sandboxRef.current.order[catIdx] ?? null); // name-keyed floating style
+    setDragTargetName(null);
+    setDragLift(0);
+    setDragSrcIdx(catIdx);
+    setDragDstIdx(catIdx);
+
+    const pointerId = e.pointerId;
+    const onMove = (ev: PointerEvent) => { if (ev.pointerId === pointerId) gripMoveAt(ev.clientY); };
+    const onUp = (ev: PointerEvent) => { if (ev.pointerId === pointerId) { gripFinish(); cleanup(); } };
+    // pointercancel is per-pointer: only OUR pointer's cancellation aborts the
+    // drag. (Synthetic cancellations dispatched at the category list — e.g.
+    // gesture-takeover simulation in tests — also count; an unrelated second
+    // pointer's cancel must NOT kill the active drag.)
+    const onCancel = (ev: PointerEvent) => {
+      const targetsList = ev.target instanceof Node && !!catListRef.current?.contains(ev.target);
+      if (ev.pointerId === pointerId || targetsList) { handleGripPointerCancel(); cleanup(); }
+    };
+    // Losing the window (tab switch, app switch, incoming call) must not leave
+    // a stuck floating card: cancel without committing.
+    const onBlur = () => { handleGripPointerCancel(); cleanup(); };
+    const onVisibility = () => { if (document.visibilityState === 'hidden') { handleGripPointerCancel(); cleanup(); } };
+    const cleanup = () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onCancel);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVisibility);
+      gripCleanupRef.current = null;
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onCancel);
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVisibility);
+    gripCleanupRef.current = cleanup;
+  }, [gripMoveAt, gripFinish, handleGripPointerCancel]);
+
+  // Unmount safety: drop window listeners if the view unmounts mid-drag
+  useEffect(() => () => { gripCleanupRef.current?.(); }, []);
 
   // Visible order during drag reorder
   const visibleOrder: string[] = (dragSrcIdx !== null && dragDstIdx !== null && dragRef.current)
@@ -2005,7 +2094,10 @@ function MobileFunctionalV3Inner() {
       subtitle: 'Base, expendables, and total weight',
       icon: <Scale size={18} strokeWidth={1.8}/>,
       render: () => (
-        <div style={{ padding: '10px 12px 14px' }}>
+        // R005 Part 7 — ONE flat panel: inner card chrome + duplicate collapsible
+        // header stripped (.tw-flat/.tw-flat-ps); body always open; the panel
+        // grows to content height and the deck view scrolls as a whole.
+        <div className="tw-flat tw-flat-ps" style={{ padding: '4px 12px 14px' }}>
           <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
             <WeightSummary
               data={sandbox.items}
@@ -2024,7 +2116,10 @@ function MobileFunctionalV3Inner() {
       subtitle: 'Category share of pack weight',
       icon: <BarChart2 size={18} strokeWidth={1.8}/>,
       render: () => (
-        <div style={{ padding: '10px 12px 14px' }}>
+        // R005 Part 6 — ONE complete panel: the nested accordion header (its
+        // duplicate "Weight Distribution" title + chevron) is hidden; the
+        // palette control, chart, legend and weights stay together, always open.
+        <div className="tw-flat tw-flat-wd" style={{ padding: '4px 12px 14px' }}>
           <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
             <WeightDistribution
               data={sandbox.items}
@@ -2282,14 +2377,30 @@ function MobileFunctionalV3Inner() {
 
   return (
     <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-      <div style={{
+      <div className="tw-v3-root" style={{
         width: '100%', maxWidth: 430, height: '100dvh',
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
         fontFamily: SANS, position: 'relative', overflow: 'hidden',
       }}>
 
-        {/* B6: hide webkit scrollbar chrome on marked scrollers (scrolling unaffected) */}
-        <style>{`.tw-noscrollbar::-webkit-scrollbar{width:0;height:0;display:none}`}</style>
+        {/* B6: hide webkit scrollbar chrome on marked scrollers (scrolling unaffected)
+            R005 Part 4: static V3 UI text is non-selectable (no iOS selection
+            handles/callout during taps, swipes, reorder, slide-to-delete);
+            editable controls explicitly re-enable selection.
+            R005 Part 6/7: .tw-flat unwraps the shared WeightSummary /
+            WeightDistribution accordion cards into ONE flat deck panel each —
+            inner card chrome removed, inner duplicate header hidden (deck bar
+            provides the single visible title), body always shown (forceOpen). */}
+        <style>{`
+          .tw-noscrollbar::-webkit-scrollbar{width:0;height:0;display:none}
+          .tw-v3-root{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+          .tw-v3-root input,.tw-v3-root textarea,.tw-v3-root [contenteditable],
+          .tw-v3-root input *,.tw-v3-root textarea *{
+            -webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+          .tw-flat > div{border:none!important;border-radius:0!important;box-shadow:none!important}
+          .tw-flat-ps > div > button:first-of-type{display:none!important}
+          .tw-flat-wd > div > div:first-child > button:first-child{display:none!important}
+        `}</style>
 
         {/* ── APP BAR ── */}
         <div style={{
@@ -2297,28 +2408,13 @@ function MobileFunctionalV3Inner() {
           display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
           flexShrink: 0, zIndex: 10,
         }}>
-          {/* Logo + wordmark */}
+          {/* Logo + wordmark — R005 Part 1: top-right Search control removed
+              entirely (no reserved width); Search lives only in the bottom nav. */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
             <LogoMark size={24}/>
             <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
               TrailWeigh
             </span>
-          </div>
-
-          {/* Search circle — FUTURE FUNCTION */}
-          {/* + is the right-edge slider cap; FAB removed per three-slider spec */}
-          <div
-            aria-label="Search (not yet available)"
-            aria-disabled="true"
-            title="GLOBAL SEARCH = FUTURE FUNCTION — no current search implemented"
-            style={{
-              width: 34, height: 34, borderRadius: 17, background: '#FFFFFF',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.04)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'not-allowed', flexShrink: 0, opacity: 0.5,
-            }}
-          >
-            <Search size={17} color={SECONDARY} strokeWidth={1.8}/>
           </div>
         </div>
 
@@ -2475,16 +2571,42 @@ function MobileFunctionalV3Inner() {
                       <theme.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>
                     </button>
 
-                    {/* CONTENT grid: [text] [handle-slot 32px] [gap 18px] [weight minmax(44px,auto)] */}
+                    {/* CONTENT grid — R005 Part 9: six-dot handle moved to a FIXED
+                        leftmost column (right after the wedge), so every handle
+                        shares one x-position regardless of name/weight length or
+                        expanded state: [handle 36px] [gap 10px] [text] [weight] */}
                     <div style={{
                       flex: 1, minWidth: 0,
                       display: 'grid',
-                      gridTemplateColumns: 'minmax(0, 1fr) 32px 18px minmax(44px, auto)',
+                      gridTemplateColumns: '36px 10px minmax(0, 1fr) minmax(44px, auto)',
                       alignItems: 'center',
-                      padding: '10px 12px',
+                      padding: '10px 12px 10px 8px',
                       columnGap: 0,
                     }}>
-                      {/* Col 1 — name + subtitle (tap name → Category Options) */}
+                      {/* Col 1 — six-dot reorder handle (R005 Part 9: fixed leftmost
+                          column so all handles align in one straight vertical line) */}
+                      <button
+                        aria-label={`Drag to reorder ${catName} category`}
+                        aria-grabbed={dragCatName === catName ? 'true' : 'false'}
+                        title="Hold and drag to reorder category"
+                        onPointerDown={e => handleGripPointerDown(e, catName)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'none', border: 'none', padding: 0,
+                          minHeight: 44, // comfortable thumb target despite compact dots
+                          cursor: 'grab', touchAction: 'none',
+                          opacity: dragCatName === catName ? 0.8 : 0.38,
+                        }}
+                        onFocus={e => { e.currentTarget.style.opacity = '0.8'; }}
+                        onBlur={e => { e.currentTarget.style.opacity = dragCatName === catName ? '0.8' : '0.38'; }}
+                      >
+                        <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
+                      </button>
+
+                      {/* Col 2 — gap (clearance between handle and text) */}
+                      <div aria-hidden="true"/>
+
+                      {/* Col 3 — name + subtitle (tap name → Category Options) */}
                       <div style={{ minWidth: 0 }}>
                         <button
                           onClick={e => { e.stopPropagation(); setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(false); setCatRenameValue(catName); }}
@@ -2508,31 +2630,6 @@ function MobileFunctionalV3Inner() {
                           {items.length} {items.length === 1 ? 'item' : 'items'} · {selectedInCat} selected
                         </div>
                       </div>
-
-                      {/* Col 2 — six-dot category reorder handle (Pointer Events) */}
-                      <button
-                        aria-label={`Drag to reorder ${catName} category`}
-                        aria-grabbed={dragSrcIdx === catIdx ? 'true' : 'false'}
-                        title="Hold and drag to reorder category"
-                        onPointerDown={e => handleGripPointerDown(e, catIdx)}
-                        onPointerMove={handleGripPointerMove}
-                        onPointerUp={handleGripPointerUp}
-                        onPointerCancel={handleGripPointerCancel}
-                        onLostPointerCapture={handleGripPointerCancel}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'none', border: 'none', padding: 0,
-                          cursor: 'grab', touchAction: 'none',
-                          opacity: dragSrcIdx === catIdx ? 0.8 : 0.38,
-                        }}
-                        onFocus={e => { e.currentTarget.style.opacity = '0.8'; }}
-                        onBlur={e => { e.currentTarget.style.opacity = dragSrcIdx === catIdx ? '0.8' : '0.38'; }}
-                      >
-                        <GripVertical size={18} color={SECONDARY} strokeWidth={1.5}/>
-                      </button>
-
-                      {/* Col 3 — gap */}
-                      <div aria-hidden="true"/>
 
                       {/* Col 4 — selected-weight */}
                       <div style={{
@@ -2826,8 +2923,9 @@ function MobileFunctionalV3Inner() {
             {/* R004 Part 4 — inline dashed "+ Add Category" control removed.
                 Add Category remains available via the bottom ADD deck only. */}
 
-            {/* Bottom padding */}
-            <div style={{ height: 24 }}/>
+            {/* R005 Part 3 — decorative 24px bottom spacer removed: content runs
+                to the bottom nav (nav is in normal flow, so it never covers the
+                last row; no reserved blank band needed). */}
           </div>
 
         </div>{/* end scrollable */}
@@ -3064,6 +3162,30 @@ function MobileFunctionalV3Inner() {
 
           {catOptionsFor && !catRenaming && !catDeleteConfirm && (
             <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* R005 Part 5 — Add Item (above Rename): adds directly into THIS
+                  category via the existing addItem workflow; no re-picking. */}
+              <button
+                onClick={() => {
+                  const cat = catOptionsFor;
+                  addItem(cat);
+                  setAllExpanded(false);
+                  setOpenCatName(cat);
+                  setCatOptionsFor(null);
+                  showToast(`Item added to "${cat}"`);
+                }}
+                aria-label={`Add item to ${catOptionsFor}`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                  padding: '14px 16px', cursor: 'pointer', textAlign: 'left', width: '100%',
+                  boxShadow: CARD_SHADOW,
+                }}
+              >
+                <div style={{ width: 38, height: 38, borderRadius: 10, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Plus size={17} color="#fff" strokeWidth={2}/>
+                </div>
+                <div style={{ fontSize: 15.5, fontWeight: 600, color: PRIMARY }}>Add Item</div>
+              </button>
               {/* Rename */}
               <button
                 onClick={() => { setCatRenaming(true); setCatRenameValue(catOptionsFor); }}

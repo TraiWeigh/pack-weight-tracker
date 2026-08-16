@@ -1,22 +1,15 @@
 ---
-name: Swipe-reveal + reorder gesture lessons (V3 mobile)
-description: Durable gesture-implementation rules learned in the R004 round (slide-to-delete, floating reorder)
+name: Swipe/drag gesture lessons (V3 mobile)
+description: Pointer-gesture pitfalls in TrailWeigh V3 — swipe reveal, category reorder drag, pointer capture, finger-follow math
 ---
 
-## Click-after-drag must be swallowed
-A pointer drag (mouse or touch) is followed by a synthetic `click` on the same element. A reveal that opens on pointerup and closes on tap will immediately re-close itself unless the first post-drag click is consumed (`justDraggedRef` flag, reset in `onClickCapture`).
-**Why:** first r004 test run opened and instantly closed every reveal.
-**How to apply:** any translate-on-drag row with tap-to-close semantics.
+# Swipe-reveal lessons (R004)
+- Swallow the click that follows a completed drag, or the row's tap action fires.
+- Compute the reorder dim target from the ORIGINAL order, not hit-testing the live-spliced children.
+- A cancel path (pointercancel) is required and must be idempotent.
 
-## Reorder target dim: compute from the STABLE original order
-With a live splice-preview reorder, the dragged card occupies the pointer's slot, so hit-testing rendered children under the pointer finds the dragged card and clears the target dim mid-cross. Target = `origOrder[dstIdx]` (the displaced category) — stable, exactly one, clears when dst===src.
-**Why:** architect review failed the hit-test version for exactly this.
-
-## Drag gestures need a cancellation path
-Wire `pointercancel` AND `lostpointercapture` to an idempotent cancel handler that clears all drag state without committing. Guard on the drag ref so the lostpointercapture that follows a normal pointerup is a no-op.
-
-## Misc V3 facts
-- Item delete confirm dialog button label is "Delete Item" (dialog aria-label "Delete item confirmation").
-- Save appends a timestamp: entry name is `<listName> — <Mon D> <h:mm>`.
-- Playwright: `el.scrollBy()` on a non-overflowing container fires no scroll event — dispatch `new Event('scroll')` or make content overflow first.
-- SERIF token now aliases the Inter stack (R004); Inter Variable loaded via `@fontsource-variable/inter` imported inside MobileFunctionalV3.tsx only.
+# True finger-follow reorder (R005)
+- **Element pointer capture cannot survive a live reorder preview**: when React moves the dragged card's DOM node (row crossing splice), the browser fires `lostpointercapture` immediately. If capture loss is treated as cancel, every crossing kills the drag. Fix: window-level pointermove/up/cancel listeners registered at pointerdown, removed on finish/cancel/unmount.
+- **Never subtract a lift ref from a rect** to recover the untransformed slot center — the ref is ahead of the rendered transform between renders, so deltas get eaten (lift converges to ~one frame's delta). Read the actually rendered translateY from `getComputedStyle(el).transform` matrix f (index 5) instead.
+- **The dragged card's own transform pollutes the slot midpoint scan** once lift is unclamped: its rect chases the finger and wedges newIdx. Subtract its rendered translateY when computing its midpoint in the scan.
+- Lifecycle hardening: filter pointercancel by pointerId (unrelated pointer's cancel must not abort; but a cancel targeting the list container counts — synthetic gesture-takeover tests dispatch on the grip); replacement pointerdown must fully cancel the prior drag; resolve dragged category by NAME against saved order (rendered slot index diverges during preview); cancel on window blur/visibility hidden.

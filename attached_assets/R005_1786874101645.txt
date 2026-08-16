@@ -1,0 +1,551 @@
+R005 — TRAILWEIGH V3 MOBILE LAYOUT / SUMMARY / REORDER REFINEMENT
+
+REPORT NUMBER
+R005
+
+PURPOSE
+Apply ONLY the approved post-R004 V3 mobile refinements listed below.
+
+STARTING POINT
+Treat the current R004 implementation as the known-good baseline.
+
+Preserve all passing R004 behavior unless this prompt explicitly changes it.
+
+STRICT SCOPE
+- V3 phone experience only.
+- Prefer changing ONLY MobileFunctionalV3.tsx for application source.
+- Do NOT modify Checklist.tsx.
+- Do NOT modify desktop.
+- Do NOT modify database/schema.
+- Do NOT modify authentication.
+- Do NOT publish/redeploy.
+- Do NOT modify production or development database state.
+- Do NOT perform unrelated cleanup/refactors.
+- Test/report files may be added/updated as needed.
+- If another application source/style file is genuinely required, STOP BEFORE editing it and report exactly why.
+
+PRESERVE FROM R004
+Do not regress:
+- Locker | Summary | Add | Search | More bottom navigation;
+- same-icon tap closes;
+- different-icon tap switches directly;
+- slide-to-delete for categories/items;
+- category/item delete safeguards;
+- Inter Variable mobile typography;
+- integrated file name / Pack Summary layout;
+- removal of List Summary;
+- removal of Not Selected;
+- removal of inline dashed + Add Category;
+- long Locker scrolling;
+- safe-area behavior;
+- disabled Search-bar readability;
+- closed-deck pointer-event behavior;
+- deterministic Undo/Redo test coverage.
+
+============================================================
+1. REMOVE TOP-RIGHT SEARCH CONTROL
+============================================================
+
+Remove the old Search icon/control from the TOP-RIGHT TrailWeigh header.
+
+REQUIRED RESULT
+- The top-right Search icon/control is completely removed.
+- Remove any space, wrapper, margin, or reserved width that exists only for that control.
+- The TrailWeigh top header should remain clean and balanced.
+- Do NOT remove or change the bottom Search area.
+- Bottom navigation remains:
+  Locker | Summary | Add | Search | More
+- Do NOT change Search deck truthfulness/availability behavior.
+
+============================================================
+2. REMOVE BLANK SPACE BELOW TOP HEADER
+============================================================
+
+Remove the blank horizontal spacer/gap directly BELOW the top TrailWeigh header.
+
+REQUIRED RESULT
+- The combined active file-name / Pack Summary structural region begins immediately beneath the top header.
+- No decorative spacer strip.
+- No empty padding band.
+- Preserve only technically necessary safe-area spacing ABOVE the header, not between header and content.
+- Keep the flat, flush, edge-to-edge TrailWeigh mobile design.
+
+============================================================
+3. REMOVE BLANK SPACE BETWEEN CATEGORY CONTENT AND BOTTOM NAV
+============================================================
+
+Remove the blank horizontal space between:
+- the bottom of the category/list content; and
+- the top edge of the bottom navigation bar.
+
+REQUIRED RESULT
+- Category/list content extends directly down to meet the bottom navigation.
+- No decorative spacer band.
+- No visible empty strip.
+- Do not leave a hard-coded blank block or reserved gap.
+- Preserve only technically necessary safe-area handling within/under the bottom navigation itself.
+- Do not allow the bottom nav to cover the final category/item row.
+- Add only the minimum content inset/padding required for actual visibility, not a visible blank band.
+
+============================================================
+4. PREVENT ACCIDENTAL TEXT SELECTION / HIGHLIGHTING
+============================================================
+
+Prevent normal mobile UI text from being selectable/highlighted during taps, swipes, scrolling, reorder gestures, and slide-to-delete gestures.
+
+APPLY TO NON-EDITABLE V3 UI TEXT, INCLUDING:
+- category names;
+- category weights;
+- category counts/subtitles;
+- Pack Summary text;
+- active file/list name;
+- bottom-navigation labels;
+- deck titles/labels;
+- static action labels;
+- static summary text.
+
+DO NOT DISABLE TEXT SELECTION WHERE USERS NEED TO EDIT/COPY TEXT.
+
+TEXT SELECTION MUST REMAIN AVAILABLE IN:
+- item-name text inputs;
+- quantity/weight inputs;
+- rename inputs;
+- search inputs if/when editable;
+- textareas;
+- contenteditable regions;
+- any other legitimate editable text control.
+
+REQUIRED RESULT
+- Normal gestures no longer trigger the iOS/Safari text-selection handles/context menu on static category/weight/summary text.
+- This must not break accessibility.
+- This must not block cursor placement/editing in actual inputs.
+
+============================================================
+5. CATEGORY OPTIONS — ADD ITEM
+============================================================
+
+In the existing Category Options panel/sheet, add:
+
+ADD ITEM
+
+above Rename Category.
+
+EXACT ACTION ORDER:
+1. Add Item
+2. Rename Category
+3. Delete Category
+
+REQUIRED BEHAVIOR
+- Add Item adds a new item DIRECTLY into the category whose Category Options are currently open.
+- Reuse the existing V3 Add Item workflow where practical.
+- Preselect/lock the target category appropriately so the new item goes to the correct category.
+- Do not force the user to choose the same category again if the action was initiated from that category's options.
+- Preserve Rename Category behavior.
+- Preserve Delete Category behavior and safeguards.
+- Do not redesign the Category Options panel beyond adding this action in the approved order.
+
+============================================================
+6. SUMMARY — WEIGHT DISTRIBUTION MUST BE ONE COMPLETE PANEL
+============================================================
+
+Current Weight Distribution presentation contains a panel/header structure that visually behaves like a panel inside another panel.
+
+Replace that with ONE complete Weight Distribution panel.
+
+THE SINGLE PANEL MUST CONTAIN ALL EXISTING WEIGHT DISTRIBUTION INFORMATION TOGETHER:
+- Weight Distribution title;
+- existing subtitle/description;
+- chart;
+- category legend;
+- category weight values;
+- any existing related Weight Distribution control(s).
+
+REQUIRED RESULT
+- No duplicate Weight Distribution heading.
+- No nested second Weight Distribution accordion/panel required to see the chart or legend.
+- Opening/activating Weight Distribution shows the entire Weight Distribution experience as one coherent panel.
+- If its content is taller than the available phone viewport, the OVERALL Summary deck/view may scroll vertically.
+- Do not clip the panel.
+- Do not hide lower legend entries behind the bottom navigation.
+- Do not create an unnecessary inner scroll area if the outer Summary view can scroll normally.
+- Preserve existing calculations/data.
+- This is a layout/presentation refinement, not a new analytics feature.
+
+============================================================
+7. SUMMARY — PACK SUMMARY MUST SHOW ALL INFORMATION
+============================================================
+
+The Pack Summary panel must be large enough to show ALL of its current information.
+
+REQUIRED RESULT
+- Do not crop its bottom rows/totals.
+- Do not hide Grand Total or any existing lower information behind the bottom navigation.
+- Do not force an unnecessary inner scroll just to see the rest of Pack Summary.
+- Let the Pack Summary panel expand to its content height.
+- If the full Pack Summary plus other Summary content cannot fit in the viewport, the OVERALL Summary deck/view should scroll.
+- Keep current Pack Summary calculations/data unchanged.
+- Keep the flat/flush V3 visual language.
+- Do not reintroduce nested rounded cards.
+
+============================================================
+8. CATEGORY REORDER — TRUE FINGER-FOLLOW FLOATING DRAG
+============================================================
+
+R004 created a raised/floating impression, but review found that the dragged category does not actually stay attached to the finger throughout the full drag distance.
+
+CORRECT THIS.
+
+WHEN DRAGGING WITH THE SIX-DOT REORDER HANDLE:
+- the dragged category visibly rises above the stack;
+- it remains the actual category being dragged;
+- it follows the user's finger DIRECTLY throughout the full vertical drag distance;
+- do not artificially clamp the visual movement to a small +/- offset;
+- do not allow the floating style to jump to another category when list order changes underneath it;
+- track the dragged category by stable identity, not only its original array index.
+
+FLOATING APPEARANCE
+- restrained elevation/shadow;
+- slight visual separation from the flush stack;
+- no excessive scaling;
+- no bounce/overshoot;
+- preserve wedge, color, text, weight, and row content while floating.
+
+TARGET FEEDBACK
+When the floating category reaches/touches a category it can switch/reorder with:
+- that valid target dims SLIGHTLY;
+- only the current valid target dims;
+- the floating category itself does not dim;
+- previous target returns to normal immediately when the dragged category moves away;
+- new valid target becomes the only dimmed target.
+
+RELEASE
+- dragged category settles smoothly into its final position;
+- settles FLUSH with the category stack;
+- all target dimming disappears;
+- no category remains elevated/transformed/dimmed.
+
+GESTURE COEXISTENCE
+- six-dot handle remains the reorder initiation control;
+- normal category taps do not reorder;
+- slide-to-delete must not start reorder;
+- reorder must close any open slide-to-delete reveal before beginning;
+- vertical category scrolling outside the handle remains normal.
+
+============================================================
+9. SIX-DOT REORDER HANDLE ALIGNMENT
+============================================================
+
+Move the six-dot category reorder handles FARTHER LEFT so they align in one perfectly straight vertical column.
+
+REQUIRED RESULT
+- Every category's six-dot handle has the same horizontal x-position.
+- The column remains aligned regardless of:
+  - category name length;
+  - weight value length;
+  - category selected/item count;
+  - wedge color/shape;
+  - expanded/collapsed state;
+  - category reorder position.
+- Handles must not drift left/right based on flex content.
+- Keep adequate clearance between:
+  - wedge;
+  - category text;
+  - six-dot handle;
+  - weight.
+- Preserve a comfortable thumb/finger touch target even if the visible dots remain compact.
+- Do not overlap the weight value.
+- Do not reduce category readability.
+- This aligned six-dot column remains the drag anchor for Part 8.
+
+============================================================
+10. RESPONSIVE ACCEPTANCE
+============================================================
+
+Test at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+At EVERY width verify:
+
+TOP HEADER
+- top-right Search control absent;
+- no empty reserved Search space;
+- no blank strip below header;
+- Pack Summary/file region begins immediately below header.
+
+CATEGORY / LIST AREA
+- no visible blank spacer before bottom nav;
+- last category/item is not covered by bottom nav;
+- static text cannot be accidentally selected;
+- editable input text remains selectable/editable;
+- six-dot handles form one straight vertical column;
+- six-dot handles are farther left than R004;
+- handles do not overlap weight/text;
+- category reorder follows finger throughout full drag;
+- correct target dims and undims.
+
+CATEGORY OPTIONS
+- order is:
+  Add Item
+  Rename Category
+  Delete Category
+- Add Item creates item in the selected category.
+
+SUMMARY
+- Weight Distribution is one complete panel;
+- no duplicate/nested Weight Distribution heading/panel;
+- chart + legend + category weights are all in the same panel;
+- Pack Summary displays all current information;
+- neither panel is clipped by bottom navigation;
+- overall Summary view scrolls when needed.
+
+BOTTOM NAV
+- Locker | Summary | Add | Search | More unchanged;
+- safe area remains correct;
+- no regression in open/close/switch behavior.
+
+============================================================
+11. AUTOMATED TESTING REQUIRED
+============================================================
+
+At minimum run:
+
+1. TypeScript/typecheck.
+2. Browser runtime console check.
+3. Existing R004 V3 regression suite.
+4. Top-right Search control absent.
+5. Bottom Search area still works exactly as before.
+6. No blank spacer below top header.
+7. No visible blank spacer between list/category content and bottom nav.
+8. Final category/item not obscured by bottom nav.
+9. Static category text cannot be selected during drag/swipe gesture.
+10. Static weight text cannot be selected during drag/swipe gesture.
+11. Editable text input still supports selection/cursor/editing.
+12. Category Options shows Add Item above Rename Category.
+13. Category Options exact order:
+    Add Item -> Rename Category -> Delete Category.
+14. Add Item from Category Options adds item to correct category.
+15. Weight Distribution has only one visible title/header.
+16. Weight Distribution chart and legend are in the same panel.
+17. Weight Distribution lower content remains reachable/visible.
+18. Pack Summary lower rows/totals remain visible/reachable.
+19. Summary overall container scrolls when necessary.
+20. Six-dot handles share a consistent x-position across categories.
+21. Handle alignment remains correct after category reorder.
+22. Dragged category follows pointer/finger across a multi-row vertical distance.
+23. Actual dragged category retains floating styling after crossing positions.
+24. Valid target dims.
+25. Previous target immediately undims when leaving.
+26. Only one target is dimmed.
+27. Release settles dragged category flush.
+28. Reorder does not conflict with slide-to-delete.
+29. 320/375/390/430 no-horizontal-overflow verification.
+30. Safe-area regression.
+31. Long Locker scrolling regression.
+32. Closed-deck pointer-event regression.
+33. Reduced-motion regression.
+34. Accessibility regression.
+
+NO TEST MAY PASS MERELY BECAUSE IT RAN.
+Critical behavior requires an assertion of the actual result.
+
+============================================================
+12. CHANGED-FILE DISCIPLINE
+============================================================
+
+Application source:
+- Prefer MobileFunctionalV3.tsx ONLY.
+
+If another application source/style file is required:
+STOP BEFORE EDITING IT.
+Report:
+- exact file;
+- exact reason;
+- exact R005 requirement that cannot safely be met without it.
+
+Testing/report files are allowed.
+
+DO NOT CHANGE:
+- Checklist.tsx;
+- desktop;
+- database/schema;
+- auth;
+- deployment/publishing;
+- unrelated app files.
+
+IMPORTANT ZIP DISCIPLINE
+R004 review found that the report referenced additional changed dependency/font files that were not included in the ZIP.
+
+For R005:
+- list EVERY file changed during the R005 run;
+- include EVERY relevant changed source/config/manifest/lockfile in R005.zip;
+- do not omit changed files from the review ZIP;
+- do not include unrelated caches/build artifacts.
+
+============================================================
+13. REQUIRED R005 REPORT
+============================================================
+
+Create:
+
+R005.md
+
+Use:
+
+# R005 Implementation Report
+
+## Scope
+- every file changed
+- why each file changed
+- confirmation restricted areas untouched
+
+## Top Header
+PASS/FAIL:
+- top Search removed
+- reserved space removed
+- blank space below header removed
+
+## Bottom Gap
+PASS/FAIL:
+- blank space between category/list content and bottom nav removed
+- final content remains visible
+- safe area preserved
+
+## Text Selection
+PASS/FAIL:
+- static UI non-selectable
+- gestures no longer trigger text selection
+- editable fields remain selectable/editable
+- accessibility unaffected
+
+## Category Options
+PASS/FAIL:
+- Add Item present
+- exact action order
+- Add Item targets correct category
+- Rename unchanged
+- Delete unchanged
+
+## Weight Distribution
+PASS/FAIL:
+- single panel
+- one heading
+- chart included
+- legend included
+- category weights included
+- no nested duplicate panel
+- all content reachable
+
+## Pack Summary
+PASS/FAIL:
+- all current information visible/reachable
+- no clipping
+- bottom totals visible
+- overall Summary scroll used when needed
+
+## Category Reorder
+PASS/FAIL:
+- true full-distance finger follow
+- correct category remains floating
+- target dimming
+- previous target undimming
+- one target only
+- flush settle
+- no slide-delete conflict
+
+## Six-Dot Alignment
+PASS/FAIL:
+- farther left
+- one straight vertical column
+- stable after reorder
+- no overlap
+- thumb-friendly target
+
+## Responsive Verification
+Table:
+320 | 375 | 390 | 430
+
+Include:
+- header
+- category/list bottom gap
+- Summary panels
+- six-dot alignment
+- reorder
+- no horizontal overflow
+- bottom-nav clearance
+
+## Regression
+PASS/FAIL:
+- Locker
+- Summary
+- Add
+- Search
+- More
+- slide-to-delete
+- Inter Variable
+- long Locker scrolling
+- safe area
+- closed overlays
+- Undo/Redo
+- reduced motion
+- accessibility
+
+## TypeScript
+result
+
+## Browser Console
+result
+
+## Automated Tests
+- total
+- passed
+- failed
+- skipped
+- exact failures
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## Final Scope Confirmation
+Confirm:
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+
+============================================================
+14. ZIP
+============================================================
+
+Provide:
+
+R005.zip
+
+Include:
+- R005.md
+- EVERY application/config/manifest/lockfile changed by R005
+- relevant test files
+- compact evidence needed for review
+
+Do NOT include:
+- node_modules
+- build caches
+- giant generated folders
+- unrelated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, testing, R005.md, and R005.zip:
+
+STOP.
+
+Do NOT continue to another TrailWeigh change.
+Do NOT publish.
+Do NOT deploy.
+Do NOT change database/auth.
+Wait for user review.

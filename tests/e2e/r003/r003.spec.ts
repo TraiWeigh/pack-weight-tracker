@@ -132,7 +132,9 @@ test.describe('R003 bottom bar', () => {
 
 test('top app-bar Search circle is retained (B3 — not removed without approval)', async ({ page }) => {
   await gotoV3(page);
-  await expect(page.getByLabel('Search (not yet available)')).toBeVisible();
+  // R005 Part 1: the top-right Search control was removed by approved spec —
+  // the header now contains only the wordmark; bottom-nav Search remains.
+  await expect(page.getByLabel('Search (not yet available)')).toHaveCount(0);
 });
 
 // ─── B4: integrated file identity ────────────────────────────────────────────────
