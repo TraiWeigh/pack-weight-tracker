@@ -1,0 +1,615 @@
+R0072P — GOLD STANDARD PLAYWRIGHT VERIFICATION / READ-ONLY DIAGNOSTIC
+
+REPORT NUMBER
+R0072P
+
+MODE
+Economy
+
+PURPOSE
+Verify the CURRENT R0072 implementation with Playwright before any repair prompt is written.
+
+THIS IS DIAGNOSTIC ONLY.
+
+DO NOT MODIFY TRAILWEIGH APPLICATION CODE.
+
+The purpose is to prove the actual rendered behavior and answer the diagnostic questions below with measurements, screenshots/video, and Playwright assertions.
+
+BASELINE
+Use the current R0072 working tree exactly as it exists now.
+
+============================================================
+1. HARD READ-ONLY BOUNDARY
+============================================================
+
+ALLOWED CHANGES ONLY:
+- a new targeted Playwright diagnostic file under tests/e2e/r0072p/
+- R0072P.md
+- compact Playwright screenshots/video/evidence created by this diagnostic
+
+DO NOT CHANGE:
+- MobileFunctionalV3.tsx
+- Checklist.tsx
+- any other application source
+- CSS/application styling
+- package dependencies unless Playwright is already unavailable and you STOP to report that fact
+- database/schema
+- authentication
+- publishing/deployment
+- production/development database state
+
+Do NOT fix anything during R0072P.
+
+If a defect is reproduced:
+DOCUMENT IT.
+DO NOT REPAIR IT.
+
+============================================================
+2. OBSERVED SOURCE FACTS TO VERIFY AT RUNTIME
+============================================================
+
+The independent R0072 ZIP review found these source facts:
+
+A. CATEGORY / STACKED-BAR SIZE
+- category structural height constant appears to be 68 px
+- inactive stacked-bar visible height appears to be 54 px
+
+B. STACKED-BAR MOVEMENT
+- the inactive stacked-bar component still contains a "lift" drag mode
+- on a non-overflowing deck, an upward drag can visually lift the stacked bar
+- a sufficiently large upward drag may activate the stacked bar on release
+
+C. PREVIEW FILTER
+- Preview is described as selected-items-only
+- the Preview implementation appears to pass filterToChecked=false
+- the existing selected-items Checklist path appears to use filterToChecked=true
+
+These are OBSERVED SOURCE FACTS, not permission to edit.
+
+Playwright must prove what the user actually experiences.
+
+============================================================
+3. GOLD STANDARD RULE
+============================================================
+
+SOURCE INSPECTION ALONE IS NOT PASS.
+
+A test may only be marked PASS if Playwright proves the USER-VISIBLE behavior or DOM/layout state that the requirement actually describes.
+
+Do not use proxy assertions such as:
+- "no floating category exists" to prove a stacked bar did not move
+- "Preview opened" to prove Preview contains only selected items
+- "maxHeight:300 is absent" to prove the full Weight Distribution legend is usable
+
+Use direct measurements and direct behavior assertions.
+
+============================================================
+4. PRIMARY TEST VIEWPORT
+============================================================
+
+Run all interaction-heavy diagnostics at:
+
+390 x 844
+
+Use:
+320 x 844
+375 x 844
+430 x 844
+
+ONLY for the targeted responsive checks in Section 11.
+
+Use Chromium Playwright unless another browser is already available without additional installation/cost.
+
+Do not spend time installing WebKit/Firefox for R0072P.
+
+============================================================
+5. DIAGNOSTIC A — STACKED BAR HEIGHT
+============================================================
+
+GOAL
+Measure whether a stacked bar is actually the same size as a category bar.
+
+STEPS
+1. Open /mobile-functional-v3 at 390 x 844.
+2. Measure the bounding-box height of a normal collapsed category bar.
+3. Open a deck that shows at least one inactive stacked bar.
+4. Measure the bounding-box height of that inactive stacked bar.
+5. Record both exact pixel values.
+
+PASS CRITERION
+- stacked-bar height equals category-bar height within <= 1 px.
+
+FAIL CRITERION
+- difference > 1 px.
+
+REPORT
+Include:
+- category bar selector/accessible target used
+- exact category height
+- stacked bar selector/accessible target used
+- exact stacked-bar height
+- exact difference
+
+Do not infer equality from comments or constants.
+
+============================================================
+6. DIAGNOSTIC B — STACKED BARS MUST NOT MOVE
+============================================================
+
+USER REQUIREMENT
+Stacked bars are tap controls only.
+They must NOT move, lift, float, follow the finger, dock, or activate because they were dragged.
+
+IMPORTANT
+Test a NON-OVERFLOWING deck because the current source may only enable "lift" mode when the deck does not overflow.
+
+TEST B1 — MID-DRAG PHYSICAL MOVEMENT
+1. Open a short/non-overflowing deck.
+2. Identify an inactive stacked bar.
+3. Record its bounding box and computed transform BEFORE interaction.
+4. Pointer/touch down near the center.
+5. Move upward approximately 70–100 px while keeping the pointer down.
+6. WHILE STILL HELD:
+   - record its bounding box
+   - record computed transform
+   - take a screenshot if useful
+
+PASS
+- bar itself has not moved relative to its stack
+- no translate/lift transform
+- no floating/lift visual state
+
+FAIL
+- bar moves upward/downward with the finger
+- transform changes to physically lift it
+- bar visibly floats
+
+TEST B2 — DRAG MUST NOT ACTIVATE
+1. Start from inactive stacked bar.
+2. Drag upward farther than any existing activation threshold.
+3. Release.
+4. Verify that the dragged stacked bar did NOT become the active card solely because of the drag.
+
+PASS
+- order/active state unchanged after drag
+- only a TAP activates the stacked bar
+
+FAIL
+- drag/release activates the stacked bar
+
+TEST B3 — TAP STILL WORKS
+Separately perform a normal tap on the same stacked bar.
+
+PASS
+- tap activates it normally
+
+This distinguishes "do not drag" from "do not work."
+
+EVIDENCE
+Prefer one short Playwright video showing:
+- upward drag
+- whether bar moves
+- release result
+- normal tap result
+
+============================================================
+7. DIAGNOSTIC C — PREVIEW MUST SHOW ONLY SELECTED ITEMS
+============================================================
+
+USER REQUIREMENT
+Preview box -> selected-items-only PDF-style checklist preview.
+Preview does NOT automatically print.
+A separate Print control is inside Preview.
+
+TEST C1 — ESTABLISH KNOWN SELECTION STATE
+Before opening Preview:
+1. Identify at least:
+   - one currently selected/checked item
+   - one currently unselected/unchecked item
+2. Record their exact visible names in R0072P.md.
+3. Do not rely on hard-coded names if the runtime can identify them dynamically.
+
+If the current seeded test state contains no mixed selected/unselected items:
+- use only the existing test/sandbox UI to create a temporary known mixed state
+- do not modify source
+- do not save changes outside the test's disposable runtime state
+
+TEST C2 — SELECTED ITEM INCLUDED
+Open Group 3 -> Preview.
+
+PASS
+- the known selected item is visible in Preview.
+
+TEST C3 — UNSELECTED ITEM EXCLUDED
+PASS
+- the known unselected item is NOT present in Preview.
+
+If the unselected item appears, mark Preview selected-only behavior FAIL.
+
+TEST C4 — NO AUTO-PRINT
+Stub/observe window.print BEFORE Preview opens.
+
+PASS
+- opening Preview calls window.print exactly 0 times.
+
+TEST C5 — DELIBERATE PRINT CONTROL
+PASS
+- a separate Print control is visible inside Preview
+- tapping it is the action that triggers print
+
+EVIDENCE
+Capture:
+- list screenshot or recorded names proving selected/unselected state
+- Preview screenshot
+- print call counts
+
+============================================================
+8. DIAGNOSTIC D — WEIGHT DISTRIBUTION COMPLETE PANEL
+============================================================
+
+The old defect was a ~300 px nested inner scroll/clipping area.
+
+The current source appears to remove that constraint.
+Do NOT call it PASS merely because maxHeight:300 is absent.
+
+Use runtime data with multiple categories.
+
+TEST D1 — COMPLETE LEGEND
+1. Open Summary -> Weight Distribution.
+2. Determine the category names represented in the current list/weight data.
+3. Determine which categories should appear in the Weight Distribution legend.
+4. Verify every expected legend entry that has applicable weight data is present in the rendered Weight Distribution panel.
+5. Record at least the first AND last/bottom legend entry.
+
+PASS
+- complete expected legend is rendered in the same Weight Distribution panel.
+
+TEST D2 — CATEGORY WEIGHTS
+Verify each legend/category entry includes its corresponding displayed weight where the UI is designed to show one.
+
+TEST D3 — NO NESTED WEIGHT-DISTRIBUTION SCROLLER
+Identify:
+- parent Summary/deck scrolling element
+- Weight Distribution content element
+
+Record for each:
+- clientHeight
+- scrollHeight
+- computed overflowY
+
+PASS
+- Weight Distribution itself is not the independent nested vertical scroller
+- parent Summary/deck owns vertical overflow when scrolling is required
+
+TEST D4 — BOTTOM LEGEND REACHABLE
+If content exceeds the viewport:
+- scroll the PARENT Summary/deck
+- prove the final/bottom legend row becomes visible
+- verify the inner Weight Distribution panel scrollTop does not independently change
+
+EVIDENCE
+Capture a top and bottom screenshot if scrolling is necessary.
+
+============================================================
+9. DIAGNOSTIC E — PACK SUMMARY CONTINUOUS PANEL
+============================================================
+
+TEST E1
+Open Summary -> Pack Summary.
+
+Verify:
+- all current rows are rendered
+- Grand Total is present in the same continuous panel
+
+TEST E2 — SCROLL OWNERSHIP
+Record:
+- parent Summary/deck clientHeight, scrollHeight, overflowY, scrollTop
+- Pack Summary content clientHeight, scrollHeight, overflowY, scrollTop
+
+If scrolling is needed:
+- scroll parent
+- confirm Grand Total is reachable
+- confirm Pack Summary does not become its own nested vertical scroller
+
+Do not use scrollIntoViewIfNeeded as proof.
+
+============================================================
+10. DIAGNOSTIC F — BOX GROUPS + DUPLICATE CONTROLS
+============================================================
+
+Verify current R0072 box groups at 390 px:
+
+GROUP 1
+Locker | Summary | Add | Search | Next
+
+GROUP 2
+Back | Undo | Redo | Reset | Next
+
+GROUP 3
+Back | Camera | Photos | Preview | Next
+
+GROUP 4
+Back | Share | More
+
+Verify:
+- Group 1 default
+- max five visible boxes
+- left swipe: 1 -> 2 -> 3 -> 4
+- right swipe: 4 -> 3 -> 2 -> 1
+- no wraparound
+- chevrons perform same transitions
+
+DUPLICATE-CONTROL AUDIT
+For every function assigned a bottom box:
+- Locker
+- Summary
+- Add
+- Search
+- Undo
+- Redo
+- Reset
+- Camera
+- Photos
+- Preview
+- Share
+- More
+
+Search the rendered V3 UI/decks for a SECOND independent launcher performing the same function.
+
+Do NOT count:
+- panel content
+- labels/headings describing the function
+- Print inside Preview, because Print does not have its own permanent bottom box
+
+Report any actual duplicate launcher.
+
+============================================================
+11. TARGETED RESPONSIVE CHECKS
+============================================================
+
+At:
+320
+375
+390
+430 px
+
+Check only:
+- no horizontal document overflow caused by box groups
+- no bottom-box clipping
+- no more than five visible boxes
+- existing TrailWeigh header remains intact
+- no duplicate header
+- current identity icons remain visible without a new R0072-caused overlap
+
+Do NOT redesign or modify the header.
+
+============================================================
+12. CATEGORY REORDER + DELETE REGRESSION
+============================================================
+
+Because stacked-bar gesture logic and bottom sliding are nearby interaction systems, perform two small regressions:
+
+A. CATEGORY REORDER
+- long-press a category
+- move it to a genuinely different position
+- verify the category order changes correctly
+- verify the dragged identity remains correct
+
+B. SLIDE-TO-DELETE
+- perform the approved right-edge-to-left reveal gesture on one test item/category
+- verify Delete reveals
+- do NOT confirm destructive deletion unless using disposable test state
+
+No application changes.
+
+============================================================
+13. PLAYWRIGHT EVIDENCE REQUIREMENTS
+============================================================
+
+Create compact evidence.
+
+REQUIRED:
+1. measurement table in R0072P.md
+2. stacked-bar drag video OR screenshots before/mid-drag/after
+3. Preview evidence proving selected item included and unselected item excluded/included
+4. Weight Distribution top/bottom evidence if scrolling is required
+5. exact Playwright test counts
+
+Do not generate large unnecessary artifacts.
+
+============================================================
+14. QUESTIONS R0072P MUST ANSWER
+============================================================
+
+Answer explicitly:
+
+Q1. What is the measured category-bar height?
+Q2. What is the measured stacked-bar height?
+Q3. Are they actually the same size?
+
+Q4. Does a stacked bar physically move/lift during an upward drag?
+Q5. Can a stacked bar activate because of a drag/release rather than a tap?
+Q6. Does a normal tap still activate it?
+
+Q7. What selected item was used for the Preview test?
+Q8. What unselected item was used?
+Q9. Does Preview contain only selected items?
+Q10. Does Preview open without triggering Print?
+Q11. Is Print a separate deliberate control inside Preview?
+
+Q12. Does Weight Distribution render the complete expected legend?
+Q13. Is the last/bottom legend row reachable?
+Q14. Which DOM element owns vertical scrolling?
+Q15. Is there any nested Weight Distribution vertical scroller?
+
+Q16. Is Pack Summary one continuous panel?
+Q17. Is Grand Total reachable through the parent Summary/deck scroll?
+Q18. Is there any nested Pack Summary vertical scroller?
+
+Q19. Are all four box groups correct?
+Q20. Are any duplicate launch controls still present?
+
+Q21. Did category reorder regress?
+Q22. Did slide-to-delete regress?
+
+Q23. What is the smallest safe correction for every CONFIRMED failure?
+Q24. Which exact application file(s) would need to change?
+Q25. Which currently passing R0072 behaviors are at risk from those corrections?
+
+IMPORTANT:
+Q23–Q25 are recommendations only.
+DO NOT IMPLEMENT THEM.
+
+============================================================
+15. PASS / FAIL DISCIPLINE
+============================================================
+
+Use only:
+PASS
+FAIL
+NOT RUN
+NOT APPLICABLE
+
+Do not write PASS when:
+- test was conditional and performed no meaningful assertion
+- source inspection was substituted for runtime behavior
+- the test only proves a proxy condition
+- evidence is missing
+
+If Playwright cannot run:
+mark affected tests NOT RUN and explain why.
+
+Do NOT install broad new dependencies or modify the environment extensively just to force a test.
+
+============================================================
+16. REQUIRED REPORT
+============================================================
+
+Create:
+
+R0072P.md
+
+Structure:
+
+# R0072P Playwright Diagnostic Report
+
+## Read-Only Confirmation
+- application files changed: NONE
+- exact files created/changed for diagnostics
+
+## Environment
+- browser
+- viewport(s)
+- route
+- Playwright version if readily available
+- any limitations
+
+## Measurements
+Table:
+Item | Measured value | Expected | PASS/FAIL
+
+Include category height and stacked-bar height.
+
+## Stacked-Bar Movement
+- mid-drag movement measurement
+- transform before/during
+- drag activation result
+- tap activation result
+- PASS/FAIL
+
+## Preview Selected-Only
+- selected test item
+- unselected test item
+- selected present?
+- unselected absent?
+- print calls on open
+- Print control behavior
+- PASS/FAIL
+
+## Weight Distribution
+- expected legend entries
+- rendered legend entries
+- first/bottom entry
+- scroll owner measurements
+- nested scroller?
+- PASS/FAIL
+
+## Pack Summary
+- Grand Total result
+- scroll owner measurements
+- nested scroller?
+- PASS/FAIL
+
+## Box Groups
+- exact group contents
+- swipe results
+- chevron results
+- duplicates found
+- PASS/FAIL
+
+## Responsive
+320 / 375 / 390 / 430 results
+
+## Regressions
+- category reorder
+- slide-delete
+
+## Diagnostic Questions
+Answer Q1–Q25 explicitly.
+
+## Confirmed Failures
+Only runtime-proven failures.
+
+## Smallest Safe Correction Recommendation
+READ-ONLY recommendation only.
+No implementation.
+
+## Test Results
+- total
+- passed
+- failed
+- not run
+- skipped, if any
+- exact failures
+
+## Evidence Files
+Exact filenames.
+
+## Final Confirmation
+APPLICATION CODE CHANGED = NO
+DEPLOYMENT CHANGED = NO
+DATABASE/AUTH CHANGED = NO
+
+============================================================
+17. ZIP
+============================================================
+
+Create:
+
+R0072P.zip
+
+Include ONLY:
+- R0072P.md
+- R0072P Playwright test file(s)
+- compact required screenshots/video/evidence
+
+Do not include:
+- application source copies unless needed only as a small quoted diagnostic artifact
+- node_modules
+- build output
+- caches
+- unrelated test artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After Playwright verification, report, evidence, and ZIP:
+
+STOP.
+
+DO NOT FIX R0072.
+DO NOT WRITE AN IMPLEMENTATION PROMPT.
+DO NOT START R0073/R008.
+DO NOT PUBLISH OR DEPLOY.
+Wait for user/ChatGPT review.
