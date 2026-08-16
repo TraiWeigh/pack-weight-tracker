@@ -64,7 +64,7 @@ type SandboxStore = { items: PackState; order: string[]; meta: Record<string, Ca
 type ActiveNav = 'list' | 'locker' | 'catalog' | 'summary';
 
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
-// 'menu' and 'footer' removed — now handled by navOpen/moreOpen boolean state.
+// Hamburger drawer handled by drawerX (0–DRAWER_W) + drawerSnapping; More by moreOpen bool.
 type MobileScreen = 'list' | 'footer-page' | 'share' | 'sources';
 type FooterPageId =
   | 'about' | 'how-it-works' | 'sources' | 'help'
@@ -640,23 +640,61 @@ function NavTabDisabled({ Icon, label, 'aria-label': ariaLabel, title }: {
   );
 }
 
-// ─── NAV DRAWER (Sheet side="left", ~52vw) — hamburger destination ───────────
-interface NavDrawerProps {
-  open: boolean;
-  onClose: () => void;
+// ─── SLIDE DRAWER CONSTANT ─────────────────────────────────────────────────────
+// Width of the slide-tab drawer panel. ~52 vw at 430 px maxWidth, capped at 240 px.
+const DRAWER_W = 220;
+
+// ─── SLIDE TAB DRAWER ─────────────────────────────────────────────────────────
+// Custom gesture drawer with:
+//   • A visible pull-tab pinned to the left edge at exactly 50 % viewport height.
+//   • 1:1 drag tracking (no CSS transition while pointer is active).
+//   • Snap-open / snap-close on pointer release (40 % threshold; <8 px = tap-toggle).
+//   • Proportional backdrop fade driven by drawerX.
+//   • Escape key closes; keyboard Enter/Space on tab toggles.
+interface SlideTabDrawerProps {
+  drawerX: number;
+  snapping: boolean;
+  onPointerDown: (e: React.PointerEvent) => void;
+  onPointerMove: (e: React.PointerEvent) => void;
+  onPointerUp:   (e: React.PointerEvent) => void;
+  onSnap:   (targetX: number) => void;
+  onClose:  () => void;
+  onTransitionEnd: () => void;
   system: string;
   setSystem: (s: 'imperial' | 'metric') => void;
   onChecklist: () => void;
   onPrint: () => void;
 }
 
-function NavDrawer({ open, onClose, system, setSystem, onChecklist, onPrint }: NavDrawerProps) {
-  const drawerItem = (
-    icon: React.ReactNode,
-    label: string,
-    sublabel: string,
-    onClick: () => void,
-  ) => (
+function SlideTabDrawer({
+  drawerX, snapping,
+  onPointerDown, onPointerMove, onPointerUp,
+  onSnap, onClose, onTransitionEnd,
+  system, setSystem, onChecklist, onPrint,
+}: SlideTabDrawerProps) {
+  const isOpen   = drawerX > 0;
+  const progress = drawerX / DRAWER_W; // 0–1
+
+  // Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
+
+  const easing   = 'cubic-bezier(0.4,0,0.2,1)';
+  const duration = '0.28s';
+  const motion   = `${duration} ${easing}`;
+
+  const gestureHandlers = {
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel: onPointerUp,
+  };
+
+  const drawerItem = (icon: React.ReactNode, label: string, sublabel: string, onClick: () => void) => (
     <button
       key={label}
       onClick={onClick}
@@ -676,10 +714,38 @@ function NavDrawer({ open, onClose, system, setSystem, onChecklist, onPrint }: N
   );
 
   return (
-    <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent
-        side="left"
-        style={{ width: '52vw', maxWidth: 240, padding: 0, display: 'flex', flexDirection: 'column' }}
+    <>
+      {/* ── Proportional backdrop — only rendered when drawer is partially/fully open ── */}
+      {isOpen && (
+        <div
+          onClick={onClose}
+          aria-hidden="true"
+          style={{
+            position: 'absolute', inset: 0, zIndex: 200,
+            background: `rgba(0,0,0,${(0.65 * progress).toFixed(3)})`,
+            transition: snapping ? `background ${motion}` : 'none',
+          }}
+        />
+      )}
+
+      {/* ── Drawer panel — slides in from left, 1:1 with drawerX ── */}
+      <div
+        {...gestureHandlers}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        style={{
+          position: 'absolute', top: 0, left: 0, bottom: 0,
+          width: DRAWER_W, zIndex: 201,
+          background: CARD_BG,
+          transform: `translateX(${drawerX - DRAWER_W}px)`,
+          transition: snapping ? `transform ${motion}` : 'none',
+          touchAction: 'none',
+          userSelect: 'none',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: `4px 0 16px rgba(0,0,0,${(0.2 * progress).toFixed(3)})`,
+        }}
+        onTransitionEnd={onTransitionEnd}
       >
         {/* Header */}
         <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${DIVIDER}`, flexShrink: 0 }}>
@@ -687,8 +753,7 @@ function NavDrawer({ open, onClose, system, setSystem, onChecklist, onPrint }: N
         </div>
 
         {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-
+        <div style={{ flex: 1, overflowY: 'auto', touchAction: 'pan-y' }}>
           {/* Units toggle */}
           <div style={{ padding: '14px 20px 12px' }}>
             <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '1px', color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>Units</div>
@@ -711,15 +776,54 @@ function NavDrawer({ open, onClose, system, setSystem, onChecklist, onPrint }: N
               ))}
             </div>
           </div>
-
           <div style={{ height: 1, background: DIVIDER }}/>
-
-          {/* Navigation items */}
           {drawerItem(<Tent size={17} strokeWidth={1.8}/>, 'Checklist', 'Trail checklist for selected items', onChecklist)}
           {drawerItem(<Printer size={17} strokeWidth={1.8}/>, 'Print', 'Print your gear list as PDF', onPrint)}
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+
+      {/* ── Slide tab — left edge, vertically centred at exactly 50 % viewport height ── */}
+      {/* The tab tracks drawerX so it moves 1:1 with the panel during drag and snaps with it. */}
+      <div
+        {...gestureHandlers}
+        role="button"
+        tabIndex={0}
+        aria-label={drawerX >= DRAWER_W / 2 ? 'Close navigation drawer' : 'Open navigation drawer'}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSnap(drawerX >= DRAWER_W / 2 ? 0 : DRAWER_W);
+          }
+        }}
+        style={{
+          position: 'absolute',
+          left: drawerX,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          transition: snapping ? `left ${motion}` : 'none',
+          width: 20,
+          height: 52,
+          zIndex: 202,
+          borderRadius: '0 10px 10px 0',
+          background: NAV_ACTIVE,
+          boxShadow: '2px 0 8px rgba(0,0,0,0.22)',
+          cursor: 'grab',
+          touchAction: 'none',
+          userSelect: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          outline: 'none',
+        }}
+      >
+        {/* Three grip dots — vertical column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4.5, alignItems: 'center', pointerEvents: 'none' }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.75)' }}/>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 
@@ -1329,7 +1433,13 @@ function MobileFunctionalV3Inner() {
   // Navigation stack (sub-pages only: footer-page, share, sources)
   const [screenStack, setScreenStack] = useState<ScreenEntry[]>([{ screen: 'list' }]);
   // Drawer / sheet open state
-  const [navOpen, setNavOpen] = useState(false);
+  // Slide-tab drawer state: drawerX tracks panel offset (0 = closed, DRAWER_W = open).
+  // drawerSnapping enables CSS transition during snap; off during 1:1 drag.
+  const [drawerX, setDrawerX]             = useState(0);
+  const [drawerSnapping, setDrawerSnapping] = useState(false);
+  const drawerDragRef = useRef<{ active: boolean; startX: number; startOffset: number }>(
+    { active: false, startX: 0, startOffset: 0 },
+  );
   const [moreOpen, setMoreOpen] = useState(false);
   const [showPlusSheet, setShowPlusSheet] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
@@ -1617,6 +1727,42 @@ function MobileFunctionalV3Inner() {
     setExpandedItem(null);
   }, []);
 
+  // ── Slide-tab drawer gesture handlers ────────────────────────────────────────
+
+  /** Snap the drawer to a target offset and enable CSS transition. */
+  const snapDrawerTo = useCallback((targetX: number) => {
+    setDrawerSnapping(true);
+    setDrawerX(targetX);
+  }, []);
+
+  /** Called by SlideTabDrawer once the snap transition completes. */
+  const handleDrawerTransitionEnd = useCallback(() => {
+    setDrawerSnapping(false);
+  }, []);
+
+  const handleDrawerPointerDown = useCallback((e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    drawerDragRef.current = { active: true, startX: e.clientX, startOffset: drawerX };
+    setDrawerSnapping(false); // disable transition for 1:1 tracking
+  }, [drawerX]);
+
+  const handleDrawerPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!drawerDragRef.current.active) return;
+    const dx = e.clientX - drawerDragRef.current.startX;
+    setDrawerX(Math.max(0, Math.min(DRAWER_W, drawerDragRef.current.startOffset + dx)));
+  }, []);
+
+  const handleDrawerPointerUp = useCallback((e: React.PointerEvent) => {
+    if (!drawerDragRef.current.active) return;
+    drawerDragRef.current.active = false;
+    const dx = Math.abs(e.clientX - drawerDragRef.current.startX);
+    // <8 px = tap → toggle; otherwise snap by 40 % threshold
+    const targetX = dx < 8
+      ? (drawerX < DRAWER_W / 2 ? DRAWER_W : 0)
+      : (drawerX > DRAWER_W * 0.4 ? DRAWER_W : 0);
+    snapDrawerTo(targetX);
+  }, [drawerX, snapDrawerTo]);
+
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
   // ── Item expand/collapse ──────────────────────────────────────────────────────
@@ -1787,7 +1933,7 @@ function MobileFunctionalV3Inner() {
       <div style={{
         width: '100%', maxWidth: 430, height: '100dvh',
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
-        fontFamily: SANS, position: 'relative',
+        fontFamily: SANS, position: 'relative', overflow: 'hidden',
       }}>
 
         {/* ── APP BAR ── */}
@@ -1799,8 +1945,8 @@ function MobileFunctionalV3Inner() {
           {/* Hamburger */}
           <button
             aria-label="Open menu"
-            aria-expanded={navOpen}
-            onClick={() => setNavOpen(true)}
+            aria-expanded={drawerX >= DRAWER_W}
+            onClick={() => snapDrawerTo(DRAWER_W)}
             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}
           >
             <Menu size={22} color={SECONDARY} strokeWidth={1.8}/>
@@ -2436,14 +2582,20 @@ function MobileFunctionalV3Inner() {
 
         {/* ── DRAWER + SHEET OVERLAYS ── */}
 
-        {/* Hamburger nav drawer */}
-        <NavDrawer
-          open={navOpen}
-          onClose={() => setNavOpen(false)}
+        {/* Slide-tab nav drawer */}
+        <SlideTabDrawer
+          drawerX={drawerX}
+          snapping={drawerSnapping}
+          onPointerDown={handleDrawerPointerDown}
+          onPointerMove={handleDrawerPointerMove}
+          onPointerUp={handleDrawerPointerUp}
+          onSnap={snapDrawerTo}
+          onClose={() => snapDrawerTo(0)}
+          onTransitionEnd={handleDrawerTransitionEnd}
           system={system}
           setSystem={setSystem}
-          onChecklist={() => { setNavOpen(false); setShowChecklist(true); }}
-          onPrint={() => { setNavOpen(false); handlePrint(); }}
+          onChecklist={() => { snapDrawerTo(0); setShowChecklist(true); }}
+          onPrint={() => { snapDrawerTo(0); handlePrint(); }}
         />
 
         {/* More bottom sheet */}
