@@ -33,11 +33,13 @@ import { useAuth } from '@clerk/react';
 import {
   Menu, Search, Plus, Check, MoreHorizontal,
   Backpack, Folder, Grid3X3, BarChart2,
-  Hash, PackageOpen, ArrowRightLeft, Luggage, Camera,
+  Hash, PackageOpen, ArrowRightLeft, Luggage, Camera, Image,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
   Tent, HelpCircle, X, ChevronLeft, ChevronRight, Layers,
   Scale, Coins, AlertCircle, Trash2, Copy, Link2,
   BookOpen, Info, Pencil, Mail, Tag, FileText, Shield,
+  // R007 header identity icons + group 3
+  Train, Plane, Ship, Car, Package,
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
@@ -580,62 +582,315 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
   );
 }
 
-// ─── BOTTOM BAR (R003 — exactly five flush square areas:
-//     Locker | Summary | Add | Search | More — no List tab, no floating Add) ─────
-type DeckId = 'locker' | 'summary' | 'add' | 'search' | 'more';
+// ─── BOTTOM BOX-GROUP BAR (R007 — 4 sliding groups, chevron + swipe navigation)
+//
+// Group 1 (default): Locker | Summary | Add | Search | [→ NEXT]
+// Group 2:           [← BACK] | Undo | Redo | Reset | [→ NEXT]
+// Group 3:           [← BACK] | Camera | Photos | Preview | [→ NEXT]
+// Group 4:           [← BACK] | Share | More
+//
+// Max five visible boxes at one time (chevron counts as a box).
+// Stacked bars (inactive deck cards) are NOT part of this system and are never
+// reorderable — they are purely content bars above the box groups.
+// ─────────────────────────────────────────────────────────────────────────────
 
-interface BottomNavBarProps {
+type DeckId = 'locker' | 'summary' | 'add' | 'search' | 'more';
+const NUM_BOX_GROUPS = 4;
+const GROUP_SWIPE_THRESHOLD = 44; // px horizontal drag to commit a group change
+
+interface BoxGroupBarProps {
   activeDeck: DeckId | null;
-  onDeck: (deck: DeckId) => void;
+  undoDisabled: boolean;
+  redoDisabled: boolean;
+  onLocker:  () => void;
+  onSummary: () => void;
+  onAdd:     () => void;
+  onSearch:  () => void;
+  onUndo:    () => void;
+  onRedo:    () => void;
+  onReset:   () => void;
+  onCamera:  () => void;
+  onPhotos:  () => void;
+  onPreview: () => void;
+  onShare:   () => void;
+  onMore:    () => void;
 }
 
-const NAV_AREAS: { deck: DeckId; Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>; label: string; aria: string }[] = [
-  { deck: 'locker',  Icon: Folder,         label: 'Locker',  aria: 'Locker — saved lists' },
-  { deck: 'summary', Icon: BarChart2,      label: 'Summary', aria: 'Summary — pack weight and progress' },
-  { deck: 'add',     Icon: Plus,           label: 'Add',     aria: 'Add — add items, categories, or import a list' },
-  { deck: 'search',  Icon: Search,         label: 'Search',  aria: 'Search — find gear' },
-  { deck: 'more',    Icon: MoreHorizontal, label: 'More',    aria: 'More — settings and tools' },
-];
+/** Shared box button inside a group. */
+function NavBox({
+  Icon, label, aria, active, disabled, onClick,
+}: {
+  Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+  label: string; aria: string; active?: boolean; disabled?: boolean; onClick: () => void;
+}) {
+  const col = disabled ? NAV_INACTIVE + '60' : active ? NAV_ACTIVE : NAV_INACTIVE;
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={aria}
+      aria-current={active ? 'page' : undefined}
+      style={{
+        flex: 1, minWidth: 0, background: active ? 'rgba(42,87,64,0.10)' : 'none',
+        border: 'none', borderRadius: 0, padding: '7px 0 8px',
+        cursor: disabled ? 'default' : 'pointer',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+      }}
+    >
+      <Icon size={21} color={col} strokeWidth={active ? 2.1 : 1.6}/>
+      <span style={{ fontSize: 10, fontWeight: active ? 700 : 400, color: col, letterSpacing: active ? '0.1px' : 0 }}>
+        {label}
+      </span>
+    </button>
+  );
+}
 
-const BottomNavBar = React.forwardRef<HTMLDivElement, BottomNavBarProps>(
-  function BottomNavBar({ activeDeck, onDeck }, ref) {
+/** Chevron navigation box — same size/style as other boxes. */
+function ChevronBox({
+  direction, aria, onClick,
+}: { direction: 'left' | 'right'; aria: string; onClick: () => void }) {
+  const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
+  return (
+    <button
+      onClick={onClick}
+      aria-label={aria}
+      style={{
+        flex: 1, minWidth: 0, background: 'none', border: 'none', borderRadius: 0,
+        padding: '7px 0 8px', cursor: 'pointer',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
+      }}
+    >
+      <Icon size={21} color={NAV_INACTIVE} strokeWidth={1.6}/>
+      <span style={{ fontSize: 10, color: NAV_INACTIVE }}>
+        {direction === 'left' ? 'Back' : 'More'}
+      </span>
+    </button>
+  );
+}
+
+const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
+  function BoxGroupBar(props, ref) {
+    const {
+      activeDeck, undoDisabled, redoDisabled,
+      onLocker, onSummary, onAdd, onSearch,
+      onUndo, onRedo, onReset,
+      onCamera, onPhotos, onPreview,
+      onShare, onMore,
+    } = props;
+
+    const [groupIdx, setGroupIdx]   = useState(0);
+    const [dragX, setDragX]         = useState(0);  // live finger offset (px)
+    // isAnimating: true for ~400ms after a committed group change so the CSS
+    // slide transition can complete before off-screen groups are hidden again.
+    const [isAnimating, setIsAnimating] = useState(false);
+    const animTimerRef = useRef<number | null>(null);
+    const swipeRef = useRef<{ startX: number; startY: number; dragged: boolean; locked: boolean; pointerId: number } | null>(null);
+    const justDraggedRef = useRef(false);
+
+    // Ref mirrors — kept current so window event listeners never close over stale state.
+    const groupIdxRef = useRef(groupIdx);
+    groupIdxRef.current = groupIdx;
+
+    // Commit a group change (or stay put) and fire a single haptic if changed.
+    const settle = useCallback((newIdx: number) => {
+      const changed = newIdx !== groupIdxRef.current;
+      setGroupIdx(newIdx);
+      setDragX(0);
+      if (changed) {
+        hapticDock(); // R007 §8 — ONE haptic on successful group settle
+        setIsAnimating(true);
+        if (animTimerRef.current) window.clearTimeout(animTimerRef.current);
+        animTimerRef.current = window.setTimeout(() => setIsAnimating(false), 400);
+      }
+    }, []); // stable — reads groupIdxRef instead of closing over groupIdx
+
+    const settleRef = useRef(settle);
+    settleRef.current = settle;
+
+    const goLeft  = useCallback(() => { settle(Math.max(0, groupIdxRef.current - 1)); }, [settle]);
+    const goRight = useCallback(() => { settle(Math.min(NUM_BOX_GROUPS - 1, groupIdxRef.current + 1)); }, [settle]);
+
+    // ── Gesture handling via WINDOW listeners (not pointer capture) ──────────────
+    // setPointerCapture() would redirect the synthetic `click` event to the nav
+    // div, preventing ChevronBox / NavBox onClick handlers from firing.  Instead
+    // we attach window-level move/up listeners from onPointerDown and remove them
+    // in onUp — this works across the full viewport without losing clicks.
+    const onPointerDown = useCallback((e: React.PointerEvent) => {
+      if (!e.isPrimary || swipeRef.current) return;
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const pid    = e.pointerId;
+      swipeRef.current = { startX, startY, dragged: false, locked: false, pointerId: pid };
+
+      const onMove = (ev: PointerEvent) => {
+        const s = swipeRef.current;
+        if (!s || ev.pointerId !== pid) return;
+        const dx = ev.clientX - startX;
+        const dy = ev.clientY - startY;
+        if (!s.locked) {
+          if (Math.abs(dy) > Math.abs(dx) + 6) {
+            // Vertical scroll — abandon horizontal tracking
+            swipeRef.current = null; setDragX(0);
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            return;
+          }
+          if (Math.abs(dx) > 6) { s.dragged = true; s.locked = true; }
+        }
+        if (s.dragged) {
+          const cur = groupIdxRef.current;
+          const clamped = cur === 0 && dx > 0 ? 0
+                        : cur === NUM_BOX_GROUPS - 1 && dx < 0 ? 0
+                        : dx;
+          setDragX(clamped);
+        }
+      };
+
+      // eslint-disable-next-line prefer-const
+      function onUp(ev: PointerEvent) {
+        if (ev.pointerId !== pid) return;
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        const s = swipeRef.current;
+        if (!s) return;
+        swipeRef.current = null;
+        const dx = ev.clientX - startX;
+        if (s.dragged) {
+          // Swallow the click that immediately follows drag-end
+          justDraggedRef.current = true;
+          requestAnimationFrame(() => { justDraggedRef.current = false; });
+        }
+        const cur = groupIdxRef.current;
+        if (dx < -GROUP_SWIPE_THRESHOLD && cur < NUM_BOX_GROUPS - 1) settleRef.current(cur + 1);
+        else if (dx > GROUP_SWIPE_THRESHOLD && cur > 0) settleRef.current(cur - 1);
+        else settleRef.current(cur); // short/cancelled → revert (no haptic)
+      }
+
+      window.addEventListener('pointermove', onMove, { passive: true });
+      window.addEventListener('pointerup', onUp);
+    }, []); // stable — everything read via refs or captured from startX/startY/pid
+
+    // Percentage-based translate: each group occupies 25% of the track (track = 4×
+    // the visible width). During live tracking, dragX pixels offset the settled position.
+    // transition is suppressed while finger is down so it tracks naturally.
+    const isDragging = !!swipeRef.current?.dragged;
+    const trackStyle: React.CSSProperties = {
+      display: 'flex',
+      width: `${NUM_BOX_GROUPS * 100}%`,
+      transform: `translateX(calc(-${groupIdx * (100 / NUM_BOX_GROUPS)}% + ${dragX}px))`,
+      transition: isDragging ? 'none' : `transform ${motionDuration()} cubic-bezier(0.4,0,0.2,1)`,
+      height: '100%',
+    };
+
+    const groupStyle: React.CSSProperties = {
+      width: `${100 / NUM_BOX_GROUPS}%`,
+      display: 'flex',
+      alignItems: 'stretch',
+      borderLeft: 'none',
+    };
+
+    // Divider between adjacent boxes
+    const boxDivider = `1px solid ${DIVIDER}`;
+
     return (
       <div
         ref={ref}
         data-testid="bottom-nav"
+        onPointerDown={onPointerDown}
+        onClickCapture={e => {
+          // Swallow the synthetic click that immediately follows a drag-end gesture
+          if (justDraggedRef.current) { justDraggedRef.current = false; e.stopPropagation(); e.preventDefault(); }
+        }}
         style={{
           position: 'sticky', bottom: 0, left: 0, right: 0,
           background: NAV_BG, borderTop: '1px solid rgba(0,0,0,0.10)',
-          display: 'flex', alignItems: 'stretch',
+          display: 'flex', flexDirection: 'column', alignItems: 'stretch',
           paddingBottom: 'var(--tw-safe-bottom, env(safe-area-inset-bottom, 0px))',
           zIndex: 40, minHeight: NAV_H, boxSizing: 'border-box', flexShrink: 0,
+          overflow: 'hidden',
+          touchAction: 'none', // pointer capture manages the gesture
         }}
       >
-        {NAV_AREAS.map(({ deck, Icon, label, aria }, i) => {
-          const active = activeDeck === deck;
-          return (
-            <button
-              key={deck}
-              onClick={() => onDeck(deck)}
-              aria-label={aria}
-              aria-current={active ? 'page' : undefined}
-              style={{
-                flex: 1, minWidth: 0,
-                background: active ? 'rgba(42,87,64,0.10)' : 'none',
-                border: 'none', borderRadius: 0,
-                borderLeft: i === 0 ? 'none' : `1px solid ${DIVIDER}`,
-                padding: '7px 0 8px', cursor: 'pointer',
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', gap: 2,
-              }}
-            >
-              <Icon size={21} color={active ? NAV_ACTIVE : NAV_INACTIVE} strokeWidth={active ? 2.1 : 1.6}/>
-              <span style={{ fontSize: 10, fontWeight: active ? 700 : 400, color: active ? NAV_ACTIVE : NAV_INACTIVE, letterSpacing: active ? '0.1px' : 0 }}>
-                {label}
-              </span>
-            </button>
-          );
-        })}
+        <div style={trackStyle}>
+          {/* Off-screen groups are visibility:hidden (not display:none so the flex
+              track dimensions stay stable) and aria-hidden so they're excluded from
+              the a11y tree and Playwright cannot find/click their buttons.
+              During a live drag (dragX≠0) or animation (isAnimating) all groups
+              are briefly visible so the CSS slide feels natural. */}
+          {([
+            {
+              /* ── Group 1: Locker | Summary | Add | Search | [NEXT] ── */
+              children: <>
+                <NavBox Icon={Folder}    label="Locker"  aria="Locker — saved lists"                    active={activeDeck==='locker'}  onClick={onLocker}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={BarChart2} label="Summary" aria="Summary — pack weight and progress"       active={activeDeck==='summary'} onClick={onSummary}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Plus}      label="Add"     aria="Add — add items, categories, or import"  active={activeDeck==='add'}     onClick={onAdd}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Search}    label="Search"  aria="Search — find gear"                       active={activeDeck==='search'}  onClick={onSearch}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <ChevronBox direction="right" aria="Next controls" onClick={goRight}/>
+              </>,
+            },
+            {
+              /* ── Group 2: [BACK] | Undo | Redo | Reset | [NEXT] ── */
+              children: <>
+                <ChevronBox direction="left" aria="Previous controls" onClick={goLeft}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Undo2}     label="Undo"    aria="Undo last change"    disabled={undoDisabled} onClick={onUndo}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Redo2}     label="Redo"    aria="Redo last change"    disabled={redoDisabled} onClick={onRedo}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={RotateCcw} label="Reset"   aria="Reset list to saved"                        onClick={onReset}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <ChevronBox direction="right" aria="Next controls" onClick={goRight}/>
+              </>,
+            },
+            {
+              /* ── Group 3: [BACK] | Camera | Photos | Preview | [NEXT] ── */
+              children: <>
+                <ChevronBox direction="left" aria="Previous controls" onClick={goLeft}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Camera}  label="Camera"  aria="Camera — capture gear photo"       onClick={onCamera}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Image}   label="Photos"  aria="Photos — gear photo library"       onClick={onPhotos}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Printer} label="Preview" aria="Preview — view and print gear list" onClick={onPreview}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <ChevronBox direction="right" aria="Next controls" onClick={goRight}/>
+              </>,
+            },
+            {
+              /* ── Group 4: [BACK] | Share | More ── */
+              children: <>
+                <ChevronBox direction="left" aria="Previous controls" onClick={goLeft}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Share2}         label="Share" aria="Share — create a review link"  onClick={onShare}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={MoreHorizontal} label="More"  aria="More — settings and tools"     active={activeDeck==='more'} onClick={onMore}/>
+              </>,
+            },
+          ] as { children: React.ReactNode }[]).map(({ children }, i) => {
+            const settled = !isAnimating && dragX === 0;
+            const hidden = settled && i !== groupIdx;
+            return (
+              <div
+                key={i}
+                data-group-idx={i}
+                data-group-active={i === groupIdx}
+                aria-hidden={hidden}
+                style={{
+                  ...groupStyle,
+                  borderLeft: i > 0 ? boxDivider : 'none',
+                  visibility: hidden ? 'hidden' : 'visible',
+                  pointerEvents: i === groupIdx ? 'auto' : 'none',
+                }}
+              >
+                {children}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -947,7 +1202,12 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
                   )}
                 </div>
               </div>
-              <div className="tw-noscrollbar" style={{ overflowY: 'auto', maxHeight: 300, scrollbarWidth: 'none' }}>
+              {/* R007 §11/12 — maxHeight:300 inner scroll removed. The active
+                  card content expands to its natural full height; the parent
+                  CardDeck scroll container (deck-scroll) owns vertical overflow.
+                  Neither Weight Distribution nor Pack Summary clips its content
+                  in a nested 300px window any more. */}
+              <div>
                 {active.render?.()}
               </div>
             </div>
@@ -1675,6 +1935,20 @@ function MobileFunctionalV3Inner() {
     });
   }, [system, listName, showToast]);
 
+  // ── Camera / Photos (Group 3 stubs — no downstream photo workflow in R007) ──
+  // R007 §10: Camera and Photos are rendered correctly in Group 3. No photo-
+  // storage subsystem exists yet; these handlers show a clear "coming soon" toast
+  // so the controls are honest placeholders. The downstream workflow is noted in
+  // R007.md under "Remaining Defects / Uncertainty".
+
+  const handleCamera = useCallback(() => {
+    showToast('Camera capture — coming in a future update');
+  }, [showToast]);
+
+  const handlePhotos = useCallback(() => {
+    showToast('Photo library — coming in a future update');
+  }, [showToast]);
+
   // ── Print (downloads PDF and opens browser print) ────────────────────────────
 
   const handlePrint = useCallback(() => {
@@ -1827,6 +2101,9 @@ function MobileFunctionalV3Inner() {
       newOrder.splice(dstIdx, 0, moved);
       mutateSandbox(prev => ({ ...prev, order: newOrder }));
       showToast('Category order saved');
+      // R007 Part 9 — ONE light haptic when a category settles into a NEW position.
+      // No haptic during drag, no haptic when position is unchanged.
+      hapticDock();
     }
   }, [mutateSandbox, showToast]);
 
@@ -2522,16 +2799,50 @@ function MobileFunctionalV3Inner() {
         {/* ── APP BAR ── */}
         <div style={{
           height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
-          display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
-          flexShrink: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', padding: '0 12px 0 14px', gap: 0,
+          flexShrink: 0, zIndex: 10, overflow: 'hidden',
         }}>
-          {/* Logo + wordmark — R005 Part 1: top-right Search control removed
-              entirely (no reserved width); Search lives only in the bottom nav. */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+          {/* Logo + wordmark */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
             <LogoMark size={24}/>
             <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
               TrailWeigh
             </span>
+          </div>
+          {/* R007 §13 — six decorative identity icons: one consistent family
+              (Lucide), TrailWeigh green, even spacing, no text labels, no
+              navigation action, no horizontal overflow. Flex: 1 distributes
+              the remaining header width evenly across all six icons. */}
+          <div
+            aria-hidden="true"
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center',
+              justifyContent: 'flex-end', gap: 0, minWidth: 0,
+              paddingLeft: 8,
+            }}
+          >
+            {([
+              [Backpack, 'Backpack'],
+              [Train,    'Train'],
+              [Plane,    'Plane'],
+              [Ship,     'Boat / Cruise ship'],
+              [Car,      'Car'],
+              [Package,  'Moving box'],
+            ] as [React.ComponentType<{ size: number; color: string; strokeWidth: number }>, string][]).map(
+              ([Icon, title], i) => (
+                <div
+                  key={title}
+                  title={title}
+                  style={{
+                    flex: '1 1 0', minWidth: 0, maxWidth: 38,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    paddingLeft: i === 0 ? 2 : 0,
+                  }}
+                >
+                  <Icon size={18} color={NAV_ACTIVE} strokeWidth={1.55}/>
+                </div>
+              )
+            )}
           </div>
         </div>
 
@@ -3048,11 +3359,24 @@ function MobileFunctionalV3Inner() {
 
         </div>{/* end scrollable */}
 
-        {/* ── BOTTOM BAR (R003 — Locker | Summary | Add | Search | More) ── */}
-        <BottomNavBar
+        {/* ── BOTTOM BOX-GROUP BAR (R007 — 4 sliding groups) ── */}
+        <BoxGroupBar
           ref={navRef}
           activeDeck={activeDeck}
-          onDeck={openDeck}
+          undoDisabled={undoHistory.length === 0}
+          redoDisabled={redoHistory.length === 0}
+          onLocker={()  => openDeck('locker')}
+          onSummary={()  => openDeck('summary')}
+          onAdd={()     => openDeck('add')}
+          onSearch={()  => openDeck('search')}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onReset={handleReset}
+          onCamera={handleCamera}
+          onPhotos={handlePhotos}
+          onPreview={handlePrint}
+          onShare={navigateToShare}
+          onMore={()  => openDeck('more')}
         />
 
         {/* ── CARD DECKS (conditionally rendered; closed decks do not exist

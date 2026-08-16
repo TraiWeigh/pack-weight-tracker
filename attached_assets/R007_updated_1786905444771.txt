@@ -1,0 +1,629 @@
+R007 — MOBILE BOX GROUPS + STACKED BAR + SUMMARY/HEADER CORRECTIONS
+
+REPORT NUMBER
+R007
+
+GOAL
+Make ONLY the approved V3 mobile changes below.
+Keep this run narrow and cost-controlled.
+
+BASELINE
+Use the current R006 implementation as the starting point.
+
+COST / SCOPE CONTROL — IMPORTANT
+- Work primarily in MobileFunctionalV3.tsx.
+- Do NOT reread or investigate unrelated project areas.
+- Reuse existing R006 test infrastructure.
+- Do NOT rebuild broad test suites from scratch.
+- Do NOT perform unrelated refactors or cleanup.
+- Do NOT touch deployment, publishing, database, schema, auth, desktop, or Checklist.tsx.
+- Do NOT attempt another overscroll/bounce fix in R007.
+- If another application source file is genuinely required, STOP before editing it and explain why.
+- After implementation, targeted tests, report, and ZIP: STOP.
+
+============================================================
+1. TERMINOLOGY — USE THIS EXACTLY
+============================================================
+
+BOX
+An individual control in the bottom control bar.
+
+BOX GROUP
+A related group of bottom-bar control boxes.
+
+STACKED BAR
+A compact deck/content bar above the bottom controls.
+A stacked bar is NOT a control box.
+
+IMPORTANT SEPARATION RULE
+A control box must NEVER appear:
+- inside a stacked bar;
+- on top of a stacked bar;
+- attached to a stacked bar;
+- embedded in a stacked bar.
+
+Control boxes belong ONLY to the bottom box-group system.
+
+============================================================
+2. STACKED BARS — MATCH CATEGORY SIZE, NEVER REORDER
+============================================================
+
+REQUIRED
+- Stacked bars use the same height and overall compact proportion as category bars.
+- Keep square/flush TrailWeigh structural styling.
+- Keep appropriate internal padding.
+- Do not make stacked bars large Wallet/credit-card-style cards.
+
+CRITICAL INTERACTION RULE
+Stacked bars MUST NOT be movable/reorderable like categories.
+
+Specifically:
+- category long-press reorder must not activate on stacked bars;
+- stacked bars must not rise/follow the finger;
+- stacked bars must not change order from a long press or drag;
+- a normal vertical gesture over a scrollable stacked-bar list remains scrolling;
+- tapping a stacked bar performs its normal action only.
+
+Do not add a visible drag/reorder handle to stacked bars.
+
+============================================================
+3. BOTTOM BOX GROUPS — NEW FINAL ORDER
+============================================================
+
+Create these four box groups in this EXACT order:
+
+GROUP 1 — PRIMARY
+Locker | Summary | Add | Search
+
+GROUP 2 — EDIT
+Undo | Redo | Reset
+
+GROUP 3 — CAPTURE / PREVIEW
+Camera | Photos | Preview
+
+IMPORTANT:
+Preview includes the Print option.
+Do NOT use a separate permanent Print box in the bottom bar.
+
+GROUP 4 — SHARE / MORE
+Share | More
+
+The normal/resting group when the list opens is GROUP 1.
+
+IMPORTANT
+The old permanent five-box layout:
+Locker | Summary | Add | Search | More
+is superseded by this four-group system.
+
+Preserve the existing More content and functionality.
+
+============================================================
+4. EXACT BOX COUNTS + CHEVRON PLACEMENT
+============================================================
+
+Maximum visible boxes at one time: FIVE.
+
+A chevron is itself a BOX.
+
+GROUP 1
+Locker | Summary | Add | Search | [NEXT chevron on RIGHT]
+
+GROUP 2
+[BACK chevron on LEFT] | Undo | Redo | Reset | [NEXT chevron on RIGHT]
+
+GROUP 3
+[BACK chevron on LEFT] | Camera | Photos | Preview | [NEXT chevron on RIGHT]
+
+GROUP 4
+[BACK chevron on LEFT] | Share | More
+
+Do NOT invent filler boxes just to fill unused space.
+
+============================================================
+5. BOX GROUPS CAN MOVE BOTH DIRECTIONS
+============================================================
+
+The box-group system is bidirectional.
+
+Exact sequence:
+
+1. GROUP 1 slides LEFT  -> GROUP 2
+2. GROUP 2 slides LEFT  -> GROUP 3
+3. GROUP 3 slides LEFT  -> GROUP 4
+
+Reverse:
+
+4. GROUP 4 slides RIGHT -> GROUP 3
+5. GROUP 3 slides RIGHT -> GROUP 2
+6. GROUP 2 slides RIGHT -> GROUP 1
+
+NO WRAPAROUND
+- Group 4 does not continue left to Group 1.
+- Group 1 does not continue right to Group 4.
+
+The bar behaves as one linear horizontal sequence:
+
+GROUP 1 <-> GROUP 2 <-> GROUP 3 <-> GROUP 4
+
+============================================================
+6. SWIPE + STATIONARY CHEVRON CONTROL
+============================================================
+
+Every group transition must be possible in TWO equivalent ways:
+
+A. gesture:
+- user physically swipes/slides the bottom bar left or right;
+
+B. stationary/tappable control:
+- user taps a directional CHEVRON BOX.
+
+Both methods MUST produce the same transition.
+
+CHEVRON MEANING
+
+RIGHT-SIDE NEXT CHEVRON
+- physically slides the current box group LEFT
+- reveals the next numbered group
+
+LEFT-SIDE BACK CHEVRON
+- physically slides the current box group RIGHT
+- reveals the previous numbered group
+
+CHEVRONS
+- match the size/style of other bottom control boxes;
+- have accessible names such as "Previous controls" and "Next controls";
+- must remain visually obvious as stationary alternatives to the swipe gesture.
+
+Do not rely on swipe alone.
+
+============================================================
+7. BOX-GROUP SLIDE FEEL
+============================================================
+
+REQUIRED
+- Horizontal finger drag tracks naturally.
+- Release settles onto the intended valid group.
+- Short/accidental movement returns to the current group.
+- Vertical list scrolling must NOT accidentally change box groups.
+- No springy/exaggerated animation.
+- Quick, smooth, controlled settle.
+- No horizontal page overflow.
+- Respect safe-area bottom inset.
+- Switching box groups must NOT open a deck automatically.
+- Active list remains visible while groups change.
+
+Do not interfere with:
+- category long-press reorder;
+- category/item slide-to-delete;
+- normal vertical list scroll.
+
+============================================================
+8. BOX-GROUP COMPLETION HAPTIC
+============================================================
+
+Add one restrained haptic confirmation when a box group COMPLETES a real move
+and settles fully into a different group position.
+
+REQUIRED
+- NO haptic while the group is physically sliding.
+- ONE light haptic only when the new group finishes settling.
+- Same completion haptic whether the move was started by swipe or chevron.
+- If a swipe is cancelled/too short and the group returns to its starting position:
+  NO haptic.
+- Do not fire one haptic for the chevron tap and another for settle.
+- Exactly one completion haptic per successful group change.
+- Respect device/browser/system support and settings.
+- Do not fake haptics on unsupported platforms.
+
+============================================================
+9. CATEGORY REORDER COMPLETION HAPTIC
+============================================================
+
+Use the same interaction language for category reorder.
+
+REQUIRED
+- NO haptic while dragging a category.
+- NO repeated haptics while crossing category boundaries.
+- If the category is released and successfully moves to a NEW position:
+  fire ONE light haptic when it settles into place.
+- If the category is released and returns to/or remains in its original position:
+  NO haptic.
+- Do not change the existing R006 long-press reorder mechanics except for this
+  completion haptic and any necessary nonfunctional wiring.
+- Respect device/browser/system support and settings.
+- Do not fake haptics on unsupported platforms.
+
+Interaction principle:
+move -> settle -> one subtle confirmation
+
+============================================================
+10. BOX FUNCTIONS
+============================================================
+
+GROUP 1
+- Locker: preserve current Locker behavior.
+- Summary: preserve current Summary behavior.
+- Add: preserve current Add behavior.
+- Search: preserve current Search behavior.
+- Search should remain architecturally suitable for future Search/AI entry,
+  but DO NOT build AI in R007.
+
+GROUP 2
+- Undo: existing Undo behavior.
+- Redo: existing Redo behavior.
+- Reset: existing Reset behavior and safeguards.
+
+GROUP 3
+- Camera and Photos are approved controls.
+- If a safe existing photo/camera handler exists in V3, reuse it.
+- If no suitable downstream workflow exists, render the controls correctly but
+  do NOT invent a large new photo-storage subsystem.
+- Report any missing downstream photo workflow in R007.md.
+- Preview: use existing safe preview/view behavior.
+- Preview must provide access to the existing Print option.
+- Do not create a duplicate print engine.
+
+GROUP 4
+- Share: preserve existing share behavior.
+- More: preserve existing More behavior/content.
+
+============================================================
+11. WEIGHT DISTRIBUTION — FIX CONFIRMED DEFECT
+============================================================
+
+THIS MUST BE FIXED IN R007.
+
+The current active Summary content still has an inner fixed/max-height
+constraint of approximately 300 px with its own vertical scrolling.
+
+That is wrong.
+
+WEIGHT DISTRIBUTION MUST BE ONE COMPLETE CONTINUOUS PANEL.
+
+Remove the fixed/max-height inner scrolling constraint from Weight Distribution.
+
+The panel must contain, together:
+- Weight Distribution title;
+- subtitle;
+- Trail control;
+- complete donut/chart;
+- EVERY category legend row;
+- EVERY category weight;
+- any existing Weight Distribution controls.
+
+REQUIRED
+- Do NOT clip later legend rows.
+- Do NOT hide legend entries inside a 300 px internal scroll window.
+- Do NOT use maxHeight: 300 or equivalent for the active panel.
+- Let the panel expand to natural full content height.
+- If content exceeds phone viewport, the PARENT Summary view/deck scrolls.
+- Weight Distribution itself must not become a nested vertical scroller.
+
+TEST THE ACTUAL DEFECT
+Do not pass merely because the chart exists.
+
+Assert:
+- multiple legend rows render when test data has multiple categories;
+- a later/bottom legend row exists in the same continuous panel;
+- active content is not constrained by maxHeight: 300 or equivalent;
+- parent Summary scroller owns vertical overflow.
+
+============================================================
+12. PACK SUMMARY — SAME SCROLL ARCHITECTURE
+============================================================
+
+REQUIRED
+- Remove the fixed/max-height 300 px inner scrolling constraint.
+- Pack Summary expands naturally to include ALL current rows.
+- Grand Total remains in the same continuous panel.
+- No nested vertical scroll trap.
+- Parent Summary view/deck scrolls when content is taller than viewport.
+- Do not hide content behind bottom controls.
+
+Test actual overflow ownership.
+Do not use scrollIntoViewIfNeeded as proof.
+
+============================================================
+13. TRAILWEIGH HEADER — R006 MISS
+============================================================
+
+Add the approved header identity treatment.
+
+Keep:
+TrailWeigh logo + wordmark
+
+Add these six identity icons:
+1. Backpack
+2. Train
+3. Plane
+4. Boat / Cruise Ship
+5. Car
+6. Moving Box
+
+REQUIRED
+- one consistent icon family/style;
+- TrailWeigh green;
+- even spacing/alignment;
+- decorative identity only, NOT navigation controls;
+- no text labels;
+- no old top-right Search button;
+- no horizontal overflow;
+- no wrapping;
+- no overlap with logo/wordmark;
+- no clipping.
+
+Test:
+320 px
+375 px
+390 px
+430 px
+
+============================================================
+14. BOUNCE / OVERSCROLL — LEAVE IT ALONE
+============================================================
+
+The bounce/overscroll behavior still exists.
+
+USER DECISION:
+LEAVE IT FOR NOW.
+
+R007 MUST NOT:
+- attempt another bounce fix;
+- spend investigation time on it;
+- alter page/body overscroll architecture solely for this issue.
+
+Preserve current behavior.
+
+============================================================
+15. TARGETED RESPONSIVE ACCEPTANCE
+============================================================
+
+Test at:
+320
+375
+390
+430 px.
+
+Verify:
+
+STACKED BARS
+- same compact height/proportion as categories;
+- no reorder behavior;
+- no control boxes inside/on stacked bars.
+
+BOX GROUPS
+- exact four groups and order;
+- Group 1 default;
+- Group 1 has Locker/Summary/Add/Search + one Next chevron;
+- Group 2 has Undo/Redo/Reset + Back/Next chevrons;
+- Group 3 has Camera/Photos/Preview + Back/Next chevrons;
+- Group 4 has Share/More + Back chevron;
+- max five visible boxes;
+- swipe left advances 1->2->3->4;
+- swipe right returns 4->3->2->1;
+- no wraparound;
+- chevrons perform identical transitions;
+- vertical scroll does not change group;
+- list remains visible;
+- successful group settle produces one haptic where supported;
+- cancelled/unchanged group movement produces no haptic.
+
+CATEGORY REORDER
+- successful new-position settle produces one light haptic where supported;
+- no haptic during drag;
+- no haptic when position does not change.
+
+WEIGHT DISTRIBUTION
+- complete legend;
+- all category weights;
+- no 300 px nested active-panel scroller;
+- parent Summary scroll owns vertical overflow.
+
+PACK SUMMARY
+- full content;
+- Grand Total in same panel;
+- no 300 px nested active-panel scroller.
+
+HEADER
+- logo/wordmark plus six identity icons;
+- all visible;
+- no clipping/wrapping/overflow.
+
+============================================================
+16. TARGETED TESTING ONLY
+============================================================
+
+Keep testing focused to control cost.
+
+Run:
+1. TypeScript/typecheck.
+2. R007 targeted browser tests.
+3. Only directly relevant R006 regressions.
+
+Required targeted assertions:
+- stacked bars are not reorderable;
+- no control box exists inside/on stacked bars;
+- Group 1 default;
+- exact group contents;
+- left swipe 1->2;
+- left swipe 2->3;
+- left swipe 3->4;
+- right swipe 4->3;
+- right swipe 3->2;
+- right swipe 2->1;
+- no wraparound;
+- chevrons trigger same transitions;
+- max five visible boxes;
+- vertical scroll does not change group;
+- one haptic on successful group settle where mock/support exists;
+- no group haptic on cancelled/no-change settle;
+- one category haptic on successful reorder settle where mock/support exists;
+- no category haptic during drag/no-change reorder;
+- Undo/Redo/Reset invoke existing functions;
+- Search still works;
+- Preview reaches existing preview and Print option;
+- Share works;
+- More works;
+- Weight Distribution complete legend test;
+- Weight Distribution no inner 300 px constraint;
+- parent Summary owns Weight Distribution scrolling;
+- Pack Summary no inner 300 px constraint;
+- Grand Total in continuous Pack Summary;
+- six header icons present at 320/375/390/430;
+- no horizontal overflow;
+- category reorder regression;
+- slide-delete regression;
+- Locker/Summary/Add regression.
+
+Do NOT rerun unrelated large project test suites unless a targeted test fails
+and genuinely requires broader diagnosis.
+
+============================================================
+17. CHANGED-FILE DISCIPLINE
+============================================================
+
+Prefer application source change:
+MobileFunctionalV3.tsx ONLY.
+
+Allowed:
+- R007 targeted test file(s);
+- R007.md.
+
+If another application source file is necessary:
+STOP BEFORE EDITING.
+Report exact file + exact reason.
+
+DO NOT CHANGE:
+- Checklist.tsx
+- desktop
+- database/schema
+- auth
+- deployment/publishing
+- unrelated project code
+
+============================================================
+18. R007 REPORT + ZIP
+============================================================
+
+Create:
+R007.md
+R007.zip
+
+R007.md must include:
+
+# R007 Implementation Report
+
+## Files Changed
+exact files
+
+## Cost / Scope Discipline
+- files inspected
+- whether scope expanded
+- why, if so
+
+## Stacked Bars
+PASS/FAIL:
+- category-size proportion
+- non-reorderable
+- no control boxes in/on stacks
+
+## Bottom Box Groups
+PASS/FAIL:
+- exact groups
+- exact order
+- Group 1 default
+- exact box counts
+- swipe directions
+- chevrons
+- max five visible boxes
+- no wraparound
+- vertical-scroll arbitration
+
+## Haptics
+PASS/FAIL:
+- one group-settle haptic on successful group change where supported
+- no group haptic during drag
+- no group haptic on cancelled/no-change move
+- one category-settle haptic on successful reorder where supported
+- no category haptic during drag
+- no category haptic when order unchanged
+
+## Box Functions
+PASS/FAIL:
+- Locker
+- Summary
+- Add
+- Search
+- Undo
+- Redo
+- Reset
+- Camera
+- Photos
+- Preview
+- Print option inside Preview
+- Share
+- More
+Clearly state if Camera/Photos downstream workflow does not yet exist.
+
+## Weight Distribution
+PASS/FAIL:
+- no 300 px inner constraint
+- complete chart
+- complete legend
+- all category weights
+- parent Summary scrolling
+
+## Pack Summary
+PASS/FAIL:
+- no 300 px inner constraint
+- full rows
+- Grand Total
+- parent Summary scrolling
+
+## Header
+PASS/FAIL:
+- logo/wordmark
+- Backpack
+- Train
+- Plane
+- Boat/Cruise
+- Car
+- Moving Box
+- responsive widths
+
+## Bounce
+Confirm intentionally NOT changed/investigated.
+
+## TypeScript
+result
+
+## Targeted Tests
+total / passed / failed / skipped
+
+## Remaining Defects / Uncertainty
+be explicit
+
+## ZIP Contents
+exact filenames
+
+ZIP MUST CONTAIN
+- R007.md
+- every application source file changed by R007
+- every test file changed/added by R007
+- any other genuinely changed relevant file
+
+Do NOT include node_modules, caches, or build folders.
+
+============================================================
+FINAL STOP
+============================================================
+
+After R007 implementation, targeted tests, report, and ZIP:
+
+STOP.
+
+Do not start R008.
+Do not publish.
+Do not deploy.
+Do not modify database/auth.
+Wait for user review.
