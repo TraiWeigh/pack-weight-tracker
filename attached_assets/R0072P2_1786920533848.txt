@@ -1,0 +1,332 @@
+R0072P2 — GOLD STANDARD PLAYWRIGHT FOLLOW-UP
+READ-ONLY ENABLED STACKED-BAR DRAG VERIFICATION
+
+REPORT NUMBER
+R0072P2
+
+RECOMMENDED REPLIT MODE
+Economy
+
+PURPOSE
+Resolve ONE remaining uncertainty from R0072P.
+
+DO NOT MODIFY TRAILWEIGH APPLICATION CODE.
+
+QUESTION TO PROVE
+Can an ENABLED stacked bar inside a NON-OVERFLOWING deck:
+1. physically lift/move/follow the finger during an upward drag; and/or
+2. activate because of drag/release rather than a normal tap?
+
+This is the only diagnostic goal.
+
+============================================================
+1. STRICT READ-ONLY SCOPE
+============================================================
+
+ALLOWED:
+- one targeted Playwright diagnostic test file
+- R0072P2.md
+- compact required screenshot/video evidence
+- R0072P2.zip
+
+DO NOT CHANGE:
+- MobileFunctionalV3.tsx
+- Checklist.tsx
+- any application source/style file
+- package dependencies
+- database/schema
+- authentication
+- deployment/publishing
+- production/development database state
+- unrelated tests
+
+Do NOT fix anything.
+
+If the test cannot be performed without changing application code:
+STOP and mark NOT RUN.
+
+============================================================
+2. TEST PRECONDITION — MUST BE PROVEN
+============================================================
+
+Before the drag test begins, Playwright must prove ALL of these:
+
+A. the open deck is NON-OVERFLOWING
+- record deck clientHeight
+- record deck scrollHeight
+- PASS precondition only if scrollHeight <= clientHeight + 1 px
+
+B. the target stacked bar is ENABLED
+- it is not disabled
+- it is normally tappable/activatable
+- it is an inactive stacked bar before the test
+
+C. the target is actually a STACKED BAR
+- not a category bar
+- not a bottom control box
+- not a disabled Search placeholder
+
+Record the exact target label/name.
+
+If A, B, or C cannot be proven:
+DO NOT perform the drag test.
+Mark NOT RUN and explain why.
+
+============================================================
+3. TEST A — NORMAL TAP BASELINE
+============================================================
+
+First prove the enabled stacked bar works normally by TAP.
+
+1. Record active state before tap.
+2. Tap the stacked bar normally.
+3. Verify it becomes active/opens according to existing behavior.
+4. Return to the starting state so the same target is inactive again.
+
+PASS:
+- normal tap activates the stacked bar.
+
+This establishes that the target is genuinely enabled.
+
+============================================================
+4. TEST B — MID-DRAG PHYSICAL MOVEMENT
+============================================================
+
+Starting with the stacked bar INACTIVE:
+
+1. Record BEFORE:
+   - boundingClientRect top
+   - boundingClientRect bottom
+   - boundingClientRect height
+   - computed transform
+   - active state
+
+2. Pointer/touch down near the center of the stacked bar.
+
+3. While keeping pointer DOWN, drag upward approximately 80 px.
+
+4. BEFORE releasing, record DURING:
+   - boundingClientRect top
+   - boundingClientRect bottom
+   - computed transform
+   - active state
+
+5. Take a screenshot while the pointer is still held if possible.
+
+PASS:
+- top/bottom position remains effectively unchanged (<= 1 px layout tolerance)
+- no lift/translate transform appears
+- bar does not visually float/follow the finger
+- active state remains unchanged
+
+FAIL:
+- the bar shifts upward/downward with the drag
+- transform changes to a translate/lift state
+- bar visibly lifts/floats/follows the pointer
+
+Report exact pixel movement:
+duringTop - beforeTop
+
+============================================================
+5. TEST C — DRAG/RELEASE MUST NOT ACTIVATE
+============================================================
+
+Repeat from an inactive state.
+
+1. Pointer/touch down on the enabled stacked bar.
+2. Drag upward far enough to exceed any existing lift/activation threshold.
+   Use approximately 100–120 px.
+3. Release.
+4. Record:
+   - active state after release
+   - target order/position
+   - final transform
+   - whether the target became active
+
+PASS:
+- drag/release does NOT activate the stacked bar
+- bar returns to original resting position
+- active card remains unchanged
+
+FAIL:
+- stacked bar activates because of drag/release
+- bar docks/changes active state without a tap
+
+============================================================
+6. TEST D — VERTICAL SCROLL SAFETY
+============================================================
+
+Because this is a NON-OVERFLOWING deck, the deck itself should not need to scroll.
+
+Verify:
+- the drag does not accidentally scroll the page/deck in a way that invalidates the test
+- any observed bar movement is distinguished from parent scroll movement
+
+Record parent scrollTop before/during/after.
+
+If parent scroll changes materially:
+- account for it in the bar-position measurement
+- do not falsely attribute parent scrolling to stacked-bar lift
+
+============================================================
+7. EVIDENCE REQUIRED
+============================================================
+
+Create compact evidence:
+
+REQUIRED:
+1. BEFORE screenshot
+2. MID-DRAG screenshot while pointer is held
+3. AFTER-RELEASE screenshot
+4. one short video if Playwright video is already enabled/easy
+5. exact measurement table in R0072P2.md
+
+Do not create large unnecessary artifacts.
+
+============================================================
+8. EXACT QUESTIONS TO ANSWER
+============================================================
+
+Q1. What deck was used?
+Q2. What enabled stacked bar was used?
+Q3. Was the deck proven non-overflowing?
+Q4. What were deck clientHeight and scrollHeight?
+Q5. Did a normal tap activate the target?
+Q6. What was target top before drag?
+Q7. What was target top during drag?
+Q8. Exact physical movement in px?
+Q9. Did computed transform change?
+Q10. Did the target visibly lift/follow the finger?
+Q11. Did drag/release activate the target?
+Q12. Did active state remain unchanged after drag/release?
+Q13. Did parent scrollTop change?
+Q14. Is the user requirement "stacked bars must not move" currently PASS or FAIL?
+Q15. If FAIL, what is the smallest safe correction?
+Q16. What exact application file(s) would need to change?
+Q17. Which already-working R0072 behaviors are at risk from that correction?
+
+Q15–Q17 are READ-ONLY recommendations.
+DO NOT IMPLEMENT.
+
+============================================================
+9. PASS / FAIL DISCIPLINE
+============================================================
+
+Use only:
+PASS
+FAIL
+NOT RUN
+
+Do NOT mark PASS unless the exact user-visible behavior is proven.
+
+Do NOT substitute:
+- source inspection
+- disabled stacked bars
+- overflowing decks
+- proxy assertions
+for the required runtime test.
+
+============================================================
+10. REQUIRED REPORT
+============================================================
+
+Create:
+
+R0072P2.md
+
+Structure:
+
+# R0072P2 Playwright Follow-Up Report
+
+## Read-Only Confirmation
+- application files changed: NONE
+- exact diagnostic files created/changed
+
+## Test Preconditions
+- deck used
+- target stacked bar
+- enabled state
+- inactive starting state
+- deck clientHeight
+- deck scrollHeight
+- non-overflowing = PASS/FAIL
+
+## Normal Tap Baseline
+- before active state
+- after tap active state
+- PASS/FAIL
+
+## Mid-Drag Measurements
+Table:
+Metric | Before | During | Difference
+
+Include:
+- top
+- bottom
+- transform
+- parent scrollTop
+
+## Drag/Release Activation
+- active before
+- active after
+- target position after
+- transform after
+- PASS/FAIL
+
+## Exact Answers
+Answer Q1–Q17.
+
+## Final Diagnostic Result
+STACKED BAR PHYSICALLY MOVES DURING DRAG = YES / NO / NOT RUN
+STACKED BAR ACTIVATES FROM DRAG/RELEASE = YES / NO / NOT RUN
+NORMAL TAP ACTIVATES STACKED BAR = YES / NO / NOT RUN
+USER REQUIREMENT "STACKED BARS MUST NOT MOVE" = PASS / FAIL / NOT RUN
+
+## Smallest Safe Correction Recommendation
+READ-ONLY only.
+No implementation.
+
+## Evidence Files
+Exact filenames.
+
+## Final Confirmation
+APPLICATION CODE CHANGED = NO
+DEPLOYMENT CHANGED = NO
+DATABASE/AUTH CHANGED = NO
+
+============================================================
+11. ZIP — MUST BE COMPLETE
+============================================================
+
+Create:
+
+R0072P2.zip
+
+MUST INCLUDE:
+- R0072P2.md
+- the Playwright test file
+- BEFORE screenshot
+- MID-DRAG screenshot
+- AFTER-RELEASE screenshot
+- short video if created
+
+Before delivering:
+1. list exact ZIP contents in R0072P2.md
+2. verify every listed file is actually inside R0072P2.zip
+3. open/list the ZIP to confirm contents
+
+Do NOT repeat the R0072P packaging failure where the report claimed evidence/test files were included but the ZIP contained only the report.
+
+============================================================
+FINAL STOP
+============================================================
+
+After the diagnostic, report, evidence, and ZIP:
+
+STOP.
+
+DO NOT FIX TRAILWEIGH.
+DO NOT WRITE THE REPAIR PROMPT.
+DO NOT START ANOTHER TASK.
+DO NOT PUBLISH OR DEPLOY.
+Wait for review.
