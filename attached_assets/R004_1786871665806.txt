@@ -1,0 +1,600 @@
+R004 — TRAILWEIGH V3 MOBILE VISUAL / GESTURE REFINEMENT
+
+REPORT NUMBER
+R004
+
+PURPOSE
+Apply ONLY the approved V3 mobile refinements that were identified after R003 review.
+
+STARTING POINT
+Treat the current R003 implementation as the known-good baseline.
+
+Preserve all passing R003 architecture and behavior unless this prompt explicitly changes it.
+
+DO NOT rework:
+- bottom navigation architecture;
+- Locker / Summary / Add / Search / More structure;
+- card-deck architecture;
+- R003 long-deck scrolling fix;
+- R003 Locker title/state synchronization;
+- R003 safe-area correction;
+- R003 disabled-card opacity correction;
+- unrelated category/item behavior.
+
+STRICT SCOPE
+- V3 phone experience only.
+- Prefer changing ONLY MobileFunctionalV3.tsx for application source.
+- Do NOT change Checklist.tsx.
+- Do NOT change desktop.
+- Do NOT change database/schema.
+- Do NOT change authentication.
+- Do NOT publish/redeploy.
+- Do NOT change production or development database state.
+- Do NOT perform unrelated cleanup/refactors.
+- Test/report files may be added or updated as needed.
+- If another application source file is genuinely required, STOP before changing it and report exactly why.
+
+============================================================
+1. CATEGORY + ITEM SLIDE-TO-DELETE
+============================================================
+
+Replace the visible resting trash-can delete controls for BOTH:
+- category rows/headers;
+- individual item rows.
+
+REQUIRED GESTURE DIRECTION
+The delete gesture must begin at or near the RIGHT EDGE of the category/item row and move LEFT.
+
+Required behavior:
+- the row itself follows the user's finger left;
+- the destructive Delete action is revealed underneath on the RIGHT side;
+- this right-edge-to-left direction is required;
+- vertical scrolling remains natural;
+- mostly vertical movement must scroll the list and must NOT reveal Delete;
+- slight diagonal movement must not accidentally trigger the delete reveal;
+- use deliberate horizontal-vs-vertical gesture disambiguation.
+
+RELEASE / SETTLE
+On release, the row settles smoothly into either:
+1. closed/resting position; or
+2. open/revealed Delete position.
+
+Requirements:
+- short/incomplete swipe returns closed;
+- intentional swipe opens to the stable Delete-reveal position;
+- no bounce;
+- no overshoot;
+- reversal during the drag should work naturally.
+
+DESTRUCTIVE SAFETY
+- Swiping must NEVER immediately delete the category/item.
+- Swipe only reveals a clearly labeled Delete action.
+- The user must deliberately activate Delete afterward.
+- Preserve existing delete confirmation/safeguards.
+- Category deletion must retain confirmation because it can remove contained items.
+- Item deletion must not weaken any existing safeguards.
+- Preserve existing Undo behavior if deletion already participates in Undo.
+- Do not invent a new undo architecture.
+
+OPEN-ROW MANAGEMENT
+- Only ONE category/item delete reveal may remain open at a time.
+- Opening another row closes the previous row.
+- Tapping elsewhere closes the open reveal.
+- Beginning normal vertical scrolling closes the open reveal.
+- Opening/switching a bottom deck must not leave a delete reveal stranded open.
+- Reordering a category must close any open delete reveal first.
+
+VISUAL
+- Remove the visible resting trash-can icon/button from category rows.
+- Remove the visible resting trash-can icon/button from item rows.
+- Remove any permanent horizontal space reserved for those trash icons.
+- Do not add replacement floating delete buttons.
+- The revealed Delete action may use a restrained destructive red treatment.
+- Keep the flat/flush V3 design.
+- Keep category wedges.
+
+ACCESSIBILITY
+Swipe must NOT be the only deletion path.
+
+Provide an accessible non-swipe delete action without restoring a permanently visible trash-can control.
+
+Acceptable approaches within current architecture:
+- screen-reader-accessible row action;
+- keyboard/focus-accessible Delete action;
+- existing contextual action surface if already present.
+
+Do not create a large new menu system only for this.
+
+============================================================
+2. CATEGORY REORDER — RAISED / FLOATING DRAG STATE
+============================================================
+
+When dragging a category using the existing SIX-DOT reorder handle:
+
+DRAGGED CATEGORY
+- The category being moved must visibly rise above the category stack.
+- It should appear to float over the other categories.
+- It follows the finger directly while raised.
+- Use restrained visual elevation:
+  - subtle shadow/depth;
+  - slight separation from the flush stack;
+  - no dramatic bounce;
+  - no excessive scaling.
+- Preserve the category's own wedge, color, text, and contents while dragging.
+- The floating visual must remain attached to the ACTUAL dragged category even after crossing/reordering positions.
+- Do not determine floating styling only from the category's original array index if that can cause the wrong category to receive the lifted style.
+
+VALID TARGET FEEDBACK
+When the floating category reaches/touches another category that it can switch/reorder with:
+- that target category dims SLIGHTLY;
+- only the current valid target dims;
+- the dragged/floating category itself does not receive the target dimming;
+- as soon as the floating category moves away, the previous target immediately returns to normal;
+- when it reaches a different valid target, only that new target dims.
+
+RELEASE
+- On release, the dragged category settles smoothly and FLUSH into its new position.
+- All dimming disappears immediately.
+- The floating elevation disappears after settling.
+- No category should remain partially transformed, dimmed, scaled, or elevated.
+
+GESTURE INTEGRATION
+- Six-dot handle remains the reorder initiation control.
+- Normal category taps/accordion behavior must not start reorder.
+- Reorder must coexist cleanly with slide-to-delete.
+- Starting reorder closes any open delete reveal.
+- A delete swipe must not accidentally trigger reorder.
+
+============================================================
+3. INTER VARIABLE — PRIMARY V3 MOBILE UI FONT
+============================================================
+
+Use INTER VARIABLE as the PRIMARY TrailWeigh V3 mobile UI font.
+
+Apply consistently across the V3 phone UI, including:
+- integrated active file/list name;
+- Pack Summary;
+- category headers;
+- category/item content;
+- bottom navigation;
+- compact stacked-bar decks;
+- buttons/actions;
+- labels;
+- V3 dialogs/overlays;
+- slide-to-delete Delete action;
+- reorder-related text.
+
+REQUIREMENTS
+- Use Inter Variable rather than mixing prominent Georgia/serif surfaces into the V3 interface.
+- Preserve the current hierarchy using weight/size rather than switching font families.
+- Do NOT make text smaller just to force fit.
+- Preserve semantic emphasis with suitable variable-font weights.
+- Use a sensible system sans-serif fallback stack if Inter Variable is unavailable.
+- Do not make unrelated global/desktop typography changes.
+- Do not expose/distribute font files as report artifacts.
+
+FILE-NAME TYPOGRAPHY SPECIAL RULE
+The active file/list name is being moved in Part 5 below.
+When moved:
+- keep the file name's CURRENT font size;
+- keep the file name's CURRENT text color;
+- change only the font family as necessary to comply with Inter Variable as the primary V3 UI font.
+
+If using Inter Variable requires modifying an application/style source outside the allowed V3 source scope:
+STOP and report the exact required file before editing it.
+
+============================================================
+4. REMOVE INLINE “+ ADD CATEGORY” CONTROL
+============================================================
+
+Remove the existing inline/dashed “+ Add Category” row from the V3 active list.
+
+This is the dashed-outline Add Category control shown beneath the category stack.
+
+REQUIRED RESULT
+- remove it completely;
+- remove the dashed outline;
+- remove the plus icon and label;
+- do not leave a blank spacer;
+- do not reserve its old height;
+- category stack should continue cleanly/flush into the next structural region.
+
+DO NOT remove Add Category functionality from TrailWeigh.
+
+Add Category must remain available through the approved bottom ADD deck.
+
+Do not create another duplicate Add Category control elsewhere.
+
+Verify the Add deck's Add Category workflow still works.
+
+============================================================
+5. PACK SUMMARY / FILE-NAME SIMPLIFICATION
+============================================================
+
+The current resting summary area must be simplified.
+
+REMOVE:
+- the visible “LIST SUMMARY” heading/title;
+- the visible “Not Selected” metric/value;
+- the separate file-name bar/line/region above the summary.
+
+MOVE FILE NAME
+Place the ACTIVE FILE/LIST NAME exactly in the area where “LIST SUMMARY” previously appeared.
+
+Requirements:
+- the file/list name becomes the top identity text inside the Pack Summary region;
+- no “List Summary” label remains;
+- no separate file-name structural strip remains;
+- no duplicate file name remains elsewhere in the resting list;
+- keep the file name's CURRENT font size;
+- keep the file name's CURRENT text color;
+- use Inter Variable per Part 3;
+- loading a different Locker file must continue updating this displayed name immediately;
+- do not break Save/Share name synchronization from R003.
+
+PACK SUMMARY CONTENT
+Remove “Not Selected.”
+
+Keep the remaining useful summary information already present, including:
+- selected count where currently shown;
+- total/item count where currently shown;
+- weight information where currently shown/applicable;
+- other existing summary information not explicitly removed by this prompt.
+
+Do not invent new metrics.
+
+LAYOUT
+- keep the Pack Summary/file identity region square-edged and flush;
+- no redundant title strip;
+- retain enough internal padding for readability;
+- do not reintroduce floating rounded cards/pills.
+
+============================================================
+6. PRESERVE CURRENT BOTTOM NAV / DECK SYSTEM
+============================================================
+
+Do not redesign the R003 bottom architecture.
+
+Keep:
+LOCKER | SUMMARY | ADD | SEARCH | MORE
+
+Preserve:
+- same-icon tap closes deck;
+- different-icon tap switches directly;
+- active list remains the resting screen underneath;
+- compact stacked-bar deck model;
+- long-deck scrolling fix;
+- opaque disabled Search bars;
+- safe-area behavior;
+- closed decks unmounted / no pointer interception.
+
+Do not add a List tab.
+Do not restore side drawers.
+Do not restore floating Add.
+
+============================================================
+7. TEST HARDENING FROM R003 REVIEW
+============================================================
+
+R003 review found two verification weaknesses.
+Tighten them in R004 without broadening functionality.
+
+A. LOCKER LOAD -> SAVE / SHARE IDENTITY
+R003 proved the displayed title changed after Locker load, but did not directly prove downstream identity use.
+
+Add direct assertions where safely testable:
+- load a Locker list with a known name;
+- assert displayed active name updates;
+- perform a safe Save path and assert the saved entry uses the loaded name;
+- exercise Share only if the existing V3 Share path can be tested without external side effects; assert the share metadata/name uses the loaded active name.
+- If Share cannot be safely asserted in automation, state that explicitly; do not fake a PASS.
+
+B. UNDO / REDO
+Do not use conditional “if enabled, test it” logic.
+
+Create a deterministic edit that should enable Undo.
+Then explicitly assert:
+- Undo becomes enabled;
+- open/close or switch a deck;
+- Undo remains enabled and performs the expected reversal;
+- Redo becomes enabled;
+- open/close or switch a deck;
+- Redo remains enabled and restores the expected change.
+
+If the existing application behavior makes this impossible, report FAIL/UNPROVEN rather than silently skipping the assertion.
+
+============================================================
+8. RESPONSIVE VERIFICATION
+============================================================
+
+Test at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+At EVERY width verify:
+
+PACK SUMMARY
+- no “LIST SUMMARY” text;
+- no “Not Selected” metric;
+- no separate file-name bar;
+- active file/list name occupies the former List Summary location;
+- file name retains its prior size and color;
+- no clipping/overflow.
+
+CATEGORIES
+- wedges retained;
+- no resting trash-can icons;
+- no inline dashed Add Category control;
+- no empty space where Add Category control was removed;
+- six-dot reorder handle still works;
+- dragged category visibly floats;
+- only valid reorder target dims slightly;
+- target dim clears immediately when leaving;
+- released category settles flush.
+
+ITEMS
+- no resting trash-can icon;
+- right-edge-to-left slide reveals Delete;
+- vertical scroll remains natural.
+
+DELETE
+- right-edge-to-left direction works;
+- swipe does not immediately delete;
+- short swipe closes;
+- intentional swipe reveals Delete;
+- only one reveal remains open;
+- confirmation/cancel works;
+- accessible non-swipe path exists.
+
+TYPOGRAPHY
+- Inter Variable primary;
+- no unintended Georgia/serif primary UI surfaces;
+- no text clipping;
+- no forced tiny labels.
+
+BOTTOM DECKS
+- all R003 bottom areas still operate;
+- no regression in safe-area clearance;
+- no regression in long-deck scrolling;
+- closed overlays do not intercept touches.
+
+============================================================
+9. AUTOMATED TESTING REQUIRED
+============================================================
+
+At minimum run:
+
+1. TypeScript/typecheck.
+2. Browser runtime console check.
+3. Existing R003 regression suite relevant to V3.
+4. 320/375/390/430 layout checks.
+5. Category right-edge-to-left delete reveal.
+6. Item right-edge-to-left delete reveal.
+7. Vertical scroll does not reveal Delete.
+8. Diagonal/mostly vertical movement does not reveal Delete.
+9. Swipe reversal.
+10. Short swipe snaps closed.
+11. Intentional swipe snaps open.
+12. Swipe alone never deletes.
+13. Delete cancel preserves category/item.
+14. Delete confirmation removes correct target only.
+15. Only one delete reveal open at a time.
+16. Tap elsewhere closes reveal.
+17. Vertical list scroll closes reveal.
+18. Accessible non-swipe delete path.
+19. No resting trash-can controls.
+20. Six-dot reorder initiates floating state.
+21. Actual dragged category retains floating styling after crossing positions.
+22. Valid target dims slightly.
+23. Previous target undims immediately when leaving.
+24. New target becomes the only dimmed target.
+25. Release settles dragged category flush.
+26. Reorder and slide-delete do not conflict.
+27. No inline dashed Add Category control.
+28. Add deck Add Category still works.
+29. No List Summary heading.
+30. No Not Selected metric.
+31. No separate file-name strip.
+32. File name in former List Summary location.
+33. Locker load updates displayed file name.
+34. Save after Locker load uses loaded name.
+35. Share name assertion if safely testable; otherwise report UNPROVEN.
+36. Deterministic Undo preservation test.
+37. Deterministic Redo preservation test.
+38. Inter Variable application / fallback verification.
+39. No horizontal overflow.
+40. Existing bottom-deck navigation regression.
+41. Long Locker scrolling regression.
+42. Safe-area regression.
+43. Closed-overlay pointer-event regression.
+44. Reduced-motion regression.
+45. Accessibility labels/states.
+
+NO TEST MAY PASS ONLY BECAUSE IT RAN.
+Critical behavior requires a meaningful assertion of the resulting state.
+
+============================================================
+10. CHANGED-FILE DISCIPLINE
+============================================================
+
+Application source:
+- Prefer MobileFunctionalV3.tsx ONLY.
+
+If another application source/style file is required:
+STOP BEFORE EDITING IT.
+Report:
+- exact file;
+- exact reason;
+- which R004 requirement cannot be met safely without it.
+
+Allowed:
+- R004 test files;
+- R004 report.
+
+Forbidden:
+- Checklist.tsx;
+- desktop changes;
+- database/schema;
+- auth;
+- publishing/deployment;
+- unrelated refactors.
+
+============================================================
+11. REQUIRED R004 REPORT
+============================================================
+
+Create:
+
+R004.md
+
+Use these sections:
+
+# R004 Implementation Report
+
+## Scope
+- application source files changed
+- test/report files changed
+- restricted areas untouched
+
+## Slide-to-Delete
+PASS/FAIL table for:
+- category right-edge-to-left reveal
+- item right-edge-to-left reveal
+- vertical-scroll disambiguation
+- reversal
+- short swipe close
+- intentional swipe reveal
+- swipe does not delete
+- cancel confirmation
+- confirm delete
+- single-open-row behavior
+- tap/scroll closes reveal
+- resting trash cans removed
+- accessible non-swipe delete path
+
+## Category Reorder
+PASS/FAIL for:
+- six-dot handle only
+- dragged category rises/floats
+- correct dragged category remains floating after crossing positions
+- follows finger
+- valid target dims
+- old target undims immediately
+- only one target dimmed
+- release settles flush
+- no conflict with slide-to-delete
+
+## Typography
+- Inter Variable status
+- application scope
+- fallback
+- whether any additional source/style file was required
+
+## Pack Summary / File Name
+PASS/FAIL for:
+- List Summary removed
+- Not Selected removed
+- separate file-name bar removed
+- file name moved to former List Summary location
+- current size preserved
+- current color preserved
+- Locker-loaded name updates correctly
+
+## Inline Add Category Removal
+PASS/FAIL
+- control absent
+- no residual gap
+- Add deck workflow still works
+
+## R003 Test Hardening
+- Locker load -> Save identity
+- Locker load -> Share identity or explicit UNPROVEN reason
+- deterministic Undo
+- deterministic Redo
+
+## Responsive Verification
+Table:
+320 | 375 | 390 | 430
+
+Include:
+- no overflow
+- summary/file layout
+- category stack
+- item rows
+- slide-delete
+- reorder
+- typography
+- bottom navigation
+
+## Regression
+PASS/FAIL:
+- Locker
+- Summary
+- Add
+- Search
+- More
+- long-deck scrolling
+- safe area
+- closed overlays
+- reduced motion
+- accessibility
+
+## TypeScript
+result
+
+## Browser Console
+result
+
+## Automated Tests
+- total
+- passed
+- failed
+- skipped
+- exact failures
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## Final Scope Confirmation
+Confirm:
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+
+============================================================
+12. ZIP
+============================================================
+
+Provide:
+
+R004.zip
+
+Include only:
+- R004.md
+- relevant changed application source file(s)
+- relevant test files
+- compact evidence necessary for review
+
+Do NOT include:
+- node_modules
+- build caches
+- giant generated folders
+- unrelated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, testing, R004.md, and R004.zip:
+
+STOP.
+
+Do NOT continue to another TrailWeigh change.
+Do NOT publish.
+Do NOT deploy.
+Do NOT change database/auth.
+Wait for user review.

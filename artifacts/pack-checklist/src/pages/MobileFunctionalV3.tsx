@@ -26,6 +26,9 @@
  */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+// R004 Part 3 — Inter Variable is the primary V3 mobile UI font (registers @font-face only;
+// applied solely through this file's font tokens, so desktop/Checklist are unaffected)
+import '@fontsource-variable/inter';
 import { useAuth } from '@clerk/react';
 import {
   Menu, Search, Plus, Check, GripVertical, MoreHorizontal,
@@ -130,8 +133,10 @@ const WEDGE_POINT = 17;
 const CARD_H      = 68;
 
 // ─── TOKENS ─────────────────────────────────────────────────────────────────────
-const SERIF        = "Georgia, 'Palatino Linotype', Palatino, 'Book Antiqua', ui-serif, serif";
-const SANS         = "'Inter', system-ui, -apple-system, sans-serif";
+// R004 Part 3 — Inter Variable primary; former SERIF surfaces keep their weight/size
+// hierarchy but now render in the same Inter Variable family (no serif mixing).
+const SANS         = "'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif";
+const SERIF        = SANS; // retained token name so existing weight/size hierarchy is untouched
 const PAGE_BG      = '#F2EDE4';
 const CARD_BG      = '#FFFFFF';
 const HEADER_BG    = '#FFFFFF';
@@ -448,6 +453,121 @@ function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayPro
             forceOpenSeq={1}
           />
         </BarStyleProvider>
+      </div>
+    </div>
+  );
+}
+
+// ─── SLIDE-TO-DELETE ROW (R004 Part 1) ───────────────────────────────────────────
+// Right-edge-to-left swipe reveals a Delete action underneath on the right.
+// - gesture must BEGIN in the right-edge zone of the row;
+// - 8px slop, then horizontal-vs-vertical mode lock (mostly-vertical → native scroll);
+// - row follows the finger; release settles open (past half) or closed — no bounce;
+// - swipe only REVEALS Delete; activation is a separate deliberate tap.
+const SWIPE_ACTION_W = 88;   // revealed Delete width (px)
+const SWIPE_SLOP_PX  = 8;    // gesture disambiguation slop
+const SWIPE_EDGE_ZONE = 0.4; // gesture must start within right 40% of the row
+
+function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, children }: {
+  swipeKey: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDelete: () => void;
+  deleteLabel: string;
+  children: React.ReactNode;
+}) {
+  const [dragX, setDragX] = useState<number | null>(null); // live offset while dragging
+  const gRef = useRef<{ startX: number; startY: number; baseX: number; mode: 'idle' | 'h' | 'v'; lastX: number } | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const justDraggedRef = useRef(false); // swallow the synthetic click that follows a drag
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    // Closed rows: the delete gesture must begin at/near the RIGHT EDGE.
+    // Open rows: allow a swipe-back-closed from anywhere on the row.
+    if (!open && e.clientX < rect.right - rect.width * SWIPE_EDGE_ZONE) return;
+    gRef.current = { startX: e.clientX, startY: e.clientY, baseX: open ? -SWIPE_ACTION_W : 0, mode: 'idle', lastX: e.clientX };
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    const g = gRef.current;
+    if (!g) return;
+    const dx = e.clientX - g.startX;
+    const dy = e.clientY - g.startY;
+    if (g.mode === 'idle') {
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_SLOP_PX) return;
+      if (Math.abs(dy) > Math.abs(dx)) { g.mode = 'v'; return; } // mostly vertical → scroll, never reveal
+      g.mode = 'h';
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
+    if (g.mode !== 'h') return;
+    g.lastX = e.clientX;
+    const x = Math.min(0, Math.max(-SWIPE_ACTION_W, g.baseX + dx)); // clamp: no overshoot
+    setDragX(x);
+  };
+
+  const endGesture = (commit: boolean) => {
+    const g = gRef.current;
+    gRef.current = null;
+    if (!g || g.mode !== 'h') { setDragX(null); return; }
+    justDraggedRef.current = true;
+    if (commit) {
+      const x = Math.min(0, Math.max(-SWIPE_ACTION_W, g.baseX + (g.lastX - g.startX)));
+      onOpenChange(x < -SWIPE_ACTION_W / 2); // past half → open; short swipe → closed
+    } else {
+      onOpenChange(false);
+    }
+    setDragX(null);
+  };
+
+  const restingX = open ? -SWIPE_ACTION_W : 0;
+  const x = dragX ?? restingX;
+
+  return (
+    <div
+      ref={wrapRef}
+      data-swipe-key={swipeKey}
+      data-swipe-open={open ? 'true' : 'false'}
+      style={{ position: 'relative', overflow: 'hidden' }}
+    >
+      {/* Revealed destructive action — underneath, right side */}
+      <button
+        onClick={() => { onOpenChange(false); onDelete(); }}
+        aria-label={deleteLabel}
+        aria-hidden={!open && dragX === null}
+        tabIndex={open ? 0 : -1}
+        style={{
+          position: 'absolute', top: 0, bottom: 0, right: 0, width: SWIPE_ACTION_W,
+          background: '#B03A2E', color: '#fff', border: 'none', cursor: 'pointer',
+          fontSize: 13.5, fontWeight: 600, fontFamily: SANS,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+        }}
+      >
+        <Trash2 size={15} strokeWidth={1.9} aria-hidden="true"/>
+        Delete
+      </button>
+      {/* Row content — follows the finger; settles with a short ease-out (no bounce) */}
+      <div
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={() => endGesture(true)}
+        onPointerCancel={() => endGesture(false)}
+        onClickCapture={e => {
+          // The click fired right after a horizontal drag is part of the gesture — swallow it.
+          if (justDraggedRef.current) { justDraggedRef.current = false; e.stopPropagation(); e.preventDefault(); return; }
+          // Tap on an open row closes the reveal instead of activating the row.
+          if (open && dragX === null) { e.stopPropagation(); e.preventDefault(); onOpenChange(false); }
+        }}
+        style={{
+          transform: `translateX(${x}px)`,
+          transition: dragX !== null ? 'none' : 'transform 0.18s ease-out',
+          touchAction: 'pan-y',
+          position: 'relative', zIndex: 1,
+        }}
+      >
+        {children}
       </div>
     </div>
   );
@@ -1274,6 +1394,7 @@ function MobileFunctionalV3Inner() {
   const [lockerEntries, setLockerEntries] = useState<LockerEntry[]>([]);
 
   const openDeck = useCallback((deck: DeckId) => {
+    setOpenSwipe(null); // R004: opening a deck closes any open delete reveal
     setActiveDeck(prev => {
       if (prev === deck) { setActiveCardId(null); return null; }  // re-tap toggles closed
       if (deck === 'locker') setLockerEntries(readLockerEntries());
@@ -1317,10 +1438,8 @@ function MobileFunctionalV3Inner() {
   const [allExpanded, setAllExpanded] = useState(false);
   const [expandedItem, setExpandedItem] = useState<{ cat: string; id: string } | null>(null);
 
-  // Add category UI
-  const [showAddCat, setShowAddCat] = useState(false);
+  // Add category UI (R004 Part 4 — inline control removed; ADD deck is the only entry)
   const [newCatName, setNewCatName] = useState('');
-  const newCatInputRef = useRef<HTMLInputElement>(null);
 
   // Checklist-use state (separate from item.checked — tracks trail progress only)
   const [checklistUse, setChecklistUse] = useState<Record<string, boolean>>({});
@@ -1333,6 +1452,12 @@ function MobileFunctionalV3Inner() {
   const catListRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ catIdx: number; origOrder: string[] } | null>(null);
   const [dragSrcIdx, setDragSrcIdx] = useState<number | null>(null);
+  // R004 Part 1 — at most ONE delete reveal open at a time (key: 'cat:<name>' | 'item:<cat>:<id>')
+  const [openSwipe, setOpenSwipe] = useState<string | null>(null);
+  // R004 Part 2 — name-keyed floating drag + single valid-target dim
+  const [dragCatName, setDragCatName] = useState<string | null>(null);
+  const [dragTargetName, setDragTargetName] = useState<string | null>(null);
+  const [dragLift, setDragLift] = useState(0);
   const [dragDstIdx, setDragDstIdx] = useState<number | null>(null);
 
   // D2 — weight input local edit state (prevents intermediate value snapping)
@@ -1605,19 +1730,6 @@ function MobileFunctionalV3Inner() {
     setExpandedItem(prev => prev?.cat === cat && prev?.id === id ? null : { cat, id });
   }, []);
 
-  // ── Add category ──────────────────────────────────────────────────────────────
-
-  const handleAddCategoryConfirm = useCallback(() => {
-    const ok = addCategory(newCatName);
-    if (ok) {
-      setNewCatName('');
-      setShowAddCat(false);
-      showToast(`Category "${newCatName.trim()}" added`);
-    } else {
-      showToast('Category name already exists or is empty');
-    }
-  }, [addCategory, newCatName, showToast]);
-
   // ── Scanner: resolve category alias then addItem to sandbox ──────────────────
 
   const handleScannerAddItem = useCallback((category: string, prefill: Partial<GearItem>) => {
@@ -1645,6 +1757,10 @@ function MobileFunctionalV3Inner() {
       catIdx,
       origOrder: [...sandboxRef.current.order],
     };
+    setOpenSwipe(null); // R004: starting reorder closes any open delete reveal
+    setDragCatName(sandboxRef.current.order[catIdx] ?? null); // name-keyed floating style
+    setDragTargetName(null);
+    setDragLift(0);
     setDragSrcIdx(catIdx);
     setDragDstIdx(catIdx);
   }, []);
@@ -1663,9 +1779,30 @@ function MobileFunctionalV3Inner() {
     }
     newIdx = Math.max(0, Math.min(dragRef.current.origOrder.length - 1, newIdx));
     setDragDstIdx(newIdx);
+
+    // R004 Part 2 — valid-target dim, computed against the STABLE original order,
+    // not the live-reordered children (the floating card occupies the pointer's
+    // slot in the preview, which would otherwise clear the dim mid-cross).
+    // Target = the single category being displaced by the current destination.
+    const { catIdx, origOrder } = dragRef.current;
+    setDragTargetName(newIdx === catIdx ? null : origOrder[newIdx] ?? null);
+
+    // Finger-follow lift: floating card leans toward the pointer within its slot.
+    const draggedName = origOrder[catIdx];
+    let lift = 0;
+    for (const child of children) {
+      if ((child as HTMLElement).dataset.cat === draggedName) {
+        const rect = child.getBoundingClientRect();
+        lift = Math.max(-22, Math.min(22, e.clientY - (rect.top + rect.height / 2)));
+        break;
+      }
+    }
+    setDragLift(lift);
   }, []);
 
   const handleGripPointerUp = useCallback((_e: React.PointerEvent) => {
+    // R004: release clears ALL drag visuals immediately — no residual dim/elevation
+    setDragCatName(null); setDragTargetName(null); setDragLift(0);
     if (!dragRef.current || dragDstIdx === null) {
       setDragSrcIdx(null); setDragDstIdx(null); dragRef.current = null; return;
     }
@@ -1679,6 +1816,15 @@ function MobileFunctionalV3Inner() {
     }
     setDragSrcIdx(null); setDragDstIdx(null); dragRef.current = null;
   }, [dragDstIdx, mutateSandbox, showToast]);
+
+  // R004 — idempotent CANCELLATION path (pointercancel / lostpointercapture):
+  // clears every drag effect and does NOT commit a reorder.
+  const handleGripPointerCancel = useCallback(() => {
+    if (!dragRef.current) return; // no-op after a normal pointerup already finalized
+    dragRef.current = null;
+    setDragSrcIdx(null); setDragDstIdx(null);
+    setDragCatName(null); setDragTargetName(null); setDragLift(0);
+  }, []);
 
   // Visible order during drag reorder
   const visibleOrder: string[] = (dragSrcIdx !== null && dragDstIdx !== null && dragRef.current)
@@ -1744,7 +1890,6 @@ function MobileFunctionalV3Inner() {
   const allItems       = sandbox.order.flatMap(cat => sandbox.items[cat] ?? []);
   const totalItems     = allItems.length;
   const selectedCount  = allItems.filter(i => i.checked).length;
-  const notSelectedCount = totalItems - selectedCount;
   const catCount       = sandbox.order.length;
   const su             = smallUnit(system);
 
@@ -2181,6 +2326,13 @@ function MobileFunctionalV3Inner() {
         <div
           className="tw-noscrollbar"
           data-testid="main-scroll"
+          onScroll={() => { if (openSwipe) setOpenSwipe(null); }}
+          onPointerDownCapture={e => {
+            // R004 — tapping anywhere OUTSIDE the open row closes its reveal
+            if (!openSwipe) return;
+            const el = (e.target as HTMLElement).closest?.('[data-swipe-key]') as HTMLElement | null;
+            if (!el || el.dataset.swipeKey !== openSwipe) setOpenSwipe(null);
+          }}
           style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative', scrollbarWidth: 'none' }}
         >
 
@@ -2193,16 +2345,6 @@ function MobileFunctionalV3Inner() {
                 margin: 0, borderRadius: 0, background: SUMMARY_BG,
                 padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
               }}>
-                {/* File identity — the active list/file name lives INSIDE the summary bar */}
-                <div style={{
-                  fontSize: 15.5, fontWeight: 700, color: SUMMARY_TEXT, fontFamily: SERIF,
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  borderBottom: '1px solid rgba(255,255,255,0.16)', paddingBottom: 7,
-                }}
-                  data-testid="active-list-name"
-                >
-                  {listName || 'Untitled List'}
-                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 {/* Icon tile — unchanged */}
                 <div style={{
@@ -2211,13 +2353,18 @@ function MobileFunctionalV3Inner() {
                 }}>
                   <Luggage size={34} color="rgba(255,255,255,0.90)" strokeWidth={1.4}/>
                 </div>
-                {/* Left: label + total count */}
+                {/* Left: active file/list name (R004 Part 5 — occupies the former
+                    LIST SUMMARY label position; size 15.5 / SUMMARY_TEXT preserved) + total count */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 10, fontWeight: 700, letterSpacing: '1.1px',
-                    color: 'rgba(255,255,255,0.52)', textTransform: 'uppercase', marginBottom: 2,
-                  }}>
-                    LIST SUMMARY
+                  <div
+                    data-testid="active-list-name"
+                    style={{
+                      fontSize: 15.5, fontWeight: 700, color: SUMMARY_TEXT, fontFamily: SANS,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      marginBottom: 3,
+                    }}
+                  >
+                    {listName || 'Untitled List'}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, lineHeight: 1 }}>
                     <span style={{ fontSize: 40, fontWeight: 800, color: SUMMARY_TEXT, letterSpacing: '-1.5px', lineHeight: 1 }}>
@@ -2247,13 +2394,7 @@ function MobileFunctionalV3Inner() {
                       {selectedCount} Selected
                     </span>
                   </div>
-                  {/* Not Selected */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: 9, border: '1.5px solid rgba(255,255,255,0.38)', background: 'transparent', flexShrink: 0 }}/>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.78)', whiteSpace: 'nowrap' }}>
-                      {notSelectedCount} Not Selected
-                    </span>
-                  </div>
+                  {/* R004 Part 5 — "Not Selected" metric removed */}
                 </div>
                 </div>
               </div>
@@ -2270,7 +2411,10 @@ function MobileFunctionalV3Inner() {
               const items   = sandbox.items[catName] ?? [];
               const isOpen  = isCatOpen(catName);
               const theme   = getCategoryTheme(catName, catIdx);
-              const isDragging = dragSrcIdx === catIdx;
+              // R004 Part 2 — floating style keyed by NAME, never by array index,
+              // so the correct category stays lifted after crossing positions.
+              const isDragging = dragCatName === catName;
+              const isDimTarget = dragTargetName === catName && !isDragging;
 
               const selectedInCat = items.filter(i => i.checked).length;
               const catTotalOz = items
@@ -2278,20 +2422,39 @@ function MobileFunctionalV3Inner() {
                 .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
 
               return (
-                <div key={catName} style={{
-                  borderRadius: 0, overflow: 'hidden',
-                  background: CARD_BG,
-                  borderBottom: `1px solid ${DIVIDER}`,
-                  boxShadow: isDragging
-                    ? '0 6px 24px rgba(0,0,0,0.22), 0 0 0 2px rgba(42,87,64,0.25)'
-                    : 'none',
-                  opacity: isDragging ? 0.85 : 1,
-                  transform: isDragging ? 'scale(1.01)' : 'none',
-                  transition: 'box-shadow 0.1s, opacity 0.1s, transform 0.1s',
-                }}>
+                <div
+                  key={catName}
+                  data-cat={catName}
+                  data-floating={isDragging ? 'true' : 'false'}
+                  data-dimtarget={isDimTarget ? 'true' : 'false'}
+                  style={{
+                    borderRadius: 0, overflow: 'hidden',
+                    background: CARD_BG,
+                    borderBottom: `1px solid ${DIVIDER}`,
+                    // Raised/floating drag state: restrained elevation, no dramatic scale,
+                    // dragged card stays fully opaque; only the valid TARGET dims slightly.
+                    boxShadow: isDragging
+                      ? '0 8px 26px rgba(0,0,0,0.24), 0 2px 6px rgba(0,0,0,0.14)'
+                      : 'none',
+                    opacity: isDimTarget ? 0.55 : 1,
+                    transform: isDragging ? `translateY(${dragLift}px) scale(1.015)` : 'none',
+                    zIndex: isDragging ? 5 : 'auto',
+                    position: 'relative',
+                    transition: isDragging ? 'box-shadow 0.1s' : 'box-shadow 0.15s, opacity 0.12s, transform 0.15s ease-out',
+                  }}>
 
-                  {/* ── CATEGORY HEADER ── */}
-                  <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H }}>
+                  {/* ── CATEGORY HEADER (R004 — right-edge-to-left slide reveals Delete) ── */}
+                  <SwipeDeleteRow
+                    swipeKey={`cat:${catName}`}
+                    open={openSwipe === `cat:${catName}`}
+                    onOpenChange={o => setOpenSwipe(o ? `cat:${catName}` : null)}
+                    deleteLabel={`Delete ${catName} category`}
+                    onDelete={() => {
+                      // Reveal is NOT deletion: route into the existing confirmation flow
+                      setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(true); setCatRenameValue(catName);
+                    }}
+                  >
+                  <div style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG }}>
 
                     {/* WEDGE / ICON — PRIMARY ACCORDION TRIGGER */}
                     <button
@@ -2354,6 +2517,8 @@ function MobileFunctionalV3Inner() {
                         onPointerDown={e => handleGripPointerDown(e, catIdx)}
                         onPointerMove={handleGripPointerMove}
                         onPointerUp={handleGripPointerUp}
+                        onPointerCancel={handleGripPointerCancel}
+                        onLostPointerCapture={handleGripPointerCancel}
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           background: 'none', border: 'none', padding: 0,
@@ -2380,6 +2545,7 @@ function MobileFunctionalV3Inner() {
                       </div>
                     </div>
                   </div>
+                  </SwipeDeleteRow>
 
                   {/* ── ITEM ROWS (when open) ── */}
                   {isOpen && items.length === 0 && (
@@ -2404,7 +2570,14 @@ function MobileFunctionalV3Inner() {
                         return (
                           <div key={item.id}>
 
-                            {/* ITEM ROW — body tap expands detail; checkbox stops propagation */}
+                            {/* ITEM ROW (R004 — right-edge-to-left slide reveals Delete) */}
+                            <SwipeDeleteRow
+                              swipeKey={`item:${catName}:${item.id}`}
+                              open={openSwipe === `item:${catName}:${item.id}`}
+                              onOpenChange={o => setOpenSwipe(o ? `item:${catName}:${item.id}` : null)}
+                              deleteLabel={`Delete ${displayName}`}
+                              onDelete={() => setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName })}
+                            >
                             <div
                               role="button"
                               tabIndex={0}
@@ -2451,22 +2624,10 @@ function MobileFunctionalV3Inner() {
                                 {item.qty}
                               </span>
 
-                              {/* D6 — Trash icon immediately after Qty */}
-                              <button
-                                onClick={e => { e.stopPropagation(); setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName }); }}
-                                onPointerDown={e => e.stopPropagation()}
-                                aria-label={`Delete ${displayName}`}
-                                title={`Delete "${displayName}" from this list`}
-                                style={{
-                                  background: 'none', border: 'none', cursor: 'pointer',
-                                  padding: '4px 2px', flexShrink: 0, lineHeight: 1,
-                                  display: 'flex', alignItems: 'center',
-                                  color: '#c0392b', opacity: 0.55,
-                                }}
-                              >
-                                <Trash2 size={14} strokeWidth={1.8}/>
-                              </button>
+                              {/* R004 — resting trash-can removed; deletion via slide reveal
+                                  or the accessible Delete row in the expanded detail panel */}
                             </div>
+                            </SwipeDeleteRow>
 
                             {/* EXPANDED DETAIL PANEL */}
                             {isExpanded && (
@@ -2599,6 +2760,27 @@ function MobileFunctionalV3Inner() {
                                   </div>
                                 </div>
 
+                                {/* R004 — accessible NON-SWIPE delete path (replaces resting trash icon) */}
+                                <div style={{
+                                  display: 'flex', alignItems: 'center',
+                                  padding: '0 14px', height: 42, gap: 10,
+                                  borderTop: `1px solid ${DETAIL_BDR}`,
+                                }}>
+                                  <Trash2 size={14} color="#B03A2E" strokeWidth={1.8} aria-hidden="true"/>
+                                  <button
+                                    onClick={e => { e.stopPropagation(); setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName }); }}
+                                    aria-label={`Delete ${displayName}`}
+                                    title={`Delete "${displayName}" from this list`}
+                                    style={{
+                                      background: 'none', border: 'none', cursor: 'pointer',
+                                      padding: 0, fontSize: 13.5, color: '#B03A2E', fontWeight: 500,
+                                      fontFamily: SANS, textAlign: 'left', flex: 1,
+                                    }}
+                                  >
+                                    Delete Item
+                                  </button>
+                                </div>
+
                               </div>
                             )}
                           </div>
@@ -2641,71 +2823,8 @@ function MobileFunctionalV3Inner() {
               </div>
             )}
 
-            {/* Add Category — contextual, below category stack */}
-            <div style={{ marginTop: 4 }}>
-              {showAddCat ? (
-                <div style={{
-                  background: CARD_BG, borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
-                  boxShadow: CARD_SHADOW, padding: '12px 14px',
-                  display: 'flex', alignItems: 'center', gap: 8,
-                }}>
-                  <input
-                    ref={newCatInputRef}
-                    type="text"
-                    value={newCatName}
-                    placeholder="Category name…"
-                    aria-label="New category name"
-                    onChange={e => setNewCatName(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter') handleAddCategoryConfirm();
-                      if (e.key === 'Escape') { setShowAddCat(false); setNewCatName(''); }
-                    }}
-                    autoFocus
-                    style={{
-                      flex: 1, fontSize: 14, color: PRIMARY, fontFamily: SANS,
-                      border: `1px solid ${CARD_BORDER}`, borderRadius: 8, padding: '7px 10px',
-                      background: PAGE_BG, outline: 'none',
-                    }}
-                  />
-                  <button
-                    onClick={handleAddCategoryConfirm}
-                    aria-label="Confirm add category"
-                    style={{
-                      background: NAV_ACTIVE, color: '#fff', border: 'none',
-                      borderRadius: 8, padding: '7px 14px', cursor: 'pointer',
-                      fontSize: 13.5, fontWeight: 600, fontFamily: SANS,
-                    }}
-                  >
-                    Add
-                  </button>
-                  <button
-                    onClick={() => { setShowAddCat(false); setNewCatName(''); }}
-                    aria-label="Cancel add category"
-                    style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                  >
-                    <X size={18} color={MUTED} strokeWidth={1.8}/>
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setShowAddCat(true);
-                    setTimeout(() => newCatInputRef.current?.focus(), 50);
-                  }}
-                  aria-label="Add a new category to this list"
-                  title="Add new category"
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    background: 'none', border: `1.5px dashed ${MUTED}`,
-                    borderRadius: 12, padding: '12px 14px', cursor: 'pointer', width: '100%',
-                    fontSize: 13.5, color: MUTED, fontFamily: SANS,
-                  }}
-                >
-                  <Plus size={15} color={MUTED} strokeWidth={2}/>
-                  Add Category
-                </button>
-              )}
-            </div>
+            {/* R004 Part 4 — inline dashed "+ Add Category" control removed.
+                Add Category remains available via the bottom ADD deck only. */}
 
             {/* Bottom padding */}
             <div style={{ height: 24 }}/>

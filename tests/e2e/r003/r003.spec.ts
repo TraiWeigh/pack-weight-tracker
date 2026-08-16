@@ -18,7 +18,9 @@ const ROUTE = '/mobile-functional-v3';
 
 async function gotoV3(page: Page) {
   await page.goto(ROUTE);
-  await expect(page.getByText('LIST SUMMARY')).toBeVisible({ timeout: 15000 });
+  // R004: "LIST SUMMARY" label removed — the active list name (inside the summary
+  // bar) is now the readiness signal.
+  await expect(page.getByTestId('active-list-name')).toBeVisible({ timeout: 15000 });
 }
 
 /** Seed N temporary Locker entries (test-only localStorage data). */
@@ -152,7 +154,10 @@ test.describe('R003 integrated summary bar', () => {
   test('summary bar is square, flush, full-width (no outer margin)', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoV3(page);
-    const bar = page.getByTestId('active-list-name').locator('..');
+    // R004: the name now sits in the metrics row — walk up to the green bar
+    // (nearest ancestor with a non-transparent background) and assert on that.
+    const bar = page.getByTestId('active-list-name').locator(
+      'xpath=ancestor::div[contains(@style,"background")][1]');
     const box = (await bar.boundingBox())!;
     expect(box.width).toBeGreaterThan(390 - 3); // full width
     expect(box.x).toBeLessThan(1.5);
@@ -183,6 +188,11 @@ test('category cards are flush, touching, square-edged, full width', async ({ pa
 
 test('scrollbar chrome hidden but scrolling still works', async ({ page }) => {
   await gotoV3(page);
+  // R004: page is shorter (inline Add Category + name band removed) — expand all
+  // categories so the list actually overflows before asserting scrollability.
+  const wedges = page.getByRole('button', { name: /^Open .* category$/ });
+  const n = await wedges.count();
+  for (let i = 0; i < n; i++) await wedges.first().click();
   const scroller = page.getByTestId('main-scroll');
   const sw = await scroller.evaluate(el => getComputedStyle(el).scrollbarWidth);
   expect(sw).toBe('none');
