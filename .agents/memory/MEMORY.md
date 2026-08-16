@@ -13,3 +13,4 @@
 - [Content extraction pattern](content-extraction-pattern.md) — AboutContent/HelpContent/HowItWorksContent/SourcesContent exported; V3 uses navigate+onOpenSources props; 'sources' is a screen stack entry not a modal.
 - [Review page testing patterns](review-page-testing.md) — Welcome modal is the readiness signal; GearCategory header is div not button; CSV names in sub not desc.
 - [Bottom card-deck navigation](card-deck-architecture.md) — R002 replaced the three-slider model: 5-tab bar + non-modal rising decks; pointer-cancel must never activate; test selector conventions.
+- [Measured nav-height gotchas](nav-height-measurement.md) — RO must observe border-box for padding-only (safe-area) growth; loading gate means callback ref, not one-shot effect.

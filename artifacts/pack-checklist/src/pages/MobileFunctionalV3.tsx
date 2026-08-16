@@ -154,13 +154,12 @@ const DETAIL_BDR   = 'rgba(0,0,0,0.06)';
 const OVERLAY_BG   = '#F2EDE4';
 const TOAST_BG     = '#2A5740';
 
-// ─── BOTTOM CARD-DECK NAVIGATION CONSTANTS (R002) ────────────────────────────────
-const TITLE_BAND_H  = 40;   // list-title band height (px)
-const NAV_H         = 58;   // bottom tab bar height (px, excludes safe-area inset)
-const CARD_PEEK_H   = 64;   // visible header height of an inactive stacked card (px)
-const CARD_OVERLAP  = 12;   // vertical overlap between stacked inactive cards (px)
-const DRAG_ACTIVATE = 48;   // upward drag distance that activates a card (px)
+// ─── BOTTOM CARD-DECK NAVIGATION CONSTANTS (R002, geometry revised R003) ─────────
+const NAV_H         = 58;   // bottom tab bar fallback height (px); actual height is measured (A4)
+const BAR_PEEK_H    = 54;   // visible height of an inactive stacked bar (px, category-header scale)
+const DRAG_ACTIVATE = 48;   // upward drag distance that activates a bar (px)
 const TAP_MAX_PX    = 8;    // pointer movement below this = tap
+const DRAG_SLOP_PX  = 8;    // movement beyond this locks the gesture mode (scroll vs lift)
 /** Snap-animation duration: near-instant when prefers-reduced-motion is set. */
 const motionDuration = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -454,95 +453,66 @@ function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayPro
   );
 }
 
-// ─── BOTTOM TAB BAR (R002 — exactly five tabs: List, Locker, +, Search, More) ─────
-type DeckId = 'locker' | 'add' | 'search' | 'more';
+// ─── BOTTOM BAR (R003 — exactly five flush square areas:
+//     Locker | Summary | Add | Search | More — no List tab, no floating Add) ─────
+type DeckId = 'locker' | 'summary' | 'add' | 'search' | 'more';
 
 interface BottomNavBarProps {
   activeDeck: DeckId | null;
-  onList: () => void;
   onDeck: (deck: DeckId) => void;
 }
 
-function BottomNavBar({ activeDeck, onList, onDeck }: BottomNavBarProps) {
-  return (
-    <div style={{
-      position: 'sticky', bottom: 0, left: 0, right: 0,
-      background: NAV_BG, borderTop: '1px solid rgba(0,0,0,0.08)',
-      display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-      paddingTop: 6, paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
-      zIndex: 40, minHeight: NAV_H, boxSizing: 'border-box', flexShrink: 0,
-    }}>
-      {/* List — resting state; closes any open deck */}
-      <NavTab
-        Icon={Backpack} label="List" active={activeDeck === null}
-        onClick={onList}
-        aria-label="List — current gear list"
-      />
-      {/* Locker deck */}
-      <NavTab
-        Icon={Folder} label="Locker" active={activeDeck === 'locker'}
-        onClick={() => onDeck('locker')}
-        aria-label="Locker — saved lists"
-      />
-      {/* + / Add — prominent center tab, part of the same tab system */}
-      <button
-        onClick={() => onDeck('add')}
-        aria-label="Add — add items, categories, or import a list"
-        aria-current={activeDeck === 'add' ? 'page' : undefined}
+const NAV_AREAS: { deck: DeckId; Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>; label: string; aria: string }[] = [
+  { deck: 'locker',  Icon: Folder,         label: 'Locker',  aria: 'Locker — saved lists' },
+  { deck: 'summary', Icon: BarChart2,      label: 'Summary', aria: 'Summary — pack weight and progress' },
+  { deck: 'add',     Icon: Plus,           label: 'Add',     aria: 'Add — add items, categories, or import a list' },
+  { deck: 'search',  Icon: Search,         label: 'Search',  aria: 'Search — find gear' },
+  { deck: 'more',    Icon: MoreHorizontal, label: 'More',    aria: 'More — settings and tools' },
+];
+
+const BottomNavBar = React.forwardRef<HTMLDivElement, BottomNavBarProps>(
+  function BottomNavBar({ activeDeck, onDeck }, ref) {
+    return (
+      <div
+        ref={ref}
+        data-testid="bottom-nav"
         style={{
-          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 52,
+          position: 'sticky', bottom: 0, left: 0, right: 0,
+          background: NAV_BG, borderTop: '1px solid rgba(0,0,0,0.10)',
+          display: 'flex', alignItems: 'stretch',
+          paddingBottom: 'var(--tw-safe-bottom, env(safe-area-inset-bottom, 0px))',
+          zIndex: 40, minHeight: NAV_H, boxSizing: 'border-box', flexShrink: 0,
         }}
       >
-        <span style={{
-          width: 40, height: 40, borderRadius: 20, marginTop: -16,
-          background: activeDeck === 'add' ? PRIMARY : NAV_ACTIVE,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(42,87,64,0.35)',
-        }}>
-          <Plus size={22} color="#fff" strokeWidth={2.2}/>
-        </span>
-        <span style={{ fontSize: 10, fontWeight: activeDeck === 'add' ? 600 : 400, color: activeDeck === 'add' ? NAV_ACTIVE : NAV_INACTIVE }}>
-          Add
-        </span>
-      </button>
-      {/* Search deck */}
-      <NavTab
-        Icon={Search} label="Search" active={activeDeck === 'search'}
-        onClick={() => onDeck('search')}
-        aria-label="Search — find gear"
-      />
-      {/* More deck */}
-      <NavTab
-        Icon={MoreHorizontal} label="More" active={activeDeck === 'more'}
-        onClick={() => onDeck('more')}
-        aria-label="More — settings and tools"
-      />
-    </div>
-  );
-}
-
-function NavTab({ Icon, label, active, onClick, 'aria-label': ariaLabel }: {
-  Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
-  label: string; active: boolean; onClick: () => void; 'aria-label'?: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-label={ariaLabel ?? label}
-      aria-current={active ? 'page' : undefined}
-      style={{
-        background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 52,
-      }}
-    >
-      <Icon size={22} color={active ? NAV_ACTIVE : NAV_INACTIVE} strokeWidth={active ? 2 : 1.6}/>
-      <span style={{ fontSize: 10, fontWeight: active ? 600 : 400, color: active ? NAV_ACTIVE : NAV_INACTIVE, letterSpacing: active ? '0.1px' : 0 }}>
-        {label}
-      </span>
-    </button>
-  );
-}
+        {NAV_AREAS.map(({ deck, Icon, label, aria }, i) => {
+          const active = activeDeck === deck;
+          return (
+            <button
+              key={deck}
+              onClick={() => onDeck(deck)}
+              aria-label={aria}
+              aria-current={active ? 'page' : undefined}
+              style={{
+                flex: 1, minWidth: 0,
+                background: active ? 'rgba(42,87,64,0.10)' : 'none',
+                border: 'none', borderRadius: 0,
+                borderLeft: i === 0 ? 'none' : `1px solid ${DIVIDER}`,
+                padding: '7px 0 8px', cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', gap: 2,
+              }}
+            >
+              <Icon size={21} color={active ? NAV_ACTIVE : NAV_INACTIVE} strokeWidth={active ? 2.1 : 1.6}/>
+              <span style={{ fontSize: 10, fontWeight: active ? 700 : 400, color: active ? NAV_ACTIVE : NAV_INACTIVE, letterSpacing: active ? '0.1px' : 0 }}>
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+);
 
 // ─── CARD DECK (R002 — bottom-rising, vertically overlapping card stack) ─────────
 // Tapping Locker / + / Search / More raises a deck of stacked cards from the bottom.
@@ -569,30 +539,48 @@ interface CardDeckProps {
   onActivateCard: (id: string) => void;
   onClose: () => void;
   emptyNote?: string;
+  /** A4: measured bottom-nav occupied height (includes safe-area inset) — the
+   *  single source of truth shared by nav, deck, and backdrop. */
+  bottomOffset: number;
 }
 
-/** One inactive (stacked) card. Tap = activate. Upward drag past threshold = activate;
- *  short drags spring back. Downward drag scrolls the deck. No destructive swipes. */
-function DeckInactiveCard({ card, index, onActivate, scrollBy }: {
+/** One inactive (stacked) bar — R003 compact category-header-scale geometry.
+ *
+ *  A1 GESTURE DISAMBIGUATION (scroll vs activation):
+ *  Movement below DRAG_SLOP_PX on release = TAP → activate (always available).
+ *  Once movement exceeds the slop, the gesture LOCKS into exactly one mode:
+ *   - 'scroll' — when the deck overflows (canDeckScroll()), ANY vertical drag
+ *     scrolls the deck naturally in BOTH directions (reversible, 1:1, no bounce)
+ *     and can never activate the bar on release;
+ *   - 'lift'   — only when the deck does NOT overflow: an upward drag lifts the
+ *     bar and docks it past DRAG_ACTIVATE px; short lifts spring back.
+ *  This removes the R002 conflict where upward drags in a long deck always
+ *  activated a bar and scrollTop could never increase via touch. */
+function DeckInactiveCard({ card, index, onActivate, scrollBy, canDeckScroll }: {
   card: DeckCardDef;
   index: number;
   onActivate: () => void;
   scrollBy: (dy: number) => void;
+  canDeckScroll: () => boolean;
 }) {
   const [lift, setLift] = useState(0);
   const [settling, setSettling] = useState(false);
   const [focused, setFocused] = useState(false);
-  const dragRef = useRef<{ active: boolean; startY: number; lastY: number }>({ active: false, startY: 0, lastY: 0 });
+  const dragRef = useRef<{ active: boolean; mode: 'idle' | 'scroll' | 'lift'; startY: number; lastY: number }>(
+    { active: false, mode: 'idle', startY: 0, lastY: 0 }
+  );
 
   const finishDrag = (e: React.PointerEvent) => {
     if (!dragRef.current.active) return;
+    const { mode, startY } = dragRef.current;
     dragRef.current.active = false;
-    const total  = Math.abs(e.clientY - dragRef.current.startY);
-    const lifted = dragRef.current.startY - e.clientY; // positive = upward
+    dragRef.current.mode = 'idle';
+    const total  = Math.abs(e.clientY - startY);
+    const lifted = startY - e.clientY; // positive = upward
     if (card.disabled) { setLift(0); return; }
-    if (total < TAP_MAX_PX)        { setLift(0); onActivate(); return; }  // tap
-    if (lifted >= DRAG_ACTIVATE)   { setLift(0); onActivate(); return; }  // drag-dock
-    setSettling(true); setLift(0);                                        // spring back
+    if (total < TAP_MAX_PX) { setLift(0); onActivate(); return; }         // tap
+    if (mode === 'lift' && lifted >= DRAG_ACTIVATE) { setLift(0); onActivate(); return; } // drag-dock
+    setSettling(true); setLift(0);                                        // settle back (scroll mode never activates)
   };
 
   /** A cancelled gesture (e.g. browser takes over the pointer) must never
@@ -600,6 +588,7 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy }: {
   const cancelDrag = () => {
     if (!dragRef.current.active) return;
     dragRef.current.active = false;
+    dragRef.current.mode = 'idle';
     setSettling(true); setLift(0);
   };
 
@@ -617,19 +606,26 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy }: {
       }}
       onPointerDown={e => {
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-        dragRef.current = { active: true, startY: e.clientY, lastY: e.clientY };
+        dragRef.current = { active: true, mode: 'idle', startY: e.clientY, lastY: e.clientY };
         setSettling(false);
       }}
       onPointerMove={e => {
-        if (!dragRef.current.active) return;
-        const up = dragRef.current.startY - e.clientY;
-        if (up >= 0) {
-          if (!card.disabled) setLift(Math.min(up, 120));
-        } else {
-          scrollBy(dragRef.current.lastY - e.clientY);  // downward drag scrolls the deck
-          setLift(0);
+        const d = dragRef.current;
+        if (!d.active) return;
+        const totalDy = e.clientY - d.startY;
+        if (d.mode === 'idle' && Math.abs(totalDy) > DRAG_SLOP_PX) {
+          // Lock the gesture mode once: overflowing deck → scroll (both directions);
+          // non-overflowing deck + upward start → lift; otherwise scroll (no-op if nothing to scroll).
+          d.mode = canDeckScroll() ? 'scroll'
+            : (totalDy < 0 && !card.disabled ? 'lift' : 'scroll');
         }
-        dragRef.current.lastY = e.clientY;
+        if (d.mode === 'scroll') {
+          scrollBy(d.lastY - e.clientY);  // finger up → scrollTop increases; finger down → decreases
+          setLift(0);
+        } else if (d.mode === 'lift') {
+          setLift(Math.max(0, Math.min(d.startY - e.clientY, 120)));
+        }
+        d.lastY = e.clientY;
       }}
       onPointerUp={finishDrag}
       onPointerCancel={cancelDrag}
@@ -638,17 +634,14 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy }: {
       onTransitionEnd={() => setSettling(false)}
       style={{
         position: 'relative',
-        marginTop: index === 0 ? 0 : -CARD_OVERLAP,
         zIndex: index + 1,
-        background: CARD_BG,
-        borderRadius: 16,
-        border: `1px solid ${CARD_BORDER}`,
-        boxShadow: '0 -3px 14px rgba(0,0,0,0.10)',
-        minHeight: CARD_PEEK_H,
+        background: CARD_BG,                      // A3: surface is ALWAYS fully opaque
+        borderRadius: 0,                          // R003: square edges
+        borderTop: index === 0 ? 'none' : `1px solid ${DIVIDER}`,
+        minHeight: BAR_PEEK_H,
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '0 16px',
+        padding: '0 14px',
         cursor: card.disabled ? 'not-allowed' : 'pointer',
-        opacity: card.disabled ? 0.45 : 1,
         userSelect: 'none', touchAction: 'none',
         transform: `translateY(${-lift}px)`,
         transition: settling ? `transform ${motionDuration()} cubic-bezier(0.4,0,0.2,1)` : 'none',
@@ -657,25 +650,27 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy }: {
         flexShrink: 0, boxSizing: 'border-box',
       }}
     >
+      {/* A3: only the CONTENT is muted when disabled — never the surface */}
       {card.icon && (
         <span style={{
-          width: 36, height: 36, borderRadius: 10, background: 'rgba(42,87,64,0.10)',
+          width: 32, height: 32, borderRadius: 0, background: 'rgba(42,87,64,0.10)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0, color: NAV_ACTIVE,
+          opacity: card.disabled ? 0.45 : 1,
         }}>
           {card.icon}
         </span>
       )}
-      <div style={{ flex: 1, minWidth: 0, padding: '10px 0' }}>
+      <div style={{ flex: 1, minWidth: 0, padding: '8px 0', opacity: card.disabled ? 0.5 : 1 }}>
         <div style={{
-          fontSize: 15, fontWeight: 600, color: PRIMARY, fontFamily: SERIF,
+          fontSize: 14.5, fontWeight: 600, color: PRIMARY, fontFamily: SERIF,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {card.title}
         </div>
         {card.subtitle && (
           <div style={{
-            fontSize: 11.5, color: MUTED, marginTop: 1,
+            fontSize: 11.5, color: card.disabled ? SECONDARY : MUTED, marginTop: 1,
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {card.subtitle}
@@ -693,7 +688,7 @@ function DeckInactiveCard({ card, index, onActivate, scrollBy }: {
   );
 }
 
-function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emptyNote }: CardDeckProps) {
+function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emptyNote, bottomOffset }: CardDeckProps) {
   const [risen, setRisen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -717,37 +712,44 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
   const inactive = cards.filter(c => c.id !== activeCardId);
   const motion   = `${motionDuration()} cubic-bezier(0.4,0,0.2,1)`;
   const scrollBy = (dy: number) => { if (scrollRef.current) scrollRef.current.scrollTop += dy; };
+  /** A1: true when the deck stack overflows and can scroll (drag = scroll mode). */
+  const canDeckScroll = () => {
+    const el = scrollRef.current;
+    return !!el && el.scrollHeight > el.clientHeight + 1;
+  };
 
   return (
     <>
-      {/* Backdrop — covers content above the tab bar; tabs stay usable. Tap closes. */}
+      {/* Backdrop — covers content above the tab bar; tabs stay usable. Tap closes.
+          A4: bottom anchored to the MEASURED nav height (incl. safe-area inset). */}
       <div
         onClick={onClose}
         aria-hidden="true"
         data-testid="deck-backdrop"
         style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: NAV_H,
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: bottomOffset,
           zIndex: 30, background: `rgba(20,28,24,${risen ? 0.45 : 0})`,
           transition: `background ${motion}`,
         }}
       />
-      {/* Deck */}
+      {/* Deck — R003 flush full-width, square-edged stacked bars */}
       <div
         role="dialog"
         aria-label={deckLabel}
+        data-testid="deck-panel"
         style={{
-          position: 'absolute', left: 0, right: 0, bottom: NAV_H,
-          maxHeight: `calc(100% - ${NAV_H + 60}px)`,
+          position: 'absolute', left: 0, right: 0, bottom: bottomOffset,
+          maxHeight: `calc(100% - ${bottomOffset + 60}px)`,
           zIndex: 31,
           display: 'flex', flexDirection: 'column',
-          padding: '0 12px',
+          padding: 0,
           transform: risen ? 'translateY(0)' : 'translateY(105%)',
           transition: `transform ${motion}`,
           boxSizing: 'border-box',
         }}
       >
         {/* Deck label row */}
-        <div style={{ display: 'flex', alignItems: 'center', padding: '0 6px 8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px 8px', flexShrink: 0 }}>
           <span style={{
             fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: '#fff',
             textShadow: '0 1px 3px rgba(0,0,0,0.45)',
@@ -769,34 +771,40 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
           </button>
         </div>
 
-        {/* Scrollable card stack */}
+        {/* Scrollable bar stack — B6: no visible scrollbar chrome */}
         <div
           ref={scrollRef}
+          className="tw-noscrollbar"
+          data-testid="deck-scroll"
           style={{
             overflowY: 'auto', overflowX: 'hidden',
             display: 'flex', flexDirection: 'column',
-            paddingBottom: 8, minHeight: 0,
+            minHeight: 0,
+            scrollbarWidth: 'none',
+            overscrollBehavior: 'contain',
+            borderTop: `1px solid rgba(0,0,0,0.10)`,
           }}
         >
-          {/* Active / operational card */}
+          {/* Active / operational bar (square-edged, flush) */}
           {active && (
             <div
               role="group"
               aria-label={`${active.title} — active card`}
               style={{
-                background: CARD_BG, borderRadius: 16, border: `1px solid ${CARD_BORDER}`,
-                boxShadow: '0 6px 24px rgba(0,0,0,0.20)',
-                marginBottom: 12, display: 'flex', flexDirection: 'column',
+                background: CARD_BG, borderRadius: 0,
+                boxShadow: '0 4px 18px rgba(0,0,0,0.18)',
+                marginBottom: 6, display: 'flex', flexDirection: 'column',
                 overflow: 'hidden', flexShrink: 0,
               }}
             >
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 12,
-                padding: '12px 16px', borderBottom: `1px solid ${DIVIDER}`,
+                padding: '10px 14px', borderBottom: `1px solid ${DIVIDER}`,
+                minHeight: BAR_PEEK_H, boxSizing: 'border-box',
               }}>
                 {active.icon && (
                   <span style={{
-                    width: 36, height: 36, borderRadius: 10, background: 'rgba(42,87,64,0.10)',
+                    width: 32, height: 32, borderRadius: 0, background: 'rgba(42,87,64,0.10)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0, color: NAV_ACTIVE,
                   }}>
@@ -804,7 +812,7 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
                   </span>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
+                  <div style={{ fontSize: 15.5, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
                     {active.title}
                   </div>
                   {active.subtitle && (
@@ -812,13 +820,13 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
                   )}
                 </div>
               </div>
-              <div style={{ overflowY: 'auto', maxHeight: 300 }}>
+              <div className="tw-noscrollbar" style={{ overflowY: 'auto', maxHeight: 300, scrollbarWidth: 'none' }}>
                 {active.render?.()}
               </div>
             </div>
           )}
 
-          {/* Inactive stacked cards */}
+          {/* Inactive stacked bars */}
           {inactive.map((card, i) => (
             <DeckInactiveCard
               key={card.id}
@@ -826,12 +834,13 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
               index={i}
               onActivate={() => onActivateCard(card.id)}
               scrollBy={scrollBy}
+              canDeckScroll={canDeckScroll}
             />
           ))}
 
           {cards.length === 0 && emptyNote && (
             <div style={{
-              background: CARD_BG, borderRadius: 16, border: `1px solid ${CARD_BORDER}`,
+              background: CARD_BG, borderRadius: 0,
               padding: '28px 20px', textAlign: 'center', color: MUTED, fontSize: 14, fontFamily: SANS,
             }}>
               {emptyNote}
@@ -1269,11 +1278,30 @@ function MobileFunctionalV3Inner() {
       if (prev === deck) { setActiveCardId(null); return null; }  // re-tap toggles closed
       if (deck === 'locker') setLockerEntries(readLockerEntries());
       setActiveCardId(null);
-      return deck;
+      return deck;                                                // different tap switches directly
     });
   }, []);
   const closeDeck = useCallback(() => { setActiveDeck(null); setActiveCardId(null); }, []);
   const activateCard = useCallback((id: string) => { setActiveCardId(id); hapticDock(); }, []);
+
+  // ── A4: measured bottom-nav occupied height — single source of truth for the
+  //    deck/backdrop bottom offset. Tracks safe-area inset growth via ResizeObserver.
+  const [navHeight, setNavHeight] = useState(NAV_H);
+  const navRoRef = useRef<ResizeObserver | null>(null);
+  // Callback ref: the component mounts the nav only after its loading gate, so a
+  // one-shot effect would see null — attach measurement whenever the node appears.
+  const navRef = useCallback((el: HTMLDivElement | null) => {
+    navRoRef.current?.disconnect();
+    navRoRef.current = null;
+    if (!el) return;
+    const update = () => setNavHeight(Math.round(el.getBoundingClientRect().height));
+    update();
+    const ro = new ResizeObserver(update);
+    // Safe-area insets grow the nav's PADDING, not its content box — observe the
+    // border-box so padding-only growth still triggers a re-measure.
+    try { ro.observe(el, { box: 'border-box' }); } catch { ro.observe(el); }
+    navRoRef.current = ro;
+  }, []);
 
   const [showSummary, setShowSummary] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
@@ -1802,6 +1830,9 @@ function MobileFunctionalV3Inner() {
                   order: store.order ?? [],
                   meta:  store.meta ?? {},
                 }));
+                // A2: the loaded Locker entry's name becomes the active list identity
+                // immediately — subsequent Save and Share use this name.
+                setListName(entry.name);
                 closeDeck();
                 showToast(`Loaded "${entry.name}"`);
               }
@@ -1819,6 +1850,51 @@ function MobileFunctionalV3Inner() {
       ),
     };
   });
+
+  // SUMMARY deck (R003 C2) — deeper summary views built from EXISTING components
+  // only (WeightSummary + WeightDistribution). No new analytics engine.
+  const summaryCards: DeckCardDef[] = [
+    {
+      id: 'pack-summary',
+      title: 'Pack Summary',
+      subtitle: 'Base, expendables, and total weight',
+      icon: <Scale size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '10px 12px 14px' }}>
+          <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
+            <WeightSummary
+              data={sandbox.items}
+              categoryOrder={sandbox.order}
+              categoryMeta={sandbox.meta}
+              forceOpen={true}
+              forceOpenSeq={1}
+            />
+          </BarStyleProvider>
+        </div>
+      ),
+    },
+    {
+      id: 'weight-distribution',
+      title: 'Weight Distribution',
+      subtitle: 'Category share of pack weight',
+      icon: <BarChart2 size={18} strokeWidth={1.8}/>,
+      render: () => (
+        <div style={{ padding: '10px 12px 14px' }}>
+          <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
+            <WeightDistribution
+              data={sandbox.items}
+              categoryOrder={sandbox.order}
+              categoryMeta={sandbox.meta}
+              paletteKey="trail"
+              onPaletteChange={() => {}}
+              forceOpen={true}
+              forceOpenSeq={1}
+            />
+          </BarStyleProvider>
+        </div>
+      ),
+    },
+  ];
 
   // ADD deck — existing creation workflows only; Create New List is honestly disabled.
   const addCards: DeckCardDef[] = [
@@ -2067,6 +2143,9 @@ function MobileFunctionalV3Inner() {
         fontFamily: SANS, position: 'relative', overflow: 'hidden',
       }}>
 
+        {/* B6: hide webkit scrollbar chrome on marked scrollers (scrolling unaffected) */}
+        <style>{`.tw-noscrollbar::-webkit-scrollbar{width:0;height:0;display:none}`}</style>
+
         {/* ── APP BAR ── */}
         <div style={{
           height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
@@ -2098,34 +2177,33 @@ function MobileFunctionalV3Inner() {
           </div>
         </div>
 
-        {/* ── TITLE BAND (R002 — full width, no slider gutters) ── */}
-        <div style={{
-          height: TITLE_BAND_H, flexShrink: 0, display: 'flex', alignItems: 'center',
-          background: PAGE_BG, borderBottom: `1px solid ${DIVIDER}`, zIndex: 5,
-        }}>
-          <div style={{ flex: 1, textAlign: 'center', padding: '0 16px', overflow: 'hidden' }}>
-            <span style={{
-              fontSize: 15, fontWeight: 500, color: PRIMARY, fontFamily: SANS,
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block',
-            }}>
-              {listName || 'Untitled List'}
-            </span>
-          </div>
-        </div>
+        {/* ── SCROLLABLE CONTENT (R003 — full width, flush, hidden scrollbar chrome) ── */}
+        <div
+          className="tw-noscrollbar"
+          data-testid="main-scroll"
+          style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative', scrollbarWidth: 'none' }}
+        >
 
-        {/* ── SCROLLABLE CONTENT (R002 — full width, gutters removed) ── */}
-        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
-
-          {/* ── STICKY HEADER: PACK SUMMARY (list name moved to title band above) ── */}
+          {/* ── STICKY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
           <div style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
 
-            {/* ── PACK SUMMARY CARD ── */}
-            <div style={{ paddingBottom: 10 }}>
+            {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
+            <div>
               <div style={{
-                margin: '0 16px', borderRadius: 16, background: SUMMARY_BG,
-                padding: '10px 14px 10px 14px', display: 'flex', alignItems: 'center',
-                gap: 14, boxShadow: '0 2px 10px rgba(42,87,64,0.28)',
+                margin: 0, borderRadius: 0, background: SUMMARY_BG,
+                padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
               }}>
+                {/* File identity — the active list/file name lives INSIDE the summary bar */}
+                <div style={{
+                  fontSize: 15.5, fontWeight: 700, color: SUMMARY_TEXT, fontFamily: SERIF,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  borderBottom: '1px solid rgba(255,255,255,0.16)', paddingBottom: 7,
+                }}
+                  data-testid="active-list-name"
+                >
+                  {listName || 'Untitled List'}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 {/* Icon tile — unchanged */}
                 <div style={{
                   width: 66, height: 66, borderRadius: 14, background: 'rgba(0,0,0,0.20)',
@@ -2177,15 +2255,16 @@ function MobileFunctionalV3Inner() {
                     </span>
                   </div>
                 </div>
+                </div>
               </div>
             </div>
 
-          </div>{/* end sticky header (027U) */}
+          </div>{/* end sticky header */}
 
-          {/* ── CATEGORY STACK ── */}
+          {/* ── CATEGORY STACK (B5 — flush, touching, square-edged) ── */}
           <div
             ref={catListRef}
-            style={{ padding: '4px 16px 8px', display: 'flex', flexDirection: 'column', gap: 8 }}
+            style={{ padding: 0, display: 'flex', flexDirection: 'column', gap: 0 }}
           >
             {visibleOrder.map((catName, catIdx) => {
               const items   = sandbox.items[catName] ?? [];
@@ -2200,11 +2279,12 @@ function MobileFunctionalV3Inner() {
 
               return (
                 <div key={catName} style={{
-                  borderRadius: 14, overflow: 'hidden',
-                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+                  borderRadius: 0, overflow: 'hidden',
+                  background: CARD_BG,
+                  borderBottom: `1px solid ${DIVIDER}`,
                   boxShadow: isDragging
                     ? '0 6px 24px rgba(0,0,0,0.22), 0 0 0 2px rgba(42,87,64,0.25)'
-                    : CARD_SHADOW,
+                    : 'none',
                   opacity: isDragging ? 0.85 : 1,
                   transform: isDragging ? 'scale(1.01)' : 'none',
                   transition: 'box-shadow 0.1s, opacity 0.1s, transform 0.1s',
@@ -2633,15 +2713,16 @@ function MobileFunctionalV3Inner() {
 
         </div>{/* end scrollable */}
 
-        {/* ── BOTTOM TAB BAR (R002 — List, Locker, +, Search, More) ── */}
+        {/* ── BOTTOM BAR (R003 — Locker | Summary | Add | Search | More) ── */}
         <BottomNavBar
+          ref={navRef}
           activeDeck={activeDeck}
-          onList={closeDeck}
           onDeck={openDeck}
         />
 
-        {/* ── CARD DECKS (R002 — conditionally rendered; closed decks do not exist
-              in the DOM and therefore cannot intercept pointer events) ── */}
+        {/* ── CARD DECKS (conditionally rendered; closed decks do not exist
+              in the DOM and therefore cannot intercept pointer events).
+              A4: all decks share the single measured bottomOffset. ── */}
         {activeDeck === 'locker' && (
           <CardDeck
             deckLabel="Locker"
@@ -2650,6 +2731,17 @@ function MobileFunctionalV3Inner() {
             onActivateCard={activateCard}
             onClose={closeDeck}
             emptyNote="No saved lists yet. Use More → List Actions → Save to add one."
+            bottomOffset={navHeight}
+          />
+        )}
+        {activeDeck === 'summary' && (
+          <CardDeck
+            deckLabel="Summary"
+            cards={summaryCards}
+            activeCardId={activeCardId}
+            onActivateCard={activateCard}
+            onClose={closeDeck}
+            bottomOffset={navHeight}
           />
         )}
         {activeDeck === 'add' && (
@@ -2659,6 +2751,7 @@ function MobileFunctionalV3Inner() {
             activeCardId={activeCardId}
             onActivateCard={activateCard}
             onClose={closeDeck}
+            bottomOffset={navHeight}
           />
         )}
         {activeDeck === 'search' && (
@@ -2668,6 +2761,7 @@ function MobileFunctionalV3Inner() {
             activeCardId={activeCardId}
             onActivateCard={activateCard}
             onClose={closeDeck}
+            bottomOffset={navHeight}
           />
         )}
         {activeDeck === 'more' && (
@@ -2677,6 +2771,7 @@ function MobileFunctionalV3Inner() {
             activeCardId={activeCardId}
             onActivateCard={activateCard}
             onClose={closeDeck}
+            bottomOffset={navHeight}
           />
         )}
 

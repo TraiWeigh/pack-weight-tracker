@@ -39,7 +39,7 @@ test.describe('Item weight & calculation correctness', () => {
     await page.getByRole('button', { name: /^More — settings and tools/ }).click();
     await page.getByRole('button', { name: /^List Settings — open card/ }).click();
     await page.getByRole('button', { name: 'Use metric units' }).click();
-    await page.getByRole('button', { name: /^List — current gear list/ }).click();
+    await page.keyboard.press('Escape'); // R003: List tab removed — Escape closes the deck
     const body = await page.content();
     expect(body).not.toContain('NaN');
     expect(body).not.toContain('Infinity');
@@ -57,7 +57,7 @@ test.describe('Item weight & calculation correctness', () => {
       await page.getByRole('button', { name: /^More — settings and tools/ }).click();
       await page.getByRole('button', { name: /^List Settings — open card/ }).click();
       await page.getByRole('button', { name: `Use ${name} units` }).click();
-      await page.getByRole('button', { name: /^List — current gear list/ }).click();
+      await page.keyboard.press('Escape'); // R003: List tab removed — Escape closes the deck
     };
 
     await toggleUnit('metric');

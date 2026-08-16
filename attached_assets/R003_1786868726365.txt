@@ -1,0 +1,676 @@
+R003 — TRAILWEIGH V3 CARD-DECK CORRECTION + FLAT FLUSH STACKED-BAR REFINEMENT
+
+REPORT NUMBER
+R003
+
+PURPOSE
+Correct the confirmed R002/R002Q defects and refine the isolated V3 phone navigation to the newer approved TrailWeigh mobile visual language:
+
+FULL-WIDTH CONTENT
++ FLUSH TOUCHING STRUCTURAL BARS
++ SQUARE EDGES
++ CATEGORY WEDGES RETAINED
++ COMPACT STACKED-BAR DECKS
++ BOTTOM NAV:
+  LOCKER | SUMMARY | ADD | SEARCH | MORE
+
+This is an approved V3 PHONE visual + functional correction/refinement.
+
+IMPORTANT SOURCE OF TRUTH
+The newer Future TrailWeigh Ideas refinement supersedes the earlier R002 large rounded Wallet-card appearance where they conflict.
+
+The physical interaction metaphor remains:
+- bottom control selects an area;
+- stacked deck rises;
+- tap or drag can activate a deck item;
+- other items remain available;
+- direct motion;
+- restrained snap/haptic where supported.
+
+But the visual geometry is now:
+- compact category-sized stacked bars;
+- square edges;
+- no large credit-card proportions;
+- no rounded outer card corners;
+- minimal wasted outer space.
+
+STRICT APPLICATION SCOPE
+- V3 phone experience only.
+- Prefer changing ONLY MobileFunctionalV3.tsx for application source.
+- Do NOT modify Checklist.tsx.
+- Do NOT modify desktop.
+- Do NOT modify database/schema.
+- Do NOT modify authentication.
+- Do NOT publish/redeploy.
+- Do NOT modify production or development database state.
+- Do NOT change unrelated list/category/item behavior.
+- Test/report files may be added or updated as needed.
+- If another application source file is genuinely required, STOP BEFORE editing it and report exactly why.
+
+KNOWN-GOOD BEHAVIOR TO PRESERVE
+Preserve all currently working R002 behavior that does not conflict with this prompt:
+- bottom-deck navigation concept;
+- Locker existing data access;
+- Add existing working actions;
+- Search truthfully showing unavailable features rather than pretending they work;
+- More task-family organization;
+- closed decks fully unmounted so they do not intercept pointer events;
+- current list/category/item state;
+- existing undoable mutation pipeline;
+- accessibility support;
+- reduced-motion support.
+
+============================================================
+PART A — CORRECT CONFIRMED R002Q DEFECTS
+============================================================
+
+A1. LOCKER / LONG-DECK TOUCH SCROLLING — FUNCTIONAL BLOCKER
+
+R002Q confirmed:
+- inactive cards use touch/pointer handling that prevents native vertical scrolling;
+- upward drag is interpreted as activation;
+- downward drag only decreases scrollTop;
+- with long Locker decks, later saved-list cards become unreachable;
+- intended upward scroll can accidentally activate/dock a card.
+
+REQUIRED RESULT
+A long deck containing 10, 20, or more entries must be reliably scrollable with one finger in BOTH directions.
+
+The interaction must distinguish:
+1. tap;
+2. deck scrolling;
+3. intentional card/bar activation drag.
+
+Requirements:
+- Vertical scrolling through an overflowing deck must work naturally in both directions.
+- A normal scroll gesture must NOT accidentally activate/dock a bar.
+- Tap must always remain an activation alternative.
+- Drag activation may remain, but it must not hijack normal scroll.
+- The user must be able to reverse direction naturally.
+- No dead scrolling direction.
+- Do not rely on inaccessible gaps between bars to make scrolling possible.
+- Do not make dragging the only way to activate.
+- Do not create bounce/overshoot.
+- Keep reduced-motion behavior.
+
+Choose a robust gesture-disambiguation strategy appropriate to the existing V3 architecture.
+Do not merely lower/raise thresholds while leaving the fundamental scroll-versus-activation conflict unresolved.
+
+TEST WITH A GENUINELY OVERFLOWING TEMPORARY DECK.
+Use temporary test-only/mock entries if needed.
+Do not persist diagnostic entries to real app data.
+
+A2. LOCKER ACTIVE LIST NAME / IDENTITY SYNCHRONIZATION
+
+R002Q confirmed:
+- loading a Locker entry replaces the list contents;
+- the centered/current list name state is not updated;
+- Save and Share can therefore continue using the OLD list name after loading another list.
+
+REQUIRED RESULT
+When a Locker file/list is loaded:
+- the active list name must immediately become the loaded Locker entry's name;
+- the user-facing title/file identity must reflect the loaded file;
+- subsequent Save and Share must use the correct loaded list name;
+- do not alter the Locker storage architecture;
+- do not create a new database/storage model.
+
+This should remain a narrow V3 state-synchronization correction.
+
+A3. DISABLED SEARCH / DISABLED DECK-BAR READABILITY
+
+R002Q confirmed:
+- disabled deck entries currently fade the entire surface;
+- the underlying category/list content bleeds through;
+- text visually collides.
+
+REQUIRED RESULT
+Disabled deck bars must remain fully opaque as structural surfaces.
+
+Only the disabled CONTENT should appear muted:
+- icon;
+- title;
+- subtitle/status;
+- other disabled foreground content.
+
+Do NOT fade the entire bar background.
+Do NOT let the active list behind the deck show through disabled bars.
+
+This rule should apply consistently to any disabled deck entry, including future/unavailable Search entries and disabled Create New List if present.
+
+A4. SAFE AREA / HOME-INDICATOR CLEARANCE
+
+R002Q confirmed:
+- the bottom nav can grow with safe-area inset;
+- deck/backdrop offsets were based on a fixed 58 px constant;
+- on a device with a nonzero bottom safe-area inset, active deck controls can sit behind the nav.
+
+REQUIRED RESULT
+The deck, backdrop, and bottom navigation must share one correct source of truth for the actual bottom occupied area.
+
+On a phone with a home-indicator safe area:
+- no part of the active deck controls may be covered by the bottom nav;
+- no deck content may sit behind the bottom nav;
+- no backdrop gap should appear;
+- bottom navigation remains safe-area compliant.
+
+Use a robust safe-area-derived offset or measured rendered nav height.
+Do not rely on the old fixed 58 px offset if the nav's actual occupied height can differ.
+
+Provide a meaningful proof test for a NONZERO inset condition, not only normal desktop Playwright where env(safe-area-inset-bottom) resolves to zero.
+
+============================================================
+PART B — NEW APPROVED MOBILE VISUAL LANGUAGE
+============================================================
+
+B1. ACTIVE LIST REMAINS THE RESTING SCREEN
+
+The active list is always the underlying/main phone workspace.
+
+There is NO permanent List bottom button in R003.
+
+When no deck is open:
+- show the active list normally;
+- preserve its scroll position;
+- preserve category accordion state;
+- preserve selected/check state;
+- preserve quantity/weight/unit state;
+- preserve undo/redo history;
+- preserve active list identity.
+
+B2. BOTTOM NAVIGATION — EXACT FIVE AREAS
+
+Change the permanent bottom navigation to:
+
+LOCKER | SUMMARY | ADD | SEARCH | MORE
+
+Rules:
+- five touching square-edged bottom boxes;
+- no gaps between boxes;
+- no rounded outer corners;
+- no floating circular Add button;
+- Add remains the center area;
+- each area has a clear icon;
+- concise label where the current V3 design needs one for clarity/accessibility;
+- active/open state is visually clear but restrained;
+- all controls remain thumb-friendly;
+- safe-area compliant.
+
+Interaction:
+- tap Locker -> Locker deck opens;
+- tap Locker again -> Locker deck closes and reveals the active list;
+- tap Add while Locker is open -> switch directly from Locker deck to Add deck;
+- tap Add again -> Add closes;
+- same open/toggle/switch behavior for Summary, Search, More;
+- no intermediate requirement to return to the list before switching decks.
+
+Do NOT add a List tab.
+
+B3. TOP SEARCH CONTROL
+
+DO NOT remove the existing older top Search circle/control in R003.
+Its removal is a separate user-approval decision.
+Do not change its behavior.
+
+B4. PACK SUMMARY + FILE/LIST NAME
+
+Remove the separate standalone file-name strip/pill/bar in V3.
+
+Integrate the active file/list name into the Pack Summary structural bar.
+
+Required appearance:
+- one combined File Identity + Pack Summary structural region;
+- square-edged;
+- flush;
+- no rounded outer corners;
+- no outer card margin;
+- no redundant separate file-name region;
+- keep useful internal padding so text does not touch edges;
+- active file/list name must be clearly readable;
+- loading from Locker must update this integrated name immediately.
+
+Do NOT eliminate important Pack Summary information merely to save space.
+Use clear typography hierarchy inside the combined structural bar.
+
+B5. CATEGORIES — FLUSH STRUCTURAL STACK
+
+Preserve category wedges.
+
+Refine the category stack:
+- remove outer spacing/gaps around category blocks;
+- category structural bars stack flush/touching;
+- square outer edges;
+- no rounded outer corners on the main category structural surfaces;
+- visually harmonize with the bottom bar;
+- do not add thick heavy borders;
+- use subtle dividers/surface-tone differences/typography/wedges for separation;
+- retain enough INTERNAL padding for readable text/icons and comfortable touch targets.
+
+"Everything touching" means remove EXTERNAL gaps.
+It does NOT mean text/icons should touch edges.
+
+Do not make expanded category item content unusably cramped.
+The user still needs comfortable tapping and scanning.
+
+B6. NO VISIBLE SCROLLBAR CHROME
+
+Preserve normal scrolling.
+
+Hide visible scrollbar track/thumb chrome on the intended phone V3 surfaces where practical.
+
+Requirements:
+- list still scrolls;
+- long decks still scroll;
+- no permanent right-side scrollbar visually occupying space;
+- do not disable scrolling to hide the scrollbar.
+
+B7. COMPACT STACKED-BAR DECK GEOMETRY
+
+The R002 large rounded Wallet-card look is superseded.
+
+Keep the stacked/deck interaction, but make each deck item approximately the SAME VISUAL SCALE / HEIGHT FAMILY AS A CATEGORY HEADER BAR.
+
+Deck items are now compact "stacked bars."
+
+Required:
+- square-edged rectangular bars;
+- no large credit-card proportions;
+- no fake bank-card visual language;
+- no rounded outer corners;
+- bar-height / category-header-like proportions;
+- clear icon + title;
+- enough exposed area of inactive stacked bars to identify each one;
+- restrained surface-tone/depth separation;
+- visually part of the same TrailWeigh system as category bars and bottom nav.
+
+The cards/bars may still overlap slightly in the stacked state if needed for the deck behavior.
+
+They must remain:
+- tappable;
+- draggable where appropriate;
+- readable;
+- accessible;
+- vertically scrollable when numerous.
+
+B8. DECK OPEN / ACTIVE / SWITCH BEHAVIOR
+
+For Locker, Summary, Add, Search, More:
+- deck rises from bottom;
+- tap or intentional drag can activate an entry;
+- inactive entries remain identifiable;
+- tapping another exposed entry switches directly;
+- tapping the same bottom area closes its deck;
+- tapping another bottom area switches decks directly;
+- active list state underneath must not reset.
+
+During intentional drag:
+- direct finger tracking where practical;
+- reverse direction allowed;
+- smooth settle after release;
+- no uncontrolled spring/bounce/overshoot;
+- no accidental destructive swipe;
+- reduced motion respected.
+
+If supported legitimately:
+- one restrained haptic when an entry docks/activates;
+- no continuous vibration;
+- no fake haptics.
+
+============================================================
+PART C — DECK CONTENT
+============================================================
+
+C1. LOCKER
+
+Preserve existing safe R002 Locker behavior.
+
+Each existing saved list/file remains represented by a compact stacked bar.
+
+Use available metadata only.
+Do not invent data.
+
+Loading a list must now synchronize the active list/file name correctly per A2.
+
+Long Locker decks MUST scroll correctly per A1.
+
+C2. SUMMARY
+
+Add Summary as the second permanent bottom area.
+
+Use ONLY summary capabilities already present in the V3/current architecture.
+
+The Summary deck may expose meaningful existing summary task families such as:
+- Pack Summary;
+- Weight Distribution;
+- Packing Progress;
+- other existing summary views only if they already exist.
+
+Do NOT invent a new analytics engine.
+Do NOT add backend/database work.
+Do NOT duplicate tiny metrics into separate top-level bars unnecessarily.
+
+The integrated Pack Summary/file-name structural bar remains visible on the active list.
+The Summary deck is for deeper/secondary summary functions, not a replacement for the compact resting summary bar.
+
+If only one meaningful Summary function currently exists, use a truthful minimal deck rather than inventing features.
+
+C3. ADD
+
+Preserve existing working Add deck actions.
+
+Possible existing task families:
+- Add Item;
+- Add Category;
+- Create New List if current V3 status supports it;
+- Add from Locker / Master List if existing;
+- Scan / Import;
+- Template if existing.
+
+Do not implement unavailable future workflows just to populate the deck.
+
+Unavailable items:
+- may be omitted;
+- or shown disabled truthfully with opaque surface + muted foreground.
+
+C4. SEARCH
+
+Preserve current truthfulness:
+- do not pretend future Search capabilities work.
+
+Use compact stacked bars.
+
+Disabled Search bars must remain fully opaque with muted foreground only.
+
+C5. MORE
+
+Preserve task-family grouping rather than one tiny command per bar.
+
+Keep existing safe actions, e.g. where already present:
+- List Actions;
+- Share & Print;
+- List Settings;
+- Help & TrailWeigh;
+- Account & Privacy.
+
+Print remains inside More.
+Do NOT add Print as a permanent bottom area.
+
+============================================================
+PART D — STATE PRESERVATION + TEST CORRECTIONS
+============================================================
+
+R002 overstated state-preservation coverage.
+
+R003 must explicitly test the following across deck open/close and, where practical, deck switching:
+
+1. active-list vertical scroll position;
+2. category accordion open/closed state;
+3. item selected/check state;
+4. item quantity;
+5. item weight;
+6. units;
+7. active list identity;
+8. active displayed list/file name;
+9. undo history;
+10. redo history.
+
+Do not call an item PASS unless there is a meaningful assertion proving the post-navigation state.
+
+Also retain/verify:
+- closed decks/backdrops fully unmounted;
+- closed overlays cannot intercept pointer/touch events;
+- optionally use an elementFromPoint or equivalent hardening assertion after close.
+
+============================================================
+PART E — RESPONSIVE / VISUAL ACCEPTANCE
+============================================================
+
+Test at:
+- 320 px
+- 375 px
+- 390 px
+- 430 px
+
+At EVERY width verify:
+
+RESTING LIST
+- essentially full available width;
+- no permanent side gutters;
+- no horizontal overflow;
+- no separate redundant file-name strip;
+- file/list name integrated into Pack Summary;
+- category wedges preserved;
+- main structural surfaces flush/touching;
+- square edges;
+- useful internal padding retained;
+- no permanent visible scrollbar chrome.
+
+BOTTOM BAR
+- exact order:
+  Locker | Summary | Add | Search | More
+- five touching square-edged boxes;
+- no List tab;
+- no floating Add control;
+- active/open state visible;
+- safe-area correct.
+
+DECKS
+- compact category-scale stacked bars;
+- no oversized rounded Wallet-card appearance;
+- titles readable in stacked state;
+- tap activation works;
+- intentional drag activation works without hijacking scroll;
+- long deck scrolls both directions;
+- same-icon tap closes;
+- different-icon tap switches directly;
+- no closed invisible overlay intercepts touches.
+
+SAFE AREA
+- prove nonzero bottom safe-area behavior or provide a test mechanism that genuinely validates it;
+- active deck controls must remain above nav.
+
+SEARCH
+- disabled surfaces remain opaque;
+- muted content readable;
+- background list text does not bleed through.
+
+LOCKER
+- loading a list changes integrated active file/list name;
+- subsequent Save/Share use the correct name.
+
+============================================================
+PART F — ACCESSIBILITY
+============================================================
+
+Preserve or improve:
+- meaningful accessible labels for all bottom controls;
+- accessible names for deck bars;
+- tap/click as alternative to drag;
+- keyboard/focus behavior where supported;
+- Escape/back close where applicable;
+- touch targets comfortably sized;
+- reduced-motion behavior;
+- disabled state communicated semantically, not only by color/opacity.
+
+============================================================
+PART G — CHANGED-FILE DISCIPLINE
+============================================================
+
+Application source:
+- Prefer MobileFunctionalV3.tsx ONLY.
+
+If any other application source file is required:
+STOP before editing it.
+Report:
+- exact file;
+- why it is required;
+- what requirement cannot safely be met without it.
+
+Testing/report files are allowed.
+
+NO:
+- Checklist.tsx change;
+- desktop change;
+- DB/schema change;
+- auth change;
+- deployment/publish change;
+- unrelated cleanup/refactor.
+
+============================================================
+PART H — REQUIRED TESTING
+============================================================
+
+At minimum run:
+
+1. TypeScript/typecheck.
+2. Browser runtime console check.
+3. Automated Chromium tests for all five bottom areas.
+4. Tap same bottom area twice -> open then close.
+5. Tap one area then another -> direct deck switch.
+6. Summary deck.
+7. Add deck.
+8. Search deck.
+9. More deck.
+10. Locker short deck.
+11. Locker genuinely overflowing long deck with 20+ temporary/test entries.
+12. Long-deck one-finger scroll both directions.
+13. Scroll gesture must not accidentally activate a deck bar.
+14. Tap activation.
+15. Intentional drag activation.
+16. State-preservation matrix from Part D.
+17. Correct active list/file name after Locker load.
+18. Save/Share identity after Locker load where testable without unsafe external effects.
+19. Disabled card/bar opacity/readability.
+20. Closed deck pointer-event assertion.
+21. 320/375/390/430 visual/layout checks.
+22. No horizontal overflow.
+23. Hidden scrollbar chrome without broken scrolling.
+24. Nonzero safe-area proof.
+25. Reduced-motion test.
+26. Accessibility labels/states.
+
+No test may count as PASS merely because it executed without an assertion.
+For each critical interaction, assert the actual expected state/result.
+
+============================================================
+PART I — REQUIRED R003 REPORT
+============================================================
+
+Create:
+
+R003.md
+
+Use concise but complete sections:
+
+# R003 Implementation Report
+
+## Scope
+- application files changed
+- test/report files changed
+- confirmation of untouched restricted areas
+
+## R002Q Corrections
+Table:
+Issue | Result | Evidence
+- long-deck scrolling
+- active-title synchronization
+- disabled surface opacity
+- safe-area offset
+
+## New Visual Refinement
+Report:
+- Locker | Summary | Add | Search | More
+- List tab removed
+- file name integrated into Pack Summary
+- flush category stack
+- wedges retained
+- square edges
+- hidden scrollbar chrome
+- category-scale stacked bars
+
+## Responsive Verification
+Table for:
+320 | 375 | 390 | 430
+
+Include:
+- no overflow
+- bottom bar
+- summary/file bar
+- category stack
+- deck readability
+- safe area
+
+## Gesture Verification
+- deck scroll both directions
+- no scroll-to-activation error
+- tap activation
+- drag activation
+- direct deck switching
+- same-icon close
+
+## State Preservation
+Provide a table for all 10 required states:
+State | PASS/FAIL | exact assertion/evidence
+
+## Accessibility / Reduced Motion
+PASS/FAIL + evidence
+
+## TypeScript
+result
+
+## Browser Console
+result
+
+## Automated Tests
+- total
+- passed
+- failed
+- skipped
+- exact failing tests if any
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## Final Scope Confirmation
+Confirm:
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+
+============================================================
+PART J — ZIP
+============================================================
+
+Provide:
+
+R003.zip
+
+Keep the ZIP short and reviewable.
+
+Include:
+- R003.md
+- relevant changed source file(s)
+- relevant test files
+- compact evidence needed for review
+
+Do NOT include:
+- node_modules
+- dependency caches
+- giant build folders
+- unrelated generated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, testing, R003.md, and R003.zip:
+
+STOP.
+
+Do NOT continue into another TrailWeigh change.
+Do NOT publish.
+Do NOT deploy.
+Do NOT change database/auth.
+Wait for user review.
