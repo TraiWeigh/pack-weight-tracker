@@ -238,3 +238,10 @@ uri = "file://workflow-reports/trailweigh-phase1b-production-shared-importer-rep
 type = "unspecified"
 title = "Phase 1B ZIP — Specs + Fixtures + Report"
 description = "32 KB · non-corrupt verified · 17 files"
+
+[[outputs]]
+id = "XKbeLsgqSgnzLFcK8Xys2"
+uri = "file://workflow-reports/TRAILWEIGH_PHASE1C_CROSS_BROWSER_REPORT.md"
+type = "text"
+title = "Phase 1C Report — Cross-Browser Compatibility"
+description = "Firefox + WebKit environment-blocked | 0 app defects found | Chromium baseline intact"
