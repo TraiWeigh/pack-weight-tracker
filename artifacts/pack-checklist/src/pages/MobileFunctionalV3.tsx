@@ -28,7 +28,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@clerk/react';
 import {
-  Menu, Search, Plus, Check, GripVertical, MoreHorizontal,
+  Search, Plus, Check, GripVertical, MoreHorizontal,
   Backpack, Folder, Grid3X3, BarChart2,
   Hash, PackageOpen, ArrowRightLeft, Luggage, Camera,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
@@ -640,9 +640,8 @@ function NavTabDisabled({ Icon, label, 'aria-label': ariaLabel, title }: {
   );
 }
 
-// ─── SLIDE DRAWER CONSTANT ─────────────────────────────────────────────────────
-// Width of the slide-tab drawer panel. ~52 vw at 430 px maxWidth, capped at 240 px.
-const DRAWER_W = 220;
+// DRAWER_W is now computed responsively at runtime (52 % of viewport, max 240 px).
+// See drawerW state in MobileFunctionalV3Inner.
 
 // ─── SLIDE TAB DRAWER ─────────────────────────────────────────────────────────
 // Custom gesture drawer with:
@@ -653,6 +652,7 @@ const DRAWER_W = 220;
 //   • Escape key closes; keyboard Enter/Space on tab toggles.
 interface SlideTabDrawerProps {
   drawerX: number;
+  drawerW: number;
   snapping: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
   onPointerMove: (e: React.PointerEvent) => void;
@@ -667,13 +667,13 @@ interface SlideTabDrawerProps {
 }
 
 function SlideTabDrawer({
-  drawerX, snapping,
+  drawerX, drawerW, snapping,
   onPointerDown, onPointerMove, onPointerUp,
   onSnap, onClose, onTransitionEnd,
   system, setSystem, onChecklist, onPrint,
 }: SlideTabDrawerProps) {
   const isOpen   = drawerX > 0;
-  const progress = drawerX / DRAWER_W; // 0–1
+  const progress = drawerX / drawerW; // 0–1
 
   // Escape key
   useEffect(() => {
@@ -736,9 +736,9 @@ function SlideTabDrawer({
         aria-label="Navigation menu"
         style={{
           position: 'absolute', top: 0, left: 0, bottom: 0,
-          width: DRAWER_W, zIndex: 201,
+          width: drawerW, zIndex: 201,
           background: CARD_BG,
-          transform: `translateX(${drawerX - DRAWER_W}px)`,
+          transform: `translateX(${drawerX - drawerW}px)`,
           transition: snapping ? `transform ${motion}` : 'none',
           touchAction: 'none',
           userSelect: 'none',
@@ -788,11 +788,11 @@ function SlideTabDrawer({
         {...gestureHandlers}
         role="button"
         tabIndex={0}
-        aria-label={drawerX >= DRAWER_W / 2 ? 'Close navigation drawer' : 'Open navigation drawer'}
+        aria-label={drawerX >= drawerW / 2 ? 'Close navigation drawer' : 'Open navigation drawer'}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onSnap(drawerX >= DRAWER_W / 2 ? 0 : DRAWER_W);
+            onSnap(drawerX >= drawerW / 2 ? 0 : drawerW);
           }
         }}
         style={{
@@ -1441,6 +1441,17 @@ function MobileFunctionalV3Inner() {
     { active: false, startX: 0, startOffset: 0 },
   );
   const [moreOpen, setMoreOpen] = useState(false);
+  // Responsive drawer width: 52 % of viewport width, capped at 240 px.
+  // Recomputes on resize so the drawer stays ~half-screen at every phone width.
+  const [drawerW, setDrawerW] = useState(() =>
+    Math.min(Math.round(window.innerWidth * 0.52), 240),
+  );
+  useEffect(() => {
+    const onResize = () =>
+      setDrawerW(Math.min(Math.round(window.innerWidth * 0.52), 240));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   const [showPlusSheet, setShowPlusSheet] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
@@ -1749,7 +1760,7 @@ function MobileFunctionalV3Inner() {
   const handleDrawerPointerMove = useCallback((e: React.PointerEvent) => {
     if (!drawerDragRef.current.active) return;
     const dx = e.clientX - drawerDragRef.current.startX;
-    setDrawerX(Math.max(0, Math.min(DRAWER_W, drawerDragRef.current.startOffset + dx)));
+    setDrawerX(Math.max(0, Math.min(drawerW, drawerDragRef.current.startOffset + dx)));
   }, []);
 
   const handleDrawerPointerUp = useCallback((e: React.PointerEvent) => {
@@ -1758,10 +1769,10 @@ function MobileFunctionalV3Inner() {
     const dx = Math.abs(e.clientX - drawerDragRef.current.startX);
     // <8 px = tap → toggle; otherwise snap by 40 % threshold
     const targetX = dx < 8
-      ? (drawerX < DRAWER_W / 2 ? DRAWER_W : 0)
-      : (drawerX > DRAWER_W * 0.4 ? DRAWER_W : 0);
+      ? (drawerX < drawerW / 2 ? drawerW : 0)
+      : (drawerX > drawerW * 0.4 ? drawerW : 0);
     snapDrawerTo(targetX);
-  }, [drawerX, snapDrawerTo]);
+  }, [drawerX, drawerW, snapDrawerTo]);
 
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
@@ -1942,16 +1953,6 @@ function MobileFunctionalV3Inner() {
           display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
           flexShrink: 0, zIndex: 10,
         }}>
-          {/* Hamburger */}
-          <button
-            aria-label="Open menu"
-            aria-expanded={drawerX >= DRAWER_W}
-            onClick={() => snapDrawerTo(DRAWER_W)}
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center' }}
-          >
-            <Menu size={22} color={SECONDARY} strokeWidth={1.8}/>
-          </button>
-
           {/* Logo + wordmark */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
             <LogoMark size={24}/>
@@ -2585,6 +2586,7 @@ function MobileFunctionalV3Inner() {
         {/* Slide-tab nav drawer */}
         <SlideTabDrawer
           drawerX={drawerX}
+          drawerW={drawerW}
           snapping={drawerSnapping}
           onPointerDown={handleDrawerPointerDown}
           onPointerMove={handleDrawerPointerMove}
