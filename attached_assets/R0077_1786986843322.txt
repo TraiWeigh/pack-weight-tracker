@@ -1,0 +1,911 @@
+TRAILWEIGH — R0077
+CURRENT MOBILE APPLE ACCESSIBILITY BASELINE
+SAFE CURRENT-WEB CHANGES ONLY — NO NATIVE iOS / APP STORE WORK
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Use the CURRENT TrailWeigh project
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+============================================================
+PURPOSE
+============================================================
+
+The user wants TrailWeigh to begin meeting Apple accessibility/design expectations NOW, using only changes that are technically appropriate in the CURRENT Replit web/mobile implementation.
+
+This is NOT an App Store submission task.
+This is NOT a native-iOS conversion task.
+This does NOT claim TrailWeigh is fully Apple-compliant.
+
+R0077 is a bounded mobile accessibility baseline pass.
+
+It must improve CURRENT mobile accessibility without redesigning TrailWeigh or disturbing the USER-PASS R0076P3 mobile behavior.
+
+============================================================
+AUTHORITATIVE BASELINE
+============================================================
+
+Use CURRENT official Apple accessibility / Human Interface Guidelines as the platform reference.
+
+For this task, verify current official Apple guidance for:
+- touch target sizing / comfortably tappable controls;
+- VoiceOver / accessible descriptions;
+- keyboard / focus accessibility where applicable to the web implementation;
+- sufficient contrast;
+- information not conveyed by color alone;
+- Larger Text / text scaling principles;
+- Reduce Motion.
+
+Do not invent Apple requirements.
+Do not call an HIG recommendation a mandatory App Store rejection rule unless Apple explicitly says so.
+
+Apple-platform facts must come from current official Apple documentation.
+
+============================================================
+USER DESIGN DECISIONS — DO NOT RE-ASK
+============================================================
+
+1. KEEP CURRENT VISIBLE CONTROL SIZES WHERE POSSIBLE.
+   If a visible checkbox/icon is intentionally small, enlarge its INVISIBLE/INTERACTIVE hit area rather than making the artwork visually bulky.
+
+2. PRESERVE TRAILWEIGH'S CURRENT VISUAL IDENTITY.
+   Keep the wedges, category icons, existing overall palette, spacing character, hierarchy, and compactness.
+
+3. DO NOT DO NATIVE-IOS-ONLY WORK.
+   Do not add Sign in with Apple, native photo permission strings, native Dynamic Type APIs, StoreKit/IAP, Xcode project files, bundle identifiers, App Store metadata, ATT, native entitlements, or iOS SDK configuration in this task.
+
+4. DO NOT IMPLEMENT ACCOUNT DELETION IN THIS TASK.
+   That is a separate backend/auth/account-policy task.
+
+5. DO NOT ALTER THE BOX-GROUP NAVIGATION DESIGN IN THIS TASK.
+   The possible looping-groups experiment is separate.
+
+============================================================
+R0076P3 IS USER PASS — ABSOLUTE PRESERVATION
+============================================================
+
+R0076P3 is USER PASS / CLOSED.
+
+DO NOT REGRESS:
+
+- native thumb/finger scrolling of long-category item rows;
+- outer category stack locked during long-category item scrolling;
+- category header fixed/aligned directly under List Summary;
+- Add Item fixed in long mode;
+- bottom controls fixed;
+- item ▲/▼ controls;
+- single-open item accordion behavior;
+- zero-open item accordion state;
+- opened-item auto-alignment / auto-reveal;
+- Delete Item reveal positioning;
+- category accordion behavior;
+- Save box;
+- Group 4 order:
+  Back | Save | Share | More
+- swipe-to-delete;
+- category long-press reorder;
+- category wedges/icons;
+- item selection logic;
+- quantity/weight behavior.
+
+Do not rewrite working R0076P3 interaction logic merely to make the accessibility changes.
+
+============================================================
+CURRENT SOURCE FINDINGS TO VERIFY
+============================================================
+
+The supplied USER-PASS R0076P3 source contained several likely accessibility issues.
+
+These are investigation leads, NOT permission to blindly change dead/stale code.
+
+Verify each in CURRENT ACTIVE source.
+
+KNOWN LIKELY ISSUES:
+
+A. Main-list item checkbox:
+- visible custom checkbox approximately 20 × 20;
+- checkbox is nested inside an item row that is itself `role="button"`;
+- checkbox had `tabIndex={-1}`;
+- therefore the visible target is small and independent keyboard access may be inadequate.
+
+B. Card-deck close button:
+- visible/interactive close button approximately 28 × 28.
+
+C. Several overlay icon buttons:
+- Preview close / Print;
+- Checklist close / Clear / Print / Share;
+- Summary back;
+- Scanner back;
+may have small padding and no guaranteed 44 × 44 hit region.
+
+D. Footer/full-screen Back controls:
+- some use only `padding: 4px 0`;
+- verify effective target dimensions.
+
+E. Category-name “Category options” button:
+- verify effective touch height; make its target comfortably tappable without changing the category-header appearance.
+
+F. Expanded item controls:
+- Weight input;
+- Quantity select;
+- Move select;
+- Delete Item button/row;
+are inside approximately 42 px rows and may expose smaller interactive targets.
+
+G. Add Category:
+- input explicitly suppresses outline;
+- Add button may be under the preferred target size.
+
+H. Rename Category:
+- input suppresses outline;
+- Cancel/Rename controls may be slightly under 44 px depending on computed line-height/padding.
+
+I. Current palette likely contains low-contrast muted/inactive colors.
+The previous supplied source used:
+- `MUTED = #9AAA9F`
+- `NAV_INACTIVE = #A0ADA8`
+on white/light surfaces.
+
+Independent pre-audit calculation suggested these may be well below 4.5:1 for small text.
+VERIFY using a recognized WCAG contrast calculation before changing.
+
+J. Summary-area subtle white/transparent text/icons:
+- verify all small meaningful text and actionable icons against the summary green background;
+- do not assume opacity is sufficiently legible.
+
+K. Reduced Motion support already exists in the current source.
+PRESERVE it and TEST it; do not replace it unnecessarily.
+
+============================================================
+CHANGE SET 1 — TOUCH TARGETS
+============================================================
+
+GOAL:
+All primary standalone interactive controls in the CURRENT mobile common-task workflow should expose a comfortably tappable hit region of at least 44 × 44 CSS px where practical.
+
+IMPORTANT:
+44 × 44 refers to the INTERACTIVE HIT REGION.
+The visible icon/check artwork may remain smaller.
+
+Do not make TrailWeigh look oversized.
+
+MANDATORY TARGET AUDIT INCLUDES AT LEAST:
+
+- main item checkbox;
+- item-row expand/collapse activation area;
+- top overlay Back/Close icon buttons;
+- Print/Share icon buttons;
+- deck Close button;
+- category wedge trigger;
+- category-name/options trigger;
+- global expand/collapse chevron;
+- item ▲/▼ controls;
+- Add Item;
+- bottom navigation boxes;
+- standalone footer Back controls;
+- standalone sheet buttons;
+- Delete Item;
+- Cancel/Confirm actions;
+- Add Category confirmation;
+- interactive form fields/selects used during common mobile tasks.
+
+For every audited control record:
+- visible geometry;
+- computed interactive width/height;
+- PASS/FAIL before;
+- PASS after.
+
+INLINE TEXT LINKS:
+Do not inflate ordinary inline paragraph links to giant blocks merely to satisfy 44 × 44.
+This target pass is focused on standalone controls and common mobile actions.
+
+============================================================
+ITEM CHECKBOX — SPECIFIC REQUIRED REPAIR
+============================================================
+
+The main-list checkbox is the clearest known target/semantic problem.
+
+Required outcome:
+
+- preserve the visual 20 × 20 checkbox artwork if that still looks best;
+- provide an effective interactive area >= 44 × 44;
+- checkbox must be independently focusable/operable;
+- expose correct checked/unchecked state to assistive technology;
+- tapping checkbox toggles selection WITHOUT opening/closing the item detail;
+- tapping the rest of the item row continues to toggle item details;
+- Space/Enter on checkbox toggles selection;
+- Space/Enter on item expansion control toggles item details;
+- swipe-to-delete remains functional;
+- native vertical scrolling remains functional;
+- do not create invalid/nested interactive semantics.
+
+PREFERRED SEMANTIC DIRECTION:
+Use native semantic controls where feasible.
+
+If the current row is a `role="button"` containing another interactive role, restructure only enough to avoid an interactive-control-inside-interactive-control accessibility conflict while preserving the exact visual row.
+
+For example:
+- row container = noninteractive layout;
+- checkbox = independent semantic button/checkbox control with 44 × 44 hit region and inner 20 × 20 visual;
+- remaining item-name/quantity area = separate expand/collapse button/control.
+
+Do NOT change the user's visible item-row design unless unavoidable.
+
+============================================================
+CHANGE SET 2 — ACCESSIBLE NAMES / STATES / SEMANTICS
+============================================================
+
+Audit common mobile controls for:
+
+- accessible name;
+- correct role;
+- correct state:
+  `aria-expanded`
+  `aria-checked`
+  `aria-pressed`
+  `aria-disabled`
+  as appropriate;
+- decorative icons hidden from screen readers;
+- no duplicated/conflicting accessible names;
+- no actionable control represented only by a decorative icon with no name.
+
+Known good labels should be preserved.
+
+Do not add redundant spoken text if the current semantic label is already clear.
+
+CHECK AT LEAST:
+
+- category open/close;
+- item open/close;
+- item selected/unselected;
+- Add Item;
+- Delete Item;
+- category options;
+- global expand/collapse;
+- item earlier/later chevrons;
+- Save;
+- Back/Next navigation boxes;
+- deck close;
+- Preview/Checklist/Summary/Scanner headers;
+- modal confirmations.
+
+============================================================
+CHANGE SET 3 — KEYBOARD / FOCUS
+============================================================
+
+Although TrailWeigh is mobile-first, the current implementation is web-based and should remain keyboard accessible.
+
+Required:
+
+- all common standalone interactive controls reachable in logical order;
+- Enter/Space activation where appropriate;
+- visible focus indication;
+- no focus outline suppressed without an accessible replacement;
+- focus indicator must be visible against the actual background;
+- disabled controls must not behave as active controls.
+
+KNOWN AREAS:
+- Add Category input currently appears to use `outline: none`;
+- Rename input appears to use `outline: none`;
+- category wedge uses custom focus styling — preserve if adequate;
+- item checkbox must become independently keyboard reachable.
+
+Do not change pointer/touch behavior merely to implement keyboard focus.
+
+============================================================
+CHANGE SET 4 — CONTRAST
+============================================================
+
+Use current Apple accessibility guidance / WCAG contrast values referenced by Apple.
+
+For normal/small text:
+- target at least 4.5:1.
+
+For sufficiently large/bold text:
+- follow the applicable Apple/WCAG threshold.
+
+For meaningful non-text controls/states:
+- target at least 3:1 where applicable.
+
+Perform a CURRENT palette audit on common mobile screens.
+
+Particular attention:
+- MUTED;
+- NAV_INACTIVE;
+- disabled-vs-enabled representations;
+- summary translucent text;
+- chevrons;
+- category subtitles;
+- small helper text;
+- text on DETAIL_BG;
+- icons conveying actionable state;
+- checkbox checked/unchecked border/state.
+
+If a current color fails:
+- change it to the NEAREST darker/lighter value in the same TrailWeigh color family that passes;
+- preserve the warm green/neutral TrailWeigh aesthetic;
+- do NOT replace the palette with generic black/white;
+- do NOT change decorative category wedge colors solely for uniformity if the icon/content remains legible.
+
+DISABLED CONTROLS:
+Do not misclassify legitimately disabled/inactive controls under a contrast rule that does not apply.
+But make sure disabled state remains understandable and not confused with enabled state.
+
+============================================================
+CHANGE SET 5 — DO NOT RELY ON COLOR ALONE
+============================================================
+
+Audit common task states.
+
+Required:
+- checked item = checkmark/shape/state, not green alone;
+- active/inactive navigation state = not color alone if the state is important;
+- destructive action = icon/text plus color;
+- enabled/disabled item scroll = semantic disabled state plus appropriate visual distinction;
+- success/error status should not depend solely on green/red where the user must understand the meaning.
+
+Do not remove color.
+TrailWeigh intentionally uses color/category icons for fast recognition.
+The requirement is to ADD a second signal where needed, not make the app monochrome.
+
+============================================================
+CHANGE SET 6 — LARGER TEXT / SCALING — CURRENT WEB LIMIT ONLY
+============================================================
+
+Do NOT claim native iOS Dynamic Type support in this web task.
+
+Instead:
+
+1. verify the current page does NOT intentionally disable browser zoom/text scaling;
+2. verify common mobile tasks remain usable at:
+   - default scaling;
+   - 150%;
+   - 200% browser/text scaling where the current test environment can reproduce it;
+3. no essential button may disappear off-screen with no way to reach it;
+4. no text may overlap another control;
+5. long labels may wrap where appropriate;
+6. if compact toolbar labels cannot practically scale to 200% without breaking the layout, preserve usability and accessible names and document the limitation honestly.
+
+DO NOT globally convert every pixel font to `rem` in one broad refactor.
+
+Use the smallest safe changes needed for actual failures.
+
+If viewport-meta configuration disables zoom:
+- identify the exact owning file;
+- change it only if CURRENT active project evidence confirms it is safe;
+- document the extra changed file.
+
+Do not edit unrelated shell/config files just to make the report look complete.
+
+============================================================
+CHANGE SET 7 — REDUCED MOTION
+============================================================
+
+CURRENT source already appears to support:
+`prefers-reduced-motion: reduce`
+and a near-instant `motionDuration()`.
+
+Preserve and verify.
+
+Test:
+- deck rise/transition;
+- category reorder transition;
+- other nonessential mobile transitions touched by this page.
+
+PASS:
+- common tasks remain fully understandable with reduced motion;
+- no functionality depends on animation;
+- nonessential motion is eliminated/minimized.
+
+Do not remove all feedback/state change.
+
+============================================================
+DIALOG / SHEET ACCESSIBILITY
+============================================================
+
+Audit current modal confirmations and sheets used in common mobile tasks.
+
+At minimum:
+- role/name appropriate;
+- focus moves into a true modal/dialog when opened where practical in current web architecture;
+- keyboard user can reach Cancel/Confirm;
+- Escape behavior where appropriate;
+- focus is not stranded after close;
+- destructive action remains explicit.
+
+Do NOT turn non-modal card decks into blocking modals if they are intentionally non-modal.
+
+============================================================
+NO FALSE COMPLIANCE CLAIMS
+============================================================
+
+Do NOT change public text to say:
+
+- “Apple compliant”
+- “App Store compliant”
+- “WCAG certified”
+- “fully accessible”
+- “supports Dynamic Type”
+
+unless the exact claim is fully proven and appropriate.
+
+The current Accessibility page may continue to state that TrailWeigh is improving accessibility.
+
+If existing text makes a stronger claim than the tests support:
+- make it MORE ACCURATE, not more promotional.
+
+Do not write App Store accessibility nutrition declarations in this task.
+
+============================================================
+OUT OF SCOPE / LATER APPLE WORK
+============================================================
+
+DO NOT IMPLEMENT these in R0077:
+
+- native iOS project/package;
+- Xcode/iOS SDK;
+- App Store Connect metadata;
+- App Store screenshots;
+- age rating;
+- bundle ID;
+- Sign in with Apple;
+- StoreKit / IAP subscriptions;
+- ATT;
+- native camera/photo permission strings;
+- privacy nutrition labels;
+- native Dynamic Type APIs;
+- native VoiceOver certification;
+- self-service account deletion backend;
+- Clerk account-deletion architecture;
+- legal-policy finalization;
+- production publishing/deployment.
+
+These remain separate future tasks.
+
+============================================================
+STRICT SAFETY / NO-CONFIG CHANGES
+============================================================
+
+DO NOT modify unless explicitly required by a proven current-web accessibility defect:
+
+- `replit.md`
+- `.replit`
+- `.agents/memory/*`
+- `.agents/skills/*`
+- packages/dependencies
+- database
+- auth
+- Clerk
+- Secrets
+- environment variables
+- deployment
+- publishing
+- production database
+- API behavior
+- storage architecture
+
+DO NOT:
+- Publish
+- Republish
+- Resume production
+- migrate database
+- apply unrelated tasks
+- enable Auto-apply
+
+============================================================
+PRE-EDIT GATE
+============================================================
+
+Before editing:
+
+1. Read current `replit.md` READ-ONLY.
+2. Confirm current active render path for `/mobile-functional-v3`.
+3. Confirm R0076P3 behavior is currently present.
+4. Record git status.
+5. List expected changed files.
+6. Audit current control target dimensions.
+7. Audit current semantic roles/names/states.
+8. Audit contrast of common mobile colors.
+9. Audit focus suppression.
+10. Verify current reduced-motion implementation.
+11. Identify whether browser zoom is disabled anywhere.
+12. Produce a BEFORE findings table.
+
+EXPECTED APPLICATION FILE:
+- `artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx`
+
+EXPECTED TEST FILE:
+- `tests/e2e/r0077/r0077.spec.ts`
+
+If one existing shared stylesheet/shell file is genuinely required for focus/text-scaling support:
+- explain why before editing;
+- keep scope minimal;
+- report exact lines/behavior changed.
+
+============================================================
+MANDATORY TESTS
+============================================================
+
+Use real CURRENT app behavior.
+
+At minimum test 390 × 844.
+Also regression check 320, 375, and 430 px widths.
+
+------------------------------------------------------------
+A01 — ITEM CHECKBOX TARGET
+------------------------------------------------------------
+Measure effective interactive target.
+
+PASS:
+- >=44 × 44;
+- visible checkbox may remain ~20 × 20;
+- tapping target toggles selected state;
+- item detail does NOT toggle.
+
+------------------------------------------------------------
+A02 — ITEM EXPAND TARGET
+------------------------------------------------------------
+PASS:
+- item expansion area remains comfortably tappable;
+- opening/closing details works;
+- checkbox does not trigger expansion.
+
+------------------------------------------------------------
+A03 — ITEM KEYBOARD SEMANTICS
+------------------------------------------------------------
+PASS:
+- Tab reaches checkbox and expansion control in logical order;
+- Space/Enter checkbox toggles selection;
+- Space/Enter expansion control toggles details;
+- states exposed correctly.
+
+------------------------------------------------------------
+A04 — SWIPE / SCROLL REGRESSION
+------------------------------------------------------------
+PASS:
+- horizontal swipe-to-delete still works;
+- vertical native item scrolling still works;
+- R0076P3 outer-category lock remains correct.
+
+Use real pointer/touch gestures where the behavior requires them.
+
+------------------------------------------------------------
+A05 — SMALL CONTROL TARGET MATRIX
+------------------------------------------------------------
+Measure and report effective targets for:
+- deck Close;
+- overlay Close/Back;
+- Preview Print;
+- Checklist Clear/Print/Share;
+- Summary Back;
+- Scanner Back;
+- Category Options;
+- global expand/collapse;
+- item ▲/▼;
+- Add Item;
+- Delete Item;
+- Add Category Add;
+- Rename Cancel/Rename;
+- modal Cancel/Delete.
+
+PASS:
+- standalone common-action targets meet intended baseline;
+- no visible-layout regression.
+
+------------------------------------------------------------
+A06 — FOCUS VISIBLE
+------------------------------------------------------------
+Keyboard-tab through common controls.
+
+PASS:
+- clear visible focus;
+- no control loses focus indicator because of `outline:none`;
+- order remains logical.
+
+------------------------------------------------------------
+A07 — ACCESSIBLE NAME / STATE
+------------------------------------------------------------
+Inspect accessibility tree/DOM semantics.
+
+PASS:
+- icon-only controls named;
+- checkbox checked state correct;
+- accordion expanded state correct;
+- disabled state correct;
+- decorative icons not redundantly announced.
+
+------------------------------------------------------------
+A08 — CONTRAST
+------------------------------------------------------------
+Calculate contrast for all common palette pairings changed/audited.
+
+Report exact ratios.
+
+PASS:
+- normal/small meaningful text meets required threshold;
+- meaningful non-text state/control contrast meets applicable threshold;
+- no arbitrary palette redesign.
+
+------------------------------------------------------------
+A09 — COLOR-INDEPENDENT STATE
+------------------------------------------------------------
+PASS:
+- checked/unchecked understandable without color;
+- destructive action understandable without color;
+- active/disabled important states have secondary cues/semantics.
+
+------------------------------------------------------------
+A10 — REDUCED MOTION
+------------------------------------------------------------
+Emulate `prefers-reduced-motion: reduce`.
+
+PASS:
+- deck/category transitions minimize appropriately;
+- tasks remain usable;
+- no functional state depends on animation.
+
+------------------------------------------------------------
+A11 — TEXT SCALING
+------------------------------------------------------------
+Test default / 150% / 200% using the closest reliable web-browser scaling available.
+
+PASS for common tasks:
+- open category;
+- scroll items;
+- select item;
+- open item detail;
+- edit weight;
+- edit quantity;
+- Add Item;
+- Save;
+- open bottom group controls;
+- return/back.
+
+No text/control overlap.
+No essential unreachable action.
+
+Document web-vs-native limitations honestly.
+
+------------------------------------------------------------
+A12 — R0076P3 PRESERVATION
+------------------------------------------------------------
+PASS all:
+- long-category thumb scroll;
+- outer category stack lock;
+- header alignment;
+- Add Item position;
+- item auto-reveal;
+- single-open item accordion;
+- zero-open;
+- item chevrons;
+- Save box.
+
+------------------------------------------------------------
+A13 — MOBILE WIDTH REGRESSION
+------------------------------------------------------------
+At 320 / 375 / 390 / 430:
+
+PASS:
+- no horizontal overflow caused by R0077;
+- bottom nav remains usable;
+- category rows remain usable;
+- no large invisible hit target overlaps adjacent unrelated controls and causes wrong-action taps.
+
+THIS IS IMPORTANT:
+Increasing hit areas must NOT create overlapping click/tap zones.
+
+------------------------------------------------------------
+A14 — DELETE CONFIRMATION ACCESSIBILITY
+------------------------------------------------------------
+PASS:
+- dialog is named;
+- Cancel/Delete reachable;
+- focus handling reasonable;
+- backdrop/touch behavior still works;
+- deleting is not accidentally triggered by focus changes.
+
+============================================================
+REGRESSION SUITES
+============================================================
+
+After R0077 passes:
+
+1. Run R0077.
+2. Re-run R0076P3.
+3. Re-run the relevant R0076P2/R0076 interaction tests that still exist and remain valid.
+4. Run any existing mobile smoke/accessibility tests relevant to the changed controls.
+
+Do not skip prior interaction tests on the claim that “only accessibility changed.”
+Hit-area/DOM-semantic changes can break gestures and event routing.
+
+============================================================
+VISUAL EVIDENCE
+============================================================
+
+Provide screenshots at 390 × 844 showing:
+
+1. normal main list — no visible design inflation;
+2. item selected + item detail expanded;
+3. long-category layout;
+4. bottom controls;
+5. at least one overlay/sheet;
+6. keyboard focus example where browser screenshot can show it.
+
+For invisible hit target changes:
+include test measurements in report; a screenshot alone is insufficient.
+
+============================================================
+CONTRAST REPORT TABLE
+============================================================
+
+Include a table:
+
+ELEMENT | FOREGROUND | BACKGROUND | BEFORE RATIO | AFTER RATIO | THRESHOLD | PASS/FAIL
+
+At minimum include:
+- PRIMARY on white;
+- SECONDARY on white;
+- MUTED on white;
+- MUTED on DETAIL_BG;
+- NAV_INACTIVE on NAV_BG;
+- NAV_ACTIVE on NAV_BG;
+- white on SUMMARY_BG;
+- summary small/translucent text on SUMMARY_BG;
+- destructive text on white/detail background;
+- checkbox checked/unchecked meaningful boundaries where applicable.
+
+If a value did not change, still record it.
+
+============================================================
+TOUCH-TARGET REPORT TABLE
+============================================================
+
+Include:
+
+CONTROL | BEFORE WxH | AFTER WxH | VISIBLE ART CHANGED? | OVERLAP CHECK | PASS/FAIL
+
+At minimum:
+- item checkbox;
+- item expand area;
+- deck close;
+- preview close;
+- preview print;
+- checklist close;
+- checklist clear;
+- checklist print;
+- checklist share;
+- summary back;
+- scanner back;
+- category options;
+- expand/collapse;
+- earlier/later chevrons;
+- Add Item;
+- Delete Item;
+- Add Category Add;
+- Rename Cancel;
+- Rename;
+- modal Cancel;
+- modal Delete.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create:
+
+`workflow-reports/R0077.md`
+
+Report sections:
+
+A. PURPOSE / SCOPE
+B. CURRENT OFFICIAL APPLE SOURCES CONSULTED
+C. ACTIVE SOURCE / ROUTE
+D. BEFORE ACCESSIBILITY FINDINGS
+E. TOUCH TARGET CHANGES
+F. SEMANTIC / VOICEOVER-READINESS CHANGES
+G. KEYBOARD / FOCUS CHANGES
+H. CONTRAST CHANGES
+I. COLOR-INDEPENDENT STATE REVIEW
+J. LARGER-TEXT / WEB-SCALING RESULTS
+K. REDUCED-MOTION RESULTS
+L. R0076P3 PRESERVATION
+M. CHANGED FILES
+N. TEST RESULTS
+O. SCREENSHOT EVIDENCE
+P. REMAINING APPLE WORK NOT POSSIBLE/NOT APPROPRIATE YET
+Q. SAFETY / NO-CHANGE VERIFICATION
+R. USER VERIFICATION = PENDING
+
+Explicit status lines:
+
+ITEM CHECKBOX EFFECTIVE TARGET >=44x44 = PASS / FAIL
+ITEM CHECKBOX INDEPENDENT KEYBOARD ACCESS = PASS / FAIL
+ITEM EXPAND/CHECK ACTION SEPARATION = PASS / FAIL
+STANDALONE COMMON CONTROL TARGETS = PASS / FAIL
+TARGET OVERLAP / WRONG-ACTION TAPS = PASS / FAIL
+ACCESSIBLE NAMES = PASS / FAIL
+ACCESSIBLE STATES = PASS / FAIL
+VISIBLE KEYBOARD FOCUS = PASS / FAIL
+NORMAL TEXT CONTRAST = PASS / FAIL
+NON-TEXT CONTROL/STATE CONTRAST = PASS / FAIL
+COLOR-ONLY INFORMATION = PASS / FAIL
+REDUCED MOTION = PASS / FAIL
+150% TEXT/ZOOM COMMON TASKS = PASS / FAIL
+200% TEXT/ZOOM COMMON TASKS = PASS / FAIL / LIMITATION DOCUMENTED
+NATIVE DYNAMIC TYPE CLAIMED = NO
+R0076P3 LONG-CATEGORY TOUCH SCROLL = PASS / FAIL
+R0076P3 SINGLE-OPEN ITEM ACCORDION = PASS / FAIL
+R0076P3 AUTO-ALIGNMENT = PASS / FAIL
+R0076P3 SAVE = PASS / FAIL
+DATABASE CHANGED = YES / NO
+AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+APPLE/APP-STORE COMPLIANCE CLAIMED = NO
+USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY ZIP
+============================================================
+
+Create:
+
+`R0077.zip`
+
+ZIP must contain:
+
+1. `R0077.md`
+2. EVERY application source/style file actually changed
+3. `tests/e2e/r0077/r0077.spec.ts`
+4. relevant screenshots
+5. any small machine-readable contrast/target audit output if created
+
+Verify:
+- ZIP exists;
+- nonzero;
+- opens;
+- report inside;
+- actual changed source inside;
+- R0077 test source inside.
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before Replit internal PASS answer:
+
+1. Did I preserve R0076P3?
+2. Are common standalone mobile targets comfortably tappable?
+3. Did I enlarge hit regions rather than visually bloating small icons?
+4. Did I prevent hit-target overlap?
+5. Is the 20 × 20 checkbox art still visually compact while its hit area is >=44 × 44?
+6. Can keyboard/assistive technology operate checkbox separately from item expansion?
+7. Did I avoid nested/conflicting interactive semantics?
+8. Did I calculate actual contrast ratios instead of judging by eye?
+9. Did I keep TrailWeigh's palette character?
+10. Did I avoid relying on color alone?
+11. Did I preserve reduced-motion behavior?
+12. Did I test enlarged text/scaling honestly?
+13. Did I avoid claiming native Dynamic Type support?
+14. Did I avoid native-iOS/App Store work?
+15. Did I avoid database/auth/deployment changes?
+16. Does ZIP contain all changed source?
+
+If any material answer is NO:
+DO NOT claim PASS.
+
+============================================================
+STOP
+============================================================
+
+STOP after R0077 report + ZIP.
+
+Do not proceed to looping box groups.
+Do not proceed to native iOS conversion.
+Do not publish.
+Do not mark USER PASS.
+
+USER LIVE VERIFICATION remains required.

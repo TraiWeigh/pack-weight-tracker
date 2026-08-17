@@ -148,13 +148,13 @@ const CARD_SHADOW  = '0 1px 6px rgba(0,0,0,0.10), 0 0 1px rgba(0,0,0,0.04)';
 const CARD_BORDER  = 'rgba(0,0,0,0.06)';
 const PRIMARY      = '#1A2920';
 const SECONDARY    = '#4A5D54';
-const MUTED        = '#9AAA9F';
+const MUTED        = '#667270'; // darkened from #9AAA9F for ≥4.5:1 on white (R0077)
 const DIVIDER      = 'rgba(0,0,0,0.06)';
 const SUMMARY_BG   = '#2A5740';
 const SUMMARY_TEXT = '#FFFFFF';
 const NAV_BG       = '#FFFFFF';
 const NAV_ACTIVE   = '#2A5740';
-const NAV_INACTIVE = '#A0ADA8';
+const NAV_INACTIVE = '#6E7672'; // darkened from #A0ADA8 for ≥4.5:1 on white (R0077)
 const CB_CHECKED   = '#4E7D5C';
 const CB_UNCHECKED = 'rgba(0,0,0,0.18)';
 const DETAIL_BG    = '#F5F0E8';
@@ -300,7 +300,7 @@ function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayPro
         <button
           onClick={onClose}
           aria-label="Close preview"
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center' }}
         >
           <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
         </button>
@@ -313,7 +313,7 @@ function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayPro
           aria-label="Print gear list"
           title="Print pack list"
           data-testid="preview-print-btn"
-          style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center' }}
         >
           <Printer size={18} color={SECONDARY} strokeWidth={1.8}/>
         </button>
@@ -371,7 +371,7 @@ function ChecklistOverlay({
         <button
           onClick={onClose}
           aria-label="Close checklist"
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center' }}
         >
           <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
         </button>
@@ -383,7 +383,7 @@ function ChecklistOverlay({
           aria-label="Clear all checklist progress"
           title="Clear check progress (does not change your gear selection)"
           style={{ background: 'none', border: 'none', padding: '4px 8px', cursor: 'pointer',
-            fontSize: 12.5, color: SECONDARY, borderRadius: 6, fontFamily: SANS }}
+            fontSize: 12.5, color: SECONDARY, borderRadius: 6, fontFamily: SANS, minHeight: 44, alignSelf: 'center' }}
         >
           Clear
         </button>
@@ -391,7 +391,7 @@ function ChecklistOverlay({
           onClick={onPrint}
           aria-label="Print checklist"
           title="Print pack list"
-          style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center' }}
         >
           <Printer size={18} color={SECONDARY} strokeWidth={1.8}/>
         </button>
@@ -399,7 +399,7 @@ function ChecklistOverlay({
           onClick={onShare}
           aria-label="Download PDF"
           title="Download PDF"
-          style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center' }}
         >
           <Share2 size={18} color={SECONDARY} strokeWidth={1.8}/>
         </button>
@@ -557,7 +557,7 @@ function SummaryOverlay({ sandbox, onClose }: SummaryOverlayProps) {
         <button
           onClick={onClose}
           aria-label="Back to list"
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center' }}
         >
           <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
         </button>
@@ -610,7 +610,7 @@ function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayPro
         <button
           onClick={onClose}
           aria-label="Close scanner"
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', minWidth: 44, minHeight: 44, justifyContent: 'center' }}
         >
           <ChevronLeft size={22} color={SECONDARY} strokeWidth={2}/>
         </button>
@@ -1302,12 +1302,15 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
             onClick={onClose}
             aria-label={`Close ${deckLabel}`}
             style={{
-              background: 'rgba(255,255,255,0.16)', border: 'none', borderRadius: 14,
-              width: 28, height: 28, cursor: 'pointer',
+              background: 'none', border: 'none', borderRadius: '50%',
+              width: 44, height: 44, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <X size={16} color="#fff" strokeWidth={2}/>
+            {/* 28px visual circle, 44px tap target */}
+            <span style={{ width: 28, height: 28, borderRadius: 14, background: 'rgba(255,255,255,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={16} color="#fff" strokeWidth={2}/>
+            </span>
           </button>
         </div>
 
@@ -1762,7 +1765,7 @@ function FooterPageView({ pageId, onBack, isAuthenticated, navigate, onOpenSourc
         <button
           onClick={onBack}
           aria-label="Back"
-          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0', minHeight: 44 }}
         >
           <ChevronLeft size={20} strokeWidth={2.5}/> Back
         </button>
@@ -2930,7 +2933,7 @@ function MobileFunctionalV3Inner() {
             style={{
               flex: 1, fontSize: 14, color: PRIMARY, fontFamily: SANS,
               border: `1px solid ${CARD_BORDER}`, borderRadius: 8, padding: '8px 10px',
-              background: PAGE_BG, outline: 'none', minWidth: 0,
+              background: PAGE_BG, minWidth: 0,
             }}
           />
           <button
@@ -2944,7 +2947,7 @@ function MobileFunctionalV3Inner() {
             style={{
               background: newCatName.trim() ? NAV_ACTIVE : MUTED, color: '#fff', border: 'none',
               borderRadius: 8, padding: '8px 14px', cursor: newCatName.trim() ? 'pointer' : 'not-allowed',
-              fontSize: 13.5, fontWeight: 600, fontFamily: SANS, flexShrink: 0,
+              fontSize: 13.5, fontWeight: 600, fontFamily: SANS, flexShrink: 0, minHeight: 44,
             }}
           >
             Add
@@ -3135,6 +3138,13 @@ function MobileFunctionalV3Inner() {
              transitions are minimized; state changes stay instant and clear. */
           @media (prefers-reduced-motion: reduce){
             .tw-v3-root [data-cat]{transition:none!important}
+          }
+          /* R0077 — restore focus-visible ring on inputs/selects that suppressed outline */
+          .tw-v3-root input:focus-visible,
+          .tw-v3-root select:focus-visible,
+          .tw-v3-root textarea:focus-visible {
+            outline: 2px solid #2A5740 !important;
+            outline-offset: 1px !important;
           }
         `}</style>
 
@@ -3418,7 +3428,9 @@ function MobileFunctionalV3Inner() {
                       padding: '10px 12px',
                       columnGap: 10,
                     }}>
-                      {/* Col 1 — name + subtitle (tap name → Category Options) */}
+                      {/* Col 1 — name + subtitle both inside the button so the
+                          tap target spans both lines. R0077: minHeight:44 is safe
+                          here because 44 + 20px grid-padding = 64 < CARD_H (68). */}
                       <div style={{ minWidth: 0 }}>
                         <button
                           onClick={e => { e.stopPropagation(); setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(false); setCatRenameValue(catName); }}
@@ -3427,6 +3439,7 @@ function MobileFunctionalV3Inner() {
                           style={{
                             background: 'none', border: 'none', padding: 0, cursor: 'pointer',
                             textAlign: 'left', width: '100%', maxWidth: '100%',
+                            minHeight: 44, display: 'flex', flexDirection: 'column', justifyContent: 'center',
                           }}
                         >
                           <div style={{
@@ -3437,10 +3450,10 @@ function MobileFunctionalV3Inner() {
                           }}>
                             {catName}
                           </div>
+                          <div style={{ fontSize: 12.5, color: MUTED }}>
+                            {items.length} {items.length === 1 ? 'item' : 'items'} · {selectedInCat} selected
+                          </div>
                         </button>
-                        <div style={{ fontSize: 12.5, color: MUTED }}>
-                          {items.length} {items.length === 1 ? 'item' : 'items'} · {selectedInCat} selected
-                        </div>
                       </div>
 
                       {/* Col 4 — selected-weight */}
@@ -3511,54 +3524,69 @@ function MobileFunctionalV3Inner() {
                               deleteLabel={`Delete ${displayName}`}
                               onDelete={() => setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName })}
                             >
+                            {/* Item row — R0077: two independent keyboard controls, no interactive-inside-interactive.
+                                1. Checkbox button (44px wide hit area, 20×20 visual) — toggles checklist selection.
+                                2. Expand button (flex:1)  — opens/closes item detail panel. */}
                             <div
-                              role="button"
-                              tabIndex={0}
-                              aria-expanded={isExpanded}
-                              aria-label={`${displayName} — ${isExpanded ? 'collapse' : 'expand'} details`}
-                              onClick={() => handleItemToggle(catName, item.id)}
-                              onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleItemToggle(catName, item.id); } }}
                               style={{
-                                display: 'flex', alignItems: 'center',
-                                padding: '0 14px', height: 44, gap: 10,
+                                display: 'flex', alignItems: 'stretch',
+                                minHeight: 44,
                                 borderBottom: (isLast && !isExpanded) ? 'none' : `1px solid ${DIVIDER}`,
-                                background: CARD_BG, cursor: 'pointer',
+                                background: CARD_BG,
                               }}
                             >
-                              {/* Main-list inclusion checkbox — stopPropagation prevents row expand */}
-                              <div
+                              {/* Checkbox — 44px wide tap target; 20×20 visual artwork unchanged */}
+                              <button
                                 role="checkbox"
                                 aria-checked={item.checked}
-                                aria-label={`${displayName} ${item.checked ? 'selected for checklist' : 'not selected'}`}
-                                tabIndex={-1}
+                                aria-label={`${displayName}: ${item.checked ? 'selected' : 'not selected'} for checklist`}
+                                tabIndex={0}
                                 onClick={e => { e.stopPropagation(); updateItem(catName, item.id, { checked: !item.checked }); }}
-                                onKeyDown={e => { e.stopPropagation(); if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); updateItem(catName, item.id, { checked: !item.checked }); } }}
+                                onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); updateItem(catName, item.id, { checked: !item.checked }); } }}
                                 style={{
-                                  width: 20, height: 20, borderRadius: 5,
-                                  border: `1.5px solid ${item.checked ? CB_CHECKED : CB_UNCHECKED}`,
-                                  background: item.checked ? CB_CHECKED : 'transparent',
-                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                  flexShrink: 0, cursor: 'pointer',
+                                  width: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                                 }}
                               >
-                                {item.checked && <Check size={11} color="#fff" strokeWidth={2.5}/>}
+                                <div
+                                  style={{
+                                    width: 20, height: 20, borderRadius: 5,
+                                    border: `1.5px solid ${item.checked ? CB_CHECKED : CB_UNCHECKED}`,
+                                    background: item.checked ? CB_CHECKED : 'transparent',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    flexShrink: 0, pointerEvents: 'none',
+                                  }}
+                                >
+                                  {item.checked && <Check size={11} color="#fff" strokeWidth={2.5}/>}
+                                </div>
+                              </button>
+
+                              {/* Expand/collapse — remaining row width; toggles detail panel */}
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                aria-expanded={isExpanded}
+                                aria-label={`${displayName} — ${isExpanded ? 'collapse' : 'expand'} details`}
+                                onClick={() => handleItemToggle(catName, item.id)}
+                                onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleItemToggle(catName, item.id); } }}
+                                style={{
+                                  flex: 1, display: 'flex', alignItems: 'center',
+                                  gap: 10, paddingRight: 14, cursor: 'pointer', minHeight: 44,
+                                }}
+                              >
+                                {/* Item name */}
+                                <div style={{
+                                  flex: 1, fontSize: 14.5, fontWeight: 450, color: PRIMARY,
+                                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                }}>
+                                  {displayName}
+                                </div>
+
+                                {/* Quantity */}
+                                <span style={{ fontSize: 14, color: SECONDARY, flexShrink: 0 }}>
+                                  {item.qty}
+                                </span>
                               </div>
-
-                              {/* Item name */}
-                              <div style={{
-                                flex: 1, fontSize: 14.5, fontWeight: 450, color: PRIMARY,
-                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                              }}>
-                                {displayName}
-                              </div>
-
-                              {/* Quantity */}
-                              <span style={{ fontSize: 14, color: SECONDARY, flexShrink: 0 }}>
-                                {item.qty}
-                              </span>
-
-                              {/* R004 — resting trash-can removed; deletion via slide reveal
-                                  or the accessible Delete row in the expanded detail panel */}
                             </div>
                             </SwipeDeleteRow>
 
@@ -3700,7 +3728,7 @@ function MobileFunctionalV3Inner() {
                                   data-testid={isExpanded && isCatLong && openCatName === catName ? 'item-delete-row' : undefined}
                                   style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', height: 42, gap: 10,
+                                  padding: '0 14px', minHeight: 44, gap: 10,
                                   borderTop: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <Trash2 size={14} color="#B03A2E" strokeWidth={1.8} aria-hidden="true"/>
@@ -3770,7 +3798,7 @@ function MobileFunctionalV3Inner() {
                             onClick={() => scrollCatItems('up')}
                             style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              width: 40, minHeight: 44, flexShrink: 0,
+                              width: 44, minHeight: 44, flexShrink: 0,
                               background: 'none', border: 'none',
                               cursor: catOverflow.above ? 'pointer' : 'default',
                               color: catOverflow.above ? SECONDARY : MUTED,
@@ -3788,7 +3816,7 @@ function MobileFunctionalV3Inner() {
                             onClick={() => scrollCatItems('down')}
                             style={{
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              width: 40, minHeight: 44, flexShrink: 0,
+                              width: 44, minHeight: 44, flexShrink: 0,
                               background: 'none', border: 'none',
                               cursor: catOverflow.below ? 'pointer' : 'default',
                               color: catOverflow.below ? SECONDARY : MUTED,
@@ -3977,7 +4005,7 @@ function MobileFunctionalV3Inner() {
               <button
                 aria-label="Back"
                 onClick={() => { popScreen(); setShareLink(null); setShareCopied(false); }}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: NAV_ACTIVE, fontSize: 15, fontWeight: 600, fontFamily: SANS }}
+                style={{ background: 'none', border: 'none', padding: '4px 0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, color: NAV_ACTIVE, fontSize: 15, fontWeight: 600, fontFamily: SANS, minHeight: 44 }}
               >
                 <ChevronLeft size={20} strokeWidth={2.2}/> Back
               </button>
@@ -4048,7 +4076,7 @@ function MobileFunctionalV3Inner() {
               <button
                 onClick={popScreen}
                 aria-label="Back"
-                style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', color: NAV_ACTIVE, fontSize: 16, fontFamily: SANS, fontWeight: 500, padding: '4px 0', minHeight: 44 }}
               >
                 <ChevronLeft size={20} strokeWidth={2.5}/> Back
               </button>
@@ -4158,16 +4186,18 @@ function MobileFunctionalV3Inner() {
                 style={{
                   width: '100%', fontSize: 15, color: PRIMARY, fontFamily: SANS,
                   border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '10px 12px',
-                  background: PAGE_BG, outline: 'none', boxSizing: 'border-box',
+                  background: PAGE_BG, boxSizing: 'border-box',
                 }}
               />
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                 <button
                   onClick={() => setCatRenaming(false)}
-                  style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 14.5, fontWeight: 600, color: SECONDARY, cursor: 'pointer' }}
+                  aria-label="Cancel rename"
+                  style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 14.5, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44 }}
                 >Cancel</button>
                 <button
                   disabled={!catRenameValue.trim() || catRenameValue.trim() === catOptionsFor}
+                  aria-label="Confirm rename"
                   onClick={() => {
                     sandboxRenameCategory(catOptionsFor, catRenameValue);
                     setCatOptionsFor(null); setCatRenaming(false);
@@ -4177,6 +4207,7 @@ function MobileFunctionalV3Inner() {
                     background: catRenameValue.trim() && catRenameValue.trim() !== catOptionsFor ? NAV_ACTIVE : MUTED,
                     border: 'none', fontSize: 14.5, fontWeight: 600, color: '#fff',
                     cursor: catRenameValue.trim() && catRenameValue.trim() !== catOptionsFor ? 'pointer' : 'not-allowed',
+                    minHeight: 44,
                   }}
                 >Rename</button>
               </div>
@@ -4204,11 +4235,13 @@ function MobileFunctionalV3Inner() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button
                     onClick={() => setCatDeleteConfirm(false)}
-                    style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 14.5, fontWeight: 600, color: SECONDARY, cursor: 'pointer' }}
+                    aria-label="Cancel delete category"
+                    style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 14.5, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44 }}
                   >Cancel</button>
                   <button
                     onClick={() => { sandboxDeleteCategory(catOptionsFor); setCatOptionsFor(null); setCatDeleteConfirm(false); showToast(`Deleted "${catOptionsFor}"`); }}
-                    style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 14.5, fontWeight: 600, color: '#fff', cursor: 'pointer' }}
+                    aria-label={`Confirm delete category ${catOptionsFor}`}
+                    style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 14.5, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
                   >Delete Category</button>
                 </div>
               </div>
@@ -4248,11 +4281,13 @@ function MobileFunctionalV3Inner() {
             <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => setDeleteItemConfirm(null)}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer' }}
+                aria-label="Cancel delete item"
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44 }}
               >Cancel</button>
               <button
                 onClick={() => { sandboxRemoveItem(deleteItemConfirm.cat, deleteItemConfirm.id); setDeleteItemConfirm(null); showToast(`Deleted "${deleteItemConfirm.name}"`); }}
-                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer' }}
+                aria-label={`Confirm delete ${deleteItemConfirm.name}`}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
               >Delete Item</button>
             </div>
           </div>
