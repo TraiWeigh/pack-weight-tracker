@@ -1,0 +1,792 @@
+R0076 — GOLD STANDARD SURGICAL REPAIR
+FIXED CATEGORY HEADER + FIXED ADD ITEM BAR + SCROLLING ITEMS ONLY
+
+REPORT NUMBER
+R0076
+
+RUN TYPE
+R0076 REPAIR — DO NOT START A NEW REPORT NUMBER
+
+RECOMMENDED REPLIT MODE
+Economy
+
+PURPOSE
+Repair ONLY the remaining failed R0076 long-category behavior and its verification.
+
+IMPORTANT:
+The following R0076 work is already considered directionally correct and should be PRESERVED unless a regression test proves otherwise:
+- contextual Add Item restored
+- Add Item available for empty categories
+- List Summary global expand/collapse chevron exists and has been moved left
+- Weight Distribution theme dropdown removed
+- Weight Distribution uses category wedge color source
+- existing R0074 protections
+
+Do NOT redo those features from scratch.
+
+============================================================
+0. BRIEF REPAIR LIST
+============================================================
+
+1. Long-category mode must use TWO STATIONARY BOUNDARIES:
+   TOP = category header
+   BOTTOM = Add Item bar
+
+2. ONLY the item rows scroll between those two boundaries.
+
+3. Category header must stay directly under List Summary and must not travel upward with item rows.
+
+4. Add Item bar must stay directly above the bottom controls and must not travel downward with item rows.
+
+5. Add Item bar must contain TWO separate controls:
+   ▲ Up
+   ▼ Down
+
+6. New items must be inserted into the scrolling item region without moving either fixed boundary.
+
+7. Replace weak R0076 Playwright checks with actual geometry/scroll assertions.
+
+8. Include required screenshots/evidence and answer the 3 Learning Questions.
+
+============================================================
+1. OBSERVED FAILURE — TREAT AS FACT
+============================================================
+
+Live video and screenshot show the current R0076 implementation still fails the core design.
+
+Observed:
+
+A. When more items are added to a long category, the category header can move away/disappear instead of remaining under List Summary.
+
+B. The Add Item row still behaves like ordinary list content in the live UI and is not reliably held directly above the bottom controls.
+
+C. The required separate ▲ and ▼ controls are missing in the live UI.
+
+D. Adding more items pushes the lower list content downward instead of keeping the new item inside a bounded scrolling item viewport.
+
+E. Existing R0076 tests do not prove that:
+- the header remains stationary during item scrolling
+- Add Item remains stationary during item scrolling
+- only the item viewport scrolls
+- ▲ and ▼ have correct enabled/disabled states
+
+F. Earlier R0076 test paths included conditional/weak checks and insufficient geometry assertions.
+
+============================================================
+2. STRICT SCOPE
+============================================================
+
+Preferred application source:
+MobileFunctionalV3.tsx ONLY
+
+Allowed:
+- targeted R0076 Playwright test file(s)
+- R0076.md update
+- compact R0076 evidence screenshots/video
+
+DO NOT:
+- modify desktop
+- modify Checklist.tsx
+- modify database/schema/auth
+- publish/deploy
+- investigate/fix bounce/overscroll
+- redesign bottom box groups
+- redesign stacked bars
+- redesign Preview
+- redesign Pack Summary
+- redesign TrailWeigh header
+- reintroduce Weight Distribution theme dropdown
+- replace current wedge-color mapping
+- perform unrelated cleanup/refactor
+
+If another APPLICATION source file is required:
+STOP before editing and explain why.
+
+============================================================
+3. PRE-EDIT AUDIT
+============================================================
+
+Before changing code, inspect only the minimum relevant V3 code and report:
+
+1. current category list/page scroll owner
+2. current expanded-category wrapper
+3. current category header element
+4. current item-row container
+5. current Add Item container
+6. current bottom control bar element
+7. current List Summary bottom boundary
+8. current long-category detection/measurement logic
+9. current Add Item handler
+10. current overflow-chevron implementation
+
+Do not broaden inspection for the Learning Questions.
+
+============================================================
+4. FINAL APPROVED LONG-CATEGORY MODEL
+============================================================
+
+This section is authoritative and supersedes earlier single-chevron / moving-category interpretations.
+
+For ONE manually opened category whose contents do NOT fit naturally in the available vertical space:
+
+LIST SUMMARY
+================================
+FIXED / STATIONARY CATEGORY HEADER
+--------------------------------
+SCROLLABLE ITEM ROWS ONLY
+SCROLLABLE ITEM ROWS ONLY
+SCROLLABLE ITEM ROWS ONLY
+--------------------------------
+FIXED / STATIONARY ADD ITEM BAR   ▲ ▼
+================================
+BOTTOM BOX CONTROLS
+
+Definitions:
+
+"FIXED / STATIONARY" here means:
+- stationary relative to the active long-category viewing region
+- NOT moving with the item-list scroll
+- NOT disappearing under List Summary
+- NOT moving below/behind bottom controls
+
+Do not interpret this as a global page-level `position: fixed` unless that is truly the safest current architecture.
+Use the existing mobile V3 layout/scroll structure wherever possible.
+
+============================================================
+5. TOP BOUNDARY — CATEGORY HEADER
+============================================================
+
+In active long-category mode:
+
+- category header remains visible at all times
+- category header sits directly below List Summary
+- category header TOP must never be above List Summary BOTTOM
+- category header must not move when item rows scroll
+- category header must not move when ▲/▼ paging is used
+- category header remains the normal tap / long-press / swipe interaction surface as already designed
+
+DO NOT:
+- place item rows over the header visually
+- allow the header to scroll out of view
+- create a duplicate header
+
+SHORT CATEGORY RULE:
+If the category fully fits naturally, do NOT activate bounded long-category mode.
+Use normal flow.
+
+============================================================
+6. BOTTOM BOUNDARY — ADD ITEM BAR
+============================================================
+
+In active long-category mode:
+
+- Add Item bar remains visible at all times
+- Add Item bar sits directly above the bottom box controls
+- Add Item bar must not move when item rows scroll
+- Add Item bar must not move when ▲/▼ paging is used
+- no large blank strip between Add Item and bottom controls
+- Add Item remains tappable
+- Add Item targets the currently expanded category
+
+For empty categories:
+- Add Item must still exist directly under the category header in normal short-category flow
+
+SHORT CATEGORY RULE:
+If the category fits naturally, Add Item remains after the final item row and is NOT artificially pinned.
+
+============================================================
+7. ITEM ROWS — THE ONLY SCROLLING PART
+============================================================
+
+In active long-category mode:
+
+ONLY the item-row region scrolls.
+
+Required:
+- item rows scroll upward underneath the fixed category-header boundary
+- item rows scroll downward underneath the fixed Add Item boundary
+- visually clip/mask item rows to the item viewport so they do not paint over the header or Add Item bar
+- normal finger vertical scrolling works inside this bounded item region
+- do not show ugly browser scrollbar chrome
+- do not create horizontal overflow
+
+Preserve:
+- item selection/checking
+- item editing
+- slide-to-delete
+- category long-press reorder
+- category open/close
+- bottom box-group horizontal gestures
+
+Do not allow a vertical item swipe to accidentally move the bottom box group.
+
+============================================================
+8. WHEN TO ENTER LONG-CATEGORY MODE
+============================================================
+
+Do not force every opened category into the bounded viewport.
+
+Determine whether:
+
+category header
++ all item rows
++ Add Item bar
+
+can fit naturally in the available vertical region between:
+
+BOTTOM of List Summary
+and
+TOP of bottom controls
+
+If YES:
+- normal short-category flow
+- no bounded item viewport
+- no active ▲/▼ controls required
+
+If NO:
+- activate bounded long-category mode
+- header becomes/stays the stationary top boundary
+- Add Item becomes/stays the stationary bottom boundary
+- item rows use the scrollable middle viewport
+
+The detection must respond correctly after:
+- opening a category
+- adding an item
+- deleting an item
+- viewport height change
+- relevant layout change
+
+A category may transition:
+SHORT -> LONG after adding items
+LONG -> SHORT after deleting enough items
+
+Do not require closing/reopening the category for that transition.
+
+============================================================
+9. ADDING NEW ITEMS IN LONG-CATEGORY MODE
+============================================================
+
+Critical acceptance behavior:
+
+When the user taps Add Item while long-category mode is active:
+
+1. the category header stays exactly where it is
+2. the Add Item bar stays exactly where it is
+3. the new item is inserted in the item list above Add Item
+4. the scrolling item region grows logically, not physically beyond the fixed boundaries
+5. automatically scroll the item viewport enough to reveal the newly added item
+6. no whole-page jump
+7. no pushing the Add Item bar downward
+8. no pushing the category header upward
+
+Repeatedly adding items must continue to satisfy all 8 rules.
+
+============================================================
+10. TWO SEPARATE ADD ITEM CHEVRONS
+============================================================
+
+The earlier ONE changing chevron is obsolete.
+
+Add TWO separate chevrons together on the RIGHT side of the Add Item bar:
+
+▲ UP
+▼ DOWN
+
+They are separate tap targets.
+
+TOP OF ITEM LIST:
+- ▲ disabled/subdued
+- ▼ active
+
+MIDDLE:
+- ▲ active
+- ▼ active
+
+BOTTOM:
+- ▲ active
+- ▼ disabled/subdued
+
+NO OVERFLOW / SHORT CATEGORY:
+- both may be hidden
+OR
+- both clearly disabled/subdued
+Choose whichever integrates best with current layout.
+Do not show either as active when nothing can scroll.
+
+Tap behavior:
+
+▲:
+- scroll approximately one visible-page increment toward earlier items
+
+▼:
+- scroll approximately one visible-page increment toward later items
+
+Do not jump directly end-to-end unless one page increment naturally reaches the end.
+
+Animation:
+- smooth
+- quick
+- no spring
+- no bounce
+
+Manual scrolling must update both controls from actual scroll position.
+
+Accessibility:
+
+▲ = "Show earlier items"
+▼ = "Show later items"
+
+Disabled state must be programmatically exposed, not only visually dimmed.
+
+============================================================
+11. PRESERVE PASSED R0076 WORK
+============================================================
+
+LIST SUMMARY GLOBAL CHEVRON:
+Preserve current R0076 implementation unless a regression is discovered:
+- one chevron
+- moved-left position
+- large tap target
+- subdued
+- DOWN when all categories closed
+- UP when any category open
+- Expand All / Collapse All behavior
+
+WEIGHT DISTRIBUTION:
+Preserve:
+- Trail/Ocean/Sunset/Forest/Berry/Desert dropdown removed
+- no replacement theme dropdown
+- pie/chart colors reuse category wedge color source
+- legend color parity
+- calculations/weights unchanged
+
+Do NOT spend Agent time redesigning these.
+
+============================================================
+12. EXPAND ALL RULE
+============================================================
+
+Global Expand All may open multiple categories.
+
+When multiple/all categories are open:
+- do NOT try to create multiple simultaneous viewport-pinned category headers/Add Item bars
+- preserve normal parent list flow for the multi-open state
+- every expanded category still has its Add Item bar
+- normal parent scrolling remains available
+
+The bounded fixed-header/fixed-Add-Item viewport is for the ONE manually focused/opened long-category workflow.
+
+If current architecture needs a precise distinction between:
+- manual single-category open
+- global Expand All
+
+reuse existing state if possible.
+
+============================================================
+13. PLAYWRIGHT — REQUIRED REAL PROOF
+============================================================
+
+Primary interaction viewport:
+390 x 844
+
+Also layout regression check:
+320
+375
+430
+
+No conditional no-op passes.
+
+Use:
+PASS / FAIL / NOT RUN / NOT APPLICABLE
+
+------------------------------------------------------------
+TEST A — TRUE SHORT CATEGORY
+------------------------------------------------------------
+
+Create/find a category that truly fits.
+
+Numerically prove:
+fullCategoryNaturalHeight <= availableHeight
+
+Assert:
+- normal flow
+- no bounded item viewport
+- Add Item after final row
+- header not artificially pinned
+- no active ▲/▼
+
+------------------------------------------------------------
+TEST B — TRUE LONG CATEGORY
+------------------------------------------------------------
+
+Create/find a category that truly overflows.
+
+Numerically prove:
+fullCategoryNaturalHeight > availableHeight
+
+Required element measurements:
+
+summaryBottom
+headerTop
+headerBottom
+itemViewportTop
+itemViewportBottom
+itemViewportClientHeight
+itemViewportScrollHeight
+addItemTop
+addItemBottom
+bottomControlsTop
+
+Assert:
+
+headerTop >= summaryBottom - 1px
+
+abs(itemViewportTop - headerBottom) <= 2px
+
+abs(itemViewportBottom - addItemTop) <= 2px
+
+abs(addItemBottom - bottomControlsTop) <= 2px
+
+itemViewportScrollHeight > itemViewportClientHeight
+
+------------------------------------------------------------
+TEST C — STATIONARY BOUNDARIES DURING MANUAL SCROLL
+------------------------------------------------------------
+
+Record before:
+headerTopBefore
+headerBottomBefore
+addItemTopBefore
+addItemBottomBefore
+itemScrollTopBefore
+
+Manually scroll item viewport substantially.
+
+Record after:
+headerTopAfter
+headerBottomAfter
+addItemTopAfter
+addItemBottomAfter
+itemScrollTopAfter
+
+Assert:
+
+abs(headerTopAfter - headerTopBefore) <= 1px
+abs(headerBottomAfter - headerBottomBefore) <= 1px
+abs(addItemTopAfter - addItemTopBefore) <= 1px
+abs(addItemBottomAfter - addItemBottomBefore) <= 1px
+
+itemScrollTopAfter != itemScrollTopBefore
+
+This is a REQUIRED core proof.
+
+------------------------------------------------------------
+TEST D — ▲ ▼ STATES
+------------------------------------------------------------
+
+At top:
+- ▲ exists
+- ▲ disabled
+- ▼ exists
+- ▼ enabled
+
+Move to middle:
+- ▲ enabled
+- ▼ enabled
+
+Move to bottom:
+- ▲ enabled
+- ▼ disabled
+
+Verify accessible names and programmatic disabled state.
+
+------------------------------------------------------------
+TEST E — CHEVRON PAGING DOES NOT MOVE BOUNDARIES
+------------------------------------------------------------
+
+At top, record header/Add Item geometry.
+
+Tap ▼.
+
+Assert:
+- item scrollTop increases
+- later content becomes visible
+- header geometry unchanged <= 1px
+- Add Item geometry unchanged <= 1px
+
+At bottom, tap ▲.
+
+Assert:
+- item scrollTop decreases
+- earlier content becomes visible
+- header geometry unchanged <= 1px
+- Add Item geometry unchanged <= 1px
+
+------------------------------------------------------------
+TEST F — REPEATED ADD ITEM
+------------------------------------------------------------
+
+Start with a category near the short/long threshold.
+
+Repeatedly tap Add Item until it transitions into long mode.
+
+Prove:
+- transition occurs without close/reopen
+- header becomes/remains stationary
+- Add Item becomes/remains stationary
+- each new item appears in item viewport
+- newest item is automatically brought into view
+- no whole-page jump
+- Add Item does not move downward
+- header does not move upward
+
+Then add at least 3 more items while already in long mode.
+
+Repeat fixed-boundary assertions after each add.
+
+------------------------------------------------------------
+TEST G — DELETE CAN RETURN TO SHORT MODE
+------------------------------------------------------------
+
+If safe/economical using test data:
+
+Delete enough items from the active long category to make it fit again.
+
+Assert:
+- bounded viewport deactivates
+- normal flow returns
+- Add Item returns after final row
+- no stale scroll container remains
+
+If this cannot be safely exercised in targeted test data:
+NOT RUN with exact reason.
+
+------------------------------------------------------------
+TEST H — EMPTY CATEGORY
+------------------------------------------------------------
+
+Open empty category.
+
+Assert:
+- category open
+- Add Item visible
+- tapping Add Item targets correct category
+
+------------------------------------------------------------
+TEST I — PROTECTED REGRESSIONS
+------------------------------------------------------------
+
+Verify targeted protections only:
+
+- category quick tap open/close
+- category long-press reorder
+- slide-to-delete
+- bottom box-group slide
+- stationary 68px stacked bars
+- Preview selected-only
+- Print inside Preview
+- Pack Summary opens
+- Weight Distribution opens
+- Weight Distribution theme dropdown absent
+- List Summary global chevron still works
+- no horizontal overflow 320/375/390/430
+- TrailWeigh header unchanged
+
+Do not investigate bounce.
+
+============================================================
+14. REQUIRED VISUAL / INTERACTION EVIDENCE
+============================================================
+
+R0076.zip MUST include:
+
+1. r0076-long-top.jpg
+Shows:
+- List Summary
+- category header fixed directly below
+- middle item rows
+- Add Item + ▲ ▼
+- bottom controls
+
+2. r0076-long-bottom.jpg
+After item viewport is scrolled to bottom:
+- same header position
+- same Add Item position
+- ▲ active
+- ▼ disabled/subdued
+
+3. r0076-add-repeat.jpg
+After multiple newly added items:
+- header still fixed
+- newest item visible
+- Add Item still fixed
+
+4. short interaction video strongly preferred:
+- manually scroll item list
+- use ▼
+- use ▲
+- add multiple items
+- header and Add Item visibly remain stationary
+
+Keep evidence compact.
+
+============================================================
+15. LEARNING QUESTIONS — EXACTLY 3
+============================================================
+
+Answer ONLY from code/files already inspected for this R0076 repair.
+Do NOT broaden scope or inspect unrelated files solely to answer them.
+
+QUESTION 1
+What exact parent/child layout structure in mobile V3 will let the category header and Add Item bar remain stationary while only the item rows scroll, without turning the whole category into another page-level scroller?
+
+QUESTION 2
+Which current state/measurement should determine when a category switches from normal-flow mode into bounded long-category mode, so short categories are never unnecessarily constrained?
+
+QUESTION 3
+What Playwright geometry checks best prove that the header and Add Item bar do not move while the item viewport scrolls, and that the separate ▲/▼ controls correctly reflect top, middle, and bottom positions?
+
+============================================================
+16. REQUIRED REPORT
+============================================================
+
+Update/create:
+
+R0076.md
+
+Required sections:
+
+# R0076 Repair Report
+
+## Scope / Cost Discipline
+- exact application files inspected
+- exact application files changed
+- exact tests changed
+- scope expansion YES/NO
+
+## Root Cause
+Explain why R0076 live behavior allowed the category header/Add Item bar to travel with the list instead of creating stationary boundaries.
+
+## Final Layout Architecture
+- parent container
+- header
+- item viewport
+- Add Item
+- bottom controls relationship
+- short vs long detection
+
+## Long Category Geometry
+Include exact numbers from Playwright:
+- summaryBottom
+- headerTop/headerBottom
+- itemViewportTop/itemViewportBottom
+- itemViewportClientHeight/scrollHeight
+- addItemTop/addItemBottom
+- bottomControlsTop
+
+## Manual Scroll Fixed-Boundary Proof
+before/after numbers
+
+## ▲ ▼ Chevron Proof
+- top state
+- middle state
+- bottom state
+- accessibility
+- paging results
+
+## Repeated Add Item Proof
+- threshold transition
+- multiple added-item results
+- auto-reveal behavior
+- boundary measurements
+
+## Short / Empty Category Proof
+PASS/FAIL
+
+## Preserved R0076 Work
+- List Summary chevron
+- Weight Distribution dropdown removal
+- wedge color parity
+
+## Protected Regressions
+PASS/FAIL/NOT RUN per item
+
+## TypeScript
+result
+
+## Playwright
+- total
+- passed
+- failed
+- skipped
+- NOT RUN
+- exact failures
+
+## Evidence
+exact filenames
+
+## Lessons for Future Prompts
+
+### Learning Question 1
+answer
+
+### Learning Question 2
+answer
+
+### Learning Question 3
+answer
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## ZIP Contents
+exact filenames
+
+## Final Scope Confirmation
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+- bounce untouched
+
+============================================================
+17. ZIP
+============================================================
+
+Create/update:
+
+R0076.zip
+
+MUST INCLUDE:
+- R0076.md
+- every application source file actually changed
+- every R0076 Playwright test file
+- all required evidence
+
+Before delivery:
+1. inspect git status/diff
+2. list exact changed files
+3. verify all changed/test/evidence files are in ZIP
+4. list/open ZIP contents to confirm
+
+Do not include:
+- node_modules
+- caches
+- build output
+- unrelated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, targeted verification, report, evidence, and ZIP:
+
+STOP.
+
+Do NOT start R0077.
+Do NOT publish.
+Do NOT deploy.
+Do NOT modify database/auth.
+Do NOT investigate bounce.
+Wait for user review.

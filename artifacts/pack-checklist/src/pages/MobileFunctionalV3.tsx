@@ -1856,6 +1856,9 @@ function MobileFunctionalV3Inner() {
   // R0076: available px for item rows in bounded mode — set from ACTUAL DOM positions
   // (not from stale state) when isCatLong activates, so it's always exact.
   const [availItemH, setAvailItemH] = useState(200);
+  // R0076 repair: track previous item count for the open category so we can
+  // auto-scroll to a newly added item without re-running the initial scroll-in.
+  const prevOpenCatItemCountRef = useRef(0);
   // Callback ref: the component mounts the nav only after its loading gate, so a
   // one-shot effect would see null — attach measurement whenever the node appears.
   const navRef = useCallback((el: HTMLDivElement | null) => {
@@ -2180,28 +2183,28 @@ function MobileFunctionalV3Inner() {
 
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
-  // R0076: recompute overflow chevron from the item container's own scroll
-  //        (bounded mode) or clear it for non-bounded categories.
+  // R0076 repair: item count for the currently open category — used to detect
+  // SHORT→LONG / LONG→SHORT transitions without requiring close + reopen.
+  const openCatItemCount = openCatName ? (sandbox.items[openCatName] ?? []).length : 0;
+
+  // R0076: recompute ▲/▼ chevron states from the item container's own scroll.
   const recalcCatOverflow = useCallback(() => {
     const items = openCatItemsRef.current;
     if (!items || !items.isConnected) { setCatOverflow({ above: false, below: false }); return; }
     if (isCatLong) {
-      // Bounded mode: item container scrolls independently — read its scroll position
       setCatOverflow({
         above: items.scrollTop > 4,
         below: items.scrollTop < items.scrollHeight - items.clientHeight - 4,
       });
       return;
     }
-    // Non-bounded (short category): no overflow
     setCatOverflow({ above: false, below: false });
   }, [isCatLong]);
 
-  // R0076: scroll the item container (bounded) or main scroll (fallback)
+  // R0076: scroll the item container (bounded mode).
   const scrollCatItems = useCallback((dir: 'down' | 'up') => {
     const items = openCatItemsRef.current;
     if (isCatLong && items) {
-      // Bounded mode: scroll within the item viewport
       const pageH = items.clientHeight;
       items.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
       setTimeout(() => recalcCatOverflow(), 350);
@@ -2213,13 +2216,32 @@ function MobileFunctionalV3Inner() {
     ms.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
   }, [isCatLong, summaryH, recalcCatOverflow]);
 
-  // R0076: auto-scroll so the open category header lands at the List Summary
-  // boundary; then determine if the category is "long" (overflows the bounded
-  // item viewport) and activate the constrained scroll mode if so.
+  // R0076 repair: shared measurement helper — reads live DOM positions and updates
+  // isCatLong / availItemH.  Called both from the initial open-effect and from the
+  // items-count effect so transitions happen without close/reopen.
+  // KEY: measure from the item container's OWN top (= headerBottom after layout),
+  // NOT from summaryBottom − CARD_H.  This eliminates sub-pixel rounding drift
+  // between the category header position and the summary bar bottom.
+  const remeasureLongMode = useCallback(() => {
+    const itemsEl = openCatItemsRef.current;
+    if (!itemsEl?.isConnected) { setIsCatLong(false); return; }
+    const navEl   = document.querySelector('[data-testid="bottom-nav"]') as HTMLElement | null;
+    const itemsTop = itemsEl.getBoundingClientRect().top;
+    const navTop   = navEl ? navEl.getBoundingClientRect().top : (window.innerHeight - navHeight);
+    // availItemH = space between item container top and the Add Item bar bottom.
+    // Add Item bar is 44px, so: rawAvailH = navTop − itemsTop − 44
+    const rawAvailH = navTop - itemsTop - 44;
+    const clampedH  = Math.max(44, rawAvailH);
+    setAvailItemH(clampedH);
+    setIsCatLong(itemsEl.scrollHeight > rawAvailH + 4);
+  }, [navHeight]);
+
+  // R0076: scroll category into view then measure long-mode on open/close.
   useEffect(() => {
     if (!openCatName || allExpanded) {
       setCatOverflow({ above: false, below: false });
       setIsCatLong(false);
+      prevOpenCatItemCountRef.current = 0;
       return;
     }
     const ms     = mainScrollRef.current;
@@ -2228,34 +2250,58 @@ function MobileFunctionalV3Inner() {
     const catEl = listEl.querySelector(`[data-cat="${CSS.escape(openCatName)}"]`) as HTMLElement | null;
     if (!catEl) return;
     const raf = requestAnimationFrame(() => {
+      // Temporarily restore scroll so we can reposition, then freeze again below.
+      ms.style.overflowY = 'auto';
       const msRect  = ms.getBoundingClientRect();
       const catRect = catEl.getBoundingClientRect();
-      const target  = ms.scrollTop + (catRect.top - msRect.top) - summaryH;
+      // Use actual DOM summaryBar height — not stale React state — so the
+      // category header lands exactly at the summary bottom with no sub-pixel gap.
+      const summaryEl2 = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
+      const actualSummaryH = summaryEl2 ? summaryEl2.getBoundingClientRect().height : summaryH;
+      const target  = ms.scrollTop + (catRect.top - msRect.top) - actualSummaryH;
       if (Math.abs(target - ms.scrollTop) > 2) {
         ms.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
       }
-      // R0076: after scroll settles, measure whether the category needs the
-      // bounded viewport (setIsCatLong triggers a follow-up recalcCatOverflow).
       setTimeout(() => {
-        const itemsEl = openCatItemsRef.current;
-        if (!itemsEl?.isConnected) { setIsCatLong(false); return; }
-        // Measure from actual DOM positions so stale state doesn't cause a gap.
-        const summaryEl = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
-        const navEl     = document.querySelector('[data-testid="bottom-nav"]')        as HTMLElement | null;
-        const summaryBtm = summaryEl ? summaryEl.getBoundingClientRect().bottom : summaryH;
-        const navTop     = navEl     ? navEl.getBoundingClientRect().top         : (window.innerHeight - navHeight);
-        const rawAvailH  = navTop - summaryBtm - CARD_H - 44;
-        const clampedH   = Math.max(44, rawAvailH);
-        const isLong     = itemsEl.scrollHeight > rawAvailH + 4;
-        setAvailItemH(clampedH);
-        setIsCatLong(isLong);
+        remeasureLongMode();
+        prevOpenCatItemCountRef.current = openCatName
+          ? (sandbox.items[openCatName] ?? []).length
+          : 0;
       }, 420);
     });
     return () => cancelAnimationFrame(raf);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openCatName, allExpanded, summaryH, navHeight]);
 
-  // R0076: once isCatLong is established (after the bounded height is applied in
-  // the next render) recalculate overflow so the chevron appears immediately.
+  // R0076 repair: re-measure when items are added/deleted in the open category
+  // so SHORT→LONG and LONG→SHORT transitions happen without close/reopen.
+  useEffect(() => {
+    if (!openCatName || allExpanded) return;
+    const t = setTimeout(() => {
+      remeasureLongMode();
+    }, 150);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openCatItemCount]);
+
+  // R0076 repair: when an item is added to the open category while in long mode,
+  // auto-scroll the item viewport so the new row is visible.
+  useEffect(() => {
+    if (!openCatName || allExpanded) return;
+    if (openCatItemCount > prevOpenCatItemCountRef.current) {
+      const el = openCatItemsRef.current;
+      if (el) {
+        setTimeout(() => {
+          el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+          setTimeout(recalcCatOverflow, 350);
+        }, 200);
+      }
+    }
+    prevOpenCatItemCountRef.current = openCatItemCount;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openCatItemCount]);
+
+  // R0076: once isCatLong is established recalculate overflow so ▲/▼ appear immediately.
   useEffect(() => {
     if (isCatLong) setTimeout(() => recalcCatOverflow(), 60);
     else setCatOverflow({ above: false, below: false });
@@ -3101,7 +3147,14 @@ function MobileFunctionalV3Inner() {
             const el = (e.target as HTMLElement).closest?.('[data-swipe-key]') as HTMLElement | null;
             if (!el || el.dataset.swipeKey !== openSwipe) setOpenSwipe(null);
           }}
-          style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', position: 'relative', scrollbarWidth: 'none' }}
+          style={{
+            flex: 1,
+            // R0076 repair: freeze the parent scroller while a long category is open so
+            // the category header and Add Item bar cannot travel with the parent scroll.
+            // The item-row container still scrolls independently via its own overflowY.
+            overflowY: (isCatLong && !!openCatName && !allExpanded) ? 'hidden' : 'auto',
+            overflowX: 'hidden', position: 'relative', scrollbarWidth: 'none',
+          }}
         >
 
           {/* ── STICKY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
@@ -3265,6 +3318,7 @@ function MobileFunctionalV3Inner() {
                     // reorder surface (400 ms stationary hold). Quick tap keeps
                     // accordion/options behavior; meaningful movement before the
                     // threshold hands the gesture to scroll or slide-to-delete.
+                    data-testid={openCatName === catName && !allExpanded ? 'cat-header-open' : undefined}
                     onPointerDown={e => handleCatBarPointerDown(e, catName)}
                     onClickCapture={e => {
                       // The click that trails a long-press reorder is part of the
@@ -3637,26 +3691,47 @@ function MobileFunctionalV3Inner() {
                         </span>
                       </button>
 
-                      {/* R0076: overflow chevron — stays in the pinned Add Item bar so it
-                          remains tappable even when items overflow.
-                          DOWN = "Show later items", UP = "Show earlier items". */}
-                      {openCatName === catName && !allExpanded && (catOverflow.above || catOverflow.below) && (
-                        <button
-                          data-testid="cat-overflow-chevron"
-                          aria-label={catOverflow.below ? 'Show later items' : 'Show earlier items'}
-                          onClick={() => scrollCatItems(catOverflow.below ? 'down' : 'up')}
-                          style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            width: 44, minHeight: 44, flexShrink: 0,
-                            background: 'none', border: 'none', cursor: 'pointer',
-                            color: SECONDARY,
-                            borderLeft: `1px solid ${DIVIDER}`,
-                          }}
-                        >
-                          {catOverflow.below
-                            ? <ChevronDown size={18} strokeWidth={1.8}/>
-                            : <ChevronUp   size={18} strokeWidth={1.8}/>}
-                        </button>
+                      {/* R0076 repair: TWO separate ▲/▼ paging controls.
+                          Both always present in long mode; disabled (and aria-disabled)
+                          at the top (▲) or bottom (▼) of the item viewport.          */}
+                      {isCatLong && openCatName === catName && !allExpanded && (
+                        <div style={{ display: 'flex', flexShrink: 0, borderLeft: `1px solid ${DIVIDER}` }}>
+                          <button
+                            data-testid="cat-chevron-up"
+                            aria-label="Show earlier items"
+                            aria-disabled={!catOverflow.above}
+                            disabled={!catOverflow.above}
+                            onClick={() => scrollCatItems('up')}
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              width: 40, minHeight: 44, flexShrink: 0,
+                              background: 'none', border: 'none',
+                              cursor: catOverflow.above ? 'pointer' : 'default',
+                              color: catOverflow.above ? SECONDARY : MUTED,
+                              opacity: catOverflow.above ? 1 : 0.35,
+                              borderRight: `1px solid ${DIVIDER}`,
+                            }}
+                          >
+                            <ChevronUp size={18} strokeWidth={1.8}/>
+                          </button>
+                          <button
+                            data-testid="cat-chevron-down"
+                            aria-label="Show later items"
+                            aria-disabled={!catOverflow.below}
+                            disabled={!catOverflow.below}
+                            onClick={() => scrollCatItems('down')}
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              width: 40, minHeight: 44, flexShrink: 0,
+                              background: 'none', border: 'none',
+                              cursor: catOverflow.below ? 'pointer' : 'default',
+                              color: catOverflow.below ? SECONDARY : MUTED,
+                              opacity: catOverflow.below ? 1 : 0.35,
+                            }}
+                          >
+                            <ChevronDown size={18} strokeWidth={1.8}/>
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
