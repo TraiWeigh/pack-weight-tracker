@@ -1,0 +1,684 @@
+R0076 — GOLD STANDARD SURGICAL REPAIR 2
+EXACT CATEGORY ALIGNMENT + ITEM ACCORDION AUTO-REVEAL + MISSING SAVE BOX
+
+REPORT NUMBER
+R0076
+
+RUN TYPE
+R0076 REPAIR — KEEP R0076 OPEN
+DO NOT START R0077
+
+RECOMMENDED REPLIT MODE
+Economy
+
+PURPOSE
+Repair ONLY the remaining live R0076 defects confirmed by user video/screenshot and add the previously approved but missing Save box.
+
+Preserve all R0076 behavior that is already working.
+
+============================================================
+0. BRIEF CHANGE LIST
+============================================================
+
+1. When a manually opened long category activates bounded mode, move its CATEGORY HEADER all the way up until its TOP TOUCHES the BOTTOM of List Summary: 0 px intended gap.
+2. Do not leave another collapsed category between List Summary and the active long-category header.
+3. Keep the working fixed category header / scrolling item list / fixed Add Item bar architecture.
+4. When an ITEM accordion is opened and its expanded panel is partly hidden below the visible item viewport, auto-scroll only the item viewport upward just enough to reveal the entire expanded item panel.
+5. The opened item's Delete Item row must settle fully visible immediately above the fixed Add Item bar.
+6. Add the missing Group 4 Save box:
+   Back | Save | Share | More
+7. Preserve the working ▲ / ▼ Add Item controls and all prior R0076 fixes.
+8. Repair Playwright so it tests a category that has other categories ABOVE it, and proves exact geometry.
+9. Answer the 3 Learning Questions below.
+
+============================================================
+1. OBSERVED FACTS
+============================================================
+
+A. R0076-2 is much closer and the bounded item viewport is now directionally correct.
+
+B. Live video shows:
+- List Summary remains fixed
+- active category header remains stationary once bounded mode is established
+- item rows scroll in the middle region
+- Add Item remains fixed above bottom controls
+- separate ▲ / ▼ controls are present
+
+C. Remaining category-position defect:
+When Dog Pack is opened as the active long category, a collapsed category such as Clothing Worn can remain between List Summary and Dog Pack.
+
+This is WRONG.
+
+Final required geometry:
+
+LIST SUMMARY
+==============================  <- bottom edge
+ACTIVE CATEGORY HEADER          <- top edge TOUCHES Summary bottom
+------------------------------
+SCROLLABLE ITEM VIEWPORT ONLY
+------------------------------
+FIXED ADD ITEM BAR + ▲ ▼
+==============================
+BOTTOM CONTROLS
+
+There must be no unrelated category bar between List Summary and the active long-category header.
+
+D. Existing Playwright previously used a first/top category for long-mode testing. That cannot detect this defect.
+
+E. Live video also shows a second UX defect:
+When an item accordion is opened low in the item viewport, part of its expanded detail panel can be hidden and the user must manually scroll upward to reach the bottom of that item accordion.
+
+F. The approved desired item behavior:
+If an opened item accordion does not fully fit in the visible item viewport, TrailWeigh automatically scrolls the ITEM VIEWPORT just enough to reveal the entire opened item accordion.
+
+The bottom of that opened item accordion is its Delete Item row.
+
+The Delete Item row should become fully visible immediately above the fixed Add Item bar.
+
+G. The bottom Group 4 Save box was approved previously but is still missing.
+
+Current wrong Group 4:
+Back | Share | More
+
+Required Group 4:
+Back | Save | Share | More
+
+============================================================
+2. STRICT SCOPE
+============================================================
+
+Preferred application source:
+MobileFunctionalV3.tsx ONLY
+
+Allowed:
+- targeted R0076 Playwright test file(s)
+- R0076.md update
+- compact screenshots/video evidence
+
+DO NOT:
+- modify desktop
+- modify Checklist.tsx
+- modify database/schema/auth
+- publish/deploy
+- investigate/fix bounce/overscroll
+- redesign stacked bars
+- redesign Preview
+- redesign Pack Summary
+- redesign TrailWeigh header
+- reintroduce Weight Distribution theme dropdown
+- replace the current category wedge color source
+- redesign the working bounded item viewport
+- perform unrelated cleanup/refactor
+
+If another APPLICATION source file is required:
+STOP before editing and explain exactly why.
+
+============================================================
+3. PRE-EDIT AUDIT
+============================================================
+
+Before changing code, inspect only the minimum relevant current V3 code and report:
+
+1. current parent list/category scroll owner
+2. current code that promotes/repositions an active long category
+3. whether the current implementation uses smooth scrolling + fixed timeout before locking parent scroll
+4. current element refs available for:
+   - List Summary
+   - active category header
+   - item viewport
+   - Add Item bar
+   - bottom controls
+5. current item accordion open-state source
+6. current item accordion DOM structure including Delete Item row
+7. current Save handler/state used elsewhere in mobile V3
+8. current bottom Group 4 definition
+
+Do not inspect unrelated files solely to answer Learning Questions.
+
+============================================================
+4. EXACT ACTIVE CATEGORY ALIGNMENT
+============================================================
+
+For ONE manually opened long category:
+
+The top of the active category header must align directly against the bottom of List Summary.
+
+INTENDED FINAL GAP:
+0 px
+
+PLAYWRIGHT TOLERANCE:
+<= 1 px
+
+Required:
+
+abs(activeCategoryHeaderTop - listSummaryBottom) <= 1 px
+
+The final live position must NOT depend only on:
+- a guessed duration
+- a fixed timeout
+- an unfinished smooth-scroll animation
+
+If the current implementation uses smooth scrolling and then locks the parent scroller after a timer:
+repair it so the final alignment is VERIFIED before the parent becomes stationary/locked.
+
+Acceptable approaches may include:
+- direct exact scroll positioning
+- scroll completion detection
+- requestAnimationFrame measurement loop with bounded timeout/fallback
+- final corrective scroll after animation
+
+Use the safest solution for the existing architecture.
+
+Do not add unnecessary animation complexity.
+
+============================================================
+5. PROMOTE THE ACTIVE CATEGORY PAST CATEGORIES ABOVE IT
+============================================================
+
+The active long category may start lower in the list.
+
+Example:
+
+List Summary
+Clothing Worn
+Dog Pack   <- user opens this
+
+When Dog Pack requires bounded long-category mode:
+
+WRONG:
+List Summary
+Clothing Worn
+Dog Pack
+
+CORRECT:
+List Summary
+Dog Pack
+
+Clothing Worn and other categories remain in the list data/order.
+Do NOT delete or reorder them.
+
+Instead, scroll the parent category/list region so the active long-category header reaches the List Summary boundary.
+
+The category order must remain unchanged when bounded mode later ends.
+
+============================================================
+6. PRESERVE WORKING BOUNDED VIEWPORT
+============================================================
+
+Do NOT regress the now-working structure:
+
+LIST SUMMARY
+FIXED ACTIVE CATEGORY HEADER
+SCROLLABLE ITEM ROWS ONLY
+FIXED ADD ITEM BAR + ▲ ▼
+BOTTOM CONTROLS
+
+Preserve:
+
+- category header stationary while item rows scroll
+- Add Item stationary while item rows scroll
+- item viewport vertical scrolling
+- ▲ / ▼ paging
+- top/middle/bottom enable/disable state
+- category reorder
+- slide-to-delete
+- bottom box-group gestures
+- transition short -> long when enough items are added
+- long -> short when enough items are removed, where current implementation supports it
+
+============================================================
+7. ITEM ACCORDION AUTO-REVEAL
+============================================================
+
+NEW APPROVED BEHAVIOR:
+
+When the user opens an ITEM accordion inside the bounded item viewport:
+
+A. First determine whether the entire expanded item accordion is already visible inside the item viewport.
+
+If fully visible:
+- DO NOTHING
+- no unnecessary movement
+
+If the bottom portion is hidden below the visible item viewport:
+- automatically scroll ONLY the item viewport upward just enough to reveal the entire expanded item accordion
+
+The target lower element is the item's Delete Item row.
+
+Final target:
+- Delete Item row fully visible
+- Delete Item row settles immediately above the fixed Add Item bar
+- no overlap with Add Item
+- no overlap with bottom controls
+- no unnecessary extra upward scroll
+
+The CATEGORY HEADER must not move.
+The ADD ITEM BAR must not move.
+The BOTTOM CONTROLS must not move.
+Only the item viewport scroll position changes.
+
+============================================================
+8. ITEM ACCORDION AUTO-REVEAL — TOP CASE
+============================================================
+
+If an item near the top is opened and its entire expanded accordion already fits:
+
+- do not scroll it upward merely because it was opened
+- do not force Delete Item to the bottom boundary if unnecessary
+- preserve the user's current item viewport position
+
+This is a reveal-if-hidden behavior, not an always-align-to-bottom behavior.
+
+============================================================
+9. ITEM ACCORDION AUTO-REVEAL — CALCULATION
+============================================================
+
+Use real rendered geometry.
+
+Suggested logic conceptually:
+
+visibleTop = itemViewport top
+visibleBottom = itemViewport bottom
+
+expandedItemTop = opened item accordion top
+expandedItemBottom = Delete Item row bottom
+
+If expandedItemBottom > visibleBottom:
+scroll item viewport downward by only the required delta so expandedItemBottom becomes visible at/just above visibleBottom.
+
+Because visibleBottom corresponds to the top of the fixed Add Item bar, the Delete Item row should finish immediately above Add Item.
+
+Do not scroll the parent page/category list for this item-level correction.
+
+Use current architecture rather than duplicating scroll state.
+
+============================================================
+10. ADDING / OPENING ITEMS MUST COEXIST
+============================================================
+
+Preserve current add behavior:
+
+When Add Item creates a new item:
+- keep category header fixed
+- keep Add Item fixed
+- bring new item into view when practical
+
+If that new item is then expanded:
+- apply the auto-reveal rule
+- if its detail panel extends below the viewport, scroll the item viewport enough to reveal through Delete Item
+
+Repeated item additions and item openings must not break either fixed boundary.
+
+============================================================
+11. MISSING SAVE BOX
+============================================================
+
+Add the previously approved Save box to Group 4.
+
+REQUIRED GROUP 4:
+
+Back | Save | Share | More
+
+Rules:
+
+- four visible boxes total in Group 4
+- Back remains leftmost
+- Save is between Back and Share
+- Share remains
+- More remains
+- use the SAME visual box language as other bottom controls
+- preserve Group 4 slide-in/slide-out behavior
+- preserve max-five-box rule
+- no wraparound changes
+
+SAVE FUNCTION:
+Reuse the existing current Save handler/state.
+Do NOT create a second save implementation.
+
+If Save is already available elsewhere as an obsolete mobile launcher:
+apply the existing no-duplicate rule and remove only the obsolete duplicate launcher, while preserving the underlying Save functionality.
+
+Do NOT remove Save content/workflows needed elsewhere.
+
+============================================================
+12. PLAYWRIGHT — EXACT CATEGORY ALIGNMENT TEST
+============================================================
+
+Primary viewport:
+390 x 844
+
+Use a long category that is NOT the first visible category.
+
+Required setup:
+- at least one other category exists ABOVE the test category
+- open the lower category manually
+- prove it becomes long/bounded
+
+Record:
+
+summaryBottom
+activeHeaderTop
+categoryAboveBeforeTop or identifier
+parentScrollTopBefore
+parentScrollTopAfter
+
+Assert:
+
+abs(activeHeaderTop - summaryBottom) <= 1 px
+
+Also prove:
+- no other category header is between List Summary and activeHeaderTop
+- original category order/data is unchanged
+- header remains in this position during item viewport scrolling
+
+Do NOT use a first/top category as the only proof.
+
+============================================================
+13. PLAYWRIGHT — ITEM ACCORDION AUTO-REVEAL
+============================================================
+
+TEST A — FULLY VISIBLE ITEM
+Open an item accordion whose complete expanded panel fits.
+
+Record itemViewport.scrollTop before and after.
+
+Assert:
+- entire panel visible
+- scrollTop does not materially change
+- header geometry unchanged
+- Add Item geometry unchanged
+
+TEST B — PARTIALLY HIDDEN ITEM
+Choose an item low enough that its expanded panel would extend below the item viewport.
+
+Before open record:
+- viewportTop
+- viewportBottom
+- itemViewport.scrollTop
+- headerTop/headerBottom
+- addItemTop/addItemBottom
+
+Open item.
+
+After settle record:
+- Delete Item row top/bottom
+- new itemViewport.scrollTop
+- header geometry
+- Add Item geometry
+
+Assert:
+- Delete Item row fully visible
+- abs(deleteItemBottom - itemViewportBottom) <= 2 px OR smaller positive gap if content cannot/should not scroll farther
+- itemViewport.scrollTop increased
+- header did not move > 1 px
+- Add Item did not move > 1 px
+
+TEST C — REPEATED
+Open at least two different low-position items one after another.
+
+Prove auto-reveal works repeatedly without parent-page drift.
+
+============================================================
+14. PLAYWRIGHT — SAVE BOX
+============================================================
+
+Navigate to Group 4.
+
+Assert visible order exactly:
+
+Back
+Save
+Share
+More
+
+Tap Save using safe test data.
+
+Prove:
+- existing Save handler is invoked / expected save state occurs
+- no duplicate Save box exists in the bottom bar
+- Share and More still work as launchers
+- Group 4 remains within screen width at:
+  320
+  375
+  390
+  430
+
+============================================================
+15. PROTECTED REGRESSIONS
+============================================================
+
+Verify targeted protections only:
+
+- List Summary global expand/collapse chevron
+- exact current left-shifted Summary chevron placement
+- fixed active category header
+- fixed Add Item bar
+- ▲ / ▼ controls
+- Add Item
+- category quick open/close
+- category long-press reorder
+- slide-to-delete
+- bottom box-group transitions
+- stationary 68 px stacked bars
+- Preview selected-only
+- Print inside Preview
+- Pack Summary
+- Weight Distribution
+- Weight Distribution theme dropdown remains absent
+- pie/legend continue using category wedge color source
+- TrailWeigh header unchanged
+- no horizontal overflow 320/375/390/430
+
+Do not investigate bounce.
+
+============================================================
+16. REQUIRED EVIDENCE
+============================================================
+
+R0076.zip MUST include compact evidence:
+
+1. r0076-category-touch.jpg
+Shows:
+- List Summary
+- active long-category header touching immediately below it
+- no unrelated category between them
+- item viewport
+- Add Item
+- bottom controls
+
+2. r0076-item-open-before.jpg
+Shows an item accordion just opened with its lower details initially requiring reveal, if practical to capture.
+
+3. r0076-item-open-after.jpg
+Shows:
+- entire opened item accordion visible
+- Delete Item row immediately above fixed Add Item
+- fixed category header visible
+- fixed Add Item visible
+- bottom controls visible
+
+4. r0076-group4-save.jpg
+Shows:
+Back | Save | Share | More
+
+A short video is strongly preferred showing:
+- lower long category opens
+- automatically aligns to List Summary
+- item list scrolls
+- low item opens
+- viewport automatically reveals through Delete Item
+- header/Add Item remain stationary
+
+============================================================
+17. PASS / FAIL DISCIPLINE
+============================================================
+
+Use only:
+
+PASS
+FAIL
+NOT RUN
+NOT APPLICABLE
+
+No conditional no-op passes.
+
+Do not mark PASS from a runner exit code alone.
+
+If the exact required setup is not created, mark NOT RUN and explain.
+
+============================================================
+18. LEARNING QUESTIONS — EXACTLY 3
+============================================================
+
+Answer ONLY from code/files already inspected for this R0076 repair.
+Do not broaden scope or inspect unrelated files solely to answer them.
+
+QUESTION 1
+What is the safest way in the current mobile V3 code to guarantee the active long-category header finishes at an exact 0 px gap beneath List Summary before the parent scroller is locked, without relying on a fixed animation timer?
+
+QUESTION 2
+What existing item-accordion state and element refs can TrailWeigh use to automatically scroll an expanded item just enough that its Delete Item row becomes fully visible above the fixed Add Item bar, without disturbing the fixed category header or Add Item boundary?
+
+QUESTION 3
+What existing Save handler/state should the missing Group 4 Save box reuse so adding Back | Save | Share | More does not create a second save implementation or regress existing save behavior?
+
+============================================================
+19. REQUIRED REPORT
+============================================================
+
+Update/create:
+
+R0076.md
+
+Required:
+
+# R0076 Repair 2 Report
+
+## Scope / Cost Discipline
+- exact application files inspected
+- exact application files changed
+- exact tests changed
+- scope expansion YES/NO
+
+## Root Cause — Category Alignment
+Explain why a lower long category stopped with another category still above it.
+
+State whether a fixed smooth-scroll timeout contributed.
+
+## Exact Category Alignment Proof
+Include:
+- summaryBottom
+- activeHeaderTop
+- gap
+- parent scroll before/after
+- category used
+- category/categories above it
+
+## Item Accordion Auto-Reveal Architecture
+- open-state source
+- element refs
+- viewport measurement
+- scroll calculation
+- why parent scroll is not moved
+
+## Item Accordion Proof
+- fully-visible case
+- hidden-bottom case
+- Delete Item geometry
+- before/after itemViewport.scrollTop
+- header before/after geometry
+- Add Item before/after geometry
+
+## Save Box
+- handler reused
+- Group 4 order
+- test result
+
+## Preserved R0076 Work
+- bounded viewport
+- ▲ / ▼
+- Summary chevron
+- Weight Distribution
+
+## Protected Regressions
+PASS/FAIL/NOT RUN per item
+
+## TypeScript
+result
+
+## Playwright
+- total
+- passed
+- failed
+- skipped
+- NOT RUN
+- exact failures
+
+## Evidence
+exact filenames
+
+## Lessons for Future Prompts
+
+### Learning Question 1
+answer
+
+### Learning Question 2
+answer
+
+### Learning Question 3
+answer
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## ZIP Contents
+exact filenames
+
+## Final Scope Confirmation
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+- bounce untouched
+
+============================================================
+20. ZIP
+============================================================
+
+Create/update:
+
+R0076.zip
+
+MUST INCLUDE:
+- R0076.md
+- every application source file actually changed
+- every R0076 Playwright test file
+- all required evidence
+
+Before delivery:
+1. inspect git status/diff
+2. list exact changed files
+3. confirm all files named in report are actually in ZIP
+4. list/open ZIP contents to verify
+
+Do not include:
+- node_modules
+- caches
+- build output
+- unrelated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, targeted verification, report, evidence, and ZIP:
+
+STOP.
+
+Do NOT start R0077.
+Do NOT publish.
+Do NOT deploy.
+Do NOT modify database/auth.
+Do NOT investigate bounce.
+Wait for user review.
