@@ -1934,6 +1934,11 @@ function MobileFunctionalV3Inner() {
 
   // D6 — item delete confirmation
   const [deleteItemConfirm, setDeleteItemConfirm] = useState<{ cat: string; id: string; name: string } | null>(null);
+  // R0077P2 — dialog focus management
+  const deleteTriggerRef   = useRef<HTMLElement | null>(null);  // which Delete btn opened the dialog
+  const deleteConfirmedRef = useRef(false);                     // true when item was actually deleted
+  const cancelDialogBtnRef  = useRef<HTMLButtonElement | null>(null);
+  const confirmDialogBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1941,6 +1946,29 @@ function MobileFunctionalV3Inner() {
   useEffect(() => () => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
   }, []);
+
+  // R0077P2 — focus management for item delete dialog.
+  // On open: focus Cancel (safe default). On close: return to trigger or Add Item fallback.
+  useEffect(() => {
+    if (deleteItemConfirm) {
+      // Dialog just opened — focus Cancel after a tick for render to complete.
+      const id = setTimeout(() => cancelDialogBtnRef.current?.focus(), 50);
+      return () => clearTimeout(id);
+    }
+    // Dialog just closed.
+    if (deleteConfirmedRef.current) {
+      // Item was deleted — trigger is gone; fall back to Add Item button.
+      deleteConfirmedRef.current = false;
+      const addBtn = document.querySelector('[data-testid="cat-add-item-btn"]') as HTMLElement | null;
+      addBtn?.focus();
+    } else {
+      // Cancelled — return focus to the button that opened the dialog.
+      (deleteTriggerRef.current as HTMLElement | null)?.focus();
+    }
+    deleteTriggerRef.current = null;
+    return undefined;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleteItemConfirm]);
 
   const showToast = useCallback((msg: string, ms = 3000) => {
     setToast(msg);
@@ -3598,9 +3626,10 @@ function MobileFunctionalV3Inner() {
                               }}>
 
                                 {/* Weight — D2 FIX: local edit state prevents intermediate-value snapping */}
+                                {/* R0077P2: row minHeight:44 (was height:42); input minHeight:44 for >=44px touch target */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', height: 42, gap: 10,
+                                  padding: '0 14px', minHeight: 44, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <Hash size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -3612,6 +3641,7 @@ function MobileFunctionalV3Inner() {
                                     step={system === 'metric' ? 1 : 0.1}
                                     value={item.id in weightInputs ? weightInputs[item.id] : weightDisplay.toString()}
                                     aria-label={`Weight of ${displayName} in ${su}`}
+                                    data-testid="expanded-weight-input"
                                     onFocus={() => {
                                       setWeightInputs(prev => ({ ...prev, [item.id]: weightDisplay.toString() }));
                                     }}
@@ -3636,16 +3666,17 @@ function MobileFunctionalV3Inner() {
                                       fontWeight: 500, color: PRIMARY,
                                       border: `1px solid ${CARD_BORDER}`, borderRadius: 6,
                                       padding: '2px 6px', background: '#fff',
-                                      fontFamily: SANS,
+                                      fontFamily: SANS, minHeight: 44,
                                     }}
                                   />
                                   <span style={{ fontSize: 13, color: MUTED, minWidth: 22, textAlign: 'left' }}>{su}</span>
                                 </div>
 
                                 {/* Quantity */}
+                                {/* R0077P2: row minHeight:44 (was height:42); select minHeight:44 for >=44px touch target */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', height: 42, gap: 10,
+                                  padding: '0 14px', minHeight: 44, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <PackageOpen size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -3653,12 +3684,13 @@ function MobileFunctionalV3Inner() {
                                   <select
                                     value={item.qty}
                                     aria-label={`Quantity of ${displayName}`}
+                                    data-testid="expanded-qty-select"
                                     onChange={e => updateItem(catName, item.id, { qty: parseInt(e.target.value, 10) })}
                                     style={{
                                       fontSize: 13.5, fontWeight: 500, color: PRIMARY,
                                       border: `1px solid ${CARD_BORDER}`, borderRadius: 6,
                                       padding: '2px 8px', background: '#fff',
-                                      fontFamily: SANS,
+                                      fontFamily: SANS, minHeight: 44,
                                     }}
                                   >
                                     {QTY_OPTIONS.map(n => <option key={n} value={n}>{n}</option>)}
@@ -3679,10 +3711,11 @@ function MobileFunctionalV3Inner() {
                                 </div>
 
                                 {/* Move */}
+                                {/* R0077P2: row minHeight:44 (was height:42); select minHeight:44 for >=44px touch target */}
                                 {otherCats.length > 0 && (
                                   <div style={{
                                     display: 'flex', alignItems: 'center',
-                                    padding: '0 14px', height: 42, gap: 10,
+                                    padding: '0 14px', minHeight: 44, gap: 10,
                                     borderBottom: `1px solid ${DETAIL_BDR}`,
                                   }}>
                                     <ArrowRightLeft size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -3690,12 +3723,13 @@ function MobileFunctionalV3Inner() {
                                     <select
                                       value=""
                                       aria-label={`Move ${displayName} to another category`}
+                                      data-testid="expanded-move-select"
                                       onChange={e => { if (e.target.value) moveItem(catName, e.target.value, item.id); }}
                                       style={{
                                         fontSize: 13.5, fontWeight: 500, color: PRIMARY,
                                         border: `1px solid ${CARD_BORDER}`, borderRadius: 6,
                                         padding: '2px 8px', background: '#fff',
-                                        maxWidth: 140, fontFamily: SANS,
+                                        maxWidth: 140, fontFamily: SANS, minHeight: 44,
                                       }}
                                     >
                                       <option value="">Move to…</option>
@@ -3723,23 +3757,32 @@ function MobileFunctionalV3Inner() {
 
                                 {/* R004 — accessible NON-SWIPE delete path (replaces resting trash icon) */}
                                 {/* R0076P2: testid set only when expanded inside bounded long mode
-                                    so the auto-reveal effect can locate the exact Delete row. */}
+                                    so the auto-reveal effect can locate the exact Delete row.
+                                    R0077P2: button itself gets data-testid="expanded-item-delete-btn"
+                                    (unique, unambiguous) + minHeight:44 + alignSelf:stretch so it
+                                    fills the row's full 44px height as a real touch target. */}
                                 <div
                                   data-testid={isExpanded && isCatLong && openCatName === catName ? 'item-delete-row' : undefined}
                                   style={{
-                                  display: 'flex', alignItems: 'center',
+                                  display: 'flex', alignItems: 'stretch',
                                   padding: '0 14px', minHeight: 44, gap: 10,
                                   borderTop: `1px solid ${DETAIL_BDR}`,
                                 }}>
-                                  <Trash2 size={14} color="#B03A2E" strokeWidth={1.8} aria-hidden="true"/>
+                                  <Trash2 size={14} color="#B03A2E" strokeWidth={1.8} aria-hidden="true" style={{ alignSelf: 'center' }}/>
                                   <button
-                                    onClick={e => { e.stopPropagation(); setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName }); }}
+                                    data-testid="expanded-item-delete-btn"
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      deleteTriggerRef.current = e.currentTarget;
+                                      setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName });
+                                    }}
                                     aria-label={`Delete ${displayName}`}
                                     title={`Delete "${displayName}" from this list`}
                                     style={{
                                       background: 'none', border: 'none', cursor: 'pointer',
                                       padding: 0, fontSize: 13.5, color: '#B03A2E', fontWeight: 500,
                                       fontFamily: SANS, textAlign: 'left', flex: 1,
+                                      minHeight: 44, display: 'flex', alignItems: 'center',
                                     }}
                                   >
                                     Delete Item
@@ -4251,6 +4294,8 @@ function MobileFunctionalV3Inner() {
       </Sheet>
 
       {/* ── D6: Item delete confirmation ── */}
+      {/* R0077P2: added Escape + Tab-trap focus containment, initial focus on Cancel,
+          focus-return on Cancel (to trigger) and after confirmed delete (to Add Item). */}
       {deleteItemConfirm && (
         <div
           role="dialog"
@@ -4261,7 +4306,25 @@ function MobileFunctionalV3Inner() {
             display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
             background: 'rgba(0,0,0,0.45)',
           }}
-          onClick={() => setDeleteItemConfirm(null)}
+          onClick={() => { deleteConfirmedRef.current = false; setDeleteItemConfirm(null); }}
+          onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              deleteConfirmedRef.current = false;
+              setDeleteItemConfirm(null);
+            }
+            if (e.key === 'Tab') {
+              e.preventDefault();
+              // Lightweight two-button focus trap
+              const els = [cancelDialogBtnRef.current, confirmDialogBtnRef.current].filter((x): x is HTMLButtonElement => x !== null);
+              const idx = els.indexOf(document.activeElement as HTMLButtonElement);
+              if (e.shiftKey) {
+                els[(idx - 1 + els.length) % els.length]?.focus();
+              } else {
+                els[(idx + 1) % els.length]?.focus();
+              }
+            }
+          }}
         >
           <div
             onClick={e => e.stopPropagation()}
@@ -4280,12 +4343,19 @@ function MobileFunctionalV3Inner() {
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button
-                onClick={() => setDeleteItemConfirm(null)}
+                ref={cancelDialogBtnRef}
+                onClick={() => { deleteConfirmedRef.current = false; setDeleteItemConfirm(null); }}
                 aria-label="Cancel delete item"
                 style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44 }}
               >Cancel</button>
               <button
-                onClick={() => { sandboxRemoveItem(deleteItemConfirm.cat, deleteItemConfirm.id); setDeleteItemConfirm(null); showToast(`Deleted "${deleteItemConfirm.name}"`); }}
+                ref={confirmDialogBtnRef}
+                onClick={() => {
+                  deleteConfirmedRef.current = true;
+                  sandboxRemoveItem(deleteItemConfirm.cat, deleteItemConfirm.id);
+                  setDeleteItemConfirm(null);
+                  showToast(`Deleted "${deleteItemConfirm.name}"`);
+                }}
                 aria-label={`Confirm delete ${deleteItemConfirm.name}`}
                 style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
               >Delete Item</button>

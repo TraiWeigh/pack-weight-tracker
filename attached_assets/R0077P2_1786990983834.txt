@@ -1,0 +1,593 @@
+TRAILWEIGH — R0077P2
+APPLE ACCESSIBILITY BASELINE FOLLOW-UP
+MISSED TOUCH TARGETS + REAL KEYBOARD/DIALOG/SCALING VERIFICATION
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- CURRENT TrailWeigh project
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+PURPOSE
+R0077 made good accessibility improvements, but independent ZIP/source review found several unverified or incomplete items. R0077P2 is a narrow follow-up ONLY.
+
+DO NOT redesign TrailWeigh.
+DO NOT redo R0077.
+DO NOT add new product features.
+DO NOT touch native-iOS/App-Store work.
+
+============================================================
+PRESERVE — R0077 GOOD WORK
+============================================================
+
+Keep all currently working R0077 changes, including:
+- compact visible item checkbox with >=44x44 effective hit target;
+- separate checkbox and item-expand controls;
+- corrected item-row semantics;
+- visible focus styling;
+- already-enlarged Back/Close/Print/Share targets;
+- deck Close visual 28x28 inside 44x44 target;
+- larger Category Options target;
+- improved MUTED and NAV_INACTIVE contrast;
+- removal of maximum-scale=1 from the active viewport meta, if still current;
+- TrailWeigh's current visual compactness and palette.
+
+Also preserve ALL USER-PASS R0076P3 behavior:
+- native thumb scrolling inside long-category item area;
+- outer category stack lock;
+- category-header alignment;
+- Add Item fixed position;
+- item chevrons;
+- single-open item accordion;
+- zero-open item state;
+- item auto-alignment/auto-reveal;
+- Save;
+- current bottom groups;
+- swipe-to-delete;
+- category reorder.
+
+============================================================
+INDEPENDENT REVIEW FINDINGS — MUST REPRODUCE/VERIFY
+============================================================
+
+Do not assume these findings are correct merely because they are in this prompt.
+Verify against CURRENT active source before changing anything.
+
+FINDING 1 — Expanded-item Delete Item button
+Current source appears to make the surrounding Delete row min-height 44, while the actual inner "Delete Item" button still has:
+- padding: 0
+- no guaranteed minHeight/minWidth
+
+R0077's target test appears to have used an ambiguous selector such as:
+  button[aria-label^="Delete"]
+which can match another delete control.
+
+R0077 then used programmatic `.click()` in the dialog test, which does not prove the actual expanded-item Delete control has a correct pointer/touch target.
+
+FINDING 2 — Weight / Quantity / Move controls
+Current expanded-item detail rows appear to remain 42px high, while:
+- Weight <input>
+- Quantity <select>
+- Move <select>
+have only small internal padding and no guaranteed >=44px interactive height.
+
+These were explicitly in R0077 scope but were not meaningfully measured/repaired.
+
+FINDING 3 — Natural Tab navigation not proven
+R0077's keyboard test appears to call `.focus()` directly on controls.
+That proves focused controls can respond to keys.
+It does NOT prove that normal Tab navigation reaches them in a logical order.
+
+FINDING 4 — Item-delete dialog keyboard behavior incomplete
+Current item-delete confirmation has role="dialog" and aria-modal="true", but independent review found no clear proof of:
+- initial focus moved into dialog;
+- Escape closes dialog;
+- keyboard focus stays in the modal while it is open;
+- focus returns appropriately after Cancel/close;
+- focus lands somewhere sensible after confirmed deletion removes the trigger.
+
+FINDING 5 — Text/zoom scaling evidence incomplete
+R0077 reports a 150% "zoom equivalent" using a narrower viewport.
+That is useful as a layout stress test, but it must NOT be described as actual text scaling unless the mechanism truly enlarges text.
+
+No 200% result was provided.
+
+FINDING 6 — Screenshot evidence invalid/incomplete
+Independent ZIP review found:
+- 02-clothing-expanded-item.jpg
+- 03-item-checkbox-states.jpg
+were byte-for-byte identical;
+and the evidence did not clearly show all required states.
+
+============================================================
+PRE-EDIT GATE
+============================================================
+
+Before editing:
+
+1. Read current `replit.md` READ-ONLY.
+2. Confirm `/mobile-functional-v3` active render path.
+3. Confirm current R0077 source is active.
+4. Record git status.
+5. Reproduce/verify all six findings above.
+6. List expected changed application files.
+7. Measure the exact CURRENT interactive rectangles for:
+   - expanded-item Delete Item button;
+   - Weight input;
+   - Quantity select;
+   - Move select.
+8. Inspect natural Tab order through an expanded item.
+9. Inspect item-delete dialog focus behavior.
+10. Record exact current scaling test method used by R0077.
+
+Expected application file:
+- `artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx`
+
+Expected test file:
+- `tests/e2e/r0077p2/r0077p2.spec.ts`
+
+Do not modify `index.html` again unless current evidence proves it is necessary.
+If another application file is required, justify it in the report before broadening scope.
+
+============================================================
+REPAIR 1 — TRUE DELETE ITEM TARGET
+============================================================
+
+The exact expanded-item Delete Item ACTION must itself expose a comfortably tappable target.
+
+Required:
+- actual button effective target >=44px high;
+- width remains appropriate/full available action area;
+- visible design stays essentially unchanged;
+- no overlapping tap target with adjacent actions;
+- touching/clicking it opens the correct item-delete confirmation;
+- it must not accidentally trigger item expansion, selection, swipe delete, or category actions.
+
+Add a UNIQUE stable selector/testid for this exact control, for example:
+  data-testid="expanded-item-delete-btn"
+or a per-item equivalent.
+
+Do NOT use an ambiguous selector such as:
+  button[aria-label^="Delete"]
+
+Test the exact button.
+
+============================================================
+REPAIR 2 — WEIGHT / QUANTITY / MOVE TOUCH TARGETS
+============================================================
+
+For expanded-item editing:
+
+- Weight input effective interactive height >=44px
+- Quantity select effective interactive height >=44px
+- Move select effective interactive height >=44px
+
+The surrounding rows must accommodate these controls without clipping.
+
+Use the smallest visual/layout adjustment practical:
+- prefer minHeight rather than arbitrary large padding;
+- preserve current typography and compact appearance;
+- a few pixels of extra row height is acceptable;
+- do not make the detail panel look oversized.
+
+Required functional preservation:
+- Weight editing still accepts intermediate input and commits correctly on blur;
+- Quantity still updates;
+- Move still moves item correctly;
+- Total remains derived correctly;
+- item auto-reveal still exposes the Delete row when necessary.
+
+Also verify Photo disabled row still communicates disabled/unavailable state correctly; do not enable Photos in this task.
+
+============================================================
+REPAIR 3 — REAL NATURAL TAB ORDER
+============================================================
+
+Do NOT prove keyboard access by calling `.focus()` on the target under test.
+
+Use normal keyboard navigation:
+- establish a known start point;
+- use `Tab` / `Shift+Tab`;
+- inspect `document.activeElement` after each step.
+
+For an expanded item, natural keyboard order must reach, where applicable:
+1. item checkbox;
+2. item expand/collapse control;
+3. Weight input;
+4. Quantity select;
+5. Move select;
+6. Delete Item action;
+without focus becoming stranded or skipping actionable controls.
+
+Exact order may include other legitimate controls based on DOM position, but it must be logical and documented.
+
+Use Enter/Space where semantically appropriate.
+For native input/select controls, use their normal keyboard behavior.
+
+PASS requires:
+- visible focus indicator;
+- no programmatic focus shortcut used to claim Tab reachability.
+
+============================================================
+REPAIR 4 — ITEM DELETE DIALOG FOCUS / KEYBOARD
+============================================================
+
+Keep the current visual design.
+
+Required behavior when Delete Item opens:
+
+1. Dialog has a clear accessible name.
+2. Focus moves INTO the dialog.
+3. Initial focus should prefer the safer action:
+   Cancel.
+4. Tab and Shift+Tab stay within the dialog's actionable controls while it is open.
+   A lightweight two-button focus containment is sufficient.
+   Do NOT introduce a broad new modal framework unless necessary.
+5. Escape closes the dialog.
+6. Clicking/tapping the backdrop may continue to close it if current behavior is intended.
+7. Cancel returns focus to the original expanded-item Delete Item button when that control still exists.
+8. Confirm Delete:
+   - removes only the intended item;
+   - closes dialog;
+   - because the trigger is removed, focus must move to a stable nearby control, preferably:
+     a) the active category's Add Item button, or
+     b) the active category header/options control,
+     whichever is safest/currently available.
+   - document the chosen destination.
+
+Do not accidentally trigger deletion from focus movement.
+
+============================================================
+REPAIR 5 — SCALING TEST MUST BE HONEST
+============================================================
+
+R0077P2 must distinguish THREE different concepts:
+
+A. narrow-viewport responsiveness;
+B. browser zoom/layout-equivalent stress;
+C. actual text enlargement/text-scaling.
+
+Do not label A as C.
+
+CURRENT WEB LIMIT:
+This is still a web prototype, not native iOS Dynamic Type.
+Do NOT claim Dynamic Type support.
+
+Required verification:
+
+1. DEFAULT
+   - 390x844 baseline.
+
+2. 150% BROWSER-ZOOM EQUIVALENT / ACTUAL BROWSER ZOOM IF AUTOMATABLE
+   - Prefer genuine browser zoom if the current Playwright/Chromium environment can reliably automate it.
+   - If not, a mathematically equivalent reduced CSS viewport may be used as a BROWSER-ZOOM-EQUIVALENT layout stress test.
+   - Label it exactly that.
+
+3. 200% BROWSER-ZOOM EQUIVALENT / ACTUAL BROWSER ZOOM IF AUTOMATABLE
+   - same rule;
+   - must actually be run.
+
+4. TEXT-ENLARGEMENT TEST
+   - use the closest technically credible web test available in the current environment to enlarge text independently of merely narrowing the viewport;
+   - this may be a browser-supported text-size mechanism or a TEST-ONLY accessibility override;
+   - do not commit a fake global text-size production change just to make the test pass;
+   - document the exact mechanism and limitation.
+
+At 150% and 200%, check common tasks:
+- category open/close;
+- long-category native item scroll;
+- item selection;
+- item detail open;
+- Weight;
+- Quantity;
+- Move where available;
+- Add Item;
+- bottom controls;
+- Save;
+- delete confirmation.
+
+PASS:
+- no essential control becomes unreachable;
+- no destructive overlap;
+- no wrong-action hit-target overlap;
+- labels remain understandable;
+- horizontal scrolling is not introduced in the normal main-list flow unless it already existed intentionally.
+
+If 200% reveals a genuine current-web limitation that cannot be safely solved without redesign:
+- report the exact limitation honestly;
+- do not hide it;
+- do not broadly redesign TW in this P2.
+
+============================================================
+REPAIR 6 — VALID EVIDENCE
+============================================================
+
+Create NEW R0077P2 evidence.
+
+Required screenshots, each showing a genuinely different state:
+
+1. `01-main-list-normal.jpg`
+   - normal main list.
+
+2. `02-expanded-item-controls.jpg`
+   - item visibly expanded;
+   - Weight/Quantity/Move/Delete controls visible.
+
+3. `03-checkbox-selected-state.jpg`
+   - selected checkbox state clearly visible.
+
+4. `04-keyboard-focus.jpg`
+   - a real visible focus indicator on an actionable control.
+
+5. `05-delete-dialog.jpg`
+   - item-delete dialog open with Cancel/Delete controls.
+
+6. `06-200pct-scaling.jpg`
+   - the 200% test state, clearly labeled in report with exact mechanism.
+
+Before delivery:
+- calculate/check file hashes or byte sizes;
+- verify no two evidence files are accidental duplicates;
+- report the check.
+
+Static screenshots do not prove target size, Tab order, or focus return.
+Those need automated measurements/assertions too.
+
+============================================================
+MANDATORY R0077P2 TESTS
+============================================================
+
+Create:
+`tests/e2e/r0077p2/r0077p2.spec.ts`
+
+Minimum tests:
+
+P2-01 — Exact expanded Delete Item target
+- locate by unique exact selector;
+- measure bounding box;
+- >=44px high;
+- pointer/touch/click opens correct dialog.
+
+P2-02 — Weight input target
+- exact bounding box >=44px high;
+- edit value;
+- blur/commit works.
+
+P2-03 — Quantity target
+- exact bounding box >=44px high;
+- selection updates.
+
+P2-04 — Move target
+- exact bounding box >=44px high where another category exists;
+- moving item works and does not corrupt list.
+
+P2-05 — Natural Tab navigation
+- use keyboard Tab/Shift+Tab;
+- do NOT call `.focus()` on controls to establish PASS;
+- prove common expanded-item controls are naturally reachable.
+
+P2-06 — Visible focus
+- prove focused control has visible focus indication.
+
+P2-07 — Delete dialog initial focus
+- open via actual Delete Item button;
+- activeElement is Cancel or documented safe initial control.
+
+P2-08 — Delete dialog focus containment
+- Tab and Shift+Tab remain within dialog controls.
+
+P2-09 — Escape
+- Escape closes dialog;
+- no deletion occurs;
+- focus returns to original Delete Item button.
+
+P2-10 — Confirm delete focus destination
+- confirm via real keyboard/pointer action;
+- intended item removed only;
+- focus lands on documented stable control.
+
+P2-11 — 150% scaling
+- run and document exact method.
+
+P2-12 — 200% scaling
+- run and document exact method.
+
+P2-13 — text-enlargement test
+- separate from mere viewport narrowing;
+- document method.
+
+P2-14 — R0076P3 touch regression
+- real/native touch scroll still scrolls only inner item area;
+- outer category stack remains locked.
+
+P2-15 — single-open item accordion regression
+- A opens;
+- B opens and A closes;
+- B closes to zero-open.
+
+P2-16 — auto-reveal regression
+- low expanded item reveals Delete row correctly after detail-control height adjustments.
+
+P2-17 — Save regression
+- Save remains present/functional in Group 4.
+
+P2-18 — no hit-target overlap
+- enlarged Weight/Quantity/Move/Delete targets do not overlap adjacent controls or cause wrong-action taps.
+
+============================================================
+REGRESSION SUITES
+============================================================
+
+After R0077P2 passes:
+
+1. Run R0077P2.
+2. Re-run COMPLETE R0077 suite.
+3. Re-run COMPLETE R0076P3 suite.
+4. Run any still-valid relevant R0076P2 interaction tests.
+
+If an old R0077 test is misleading or uses the wrong selector:
+- do not silently keep citing it as proof;
+- identify it in the report;
+- correct the selector/test while preserving the intended acceptance criterion.
+
+Do not rewrite tests merely to make failing code pass.
+
+============================================================
+STRICT FILE / SAFETY SCOPE
+============================================================
+
+Expected application file:
+- `artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx`
+
+Expected test file:
+- `tests/e2e/r0077p2/r0077p2.spec.ts`
+
+Report/evidence files may also be created.
+
+DO NOT modify:
+- `replit.md`
+- `.replit`
+- `.agents/memory/*`
+- `.agents/skills/*`
+- package versions/dependencies
+- database/schema/data
+- auth/Clerk
+- Secrets/env
+- deployment/publishing
+- Production Database
+- unrelated desktop/shared routes
+- AI/list-creation architecture
+- looping bottom-group navigation
+
+DO NOT Publish/Republish/Resume production.
+DO NOT apply unrelated Ready tasks.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create:
+`workflow-reports/R0077P2.md`
+
+Report sections:
+
+A. PURPOSE / SCOPE
+B. PRE-EDIT FINDINGS
+C. ACTIVE SOURCE / ROUTE
+D. EXACT DELETE ITEM TARGET FINDING + REPAIR
+E. WEIGHT / QUANTITY / MOVE TARGET FINDINGS + REPAIRS
+F. NATURAL TAB-ORDER RESULTS
+G. DELETE DIALOG FOCUS / ESCAPE / RETURN RESULTS
+H. SCALING METHODS — EXACTLY DISTINGUISH:
+   - narrow viewport
+   - browser zoom/equivalent
+   - text enlargement
+I. 150% RESULTS
+J. 200% RESULTS
+K. R0076P3 PRESERVATION
+L. R0077 REGRESSION
+M. CHANGED FILES
+N. SCREENSHOT / DUPLICATE CHECK
+O. SAFETY / NO-CHANGE VERIFICATION
+P. USER VERIFICATION = PENDING
+
+Explicit status lines:
+
+EXPANDED DELETE ITEM BUTTON >=44PX = PASS / FAIL
+WEIGHT INPUT >=44PX = PASS / FAIL
+QUANTITY SELECT >=44PX = PASS / FAIL
+MOVE SELECT >=44PX = PASS / FAIL
+NATURAL TAB REACHES ITEM CONTROLS = PASS / FAIL
+DIRECT .FOCUS USED TO CLAIM TAB PASS = YES / NO
+VISIBLE FOCUS = PASS / FAIL
+DELETE DIALOG INITIAL FOCUS = PASS / FAIL
+DELETE DIALOG TAB CONTAINMENT = PASS / FAIL
+DELETE DIALOG ESCAPE = PASS / FAIL
+CANCEL FOCUS RETURN = PASS / FAIL
+CONFIRM DELETE FOCUS DESTINATION = PASS / FAIL
+150% BROWSER-ZOOM OR EQUIVALENT TEST = PASS / FAIL
+150% METHOD = [exact method]
+200% BROWSER-ZOOM OR EQUIVALENT TEST = PASS / FAIL
+200% METHOD = [exact method]
+TEXT-ENLARGEMENT TEST = PASS / FAIL / LIMITATION
+TEXT-ENLARGEMENT METHOD = [exact method]
+NATIVE DYNAMIC TYPE CLAIMED = NO
+R0076P3 TOUCH SCROLL = PASS / FAIL
+R0076P3 OUTER STACK LOCK = PASS / FAIL
+R0076P3 SINGLE-OPEN ITEM = PASS / FAIL
+R0076P3 AUTO-REVEAL = PASS / FAIL
+R0076P3 SAVE = PASS / FAIL
+R0077 SUITE = [X]/[X] PASS
+R0077P2 SUITE = [X]/[X] PASS
+R0076P3 SUITE = [X]/[X] PASS
+SCREENSHOT DUPLICATES = YES / NO
+DATABASE CHANGED = YES / NO
+AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY DELIVERY ZIP
+============================================================
+
+Create:
+`R0077P2.zip`
+
+ZIP MUST contain:
+1. `R0077P2.md`
+2. every application source file actually changed
+3. `tests/e2e/r0077p2/r0077p2.spec.ts`
+4. the six R0077P2 evidence screenshots
+5. any small audit output used for target/scaling verification
+
+Verify:
+- ZIP exists;
+- ZIP >0 bytes;
+- ZIP opens;
+- report present;
+- changed source present;
+- P2 test source present;
+- screenshots present;
+- screenshots not accidental duplicates.
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before claiming internal PASS:
+
+1. Did I measure the exact expanded-item Delete Item button rather than another Delete control?
+2. Can a real pointer/touch activate it?
+3. Are Weight, Quantity, and Move themselves >=44px high?
+4. Did I use natural Tab navigation rather than direct `.focus()` to claim reachability?
+5. Does the delete dialog receive focus?
+6. Can Escape close it without deleting?
+7. Is focus contained while modal is open?
+8. Does Cancel return focus correctly?
+9. Does confirmed deletion move focus to a stable control?
+10. Did I run a real 200% test?
+11. Did I clearly distinguish zoom-equivalent from text enlargement?
+12. Did I avoid claiming native Dynamic Type?
+13. Are evidence images genuinely different?
+14. Did R0076P3 remain intact?
+15. Did R0077's good work remain intact?
+16. Did I avoid all unrelated/config/database/deployment changes?
+17. Does the ZIP include the actual changed source?
+
+If any material answer is NO:
+DO NOT claim PASS.
+
+============================================================
+STOP
+============================================================
+
+STOP after R0077P2 report + ZIP.
+Do not proceed to looping control groups.
+Do not proceed to onboarding/list-creation redesign.
+Do not publish.
+Do not mark USER PASS.
+
+USER LIVE VERIFICATION remains required.

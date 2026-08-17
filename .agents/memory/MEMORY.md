@@ -21,3 +21,4 @@
 - [R0076P2 scroll-clamp + isCatLong dep](r0076p2-scroll-lessons.md) — 3 root causes: scroll clamped on first open (content too short), isCatLong missing from effect deps, behavior:'instant' is async in Chrome.
 - [R0076P3 lessons](r0076p3-lessons.md) — overflow:hidden accepts scrollTop (never unlock), overscroll-behavior:contain on inner viewports, BoundingBox={x,y,w,h} not {top/bottom}, CDP for real touch scroll in tests, nav chevron DOM.click().
 - [R0077 accessibility lessons](r0077-accessibility-lessons.md) — item row split, cat-header height constraint, SwipeDeleteRow delete button selector, evaluate(.click()) for React handlers, NavBox aria-label format.
+- [R0077P2 test infra lessons](r0077p2-test-infra-lessons.md) — gotoDemo() broken (waits for "LIST SUMMARY" which no longer renders); use beforeEach+waitForSelector("main-scroll") instead; isCatLong needs 15+ items at 390×844; Group 4 nav needs 3 Next-chevron clicks.
