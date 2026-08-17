@@ -18,3 +18,4 @@
 - [Measured nav-height gotchas](nav-height-measurement.md) — RO must observe border-box for padding-only (safe-area) growth; loading gate means callback ref, not one-shot effect.
 - [Swipe/drag gesture lessons](swipe-reveal-gesture.md) — post-drag click swallow; dim from ORIGINAL order; finger-follow drags need WINDOW listeners (DOM moves fire lostpointercapture) + rendered-transform math.
 - [BoxGroupBar pointer-capture trap](boxgroupbar-pointer-capture.md) — setPointerCapture() on a nav container div prevents click events from reaching child buttons in Playwright (and some real browsers); always use window.addEventListener for drag tracking instead.
+- [R0076P2 scroll-clamp + isCatLong dep](r0076p2-scroll-lessons.md) — 3 root causes: scroll clamped on first open (content too short), isCatLong missing from effect deps, behavior:'instant' is async in Chrome.

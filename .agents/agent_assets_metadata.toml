@@ -259,3 +259,10 @@ uri = "file://R0075.zip"
 type = "unspecified"
 title = "R0075.zip"
 description = "MobileFunctionalV3.tsx + r0075.spec.ts + R0075.md"
+
+[[outputs]]
+id = "C6-HHQ4Oxj2v7IbT0RwHv"
+uri = "file://R0076P2.zip"
+type = "unspecified"
+title = "R0076P2.zip"
+description = "MobileFunctionalV3.tsx · r0076p2.spec.ts · R0076P2.md · 3 screenshots — 10/10 tests pass"

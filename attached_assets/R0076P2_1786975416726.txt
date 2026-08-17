@@ -1,0 +1,540 @@
+R0076P2 — GOLD STANDARD SURGICAL REPAIR
+PARENT REPORT: R0076
+
+RECOMMENDED MODE
+Economy
+
+PURPOSE
+Work from the CURRENT R0076 checkpoint and repair ONLY the three remaining confirmed defects below.
+
+DO NOT restart R0076.
+DO NOT start R0077.
+DO NOT redo already-working R0076 features.
+
+============================================================
+0. BRIEF CHANGE LIST
+============================================================
+
+1. Active lower long-category header must finish TOUCHING the bottom of List Summary:
+   intended gap = 0 px
+   Playwright tolerance = <= 1 px
+
+2. When an opened ITEM accordion is partly hidden below the bounded item viewport, automatically scroll ONLY the item viewport until the entire accordion is visible through its Delete Item row immediately above Add Item.
+
+3. Add the missing Group 4 Save box:
+   Back | Save | Share | More
+
+Preserve:
+- fixed active category header
+- scrolling item rows only
+- fixed Add Item bar
+- separate ▲ / ▼ controls
+- List Summary global chevron
+- Weight Distribution wedge-color mapping
+- removed Weight Distribution theme dropdown
+- R0074/R0076 protected behavior
+
+============================================================
+1. OBSERVED FAILURES — TREAT AS FACT
+============================================================
+
+A. A lower long category such as Dog Pack can enter bounded mode while another collapsed category remains between List Summary and the active category.
+
+Required final layout:
+
+LIST SUMMARY
+ACTIVE CATEGORY HEADER  <- top touches Summary bottom
+SCROLLING ITEM VIEWPORT
+FIXED ADD ITEM + ▲ ▼
+BOTTOM CONTROLS
+
+No unrelated category may remain visually between List Summary and the active long-category header.
+
+B. Current tests previously accepted about a 2 px overlap/gap by widening tolerance. Do NOT loosen acceptance criteria.
+
+Required:
+abs(activeHeaderTop - summaryBottom) <= 1 px
+
+C. Item accordion expansion can require manual scrolling to reach the lower controls and Delete Item row.
+
+Required:
+If the opened item does not fully fit, TrailWeigh auto-scrolls ONLY the item viewport just enough to reveal the entire opened accordion.
+
+D. Group 4 still lacks Save.
+
+Current:
+Back | Share | More
+
+Required:
+Back | Save | Share | More
+
+============================================================
+2. STRICT SCOPE
+============================================================
+
+Preferred application source:
+MobileFunctionalV3.tsx ONLY
+
+Allowed:
+- targeted R0076P2 Playwright test file(s)
+- R0076P2.md
+- compact evidence
+
+Do NOT:
+- modify desktop
+- modify Checklist.tsx
+- modify DB/schema/auth
+- publish/deploy
+- investigate bounce
+- redesign bottom groups
+- redesign stacked bars
+- redesign Preview
+- redesign Pack Summary
+- redesign TrailWeigh header
+- redo Weight Distribution colors/dropdown
+- refactor unrelated code
+
+If another APPLICATION source file is required:
+STOP before editing and explain.
+
+============================================================
+3. PRE-EDIT AUDIT
+============================================================
+
+Inspect only what is needed and report:
+
+1. parent category/list scroll owner
+2. code that promotes a lower long category into bounded mode
+3. whether it relies on smooth scroll + fixed timeout
+4. refs/measurements for:
+   - List Summary
+   - active category header
+   - item viewport
+   - Add Item
+   - bottom controls
+5. item accordion open-state source
+6. item accordion DOM boundary through Delete Item
+7. existing Save handler/state
+8. current Group 4 definition
+
+============================================================
+4. FIX 1 — EXACT ACTIVE CATEGORY ALIGNMENT
+============================================================
+
+For ONE manually opened LONG category located below one or more other categories:
+
+- scroll/promote the active category until:
+  activeCategoryHeaderTop == listSummaryBottom
+- intended visual gap = 0 px
+- Playwright tolerance = <= 1 px
+- no collapsed category may remain visually between List Summary and the active header
+- do NOT reorder/delete category data
+- preserve original list order when bounded mode ends
+
+Do NOT rely only on a guessed animation duration or fixed timer.
+
+The final position must be VERIFIED before parent scrolling is considered finished/locked.
+
+Use the safest existing architecture, for example:
+- exact scroll positioning
+- scroll completion detection
+- bounded requestAnimationFrame measurement/correction
+- final corrective scroll after smooth motion
+
+Do not add unnecessary animation complexity.
+
+============================================================
+5. FIX 2 — ITEM ACCORDION AUTO-REVEAL
+============================================================
+
+Inside the already-working bounded long-category viewport:
+
+When an ITEM accordion opens:
+
+IF the entire expanded item accordion already fits:
+- do nothing
+- do not move item viewport unnecessarily
+
+IF its lower portion is hidden:
+- scroll ONLY the item viewport
+- scroll only enough to reveal the entire opened item accordion
+- target the bottom of the Delete Item row
+- final Delete Item row must be fully visible immediately above the fixed Add Item bar
+
+Do NOT move:
+- List Summary
+- category header
+- Add Item bar
+- bottom controls
+- parent category/page scroll
+
+Only itemViewport.scrollTop changes.
+
+Target geometry:
+
+deleteItemBottom <= itemViewportBottom
+
+Preferred finished position when enough scroll range exists:
+
+abs(deleteItemBottom - itemViewportBottom) <= 2 px
+
+If the viewport cannot scroll farther, report the remaining positive gap rather than overscrolling.
+
+This behavior must work repeatedly for different low-position items.
+
+============================================================
+6. PRESERVE FIXED-BOUNDARY MODEL
+============================================================
+
+Do NOT regress:
+
+LIST SUMMARY
+FIXED ACTIVE CATEGORY HEADER
+SCROLLABLE ITEMS ONLY
+FIXED ADD ITEM + ▲ ▼
+BOTTOM CONTROLS
+
+Preserve:
+- manual item scrolling
+- ▲ / ▼ page movement
+- ▲ / ▼ top/middle/bottom states
+- new-item auto-reveal behavior
+- category open/close
+- category long-press reorder
+- slide-to-delete
+- bottom box gestures
+
+============================================================
+7. FIX 3 — ADD SAVE BOX
+============================================================
+
+Required Group 4:
+
+Back | Save | Share | More
+
+Rules:
+- exactly four boxes
+- Save between Back and Share
+- use same box dimensions/style/tap behavior as sibling controls
+- preserve Group 4 animation and no-wrap behavior
+- keep Group 4 within width at 320/375/390/430
+
+SAVE FUNCTION:
+Reuse the existing Save handler/state.
+
+Do NOT create:
+- a second save implementation
+- a second persistence path
+- new DB logic
+
+If an obsolete mobile Save launcher elsewhere duplicates the new bottom Save box:
+remove only that obsolete launcher under the existing no-duplicate rule.
+Do not remove underlying Save functionality.
+
+============================================================
+8. PLAYWRIGHT — EXACT LOWER-CATEGORY TEST
+============================================================
+
+Primary viewport:
+390 x 844
+
+Use a LONG category that is NOT the first category.
+
+Precondition:
+at least one other category must exist above it.
+
+Record:
+summaryBottom
+activeHeaderTop
+parentScrollTopBefore
+parentScrollTopAfter
+identity of category/categories above
+
+Assert:
+abs(activeHeaderTop - summaryBottom) <= 1 px
+
+Also prove:
+- no other category element intersects the vertical interval between Summary bottom and active header top
+- category data/order remains unchanged
+- header position remains unchanged while item viewport scrolls
+
+Do NOT use only Backpack/top category for this proof.
+
+============================================================
+9. PLAYWRIGHT — ITEM AUTO-REVEAL TESTS
+============================================================
+
+TEST A — ALREADY FITS
+Open an item whose entire expanded accordion fits.
+
+Record itemViewport.scrollTop before/after.
+
+Assert:
+- full accordion visible
+- no material scrollTop change
+- category header unchanged <= 1 px
+- Add Item unchanged <= 1 px
+
+TEST B — PARTLY HIDDEN
+Choose a low item whose expansion would extend below the viewport.
+
+Before:
+- viewportBottom
+- scrollTop
+- header geometry
+- Add Item geometry
+
+Open item.
+
+After:
+- Delete Item bottom
+- scrollTop
+- header geometry
+- Add Item geometry
+
+Assert:
+- Delete Item fully visible
+- if enough scroll range exists:
+  abs(deleteItemBottom - itemViewportBottom) <= 2 px
+- scrollTop increased
+- header unchanged <= 1 px
+- Add Item unchanged <= 1 px
+
+TEST C — REPEAT
+Open at least two different low items in sequence.
+
+Prove:
+- both auto-reveal correctly
+- parent page/category scroll does not drift
+
+============================================================
+10. PLAYWRIGHT — SAVE BOX
+============================================================
+
+Navigate to Group 4.
+
+Assert exact visible order:
+
+Back
+Save
+Share
+More
+
+Tap Save with safe test data.
+
+Prove:
+- existing Save handler/state is used
+- Save action behaves as existing TrailWeigh Save
+- no duplicate bottom Save box
+- Share remains
+- More remains
+- layout fits at 320/375/390/430
+
+============================================================
+11. TARGETED REGRESSIONS
+============================================================
+
+Verify only:
+
+- fixed active category header
+- fixed Add Item
+- item-only scrolling
+- ▲ / ▼ controls
+- List Summary global chevron
+- category open/close
+- category reorder
+- slide-delete
+- bottom box-group transitions
+- stationary 68 px stacked bars
+- Preview selected-only
+- Print inside Preview
+- Pack Summary
+- Weight Distribution opens
+- theme dropdown remains absent
+- wedge-color chart mapping preserved
+- TrailWeigh header unchanged
+- no horizontal overflow 320/375/390/430
+
+Do not investigate bounce.
+
+============================================================
+12. REQUIRED EVIDENCE
+============================================================
+
+Include in R0076P2.zip:
+
+1. r0076p2-category-touch.jpg
+Shows lower long category header touching List Summary with no category between them.
+
+2. r0076p2-item-reveal.jpg
+Shows expanded low item fully visible through Delete Item directly above fixed Add Item.
+
+3. r0076p2-save.jpg
+Shows Group 4:
+Back | Save | Share | More
+
+A short video is preferred showing:
+- lower long category opens and aligns
+- low item expands and auto-reveals
+- fixed header/Add Item do not move
+
+============================================================
+13. PASS / FAIL DISCIPLINE
+============================================================
+
+Use:
+PASS
+FAIL
+NOT RUN
+NOT APPLICABLE
+
+No conditional no-op passes.
+
+Do not widen tolerance to make a failure pass.
+
+Do not call runner exit code 0 proof of product PASS.
+
+============================================================
+14. LEARNING QUESTIONS — EXACTLY 3
+============================================================
+
+Answer ONLY from code/files already inspected for R0076P2.
+Do not broaden scope solely to answer them.
+
+QUESTION 1
+What exact parent-scroll completion method should mobile V3 use so a lower active category finishes with a true 0 px gap beneath List Summary before the parent is locked, rather than relying on a fixed timer?
+
+QUESTION 2
+What existing item-accordion state and DOM refs can be reused to auto-scroll only the bounded item viewport until the opened item’s Delete Item row is fully visible above Add Item?
+
+QUESTION 3
+What existing Save handler should Group 4 reuse so Back | Save | Share | More adds only a launcher and does not create duplicate save logic?
+
+============================================================
+15. REQUIRED REPORT
+============================================================
+
+Create:
+
+R0076P2.md
+
+Required structure:
+
+# R0076P2 Report
+
+## Parent Report
+R0076
+
+## Scope / Cost Discipline
+- exact application files inspected
+- exact application files changed
+- tests changed/added
+- scope expansion YES/NO
+
+## Root Cause — Category Alignment
+- why lower category did not reach Summary
+- whether timer/smooth-scroll completion contributed
+
+## Exact Category Alignment Proof
+- category used
+- categories above it
+- summaryBottom
+- activeHeaderTop
+- exact gap
+- parent scroll before/after
+
+## Item Accordion Auto-Reveal
+- state/ref source
+- geometry calculation
+- already-fits result
+- hidden-bottom result
+- repeated result
+- parent-scroll drift result
+
+## Save Box
+- handler reused
+- Group 4 order
+- responsive results
+
+## Protected Regressions
+PASS/FAIL/NOT RUN
+
+## TypeScript
+result
+
+## Playwright
+- total
+- passed
+- failed
+- skipped
+- NOT RUN
+- exact failures
+
+## Evidence
+exact filenames
+
+## Lessons for Future Prompts
+
+### Learning Question 1
+answer
+
+### Learning Question 2
+answer
+
+### Learning Question 3
+answer
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## ZIP Contents
+exact filenames
+
+## Final Scope Confirmation
+- Checklist.tsx untouched
+- desktop untouched
+- DB/schema untouched
+- auth untouched
+- deployment/publishing untouched
+- bounce untouched
+
+============================================================
+16. ZIP
+============================================================
+
+Create:
+
+R0076P2.zip
+
+MUST INCLUDE:
+- R0076P2.md
+- every application source file actually changed
+- every R0076P2 Playwright test file
+- all required evidence
+
+Before delivery:
+1. inspect git status/diff
+2. list exact changed files
+3. confirm report filenames actually exist in ZIP
+4. list/open ZIP contents
+
+Do not include:
+- node_modules
+- caches
+- build output
+- unrelated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, targeted verification, report, evidence, and ZIP:
+
+STOP.
+
+Do NOT start R0077.
+Do NOT publish.
+Do NOT deploy.
+Do NOT modify DB/auth.
+Do NOT investigate bounce.
+Wait for user review.

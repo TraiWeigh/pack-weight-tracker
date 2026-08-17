@@ -758,7 +758,7 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
 // Group 1 (default): Locker | Summary | Add | Search | [→ NEXT]
 // Group 2:           [← BACK] | Undo | Redo | Reset | [→ NEXT]
 // Group 3:           [← BACK] | Camera | Photos | Preview | [→ NEXT]
-// Group 4:           [← BACK] | Share | More
+// Group 4:           [← BACK] | Save | Share | More
 //
 // Max five visible boxes at one time (chevron counts as a box).
 // Stacked bars (inactive deck cards) are NOT part of this system and are never
@@ -783,6 +783,7 @@ interface BoxGroupBarProps {
   onCamera:  () => void;
   onPhotos:  () => void;
   onPreview: () => void;
+  onSave:    () => void;
   onShare:   () => void;
   onMore:    () => void;
 }
@@ -846,7 +847,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
       onLocker, onSummary, onAdd, onSearch,
       onUndo, onRedo, onReset,
       onCamera, onPhotos, onPreview,
-      onShare, onMore,
+      onSave, onShare, onMore,
     } = props;
 
     const [groupIdx, setGroupIdx]   = useState(0);
@@ -1032,9 +1033,11 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
               </>,
             },
             {
-              /* ── Group 4: [BACK] | Share | More ── */
+              /* ── Group 4: [BACK] | Save | Share | More ── */
               children: <>
                 <ChevronBox direction="left" aria="Previous controls" onClick={goLeft}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                <NavBox Icon={Save}           label="Save"  aria="Save — save list to Locker"    onClick={onSave}/>
                 <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
                 <NavBox Icon={Share2}         label="Share" aria="Share — create a review link"  onClick={onShare}/>
                 <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
@@ -2249,29 +2252,55 @@ function MobileFunctionalV3Inner() {
     if (!ms || !listEl) return;
     const catEl = listEl.querySelector(`[data-cat="${CSS.escape(openCatName)}"]`) as HTMLElement | null;
     if (!catEl) return;
-    const raf = requestAnimationFrame(() => {
-      // Temporarily restore scroll so we can reposition, then freeze again below.
+
+    // R0076P2 — Use INSTANT scroll (not smooth) so the final position is
+    // deterministic before the parent is locked.  A second RAF then reads the
+    // actual settled geometry and applies a sub-pixel corrective offset if needed.
+    // This replaces the previous smooth-scroll + 420 ms fixed-timer approach which
+    // could lock the scroller before the animation finished, leaving other
+    // categories visible between List Summary and the active long-category header.
+    let raf1 = -1;
+    let raf2 = -1;
+
+    raf1 = requestAnimationFrame(() => {
+      // Restore scrollability so we can reposition.
       ms.style.overflowY = 'auto';
-      const msRect  = ms.getBoundingClientRect();
-      const catRect = catEl.getBoundingClientRect();
-      // Use actual DOM summaryBar height — not stale React state — so the
-      // category header lands exactly at the summary bottom with no sub-pixel gap.
-      const summaryEl2 = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
-      const actualSummaryH = summaryEl2 ? summaryEl2.getBoundingClientRect().height : summaryH;
-      const target  = ms.scrollTop + (catRect.top - msRect.top) - actualSummaryH;
-      if (Math.abs(target - ms.scrollTop) > 2) {
-        ms.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
-      }
-      setTimeout(() => {
+
+      const summaryEl = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
+      const summaryBtm = summaryEl ? summaryEl.getBoundingClientRect().bottom : summaryH;
+      const catTop     = catEl.getBoundingClientRect().top;
+      // delta = how far the category header top is from its target (summaryBtm)
+      const delta  = catTop - summaryBtm;
+      const target = Math.max(0, ms.scrollTop + delta);
+
+      // Direct property assignment — guaranteed synchronous in all browsers.
+      // ms.scrollTo({ behavior: 'instant' }) is NOT reliably synchronous in Chrome
+      // (it queues a task like smooth scroll); ms.scrollTop = N is always instant.
+      ms.scrollTop = Math.max(0, target);
+
+      // Second RAF: re-read the actual settled geometry and correct any sub-pixel residual.
+      raf2 = requestAnimationFrame(() => {
+        const summaryEl2 = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
+        const summaryBtm2 = summaryEl2 ? summaryEl2.getBoundingClientRect().bottom : summaryH;
+        const residual    = catEl.getBoundingClientRect().top - summaryBtm2;
+        if (Math.abs(residual) > 0.5) {
+          ms.scrollTop = Math.max(0, ms.scrollTop + residual);
+        }
+        // Header is now exactly at summaryBtm — run long-mode measurement and lock.
         remeasureLongMode();
         prevOpenCatItemCountRef.current = openCatName
           ? (sandbox.items[openCatName] ?? []).length
           : 0;
-      }, 420);
+      });
     });
-    return () => cancelAnimationFrame(raf);
+
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
+  // R0076P2: isCatLong is in deps so the effect re-fires when the category transitions
+  // from short → long.  On first open (few items), the main-scroll content may be too
+  // short for the full delta scroll, clamping scrollTop prematurely.  Re-firing when
+  // isCatLong=true (content is now tall enough) applies the corrective offset.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openCatName, allExpanded, summaryH, navHeight]);
+  }, [openCatName, isCatLong, allExpanded, summaryH, navHeight]);
 
   // R0076 repair: re-measure when items are added/deleted in the open category
   // so SHORT→LONG and LONG→SHORT transitions happen without close/reopen.
@@ -2306,6 +2335,29 @@ function MobileFunctionalV3Inner() {
     if (isCatLong) setTimeout(() => recalcCatOverflow(), 60);
     else setCatOverflow({ above: false, below: false });
   }, [isCatLong, recalcCatOverflow]);
+
+  // R0076P2: when an item accordion opens inside the bounded item viewport, auto-scroll
+  // ONLY the item viewport just enough to reveal the Delete Item row immediately above
+  // the fixed Add Item bar.  If the accordion already fits, nothing moves.
+  useEffect(() => {
+    if (!expandedItem || !isCatLong) return;
+    const t = setTimeout(() => {
+      const el = openCatItemsRef.current;
+      if (!el) return;
+      // Locate the Delete Item row (testid set only when isExpanded && isCatLong)
+      const deleteRow = el.querySelector('[data-testid="item-delete-row"]') as HTMLElement | null;
+      if (!deleteRow) return;
+      const elRect     = el.getBoundingClientRect();
+      const deleteBottom = deleteRow.getBoundingClientRect().bottom;
+      // Only scroll if the Delete Item row extends below the visible item viewport.
+      if (deleteBottom > elRect.bottom + 1) {
+        el.scrollTop += (deleteBottom - elRect.bottom) + 2; // +2 breathing room
+        setTimeout(recalcCatOverflow, 60);
+      }
+    }, 200); // Allow accordion render to settle before measuring
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedItem, isCatLong]);
 
   // ── Item expand/collapse ──────────────────────────────────────────────────────
 
@@ -3632,7 +3684,11 @@ function MobileFunctionalV3Inner() {
                                 </div>
 
                                 {/* R004 — accessible NON-SWIPE delete path (replaces resting trash icon) */}
-                                <div style={{
+                                {/* R0076P2: testid set only when expanded inside bounded long mode
+                                    so the auto-reveal effect can locate the exact Delete row. */}
+                                <div
+                                  data-testid={isExpanded && isCatLong && openCatName === catName ? 'item-delete-row' : undefined}
+                                  style={{
                                   display: 'flex', alignItems: 'center',
                                   padding: '0 14px', height: 42, gap: 10,
                                   borderTop: `1px solid ${DETAIL_BDR}`,
@@ -3774,6 +3830,7 @@ function MobileFunctionalV3Inner() {
           onCamera={handleCamera}
           onPhotos={handlePhotos}
           onPreview={() => setShowPreview(true)}
+          onSave={handleSave}
           onShare={navigateToShare}
           onMore={()  => openDeck('more')}
         />
