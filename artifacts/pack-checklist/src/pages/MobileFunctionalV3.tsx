@@ -260,6 +260,17 @@ function appendLockerEntry(entry: LockerEntry): void {
   localStorage.setItem(LOCKER_KEY, JSON.stringify([...entries, entry]));
 }
 
+// R0079 — write full array, update one entry, remove one entry
+function writeLockerEntries(entries: LockerEntry[]): void {
+  localStorage.setItem(LOCKER_KEY, JSON.stringify(entries));
+}
+function updateLockerEntry(id: string, updated: LockerEntry): void {
+  writeLockerEntries(readLockerEntries().map(e => e.id === id ? updated : e));
+}
+function removeLockerEntry(id: string): void {
+  writeLockerEntries(readLockerEntries().filter(e => e.id !== id));
+}
+
 // ─── TOAST ───────────────────────────────────────────────────────────────────────
 function Toast({ message }: { message: string }) {
   return (
@@ -1013,7 +1024,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
                 <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
                 <NavBox Icon={Redo2}     label="Redo"    aria="Redo last change"    disabled={redoDisabled} onClick={onRedo}/>
                 <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
-                <NavBox Icon={RotateCcw} label="Reset"   aria="Reset list to saved"                        onClick={onReset}/>
+                <NavBox Icon={RotateCcw} label="Reset"   aria="Reset — clear checked/packed marks"          onClick={onReset}/>
                 <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
                 <ChevronBox direction="right" aria="Next controls" onClick={goRight}/>
               </>,
@@ -1932,6 +1943,14 @@ function MobileFunctionalV3Inner() {
   const [catRenameValue, setCatRenameValue] = useState('');
   const [catDeleteConfirm, setCatDeleteConfirm] = useState(false);
 
+  // R0079 — Save chooser / Save As / Reset checked-state / Locker delete
+  const [activeLockerEntryId, setActiveLockerEntryId] = useState<string | null>(null);
+  const [showSaveChooser, setShowSaveChooser] = useState(false);
+  const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
+  const [saveAsName, setSaveAsName] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [lockerDeleteTarget, setLockerDeleteTarget] = useState<LockerEntry | null>(null);
+
   // D6 — item delete confirmation
   const [deleteItemConfirm, setDeleteItemConfirm] = useState<{ cat: string; id: string; name: string } | null>(null);
   // R0077P2 — dialog focus management
@@ -1939,6 +1958,12 @@ function MobileFunctionalV3Inner() {
   const deleteConfirmedRef = useRef(false);                     // true when item was actually deleted
   const cancelDialogBtnRef  = useRef<HTMLButtonElement | null>(null);
   const confirmDialogBtnRef = useRef<HTMLButtonElement | null>(null);
+  // R0079 — focus refs for new dialogs (initial focus on Cancel/safe button)
+  const saveChooserCancelRef  = useRef<HTMLButtonElement | null>(null);
+  const saveAsCancelRef        = useRef<HTMLButtonElement | null>(null);
+  const saveAsInputRef         = useRef<HTMLInputElement  | null>(null);
+  const resetCancelRef         = useRef<HTMLButtonElement | null>(null);
+  const lockerDeleteCancelRef  = useRef<HTMLButtonElement | null>(null);
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -1969,6 +1994,36 @@ function MobileFunctionalV3Inner() {
     return undefined;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deleteItemConfirm]);
+
+  // R0079 — focus management for new dialogs (all focus Cancel / input on open)
+  useEffect(() => {
+    if (showSaveChooser) {
+      const id = setTimeout(() => saveChooserCancelRef.current?.focus(), 50);
+      return () => clearTimeout(id);
+    }
+    return undefined;
+  }, [showSaveChooser]);
+  useEffect(() => {
+    if (showSaveAsDialog) {
+      const id = setTimeout(() => saveAsInputRef.current?.focus(), 50);
+      return () => clearTimeout(id);
+    }
+    return undefined;
+  }, [showSaveAsDialog]);
+  useEffect(() => {
+    if (showResetConfirm) {
+      const id = setTimeout(() => resetCancelRef.current?.focus(), 50);
+      return () => clearTimeout(id);
+    }
+    return undefined;
+  }, [showResetConfirm]);
+  useEffect(() => {
+    if (lockerDeleteTarget) {
+      const id = setTimeout(() => lockerDeleteCancelRef.current?.focus(), 50);
+      return () => clearTimeout(id);
+    }
+    return undefined;
+  }, [lockerDeleteTarget]);
 
   const showToast = useCallback((msg: string, ms = 3000) => {
     setToast(msg);
@@ -2092,23 +2147,55 @@ function MobileFunctionalV3Inner() {
     setSandbox(next);
   }, [redoHistory]);
 
-  // ── Reset ─────────────────────────────────────────────────────────────────────
+  // ── Reset — R0079: shows confirmation; only clears checked/packed marks ──────
 
   const handleReset = useCallback(() => {
-    const seed = originalSeedRef.current ?? DEMO_SEED;
-    setUndoHistory(prev => [...prev.slice(-(HISTORY_LIMIT - 1)), sandboxRef.current]);
-    setRedoHistory([]);
-    setSandbox(seed);
-    setOpenCatName(null);
-    setAllExpanded(false);
-    setExpandedItem(null);
-    showToast('Reset to original data');
-  }, [showToast]);
+    setShowResetConfirm(true);
+  }, []);
 
-  // ── Save (creates a new Locker entry — additive, does not overwrite active store) ──
+  const handleResetConfirm = useCallback(() => {
+    // Clear every item's checked mark; preserve all other fields.
+    mutateSandbox(prev => {
+      const newItems: SandboxStore['items'] = {};
+      for (const cat of Object.keys(prev.items)) {
+        newItems[cat] = prev.items[cat].map(item => ({ ...item, checked: false }));
+      }
+      return { ...prev, items: newItems };
+    });
+    setShowResetConfirm(false);
+    showToast('Checked items cleared');
+  }, [mutateSandbox, showToast]);
 
+  // ── Save — R0079: opens chooser (Save / Save As / Cancel) ────────────────────
+
+  /** Open the save chooser sheet. Does NOT immediately save. */
   const handleSave = useCallback(() => {
+    setShowSaveChooser(true);
+  }, []);
+
+  /** Save to the currently active Locker entry (update), or auto-create new (unsaved list). */
+  const handleSaveNow = useCallback(() => {
+    setShowSaveChooser(false);
     const now = new Date();
+    if (activeLockerEntryId) {
+      const all = readLockerEntries();
+      const existing = all.find(e => e.id === activeLockerEntryId);
+      if (existing) {
+        const updated: LockerEntry = {
+          ...existing,
+          savedAt: Date.now(),
+          store: {
+            items: sandboxRef.current.items,
+            order: sandboxRef.current.order,
+            meta:  sandboxRef.current.meta,
+          } as LockerEntry['store'],
+        };
+        updateLockerEntry(activeLockerEntryId, updated);
+        showToast(`Saved "${existing.name}"`);
+        return;
+      }
+    }
+    // No active entry — create new with auto-generated name (same as legacy behaviour).
     const name = `${listName} — ${now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
     const entry: LockerEntry = {
       id: crypto.randomUUID(),
@@ -2118,15 +2205,61 @@ function MobileFunctionalV3Inner() {
         items: sandboxRef.current.items,
         order: sandboxRef.current.order,
         meta:  sandboxRef.current.meta,
-        // LockerEntry.store also has Background fields — not relevant here
       } as LockerEntry['store'],
-      background:  null,
-      bgFade:      0.3,
-      bgTone:      'light',
+      background: null,
+      bgFade:     0.3,
+      bgTone:     'light',
     };
     appendLockerEntry(entry);
+    setActiveLockerEntryId(entry.id);
     showToast(`Saved as "${name}"`);
-  }, [listName, showToast]);
+  }, [activeLockerEntryId, listName, showToast]);
+
+  /** Open the Save As name dialog. */
+  const handleSaveAsOpen = useCallback(() => {
+    setShowSaveChooser(false);
+    setSaveAsName(listName);
+    setShowSaveAsDialog(true);
+  }, [listName]);
+
+  /** Create a new independent Locker copy with the typed name. */
+  const handleSaveAsConfirm = useCallback(() => {
+    const name = saveAsName.trim() || listName;
+    const newId = crypto.randomUUID();
+    const entry: LockerEntry = {
+      id: newId,
+      name,
+      savedAt: Date.now(),
+      store: {
+        items: sandboxRef.current.items,
+        order: sandboxRef.current.order,
+        meta:  sandboxRef.current.meta,
+      } as LockerEntry['store'],
+      background: null,
+      bgFade:     0.3,
+      bgTone:     'light',
+    };
+    appendLockerEntry(entry);
+    setActiveLockerEntryId(newId);
+    setListName(name);
+    setShowSaveAsDialog(false);
+    showToast(`Saved as "${name}"`);
+  }, [saveAsName, listName, showToast]);
+
+  /** Delete the targeted Locker entry; if it is the active list, detach identity only. */
+  const handleLockerDeleteConfirm = useCallback(() => {
+    if (!lockerDeleteTarget) return;
+    const { id, name } = lockerDeleteTarget;
+    removeLockerEntry(id);
+    if (activeLockerEntryId === id) {
+      // Keep the working list in memory as unsaved; next Save creates a new entry.
+      setActiveLockerEntryId(null);
+    }
+    // Refresh the locker entries panel.
+    setLockerEntries(readLockerEntries());
+    setLockerDeleteTarget(null);
+    showToast(`Deleted "${name}"`);
+  }, [lockerDeleteTarget, activeLockerEntryId, showToast]);
 
   // ── Share — 027Q: navigate to full-screen Share view, then generate link ─────
 
@@ -2836,6 +2969,8 @@ function MobileFunctionalV3Inner() {
                 // A2: the loaded Locker entry's name becomes the active list identity
                 // immediately — subsequent Save and Share use this name.
                 setListName(entry.name);
+                // R0079: track which Locker entry is active so Save updates it.
+                setActiveLockerEntryId(entry.id);
                 closeDeck();
                 showToast(`Loaded "${entry.name}"`);
               }
@@ -2848,6 +2983,19 @@ function MobileFunctionalV3Inner() {
             }}
           >
             Load This List
+          </button>
+          {/* R0079 — Delete saved list (secondary/destructive, separated from Load) */}
+          <button
+            onClick={() => setLockerDeleteTarget(entry)}
+            aria-label={`Delete saved list ${entry.name}`}
+            style={{
+              marginTop: 8, width: '100%', background: 'transparent', color: '#dc2626',
+              border: '1px solid #dc2626', borderRadius: 10, padding: '10px 0',
+              fontSize: 13.5, fontWeight: 600, cursor: 'pointer', fontFamily: SANS,
+              minHeight: 44,
+            }}
+          >
+            Delete List
           </button>
         </div>
       ),
@@ -3033,7 +3181,7 @@ function MobileFunctionalV3Inner() {
       icon: <Save size={18} strokeWidth={1.8}/>,
       render: () => (
         <div style={{ padding: '4px 0 8px' }}>
-          {deckAction(<Save size={17} strokeWidth={1.8}/>,  'Save',      runAndClose(handleSave), false, 'Save current list as a new Locker entry')}
+          {deckAction(<Save size={17} strokeWidth={1.8}/>,  'Save',      runAndClose(handleSave), false, 'Save or Save As')}
           {deckAction(<Tent size={17} strokeWidth={1.8}/>,  'Checklist', runAndClose(() => setShowChecklist(true)), false, 'Trail checklist for selected items')}
           {/* R0072 §10 No Duplicate Control: Undo/Redo/Reset moved to Group 2 bottom box.
               R0072 §10 No Duplicate Control: View/Print moved to Preview bottom box (Group 3).
@@ -4359,6 +4507,238 @@ function MobileFunctionalV3Inner() {
                 aria-label={`Confirm delete ${deleteItemConfirm.name}`}
                 style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
               >Delete Item</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0079-D1: Save Chooser — Save / Save As / Cancel ── */}
+      {showSaveChooser && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Save options"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setShowSaveChooser(false)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setShowSaveChooser(false); } }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500,
+              background: '#fff', borderRadius: '16px 16px 0 0',
+              padding: '20px 20px 40px', fontFamily: SANS,
+              boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.8px', color: MUTED, textTransform: 'uppercase', marginBottom: 16, textAlign: 'center' }}>
+              Save List
+            </div>
+            <button
+              data-testid="save-chooser-save"
+              onClick={handleSaveNow}
+              aria-label={activeLockerEntryId ? 'Save — update current saved list' : 'Save — create new saved list'}
+              style={{
+                width: '100%', marginBottom: 10, background: NAV_ACTIVE, color: '#fff',
+                border: 'none', borderRadius: 10, padding: '13px 0',
+                fontSize: 15, fontWeight: 600, cursor: 'pointer', minHeight: 44,
+              }}
+            >
+              {activeLockerEntryId ? 'Save' : 'Save'}
+            </button>
+            <button
+              data-testid="save-chooser-save-as"
+              onClick={handleSaveAsOpen}
+              aria-label="Save As — create a new independent copy"
+              style={{
+                width: '100%', marginBottom: 14, background: CARD_BG,
+                border: `1px solid ${CARD_BORDER}`, borderRadius: 10, padding: '13px 0',
+                fontSize: 15, fontWeight: 600, color: PRIMARY, cursor: 'pointer', minHeight: 44,
+              }}
+            >
+              Save As
+            </button>
+            <button
+              ref={saveChooserCancelRef}
+              data-testid="save-chooser-cancel"
+              onClick={() => setShowSaveChooser(false)}
+              aria-label="Cancel save"
+              style={{
+                width: '100%', background: 'transparent', border: 'none',
+                padding: '10px 0', fontSize: 14.5, fontWeight: 500, color: SECONDARY,
+                cursor: 'pointer', minHeight: 44,
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0079-D2: Save As — name input dialog ── */}
+      {showSaveAsDialog && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Save As"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setShowSaveAsDialog(false)}
+          onKeyDown={e => {
+            if (e.key === 'Escape') { e.preventDefault(); setShowSaveAsDialog(false); }
+            if (e.key === 'Enter') { e.preventDefault(); handleSaveAsConfirm(); }
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500,
+              background: '#fff', borderRadius: '16px 16px 0 0',
+              padding: '24px 20px 40px', fontFamily: SANS,
+              boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 6 }}>
+              Save As
+            </div>
+            <div style={{ fontSize: 13.5, color: SECONDARY, marginBottom: 16, lineHeight: 1.5 }}>
+              Enter a name for the new copy. It will be saved independently.
+            </div>
+            <input
+              ref={saveAsInputRef}
+              data-testid="save-as-name-input"
+              type="text"
+              value={saveAsName}
+              onChange={e => setSaveAsName(e.target.value)}
+              placeholder="List name"
+              aria-label="New list name"
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                padding: '11px 14px', borderRadius: 10, border: `1.5px solid ${CARD_BORDER}`,
+                fontSize: 15, fontFamily: SANS, color: PRIMARY, outline: 'none', marginBottom: 18,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                ref={saveAsCancelRef}
+                data-testid="save-as-cancel"
+                onClick={() => setShowSaveAsDialog(false)}
+                aria-label="Cancel Save As"
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44 }}
+              >Cancel</button>
+              <button
+                data-testid="save-as-confirm"
+                onClick={handleSaveAsConfirm}
+                aria-label="Save copy"
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: NAV_ACTIVE, border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
+              >Save Copy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0079-D3: Reset Checklist confirmation ── */}
+      {showResetConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Reset Checklist confirmation"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setShowResetConfirm(false)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setShowResetConfirm(false); } }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500,
+              background: '#fff', borderRadius: '16px 16px 0 0',
+              padding: '24px 20px 36px', fontFamily: SANS,
+              boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 8 }}>
+              Reset Checklist?
+            </div>
+            <div style={{ fontSize: 14, color: SECONDARY, marginBottom: 24, lineHeight: 1.55 }}>
+              Clear all checked/packed marks in this list?
+              <br/>
+              Your items, categories, quantities, weights, and saved list will not be deleted.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                ref={resetCancelRef}
+                data-testid="reset-cancel"
+                onClick={() => setShowResetConfirm(false)}
+                aria-label="Cancel reset"
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44 }}
+              >Cancel</button>
+              <button
+                data-testid="reset-confirm"
+                onClick={handleResetConfirm}
+                aria-label="Confirm reset checked items"
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#b45309', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
+              >Reset Checks</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0079-D4: Locker Delete confirmation ── */}
+      {lockerDeleteTarget && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Delete Saved List confirmation"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 201,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.55)',
+          }}
+          onClick={() => setLockerDeleteTarget(null)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setLockerDeleteTarget(null); } }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500,
+              background: '#fff', borderRadius: '16px 16px 0 0',
+              padding: '24px 20px 36px', fontFamily: SANS,
+              boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#dc2626', marginBottom: 8 }}>
+              Delete Saved List?
+            </div>
+            <div style={{ fontSize: 14, color: SECONDARY, marginBottom: 24, lineHeight: 1.55 }}>
+              Delete "{lockerDeleteTarget.name}"?
+              <br/>
+              This removes the saved list only. Items in your Master Library will not be deleted.
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                ref={lockerDeleteCancelRef}
+                data-testid="locker-delete-cancel"
+                onClick={() => setLockerDeleteTarget(null)}
+                aria-label="Cancel delete saved list"
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44 }}
+              >Cancel</button>
+              <button
+                data-testid="locker-delete-confirm"
+                onClick={handleLockerDeleteConfirm}
+                aria-label={`Confirm delete ${lockerDeleteTarget.name}`}
+                style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
+              >Delete List</button>
             </div>
           </div>
         </div>

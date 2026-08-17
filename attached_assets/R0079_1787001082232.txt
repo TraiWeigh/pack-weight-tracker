@@ -1,0 +1,742 @@
+TRAILWEIGH — R0079
+LOCKER DELETE + SAVE / SAVE AS + RESET CHECKED STATE
+SURGICAL MOBILE FILE/LIST WORKFLOW REPAIR
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- CURRENT TrailWeigh project
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+============================================================
+PURPOSE
+============================================================
+
+R0079 implements THREE closely related saved-list workflow changes:
+
+1. Add a DELETE option to an expanded saved-list folder/card in Locker.
+2. Change the bottom Save box so it offers:
+   - Save
+   - Save As
+3. Give the existing Reset box a clear purpose:
+   RESET CHECKED/PACKED STATE ONLY.
+
+These changes are about saved-list lifecycle and checklist reuse.
+
+R0079 must NOT change Master Library ownership, list-selection logic,
+Preview/Print check-state behavior, photo/location architecture, sharing format,
+AI list creation, LiDAR ideas, or onboarding.
+
+Those are separate prompts.
+
+============================================================
+CURRENT USER REQUIREMENTS
+============================================================
+
+A. LOCKER DELETE
+
+When a saved list/folder is expanded in Locker, the user must have a clear Delete option.
+
+Delete means:
+
+- delete THAT SAVED LIST only;
+- do NOT delete Master Library items;
+- do NOT delete items from other saved lists;
+- do NOT alter account/auth;
+- do NOT delete photos or other shared assets unless current existing architecture
+  clearly treats them as list-owned and safe to remove;
+- do NOT change another list currently loaded unless deleting the active list requires
+  a safe active-state transition.
+
+Deletion must require confirmation.
+
+B. SAVE BOX
+
+The existing bottom Save box must offer two choices:
+
+- Save
+- Save As
+
+SAVE:
+- If the currently loaded list already has a persistent saved-list identity:
+  update that SAME saved list.
+- Do not create a duplicate.
+- Preserve the saved list's identity.
+- Preserve its current name unless the existing Save flow explicitly includes rename.
+- Use the existing persistence architecture.
+
+SAVE AS:
+- create a NEW independent saved list/copy;
+- ask the user for a new list name;
+- do not overwrite the source saved list;
+- after successful Save As, the new copy should become the current saved list if that
+  is consistent with the existing TrailWeigh save/load model;
+- report the exact resulting active-list behavior.
+
+UNSAVED / NEW LIST:
+- If no persistent saved-list identity exists yet, choosing Save must use the existing
+  naming/save flow to create the first saved list.
+- Do not present a meaningless overwrite action when no saved target exists.
+
+C. RESET BOX
+
+The existing Reset control currently does not perform a useful user-visible action.
+
+R0079 defines Reset as:
+
+RESET CHECKED ITEMS / PACKED STATE
+
+When used:
+- every currently CHECKED/PACKED item in the active checklist becomes unchecked;
+- INCLUDED items remain in the checklist;
+- categories remain;
+- quantities remain;
+- weights remain;
+- notes remain;
+- photos remain;
+- locations remain;
+- Master Library membership remains;
+- saved-list structure remains;
+- nothing is deleted.
+
+Reset must NOT:
+- delete items;
+- delete categories;
+- clear the list;
+- reset quantities or weights;
+- delete the saved file;
+- change Master Library contents;
+- remove photos/locations;
+- alter item inclusion/selection state.
+
+This establishes a standing product distinction:
+
+INCLUDED IN LIST != CHECKED/PACKED
+
+============================================================
+RESET CONFIRMATION COPY
+============================================================
+
+Use a clear confirmation before resetting checked state.
+
+Preferred wording:
+
+Title:
+Reset Checklist?
+
+Body:
+Clear all checked/packed marks in this list?
+Your items, categories, quantities, weights, photos, locations, and saved list will not be deleted.
+
+Buttons:
+Cancel
+Reset Checks
+
+If current terminology consistently uses “Checked” instead of “Packed”,
+use the current user-facing terminology while preserving the meaning.
+
+Do not use destructive red copy that implies files/items are being deleted unless
+the existing design system requires red for a reset confirmation.
+
+============================================================
+LOCKER DELETE UX
+============================================================
+
+CURRENT REFERENCE:
+The user's current Locker screenshot shows an expanded saved-list card with:
+- saved list name/date/item information
+- summary information
+- a large "Load This List" action
+
+Add Delete in the expanded saved-list card.
+
+Preferred hierarchy:
+
+Load This List          ← primary
+Delete                  ← secondary/destructive
+
+Do NOT put Delete immediately adjacent to Load in a way that encourages mis-taps.
+
+Delete may be:
+- a full-width secondary row/button below Load; OR
+- a clearly separated destructive text/button area
+
+Use current TrailWeigh visual language.
+
+Do not add a hamburger, context menu, notification menu, or unrelated top control.
+
+============================================================
+LOCKER DELETE CONFIRMATION
+============================================================
+
+Use a confirmation dialog.
+
+Preferred copy:
+
+Title:
+Delete Saved List?
+
+Body:
+Delete “[LIST NAME]”?
+This removes the saved list only. Items in your Master Library will not be deleted.
+
+Buttons:
+Cancel
+Delete List
+
+Required:
+- exact target list name shown;
+- safe initial focus on Cancel for keyboard accessibility;
+- Escape closes without deleting where current modal system supports it;
+- deleting must require an explicit confirm action;
+- backdrop behavior should remain consistent with existing dialogs.
+
+============================================================
+ACTIVE-LIST DELETE EDGE CASE
+============================================================
+
+If the saved list being deleted is ALSO the currently active/loaded list:
+
+Do not leave the application pointing at a deleted persistent identity.
+
+Determine the existing application's safest current behavior.
+
+Preferred outcome:
+- delete the saved Locker copy;
+- keep the currently visible working list in memory as an UNSAVED working list,
+  with its data intact;
+- next Save creates a new saved list rather than silently recreating the deleted ID.
+
+If current architecture cannot safely do that without broad work:
+- use the least-destructive existing behavior;
+- explain the behavior clearly in the report;
+- do not silently wipe the visible active list.
+
+============================================================
+SAVE / SAVE AS UX
+============================================================
+
+When user taps the Save box in bottom Group 4:
+
+Open a small accessible chooser/sheet/popover with:
+
+Save
+Save As
+Cancel
+
+Do NOT immediately save before the user chooses.
+
+SAVE:
+- current saved list -> update same list
+- unsaved list -> naming/create flow
+
+SAVE AS:
+- always new copy
+- prompt for new name before creation
+
+Keep this interaction compact.
+Do not redesign Group 4.
+
+Group 4 remains:
+Back | Save | Share | More | Next
+if the currently active looping-control implementation already uses Next.
+
+If current production branch has not yet implemented looping Group 4:
+DO NOT introduce looping in R0079.
+Preserve the CURRENT actual Group 4 structure.
+
+R0079 is not the looping-controls prompt.
+
+============================================================
+SAVE AS NAME DIALOG
+============================================================
+
+Required:
+- clear heading: Save As
+- text field prefilled with current list name if useful, selected/editable;
+- user must be able to choose a different name;
+- Cancel;
+- Save Copy / Save As action.
+
+Do not overwrite an existing saved list just because the typed name matches.
+
+If the current persistence layer requires unique names:
+- use existing duplicate-name handling;
+- do not invent a new naming policy unless needed;
+- report the behavior.
+
+If unique names are NOT required:
+- duplicate display names may exist, but saved-list identities must remain distinct.
+
+============================================================
+PERSISTENCE / DATA-INTEGRITY RULES
+============================================================
+
+Inspect the current save/Locker architecture before editing.
+
+Do not assume whether saved lists are:
+- localStorage-backed;
+- account/server-backed;
+- hybrid;
+- identified by token/id/name.
+
+Use the current active implementation.
+
+Do not introduce a new persistence layer.
+
+Do not change:
+- database schema;
+- authentication;
+- Clerk;
+- account model;
+- deployment;
+- Production Database.
+
+If existing saved-list delete/update functions exist:
+REUSE THEM.
+
+If current saved lists are server-backed:
+use the current safe delete/update API path only.
+
+If current saved lists are local:
+use the current storage abstraction rather than new raw storage keys.
+
+============================================================
+IMPORTANT STATE DISTINCTIONS
+============================================================
+
+R0079 must preserve these distinctions:
+
+1. MASTER LIBRARY ITEM
+   reusable personal item record
+
+2. SAVED LIST MEMBERSHIP
+   item/category included in a particular saved checklist
+
+3. CHECKED/PACKED STATE
+   completion/packing state within that checklist
+
+4. SAVED-LIST FILE IDENTITY
+   the persistent saved copy in Locker
+
+Deleting or resetting one must NOT incorrectly mutate another.
+
+============================================================
+STRICT PRESERVATION — USER PASS
+============================================================
+
+Preserve all current USER-PASS behavior including:
+
+R0076P3:
+- native thumb item scrolling in long categories;
+- outer category stack locked;
+- category header alignment;
+- Add Item fixed position;
+- item single-open accordion;
+- zero-open item state;
+- item auto-alignment/auto-reveal;
+- item chevrons;
+- Save remains accessible in Group 4;
+- swipe-to-delete;
+- category long-press reorder.
+
+R0077 / R0077P2:
+- checkbox target/semantics;
+- item-expand action separation;
+- 44px Weight / Quantity / Move controls;
+- 44px Delete Item control;
+- focus styling;
+- delete-item confirmation accessibility;
+- contrast improvements;
+- viewport zoom restriction removal.
+
+Do not alter Preview/Print in this prompt.
+
+============================================================
+NO-CHANGE SCOPE
+============================================================
+
+DO NOT implement in R0079:
+
+- Preview/Print checked-state correction
+- shared checklist state
+- TW transfer/import file format
+- item Location
+- location photos
+- View Photo / Add Photo accordion controls
+- AI list creation
+- Master Library redesign
+- onboarding/tutorial redesign
+- LiDAR
+- looping bottom groups
+- native iOS work
+- WCAG remediation unrelated to these controls
+- category reorder redesign
+
+DO NOT modify:
+- `replit.md`
+- `.replit`
+- `.agents/memory/*`
+- `.agents/skills/*`
+- dependency versions
+- auth/Clerk
+- schema/migrations
+- Secrets/env
+- deployment/publishing
+
+DO NOT:
+- Publish
+- Republish
+- Resume production
+- apply unrelated Ready tasks
+- enable Auto-apply
+
+============================================================
+PRE-EDIT GATE
+============================================================
+
+Before editing:
+
+1. Read current `replit.md` READ-ONLY.
+2. Confirm current `/mobile-functional-v3` active render path.
+3. Record git status.
+4. Identify current saved-list/Locker persistence implementation.
+5. Identify current Save handler.
+6. Identify current Reset handler and why it currently appears nonfunctional.
+7. Identify whether current active list has a persistent saved-list ID.
+8. Identify current Locker delete capability, if any.
+9. List expected application files to change.
+10. Reproduce:
+    - Save current behavior
+    - Reset current behavior
+    - expanded Locker card current behavior
+
+Do not edit until root cause/current paths are documented.
+
+============================================================
+EXPECTED SOURCE SCOPE
+============================================================
+
+Likely application file:
+- `artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx`
+
+Possible existing save/storage hook/module:
+ONLY if current source proves it owns saved-list persistence and must be changed.
+
+Possible test file:
+- `tests/e2e/r0079/r0079.spec.ts`
+
+Do not broaden scope without explicit evidence.
+
+============================================================
+MANDATORY TEST MATRIX
+============================================================
+
+R79-01 — LOCKER DELETE CONTROL VISIBLE
+- open Locker
+- expand one saved-list card
+PASS:
+- Load This List remains present
+- Delete List action visible
+- Delete visually separated from Load
+- no overlapping tap targets
+
+R79-02 — DELETE CANCEL
+- tap exact saved-list Delete
+- confirmation shows exact list name
+- Cancel
+PASS:
+- saved list still exists
+- active list unchanged
+- Master Library unchanged
+
+R79-03 — DELETE CONFIRM NONACTIVE LIST
+- choose a saved list that is NOT current active list
+- confirm delete
+PASS:
+- exactly that Locker entry disappears
+- other saved lists remain
+- active list remains
+- Master Library item count/content unchanged
+
+R79-04 — DELETE ACTIVE LIST EDGE CASE
+- delete the currently loaded saved-list entry
+PASS:
+- no crash
+- no blank/corrupt current UI
+- current working list behavior matches documented safe design
+- no stale persistent ID remains
+- Master Library unchanged
+
+R79-05 — SAVE CHOOSER
+- navigate to Group 4
+- tap Save
+PASS:
+- compact chooser shows Save / Save As / Cancel
+- no save occurs merely from opening chooser
+
+R79-06 — SAVE EXISTING LIST
+- load saved list
+- make small safe change to check state or note
+- Save -> Save
+PASS:
+- same saved-list identity updated
+- Locker does not gain duplicate
+- current name preserved
+- reload proves persistence
+
+R79-07 — SAVE AS EXISTING LIST
+- load saved list
+- Save -> Save As
+- enter new name
+PASS:
+- new independent Locker entry created
+- original remains unchanged
+- new name shown
+- identities are distinct
+- documented which list becomes active
+
+R79-08 — SAVE UNSAVED LIST
+- use unsaved/new working list state
+- Save -> Save
+PASS:
+- naming/create flow appears
+- successful save creates one Locker entry
+- no duplicate phantom save
+
+R79-09 — SAVE AS CANCEL
+PASS:
+- no copy created
+- source list unchanged
+
+R79-10 — RESET CONFIRMATION
+- create list with mix of checked/unchecked items
+- tap Reset
+PASS:
+- confirmation explains only checks will clear
+- Cancel leaves all states unchanged
+
+R79-11 — RESET CHECKS
+- confirm Reset Checks
+PASS:
+- all checked/packed marks become unchecked
+- item count unchanged
+- categories unchanged
+- included list membership unchanged
+- quantities unchanged
+- weights unchanged
+- notes unchanged where present
+- photos/locations unchanged where present/currently supported
+- no list deletion
+- Master Library unchanged
+
+R79-12 — RESET ZERO-CHECK STATE
+- active list already has zero checked items
+PASS:
+- no destructive side effect
+- either confirmation works harmlessly or control is safely disabled according to current design
+- behavior documented
+
+R79-13 — RESET PERSISTENCE
+Determine current expected persistence model:
+- if reset changes are auto-persisted, reload should remain unchecked;
+- if Save is required, reset should mark list dirty and Save should persist it.
+Do not invent a different save model.
+Document and test current intended behavior.
+
+R79-14 — MASTER LIBRARY ISOLATION
+Before/after:
+- saved list Delete
+- Reset
+- Save As
+PASS:
+- Master Library records remain intact
+
+R79-15 — R0076P3 REGRESSION
+PASS:
+- long-category native touch scroll
+- outer stack lock
+- item single-open
+- item auto-reveal
+- Save group accessible
+
+R79-16 — R0077P2 ACCESSIBILITY REGRESSION
+PASS:
+- Save chooser keyboard reachable
+- Delete-list dialog focus starts on Cancel
+- Escape closes without delete
+- focus return reasonable
+- Reset confirmation accessible
+- touch targets >=44 where standalone
+
+R79-17 — MOBILE WIDTHS
+At 320 / 375 / 390 / 430:
+PASS:
+- Locker delete fits
+- Save chooser fits
+- Reset confirmation fits
+- no horizontal overflow
+- no control overlap
+
+============================================================
+DATA-ISOLATION PROOF
+============================================================
+
+For deletion and Save As, capture identifiers/counts sufficient to prove:
+
+- only intended saved list changed;
+- Master Library did not change;
+- no other saved list changed.
+
+Do not expose secrets or private tokens in report/screenshots.
+
+Use redacted/stable IDs where needed.
+
+============================================================
+VISUAL EVIDENCE
+============================================================
+
+Provide DIFFERENT screenshots:
+
+1. expanded Locker saved-list card with Delete visible
+2. Delete Saved List confirmation
+3. Save chooser showing Save / Save As
+4. Save As naming dialog
+5. Reset Checklist confirmation
+6. list after Reset showing items still present but checks cleared
+
+Verify screenshots are not duplicates.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create:
+
+`workflow-reports/R0079.md`
+
+Sections:
+
+A. PURPOSE / USER REQUIREMENTS
+B. ACTIVE SOURCE / PERSISTENCE PATH
+C. PRE-EDIT BEHAVIOR
+D. LOCKER DELETE IMPLEMENTATION
+E. ACTIVE-LIST DELETE EDGE CASE
+F. SAVE / SAVE AS IMPLEMENTATION
+G. UNSAVED-LIST SAVE BEHAVIOR
+H. RESET CHECKED-STATE IMPLEMENTATION
+I. DATA-ISOLATION RESULTS
+J. ACCESSIBILITY
+K. R0076P3 REGRESSION
+L. R0077P2 REGRESSION
+M. MOBILE WIDTH RESULTS
+N. CHANGED FILES
+O. SCREENSHOT EVIDENCE
+P. SAFETY / NO-CHANGE VERIFICATION
+Q. USER VERIFICATION = PENDING
+
+Explicit status:
+
+LOCKER DELETE VISIBLE = PASS / FAIL
+LOCKER DELETE REQUIRES CONFIRMATION = PASS / FAIL
+DELETE CANCEL PRESERVES LIST = PASS / FAIL
+DELETE NONACTIVE LIST ISOLATED = PASS / FAIL
+DELETE ACTIVE LIST SAFE = PASS / FAIL
+MASTER LIBRARY UNAFFECTED BY LIST DELETE = PASS / FAIL
+
+SAVE CHOOSER = PASS / FAIL
+SAVE UPDATES SAME SAVED LIST = PASS / FAIL
+SAVE CREATES DUPLICATE = YES / NO
+SAVE AS CREATES INDEPENDENT COPY = PASS / FAIL
+SAVE AS REQUIRES NAME = PASS / FAIL
+UNSAVED SAVE FLOW = PASS / FAIL
+
+RESET MEANS CLEAR CHECKED/PACKED STATE ONLY = PASS / FAIL
+RESET DELETES ITEMS = YES / NO
+RESET DELETES CATEGORIES = YES / NO
+RESET CHANGES INCLUDED MEMBERSHIP = YES / NO
+RESET CHANGES WEIGHTS/QUANTITIES = YES / NO
+RESET CHANGES MASTER LIBRARY = YES / NO
+ALL CHECKED ITEMS CLEAR AFTER RESET = PASS / FAIL
+
+R0076P3 REGRESSION = PASS / FAIL
+R0077P2 ACCESSIBILITY REGRESSION = PASS / FAIL
+
+DATABASE SCHEMA CHANGED = YES / NO
+AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPENDENCIES CHANGED = YES / NO
+DEPLOYMENT/PUBLISHING CHANGED = YES / NO
+USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY ZIP
+============================================================
+
+Create:
+
+`R0079.zip`
+
+ZIP must contain:
+
+1. `R0079.md`
+2. every application source/storage file actually changed
+3. `tests/e2e/r0079/r0079.spec.ts`
+4. all six required screenshots
+5. small safe audit output if created
+
+Verify:
+- ZIP exists
+- nonzero
+- opens
+- report inside
+- actual changed source inside
+- test source inside
+- screenshots inside
+- screenshots unique
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before internal PASS:
+
+1. Does Delete remove only the chosen saved list?
+2. Is Master Library untouched?
+3. Is active-list deletion safe?
+4. Does Save update rather than duplicate?
+5. Does Save As always create a separate identity?
+6. Does unsaved Save create exactly one new saved list?
+7. Does Reset clear only checked/packed marks?
+8. Are items/categories/weights/quantities preserved?
+9. Did I avoid Preview/Print changes?
+10. Did I avoid photo/location changes?
+11. Did I preserve R0076P3?
+12. Did I preserve R0077P2 accessibility?
+13. Are dialogs accessible?
+14. Did I avoid persistence/schema redesign?
+15. Did I avoid unrelated files?
+16. Does ZIP contain actual changed source?
+
+If any material answer is NO:
+DO NOT claim PASS.
+
+============================================================
+STOP
+============================================================
+
+STOP after R0079 report + ZIP.
+
+Do not proceed to:
+- Preview/Print check-state repair
+- share/export TW list format
+- item Location
+- item photos
+- AI/list creation
+- looping controls
+- LiDAR
+- onboarding
+
+USER LIVE VERIFICATION is required before R0079 closes.
