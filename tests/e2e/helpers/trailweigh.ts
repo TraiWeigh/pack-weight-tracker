@@ -43,12 +43,24 @@ export function expectClean(errors: ErrorLog) {
   expect(realFailures, 'failed network requests (allowlist-filtered)').toEqual([]);
 }
 
-/** Navigate to the isolated demo route and wait for full mount. */
+/** Navigate to the isolated demo route and wait for full mount.
+ *
+ * Readiness condition updated (R0078): the V3 UI replaced the generic
+ * "LIST SUMMARY" header with the active list name, so that text is no longer
+ * a stable signal. We now wait for `[data-testid="main-scroll"]` (the outer
+ * scroll container that mounts when the list is hydrated) plus at least one
+ * visible category wedge button (proving the list rendered, not a blank page).
+ */
 export async function gotoDemo(page: Page) {
   const resp = await page.goto('/mobile-functional-v3');
   expect(resp, 'initial navigation response').not.toBeNull();
   expect(resp!.ok(), `document request failed: HTTP ${resp?.status()}`).toBe(true);
-  await expect(page.getByText('LIST SUMMARY')).toBeVisible();
+  // Wait for the stable V3 readiness signal (mounted + hydrated list).
+  await page.waitForSelector('[data-testid="main-scroll"]', { timeout: 15000 });
+  // Secondary check: at least one category wedge present → page is not blank/crashed.
+  await expect(
+    page.getByRole('button', { name: /^Open .+ category$/ }).first()
+  ).toBeVisible({ timeout: 5000 });
   await page.waitForLoadState('networkidle');
   return resp!;
 }
@@ -74,7 +86,8 @@ export async function openMenu(page: Page) {
 export async function backToList(page: Page) {
   const back = page.getByRole('button', { name: 'Back to list' }).first();
   if (await back.isVisible().catch(() => false)) await back.click();
-  await expect(page.getByText('LIST SUMMARY')).toBeVisible();
+  // Readiness updated (R0078): wait for the stable V3 main-scroll container.
+  await expect(page.locator('[data-testid="main-scroll"]')).toBeVisible();
 }
 
 /** Click a menu action then return to the list if the menu remains open. */
@@ -108,9 +121,15 @@ export async function openCategoryOptions(page: Page, cat: string) {
   await expect(page.getByText('Category Options')).toBeVisible();
 }
 
-/** Add a category through the bottom "Add Category" flow. Returns without asserting success. */
+/** Add a category through the bottom "Add Category" flow. Returns without asserting success.
+ *
+ * Path updated (R0078): Add Category moved to the Add bottom deck (R002/R004 architecture).
+ * Old path: 'Add a new category to this list' inline button (removed in R004 Part 4).
+ * New path: Add NavBox → 'Add Category — open card' → fill input → confirm.
+ */
 export async function addCategory(page: Page, name: string) {
-  await page.getByRole('button', { name: 'Add a new category to this list' }).click();
+  await page.getByRole('button', { name: 'Add — add items, categories, or import', exact: true }).click();
+  await page.getByRole('button', { name: 'Add Category — open card' }).click();
   await page.getByLabel('New category name').fill(name);
   await page.getByRole('button', { name: 'Confirm add category' }).click();
 }

@@ -61,7 +61,11 @@ test.describe('Keyboard interaction', () => {
 
   test('Escape cancels Add Category input', async ({ page, errors }) => {
     await gotoDemo(page);
-    await page.getByRole('button', { name: 'Add a new category to this list' }).click();
+    // Updated (R0078): Add Category is now in the Add bottom deck (R002 architecture).
+    // Old path 'Add a new category to this list' button was removed when the inline
+    // add-category control was replaced by the deck card (R004 Part 4).
+    await page.getByRole('button', { name: 'Add — add items, categories, or import', exact: true }).click();
+    await page.getByRole('button', { name: 'Add Category — open card' }).click();
     const input = page.getByLabel('New category name');
     await expect(input).toBeVisible({ timeout: 3000 });
     await input.fill('ShouldBeDiscarded');
@@ -74,7 +78,9 @@ test.describe('Keyboard interaction', () => {
 
   test('Enter confirms Add Category input', async ({ page, errors }) => {
     await gotoDemo(page);
-    await page.getByRole('button', { name: 'Add a new category to this list' }).click();
+    // Updated (R0078): same navigation fix as Escape test — use Add deck path.
+    await page.getByRole('button', { name: 'Add — add items, categories, or import', exact: true }).click();
+    await page.getByRole('button', { name: 'Add Category — open card' }).click();
     const input = page.getByLabel('New category name');
     await expect(input).toBeVisible({ timeout: 3000 });
     await input.fill('KeyboardCat');
@@ -103,15 +109,22 @@ test.describe('Keyboard interaction', () => {
 test.describe('Accessible names & tooltips', () => {
 
   test('Print button has both aria-label and title attribute', async ({ page, errors }) => {
-    // The "Print checklist" button lives inside the MobileChecklist overlay (only
-    // mounted when checklist mode is active). R002: the always-reachable Print entry
-    // is in the More deck → "Share & Print" card — test that one for its label.
+    // Updated (R0078): The More deck "Share & Print" card was removed in R0072 §10
+    // ("No Duplicate Control: Share/Print moved to Share/Preview bottom boxes").
+    // Print is now always-reachable via the Preview NavBox in nav Group 3.
     await gotoDemo(page);
-    await page.getByRole('button', { name: /^More — settings and tools/ }).click();
-    await page.getByRole('button', { name: /^Share & Print — open card/ }).click();
-    const btn = page.getByRole('button', { name: /^Print — Print your gear list/ });
+    // Navigate to Group 3: two "Next controls" clicks from Group 1.
+    const nextBtn = page.locator('button[aria-label="Next controls"]');
+    await nextBtn.first().evaluate(el => (el as HTMLElement).click());
+    await page.waitForTimeout(300);
+    await nextBtn.first().evaluate(el => (el as HTMLElement).click());
+    await page.waitForTimeout(300);
+    // Open the Preview overlay — contains the Print button.
+    await page.locator('button[aria-label="Preview — view and print gear list"]').evaluate(el => (el as HTMLElement).click());
+    await page.waitForTimeout(400);
+    // Verify the Print button has an accessible label.
+    const btn = page.getByRole('button', { name: /Print/i }).first();
     await expect(btn).toBeVisible({ timeout: 5000 });
-    // title attribute: may be on the button or its container — check aria-label at minimum
     const label = await btn.getAttribute('aria-label');
     expect(label ?? 'Print', 'Print button accessible label').toBeTruthy();
     expect(errors.pageErrors).toEqual([]);
@@ -154,8 +167,10 @@ test.describe('Accessible names & tooltips', () => {
     for (let i = 0; i < 10; i++) {
       await page.keyboard.press('Tab');
     }
-    // Page should still be interactive and responsive
-    await expect(page.getByText('LIST SUMMARY')).toBeVisible();
+    // Page should still be interactive and responsive.
+    // Readiness updated (R0078): 'LIST SUMMARY' header was replaced by the
+    // active list name in V3; use the stable main-scroll container instead.
+    await expect(page.locator('[data-testid="main-scroll"]')).toBeVisible();
     expect(errors.pageErrors).toEqual([]);
   });
 

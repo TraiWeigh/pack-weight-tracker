@@ -1,0 +1,577 @@
+TRAILWEIGH — R0078
+ACCESSIBILITY TEST INTEGRITY + READ-ONLY WCAG DIAGNOSTIC
+REPAIR STALE PLAYWRIGHT READINESS HELPER — NO APPLICATION CHANGES
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- CURRENT TrailWeigh project
+- Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+============================================================
+PURPOSE
+============================================================
+
+R0077P2 is the current accessibility implementation baseline.
+
+R0077P2 reported:
+
+- R0077P2 suite = 18/18 PASS
+- R0077 suite = 16/16 PASS
+- phase1b importers + UI = 46/46 PASS
+- phase1b keyboard-tooltips = 0/10 FAIL, documented as pre-existing
+
+R0077P2 also documented a known stale shared Playwright helper:
+
+`gotoDemo()` in:
+`tests/e2e/helpers/trailweigh.ts`
+
+currently waits for text similar to:
+`LIST SUMMARY`
+
+but the current `/mobile-functional-v3` UI replaced that old generic text with the active list name.
+
+R0077P2 therefore bypassed `gotoDemo()` and instead waited for:
+`[data-testid="main-scroll"]`
+
+This creates a strong possibility that some or all of the 0/10 keyboard-tooltip failures are TEST-INFRASTRUCTURE failures rather than current product failures.
+
+R0078 must:
+
+1. verify that hypothesis;
+2. repair the stale shared Playwright readiness helper ONLY if confirmed;
+3. rerun the affected keyboard-tooltip suite;
+4. classify every remaining failure accurately;
+5. run a READ-ONLY automated WCAG/accessibility diagnostic on the current mobile V3 route;
+6. produce a precise next-action report.
+
+R0078 is NOT an application accessibility repair.
+
+============================================================
+THREE NON-NEGOTIABLE RULES
+============================================================
+
+RULE 1 — NO APPLICATION SOURCE CHANGES
+Do not modify TrailWeigh UI/application behavior in R0078.
+
+RULE 2 — DO NOT “FIX TESTS” TO HIDE REAL PRODUCT FAILURES
+Only correct stale selectors/readiness assumptions/test infrastructure that are objectively inconsistent with current USER-PASS UI behavior.
+
+RULE 3 — WCAG SCAN IS DIAGNOSTIC ONLY
+Do not auto-fix accessibility findings.
+Do not apply Replit suggested accessibility changes.
+Report findings only.
+
+============================================================
+CURRENT USER-PASS BASELINES — PRESERVE
+============================================================
+
+Do not modify or regress any USER-PASS behavior from R0076P3 / R0077 / R0077P2, including:
+
+- long-category native thumb scrolling;
+- outer category stack lock;
+- category header alignment;
+- item single-open accordion behavior;
+- item auto-reveal;
+- Save in Group 4;
+- 44px accessibility targets already implemented;
+- item checkbox semantics;
+- Weight / Quantity / Move 44px controls;
+- Delete Item 44px control;
+- delete-dialog focus behavior;
+- contrast fixes;
+- visible focus styling;
+- viewport zoom restriction removal.
+
+R0078 should not need to touch any of those source areas.
+
+============================================================
+ALLOWED CHANGE SCOPE
+============================================================
+
+EXPECTED TEST-INFRASTRUCTURE FILE:
+- `tests/e2e/helpers/trailweigh.ts`
+
+POSSIBLE TEST FILES:
+Only if current evidence proves a test itself contains a stale UI expectation:
+- the exact phase1b keyboard-tooltip spec file(s)
+
+Do NOT change a test simply because the application fails it.
+
+REPORT / DIAGNOSTIC OUTPUTS MAY BE CREATED:
+- `workflow-reports/R0078.md`
+- raw accessibility/WCAG diagnostic artifacts
+- screenshots/logs
+- `R0078.zip`
+
+============================================================
+ABSOLUTELY OUT OF SCOPE
+============================================================
+
+DO NOT modify:
+
+- `artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx`
+- any other TrailWeigh application source
+- `replit.md`
+- `.replit`
+- `.agents/memory/*`
+- `.agents/skills/*`
+- package versions/dependencies
+- database/schema/data
+- auth/Clerk
+- Secrets/environment variables
+- deployment/publishing
+- Production Database
+- themes
+- importers
+- AI/list-creation features
+- onboarding
+- looping bottom-group navigation
+
+DO NOT:
+- Publish
+- Republish
+- Resume production
+- migrate/restore databases
+- enable Auto-apply
+- apply unrelated Ready tasks
+- use an accessibility tool's automatic fix function
+
+If an automated scan can only run by modifying application files:
+DO NOT RUN THAT MODE.
+Use a read-only mode or report the blocker.
+
+============================================================
+PRE-EDIT GATE
+============================================================
+
+Before changing ANY file:
+
+1. Read current `replit.md` READ-ONLY.
+2. Confirm current active route:
+   `/mobile-functional-v3`
+3. Confirm R0077P2 is currently present.
+4. Record git status.
+5. Locate:
+   - `tests/e2e/helpers/trailweigh.ts`
+   - all tests in the reported phase1b keyboard-tooltips suite
+6. Run the keyboard-tooltip suite AS-IS first.
+7. Capture the exact failure output for all 10 tests.
+8. Determine whether each test reaches its actual assertion or fails during shared setup/navigation.
+9. Inspect `gotoDemo()` and every helper invoked before the first assertion.
+10. Confirm whether `LIST SUMMARY` is absent by CURRENT intended design and whether `[data-testid="main-scroll"]` is a stable current readiness signal.
+11. List expected changed files before editing.
+
+Do not edit until the root cause is documented.
+
+============================================================
+PART A — RECONCILE THE “7 BROKEN” VS “0/10” DISCREPANCY
+============================================================
+
+Replit UI previously suggested:
+“Fix 7 broken automated keyboard tests so the CI suite is clean.”
+
+R0077P2 reported:
+“phase1b keyboard-tooltips = 0/10.”
+
+Determine why these numbers differ.
+
+Possible explanations may include:
+- Replit suggestion was generated from an older run;
+- only 7 of 10 are distinct root failures;
+- 3 are setup/secondary failures;
+- different suites/runs were being referenced;
+- stale Replit suggested-task metadata.
+
+Do NOT guess.
+
+Report:
+- exact current number of tests;
+- exact current number failing before any R0078 change;
+- why Replit showed 7 if determinable;
+- if not determinable, state UNKNOWN.
+
+============================================================
+PART B — REPAIR SHARED READINESS HELPER IF CONFIRMED
+============================================================
+
+Known lead from R0077P2:
+
+`gotoDemo()` waits for obsolete text such as:
+`LIST SUMMARY`
+
+R0077P2 used:
+`[data-testid="main-scroll"]`
+
+instead.
+
+If CURRENT evidence confirms this is the shared root cause:
+
+Repair `gotoDemo()` so it waits for a CURRENT, stable, semantic V3 readiness condition.
+
+Preferred characteristics:
+
+1. Do not wait on a presentation string that can legitimately change.
+2. Prefer stable route/UI readiness such as:
+   `[data-testid="main-scroll"]`
+   plus any minimal condition needed to prove the list is actually hydrated/rendered.
+3. Keep a bounded timeout.
+4. Preserve fail-fast behavior.
+5. Do not add arbitrary multi-second sleeps.
+6. Do not make helper so permissive that a broken page falsely passes.
+7. Preserve compatibility with still-valid tests using the helper.
+
+If `/mobile-functional-v3` and another route legitimately need different readiness criteria:
+make the smallest explicit helper adjustment rather than a broad testing framework refactor.
+
+============================================================
+PART C — RERUN KEYBOARD-TOOLTIPS SUITE
+============================================================
+
+After helper repair:
+
+Run the complete phase1b keyboard-tooltip suite again.
+
+For EACH of the 10 tests, classify the result:
+
+A. PASS after helper repair
+B. REAL CURRENT PRODUCT FAILURE
+C. STALE TEST EXPECTATION
+D. TEST HARNESS / HELPER FAILURE
+E. ENVIRONMENT / BROWSER LIMITATION
+F. FLAKE / NONDETERMINISTIC
+
+For every non-PASS:
+include:
+- test name;
+- exact assertion/failure;
+- screenshot/trace if useful;
+- classification;
+- evidence supporting classification;
+- recommended next action.
+
+IMPORTANT:
+If a test now reaches a real current accessibility defect:
+DO NOT fix the app in R0078.
+
+The purpose is to obtain trustworthy diagnostic evidence.
+
+============================================================
+PART D — STALE TEST EXPECTATIONS
+============================================================
+
+A test may be updated ONLY when BOTH are true:
+
+1. Current USER-PASS/product requirements clearly superseded the old expectation.
+2. The test is demonstrably asserting obsolete UI text/structure rather than product behavior.
+
+Examples:
+- waiting for generic “LIST SUMMARY” after that header was intentionally replaced by the current active list name;
+- checking an old control name that was intentionally renamed and USER-PASS verified.
+
+Do NOT weaken substantive accessibility requirements.
+
+Never change:
+- keyboard reachability expectations;
+- accessible-name expectations;
+- focus visibility expectations;
+- tooltip availability requirements;
+- target-size requirements;
+merely to make tests pass.
+
+Every stale test edit must be individually listed in the report:
+OLD EXPECTATION → CURRENT VERIFIED EXPECTATION → WHY CHANGE IS VALID.
+
+============================================================
+PART E — READ-ONLY WCAG / ACCESSIBILITY DIAGNOSTIC
+============================================================
+
+After test infrastructure is trustworthy, run the best available READ-ONLY automated accessibility diagnostic on:
+
+`/mobile-functional-v3`
+
+Primary state:
+390 × 844
+
+Scan at least these UI states when the scanner supports stateful scans:
+
+1. Main list, categories collapsed
+2. One category expanded
+3. One item detail expanded
+4. Long-category mode
+5. Delete Item confirmation dialog
+6. Bottom control Group 1
+7. Bottom control Group 4
+8. Summary panel
+9. Preview/Checklist overlay if currently reachable without changing persisted data
+10. Add Category / Rename Category UI if safely reachable
+
+Use current WCAG 2.2 AA as the diagnostic baseline where supported.
+
+Use a tool already available in the project/Replit environment.
+
+DO NOT install or update dependencies solely for this diagnostic without explicit authorization.
+
+If an existing axe/Playwright accessibility integration is available:
+use it read-only.
+
+If Replit's suggested “full automated WCAG scan” is available:
+- run it only if it can be guaranteed not to auto-edit;
+- disable any auto-fix/apply feature;
+- preserve raw output.
+
+If no full automated scanner is available without package/config changes:
+DO NOT add one.
+Perform the strongest existing read-only accessibility inspection available and report the limitation.
+
+============================================================
+PART F — WCAG FINDING CLASSIFICATION
+============================================================
+
+For every automated finding classify:
+
+1. CRITICAL
+2. SERIOUS
+3. MODERATE
+4. MINOR
+
+Also classify the likely nature:
+
+- REAL PRODUCT ISSUE
+- FALSE POSITIVE
+- NEEDS MANUAL VERIFICATION
+- NATIVE-iOS-ONLY / NOT APPLICABLE TO CURRENT WEB
+- ALREADY ADDRESSED / STALE SCAN RESULT
+
+Group duplicate findings by common root cause.
+
+Do not simply dump 100 duplicate violations.
+
+Report:
+- unique root cause;
+- affected controls/screens;
+- count of instances;
+- relevant rule;
+- recommended repair concept;
+- whether repair can be safely done in current web app.
+
+============================================================
+PART G — MANUAL-VERIFICATION FLAGS
+============================================================
+
+Automated scanners cannot prove everything.
+
+Explicitly list items still requiring manual/user/device testing, including as applicable:
+
+- real finger target comfort;
+- native thumb scrolling;
+- VoiceOver pronunciation/order;
+- Voice Control;
+- color perception outdoors/bright light;
+- native iOS Dynamic Type;
+- Reduce Motion on an actual Apple device;
+- touch target comfort for user;
+- visual focus quality;
+- semantic clarity of controls.
+
+Do not claim automated WCAG PASS equals full Apple accessibility compliance.
+
+============================================================
+MANDATORY R0078 TESTS
+============================================================
+
+Create a narrow R0078 test file only if necessary:
+`tests/e2e/r0078/r0078.spec.ts`
+
+Minimum verification:
+
+R78-01 — `gotoDemo()` readiness
+- navigate using the repaired helper;
+- prove it reaches current V3 reliably;
+- no obsolete `LIST SUMMARY` dependency.
+
+R78-02 — bounded failure behavior
+- helper retains a finite timeout/fail-fast behavior.
+
+R78-03 — current stable readiness
+- main-scroll exists;
+- at least one expected current category/list UI element exists;
+- no false PASS on blank/crashed page.
+
+R78-04 — keyboard-tooltip suite can reach substantive assertions
+- prove suite no longer dies universally in stale setup.
+
+Do not create unnecessary new tests if existing tests already prove these outcomes.
+
+============================================================
+REGRESSION / BASELINE RUNS
+============================================================
+
+Before R0078 changes:
+- run phase1b keyboard-tooltips and capture 0/10 or current actual result.
+
+After R0078 test-helper changes:
+1. phase1b keyboard-tooltips — complete suite
+2. R0077P2 — complete 18 tests
+3. R0077 — complete 16 tests
+4. phase1b importers + UI — complete 46 tests
+5. any existing smoke test that uses `gotoDemo()`
+
+Because this prompt changes shared test infrastructure, identify any OTHER suites that use `gotoDemo()`.
+
+Run a representative affected set or the complete affected set if practical.
+
+Report exact totals.
+
+============================================================
+NO APPLICATION CHANGE ASSERTION
+============================================================
+
+At completion, verify git diff.
+
+Expected changed code files should be TEST INFRASTRUCTURE ONLY.
+
+If ANY application source changed:
+- revert it before delivery;
+- explain what created the change.
+
+Explicitly report:
+
+APPLICATION SOURCE CHANGED = NO
+DATABASE CHANGED = NO
+AUTH CHANGED = NO
+REPLIT.MD CHANGED = NO
+.AGENTS/MEMORY CHANGED = NO
+DEPENDENCIES CHANGED = NO
+DEPLOYMENT/PUBLISHING CHANGED = NO
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create:
+
+`workflow-reports/R0078.md`
+
+Sections:
+
+A. PURPOSE
+B. PRE-EDIT GIT STATUS
+C. CURRENT ROUTE / ACTIVE SOURCE
+D. KEYBOARD-TOOLTIP BASELINE RUN
+E. 7-VS-10 DISCREPANCY
+F. GOTO DEMO / READINESS HELPER ROOT CAUSE
+G. EXACT TEST-INFRASTRUCTURE CHANGES
+H. KEYBOARD-TOOLTIP POST-REPAIR RESULTS
+I. PER-TEST FAILURE CLASSIFICATION
+J. STALE TEST EXPECTATIONS CHANGED, IF ANY
+K. WCAG/A11Y SCAN METHOD
+L. RAW WCAG/A11Y RESULT SUMMARY
+M. UNIQUE FINDINGS BY SEVERITY
+N. FALSE POSITIVES / MANUAL VERIFICATION
+O. R0077P2 REGRESSION
+P. R0077 REGRESSION
+Q. IMPORTER/UI REGRESSION
+R. OTHER GOTO-DEMO USERS / IMPACT
+S. ACTUAL CHANGED FILES
+T. SAFETY / NO-APPLICATION-CHANGE VERIFICATION
+U. RECOMMENDED NEXT REPAIR SCOPE
+V. USER VERIFICATION = NOT REQUIRED FOR DIAGNOSTIC / TEST-INFRASTRUCTURE ONLY
+
+Explicit status lines:
+
+KEYBOARD-TOOLTIPS BEFORE = [X]/10 PASS
+KEYBOARD-TOOLTIPS AFTER = [X]/10 PASS
+ALL 10 REACHED SUBSTANTIVE ASSERTIONS = YES / NO
+GOTODEMO STALE READINESS CONFIRMED = YES / NO
+GOTODEMO REPAIRED = YES / NO / NOT NEEDED
+OBSOLETE LIST SUMMARY DEPENDENCY REMOVED = YES / NO / NOT PRESENT
+STALE TEST EXPECTATIONS MODIFIED = [COUNT]
+REAL CURRENT PRODUCT FAILURES FOUND = [COUNT]
+TEST/HARNESS FAILURES REMAINING = [COUNT]
+WCAG/A11Y AUTOMATED SCAN RUN = YES / NO
+WCAG/A11Y SCAN TOOL = [exact tool/method]
+AUTO-FIX USED = NO
+CRITICAL UNIQUE FINDINGS = [COUNT]
+SERIOUS UNIQUE FINDINGS = [COUNT]
+MODERATE UNIQUE FINDINGS = [COUNT]
+MINOR UNIQUE FINDINGS = [COUNT]
+R0077P2 SUITE = [X]/18 PASS
+R0077 SUITE = [X]/16 PASS
+PHASE1B IMPORTERS+UI = [X]/46 PASS
+APPLICATION SOURCE CHANGED = NO
+DATABASE CHANGED = NO
+AUTH CHANGED = NO
+REPLIT.MD CHANGED = NO
+.AGENTS/MEMORY CHANGED = NO
+DEPENDENCIES CHANGED = NO
+DEPLOYMENT/PUBLISHING CHANGED = NO
+
+============================================================
+MANDATORY DELIVERY ZIP
+============================================================
+
+Create:
+
+`R0078.zip`
+
+ZIP must contain:
+
+1. `R0078.md`
+2. every test/helper file actually changed
+3. `tests/e2e/r0078/r0078.spec.ts` if created
+4. raw WCAG/accessibility scan output, if generated
+5. relevant failure screenshots/traces/logs
+6. a concise machine-readable finding summary if available
+
+DO NOT include application source as a “changed file” because application source must not change.
+
+Verify:
+- ZIP exists
+- nonzero
+- opens
+- report inside
+- changed helper/test files inside
+- raw diagnostic output inside when available
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before claiming R0078 PASS:
+
+1. Did I reproduce the keyboard suite before editing?
+2. Did I prove whether failures happen in setup or substantive assertions?
+3. Did I repair only objectively stale test infrastructure?
+4. Did I avoid changing TrailWeigh application code?
+5. Did I avoid weakening real accessibility requirements?
+6. Did I reconcile 7 vs 10 or explicitly mark it UNKNOWN?
+7. Did I rerun all 10 keyboard-tooltip tests?
+8. Did I classify every remaining failure?
+9. Did I run the WCAG/accessibility diagnostic read-only?
+10. Did I avoid auto-fix?
+11. Did I preserve raw scan evidence?
+12. Did R0077P2 still pass?
+13. Did R0077 still pass?
+14. Did importer/UI regression still pass?
+15. Did I inspect other suites that use the repaired shared helper?
+16. Does git diff contain NO application-source changes?
+17. Does the ZIP contain every changed test/helper file?
+
+If any material answer is NO:
+DO NOT claim PASS.
+
+============================================================
+STOP
+============================================================
+
+STOP after R0078 report + ZIP.
+
+Do not repair WCAG findings in this prompt.
+Do not repair application keyboard/tooltip defects in this prompt.
+Do not proceed to looping control groups.
+Do not proceed to onboarding/list-creation redesign.
+Do not publish.
+
+The next implementation prompt must be based on R0078's verified diagnostic findings.
