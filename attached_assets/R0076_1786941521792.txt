@@ -1,0 +1,766 @@
+R0076 — GOLD STANDARD R0075 REPAIR
+ACTIVE CATEGORY VIEWPORT + CHEVRON POSITION + WEIGHT DISTRIBUTION COLORS
+
+REPORT NUMBER
+R0076
+
+RECOMMENDED REPLIT MODE
+Economy
+
+PURPOSE
+Repair only the failed/incomplete R0075 behavior and apply the two newly approved visual refinements.
+
+Do not redesign unrelated TrailWeigh areas.
+Preserve all R0074-passing behavior and all R0075 behavior that is already correct.
+
+============================================================
+0. BRIEF CHANGE LIST
+============================================================
+
+1. Fix long expanded categories so the CATEGORY HEADER remains at/below the bottom of List Summary.
+2. Keep the contextual ADD ITEM BAR visible directly above the bottom box bar while the long category items move between those two boundaries.
+3. Make the Add Item overflow chevron actually usable while content is hidden.
+4. Restore Add Item for EMPTY expanded categories too.
+5. Move the large List Summary expand/collapse chevron farther LEFT, approximately 50 px from its current R0075 position, while preserving its vertical position/size/behavior.
+6. Delete the Weight Distribution Trail/Ocean/Sunset/Forest/Berry/Desert dropdown completely.
+7. Make Weight Distribution pie slices use the SAME colors as the actual category wedges.
+8. Replace weak/false-positive R0075 Playwright coverage with tests that prove the real geometry and behavior.
+9. Answer exactly 3 Learning Questions from code already inspected for this task.
+
+============================================================
+1. OBSERVED R0075 FAILURES — TREAT AS FACTS
+============================================================
+
+The following failures were observed from R0075 source/test review and live video:
+
+A. The contextual Add Item bar was restored, but on a long category it remains a normal list element and scrolls off-screen.
+
+B. The right-side Add Item overflow chevron is inside that moving Add Item bar, so it also becomes inaccessible until the user manually reaches the bottom.
+
+C. The category header can disappear above the List Summary while moving through a long category.
+
+D. R0075's auto-position logic primarily positions the category header; it does not establish the required top-and-bottom active-category viewing boundaries.
+
+E. Short categories may be repositioned even when they already fit.
+
+F. Empty expanded categories do not receive the Add Item bar.
+
+G. R0075 overflow Playwright tests did not prove real overflow behavior and contained false-positive paths.
+
+H. Required geometry was not measured:
+- List Summary bottom
+- category header top
+- Add Item bottom
+- bottom box bar top
+
+I. Required R0075 evidence and Learning Questions were not delivered.
+
+J. The large List Summary chevron works, but the user wants it moved farther LEFT.
+
+K. The Weight Distribution color-theme dropdown is no longer wanted.
+
+============================================================
+2. STRICT APPLICATION SCOPE / COST CONTROL
+============================================================
+
+Preferred application source:
+MobileFunctionalV3.tsx ONLY.
+
+Allowed:
+- targeted R0076 Playwright test file(s)
+- R0076.md
+- compact screenshots/video evidence
+
+Do NOT:
+- modify desktop
+- modify Checklist.tsx
+- modify database/schema
+- modify auth
+- publish/deploy
+- investigate/fix Safari bounce/overscroll
+- redesign bottom box groups
+- redesign stacked bars
+- redesign Preview
+- redesign Pack Summary
+- redesign TrailWeigh header
+- perform unrelated cleanup/refactoring
+- inspect unrelated project areas
+
+If another APPLICATION source/style file is required:
+STOP before editing it and explain exactly why.
+
+============================================================
+3. GOLD STANDARD PRE-EDIT AUDIT
+============================================================
+
+Before editing, inspect only the minimum relevant current V3 code/tests and report:
+
+1. Current main category/list scroll owner.
+2. Current R0075 category auto-position logic.
+3. Current Add Item rendering location and handler.
+4. Current Add Item overflow-chevron logic.
+5. Current List Summary global-chevron layout rules.
+6. Current Weight Distribution chart color source.
+7. Current category wedge color source/mapping.
+8. Whether Weight Distribution can consume the same wedge-color mapping without duplicating palette logic.
+
+Do not broaden scope solely to answer Learning Questions.
+
+============================================================
+4. ACTIVE LONG-CATEGORY VIEWPORT — REQUIRED ARCHITECTURE
+============================================================
+
+USER INTENT:
+When ONE category is manually opened and its full content cannot fit in the available vertical space, the user should be able to view its items within a bounded active-category region without losing either:
+
+TOP BOUNDARY:
+the category header
+
+BOTTOM BOUNDARY:
+the contextual Add Item bar
+
+The item rows move BETWEEN those two boundaries.
+
+Required structure for a manually opened long category:
+
+LIST SUMMARY
+------------------------------  <- hard upper boundary
+CATEGORY HEADER                 <- remains visible; never above Summary
+ITEM VIEWPORT
+ITEM VIEWPORT
+ITEM VIEWPORT
+ADD ITEM BAR + CHEVRON          <- remains visible
+BOTTOM BOX BAR
+------------------------------
+
+This is the core R0076 repair.
+
+============================================================
+5. CATEGORY HEADER HARD STOP
+============================================================
+
+For the active manually opened long category:
+
+- the TOP of the category header must never move above the BOTTOM edge of the List Summary
+- it must not disappear beneath/behind List Summary
+- it may naturally remain lower if the category already fits
+- do not force short categories upward unnecessarily
+
+If the category fits in the available region:
+- preserve normal flow
+- do not create a special constrained item viewport
+- Add Item remains after the final item row
+
+If the category does NOT fit:
+- activate the long-category bounded viewport behavior
+
+============================================================
+6. ADD ITEM BAR — KEEP IT VISIBLE
+============================================================
+
+For an active manually opened LONG category:
+
+- keep the contextual Add Item bar visible at the bottom of the active category region
+- its BOTTOM edge must align directly above the TOP edge of the bottom box bar
+- no large blank strip between Add Item and bottom box bar
+- Add Item must not scroll away with the item rows
+- Add Item must remain tappable while the item rows move
+
+For SHORT categories:
+- Add Item remains naturally after the final item row
+- no unnecessary pinning
+
+For EMPTY expanded categories:
+- Add Item MUST still appear
+- it should be the first/only row beneath the expanded category header
+- it must target that category
+
+The bottom-box Add control remains unchanged.
+
+============================================================
+7. ITEM CONTENT MOVEMENT INSIDE THE ACTIVE LONG CATEGORY
+============================================================
+
+When the long-category bounded mode is active:
+
+- only the item-content region should move through the available vertical space between the visible category header and visible Add Item bar
+- preserve normal vertical touch scrolling
+- preserve category long-press reorder behavior on category headers
+- preserve item/category slide-to-delete behavior
+- preserve bottom box-group horizontal gestures
+- do not move the entire application shell
+- do not create horizontal overflow
+
+Prefer the safest existing scroll/layout mechanism already present in mobile V3.
+
+Avoid adding unnecessary nested scrolling layers.
+
+If one constrained item-content scroll region is required to achieve the approved behavior, it must:
+- be limited to the active long category
+- not create a second unrelated scroller
+- not show ugly browser scrollbar chrome
+- not trap the user
+- not break page/category navigation
+
+============================================================
+8. ADD ITEM BAR OVERFLOW CHEVRON — REPAIR
+============================================================
+
+The right-side chevron belongs to the contextual Add Item bar.
+
+It must remain visible whenever the active long category is in bounded overflow mode.
+
+State rules:
+
+A. Hidden content BELOW:
+- chevron points DOWN
+
+B. At the bottom, hidden content exists ABOVE and none below:
+- chevron points UP
+
+C. Both above and below are possible:
+- use ONE chevron only
+- while later content remains below, point DOWN
+- once the bottom is reached, change to UP
+
+D. No overflow:
+- chevron hidden or clearly disabled
+
+Tap:
+- DOWN -> move approximately one visible-page increment toward later items
+- UP -> move approximately one visible-page increment toward earlier items
+- smooth settle
+- no spring/bounce
+- do not jump end-to-end unless one page naturally reaches the end
+
+Manual scrolling:
+- still works
+- chevron direction updates from actual current scroll position
+
+Accessibility:
+- DOWN = "Show later items"
+- UP = "Show earlier items"
+
+============================================================
+9. LIST SUMMARY GLOBAL CHEVRON — MOVE LEFT ONLY
+============================================================
+
+The R0075 global expand/collapse chevron behavior is conceptually correct.
+
+DO NOT change:
+- single chevron only
+- size
+- tap target
+- vertical position
+- bottom padding alignment with the large item count
+- subdued appearance
+- DOWN when all categories collapsed
+- UP when one or more categories expanded
+- DOWN tap = Expand All
+- UP tap = Collapse All
+- real accordion state drives direction
+
+ONLY HORIZONTAL CORRECTION:
+Move the chevron farther LEFT.
+
+Target:
+- approximately 50 px LEFT of its current R0075 position
+- visually place it more naturally in the open space between:
+  LEFT = large item-count block
+  RIGHT = circled checkmark / Selected block
+
+Do not move it so far left that it visually collides with "items".
+Do not leave it visually attached to the Selected block.
+
+Use screenshot evidence to verify the resulting spacing.
+
+============================================================
+10. WEIGHT DISTRIBUTION — DELETE THE THEME DROPDOWN
+============================================================
+
+Remove the Weight Distribution dropdown that currently contains:
+
+Trail
+Ocean
+Sunset
+Forest
+Berry
+Desert
+
+Delete this control entirely.
+
+Do NOT:
+- replace it with another theme selector
+- keep an empty placeholder
+- leave unused mobile UI space where it used to be
+
+Preserve:
+- Weight Distribution title
+- category names
+- weights
+- calculations
+- percentages
+- legend/list
+- chart behavior
+- panel opening/closing
+
+============================================================
+11. WEIGHT DISTRIBUTION — USE CATEGORY WEDGE COLORS
+============================================================
+
+The Weight Distribution pie wheel must use the actual CATEGORY WEDGE COLORS.
+
+Required:
+- each category slice uses the same color as that category's wedge in the main category list
+- use the existing wedge-color source of truth
+- do not create a second independent chart palette if the wedge mapping already exists
+- if category order changes, color stays associated with the category according to current TrailWeigh wedge-color logic
+- legend color indicators, if present, must match the corresponding pie slice and category wedge
+
+Goal:
+A user should be able to visually match:
+
+CATEGORY WEDGE
+=
+WEIGHT DISTRIBUTION SLICE
+=
+WEIGHT DISTRIBUTION LEGEND COLOR
+
+No Trail/Ocean/Sunset/Forest/Berry/Desert theme layer should remain in the Weight Distribution UI.
+
+============================================================
+12. EXPAND ALL / COLLAPSE ALL INTERACTION
+============================================================
+
+Preserve R0075's global Summary chevron behavior:
+
+ALL collapsed:
+DOWN -> Expand All
+
+ONE OR MORE open:
+UP -> Collapse All
+
+Important:
+When Expand All is used:
+- do NOT try to pin every category header/Add Item bar simultaneously
+- keep normal list flow
+- each expanded category still contains its Add Item bar
+- parent list scrolling remains available
+
+The bounded active-category viewport is for the manually focused/opened long-category workflow, not simultaneous pinning of all expanded categories.
+
+============================================================
+13. PROTECTED BEHAVIOR — DO NOT REGRESS
+============================================================
+
+Preserve:
+
+STACKED BARS
+- stationary
+- 68 px
+- tap-only
+- no lift
+- no drag activation
+- keyboard activation
+
+BOTTOM BOX GROUPS
+
+Group 1:
+Locker | Summary | Add | Search | Next
+
+Group 2:
+Back | Undo | Redo | Reset | Next
+
+Group 3:
+Back | Camera | Photos | Preview | Next
+
+Group 4:
+Back | Share | More
+
+Preserve:
+- bidirectional sliding
+- no wraparound
+- max five boxes
+- existing haptic behavior where supported
+
+PREVIEW
+- selected items only
+- no automatic print
+- Print control inside Preview
+
+PRESERVE:
+- category long-press reorder
+- slide-to-delete
+- Pack Summary
+- Weight Distribution calculations
+- TrailWeigh header
+- Locker/Summary/Add/Search
+- Share/More
+- wedges
+- fonts/colors except the approved Weight Distribution chart-color source change
+
+BOUNCE:
+Leave it alone.
+
+============================================================
+14. PLAYWRIGHT — REPLACE FALSE POSITIVES WITH REAL PROOF
+============================================================
+
+Primary interaction viewport:
+390 x 844
+
+Also layout-check:
+320
+375
+430
+
+TEST A — EMPTY CATEGORY ADD ITEM
+1. Open an empty category.
+2. Prove it is open.
+3. Verify Add Item is visible.
+4. Tap it.
+5. Prove correct category is targeted.
+
+TEST B — SHORT CATEGORY
+Use a category that truly fits.
+
+Prove:
+- normal flow
+- header not unnecessarily repositioned
+- final item followed by Add Item
+- no active overflow chevron
+- no constrained long-category viewport activated
+
+TEST C — TRUE LONG CATEGORY GEOMETRY
+Use a category that truly overflows.
+
+Before asserting, prove overflow precondition numerically.
+
+Measure and report:
+
+summaryBottom
+categoryHeaderTop
+categoryHeaderBottom
+addItemTop
+addItemBottom
+bottomBoxTop
+itemViewportTop
+itemViewportBottom
+itemViewportScrollHeight
+itemViewportClientHeight
+
+Required assertions:
+
+categoryHeaderTop >= summaryBottom - 1px tolerance
+
+abs(addItemBottom - bottomBoxTop) <= 2px
+
+itemViewportScrollHeight > itemViewportClientHeight
+
+Category header remains visible while:
+- scrolling item viewport downward
+- paging downward with chevron
+- reaching bottom
+- paging upward
+
+Add Item remains visible during the same actions.
+
+TEST D — OVERFLOW CHEVRON MUST ACTUALLY EXIST
+Do not conditionally pass when no chevron exists.
+
+For a proven overflowing active category:
+
+At top:
+- exactly one active chevron
+- DOWN
+- "Show later items"
+
+Tap:
+- item viewport scroll position increases
+- a later hidden item becomes visible
+
+At bottom:
+- exactly one active chevron
+- UP
+- "Show earlier items"
+
+Tap:
+- item viewport scroll position decreases
+- earlier content becomes visible
+
+Manual scroll:
+- direction updates based on actual position
+
+TEST E — LIST SUMMARY CHEVRON POSITION
+Measure:
+
+itemCountRight
+summaryChevronLeft
+summaryChevronRight
+selectedBlockLeft
+
+Prove:
+- chevron lies between item-count and Selected blocks
+- no overlap
+- after R0076 it is approximately 50 px left of its prior R0075 position, or report the exact final delta if responsive constraints require a slightly different value
+
+Also preserve:
+- same vertical placement relative to "80/89"
+- same size
+- same DOWN/UP state behavior
+
+TEST F — WEIGHT DISTRIBUTION DROPDOWN REMOVED
+Open Weight Distribution.
+
+Assert:
+- no Trail theme button
+- no Ocean/Sunset/Forest/Berry/Desert dropdown options
+- no replacement theme selector
+- panel content closes up without dead reserved space
+
+TEST G — PIE/WEDGE COLOR PARITY
+For multiple visible categories:
+
+1. Read actual rendered wedge color.
+2. Read corresponding Weight Distribution slice color.
+3. Read corresponding legend indicator color if present.
+4. Prove they match according to the existing category-color source of truth.
+
+Use at least 3 categories with distinct colors.
+
+Do not merely assert that the number of colors is equal.
+
+TEST H — GLOBAL EXPAND/COLLAPSE
+- all collapsed -> DOWN
+- tap -> all expand -> UP
+- tap -> all collapse -> DOWN
+- manually open one -> UP
+- manually close final open -> DOWN
+
+TEST I — PROTECTED REGRESSIONS
+- stationary stacked bars
+- box-group sliding
+- category reorder
+- slide-delete
+- Preview selected-only
+- Print remains inside Preview
+- Pack Summary opens
+- Weight Distribution opens
+- header unchanged
+- no horizontal overflow at 320/375/390/430
+
+============================================================
+15. REQUIRED VISUAL EVIDENCE
+============================================================
+
+Include compact evidence in R0076.zip:
+
+1. LONG CATEGORY — TOP/BOUNDARIES
+Shows:
+- List Summary
+- visible category header immediately below/at boundary
+- item rows
+- visible Add Item bar
+- bottom box bar
+
+2. LONG CATEGORY — BOTTOM STATE
+Shows:
+- category header still visible
+- Add Item still visible
+- overflow chevron UP
+
+3. LIST SUMMARY CHEVRON
+Shows:
+- corrected farther-left horizontal position
+
+4. WEIGHT DISTRIBUTION
+Shows:
+- theme dropdown gone
+- pie wheel using category wedge colors
+- legend/category correspondence visible
+
+Optional:
+short video proving scrolling/paging while header and Add Item remain visible.
+
+============================================================
+16. PASS / FAIL / NOT RUN DISCIPLINE
+============================================================
+
+Use only:
+
+PASS
+FAIL
+NOT RUN
+NOT APPLICABLE
+
+No conditional no-op assertions.
+
+If a required precondition cannot be created:
+mark NOT RUN and explain.
+
+Do not report a test runner exit code of zero as proof that product behavior passed.
+
+============================================================
+17. LEARNING QUESTIONS — EXACTLY 3
+============================================================
+
+Answer ONLY from code/files already inspected for R0076.
+Do not broaden scope or spend extra Agent time solely to answer them.
+
+QUESTION 1
+What existing mobile V3 scroll/layout structure is safest for creating an active long-category viewport with the category header held below List Summary and the Add Item bar held above the bottom box bar, without breaking reorder, swipe-delete, or bottom-bar gestures?
+
+QUESTION 2
+What existing source of truth currently assigns each category its wedge color, and how can Weight Distribution reuse that same mapping directly instead of maintaining a separate chart-theme palette?
+
+QUESTION 3
+What Playwright measurement approach is most reliable in this codebase for proving fixed/sticky vertical boundaries and overflow-chevron behavior during both manual scrolling and chevron-driven paging?
+
+============================================================
+18. REQUIRED REPORT
+============================================================
+
+Create:
+
+R0076.md
+
+Structure:
+
+# R0076 Implementation Report
+
+## Scope / Cost Discipline
+- application files inspected
+- application files changed
+- tests changed/added
+- scope expansion YES/NO
+
+## Pre-Edit Architecture Findings
+- main scroll owner
+- R0075 auto-position logic
+- Add Item render/handler
+- overflow-chevron logic
+- Summary chevron positioning
+- Weight Distribution color source
+- category wedge color source
+
+## Active Long-Category Viewport
+PASS/FAIL
+- short category behavior
+- long category activation
+- category header boundary
+- item viewport
+- Add Item boundary
+- manual scrolling
+- paging
+
+Include exact geometry numbers.
+
+## Empty Category Add Item
+PASS/FAIL
+
+## Add Item Overflow Chevron
+PASS/FAIL
+- DOWN
+- UP
+- manual scroll update
+- accessibility
+
+## List Summary Chevron
+PASS/FAIL
+- horizontal movement
+- exact measured delta
+- vertical placement preserved
+- behavior preserved
+
+## Weight Distribution
+PASS/FAIL
+- theme dropdown removed
+- no dead UI space
+- pie uses wedge colors
+- legend parity
+- calculations preserved
+
+## Global Expand/Collapse
+PASS/FAIL
+
+## Protected Regressions
+PASS/FAIL per behavior
+
+## TypeScript
+result
+
+## Playwright
+- total
+- passed
+- failed
+- NOT RUN
+- skipped
+- exact failures
+
+## Evidence
+exact filenames
+
+## Lessons for Future Prompts
+
+### Learning Question 1
+answer
+
+### Learning Question 2
+answer
+
+### Learning Question 3
+answer
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## ZIP Contents
+exact filenames
+
+## Final Scope Confirmation
+- Checklist.tsx untouched
+- desktop untouched
+- database/schema untouched
+- auth untouched
+- deployment/publishing untouched
+- bounce untouched
+
+============================================================
+19. ZIP
+============================================================
+
+Create:
+
+R0076.zip
+
+MUST INCLUDE:
+- R0076.md
+- every application source file actually changed
+- every R0076 Playwright test file
+- all required evidence screenshots/video
+
+Before delivery:
+1. inspect git status/diff
+2. list exact changed files
+3. verify every listed file is in ZIP
+4. list/open ZIP contents to confirm
+
+Do not include:
+- node_modules
+- caches
+- build output
+- unrelated artifacts
+
+============================================================
+FINAL STOP
+============================================================
+
+After implementation, targeted Playwright verification, report, evidence, and ZIP:
+
+STOP.
+
+Do NOT start another TrailWeigh task.
+Do NOT publish.
+Do NOT deploy.
+Do NOT modify database/auth.
+Wait for user review.

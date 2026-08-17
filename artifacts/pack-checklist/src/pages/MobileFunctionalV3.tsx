@@ -49,7 +49,8 @@ import { AboutContent } from './info/AboutPage';
 import { HelpContent } from './info/HelpPage';
 import { HowItWorksContent } from './info/HowItWorksPage';
 import { BarStyleProvider } from '../context/BarStyleContext';
-import { WeightSummary, WeightDistribution } from '../components/WeightSummary';
+import { WeightSummary } from '../components/WeightSummary';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { PreviewBody } from '../components/PreviewModal';
 import { ImportGearPanel } from '../components/ImportGearPanel';
 import { generatePackPDF } from '../lib/exportPDF';
@@ -60,7 +61,7 @@ import type { GearItem, CategoryMeta } from '../hooks/usePackData';
 import { LOCKER_KEY } from '../hooks/usePackData';
 import type { LockerEntry } from '../components/LockerPanel';
 import { getCategoryTheme } from '../lib/mobileCategoryTheme';
-import { calcTotalOz, formatWeight, smallUnit, gramsToOz } from '../lib/weightUtils';
+import { calcTotalOz, formatWeight, smallUnit, largeUnit, gramsToOz } from '../lib/weightUtils';
 import { useUnit, UnitProvider } from '../context/UnitContext';
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
@@ -430,6 +431,112 @@ function ChecklistOverlay({
   );
 }
 
+// ─── MOBILE WEIGHT DISTRIBUTION (R0076) ─────────────────────────────────────────
+// Inline pie chart that uses category wedge colours (getCategoryTheme) directly.
+// Replaces the desktop WeightDistribution component in the mobile deck — no
+// Trail/Ocean/Sunset/Forest/Berry/Desert theme selector.
+interface MobileWDProps {
+  data:          { [category: string]: import('../hooks/usePackData').GearItem[] };
+  categoryOrder: string[];
+  categoryMeta:  Record<string, import('../hooks/usePackData').CategoryMeta>;
+}
+function MobileWeightDistribution({ data, categoryOrder }: MobileWDProps) {
+  const { system } = useUnit();
+  const lu = largeUnit(system);
+
+  // Build slice data using the same wedge-colour source as the category bars
+  let grandTotal = 0;
+  const slices = categoryOrder.map((cat, idx) => {
+    const items = (data[cat] || []).filter(i => i.checked);
+    const oz = items.reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0);
+    grandTotal += oz;
+    return { name: cat, value: oz, fill: getCategoryTheme(cat, idx).bg };
+  }).filter(d => d.value > 0);
+
+  const pct = (oz: number) => grandTotal > 0 ? ((oz / grandTotal) * 100).toFixed(1) : '0.0';
+
+  // Colour constants borrowed from the outer component palette
+  const SANS_  = '"Inter Variable", "Inter", system-ui, -apple-system, sans-serif';
+  const PRIMARY_  = '#1a1a2e';
+  const MUTED_    = '#8a8a9a';
+
+  return (
+    <div style={{ padding: '4px 0 8px' }}>
+      {grandTotal > 0 ? (
+        <>
+          {/* Pie wheel */}
+          <div style={{ height: 200, width: '100%' }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={slices}
+                  cx="50%" cy="50%"
+                  innerRadius={60} outerRadius={80}
+                  paddingAngle={2}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {slices.map((s, i) => (
+                    <Cell key={i} fill={s.fill} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend — name · percentage · weight */}
+          <div style={{ marginTop: 14, padding: '0 4px' }}>
+            {slices.map((s, i) => (
+              <div
+                key={i}
+                data-testid={`wd-legend-${i}`}
+                data-cat-color={s.fill}
+                data-cat-name={s.name}
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  gap: 8, marginBottom: 9,
+                }}
+              >
+                {/* Colour swatch — matches the pie slice */}
+                <div
+                  data-testid={`wd-swatch-${i}`}
+                  style={{
+                    width: 12, height: 12, borderRadius: 3,
+                    backgroundColor: s.fill, flexShrink: 0,
+                  }}
+                />
+                <span style={{
+                  flex: 1, fontSize: 13, fontWeight: 500, color: PRIMARY_,
+                  fontFamily: SANS_,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>
+                  {s.name}
+                </span>
+                <span style={{ fontSize: 12, color: MUTED_, fontFamily: SANS_, whiteSpace: 'nowrap' }}>
+                  {pct(s.value)}%
+                </span>
+                <span style={{
+                  fontSize: 12, color: MUTED_, fontFamily: 'monospace', whiteSpace: 'nowrap',
+                  minWidth: 60, textAlign: 'right',
+                }}>
+                  {formatWeight(s.value, system, 'large')} {lu}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div style={{
+          height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#8a8a9a', fontSize: 14, fontStyle: 'italic',
+        }}>
+          No items packed yet
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── SUMMARY OVERLAY ─────────────────────────────────────────────────────────────
 interface SummaryOverlayProps {
   sandbox: SandboxStore;
@@ -468,14 +575,10 @@ function SummaryOverlay({ sandbox, onClose }: SummaryOverlayProps) {
             forceOpen={true}
             forceOpenSeq={1}
           />
-          <WeightDistribution
+          <MobileWeightDistribution
             data={sandbox.items}
             categoryOrder={sandbox.order}
             categoryMeta={sandbox.meta}
-            paletteKey="trail"
-            onPaletteChange={() => {}}
-            forceOpen={true}
-            forceOpenSeq={1}
           />
         </BarStyleProvider>
       </div>
@@ -1747,6 +1850,12 @@ function MobileFunctionalV3Inner() {
   const mainScrollRef = useRef<HTMLDivElement | null>(null);
   const openCatItemsRef = useRef<HTMLDivElement | null>(null);
   const [catOverflow, setCatOverflow] = useState<{ above: boolean; below: boolean }>({ above: false, below: false });
+
+  // R0076: whether the currently open category is "long" (needs bounded item viewport)
+  const [isCatLong, setIsCatLong] = useState(false);
+  // R0076: available px for item rows in bounded mode — set from ACTUAL DOM positions
+  // (not from stale state) when isCatLong activates, so it's always exact.
+  const [availItemH, setAvailItemH] = useState(200);
   // Callback ref: the component mounts the nav only after its loading gate, so a
   // one-shot effect would see null — attach measurement whenever the node appears.
   const navRef = useCallback((el: HTMLDivElement | null) => {
@@ -2071,45 +2180,53 @@ function MobileFunctionalV3Inner() {
 
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
-  // R0075: recompute Add Item overflow chevron direction from live DOM measurements
+  // R0076: recompute overflow chevron from the item container's own scroll
+  //        (bounded mode) or clear it for non-bounded categories.
   const recalcCatOverflow = useCallback(() => {
-    const ms    = mainScrollRef.current;
     const items = openCatItemsRef.current;
-    // Guard against stale/detached refs
-    if (!ms || !items || !items.isConnected) { setCatOverflow({ above: false, below: false }); return; }
-    const msRect   = ms.getBoundingClientRect();
-    const itemRect = items.getBoundingClientRect();
-    const ADD_H    = 44; // contextual Add Item bar height
-    // Visible item window: between sticky summary+header bottom and sticky Add Item top
-    const visibleTop    = msRect.top + summaryH + BAR_PEEK_H;
-    const visibleBottom = msRect.bottom - ADD_H;
-    setCatOverflow({
-      above: itemRect.top    < visibleTop    - 4,
-      below: itemRect.bottom > visibleBottom + 4,
-    });
-  }, [summaryH]);
+    if (!items || !items.isConnected) { setCatOverflow({ above: false, below: false }); return; }
+    if (isCatLong) {
+      // Bounded mode: item container scrolls independently — read its scroll position
+      setCatOverflow({
+        above: items.scrollTop > 4,
+        below: items.scrollTop < items.scrollHeight - items.clientHeight - 4,
+      });
+      return;
+    }
+    // Non-bounded (short category): no overflow
+    setCatOverflow({ above: false, below: false });
+  }, [isCatLong]);
 
-  // R0075: scroll the main-scroll by one visible-page increment for the chevron
+  // R0076: scroll the item container (bounded) or main scroll (fallback)
   const scrollCatItems = useCallback((dir: 'down' | 'up') => {
+    const items = openCatItemsRef.current;
+    if (isCatLong && items) {
+      // Bounded mode: scroll within the item viewport
+      const pageH = items.clientHeight;
+      items.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
+      setTimeout(() => recalcCatOverflow(), 350);
+      return;
+    }
     const ms = mainScrollRef.current;
     if (!ms) return;
     const pageH = ms.clientHeight - summaryH - BAR_PEEK_H - 44;
     ms.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
-  }, [summaryH]);
+  }, [isCatLong, summaryH, recalcCatOverflow]);
 
-  // R0075: auto-scroll so the open category header sits just below List Summary;
-  // also resets overflow state when the category collapses.
+  // R0076: auto-scroll so the open category header lands at the List Summary
+  // boundary; then determine if the category is "long" (overflows the bounded
+  // item viewport) and activate the constrained scroll mode if so.
   useEffect(() => {
     if (!openCatName || allExpanded) {
       setCatOverflow({ above: false, below: false });
+      setIsCatLong(false);
       return;
     }
-    const ms      = mainScrollRef.current;
-    const listEl  = catListRef.current;
+    const ms     = mainScrollRef.current;
+    const listEl = catListRef.current;
     if (!ms || !listEl) return;
     const catEl = listEl.querySelector(`[data-cat="${CSS.escape(openCatName)}"]`) as HTMLElement | null;
     if (!catEl) return;
-    // rAF ensures layout has settled before measuring
     const raf = requestAnimationFrame(() => {
       const msRect  = ms.getBoundingClientRect();
       const catRect = catEl.getBoundingClientRect();
@@ -2117,11 +2234,32 @@ function MobileFunctionalV3Inner() {
       if (Math.abs(target - ms.scrollTop) > 2) {
         ms.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
       }
-      // refresh chevron after scroll settles
-      setTimeout(() => recalcCatOverflow(), 420);
+      // R0076: after scroll settles, measure whether the category needs the
+      // bounded viewport (setIsCatLong triggers a follow-up recalcCatOverflow).
+      setTimeout(() => {
+        const itemsEl = openCatItemsRef.current;
+        if (!itemsEl?.isConnected) { setIsCatLong(false); return; }
+        // Measure from actual DOM positions so stale state doesn't cause a gap.
+        const summaryEl = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
+        const navEl     = document.querySelector('[data-testid="bottom-nav"]')        as HTMLElement | null;
+        const summaryBtm = summaryEl ? summaryEl.getBoundingClientRect().bottom : summaryH;
+        const navTop     = navEl     ? navEl.getBoundingClientRect().top         : (window.innerHeight - navHeight);
+        const rawAvailH  = navTop - summaryBtm - CARD_H - 44;
+        const clampedH   = Math.max(44, rawAvailH);
+        const isLong     = itemsEl.scrollHeight > rawAvailH + 4;
+        setAvailItemH(clampedH);
+        setIsCatLong(isLong);
+      }, 420);
     });
     return () => cancelAnimationFrame(raf);
-  }, [openCatName, allExpanded, summaryH, recalcCatOverflow]);
+  }, [openCatName, allExpanded, summaryH, navHeight]);
+
+  // R0076: once isCatLong is established (after the bounded height is applied in
+  // the next render) recalculate overflow so the chevron appears immediately.
+  useEffect(() => {
+    if (isCatLong) setTimeout(() => recalcCatOverflow(), 60);
+    else setCatOverflow({ above: false, below: false });
+  }, [isCatLong, recalcCatOverflow]);
 
   // ── Item expand/collapse ──────────────────────────────────────────────────────
 
@@ -2614,22 +2752,14 @@ function MobileFunctionalV3Inner() {
       subtitle: 'Category share of pack weight',
       icon: <BarChart2 size={18} strokeWidth={1.8}/>,
       render: () => (
-        // R005 Part 6 — ONE complete panel: the nested accordion header (its
-        // duplicate "Weight Distribution" title + chevron) is hidden; the
-        // palette control, chart, legend and weights stay together, always open.
-        <div className="tw-flat tw-flat-wd" style={{ padding: '4px 12px 14px' }}>
-          <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
-            <WeightDistribution
-              data={sandbox.items}
-              categoryOrder={sandbox.order}
-              categoryMeta={sandbox.meta}
-              paletteKey="trail"
-              onPaletteChange={() => {}}
-              forceOpen={true}
-              forceOpenSeq={1}
-            />
-          </BarStyleProvider>
-        </div>
+        // R0076: replaced WeightDistribution (trail/ocean/… theme picker) with
+        // MobileWeightDistribution — uses category wedge colours directly;
+        // no palette dropdown.
+        <MobileWeightDistribution
+          data={sandbox.items}
+          categoryOrder={sandbox.order}
+          categoryMeta={sandbox.meta}
+        />
       ),
     },
   ];
@@ -2975,7 +3105,7 @@ function MobileFunctionalV3Inner() {
         >
 
           {/* ── STICKY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
-          <div ref={summaryRef} style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
+          <div ref={summaryRef} data-testid="list-summary-bar" style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
 
             {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
             <div>
@@ -3024,6 +3154,10 @@ function MobileFunctionalV3Inner() {
                       style={{
                         alignSelf: 'flex-end',
                         marginBottom: 2,
+                        // R0076: move chevron ~48 px LEFT of its R0075 position.
+                        // flex:1 on the left block absorbs the margin, shifting
+                        // the chevron toward the item-count block.
+                        marginRight: 48,
                         background: 'none', border: 'none', cursor: 'pointer',
                         color: 'rgba(255,255,255,0.50)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -3219,14 +3353,24 @@ function MobileFunctionalV3Inner() {
                     </div>
                   )}
 
+                  {/* R0076: item container — bounded scroll when category is "long".
+                      Add Item bar is rendered OUTSIDE so it never scrolls away. */}
                   {isOpen && items.length > 0 && (
                     <div
                       ref={(el: HTMLDivElement | null) => {
-                        // R0075: track the open category's item container for overflow detection
                         if (openCatName === catName && !allExpanded) openCatItemsRef.current = el;
                       }}
                       data-testid={openCatName === catName && !allExpanded ? 'open-cat-items' : undefined}
-                      style={{ borderTop: `1px solid ${DIVIDER}` }}
+                      onScroll={(isCatLong && openCatName === catName && !allExpanded) ? recalcCatOverflow : undefined}
+                      style={{
+                        borderTop: `1px solid ${DIVIDER}`,
+                        ...((isCatLong && openCatName === catName && !allExpanded) ? {
+                          maxHeight: availItemH,
+                          overflowY: 'auto' as const,
+                          overflowX: 'hidden' as const,
+                          scrollbarWidth: 'none' as const,
+                        } : {}),
+                      }}
                     >
                       {items.map((item, itemIdx) => {
                         const isExpanded  = expandedItem?.cat === catName && expandedItem?.id === item.id;
@@ -3460,55 +3604,60 @@ function MobileFunctionalV3Inner() {
                         );
                       })}
 
-                      {/* R0075: contextual Add Item bar — restored at the bottom of every
-                          expanded category. Right-side chevron navigates overflow when the
-                          item list is taller than the visible window. */}
-                      <div
-                        data-testid={openCatName === catName && !allExpanded ? 'cat-add-item-bar' : undefined}
+                    </div>
+                  )}
+
+                  {/* R0076: Add Item bar — rendered OUTSIDE the item container so it
+                      is always visible at the bottom of the bounded viewport for long
+                      categories. Also appears for empty categories (items.length === 0). */}
+                  {isOpen && (
+                    <div
+                      data-testid={openCatName === catName && !allExpanded ? 'cat-add-item-bar' : undefined}
+                      style={{
+                        display: 'flex', alignItems: 'center',
+                        borderTop: `1px solid ${DIVIDER}`,
+                        minHeight: 44,
+                      }}
+                    >
+                      {/* Add Item tap target — full width minus optional chevron */}
+                      <button
+                        data-testid="cat-add-item-btn"
+                        onClick={() => addItem(catName)}
+                        aria-label={`Add item to ${catName}`}
                         style={{
-                          display: 'flex', alignItems: 'center',
-                          borderTop: `1px solid ${DIVIDER}`,
-                          minHeight: 44,
+                          flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '0 14px', minHeight: 44,
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          textAlign: 'left',
                         }}
                       >
-                        {/* Add Item tap target — full width minus optional chevron */}
+                        <Plus size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                        <span style={{ fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500, fontFamily: SANS }}>
+                          Add Item
+                        </span>
+                      </button>
+
+                      {/* R0076: overflow chevron — stays in the pinned Add Item bar so it
+                          remains tappable even when items overflow.
+                          DOWN = "Show later items", UP = "Show earlier items". */}
+                      {openCatName === catName && !allExpanded && (catOverflow.above || catOverflow.below) && (
                         <button
-                          data-testid="cat-add-item-btn"
-                          onClick={() => addItem(catName)}
-                          aria-label={`Add item to ${catName}`}
+                          data-testid="cat-overflow-chevron"
+                          aria-label={catOverflow.below ? 'Show later items' : 'Show earlier items'}
+                          onClick={() => scrollCatItems(catOverflow.below ? 'down' : 'up')}
                           style={{
-                            flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-                            padding: '0 14px', minHeight: 44,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            width: 44, minHeight: 44, flexShrink: 0,
                             background: 'none', border: 'none', cursor: 'pointer',
-                            textAlign: 'left',
+                            color: SECONDARY,
+                            borderLeft: `1px solid ${DIVIDER}`,
                           }}
                         >
-                          <Plus size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
-                          <span style={{ fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500, fontFamily: SANS }}>
-                            Add Item
-                          </span>
+                          {catOverflow.below
+                            ? <ChevronDown size={18} strokeWidth={1.8}/>
+                            : <ChevronUp   size={18} strokeWidth={1.8}/>}
                         </button>
-
-                        {/* Overflow chevron — visible only when item content overflows the visible window */}
-                        {openCatName === catName && !allExpanded && (catOverflow.above || catOverflow.below) && (
-                          <button
-                            data-testid="cat-overflow-chevron"
-                            aria-label={catOverflow.below ? 'Scroll down to see more items' : 'Scroll up to see more items'}
-                            onClick={() => scrollCatItems(catOverflow.below ? 'down' : 'up')}
-                            style={{
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              width: 44, minHeight: 44, flexShrink: 0,
-                              background: 'none', border: 'none', cursor: 'pointer',
-                              color: SECONDARY,
-                              borderLeft: `1px solid ${DIVIDER}`,
-                            }}
-                          >
-                            {catOverflow.below
-                              ? <ChevronDown size={18} strokeWidth={1.8}/>
-                              : <ChevronUp   size={18} strokeWidth={1.8}/>}
-                          </button>
-                        )}
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
