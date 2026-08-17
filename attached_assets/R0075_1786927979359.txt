@@ -1,0 +1,495 @@
+R0075 — GOLD STANDARD MOBILE CATEGORY VIEWPORT + ADD ITEM BAR + LIST SUMMARY CHEVRON
+
+REPORT NUMBER: R0075
+RECOMMENDED REPLIT MODE: Economy
+
+PURPOSE
+Implement only the approved V3 mobile changes below. Preserve all R0074-passing behavior unless explicitly changed here.
+
+BRIEF CHANGE LIST
+1. Restore the contextual Add Item bar at the bottom of every expanded category item list.
+2. For a long manually opened category, reposition it upward as needed so the Add Item bar can sit directly above the bottom box bar.
+3. The top of that category header must never move above the bottom edge of the List Summary bar.
+4. Add one right-side directional chevron to the Add Item bar for overflow navigation.
+5. Add one large, subdued global expand/collapse chevron inside List Summary, centered between the item-count block and Selected/checkmark block.
+6. Preserve stationary stacked bars, bottom box groups, Preview, Weight Distribution, Pack Summary, category reorder, slide-delete, header, and all R0074 fixes.
+
+============================================================
+1. GOLD STANDARD PRE-EDIT AUDIT
+============================================================
+
+Before editing, inspect only the minimum relevant current V3 code/tests and report:
+- current List Summary container
+- current category header/accordion container
+- expanded category item-list container
+- bottom box-bar container
+- current scroll owner for the category/list region
+- whether the old contextual Add Item handler/component still exists and can be reused
+- current category-open state source for zero/one/multiple open categories
+- existing Expand All / Collapse All functions, if available
+
+Do not broaden investigation. If another application source file is required, STOP before editing and explain.
+
+============================================================
+2. STRICT SCOPE / COST CONTROL
+============================================================
+
+Preferred application source:
+MobileFunctionalV3.tsx ONLY.
+
+Allowed:
+- targeted R0075 Playwright tests
+- R0075.md
+- compact evidence
+
+Do NOT:
+- modify desktop
+- modify Checklist.tsx
+- modify database/schema/auth
+- publish/deploy
+- investigate/fix bounce
+- redesign bottom box groups, stacked bars, Preview, Weight Distribution, Pack Summary, or header
+- perform unrelated cleanup/refactoring
+- inspect unrelated project areas
+
+============================================================
+3. RESTORE CONTEXTUAL ADD ITEM BAR
+============================================================
+
+LATEST USER DECISION:
+Restore the contextual Add Item bar at the bottom of EVERY expanded category item list.
+
+Important distinction:
+- bottom-box Add = broader Add workflow
+- contextual Add Item bar = direct category-specific action
+These are not accidental duplicates.
+
+Required:
+- every expanded category ends with a full-width Add Item bar
+- when no special overflow positioning is needed, place it immediately after the final item row
+- no unnecessary gap between the final item and Add Item
+- reuse the existing category-specific Add Item behavior if available
+- Add Item must target the category in which it appears
+- do not create a separate Add Item launcher in More or another stacked bar
+- flat/flush category structural styling; not a floating card; not a bottom control box
+
+============================================================
+4. LONG MANUALLY OPENED CATEGORY — AUTO-POSITION
+============================================================
+
+When a manually opened category does not fully fit between List Summary and the bottom box bar:
+
+- automatically reposition/scroll that category upward enough to maximize visible items
+- the TOP of the category header may move upward only until it reaches the hard upper stop
+- HARD UPPER STOP = bottom edge of the List Summary bar
+- the category header must never move under/behind the List Summary
+- when this long-category behavior is active, the Add Item bar should rest directly above the bottom box bar with no wasted blank strip
+- do not cover the bottom box bar
+- do not move the app shell
+- do not create horizontal overflow
+- do not break category reorder, slide-delete, vertical scrolling, or bottom box-group sliding
+
+Use existing scroll/layout ownership where possible. Avoid a new nested-scroll architecture unless absolutely necessary.
+
+============================================================
+5. IF THE CATEGORY IS STILL TOO TALL
+============================================================
+
+If the category remains taller than the available region after its header reaches the hard upper stop:
+
+- keep the category header at/below the List Summary boundary
+- keep the Add Item bar available at the bottom of the visible category region, directly above the bottom box bar
+- allow the item content to move through the available window using the existing safe scroll model
+- do not move the Add Item bar off-screen while overflow navigation is active
+- maximize visible items first; use scrolling/navigation only when content genuinely cannot fit
+
+Do not claim scrolling is unnecessary when the content is physically taller than the available area.
+
+============================================================
+6. ADD ITEM BAR — ONE RIGHT-SIDE OVERFLOW CHEVRON
+============================================================
+
+Add ONE directional chevron on the RIGHT side of the contextual Add Item bar.
+
+Chevron state:
+- hidden content BELOW -> chevron points DOWN
+- hidden content ABOVE and none below -> chevron points UP
+- if both above and below are possible, use one chevron only:
+  while later content remains below, point DOWN;
+  once the bottom is reached, change to UP
+- no overflow -> chevron hidden or clearly disabled
+
+Tap behavior:
+- DOWN -> smoothly advance item content by about one visible-page increment
+- UP -> smoothly move item content upward by about one visible-page increment
+- do not jump end-to-end unless one page naturally reaches the end
+- no spring/bounce animation
+- manual vertical scrolling remains available
+- chevron state must update after manual scrolling
+
+Accessibility:
+- DOWN: "Show later items"
+- UP: "Show earlier items"
+
+============================================================
+7. LIST SUMMARY — ONE GLOBAL EXPAND/COLLAPSE CHEVRON
+============================================================
+
+Add ONE chevron only inside List Summary.
+
+Exact placement:
+- horizontally in the open space BETWEEN:
+  left = item-count block (example "80 items")
+  right = Selected block / circled checkmark
+- not at the far edge
+- not on the bottom border as a separate tab
+
+Exact vertical position:
+- align with the large item-count number ("80")
+- use the SAME bottom padding from the List Summary bar as the "80"
+- do not center vertically in the whole panel if that changes this alignment
+
+Size/style:
+- approximately the visual size of the large "80"
+- generous touch target
+- visible but subdued
+- no heavy button chrome
+- no second chevron
+
+============================================================
+8. LIST SUMMARY CHEVRON — STATE AND ACTION
+============================================================
+
+ONE CHEVRON ONLY.
+
+All categories collapsed:
+- points DOWN
+- accessible name: "Expand all categories"
+
+One or more categories expanded:
+- points UP
+- accessible name: "Collapse all categories"
+
+Tap DOWN:
+- EXPAND ALL categories
+
+Tap UP:
+- COLLAPSE ALL categories
+
+Drive the icon from REAL accordion open state. Do not use a separate boolean that can drift out of sync.
+
+Do not re-add Expand All / Collapse All in More or another control area.
+
+============================================================
+9. EXPAND-ALL INTERACTION
+============================================================
+
+The special auto-position/pinned Add Item behavior is for a manually opened category the user is actively viewing.
+
+When global Expand All is used:
+- do NOT try to pin every category's Add Item bar to the viewport bottom simultaneously
+- preserve normal list/document order
+- every expanded category still has its own Add Item bar at the end of its item list
+- normal parent list scrolling remains available
+
+When categories are collapsed and the user manually opens one category:
+- apply the focused category viewport behavior in Sections 4–6
+
+============================================================
+10. PROTECTED BEHAVIOR
+============================================================
+
+Preserve R0074-passing behavior:
+
+Stacked bars:
+- stationary
+- 68 px
+- tap-only
+- never lift/follow finger/reorder
+- keyboard activation preserved
+
+Bottom box groups:
+Group 1: Locker | Summary | Add | Search | Next
+Group 2: Back | Undo | Redo | Reset | Next
+Group 3: Back | Camera | Photos | Preview | Next
+Group 4: Back | Share | More
+
+Preserve:
+- bidirectional box-group sliding
+- chevrons/no wraparound/max five boxes
+- haptics where supported
+- Preview selected-items-only
+- Preview no auto-print
+- Print inside Preview
+- category long-press reorder
+- slide-to-delete
+- Weight Distribution
+- Pack Summary
+- TrailWeigh header
+- Share/More
+- Locker/Summary/Add/Search
+- fonts/colors/wedges
+
+Bounce/overscroll: leave alone.
+
+============================================================
+11. TARGETED PLAYWRIGHT VERIFICATION
+============================================================
+
+Primary interaction viewport: 390 x 844.
+Also perform layout checks at 320, 375, and 430 px.
+
+TEST A — ADD ITEM RESTORED
+- open a category with items
+- prove it is open
+- Add Item bar appears after final item
+- tapping Add Item targets that category
+
+TEST B — SHORT CATEGORY
+- Add Item appears after final item
+- no active overflow chevron
+- no unnecessary repositioning
+
+TEST C — LONG MANUALLY OPENED CATEGORY
+Use a category that truly requires the new positioning behavior.
+
+Prove:
+- category repositions upward as needed
+- category header top >= List Summary bottom
+- Add Item bar rests immediately above bottom box bar when overflow positioning is active
+- bottom box bar stays visible
+
+Record:
+- List Summary bottom
+- category header top
+- Add Item bottom
+- bottom box-bar top
+- pixel differences
+
+TEST D — ADD ITEM OVERFLOW CHEVRON
+- hidden content below -> DOWN visible
+- tap DOWN -> later hidden item becomes visible
+- at bottom -> chevron becomes UP
+- tap UP -> earlier item becomes visible
+- manual scroll updates direction
+- no overflow -> hidden/disabled
+
+TEST E — LIST SUMMARY GLOBAL CHEVRON
+Initial all-collapsed:
+- exactly one chevron
+- points DOWN
+- located between item count and Selected/checkmark
+- vertical bottom padding matches "80" within <= 2 px
+
+Tap DOWN:
+- all categories expand
+- chevron becomes UP
+
+Tap UP:
+- all categories collapse
+- chevron becomes DOWN
+
+Manual category open:
+- chevron becomes UP
+
+Return to zero open:
+- chevron becomes DOWN
+
+TEST F — EXPAND ALL
+- every expanded category has its own Add Item bar
+- no simultaneous viewport pinning of all Add Item bars
+- normal parent list scrolling works
+
+TEST G — REGRESSIONS
+- stacked bars stationary/tap-only
+- box groups slide
+- category reorder works
+- slide-delete works
+- Preview selected-only
+- Weight Distribution opens
+- Pack Summary opens
+- header unchanged
+- no horizontal overflow
+
+============================================================
+12. REQUIRED VISUAL EVIDENCE
+============================================================
+
+Provide compact screenshots:
+
+1. Short expanded category:
+   final item + Add Item bar + no active overflow chevron
+
+2. Long expanded category:
+   List Summary + category header at/below hard stop + visible items + Add Item bar directly above bottom box bar + active directional chevron
+
+3. List Summary DOWN state:
+   large subdued chevron between item count and Selected/checkmark
+
+4. List Summary UP state:
+   one or more categories expanded
+
+Optional:
+- short video showing Add Item overflow navigation and global expand/collapse
+
+============================================================
+13. PASS / FAIL DISCIPLINE
+============================================================
+
+Use:
+PASS / FAIL / NOT RUN / NOT APPLICABLE
+
+Do not mark PASS unless the actual precondition is proven.
+
+Examples:
+- long-category test requires a category that really overflows
+- chevron direction requires actual hidden content in that direction
+- global state must come from real accordion state
+
+============================================================
+14. LEARNING QUESTIONS — EXACTLY 3
+============================================================
+
+Answer only from code/files already inspected for R0075.
+Do not broaden scope or spend extra Agent time solely to answer them.
+
+1. What existing mobile V3 scroll/positioning structure is safest for keeping an expanded category between the List Summary and bottom box bar without creating nested-scroll or gesture conflicts?
+
+2. What state already tells TrailWeigh whether zero, one, or multiple categories are expanded, and what is the safest way to drive the new List Summary chevron from that existing state?
+
+3. What interaction pattern should future TrailWeigh prompts use when a contextual control such as Add Item must remain visible while its content list may overflow, without interfering with category reorder, swipe-delete, or bottom box-group gestures?
+
+============================================================
+15. REQUIRED REPORT
+============================================================
+
+Create R0075.md with:
+
+# R0075 Implementation Report
+
+## Scope / Cost Discipline
+- exact application files inspected/changed
+- tests added/changed
+- scope expansion YES/NO
+
+## Pre-Edit Architecture Findings
+- List Summary
+- category header/container
+- item list
+- bottom box bar
+- scroll owner
+- existing Add Item handler
+- category open-state source
+- expand/collapse functions
+
+## Add Item Bar
+- restored in every expanded category
+- correct category target
+- short-category layout
+- PASS/FAIL
+
+## Long Category Positioning
+- Summary bottom
+- category header top
+- hard stop
+- Add Item bottom
+- bottom box-bar top
+- gap
+- PASS/FAIL
+
+## Add Item Overflow Chevron
+- DOWN
+- UP
+- no-overflow
+- tap navigation
+- manual-scroll update
+- accessibility
+- PASS/FAIL
+
+## List Summary Global Chevron
+- one only
+- placement
+- vertical alignment
+- size/tap target
+- subdued styling
+- DOWN all-collapsed
+- UP any-open
+- Expand All
+- Collapse All
+- real state drives icon
+- PASS/FAIL
+
+## Expand-All Interaction
+- Add Item bars present
+- no impossible simultaneous pinning
+- parent scrolling
+- PASS/FAIL
+
+## Protected Regressions
+- stacked bars
+- box groups
+- category reorder
+- slide-delete
+- Preview
+- Weight Distribution
+- Pack Summary
+- header
+- horizontal overflow
+
+## TypeScript
+result
+
+## Playwright
+- total/passed/failed/not run/skipped
+- exact failures
+
+## Evidence
+exact filenames
+
+## Lessons for Future Prompts
+### Learning Question 1
+answer
+### Learning Question 2
+answer
+### Learning Question 3
+answer
+
+## Remaining Defects / Uncertainty
+Be explicit.
+
+## ZIP Contents
+exact filenames
+
+## Final Scope Confirmation
+Checklist.tsx untouched
+desktop untouched
+database/schema untouched
+auth untouched
+deployment/publishing untouched
+bounce untouched
+
+============================================================
+16. ZIP
+============================================================
+
+Create R0075.zip including:
+- R0075.md
+- every application source file actually changed
+- every R0075 Playwright test file
+- required compact evidence
+
+Before delivery:
+- inspect git status/diff
+- list exact changed files
+- verify all listed files are inside ZIP
+- list/open ZIP to confirm
+
+Do not include node_modules, caches, build output, or unrelated artifacts.
+
+FINAL STOP
+After implementation, targeted Playwright verification, report, and ZIP:
+STOP.
+Do not start another TrailWeigh task.
+Do not publish/deploy.
+Do not modify database/auth.
+Wait for user review.

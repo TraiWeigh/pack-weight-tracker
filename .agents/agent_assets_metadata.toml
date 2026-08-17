@@ -245,3 +245,17 @@ uri = "file://workflow-reports/TRAILWEIGH_PHASE1C_CROSS_BROWSER_REPORT.md"
 type = "text"
 title = "Phase 1C Report — Cross-Browser Compatibility"
 description = "Firefox + WebKit environment-blocked | 0 app defects found | Chromium baseline intact"
+
+[[outputs]]
+id = "6_CQTpycHQIFz4cXfhnDZ"
+uri = "file://R0075.md"
+type = "text"
+title = "R0075 Report"
+description = "15/15 tests pass — Add Item bar, expand/collapse chevron, overflow chevron, auto-scroll."
+
+[[outputs]]
+id = "c-7Q3I8zecKliVIqY3wfY"
+uri = "file://R0075.zip"
+type = "unspecified"
+title = "R0075.zip"
+description = "MobileFunctionalV3.tsx + r0075.spec.ts + R0075.md"

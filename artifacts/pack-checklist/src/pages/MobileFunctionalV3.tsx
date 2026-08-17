@@ -35,7 +35,7 @@ import {
   Backpack, Folder, Grid3X3, BarChart2,
   Hash, PackageOpen, ArrowRightLeft, Luggage, Camera, Image,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
-  Tent, HelpCircle, X, ChevronLeft, ChevronRight, Layers,
+  Tent, HelpCircle, X, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Layers,
   Scale, Coins, AlertCircle, Trash2, Copy, Link2,
   BookOpen, Info, Pencil, Mail, Tag, FileText, Shield,
   // R007 header identity icons + group 3
@@ -1728,6 +1728,25 @@ function MobileFunctionalV3Inner() {
   //    deck/backdrop bottom offset. Tracks safe-area inset growth via ResizeObserver.
   const [navHeight, setNavHeight] = useState(NAV_H);
   const navRoRef = useRef<ResizeObserver | null>(null);
+
+  // R0075: measured List Summary bar height — sticky top for open category header
+  const [summaryH, setSummaryH] = useState(0);
+  const summaryRoRef = useRef<ResizeObserver | null>(null);
+  const summaryRef = useCallback((el: HTMLDivElement | null) => {
+    summaryRoRef.current?.disconnect();
+    summaryRoRef.current = null;
+    if (!el) return;
+    const update = () => setSummaryH(Math.round(el.getBoundingClientRect().height));
+    update();
+    const ro = new ResizeObserver(update);
+    try { ro.observe(el, { box: 'border-box' }); } catch { ro.observe(el); }
+    summaryRoRef.current = ro;
+  }, []);
+
+  // R0075: refs for scroll-based overflow chevron on the contextual Add Item bar
+  const mainScrollRef = useRef<HTMLDivElement | null>(null);
+  const openCatItemsRef = useRef<HTMLDivElement | null>(null);
+  const [catOverflow, setCatOverflow] = useState<{ above: boolean; below: boolean }>({ above: false, below: false });
   // Callback ref: the component mounts the nav only after its loading gate, so a
   // one-shot effect would see null — attach measurement whenever the node appears.
   const navRef = useCallback((el: HTMLDivElement | null) => {
@@ -2043,13 +2062,66 @@ function MobileFunctionalV3Inner() {
     }
   }, [allExpanded, openCatName]);
 
-  // (R006 Part 7: handleExpandAll/handleCollapseAll removed with their
-  //  More → List Actions rows; allExpanded state remains for accordion logic.)
+  // R0075: expand/collapse all — restored for the List Summary global chevron
+  const handleExpandAll   = useCallback(() => setAllExpanded(true), []);
+  const handleCollapseAll = useCallback(() => { setAllExpanded(false); setOpenCatName(null); }, []);
 
   // (R002: the left/right/bottom slider gesture handlers were retired with the
   //  slider components — deck interaction lives in CardDeck / DeckInactiveCard.)
 
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
+
+  // R0075: recompute Add Item overflow chevron direction from live DOM measurements
+  const recalcCatOverflow = useCallback(() => {
+    const ms    = mainScrollRef.current;
+    const items = openCatItemsRef.current;
+    // Guard against stale/detached refs
+    if (!ms || !items || !items.isConnected) { setCatOverflow({ above: false, below: false }); return; }
+    const msRect   = ms.getBoundingClientRect();
+    const itemRect = items.getBoundingClientRect();
+    const ADD_H    = 44; // contextual Add Item bar height
+    // Visible item window: between sticky summary+header bottom and sticky Add Item top
+    const visibleTop    = msRect.top + summaryH + BAR_PEEK_H;
+    const visibleBottom = msRect.bottom - ADD_H;
+    setCatOverflow({
+      above: itemRect.top    < visibleTop    - 4,
+      below: itemRect.bottom > visibleBottom + 4,
+    });
+  }, [summaryH]);
+
+  // R0075: scroll the main-scroll by one visible-page increment for the chevron
+  const scrollCatItems = useCallback((dir: 'down' | 'up') => {
+    const ms = mainScrollRef.current;
+    if (!ms) return;
+    const pageH = ms.clientHeight - summaryH - BAR_PEEK_H - 44;
+    ms.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
+  }, [summaryH]);
+
+  // R0075: auto-scroll so the open category header sits just below List Summary;
+  // also resets overflow state when the category collapses.
+  useEffect(() => {
+    if (!openCatName || allExpanded) {
+      setCatOverflow({ above: false, below: false });
+      return;
+    }
+    const ms      = mainScrollRef.current;
+    const listEl  = catListRef.current;
+    if (!ms || !listEl) return;
+    const catEl = listEl.querySelector(`[data-cat="${CSS.escape(openCatName)}"]`) as HTMLElement | null;
+    if (!catEl) return;
+    // rAF ensures layout has settled before measuring
+    const raf = requestAnimationFrame(() => {
+      const msRect  = ms.getBoundingClientRect();
+      const catRect = catEl.getBoundingClientRect();
+      const target  = ms.scrollTop + (catRect.top - msRect.top) - summaryH;
+      if (Math.abs(target - ms.scrollTop) > 2) {
+        ms.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+      }
+      // refresh chevron after scroll settles
+      setTimeout(() => recalcCatOverflow(), 420);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [openCatName, allExpanded, summaryH, recalcCatOverflow]);
 
   // ── Item expand/collapse ──────────────────────────────────────────────────────
 
@@ -2888,7 +2960,11 @@ function MobileFunctionalV3Inner() {
         <div
           className="tw-noscrollbar"
           data-testid="main-scroll"
-          onScroll={() => { if (openSwipe) setOpenSwipe(null); }}
+          ref={mainScrollRef}
+          onScroll={() => {
+            if (openSwipe) setOpenSwipe(null);
+            recalcCatOverflow();
+          }}
           onPointerDownCapture={e => {
             // R004 — tapping anywhere OUTSIDE the open row closes its reveal
             if (!openSwipe) return;
@@ -2899,7 +2975,7 @@ function MobileFunctionalV3Inner() {
         >
 
           {/* ── STICKY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
-          <div style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
+          <div ref={summaryRef} style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
 
             {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
             <div>
@@ -2937,6 +3013,32 @@ function MobileFunctionalV3Inner() {
                     </span>
                   </div>
                 </div>
+                {/* R0075: global expand/collapse chevron — centered between item-count and Selected blocks */}
+                {(() => {
+                  const anyOpen = allExpanded || openCatName !== null;
+                  return (
+                    <button
+                      data-testid="summary-expand-collapse"
+                      onClick={() => anyOpen ? handleCollapseAll() : handleExpandAll()}
+                      aria-label={anyOpen ? 'Collapse all categories' : 'Expand all categories'}
+                      style={{
+                        alignSelf: 'flex-end',
+                        marginBottom: 2,
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        color: 'rgba(255,255,255,0.50)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        minWidth: 44, minHeight: 44,
+                        padding: '0 4px',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {anyOpen
+                        ? <ChevronUp   size={36} strokeWidth={1.5}/>
+                        : <ChevronDown size={36} strokeWidth={1.5}/>}
+                    </button>
+                  );
+                })()}
+
                 {/* Right: categories / selected / not selected stacked (027U) */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
                   {/* Category count — top of right stack */}
@@ -3118,7 +3220,14 @@ function MobileFunctionalV3Inner() {
                   )}
 
                   {isOpen && items.length > 0 && (
-                    <div style={{ borderTop: `1px solid ${DIVIDER}` }}>
+                    <div
+                      ref={(el: HTMLDivElement | null) => {
+                        // R0075: track the open category's item container for overflow detection
+                        if (openCatName === catName && !allExpanded) openCatItemsRef.current = el;
+                      }}
+                      data-testid={openCatName === catName && !allExpanded ? 'open-cat-items' : undefined}
+                      style={{ borderTop: `1px solid ${DIVIDER}` }}
+                    >
                       {items.map((item, itemIdx) => {
                         const isExpanded  = expandedItem?.cat === catName && expandedItem?.id === item.id;
                         const isLast      = itemIdx === items.length - 1;
@@ -3351,7 +3460,55 @@ function MobileFunctionalV3Inner() {
                         );
                       })}
 
-                      {/* R0073: category "+ Add Item" row removed — use dedicated Add control (Group 1) */}
+                      {/* R0075: contextual Add Item bar — restored at the bottom of every
+                          expanded category. Right-side chevron navigates overflow when the
+                          item list is taller than the visible window. */}
+                      <div
+                        data-testid={openCatName === catName && !allExpanded ? 'cat-add-item-bar' : undefined}
+                        style={{
+                          display: 'flex', alignItems: 'center',
+                          borderTop: `1px solid ${DIVIDER}`,
+                          minHeight: 44,
+                        }}
+                      >
+                        {/* Add Item tap target — full width minus optional chevron */}
+                        <button
+                          data-testid="cat-add-item-btn"
+                          onClick={() => addItem(catName)}
+                          aria-label={`Add item to ${catName}`}
+                          style={{
+                            flex: 1, display: 'flex', alignItems: 'center', gap: 8,
+                            padding: '0 14px', minHeight: 44,
+                            background: 'none', border: 'none', cursor: 'pointer',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <Plus size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                          <span style={{ fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500, fontFamily: SANS }}>
+                            Add Item
+                          </span>
+                        </button>
+
+                        {/* Overflow chevron — visible only when item content overflows the visible window */}
+                        {openCatName === catName && !allExpanded && (catOverflow.above || catOverflow.below) && (
+                          <button
+                            data-testid="cat-overflow-chevron"
+                            aria-label={catOverflow.below ? 'Scroll down to see more items' : 'Scroll up to see more items'}
+                            onClick={() => scrollCatItems(catOverflow.below ? 'down' : 'up')}
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              width: 44, minHeight: 44, flexShrink: 0,
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: SECONDARY,
+                              borderLeft: `1px solid ${DIVIDER}`,
+                            }}
+                          >
+                            {catOverflow.below
+                              ? <ChevronDown size={18} strokeWidth={1.8}/>
+                              : <ChevronUp   size={18} strokeWidth={1.8}/>}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
