@@ -19,3 +19,4 @@
 - [Swipe/drag gesture lessons](swipe-reveal-gesture.md) — post-drag click swallow; dim from ORIGINAL order; finger-follow drags need WINDOW listeners (DOM moves fire lostpointercapture) + rendered-transform math.
 - [BoxGroupBar pointer-capture trap](boxgroupbar-pointer-capture.md) — setPointerCapture() on a nav container div prevents click events from reaching child buttons in Playwright (and some real browsers); always use window.addEventListener for drag tracking instead.
 - [R0076P2 scroll-clamp + isCatLong dep](r0076p2-scroll-lessons.md) — 3 root causes: scroll clamped on first open (content too short), isCatLong missing from effect deps, behavior:'instant' is async in Chrome.
+- [R0076P3 lessons](r0076p3-lessons.md) — overflow:hidden accepts scrollTop (never unlock), overscroll-behavior:contain on inner viewports, BoundingBox={x,y,w,h} not {top/bottom}, CDP for real touch scroll in tests, nav chevron DOM.click().

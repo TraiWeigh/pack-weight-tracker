@@ -2263,8 +2263,12 @@ function MobileFunctionalV3Inner() {
     let raf2 = -1;
 
     raf1 = requestAnimationFrame(() => {
-      // Restore scrollability so we can reposition.
-      ms.style.overflowY = 'auto';
+      // NOTE: Do NOT set ms.style.overflowY = 'auto' here.
+      // overflow:hidden elements still accept programmatic scrollTop changes (per spec),
+      // so there is no need to unlock the outer scroll.  The previous R0076P2 approach
+      // of setting overflowY='auto' to allow scrollTop changes was unnecessary, and the
+      // inline style persisted when isCatLong was already true (no re-render → no
+      // reset), leaving main-scroll permanently open to native touch scroll (R0076P3 Defect 1).
 
       const summaryEl = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
       const summaryBtm = summaryEl ? summaryEl.getBoundingClientRect().bottom : summaryH;
@@ -3475,6 +3479,12 @@ function MobileFunctionalV3Inner() {
                           overflowY: 'auto' as const,
                           overflowX: 'hidden' as const,
                           scrollbarWidth: 'none' as const,
+                          // R0076P3: prevent scroll chaining from the bounded item
+                          // viewport to the outer main-scroll.  Without this, when
+                          // the inner viewport reaches its top/bottom boundary the
+                          // browser would chain the gesture to main-scroll, which
+                          // must remain locked ('hidden') during long-category mode.
+                          overscrollBehavior: 'contain' as const,
                         } : {}),
                       }}
                     >

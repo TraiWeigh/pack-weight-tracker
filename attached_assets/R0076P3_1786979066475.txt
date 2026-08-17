@@ -1,0 +1,590 @@
+TRAILWEIGH — R0076P3
+MOBILE LONG-CATEGORY NATIVE TOUCH SCROLL + SINGLE-OPEN ITEM ACCORDION REPAIR
+
+RECOMMENDED REPLIT SETTINGS
+- Agent mode: Economy
+- Work mode: Build
+- Start in the CURRENT TrailWeigh project
+- Keep Auto-apply OFF
+- Do not apply unrelated Ready tasks
+
+ESTIMATED REPLIT SCOPE
+- Small, surgical repair
+- Expected application scope: MobileFunctionalV3 only unless current active-source evidence proves otherwise
+- Do not broaden into desktop, database, deployment, themes, Locker, Share, importer, or unrelated mobile work
+
+============================================================
+WHY R0076P3 EXISTS
+============================================================
+
+R0076P2 is USER FAIL.
+
+The user live-tested R0076P2 on the actual mobile-style interface and found TWO interaction defects.
+
+IMPORTANT:
+Three R0076P2 outcomes are GOOD and must be preserved:
+
+PASS / PRESERVE:
+1. The opened long-category header aligns correctly directly under List Summary.
+2. When an item accordion is opened low in the visible item area, the new auto-alignment/auto-reveal behavior positions it correctly.
+3. Group 4 correctly contains:
+   Back | Save | Share | More
+
+Do NOT rewrite, remove, or regress those working outcomes.
+
+============================================================
+USER-VERIFIED FAILURE 1
+NATIVE THUMB/FINGER SCROLL MOVES THE CATEGORY STACK
+============================================================
+
+USER LIVE OBSERVATION:
+
+When a category is fully expanded into long-category mode and its items fit in the bounded scrolling area between:
+
+- the fixed/open category header above, and
+- the fixed Add Item bar below,
+
+the item rows can currently be moved using the ▲/▼ item-scroll chevrons.
+
+BUT:
+
+When the user places a thumb/finger on the item rows and performs a normal vertical drag/swipe, the item rows do NOT behave as the only native scroll surface.
+
+Instead, the OUTER category stack moves vertically.
+
+This is WRONG.
+
+The chevrons must remain an alternate scrolling control.
+They must NOT be the only practical way to scroll the item rows.
+
+============================================================
+REQUIRED LONG-CATEGORY TOUCH BEHAVIOR
+============================================================
+
+While long-category mode is active:
+
+A. List Summary stays fixed.
+B. The active category header stays fixed directly below List Summary.
+C. The item viewport is the native vertical touch-scroll surface.
+D. Add Item stays fixed below the item viewport.
+E. Bottom controls stay fixed.
+F. A thumb/finger drag over the item area scrolls ONLY the item rows.
+G. The outer category stack must not vertically move during that gesture.
+H. ▲ and ▼ item-scroll controls must continue to work.
+I. Normal item taps must continue to open/close item accordions.
+J. Horizontal/other gestures unrelated to this defect must not be changed.
+
+The user must be able to naturally drag the item rows upward and downward with a thumb, just like a normal mobile scroll list.
+
+============================================================
+KNOWN R0076P2 CODE CONFLICT TO INVESTIGATE
+============================================================
+
+R0076P2 reported this change in the open-category alignment effect:
+
+    ms.style.overflowY = 'auto'
+
+before measuring/repositioning `main-scroll`.
+
+The active JSX/long-category logic is supposed to prevent the OUTER category scroller from being the mobile scroll surface while long-category mode is active.
+
+Investigate whether R0076P2's direct DOM assignment leaves `main-scroll` scrollable after the alignment operation and therefore overrides/conflicts with the intended long-category parent lock.
+
+DO NOT assume this is the root cause merely because ChatGPT identified it.
+
+You MUST:
+
+1. reproduce the USER LIVE failure first;
+2. identify the actual active render/event/scroll path;
+3. inspect the computed overflow/touch/scroll state of:
+   - outer `main-scroll`,
+   - active long-category wrapper,
+   - item viewport;
+4. determine which element receives the native gesture and which element actually scrolls;
+5. identify the exact root cause;
+6. make the smallest safe repair.
+
+PREFERRED DIRECTION IF CONFIRMED:
+
+Allow the alignment logic to programmatically set `main-scroll.scrollTop` when necessary WITHOUT leaving the outer scroller natively scrollable during long-category mode.
+
+Do not add complicated global touch handlers unless current browser behavior proves they are necessary.
+
+Do not disable native scrolling of the INNER item viewport.
+
+============================================================
+USER-VERIFIED FAILURE 2
+OPENING ITEM B DOES NOT CLOSE ITEM A
+============================================================
+
+USER LIVE OBSERVATION:
+
+The new item auto-alignment is GOOD.
+
+However:
+
+- Open Item A.
+- Item A expands correctly.
+- Open Item B.
+- Item B opens.
+- Item A remains open.
+
+This is WRONG.
+
+============================================================
+REQUIRED ITEM-ACCORDION RULE
+============================================================
+
+Only ONE item detail accordion may be open at a time across the active mobile list.
+
+Required behavior:
+
+1. Tap Item A:
+   - Item A opens.
+
+2. Tap Item B:
+   - Item A closes automatically.
+   - Item B opens.
+   - Item B receives the existing working auto-alignment/auto-reveal behavior if necessary.
+
+3. Tap Item B again:
+   - Item B closes.
+   - Zero item accordions open is allowed.
+
+4. If Expand All has multiple categories visible:
+   - opening an item in another category must still close any previously open item detail panel.
+   - there must never be two simultaneously expanded item-detail accordions.
+
+5. Category accordion behavior itself must NOT be changed by this repair.
+
+============================================================
+IMPORTANT CONTRADICTION — DO NOT GUESS
+============================================================
+
+Earlier R0076/R0076P2 source/report evidence suggests the mobile implementation uses a single `expandedItem` state.
+
+If CURRENT active source still appears to use a single state that SHOULD enforce one-open behavior, do NOT declare the code correct.
+
+USER LIVE EVIDENCE WINS.
+
+You must reproduce the live failure and determine why two item details can remain visibly open.
+
+Check for possibilities such as:
+
+- duplicate/local expansion state;
+- stale component state;
+- key/identity mismatch;
+- item IDs that are not globally unique;
+- separate render paths;
+- nested component-local state;
+- DOM/CSS leaving previous detail visible;
+- event ordering;
+- active source differing from the earlier supplied report;
+- multiple mounted item-row instances.
+
+Do not fix a dead or inactive code path.
+
+============================================================
+STRICT PRESERVATION RULES
+============================================================
+
+DO NOT REGRESS:
+
+- R0076P2 category-header flush alignment under List Summary;
+- R0076P2 opened-item auto-alignment / auto-reveal;
+- Delete Item reveal positioning;
+- Add Item fixed position;
+- bottom navigation fixed position;
+- Save box;
+- Back | Save | Share | More order;
+- category chevrons;
+- item ▲/▼ scrolling controls;
+- category icons/wedges;
+- existing category accordion behavior;
+- item selection/check state;
+- weight/quantity behavior;
+- Add Item behavior;
+- Locker/Save behavior;
+- desktop behavior;
+- Review/Share isolation;
+- KIS/theme behavior;
+- importers;
+- authentication;
+- database;
+- deployment/publishing.
+
+============================================================
+NO PLATFORM / CONFIGURATION CHANGES
+============================================================
+
+DO NOT modify:
+
+- `replit.md`
+- `.replit`
+- `.agents/memory/*`
+- `.agents/skills/*`
+- custom instructions
+- package/dependency versions
+- database rows
+- database schema
+- Secrets
+- environment variables
+- authentication
+- deployment settings
+- publishing settings
+
+DO NOT:
+
+- Publish
+- Republish
+- Resume production
+- create/connect/remove a Production Database
+- run migrations
+- restore a database
+- apply unrelated Ready tasks
+- enable Auto-apply
+
+============================================================
+PRE-EDIT GATE
+============================================================
+
+Before changing code:
+
+1. Read current `replit.md` READ-ONLY.
+2. Inspect CURRENT active mobile render path.
+3. Confirm the actual source file used by `/mobile-functional-v3`.
+4. Reproduce BOTH user failures.
+5. Record current git status.
+6. List EXPECTED application files to change.
+7. Identify exact root cause for each failure.
+
+Expected application file:
+- `artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx`
+
+Expected test file:
+- `tests/e2e/r0076p3/r0076p3.spec.ts`
+
+If another application file is truly required:
+STOP before broadening and explain why in the report.
+
+============================================================
+MANDATORY REAL-GESTURE TESTING
+============================================================
+
+CRITICAL:
+
+R0076P2's tests were insufficient because they used programmatic `scrollTop` changes to prove scrolling.
+
+That is NOT enough for R0076P3.
+
+At least one acceptance test MUST generate an actual browser-level touch/pointer drag over the item rows.
+
+Preferred:
+- Playwright Chromium mobile/touch emulation;
+- CDP `Input.dispatchTouchEvent`;
+- another method that produces real native browser scrolling.
+
+DO NOT satisfy the touch acceptance test with only:
+
+- `element.scrollTop = ...`
+- `element.scrollTop += ...`
+- `scrollTo(...)`
+- `scrollBy(...)`
+- DOM-dispatched fake `touchmove` events that do not trigger native scrolling
+- chevron clicks
+- mouse wheel alone
+
+Programmatic scroll measurements may be used to VERIFY results, but not to CREATE the gesture being tested.
+
+============================================================
+MANDATORY TEST MATRIX
+============================================================
+
+Use at least 390 × 844 and also regression-check 320, 375, and 430 widths where practical.
+
+TEST P3-01 — LONG CATEGORY, TOUCH DRAG UP
+Setup:
+- open a category with enough items to enter long mode;
+- position item viewport near its top;
+- record:
+  - inner item viewport scrollTop;
+  - outer main-scroll scrollTop;
+  - category-header top;
+  - Add Item top.
+
+Action:
+- perform a REAL upward finger/touch drag starting over the middle of an item row.
+
+PASS:
+- inner item viewport scrollTop increases;
+- outer main-scroll scrollTop does not change beyond <= 1 px tolerance;
+- category header does not move beyond <= 1 px;
+- Add Item does not move beyond <= 1 px.
+
+TEST P3-02 — LONG CATEGORY, TOUCH DRAG DOWN
+Setup:
+- item viewport at a middle/lower scroll position.
+
+Action:
+- perform a REAL downward finger/touch drag over item rows.
+
+PASS:
+- inner scrollTop decreases;
+- outer scrollTop remains locked;
+- fixed boundaries do not move.
+
+TEST P3-03 — NATIVE TOUCH AT TOP / MIDDLE / BOTTOM
+Repeat real touch scrolling with the inner viewport:
+- at top;
+- at middle;
+- near bottom.
+
+PASS:
+- item area behaves like a normal bounded mobile scroll list;
+- no scroll chaining moves the category stack.
+
+If browser overscroll behavior can cause parent chaining at the inner boundary, prevent that narrowly for this long-category item viewport without breaking normal item scrolling.
+
+TEST P3-04 — CHEVRON REGRESSION
+PASS:
+- ▲/▼ still scroll only item rows;
+- enabled/disabled states remain correct.
+
+TEST P3-05 — OPEN ITEM A
+PASS:
+- A opens;
+- A auto-aligns/reveals according to the existing good P2 behavior.
+
+TEST P3-06 — OPEN ITEM B
+Action:
+- with A open, tap B.
+
+PASS:
+- A visibly closes;
+- B visibly opens;
+- only one item detail panel exists visibly expanded;
+- B auto-aligns/reveals if required.
+
+TEST P3-07 — CLOSE CURRENT ITEM
+Action:
+- tap B again.
+
+PASS:
+- B closes;
+- zero expanded items allowed.
+
+TEST P3-08 — RAPID A → B → C
+PASS:
+- final visible expanded item is C only;
+- no stale A/B details remain.
+
+TEST P3-09 — EXPAND-ALL CROSS-CATEGORY ITEM RULE
+If multiple categories are visible through existing Expand All:
+- open item in Category 1;
+- open item in Category 2.
+
+PASS:
+- Category 1 item closes;
+- Category 2 item opens;
+- maximum visible expanded item panels = 1.
+
+TEST P3-10 — ALIGNMENT PRESERVATION
+PASS:
+- long active category header remains flush under List Summary;
+- tolerance <= 1 px.
+
+TEST P3-11 — ITEM AUTO-REVEAL PRESERVATION
+Open a low item whose detail/Delete row would otherwise be obscured.
+
+PASS:
+- existing P2 auto-reveal still works;
+- Delete Item row becomes visible above the fixed Add Item area;
+- outer category stack remains locked.
+
+TEST P3-12 — SAVE PRESERVATION
+PASS:
+- Group 4 = Back | Save | Share | More;
+- Save still invokes the existing save action.
+
+TEST P3-13 — SHORT CATEGORY REGRESSION
+PASS:
+- short category interaction remains normal;
+- no forced long-mode scroll lock leaks into short mode.
+
+TEST P3-14 — CATEGORY ACCORDION REGRESSION
+PASS:
+- existing category single-open/zero-open/global controls remain unchanged.
+
+TEST P3-15 — MOBILE WIDTH REGRESSION
+At 320 / 375 / 390 / 430:
+PASS:
+- no horizontal overflow introduced;
+- item native scroll remains usable;
+- fixed bars remain accessible.
+
+============================================================
+RE-RUN PRIOR TESTS
+============================================================
+
+After R0076P3 tests pass:
+
+1. Re-run the complete original R0076 suite.
+2. Re-run the complete R0076P2 suite.
+3. Re-run R0076P3.
+
+Do NOT claim "prior tests not affected."
+
+R0076P3 directly touches behavior covered by earlier category/scroll/item tests.
+
+If an older test encodes behavior now proven wrong by USER LIVE evidence:
+- do not silently alter the requirement;
+- identify the obsolete test;
+- explain why;
+- update only if it contradicts the confirmed user requirement.
+
+============================================================
+VISUAL / VIDEO EVIDENCE
+============================================================
+
+Provide evidence for:
+
+1. Long-category header still flush below List Summary.
+2. Item B open while Item A is visibly closed.
+3. Save box still present.
+4. Prefer a short test video or equivalent browser trace demonstrating a REAL touch drag scrolling item rows while the outer category/header/Add Item remain fixed.
+
+A static screenshot alone cannot prove native touch-scroll routing.
+
+============================================================
+CHANGED-FILE CONTROL
+============================================================
+
+Before edit:
+- list expected changed files.
+
+After edit:
+- list actual changed files.
+
+No unrelated edits.
+
+No broad refactor.
+
+No "cleanup while here."
+
+If an unrelated application/config file changes:
+- investigate;
+- revert it unless strictly necessary;
+- report it.
+
+============================================================
+MANDATORY REPORT
+============================================================
+
+Create:
+
+`workflow-reports/R0076P3.md`
+
+The report must include:
+
+A. USER FAILURES REPRODUCED
+B. ROOT CAUSE — NATIVE TOUCH SCROLL
+C. ROOT CAUSE — MULTIPLE ITEM ACCORDIONS
+D. CURRENT ACTIVE SOURCE / RENDER PATH
+E. EXACT FILES CHANGED
+F. EXACT CODE BEHAVIOR CHANGED
+G. PRESERVED R0076P2 BEHAVIOR
+H. REAL TOUCH TEST METHOD
+I. R0076P3 TEST RESULTS
+J. ORIGINAL R0076 REGRESSION RESULTS
+K. R0076P2 REGRESSION RESULTS
+L. VISUAL/VIDEO EVIDENCE
+M. NO-CHANGE / SAFETY VERIFICATION
+N. USER VERIFICATION = PENDING
+
+The report must explicitly state:
+
+NATIVE THUMB ITEM SCROLL = PASS / FAIL
+OUTER CATEGORY STACK LOCKED DURING ITEM TOUCH = PASS / FAIL
+UPWARD TOUCH DRAG = PASS / FAIL
+DOWNWARD TOUCH DRAG = PASS / FAIL
+TOUCH SCROLL AT TOP/MIDDLE/BOTTOM = PASS / FAIL
+ITEM CHEVRONS STILL WORK = PASS / FAIL
+SINGLE-OPEN ITEM ACCORDION = PASS / FAIL
+ZERO-OPEN ITEM STATE = PASS / FAIL
+A→B AUTO-CLOSE = PASS / FAIL
+CROSS-CATEGORY SINGLE-OPEN = PASS / FAIL / NOT RUN
+P2 CATEGORY ALIGNMENT PRESERVED = PASS / FAIL
+P2 ITEM AUTO-REVEAL PRESERVED = PASS / FAIL
+P2 SAVE BOX PRESERVED = PASS / FAIL
+ORIGINAL R0076 SUITE = [X]/[X] PASS
+R0076P2 SUITE = [X]/[X] PASS
+R0076P3 SUITE = [X]/[X] PASS
+DATABASE CHANGED = YES / NO
+AUTH CHANGED = YES / NO
+REPLIT.MD CHANGED = YES / NO
+.AGENTS/MEMORY CHANGED = YES / NO
+DEPLOYMENT CHANGED = YES / NO
+UNRELATED APPLICATION FILES CHANGED = YES / NO
+USER VERIFICATION = PENDING
+
+============================================================
+MANDATORY DELIVERY ZIP
+============================================================
+
+Create:
+
+`R0076P3.zip`
+
+ZIP MUST contain:
+
+1. `R0076P3.md`
+2. every application source file actually changed
+3. `tests/e2e/r0076p3/r0076p3.spec.ts`
+4. relevant screenshots
+5. touch-scroll evidence video/trace if created
+
+IMPORTANT:
+Unlike R0076P2, the ZIP MUST contain the actual changed source file(s), not only the report/screenshots.
+
+Verify:
+- ZIP exists;
+- ZIP > 0 bytes;
+- ZIP opens successfully;
+- report is inside;
+- changed source is inside;
+- P3 test source is inside.
+
+============================================================
+FINAL SELF-AUDIT
+============================================================
+
+Before internal PASS, answer:
+
+1. Did a REAL native touch/pointer drag scroll the item viewport?
+2. Did the same gesture leave the outer category stack fixed?
+3. Did I test both upward and downward thumb movement?
+4. Did I test boundary scroll chaining?
+5. Did opening Item B visibly close Item A?
+6. Is only one item detail panel ever visible at once?
+7. Can the current item still be closed to zero-open?
+8. Did the working P2 category alignment remain unchanged?
+9. Did the working P2 item auto-reveal remain unchanged?
+10. Did Save remain present and functional?
+11. Did I re-run R0076 and R0076P2?
+12. Did I avoid unrelated source/config/database/deployment work?
+13. Does the ZIP contain the actual changed source?
+
+If any material answer is NO:
+DO NOT claim PASS.
+
+============================================================
+FINAL STOP
+============================================================
+
+STOP after R0076P3 report + ZIP.
+
+Do not proceed to another TrailWeigh task.
+
+Do not mark USER PASS.
+
+USER LIVE VERIFICATION is required after Replit's internal tests.
