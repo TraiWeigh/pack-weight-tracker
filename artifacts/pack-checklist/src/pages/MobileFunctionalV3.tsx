@@ -1,5 +1,5 @@
 /**
- * MobileFunctionalV3.tsx — 027Q
+ * MobileFunctionalV3.tsx — R0080
  * Full-screen mobile navigation repair at /mobile-functional-v3.
  *
  * SANDBOX ISOLATION:
@@ -891,7 +891,8 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
     settleRef.current = settle;
 
     const goLeft  = useCallback(() => { settle(Math.max(0, groupIdxRef.current - 1)); }, [settle]);
-    const goRight = useCallback(() => { settle(Math.min(NUM_BOX_GROUPS - 1, groupIdxRef.current + 1)); }, [settle]);
+    // R0080: Next wraps Group 4 → Group 1; Back still clamps (no back-wrap from Group 1).
+    const goRight = useCallback(() => { settle((groupIdxRef.current + 1) % NUM_BOX_GROUPS); }, [settle]);
 
     // ── Gesture handling via WINDOW listeners (not pointer capture) ──────────────
     // setPointerCapture() would redirect the synthetic `click` event to the nav
@@ -944,7 +945,8 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           requestAnimationFrame(() => { justDraggedRef.current = false; });
         }
         const cur = groupIdxRef.current;
-        if (dx < -GROUP_SWIPE_THRESHOLD && cur < NUM_BOX_GROUPS - 1) settleRef.current(cur + 1);
+        // R0080: forward swipe wraps Group 4 → Group 1; back swipe still clamps at Group 1.
+        if (dx < -GROUP_SWIPE_THRESHOLD) settleRef.current((cur + 1) % NUM_BOX_GROUPS);
         else if (dx > GROUP_SWIPE_THRESHOLD && cur > 0) settleRef.current(cur - 1);
         else settleRef.current(cur); // short/cancelled → revert (no haptic)
       }
@@ -1053,6 +1055,9 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
                 <NavBox Icon={Share2}         label="Share" aria="Share — create a review link"  onClick={onShare}/>
                 <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
                 <NavBox Icon={MoreHorizontal} label="More"  aria="More — settings and tools"     active={activeDeck==='more'} onClick={onMore}/>
+                <span style={{ width: 1, background: DIVIDER, alignSelf: 'stretch' }}/>
+                {/* R0080: Next added to Group 4 — wraps forward to Group 1 */}
+                <ChevronBox direction="right" aria="Next controls" onClick={goRight}/>
               </>,
             },
           ] as { children: React.ReactNode }[]).map(({ children }, i) => {
@@ -3400,12 +3405,19 @@ function MobileFunctionalV3Inner() {
         >
 
           {/* ── STICKY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
-          <div ref={summaryRef} data-testid="list-summary-bar" style={{ position: 'sticky', top: 0, zIndex: 4, background: PAGE_BG }}>
+          {/* R0080: outer wrapper is transparent so backdrop-filter shows blurred categories below;
+               inner panel uses rgba(SUMMARY_BG, 0.82) so text contrast is preserved while
+               categories are barely visible moving underneath — matte, no shine/gradient. */}
+          <div ref={summaryRef} data-testid="list-summary-bar" style={{
+            position: 'sticky', top: 0, zIndex: 4,
+            backdropFilter: 'blur(14px) saturate(1.25)',
+            WebkitBackdropFilter: 'blur(14px) saturate(1.25)',
+          }}>
 
             {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
             <div>
               <div style={{
-                margin: 0, borderRadius: 0, background: SUMMARY_BG,
+                margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.82)',
                 padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
