@@ -725,11 +725,11 @@ function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayPro
 // - 8px slop, then horizontal-vs-vertical mode lock (mostly-vertical → native scroll);
 // - row follows the finger; release settles open (past half) or closed — no bounce;
 // - swipe only REVEALS Delete; activation is a separate deliberate tap.
-const SWIPE_ACTION_W = 88;   // revealed Delete width (px)
+const SWIPE_ACTION_W = 88;   // width of each revealed action button (px)
 const SWIPE_SLOP_PX  = 8;    // gesture disambiguation slop
 const SWIPE_EDGE_ZONE = 0.4; // gesture must start within right 40% of the row
 
-function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, reorderActive, children }: {
+function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, reorderActive, secondaryAction, children }: {
   swipeKey: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -738,8 +738,12 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
   /** R006 Part 4 — while a category reorder owns the gesture, the swipe
    *  machinery is inert: it can never reveal Delete mid-reorder. */
   reorderActive?: boolean;
+  /** R0083P1 — optional second action revealed beside Delete (category rows only). */
+  secondaryAction?: { label: string; icon: React.ReactNode; onAction: () => void };
   children: React.ReactNode;
 }) {
+  const totalRevealW = secondaryAction ? SWIPE_ACTION_W * 2 : SWIPE_ACTION_W;
+
   const [dragX, setDragX] = useState<number | null>(null); // live offset while dragging
   const gRef = useRef<{ startX: number; startY: number; baseX: number; mode: 'idle' | 'h' | 'v'; lastX: number } | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -752,7 +756,7 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
     // Closed rows: the delete gesture must begin at/near the RIGHT EDGE.
     // Open rows: allow a swipe-back-closed from anywhere on the row.
     if (!open && e.clientX < rect.right - rect.width * SWIPE_EDGE_ZONE) return;
-    gRef.current = { startX: e.clientX, startY: e.clientY, baseX: open ? -SWIPE_ACTION_W : 0, mode: 'idle', lastX: e.clientX };
+    gRef.current = { startX: e.clientX, startY: e.clientY, baseX: open ? -totalRevealW : 0, mode: 'idle', lastX: e.clientX };
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -769,7 +773,7 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
     }
     if (g.mode !== 'h') return;
     g.lastX = e.clientX;
-    const x = Math.min(0, Math.max(-SWIPE_ACTION_W, g.baseX + dx)); // clamp: no overshoot
+    const x = Math.min(0, Math.max(-totalRevealW, g.baseX + dx)); // clamp: no overshoot
     setDragX(x);
   };
 
@@ -779,15 +783,15 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
     if (!g || g.mode !== 'h') { setDragX(null); return; }
     justDraggedRef.current = true;
     if (commit) {
-      const x = Math.min(0, Math.max(-SWIPE_ACTION_W, g.baseX + (g.lastX - g.startX)));
-      onOpenChange(x < -SWIPE_ACTION_W / 2); // past half → open; short swipe → closed
+      const x = Math.min(0, Math.max(-totalRevealW, g.baseX + (g.lastX - g.startX)));
+      onOpenChange(x < -totalRevealW / 2); // past half → open; short swipe → closed
     } else {
       onOpenChange(false);
     }
     setDragX(null);
   };
 
-  const restingX = open ? -SWIPE_ACTION_W : 0;
+  const restingX = open ? -totalRevealW : 0;
   const x = dragX ?? restingX;
 
   return (
@@ -797,7 +801,28 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
       data-swipe-open={open ? 'true' : 'false'}
       style={{ position: 'relative', overflow: 'hidden' }}
     >
-      {/* Revealed destructive action — underneath, right side */}
+      {/* R0083P1: secondary action (e.g. Open/Close) — revealed to the LEFT of Delete */}
+      {secondaryAction && (
+        <button
+          data-testid="swipe-secondary-action"
+          onClick={() => { onOpenChange(false); secondaryAction.onAction(); }}
+          aria-label={secondaryAction.label}
+          aria-hidden={!open && dragX === null}
+          tabIndex={open ? 0 : -1}
+          style={{
+            position: 'absolute', top: 0, bottom: 0,
+            right: SWIPE_ACTION_W, width: SWIPE_ACTION_W,
+            background: '#2A5740', color: '#fff', border: 'none', cursor: 'pointer',
+            fontSize: 13.5, fontWeight: 600, fontFamily: SANS,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            minHeight: 44,
+          }}
+        >
+          {secondaryAction.icon}
+          {secondaryAction.label}
+        </button>
+      )}
+      {/* Revealed destructive action — underneath, rightmost */}
       <button
         onClick={() => { onOpenChange(false); onDelete(); }}
         aria-label={deleteLabel}
@@ -3458,21 +3483,19 @@ function MobileFunctionalV3Inner() {
           display: 'flex', alignItems: 'center', padding: '0 8px', gap: 0,
           flexShrink: 0, zIndex: 10, overflow: 'hidden',
         }}>
-          {/* R0082: Hamburger — LEFT side for right-handed (default) */}
-          {handedness === 'right' && (
-            <button
-              data-testid="hamburger-btn"
-              aria-label="Open navigation menu"
-              onClick={() => { setShowDrawer(true); setOpenSwipe(null); }}
-              style={{
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                minWidth: 44, minHeight: 44, flexShrink: 0,
-              }}
-            >
-              <Menu size={22} color={NAV_ACTIVE} strokeWidth={2}/>
-            </button>
-          )}
+          {/* R0083P1: Hamburger — always on the LEFT for everyone */}
+          <button
+            data-testid="hamburger-btn"
+            aria-label="Open navigation menu"
+            onClick={() => { setShowDrawer(true); setOpenSwipe(null); }}
+            style={{
+              background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              minWidth: 44, minHeight: 44, flexShrink: 0,
+            }}
+          >
+            <Menu size={22} color={NAV_ACTIVE} strokeWidth={2}/>
+          </button>
           {/* Logo + wordmark */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 6 }}>
             <LogoMark size={24}/>
@@ -3515,21 +3538,7 @@ function MobileFunctionalV3Inner() {
               )
             )}
           </div>
-          {/* R0082: Hamburger — RIGHT side for left-handed mode */}
-          {handedness === 'left' && (
-            <button
-              data-testid="hamburger-btn"
-              aria-label="Open navigation menu"
-              onClick={() => { setShowDrawer(true); setOpenSwipe(null); }}
-              style={{
-                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                minWidth: 44, minHeight: 44, flexShrink: 0,
-              }}
-            >
-              <Menu size={22} color={NAV_ACTIVE} strokeWidth={2}/>
-            </button>
-          )}
+          {/* R0083P1: right-side hamburger removed — hamburger is always left */}
         </div>
 
         {/* ── SCROLLABLE CONTENT (R003 — full width, flush, hidden scrollbar chrome) ── */}
@@ -3719,6 +3728,13 @@ function MobileFunctionalV3Inner() {
                       // Reveal is NOT deletion: route into the existing confirmation flow
                       setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(true); setCatRenameValue(catName);
                     }}
+                    secondaryAction={{
+                      label: isOpen ? 'Close' : 'Open',
+                      icon: isOpen
+                        ? <ChevronUp size={15} strokeWidth={1.9} aria-hidden="true"/>
+                        : <ChevronDown size={15} strokeWidth={1.9} aria-hidden="true"/>,
+                      onAction: () => handleCatToggle(catName),
+                    }}
                   >
                   <div
                     // R006 Part 2/4 — the whole category bar is the long-press
@@ -3746,16 +3762,9 @@ function MobileFunctionalV3Inner() {
                       style={{
                         width: WEDGE_W, minHeight: CARD_H,
                         background: theme.bg,
-                        // R0083: flip clip-path when wedge is on the right (right-handed mode)
-                        clipPath: handedness === 'right'
-                          ? `polygon(${WEDGE_POINT}px 0, 100% 0, 100% 100%, ${WEDGE_POINT}px 100%, 0 50%)`
-                          : `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
+                        clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                        paddingRight: handedness === 'right' ? 0 : WEDGE_POINT / 2,
-                        paddingLeft:  handedness === 'right' ? WEDGE_POINT / 2 : 0,
-                        // R0083: order moves this to the end of the flex row in right-handed mode
-                        order: handedness === 'right' ? 2 : 0,
+                        flexShrink: 0, paddingRight: WEDGE_POINT / 2,
                         border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
                       }}
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
@@ -3775,8 +3784,6 @@ function MobileFunctionalV3Inner() {
                       alignItems: 'center',
                       padding: '10px 12px',
                       columnGap: 10,
-                      // R0083: explicit order keeps the content grid between wedge and right edge
-                      order: 1,
                     }}>
                       {/* Col 1 — name + subtitle both inside the button so the
                           tap target spans both lines. R0077: minHeight:44 is safe
@@ -3896,8 +3903,6 @@ function MobileFunctionalV3Inner() {
                                 style={{
                                   width: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
                                   flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                                  // R0083: order moves checkbox to right end of row in right-handed mode
-                                  order: handedness === 'right' ? 2 : 0,
                                 }}
                               >
                                 <div
@@ -3923,11 +3928,7 @@ function MobileFunctionalV3Inner() {
                                 onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleItemToggle(catName, item.id); } }}
                                 style={{
                                   flex: 1, display: 'flex', alignItems: 'center',
-                                  gap: 10,
-                                  // R0083: padding follows the open edge (opposite the checkbox)
-                                  paddingRight: handedness === 'right' ? 0 : 14,
-                                  paddingLeft:  handedness === 'right' ? 14 : 0,
-                                  cursor: 'pointer', minHeight: 44,
+                                  gap: 10, paddingRight: 14, cursor: 'pointer', minHeight: 44,
                                 }}
                               >
                                 {/* Item name */}
