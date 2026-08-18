@@ -3698,7 +3698,7 @@ function MobileFunctionalV3Inner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 6 }}>
             <LogoMark size={24}/>
             <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
-              Cleak
+              TrailWeigh
             </span>
           </div>
           {/* R007 §13 — six decorative identity icons: one consistent family
@@ -4842,7 +4842,7 @@ function MobileFunctionalV3Inner() {
               flexShrink: 0, zIndex: 1,
             }}>
               <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.60)', letterSpacing: '1.2px', textTransform: 'uppercase' }}>
-                Cleak
+                TrailWeigh
               </p>
               <h1 style={{ margin: '0 0 10px', fontSize: 26, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, letterSpacing: '-0.3px', textTransform: 'uppercase' }}>
                 Checklist Engine
