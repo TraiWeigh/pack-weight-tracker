@@ -42,7 +42,7 @@ import {
   // R007 header identity icons + group 3
   Train, Plane, Ship, Car, Package,
   // R0086 Home screen
-  Clock, Sparkles,
+  Clock, Sparkles, SlidersHorizontal,
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
@@ -4920,7 +4920,7 @@ function MobileFunctionalV3Inner() {
             </div>
 
             {/* Nav rows — full-bleed dividers */}
-            <div style={{ paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom, 0px) + 16px)` }}>
+            <div>
               {(
                 [
                   {
@@ -4989,6 +4989,115 @@ function MobileFunctionalV3Inner() {
                     <ChevronRight size={18} color={row.accent ? NAV_ACTIVE : SECONDARY} strokeWidth={2}/>
                   )}
                 </button>
+              ))}
+            </div>
+
+            {/* ── HOME CATEGORY BARS — R0086 visual trial ────────────────────────────
+                My Lists, Master List, Locations, Settings.
+                Each bar replicates the pack-list wedge geometry exactly:
+                WEDGE_W=72, WEDGE_POINT=17, CARD_H=68, same clipPath polygon.
+                Shadow lives on the outer wrapper so clipPath doesn't eat it.
+                ─────────────────────────────────────────────────────────────── */}
+            <div style={{
+              paddingTop: 12, paddingLeft: 12, paddingRight: 12,
+              paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom, 0px) + 20px)`,
+              display: 'flex', flexDirection: 'column', gap: 6,
+            }}>
+              {(
+                [
+                  {
+                    label: 'My Lists',
+                    subtitle: 'Saved checklists',
+                    color: '#3B6978',
+                    Icon: Folder,
+                    disabled: false,
+                    badge: undefined as string | undefined,
+                    onClick: () => { setScreenStack([{ screen: 'list' }]); openDeck('locker'); },
+                  },
+                  {
+                    label: 'Master List',
+                    subtitle: 'Full item library',
+                    color: '#6B5C3A',
+                    Icon: BookOpen,
+                    disabled: true,
+                    badge: 'Soon',
+                    onClick: undefined as (() => void) | undefined,
+                  },
+                  {
+                    label: 'Locations',
+                    subtitle: 'Pack zones & spots',
+                    color: '#1B7A8A',
+                    Icon: MapPin,
+                    disabled: true,
+                    badge: 'Soon',
+                    onClick: undefined as (() => void) | undefined,
+                  },
+                  {
+                    label: 'Settings',
+                    subtitle: 'Preferences & tools',
+                    color: '#4A5568',
+                    Icon: SlidersHorizontal,
+                    disabled: false,
+                    badge: undefined as string | undefined,
+                    onClick: () => { setScreenStack([{ screen: 'list' }]); openDeck('more'); },
+                  },
+                ] as Array<{
+                  label: string; subtitle: string; color: string;
+                  Icon: React.ComponentType<{ size: number; color: string; strokeWidth: number }>;
+                  disabled: boolean; badge: string | undefined;
+                  onClick: (() => void) | undefined;
+                }>
+              ).map(bar => (
+                <div
+                  key={bar.label}
+                  style={{ boxShadow: CARD_SHADOW, opacity: bar.disabled ? 0.62 : 1 }}
+                >
+                  <button
+                    disabled={bar.disabled}
+                    aria-label={bar.label + (bar.badge ? ' — coming soon' : '')}
+                    onClick={bar.onClick}
+                    style={{
+                      width: '100%', minHeight: CARD_H,
+                      display: 'flex', alignItems: 'stretch',
+                      background: CARD_BG, border: 'none', padding: 0,
+                      cursor: bar.disabled ? 'default' : 'pointer', outline: 'none',
+                    }}
+                  >
+                    {/* Wedge — same geometry as pack-list category bars */}
+                    <div style={{
+                      width: WEDGE_W, minHeight: CARD_H,
+                      background: bar.color,
+                      clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0, paddingRight: WEDGE_POINT / 2,
+                    }}>
+                      <bar.Icon size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5}/>
+                    </div>
+                    {/* Content */}
+                    <div style={{
+                      flex: 1, display: 'flex', alignItems: 'center',
+                      padding: '10px 12px', minWidth: 0, gap: 8,
+                    }}>
+                      <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                        <div style={{
+                          fontSize: 17, fontWeight: 500, color: PRIMARY,
+                          lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
+                          fontFamily: SERIF, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }}>
+                          {bar.label}
+                        </div>
+                        <div style={{ fontSize: 12.5, color: MUTED }}>{bar.subtitle}</div>
+                      </div>
+                      {bar.badge ? (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: NAV_ACTIVE, background: 'rgba(42,87,64,0.09)', padding: '2px 8px', borderRadius: 6, letterSpacing: '0.3px', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          {bar.badge}
+                        </span>
+                      ) : (
+                        <ChevronRight size={18} color={SECONDARY} strokeWidth={2} style={{ flexShrink: 0 }}/>
+                      )}
+                    </div>
+                  </button>
+                </div>
               ))}
             </div>
           </div>
