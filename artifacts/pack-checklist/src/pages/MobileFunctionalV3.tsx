@@ -845,7 +845,7 @@ function ChevronBox({
     >
       <Icon size={21} color={NAV_INACTIVE} strokeWidth={1.6}/>
       <span style={{ fontSize: 10, color: NAV_INACTIVE }}>
-        {direction === 'left' ? 'Back' : 'More'}
+        {direction === 'left' ? 'Back' : 'Next'}
       </span>
     </button>
   );
