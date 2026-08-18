@@ -3746,9 +3746,16 @@ function MobileFunctionalV3Inner() {
                       style={{
                         width: WEDGE_W, minHeight: CARD_H,
                         background: theme.bg,
-                        clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
+                        // R0083: flip clip-path when wedge is on the right (right-handed mode)
+                        clipPath: handedness === 'right'
+                          ? `polygon(${WEDGE_POINT}px 0, 100% 0, 100% 100%, ${WEDGE_POINT}px 100%, 0 50%)`
+                          : `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0, paddingRight: WEDGE_POINT / 2,
+                        flexShrink: 0,
+                        paddingRight: handedness === 'right' ? 0 : WEDGE_POINT / 2,
+                        paddingLeft:  handedness === 'right' ? WEDGE_POINT / 2 : 0,
+                        // R0083: order moves this to the end of the flex row in right-handed mode
+                        order: handedness === 'right' ? 2 : 0,
                         border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
                       }}
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
@@ -3768,6 +3775,8 @@ function MobileFunctionalV3Inner() {
                       alignItems: 'center',
                       padding: '10px 12px',
                       columnGap: 10,
+                      // R0083: explicit order keeps the content grid between wedge and right edge
+                      order: 1,
                     }}>
                       {/* Col 1 — name + subtitle both inside the button so the
                           tap target spans both lines. R0077: minHeight:44 is safe
@@ -3887,6 +3896,8 @@ function MobileFunctionalV3Inner() {
                                 style={{
                                   width: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
                                   flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                                  // R0083: order moves checkbox to right end of row in right-handed mode
+                                  order: handedness === 'right' ? 2 : 0,
                                 }}
                               >
                                 <div
@@ -3912,7 +3923,11 @@ function MobileFunctionalV3Inner() {
                                 onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleItemToggle(catName, item.id); } }}
                                 style={{
                                   flex: 1, display: 'flex', alignItems: 'center',
-                                  gap: 10, paddingRight: 14, cursor: 'pointer', minHeight: 44,
+                                  gap: 10,
+                                  // R0083: padding follows the open edge (opposite the checkbox)
+                                  paddingRight: handedness === 'right' ? 0 : 14,
+                                  paddingLeft:  handedness === 'right' ? 14 : 0,
+                                  cursor: 'pointer', minHeight: 44,
                                 }}
                               >
                                 {/* Item name */}
