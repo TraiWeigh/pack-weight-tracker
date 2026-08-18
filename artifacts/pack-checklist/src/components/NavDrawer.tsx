@@ -24,12 +24,13 @@ import {
 } from 'lucide-react';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
-const PANEL_BG      = '#1D3828';
-const PANEL_BDR     = 'rgba(255,255,255,0.08)';
-const ROW_TEXT      = 'rgba(255,255,255,0.90)';
-const ROW_ICON      = 'rgba(255,255,255,0.70)';
-const ROW_MUTED     = 'rgba(255,255,255,0.32)';
-const ROW_HOVER_BG  = 'rgba(255,255,255,0.06)';
+// R0082P1: white panel with dark green/charcoal text for readability
+const PANEL_BG      = '#FFFFFF';
+const PANEL_BDR     = 'rgba(0,0,0,0.10)';
+const ROW_TEXT      = '#1D3828';                  // TrailWeigh dark green
+const ROW_ICON      = '#2A5740';                  // brand green
+const ROW_MUTED     = 'rgba(0,0,0,0.35)';         // muted for disabled + sublabels
+const ROW_HOVER_BG  = 'rgba(0,0,0,0.04)';
 const BACKDROP_CLR  = 'rgba(0,0,0,0.40)';
 const BRAND_GREEN   = '#2A5740';
 const SANS          = "'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif";
@@ -337,8 +338,8 @@ export function NavDrawer({
               width:        22,
               height:       22,
               borderRadius: '50%',
-              border:       `2px solid ${PANEL_BDR}`,
-              background:   PANEL_BG,
+              border:       `2px solid rgba(0,0,0,0.18)`,
+              background:   '#F0F4F1',
               display:      'flex',
               alignItems:   'center',
               justifyContent: 'center',
