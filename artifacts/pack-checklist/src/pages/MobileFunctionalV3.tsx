@@ -1138,9 +1138,11 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
-          background: 'rgba(255,255,255,0.78)',
-          backdropFilter: 'blur(14px) saturate(1.08)',
-          WebkitBackdropFilter: 'blur(14px) saturate(1.08)',
+          /* R0085P3: lower opacity + narrower blur so list colours bleed through as
+             recognisable hues rather than averaging to white */
+          background: 'rgba(255,255,255,0.65)',
+          backdropFilter: 'blur(8px) saturate(1.15)',
+          WebkitBackdropFilter: 'blur(8px) saturate(1.15)',
           borderTop: '1px solid rgba(0,0,0,0.07)',
           boxShadow: '0 -3px 10px rgba(0,0,0,0.07)',
           display: 'flex', flexDirection: 'column', alignItems: 'stretch',
@@ -3797,8 +3799,7 @@ function MobileFunctionalV3Inner() {
             position: 'sticky', top: 0, zIndex: 4,
             backdropFilter: 'blur(9px) saturate(1.05)',
             WebkitBackdropFilter: 'blur(9px) saturate(1.05)',
-            /* R0085P2: soft but clearly perceptible shadow at bottom of List Summary */
-            boxShadow: '0 4px 14px rgba(0,0,0,0.14)',
+            /* R0085P3: shadow moved OFF the backdrop-filter wrapper (compositor trap) */
           }}>
 
             {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
@@ -3806,6 +3807,9 @@ function MobileFunctionalV3Inner() {
               <div style={{
                 margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
                 padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
+                /* R0085P3: shadow on the opaque green panel — correctly renders above
+                   white category rows; detached from backdrop-filter compositor layer */
+                boxShadow: '0 4px 12px rgba(0,0,0,0.22)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 {/* Icon tile — unchanged */}
@@ -3931,9 +3935,10 @@ function MobileFunctionalV3Inner() {
                     borderBottom: `1px solid ${DIVIDER}`,
                     // Raised/floating drag state: restrained elevation, no dramatic scale,
                     // dragged card stays fully opaque; only the valid TARGET dims slightly.
+                    /* R0085P3: subtle resting shadow gives category wedges slight depth */
                     boxShadow: isDragging
                       ? '0 8px 26px rgba(0,0,0,0.24), 0 2px 6px rgba(0,0,0,0.14)'
-                      : 'none',
+                      : '0 2px 6px rgba(0,0,0,0.07)',
                     opacity: isDimTarget ? 0.55 : 1,
                     // R006 Part 3 — non-dragged bars GLIDE into their temporary
                     // positions (translateY ± dragged height) while the DOM order
@@ -4582,6 +4587,8 @@ function MobileFunctionalV3Inner() {
                         borderRadius: 0, overflow: 'hidden',
                         background: CARD_BG,
                         borderBottom: `1px solid ${DIVIDER}`,
+                        /* R0085P3: same subtle depth shadow as category wedges */
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.07)',
                       }}
                     >
                       {/* LOCATION WEDGE BAR — swipe-to-reveal Edit | Delete, matching category pattern */}
