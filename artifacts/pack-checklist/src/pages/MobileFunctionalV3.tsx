@@ -4832,7 +4832,7 @@ function MobileFunctionalV3Inner() {
             style={{
               position: 'absolute', top: 52, left: 0, right: 0, bottom: 0,
               zIndex: 35, background: CARD_BG,
-              overflowY: 'auto', fontFamily: SANS,
+              display: 'flex', flexDirection: 'column', fontFamily: SANS,
             }}
           >
             {/* ── HERO — green with depth shadow (R0087) ── */}
@@ -4840,7 +4840,7 @@ function MobileFunctionalV3Inner() {
               background: SUMMARY_BG,
               padding: '24px 20px 28px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
-              position: 'relative', zIndex: 1,
+              flexShrink: 0, zIndex: 1,
             }}>
               <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.60)', letterSpacing: '1.2px', textTransform: 'uppercase' }}>
                 TrailWeigh
@@ -4852,6 +4852,9 @@ function MobileFunctionalV3Inner() {
                 Create your own custom checklist or let AI do it for you!
               </p>
             </div>
+
+            {/* ── Scrollable content — pinned below hero, scrolls independently ── */}
+            <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
 
             {/* ── USE-CASE GRID — 2 columns ── */}
             <div style={{ padding: '16px 14px 12px' }}>
@@ -5020,6 +5023,7 @@ function MobileFunctionalV3Inner() {
                 </div>
               ))}
             </div>
+            </div>{/* end scrollable content */}
           </div>
         )}
 
