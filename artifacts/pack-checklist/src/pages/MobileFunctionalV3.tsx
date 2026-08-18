@@ -738,8 +738,10 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
   /** R006 Part 4 — while a category reorder owns the gesture, the swipe
    *  machinery is inert: it can never reveal Delete mid-reorder. */
   reorderActive?: boolean;
-  /** R0083P1 — optional second action revealed beside Delete (category rows only). */
-  secondaryAction?: { label: string; icon: React.ReactNode; onAction: () => void };
+  /** R0083P1 — optional second action revealed beside Delete (category rows only).
+   *  R0084P2: `visibleLabel` is the short text shown inside the narrow button;
+   *  `label` is the full descriptive string used only for aria-label. */
+  secondaryAction?: { label: string; visibleLabel?: string; icon: React.ReactNode; onAction: () => void };
   children: React.ReactNode;
 }) {
   const totalRevealW = secondaryAction ? SWIPE_ACTION_W * 2 : SWIPE_ACTION_W;
@@ -816,10 +818,11 @@ function SwipeDeleteRow({ swipeKey, open, onOpenChange, onDelete, deleteLabel, r
             fontSize: 13.5, fontWeight: 600, fontFamily: SANS,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
             minHeight: 44,
+            whiteSpace: 'nowrap',
           }}
         >
           {secondaryAction.icon}
-          {secondaryAction.label}
+          {secondaryAction.visibleLabel ?? secondaryAction.label}
         </button>
       )}
       {/* Revealed destructive action — underneath, rightmost */}
@@ -3735,7 +3738,9 @@ function MobileFunctionalV3Inner() {
                     secondaryAction={{
                       // R0084: Rename replaces Open/Close — tap-anywhere on the bar handles
                       // open/close; the swipe reveal is reserved for edit actions only.
+                      // R0084P2: visibleLabel is the short text in the button; label is aria-label only.
                       label: `Edit ${catName} category`,
+                      visibleLabel: 'Edit',
                       icon: <Pencil size={15} strokeWidth={1.9} aria-hidden="true"/>,
                       onAction: () => {
                         setCatOptionsFor(catName);
@@ -3895,7 +3900,9 @@ function MobileFunctionalV3Inner() {
                               secondaryAction={{
                                 // R0084: item rename — list-only; no Master Library mutation
                                 // until real item linking is implemented.
-                                label: `Rename ${displayName}`,
+                                // R0084P2: visibleLabel is the short text in the button; label is aria-label only.
+                                label: `Edit ${displayName}`,
+                                visibleLabel: 'Edit',
                                 icon: <Pencil size={15} strokeWidth={1.9} aria-hidden="true"/>,
                                 onAction: () => {
                                   setItemRenameFor({ cat: catName, id: item.id, currentDesc: displayName });
