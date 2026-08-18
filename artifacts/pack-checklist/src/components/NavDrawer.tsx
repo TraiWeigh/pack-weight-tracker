@@ -78,7 +78,7 @@ export function NavDrawer({
   onToggleHandedness,
 }: NavDrawerProps) {
 
-  const fromLeft = handedness === 'right'; // right-handed → drawer from left
+  const fromLeft = true; // R0083P2: always slide from the left regardless of handedness
 
   // ── Swipe-to-close gesture state ─────────────────────────────────────────
   //  ptrRef tracks the active pointer (null = no drag in progress).

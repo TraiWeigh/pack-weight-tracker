@@ -3741,7 +3741,7 @@ function MobileFunctionalV3Inner() {
                     // reorder surface (400 ms stationary hold). Quick tap keeps
                     // accordion/options behavior; meaningful movement before the
                     // threshold hands the gesture to scroll or slide-to-delete.
-                    data-testid={openCatName === catName && !allExpanded ? 'cat-header-open' : undefined}
+                    data-testid={`cat-header-${catName}`}
                     onPointerDown={e => handleCatBarPointerDown(e, catName)}
                     onClickCapture={e => {
                       // The click that trails a long-press reorder is part of the
@@ -3751,12 +3751,17 @@ function MobileFunctionalV3Inner() {
                         e.stopPropagation(); e.preventDefault();
                       }
                     }}
-                    style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG }}
+                    // R0083P2: tap anywhere on the bar toggles the category.
+                    // onClickCapture swallows post-reorder clicks;
+                    // SwipeDeleteRow's onClickCapture swallows post-swipe clicks.
+                    // Wedge button stops propagation to prevent double-toggle.
+                    onClick={() => handleCatToggle(catName)}
+                    style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG, cursor: 'pointer' }}
                   >
 
                     {/* WEDGE / ICON — PRIMARY ACCORDION TRIGGER */}
                     <button
-                      onClick={() => handleCatToggle(catName)}
+                      onClick={e => { e.stopPropagation(); handleCatToggle(catName); }}
                       aria-expanded={isOpen}
                       aria-label={`${isOpen ? 'Close' : 'Open'} ${catName} category`}
                       style={{
@@ -3789,12 +3794,11 @@ function MobileFunctionalV3Inner() {
                           tap target spans both lines. R0077: minHeight:44 is safe
                           here because 44 + 20px grid-padding = 64 < CARD_H (68). */}
                       <div style={{ minWidth: 0 }}>
-                        <button
-                          onClick={e => { e.stopPropagation(); setCatOptionsFor(catName); setCatRenaming(false); setCatDeleteConfirm(false); setCatRenameValue(catName); }}
-                          aria-label={`Category options for ${catName}`}
-                          title="Tap for category options (rename/delete)"
+                        {/* R0083P2: was a <button> opening options; converted to <div>
+                            so taps bubble up to the outer onClick and toggle the category. */}
+                        <div
+                          data-testid={`cat-name-${catName}`}
                           style={{
-                            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
                             textAlign: 'left', width: '100%', maxWidth: '100%',
                             minHeight: 44, display: 'flex', flexDirection: 'column', justifyContent: 'center',
                           }}
@@ -3810,7 +3814,7 @@ function MobileFunctionalV3Inner() {
                           <div style={{ fontSize: 12.5, color: MUTED }}>
                             {items.length} {items.length === 1 ? 'item' : 'items'} · {selectedInCat} selected
                           </div>
-                        </button>
+                        </div>
                       </div>
 
                       {/* Col 4 — selected-weight */}
