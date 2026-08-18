@@ -945,8 +945,8 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           requestAnimationFrame(() => { justDraggedRef.current = false; });
         }
         const cur = groupIdxRef.current;
-        // R0080: forward swipe wraps Group 4 → Group 1; back swipe still clamps at Group 1.
-        if (dx < -GROUP_SWIPE_THRESHOLD) settleRef.current((cur + 1) % NUM_BOX_GROUPS);
+        // R0080P2: swipe clamps at endpoints (no wrap); only tapping Next wraps Group 4 → Group 1.
+        if (dx < -GROUP_SWIPE_THRESHOLD && cur < NUM_BOX_GROUPS - 1) settleRef.current(cur + 1);
         else if (dx > GROUP_SWIPE_THRESHOLD && cur > 0) settleRef.current(cur - 1);
         else settleRef.current(cur); // short/cancelled → revert (no haptic)
       }
@@ -3405,19 +3405,19 @@ function MobileFunctionalV3Inner() {
         >
 
           {/* ── STICKY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
-          {/* R0080: outer wrapper is transparent so backdrop-filter shows blurred categories below;
-               inner panel uses rgba(SUMMARY_BG, 0.82) so text contrast is preserved while
-               categories are barely visible moving underneath — matte, no shine/gradient. */}
+          {/* R0080P2: outer wrapper is transparent so backdrop-filter blurs categories below;
+               inner panel uses rgba(SUMMARY_BG, 0.94) — ~94% opacity gives a very subtle
+               matte frost: categories barely visible underneath, no shine/gradient/gloss. */}
           <div ref={summaryRef} data-testid="list-summary-bar" style={{
             position: 'sticky', top: 0, zIndex: 4,
-            backdropFilter: 'blur(14px) saturate(1.25)',
-            WebkitBackdropFilter: 'blur(14px) saturate(1.25)',
+            backdropFilter: 'blur(9px) saturate(1.05)',
+            WebkitBackdropFilter: 'blur(9px) saturate(1.05)',
           }}>
 
             {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
             <div>
               <div style={{
-                margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.82)',
+                margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
                 padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
