@@ -228,13 +228,10 @@ function hapticDock() {
 
 // ─── LOGO MARK ──────────────────────────────────────────────────────────────────
 function LogoMark({ size = 24 }: { size?: number }) {
+  // Cleak brand mark — outlined square with checkmark, reusing already-imported CheckSquare.
+  // aria-hidden: decorative; the adjacent wordmark carries the accessible label.
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <path d="M4 38 L16 18 L24 28 L32 14 L44 38 Z" fill="#2A5740" opacity="0.9"/>
-      <path d="M32 14 L28.5 22 L35.5 22 Z" fill="#FFFFFF" opacity="0.85"/>
-      <path d="M16 18 L13.5 23 L18.5 23 Z" fill="#FFFFFF" opacity="0.70"/>
-      <circle cx="24" cy="32" r="2.5" fill="#FFFFFF" opacity="0.6"/>
-    </svg>
+    <CheckSquare size={size} color="#2A5740" strokeWidth={2.2} aria-hidden="true" />
   );
 }
 
@@ -3701,7 +3698,7 @@ function MobileFunctionalV3Inner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 6 }}>
             <LogoMark size={24}/>
             <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
-              TrailWeigh
+              Cleak
             </span>
           </div>
           {/* R007 §13 — six decorative identity icons: one consistent family
@@ -4845,7 +4842,7 @@ function MobileFunctionalV3Inner() {
               flexShrink: 0, zIndex: 1,
             }}>
               <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.60)', letterSpacing: '1.2px', textTransform: 'uppercase' }}>
-                TrailWeigh
+                Cleak
               </p>
               <h1 style={{ margin: '0 0 10px', fontSize: 26, fontWeight: 800, color: '#FFFFFF', lineHeight: 1.1, letterSpacing: '-0.3px', textTransform: 'uppercase' }}>
                 Checklist Engine
