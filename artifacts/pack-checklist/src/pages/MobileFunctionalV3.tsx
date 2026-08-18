@@ -3622,7 +3622,7 @@ function MobileFunctionalV3Inner() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+    <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflow: 'hidden' }}>
       <div className="tw-v3-root" style={{
         width: '100%', maxWidth: 430, height: '100dvh',
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
@@ -4038,7 +4038,7 @@ function MobileFunctionalV3Inner() {
                         the full width: [text 1fr] [weight auto].
                         Reorder now starts with a long press anywhere on the bar. */}
                     <div style={{
-                      flex: 1, minWidth: 0,
+                      flex: 1, minWidth: 0, width: '100%',
                       display: 'grid',
                       gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
                       alignItems: 'center',
@@ -4077,6 +4077,7 @@ function MobileFunctionalV3Inner() {
                         textAlign: 'right',
                         fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
                         whiteSpace: 'nowrap',
+                        maxWidth: 96, overflow: 'hidden', textOverflow: 'ellipsis',
                         visibility: catTotalOz > 0 ? 'visible' : 'hidden',
                       }}>
                         {catTotalOz > 0 ? `${formatWeight(catTotalOz, system, 'small')} ${su}` : '—'}
