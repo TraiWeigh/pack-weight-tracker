@@ -25,3 +25,4 @@
 - [R0078 test infra repair](r0078-infra-repair.md) — gotoDemo/backToList/addCategory all had stale LIST SUMMARY / old button paths; repaired in R0078; drag-to-reorder handle is a confirmed SERIOUS a11y gap; many core/*.spec.ts and other phase1b specs still have direct LIST SUMMARY body assertions (not yet fixed).
 - [R0080 nav-wrap + frosted glass](r0080-nav-wrap-frosted.md) — Next wraps modularly; back clamps; live-drag clamp preserved at Group 4 (no visual wrap preview); frosted = transparent outer + rgba inner + backdrop-filter.
 - [R0085 locations + photos + cat direct-edit](r0085-feature-lessons.md) — R0085C: dropdown+wedge hybrid, Location Photo, mutateSandboxEdit split, narrowed auto-switch, "View/Edit Photo" label fix.
+- [Home screen architecture](home-screen-architecture.md) — absolute overlay zIndex 35 (below bottom bar zIndex 40); setScreenStack([list]) for back-navigation; conditional app-bar shadow on Home.

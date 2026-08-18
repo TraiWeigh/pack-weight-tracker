@@ -41,6 +41,8 @@ import {
   CheckSquare,
   // R007 header identity icons + group 3
   Train, Plane, Ship, Car, Package,
+  // R0086 Home screen
+  Clock, Sparkles,
 } from 'lucide-react';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
@@ -78,7 +80,7 @@ type SandboxStore = { items: PackState; order: string[]; meta: Record<string, Ca
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
 // R002: bottom card-deck navigation — DeckId selects the raised deck; screenStack
 // carries full-screen sub-pages (footer pages, share, sources).
-type MobileScreen = 'list' | 'footer-page' | 'share' | 'sources';
+type MobileScreen = 'list' | 'home' | 'footer-page' | 'share' | 'sources';
 type FooterPageId =
   | 'about' | 'how-it-works' | 'sources' | 'help'
   | 'report-problem' | 'contact' | 'privacy' | 'terms'
@@ -2519,8 +2521,17 @@ function MobileFunctionalV3Inner() {
   }, []);
 
   const handleDrawerHome = useCallback(() => {
+    setOpenSwipe(null);
     setShowDrawer(false);
     closeDeck();
+    // R0086: push a real Home screen rather than merely returning to the list.
+    // Reset to a clean [list, home] stack so sub-screens (help, share, etc.)
+    // don't linger underneath. Guard against double-push if already on Home.
+    setScreenStack(prev => {
+      const top = prev[prev.length - 1];
+      if (top?.screen === 'home') return prev;
+      return [{ screen: 'list' }, { screen: 'home' }];
+    });
   }, [closeDeck]);
 
   const handleDrawerMyLists = useCallback(() => {
@@ -3669,6 +3680,9 @@ function MobileFunctionalV3Inner() {
           height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
           display: 'flex', alignItems: 'center', padding: '0 8px', gap: 0,
           flexShrink: 0, zIndex: 10, overflow: 'hidden',
+          /* R0086: on Home both the bar and page are white — strengthen the
+             bottom-edge shadow so the boundary is clearly visible. */
+          boxShadow: currentScreen.screen === 'home' ? '0 2px 10px rgba(0,0,0,0.10)' : undefined,
         }}>
           {/* R0083P1: Hamburger — always on the LEFT for everyone */}
           <button
@@ -4804,6 +4818,181 @@ function MobileFunctionalV3Inner() {
           })()}
 
         </div>{/* end scrollable */}
+
+        {/* ── HOME SCREEN OVERLAY (R0086) ─────────────────────────────────────────
+            Sits above the list content (zIndex 35) but below the bottom bar
+            (zIndex 40) so the tab bar and its top-edge shadow remain visible.
+            The list + refs stay mounted behind it — no checklist state is lost.
+            ───────────────────────────────────────────────────────────────────── */}
+        {currentScreen.screen === 'home' && (
+          <div
+            data-testid="home-screen"
+            role="main"
+            aria-label="TrailWeigh Home"
+            style={{
+              position: 'absolute', top: 52, left: 0, right: 0, bottom: 0,
+              zIndex: 35, background: CARD_BG,
+              overflowY: 'auto', fontFamily: SANS,
+            }}
+          >
+            {/* ── Identity ── */}
+            <div style={{ padding: '32px 20px 0' }}>
+              <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: MUTED, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                TrailWeigh
+              </p>
+              <h1 style={{ margin: '0 0 8px', fontSize: 28, fontWeight: 700, color: PRIMARY, lineHeight: 1.15, letterSpacing: '-0.3px' }}>
+                A checklist engine.
+              </h1>
+              <p style={{ margin: '0 0 28px', fontSize: 14, color: SECONDARY, lineHeight: 1.6 }}>
+                Build, manage, and carry your perfect list for any journey.
+              </p>
+
+              {/* ── Primary creation section ── */}
+              <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: MUTED, letterSpacing: '0.9px', textTransform: 'uppercase' }}>
+                Start a new list
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 28 }}>
+
+                {/* AI Help Me Create — coming soon */}
+                <button
+                  disabled
+                  aria-label="AI Help Me Create — coming soon"
+                  style={{
+                    width: '100%', minHeight: 52, display: 'flex', alignItems: 'center',
+                    background: '#F7FAF8', border: `1px solid ${DIVIDER}`,
+                    borderRadius: 10, padding: '0 14px', gap: 10,
+                    cursor: 'default', opacity: 0.8, outline: 'none',
+                  }}
+                >
+                  <Sparkles size={18} color={NAV_ACTIVE} strokeWidth={1.7}/>
+                  <span style={{ flex: 1, textAlign: 'left', fontSize: 15, fontWeight: 600, color: SECONDARY }}>
+                    AI Help Me Create
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: NAV_ACTIVE, background: 'rgba(42,87,64,0.09)', padding: '2px 8px', borderRadius: 6, letterSpacing: '0.3px' }}>
+                    Soon
+                  </span>
+                </button>
+
+                {/* Build It Myself — returns to checklist */}
+                <button
+                  aria-label="Build It Myself — open current checklist"
+                  onClick={() => setScreenStack([{ screen: 'list' }])}
+                  style={{
+                    width: '100%', minHeight: 52, display: 'flex', alignItems: 'center',
+                    background: NAV_ACTIVE, border: 'none',
+                    borderRadius: 10, padding: '0 14px', gap: 10,
+                    cursor: 'pointer', outline: 'none',
+                  }}
+                >
+                  <CheckSquare size={18} color="#FFFFFF" strokeWidth={1.8}/>
+                  <span style={{ flex: 1, textAlign: 'left', fontSize: 15, fontWeight: 600, color: '#FFFFFF' }}>
+                    Build It Myself
+                  </span>
+                  <ChevronRight size={18} color="rgba(255,255,255,0.65)" strokeWidth={2}/>
+                </button>
+
+                {/* Import / Scan a List — opens Add deck */}
+                <button
+                  aria-label="Import or scan a list — open import tools"
+                  onClick={() => { setScreenStack([{ screen: 'list' }]); openDeck('add'); }}
+                  style={{
+                    width: '100%', minHeight: 52, display: 'flex', alignItems: 'center',
+                    background: 'none', border: `1.5px solid ${NAV_ACTIVE}`,
+                    borderRadius: 10, padding: '0 14px', gap: 10,
+                    cursor: 'pointer', outline: 'none',
+                  }}
+                >
+                  <FileText size={18} color={NAV_ACTIVE} strokeWidth={1.7}/>
+                  <span style={{ flex: 1, textAlign: 'left', fontSize: 15, fontWeight: 600, color: NAV_ACTIVE }}>
+                    Import / Scan a List
+                  </span>
+                  <ChevronRight size={18} color={NAV_ACTIVE} strokeWidth={2}/>
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div style={{ height: 1, background: DIVIDER, margin: '0 -20px 24px' }}/>
+
+              {/* ── Secondary navigation label ── */}
+              <p style={{ margin: '0 0 4px', fontSize: 11, fontWeight: 700, color: MUTED, letterSpacing: '0.9px', textTransform: 'uppercase' }}>
+                Your lists
+              </p>
+            </div>
+
+            {/* Nav rows — full-bleed dividers */}
+            <div style={{ paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom, 0px) + 16px)` }}>
+              {(
+                [
+                  {
+                    icon: <CheckSquare size={18} color={NAV_ACTIVE} strokeWidth={1.8}/>,
+                    label: 'Continue Current List',
+                    accent: true,
+                    badge: undefined as string | undefined,
+                    disabled: false,
+                    onClick: () => setScreenStack([{ screen: 'list' }]),
+                  },
+                  {
+                    icon: <Clock size={18} color={MUTED} strokeWidth={1.7}/>,
+                    label: 'Recent Lists',
+                    accent: false,
+                    badge: 'Soon',
+                    disabled: true,
+                    onClick: undefined as (() => void) | undefined,
+                  },
+                  {
+                    icon: <Folder size={18} color={SECONDARY} strokeWidth={1.7}/>,
+                    label: 'My Lists',
+                    accent: false,
+                    badge: undefined as string | undefined,
+                    disabled: false,
+                    onClick: () => { setScreenStack([{ screen: 'list' }]); openDeck('locker'); },
+                  },
+                  {
+                    icon: <BookOpen size={18} color={MUTED} strokeWidth={1.7}/>,
+                    label: 'Master List',
+                    accent: false,
+                    badge: 'Soon',
+                    disabled: true,
+                    onClick: undefined as (() => void) | undefined,
+                  },
+                ]
+              ).map((row, i, arr) => (
+                <button
+                  key={row.label}
+                  disabled={row.disabled}
+                  aria-label={row.label + (row.badge ? ' — coming soon' : '')}
+                  onClick={row.onClick}
+                  style={{
+                    width: '100%', minHeight: 52, display: 'flex', alignItems: 'center',
+                    padding: '0 20px', gap: 12,
+                    background: 'none', border: 'none',
+                    borderBottom: i < arr.length - 1 ? `1px solid ${DIVIDER}` : 'none',
+                    cursor: row.disabled ? 'default' : 'pointer',
+                    opacity: row.disabled ? 0.5 : 1,
+                    outline: 'none',
+                  }}
+                >
+                  {row.icon}
+                  <span style={{
+                    flex: 1, textAlign: 'left',
+                    fontSize: 15,
+                    fontWeight: row.accent ? 600 : 500,
+                    color: row.accent ? NAV_ACTIVE : PRIMARY,
+                  }}>
+                    {row.label}
+                  </span>
+                  {row.badge ? (
+                    <span style={{ fontSize: 11, fontWeight: 700, color: NAV_ACTIVE, background: 'rgba(42,87,64,0.09)', padding: '2px 8px', borderRadius: 6, letterSpacing: '0.3px' }}>
+                      {row.badge}
+                    </span>
+                  ) : (
+                    <ChevronRight size={18} color={row.accent ? NAV_ACTIVE : SECONDARY} strokeWidth={2}/>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── BOTTOM BOX-GROUP BAR (R007 — 4 sliding groups) ── */}
         <BoxGroupBar
