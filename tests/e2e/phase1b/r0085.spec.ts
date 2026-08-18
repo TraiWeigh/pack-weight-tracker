@@ -371,12 +371,33 @@ test.describe('R85 — Location Wedge & Location Photo', () => {
     expectClean(errors);
   });
 
-  test('R85-22 Location rename dialog opens from pencil button on wedge', async ({ page, errors }) => {
+  test('R85-22 Location rename dialog opens from swipe Edit on wedge', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Dry Bag');
     await page.locator('[data-testid="view-mode-location"]').click();
-    // Click pencil/rename button in wedge bar
-    await page.getByRole('button', { name: 'Rename location Dry Bag' }).click();
+    // Get the loc id from the header testid so we can target the SwipeDeleteRow wrapper
+    const wedgeHeader = page.locator('[data-testid^="loc-header-"]').first();
+    await wedgeHeader.waitFor({ state: 'visible', timeout: 5000 });
+    const locTestId = await wedgeHeader.getAttribute('data-testid');
+    const locId = locTestId!.replace('loc-header-', '');
+    // data-swipe-open and swipe-secondary-action live on SwipeDeleteRow's wrapper (data-swipe-key)
+    const swipeRow = page.locator(`[data-swipe-key="loc:${locId}"]`);
+    // Location wedges sit below all category rows — scroll into view before swiping
+    await swipeRow.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(120); // let layout settle after scroll
+    // Swipe left to reveal Edit | Delete
+    const box = (await swipeRow.boundingBox())!;
+    const startX = box.x + box.width - 6;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX - 110, y, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(350);
+    await expect(swipeRow).toHaveAttribute('data-swipe-open', 'true');
+    // Click the secondary action (Edit)
+    await swipeRow.locator('[data-testid="swipe-secondary-action"]').click();
+    // Rename dialog must be visible with input and save
     const dialog = page.locator('[data-testid="location-rename-dialog"]');
     await expect(dialog).toBeVisible({ timeout: 5000 });
     await expect(page.locator('[data-testid="location-rename-input"]')).toBeVisible();

@@ -4575,93 +4575,91 @@ function MobileFunctionalV3Inner() {
                         borderBottom: `1px solid ${DIVIDER}`,
                       }}
                     >
-                      {/* LOCATION WEDGE BAR */}
-                      <div
-                        data-testid={`loc-header-${loc.id}`}
-                        onClick={() => {
-                          setOpenCatName(null);
-                          setOpenLocId(prev => prev === loc.id ? null : loc.id);
+                      {/* LOCATION WEDGE BAR — swipe-to-reveal Edit | Delete, matching category pattern */}
+                      <SwipeDeleteRow
+                        swipeKey={`loc:${loc.id}`}
+                        open={openSwipe === `loc:${loc.id}`}
+                        onOpenChange={o => setOpenSwipe(o ? `loc:${loc.id}` : null)}
+                        deleteLabel={`Delete location ${loc.name}`}
+                        onDelete={() => removeLocation(loc.id)}
+                        secondaryAction={{
+                          label: `Edit location ${loc.name}`,
+                          visibleLabel: 'Edit',
+                          icon: <Pencil size={15} strokeWidth={1.9} aria-hidden="true"/>,
+                          onAction: () => {
+                            setLocRenameId(loc.id);
+                            setLocRenameValue(loc.name);
+                          },
                         }}
-                        style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG, cursor: 'pointer' }}
                       >
-                        {/* Wedge button */}
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
+                        <div
+                          data-testid={`loc-header-${loc.id}`}
+                          onClick={() => {
                             setOpenCatName(null);
                             setOpenLocId(prev => prev === loc.id ? null : loc.id);
                           }}
-                          aria-expanded={isLocOpen}
-                          aria-label={`${isLocOpen ? 'Close' : 'Open'} location ${loc.name}`}
-                          style={{
-                            width: WEDGE_W, minHeight: CARD_H,
-                            background: NAV_ACTIVE,
-                            clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            flexShrink: 0, paddingRight: WEDGE_POINT / 2,
-                            border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
-                          }}
+                          style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG, cursor: 'pointer' }}
                         >
-                          <MapPin size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>
-                        </button>
+                          {/* Wedge button */}
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              setOpenCatName(null);
+                              setOpenLocId(prev => prev === loc.id ? null : loc.id);
+                            }}
+                            aria-expanded={isLocOpen}
+                            aria-label={`${isLocOpen ? 'Close' : 'Open'} location ${loc.name}`}
+                            style={{
+                              width: WEDGE_W, minHeight: CARD_H,
+                              background: NAV_ACTIVE,
+                              clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              flexShrink: 0, paddingRight: WEDGE_POINT / 2,
+                              border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
+                            }}
+                          >
+                            <MapPin size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>
+                          </button>
 
-                        {/* Content grid */}
-                        <div style={{
-                          flex: 1, minWidth: 0,
-                          display: 'grid',
-                          gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
-                          alignItems: 'center',
-                          padding: '10px 12px',
-                          columnGap: 10,
-                        }}>
-                          {/* Col 1 — "Location" label + item count */}
-                          <div style={{ minWidth: 0 }}>
-                            <div style={{
-                              textAlign: 'left', width: '100%',
-                              minHeight: 44, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                            }}>
+                          {/* Content grid */}
+                          <div style={{
+                            flex: 1, minWidth: 0,
+                            display: 'grid',
+                            gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
+                            alignItems: 'center',
+                            padding: '10px 12px',
+                            columnGap: 10,
+                          }}>
+                            {/* Col 1 — "Location" label + item count */}
+                            <div style={{ minWidth: 0 }}>
                               <div style={{
-                                fontSize: 17, fontWeight: 500, color: PRIMARY,
-                                lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
-                                fontFamily: SERIF,
+                                textAlign: 'left', width: '100%',
+                                minHeight: 44, display: 'flex', flexDirection: 'column', justifyContent: 'center',
                               }}>
-                                Location
-                              </div>
-                              <div style={{ fontSize: 12.5, color: MUTED }}>
-                                {locItems.length} {locItems.length === 1 ? 'item' : 'items'}
+                                <div style={{
+                                  fontSize: 17, fontWeight: 500, color: PRIMARY,
+                                  lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
+                                  fontFamily: SERIF,
+                                }}>
+                                  Location
+                                </div>
+                                <div style={{ fontSize: 12.5, color: MUTED }}>
+                                  {locItems.length} {locItems.length === 1 ? 'item' : 'items'}
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Col 2 — location name + rename + delete */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
+                            {/* Col 2 — location name only (Edit | Delete via swipe reveal) */}
                             <div style={{
                               fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
-                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 110,
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                              maxWidth: 130, textAlign: 'right',
                             }}>
                               {loc.name}
                             </div>
-                            <button
-                              onClick={e => {
-                                e.stopPropagation();
-                                setLocRenameId(loc.id);
-                                setLocRenameValue(loc.name);
-                              }}
-                              aria-label={`Rename location ${loc.name}`}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', minHeight: 36, color: MUTED }}
-                            >
-                              <Pencil size={13} strokeWidth={1.8} aria-hidden="true"/>
-                            </button>
-                            <button
-                              onClick={e => { e.stopPropagation(); removeLocation(loc.id); }}
-                              aria-label={`Delete location ${loc.name}`}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', minHeight: 36, color: '#B03A2E' }}
-                            >
-                              <Trash2 size={13} strokeWidth={1.8} aria-hidden="true"/>
-                            </button>
                           </div>
                         </div>
-                      </div>
+                      </SwipeDeleteRow>
 
                       {/* EXPANDED LOCATION CONTENT */}
                       {isLocOpen && (
