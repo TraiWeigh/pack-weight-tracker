@@ -46,6 +46,8 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
 } from '../components/ui/sheet';
 import { SourcesContent } from '../components/SourcesModal';
+import { NavDrawer } from '../components/NavDrawer';
+import type { Handedness } from '../components/NavDrawer';
 import { AboutContent } from './info/AboutPage';
 import { HelpContent } from './info/HelpPage';
 import { HowItWorksContent } from './info/HowItWorksPage';
@@ -1909,6 +1911,15 @@ function MobileFunctionalV3Inner() {
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [lockerEntries, setLockerEntries] = useState<LockerEntry[]>([]);
 
+  // ── R0082: navigation drawer ──────────────────────────────────────────────
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [handedness, setHandedness] = useState<Handedness>(() => {
+    try { return (localStorage.getItem('tw-handedness') as Handedness) || 'right'; }
+    catch { return 'right'; }
+  });
+  // After openDeck('more') renders, activate the pending card (Settings shortcut).
+  const [pendingCardActivation, setPendingCardActivation] = useState<string | null>(null);
+
   const openDeck = useCallback((deck: DeckId) => {
     setOpenSwipe(null); // R004: opening a deck closes any open delete reveal
     setActiveDeck(prev => {
@@ -2362,6 +2373,46 @@ function MobileFunctionalV3Inner() {
       }
     });
   }, [system, listName, showToast]);
+
+  // ── R0082: pending Settings card activation (after More deck opens) ─────────
+  useEffect(() => {
+    if (pendingCardActivation && activeDeck === 'more') {
+      activateCard(pendingCardActivation);
+      setPendingCardActivation(null);
+    }
+  }, [activeDeck, pendingCardActivation, activateCard]);
+
+  // ── R0082: drawer action handlers ────────────────────────────────────────
+  const handleToggleHandedness = useCallback(() => {
+    setHandedness(prev => {
+      const next: Handedness = prev === 'right' ? 'left' : 'right';
+      try { localStorage.setItem('tw-handedness', next); } catch {}
+      return next;
+    });
+  }, []);
+
+  const handleDrawerHome = useCallback(() => {
+    setShowDrawer(false);
+    closeDeck();
+  }, [closeDeck]);
+
+  const handleDrawerMyLists = useCallback(() => {
+    setOpenSwipe(null);
+    setShowDrawer(false);
+    openDeck('locker');
+  }, [openDeck]);
+
+  const handleDrawerHelp = useCallback(() => {
+    setShowDrawer(false);
+    pushScreen({ screen: 'footer-page', footerPageId: 'help' });
+  }, [pushScreen]);
+
+  const handleDrawerSettings = useCallback(() => {
+    setOpenSwipe(null);
+    setShowDrawer(false);
+    openDeck('more');
+    setPendingCardActivation('list-settings');
+  }, [openDeck]);
 
   // ── Camera / Photos (Group 3 stubs — no downstream photo workflow in R007) ──
   // R007 §10: Camera and Photos are rendered correctly in Group 3. No photo-
@@ -3401,14 +3452,29 @@ function MobileFunctionalV3Inner() {
           }
         `}</style>
 
-        {/* ── APP BAR ── */}
+        {/* ── APP BAR — R0082: hamburger added ── */}
         <div style={{
           height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
-          display: 'flex', alignItems: 'center', padding: '0 12px 0 14px', gap: 0,
+          display: 'flex', alignItems: 'center', padding: '0 8px', gap: 0,
           flexShrink: 0, zIndex: 10, overflow: 'hidden',
         }}>
+          {/* R0082: Hamburger — LEFT side for right-handed (default) */}
+          {handedness === 'right' && (
+            <button
+              data-testid="hamburger-btn"
+              aria-label="Open navigation menu"
+              onClick={() => { setShowDrawer(true); setOpenSwipe(null); }}
+              style={{
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                minWidth: 44, minHeight: 44, flexShrink: 0,
+              }}
+            >
+              <Menu size={22} color={NAV_ACTIVE} strokeWidth={2}/>
+            </button>
+          )}
           {/* Logo + wordmark */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 6 }}>
             <LogoMark size={24}/>
             <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
               TrailWeigh
@@ -3449,6 +3515,21 @@ function MobileFunctionalV3Inner() {
               )
             )}
           </div>
+          {/* R0082: Hamburger — RIGHT side for left-handed mode */}
+          {handedness === 'left' && (
+            <button
+              data-testid="hamburger-btn"
+              aria-label="Open navigation menu"
+              onClick={() => { setShowDrawer(true); setOpenSwipe(null); }}
+              style={{
+                background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                minWidth: 44, minHeight: 44, flexShrink: 0,
+              }}
+            >
+              <Menu size={22} color={NAV_ACTIVE} strokeWidth={2}/>
+            </button>
+          )}
         </div>
 
         {/* ── SCROLLABLE CONTENT (R003 — full width, flush, hidden scrollbar chrome) ── */}
@@ -4204,6 +4285,18 @@ function MobileFunctionalV3Inner() {
         )}
 
         {/* ── OVERLAYS (rendered as absolute children of the phone frame) ── */}
+
+        {/* R0082: Navigation drawer — always rendered, open/close via CSS transform */}
+        <NavDrawer
+          open={showDrawer}
+          handedness={handedness}
+          onClose={() => setShowDrawer(false)}
+          onHome={handleDrawerHome}
+          onMyLists={handleDrawerMyLists}
+          onHelp={handleDrawerHelp}
+          onSettings={handleDrawerSettings}
+          onToggleHandedness={handleToggleHandedness}
+        />
 
         {/* Summary overlay — reached via More → List Actions → Summary */}
         {showSummary && (
