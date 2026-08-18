@@ -3735,7 +3735,7 @@ function MobileFunctionalV3Inner() {
                     secondaryAction={{
                       // R0084: Rename replaces Open/Close — tap-anywhere on the bar handles
                       // open/close; the swipe reveal is reserved for edit actions only.
-                      label: `Rename ${catName} category`,
+                      label: `Edit ${catName} category`,
                       icon: <Pencil size={15} strokeWidth={1.9} aria-hidden="true"/>,
                       onAction: () => {
                         setCatOptionsFor(catName);

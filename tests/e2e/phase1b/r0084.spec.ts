@@ -75,7 +75,7 @@ test.describe('R84 — Category swipe reveal: Rename | Delete', () => {
     // Rename button (secondary slot) visible
     const renameBtn = row.locator('[data-testid="swipe-secondary-action"]');
     await expect(renameBtn).toBeVisible();
-    await expect(renameBtn).toHaveAttribute('aria-label', `Rename ${cat} category`);
+    await expect(renameBtn).toHaveAttribute('aria-label', `Edit ${cat} category`);
 
     // Delete button (rightmost slot) visible
     const deleteBtn = row.locator(`[aria-label="Delete ${cat} category"]`);
