@@ -1138,7 +1138,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
-          background: 'rgba(255,255,255,0.88)',
+          background: 'rgba(255,255,255,0.78)',
           backdropFilter: 'blur(14px) saturate(1.08)',
           WebkitBackdropFilter: 'blur(14px) saturate(1.08)',
           borderTop: '1px solid rgba(0,0,0,0.07)',
@@ -3797,8 +3797,8 @@ function MobileFunctionalV3Inner() {
             position: 'sticky', top: 0, zIndex: 4,
             backdropFilter: 'blur(9px) saturate(1.05)',
             WebkitBackdropFilter: 'blur(9px) saturate(1.05)',
-            /* R0085P1: tiny soft shadow at bottom of List Summary — understated separation only */
-            boxShadow: '0 3px 8px rgba(0,0,0,0.07)',
+            /* R0085P2: soft but clearly perceptible shadow at bottom of List Summary */
+            boxShadow: '0 4px 14px rgba(0,0,0,0.14)',
           }}>
 
             {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
