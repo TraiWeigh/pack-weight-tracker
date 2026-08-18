@@ -19,6 +19,12 @@ export interface PreviewBodyProps {
    */
   filterToChecked?: boolean;
   /**
+   * When false, unchecked items render at full opacity rather than 50%.
+   * Defaults to true (preserves legacy dimming for existing callers).
+   * R0081: Preview passes false so all items are equally readable.
+   */
+  dimUnchecked?: boolean;
+  /**
    * Separate checklist-use checkbox state (does NOT touch item.checked).
    * Keys are item IDs; value is whether the item has been ticked in Checklist.
    */
@@ -42,6 +48,7 @@ export function PreviewBody({
   filterToChecked = false,
   checklistUse,
   onToggle,
+  dimUnchecked = true,
 }: PreviewBodyProps) {
   const lu = largeUnit(system);
   const su = smallUnit(system);
@@ -195,8 +202,8 @@ export function PreviewBody({
                   fontSize: 12, padding: '3px 4px',
                   borderBottom: '1px solid #f0f0f0',
                   background: idx % 2 === 0 ? '#f8fbf8' : undefined,
-                  // In legacy mode, dim unchecked items; in checklist-use mode, all shown items are source-selected
-                  opacity: filterToChecked ? 1 : (item.checked ? 1 : 0.5),
+                  // Dim unchecked items in legacy mode unless dimUnchecked=false (R0081 Preview)
+                  opacity: filterToChecked ? 1 : (dimUnchecked && !item.checked) ? 0.5 : 1,
                 }}>
                   {/* Checkbox */}
                   <span style={{ width: 22, flexShrink: 0, display: 'flex', alignItems: 'center' }}>

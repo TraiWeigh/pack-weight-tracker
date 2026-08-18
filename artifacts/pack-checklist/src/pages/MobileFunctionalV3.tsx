@@ -25,7 +25,7 @@
  * PRODUCTION SAFETY: /checklist, desktop layout, API, DB, auth — all untouched.
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 // R004 Part 3 — Inter Variable is the primary V3 mobile UI font (registers @font-face only;
 // applied solely through this file's font tokens, so desktop/Checklist are unaffected)
 import '@fontsource-variable/inter';
@@ -38,6 +38,7 @@ import {
   Tent, HelpCircle, X, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Layers,
   Scale, Coins, AlertCircle, Trash2, Copy, Link2,
   BookOpen, Info, Pencil, Mail, Tag, FileText, Shield,
+  CheckSquare,
   // R007 header identity icons + group 3
   Train, Plane, Ship, Car, Package,
 } from 'lucide-react';
@@ -298,11 +299,59 @@ interface PreviewOverlayProps {
 }
 
 function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayProps) {
+  // R0081 — Preview-local check state.
+  // Initialised once from the working list on mount; NEVER writes back to sandbox.
+  // Auto-discarded on close because this component unmounts when showPreview=false.
+  const [previewChecks, setPreviewChecks] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    for (const cat of Object.keys(sandbox.items)) {
+      for (const item of sandbox.items[cat]) {
+        init[item.id] = item.checked;
+      }
+    }
+    return init;
+  });
+
+  // beforeClear: null  → not yet cleared (pill shows "Clear Checks")
+  //             non-null → holds pre-clear snapshot (pill shows "Undo")
+  const [beforeClear, setBeforeClear] = useState<Record<string, boolean> | null>(null);
+  const isCleared = beforeClear !== null;
+
+  // Display data: each item's checked value comes from previewChecks, not sandbox.
+  // sandbox.items is read-only here — it is never mutated.
+  const displayData: PackState = useMemo(() => {
+    const out: PackState = {};
+    for (const cat of Object.keys(sandbox.items)) {
+      out[cat] = sandbox.items[cat].map(item => ({
+        ...item,
+        checked: previewChecks[item.id] ?? item.checked,
+      }));
+    }
+    return out;
+  }, [sandbox.items, previewChecks]);
+
+  const handleClear = useCallback(() => {
+    setBeforeClear(previewChecks);
+    const allFalse: Record<string, boolean> = {};
+    for (const id of Object.keys(previewChecks)) allFalse[id] = false;
+    setPreviewChecks(allFalse);
+  }, [previewChecks]);
+
+  const handleUndo = useCallback(() => {
+    if (beforeClear) {
+      setPreviewChecks(beforeClear);
+      setBeforeClear(null);
+    }
+  }, [beforeClear]);
+
   return (
-    <div style={{
-      position: 'absolute', inset: 0, background: OVERLAY_BG,
-      zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
-    }}>
+    <div
+      data-testid="preview-overlay"
+      style={{
+        position: 'absolute', inset: 0, background: OVERLAY_BG,
+        zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
+      }}
+    >
       {/* Header */}
       <div style={{
         height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
@@ -330,23 +379,46 @@ function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayPro
         </button>
       </div>
 
-      {/* Note banner */}
+      {/* Note banner — R0081: updated; no longer says "selected gear only" */}
       <div style={{
         background: 'rgba(42,87,64,0.08)', borderBottom: `1px solid rgba(42,87,64,0.12)`,
         padding: '7px 16px', fontSize: 12, color: SECONDARY, flexShrink: 0,
       }}>
-        Your selected gear — tap the printer icon to print or download.
+        All items in this list — tap the printer icon to print or download.
       </div>
 
-      {/* Preview body — SELECTED items only (filterToChecked=true, R0073) */}
+      {/* Clear Checks / Undo pill — R0081 */}
+      <div style={{ padding: '10px 16px 6px', flexShrink: 0 }}>
+        <button
+          onClick={isCleared ? handleUndo : handleClear}
+          aria-label={isCleared ? 'Undo clear checks' : 'Clear all preview checkmarks'}
+          data-testid={isCleared ? 'preview-undo-btn' : 'preview-clear-btn'}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 8, width: '100%', minHeight: 44,
+            background: SUMMARY_BG, border: 'none', borderRadius: 100,
+            color: '#fff', fontSize: 15, fontWeight: 600, fontFamily: SANS,
+            cursor: 'pointer', padding: '11px 20px', letterSpacing: '0.1px',
+          }}
+        >
+          {isCleared
+            ? <Undo2     size={18} color="#fff" strokeWidth={2}/>
+            : <CheckSquare size={18} color="#fff" strokeWidth={2}/>
+          }
+          <span>{isCleared ? 'Undo' : 'Clear Checks'}</span>
+        </button>
+      </div>
+
+      {/* Preview body — R0081: all items, no filter, no dimming */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
           <PreviewBody
-            data={sandbox.items}
+            data={displayData}
             system={system as 'imperial' | 'metric'}
             categoryOrder={sandbox.order}
             categoryMeta={sandbox.meta}
-            filterToChecked={true}
+            filterToChecked={false}
+            dimUnchecked={false}
           />
         </BarStyleProvider>
       </div>
