@@ -1138,8 +1138,8 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
-          /* R0085P5: clearly more transparent — ~38% white; list colours visibly bleed through */
-          background: 'rgba(255,255,255,0.38)',
+          /* R0085P6: solid white matching category body panels (CARD_BG = #FFFFFF) */
+          background: CARD_BG,
           backdropFilter: 'blur(8px) saturate(1.15)',
           WebkitBackdropFilter: 'blur(8px) saturate(1.15)',
           borderTop: '1px solid rgba(0,0,0,0.07)',
