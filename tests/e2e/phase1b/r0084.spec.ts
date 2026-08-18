@@ -114,8 +114,8 @@ test.describe('R84 — Category swipe reveal: Rename | Delete', () => {
     await input.click({ clickCount: 3 });
     await input.fill('Renamed Category');
 
-    // Confirm via Rename button
-    await page.getByRole('button', { name: 'Confirm rename' }).click();
+    // Confirm via Save button (R0084P3: was "Rename")
+    await page.getByRole('button', { name: 'Save category name' }).click();
     await page.waitForTimeout(300);
 
     // Sheet closed — new name visible in category bar
@@ -185,9 +185,9 @@ test.describe('R84 — Item swipe reveal: Rename | Delete', () => {
 
     const renameBtn = itemRow.locator('[data-testid="swipe-secondary-action"]');
     await expect(renameBtn).toBeVisible();
-    // aria-label contains "Rename"
+    // aria-label starts with "Edit " (R0084P2 changed from "Rename " to "Edit ")
     const label = await renameBtn.getAttribute('aria-label');
-    expect(label).toMatch(/^Rename /);
+    expect(label).toMatch(/^Edit /);
 
     // Delete button also visible
     await expect(itemRow.locator('[aria-label^="Delete "]')).toBeVisible();
@@ -206,7 +206,7 @@ test.describe('R84 — Item swipe reveal: Rename | Delete', () => {
 
     const renameBtn = itemRow.locator('[data-testid="swipe-secondary-action"]');
     const ariaLabel = (await renameBtn.getAttribute('aria-label'))!;
-    const expectedName = ariaLabel.replace(/^Rename /, '');
+    const expectedName = ariaLabel.replace(/^Edit /, '');
 
     await renameBtn.click();
     await page.waitForTimeout(200);
@@ -254,7 +254,7 @@ test.describe('R84 — Item swipe reveal: Rename | Delete', () => {
 
     const renameBtn = itemRow.locator('[data-testid="swipe-secondary-action"]');
     const ariaLabel = (await renameBtn.getAttribute('aria-label'))!;
-    const originalName = ariaLabel.replace(/^Rename /, '');
+    const originalName = ariaLabel.replace(/^Edit /, '');
 
     await renameBtn.click();
     await page.waitForTimeout(200);
@@ -281,7 +281,7 @@ test.describe('R84 — Item swipe reveal: Rename | Delete', () => {
     const renameBtn = itemRow.locator('[data-testid="swipe-secondary-action"]');
     await swipeLeft(page, itemRow);
     const ariaLabel = (await renameBtn.getAttribute('aria-label'))!;
-    const itemName = ariaLabel.replace(/^Rename /, '');
+    const itemName = ariaLabel.replace(/^Edit /, '');
 
     // Click the Delete button (not Rename)
     await itemRow.locator(`[aria-label="Delete ${itemName}"]`).click();
@@ -389,7 +389,7 @@ test.describe('R84 — Category bar interactions: tap, long-press, swipe disambi
 
     // Get item name
     const ariaLabel = (await renameBtn.getAttribute('aria-label'))!;
-    const itemName = ariaLabel.replace(/^Rename /, '');
+    const itemName = ariaLabel.replace(/^Edit /, '');
 
     // Swipe open
     await swipeLeft(page, itemRow);

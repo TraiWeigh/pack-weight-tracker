@@ -4610,7 +4610,7 @@ function MobileFunctionalV3Inner() {
                 >Cancel</button>
                 <button
                   disabled={!catRenameValue.trim() || catRenameValue.trim() === catOptionsFor}
-                  aria-label="Confirm rename"
+                  aria-label="Save category name"
                   onClick={() => {
                     sandboxRenameCategory(catOptionsFor, catRenameValue);
                     setCatOptionsFor(null); setCatRenaming(false);
@@ -4622,7 +4622,7 @@ function MobileFunctionalV3Inner() {
                     cursor: catRenameValue.trim() && catRenameValue.trim() !== catOptionsFor ? 'pointer' : 'not-allowed',
                     minHeight: 44,
                   }}
-                >Rename</button>
+                >Save</button>
               </div>
             </div>
           )}
@@ -4812,7 +4812,7 @@ function MobileFunctionalV3Inner() {
                   showToast(`Renamed to "${v}"`);
                   setItemRenameFor(null);
                 }}
-                aria-label="Confirm rename item"
+                aria-label="Save item name"
                 data-testid="item-rename-confirm"
                 style={{
                   flex: 1, padding: '12px 0', borderRadius: 10,
@@ -4823,7 +4823,7 @@ function MobileFunctionalV3Inner() {
                     ? 'pointer' : 'not-allowed',
                   minHeight: 44,
                 }}
-              >Rename</button>
+              >Save</button>
             </div>
           </div>
         </div>
