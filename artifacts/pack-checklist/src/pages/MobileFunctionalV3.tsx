@@ -3779,6 +3779,114 @@ function MobileFunctionalV3Inner() {
           </div>
         )}
 
+        {/* ── STATIONARY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
+        {/* R0089: moved outside main-scroll — now a flex sibling directly below the
+             title bar (and optional location/category toggle bar). Physically anchored
+             to the header region; cannot scroll or rubber-band with the category
+             content beneath it. Matches the proven Home hero pattern.
+             summaryRef / summaryH measurements are preserved and more accurate here:
+             getBoundingClientRect().bottom is a stable viewport-relative constant
+             rather than a scroll-position-dependent value. */}
+        <div ref={summaryRef} data-testid="list-summary-bar" style={{
+          flexShrink: 0, zIndex: 4,
+        }}>
+
+          {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
+          <div>
+            <div style={{
+              margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
+              padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
+              /* R0085P3: shadow on the opaque green panel — correctly renders above
+                 white category rows; detached from backdrop-filter compositor layer */
+              boxShadow: '0 4px 12px rgba(0,0,0,0.22)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {/* Icon tile — unchanged */}
+              <div style={{
+                width: 66, height: 66, borderRadius: 14, background: 'rgba(0,0,0,0.20)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <Luggage size={34} color="rgba(255,255,255,0.90)" strokeWidth={1.4}/>
+              </div>
+              {/* Left: active file/list name (R004 Part 5 — occupies the former
+                  LIST SUMMARY label position; size 15.5 / SUMMARY_TEXT preserved) + total count */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  data-testid="active-list-name"
+                  style={{
+                    fontSize: 15.5, fontWeight: 700, color: SUMMARY_TEXT, fontFamily: SANS,
+                    whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    marginBottom: 3,
+                  }}
+                >
+                  {listName || 'Untitled List'}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, lineHeight: 1 }}>
+                  <span style={{ fontSize: 40, fontWeight: 800, color: SUMMARY_TEXT, letterSpacing: '-1.5px', lineHeight: 1 }}>
+                    {totalItems}
+                  </span>
+                  <span style={{ fontSize: 17, fontWeight: 500, color: 'rgba(255,255,255,0.78)' }}>
+                    items
+                  </span>
+                </div>
+              </div>
+              {/* R0075: global expand/collapse chevron — centered between item-count and Selected blocks */}
+              {(() => {
+                const anyOpen = allExpanded || openCatName !== null;
+                return (
+                  <button
+                    data-testid="summary-expand-collapse"
+                    onClick={() => anyOpen ? handleCollapseAll() : handleExpandAll()}
+                    aria-label={anyOpen ? 'Collapse all categories' : 'Expand all categories'}
+                    style={{
+                      alignSelf: 'flex-end',
+                      marginBottom: 2,
+                      // R0076: move chevron ~48 px LEFT of its R0075 position.
+                      // flex:1 on the left block absorbs the margin, shifting
+                      // the chevron toward the item-count block.
+                      marginRight: 48,
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'rgba(255,255,255,0.50)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      minWidth: 44, minHeight: 44,
+                      padding: '0 4px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {anyOpen
+                      ? <ChevronUp   size={36} strokeWidth={1.5}/>
+                      : <ChevronDown size={36} strokeWidth={1.5}/>}
+                  </button>
+                );
+              })()}
+
+              {/* Right: categories / selected / not selected stacked (027U) */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
+                {/* Category count — top of right stack */}
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.58)', whiteSpace: 'nowrap', letterSpacing: '0.2px' }}>
+                  {catCount} {catCount === 1 ? 'category' : 'categories'}
+                </span>
+                {/* Selected */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{
+                    width: 18, height: 18, borderRadius: 9,
+                    background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.50)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <Check size={9} color="rgba(255,255,255,0.92)" strokeWidth={2.5}/>
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT, whiteSpace: 'nowrap' }}>
+                    {selectedCount} Selected
+                  </span>
+                </div>
+                {/* R004 Part 5 — "Not Selected" metric removed */}
+              </div>
+              </div>
+            </div>
+          </div>
+
+        </div>{/* end stationary header */}
+
         {/* ── SCROLLABLE CONTENT (R003 — full width, flush, hidden scrollbar chrome) ── */}
         <div
           className="tw-noscrollbar"
@@ -3803,113 +3911,6 @@ function MobileFunctionalV3Inner() {
             overflowX: 'hidden', position: 'relative', scrollbarWidth: 'none',
           }}
         >
-
-          {/* ── STICKY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
-          {/* R0080P2: outer wrapper is transparent so backdrop-filter blurs categories below;
-               inner panel uses rgba(SUMMARY_BG, 0.94) — ~94% opacity gives a very subtle
-               matte frost: categories barely visible underneath, no shine/gradient/gloss. */}
-          <div ref={summaryRef} data-testid="list-summary-bar" style={{
-            position: 'sticky', top: 0, zIndex: 4,
-            backdropFilter: 'blur(9px) saturate(1.05)',
-            WebkitBackdropFilter: 'blur(9px) saturate(1.05)',
-            /* R0085P3: shadow moved OFF the backdrop-filter wrapper (compositor trap) */
-          }}>
-
-            {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
-            <div>
-              <div style={{
-                margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
-                padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
-                /* R0085P3: shadow on the opaque green panel — correctly renders above
-                   white category rows; detached from backdrop-filter compositor layer */
-                boxShadow: '0 4px 12px rgba(0,0,0,0.22)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                {/* Icon tile — unchanged */}
-                <div style={{
-                  width: 66, height: 66, borderRadius: 14, background: 'rgba(0,0,0,0.20)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>
-                  <Luggage size={34} color="rgba(255,255,255,0.90)" strokeWidth={1.4}/>
-                </div>
-                {/* Left: active file/list name (R004 Part 5 — occupies the former
-                    LIST SUMMARY label position; size 15.5 / SUMMARY_TEXT preserved) + total count */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    data-testid="active-list-name"
-                    style={{
-                      fontSize: 15.5, fontWeight: 700, color: SUMMARY_TEXT, fontFamily: SANS,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                      marginBottom: 3,
-                    }}
-                  >
-                    {listName || 'Untitled List'}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, lineHeight: 1 }}>
-                    <span style={{ fontSize: 40, fontWeight: 800, color: SUMMARY_TEXT, letterSpacing: '-1.5px', lineHeight: 1 }}>
-                      {totalItems}
-                    </span>
-                    <span style={{ fontSize: 17, fontWeight: 500, color: 'rgba(255,255,255,0.78)' }}>
-                      items
-                    </span>
-                  </div>
-                </div>
-                {/* R0075: global expand/collapse chevron — centered between item-count and Selected blocks */}
-                {(() => {
-                  const anyOpen = allExpanded || openCatName !== null;
-                  return (
-                    <button
-                      data-testid="summary-expand-collapse"
-                      onClick={() => anyOpen ? handleCollapseAll() : handleExpandAll()}
-                      aria-label={anyOpen ? 'Collapse all categories' : 'Expand all categories'}
-                      style={{
-                        alignSelf: 'flex-end',
-                        marginBottom: 2,
-                        // R0076: move chevron ~48 px LEFT of its R0075 position.
-                        // flex:1 on the left block absorbs the margin, shifting
-                        // the chevron toward the item-count block.
-                        marginRight: 48,
-                        background: 'none', border: 'none', cursor: 'pointer',
-                        color: 'rgba(255,255,255,0.50)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        minWidth: 44, minHeight: 44,
-                        padding: '0 4px',
-                        flexShrink: 0,
-                      }}
-                    >
-                      {anyOpen
-                        ? <ChevronUp   size={36} strokeWidth={1.5}/>
-                        : <ChevronDown size={36} strokeWidth={1.5}/>}
-                    </button>
-                  );
-                })()}
-
-                {/* Right: categories / selected / not selected stacked (027U) */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
-                  {/* Category count — top of right stack */}
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.58)', whiteSpace: 'nowrap', letterSpacing: '0.2px' }}>
-                    {catCount} {catCount === 1 ? 'category' : 'categories'}
-                  </span>
-                  {/* Selected */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <div style={{
-                      width: 18, height: 18, borderRadius: 9,
-                      background: 'rgba(255,255,255,0.18)', border: '1.5px solid rgba(255,255,255,0.50)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      <Check size={9} color="rgba(255,255,255,0.92)" strokeWidth={2.5}/>
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT, whiteSpace: 'nowrap' }}>
-                      {selectedCount} Selected
-                    </span>
-                  </div>
-                  {/* R004 Part 5 — "Not Selected" metric removed */}
-                </div>
-                </div>
-              </div>
-            </div>
-
-          </div>{/* end sticky header */}
 
           {/* ── CATEGORY STACK (B5 — flush, touching, square-edged) ── */}
           {/* R0085C: Category list always rendered; in Location view, items with a location
