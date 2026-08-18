@@ -11,6 +11,10 @@ export type GearItem = {
   qty: number;
   checked: boolean;
   expendable: boolean;
+  /** R0085 — ID of a reusable PackLocation; rename propagates via the location record */
+  locationId?: string;
+  /** R0085 — TrailWeigh-owned compressed copy of item photo (data URL); never the original device file */
+  photoDataUrl?: string;
 };
 
 export type PackState = {

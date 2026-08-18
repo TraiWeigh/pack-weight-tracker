@@ -36,7 +36,7 @@ import {
   Hash, PackageOpen, ArrowRightLeft, Luggage, Camera, Image,
   Save, Undo2, Redo2, RotateCcw, Share2, Printer,
   Tent, HelpCircle, X, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Layers,
-  Scale, Coins, AlertCircle, Trash2, Copy, Link2,
+  Scale, Coins, AlertCircle, Trash2, Copy, Link2, MapPin,
   BookOpen, Info, Pencil, Mail, Tag, FileText, Shield,
   CheckSquare,
   // R007 header identity icons + group 3
@@ -69,7 +69,9 @@ import { useUnit, UnitProvider } from '../context/UnitContext';
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 type PackState = { [category: string]: GearItem[] };
-type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta> };
+/** R0085: a named, reusable gear location (e.g. "Top lid", "Hip belt pocket"). */
+type PackLocation = { id: string; name: string };
+type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta>; locations: PackLocation[] };
 // (R002: the old ActiveNav tab type was retired — deck selection uses DeckId below.)
 
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
@@ -84,6 +86,36 @@ interface ScreenEntry { screen: MobileScreen; footerPageId?: FooterPageId; }
 
 const HISTORY_LIMIT = 30;
 
+// ─── R0085: Photo compression utility ────────────────────────────────────────────
+/** Compress an image File to a TrailWeigh-owned JPEG data URL (max 800 px, 72% quality).
+ *  The original device file is never altered. Deleting the TW photo only removes this copy. */
+function compressPhoto(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new window.Image();
+      img.onload = () => {
+        const MAX = 800;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else                { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('canvas unavailable')); return; }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.onerror = () => reject(new Error('image load failed'));
+      img.src = ev.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('file read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
 // ─── DEMO SEED ──────────────────────────────────────────────────────────────────
 const DEMO_SEED: SandboxStore = {
   order: ['Backpack', 'Clothing', 'Toiletries', 'Electronics', 'Shelter', 'Kitchen'],
@@ -95,6 +127,7 @@ const DEMO_SEED: SandboxStore = {
     Shelter:     { countsToBase: true },
     Kitchen:     { countsToBase: true },
   },
+  locations: [],
   items: {
     Backpack: [
       { id: 'b1', sub: 'Backpack', desc: 'Osprey Atmos 65',       weightOz: 68.0,  qty: 1, checked: true,  expendable: false },
@@ -899,6 +932,8 @@ interface BoxGroupBarProps {
   onSave:    () => void;
   onShare:   () => void;
   onMore:    () => void;
+  /** R0085 — exposes settle() so the parent can auto-switch to the Edit group on data mutations. */
+  groupControlRef?: React.MutableRefObject<{ switchGroup: (idx: number) => void } | null>;
 }
 
 /** Shared box button inside a group. */
@@ -991,6 +1026,15 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
 
     const settleRef = useRef(settle);
     settleRef.current = settle;
+
+    // R0085 — expose switchGroup to parent via groupControlRef (stable, never re-registered)
+    const { groupControlRef } = props;
+    useEffect(() => {
+      if (!groupControlRef) return;
+      groupControlRef.current = { switchGroup: (idx: number) => settleRef.current(idx) };
+      return () => { if (groupControlRef) groupControlRef.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [groupControlRef]); // settleRef is a stable ref, not a dep
 
     const goLeft  = useCallback(() => { settle(Math.max(0, groupIdxRef.current - 1)); }, [settle]);
     // R0080: Next wraps Group 4 → Group 1; Back still clamps (no back-wrap from Group 1).
@@ -1917,7 +1961,7 @@ function MobileFunctionalV3Inner() {
   const { system, setSystem } = useUnit();
 
   // ── Sandbox state ─────────────────────────────────────────────────────────────
-  const [sandbox, setSandbox] = useState<SandboxStore>({ items: {}, order: [], meta: {} });
+  const [sandbox, setSandbox] = useState<SandboxStore>({ items: {}, order: [], meta: {}, locations: [] });
   const [sandboxReady, setSandboxReady] = useState(false);
   const [listName, setListName] = useState('Untitled List');
 
@@ -2073,6 +2117,24 @@ function MobileFunctionalV3Inner() {
   // R0084 — item rename (list-only; no Master Library mutation until real linking exists)
   const [itemRenameFor, setItemRenameFor] = useState<{ cat: string; id: string; currentDesc: string } | null>(null);
   const [itemRenameValue, setItemRenameValue] = useState('');
+
+  // R0085 — Location / Photo / View-mode state
+  const [viewMode, setViewMode] = useState<'category' | 'location'>('category');
+  const [locPickerFor, setLocPickerFor] = useState<{ cat: string; id: string } | null>(null);
+  const [locPickerFilter, setLocPickerFilter] = useState('');
+  const [locRenameId, setLocRenameId] = useState<string | null>(null);
+  const [locRenameValue, setLocRenameValue] = useState('');
+  const [photoViewFor, setPhotoViewFor] = useState<{ cat: string; id: string } | null>(null);
+  const [photoEditFor, setPhotoEditFor] = useState<{ cat: string; id: string } | null>(null);
+  // R0085 — Category direct-edit (swipe Edit bypasses Category Options Sheet entirely)
+  const [catDirectEditFor, setCatDirectEditFor] = useState<string | null>(null);
+  const [catDirectEditValue, setCatDirectEditValue] = useState('');
+  // R0085 — Group auto-switch: exposes BoxGroupBar.settle to parent (stable ref object)
+  const navGroupRef = useRef<{ switchGroup: (idx: number) => void } | null>(null);
+  // R0085 — Photo file input refs (hidden inputs; device original is never touched)
+  const photoCameraRef = useRef<HTMLInputElement | null>(null);
+  const photoUploadRef = useRef<HTMLInputElement | null>(null);
+
   // R0077P2 — dialog focus management
   const deleteTriggerRef   = useRef<HTMLElement | null>(null);  // which Delete btn opened the dialog
   const deleteConfirmedRef = useRef(false);                     // true when item was actually deleted
@@ -2157,6 +2219,10 @@ function MobileFunctionalV3Inner() {
     setUndoHistory(prev => [...prev.slice(-(HISTORY_LIMIT - 1)), current]);
     setRedoHistory([]);
     setSandbox(updater);
+    // R0085 — auto-surface the Edit group (Back | Undo | Redo | Reset | Next) on any data mutation.
+    // View-only actions (accordion open, photo view, Category↔Location toggle, Preview) never call
+    // mutateSandbox, so they never trigger this switch.
+    navGroupRef.current?.switchGroup(1);
   }, []);
 
   // ── Seed sandbox from production localStorage (read-once on auth ready) ───────
@@ -2174,6 +2240,7 @@ function MobileFunctionalV3Inner() {
             items: parsed.items as PackState,
             order: parsed.order as string[],
             meta:  (parsed.meta ?? {}) as Record<string, CategoryMeta>,
+            locations: (parsed.locations ?? []) as PackLocation[],
           };
           seeded = true;
         }
@@ -2308,7 +2375,9 @@ function MobileFunctionalV3Inner() {
             items: sandboxRef.current.items,
             order: sandboxRef.current.order,
             meta:  sandboxRef.current.meta,
-          } as LockerEntry['store'],
+            // R0085: persist locations with the list so rename/assignment survives save→load
+            locations: sandboxRef.current.locations,
+          } as unknown as LockerEntry['store'],
         };
         updateLockerEntry(activeLockerEntryId, updated);
         showToast(`Saved "${existing.name}"`);
@@ -2325,7 +2394,8 @@ function MobileFunctionalV3Inner() {
         items: sandboxRef.current.items,
         order: sandboxRef.current.order,
         meta:  sandboxRef.current.meta,
-      } as LockerEntry['store'],
+        locations: sandboxRef.current.locations,
+      } as unknown as LockerEntry['store'],
       background: null,
       bgFade:     0.3,
       bgTone:     'light',
@@ -2354,7 +2424,8 @@ function MobileFunctionalV3Inner() {
         items: sandboxRef.current.items,
         order: sandboxRef.current.order,
         meta:  sandboxRef.current.meta,
-      } as LockerEntry['store'],
+        locations: sandboxRef.current.locations,
+      } as unknown as LockerEntry['store'],
       background: null,
       bgFade:     0.3,
       bgTone:     'light',
@@ -2998,7 +3069,7 @@ function MobileFunctionalV3Inner() {
       delete newItems[name];
       const newMeta = { ...prev.meta };
       delete newMeta[name];
-      return { items: newItems, meta: newMeta, order: prev.order.filter(c => c !== name) };
+      return { items: newItems, meta: newMeta, order: prev.order.filter(c => c !== name), locations: prev.locations };
     });
     // Close any open accordion for deleted category
     setOpenCatName(prev => prev === name ? null : prev);
@@ -3018,7 +3089,7 @@ function MobileFunctionalV3Inner() {
         newItems[key] = prev.items[cat] ?? [];
         newMeta[key]  = prev.meta[cat] ?? { countsToBase: true };
       });
-      return { items: newItems, order, meta: newMeta };
+      return { items: newItems, order, meta: newMeta, locations: prev.locations };
     });
     setOpenCatName(prev => prev === oldName ? trimmed : prev);
     setExpandedItem(prev => prev?.cat === oldName ? { ...prev, cat: trimmed } : prev);
@@ -3035,6 +3106,66 @@ function MobileFunctionalV3Inner() {
     setChecklistUse(prev => { const next = { ...prev }; delete next[id]; return next; });
     setExpandedItem(prev => (prev?.cat === cat && prev?.id === id) ? null : prev);
   }, [mutateSandbox]);
+
+  // ── R0085 — Location CRUD ─────────────────────────────────────────────────────
+
+  const addLocation = useCallback((name: string): string => {
+    const id = crypto.randomUUID();
+    const trimmed = name.trim();
+    mutateSandbox(prev => ({ ...prev, locations: [...prev.locations, { id, name: trimmed }] }));
+    return id;
+  }, [mutateSandbox]);
+
+  const renameLocation = useCallback((id: string, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    mutateSandbox(prev => ({
+      ...prev,
+      locations: prev.locations.map(l => l.id === id ? { ...l, name: trimmed } : l),
+    }));
+    showToast(`Location renamed to "${trimmed}"`);
+  }, [mutateSandbox, showToast]);
+
+  const removeLocation = useCallback((id: string) => {
+    mutateSandbox(prev => ({
+      ...prev,
+      locations: prev.locations.filter(l => l.id !== id),
+      items: Object.fromEntries(
+        Object.entries(prev.items).map(([cat, itms]) => [
+          cat,
+          itms.map(item => item.locationId === id ? { ...item, locationId: undefined } : item),
+        ])
+      ),
+    }));
+    showToast('Location removed');
+  }, [mutateSandbox, showToast]);
+
+  const setItemLocation = useCallback((cat: string, id: string, locationId: string | undefined) => {
+    mutateSandbox(prev => ({
+      ...prev,
+      items: {
+        ...prev.items,
+        [cat]: (prev.items[cat] ?? []).map(i => i.id === id ? { ...i, locationId } : i),
+      },
+    }));
+  }, [mutateSandbox]);
+
+  // ── R0085 — Photo handling ─────────────────────────────────────────────────────
+
+  const handlePhotoAdd = useCallback((cat: string, id: string, file: File) => {
+    compressPhoto(file).then(dataUrl => {
+      updateItem(cat, id, { photoDataUrl: dataUrl });
+      setPhotoEditFor(null);
+      showToast('Photo saved');
+    }).catch(() => showToast('Photo could not be loaded'));
+  }, [updateItem, showToast]);
+
+  const handlePhotoDelete = useCallback((cat: string, id: string) => {
+    updateItem(cat, id, { photoDataUrl: undefined });
+    setPhotoViewFor(null);
+    setPhotoEditFor(null);
+    showToast('Photo removed');
+  }, [updateItem, showToast]);
 
   // ── Derived summary metrics ───────────────────────────────────────────────────
 
@@ -3125,6 +3256,7 @@ function MobileFunctionalV3Inner() {
                   items: store.items ?? {},
                   order: store.order ?? [],
                   meta:  store.meta ?? {},
+                  locations: (store as any).locations ?? [],
                 }));
                 // A2: the loaded Locker entry's name becomes the active list identity
                 // immediately — subsequent Save and Share use this name.
@@ -3548,6 +3680,43 @@ function MobileFunctionalV3Inner() {
           {/* R0083P1: right-side hamburger removed — hamburger is always left */}
         </div>
 
+        {/* ── R0085: Category | Location view toggle bar ── */}
+        {/* Only appears when at least one item in the current list has an assigned location */}
+        {allItems.some(i => i.locationId) && (
+          <div
+            data-testid="view-mode-bar"
+            role="toolbar"
+            aria-label="List view mode"
+            style={{
+              display: 'flex', background: CARD_BG, borderBottom: `1px solid ${DIVIDER}`,
+              padding: '5px 14px', gap: 4, flexShrink: 0,
+            }}
+          >
+            <button
+              onClick={() => setViewMode('category')}
+              aria-pressed={viewMode === 'category'}
+              data-testid="view-mode-category"
+              style={{
+                flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
+                background: viewMode === 'category' ? NAV_ACTIVE : 'transparent',
+                color: viewMode === 'category' ? '#fff' : SECONDARY,
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
+              }}
+            >Category</button>
+            <button
+              onClick={() => setViewMode('location')}
+              aria-pressed={viewMode === 'location'}
+              data-testid="view-mode-location"
+              style={{
+                flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
+                background: viewMode === 'location' ? NAV_ACTIVE : 'transparent',
+                color: viewMode === 'location' ? '#fff' : SECONDARY,
+                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
+              }}
+            >Location</button>
+          </div>
+        )}
+
         {/* ── SCROLLABLE CONTENT (R003 — full width, flush, hidden scrollbar chrome) ── */}
         <div
           className="tw-noscrollbar"
@@ -3677,9 +3846,110 @@ function MobileFunctionalV3Inner() {
           </div>{/* end sticky header */}
 
           {/* ── CATEGORY STACK (B5 — flush, touching, square-edged) ── */}
+          {/* R0085: Location view — alternative presentation of the same items grouped by location */}
+          {viewMode === 'location' && (
+            <div data-testid="location-view" style={{ display: 'flex', flexDirection: 'column', paddingBottom: 24 }}>
+              {(() => {
+                // Build location groups from all items across all categories
+                const allItemsWithCat = sandbox.order.flatMap(cat =>
+                  (sandbox.items[cat] ?? []).map(item => ({ ...item, _cat: cat }))
+                );
+                // Only show locations that are actually used in the current list
+                const usedLocIds = new Set(allItemsWithCat.map(i => i.locationId).filter(Boolean));
+                const usedLocs = sandbox.locations.filter(l => usedLocIds.has(l.id));
+                const noLocItems = allItemsWithCat.filter(i => !i.locationId);
+
+                if (usedLocs.length === 0 && noLocItems.length === 0) {
+                  return (
+                    <div style={{ textAlign: 'center', padding: '40px 24px', color: MUTED, fontSize: 14 }}>
+                      No items with locations yet.
+                    </div>
+                  );
+                }
+
+                const groups: { id: string; name: string; items: typeof allItemsWithCat }[] = [
+                  ...usedLocs.map(loc => ({
+                    id: loc.id,
+                    name: loc.name,
+                    items: allItemsWithCat.filter(i => i.locationId === loc.id),
+                  })),
+                  ...(noLocItems.length > 0 ? [{ id: '__none__', name: 'No Location', items: noLocItems }] : []),
+                ];
+
+                return groups.map(group => (
+                  <div key={group.id} style={{ borderBottom: `1px solid ${DIVIDER}` }}>
+                    {/* Location group header */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '7px 16px', background: NAV_ACTIVE + '14',
+                      borderBottom: `1px solid ${DIVIDER}`,
+                    }}>
+                      <MapPin size={13} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: NAV_ACTIVE, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {group.name}
+                      </span>
+                      <span style={{ fontSize: 11, color: MUTED, marginLeft: 'auto' }}>
+                        {group.items.length} {group.items.length === 1 ? 'item' : 'items'}
+                      </span>
+                    </div>
+                    {/* Item rows in this location group */}
+                    {group.items.map(item => {
+                      const displayName = item.desc || item.sub || 'Item';
+                      const totalOz = calcTotalOz(item.weightOz, item.qty);
+                      const weightDisplay = system === 'metric'
+                        ? Math.round(totalOz * 28.3495)
+                        : Math.round(totalOz * 10) / 10;
+                      return (
+                        <div
+                          key={item.id}
+                          style={{
+                            display: 'flex', alignItems: 'center',
+                            padding: '10px 16px', gap: 10,
+                            borderBottom: `1px solid ${DETAIL_BDR}`,
+                            background: CARD_BG,
+                          }}
+                        >
+                          {item.photoDataUrl && (
+                            <img
+                              src={item.photoDataUrl}
+                              alt=""
+                              aria-hidden="true"
+                              style={{ width: 34, height: 34, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }}
+                            />
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13.5, fontWeight: 500, color: PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {displayName}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: MUTED, marginTop: 2 }}>
+                              {item._cat} · {weightDisplay} {su}{item.qty > 1 ? ` × ${item.qty}` : ''}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setViewMode('category');
+                              setOpenCatName(item._cat);
+                              setExpandedItem({ cat: item._cat, id: item.id });
+                            }}
+                            aria-label={`Edit ${displayName} in category view`}
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              fontSize: 11.5, color: NAV_ACTIVE, padding: '4px 0', minHeight: 36, fontFamily: SANS,
+                            }}
+                          >Edit</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ));
+              })()}
+            </div>
+          )}
+
+          {/* R0085: Category list — hidden when Location view is active (never rewritten, purely visual) */}
           <div
             ref={catListRef}
-            style={{ padding: 0, display: 'flex', flexDirection: 'column', gap: 0 }}
+            style={{ padding: 0, display: viewMode === 'location' ? 'none' : 'flex', flexDirection: 'column', gap: 0 }}
           >
             {visibleOrder.map((catName, catIdx) => {
               const items   = sandbox.items[catName] ?? [];
@@ -3743,9 +4013,9 @@ function MobileFunctionalV3Inner() {
                       visibleLabel: 'Edit',
                       icon: <Pencil size={15} strokeWidth={1.9} aria-hidden="true"/>,
                       onAction: () => {
-                        setCatOptionsFor(catName);
-                        setCatRenaming(true);
-                        setCatRenameValue(catName);
+                        // R0085: bypass Category Options Sheet — go directly to focused name-edit dialog
+                        setCatDirectEditFor(catName);
+                        setCatDirectEditValue(catName);
                       },
                     }}
                   >
@@ -4096,22 +4366,105 @@ function MobileFunctionalV3Inner() {
                                   </div>
                                 )}
 
-                                {/* Photo row — BELOW Move — visual reservation (disabled, pending backend) */}
-                                <div
-                                  aria-disabled="true"
-                                  title="Photos not enabled yet — item photo backend pending implementation"
-                                  style={{
-                                    display: 'flex', alignItems: 'center',
-                                    padding: '0 14px', height: 42, gap: 10,
-                                    opacity: 0.4, cursor: 'not-allowed',
-                                  }}
-                                >
+                                {/* R0085: Location row — Weight · Qty · Total · Move · [Location] · Photo · Delete */}
+                                <div style={{
+                                  display: 'flex', alignItems: 'center',
+                                  padding: '0 14px', minHeight: 44, gap: 10,
+                                  borderBottom: `1px solid ${DETAIL_BDR}`,
+                                }}>
+                                  <MapPin size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
+                                  <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Location</div>
+                                  {item.locationId ? (() => {
+                                    const loc = sandbox.locations.find(l => l.id === item.locationId);
+                                    return (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <span style={{ fontSize: 12, color: PRIMARY, fontWeight: 500, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {loc?.name ?? '(unknown)'}
+                                        </span>
+                                        <button
+                                          onClick={e => { e.stopPropagation(); setLocPickerFor({ cat: catName, id: item.id }); setLocPickerFilter(''); }}
+                                          aria-label={`Change location for ${displayName}`}
+                                          style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: NAV_ACTIVE, fontSize: 11.5, fontFamily: SANS }}
+                                        >Change</button>
+                                        <button
+                                          onClick={e => { e.stopPropagation(); setItemLocation(catName, item.id, undefined); }}
+                                          aria-label={`Remove location from ${displayName}`}
+                                          style={{ background: 'none', border: 'none', padding: '2px 4px', cursor: 'pointer', minHeight: 44, color: '#B03A2E', fontSize: 13 }}
+                                        >✕</button>
+                                      </div>
+                                    );
+                                  })() : (
+                                    <button
+                                      onClick={e => { e.stopPropagation(); setLocPickerFor({ cat: catName, id: item.id }); setLocPickerFilter(''); }}
+                                      aria-label={`Set location for ${displayName}`}
+                                      data-testid="item-location-set-btn"
+                                      style={{
+                                        background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 8,
+                                        padding: '4px 10px', cursor: 'pointer', fontSize: 11.5, color: SECONDARY,
+                                        fontFamily: SANS, minHeight: 36,
+                                      }}
+                                    >No location</button>
+                                  )}
+                                </div>
+
+                                {/* R0085: Photo row — replaces disabled stub */}
+                                <div style={{
+                                  display: 'flex', alignItems: 'center',
+                                  padding: '0 14px', minHeight: 44, gap: 10,
+                                  borderBottom: `1px solid ${DETAIL_BDR}`,
+                                }}>
                                   <Camera size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
                                   <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Photo</div>
-                                  <div style={{ fontSize: 12, color: MUTED, fontStyle: 'italic' }}>
-                                    Photos not enabled yet
-                                  </div>
+                                  {item.photoDataUrl ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                      <button
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          const isViewing = photoViewFor?.cat === catName && photoViewFor?.id === item.id;
+                                          setPhotoViewFor(isViewing ? null : { cat: catName, id: item.id });
+                                        }}
+                                        aria-label={`${photoViewFor?.cat === catName && photoViewFor?.id === item.id ? 'Hide' : 'View'} photo of ${displayName}`}
+                                        aria-pressed={photoViewFor?.cat === catName && photoViewFor?.id === item.id}
+                                        style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: NAV_ACTIVE, fontSize: 11.5, fontFamily: SANS }}
+                                      >{photoViewFor?.cat === catName && photoViewFor?.id === item.id ? 'Hide' : 'View'}</button>
+                                      <button
+                                        onClick={e => { e.stopPropagation(); setPhotoEditFor({ cat: catName, id: item.id }); }}
+                                        aria-label={`Edit photo of ${displayName}`}
+                                        style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: SECONDARY, fontSize: 11.5, fontFamily: SANS }}
+                                      >Edit</button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={e => { e.stopPropagation(); setPhotoEditFor({ cat: catName, id: item.id }); }}
+                                      aria-label={`Add photo to ${displayName}`}
+                                      data-testid="item-photo-add-btn"
+                                      style={{
+                                        background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 8,
+                                        padding: '4px 10px', cursor: 'pointer', fontSize: 11.5, color: SECONDARY,
+                                        fontFamily: SANS, minHeight: 36,
+                                      }}
+                                    >Add Photo</button>
+                                  )}
                                 </div>
+
+                                {/* R0085: Inline photo viewer — stays open until user closes explicitly */}
+                                {item.photoDataUrl && photoViewFor?.cat === catName && photoViewFor?.id === item.id && (
+                                  <div style={{ background: '#111', borderBottom: `1px solid ${DETAIL_BDR}` }}>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '2px 8px' }}>
+                                      <button
+                                        onClick={e => { e.stopPropagation(); setPhotoViewFor(null); }}
+                                        aria-label="Close photo"
+                                        data-testid="photo-view-close"
+                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, padding: '6px 8px', minHeight: 36 }}
+                                      >✕ Close</button>
+                                    </div>
+                                    <img
+                                      src={item.photoDataUrl}
+                                      alt={`Photo of ${displayName}`}
+                                      style={{ width: '100%', display: 'block', maxHeight: 300, objectFit: 'contain' }}
+                                    />
+                                  </div>
+                                )}
 
                                 {/* R004 — accessible NON-SWIPE delete path (replaces resting trash icon) */}
                                 {/* R0076P2: testid set only when expanded inside bounded long mode
@@ -4256,6 +4609,7 @@ function MobileFunctionalV3Inner() {
         {/* ── BOTTOM BOX-GROUP BAR (R007 — 4 sliding groups) ── */}
         <BoxGroupBar
           ref={navRef}
+          groupControlRef={navGroupRef}
           activeDeck={activeDeck}
           undoDisabled={undoHistory.length === 0}
           redoDisabled={redoHistory.length === 0}
@@ -4825,6 +5179,412 @@ function MobileFunctionalV3Inner() {
                 }}
               >Save</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0085: Category direct-edit dialog (swipe Edit → focused name change, no Options sheet) ── */}
+      {catDirectEditFor !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Edit category name"
+          data-testid="cat-direct-edit-dialog"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setCatDirectEditFor(null)}
+          onKeyDown={e => {
+            if (e.key === 'Escape') { e.preventDefault(); setCatDirectEditFor(null); }
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '24px 20px 36px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 6 }}>Edit Category</div>
+            <div style={{ fontSize: 13.5, color: SECONDARY, marginBottom: 12 }}>
+              New name for "{catDirectEditFor}":
+            </div>
+            <input
+              autoFocus
+              type="text"
+              value={catDirectEditValue}
+              onChange={e => setCatDirectEditValue(e.target.value)}
+              onKeyDown={e => {
+                const v = catDirectEditValue.trim();
+                if (e.key === 'Enter' && v && v !== catDirectEditFor) {
+                  sandboxRenameCategory(catDirectEditFor, v);
+                  setCatDirectEditFor(null);
+                }
+                if (e.key === 'Escape') { setCatDirectEditFor(null); }
+              }}
+              placeholder="Category name…"
+              aria-label="New category name"
+              data-testid="cat-direct-edit-input"
+              style={{
+                width: '100%', fontSize: 15, color: PRIMARY, fontFamily: SANS,
+                border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '10px 12px',
+                background: PAGE_BG, boxSizing: 'border-box' as const,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button
+                onClick={() => setCatDirectEditFor(null)}
+                aria-label="Cancel rename"
+                data-testid="cat-direct-edit-cancel"
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 10,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+                  fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44,
+                }}
+              >Cancel</button>
+              <button
+                disabled={!catDirectEditValue.trim() || catDirectEditValue.trim() === catDirectEditFor}
+                onClick={() => {
+                  const v = catDirectEditValue.trim();
+                  if (v && v !== catDirectEditFor) { sandboxRenameCategory(catDirectEditFor, v); setCatDirectEditFor(null); }
+                }}
+                aria-label="Save category name"
+                data-testid="cat-direct-edit-save"
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 10,
+                  background: catDirectEditValue.trim() && catDirectEditValue.trim() !== catDirectEditFor ? NAV_ACTIVE : MUTED,
+                  border: 'none', fontSize: 15, fontWeight: 600, color: '#fff',
+                  cursor: catDirectEditValue.trim() && catDirectEditValue.trim() !== catDirectEditFor ? 'pointer' : 'not-allowed',
+                  minHeight: 44,
+                }}
+              >Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0085: Location picker sheet ── */}
+      {locPickerFor !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Set item location"
+          data-testid="location-picker-sheet"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 210,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => { setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }}
+          onKeyDown={e => {
+            if (e.key === 'Escape') { e.preventDefault(); setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '20px 20px 36px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+              maxHeight: '80vh', display: 'flex', flexDirection: 'column',
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY, marginBottom: 10 }}>Set Location</div>
+            {/* Filter / type-a-new input */}
+            <input
+              autoFocus
+              type="text"
+              value={locPickerFilter}
+              onChange={e => { setLocPickerFilter(e.target.value); setLocRenameId(null); }}
+              onKeyDown={e => {
+                const lp = locPickerFor;
+                if (e.key === 'Enter' && locPickerFilter.trim() && lp) {
+                  const exact = sandbox.locations.find(l => l.name.toLowerCase() === locPickerFilter.trim().toLowerCase());
+                  if (exact) {
+                    setItemLocation(lp.cat, lp.id, exact.id);
+                  } else {
+                    const newId = crypto.randomUUID();
+                    mutateSandbox(prev => ({
+                      ...prev,
+                      locations: [...prev.locations, { id: newId, name: locPickerFilter.trim() }],
+                      items: { ...prev.items, [lp.cat]: (prev.items[lp.cat] ?? []).map(i => i.id === lp.id ? { ...i, locationId: newId } : i) },
+                    }));
+                  }
+                  setLocPickerFor(null); setLocPickerFilter('');
+                }
+                if (e.key === 'Escape') { setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }
+              }}
+              placeholder="Filter or type a new location name…"
+              aria-label="Location filter or new location name"
+              data-testid="location-picker-input"
+              style={{
+                width: '100%', fontSize: 14, color: PRIMARY, fontFamily: SANS,
+                border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '9px 12px',
+                background: PAGE_BG, boxSizing: 'border-box' as const, minHeight: 44, marginBottom: 10,
+              }}
+            />
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {/* Existing locations matching filter */}
+              {sandbox.locations
+                .filter(l => !locPickerFilter || l.name.toLowerCase().includes(locPickerFilter.toLowerCase()))
+                .map(loc => (
+                  <div key={loc.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                    {locRenameId === loc.id ? (
+                      <>
+                        <input
+                          autoFocus
+                          type="text"
+                          value={locRenameValue}
+                          onChange={e => setLocRenameValue(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && locRenameValue.trim()) { renameLocation(loc.id, locRenameValue); setLocRenameId(null); }
+                            if (e.key === 'Escape') { setLocRenameId(null); }
+                          }}
+                          aria-label="Rename location"
+                          data-testid="location-rename-input"
+                          style={{
+                            flex: 1, fontSize: 13.5, color: PRIMARY, fontFamily: SANS,
+                            border: `1.5px solid ${NAV_ACTIVE}`, borderRadius: 8, padding: '7px 10px',
+                            background: PAGE_BG, minHeight: 44,
+                          }}
+                        />
+                        <button
+                          onClick={() => { if (locRenameValue.trim()) renameLocation(loc.id, locRenameValue); setLocRenameId(null); }}
+                          aria-label="Save location name"
+                          data-testid="location-rename-save"
+                          style={{ padding: '0 12px', background: NAV_ACTIVE, border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 13, minHeight: 44 }}
+                        >Save</button>
+                        <button
+                          onClick={() => setLocRenameId(null)}
+                          aria-label="Cancel rename"
+                          style={{ padding: '0 10px', background: 'none', border: `1px solid ${CARD_BORDER}`, borderRadius: 8, color: SECONDARY, cursor: 'pointer', fontSize: 13, minHeight: 44 }}
+                        >✕</button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => { const lp = locPickerFor; if (lp) { setItemLocation(lp.cat, lp.id, loc.id); setLocPickerFor(null); setLocPickerFilter(''); } }}
+                          aria-label={`Assign location ${loc.name}`}
+                          data-testid="location-picker-option"
+                          style={{
+                            flex: 1, textAlign: 'left', padding: '10px 14px',
+                            background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 10,
+                            fontSize: 14, color: PRIMARY, fontFamily: SANS, cursor: 'pointer', minHeight: 44,
+                            display: 'flex', alignItems: 'center', gap: 8,
+                          }}
+                        >
+                          <MapPin size={13} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                          {loc.name}
+                        </button>
+                        <button
+                          onClick={() => { setLocRenameId(loc.id); setLocRenameValue(loc.name); }}
+                          aria-label={`Rename location ${loc.name}`}
+                          title={`Rename "${loc.name}"`}
+                          style={{ padding: '0 10px', background: 'none', border: 'none', cursor: 'pointer', minHeight: 44, color: MUTED }}
+                        >
+                          <Pencil size={14} strokeWidth={1.8} aria-hidden="true"/>
+                        </button>
+                        <button
+                          onClick={() => removeLocation(loc.id)}
+                          aria-label={`Delete location ${loc.name}`}
+                          title={`Delete "${loc.name}" and unlink all items`}
+                          style={{ padding: '0 10px', background: 'none', border: 'none', cursor: 'pointer', minHeight: 44, color: '#B03A2E' }}
+                        >
+                          <Trash2 size={14} strokeWidth={1.8} aria-hidden="true"/>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              {/* Create new location if filter doesn't match any existing exactly */}
+              {locPickerFilter.trim() && !sandbox.locations.some(l => l.name.toLowerCase() === locPickerFilter.trim().toLowerCase()) && (
+                <button
+                  onClick={() => {
+                    const lp = locPickerFor;
+                    if (!lp) return;
+                    const newId = crypto.randomUUID();
+                    mutateSandbox(prev => ({
+                      ...prev,
+                      locations: [...prev.locations, { id: newId, name: locPickerFilter.trim() }],
+                      items: { ...prev.items, [lp.cat]: (prev.items[lp.cat] ?? []).map(i => i.id === lp.id ? { ...i, locationId: newId } : i) },
+                    }));
+                    setLocPickerFor(null); setLocPickerFilter('');
+                  }}
+                  aria-label={`Create new location: ${locPickerFilter.trim()}`}
+                  data-testid="location-picker-create"
+                  style={{
+                    width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6,
+                    background: 'transparent', border: `1.5px dashed ${CARD_BORDER}`, borderRadius: 10,
+                    fontSize: 14, color: NAV_ACTIVE, fontFamily: SANS, cursor: 'pointer', minHeight: 44,
+                    display: 'flex', alignItems: 'center', gap: 8,
+                  }}
+                >
+                  <Plus size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                  Create "{locPickerFilter.trim()}"
+                </button>
+              )}
+              {/* Empty state */}
+              {sandbox.locations.length === 0 && !locPickerFilter.trim() && (
+                <div style={{ color: MUTED, fontSize: 13.5, textAlign: 'center', padding: '12px 0' }}>
+                  Type a name above to create your first location.
+                </div>
+              )}
+              {/* Remove current location option */}
+              {locPickerFor && (() => {
+                const lp = locPickerFor;
+                const item = (sandbox.items[lp.cat] ?? []).find(i => i.id === lp.id);
+                return item?.locationId ? (
+                  <button
+                    onClick={() => { setItemLocation(lp.cat, lp.id, undefined); setLocPickerFor(null); setLocPickerFilter(''); }}
+                    aria-label="Remove location from this item"
+                    data-testid="location-picker-remove"
+                    style={{
+                      width: '100%', textAlign: 'left', padding: '10px 14px', marginTop: 4,
+                      background: 'transparent', border: `1px solid ${CARD_BORDER}`, borderRadius: 10,
+                      fontSize: 13.5, color: '#B03A2E', fontFamily: SANS, cursor: 'pointer', minHeight: 44,
+                    }}
+                  >Remove location</button>
+                ) : null;
+              })()}
+            </div>
+            <button
+              onClick={() => { setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }}
+              aria-label="Cancel location selection"
+              data-testid="location-picker-cancel"
+              style={{
+                marginTop: 12, width: '100%', padding: '12px 0', borderRadius: 10,
+                background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+                fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44,
+              }}
+            >Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0085: Photo edit sheet ── */}
+      {/* Hidden file inputs live here so they survive between renders; device original is never touched. */}
+      <input
+        ref={photoCameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        aria-label="Take a new photo with camera"
+        style={{ display: 'none' }}
+        onChange={e => {
+          const pe = photoEditFor;
+          const file = e.target.files?.[0];
+          if (file && pe) handlePhotoAdd(pe.cat, pe.id, file);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={photoUploadRef}
+        type="file"
+        accept="image/*"
+        aria-label="Upload a photo from device library"
+        style={{ display: 'none' }}
+        onChange={e => {
+          const pe = photoEditFor;
+          const file = e.target.files?.[0];
+          if (file && pe) handlePhotoAdd(pe.cat, pe.id, file);
+          e.target.value = '';
+        }}
+      />
+      {photoEditFor !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Photo options"
+          data-testid="photo-edit-sheet"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 210,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setPhotoEditFor(null)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setPhotoEditFor(null); } }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '20px 20px 40px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            {(() => {
+              const pe = photoEditFor;
+              const item = (sandbox.items[pe.cat] ?? []).find(i => i.id === pe.id);
+              return (
+                <>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
+                    {item?.photoDataUrl ? 'Edit Photo' : 'Add Photo'}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <button
+                      onClick={() => photoCameraRef.current?.click()}
+                      aria-label="Take new photo with camera"
+                      data-testid="photo-take-btn"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                        padding: '13px 16px', cursor: 'pointer', width: '100%', minHeight: 52, fontFamily: SANS,
+                      }}
+                    >
+                      <div style={{ width: 36, height: 36, borderRadius: 9, background: '#4f87c4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Camera size={16} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: PRIMARY }}>Take New Photo</div>
+                    </button>
+                    <button
+                      onClick={() => photoUploadRef.current?.click()}
+                      aria-label="Upload photo from device library"
+                      data-testid="photo-upload-btn"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                        padding: '13px 16px', cursor: 'pointer', width: '100%', minHeight: 52, fontFamily: SANS,
+                      }}
+                    >
+                      <div style={{ width: 36, height: 36, borderRadius: 9, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Image size={16} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: PRIMARY }}>Upload New Photo</div>
+                    </button>
+                    {item?.photoDataUrl && (
+                      <button
+                        onClick={() => handlePhotoDelete(pe.cat, pe.id)}
+                        aria-label="Delete item photo (only TrailWeigh's copy is removed; device original is untouched)"
+                        data-testid="photo-delete-btn"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 14,
+                          background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                          padding: '13px 16px', cursor: 'pointer', width: '100%', minHeight: 52, fontFamily: SANS,
+                        }}
+                      >
+                        <div style={{ width: 36, height: 36, borderRadius: 9, background: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Trash2 size={16} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                        </div>
+                        <div style={{ fontSize: 15, fontWeight: 600, color: '#dc2626' }}>Delete Photo</div>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setPhotoEditFor(null)}
+                      aria-label="Cancel photo action"
+                      data-testid="photo-edit-cancel"
+                      style={{
+                        padding: '12px 0', borderRadius: 10, border: `1px solid ${CARD_BORDER}`,
+                        background: CARD_BG, fontSize: 15, fontWeight: 600, color: SECONDARY,
+                        cursor: 'pointer', width: '100%', minHeight: 44, fontFamily: SANS,
+                      }}
+                    >Cancel</button>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
       )}
