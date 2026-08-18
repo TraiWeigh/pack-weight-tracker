@@ -1,47 +1,51 @@
 ---
 name: R0085 feature lessons
-description: Per-item locations, photos, category direct-edit — implementation gotchas and backward-compat rules.
+description: Location dropdown+wedge hybrid, Location Photo, narrowed auto-switch, label fixes implemented in R0085C correction pass.
 ---
 
-## Locker save must include `locations`
+## Narrowed Auto-switch pattern
 
-All 3 Locker save paths must include `locations: sandboxRef.current.locations` in the serialized store.
-Use `as unknown as LockerEntry['store']` to bypass the type (LockerEntry['store'] has no `locations` field).
-The load path already handles it: `locations: (store as any).locations ?? []`.
+Split `mutateSandbox` into two callbacks:
+- `mutateSandbox` — records undo/redo only; does NOT call `switchGroup`
+- `mutateSandboxEdit` — calls `mutateSandbox` + `switchGroup(1)`
 
-**Why:** `SandboxStore.locations` holds the canonical `PackLocation[]` list; without it, locations are silently dropped on every Save and all locationId references become dangling.
+`updateItem(cat, id, updates, { edit?: boolean })` selects which mutator to use via opts flag.
 
-**How to apply:** Any new save path (e.g. auto-save, cloud sync) must also persist `locations`.
+**Use `mutateSandboxEdit` for:** rename, weight/qty change, move, reorder, location assign/rename, photo add/change/delete.  
+**Use plain `mutateSandbox` for:** check/uncheck, add/delete item, add/delete category, infrastructure CRUD (add/remove location), locker load, reset.
 
-## Category swipe Edit: Cancel button must use aria-label "Cancel rename"
+**Why:** check/uncheck and add/delete operations must NOT surface the Edit nav group — they are not user edits of existing data.
 
-The category direct-edit dialog's Cancel button MUST have `aria-label="Cancel rename"` (not "Cancel edit category name").
+## Location view — wedge hybrid architecture
 
-**Why:** R84-04 (`getByRole('button', { name: 'Cancel rename' })`) tests this label. Changing it breaks that pre-existing test.
+- catListRef div **always renders** (never `display:none`)
+- In Location view: filter each category's items to only those WITHOUT a `locationId` before rendering
+- After the catListRef closing div, render Location wedges for each `PackLocation` that has at least one item assigned to it
+- Location wedge uses same visual style (CARD_H, WEDGE_W, WEDGE_POINT, NAV_ACTIVE bg, MapPin icon)
+- Left slot: static text "Location"; right slot: `loc.name`
+- `openLocId` state for one-open-at-a-time across categories AND location wedges
+- `handleCatToggle` must call `setOpenLocId(null)` to close any open location when a category opens
 
-**How to apply:** If the dialog is redesigned, keep the Cancel button's accessible name as "Cancel rename". The Save button must keep `aria-label="Save category name"` (R84-03 also depends on it).
+## Location dropdown (replaces picker sheet)
 
-## Location view is display:none, not unmounted
+- Native `<select data-testid="item-location-select">` with options: `""` (No location), each `loc.id` → `loc.name`, `"__create__"` (Create New Location…)
+- Selecting `__create__` opens `[data-testid="create-location-dialog"]`; React re-render resets the select to the current `item.locationId ?? ''` automatically (no manual DOM reset needed since value prop is controlled)
+- Rename is separated to a distinct `[data-testid="location-rename-dialog"]` triggered by pencil on the Location wedge bar
 
-When `viewMode === 'location'`, the catListRef div uses `display: viewMode === 'location' ? 'none' : 'flex'`. It is NOT conditionally rendered.
+## Location Photo
 
-**Why:** Toggling between views must not remount the category DOM (scroll position, accordion state, long-press timers all preserved). The location view block is rendered separately above.
+- Property `photoDataUrl?: string` on `PackLocation` type
+- Shared by all items with that `locationId`; independent from `GearItem.photoDataUrl`
+- Edit sheet: `[data-testid="loc-photo-edit-sheet"]` with `loc-photo-take-btn`, `loc-photo-upload-btn`, `loc-photo-delete-btn`, `loc-photo-edit-cancel`
+- Inline viewer: `loc-photo-view-btn`, `loc-photo-view-close` inside open Location wedge
+- `locCameraRef` / `locUploadRef` refs separate from `photoCameraRef` / `photoUploadRef`
+- Handlers: `handleLocPhotoAdd`, `handleLocPhotoDelete` — both use `mutateSandboxEdit`
 
-## Photo file inputs live outside the item accordion
+## Locker save compatibility
 
-The hidden `<input type="file">` elements (`photoCameraRef`, `photoUploadRef`) are rendered at the root overlay level, not inside the item accordion.
+`PackLocation.photoDataUrl` is stored as-is since the location array is already serialized. Loading path uses `(parsed.locations ?? []) as PackLocation[]` which naturally reads `photoDataUrl` if present.
 
-**Why:** If they were inside the accordion, collapsing/switching items would unmount them mid-file-selection on some browsers.
+## Item Photo label fix
 
-## Test selectors for R0085 flows
-
-- Location "No location" button: `[data-testid="item-location-set-btn"]`
-- Location picker sheet: `[data-testid="location-picker-sheet"]`
-- Location picker input: `[data-testid="location-picker-input"]`
-- View toggle bar: `[data-testid="view-mode-bar"]`
-- Location view: `[data-testid="location-view"]`
-- Category toggle: `[data-testid="view-mode-category"]`
-- Location toggle: `[data-testid="view-mode-location"]`
-- Photo add button: `[data-testid="item-photo-add-btn"]`
-- Photo edit sheet: `[data-testid="photo-edit-sheet"]`
-- Category direct-edit dialog: `[data-testid="cat-direct-edit-dialog"]`
+- Button text: `'View'` → `'View Photo'`, `'Hide'` → `'Hide Photo'`, `'Edit'` → `'Edit Photo'`
+- Aria-labels unchanged (still say "View photo of X" / "Edit photo of X")

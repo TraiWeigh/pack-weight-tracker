@@ -69,8 +69,9 @@ import { useUnit, UnitProvider } from '../context/UnitContext';
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 type PackState = { [category: string]: GearItem[] };
-/** R0085: a named, reusable gear location (e.g. "Top lid", "Hip belt pocket"). */
-type PackLocation = { id: string; name: string };
+/** R0085: a named, reusable gear location (e.g. "Top lid", "Hip belt pocket").
+ *  photoDataUrl holds a compressed JPEG owned by TrailWeigh — deleting it never affects the device. */
+type PackLocation = { id: string; name: string; photoDataUrl?: string };
 type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta>; locations: PackLocation[] };
 // (R002: the old ActiveNav tab type was retired — deck selection uses DeckId below.)
 
@@ -2120,10 +2121,18 @@ function MobileFunctionalV3Inner() {
 
   // R0085 — Location / Photo / View-mode state
   const [viewMode, setViewMode] = useState<'category' | 'location'>('category');
-  const [locPickerFor, setLocPickerFor] = useState<{ cat: string; id: string } | null>(null);
-  const [locPickerFilter, setLocPickerFilter] = useState('');
-  const [locRenameId, setLocRenameId] = useState<string | null>(null);
+  // R0085C — Location-view wedge state (replaces full-screen picker sheet)
+  const [openLocId, setOpenLocId] = useState<string | null>(null);        // which loc wedge is open
+  const [locRenameId, setLocRenameId] = useState<string | null>(null);    // which loc is being renamed
   const [locRenameValue, setLocRenameValue] = useState('');
+  const [createLocForItem, setCreateLocForItem] = useState<{ cat: string; id: string } | null>(null);
+  const [createLocName, setCreateLocName] = useState('');
+  // R0085C — Location photo state
+  const [locPhotoViewId, setLocPhotoViewId] = useState<string | null>(null);
+  const [locPhotoEditId, setLocPhotoEditId] = useState<string | null>(null);
+  const locCameraRef = useRef<HTMLInputElement | null>(null);
+  const locUploadRef = useRef<HTMLInputElement | null>(null);
+  // R0085 — Item Photo state
   const [photoViewFor, setPhotoViewFor] = useState<{ cat: string; id: string } | null>(null);
   const [photoEditFor, setPhotoEditFor] = useState<{ cat: string; id: string } | null>(null);
   // R0085 — Category direct-edit (swipe Edit bypasses Category Options Sheet entirely)
@@ -2131,7 +2140,7 @@ function MobileFunctionalV3Inner() {
   const [catDirectEditValue, setCatDirectEditValue] = useState('');
   // R0085 — Group auto-switch: exposes BoxGroupBar.settle to parent (stable ref object)
   const navGroupRef = useRef<{ switchGroup: (idx: number) => void } | null>(null);
-  // R0085 — Photo file input refs (hidden inputs; device original is never touched)
+  // R0085 — Item photo file input refs (hidden inputs; device original is never touched)
   const photoCameraRef = useRef<HTMLInputElement | null>(null);
   const photoUploadRef = useRef<HTMLInputElement | null>(null);
 
@@ -2219,11 +2228,17 @@ function MobileFunctionalV3Inner() {
     setUndoHistory(prev => [...prev.slice(-(HISTORY_LIMIT - 1)), current]);
     setRedoHistory([]);
     setSandbox(updater);
-    // R0085 — auto-surface the Edit group (Back | Undo | Redo | Reset | Next) on any data mutation.
-    // View-only actions (accordion open, photo view, Category↔Location toggle, Preview) never call
-    // mutateSandbox, so they never trigger this switch.
-    navGroupRef.current?.switchGroup(1);
   }, []);
+
+  /** Like mutateSandbox, but also surfaces the Edit nav group.
+   *  Use ONLY for edit-class mutations: rename, weight, qty, move, reorder,
+   *  location assign/rename, photo add/change/delete.
+   *  Must NOT be called for: check/uncheck, add/delete item, add/delete category,
+   *  view-only actions, or Category↔Location toggle. */
+  const mutateSandboxEdit = useCallback((updater: (prev: SandboxStore) => SandboxStore) => {
+    mutateSandbox(updater);
+    navGroupRef.current?.switchGroup(1);
+  }, [mutateSandbox]);
 
   // ── Seed sandbox from production localStorage (read-once on auth ready) ───────
   useEffect(() => {
@@ -2256,8 +2271,9 @@ function MobileFunctionalV3Inner() {
 
   // ── Sandbox mutations ─────────────────────────────────────────────────────────
 
-  const updateItem = useCallback((category: string, id: string, updates: Partial<GearItem>) => {
-    mutateSandbox(prev => ({
+  const updateItem = useCallback((category: string, id: string, updates: Partial<GearItem>, opts?: { edit?: boolean }) => {
+    const mutate = opts?.edit ? mutateSandboxEdit : mutateSandbox;
+    mutate(prev => ({
       ...prev,
       items: {
         ...prev.items,
@@ -2266,10 +2282,10 @@ function MobileFunctionalV3Inner() {
         ),
       },
     }));
-  }, [mutateSandbox]);
+  }, [mutateSandbox, mutateSandboxEdit]);
 
   const moveItem = useCallback((src: string, dst: string, id: string) => {
-    mutateSandbox(prev => {
+    mutateSandboxEdit(prev => {
       const srcItems = prev.items[src] ?? [];
       const item = srcItems.find(i => i.id === id);
       if (!item) return prev;
@@ -2283,7 +2299,7 @@ function MobileFunctionalV3Inner() {
       };
     });
     setExpandedItem(null);
-  }, [mutateSandbox]);
+  }, [mutateSandboxEdit]);
 
   const addItem = useCallback((category: string, prefill?: Partial<GearItem>) => {
     const newItem: GearItem = {
@@ -2560,6 +2576,7 @@ function MobileFunctionalV3Inner() {
   // ── Category accordion ────────────────────────────────────────────────────────
 
   const handleCatToggle = useCallback((catName: string) => {
+    setOpenLocId(null); // one-open-at-a-time across category and location wedges
     if (allExpanded) {
       // Exit expand-all; the tapped category stays open (single-open mode resumes)
       setAllExpanded(false);
@@ -2859,7 +2876,7 @@ function MobileFunctionalV3Inner() {
       const newOrder = [...origOrder];
       const [moved] = newOrder.splice(catIdx, 1);
       newOrder.splice(dstIdx, 0, moved);
-      mutateSandbox(prev => ({ ...prev, order: newOrder }));
+      mutateSandboxEdit(prev => ({ ...prev, order: newOrder }));
       showToast('Category order saved');
       // R007 Part 9 — ONE light haptic when a category settles into a NEW position.
       // No haptic during drag, no haptic when position is unchanged.
@@ -3079,7 +3096,7 @@ function MobileFunctionalV3Inner() {
   const sandboxRenameCategory = useCallback((oldName: string, newName: string) => {
     const trimmed = newName.trim();
     if (!trimmed || trimmed === oldName) return;
-    mutateSandbox(prev => {
+    mutateSandboxEdit(prev => {
       if (prev.order.includes(trimmed)) { showToast('Category name already exists'); return prev; }
       const order = prev.order.map(c => c === oldName ? trimmed : c);
       const newItems: PackState = {};
@@ -3094,7 +3111,7 @@ function MobileFunctionalV3Inner() {
     setOpenCatName(prev => prev === oldName ? trimmed : prev);
     setExpandedItem(prev => prev?.cat === oldName ? { ...prev, cat: trimmed } : prev);
     showToast(`Renamed to "${trimmed}"`);
-  }, [mutateSandbox, showToast]);
+  }, [mutateSandboxEdit, showToast]);
 
   // ── D6 — Sandbox item remove ──────────────────────────────────────────────────
 
@@ -3119,12 +3136,12 @@ function MobileFunctionalV3Inner() {
   const renameLocation = useCallback((id: string, name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    mutateSandbox(prev => ({
+    mutateSandboxEdit(prev => ({
       ...prev,
       locations: prev.locations.map(l => l.id === id ? { ...l, name: trimmed } : l),
     }));
     showToast(`Location renamed to "${trimmed}"`);
-  }, [mutateSandbox, showToast]);
+  }, [mutateSandboxEdit, showToast]);
 
   const removeLocation = useCallback((id: string) => {
     mutateSandbox(prev => ({
@@ -3141,31 +3158,54 @@ function MobileFunctionalV3Inner() {
   }, [mutateSandbox, showToast]);
 
   const setItemLocation = useCallback((cat: string, id: string, locationId: string | undefined) => {
-    mutateSandbox(prev => ({
+    mutateSandboxEdit(prev => ({
       ...prev,
       items: {
         ...prev.items,
         [cat]: (prev.items[cat] ?? []).map(i => i.id === id ? { ...i, locationId } : i),
       },
     }));
-  }, [mutateSandbox]);
+  }, [mutateSandboxEdit]);
 
   // ── R0085 — Photo handling ─────────────────────────────────────────────────────
 
   const handlePhotoAdd = useCallback((cat: string, id: string, file: File) => {
     compressPhoto(file).then(dataUrl => {
-      updateItem(cat, id, { photoDataUrl: dataUrl });
+      updateItem(cat, id, { photoDataUrl: dataUrl }, { edit: true });
       setPhotoEditFor(null);
       showToast('Photo saved');
     }).catch(() => showToast('Photo could not be loaded'));
   }, [updateItem, showToast]);
 
   const handlePhotoDelete = useCallback((cat: string, id: string) => {
-    updateItem(cat, id, { photoDataUrl: undefined });
+    updateItem(cat, id, { photoDataUrl: undefined }, { edit: true });
     setPhotoViewFor(null);
     setPhotoEditFor(null);
     showToast('Photo removed');
   }, [updateItem, showToast]);
+
+  // ── R0085C — Location photo handlers ─────────────────────────────────────────
+
+  const handleLocPhotoAdd = useCallback((locId: string, file: File) => {
+    compressPhoto(file).then(dataUrl => {
+      mutateSandboxEdit(prev => ({
+        ...prev,
+        locations: prev.locations.map(l => l.id === locId ? { ...l, photoDataUrl: dataUrl } : l),
+      }));
+      setLocPhotoEditId(null);
+      showToast('Location photo saved');
+    }).catch(() => showToast('Photo could not be loaded'));
+  }, [mutateSandboxEdit, showToast]);
+
+  const handleLocPhotoDelete = useCallback((locId: string) => {
+    mutateSandboxEdit(prev => ({
+      ...prev,
+      locations: prev.locations.map(l => l.id === locId ? { ...l, photoDataUrl: undefined } : l),
+    }));
+    setLocPhotoViewId(null);
+    setLocPhotoEditId(null);
+    showToast('Location photo removed');
+  }, [mutateSandboxEdit, showToast]);
 
   // ── Derived summary metrics ───────────────────────────────────────────────────
 
@@ -3846,113 +3886,18 @@ function MobileFunctionalV3Inner() {
           </div>{/* end sticky header */}
 
           {/* ── CATEGORY STACK (B5 — flush, touching, square-edged) ── */}
-          {/* R0085: Location view — alternative presentation of the same items grouped by location */}
-          {viewMode === 'location' && (
-            <div data-testid="location-view" style={{ display: 'flex', flexDirection: 'column', paddingBottom: 24 }}>
-              {(() => {
-                // Build location groups from all items across all categories
-                const allItemsWithCat = sandbox.order.flatMap(cat =>
-                  (sandbox.items[cat] ?? []).map(item => ({ ...item, _cat: cat }))
-                );
-                // Only show locations that are actually used in the current list
-                const usedLocIds = new Set(allItemsWithCat.map(i => i.locationId).filter(Boolean));
-                const usedLocs = sandbox.locations.filter(l => usedLocIds.has(l.id));
-                const noLocItems = allItemsWithCat.filter(i => !i.locationId);
-
-                if (usedLocs.length === 0 && noLocItems.length === 0) {
-                  return (
-                    <div style={{ textAlign: 'center', padding: '40px 24px', color: MUTED, fontSize: 14 }}>
-                      No items with locations yet.
-                    </div>
-                  );
-                }
-
-                const groups: { id: string; name: string; items: typeof allItemsWithCat }[] = [
-                  ...usedLocs.map(loc => ({
-                    id: loc.id,
-                    name: loc.name,
-                    items: allItemsWithCat.filter(i => i.locationId === loc.id),
-                  })),
-                  ...(noLocItems.length > 0 ? [{ id: '__none__', name: 'No Location', items: noLocItems }] : []),
-                ];
-
-                return groups.map(group => (
-                  <div key={group.id} style={{ borderBottom: `1px solid ${DIVIDER}` }}>
-                    {/* Location group header */}
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '7px 16px', background: NAV_ACTIVE + '14',
-                      borderBottom: `1px solid ${DIVIDER}`,
-                    }}>
-                      <MapPin size={13} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: NAV_ACTIVE, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                        {group.name}
-                      </span>
-                      <span style={{ fontSize: 11, color: MUTED, marginLeft: 'auto' }}>
-                        {group.items.length} {group.items.length === 1 ? 'item' : 'items'}
-                      </span>
-                    </div>
-                    {/* Item rows in this location group */}
-                    {group.items.map(item => {
-                      const displayName = item.desc || item.sub || 'Item';
-                      const totalOz = calcTotalOz(item.weightOz, item.qty);
-                      const weightDisplay = system === 'metric'
-                        ? Math.round(totalOz * 28.3495)
-                        : Math.round(totalOz * 10) / 10;
-                      return (
-                        <div
-                          key={item.id}
-                          style={{
-                            display: 'flex', alignItems: 'center',
-                            padding: '10px 16px', gap: 10,
-                            borderBottom: `1px solid ${DETAIL_BDR}`,
-                            background: CARD_BG,
-                          }}
-                        >
-                          {item.photoDataUrl && (
-                            <img
-                              src={item.photoDataUrl}
-                              alt=""
-                              aria-hidden="true"
-                              style={{ width: 34, height: 34, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }}
-                            />
-                          )}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13.5, fontWeight: 500, color: PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {displayName}
-                            </div>
-                            <div style={{ fontSize: 11.5, color: MUTED, marginTop: 2 }}>
-                              {item._cat} · {weightDisplay} {su}{item.qty > 1 ? ` × ${item.qty}` : ''}
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => {
-                              setViewMode('category');
-                              setOpenCatName(item._cat);
-                              setExpandedItem({ cat: item._cat, id: item.id });
-                            }}
-                            aria-label={`Edit ${displayName} in category view`}
-                            style={{
-                              background: 'none', border: 'none', cursor: 'pointer',
-                              fontSize: 11.5, color: NAV_ACTIVE, padding: '4px 0', minHeight: 36, fontFamily: SANS,
-                            }}
-                          >Edit</button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ));
-              })()}
-            </div>
-          )}
-
-          {/* R0085: Category list — hidden when Location view is active (never rewritten, purely visual) */}
+          {/* R0085C: Category list always rendered; in Location view, items with a location
+              are hidden from their category wedge (they appear only under Location wedges). */}
           <div
             ref={catListRef}
-            style={{ padding: 0, display: viewMode === 'location' ? 'none' : 'flex', flexDirection: 'column', gap: 0 }}
+            style={{ padding: 0, display: 'flex', flexDirection: 'column', gap: 0 }}
           >
             {visibleOrder.map((catName, catIdx) => {
-              const items   = sandbox.items[catName] ?? [];
+              const allCatItems = sandbox.items[catName] ?? [];
+              // In Location view, suppress located items from their category wedge
+              const items = viewMode === 'location'
+                ? allCatItems.filter(i => !i.locationId)
+                : allCatItems;
               const isOpen  = isCatOpen(catName);
               const theme   = getCategoryTheme(catName, catIdx);
               // R004 Part 2 — floating style keyed by NAME, never by array index,
@@ -4284,7 +4229,7 @@ function MobileFunctionalV3Inner() {
                                       if (!isNaN(num) && num >= 0) {
                                         updateItem(catName, item.id, {
                                           weightOz: system === 'metric' ? gramsToOz(num) : num,
-                                        });
+                                        }, { edit: true });
                                       }
                                       // Clear local edit state — revert to derived display value
                                       setWeightInputs(prev => { const n = { ...prev }; delete n[item.id]; return n; });
@@ -4313,7 +4258,7 @@ function MobileFunctionalV3Inner() {
                                     value={item.qty}
                                     aria-label={`Quantity of ${displayName}`}
                                     data-testid="expanded-qty-select"
-                                    onChange={e => updateItem(catName, item.id, { qty: parseInt(e.target.value, 10) })}
+                                    onChange={e => updateItem(catName, item.id, { qty: parseInt(e.target.value, 10) }, { edit: true })}
                                     style={{
                                       fontSize: 13.5, fontWeight: 500, color: PRIMARY,
                                       border: `1px solid ${CARD_BORDER}`, borderRadius: 6,
@@ -4366,7 +4311,7 @@ function MobileFunctionalV3Inner() {
                                   </div>
                                 )}
 
-                                {/* R0085: Location row — Weight · Qty · Total · Move · [Location] · Photo · Delete */}
+                                {/* R0085C: Location row — dropdown chooser; Create New Location… at bottom */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
                                   padding: '0 14px', minHeight: 44, gap: 10,
@@ -4374,37 +4319,37 @@ function MobileFunctionalV3Inner() {
                                 }}>
                                   <MapPin size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
                                   <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Location</div>
-                                  {item.locationId ? (() => {
-                                    const loc = sandbox.locations.find(l => l.id === item.locationId);
-                                    return (
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <span style={{ fontSize: 12, color: PRIMARY, fontWeight: 500, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                          {loc?.name ?? '(unknown)'}
-                                        </span>
-                                        <button
-                                          onClick={e => { e.stopPropagation(); setLocPickerFor({ cat: catName, id: item.id }); setLocPickerFilter(''); }}
-                                          aria-label={`Change location for ${displayName}`}
-                                          style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: NAV_ACTIVE, fontSize: 11.5, fontFamily: SANS }}
-                                        >Change</button>
-                                        <button
-                                          onClick={e => { e.stopPropagation(); setItemLocation(catName, item.id, undefined); }}
-                                          aria-label={`Remove location from ${displayName}`}
-                                          style={{ background: 'none', border: 'none', padding: '2px 4px', cursor: 'pointer', minHeight: 44, color: '#B03A2E', fontSize: 13 }}
-                                        >✕</button>
-                                      </div>
-                                    );
-                                  })() : (
-                                    <button
-                                      onClick={e => { e.stopPropagation(); setLocPickerFor({ cat: catName, id: item.id }); setLocPickerFilter(''); }}
-                                      aria-label={`Set location for ${displayName}`}
-                                      data-testid="item-location-set-btn"
-                                      style={{
-                                        background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 8,
-                                        padding: '4px 10px', cursor: 'pointer', fontSize: 11.5, color: SECONDARY,
-                                        fontFamily: SANS, minHeight: 36,
-                                      }}
-                                    >No location</button>
-                                  )}
+                                  <select
+                                    value={item.locationId ?? ''}
+                                    aria-label={`Location for ${displayName}`}
+                                    data-testid="item-location-select"
+                                    onClick={e => e.stopPropagation()}
+                                    onChange={e => {
+                                      e.stopPropagation();
+                                      const val = e.target.value;
+                                      if (val === '__create__') {
+                                        setCreateLocForItem({ cat: catName, id: item.id });
+                                        setCreateLocName('');
+                                        // Reset the select visually — state drives the real value
+                                        e.currentTarget.value = item.locationId ?? '';
+                                      } else {
+                                        setItemLocation(catName, item.id, val || undefined);
+                                      }
+                                    }}
+                                    style={{
+                                      fontSize: 13, fontWeight: 500, color: PRIMARY,
+                                      border: `1px solid ${CARD_BORDER}`, borderRadius: 8,
+                                      padding: '4px 6px', background: '#fff',
+                                      fontFamily: SANS, minHeight: 36, maxWidth: 160,
+                                      cursor: 'pointer',
+                                    }}
+                                  >
+                                    <option value="">No location</option>
+                                    {sandbox.locations.map(loc => (
+                                      <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                    ))}
+                                    <option value="__create__">— Create New Location… —</option>
+                                  </select>
                                 </div>
 
                                 {/* R0085: Photo row — replaces disabled stub */}
@@ -4426,12 +4371,12 @@ function MobileFunctionalV3Inner() {
                                         aria-label={`${photoViewFor?.cat === catName && photoViewFor?.id === item.id ? 'Hide' : 'View'} photo of ${displayName}`}
                                         aria-pressed={photoViewFor?.cat === catName && photoViewFor?.id === item.id}
                                         style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: NAV_ACTIVE, fontSize: 11.5, fontFamily: SANS }}
-                                      >{photoViewFor?.cat === catName && photoViewFor?.id === item.id ? 'Hide' : 'View'}</button>
+                                      >{photoViewFor?.cat === catName && photoViewFor?.id === item.id ? 'Hide Photo' : 'View Photo'}</button>
                                       <button
                                         onClick={e => { e.stopPropagation(); setPhotoEditFor({ cat: catName, id: item.id }); }}
                                         aria-label={`Edit photo of ${displayName}`}
                                         style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: SECONDARY, fontSize: 11.5, fontFamily: SANS }}
-                                      >Edit</button>
+                                      >Edit Photo</button>
                                     </div>
                                   ) : (
                                     <button
@@ -4603,6 +4548,247 @@ function MobileFunctionalV3Inner() {
                 to the bottom nav (nav is in normal flow, so it never covers the
                 last row; no reserved blank band needed). */}
           </div>
+
+          {/* R0085C: Location wedges — rendered below category list in Location view.
+              Each used location gets a wedge bar (visually identical to a category bar)
+              where the left slot reads "Location" and the right slot shows the location name.
+              Located items appear ONLY here (they are suppressed from their category wedge above). */}
+          {viewMode === 'location' && (() => {
+            const allItemsFlat = sandbox.order.flatMap(cat =>
+              (sandbox.items[cat] ?? []).map(item => ({ ...item, _cat: cat }))
+            );
+            const usedLocIds = new Set(allItemsFlat.filter(i => i.locationId).map(i => i.locationId as string));
+            const usedLocs = sandbox.locations.filter(l => usedLocIds.has(l.id));
+            if (usedLocs.length === 0) return null;
+            return (
+              <>
+                {usedLocs.map(loc => {
+                  const locItems = allItemsFlat.filter(i => i.locationId === loc.id);
+                  const isLocOpen = openLocId === loc.id;
+                  return (
+                    <div
+                      key={loc.id}
+                      data-testid={`loc-wedge-${loc.id}`}
+                      style={{
+                        borderRadius: 0, overflow: 'hidden',
+                        background: CARD_BG,
+                        borderBottom: `1px solid ${DIVIDER}`,
+                      }}
+                    >
+                      {/* LOCATION WEDGE BAR */}
+                      <div
+                        data-testid={`loc-header-${loc.id}`}
+                        onClick={() => {
+                          setOpenCatName(null);
+                          setOpenLocId(prev => prev === loc.id ? null : loc.id);
+                        }}
+                        style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG, cursor: 'pointer' }}
+                      >
+                        {/* Wedge button */}
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            setOpenCatName(null);
+                            setOpenLocId(prev => prev === loc.id ? null : loc.id);
+                          }}
+                          aria-expanded={isLocOpen}
+                          aria-label={`${isLocOpen ? 'Close' : 'Open'} location ${loc.name}`}
+                          style={{
+                            width: WEDGE_W, minHeight: CARD_H,
+                            background: NAV_ACTIVE,
+                            clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0, paddingRight: WEDGE_POINT / 2,
+                            border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
+                          }}
+                        >
+                          <MapPin size={26} color="rgba(255,255,255,0.93)" strokeWidth={1.5} aria-hidden="true"/>
+                        </button>
+
+                        {/* Content grid */}
+                        <div style={{
+                          flex: 1, minWidth: 0,
+                          display: 'grid',
+                          gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
+                          alignItems: 'center',
+                          padding: '10px 12px',
+                          columnGap: 10,
+                        }}>
+                          {/* Col 1 — "Location" label + item count */}
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{
+                              textAlign: 'left', width: '100%',
+                              minHeight: 44, display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                            }}>
+                              <div style={{
+                                fontSize: 17, fontWeight: 500, color: PRIMARY,
+                                lineHeight: 1.2, marginBottom: 2, letterSpacing: '-0.1px',
+                                fontFamily: SERIF,
+                              }}>
+                                Location
+                              </div>
+                              <div style={{ fontSize: 12.5, color: MUTED }}>
+                                {locItems.length} {locItems.length === 1 ? 'item' : 'items'}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Col 2 — location name + rename + delete */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 2, justifyContent: 'flex-end' }}>
+                            <div style={{
+                              fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 110,
+                            }}>
+                              {loc.name}
+                            </div>
+                            <button
+                              onClick={e => {
+                                e.stopPropagation();
+                                setLocRenameId(loc.id);
+                                setLocRenameValue(loc.name);
+                              }}
+                              aria-label={`Rename location ${loc.name}`}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', minHeight: 36, color: MUTED }}
+                            >
+                              <Pencil size={13} strokeWidth={1.8} aria-hidden="true"/>
+                            </button>
+                            <button
+                              onClick={e => { e.stopPropagation(); removeLocation(loc.id); }}
+                              aria-label={`Delete location ${loc.name}`}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', minHeight: 36, color: '#B03A2E' }}
+                            >
+                              <Trash2 size={13} strokeWidth={1.8} aria-hidden="true"/>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* EXPANDED LOCATION CONTENT */}
+                      {isLocOpen && (
+                        <div style={{ borderTop: `1px solid ${DIVIDER}` }}>
+                          {/* Location Photo row */}
+                          <div style={{
+                            display: 'flex', alignItems: 'center',
+                            padding: '0 14px', minHeight: 44, gap: 10,
+                            borderBottom: `1px solid ${DETAIL_BDR}`,
+                            background: DETAIL_BG,
+                          }}>
+                            <Camera size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
+                            <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Location Photo</div>
+                            {loc.photoDataUrl ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <button
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    setLocPhotoViewId(prev => prev === loc.id ? null : loc.id);
+                                  }}
+                                  aria-label={`${locPhotoViewId === loc.id ? 'Hide' : 'View'} photo of location ${loc.name}`}
+                                  aria-pressed={locPhotoViewId === loc.id}
+                                  data-testid="loc-photo-view-btn"
+                                  style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: NAV_ACTIVE, fontSize: 11.5, fontFamily: SANS }}
+                                >{locPhotoViewId === loc.id ? 'Hide Photo' : 'View Photo'}</button>
+                                <button
+                                  onClick={e => { e.stopPropagation(); setLocPhotoEditId(loc.id); }}
+                                  aria-label={`Edit photo of location ${loc.name}`}
+                                  data-testid="loc-photo-edit-btn"
+                                  style={{ background: 'none', border: 'none', padding: '2px 6px', cursor: 'pointer', minHeight: 44, color: SECONDARY, fontSize: 11.5, fontFamily: SANS }}
+                                >Edit Photo</button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={e => { e.stopPropagation(); setLocPhotoEditId(loc.id); }}
+                                aria-label={`Add photo to location ${loc.name}`}
+                                data-testid="loc-photo-add-btn"
+                                style={{
+                                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 8,
+                                  padding: '4px 10px', cursor: 'pointer', fontSize: 11.5, color: SECONDARY,
+                                  fontFamily: SANS, minHeight: 36,
+                                }}
+                              >Add Photo</button>
+                            )}
+                          </div>
+
+                          {/* Inline location photo viewer */}
+                          {loc.photoDataUrl && locPhotoViewId === loc.id && (
+                            <div style={{ background: '#111', borderBottom: `1px solid ${DETAIL_BDR}` }}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '2px 8px' }}>
+                                <button
+                                  onClick={e => { e.stopPropagation(); setLocPhotoViewId(null); }}
+                                  aria-label="Close location photo"
+                                  data-testid="loc-photo-view-close"
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, padding: '6px 8px', minHeight: 36 }}
+                                >✕ Close</button>
+                              </div>
+                              <img
+                                src={loc.photoDataUrl}
+                                alt={`Photo of location ${loc.name}`}
+                                style={{ width: '100%', display: 'block', maxHeight: 300, objectFit: 'contain' }}
+                              />
+                            </div>
+                          )}
+
+                          {/* Items in this location */}
+                          {locItems.map(item => {
+                            const displayName = item.desc || item.sub || 'Unnamed item';
+                            const totalOz = calcTotalOz(item.weightOz, item.qty);
+                            const weightDisplay = system === 'metric'
+                              ? Math.round(totalOz * 28.3495)
+                              : Math.round(totalOz * 10) / 10;
+                            return (
+                              <div
+                                key={item.id}
+                                style={{
+                                  display: 'flex', alignItems: 'center',
+                                  padding: '10px 16px', gap: 10,
+                                  borderBottom: `1px solid ${DETAIL_BDR}`,
+                                  background: CARD_BG,
+                                }}
+                              >
+                                {item.photoDataUrl && (
+                                  <img
+                                    src={item.photoDataUrl}
+                                    alt=""
+                                    aria-hidden="true"
+                                    style={{ width: 34, height: 34, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }}
+                                  />
+                                )}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 13.5, fontWeight: 500, color: PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {displayName}
+                                  </div>
+                                  <div style={{ fontSize: 11.5, color: MUTED, marginTop: 2 }}>
+                                    {item._cat} · {weightDisplay} {su}{item.qty > 1 ? ` × ${item.qty}` : ''}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    setViewMode('category');
+                                    setOpenLocId(null);
+                                    setOpenCatName(item._cat);
+                                    setExpandedItem({ cat: item._cat, id: item.id });
+                                  }}
+                                  aria-label={`Edit ${displayName} in category view`}
+                                  style={{
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    fontSize: 11.5, color: NAV_ACTIVE, padding: '4px 0', minHeight: 36, fontFamily: SANS,
+                                  }}
+                                >Edit</button>
+                              </div>
+                            );
+                          })}
+                          {locItems.length === 0 && (
+                            <div style={{ padding: '12px 16px', fontSize: 13.5, color: MUTED, fontStyle: 'italic' }}>
+                              No items assigned to this location.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            );
+          })()}
 
         </div>{/* end scrollable */}
 
@@ -5130,7 +5316,7 @@ function MobileFunctionalV3Inner() {
               onKeyDown={e => {
                 const v = itemRenameValue.trim();
                 if (e.key === 'Enter' && v && v !== itemRenameFor.currentDesc) {
-                  updateItem(itemRenameFor.cat, itemRenameFor.id, { desc: v });
+                  updateItem(itemRenameFor.cat, itemRenameFor.id, { desc: v }, { edit: true });
                   showToast(`Renamed to "${v}"`);
                   setItemRenameFor(null);
                 }
@@ -5162,7 +5348,7 @@ function MobileFunctionalV3Inner() {
                 onClick={() => {
                   const v = itemRenameValue.trim();
                   if (!v || v === itemRenameFor.currentDesc) return;
-                  updateItem(itemRenameFor.cat, itemRenameFor.id, { desc: v });
+                  updateItem(itemRenameFor.cat, itemRenameFor.id, { desc: v }, { edit: true });
                   showToast(`Renamed to "${v}"`);
                   setItemRenameFor(null);
                 }}
@@ -5266,205 +5452,302 @@ function MobileFunctionalV3Inner() {
         </div>
       )}
 
-      {/* ── R0085: Location picker sheet ── */}
-      {locPickerFor !== null && (
+      {/* ── R0085C: Create New Location dialog (opened by dropdown "Create New Location…" option) ── */}
+      {createLocForItem !== null && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Set item location"
-          data-testid="location-picker-sheet"
+          aria-label="Create new location"
+          data-testid="create-location-dialog"
           style={{
             position: 'fixed', inset: 0, zIndex: 210,
             display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
             background: 'rgba(0,0,0,0.45)',
           }}
-          onClick={() => { setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }}
-          onKeyDown={e => {
-            if (e.key === 'Escape') { e.preventDefault(); setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }
-          }}
+          onClick={() => setCreateLocForItem(null)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setCreateLocForItem(null); } }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500, background: '#fff',
-              borderRadius: '16px 16px 0 0', padding: '20px 20px 36px',
+              borderRadius: '16px 16px 0 0', padding: '24px 20px 36px',
               fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
-              maxHeight: '80vh', display: 'flex', flexDirection: 'column',
             }}
           >
-            <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY, marginBottom: 10 }}>Set Location</div>
-            {/* Filter / type-a-new input */}
+            <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 6 }}>New Location</div>
+            <div style={{ fontSize: 13.5, color: SECONDARY, marginBottom: 12 }}>
+              Enter a name for the new location:
+            </div>
             <input
               autoFocus
               type="text"
-              value={locPickerFilter}
-              onChange={e => { setLocPickerFilter(e.target.value); setLocRenameId(null); }}
+              value={createLocName}
+              onChange={e => setCreateLocName(e.target.value)}
               onKeyDown={e => {
-                const lp = locPickerFor;
-                if (e.key === 'Enter' && locPickerFilter.trim() && lp) {
-                  const exact = sandbox.locations.find(l => l.name.toLowerCase() === locPickerFilter.trim().toLowerCase());
-                  if (exact) {
-                    setItemLocation(lp.cat, lp.id, exact.id);
-                  } else {
-                    const newId = crypto.randomUUID();
-                    mutateSandbox(prev => ({
-                      ...prev,
-                      locations: [...prev.locations, { id: newId, name: locPickerFilter.trim() }],
-                      items: { ...prev.items, [lp.cat]: (prev.items[lp.cat] ?? []).map(i => i.id === lp.id ? { ...i, locationId: newId } : i) },
-                    }));
-                  }
-                  setLocPickerFor(null); setLocPickerFilter('');
+                if (e.key === 'Enter' && createLocName.trim() && createLocForItem) {
+                  const newId = crypto.randomUUID();
+                  mutateSandboxEdit(prev => ({
+                    ...prev,
+                    locations: [...prev.locations, { id: newId, name: createLocName.trim() }],
+                    items: {
+                      ...prev.items,
+                      [createLocForItem.cat]: (prev.items[createLocForItem.cat] ?? []).map(i =>
+                        i.id === createLocForItem.id ? { ...i, locationId: newId } : i
+                      ),
+                    },
+                  }));
+                  setCreateLocForItem(null);
                 }
-                if (e.key === 'Escape') { setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }
+                if (e.key === 'Escape') setCreateLocForItem(null);
               }}
-              placeholder="Filter or type a new location name…"
-              aria-label="Location filter or new location name"
-              data-testid="location-picker-input"
+              placeholder="Location name…"
+              aria-label="New location name"
+              data-testid="create-location-input"
               style={{
-                width: '100%', fontSize: 14, color: PRIMARY, fontFamily: SANS,
-                border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '9px 12px',
-                background: PAGE_BG, boxSizing: 'border-box' as const, minHeight: 44, marginBottom: 10,
+                width: '100%', fontSize: 15, color: PRIMARY, fontFamily: SANS,
+                border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '10px 12px',
+                background: PAGE_BG, boxSizing: 'border-box' as const,
               }}
             />
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              {/* Existing locations matching filter */}
-              {sandbox.locations
-                .filter(l => !locPickerFilter || l.name.toLowerCase().includes(locPickerFilter.toLowerCase()))
-                .map(loc => (
-                  <div key={loc.id} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                    {locRenameId === loc.id ? (
-                      <>
-                        <input
-                          autoFocus
-                          type="text"
-                          value={locRenameValue}
-                          onChange={e => setLocRenameValue(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter' && locRenameValue.trim()) { renameLocation(loc.id, locRenameValue); setLocRenameId(null); }
-                            if (e.key === 'Escape') { setLocRenameId(null); }
-                          }}
-                          aria-label="Rename location"
-                          data-testid="location-rename-input"
-                          style={{
-                            flex: 1, fontSize: 13.5, color: PRIMARY, fontFamily: SANS,
-                            border: `1.5px solid ${NAV_ACTIVE}`, borderRadius: 8, padding: '7px 10px',
-                            background: PAGE_BG, minHeight: 44,
-                          }}
-                        />
-                        <button
-                          onClick={() => { if (locRenameValue.trim()) renameLocation(loc.id, locRenameValue); setLocRenameId(null); }}
-                          aria-label="Save location name"
-                          data-testid="location-rename-save"
-                          style={{ padding: '0 12px', background: NAV_ACTIVE, border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontSize: 13, minHeight: 44 }}
-                        >Save</button>
-                        <button
-                          onClick={() => setLocRenameId(null)}
-                          aria-label="Cancel rename"
-                          style={{ padding: '0 10px', background: 'none', border: `1px solid ${CARD_BORDER}`, borderRadius: 8, color: SECONDARY, cursor: 'pointer', fontSize: 13, minHeight: 44 }}
-                        >✕</button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => { const lp = locPickerFor; if (lp) { setItemLocation(lp.cat, lp.id, loc.id); setLocPickerFor(null); setLocPickerFilter(''); } }}
-                          aria-label={`Assign location ${loc.name}`}
-                          data-testid="location-picker-option"
-                          style={{
-                            flex: 1, textAlign: 'left', padding: '10px 14px',
-                            background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 10,
-                            fontSize: 14, color: PRIMARY, fontFamily: SANS, cursor: 'pointer', minHeight: 44,
-                            display: 'flex', alignItems: 'center', gap: 8,
-                          }}
-                        >
-                          <MapPin size={13} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
-                          {loc.name}
-                        </button>
-                        <button
-                          onClick={() => { setLocRenameId(loc.id); setLocRenameValue(loc.name); }}
-                          aria-label={`Rename location ${loc.name}`}
-                          title={`Rename "${loc.name}"`}
-                          style={{ padding: '0 10px', background: 'none', border: 'none', cursor: 'pointer', minHeight: 44, color: MUTED }}
-                        >
-                          <Pencil size={14} strokeWidth={1.8} aria-hidden="true"/>
-                        </button>
-                        <button
-                          onClick={() => removeLocation(loc.id)}
-                          aria-label={`Delete location ${loc.name}`}
-                          title={`Delete "${loc.name}" and unlink all items`}
-                          style={{ padding: '0 10px', background: 'none', border: 'none', cursor: 'pointer', minHeight: 44, color: '#B03A2E' }}
-                        >
-                          <Trash2 size={14} strokeWidth={1.8} aria-hidden="true"/>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                ))}
-              {/* Create new location if filter doesn't match any existing exactly */}
-              {locPickerFilter.trim() && !sandbox.locations.some(l => l.name.toLowerCase() === locPickerFilter.trim().toLowerCase()) && (
-                <button
-                  onClick={() => {
-                    const lp = locPickerFor;
-                    if (!lp) return;
-                    const newId = crypto.randomUUID();
-                    mutateSandbox(prev => ({
-                      ...prev,
-                      locations: [...prev.locations, { id: newId, name: locPickerFilter.trim() }],
-                      items: { ...prev.items, [lp.cat]: (prev.items[lp.cat] ?? []).map(i => i.id === lp.id ? { ...i, locationId: newId } : i) },
-                    }));
-                    setLocPickerFor(null); setLocPickerFilter('');
-                  }}
-                  aria-label={`Create new location: ${locPickerFilter.trim()}`}
-                  data-testid="location-picker-create"
-                  style={{
-                    width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6,
-                    background: 'transparent', border: `1.5px dashed ${CARD_BORDER}`, borderRadius: 10,
-                    fontSize: 14, color: NAV_ACTIVE, fontFamily: SANS, cursor: 'pointer', minHeight: 44,
-                    display: 'flex', alignItems: 'center', gap: 8,
-                  }}
-                >
-                  <Plus size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
-                  Create "{locPickerFilter.trim()}"
-                </button>
-              )}
-              {/* Empty state */}
-              {sandbox.locations.length === 0 && !locPickerFilter.trim() && (
-                <div style={{ color: MUTED, fontSize: 13.5, textAlign: 'center', padding: '12px 0' }}>
-                  Type a name above to create your first location.
-                </div>
-              )}
-              {/* Remove current location option */}
-              {locPickerFor && (() => {
-                const lp = locPickerFor;
-                const item = (sandbox.items[lp.cat] ?? []).find(i => i.id === lp.id);
-                return item?.locationId ? (
-                  <button
-                    onClick={() => { setItemLocation(lp.cat, lp.id, undefined); setLocPickerFor(null); setLocPickerFilter(''); }}
-                    aria-label="Remove location from this item"
-                    data-testid="location-picker-remove"
-                    style={{
-                      width: '100%', textAlign: 'left', padding: '10px 14px', marginTop: 4,
-                      background: 'transparent', border: `1px solid ${CARD_BORDER}`, borderRadius: 10,
-                      fontSize: 13.5, color: '#B03A2E', fontFamily: SANS, cursor: 'pointer', minHeight: 44,
-                    }}
-                  >Remove location</button>
-                ) : null;
-              })()}
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button
+                onClick={() => setCreateLocForItem(null)}
+                aria-label="Cancel create location"
+                data-testid="create-location-cancel"
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 10,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+                  fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44,
+                }}
+              >Cancel</button>
+              <button
+                disabled={!createLocName.trim()}
+                onClick={() => {
+                  if (!createLocName.trim() || !createLocForItem) return;
+                  const newId = crypto.randomUUID();
+                  mutateSandboxEdit(prev => ({
+                    ...prev,
+                    locations: [...prev.locations, { id: newId, name: createLocName.trim() }],
+                    items: {
+                      ...prev.items,
+                      [createLocForItem.cat]: (prev.items[createLocForItem.cat] ?? []).map(i =>
+                        i.id === createLocForItem.id ? { ...i, locationId: newId } : i
+                      ),
+                    },
+                  }));
+                  setCreateLocForItem(null);
+                }}
+                aria-label="Save new location"
+                data-testid="create-location-save"
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 10,
+                  background: createLocName.trim() ? NAV_ACTIVE : MUTED,
+                  border: 'none', fontSize: 15, fontWeight: 600, color: '#fff',
+                  cursor: createLocName.trim() ? 'pointer' : 'not-allowed', minHeight: 44,
+                }}
+              >Save</button>
             </div>
-            <button
-              onClick={() => { setLocPickerFor(null); setLocPickerFilter(''); setLocRenameId(null); }}
-              aria-label="Cancel location selection"
-              data-testid="location-picker-cancel"
-              style={{
-                marginTop: 12, width: '100%', padding: '12px 0', borderRadius: 10,
-                background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
-                fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44,
-              }}
-            >Cancel</button>
           </div>
         </div>
       )}
 
-      {/* ── R0085: Photo edit sheet ── */}
+      {/* ── R0085C: Location rename dialog (opened from pencil button on location wedge bar) ── */}
+      {locRenameId !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Rename location"
+          data-testid="location-rename-dialog"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 210,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setLocRenameId(null)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setLocRenameId(null); } }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '24px 20px 36px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 12 }}>Rename Location</div>
+            <input
+              autoFocus
+              type="text"
+              value={locRenameValue}
+              onChange={e => setLocRenameValue(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && locRenameValue.trim() && locRenameId) {
+                  renameLocation(locRenameId, locRenameValue);
+                  setLocRenameId(null);
+                }
+                if (e.key === 'Escape') setLocRenameId(null);
+              }}
+              placeholder="Location name…"
+              aria-label="Rename location"
+              data-testid="location-rename-input"
+              style={{
+                width: '100%', fontSize: 15, color: PRIMARY, fontFamily: SANS,
+                border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '10px 12px',
+                background: PAGE_BG, boxSizing: 'border-box' as const,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+              <button
+                onClick={() => setLocRenameId(null)}
+                aria-label="Cancel rename location"
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 10,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+                  fontSize: 15, fontWeight: 600, color: SECONDARY, cursor: 'pointer', minHeight: 44,
+                }}
+              >Cancel</button>
+              <button
+                disabled={!locRenameValue.trim()}
+                onClick={() => {
+                  if (!locRenameValue.trim() || !locRenameId) return;
+                  renameLocation(locRenameId, locRenameValue);
+                  setLocRenameId(null);
+                }}
+                aria-label="Save location name"
+                data-testid="location-rename-save"
+                style={{
+                  flex: 1, padding: '12px 0', borderRadius: 10,
+                  background: locRenameValue.trim() ? NAV_ACTIVE : MUTED,
+                  border: 'none', fontSize: 15, fontWeight: 600, color: '#fff',
+                  cursor: locRenameValue.trim() ? 'pointer' : 'not-allowed', minHeight: 44,
+                }}
+              >Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0085C: Location Photo edit sheet + file inputs ── */}
+      <input
+        ref={locCameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        aria-label="Take a new photo for this location"
+        style={{ display: 'none' }}
+        onChange={e => {
+          const locId = locPhotoEditId;
+          const file = e.target.files?.[0];
+          if (file && locId) handleLocPhotoAdd(locId, file);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={locUploadRef}
+        type="file"
+        accept="image/*"
+        aria-label="Upload a photo for this location"
+        style={{ display: 'none' }}
+        onChange={e => {
+          const locId = locPhotoEditId;
+          const file = e.target.files?.[0];
+          if (file && locId) handleLocPhotoAdd(locId, file);
+          e.target.value = '';
+        }}
+      />
+      {locPhotoEditId !== null && (() => {
+        const loc = sandbox.locations.find(l => l.id === locPhotoEditId);
+        return (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Location photo options"
+            data-testid="loc-photo-edit-sheet"
+            style={{
+              position: 'fixed', inset: 0, zIndex: 210,
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+              background: 'rgba(0,0,0,0.45)',
+            }}
+            onClick={() => setLocPhotoEditId(null)}
+            onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setLocPhotoEditId(null); } }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', maxWidth: 500, background: '#fff',
+                borderRadius: '16px 16px 0 0', padding: '20px 20px 40px',
+                fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+              }}
+            >
+              <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
+                {loc?.photoDataUrl ? 'Edit Location Photo' : 'Add Location Photo'}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <button
+                  onClick={() => locCameraRef.current?.click()}
+                  aria-label="Take new location photo with camera"
+                  data-testid="loc-photo-take-btn"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                    padding: '13px 16px', cursor: 'pointer', width: '100%', minHeight: 52, fontFamily: SANS,
+                  }}
+                >
+                  <div style={{ width: 36, height: 36, borderRadius: 9, background: '#4f87c4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Camera size={16} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: PRIMARY }}>Take New Photo</div>
+                </button>
+                <button
+                  onClick={() => locUploadRef.current?.click()}
+                  aria-label="Upload location photo from device library"
+                  data-testid="loc-photo-upload-btn"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                    padding: '13px 16px', cursor: 'pointer', width: '100%', minHeight: 52, fontFamily: SANS,
+                  }}
+                >
+                  <div style={{ width: 36, height: 36, borderRadius: 9, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Image size={16} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: PRIMARY }}>Upload New Photo</div>
+                </button>
+                {loc?.photoDataUrl && (
+                  <button
+                    onClick={() => handleLocPhotoDelete(locPhotoEditId)}
+                    aria-label="Delete location photo (only TrailWeigh's copy; device original untouched)"
+                    data-testid="loc-photo-delete-btn"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 14,
+                      background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                      padding: '13px 16px', cursor: 'pointer', width: '100%', minHeight: 52, fontFamily: SANS,
+                    }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 9, background: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Trash2 size={16} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#dc2626' }}>Delete Location Photo</div>
+                  </button>
+                )}
+                <button
+                  onClick={() => setLocPhotoEditId(null)}
+                  aria-label="Cancel location photo action"
+                  data-testid="loc-photo-edit-cancel"
+                  style={{
+                    padding: '12px 0', borderRadius: 10, border: `1px solid ${CARD_BORDER}`,
+                    background: CARD_BG, fontSize: 15, fontWeight: 600, color: SECONDARY,
+                    cursor: 'pointer', width: '100%', minHeight: 44, fontFamily: SANS,
+                  }}
+                >Cancel</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── R0085: Item Photo edit sheet ── */}
       {/* Hidden file inputs live here so they survive between renders; device original is never touched. */}
       <input
         ref={photoCameraRef}
