@@ -1138,9 +1138,8 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
-          /* R0085P3: lower opacity + narrower blur so list colours bleed through as
-             recognisable hues rather than averaging to white */
-          background: 'rgba(255,255,255,0.65)',
+          /* R0085P4: one step more transparent — ~53% white so list colour bleeds through clearly */
+          background: 'rgba(255,255,255,0.53)',
           backdropFilter: 'blur(8px) saturate(1.15)',
           WebkitBackdropFilter: 'blur(8px) saturate(1.15)',
           borderTop: '1px solid rgba(0,0,0,0.07)',
@@ -3935,10 +3934,10 @@ function MobileFunctionalV3Inner() {
                     borderBottom: `1px solid ${DIVIDER}`,
                     // Raised/floating drag state: restrained elevation, no dramatic scale,
                     // dragged card stays fully opaque; only the valid TARGET dims slightly.
-                    /* R0085P3: subtle resting shadow gives category wedges slight depth */
+                    /* R0085P4: slightly stronger resting shadow — still soft, no floating-card */
                     boxShadow: isDragging
                       ? '0 8px 26px rgba(0,0,0,0.24), 0 2px 6px rgba(0,0,0,0.14)'
-                      : '0 2px 6px rgba(0,0,0,0.07)',
+                      : '0 2px 8px rgba(0,0,0,0.11)',
                     opacity: isDimTarget ? 0.55 : 1,
                     // R006 Part 3 — non-dragged bars GLIDE into their temporary
                     // positions (translateY ± dragged height) while the DOM order
@@ -4587,8 +4586,8 @@ function MobileFunctionalV3Inner() {
                         borderRadius: 0, overflow: 'hidden',
                         background: CARD_BG,
                         borderBottom: `1px solid ${DIVIDER}`,
-                        /* R0085P3: same subtle depth shadow as category wedges */
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.07)',
+                        /* R0085P4: slightly stronger — matches updated category wedge resting shadow */
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.11)',
                       }}
                     >
                       {/* LOCATION WEDGE BAR — swipe-to-reveal Edit | Delete, matching category pattern */}
