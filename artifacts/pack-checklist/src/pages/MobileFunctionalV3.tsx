@@ -3620,7 +3620,7 @@ function MobileFunctionalV3Inner() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflowX: 'hidden' }}>
       <div className="tw-v3-root" style={{
         width: '100%', maxWidth: 430, height: '100dvh',
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
@@ -3647,9 +3647,15 @@ function MobileFunctionalV3Inner() {
           /* R006 Part 5 — the app shell is pinned to the viewport: no page/body
              rubber-band bounce, no blank area above/below the app. Only the
              intended internal regions scroll. */
-          html:has(.tw-v3-root),body:has(.tw-v3-root){
-            overscroll-behavior:none;height:100%;overflow:hidden}
-          .tw-v3-root{overscroll-behavior:none}
+          /* R0090: split html/body document lock — html loses overflow:hidden so that
+             on iOS 16+, scroll events from the inner main-scroll propagate to the
+             html element and can trigger Safari chrome retraction. Body keeps
+             overflow:hidden to prevent rubber-band bounce on pull-to-refresh.
+             .tw-v3-root height:100vh is a dvh fallback for iOS < 15.4: the inline
+             style height:100dvh overrides it whenever dvh units are supported. */
+          html:has(.tw-v3-root){overscroll-behavior:none;height:100%}
+          body:has(.tw-v3-root){overscroll-behavior:none;height:100%;overflow:hidden}
+          .tw-v3-root{overscroll-behavior:none;height:100vh}
           .tw-v3-root [data-testid="main-scroll"]{overscroll-behavior:contain}
           /* R006 Part 6 — Trail palette dropdown: the flattened Weight
              Distribution panel must not clip the menu (the shared card ships
@@ -3671,6 +3677,17 @@ function MobileFunctionalV3Inner() {
             outline: 2px solid #2A5740 !important;
             outline-offset: 1px !important;
           }
+          /* R0090: safe-area bottom padding for all bottom-anchored sheet panels.
+             !important overrides the inline padding shorthand's paddingBottom so
+             content clears the home-indicator on Face ID iPhones when
+             viewport-fit=cover is active. Assign the class whose design value
+             matches the panel's intended bottom padding. */
+          .tw-sa-36{padding-bottom:calc(36px + env(safe-area-inset-bottom,0px))!important}
+          .tw-sa-40{padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))!important}
+          /* R0090: Radix category-options SheetContent — dvh max-height + safe-area.
+             Duplicate max-height rule: browser uses 70dvh if supported, else 70vh. */
+          .tw-cat-sheet{max-height:70vh;max-height:70dvh;
+            padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))!important}
         `}</style>
 
         {/* ── APP BAR — R0082: hamburger added ── */}
@@ -5293,7 +5310,7 @@ function MobileFunctionalV3Inner() {
 
       {/* ── D5: Category Options sheet ── */}
       <Sheet open={catOptionsFor !== null} onOpenChange={v => { if (!v) { setCatOptionsFor(null); setCatRenaming(false); setCatDeleteConfirm(false); } }}>
-        <SheetContent side="bottom" style={{ maxHeight: '70vh', fontFamily: SANS, padding: '20px 20px 32px' }}>
+        <SheetContent side="bottom" className="tw-cat-sheet" style={{ fontFamily: SANS, padding: '20px 20px 32px' }}>
           <SheetHeader>
             <SheetTitle style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, fontFamily: SERIF }}>
               Category Options
@@ -5480,6 +5497,7 @@ function MobileFunctionalV3Inner() {
           }}
         >
           <div
+            className="tw-sa-36"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500,
@@ -5537,6 +5555,7 @@ function MobileFunctionalV3Inner() {
           }}
         >
           <div
+            className="tw-sa-36"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500,
@@ -5630,6 +5649,7 @@ function MobileFunctionalV3Inner() {
           }}
         >
           <div
+            className="tw-sa-36"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500, background: '#fff',
@@ -5711,6 +5731,7 @@ function MobileFunctionalV3Inner() {
           onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setCreateLocForItem(null); } }}
         >
           <div
+            className="tw-sa-36"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500, background: '#fff',
@@ -5811,6 +5832,7 @@ function MobileFunctionalV3Inner() {
           onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setLocRenameId(null); } }}
         >
           <div
+            className="tw-sa-36"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500, background: '#fff',
@@ -5916,6 +5938,7 @@ function MobileFunctionalV3Inner() {
             onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setLocPhotoEditId(null); } }}
           >
             <div
+              className="tw-sa-40"
               onClick={e => e.stopPropagation()}
               style={{
                 width: '100%', maxWidth: 500, background: '#fff',
@@ -6034,6 +6057,7 @@ function MobileFunctionalV3Inner() {
           onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setPhotoEditFor(null); } }}
         >
           <div
+            className="tw-sa-40"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500, background: '#fff',
@@ -6130,6 +6154,7 @@ function MobileFunctionalV3Inner() {
           onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setShowSaveChooser(false); } }}
         >
           <div
+            className="tw-sa-40"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500,
@@ -6200,6 +6225,7 @@ function MobileFunctionalV3Inner() {
           }}
         >
           <div
+            className="tw-sa-40"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500,
@@ -6262,6 +6288,7 @@ function MobileFunctionalV3Inner() {
           onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setShowResetConfirm(false); } }}
         >
           <div
+            className="tw-sa-36"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500,
@@ -6312,6 +6339,7 @@ function MobileFunctionalV3Inner() {
           onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setLockerDeleteTarget(null); } }}
         >
           <div
+            className="tw-sa-36"
             onClick={e => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 500,

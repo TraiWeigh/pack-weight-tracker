@@ -469,13 +469,20 @@ function BottomSheet({
       }}
       onClick={onClose}
     >
+      {/* R0090: dvh-aware max-height — 88dvh tracks the real visible viewport
+          (address bar present/absent, keyboard open/closed) on iOS 15.4+.
+          The duplicate rule lets browsers without dvh support fall back to 88vh.
+          Safe-area !important overrides the inline padding shorthand bottom so
+          content clears the home-indicator when viewport-fit=cover is active. */}
+      <style>{`.tw-ms-sheet{max-height:88vh;max-height:88dvh;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px))!important}`}</style>
       <div
+        className="tw-ms-sheet"
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 500, background: '#fff',
           borderRadius: '18px 18px 0 0', padding: '22px 20px 40px',
           fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
-          maxHeight: '88vh', overflowY: 'auto', overscrollBehavior: 'contain',
+          overflowY: 'auto', overscrollBehavior: 'contain',
         }}
       >
         <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>{title}</div>
