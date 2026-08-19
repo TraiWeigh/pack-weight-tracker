@@ -15,6 +15,20 @@ export type GearItem = {
   locationId?: string;
   /** R0085 — TrailWeigh-owned compressed copy of item photo (data URL); never the original device file */
   photoDataUrl?: string;
+  /**
+   * Phase 1-ML — Optional foreign key to a MasterItem.id in the Master Library.
+   * Absent  = item was added without master linking; it is entirely list-local.
+   * Present = item was added from or saved to the Master Library.
+   *
+   * This is a one-way, non-enforced reference:
+   *   • Editing this GearItem (rename, weight, category) never propagates to
+   *     the linked MasterItem.
+   *   • Deleting the MasterItem does NOT delete or modify this GearItem — the
+   *     field just becomes a dangling reference that resolves to null at lookup.
+   *     The GearItem remains fully functional either way.
+   *   • No automatic sync ever runs from Master List to existing checklists.
+   */
+  masterItemId?: string;
 };
 
 export type PackState = {
@@ -603,6 +617,8 @@ export function usePackData(
           qty: prefill?.qty ?? 1,
           checked: prefill?.checked ?? true,
           expendable: prefill?.expendable ?? false,
+          // Phase 1-ML: forward master library link when adding from master list
+          masterItemId: prefill?.masterItemId,
         }],
       },
     }));

@@ -1,15 +1,18 @@
 /**
- * bgPhotoStore.ts  —  Prompt 016B
+ * bgPhotoStore.ts  —  Prompt 016B (updated Phase 1-ML)
  *
- * IndexedDB-backed blob store for custom background photos.
+ * IndexedDB-backed blob store for custom background photos and Master List
+ * item photos.
  *
- * Database     : 'trailweigh'
- * Version      : 1
- * Object store : 'bgPhotos'   keyPath: 'photoId'
+ * Database : 'trailweigh'
+ * Version  : 2  (bumped from 1 to add Master List object stores)
  *
- * Record shape :
- *   { photoId: string, blob: Blob, mimeType: string,
- *     width: number, height: number }
+ * Object stores (all keyPath: 'photoId' / 'id' as noted):
+ *   v1  'bgPhotos'              keyPath: 'photoId' — background photo blobs
+ *   v2  'masterList'            keyPath: 'id'      — MasterItem records
+ *   v2  'masterItemPhotos'      keyPath: 'photoId' — Master List item photo blobs
+ *   v2  'masterListTrash'       keyPath: 'id'      — soft-deleted MasterItems
+ *   v2  'masterItemPhotosTrash' keyPath: 'photoId' — soft-deleted item photo blobs
  *
  * All photo binary data lives here.  Theme metadata in localStorage stores
  * only photo IDs.  The active-background state stores only a photoId reference.
@@ -17,9 +20,15 @@
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-export const BG_DB_NAME   = 'trailweigh';
-export const BG_DB_STORE  = 'bgPhotos';
-export const BG_DB_VERSION = 1;
+export const BG_DB_NAME    = 'trailweigh';
+export const BG_DB_STORE   = 'bgPhotos';
+export const BG_DB_VERSION = 2;          // bumped: v2 adds Master List stores
+
+/** Master List object store names — used by masterList.ts */
+export const ML_STORE              = 'masterList'            as const;
+export const ML_PHOTO_STORE        = 'masterItemPhotos'      as const;
+export const ML_TRASH_STORE        = 'masterListTrash'       as const;
+export const ML_PHOTO_TRASH_STORE  = 'masterItemPhotosTrash' as const;
 
 /** Maximum long-edge pixel dimension before downscaling. */
 export const MAX_PHOTO_LONG_EDGE = 1920;
@@ -42,16 +51,45 @@ export function openPhotoDb(): Promise<IDBDatabase> {
   if (_db) return Promise.resolve(_db);
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(BG_DB_NAME, BG_DB_VERSION);
+
     req.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(BG_DB_STORE)) {
+      const db         = (e.target as IDBOpenDBRequest).result;
+      const oldVersion = e.oldVersion;           // 0 = fresh install
+      // v1 stores ─────────────────────────────────────────────────────────
+      if (oldVersion < 1) {
         db.createObjectStore(BG_DB_STORE, { keyPath: 'photoId' });
       }
+      // v2 stores — Master List ────────────────────────────────────────────
+      if (oldVersion < 2) {
+        db.createObjectStore(ML_STORE,             { keyPath: 'id'      });
+        db.createObjectStore(ML_PHOTO_STORE,       { keyPath: 'photoId' });
+        db.createObjectStore(ML_TRASH_STORE,       { keyPath: 'id'      });
+        db.createObjectStore(ML_PHOTO_TRASH_STORE, { keyPath: 'photoId' });
+      }
     };
+
+    /** Another tab is mid-upgrade and waiting for us to release the DB.
+     *  Close our stale connection so the upgrade can proceed. */
+    req.onblocked = () => {
+      console.warn('[trailweigh/db] upgrade blocked — closing stale connection');
+      _db?.close();
+      _db = null;
+    };
+
     req.onsuccess = (e) => {
       _db = (e.target as IDBOpenDBRequest).result;
-      resolve(_db!);
+
+      /** A newer tab has opened the DB at a higher version.
+       *  Release our connection so the upgrade is not blocked. */
+      _db.onversionchange = () => {
+        console.warn('[trailweigh/db] version change from another tab — closing');
+        _db?.close();
+        _db = null;
+      };
+
+      resolve(_db);
     };
+
     req.onerror = () => reject(req.error);
   });
 }
