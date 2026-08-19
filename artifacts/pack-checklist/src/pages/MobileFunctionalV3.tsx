@@ -446,7 +446,8 @@ function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayPro
       </div>
 
       {/* Preview body — R0081: all items, no filter, no dimming */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+      {/* R0091: tw-sa-8 adds env(safe-area-inset-bottom) so the last item clears the home indicator */}
+      <div className="tw-sa-8" style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
           <PreviewBody
             data={displayData}
@@ -533,7 +534,8 @@ function ChecklistOverlay({
       </div>
 
       {/* PreviewBody */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+      {/* R0091: tw-sa-8 adds env(safe-area-inset-bottom) so the last item clears the home indicator */}
+      <div className="tw-sa-8" style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
           <PreviewBody
             data={sandbox.items}
@@ -685,7 +687,8 @@ function SummaryOverlay({ sandbox, onClose }: SummaryOverlayProps) {
         </span>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* R0091: tw-sa-12 adds env(safe-area-inset-bottom) to the existing 12px bottom padding */}
+      <div className="tw-sa-12" style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
           <WeightSummary
             data={sandbox.items}
@@ -738,7 +741,8 @@ function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayPro
         </span>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
+      {/* R0091: tw-sa-12 adds env(safe-area-inset-bottom) to the existing 12px bottom padding */}
+      <div className="tw-sa-12" style={{ flex: 1, overflowY: 'auto', padding: '12px 0' }}>
         <BarStyleProvider value={{ barColor: '', barFont: '', barTextColor: '', barTransparency: 1 }}>
           <ImportGearPanel
             categoryOrder={categoryOrder}
@@ -1943,7 +1947,8 @@ function FooterPageView({ pageId, onBack, isAuthenticated, navigate, onOpenSourc
       </div>
 
       {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
+      {/* R0091: tw-sa-40 extends existing 40px bottom padding with safe-area inset */}
+      <div className="tw-sa-40" style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
         {/* For about/help/how-it-works, the content component renders its own h1 */}
         {!contentOwnsTitle.has(pageId) && (
           <h1 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
@@ -3688,6 +3693,13 @@ function MobileFunctionalV3Inner() {
              Duplicate max-height rule: browser uses 70dvh if supported, else 70vh. */
           .tw-cat-sheet{max-height:70vh;max-height:70dvh;
             padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))!important}
+          /* R0091: safe-area for full-screen overlay scroll areas.
+             position:absolute;inset:0 overlays inside the 100dvh root extend to the
+             physical screen bottom on Face ID iPhones (home indicator ≈34 px).
+             Base values match each container's existing CSS padding shorthand bottom. */
+          .tw-sa-8{padding-bottom:calc(8px + env(safe-area-inset-bottom,0px))!important}
+          .tw-sa-12{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))!important}
+          .tw-sa-32{padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))!important}
         `}</style>
 
         {/* ── APP BAR — R0082: hamburger added ── */}
@@ -5227,7 +5239,8 @@ function MobileFunctionalV3Inner() {
               <div style={{ flex: 1 }}/>
             </div>
             {/* Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 32px' }}>
+            {/* R0091: tw-sa-32 extends existing 32px bottom padding (< 34px home indicator) with safe-area inset */}
+            <div className="tw-sa-32" style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 32px' }}>
               {shareLoading ? (
                 <div style={{ textAlign: 'center', paddingTop: 48, color: MUTED, fontSize: 14 }}>
                   <div style={{ marginBottom: 12, fontSize: 28 }}>⏳</div>
@@ -5295,7 +5308,8 @@ function MobileFunctionalV3Inner() {
               </button>
             </div>
             {/* Scrollable content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
+            {/* R0091: tw-sa-40 extends existing 40px bottom padding with safe-area inset */}
+            <div className="tw-sa-40" style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 40px' }}>
               <h1 style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: PRIMARY, marginBottom: 16 }}>
                 Sources &amp; References
               </h1>
