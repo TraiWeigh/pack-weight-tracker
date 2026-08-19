@@ -3,6 +3,7 @@ import { useLocation, useParams } from 'wouter';
 import { INCOMING_SHARE_KEY } from '../hooks/usePackData';
 import type { PackState, CategoryMeta } from '../hooks/usePackData';
 import { calcTotalOz, formatWeight, largeUnit, smallUnit } from '../lib/weightUtils';
+import type { UnitSystem } from '../lib/weightUtils';
 import { Tent, ArrowRight, UserPlus } from 'lucide-react';
 import type { Background } from '../components/BackgroundPicker';
 import { PRESETS, getFullUrl } from '../components/BackgroundPicker';
@@ -17,6 +18,8 @@ interface StoredPayload {
   bgFade?: number;
   bgTone?: 'light' | 'dark';
   bgSize?: 'cover' | 'contain';
+  /** Sender's active unit system — initialises the recipient's unit display. */
+  unit?: UnitSystem;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -60,7 +63,7 @@ function ReadOnlyPackView({
 }) {
   const { data, categoryOrder, categoryMeta, background, bgFade = 1, bgTone = 'light', bgSize = 'cover' } = payload;
   const [copied, setCopied] = useState(false);
-  const system = 'imperial' as const;
+  const [system, setSystem] = useState<UnitSystem>(payload.unit ?? 'metric');
   const lu = largeUnit(system);
   const su = smallUnit(system);
 
@@ -120,13 +123,38 @@ function ReadOnlyPackView({
             <p className="text-xs text-muted-foreground">
               This is a view-only pack list. Sign in or create a free account to save your own copy.
             </p>
-            <button
-              onClick={handleAdd}
-              className="flex items-center gap-1.5 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap flex-shrink-0"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              Add
-            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Unit toggle */}
+              <div className="flex items-center rounded-lg border border-border bg-background overflow-hidden text-xs font-semibold">
+                <button
+                  onClick={() => setSystem('imperial')}
+                  className={`px-2.5 py-1 transition-colors ${
+                    system === 'imperial'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  lbs
+                </button>
+                <button
+                  onClick={() => setSystem('metric')}
+                  className={`px-2.5 py-1 transition-colors ${
+                    system === 'metric'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  kg
+                </button>
+              </div>
+              <button
+                onClick={handleAdd}
+                className="flex items-center gap-1.5 text-xs font-semibold bg-primary text-primary-foreground px-3 py-1.5 rounded-lg hover:bg-primary/90 transition-colors whitespace-nowrap"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                Add
+              </button>
+            </div>
           </div>
         </div>
       </header>

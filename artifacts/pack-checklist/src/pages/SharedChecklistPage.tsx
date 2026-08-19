@@ -1689,14 +1689,17 @@ function SharedPackListContent({ snapshot }: { snapshot: SharePayload }) {
                 Gear Tracker
               </p>
             </div>
-            {/* Print — only action available to pack-list share recipients */}
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
-            >
-              <Printer className="w-3.5 h-3.5" />
-              Print
-            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <UnitToggle />
+              {/* Print — only action available to pack-list share recipients */}
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border hover:border-foreground/30 bg-card hover:bg-muted/50 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print
+              </button>
+            </div>
           </div>
 
           {/* View-only banner */}
@@ -1770,7 +1773,7 @@ function SharedPackListInner({ snapshot }: { snapshot: SharePayload }) {
   }
 
   return (
-    <UnitProvider initialSystem={snapshot.unit}>
+    <UnitProvider initialSystem={snapshot.unit ?? 'metric'}>
       <SharedPackListContent snapshot={snapshot} />
     </UnitProvider>
   );
@@ -1789,7 +1792,7 @@ function SharedChecklistInner({ snapshot }: { snapshot: SharePayload }) {
   }
 
   return (
-    <UnitProvider initialSystem={snapshot.unit}>
+    <UnitProvider initialSystem={snapshot.unit ?? 'metric'}>
       <SharedChecklistContent
         key={snapshot.categoryOrder.join(',')} // stable key for the snapshot
         snapshot={snapshot}
