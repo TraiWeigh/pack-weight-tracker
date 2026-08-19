@@ -68,6 +68,7 @@ import type { LockerEntry } from '../components/LockerPanel';
 import { getCategoryTheme } from '../lib/mobileCategoryTheme';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit, gramsToOz } from '../lib/weightUtils';
 import { useUnit, UnitProvider } from '../context/UnitContext';
+import { MasterListScreen } from '../components/MasterListScreen';
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 type PackState = { [category: string]: GearItem[] };
@@ -80,7 +81,7 @@ type SandboxStore = { items: PackState; order: string[]; meta: Record<string, Ca
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
 // R002: bottom card-deck navigation — DeckId selects the raised deck; screenStack
 // carries full-screen sub-pages (footer pages, share, sources).
-type MobileScreen = 'list' | 'home' | 'footer-page' | 'share' | 'sources';
+type MobileScreen = 'list' | 'home' | 'footer-page' | 'share' | 'sources' | 'master-list';
 type FooterPageId =
   | 'about' | 'how-it-works' | 'sources' | 'help'
   | 'report-problem' | 'contact' | 'privacy' | 'terms'
@@ -4941,9 +4942,9 @@ function MobileFunctionalV3Inner() {
                     subtitle: 'Full item library',
                     color: '#6B6B3A',
                     Icon: BookOpen,
-                    disabled: true,
-                    badge: 'Soon',
-                    onClick: undefined as (() => void) | undefined,
+                    disabled: false,
+                    badge: undefined as string | undefined,
+                    onClick: (() => pushScreen({ screen: 'master-list' })) as (() => void) | undefined,
                   },
                   {
                     label: 'Locations',
@@ -5024,6 +5025,14 @@ function MobileFunctionalV3Inner() {
             </div>
             </div>{/* end scrollable content */}
           </div>
+        )}
+
+        {/* ── MASTER LIST SCREEN OVERLAY ────────────────────────────────────────
+            Same absolute geometry as home screen: top:52, zIndex:35, CARD_BG bg.
+            The list + refs stay mounted behind — no checklist state is lost.
+            ─────────────────────────────────────────────────────────────────── */}
+        {currentScreen.screen === 'master-list' && (
+          <MasterListScreen onBack={popScreen}/>
         )}
 
         {/* ── BOTTOM BOX-GROUP BAR (R007 — 4 sliding groups) ── */}

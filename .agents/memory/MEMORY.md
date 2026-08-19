@@ -27,3 +27,4 @@
 - [R0085 locations + photos + cat direct-edit](r0085-feature-lessons.md) — R0085C: dropdown+wedge hybrid, Location Photo, mutateSandboxEdit split, narrowed auto-switch, "View/Edit Photo" label fix.
 - [Home screen architecture](home-screen-architecture.md) — absolute overlay zIndex 35 (below bottom bar zIndex 40); setScreenStack([list]) for back-navigation; conditional app-bar shadow on Home.
 - [Category row overflow fix](category-row-overflow-fix.md) — CSS Grid inside flex:1/minWidth:0 MUST have width:'100%'; iOS Safari WebKit sizes grid tracks from max-content without it; weight cell needs maxWidth:96 cap.
+- [Master List Phase 2 — UI screen](master-list-phase2.md) — layout clearance, toast timing, getCategoryTheme(name,index), putMasterItemAndPhoto 6-arg signature, WriteResult.message not .error.
