@@ -15,21 +15,12 @@
  * Real-iPhone verification is required to confirm that the home indicator no
  * longer overlaps content in overlays and sheets on Face ID devices.
  *
- * Safari chrome retraction status (honest assessment):
- *   The R0090 change removed overflow:hidden from <html> but the document STILL
- *   does not scroll (body has overflow:hidden; .tw-v3-root is a 100dvh closed
- *   container). window.scrollY stays 0 and Safari's chrome CANNOT retract.
- *   Full chrome retraction requires converting the shell to document-level
- *   scroll, which conflicts with:
- *     a) position:absolute overlays (Home hero, deck overlays, all full-screen
- *        overlays) — they would scroll with the document instead of staying fixed;
- *     b) isCatLong bounded-scroll — relies on programmatic scrollTop on a fixed-
- *        height inner div; with document scroll this must become window.scrollTo
- *        plus document.documentElement overflow toggling.
- *   This is a full-shell rearchitecture (~2-3 days, high regression risk) and is
- *   out of scope for the current sprint. Filed as a known limitation.
+ * Safari chrome retraction status:
+ *   The checklist shell is a real document-flow scroller. This suite verifies
+ *   that the document has scrollable height and that a native-style window scroll
+ *   changes document scrollY rather than relying on an inner main-scroll element.
  */
-import { test, expect, gotoDemo } from '../helpers/trailweigh';
+import { test, expect, gotoDemo, addCategory } from '../helpers/trailweigh';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -160,8 +151,8 @@ test.describe('R0090/R0091 — bottom nav & safe-area CSS', () => {
   test('safe-area CSS classes are present in rendered CSSOM', async ({ page, errors }) => {
     await gotoDemo(page);
 
-    // R0090 sheet-panel classes
-    for (const token of ['tw-sa-36', 'tw-sa-40', 'tw-cat-sheet', 'tw-ms-sheet']) {
+    // R0090 sheet-panel classes rendered by V3 itself
+    for (const token of ['tw-sa-36', 'tw-sa-40', 'tw-cat-sheet']) {
       const found = await stylesheetContains(page, token);
       expect(found, `CSS class .${token} must be defined in embedded <style>`).toBe(true);
     }
@@ -171,6 +162,15 @@ test.describe('R0090/R0091 — bottom nav & safe-area CSS', () => {
       const found = await stylesheetContains(page, token);
       expect(found, `CSS class .${token} must be defined in embedded <style>`).toBe(true);
     }
+
+    // Master List owns its sheet style locally, so mount that screen before
+    // checking the scoped .tw-ms-sheet rule.
+    await page.getByTestId('hamburger-btn').click();
+    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    await page.getByRole('button', { name: 'Master List', exact: true }).click();
+    await page.getByTestId('ml-add-btn').click();
+    await page.waitForTimeout(150);
+    expect(await stylesheetContains(page, 'tw-ms-sheet')).toBe(true);
 
     expect(errors.pageErrors).toEqual([]);
   });
@@ -196,6 +196,11 @@ test.describe('R0090/R0091 — bottom nav & safe-area CSS', () => {
 
   test('MasterList sheet .tw-ms-sheet max-height rule uses vh and/or dvh', async ({ page, errors }) => {
     await gotoDemo(page);
+    await page.getByTestId('hamburger-btn').click();
+    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    await page.getByRole('button', { name: 'Master List', exact: true }).click();
+    await page.getByTestId('ml-add-btn').click();
+    await page.waitForTimeout(150);
     const found = await page.evaluate(() => {
       for (const sheet of Array.from(document.styleSheets)) {
         try {
@@ -208,6 +213,37 @@ test.describe('R0090/R0091 — bottom nav & safe-area CSS', () => {
       return false;
     });
     expect(found, '.tw-ms-sheet must have a max-height rule').toBe(true);
+    expect(errors.pageErrors).toEqual([]);
+  });
+
+  test('document flow scrolls through window instead of the main-scroll div', async ({ page, errors }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoDemo(page);
+    for (let i = 0; i < 5; i++) {
+      await addCategory(page, `Scroll Test ${i}`);
+    }
+    await page.waitForTimeout(250);
+
+    await page.getByRole('button', { name: /^Open .+ category$/ }).first().click();
+    await page.waitForTimeout(350);
+
+    const initial = await page.evaluate(() => ({
+      scrollY: window.scrollY,
+      documentHeight: document.documentElement.scrollHeight,
+      viewportHeight: window.innerHeight,
+      mainOverflowY: getComputedStyle(document.querySelector('[data-testid="main-scroll"]')!).overflowY,
+    }));
+    expect(initial.documentHeight, 'document must be taller than the viewport').toBeGreaterThan(initial.viewportHeight);
+    expect(initial.mainOverflowY, 'main-scroll must not be the primary scroller').not.toBe('auto');
+
+    await page.evaluate(() => window.scrollBy(0, 180));
+    await page.waitForTimeout(50);
+    const after = await page.evaluate(() => ({
+      scrollY: window.scrollY,
+      mainScrollTop: document.querySelector('[data-testid="main-scroll"]')?.scrollTop ?? -1,
+    }));
+    expect(after.scrollY, 'window scrollY must change during document scrolling').toBeGreaterThan(0);
+    expect(after.mainScrollTop, 'main-scroll must remain stationary').toBe(0);
     expect(errors.pageErrors).toEqual([]);
   });
 

@@ -384,7 +384,7 @@ function PreviewOverlay({ sandbox, system, onPrint, onClose }: PreviewOverlayPro
     <div
       data-testid="preview-overlay"
       style={{
-        position: 'absolute', inset: 0, background: OVERLAY_BG,
+        position: 'fixed', inset: 0, background: OVERLAY_BG,
         zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
       }}
     >
@@ -480,7 +480,7 @@ function ChecklistOverlay({
 }: ChecklistOverlayProps) {
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      position: 'fixed', inset: 0, background: OVERLAY_BG,
       zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
     }}>
       {/* Header */}
@@ -667,7 +667,7 @@ interface SummaryOverlayProps {
 function SummaryOverlay({ sandbox, onClose }: SummaryOverlayProps) {
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      position: 'fixed', inset: 0, background: OVERLAY_BG,
       zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
     }}>
       {/* Header */}
@@ -721,7 +721,7 @@ interface ScannerOverlayProps {
 function ScannerOverlay({ categoryOrder, onAddItem, onClose }: ScannerOverlayProps) {
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: OVERLAY_BG,
+      position: 'fixed', inset: 0, background: OVERLAY_BG,
       zIndex: 50, display: 'flex', flexDirection: 'column', fontFamily: SANS,
     }}>
       {/* Header */}
@@ -1138,7 +1138,10 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           if (justDraggedRef.current) { justDraggedRef.current = false; e.stopPropagation(); e.preventDefault(); }
         }}
         style={{
-          position: 'sticky', bottom: 0, left: 0, right: 0,
+          position: 'fixed',
+          left: 'max(0px, calc(50% - 215px))',
+          right: 'max(0px, calc(50% - 215px))',
+          bottom: 0,
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
@@ -1442,7 +1445,10 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
         aria-hidden="true"
         data-testid="deck-backdrop"
         style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: bottomOffset,
+          position: 'fixed', top: 0,
+          left: 'max(0px, calc(50% - 215px))',
+          right: 'max(0px, calc(50% - 215px))',
+          bottom: bottomOffset,
           zIndex: 30, background: `rgba(20,28,24,${risen ? 0.45 : 0})`,
           transition: `background ${motion}`,
         }}
@@ -1453,8 +1459,11 @@ function CardDeck({ deckLabel, cards, activeCardId, onActivateCard, onClose, emp
         aria-label={deckLabel}
         data-testid="deck-panel"
         style={{
-          position: 'absolute', left: 0, right: 0, bottom: bottomOffset,
-          maxHeight: `calc(100% - ${bottomOffset + 60}px)`,
+          position: 'fixed',
+          left: 'max(0px, calc(50% - 215px))',
+          right: 'max(0px, calc(50% - 215px))',
+          bottom: bottomOffset,
+          maxHeight: `calc(100dvh - ${bottomOffset + 60}px)`,
           zIndex: 31,
           display: 'flex', flexDirection: 'column',
           padding: 0,
@@ -1934,7 +1943,7 @@ function FooterPageView({ pageId, onBack, isAuthenticated, navigate, onOpenSourc
   };
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
       {/* Sticky back bar */}
       <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
         <button
@@ -2050,6 +2059,7 @@ function MobileFunctionalV3Inner() {
   // R0076 repair: track previous item count for the open category so we can
   // auto-scroll to a newly added item without re-running the initial scroll-in.
   const prevOpenCatItemCountRef = useRef(0);
+
   // Callback ref: the component mounts the nav only after its loading gate, so a
   // one-shot effect would see null — attach measurement whenever the node appears.
   const navRef = useCallback((el: HTMLDivElement | null) => {
@@ -2079,6 +2089,38 @@ function MobileFunctionalV3Inner() {
   const [openCatName, setOpenCatName] = useState<string | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
   const [expandedItem, setExpandedItem] = useState<{ cat: string; id: string } | null>(null);
+
+  // R0091: long-category mode owns the document viewport with the canonical
+  // iOS body-lock pattern. The saved scroll position is restored exactly when
+  // the bounded item viewport is released.
+  useEffect(() => {
+    if (!isCatLong || !openCatName || allExpanded) return;
+    const body = document.body;
+    const scrollY = window.scrollY;
+    const previous = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+    body.style.position = 'fixed';
+    body.style.top = `-${scrollY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+    body.style.overflow = 'hidden';
+    return () => {
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.left = previous.left;
+      body.style.right = previous.right;
+      body.style.width = previous.width;
+      body.style.overflow = previous.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [isCatLong, openCatName, allExpanded]);
 
   // Add category UI (R004 Part 4 — inline control removed; ADD deck is the only entry)
   const [newCatName, setNewCatName] = useState('');
@@ -2647,11 +2689,9 @@ function MobileFunctionalV3Inner() {
       setTimeout(() => recalcCatOverflow(), 350);
       return;
     }
-    const ms = mainScrollRef.current;
-    if (!ms) return;
-    const pageH = ms.clientHeight - summaryH - BAR_PEEK_H - 44;
-    ms.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
-  }, [isCatLong, summaryH, recalcCatOverflow]);
+    const pageH = window.innerHeight - 52 - summaryH - navHeight - BAR_PEEK_H - 44;
+    window.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
+  }, [isCatLong, summaryH, navHeight, recalcCatOverflow]);
 
   // R0076 repair: shared measurement helper — reads live DOM positions and updates
   // isCatLong / availItemH.  Called both from the initial open-effect and from the
@@ -2681,9 +2721,8 @@ function MobileFunctionalV3Inner() {
       prevOpenCatItemCountRef.current = 0;
       return;
     }
-    const ms     = mainScrollRef.current;
     const listEl = catListRef.current;
-    if (!ms || !listEl) return;
+    if (!listEl) return;
     const catEl = listEl.querySelector(`[data-cat="${CSS.escape(openCatName)}"]`) as HTMLElement | null;
     if (!catEl) return;
 
@@ -2697,24 +2736,17 @@ function MobileFunctionalV3Inner() {
     let raf2 = -1;
 
     raf1 = requestAnimationFrame(() => {
-      // NOTE: Do NOT set ms.style.overflowY = 'auto' here.
-      // overflow:hidden elements still accept programmatic scrollTop changes (per spec),
-      // so there is no need to unlock the outer scroll.  The previous R0076P2 approach
-      // of setting overflowY='auto' to allow scrollTop changes was unnecessary, and the
-      // inline style persisted when isCatLong was already true (no re-render → no
-      // reset), leaving main-scroll permanently open to native touch scroll (R0076P3 Defect 1).
-
       const summaryEl = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
       const summaryBtm = summaryEl ? summaryEl.getBoundingClientRect().bottom : summaryH;
       const catTop     = catEl.getBoundingClientRect().top;
       // delta = how far the category header top is from its target (summaryBtm)
       const delta  = catTop - summaryBtm;
-      const target = Math.max(0, ms.scrollTop + delta);
+      const target = Math.max(0, window.scrollY + delta);
 
       // Direct property assignment — guaranteed synchronous in all browsers.
       // ms.scrollTo({ behavior: 'instant' }) is NOT reliably synchronous in Chrome
       // (it queues a task like smooth scroll); ms.scrollTop = N is always instant.
-      ms.scrollTop = Math.max(0, target);
+      document.documentElement.scrollTop = Math.max(0, target);
 
       // Second RAF: re-read the actual settled geometry and correct any sub-pixel residual.
       raf2 = requestAnimationFrame(() => {
@@ -2722,7 +2754,7 @@ function MobileFunctionalV3Inner() {
         const summaryBtm2 = summaryEl2 ? summaryEl2.getBoundingClientRect().bottom : summaryH;
         const residual    = catEl.getBoundingClientRect().top - summaryBtm2;
         if (Math.abs(residual) > 0.5) {
-          ms.scrollTop = Math.max(0, ms.scrollTop + residual);
+          document.documentElement.scrollTop = Math.max(0, window.scrollY + residual);
         }
         // Header is now exactly at summaryBtm — run long-mode measurement and lock.
         remeasureLongMode();
@@ -3625,11 +3657,12 @@ function MobileFunctionalV3Inner() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflowX: 'hidden' }}>
+      <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflowX: 'hidden' }}>
       <div className="tw-v3-root" style={{
-        width: '100%', maxWidth: 430, height: '100dvh',
+        width: '100%', maxWidth: 430, minHeight: '100dvh',
+        paddingTop: 52, paddingBottom: navHeight,
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
-        fontFamily: SANS, position: 'relative', overflow: 'hidden',
+        fontFamily: SANS, position: 'relative', overflow: 'visible',
       }}>
 
         {/* B6: hide webkit scrollbar chrome on marked scrollers (scrolling unaffected)
@@ -3652,16 +3685,11 @@ function MobileFunctionalV3Inner() {
           /* R006 Part 5 — the app shell is pinned to the viewport: no page/body
              rubber-band bounce, no blank area above/below the app. Only the
              intended internal regions scroll. */
-          /* R0090: split html/body document lock — html loses overflow:hidden so that
-             on iOS 16+, scroll events from the inner main-scroll propagate to the
-             html element and can trigger Safari chrome retraction. Body keeps
-             overflow:hidden to prevent rubber-band bounce on pull-to-refresh.
-             .tw-v3-root height:100vh is a dvh fallback for iOS < 15.4: the inline
-             style height:100dvh overrides it whenever dvh units are supported. */
-          html:has(.tw-v3-root){overscroll-behavior:none;height:100%}
-          body:has(.tw-v3-root){overscroll-behavior:none;height:100%;overflow:hidden}
-          .tw-v3-root{overscroll-behavior:none;height:100vh}
-          .tw-v3-root [data-testid="main-scroll"]{overscroll-behavior:contain}
+           /* R0091: the checklist uses the document as its normal scroller so
+              iOS Safari can retract its address bar during a real swipe. */
+           html:has(.tw-v3-root){overscroll-behavior:none}
+           body:has(.tw-v3-root){overscroll-behavior:none}
+           .tw-v3-root{overscroll-behavior:none;min-height:100vh}
           /* R006 Part 6 — Trail palette dropdown: the flattened Weight
              Distribution panel must not clip the menu (the shared card ships
              overflow-hidden), and the menu is pinned to the panel's right edge
@@ -3704,6 +3732,10 @@ function MobileFunctionalV3Inner() {
 
         {/* ── APP BAR — R0082: hamburger added ── */}
         <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 'max(0px, calc(50% - 215px))',
+          right: 'max(0px, calc(50% - 215px))',
           height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
           display: 'flex', alignItems: 'center', padding: '0 8px', gap: 0,
           flexShrink: 0, zIndex: 10, overflow: 'hidden',
@@ -3815,6 +3847,7 @@ function MobileFunctionalV3Inner() {
              getBoundingClientRect().bottom is a stable viewport-relative constant
              rather than a scroll-position-dependent value. */}
         <div ref={summaryRef} data-testid="list-summary-bar" style={{
+          position: 'sticky', top: 52,
           flexShrink: 0, zIndex: 4,
         }}>
 
@@ -3930,12 +3963,9 @@ function MobileFunctionalV3Inner() {
             if (!el || el.dataset.swipeKey !== openSwipe) setOpenSwipe(null);
           }}
           style={{
-            flex: 1,
-            // R0076 repair: freeze the parent scroller while a long category is open so
-            // the category header and Add Item bar cannot travel with the parent scroll.
-            // The item-row container still scrolls independently via its own overflowY.
-            overflowY: (isCatLong && !!openCatName && !allExpanded) ? 'hidden' : 'auto',
-            overflowX: 'hidden', position: 'relative', scrollbarWidth: 'none',
+             flex: '0 0 auto',
+             overflow: 'visible',
+             overflowX: 'clip', position: 'relative', scrollbarWidth: 'none',
           }}
         >
 
@@ -5217,7 +5247,7 @@ function MobileFunctionalV3Inner() {
         {/* Share */}
         {currentScreen.screen === 'share' && (
           <div style={{
-            position: 'absolute', inset: 0, zIndex: 50,
+            position: 'fixed', inset: 0, zIndex: 50,
             background: PAGE_BG, display: 'flex', flexDirection: 'column',
             fontFamily: SANS,
           }}>
@@ -5296,7 +5326,7 @@ function MobileFunctionalV3Inner() {
 
         {/* Sources & References — full-screen in-app page (027R) */}
         {currentScreen.screen === 'sources' && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 60, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: PAGE_BG, display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
             {/* Sticky back bar */}
             <div style={{ position: 'sticky', top: 0, background: PAGE_BG, zIndex: 5, borderBottom: `1px solid ${DIVIDER}`, height: 48, display: 'flex', alignItems: 'center', padding: '0 16px', flexShrink: 0 }}>
               <button

@@ -1265,7 +1265,7 @@ export function MasterListScreen({ onBack }: MasterListScreenProps) {
       role="main"
       aria-label="Master List"
       style={{
-        position: 'absolute', top: HEADER_H, left: 0, right: 0, bottom: 0,
+        position: 'fixed', top: HEADER_H, left: 0, right: 0, bottom: 0,
         zIndex: 35, background: PAGE_BG,
         display: 'flex', flexDirection: 'column', fontFamily: SANS,
         overscrollBehavior: 'contain',
