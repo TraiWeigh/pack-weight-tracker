@@ -2032,7 +2032,8 @@ function MobileFunctionalV3Inner() {
   const [navHeight, setNavHeight] = useState(NAV_H);
   const navRoRef = useRef<ResizeObserver | null>(null);
 
-  // R0075: measured List Summary bar height — sticky top for open category header
+  // R0075: measured List Summary bar height — fixed second layer below the AppBar.
+  // The matching spacer in the document flow preserves category geometry.
   const [summaryH, setSummaryH] = useState(0);
   const summaryRoRef = useRef<ResizeObserver | null>(null);
   const summaryRef = useCallback((el: HTMLDivElement | null) => {
@@ -2044,6 +2045,21 @@ function MobileFunctionalV3Inner() {
     const ro = new ResizeObserver(update);
     try { ro.observe(el, { box: 'border-box' }); } catch { ro.observe(el); }
     summaryRoRef.current = ro;
+  }, []);
+
+  // R0091: Home's green hero is a fixed second layer below the AppBar.
+  // The matching spacer keeps the Home content below the measured hero height.
+  const [homeHeroH, setHomeHeroH] = useState(0);
+  const homeHeroRoRef = useRef<ResizeObserver | null>(null);
+  const homeHeroRef = useCallback((el: HTMLDivElement | null) => {
+    homeHeroRoRef.current?.disconnect();
+    homeHeroRoRef.current = null;
+    if (!el) return;
+    const update = () => setHomeHeroH(Math.round(el.getBoundingClientRect().height));
+    update();
+    const ro = new ResizeObserver(update);
+    try { ro.observe(el, { box: 'border-box' }); } catch { ro.observe(el); }
+    homeHeroRoRef.current = ro;
   }, []);
 
   // R0075: refs for scroll-based overflow chevron on the contextual Add Item bar
@@ -2089,38 +2105,6 @@ function MobileFunctionalV3Inner() {
   const [openCatName, setOpenCatName] = useState<string | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
   const [expandedItem, setExpandedItem] = useState<{ cat: string; id: string } | null>(null);
-
-  // R0091: long-category mode owns the document viewport with the canonical
-  // iOS body-lock pattern. The saved scroll position is restored exactly when
-  // the bounded item viewport is released.
-  useEffect(() => {
-    if (!isCatLong || !openCatName || allExpanded) return;
-    const body = document.body;
-    const scrollY = window.scrollY;
-    const previous = {
-      position: body.style.position,
-      top: body.style.top,
-      left: body.style.left,
-      right: body.style.right,
-      width: body.style.width,
-      overflow: body.style.overflow,
-    };
-    body.style.position = 'fixed';
-    body.style.top = `-${scrollY}px`;
-    body.style.left = '0';
-    body.style.right = '0';
-    body.style.width = '100%';
-    body.style.overflow = 'hidden';
-    return () => {
-      body.style.position = previous.position;
-      body.style.top = previous.top;
-      body.style.left = previous.left;
-      body.style.right = previous.right;
-      body.style.width = previous.width;
-      body.style.overflow = previous.overflow;
-      window.scrollTo(0, scrollY);
-    };
-  }, [isCatLong, openCatName, allExpanded]);
 
   // Add category UI (R004 Part 4 — inline control removed; ADD deck is the only entry)
   const [newCatName, setNewCatName] = useState('');
@@ -3801,54 +3785,15 @@ function MobileFunctionalV3Inner() {
           {/* R0083P1: right-side hamburger removed — hamburger is always left */}
         </div>
 
-        {/* ── R0085: Category | Location view toggle bar ── */}
-        {/* Only appears when at least one item in the current list has an assigned location */}
-        {allItems.some(i => i.locationId) && (
-          <div
-            data-testid="view-mode-bar"
-            role="toolbar"
-            aria-label="List view mode"
-            style={{
-              display: 'flex', background: CARD_BG, borderBottom: `1px solid ${DIVIDER}`,
-              padding: '5px 14px', gap: 4, flexShrink: 0,
-            }}
-          >
-            <button
-              onClick={() => setViewMode('category')}
-              aria-pressed={viewMode === 'category'}
-              data-testid="view-mode-category"
-              style={{
-                flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
-                background: viewMode === 'category' ? NAV_ACTIVE : 'transparent',
-                color: viewMode === 'category' ? '#fff' : SECONDARY,
-                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
-              }}
-            >Category</button>
-            <button
-              onClick={() => setViewMode('location')}
-              aria-pressed={viewMode === 'location'}
-              data-testid="view-mode-location"
-              style={{
-                flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
-                background: viewMode === 'location' ? NAV_ACTIVE : 'transparent',
-                color: viewMode === 'location' ? '#fff' : SECONDARY,
-                fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
-              }}
-            >Location</button>
-          </div>
-        )}
-
         {/* ── STATIONARY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
-        {/* R0089: moved outside main-scroll — now a flex sibling directly below the
-             title bar (and optional location/category toggle bar). Physically anchored
-             to the header region; cannot scroll or rubber-band with the category
-             content beneath it. Matches the proven Home hero pattern.
-             summaryRef / summaryH measurements are preserved and more accurate here:
-             getBoundingClientRect().bottom is a stable viewport-relative constant
-             rather than a scroll-position-dependent value. */}
+        {/* R0091: true fixed second layer directly below the AppBar. The matching
+            measured spacer is rendered at the start of main-scroll below. */}
         <div ref={summaryRef} data-testid="list-summary-bar" style={{
-          position: 'sticky', top: 52,
-          flexShrink: 0, zIndex: 4,
+          position: 'fixed',
+          top: 52,
+          left: 'max(0px, calc(50% - 215px))',
+          right: 'max(0px, calc(50% - 215px))',
+          zIndex: 9,
         }}>
 
           {/* ── PACK SUMMARY STRUCTURAL BAR — square-edged, flush, no outer margin ── */}
@@ -3968,6 +3913,49 @@ function MobileFunctionalV3Inner() {
              overflowX: 'clip', position: 'relative', scrollbarWidth: 'none',
           }}
         >
+          {/* Reserve the fixed Summary's measured height in document flow. */}
+          <div
+            aria-hidden="true"
+            data-testid="list-summary-spacer"
+            style={{ height: summaryH }}
+          />
+
+          {/* R0085: the view toggle remains normal scrolling content below the
+              fixed Summary, rather than becoming another fixed layer. */}
+          {allItems.some(i => i.locationId) && (
+            <div
+              data-testid="view-mode-bar"
+              role="toolbar"
+              aria-label="List view mode"
+              style={{
+                display: 'flex', background: CARD_BG, borderBottom: `1px solid ${DIVIDER}`,
+                padding: '5px 14px', gap: 4, flexShrink: 0,
+              }}
+            >
+              <button
+                onClick={() => setViewMode('category')}
+                aria-pressed={viewMode === 'category'}
+                data-testid="view-mode-category"
+                style={{
+                  flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
+                  background: viewMode === 'category' ? NAV_ACTIVE : 'transparent',
+                  color: viewMode === 'category' ? '#fff' : SECONDARY,
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
+                }}
+              >Category</button>
+              <button
+                onClick={() => setViewMode('location')}
+                aria-pressed={viewMode === 'location'}
+                data-testid="view-mode-location"
+                style={{
+                  flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
+                  background: viewMode === 'location' ? NAV_ACTIVE : 'transparent',
+                  color: viewMode === 'location' ? '#fff' : SECONDARY,
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
+                }}
+              >Location</button>
+            </div>
+          )}
 
           {/* ── CATEGORY STACK (B5 — flush, touching, square-edged) ── */}
           {/* R0085C: Category list always rendered; in Location view, items with a location
@@ -4879,27 +4867,34 @@ function MobileFunctionalV3Inner() {
         </div>{/* end scrollable */}
 
         {/* ── HOME SCREEN OVERLAY (R0086) ─────────────────────────────────────────
-            Sits above the list content (zIndex 35) but below the bottom bar
-            (zIndex 40) so the tab bar and its top-edge shadow remain visible.
-            The list + refs stay mounted behind it — no checklist state is lost.
-            ───────────────────────────────────────────────────────────────────── */}
+            Fixed app viewport below the AppBar. The fixed hero is measured and
+            reserved inside the Home-only content scroller. The list + refs stay
+            mounted behind it, so no checklist state is lost. */}
         {currentScreen.screen === 'home' && (
           <div
             data-testid="home-screen"
             role="main"
             aria-label="TrailWeigh Home"
             style={{
-              position: 'absolute', top: 52, left: 0, right: 0, bottom: 0,
+              position: 'fixed', top: 52,
+              left: 'max(0px, calc(50% - 215px))',
+              right: 'max(0px, calc(50% - 215px))',
+              bottom: 0,
               zIndex: 35, background: CARD_BG,
               display: 'flex', flexDirection: 'column', fontFamily: SANS,
+              overflow: 'hidden',
             }}
           >
-            {/* ── HERO — green with depth shadow (R0087) ── */}
-            <div style={{
+            {/* ── HERO — fixed green second layer below the AppBar (R0091) ── */}
+            <div ref={homeHeroRef} data-testid="home-hero" style={{
+              position: 'fixed',
+              top: 52,
+              left: 'max(0px, calc(50% - 215px))',
+              right: 'max(0px, calc(50% - 215px))',
               background: SUMMARY_BG,
               padding: '24px 20px 28px',
               boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
-              flexShrink: 0, zIndex: 1,
+              zIndex: 36,
             }}>
               <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.60)', letterSpacing: '1.2px', textTransform: 'uppercase' }}>
                 TrailWeigh
@@ -4912,8 +4907,12 @@ function MobileFunctionalV3Inner() {
               </p>
             </div>
 
-            {/* ── Scrollable content — pinned below hero, scrolls independently ── */}
-            <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain' }}>
+            {/* ── Home-only scrollable content — starts below measured fixed hero ── */}
+            <div
+              data-testid="home-content-scroll"
+              style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain' }}
+            >
+            <div aria-hidden="true" data-testid="home-hero-spacer" style={{ height: homeHeroH }} />
 
             {/* ── USE-CASE GRID — 2 columns ── */}
             <div style={{ padding: '16px 14px 12px' }}>

@@ -1,0 +1,159 @@
+TRAILWEIGH — GOLD STANDARD REPLIT PROMPT
+Mobile Safari / iPhone Scroll Architecture Repair
+
+IMPORTANT: Work from the CURRENT Replit state. Inspect first. Do not assume a prior attempted fix landed.
+
+GOAL
+Repair the iPhone Safari/mobile vertical-scroll architecture without changing any previously USER-PASS TrailWeigh behavior.
+
+NON-NEGOTIABLE USER-PASS BASELINE
+1. The TrailWeigh header is already correct. It must remain permanently fixed and visually/functionally unchanged.
+2. Bottom Box Groups are already correct. They must remain permanently fixed and visually/functionally unchanged.
+3. On checklist/list screens, the List Summary panel must remain permanently fixed directly beneath the TrailWeigh header.
+4. On Home, the green Home hero must remain permanently fixed directly beneath the TrailWeigh header.
+5. Only the category/list content on checklist screens and the Home content below the green hero should vertically scroll.
+6. Long/open categories must not freeze iPhone Safari or globally disable normal document scrolling.
+7. Preserve all existing category/item accordion behavior, paging controls, Add Item behavior, drawers, slide gestures, swipe-to-delete, reordering, checklist semantics, selection state, bottom navigation behavior, and every other prior USER-PASS interaction.
+
+CURRENT KNOWN REGRESSIONS TO VERIFY BEFORE EDITING
+Previous read-only audits found:
+- The TrailWeigh header is fixed and correct.
+- Bottom Box Groups are fixed and correct.
+- List Summary is still implemented as sticky rather than a true fixed second layer.
+- Home is still using an absolute/inner-scroll architecture rather than a true fixed green hero second layer.
+- Long-category mode still applies a global body/document lock, including body position fixed / overflow hidden behavior, which conflicts with the newer Safari root/document-scroll architecture.
+- The bounded long-category item viewport, category paging controls, and Add Item bar already exist and should be preserved.
+
+GOLD STANDARD WORKFLOW
+
+A. INSPECT FIRST — NO EDITS YET
+Before modifying anything:
+1. Inspect the CURRENT active mobile implementation and identify the actual rendered code path for:
+   - TrailWeigh header
+   - List Summary
+   - category/list scrolling
+   - Home green hero
+   - Home content scrolling
+   - Bottom Box Groups
+   - long-category open state
+   - long-category bounded item viewport
+2. Confirm whether the known findings above are still true.
+3. Inspect recent relevant changes/diffs so the repair is based on the current state, not an older assumption.
+4. Identify exactly which element owns vertical scrolling in each mobile state.
+5. Do not modify the header or Bottom Box Groups if they remain USER-PASS.
+
+B. APPLY THE SMALLEST SAFE REPAIR
+Use the smallest reversible implementation that produces this architecture:
+
+CHECKLIST / LIST SCREEN
+- TrailWeigh header: fixed at top; unchanged.
+- List Summary: true fixed second layer immediately beneath the header.
+- Categories/list content: the only normal vertical scrolling content beneath List Summary.
+- Bottom Box Groups: fixed at bottom; unchanged.
+- Reserve the physical height occupied by the fixed List Summary so category content starts below it and never hides underneath it.
+- Preserve any existing List Summary measurement logic that is useful; do not create brittle hard-coded spacing if the panel can vary in height.
+- Do not reintroduce the old full-page inner-scroll architecture if the current Safari root/document-scroll architecture is otherwise correct.
+
+HOME
+- TrailWeigh header: fixed at top; unchanged.
+- Green Home hero: true fixed second layer immediately beneath the header.
+- Home content/cards/actions below the hero: vertically scroll independently beneath the fixed hero.
+- Bottom Box Groups: fixed at bottom; unchanged.
+- Reserve the hero’s actual occupied height so Home content never renders underneath the fixed hero.
+- Do not change Home design/content beyond what is required for the scroll architecture.
+
+LONG CATEGORIES
+- Remove the GLOBAL document/body lock that makes the entire page fixed or overflow hidden when a long category is open.
+- Preserve the existing bounded item viewport for long-category item rows.
+- Preserve its max-height/available-height behavior.
+- Preserve its internal vertical scrolling.
+- Preserve overscroll containment if it is still appropriate.
+- Preserve the existing up/down paging controls.
+- Preserve the Add Item bar outside the bounded item-row viewport.
+- Opening a long category must not freeze root/document scrolling or break iPhone Safari address-bar behavior.
+
+C. STRICT SCOPE PROTECTION
+Do NOT:
+- redesign the header;
+- redesign Bottom Box Groups;
+- alter TrailWeigh colors, typography, icons, spacing, or category visuals except where strictly necessary to reserve fixed-layer space;
+- alter checklist selection semantics;
+- alter data persistence;
+- alter database/schema;
+- alter auth;
+- alter packages/dependencies unless absolutely required and explicitly justified first;
+- alter publishing/deployment;
+- alter drawers, slide bars, gestures, reordering, swipe-to-delete, item editing, category controls, or Add Item behavior;
+- replace working USER-PASS behavior merely to simplify implementation.
+
+If a broader architectural change appears necessary, STOP and explain why before making it.
+
+D. PLAYWRIGHT / REGRESSION VERIFICATION
+After implementation, run focused browser verification at an iPhone-style viewport, minimum 390 × 844.
+
+Verify these behaviors in the actual rendered app:
+
+1. HEADER
+- Record header top before scrolling.
+- Scroll the page/content substantially.
+- Confirm header remains fixed at the same viewport top.
+- Confirm no visual/layout change to the header.
+
+2. LIST SUMMARY
+- Open a checklist/list containing enough categories/items to scroll.
+- Record List Summary top before scrolling.
+- Scroll categories substantially.
+- Confirm List Summary remains permanently directly beneath the header.
+- Confirm categories move underneath/below it rather than moving the Summary away.
+- Confirm no content is hidden because of missing spacer/reserved height.
+
+3. HOME HERO
+- Open Home with enough content to scroll.
+- Record green hero top before scrolling.
+- Scroll Home content.
+- Confirm green hero remains directly beneath the header.
+- Confirm only Home content below it moves.
+- Confirm no Home content is hidden beneath the hero.
+
+4. BOTTOM BOX GROUPS
+- During checklist scrolling and Home scrolling, confirm Bottom Box Groups remain fixed at the viewport bottom.
+- Confirm existing bottom gestures still work.
+
+5. LONG CATEGORY
+- Open a category long enough to use the bounded item viewport.
+- Confirm opening it does NOT globally set the document/body into a fixed/overflow-hidden state.
+- Confirm the page is not frozen.
+- Confirm bounded item-row scrolling works.
+- Confirm up/down paging controls work.
+- Confirm Add Item remains visible/usable in its existing location.
+- Confirm closing/reopening the category does not leave stale scroll locks or displaced page position.
+
+6. GENERAL MOBILE REGRESSION
+- Confirm no horizontal overflow is introduced.
+- Confirm drawers and slide gestures still open/close.
+- Confirm category/item accordions still operate.
+- Confirm checklist interactions still operate.
+- Confirm fixed layers do not overlap incorrectly with Safari safe areas or Bottom Box Groups.
+
+E. PASS STANDARD
+Do NOT report this as PASS merely because code compiles or a source inspection looks correct.
+
+A valid completion requires:
+- the scoped implementation is actually written to the current project;
+- focused Playwright/runtime verification runs successfully;
+- all five fixed/scroll conditions above pass;
+- no protected USER-PASS behavior is knowingly regressed.
+
+If Playwright or the app workflow cannot run, report the exact blocker and mark runtime status UNVERIFIED — do not claim PASS.
+
+F. COMPLETION REPORT
+When finished, report:
+1. What the root cause was.
+2. Exactly what behavior changed.
+3. What was deliberately left unchanged.
+4. Playwright checks run and their results.
+5. Any remaining uncertainty.
+6. Whether the result is ready for USER iPhone Safari verification.
+
+GOLD STANDARD RULE
+User-observed behavior outranks assumptions or internal reports. If the implementation conflicts with current runtime evidence, investigate the discrepancy before making another patch.
