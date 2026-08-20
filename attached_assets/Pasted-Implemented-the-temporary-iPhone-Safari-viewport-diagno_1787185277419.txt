@@ -1,0 +1,105 @@
+Implemented the temporary iPhone Safari viewport diagnostic.
+
+### What changed
+
+- Added a new diagnostic overlay component for the active mobile TrailWeigh route.
+- Added only the minimum AppBar selector wiring needed for measurement.
+- Added focused Playwright coverage in `tests/e2e/phase1b/viewport-safe.spec.ts`.
+- No viewport/layout fix was attempted.
+- No dependencies, settings, workflows, auth, data, or backend behavior were changed.
+
+### Enable / disable
+
+Open the active mobile preview with:
+
+```text
+/mobile-functional-v3?twViewportDebug=1
+```
+
+Without `?twViewportDebug=1`, the diagnostic is completely absent.
+
+The panel starts collapsed. Tap **Show** to expand it, then use:
+
+- **Copy Snapshot** — copies the local JSON snapshot.
+- **Refresh** — captures the current measurements again.
+- If clipboard access is denied, a selectable fallback text area appears.
+- No diagnostic data is transmitted anywhere.
+
+### Captured data
+
+The snapshot includes:
+
+- Screen and window dimensions, scroll position, and device pixel ratio
+- Document client/scroll dimensions
+- `visualViewport` geometry and scale
+- TrailWeigh root, AppBar, List Summary, Home hero, bottom navigation, checklist scroller, Home scroller, and long-category viewport rectangles
+- Visible category width samples
+- HTML/body/root overflow and sizing flags
+- Safe-area CSS probe values
+- Orientation
+- Current path/query and user agent
+- Timestamp and detected screen state
+
+### Verification
+
+Passed:
+
+```text
+pnpm --filter @workspace/pack-checklist run typecheck
+```
+
+Focused Playwright suite:
+
+```text
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
+```
+
+Result:
+
+```text
+11 passed
+```
+
+The browser-level diagnostic check also passed for:
+
+- Diagnostic absent without the query parameter
+- Diagnostic visible and expandable with the parameter
+- Requested values rendered
+- Fixed positioning/out-of-flow behavior
+- No horizontal overflow at 390px
+- Home scrolling still working
+- Bounded long-category scrolling still working
+
+The web workflow was restarted and came up cleanly with Vite serving the current code.
+
+### iPhone Safari capture procedure
+
+1. Open the mobile TrailWeigh checklist with `?twViewportDebug=1`.
+2. Keep Safari’s bottom controls/address bar fully visible.
+3. Do not pinch zoom.
+4. Tap **Show**, then **Copy Snapshot**.
+5. Take a screenshot showing TrailWeigh and Safari chrome together.
+
+Then:
+
+6. Scroll the checklist normally with a finger.
+7. Capture another snapshot and screenshot.
+8. Record whether Safari’s address bar collapsed, stayed visible, or partially changed.
+
+Home:
+
+9. Open Home.
+10. With Safari chrome visible, capture a snapshot.
+11. Scroll Home content and capture another snapshot.
+
+Long category:
+
+12. Open a genuinely long category.
+13. Capture before and after scrolling inside its bounded item viewport.
+14. Note whether Safari chrome changes while the inner viewport scrolls.
+
+Optional:
+
+15. Rotate to landscape and back to portrait, then capture one more snapshot.
+
+Modern Safari should expose `visualViewport`; if not, the panel explicitly reports `visualViewport unavailable`. Safe-area values may show `0px` when the browser does not resolve the CSS environment values in that context. Chromium does not reproduce Safari browser chrome behavior, so these measurements must come from the real iPhone.
