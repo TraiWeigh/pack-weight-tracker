@@ -4290,10 +4290,12 @@ function MobileFunctionalV3Inner() {
                         border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
                         // R0100 correction: reuse the Bottom Box Groups bar's
                         // broad, soft, low-opacity elevation language, adapted
-                        // downward for this vertical wedge position. The filter
-                        // follows the clip-path, including the angled point,
-                        // without changing the row's geometry or adding row elevation.
-                        filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.07))',
+                        // toward this vertical wedge's exposed right-hand point.
+                        // This keeps the blur inside the row's horizontal content
+                        // area instead of spending it against the clipped bottom edge.
+                        // The filter follows the clip-path without changing geometry
+                        // or adding row elevation.
+                        filter: 'drop-shadow(3px 0 10px rgba(0,0,0,0.07))',
                       }}
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
                       onBlur={e => { e.currentTarget.style.outline = 'none'; }}

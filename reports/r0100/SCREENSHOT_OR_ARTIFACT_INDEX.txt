@@ -2,14 +2,22 @@ TRAILWEIGH R0100 SCREENSHOT / ARTIFACT INDEX
 
 1. screenshots/01-wedge-shadow-402x714.png
    Captured by the focused R0100 Playwright test. Shows the active mobile list
-   with the corrected broad Bottom Box Groups-compatible wedge-only shadow
-   state.
+   with the corrected broad Bottom Box Groups-compatible wedge-only shadow state,
+   directed toward the exposed angled point.
 
 2. screenshots/02-standard-checklist-402x714.jpg
    Captured from the running Replit preview at /mobile-functional-v3. Shows the
    standard 402×714 checklist shell with AppBar, Summary, Filter, categories,
    wedge styling, and Bottom Box Groups.
 
+3. screenshots/03-corrected-wedge-shadow-402x714.jpg
+   Captured from the running Replit preview after the Safari-aware correction.
+   The wedge shadow is directed into the available white-content space beside
+   the angled point, retaining the Bottom Box Groups bar's broad, low-opacity
+   elevation character.
+
 Visual review note:
-The shadow is intentionally narrow and low-contrast. Automated geometry checks
-confirm it does not change layout bounds or the 1px wedge rhythm.
+The shadow is intentionally soft, broad, and low-opacity. Automated geometry
+checks confirm it does not change layout bounds or the 1px wedge rhythm. Physical
+iPhone Safari visual verification remains pending; this report does not claim a
+USER PASS.

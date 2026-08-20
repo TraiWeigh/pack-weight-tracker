@@ -3,22 +3,25 @@ ADD SUBTLE WEDGE SHADOWS ONLY
 
 Agent mode used: POWER
 Final status: REPLIT PASS / READY FOR USER IPHONE TEST
+USER status: PENDING physical iPhone Safari visual verification
 USER live-device evidence remains authoritative over Chromium and browser-review
-results.
+results. The initial physical iPhone check found the narrower shadow
+imperceptible; this corrected build has not yet received a new USER PASS.
 
 SCOPE
 R0100 adds a cosmetic elevation effect to the colored category wedge surface on
 /mobile-functional-v3. Following the failed physical iPhone Safari visual
 check, the correction reuses the Bottom Box Groups bar's exact broad, soft,
-low-opacity shadow character, adapted downward for the wedge's position. The
-effect is attached to the clipped wedge button, so the shadow follows the
-angled point without changing the row's geometry or adding a new full-row
+low-opacity shadow character, adapted toward the wedge's exposed right-hand
+point. The effect is attached to the clipped wedge button, so the shadow follows
+the angled point without changing the row's geometry or adding a new full-row
 shadow.
 
 IMPLEMENTATION
-- Added `drop-shadow(0 3px 10px rgba(0,0,0,0.07))` to the active colored wedge
-  button. This preserves the Bottom Box Groups bar's exact 10px blur and 7%
-  opacity while adapting the vertical offset from -3px to +3px.
+- Added `drop-shadow(3px 0 10px rgba(0,0,0,0.07))` to the active colored wedge
+  button. This preserves the Bottom Box Groups bar's exact 3px offset, 10px
+  blur, and 7% opacity while directing the shadow into the wedge point's exposed
+  white-content side instead of the row's vertically clipped bottom edge.
 - Preserved the existing polygon clip path, 72px wedge width, row height,
   colors, icons, text, weights, and focus behavior.
 - Preserved the existing full-row elevation and did not add or change shadow
@@ -29,8 +32,9 @@ FACTS
 - The colored category wedge is the clipped primary accordion trigger.
 - CSS filter drop-shadow is used rather than a box shadow so the angled wedge
   point is included in the visible shadow. The effect remains subject to the
-  current category overflow clipping and is intentionally broad enough to be
-  visually apparent within that existing boundary.
+  current category overflow clipping. Its horizontal offset puts the broad blur
+  in the available white-content area, where it remains visually apparent inside
+  the existing boundary.
 - The active wedge retains `boxShadow: 'none'`; its elevation is supplied only
   by the clipped-shape filter.
 
@@ -70,8 +74,8 @@ THREE STANDING REPLIT QUESTIONS
    would help ChatGPT make future prompts more accurate or efficient?
    The active functional route uses a clipped 72px wedge button inside a 65px
    category row. The Bottom Box Groups bar's `0 -3px 10px rgba(0,0,0,0.07)`
-   is the existing elevation reference; the wedge uses the same blur and
-   opacity with a downward offset for its vertical position.
+   is the existing elevation reference; the wedge uses the same offset magnitude,
+   blur, and opacity with a rightward offset toward its exposed angled point.
 
 2. Was anything in this prompt unclear, unnecessary, technically risky, or better
    expressed another way for Replit Agent?

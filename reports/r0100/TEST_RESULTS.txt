@@ -9,7 +9,8 @@ Coverage:
 - 402×754
 - 390×844
 - 360×800
-- corrected broad Bottom Box Groups-compatible wedge shadow
+- corrected broad Bottom Box Groups-compatible wedge shadow, directed toward the
+  exposed angled point to avoid vertical overflow clipping
 
 R0099 loop regression:
 PASS — 5/5

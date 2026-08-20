@@ -371,3 +371,10 @@ uri = "file://R0099_GS.zip"
 type = "unspecified"
 title = "R0099 revised prompt archive"
 description = "Revised R0099 gold-standard prompt stored as R0099_GS.txt."
+
+[[outputs]]
+id = "quf3z0giS6rWKp_MgOM-O"
+uri = "file://R0100.zip"
+type = "unspecified"
+title = "R0100 correction report"
+description = "Finalized corrected bundle: Bottom Box Groups-compatible wedge shadow, focused and regression test evidence, updated screenshots, and a pending iPhone Safari checklist."

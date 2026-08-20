@@ -32,3 +32,4 @@
 - [Checklist right-gutter rule](checklist-right-gutter.md) — real iPhone evidence needs separate general, deep-weight, and AppBar insets; preserve the Summary’s flex budget.
 - [Mobile visual-viewport anchoring](mobile-visual-viewport-anchoring.md) — physical Safari chrome stability requires a scoped internal-scroll shell, not document-scrolled fixed layers.
 - [Safe-area shell coordinates](safe-area-shell-coordinates.md) — moving the mobile shell by the top safe inset requires local-coordinate compensation for absolute footer layers.
+- [Wedge shadow Safari visibility](wedge-shadow-safari-visibility.md) — clipped wedges need broad shadows projected into their exposed content-side space, not their overflow-clipped edge.
