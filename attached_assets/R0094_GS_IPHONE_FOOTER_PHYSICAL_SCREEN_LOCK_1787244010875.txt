@@ -1,0 +1,469 @@
+TRAILWEIGH — R0094 GS
+Gold Standard Replit Prompt
+REAL IPHONE FOOTER PHYSICAL-SCREEN LOCK — Post-R0093 USER FAIL
+
+REPLIT EXECUTION SETTINGS
+- Agent mode: POWER
+- App Testing: ON
+- Code Optimizations: OFF for this task
+- Work in Build mode, not Plan-only mode
+
+WHY POWER
+This is a repeated real-iPhone Safari positioning failure that has survived multiple implementation attempts and Chromium PASS results. It requires careful inspection of current scroll ownership, viewport coordinate systems, fixed positioning, and Safari behavior.
+
+WHY CODE OPTIMIZATIONS OFF
+This is a narrow corrective task. Do not invite unrelated refactoring or code cleanup.
+
+AUTHORITATIVE USER EVIDENCE INCLUDED
+This ZIP contains:
+
+R0094_USER_IPHONE_POST_R0093_FOOTER_MOVEMENT.MP4
+
+This recording was made on Kevin's actual iPhone AFTER R0093.
+
+WATCH THE ENTIRE VIDEO BEFORE EDITING.
+
+This is the newest and highest-priority evidence.
+
+AUTHORITATIVE RESULT
+R0093 DID NOT SOLVE THE REAL IPHONE PROBLEM.
+
+Kevin's actual iPhone recording shows that the Bottom Box Groups still changes vertical screen position as he scrolls.
+
+Therefore:
+
+R0093 = REPLIT/CHROMIUM PASS MAY HAVE OCCURRED,
+BUT USER FAIL FOR FOOTER LOCKING.
+
+Do not repeat the same implementation assumption.
+
+PRIMARY USER INTENT
+The Bottom Box Groups is already in a visually good resting location.
+
+The user wants it LOCKED THERE.
+
+When checklist/category content scrolls:
+- checklist content moves;
+- Bottom Box Groups must remain visually stationary on the physical iPhone screen;
+- it must not rise or fall when Safari browser chrome expands, contracts, or animates during the scroll gesture.
+
+This is now more specific than "position: fixed."
+
+The required outcome is:
+PHYSICAL-SCREEN STABILITY AS SEEN BY THE USER.
+
+IMPORTANT OBSERVATION FROM USER VIDEO
+The top AppBar and List Summary appear substantially more visually stable than the Bottom Box Groups.
+
+Use that comparison.
+
+Before inventing another footer-specific compensator:
+- inspect exactly how the header and Summary achieve their stable screen position;
+- determine why the footer uses a different coordinate/anchoring behavior;
+- prefer making the footer use the same stable coordinate philosophy as the top fixed layers.
+
+ROOT PROBLEM TO INVESTIGATE
+The likely distinction is between:
+
+A. anchoring to a DYNAMIC VISUAL-VIEWPORT BOTTOM
+versus
+B. anchoring to a STABLE SCREEN/LAYOUT-VIEWPORT COORDINATE.
+
+Earlier real-device diagnostics established an important iPhone Safari fact:
+
+- physical screen height: 874px;
+- documentElement.clientHeight remained approximately 714px;
+- visualViewport / innerHeight changed approximately 714px -> 754px as Safari chrome compacted.
+
+A footer anchored using `bottom: 0` or a visualViewport-derived bottom position can therefore move downward as the usable visual viewport grows.
+
+A top-fixed element at a stable Y coordinate does not have the same problem.
+
+R0094 must inspect whether this is the actual current cause.
+
+DO NOT ASSUME.
+MEASURE CURRENT R0093 STATE FIRST.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. WATCH the included post-R0093 iPhone MP4 from start to finish.
+2. Inspect CURRENT active `/mobile-functional-v3`.
+3. Read relevant `replit.md` and durable Safari guidance read-only.
+4. Locate/read the existing R0093 report in the workspace if present.
+5. Identify exactly what R0093 changed.
+6. Identify the current Bottom Box Groups:
+   - CSS position mode;
+   - top;
+   - bottom;
+   - transform;
+   - containing block;
+   - ancestor transforms;
+   - CSS variables;
+   - React state;
+   - visualViewport listeners;
+   - window scroll/resize listeners.
+7. Identify actual checklist scroll owner.
+8. Inspect the AppBar and List Summary anchoring strategy and compare it directly to the footer.
+9. Determine why header/Summary appear stable while footer visibly moves.
+10. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS.
+11. State root cause before making the edit.
+
+CRITICAL ACCEPTANCE DEFINITION
+Do not define "locked" as:
+- CSS says `position: fixed`;
+- `getBoundingClientRect` is stable in Chromium;
+- footer tracks visualViewport bottom;
+- footer remains a fixed distance above whichever Safari toolbar state currently exists.
+
+For this task, "locked" means:
+
+THE FOOTER'S VISUAL Y POSITION ON THE IPHONE SCREEN DOES NOT CHANGE DURING ORDINARY SCROLLING.
+
+If Safari browser chrome changes underneath/below it, the footer itself should not chase that change.
+
+STABLE-Y STRATEGY TO TEST
+If current inspection confirms that dynamic bottom anchoring is the cause, test a stable-Y/top-based strategy rather than another bottom compensation strategy.
+
+Conceptually:
+
+- determine the correct stable footer Y position from the layout/stable viewport baseline;
+- anchor the footer by a stable top coordinate / stable containing shell;
+- do not continuously recompute that Y from visualViewport height or offset during scroll;
+- preserve responsiveness across different device heights by deriving the stable coordinate from an appropriate non-scroll-reactive viewport/layout measurement at initialization or genuine orientation/layout change.
+
+Do not blindly hardcode 656px.
+
+The earlier 402×714 example where a 58px footer sat at approximately y=656 is evidence for the concept, not a universal constant.
+
+The implementation must remain responsive.
+
+PREFERRED COMPARISON
+If AppBar/List Summary already use a stable fixed-top method that remains stationary on iPhone:
+REUSE OR MIRROR THAT ARCHITECTURAL PRINCIPLE FOR THE FOOTER.
+
+Avoid another custom Safari-scroll compensator if possible.
+
+VISUALVIEWPORT RULE
+During ordinary scrolling:
+- no visualViewport `scroll` event may change footer top/bottom/transform;
+- no scroll event may change footer position;
+- no `window.scrollY` / `scrollTop` value may affect footer screen position.
+
+If visualViewport is used at all, limit it to non-scroll-reactive cases such as:
+- initial setup;
+- genuine resize;
+- orientation change;
+only if necessary and only if it does not produce the user-visible movement in the supplied recording.
+
+IF INTERNAL SCROLLER IS NECESSARY
+If Safari document scrolling itself makes a physically stationary footer impossible with the current architecture, Replit may convert the checklist content area on `/mobile-functional-v3` to a dedicated internal scroller while AppBar, Summary, and Footer remain outside it.
+
+This is allowed ONLY if:
+- it is demonstrably necessary;
+- it is scoped to the active mobile route;
+- no body-lock freeze occurs;
+- long-category scrolling remains functional;
+- drawers and gestures remain functional;
+- last content remains reachable;
+- no unrelated layout redesign occurs.
+
+The user now prioritizes the locked footer over Safari address-bar retraction behavior.
+
+CURRENT GOOD FOOTER POSITION — PRESERVE
+Do not intentionally raise/lower/redesign the footer.
+
+Preserve:
+- 58px height;
+- current resting vertical Y as seen in the supplied video;
+- width;
+- horizontal placement;
+- internal groups;
+- current Next-chevron inset;
+- Locker / Summary / Add / Search / Next;
+- icons and labels.
+
+The implementation mechanism may change, but the resting visual result should not.
+
+CONTENT RESERVATION
+Ensure scrolling content reserves enough space for the locked footer.
+
+Acceptance:
+- last category/item can scroll fully above footer;
+- no content hidden underneath;
+- no oversized blank tail;
+- raised drawers/decks continue to clear footer correctly.
+
+PRESERVE CURRENT USER-APPROVED / CURRENT HORIZONTAL STATE
+Do NOT change:
+- weight-column position;
+- weight right inset;
+- Summary horizontal alignment;
+- AppBar horizontal alignment;
+- hamburger position;
+- header icons;
+- category row height;
+- wedge positions;
+- List Summary height.
+
+THIS TASK IS FOOTER-LOCK ONLY.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- app shell width;
+- viewport meta;
+- AppBar height/design;
+- List Summary height/design;
+- category row height;
+- wedge geometry/colors/icons;
+- weight column;
+- checklist semantics;
+- Home design;
+- swipe-to-delete;
+- reorder;
+- Add Item;
+- accordions;
+- data;
+- DB/schema;
+- auth;
+- packages/dependencies;
+- publishing/deployment.
+
+FUTURE ITEMS — DO NOT IMPLEMENT
+Do NOT mix in:
+- Filter control;
+- locked Filter control;
+- Photo mode;
+- wedge shadows;
+- color themes;
+- Android-specific override;
+- PWA conversion;
+- address-bar hiding work.
+
+AUTOMATED TESTING
+Run at minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+- existing viewport-safe regression suite.
+
+Create focused R0094 footer tests.
+
+TEST A — STABLE Y THROUGH CONTENT SCROLL
+At 402×714:
+1. record footer top/bottom;
+2. scroll actual content owner at least 100px;
+3. record footer;
+4. scroll much farther;
+5. record footer;
+6. reverse scroll;
+7. record footer.
+
+Max footer Y movement must be effectively zero except sub-pixel rounding.
+
+TEST B — SIMULATED VIEWPORT HEIGHT CHANGE
+Where practical, change viewport height 714 -> 754 WITHOUT treating it as an ordinary scroll-driven footer reposition event.
+
+Document exactly what happens.
+
+The implementation should distinguish:
+- genuine responsive/layout resize;
+from
+- Safari's scroll-time browser-chrome animation.
+
+Do not create continuous footer movement during the latter.
+
+TEST C — POSITION MUTATION AUDIT
+During scroll prove:
+- footer inline top/bottom unchanged;
+- footer transform unchanged;
+- position-driving CSS variables unchanged;
+- no React state changes footer geometry;
+- no visualViewport scroll handler changes footer geometry.
+
+TEST D — CONTENT REACHABILITY
+Scroll to bottom:
+- final category/item can clear footer;
+- no blocked content;
+- no giant spacer.
+
+TEST E — INTERACTIONS
+Verify:
+- Locker;
+- Summary;
+- Add;
+- Search;
+- Next;
+- bottom-group horizontal navigation;
+- category scrolling;
+- long-category bounded scrolling;
+- drawers/decks.
+
+REAL IPHONE LIMITATION
+Chromium cannot prove iPhone Safari browser-chrome compositing.
+
+Therefore:
+REPLIT PASS != USER PASS.
+
+The result must be labeled:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Kevin's actual iPhone video/test determines USER PASS.
+
+OPTIONAL DEBUG MODE
+If needed, add a temporary query-only diagnostic:
+`?twFooterDebug=1`
+
+It may display:
+- footer top/bottom;
+- computed position/top/bottom/transform;
+- layout viewport/clientHeight;
+- visualViewport height/offsetTop;
+- actual scroll owner and scrollTop;
+- whether any footer geometry variable changed.
+
+Rules:
+- OFF by default;
+- no normal UI impact;
+- removable;
+- do not leave visible debug UI in normal TrailWeigh.
+
+REQUIRED BEFORE/AFTER METRICS
+Report:
+
+R0093 CURRENT STATE
+- footer positioning method;
+- containing block;
+- scroll owner;
+- footer top/bottom;
+- all position-affecting listeners;
+- AppBar anchoring method;
+- Summary anchoring method;
+- why footer differs.
+
+R0094 AFTER
+- new positioning method;
+- containing block;
+- scroll owner;
+- stable footer Y;
+- top/bottom across multiple scroll positions;
+- max movement px;
+- whether visualViewport scroll affects footer: YES/NO;
+- whether window/document scroll affects footer geometry: YES/NO;
+- content bottom reservation;
+- final-content clearance.
+
+PRESERVATION METRICS
+Also report:
+- footer height;
+- AppBar height;
+- Summary height;
+- weight-column right edge;
+- root width.
+
+VISUAL ARTIFACTS
+At 402px capture:
+- start;
+- mid-scroll;
+- deep-scroll;
+- reverse-scroll;
+- bottom-of-list.
+
+Overlay or report footer Y line so it is easy to prove it stayed in the exact same screen position.
+
+The included real-iPhone MP4 remains the authoritative failure reference.
+
+PASS STANDARD
+REPLIT PASS requires ALL:
+1. Included post-R0093 iPhone MP4 watched.
+2. R0093 report/current implementation inspected.
+3. Root cause documented.
+4. Footer resting position preserved.
+5. Footer Y does not change during ordinary content scrolling.
+6. No scroll-driven footer geometry mutation.
+7. No visualViewport.scroll-driven footer position mutation.
+8. Header/Summary/weights preserved.
+9. Content fully scrollable.
+10. Last content reachable.
+11. No body freeze.
+12. Long-category scrolling works.
+13. Footer interactions work.
+14. Footer height remains 58px.
+15. 360px responsive test passes.
+16. Typecheck passes.
+17. Focused Playwright passes.
+18. Relevant regressions pass.
+19. Complete report ZIP produced.
+
+REQUIRED ZIP REPORT
+Create and provide:
+
+trailweigh-R0094-report.zip
+
+Must contain:
+
+1. R0094_REPORT.txt
+- R0094 GS
+- mode used: POWER
+- acknowledgement newest iPhone MP4 was watched
+- observed movement
+- exact R0093 current state
+- root cause
+- AppBar/Summary vs footer architecture comparison
+- exact R0094 correction
+- exact stable-coordinate strategy
+- whether visualViewport.scroll affects footer after fix
+- exact scroll owner
+- exact tests / totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+
+3. TEST_RESULTS.txt
+
+4. BEFORE_AFTER_METRICS.txt
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to verify on actual iPhone:
+- start with Safari controls visible;
+- slow category scroll;
+- fast flick;
+- reverse scroll;
+- let Safari bottom browser controls compact/expand;
+- confirm Bottom Box Groups stays on the exact same physical screen line throughout;
+- scroll to last content;
+- confirm last row/item is reachable;
+- confirm weights/header/Summary did not change.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+Must reference:
+- supplied R0094 iPhone MP4;
+- start/mid/deep/reverse/bottom screenshots;
+- Playwright traces/reports.
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state clearly.
+
+If blocked or failed, STILL create `trailweigh-R0094-report.zip`.
+
+THREE STANDING QUESTIONS FOR REPLIT
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+The included post-R0093 iPhone recording is the PRIMARY evidence.
+
+Do not repeat R0092/R0093 failed assumptions.
+Inspect current state first.
+Find root cause.
+Make the smallest robust correction.
+Protect unrelated USER-PASS behavior.
