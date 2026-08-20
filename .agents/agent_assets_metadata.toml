@@ -322,3 +322,10 @@ uri = "file://trailweigh-R0093-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0093 report"
 description = "True static Bottom Box Groups correction with reviewed iPhone evidence, before/mid/deep/after scroll screenshots, metrics, regression results, and Kevin’s final iPhone Safari checklist."
+
+[[outputs]]
+id = "UCNRBxyTkoPqrFcjnGfTR"
+uri = "file://trailweigh-R0094-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0094 report"
+description = "Physical-screen Bottom Box Groups lock correction with the post-R0093 iPhone Safari recording, five scroll screenshots, exact coordinate metrics, tests, and Kevin’s iPhone acceptance checklist."

@@ -1,0 +1,134 @@
+TRAILWEIGH — R0094 GS
+REAL IPHONE FOOTER PHYSICAL-SCREEN LOCK
+
+Execution mode requested: POWER
+STATUS: REPLIT PASS / READY FOR USER IPHONE TEST — NOT USER PASS
+
+AUTHORITATIVE EVIDENCE
+R0093 is a USER FAIL. The newest supplied post-R0093 iPhone Safari recording,
+R0094_USER_IPHONE_POST_R0093_FOOTER_MOVEMENT, was reviewed across its full 11.53-second
+duration (1206×2622 source, including evenly sampled full-duration frames). It shows the
+same reported failure: checklist content scrolls while Bottom Box Groups changes vertical
+physical-screen position as Safari controls animate. This evidence outranks the R0093
+Chromium PASS.
+
+R0093 CURRENT STATE — FACTS
+- Bottom Box Groups was CSS `position: fixed; bottom: 0` with a 58px occupied height.
+- It had no React scroll state, visualViewport scroll listener, or window scroll listener
+  after R0093.
+- The actual checklist scroll owner is the document/window. `main-scroll` is flow content
+  with `overflow-y: visible`; native document scrolling remains active.
+- The fixed AppBar uses `top: 0`; the fixed List Summary uses `top: 52px`.
+- The footer used a bottom coordinate rather than that same stable-top strategy.
+- The mobile footer has no transformed, filtered, or perspective ancestor that creates a
+  custom fixed containing block.
+
+IPHONE DIAGNOSTIC CONTEXT
+Earlier real-device measurement reports the iPhone layout/document client height remained
+about 714px while Safari’s usable visual viewport / innerHeight could grow about 714→754px
+as browser chrome compacted. A footer anchored to `bottom: 0` follows that changing bottom
+edge. The AppBar and Summary do not have the same failure because their top coordinates
+remain on a stable screen line.
+
+ROOT CAUSE
+R0093 removed JavaScript compensation but retained `position: fixed; bottom: 0`. On the
+actual iPhone Safari path, that bottom anchor is still tied to the dynamic visual-viewport
+bottom, so the footer moves downward/upward with browser-chrome animation. The failure was
+not an application scroll handler or transform; it was the footer using a different
+coordinate philosophy than the top fixed layers.
+
+R0094 CORRECTION
+- Bottom Box Groups remains a fixed viewport layer but is now positioned by a responsive
+  `top` coordinate, not the dynamic `bottom` edge.
+- The coordinate is `document.documentElement.clientHeight − measured footer height`.
+  At the 402×714 reference layout, that is `714 − 58 = 656px`.
+- `documentElement.clientHeight` is captured at startup and re-read through a
+  ResizeObserver only when the layout viewport itself changes. That preserves genuine
+  responsive/orientation behavior without listening to ordinary document or
+  visual-viewport scroll events.
+- The footer's authored CSS is `position: fixed; top: <stable layout top>; bottom: auto`.
+  Chromium resolves the computed bottom value to `0px` for this geometry, so tests inspect
+  the authored inline `bottom: auto`, the authored top, the stable-top marker, and rendered
+  rect instead of misinterpreting that browser-resolved shorthand.
+- The measured footer height remains the sole content/deck reservation. Native document
+  scrolling, list geometry, and all horizontal layout remain unchanged.
+
+APPBAR / SUMMARY VS FOOTER COMPARISON
+Layer               Before R0094                 After R0094
+AppBar              fixed top: 0                 unchanged
+List Summary        fixed top: 52px              unchanged
+Bottom Box Groups   fixed bottom: 0 (dynamic)    fixed top: layout clientHeight − nav height
+Scroll owner        document/window              unchanged
+Visual viewport     no R0093 JS listener         no scroll listener; no scroll-driven geometry
+Content reservation measured nav height          unchanged measured nav height
+
+AFTER — POSITION-AFFECTING INPUTS
+- `visualViewport.scroll` affects footer geometry: NO.
+- window/document scrolling affects footer geometry: NO.
+- window.scrollY / scrollTop affects footer geometry: NO.
+- visual-viewport height is used for footer positioning: NO.
+- Layout viewport/clientHeight is used: YES, only as the stable responsive baseline.
+- Footer `top`, authored `bottom`, transform, markers, and React position state remain
+  unchanged across content scroll and dispatched visualViewport scroll notifications.
+
+EXACT CURRENT SCROLL OWNER / CONTAINING BLOCK
+- Scroll owner: document/window; `main-scroll` remains non-primary flow content.
+- Footer containing block: fixed viewport layer, with no transformed/filter/perspective
+  ancestor in the active mobile checklist path.
+- Footer screen coordinate: stable top derived from layout viewport clientHeight, not
+  visual viewport bottom.
+
+TEST RESULTS
+1. TrailWeigh package typecheck
+   PASS
+
+2. R0094 focused footer suite
+   `pnpm exec playwright test tests/e2e/phase1b/r0094-iphone-physical-footer-lock.spec.ts --workers=1 --project=chromium`
+   PASS — 7 passed, 0 failed
+
+3. Combined R0094 + preserved R0093 + R0092 footer suites
+   PASS — 18 passed, 0 failed
+
+4. Existing R0091, right-side inset, screen-efficiency, and viewport-safe regressions
+   PASS — 25 passed, 0 failed
+
+5. Independent browser verification at 402×714
+   PASS
+   - Footer: fixed, inline top=656px, inline bottom=auto, stable top marker=656,
+     layout-height marker=714, rendered rect y=656, height=58.
+   - Actual document scroll moved window.scrollY 0→134→0 while footer y remained 656.
+   - A dispatched visualViewport scroll event did not change footer metrics.
+   - Final added category cleared the footer.
+   - Locker, Summary, Add, Search, Next/Back group navigation, category expansion, and
+     bounded long-category item scrolling all worked.
+   - No app-console errors; only the expected Clerk development-key warning appeared.
+
+6. Final `git diff --check`
+   PASS
+
+WORKSPACE-WIDE TYPECHECK NOTE
+The changed TrailWeigh package typecheck passes. The workspace-wide recursive typecheck
+remains blocked by pre-existing React ref typing errors in the unrelated
+`artifacts/mockup-sandbox` calendar/spinner components.
+
+REAL IPHONE LIMITATION
+Chromium verifies the coordinate structure and regression behavior only. It cannot prove
+iPhone Safari browser-chrome compositing. Kevin's real-iPhone test below decides USER PASS.
+
+STANDING QUESTIONS FOR REPLIT
+1. What did this teach us?
+   Removing JavaScript scroll compensation is not sufficient when a fixed bottom anchor
+   itself follows Safari’s dynamic visual viewport. In document-scrolling mobile layouts,
+   compare both coordinate direction and viewport reference with stable top layers before
+   deciding a footer is locked.
+
+2. What could be expressed better?
+   “Fixed” must be defined as physical-screen stability, not merely CSS `position: fixed`
+   or a stable Chromium DOM rect. The iPhone diagnostic pairing of clientHeight and
+   visualViewport height is the essential acceptance evidence for this class of issue.
+
+3. What project detail helps future work?
+   The active mobile checklist intentionally uses native document scrolling. Keep the
+   footer outside moving content, preserve the measured footer-height reservation for
+   content/decks, and use focused Playwright geometry tests as structural evidence while
+   reserving Safari compositing acceptance for real device recording.

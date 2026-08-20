@@ -90,15 +90,18 @@ test.describe('R0092 — lock Bottom Box Groups and align to weight master line'
         return ({
         footerPositioning: nav.getAttribute('data-footer-positioning'),
         footerPosition: navStyle.position,
+        footerTop: navStyle.top,
         footerBottom: navStyle.bottom,
+        footerAuthoredBottom: nav.style.bottom,
         footerTransform: navStyle.transform,
         documentWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
         });
       });
-      expect(viewportData.footerPositioning, 'R0093 footer must use stable fixed positioning').toBe('fixed-static');
+      expect(viewportData.footerPositioning, 'R0094 footer must use a stable layout-top position').toBe('layout-top-static');
       expect(viewportData.footerPosition, 'footer must remain CSS fixed').toBe('fixed');
-      expect(viewportData.footerBottom, 'footer must have a static bottom offset').toBe('0px');
+      expect(viewportData.footerTop, 'footer must use the stable layout viewport top coordinate').toBe(`${viewport.height - 58}px`);
+      expect(viewportData.footerAuthoredBottom, 'footer must not track the dynamic visual viewport bottom').toBe('auto');
       expect(viewportData.footerTransform, 'footer must not use a transform for positioning').toBe('none');
       expect(viewportData.documentWidth, 'document must not horizontally overflow').toBeLessThanOrEqual(viewport.width);
       expect(viewportData.bodyWidth, 'body must not horizontally overflow').toBeLessThanOrEqual(viewport.width);

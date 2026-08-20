@@ -1,0 +1,39 @@
+R0094 CHANGED FILES
+
+PRODUCT SOURCE
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Bottom Box Groups now uses a stable layout-top coordinate derived from
+  documentElement.clientHeight and measured nav height. It no longer uses a dynamic
+  bottom anchor. A layout viewport ResizeObserver supports genuine responsive/orientation
+  changes; no ordinary scrolling listener changes footer geometry.
+
+TEST SOURCE
+- tests/e2e/phase1b/r0094-iphone-physical-footer-lock.spec.ts
+  New focused R0094 suite for stable Y through document/visual-viewport scroll events,
+  real layout resize behavior, four required responsive sizes, content clearance,
+  screenshots, and bottom-control navigation/Add.
+
+- tests/e2e/phase1b/r0093-true-bottom-lock.spec.ts
+  Updated stale R0093 bottom-anchor assertions to protect the current stable layout-top
+  contract and verify the authored top/bottom values, markers, and rendered rect.
+
+- tests/e2e/phase1b/r0092-bottom-lock-alignment.spec.ts
+  Updated preserved geometry coverage for R0094's layout-top footer contract while
+  retaining all approved R0092 horizontal alignment assertions.
+
+R0094 EVIDENCE / REPORT
+- reports/r0094/R0094_REPORT.txt
+- reports/r0094/CHANGED_FILES.txt
+- reports/r0094/TEST_RESULTS.txt
+- reports/r0094/BEFORE_AFTER_METRICS.txt
+- reports/r0094/USER_IPHONE_TEST.txt
+- reports/r0094/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- screenshots/r0094-start-402x714.png
+- screenshots/r0094-mid-scroll-402x714.png
+- screenshots/r0094-deep-scroll-402x714.png
+- screenshots/r0094-reverse-scroll-402x714.png
+- screenshots/r0094-bottom-of-list-402x714.png
+
+USER-SUPPLIED INPUTS, NOT MODIFIED
+- attached_assets/R0094_GS_IPHONE_FOOTER_PHYSICAL_SCREEN_LOCK_1787244010875.txt
+- attached_assets/R0094_USER_IPHONE_POST_R0093_FOOTER_MOVEMENT_1787244010876.MP4

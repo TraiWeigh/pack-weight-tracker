@@ -934,6 +934,9 @@ interface BoxGroupBarProps {
   activeDeck: DeckId | null;
   undoDisabled: boolean;
   redoDisabled: boolean;
+  /** R0094: footer Y derived from the stable layout viewport, never from scroll. */
+  stableTop: number;
+  layoutViewportHeight: number;
   onLocker:  () => void;
   onSummary: () => void;
   onAdd:     () => void;
@@ -1016,6 +1019,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
   function BoxGroupBar(props, ref) {
     const {
       activeDeck, undoDisabled, redoDisabled,
+      stableTop, layoutViewportHeight,
       onLocker, onSummary, onAdd, onSearch,
       onUndo, onRedo, onReset,
       onCamera, onPhotos, onPreview,
@@ -1151,7 +1155,9 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
       <div
         ref={ref}
         data-testid="bottom-nav"
-        data-footer-positioning="fixed-static"
+        data-footer-positioning="layout-top-static"
+        data-footer-layout-height={Math.round(layoutViewportHeight)}
+        data-footer-stable-top={Math.round(stableTop)}
         onPointerDown={onPointerDown}
         onClickCapture={e => {
           // Swallow the synthetic click that immediately follows a drag-end gesture
@@ -1161,9 +1167,13 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           position: 'fixed',
           left: 'max(0px, calc(50% - 215px))',
           right: 'max(0px, calc(50% - 215px))',
-          // R0093: this must never move as a function of checklist scrolling.
-          // Native fixed positioning isolates the footer from the content layer.
-          bottom: 0,
+          // R0094: Safari's fixed bottom edge follows its changing visual viewport
+          // during browser-chrome animation. Match the AppBar/Summary's stable
+          // top-coordinate approach instead. `stableTop` comes from
+          // documentElement.clientHeight and only changes when that layout viewport
+          // itself changes (for example, orientation), never during scrolling.
+          top: stableTop,
+          bottom: 'auto',
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
@@ -2053,8 +2063,33 @@ function MobileFunctionalV3Inner() {
   //    deck/backdrop bottom offset. Tracks safe-area inset growth via ResizeObserver.
   const [navHeight, setNavHeight] = useState(NAV_H);
   const navRoRef = useRef<ResizeObserver | null>(null);
-  // R0093: the nav's measured occupied height remains the sole content/deck
-  // clearance source. No scroll or visualViewport event alters footer placement.
+  // R0094: Bottom Box Groups must remain on one physical iPhone screen line while
+  // Safari animates browser chrome. `clientHeight` is the layout viewport baseline;
+  // unlike innerHeight/visualViewport, the current iPhone evidence shows it stays
+  // stable throughout ordinary scrolling. Observe only that baseline for genuine
+  // layout/orientation changes — never window scroll or visualViewport scroll.
+  const [layoutViewportHeight, setLayoutViewportHeight] = useState(() => {
+    if (typeof document === 'undefined') return NAV_H;
+    return document.documentElement.clientHeight || window.innerHeight || NAV_H;
+  });
+  const layoutViewportRoRef = useRef<ResizeObserver | null>(null);
+  useEffect(() => {
+    const layoutViewport = document.documentElement;
+    const syncLayoutHeight = () => {
+      const next = layoutViewport.clientHeight || window.innerHeight || NAV_H;
+      setLayoutViewportHeight(previous => previous === next ? previous : next);
+    };
+    syncLayoutHeight();
+    const observer = new ResizeObserver(syncLayoutHeight);
+    try { observer.observe(layoutViewport, { box: 'border-box' }); } catch { observer.observe(layoutViewport); }
+    layoutViewportRoRef.current = observer;
+    return () => {
+      observer.disconnect();
+      if (layoutViewportRoRef.current === observer) layoutViewportRoRef.current = null;
+    };
+  }, []);
+  const stableFooterTop = Math.max(0, layoutViewportHeight - navHeight);
+  // The nav's measured occupied height remains the sole content/deck clearance source.
   const bottomLayerOffset = navHeight;
 
 
@@ -5143,6 +5178,8 @@ function MobileFunctionalV3Inner() {
           activeDeck={activeDeck}
           undoDisabled={undoHistory.length === 0}
           redoDisabled={redoHistory.length === 0}
+          stableTop={stableFooterTop}
+          layoutViewportHeight={layoutViewportHeight}
           onLocker={()  => openDeck('locker')}
           onSummary={()  => openDeck('summary')}
           onAdd={()     => openDeck('add')}

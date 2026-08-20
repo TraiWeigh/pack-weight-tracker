@@ -12,9 +12,13 @@ type FooterSnapshot = {
   bottom: number;
   height: number;
   position: string;
+  topStyle: string;
   bottomStyle: string;
+  authoredBottom: string;
   transform: string;
   lockMode: string | null;
+  layoutViewportHeight: number;
+  stableTop: number;
   scrollY: number;
   rootPaddingBottom: string;
   mainScrollOverflowY: string;
@@ -32,9 +36,13 @@ async function footerSnapshot(page: import('@playwright/test').Page): Promise<Fo
       bottom: rect.bottom,
       height: rect.height,
       position: style.position,
+      topStyle: style.top,
       bottomStyle: style.bottom,
+      authoredBottom: nav.style.bottom,
       transform: style.transform,
       lockMode: nav.getAttribute('data-footer-positioning'),
+      layoutViewportHeight: Number(nav.getAttribute('data-footer-layout-height') ?? '0'),
+      stableTop: Number(nav.getAttribute('data-footer-stable-top') ?? '0'),
       scrollY: window.scrollY,
       rootPaddingBottom: getComputedStyle(root).paddingBottom,
       mainScrollOverflowY: getComputedStyle(mainScroll).overflowY,
@@ -76,12 +84,16 @@ test.describe('R0093 — true fixed Bottom Box Groups lock', () => {
       const categoryCountRight = await rectRight(page, '[data-testid="summary-category-count"]');
       const selectedRight = await rectRight(page, '[data-testid="summary-selected-status"]');
 
-      expect(nav.lockMode).toBe('fixed-static');
+      expect(nav.lockMode).toBe('layout-top-static');
       expect(nav.position).toBe('fixed');
-      expect(nav.bottomStyle).toBe('0px');
+      expect(nav.topStyle).toBe(`${viewport.height - 58}px`);
+      expect(nav.authoredBottom).toBe('auto');
       expect(nav.transform).toBe('none');
       expect(nav.height).toBe(58);
+      expect(nav.top).toBeCloseTo(viewport.height - 58, 0);
       expect(nav.bottom).toBeCloseTo(viewport.height, 0);
+      expect(nav.layoutViewportHeight).toBe(viewport.height);
+      expect(nav.stableTop).toBe(viewport.height - 58);
       expect(appBar?.height).toBe(52);
       expect(summary?.height).toBeGreaterThanOrEqual(88);
       expect(summary?.height).toBeLessThan(89);
@@ -160,9 +172,12 @@ test.describe('R0093 — true fixed Bottom Box Groups lock', () => {
     expect(returned.scrollY).toBeLessThan(final.scrollY);
     for (const snapshot of snapshots) {
       expect(snapshot.position).toBe('fixed');
-      expect(snapshot.bottomStyle).toBe('0px');
+      expect(snapshot.topStyle).toBe(`${initial.top}px`);
+      expect(snapshot.authoredBottom).toBe('auto');
       expect(snapshot.transform).toBe('none');
-      expect(snapshot.lockMode).toBe('fixed-static');
+      expect(snapshot.lockMode).toBe('layout-top-static');
+      expect(snapshot.layoutViewportHeight).toBe(initial.layoutViewportHeight);
+      expect(snapshot.stableTop).toBe(initial.stableTop);
       expect(Number.parseFloat(snapshot.rootPaddingBottom)).toBeGreaterThanOrEqual(snapshot.height);
       expect(snapshot.mainScrollOverflowY).toBe('visible');
       expect(Math.abs(snapshot.top - initial.top)).toBeLessThanOrEqual(1);

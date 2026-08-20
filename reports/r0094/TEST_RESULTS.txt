@@ -1,0 +1,45 @@
+R0094 TEST RESULTS
+
+1. pnpm --filter @workspace/pack-checklist run typecheck
+   PASS
+
+2. pnpm exec playwright test tests/e2e/phase1b/r0094-iphone-physical-footer-lock.spec.ts --workers=1 --project=chromium
+   PASS — 7 passed, 0 failed
+   - 402×714, 402×754, 390×844, and 360×800 responsive layout-top geometry.
+   - Start, mid, deep, bottom-of-list, and reverse scroll snapshots.
+   - Actual document scroll changes while footer top/marker/height remain stable.
+   - Explicit visualViewport scroll event does not alter footer geometry.
+   - Genuine 714→754 layout resize moves the responsive resting line by exactly 40px,
+     then returns it after resize back to 714px.
+   - Position mutation audit observes no style/class/marker changes during scroll.
+   - Final content clears footer; Next/Back/Add works.
+
+3. Combined footer regression suites
+   R0094 + R0093 + R0092: PASS — 18 passed, 0 failed
+
+4. Existing mobile regressions
+   R0091 header/Summary/nav + right-side inset + screen-efficiency + viewport-safe:
+   PASS — 25 passed, 0 failed
+   This includes native document scrolling, 320px width safety, long-category bounded
+   scrolling, Home interaction, safe-area CSS, and existing protected geometry.
+
+5. Independent browser verification, 402×714
+   PASS
+   - Actual document scroll: window.scrollY 0→134→0.
+   - Footer remained at y=656, height=58.
+   - Position=fixed; inline top=656px; inline bottom=auto;
+     data-footer-positioning=layout-top-static;
+     data-footer-layout-height=714; data-footer-stable-top=656.
+   - visualViewport scroll dispatch did not change the footer.
+   - Locker, Summary, Add, Search, Next/Back, category expansion, and bounded
+     long-category item scrolling worked.
+   - No app-console errors; expected Clerk development-key warning only.
+
+6. git diff --check
+   PASS
+
+LIMITATION
+The wider `pnpm -r --if-present run typecheck` remains blocked by pre-existing TypeScript
+errors in unrelated artifacts/mockup-sandbox calendar/spinner components. The changed
+TrailWeigh package typecheck passes. Chromium cannot certify iPhone Safari compositor
+behavior; real-iPhone validation is required for USER PASS.

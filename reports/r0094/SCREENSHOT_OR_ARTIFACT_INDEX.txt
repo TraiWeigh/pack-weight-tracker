@@ -1,0 +1,42 @@
+R0094 SCREENSHOT / ARTIFACT INDEX
+
+AUTHORITATIVE USER EVIDENCE
+- attached_assets/R0094_USER_IPHONE_POST_R0093_FOOTER_MOVEMENT_1787244010876.MP4
+  Newest post-R0093 real-iPhone Safari USER FAIL evidence. Reviewed before R0094 editing.
+
+- attached_assets/R0094_GS_IPHONE_FOOTER_PHYSICAL_SCREEN_LOCK_1787244010875.txt
+  R0094 Gold Standard requirements.
+
+CHROMIUM R0094 STRUCTURAL-EVIDENCE SCREENSHOTS — 402×714
+- screenshots/r0094-start-402x714.png
+  Start position: footer is at y=656..714.
+
+- screenshots/r0094-mid-scroll-402x714.png
+  Mid-scroll position: checklist content moves; footer remains at y=656..714.
+
+- screenshots/r0094-deep-scroll-402x714.png
+  Deep-scroll position: checklist content moves; footer remains at y=656..714.
+
+- screenshots/r0094-reverse-scroll-402x714.png
+  Reverse-scroll position: content returns; footer remains on the same screen line.
+
+- screenshots/r0094-bottom-of-list-402x714.png
+  Bottom-of-list: final R0094 Physical H category clears above the stationary footer.
+
+PLAYWRIGHT / BROWSER EVIDENCE
+- tests/e2e/phase1b/r0094-iphone-physical-footer-lock.spec.ts
+  Focused structural suite with R0094 scroll, resize, mutation, clearance, and
+  interaction checks.
+
+- playwright-report/index.html
+  Generated Playwright HTML report. Passing current runs do not require a retry trace;
+  any retry traces/reports produced by Playwright are under test-results/ and
+  playwright-report/ during the run.
+
+- Independent browser verifier screenshot IDs: v6zrzs (initial stable coordinate),
+  c5ceal (deep scroll / final content clearance), ufgi37 (top state after control
+  verification), w3vgqx (bounded long-category scrolling).
+
+STANDARD REPLIT USAGE SCREENSHOT
+Unavailable. The archive includes the supplied real-iPhone MP4 and five required
+Chromium regression frames instead.

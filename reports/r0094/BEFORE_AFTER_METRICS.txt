@@ -1,0 +1,67 @@
+R0094 BEFORE / AFTER METRICS
+
+The supplied iPhone evidence is authoritative for physical-screen behavior. Chromium
+measurements below verify structural geometry only.
+
+R0093 CURRENT STATE / R0094 AFTER
+Metric                                      R0093 current state                   R0094 after
+Footer position                             fixed                                 fixed
+Authored top                                auto                                  layout client height − nav height
+Authored bottom                             0px                                   auto
+Reference coordinate                        dynamic visual viewport bottom        stable layout viewport clientHeight
+Layout baseline                             none                                  documentElement.clientHeight
+Responsive update path                      browser determines bottom edge        documentElement ResizeObserver
+Window scroll updates footer                no                                    no
+visualViewport scroll updates footer        no                                    no
+visualViewport height used for position     no                                    no
+Footer transform                            none                                  none
+Footer marker                               fixed-static                          layout-top-static
+Content/deck reservation                   measured nav height                   measured nav height
+Scroll owner                                document/window                       document/window
+
+CURRENT 402×714 STABLE COORDINATE
+Layout viewport/clientHeight: 714px
+Measured Bottom Box Groups height: 58px
+Stable top: 714 − 58 = 656px
+Authored footer style: position=fixed; top=656px; bottom=auto; transform=none
+Rendered footer rect: x=0..402, y=656..714
+
+SCROLL SNAPSHOTS — 402×714
+Snapshot                  Document scroll target       Footer top/bottom      Max movement
+Start                     0%                           y=656..714            0px
+After visualViewport event unchanged                   y=656..714            0px
+Mid-scroll                35%                          y=656..714            <=1px
+Deep-scroll               85%                          y=656..714            <=1px
+Bottom-of-list            100%                         y=656..714            <=1px
+Reverse-scroll            20%                          y=656..714            <=1px
+
+The R0094 mutation observer found 0 footer style/class/position-marker mutations during
+the lifecycle. The independent browser session also observed window.scrollY 0→134→0
+without any footer movement.
+
+TRUE LAYOUT RESIZE TEST — CHROMIUM
+Layout height              Footer top                 Result
+714px                      656px                      baseline
+754px                      696px                      +40px once for genuine layout resize
+714px                      656px                      returned to baseline
+
+The visualViewport scroll dispatch performed at both layout sizes changed none of the
+footer's authored values, markers, or rendered coordinate.
+
+PRESERVATION METRICS
+Metric                                      R0093 current state                   R0094 after
+Footer height                               58px                                 58px
+AppBar height                               52px                                 52px
+List Summary height                         approximately 88.25px                approximately 88.25px
+Root width at 402px                         402px                                402px
+Category weight right edge                  358px                                358px
+Summary right metric edge                   358px                                358px
+Terminal AppBar box right edge              358px                                358px
+Hamburger hit target                        x=8..52                              x=8..52
+Category row height                         64–65px                              64–65px
+
+FINAL CONTENT CLEARANCE
+- Root bottom reservation remains at least the measured 58px footer height.
+- R0094 Physical H clears the footer top at bottom-of-list.
+- The independent browser check confirmed R0094 Browser D clears the footer.
+- No oversized blank tail or body freeze was introduced.

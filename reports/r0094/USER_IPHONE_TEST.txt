@@ -1,0 +1,36 @@
+R0094 — KEVIN'S REAL IPHONE SAFARI TEST
+
+R0093 was a USER FAIL. Please test R0094 on the same iPhone/Safari route and report
+USER PASS only if Bottom Box Groups stays on one exact physical-screen line throughout.
+
+1. Start with Safari controls visible.
+   - Open /mobile-functional-v3.
+   - Note the resting Bottom Box Groups line. It should match the good location shown in
+     the supplied reference/video: full width and 58px high, with its current labels/icons.
+
+2. Slow category scroll.
+   - Drag the checklist slowly through several categories.
+   - Checklist rows must move.
+   - Bottom Box Groups must not rise, fall, drift, jump, or chase Safari controls.
+
+3. Fast flick and reverse scroll.
+   - Flick down until Safari controls compact, then flick/drag back until they expand.
+   - The footer must remain on the exact same physical screen line in both directions.
+   - This is the critical R0094 acceptance check.
+
+4. Content reachability.
+   - Scroll to the last category/item.
+   - Confirm it can move fully above the footer with no hidden row and no giant blank tail.
+   - Confirm native scrolling is still natural; the page must not feel frozen.
+
+5. Footer and checklist interaction safety.
+   - Test Locker, Summary, Add, Search, and Next/Back.
+   - Open a category with many items and confirm its bounded item area scrolls.
+   - Confirm drawers/decks still raise above the footer.
+
+6. Protected visual state.
+   - Confirm the AppBar, List Summary, hamburger, category wedges/rows, weight-column
+     position, right-side spacing, and footer size/design did not change.
+
+If the footer moves at all, please send another recording showing whether movement starts
+on slow drag, fast flick, Safari-control animation, reverse scroll, or a layout rotation.
