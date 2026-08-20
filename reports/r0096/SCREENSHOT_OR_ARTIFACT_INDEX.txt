@@ -1,0 +1,28 @@
+R0096 screenshot index
+
+screenshots/01-normal-filter-402x714.png
+  Normal checklist with locked Filter: Category.
+
+screenshots/02-normal-mid-scroll-402x714.png
+  Main checklist scrolled while AppBar, Summary, Filter, and Bottom Box Groups remain fixed.
+
+screenshots/03-active-category-402x714.png
+  Active bounded category with Filter replaced by the category header.
+
+screenshots/04-active-item-scroll-402x714.png
+  Inner category item scroll with the active header and Add Item bar locked.
+
+screenshots/05-drawer-open-402x714.png
+  Hamburger frame open over the fixed shell.
+
+screenshots/06-drawer-after-underlying-scroll-402x714.png
+  Drawer frame after underlying-scroll attempt; frame geometry remains fixed.
+
+screenshots/07-home-regression-402x714.png
+  Home regression state.
+
+screenshots/08-preview-normal-402x714.jpg
+  Fresh proxied app-preview visual check of normal Filter layout.
+
+Standard Replit usage screenshot:
+Unavailable in this rewrite environment. The fresh proxied app-preview screenshot is included instead.

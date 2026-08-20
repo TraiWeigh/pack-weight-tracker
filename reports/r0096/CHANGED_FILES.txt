@@ -1,0 +1,22 @@
+R0096 changed source and test files
+
+Application
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Added the fixed Filter slot, Category/Location/Photo menu, shared active-category slot,
+  Photo mode item rendering, and adjusted main-scroll clearance.
+- artifacts/pack-checklist/src/components/NavDrawer.tsx
+  Confined drawer overflow to the navigation-list interior so the panel frame stays locked.
+
+Tests
+- tests/e2e/phase1b/r0096-locked-controls.spec.ts
+  Added focused R0096 behavior, geometry, responsive, Photo, drawer, and Home coverage.
+- tests/e2e/phase1b/r0096-evidence.spec.ts
+  Added reproducible report screenshot and metric capture.
+- tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts
+  Updated the R0095 shell assertion for the new R0096 Filter clearance.
+- tests/e2e/phase1b/r0085.spec.ts
+  Updated preserved Location behavior tests to select views through Filter.
+- tests/e2e/phase1b/right-side-inset.spec.ts
+  Updated the Location view entry to select through Filter.
+
+Report files and screenshots are included in this archive.

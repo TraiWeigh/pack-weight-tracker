@@ -1,0 +1,109 @@
+TRAILWEIGH — R0096 GS REPORT
+LOCKED CONTROL LAYERS + FILTER BAR + HAMBURGER PANEL
+
+Agent mode used: POWER
+Status: REPLIT PASS / READY FOR USER IPHONE TEST
+Important: Chromium verification is not user-device acceptance. Real iPhone Safari evidence remains authoritative.
+
+R0095 architecture confirmed: YES
+- The TrailWeigh mobile root remains a fixed-height shell.
+- AppBar, List Summary, and Bottom Box Groups remain outside ordinary checklist scrolling.
+- main-scroll remains the ordinary checklist/category scroll owner.
+- document, window, and body remained at scroll position 0 in checked checklist and Home flows.
+
+FACTS
+- The prior Category/Location segmented bar was normal scrolling content.
+- The existing List Summary height is measured at runtime.
+- Long categories already use a bounded open-cat-items viewport and an Add Item bar outside it.
+- The existing NavDrawer frame and its list were both permitted to scroll.
+- Item-owned photo storage and editor already existed and could be safely reused.
+
+UNKNOWNS
+- Chromium cannot reproduce physical iPhone Safari browser-chrome movement.
+- No live-device R0096 recording was supplied with this rewrite.
+
+ASSUMPTIONS
+- The measured List Summary is the canonical top boundary for the shared Filter/active-category slot.
+- A one-pixel border overlap between Add Item and Bottom Box Groups is intentional visual adjacency, not content overlap.
+
+LOCKED-SLOT ARCHITECTURE IMPLEMENTED
+Normal checklist:
+  AppBar (locked)
+  List Summary (locked)
+  Filter bar (locked)
+  main-scroll category content (scrolling)
+  Bottom Box Groups (locked)
+
+Active bounded category:
+  AppBar (locked)
+  List Summary (locked)
+  active category header in the Filter slot (sticky)
+  open-cat-items bounded item viewport (scrolling)
+  Add Item bar (locked by its measured bounded viewport)
+  Bottom Box Groups (locked)
+
+Hamburger:
+  fixed shell overlay frame (not a scroller)
+  nav-drawer-scroll interior list (the only drawer scroll owner)
+
+SCROLL OWNERS
+- Normal checklist: main-scroll.
+- Active long category: open-cat-items for item movement; main-scroll remains at the active category top.
+- Hamburger: nav-drawer-scroll only when needed.
+- Home: home-content-scroll.
+- Window/document/body: none for ordinary checklist or Home interaction.
+
+FILTER CONTROL
+- One locked Filter control sits directly beneath the measured List Summary.
+- It opens a compact in-place menu with Category, Location, and Photo.
+- The visible control label reflects the selected option.
+- Category and Location retain their existing view semantics.
+
+PHOTO MODE
+Implemented fully using the existing item-owned photo editor/storage:
+- A photo-bearing item in Photo mode renders its retained checklist checkbox, item name, photo, and only Delete/Edit below the photo.
+- Delete removes TrailWeigh's stored copy; Edit opens the existing Take New Photo / Upload Photo Library flow.
+- Items without a photo retain their normal item form.
+- Switching away from Photo restores normal item presentation.
+
+ACTIVE CATEGORY / ADD ITEM
+- Any bounded open category, including while Photo is selected, replaces the Filter rather than stacking below it.
+- Its header is sticky at the main-scroll top edge, directly below List Summary.
+- The existing Add Item appearance/function and paging controls are preserved.
+- The bounded item viewport is measured from the active header/item top to the Add Item/bottom-navigation boundary.
+
+HAMBURGER PANEL
+- The panel frame now has overflow hidden and contains overscroll.
+- Its existing middle navigation list is the dedicated auto-scrolling interior.
+- Size, appearance, open/close, rows, and handedness control are unchanged.
+
+HOME REGRESSION
+- PASS in Chromium: Home remains a fixed shell overlay with its own home-content-scroll region.
+- AppBar and Bottom Box Groups remain stable and document scroll stays at 0.
+
+AREAS DELIBERATELY UNCHANGED
+- R0095 document-scroll isolation and shell geometry.
+- AppBar, List Summary, Bottom Box Groups, width, weight-column alignment, category row heights, wedge visuals, fonts, weights, checklist model, auth, DB, packages, deployment, swipe-delete, reorder, and Home visual design.
+
+TEST COMMANDS AND RESULTS
+1. pnpm --filter @workspace/pack-checklist run typecheck
+   PASS
+2. pnpm exec playwright test tests/e2e/phase1b/r0096-locked-controls.spec.ts --workers=1 --project=chromium
+   PASS — 9/9
+3. pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
+   PASS — 19/19
+4. pnpm exec playwright test tests/e2e/phase1b/r0085.spec.ts tests/e2e/phase1b/right-side-inset.spec.ts --workers=1 --project=chromium
+   PASS — 29/29
+5. pnpm exec playwright test tests/e2e/phase1b/r0096-evidence.spec.ts --workers=1 --project=chromium
+   PASS — 1/1
+
+Exact focused total: PASS — 58/58 browser tests plus package typecheck.
+Independent browser pass: PASS after one corrected Photo-mode active-category edge case.
+
+THREE STANDING REPLIT QUESTIONS
+1. What did you learn that improves future prompts?
+   The R0095 shell is easiest to extend by adding a shared shell slot and adjusting main-scroll clearance. The active long-category header should be sticky within that same scroll viewport, not duplicated with a new fixed offset.
+2. What was unclear, unnecessary, risky, or better expressed?
+   “Active/over-expanded” needed translation to the current isCatLong bounded-mode state. Making the requirement explicitly apply to every view mode, including Photo, avoids a subtle state-dependent gap.
+3. What Replit/project guidance helps next time?
+   Run the focused Playwright suites with one worker. Real iPhone evidence outranks the passed Chromium geometry. The existing drawer is an absolute child of the fixed shell, so frame stability comes from separating its interior overflow rather than adding viewport compensation.

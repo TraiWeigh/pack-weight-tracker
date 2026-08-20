@@ -221,9 +221,11 @@ export function NavDrawer({
           flexDirection: 'column',
           transform:   `translateX(${panelTranslate})`,
           transition,
+          // R0096: the panel frame is never a scroller. Its middle list owns
+          // overflow, so its screen-anchored rect remains stable during gestures.
           touchAction: 'pan-y',
-          overflowY:   'auto',
-          overflowX:   'hidden',
+          overflow:    'hidden',
+          overscrollBehavior: 'contain',
         }}
       >
         {/* Panel header — 52 px, matches the APP BAR height */}
@@ -249,7 +251,17 @@ export function NavDrawer({
         {/* ── 5 Navigation rows ──────────────────────────────────────────── */}
         <div
           role="list"
-          style={{ flex: 1, paddingTop: 6, paddingBottom: 6, overflowY: 'auto' }}
+          data-testid="nav-drawer-scroll"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            paddingTop: 6,
+            paddingBottom: 6,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
+          }}
         >
           {rows.map(({ id, Icon, label, sublabel, disabled, onClick }) => (
             <div role="listitem" key={id}>

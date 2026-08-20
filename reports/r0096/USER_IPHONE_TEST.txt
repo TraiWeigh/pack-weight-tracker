@@ -1,0 +1,40 @@
+R0096 — USER IPHONE TEST CHECKLIST
+
+This build is REPLIT PASS / READY FOR USER IPHONE TEST, not USER PASS.
+Please test /mobile-functional-v3 on the actual iPhone:
+
+1. Normal checklist
+- Scroll deeply and back.
+- Confirm only categories/content move.
+- Confirm AppBar, List Summary, Filter, and Bottom Box Groups do not move.
+
+2. Filter
+- Confirm Filter remains locked below Summary.
+- Confirm Category, Location, and Photo choices open and select correctly.
+- Confirm the active choice is visible in the Filter label.
+
+3. Active category
+- Open a category with enough content to enter its bounded item mode.
+- Confirm the active category header replaces Filter instead of stacking under it.
+- Confirm it stays locked directly below Summary while items scroll.
+
+4. Add Item
+- In the bounded category, confirm Add Item stays directly above Bottom Box Groups.
+- Confirm only category items scroll between the active category header and Add Item.
+- Confirm Add Item, paging controls, close/return, and checkbox interactions work.
+
+5. Photo
+- Select Photo in Filter, open a category, and check a saved-photo item.
+- Confirm the checkbox remains usable and photo controls are only Delete and Edit.
+- Confirm Edit can choose Take New Photo or Photo Library and changes only that item photo.
+
+6. Hamburger
+- Open the hamburger, try to scroll underlying content, and confirm the panel frame does not move.
+- If drawer content needs scrolling, confirm only its interior moves.
+- Close and reopen the panel.
+
+7. Home
+- Open Home, scroll its content, and confirm AppBar/Bottom Box Groups stay stable.
+- Confirm no header, Summary, Filter, footer movement, document scroll escape, or freezes.
+
+If any movement is visible, capture a short recording showing the full screen and browser chrome; real device evidence overrides this Chromium report.

@@ -94,6 +94,19 @@ async function assignNewLocation(page: Page, locName: string) {
   await dialog.waitFor({ state: 'hidden', timeout: 5000 });
 }
 
+/** R0096: choose an existing view through the single locked Filter control. */
+async function chooseView(page: Page, view: 'category' | 'location' | 'photo') {
+  await page.getByTestId('filter-control').click();
+  await page.getByTestId(`filter-option-${view}`).click();
+}
+
+/** Active bounded categories intentionally replace the Filter slot in R0096. */
+async function returnToFilter(page: Page) {
+  const close = page.getByRole('button', { name: /^Close .+ category$/ }).first();
+  if (await close.isVisible().catch(() => false)) await close.click();
+  await expect(page.getByTestId('filter-control')).toBeVisible({ timeout: 5000 });
+}
+
 /**
  * Swipe-reveal the Edit (secondary) action on the first category,
  * then click it — opens the R0085 category direct-edit dialog.
@@ -161,26 +174,30 @@ test.describe('R85 — Location', () => {
     expectClean(errors);
   });
 
-  test('R85-05 Category|Location view bar absent when no items have locations', async ({ page, errors }) => {
+  test('R85-05 locked Filter is available before items have locations', async ({ page, errors }) => {
     await gotoDemo(page);
-    await expect(page.locator('[data-testid="view-mode-bar"]')).not.toBeVisible();
+    await expect(page.getByTestId('filter-bar')).toBeVisible();
+    await expect(page.getByTestId('filter-control')).toContainText('Filter: Category');
     expectClean(errors);
   });
 
-  test('R85-06 Category|Location view bar appears after assigning via dropdown', async ({ page, errors }) => {
+  test('R85-06 Filter exposes Category, Location, and Photo after assigning via dropdown', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Pack Top');
-    await expect(page.locator('[data-testid="view-mode-bar"]')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('[data-testid="view-mode-category"]')).toBeVisible();
-    await expect(page.locator('[data-testid="view-mode-location"]')).toBeVisible();
+    await returnToFilter(page);
+    await page.getByTestId('filter-control').click();
+    await expect(page.getByTestId('filter-option-category')).toBeVisible();
+    await expect(page.getByTestId('filter-option-location')).toBeVisible();
+    await expect(page.getByTestId('filter-option-photo')).toBeVisible();
     expectClean(errors);
   });
 
   test('R85-07 Location view adds a Location wedge for each used location', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Tent Pocket');
+    await returnToFilter(page);
     // Switch to Location view
-    await page.locator('[data-testid="view-mode-location"]').click();
+    await chooseView(page, 'location');
     // At least one location wedge must be visible
     await page.locator('[data-testid^="loc-wedge-"]').first().waitFor({ state: 'visible', timeout: 5000 });
     expectClean(errors);
@@ -189,7 +206,8 @@ test.describe('R85 — Location', () => {
   test('R85-08 Location wedge bar shows "Location" left label and loc name right', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Hip Belt Pocket');
-    await page.locator('[data-testid="view-mode-location"]').click();
+    await returnToFilter(page);
+    await chooseView(page, 'location');
     // Wait for a location wedge header
     const locHeader = page.locator('[data-testid^="loc-header-"]').first();
     await locHeader.waitFor({ state: 'visible', timeout: 5000 });
@@ -203,10 +221,11 @@ test.describe('R85 — Location', () => {
   test('R85-09 Switch back to Category view — location wedges disappear', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Sleeping Bag');
-    await page.locator('[data-testid="view-mode-location"]').click();
+    await returnToFilter(page);
+    await chooseView(page, 'location');
     await page.locator('[data-testid^="loc-wedge-"]').first().waitFor({ state: 'visible', timeout: 5000 });
     // Switch back
-    await page.locator('[data-testid="view-mode-category"]').click();
+    await chooseView(page, 'category');
     await expect(page.locator('[data-testid^="loc-wedge-"]').first()).not.toBeVisible({ timeout: 5000 });
     // Category bars still present
     await expect(page.locator('[data-swipe-key^="cat:"]').first()).toBeVisible();
@@ -346,7 +365,8 @@ test.describe('R85 — Location Wedge & Location Photo', () => {
   test('R85-20 Location wedge expand shows Location Photo row with Add Photo button', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Hip Pocket');
-    await page.locator('[data-testid="view-mode-location"]').click();
+    await returnToFilter(page);
+    await chooseView(page, 'location');
     // Open the location wedge
     const wedge = page.locator('[data-testid^="loc-header-"]').first();
     await wedge.waitFor({ state: 'visible', timeout: 5000 });
@@ -359,7 +379,8 @@ test.describe('R85 — Location Wedge & Location Photo', () => {
   test('R85-21 Location Photo Add button opens location photo edit sheet', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Bear Box');
-    await page.locator('[data-testid="view-mode-location"]').click();
+    await returnToFilter(page);
+    await chooseView(page, 'location');
     await page.locator('[data-testid^="loc-header-"]').first().click();
     await expect(page.locator('[data-testid="loc-photo-add-btn"]')).toBeVisible({ timeout: 5000 });
     await page.locator('[data-testid="loc-photo-add-btn"]').click();
@@ -374,7 +395,8 @@ test.describe('R85 — Location Wedge & Location Photo', () => {
   test('R85-22 Location rename dialog opens from swipe Edit on wedge', async ({ page, errors }) => {
     await gotoDemo(page);
     await assignNewLocation(page, 'Dry Bag');
-    await page.locator('[data-testid="view-mode-location"]').click();
+    await returnToFilter(page);
+    await chooseView(page, 'location');
     // Get the loc id from the header testid so we can target the SwipeDeleteRow wrapper
     const wedgeHeader = page.locator('[data-testid^="loc-header-"]').first();
     await wedgeHeader.waitFor({ state: 'visible', timeout: 5000 });
@@ -472,8 +494,9 @@ test('R85-25 No page errors after exercising all corrected flows', async ({ page
 
   // Assign a location and switch to Location view
   await assignNewLocation(page, 'Side Pocket');
-  await expect(page.locator('[data-testid="view-mode-bar"]')).toBeVisible({ timeout: 5000 });
-  await page.locator('[data-testid="view-mode-location"]').click();
+  await returnToFilter(page);
+  await expect(page.getByTestId('filter-bar')).toBeVisible({ timeout: 5000 });
+  await chooseView(page, 'location');
 
   // Open the location wedge
   const locHeader = page.locator('[data-testid^="loc-header-"]').first();
@@ -488,7 +511,7 @@ test('R85-25 No page errors after exercising all corrected flows', async ({ page
   await expect(page.locator('[data-testid="loc-photo-edit-sheet"]')).not.toBeVisible({ timeout: 5000 });
 
   // Switch back to category view
-  await page.locator('[data-testid="view-mode-category"]').click();
+  await chooseView(page, 'category');
   await expect(page.locator('[data-swipe-key^="cat:"]').first()).toBeVisible();
 
   expectClean(errors);

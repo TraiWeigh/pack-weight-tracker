@@ -105,7 +105,10 @@ test.describe('R0089 — shared checklist right-side inset', () => {
     await gotoDemo(page);
     await createLocationForFirstItem(page);
 
-    await page.getByTestId('view-mode-location').click();
+    const close = page.getByRole('button', { name: /^Close .+ category$/ }).first();
+    if (await close.isVisible().catch(() => false)) await close.click();
+    await page.getByTestId('filter-control').click();
+    await page.getByTestId('filter-option-location').click();
     const locationName = page.locator('[data-testid^="loc-name-"]').first();
     await expect(locationName).toBeVisible();
     expectInset(await rectOf(page, '[data-testid^="loc-name-"]'), 402, 'Location header name');

@@ -336,3 +336,10 @@ uri = "file://R0095.zip"
 type = "unspecified"
 title = "R0095 mobile shell report"
 description = "Stable mobile chrome correction: supplied iPhone evidence, five checklist-scroll screenshots, exact AppBar/Summary/footer metrics, focused tests, and Kevin’s real-iPhone acceptance checklist."
+
+[[outputs]]
+id = "2f7F_hgI5nG50Pxv3SCsV"
+uri = "file://R0096.zip"
+type = "unspecified"
+title = "R0096 report archive"
+description = "Rewritten R0096 archive with reports, fresh screenshots, source and focused test evidence. Integrity checked successfully."

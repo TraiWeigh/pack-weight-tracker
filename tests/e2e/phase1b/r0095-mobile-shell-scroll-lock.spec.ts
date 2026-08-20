@@ -10,6 +10,7 @@ type ShellSnapshot = {
   root: { top: number; bottom: number; height: number; position: string; overflowY: string };
   appBar: { top: number; bottom: number; height: number; position: string };
   summary: { top: number; bottom: number; height: number; position: string };
+  filter: { top: number; bottom: number; height: number; position: string };
   nav: { top: number; bottom: number; height: number; position: string; topStyle: string; mode: string | null };
   main: { top: number; bottom: number; height: number; scrollTop: number; scrollHeight: number; overflowY: string };
   representativeRowTop: number;
@@ -39,6 +40,7 @@ async function snapshot(page: import('@playwright/test').Page, categoryName = 'B
       root: { top: rootBox.top, bottom: rootBox.bottom, height: rootBox.height, position: rootStyle.position, overflowY: rootStyle.overflowY },
       appBar: rect('[data-testid="app-bar"]'),
       summary: rect('[data-testid="list-summary-bar"]'),
+      filter: rect('[data-testid="filter-bar"]'),
       nav: {
         top: navBox.top, bottom: navBox.bottom, height: navBox.height,
         position: navStyle.position, topStyle: nav.style.top,
@@ -75,13 +77,15 @@ function expectStableShell(frame: ShellSnapshot, viewportHeight: number) {
   expect(frame.appBar.height).toBe(52);
   expect(frame.summary.position).toBe('absolute');
   expect(frame.summary.top).toBeCloseTo(52, 0);
+  expect(frame.filter.position).toBe('absolute');
+  expect(frame.filter.top).toBeCloseTo(frame.summary.bottom, 0);
   expect(frame.nav.position).toBe('absolute');
   expect(frame.nav.mode).toBe('shell-top-static');
   expect(frame.nav.topStyle).toBe(`${viewportHeight - 58}px`);
   expect(frame.nav.height).toBe(58);
   expect(frame.nav.bottom).toBeCloseTo(viewportHeight, 0);
   expect(frame.main.overflowY).toBe('auto');
-  expect(frame.main.top).toBeCloseTo(frame.summary.bottom, 0);
+  expect(frame.main.top).toBeCloseTo(frame.filter.bottom, 0);
   expect(frame.main.bottom).toBeCloseTo(frame.nav.top, 0);
   expect(frame.windowScrollY).toBe(0);
   expect(frame.documentScrollTop).toBe(0);

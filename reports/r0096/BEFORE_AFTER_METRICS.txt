@@ -1,0 +1,60 @@
+R0096 Chromium measurements
+Viewport: 402 × 714
+Capture command:
+pnpm exec playwright test tests/e2e/phase1b/r0096-evidence.spec.ts --workers=1 --project=chromium
+
+NORMAL CHECKLIST
+Start:
+- AppBar: top 0, bottom 52, height 52
+- List Summary: top 52, bottom 140.25, height 88.25
+- Filter: top 140, bottom 190, height 50
+- Bottom Box Groups: top 656, bottom 714, height 58
+- main-scroll: top 190, bottom 656, scrollTop 0, scrollHeight 780, clientHeight 466
+- document/window/body scroll: 0 / 0 / 0
+
+After main-scroll mid-scroll:
+- AppBar: top 0, bottom 52, height 52
+- List Summary: top 52, bottom 140.25, height 88.25
+- Filter: top 140, bottom 190, height 50
+- Bottom Box Groups: top 656, bottom 714, height 58
+- main-scroll scrollTop: 220
+- document/window/body scroll: 0 / 0 / 0
+
+ACTIVE BOUNDED CATEGORY
+Start:
+- AppBar: top 0, bottom 52
+- List Summary: top 52, bottom 140.25
+- Filter: absent (replaced)
+- Active Category header: top 140, bottom 204, height 64
+- Add Item: top 612, bottom 657, height 45
+- Bottom Box Groups: top 656, bottom 714, height 58
+- open-cat-items: scrollTop 12, scrollHeight 764, clientHeight 407
+- main-scroll: top 140, bottom 656, scrollTop 0
+- document/window/body scroll: 0 / 0 / 0
+
+After inner item scroll:
+- Active Category header: top 140, bottom 204, height 64
+- Add Item: top 612, bottom 657, height 45
+- Bottom Box Groups: top 656, bottom 714, height 58
+- open-cat-items scrollTop: 357
+- main-scroll scrollTop: 0
+- document/window/body scroll: 0 / 0 / 0
+
+HAMBURGER PANEL
+Before and after attempted underlying-scroll:
+- Frame rect: top 0, bottom 714, height 714 in both snapshots.
+- Underlying main-scroll remained top 140, bottom 656, scrollTop 0 in the bounded state.
+- Drawer interior is nav-drawer-scroll with overflowY:auto; frame overflow is hidden.
+
+HOME
+- home-content-scroll: scrollTop 200, scrollHeight 952, clientHeight 662
+- window/document scroll: 0 / 0
+
+PRESERVATION METRICS
+- AppBar height: 52 px
+- List Summary height: 88.25 px
+- Bottom Box Groups height: 58 px
+- Category row height: 64 px
+- Category weight-column right edge: 358 px
+- Root width: 402 px
+- Document scroll width: 402 px

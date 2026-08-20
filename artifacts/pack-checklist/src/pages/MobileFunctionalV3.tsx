@@ -215,6 +215,10 @@ const TOAST_BG     = '#2A5740';
 // ─── BOTTOM CARD-DECK NAVIGATION CONSTANTS (R002, geometry revised R003) ─────────
 const NAV_H         = 58;   // bottom tab bar fallback height (px); actual height is measured (A4)
 const BAR_PEEK_H    = 68;   // visible height of an inactive stacked bar (matches category-bar height)
+// R0096: shared locked-control slot directly beneath the measured List Summary.
+// Keep this constant independent of individual view labels so future filter choices
+// cannot change the checklist viewport geometry.
+const FILTER_BAR_H  = 50;
 // DRAG_ACTIVATE removed R0073: stacked bars are tap-only, no drag-to-activate
 const TAP_MAX_PX    = 8;    // pointer movement below this = tap
 // R006 Part 2 — long-press reorder tuning (documented stable values)
@@ -2217,8 +2221,10 @@ function MobileFunctionalV3Inner() {
   const [itemRenameFor, setItemRenameFor] = useState<{ cat: string; id: string; currentDesc: string } | null>(null);
   const [itemRenameValue, setItemRenameValue] = useState('');
 
-  // R0085 — Location / Photo / View-mode state
-  const [viewMode, setViewMode] = useState<'category' | 'location'>('category');
+  // R0085/R0096 — Location / Photo / View-mode state. R0096 presents these
+  // through one locked Filter control rather than a scrolling segmented bar.
+  const [viewMode, setViewMode] = useState<'category' | 'location' | 'photo'>('category');
+  const [filterOpen, setFilterOpen] = useState(false);
   // R0085C — Location-view wedge state (replaces full-screen picker sheet)
   const [openLocId, setOpenLocId] = useState<string | null>(null);        // which loc wedge is open
   const [locRenameId, setLocRenameId] = useState<string | null>(null);    // which loc is being renamed
@@ -2696,6 +2702,19 @@ function MobileFunctionalV3Inner() {
     }
   }, [allExpanded, openCatName]);
 
+  // A view change is a presentation switch, not a second accordion hierarchy.
+  // Close the current category/location surface first so the normal Filter slot
+  // is restored cleanly and each view begins with its existing list semantics.
+  const handleViewModeChange = useCallback((next: 'category' | 'location' | 'photo') => {
+    setViewMode(next);
+    setFilterOpen(false);
+    setOpenCatName(null);
+    setOpenLocId(null);
+    setAllExpanded(false);
+    setExpandedItem(null);
+    setPhotoViewFor(null);
+  }, []);
+
   // R0075: expand/collapse all — restored for the List Summary global chevron
   const handleExpandAll   = useCallback(() => setAllExpanded(true), []);
   const handleCollapseAll = useCallback(() => { setAllExpanded(false); setOpenCatName(null); }, []);
@@ -2704,6 +2723,16 @@ function MobileFunctionalV3Inner() {
   //  slider components — deck interaction lives in CardDeck / DeckInactiveCard.)
 
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
+
+  // R0096: an active bounded category takes the exact same top-control slot as
+  // the Filter. This avoids stacking two locked rows and preserves the R0095
+  // single owner for ordinary checklist scrolling.
+  const activeCategorySlot = !!openCatName && !allExpanded && isCatLong;
+  const showFilterSlot = !activeCategorySlot;
+
+  useEffect(() => {
+    if (activeCategorySlot) setFilterOpen(false);
+  }, [activeCategorySlot]);
 
   // R0076 repair: item count for the currently open category — used to detect
   // SHORT→LONG / LONG→SHORT transitions without requiring close + reopen.
@@ -2818,7 +2847,7 @@ function MobileFunctionalV3Inner() {
   // short for the full delta scroll, clamping scrollTop prematurely.  Re-firing when
   // isCatLong=true (content is now tall enough) applies the corrective offset.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [openCatName, isCatLong, allExpanded, summaryH, navHeight]);
+  }, [openCatName, isCatLong, allExpanded, summaryH, navHeight, showFilterSlot]);
 
   // R0076 repair: re-measure when items are added/deleted in the open category
   // so SHORT→LONG and LONG→SHORT transitions happen without close/reopen.
@@ -3973,6 +4002,121 @@ function MobileFunctionalV3Inner() {
 
         </div>{/* end stationary header */}
 
+        {/* ── R0096 LOCKED FILTER SLOT ───────────────────────────────────────────
+            This shell layer deliberately sits between Summary and main-scroll.
+            When an active bounded category needs the working slot, it disappears
+            and that category header becomes sticky at main-scroll's top edge. */}
+        {showFilterSlot && (
+          <div
+            data-testid="filter-bar"
+            role="toolbar"
+            aria-label="Checklist filter"
+            style={{
+              position: 'absolute',
+              top: 52 + summaryH,
+              left: 0,
+              right: 0,
+              height: FILTER_BAR_H,
+              zIndex: 8,
+              display: 'flex',
+              alignItems: 'center',
+              padding: '5px 14px',
+              boxSizing: 'border-box',
+              background: CARD_BG,
+              borderBottom: `1px solid ${DIVIDER}`,
+              boxShadow: '0 3px 8px rgba(0,0,0,0.08)',
+            }}
+          >
+            <button
+              type="button"
+              data-testid="filter-control"
+              aria-label={`Filter: ${viewMode}`}
+              aria-expanded={filterOpen}
+              aria-haspopup="menu"
+              onClick={() => setFilterOpen(open => !open)}
+              style={{
+                width: '100%',
+                minHeight: 36,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10,
+                padding: '6px 10px',
+                background: '#fff',
+                border: `1px solid ${CARD_BORDER}`,
+                borderRadius: 8,
+                color: PRIMARY,
+                cursor: 'pointer',
+                fontFamily: SANS,
+                fontSize: 13,
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <SlidersHorizontal size={15} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true" />
+                Filter: {viewMode.charAt(0).toUpperCase() + viewMode.slice(1)}
+              </span>
+              <ChevronDown
+                size={17}
+                color={SECONDARY}
+                strokeWidth={2}
+                aria-hidden="true"
+                style={{ transform: filterOpen ? 'rotate(180deg)' : undefined }}
+              />
+            </button>
+            {filterOpen && (
+              <div
+                data-testid="filter-menu"
+                role="menu"
+                aria-label="Filter choices"
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 4px)',
+                  left: 14,
+                  right: 14,
+                  zIndex: 12,
+                  overflow: 'hidden',
+                  background: '#fff',
+                  border: `1px solid ${CARD_BORDER}`,
+                  borderRadius: 10,
+                  boxShadow: '0 8px 22px rgba(0,0,0,0.18)',
+                }}
+              >
+                {(['category', 'location', 'photo'] as const).map(mode => (
+                  <button
+                    key={mode}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={viewMode === mode}
+                    data-testid={`filter-option-${mode}`}
+                    onClick={() => handleViewModeChange(mode)}
+                    style={{
+                      width: '100%',
+                      minHeight: 44,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0 12px',
+                      border: 'none',
+                      borderBottom: mode === 'photo' ? 'none' : `1px solid ${DIVIDER}`,
+                      background: viewMode === mode ? 'rgba(42, 87, 64, 0.10)' : '#fff',
+                      color: viewMode === mode ? NAV_ACTIVE : PRIMARY,
+                      cursor: 'pointer',
+                      fontFamily: SANS,
+                      fontSize: 14,
+                      fontWeight: viewMode === mode ? 700 : 500,
+                      textAlign: 'left',
+                    }}
+                  >
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                    {viewMode === mode && <Check size={17} strokeWidth={2.4} aria-hidden="true" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── SCROLLABLE CONTENT (R003 — full width, flush, hidden scrollbar chrome) ── */}
         <div
           className="tw-noscrollbar"
@@ -3992,7 +4136,7 @@ function MobileFunctionalV3Inner() {
              // R0095: the only ordinary checklist/category scroll owner.
              flex: '1 1 0',
              minHeight: 0,
-             marginTop: summaryH,
+              marginTop: summaryH + (showFilterSlot ? FILTER_BAR_H : 0),
              overflowY: 'auto',
              overflowX: 'hidden',
              overscrollBehavior: 'contain',
@@ -4009,43 +4153,6 @@ function MobileFunctionalV3Inner() {
             data-testid="list-summary-spacer"
             style={{ height: 0 }}
           />
-
-          {/* R0085: the view toggle remains normal scrolling content below the
-              fixed Summary, rather than becoming another fixed layer. */}
-          {allItems.some(i => i.locationId) && (
-            <div
-              data-testid="view-mode-bar"
-              role="toolbar"
-              aria-label="List view mode"
-              style={{
-                display: 'flex', background: CARD_BG, borderBottom: `1px solid ${DIVIDER}`,
-                padding: '5px 14px', gap: 4, flexShrink: 0,
-              }}
-            >
-              <button
-                onClick={() => setViewMode('category')}
-                aria-pressed={viewMode === 'category'}
-                data-testid="view-mode-category"
-                style={{
-                  flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
-                  background: viewMode === 'category' ? NAV_ACTIVE : 'transparent',
-                  color: viewMode === 'category' ? '#fff' : SECONDARY,
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
-                }}
-              >Category</button>
-              <button
-                onClick={() => setViewMode('location')}
-                aria-pressed={viewMode === 'location'}
-                data-testid="view-mode-location"
-                style={{
-                  flex: 1, padding: '6px 0', borderRadius: 8, border: 'none',
-                  background: viewMode === 'location' ? NAV_ACTIVE : 'transparent',
-                  color: viewMode === 'location' ? '#fff' : SECONDARY,
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: SANS, minHeight: 36,
-                }}
-              >Location</button>
-            </div>
-          )}
 
           {/* ── CATEGORY STACK (B5 — flush, touching, square-edged) ── */}
           {/* R0085C: Category list always rendered; in Location view, items with a location
@@ -4103,6 +4210,16 @@ function MobileFunctionalV3Inner() {
                   }}>
 
                   {/* ── CATEGORY HEADER (R004 — right-edge-to-left slide reveals Delete) ── */}
+                  <div
+                    data-testid={activeCategorySlot && openCatName === catName ? 'active-category-bar' : undefined}
+                    style={activeCategorySlot && openCatName === catName ? {
+                      position: 'sticky',
+                      top: 0,
+                      zIndex: 7,
+                      background: CARD_BG,
+                      boxShadow: '0 3px 8px rgba(0,0,0,0.16)',
+                    } : undefined}
+                  >
                   <SwipeDeleteRow
                     swipeKey={`cat:${catName}`}
                     reorderActive={dragCatName !== null}
@@ -4223,6 +4340,7 @@ function MobileFunctionalV3Inner() {
                     </div>
                   </div>
                   </SwipeDeleteRow>
+                  </div>
 
                   {/* ── ITEM ROWS (when open) ── */}
                   {isOpen && items.length === 0 && (
@@ -4270,6 +4388,121 @@ function MobileFunctionalV3Inner() {
                         return (
                           <div key={item.id}>
 
+                            {/* R0096: Photo mode is an in-place view of the same item.
+                                It keeps the real checklist checkbox, shows an existing
+                                TrailWeigh-owned photo, and exposes only Delete/Edit
+                                beneath the image. Items without photos retain their
+                                normal item presentation, as requested. */}
+                            {viewMode === 'photo' && item.photoDataUrl ? (
+                              <div
+                                data-testid="photo-mode-item"
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'stretch',
+                                  borderBottom: `1px solid ${DIVIDER}`,
+                                  background: CARD_BG,
+                                }}
+                              >
+                                <button
+                                  role="checkbox"
+                                  aria-checked={item.checked}
+                                  aria-label={`${displayName}: ${item.checked ? 'selected' : 'not selected'} for checklist`}
+                                  onClick={e => { e.stopPropagation(); updateItem(catName, item.id, { checked: !item.checked }); }}
+                                  style={{
+                                    width: 44,
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    justifyContent: 'center',
+                                    flexShrink: 0,
+                                    padding: '12px 0 0',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: 20, height: 20, borderRadius: 5,
+                                      border: `1.5px solid ${item.checked ? CB_CHECKED : CB_UNCHECKED}`,
+                                      background: item.checked ? CB_CHECKED : 'transparent',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      flexShrink: 0, pointerEvents: 'none',
+                                    }}
+                                  >
+                                    {item.checked && <Check size={11} color="#fff" strokeWidth={2.5}/>}
+                                  </div>
+                                </button>
+                                <div style={{ flex: 1, minWidth: 0, padding: `10px ${CHECKLIST_RIGHT_INSET}px 10px 0` }}>
+                                  <div style={{
+                                    marginBottom: 8,
+                                    fontSize: 14.5,
+                                    fontWeight: 600,
+                                    color: PRIMARY,
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                  }}>
+                                    {displayName}
+                                  </div>
+                                  <img
+                                    src={item.photoDataUrl}
+                                    alt={`Photo of ${displayName}`}
+                                    style={{
+                                      width: '100%',
+                                      maxHeight: 220,
+                                      display: 'block',
+                                      borderRadius: 8,
+                                      objectFit: 'cover',
+                                      background: '#111',
+                                    }}
+                                  />
+                                  <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'center',
+                                    gap: 8,
+                                    minHeight: 40,
+                                    marginTop: 6,
+                                  }}>
+                                    <button
+                                      type="button"
+                                      data-testid="photo-mode-delete-btn"
+                                      onClick={() => handlePhotoDelete(catName, item.id)}
+                                      aria-label={`Delete photo of ${displayName}`}
+                                      style={{
+                                        minHeight: 36,
+                                        padding: '4px 8px',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#B03A2E',
+                                        cursor: 'pointer',
+                                        fontSize: 12.5,
+                                        fontWeight: 600,
+                                        fontFamily: SANS,
+                                      }}
+                                    >Delete</button>
+                                    <button
+                                      type="button"
+                                      data-testid="photo-mode-edit-btn"
+                                      onClick={() => setPhotoEditFor({ cat: catName, id: item.id })}
+                                      aria-label={`Edit photo of ${displayName}`}
+                                      style={{
+                                        minHeight: 36,
+                                        padding: '4px 8px',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: NAV_ACTIVE,
+                                        cursor: 'pointer',
+                                        fontSize: 12.5,
+                                        fontWeight: 600,
+                                        fontFamily: SANS,
+                                      }}
+                                    >Edit</button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
                             {/* ITEM ROW (R004 — right-edge-to-left slide reveals Delete) */}
                             <SwipeDeleteRow
                               swipeKey={`item:${catName}:${item.id}`}
@@ -4612,6 +4845,8 @@ function MobileFunctionalV3Inner() {
                                 </div>
 
                               </div>
+                            )}
+                              </>
                             )}
                           </div>
                         );
