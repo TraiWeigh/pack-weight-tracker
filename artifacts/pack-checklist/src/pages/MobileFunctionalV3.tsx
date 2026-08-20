@@ -985,6 +985,7 @@ function ChevronBox({
   const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
   return (
     <button
+      data-testid={direction === 'right' ? 'bottom-next-chevron' : 'bottom-back-chevron'}
       onClick={onClick}
       aria-label={aria}
       style={{
@@ -993,9 +994,17 @@ function ChevronBox({
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
       }}
     >
-      <Icon size={21} color={NAV_INACTIVE} strokeWidth={1.6}/>
-      <span style={{ fontSize: 10, color: NAV_INACTIVE }}>
-        {direction === 'left' ? 'Back' : 'Next'}
+      <span
+        data-testid={direction === 'right' ? 'bottom-next-chevron-content' : 'bottom-back-chevron-content'}
+        style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+          transform: direction === 'right' ? 'translateX(-8px)' : undefined,
+        }}
+      >
+        <Icon size={21} color={NAV_INACTIVE} strokeWidth={1.6}/>
+        <span style={{ fontSize: 10, color: NAV_INACTIVE }}>
+          {direction === 'left' ? 'Back' : 'Next'}
+        </span>
       </span>
     </button>
   );
@@ -3749,7 +3758,7 @@ function MobileFunctionalV3Inner() {
             <Menu size={22} color={NAV_ACTIVE} strokeWidth={2}/>
           </button>
           {/* Logo + wordmark */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 6 }}>
+           <div data-testid="appbar-logo-group" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 0 }}>
             <LogoMark size={24}/>
             <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
               TrailWeigh
@@ -3876,7 +3885,7 @@ function MobileFunctionalV3Inner() {
               })()}
 
               {/* Right: categories / selected / not selected stacked (027U) */}
-              <div data-testid="summary-right-metrics" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
+              <div data-testid="summary-right-metrics" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
                 {/* Category count — top of right stack */}
                    <span data-testid="summary-category-count" style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.58)', whiteSpace: 'nowrap', letterSpacing: '0.2px' }}>
                   {catCount} {catCount === 1 ? 'category' : 'categories'}

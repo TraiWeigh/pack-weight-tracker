@@ -1,0 +1,55 @@
+R0091 TEST RESULTS
+
+FOCUSED HEADER / SUMMARY / BOTTOM-NAV SUITE
+Command:
+pnpm exec playwright test tests/e2e/phase1b/r0091-header-summary-nav.spec.ts --workers=1 --project=chromium --output=/tmp/r0091-header-summary-nav-results
+Result:
+5 passed, 0 failed (11.9s)
+
+Viewports:
+- 402x714
+- 402x754
+- 390x844
+- 360x800
+
+Verified:
+- hamburger-to-logo visual gap reduced to 0px;
+- all AppBar icons fully inside the preserved 16px right gutter;
+- Summary category/status visual right-edge delta is 0px;
+- Summary height remains 88.25px;
+- R0090 category-weight edge remains at 358px at 402px;
+- Bottom Box Groups remains full-width and 58px high;
+- Next visual content has 36.640625px right clearance;
+- Next interaction advances through groups;
+- category rows/wedges remain unchanged;
+- no horizontal overflow or page errors.
+
+EXISTING VIEWPORT-SAFE REGRESSION
+Command:
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium --output=/tmp/r0091-viewport-results
+Result:
+13 passed, 0 failed (45.3s)
+
+RESTORED SUMMARY / HOME REGRESSION
+Command:
+pnpm exec playwright test tests/e2e/phase1b/screen-efficiency.spec.ts --workers=1 --project=chromium --output=/tmp/r0091-summary-results
+Result:
+3 passed, 0 failed (12.3s)
+
+TYPECHECK
+Command:
+pnpm --filter @workspace/pack-checklist run typecheck
+Result:
+PASS
+
+WHITESPACE CHECK
+Command:
+git diff --check
+Result:
+PASS
+
+CHROMIUM VS REAL DEVICE
+All automated results above are Chromium verification. They do not supersede the attached
+real-iPhone evidence or constitute a Safari user pass.
+
+No product test blocker remains. Workflows were not changed or reconfigured.

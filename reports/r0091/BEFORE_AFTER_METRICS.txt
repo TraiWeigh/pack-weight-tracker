@@ -1,0 +1,61 @@
+R0091 BEFORE / AFTER METRICS
+
+All values below are CSS-pixel measurements in the 402px Chromium regression viewport.
+The attached iPhone screenshot remains the authoritative visual reference.
+
+APPBAR
+Metric                                      Before R0090       After R0091
+Viewport / AppBar width                     402 / 402px        402 / 402px
+AppBar height                               52px               52px
+Hamburger hit target                        x=8..52            x=8..52
+Logo visible start                          x=58               x=52
+Visible hamburger-to-logo gap               6px                0px
+Logo/title group box                        x=52..186.859      x=52..180.859
+Rightmost icon right edge                   386px              386px
+Right gutter                                16px               16px
+Inter-icon gap                              0px                0px
+
+The logo group's box keeps the same post-hamburger start; only its prior 6px internal
+left padding was removed. Icon sizes/order and right-side spacing remain unchanged.
+
+LIST SUMMARY
+Metric                                      Before R0090       After R0091
+Summary width                               402px              402px
+Summary height                              88.25px            88.25px
+Category count right bound                  visually left of    368px
+                                             Selected line
+Selected status right bound                 368px              368px
+Right-edge alignment delta                  ~20.65px visual    0px
+Right-side content inset                    34px               34px
+Vertical padding                            10px / 12px        10px / 12px
+Center/down Summary chevron                 unchanged          unchanged
+
+After exact selector rectangles:
+- category count: x=293.171875..368, w=74.828125, h=18;
+- Selected status: x=296.515625..368, w=71.484375, h=19.5.
+
+CATEGORY WEIGHTS — R0090 PRESERVED
+Metric                                      Before R0091       After R0091
+402px weight right edge                    358px              358px
+Effective weight gutter                    44px               44px
+Wrapping                                   nowrap             nowrap
+Wedge                                      x=0..72            x=0..72
+Category row                               x=0..402, h=64     x=0..402, h=64
+
+BOTTOM NEXT CONTROL
+Metric                                      Before R0091       After R0091
+Bottom bar width                            402px              402px
+Bottom bar height                           58px               58px
+Active Next button                          x=322.625..402.031 x=322.625..402.031
+Next inner content right edge               373.359px          365.359375px
+Effective visual right gutter               28.640625px        36.640625px
+Internal visual shift                       0px                -8px
+Button hitbox / group navigation            unchanged          unchanged
+
+RESPONSIVE
+Viewport       Header gap   Summary delta   Weight inset   Next-content safety
+402px          0px           0px             44px           pass
+390px          0px           0px             44px           pass
+360px          0px           0px             44px           pass
+
+The same values remain safe at 360px; no Android-specific override was added.

@@ -1,0 +1,427 @@
+TRAILWEIGH — R0091 GS
+Gold Standard Replit Prompt
+Header + List Summary + Bottom-Right Chevron Refinement
+
+AUTHORITATIVE USER EVIDENCE
+This ZIP contains:
+
+R0091_USER_IPHONE_EVIDENCE.png
+
+This is an actual iPhone screenshot from Kevin after R0090.
+
+Treat this screenshot as AUTHORITATIVE USER evidence.
+
+USER live-device evidence outranks:
+- Replit reports;
+- source-code assumptions;
+- Chromium screenshots;
+- Playwright PASS;
+- computed geometry that contradicts the actual iPhone result.
+
+R0090 IS NOT USER PASS.
+
+IMPORTANT CORRECTION
+Do NOT invent or search for a "right-side chevron in the List Summary."
+
+There is NO right-side chevron in the List Summary.
+
+The only right-side chevron discussed by the user in this screenshot is the BOTTOM BAR / "Next" chevron at the far right of the Bottom Box Groups.
+
+CURRENT USER ASSESSMENT
+
+WHAT IS NOW GOOD
+1. CATEGORY WEIGHT COLUMN
+The weight column is much better after R0090.
+
+Examples visible in the screenshot:
+- 1012.1 g
+- 1043.3 g
+- 1229.8 g
+- 551.4 g
+- 188.5 g
+
+The user likes this new weight position.
+
+PRESERVE IT.
+
+Do NOT move the weights back toward the right edge.
+Do NOT globally change the weight-column inset unless inspection proves a tiny correction is required to preserve layout after the scoped edits below.
+
+WHAT STILL NEEDS REFINEMENT
+
+1. BOTTOM BAR RIGHT "NEXT" CHEVRON
+The far-right chevron in the Bottom Box Groups / "Next" control is touching or visually too close to the physical right edge.
+
+Move that chevron/control content inward enough to provide comfortable right-side clearance.
+
+Do NOT move, resize, or vertically alter the entire Bottom Box Groups container.
+
+Preserve:
+- bottom bar height;
+- bottom bar fixed position;
+- group widths unless a minimal internal spacing change is necessary;
+- existing icons/labels;
+- horizontal slide/group behavior;
+- current bottom bar visual language.
+
+The fix should be internal to the far-right "Next" control or its right padding/alignment.
+
+2. APPBAR / HEADER LEFT-SIDE SPACING
+There is visibly extra horizontal space between:
+- the hamburger menu icon;
+and
+- the checkbox TrailWeigh logo/title area.
+
+Reduce this unused gap.
+
+The user's intention is to reclaim that space so the header content fits more naturally and the right-side header icons have more breathing room.
+
+Preserve:
+- hamburger size;
+- checkbox logo size;
+- TrailWeigh title size;
+- icon sizes;
+- icon order;
+- AppBar height;
+- header styling.
+
+Do NOT:
+- shrink the whole header;
+- globally scale icons;
+- hide icons;
+- remove icons;
+- change the TrailWeigh title text;
+- move the hamburger off its current left-side anchor more than necessary.
+
+Prefer adjusting:
+- gap;
+- padding;
+- flex spacing;
+- content-group margins.
+
+3. LIST SUMMARY RIGHT-SIDE ALIGNMENT
+The user wants:
+"29 Selected" aligned with "13 categories".
+
+Interpret this visually as a clean shared right-side column/alignment system.
+
+The right-side Summary group should look intentionally aligned:
+- "13 categories"
+- "29 Selected"
+
+The two lines should share the same right-edge alignment or visually coherent column alignment, whichever matches the current design structure best.
+
+Do NOT:
+- change List Summary height;
+- change its restored R0088 vertical padding;
+- compact it;
+- change font sizes;
+- change the overall Summary card proportions;
+- move the left icon / title / 78 Items block unless a tiny horizontal redistribution is unavoidable.
+
+The goal is HORIZONTAL alignment only.
+
+PRIMARY GOAL
+Make these three refinements while preserving everything that improved in R0090:
+
+A. keep the weight column where the user likes it;
+B. give the bottom "Next" chevron right-side clearance;
+C. reduce unused hamburger-to-logo/header spacing;
+D. align "29 Selected" with "13 categories".
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. Inspect CURRENT active rendered mobile code.
+2. Read relevant replit.md / project guidance read-only.
+3. Confirm R0088 List Summary restoration remains present.
+4. Confirm R0090 weight-column inset remains present.
+5. Measure CURRENT geometry for:
+   - hamburger;
+   - checkbox TrailWeigh logo/title group;
+   - right-side AppBar icon group;
+   - "13 categories";
+   - "29 Selected";
+   - bottom "Next" control and chevron;
+   - category weight column.
+6. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS
+7. Identify the smallest structural changes required.
+
+USER SCREENSHOT IS THE VISUAL PROBLEM STATEMENT
+Compare the implementation against:
+R0091_USER_IPHONE_EVIDENCE.png
+
+Do not infer controls that are not visible.
+Do not add a List Summary chevron.
+Do not alter unrelated UI.
+
+HEADER / APPBAR ACCEPTANCE
+At approximately 402px mobile width:
+
+- hamburger remains fully visible;
+- checkbox logo remains fully visible;
+- "TrailWeigh" remains fully visible;
+- gap between hamburger and logo/title is visibly reduced from R0090;
+- right-side header icons gain usable breathing room;
+- no right-side icon clips;
+- no icon order changes;
+- no icon size reduction unless absolutely unavoidable and documented;
+- no horizontal overflow.
+
+LIST SUMMARY ACCEPTANCE
+- restored R0088 height unchanged;
+- "13 categories" and "29 Selected" are cleanly aligned;
+- both are fully visible;
+- no clipping;
+- no font-size change;
+- no vertical compaction;
+- the existing center/down-chevron in the Summary remains untouched unless layout naturally reflows around it;
+- there is NO new right-side chevron.
+
+BOTTOM BAR ACCEPTANCE
+- Bottom Box Groups remain fixed and full-width;
+- bar height unchanged;
+- "Next" label remains;
+- far-right Next chevron moves inward enough to avoid touching the physical right edge;
+- no group-navigation regression;
+- no horizontal overflow;
+- no changes to unrelated Locker / Summary / Add / Search controls.
+
+CATEGORY WEIGHTS — PRESERVE
+At 402px:
+- keep current R0090 weight inset;
+- keep current alignment;
+- keep units fully visible;
+- no wrapping;
+- no movement back toward the right edge.
+
+If a header/Summary/bottom-bar fix accidentally alters weight geometry, correct the regression before PASS.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- full TrailWeigh shell width;
+- viewport meta;
+- Safari address-bar behavior;
+- visualViewport logic;
+- document/root scrolling;
+- category row height;
+- wedge width/shape/position;
+- wedge colors/icons/shadows;
+- weight-column design except to preserve R0090;
+- Home hero;
+- long-category bounded scrolling;
+- checklist semantics;
+- drawers;
+- gestures;
+- swipe-to-delete;
+- reorder;
+- Add Item;
+- item/category accordion behavior;
+- data;
+- DB/schema;
+- auth;
+- packages/dependencies;
+- workflow configuration;
+- publishing/deployment.
+
+FUTURE ITEMS — DO NOT IMPLEMENT IN R0091
+Keep these as separate future work:
+- replace Category / Location / Photo with a single Filter control;
+- lock that future Filter control beneath the List Summary;
+- future Photo view behavior;
+- wedge shadows;
+- color themes;
+- Safari/PWA/browser-chrome work.
+
+ANDROID / RESPONSIVE SAFETY
+Do not create Android-specific code in R0091.
+
+Use responsive layout principles.
+
+Test at minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow mobile viewport
+
+If header spacing must adapt below 390px, use width-responsive spacing rather than an Android-only branch.
+
+PLAYWRIGHT / AUTOMATED VERIFICATION
+Verify:
+
+1. Root/app width remains viewport width.
+2. No horizontal overflow.
+3. AppBar height unchanged.
+4. Hamburger bounds remain safe.
+5. Hamburger-to-logo/title gap is reduced and measured.
+6. All right-side header icons remain fully visible.
+7. List Summary height unchanged from R0088.
+8. "13 categories" fully visible.
+9. "29 Selected" fully visible.
+10. The two Summary right-side lines align coherently.
+11. No new Summary chevron is introduced.
+12. Category weight right edge remains effectively unchanged from R0090.
+13. Weight units remain visible.
+14. Bottom Box Groups height unchanged.
+15. Bottom "Next" chevron has increased right-side clearance.
+16. Bottom bar group behavior remains intact.
+17. Category rows unchanged.
+18. Wedges unchanged.
+19. Scrolling unchanged.
+20. 360px layout remains usable.
+
+BEFORE / AFTER METRICS REQUIRED
+
+APPBAR
+Report:
+- viewport width;
+- hamburger left/right bounds;
+- checkbox/logo/title group left/right bounds;
+- hamburger-to-logo/title horizontal gap BEFORE;
+- same gap AFTER;
+- rightmost AppBar icon right edge BEFORE/AFTER;
+- right gutter BEFORE/AFTER;
+- inter-icon gap values if changed.
+
+LIST SUMMARY
+Report:
+- Summary width;
+- Summary height;
+- "13 categories" left/right bounds;
+- "29 Selected" left/right bounds;
+- right-edge alignment delta BEFORE;
+- right-edge alignment delta AFTER;
+- any changed horizontal padding/gap.
+
+CATEGORY WEIGHTS
+Report:
+- current R0090 weight right edge;
+- R0091 weight right edge;
+- effective right gutter;
+- prove it stayed effectively unchanged.
+
+BOTTOM "NEXT" CONTROL
+Report:
+- Bottom Box Groups width/height;
+- Next control left/right bounds;
+- Next chevron right edge BEFORE;
+- Next chevron right edge AFTER;
+- effective right gutter BEFORE/AFTER;
+- any padding/gap changed.
+
+RESPONSIVE
+Report effective geometry at:
+- 402px;
+- 390px;
+- 360px.
+
+VISUAL ARTIFACTS
+Create before/after screenshots at 402px that clearly show:
+- full AppBar;
+- full List Summary;
+- several rows with weights;
+- full Bottom Box Groups including Next chevron.
+
+Compare directly against:
+R0091_USER_IPHONE_EVIDENCE.png
+
+Chromium screenshot = regression aid only.
+Do not call it equivalent to real iPhone Safari.
+
+PASS STANDARD
+REPLIT PASS requires:
+
+- R0090 weight column preserved;
+- Bottom "Next" chevron no longer pressed against right edge in test geometry;
+- hamburger-to-logo/title gap visibly and measurably reduced;
+- right-side AppBar icons remain fully visible;
+- "13 categories" and "29 Selected" aligned coherently;
+- List Summary height unchanged;
+- Bottom Box Groups height unchanged;
+- no horizontal overflow;
+- no unrelated regressions;
+- typecheck and focused Playwright pass;
+- 360px safety verified;
+- report and artifacts complete.
+
+Label result:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Do NOT call it USER PASS.
+
+Kevin's real iPhone screenshot/video is final.
+
+REQUIRED ZIP REPORT
+Create and provide:
+
+trailweigh-R0091-report.zip
+
+It must contain at minimum:
+
+1. R0091_REPORT.txt
+- R0091 GS
+- branch / commit / checkpoint
+- current-state findings
+- exact root causes
+- exact changes
+- exact spacing/alignment values
+- preserved R0090 weight inset
+- areas deliberately unchanged
+- commands / PASS-FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+- every changed file;
+- reason for each;
+- unexpected files explicitly identified.
+
+3. TEST_RESULTS.txt
+- exact commands;
+- suites;
+- PASS/FAIL totals;
+- Chromium vs real-device distinction;
+- blockers if any.
+
+4. BEFORE_AFTER_METRICS.txt
+Include all required geometry above.
+
+5. USER_IPHONE_TEST.txt
+Ask Kevin to verify:
+- weight column still looks good;
+- hamburger-to-logo/title spacing is improved;
+- all header icons fit;
+- 13 categories / 29 Selected alignment;
+- Next chevron right-edge clearance;
+- Summary height unchanged;
+- wedges unchanged;
+- bottom bar height/behavior unchanged.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- before/after screenshots;
+- traces/reports;
+- included user evidence reference.
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state that clearly.
+
+If blocked or failed, STILL create trailweigh-R0091-report.zip documenting the blocker.
+
+THREE STANDING QUESTIONS FOR REPLIT
+Answer in the report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+Use the included iPhone screenshot as the authoritative visual reference.
+Find root cause before editing.
+Make the smallest reversible patch.
+Protect every unrelated USER-PASS behavior.

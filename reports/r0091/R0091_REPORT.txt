@@ -1,0 +1,117 @@
+TRAILWEIGH — R0091 GS
+Header + List Summary + Bottom-Right Chevron Refinement
+
+STATUS: REPLIT PASS / READY FOR USER IPHONE TEST — NOT USER PASS
+
+AUTHORITATIVE EVIDENCE
+The attached R0091_USER_IPHONE_EVIDENCE image is real iPhone evidence from after R0090.
+It outranks Chromium measurements and prior automated PASS results. R0090 was therefore
+treated as not user-approved.
+
+BRANCH / COMMIT / CHECKPOINT
+Branch: main
+Current HEAD before R0091 working-tree changes: 3e980a3
+R0088 Summary restoration and R0090 weight/header-right inset are preserved.
+
+CURRENT-STATE FINDINGS
+FACTS
+- The R0091 iPhone screenshot shows the category weights in the improved R0090 position.
+  They must remain there.
+- The visible remaining issues are: the bottom Next chevron is too close to the physical
+  right edge; there is extra visual space between the hamburger and checkbox/logo group;
+  and the Summary's category/status lines do not form one clean right-aligned column.
+- The List Summary has no right-side chevron. Its existing center/down chevron is separate
+  and was not moved.
+- R0088 Summary height/vertical restoration and R0090's 44px category-weight inset remain
+  active.
+
+UNKNOWNS
+- Exact iPhone CSS viewport/device-pixel scaling cannot be inferred from the screenshot.
+  R0091 therefore changes only local content alignment and does not claim to alter Safari
+  chrome, viewport sizing, or browser behavior.
+
+ROOT CAUSES
+1. Bottom Next controls used a centered icon/label directly inside the full-width button,
+   leaving the visual content too close to the physical right edge even though the button
+   hitbox was correct.
+2. The logo group retained a 6px left padding after the 44px hamburger target, producing a
+   visible gap that was unnecessary for the header's flex layout.
+3. Summary metrics were in a vertical flex stack without right-edge alignment. The
+   category line's visual text ended left of the Selected line even though the outer stack
+   itself was inside the R0090 gutter.
+
+SMALLEST COHERENT FIX
+The patch is limited to three internal alignment changes:
+- Remove the logo group's 6px left padding. Hamburger size, AppBar outer 8px frame,
+  logo size, title size, and header height stay unchanged.
+- Add `alignItems: flex-end` to the existing Summary right metrics stack. Both visible
+  lines now share the same right edge; no new Summary chevron was introduced.
+- Shift only the right-direction ChevronBox's inner icon/label content left by 8px using
+  an internal transform. The Bottom Box Groups button, width, height, hitbox, and group
+  navigation remain unchanged.
+
+EXACT FINAL VALUES
+- Hamburger hit target: x=8..52, 44px wide; unchanged.
+- Logo group box: x=52..180.859375; visible logo begins immediately after the hamburger
+  target. Visual hamburger-to-logo gap: 6px before -> 0px after.
+- AppBar rightmost icon: x=353.46875..386; R0090 16px right gutter preserved.
+- Summary: x=0..402, height=88.25px; R0088 height preserved.
+- Summary category count: x=293.171875..368.
+- Summary Selected status: x=296.515625..368.
+- Summary right-edge delta: approximately 20.65px of visual misalignment before -> 0px after.
+- Category weight: x=305.125..358; R0090 44px inset preserved exactly.
+- Bottom Box Groups: x=0..402, height=58px.
+- Active Next button: x=322.625..402.03125, hitbox unchanged.
+- Active Next icon/label content after refinement: x=343.28125..365.359375,
+  right clearance=36.640625px. Only the internal visual content moved left by 8px.
+- AppBar inter-icon gap: 0px before and after.
+
+RESPONSIVE BEHAVIOR
+The same internal values are used at 402px, 390px, and 360px. No Android-specific branch
+or platform override was added.
+
+PRESERVED R0090 WEIGHT COLUMN
+The category-weight right edge remains at approximately viewport width minus 44px:
+- 402px: right edge 358px;
+- 390px and 360px: verified safe by the focused regression;
+- no weight inset, typography, wrapping, or unit behavior changed.
+
+AREAS DELIBERATELY UNCHANGED
+- Full TrailWeigh shell width, viewport handling, Safari address-bar behavior, and scrolling.
+- AppBar height, hamburger hit target, logo/title sizes, icon sizes/order/style, and right
+  AppBar safe inset.
+- R0088 Summary height, vertical padding, tile, item count, proportions, and center/down
+  chevron.
+- R0090 general 34px content inset and 44px category-weight inset.
+- Category row height, full-width backgrounds, wedge size/shape/icon/colour/position.
+- Bottom Box Groups container width/height/fixed position, group widths, labels, icons,
+  dividers, swipe behavior, and Next navigation.
+- Home, long-category scrolling, drawers, gestures, swipe-to-delete, reorder, Add Item,
+  accordions, data, DB/schema, auth, packages, workflows, and publishing.
+- No future Filter/Photo mode, wedge shadows, themes, Android override, or Safari/PWA work.
+
+TEST RESULTS
+- R0091 focused suite: 5 passed, 0 failed.
+- Existing viewport-safe suite: 13 passed, 0 failed.
+- Restored Summary/Home regression: 3 passed, 0 failed.
+- TrailWeigh package typecheck: PASS.
+- Final `git diff --check`: PASS.
+
+All automated results are Chromium/regression results. They do not constitute a real-iPhone
+visual pass. Kevin's live-device review remains final.
+
+STANDING QUESTIONS FOR REPLIT
+1. What did this task teach us?
+   Right-edge refinement is not one global operation: the weight column, AppBar icon group,
+   Summary metric text, and Bottom Next visual content each have different alignment risks.
+   Preserve hitboxes and fixed layers while changing only the affected visual content.
+
+2. Was anything unclear, unnecessary, risky, or better expressed another way?
+   The prompt's correction that the Summary has no right-side chevron was important and
+   prevented an incorrect new control. The real-iPhone screenshot made the three remaining
+   refinements precise.
+
+3. What Replit/project detail helps future work?
+   Use focused mobile Playwright suites for geometry and preserve the existing workflow
+   configuration. Generated Playwright report files may change during test runs and should
+   be identified separately from product-source changes.

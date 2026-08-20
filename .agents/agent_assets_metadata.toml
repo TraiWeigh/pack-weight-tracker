@@ -301,3 +301,10 @@ uri = "file://trailweigh-R0090-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0090 report"
 description = "Real-iPhone-informed right-edge correction report with the authoritative user evidence, before/after metrics, final screenshots, focused test results, and iPhone verification checklist."
+
+[[outputs]]
+id = "Jjo-IxMSpJC2E0Csiphwm"
+uri = "file://trailweigh-R0091-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0091 report"
+description = "Header, Summary alignment, and Bottom Next refinement report with authoritative iPhone evidence, exact before/after metrics, final screenshots, and test results."

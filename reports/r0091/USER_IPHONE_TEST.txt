@@ -1,0 +1,36 @@
+KEVIN — R0091 REAL IPHONE SAFARI TEST
+
+Open:
+https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.worf.replit.dev/mobile-functional-v3
+
+Compare against the attached R0091 iPhone evidence:
+
+1. Preserve the good R0090 weight position.
+   - Check long values such as 1012.1 g, 1043.3 g, 1229.8 g, 551.4 g, and 188.5 g.
+   - Every value/unit should remain fully visible, aligned, and comfortably inset.
+
+2. Header spacing.
+   - Confirm the hamburger-to-checkbox/logo/title gap is visibly smaller.
+   - Confirm the hamburger, checkbox logo, TrailWeigh title, and all six right icons remain
+     fully visible with unchanged sizes/order/style.
+
+3. List Summary.
+   - Confirm “13 categories” and “29 Selected” form one clean right-aligned column.
+   - Confirm both are fully visible.
+   - Confirm Summary height and vertical proportions are unchanged.
+   - Confirm the existing center/down chevron remains the only Summary chevron.
+
+4. Bottom Box Groups.
+   - Confirm the far-right Next chevron has comfortable right-side clearance.
+   - Confirm the Next label remains visible.
+   - Tap Next and confirm group navigation still advances.
+   - Confirm the bottom bar height, fixed position, group widths, and other controls are
+     unchanged.
+
+5. Protected layout.
+   - Left wedges, full-width rows, scrolling, long categories, Home, drawers, gestures,
+     and Bottom Box Groups should remain unchanged.
+   - Check both expanded and compact Safari chrome states. R0091 does not change Safari
+     browser chrome or viewport sizing.
+
+R0091 is REPLIT PASS / READY FOR USER IPHONE TEST, not USER PASS.

@@ -1,0 +1,38 @@
+R0091 CHANGED FILES
+
+PRODUCT SOURCE
+1. artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+   Reason:
+   - Removed the AppBar logo/title group's 6px left padding to reclaim the unused visual
+     hamburger-to-logo gap.
+   - Right-aligned the existing Summary category/status stack without changing its height,
+     padding, typography, or center/down chevron.
+   - Shifted only the right-direction Bottom Next icon/label content left by 8px inside
+     its existing button hitbox.
+   - Added stable selectors for R0091 geometry verification.
+
+TEST SOURCE
+2. tests/e2e/phase1b/r0091-header-summary-nav.spec.ts
+   Reason:
+   - New focused coverage at 402x714, 402x754, 390x844, and 360x800.
+   - Verifies header spacing/icons, Summary alignment, preserved R0090 weight inset,
+     unchanged shell/rows/wedges/bottom bar, no overflow, and Next navigation.
+
+REPORTING / ARTIFACTS
+3. reports/r0091/R0091_REPORT.txt
+4. reports/r0091/CHANGED_FILES.txt
+5. reports/r0091/TEST_RESULTS.txt
+6. reports/r0091/BEFORE_AFTER_METRICS.txt
+7. reports/r0091/USER_IPHONE_TEST.txt
+8. reports/r0091/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+9. screenshots/r0091-after-402x714.jpg
+10. screenshots/r0091-after-402x754.jpg
+11. trailweigh-R0091-report.zip
+
+AUTHORITATIVE REFERENCE, NOT PRODUCT SOURCE
+- attached_assets/R0091_GS_HEADER_SUMMARY_BOTTOM_CHEVRON_REFINEMENT_1787202737436.txt
+- attached_assets/R0091_USER_IPHONE_EVIDENCE_1787202737436.png
+
+UNEXPECTED / GENERATED FILE
+- playwright-report/index.html was modified by Playwright execution. It is generated test
+  report churn, not an R0091 product change, and is explicitly identified here.
