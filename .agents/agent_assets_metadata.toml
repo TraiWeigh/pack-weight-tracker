@@ -266,3 +266,10 @@ uri = "file://R0076P2.zip"
 type = "unspecified"
 title = "R0076P2.zip"
 description = "MobileFunctionalV3.tsx · r0076p2.spec.ts · R0076P2.md · 3 screenshots — 10/10 tests pass"
+
+[[outputs]]
+id = "TpEme1bhs-7ShC7dTHu_z"
+uri = "file://trailweigh-R0086-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0086 report"
+description = "Diagnostic-controls fix report, focused test results, iPhone capture instructions, and preview artifact index."

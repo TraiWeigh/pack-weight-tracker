@@ -69,6 +69,7 @@ type ViewportSnapshot = {
       homeContentScroller: ElementSnapshot | null;
       normalChecklistScroller: ElementSnapshot | null;
       openLongCategoryViewport: ElementSnapshot | null;
+        firstVisibleWedge: ElementSnapshot | null;
     };
     categorySamples: {
       firstVisible: CategorySample | null;
@@ -157,6 +158,7 @@ function captureSnapshot(): ViewportSnapshot {
   const safeAreaProbe = document.querySelector('[data-testid="viewport-diagnostic-safe-area"]');
   const safeAreaStyle = safeAreaProbe ? window.getComputedStyle(safeAreaProbe) : null;
   const rootStyle = root ? window.getComputedStyle(root) : null;
+  const firstVisibleWedge = categoryElements[0]?.querySelector('button[aria-expanded]') ?? null;
 
   const element = (selector: string) => elementOf(selector, document.querySelector(selector));
 
@@ -213,6 +215,7 @@ function captureSnapshot(): ViewportSnapshot {
         homeContentScroller: element('[data-testid="home-content-scroll"]'),
         normalChecklistScroller: element('[data-testid="main-scroll"]'),
         openLongCategoryViewport: element('[data-testid="open-cat-items"]'),
+        firstVisibleWedge: elementOf('[data-cat] button[aria-expanded]', firstVisibleWedge),
       },
       categorySamples: {
         firstVisible: toCategorySample(categoryElements[0]),
@@ -262,10 +265,61 @@ function snapshotText(snapshot: ViewportSnapshot | null): string {
   return snapshot ? JSON.stringify(snapshot, null, 2) : 'Collecting viewport snapshot…';
 }
 
+function rectMetric(label: string, element: ElementSnapshot | null): string {
+  if (!element) return `${label}: unavailable`;
+  const { left, right, top, bottom, width, height } = element.rect;
+  return `${label}: L ${left} · R ${right} · T ${top} · B ${bottom} · ${width} × ${height}`;
+}
+
+function keyMetricsText(snapshot: ViewportSnapshot | null): string {
+  if (!snapshot) return 'Collecting key metrics…';
+
+  const { screen, document: documentMetrics, visualViewport, trailweigh } = snapshot;
+  const visualMetrics = visualViewport.available
+    ? [
+        `visualViewport: ${visualViewport.width} × ${visualViewport.height} · offset ${visualViewport.offsetLeft} / ${visualViewport.offsetTop} · scale ${visualViewport.scale}`,
+        `HIGHLIGHT visualViewport.height: ${visualViewport.height}`,
+      ]
+    : ['visualViewport: unavailable'];
+  const { elements, categorySamples } = trailweigh;
+
+  return [
+    `screen: ${screen.width} × ${screen.height}`,
+    `inner: ${screen.innerWidth} × ${screen.innerHeight}`,
+    `document client: ${documentMetrics.clientWidth} × ${documentMetrics.clientHeight}`,
+    `HIGHLIGHT document/client width: ${documentMetrics.clientWidth}`,
+    ...visualMetrics,
+    rectMetric('root shell', elements.rootMobileShell),
+    elements.rootMobileShell ? `HIGHLIGHT root bottom: ${elements.rootMobileShell.rect.bottom}` : 'HIGHLIGHT root bottom: unavailable',
+    rectMetric('AppBar', elements.appBar),
+    rectMetric('List Summary', elements.listSummary),
+    rectMetric('Bottom Box Groups', elements.bottomBoxGroups),
+    elements.bottomBoxGroups
+      ? `HIGHLIGHT Bottom Box Groups top / bottom / height: ${elements.bottomBoxGroups.rect.top} / ${elements.bottomBoxGroups.rect.bottom} / ${elements.bottomBoxGroups.rect.height}`
+      : 'HIGHLIGHT Bottom Box Groups: unavailable',
+    rectMetric('Home hero', elements.homeHero),
+    rectMetric('checklist main content', elements.normalChecklistScroller),
+    elements.normalChecklistScroller
+      ? `HIGHLIGHT checklist content right edge: ${elements.normalChecklistScroller.rect.right}`
+      : 'HIGHLIGHT checklist content right edge: unavailable',
+    rectMetric('first visible category row', categorySamples.firstVisible),
+    categorySamples.firstVisible
+      ? `HIGHLIGHT first visible category row right edge: ${categorySamples.firstVisible.rect.right}`
+      : 'HIGHLIGHT first visible category row right edge: unavailable',
+    rectMetric('first visible wedge', elements.firstVisibleWedge),
+    elements.firstVisibleWedge
+      ? `HIGHLIGHT first visible wedge right edge: ${elements.firstVisibleWedge.rect.right}`
+      : 'HIGHLIGHT first visible wedge right edge: unavailable',
+  ].join('\n');
+}
+
 export function ViewportDiagnostic() {
   const [expanded, setExpanded] = useState(false);
   const [snapshot, setSnapshot] = useState<ViewportSnapshot | null>(null);
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'fallback'>('idle');
+  const [visualHeight, setVisualHeight] = useState(() =>
+    Math.round(window.visualViewport?.height ?? window.innerHeight),
+  );
   const enabled = useMemo(
     () => new URLSearchParams(window.location.search).get(DEBUG_QUERY) === '1',
     [],
@@ -275,7 +329,10 @@ export function ViewportDiagnostic() {
     if (!enabled) return;
 
     let frame = 0;
-    const refresh = () => setSnapshot(captureSnapshot());
+    const refresh = () => {
+      setSnapshot(captureSnapshot());
+      setVisualHeight(Math.round(window.visualViewport?.height ?? window.innerHeight));
+    };
     const scheduleRefresh = () => {
       window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(refresh);
@@ -300,6 +357,8 @@ export function ViewportDiagnostic() {
   if (!enabled) return null;
 
   const text = snapshotText(snapshot);
+  const keyMetrics = keyMetricsText(snapshot);
+  const detailsHeight = Math.max(120, Math.min(520, visualHeight - 60));
   const copySnapshot = async () => {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
@@ -351,112 +410,189 @@ export function ViewportDiagnostic() {
             <span aria-live="polite" style={{ color: '#315b43', whiteSpace: 'nowrap' }}>
               {snapshot?.trailweigh.pageState ?? 'Loading'}
             </span>
-            <button
-              type="button"
-              data-testid="viewport-diagnostic-toggle"
-              aria-expanded={expanded}
-              aria-label={expanded ? 'Collapse viewport diagnostic' : 'Expand viewport diagnostic'}
-              onClick={() => setExpanded(value => !value)}
-              style={{
-                pointerEvents: 'auto',
-                minWidth: 44,
-                minHeight: 36,
-                border: '1px solid #759582',
-                borderRadius: 5,
-                background: '#fff',
-                color: '#173c27',
-                fontSize: 11,
-                fontWeight: 700,
-              }}
-            >
-              {expanded ? 'Hide' : 'Show'}
-            </button>
+            {!expanded && (
+              <button
+                type="button"
+                data-testid="viewport-diagnostic-toggle"
+                aria-expanded={false}
+                aria-label="Expand viewport diagnostic"
+                onClick={() => setExpanded(true)}
+                style={{
+                  pointerEvents: 'auto',
+                  minWidth: 44,
+                  minHeight: 36,
+                  border: '1px solid #759582',
+                  borderRadius: 5,
+                  background: '#fff',
+                  color: '#173c27',
+                  fontSize: 11,
+                  fontWeight: 700,
+                }}
+              >
+                Show
+              </button>
+            )}
           </div>
 
           {expanded && (
             <div
               data-testid="viewport-diagnostic-details"
               style={{
-                maxHeight: 'min(68vh, 520px)',
-                overflowY: 'auto',
+                height: detailsHeight,
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
                 borderTop: '1px solid #b9cdbf',
-                padding: '7px 8px 8px',
               }}
             >
-              <div style={{ marginBottom: 6, color: '#315b43' }}>
-                Live local-only snapshot · {snapshot?.timestamp ?? 'collecting…'}
-              </div>
-              <pre
-                data-testid="viewport-diagnostic-values"
+              <div
+                data-testid="viewport-diagnostic-toolbar"
                 style={{
-                  margin: 0,
-                  whiteSpace: 'pre-wrap',
-                  overflowWrap: 'anywhere',
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                  fontSize: 9.5,
-                  lineHeight: 1.3,
+                  display: 'flex',
+                  gap: 5,
+                  padding: '6px 7px',
+                  flexShrink: 0,
+                  borderBottom: '1px solid #b9cdbf',
+                  background: 'rgba(248, 252, 249, 0.99)',
                 }}
               >
-                {text}
-              </pre>
-              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                 <button
                   type="button"
-                  data-testid="viewport-diagnostic-copy"
-                  onClick={copySnapshot}
+                  data-testid="viewport-diagnostic-collapse"
+                  onClick={() => setExpanded(false)}
                   style={{
                     pointerEvents: 'auto',
-                    minHeight: 36,
+                    minHeight: 34,
+                    minWidth: 0,
                     flex: 1,
-                    border: '1px solid #315b43',
+                    border: '1px solid #759582',
                     borderRadius: 5,
-                    background: '#315b43',
-                    color: '#fff',
+                    background: '#fff',
+                    color: '#173c27',
+                    fontSize: 10,
                     fontWeight: 700,
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {copyState === 'copied' ? 'Copied' : 'Copy Snapshot'}
+                  Hide
                 </button>
                 <button
                   type="button"
                   data-testid="viewport-diagnostic-refresh"
                   onClick={() => {
                     setSnapshot(captureSnapshot());
+                    setVisualHeight(Math.round(window.visualViewport?.height ?? window.innerHeight));
                     setCopyState('idle');
                   }}
                   style={{
                     pointerEvents: 'auto',
-                    minHeight: 36,
-                    flex: 1,
+                    minHeight: 34,
+                    minWidth: 0,
+                    flex: 1.35,
                     border: '1px solid #759582',
                     borderRadius: 5,
                     background: '#fff',
                     color: '#173c27',
+                    fontSize: 10,
                     fontWeight: 700,
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  Refresh
+                  Refresh Snapshot
                 </button>
-              </div>
-              {copyState === 'fallback' && (
-                <textarea
-                  data-testid="viewport-diagnostic-fallback"
-                  aria-label="Viewport diagnostic snapshot fallback"
-                  readOnly
-                  value={text}
-                  onFocus={event => event.currentTarget.select()}
+                <button
+                  type="button"
+                  data-testid="viewport-diagnostic-copy"
+                  onClick={copySnapshot}
                   style={{
                     pointerEvents: 'auto',
-                    display: 'block',
-                    width: '100%',
-                    height: 120,
-                    marginTop: 8,
-                    resize: 'vertical',
+                    minHeight: 34,
+                    minWidth: 0,
+                    flex: 1.2,
+                    border: '1px solid #315b43',
+                    borderRadius: 5,
+                    background: '#315b43',
+                    color: '#fff',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {copyState === 'copied' ? 'Copied' : 'Copy Snapshot'}
+                </button>
+              </div>
+              <div
+                data-testid="viewport-diagnostic-scroll"
+                style={{
+                  minHeight: 0,
+                  flex: 1,
+                  overflowY: 'auto',
+                  padding: '7px 8px 8px',
+                }}
+              >
+                <div style={{ marginBottom: 6, color: '#315b43' }}>
+                  Live local-only snapshot · {snapshot?.timestamp ?? 'collecting…'}
+                </div>
+                <section
+                  data-testid="viewport-diagnostic-key-metrics"
+                  aria-label="Viewport diagnostic key metrics"
+                  style={{
+                    marginBottom: 8,
+                    padding: 6,
+                    border: '1px solid #94ae9e',
+                    borderRadius: 5,
+                    background: '#f0f7f2',
+                  }}
+                >
+                  <strong style={{ display: 'block', marginBottom: 4 }}>KEY METRICS</strong>
+                  <pre
+                    style={{
+                      margin: 0,
+                      whiteSpace: 'pre-wrap',
+                      overflowWrap: 'anywhere',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                      fontSize: 9.5,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {keyMetrics}
+                  </pre>
+                </section>
+                <pre
+                  data-testid="viewport-diagnostic-values"
+                  style={{
+                    margin: 0,
+                    whiteSpace: 'pre-wrap',
+                    overflowWrap: 'anywhere',
                     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
                     fontSize: 9.5,
+                    lineHeight: 1.3,
                   }}
-                />
-              )}
+                >
+                  {text}
+                </pre>
+                {copyState === 'fallback' && (
+                  <textarea
+                    data-testid="viewport-diagnostic-fallback"
+                    aria-label="Viewport diagnostic snapshot fallback"
+                    readOnly
+                    value={text}
+                    onFocus={event => event.currentTarget.select()}
+                    style={{
+                      pointerEvents: 'auto',
+                      display: 'block',
+                      boxSizing: 'border-box',
+                      width: '100%',
+                      maxWidth: '100%',
+                      height: 120,
+                      marginTop: 8,
+                      resize: 'vertical',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                      fontSize: 9.5,
+                    }}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>

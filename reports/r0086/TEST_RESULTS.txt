@@ -1,0 +1,46 @@
+R0086 VALIDATION RESULTS
+
+1. Focused Playwright viewport regression suite
+Command:
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium --output=/tmp/r0086-playwright-results
+
+Result:
+13 passed (49.1s)
+
+The suite includes:
+- diagnostic absent without ?twViewportDebug=1;
+- expanded controls visible at 402×714;
+- toolbar remains visible after internal JSON scrolling;
+- Key Metrics rendered;
+- full snapshot body scrollable;
+- clipboard-denied selectable fallback remains inside the scroll body;
+- no diagnostic-induced horizontal overflow;
+- panel remains fixed/out of normal document flow;
+- AppBar, List Summary, Bottom Box Groups positions unchanged;
+- Home scrolling works;
+- bounded long-category scrolling works;
+- existing narrow-width, bottom-nav, safe-area, and document-flow regressions.
+
+2. TrailWeigh web package typecheck
+Command:
+pnpm --filter @workspace/pack-checklist run typecheck
+
+Result:
+PASS
+
+3. Browser-level visual verification
+Fresh 402×714 browser context at:
+/mobile-functional-v3?twViewportDebug=1
+
+Result:
+PASS
+- Hide, Refresh Snapshot, and Copy Snapshot immediately visible after Show.
+- KEY METRICS directly below the toolbar with requested values.
+- Toolbar remains pinned after scroll-body scrolling.
+- Panel bottom remains within the visual viewport.
+- document/body widths remain 402px.
+- Panel position is fixed.
+
+NOTE
+Chromium results do not claim to reproduce Safari browser chrome. Real iPhone capture
+remains the required source of viewport evidence.

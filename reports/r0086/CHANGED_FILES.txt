@@ -1,0 +1,16 @@
+R0086 SOURCE AND TEST CHANGES
+
+artifacts/pack-checklist/src/components/ViewportDiagnostic.tsx
+- Reworked the expanded diagnostic into a persistent control toolbar and an internal
+  scroll region.
+- Added Key Metrics and first-visible-wedge measurement data.
+- Kept the overlay portal/fixed positioning and local-only snapshot behavior.
+
+tests/e2e/phase1b/viewport-safe.spec.ts
+- Added constrained 402×714 persistent-toolbar coverage.
+- Added clipboard-denied fallback placement coverage.
+- Preserved existing viewport regression coverage.
+- Updated the Home-navigation test setup to collapse the deliberate overlay before using
+  a drawer control positioned beneath it, then re-expand for the Home snapshot check.
+
+NO OTHER TRAILWEIGH SOURCE, DEPENDENCIES, SETTINGS, SERVICES, OR WORKFLOWS WERE CHANGED.

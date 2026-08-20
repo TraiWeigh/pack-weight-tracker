@@ -1,0 +1,22 @@
+KEVIN — R0086 IPHONE SAFARI CAPTURE
+
+1. Open this URL in iPhone Safari:
+https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.worf.replit.dev/mobile-functional-v3?twViewportDebug=1
+
+2. Tap Show.
+
+3. Immediately confirm that all of these are visible without scrolling the JSON:
+   - Hide
+   - Refresh Snapshot
+   - Copy Snapshot
+   - KEY METRICS
+
+4. Take one screenshot that includes Safari chrome, the toolbar, and Key Metrics.
+
+5. Tap Copy Snapshot, then paste the result into ChatGPT.
+
+6. If copy is denied, scroll within the diagnostic panel and use the selectable fallback
+   text area containing the full snapshot.
+
+7. Do not interpret this as a viewport fix. The next decision comes after the real Safari
+   snapshot is reviewed.

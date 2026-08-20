@@ -1,0 +1,14 @@
+R0086 SCREENSHOT / ARTIFACT INDEX
+
+Browser visual-test evidence (402×714):
+- Screenshot ID xz7olf
+  Expanded diagnostic panel with Hide, Refresh Snapshot, Copy Snapshot, and KEY METRICS visible.
+- Screenshot ID w5h2c4
+  Diagnostic scroll body moved while the control toolbar remained visible and fixed.
+
+Workspace preview artifact:
+- screenshots/r0086-diagnostic-collapsed-402x714.jpg
+  Query-enabled diagnostic in its intentionally compact default state before tapping Show.
+
+No standard Replit usage screenshot was available in this session.
+The browser-test screenshots above are evidence artifacts from the final visual verification.

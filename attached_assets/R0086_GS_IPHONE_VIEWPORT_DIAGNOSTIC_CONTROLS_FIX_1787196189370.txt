@@ -1,0 +1,245 @@
+TRAILWEIGH — R0086 GS
+Gold Standard Replit Prompt
+iPhone Safari Viewport Diagnostic Controls Fix
+DIAGNOSTIC UI ONLY — DO NOT CHANGE TRAILWEIGH LAYOUT YET
+
+BACKGROUND / USER EVIDENCE
+R0085 successfully added the temporary Safari viewport diagnostic and the real iPhone measurements are working.
+
+However, USER iPhone evidence now overrides the implementation report on one point:
+- Replit reported that the diagnostic contains "Copy Snapshot" and "Refresh" controls.
+- On the actual iPhone Safari screenshot, those controls are NOT visible.
+- The only visible control at the top of the expanded diagnostic panel is "Hide".
+- Therefore, the diagnostic is not yet fully usable on the real device.
+
+This task is ONLY to make the existing diagnostic controls reliably visible and usable on iPhone Safari.
+
+DO NOT ATTEMPT THE SAFARI VIEWPORT/LAYOUT FIX IN THIS TASK.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+1. Inspect the CURRENT R0085 diagnostic implementation.
+2. Confirm the active mobile route and current diagnostic component.
+3. Confirm the existing diagnostic measurements are still working.
+4. Confirm the existing USER-PASS TrailWeigh fixed-layer behavior remains unchanged.
+5. Inspect why Copy Snapshot / Refresh are not visible on the real iPhone:
+   - off-screen below a non-scrollable panel;
+   - clipped by max-height/overflow;
+   - obscured by panel content;
+   - hidden by breakpoint/responsive rules;
+   - rendered outside the visible diagnostic viewport;
+   - or another actual cause.
+6. Do not guess. Identify the actual render/layout cause first.
+
+STRICT SCOPE
+Allowed:
+- diagnostic overlay component only;
+- minimal selector/wiring changes only if required for the diagnostic;
+- focused Playwright coverage for the diagnostic controls.
+
+Do NOT change:
+- TrailWeigh app width or height;
+- viewport sizing;
+- Safari scrolling architecture;
+- AppBar/header;
+- List Summary;
+- Home hero;
+- Bottom Box Groups;
+- checklist/category row sizing;
+- category wedges;
+- colors;
+- typography;
+- shadows;
+- spacing;
+- drawers;
+- gestures;
+- long-category behavior;
+- Add Item;
+- checklist semantics;
+- data;
+- auth;
+- database;
+- dependencies;
+- workflows;
+- publishing/deployment.
+
+REQUIRED DIAGNOSTIC UX
+
+A. CONTROLS MUST ALWAYS BE VISIBLE
+When ?twViewportDebug=1 is active and the panel is expanded, these controls must be visible WITHOUT scrolling the JSON body:
+- Hide / Collapse
+- Refresh Snapshot
+- Copy Snapshot
+
+Put these controls in a compact persistent toolbar inside the diagnostic overlay. The diagnostic JSON/text body may scroll independently underneath the controls.
+
+The controls must remain reachable on:
+- iPhone Safari portrait;
+- 402px viewport width;
+- visual viewport heights around 714px and 754px;
+- Chromium mobile emulation.
+
+B. DO NOT LET THE DIAGNOSTIC PANEL COVER ITS OWN CONTROLS
+The panel must:
+- fit within the current visual viewport;
+- use an internal scroll region for the long diagnostic text;
+- keep the control toolbar visible;
+- avoid extending controls below the visible viewport;
+- remain out of normal TrailWeigh document flow;
+- avoid creating horizontal overflow.
+
+C. COPY SNAPSHOT FALLBACK
+Copy Snapshot must:
+1. attempt to copy the full current snapshot to the clipboard;
+2. visibly confirm success, e.g. "Copied";
+3. if clipboard access fails, show a selectable fallback text area containing the full snapshot;
+4. keep that fallback text area inside the diagnostic panel's scrollable content area.
+
+D. ADD A COMPACT "KEY METRICS" SECTION AT THE TOP
+Because the full JSON is long, add a compact human-readable summary immediately below the persistent controls.
+
+Include at minimum:
+- screen width × height
+- inner width × height
+- document client width × height
+- visualViewport width × height
+- visualViewport offsetLeft / offsetTop
+- visualViewport scale
+- root shell left/right/top/bottom/width/height
+- AppBar rect
+- List Summary rect when present
+- Bottom Box Groups rect
+- Home hero rect when present
+- checklist main content rect
+- first visible category row/wedge rect
+
+E. SHOW THE BOTTOM NAV / RIGHT-EDGE VALUES CLEARLY
+We specifically need to diagnose:
+1. Safari bottom chrome vs. Bottom Box Groups.
+2. Right-edge clipping of checklist weights.
+
+Highlight:
+- visualViewport.height
+- Bottom Box Groups top/bottom/height
+- root bottom
+- checklist content right edge
+- first visible category row right edge
+- first visible wedge right edge
+- document/client width
+- visualViewport width
+
+No interpretation/fix yet — measurement only.
+
+R0085 REAL-DEVICE VALUES TO PRESERVE AS REFERENCE
+Do not hardcode these values. They are reference evidence only.
+
+Before Safari chrome compaction:
+- screen: 402 × 874
+- innerWidth: 402
+- innerHeight: 714
+- document clientWidth: 402
+- document clientHeight: 714
+- visualViewport.width: 402
+- visualViewport.height: 714
+- visualViewport.scale: 1
+
+After real finger scrolling / Safari chrome compaction:
+- screen: 402 × 874
+- innerWidth: 402
+- innerHeight: 754
+- document clientWidth remained 402
+- document clientHeight remained 714
+- visualViewport.width: 402
+- visualViewport.height: 754
+- visualViewport.scale: 1
+
+This confirms:
+- no whole-page 430px width problem;
+- no pinch/page zoom problem;
+- Safari visual height changes dynamically;
+- layout/document client height does not necessarily change with the visual viewport.
+
+PLAYWRIGHT / AUTOMATED VERIFICATION
+Run focused Playwright verification.
+
+At minimum verify:
+1. WITHOUT ?twViewportDebug=1
+- diagnostic is absent;
+- TrailWeigh layout is unchanged.
+
+2. WITH ?twViewportDebug=1
+- panel appears;
+- panel expands;
+- Hide is visible;
+- Refresh Snapshot is visible without scrolling the JSON body;
+- Copy Snapshot is visible without scrolling the JSON body;
+- control toolbar remains visible after scrolling the diagnostic text;
+- KEY METRICS section renders near the top;
+- full snapshot text remains internally scrollable;
+- no diagnostic-induced horizontal overflow;
+- panel stays within a 402px-wide viewport;
+- test at a constrained vertical viewport representative of iPhone Safari;
+- existing TrailWeigh AppBar, Summary/Home hero, Bottom Box Groups positions are not changed by the diagnostic;
+- normal checklist scrolling still works;
+- Home scrolling still works;
+- long-category bounded scrolling still works.
+
+3. Run the existing focused viewport regression suite and report exact results.
+
+Do NOT claim Chromium reproduces Safari browser chrome.
+
+PASS STANDARD
+R0086 GS passes only if:
+- USER-visible controls are actually placed in a location that will remain visible on iPhone;
+- the diagnostic body scrolls independently under persistent controls;
+- Copy Snapshot has a working fallback;
+- KEY METRICS can be captured in a screenshot;
+- no normal TrailWeigh layout behavior changes;
+- Playwright passes the diagnostic-specific and existing regression checks.
+
+REQUIRED USER TEST IN COMPLETION REPORT
+Tell Kevin to:
+1. Open the existing R0085 debug URL with ?twViewportDebug=1.
+2. Tap Show.
+3. Confirm he can immediately see Hide, Refresh Snapshot, Copy Snapshot, and Key Metrics.
+4. Take one screenshot.
+5. Tap Copy Snapshot and paste it into ChatGPT.
+6. If copy fails, use the selectable fallback text.
+
+REQUIRED ZIP REPORT
+Create and provide:
+trailweigh-R0086-report.zip
+
+The ZIP must contain at minimum:
+- R0086_REPORT.txt
+- CHANGED_FILES.txt
+- TEST_RESULTS.txt
+- USER_TEST_INSTRUCTIONS.txt
+- SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- the standard Replit usage screenshot if available
+
+If the task is blocked or fails, STILL create the ZIP report documenting the blocker.
+
+The report must clearly state:
+- R0086 GS
+- root cause of missing controls
+- exact diagnostic-only changes
+- exact Playwright commands/results
+- whether any non-diagnostic TrailWeigh behavior changed
+- READY / NOT READY FOR USER IPHONE CAPTURE
+
+THREE STANDING QUESTIONS FOR REPLIT
+Answer these three questions in the R0086 report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports and Chromium assumptions.
+
+Do not call the Safari viewport problem fixed.
+R0086 GS is only a diagnostic usability correction.
+The actual Safari viewport and checklist right-edge fix will be a separate prompt after the full iPhone snapshot is reviewed.

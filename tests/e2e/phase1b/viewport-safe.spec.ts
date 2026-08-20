@@ -117,6 +117,7 @@ test.describe('temporary real-device viewport diagnostic', () => {
     expect(snapshot.trailweigh.elements.listSummary).not.toBeNull();
     expect(snapshot.trailweigh.elements.bottomBoxGroups).not.toBeNull();
     expect(snapshot.trailweigh.categorySamples.firstVisible).not.toBeNull();
+    expect(snapshot.trailweigh.elements.firstVisibleWedge).not.toBeNull();
 
     const diagnosticStyle = await diagnostic.evaluate(element => getComputedStyle(element).position);
     expect(diagnosticStyle, 'diagnostic must be out of document flow').toBe('fixed');
@@ -142,6 +143,9 @@ test.describe('temporary real-device viewport diagnostic', () => {
     }
 
     // Verify the Home-owned scroller remains usable while the overlay is enabled.
+    // The expanded diagnostic intentionally owns its toolbar hit area. Collapse it
+    // before navigating through the temporary drawer, then re-expand on Home.
+    await page.getByTestId('viewport-diagnostic-collapse').click();
     await page.getByTestId('hamburger-btn').click();
     await page.getByRole('button', { name: 'Home', exact: true }).click();
     await expect(page.getByTestId('home-screen')).toBeVisible();
@@ -151,12 +155,110 @@ test.describe('temporary real-device viewport diagnostic', () => {
     });
     expect(homeScrollTop, 'Home content must remain scrollable').toBeGreaterThan(0);
 
+    await page.getByTestId('viewport-diagnostic-toggle').click();
     await page.getByTestId('viewport-diagnostic-refresh').click();
     const homeSnapshot = await page.getByTestId('viewport-diagnostic-values').evaluate(element =>
       JSON.parse(element.textContent || '{}'),
     );
     expect(homeSnapshot.trailweigh.pageState).toBe('Home');
     expect(homeSnapshot.trailweigh.elements.homeContentScroller).not.toBeNull();
+    expect(errors.pageErrors).toEqual([]);
+  });
+
+  test('keeps diagnostic controls persistent above a scrollable snapshot at constrained iPhone height', async ({ page, errors }) => {
+    await page.setViewportSize({ width: 402, height: 714 });
+    await gotoDiagnosticDemo(page);
+
+    const toolbar = page.getByTestId('viewport-diagnostic-toolbar');
+    const details = page.getByTestId('viewport-diagnostic-details');
+    const scrollRegion = page.getByTestId('viewport-diagnostic-scroll');
+    const keyMetrics = page.getByTestId('viewport-diagnostic-key-metrics');
+    const collapse = page.getByTestId('viewport-diagnostic-collapse');
+    const refresh = page.getByTestId('viewport-diagnostic-refresh');
+    const copy = page.getByTestId('viewport-diagnostic-copy');
+
+    await expect(toolbar).toBeVisible();
+    await expect(collapse).toBeVisible();
+    await expect(refresh).toBeVisible();
+    await expect(copy).toBeVisible();
+    await expect(keyMetrics).toContainText('KEY METRICS');
+    await expect(keyMetrics).toContainText('Bottom Box Groups');
+    await expect(keyMetrics).toContainText('first visible wedge');
+
+    const beforeScroll = await page.evaluate(() => {
+      const getRect = (testId: string) => {
+        const element = document.querySelector(`[data-testid="${testId}"]`);
+        if (!element) return null;
+        const rect = element.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom };
+      };
+      const scroll = document.querySelector<HTMLElement>('[data-testid="viewport-diagnostic-scroll"]');
+      const details = document.querySelector<HTMLElement>('[data-testid="viewport-diagnostic-details"]');
+      return {
+        viewportHeight: window.visualViewport?.height ?? window.innerHeight,
+        panelBottom: document.querySelector('[data-testid="viewport-diagnostic"]')?.getBoundingClientRect().bottom ?? 0,
+        detailsHeight: details?.getBoundingClientRect().height ?? 0,
+        scrollClientHeight: scroll?.clientHeight ?? 0,
+        scrollHeight: scroll?.scrollHeight ?? 0,
+        toolbar: getRect('viewport-diagnostic-toolbar'),
+        collapse: getRect('viewport-diagnostic-collapse'),
+        refresh: getRect('viewport-diagnostic-refresh'),
+        copy: getRect('viewport-diagnostic-copy'),
+      };
+    });
+    expect(beforeScroll.panelBottom, 'diagnostic panel must fit within the visual viewport').toBeLessThanOrEqual(beforeScroll.viewportHeight + 1);
+    expect(beforeScroll.detailsHeight).toBeGreaterThan(0);
+    expect(beforeScroll.scrollHeight, 'full snapshot must scroll inside its own region').toBeGreaterThan(beforeScroll.scrollClientHeight);
+    for (const control of [beforeScroll.toolbar, beforeScroll.collapse, beforeScroll.refresh, beforeScroll.copy]) {
+      expect(control).not.toBeNull();
+      expect(control!.bottom, 'persistent controls must be visible without scrolling snapshot text').toBeLessThanOrEqual(beforeScroll.viewportHeight + 1);
+    }
+
+    await scrollRegion.evaluate((element: HTMLElement) => { element.scrollTop = element.scrollHeight; });
+    const afterScroll = await page.evaluate(() => {
+      const element = document.querySelector('[data-testid="viewport-diagnostic-toolbar"]');
+      const rect = element?.getBoundingClientRect();
+      return rect ? { top: rect.top, bottom: rect.bottom } : null;
+    });
+    expect(afterScroll).not.toBeNull();
+    expect(Math.abs(afterScroll!.top - beforeScroll.toolbar!.top), 'toolbar must not scroll with JSON body').toBeLessThanOrEqual(1);
+
+    const widths = await getScrollWidths(page);
+    expect(widths.body).toBeLessThanOrEqual(402);
+    expect(widths.html).toBeLessThanOrEqual(402);
+    expect(errors.pageErrors).toEqual([]);
+  });
+
+  test('keeps the clipboard-denied fallback inside the diagnostic scroll region', async ({ page, errors }) => {
+    await page.setViewportSize({ width: 402, height: 714 });
+    await gotoDiagnosticDemo(page);
+
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async () => {
+            throw new Error('Clipboard deliberately denied for diagnostic fallback test');
+          },
+        },
+      });
+    });
+    await page.getByTestId('viewport-diagnostic-copy').click();
+    const fallback = page.getByTestId('viewport-diagnostic-fallback');
+    await expect(fallback).toBeVisible();
+    await expect(fallback).toHaveValue(/"innerWidth"/);
+
+    const fallbackPlacement = await fallback.evaluate(element => {
+      const scroll = document.querySelector('[data-testid="viewport-diagnostic-scroll"]');
+      return {
+        insideScrollRegion: Boolean(scroll?.contains(element)),
+        documentWidth: document.documentElement.scrollWidth,
+        bodyWidth: document.body.scrollWidth,
+      };
+    });
+    expect(fallbackPlacement.insideScrollRegion).toBe(true);
+    expect(fallbackPlacement.documentWidth).toBeLessThanOrEqual(402);
+    expect(fallbackPlacement.bodyWidth).toBeLessThanOrEqual(402);
     expect(errors.pageErrors).toEqual([]);
   });
 

@@ -1,0 +1,66 @@
+TRAILWEIGH — R0086 GS
+iPhone Safari Viewport Diagnostic Controls Fix
+
+STATUS: READY FOR USER IPHONE CAPTURE
+
+SCOPE
+This is a diagnostic-usability correction only. No Safari viewport/layout fix was attempted.
+TrailWeigh app layout, fixed layers, scrolling architecture, data, auth, dependencies,
+workflows, and deployment settings were not changed.
+
+ROOT CAUSE OF MISSING CONTROLS
+The prior diagnostic rendered its Copy Snapshot and Refresh controls after the complete,
+long JSON <pre> inside one max-height, overflow-y:auto details region. On a real iPhone
+the panel initially displayed the top of that scroll region, leaving the two controls
+below the visible JSON content. The header Hide button was the only control initially
+visible. This was not a breakpoint or CSS visibility rule: the controls were simply
+placed later in the same independently scrollable content.
+
+DIAGNOSTIC-ONLY CHANGES
+1. Added a compact persistent toolbar immediately below the diagnostic title when expanded:
+   - Hide
+   - Refresh Snapshot
+   - Copy Snapshot
+2. Split the overlay details area into a fixed toolbar plus an independently scrolling body.
+   The body contains the timestamp, Key Metrics, full JSON snapshot, and any clipboard
+   fallback text area.
+3. Sized the details area from the live visual viewport height, capped at 520px, so the
+   entire fixed panel remains within the current visual viewport at the tested iPhone sizes.
+4. Added a compact KEY METRICS section near the top of the scroll body. It includes:
+   screen, inner and document client dimensions; visualViewport dimensions/offset/scale;
+   root shell; AppBar; List Summary; Bottom Box Groups; Home hero; checklist content;
+   first visible category row; and first visible wedge. The right-edge and bottom-nav
+   values requested for the next diagnostic review are explicitly highlighted.
+5. Kept Copy Snapshot's existing local clipboard attempt and success state. If clipboard
+   access fails, the selectable full-snapshot textarea is rendered inside the scroll body.
+
+NON-DIAGNOSTIC TRAILWEIGH BEHAVIOR
+No normal TrailWeigh UI, layout, spacing, colours, typography, drawers, gestures,
+checklist behavior, Home behavior, long-category behavior, data, or service configuration
+was changed. The only test-navigation adjustment collapses the expanded diagnostic before
+clicking a drawer item that would otherwise lie beneath the intentional fixed overlay.
+
+REAL-DEVICE LIMITATION
+Chromium testing verifies the diagnostic's DOM behavior and fixed-panel geometry only.
+It does not emulate iPhone Safari browser chrome or its dynamic visual viewport changes.
+The actual Safari viewport/right-edge issue is NOT fixed or interpreted by R0086.
+
+STANDING QUESTIONS
+1. What did this task teach us for future prompts?
+   The active mobile diagnostic route is /mobile-functional-v3. A browser overlay can be
+   correctly fixed and out of document flow while still hiding its own controls if controls
+   are sequenced after long scrollable content. Future diagnostic prompts should explicitly
+   specify control persistence and a separately scrollable content region.
+
+2. Was anything unclear or technically risky?
+   The prompt was clear and appropriately narrow. The technically important limit is that
+   real iPhone Safari dynamic-browser-chrome behavior cannot be concluded from Chromium.
+   The request for a standard Replit usage screenshot is environment-dependent; browser
+   verification screenshots are indexed where available.
+
+3. What Replit/project information will help future work?
+   The Pack Weight Checklist web artifact is mounted at the root preview path and the
+   focused TrailWeigh typecheck can pass even when the aggregate workspace typecheck is
+   red because of an unrelated mockup-sandbox React ref error. A project-wide e2e workflow
+   may concurrently run unrelated legacy tests, so focused diagnostic test output was
+   isolated under /tmp for this verification.
