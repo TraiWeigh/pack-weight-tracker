@@ -1,0 +1,414 @@
+TRAILWEIGH — R0090 GS
+Gold Standard Replit Prompt
+Right-Edge Visual Correction — USER iPhone Evidence Included
+
+AUTHORITATIVE USER EVIDENCE
+This ZIP contains:
+
+R0090_USER_IPHONE_EVIDENCE.png
+
+This is an actual screenshot from Kevin's iPhone after R0089.
+
+Treat this screenshot as AUTHORITATIVE USER evidence.
+
+USER live-device evidence outranks:
+- Replit reports;
+- source-code assumptions;
+- Chromium screenshots;
+- Playwright PASS;
+- computed geometry that appears correct but does not match what the user actually sees.
+
+R0089 IS NOT USER PASS.
+
+WHAT THE USER'S SCREENSHOT SHOWS
+The actual iPhone screenshot demonstrates that the right side of the TrailWeigh mobile interface is still too close to / clipped by the right edge.
+
+Specifically visible:
+
+1. CATEGORY WEIGHTS
+Examples such as:
+- 1156.7 g
+- 1627.3 g
+- 1012.1 g
+- 1043.3 g
+- 1229.8 g
+- 551.4 g
+
+remain visually too close to the physical right edge.
+
+The weights need MORE inward movement than R0089 provided.
+
+2. LIST SUMMARY
+The right-side "29 Selected" content is visibly clipped at the right edge.
+
+This is a real-device failure and must be corrected.
+
+3. TOP APPBAR / HEADER
+The rightmost header icon is visibly cut off / partially outside the visible content area.
+
+This must be corrected.
+
+4. LEFT SIDE
+The left wedge system and left-side category layout look correct.
+
+DO NOT move the wedges inward.
+DO NOT globally center the whole app.
+DO NOT shrink the full app shell.
+
+USER INTENT
+Everything that belongs visually to the RIGHT SIDE of the TrailWeigh mobile interface needs sufficient inward clearance so it is comfortably visible on the iPhone screen.
+
+This includes more than checklist weights.
+
+The solution must preserve:
+- full-width TrailWeigh shell;
+- left-edge wedge anchoring;
+- current typography;
+- fixed header;
+- restored List Summary proportions;
+- Bottom Box Groups;
+- current category row height;
+- current scroll behavior.
+
+PRIMARY GOAL
+Correct the right-edge layout across the active TrailWeigh mobile checklist screen so no intended visible content is pressed against, clipped by, or partially outside the physical right edge.
+
+The screenshot must be used as the visual acceptance reference.
+
+GOLD STANDARD — INSPECT CURRENT STATE FIRST
+Before editing:
+
+1. Inspect the CURRENT active rendered mobile code path.
+2. Read relevant replit.md/project guidance read-only.
+3. Confirm R0088 List Summary restoration is still present.
+4. Confirm R0089's existing right-side inset changes.
+5. Inspect the exact layout structures responsible for:
+   - category weights;
+   - List Summary right-side count/status;
+   - AppBar/header right-side icons;
+   - any other visible right-aligned controls/content.
+6. Determine WHY the screenshot still shows right-edge clipping / crowding despite prior measurements.
+7. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS
+8. Identify the smallest coherent structural fix.
+
+DO NOT simply assume the prior 24px gutter is being visually honored because CSS/computed values say so.
+
+The actual iPhone screenshot proves the current result is insufficient.
+
+RIGHT-SIDE LAYOUT STRATEGY
+Use a coordinated but not necessarily identical inset strategy.
+
+GENERAL RIGHT-SIDE CONTENT
+Create a larger safe visual gutter for general right-side content.
+
+Candidate range to TEST:
+approximately 32–36px effective gutter.
+
+Do not blindly pick a number.
+Test and measure.
+
+WEIGHT COLUMN
+The category weight column may need a DEEPER inset than the general right-side gutter.
+
+Candidate range to TEST:
+approximately 40–48px effective gutter.
+
+Again, do not blindly hardcode.
+Choose the smallest value that:
+- clearly separates weights from the right screen edge;
+- keeps all units visible;
+- maintains vertical alignment;
+- avoids crowding category titles/subtitles.
+
+LIST SUMMARY
+Move the right-side List Summary content inward enough that:
+- "29 Selected" is fully visible;
+- category count/status content is fully visible;
+- nothing clips or touches the right edge;
+- Summary height and vertical proportions remain EXACTLY as restored in R0088.
+
+Do NOT compact or resize the List Summary.
+
+HEADER / APPBAR
+Unlike R0089, R0090 MUST inspect the right side of the AppBar because USER evidence shows the rightmost header icon is clipped.
+
+Correct the right-side AppBar content inset as necessary.
+
+Preserve:
+- AppBar height;
+- icon sizes;
+- icon order;
+- left hamburger;
+- TrailWeigh logo/title;
+- header visual style.
+
+Do NOT redesign the header.
+
+If the current header icon group is simply wider than the available 402px space, use a measured layout correction such as:
+- reduced inter-icon gap on the right-side icon group;
+- slightly increased right content inset combined with proper flex sizing;
+- responsive distribution;
+- another minimal structural fix supported by measurements.
+
+Do NOT:
+- shrink icons unless absolutely necessary and justified;
+- hide icons;
+- remove icons;
+- globally scale the header.
+
+CATEGORY WEIGHTS
+The category weight column is allowed to use a deeper secondary inset than the rest of the interface.
+
+Requirements:
+- all weights align consistently;
+- units remain fully visible;
+- no wrapping;
+- no clipping;
+- no overlap with title/subtitle content;
+- left wedge remains unchanged;
+- row background remains full width.
+
+OTHER RIGHT-SIDE CONTENT
+Inventory all other right-aligned visible mobile checklist elements.
+
+If any other element sits at the old problematic edge, move it inward consistently.
+
+Do not leave one visually stranded at the old edge.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- full TrailWeigh app width;
+- viewport meta;
+- visualViewport logic;
+- Safari address-bar behavior;
+- document/root scroll architecture;
+- List Summary height;
+- List Summary vertical padding;
+- category row height;
+- wedge width/shape/position;
+- wedge icons/colors/shadows;
+- Bottom Box Groups position/height/design;
+- Home hero;
+- long-category bounded scrolling;
+- checklist semantics;
+- drawers;
+- gestures;
+- swipe-to-delete;
+- reorder;
+- Add Item;
+- item/category accordion behavior;
+- data;
+- DB/schema;
+- auth;
+- packages/dependencies;
+- workflows;
+- publishing/deployment.
+
+FUTURE FEATURES — DO NOT IMPLEMENT
+Do NOT mix in:
+- locked Category / Location bar;
+- future Photo mode;
+- wedge shadows;
+- color themes;
+- Android-only layout changes;
+- Safari/PWA address-bar work.
+
+Those are separate tasks.
+
+ANDROID
+Do NOT create Android-specific overrides in R0090.
+
+Use responsive layout principles that remain safe at narrower widths.
+
+At minimum also test:
+- 390px width;
+- 360px width.
+
+If the deeper iPhone inset causes problems at 360px, use a width-responsive inset reduction rather than a platform-specific Android branch.
+
+REAL-DEVICE REFERENCE WIDTH
+The authoritative iPhone screenshot is approximately a 402px-wide viewport environment.
+
+The intended 402px result is:
+- full shell remains 402px;
+- wedges remain anchored left;
+- right-side content has visibly more breathing room;
+- "29 Selected" fully visible;
+- rightmost AppBar icon fully visible;
+- all category weights fully visible and clearly farther inward.
+
+PLAYWRIGHT / AUTOMATED TESTS
+Run focused tests at minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow Android viewport
+- existing viewport-safe suite
+
+VERIFY
+1. Root/app width remains viewport width.
+2. No horizontal overflow.
+3. Header remains full width.
+4. Rightmost AppBar icon fully inside viewport.
+5. List Summary right-side content fully inside viewport.
+6. "29 Selected" fully visible.
+7. Category weights have increased right gutter.
+8. Weight units fully visible.
+9. Weight column vertically aligned.
+10. No title/subtitle overlap.
+11. Wedge bounds unchanged.
+12. Category row height unchanged.
+13. List Summary height unchanged.
+14. Bottom Box Groups unchanged.
+15. Scroll behavior unchanged.
+16. Long-category behavior unchanged.
+17. 360px layout remains usable.
+
+BEFORE / AFTER METRICS REQUIRED
+Document at minimum:
+
+APPBAR
+- viewport width;
+- AppBar width;
+- rightmost icon right edge before;
+- rightmost icon right edge after;
+- effective right gutter before/after;
+- icon-group gaps before/after if changed.
+
+LIST SUMMARY
+- Summary width;
+- Summary height;
+- right edge of category count/status;
+- right edge of "Selected" group;
+- effective right gutter before/after.
+
+CATEGORY ROWS
+- row width;
+- wedge bounds;
+- weight right edge before/after;
+- effective weight gutter before/after;
+- title/content available width before/after;
+- row height before/after.
+
+RESPONSIVE
+Report the effective inset/gutter at:
+- 402px;
+- 390px;
+- 360px.
+
+VISUAL SCREENSHOT VERIFICATION
+Create before/after screenshots at 402px that clearly show:
+
+- header rightmost icon;
+- List Summary right-side status;
+- several category weights;
+- full left wedge region.
+
+Compare the result directly against:
+R0090_USER_IPHONE_EVIDENCE.png
+
+Do not call a Chromium screenshot visually equivalent to an iPhone screenshot.
+It is only a regression aid.
+
+PASS STANDARD
+REPLIT PASS requires:
+- rightmost header icon no longer clips in test geometry;
+- List Summary right-side content is fully visible;
+- category weights are meaningfully farther inward than R0089;
+- no weight units clip;
+- no title overlap;
+- full app width unchanged;
+- wedges unchanged;
+- Summary height unchanged;
+- row height unchanged;
+- Bottom Box Groups unchanged;
+- 360px narrow-screen safety verified;
+- typecheck and focused Playwright pass;
+- report and artifacts complete.
+
+R0090 must still be labeled:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Do NOT call it USER PASS.
+
+Kevin's actual iPhone visual verification is final.
+
+REQUIRED ZIP REPORT
+Create and provide:
+
+trailweigh-R0090-report.zip
+
+The ZIP must contain at minimum:
+
+1. R0090_REPORT.txt
+Include:
+- R0090 GS
+- branch / commit / checkpoint
+- current-state findings
+- root cause(s)
+- exact changes
+- exact final inset values
+- any responsive inset rules
+- areas deliberately unchanged
+- test commands
+- exact PASS/FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+- every changed file;
+- reason for each;
+- any unexpected file explicitly identified.
+
+3. TEST_RESULTS.txt
+- exact commands;
+- suites;
+- PASS/FAIL totals;
+- Chromium vs real-device distinction;
+- blockers if any.
+
+4. BEFORE_AFTER_METRICS.txt
+Include all measurements listed above.
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to visually verify:
+- rightmost header icon;
+- 29 Selected;
+- category count;
+- every weight and unit;
+- right-side breathing room;
+- no title overlap;
+- left wedges unchanged;
+- full app width unchanged;
+- Summary proportions unchanged;
+- Bottom Box Groups unchanged.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+List:
+- before/after screenshots;
+- traces/reports;
+- included user evidence reference.
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state that clearly.
+
+If blocked or failed, STILL create trailweigh-R0090-report.zip documenting the blocker.
+
+THREE STANDING QUESTIONS FOR REPLIT
+Answer these in the report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+Use the included iPhone screenshot as the visual problem statement.
+Find root cause before editing.
+Make the smallest reversible correction.
+Protect every unrelated USER-PASS behavior.

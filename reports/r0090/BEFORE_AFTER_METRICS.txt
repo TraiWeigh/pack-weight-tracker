@@ -1,0 +1,50 @@
+R0090 BEFORE / AFTER METRICS
+
+All listed values are CSS-pixel layout targets inside the full-width mobile shell.
+The attached iPhone screenshot is the visual acceptance reference; Chromium values are
+regression measurements, not a claim of iPhone visual equivalence.
+
+APPBAR — 402PX
+Metric                                  R0089 before      R0090 after
+Viewport / AppBar width                 402px / 402px    402px / 402px
+AppBar height                           52px             52px
+Rightmost icon wrapper right bound      394px            <=386px
+Effective right safe gutter             8px              16px
+Icon group inter-icon gap               0px              0px
+Icon size / order                       unchanged        unchanged
+
+LIST SUMMARY — 402PX
+Metric                                  R0089 before      R0090 after
+Summary width                           402px            402px
+Summary height                          88.25px          88.25px
+Summary vertical padding                10px / 12px      10px / 12px
+Category count/status right bound       <=378px          <=368px
+Effective right gutter                  24px             34px
+Interior list-name flex budget          preserved        preserved
+
+CATEGORY ROWS — 402PX
+Metric                                  R0089 before      R0090 after
+Row width                               402px            402px
+Wedge bounds                            x=0, w=72px      x=0, w=72px
+Weight right bound                      <=378px          <=358px
+Effective weight gutter                 24px             44px
+Category content grid usable width      294px            274px
+Title-column width impact               20px less grid space; validated with no title/weight collision
+Row height                              64px min         64px min
+Weight wrapping                         nowrap           nowrap
+
+RESPONSIVE TARGETS
+Viewport width          General content         Category weight         AppBar icon
+402px                   34px                    44px                    16px
+390px                   34px                    44px                    16px
+360px                   34px                    44px                    16px
+
+No responsive reduction was required: the same insets passed the focused 360x800 safety
+test without horizontal overflow, title/weight collision, or wrapping.
+
+NOTES
+- General content includes Summary status/count, location headers, item values, expanded
+  item controls, photo controls, and pager controls.
+- The category weight gutter is intentionally deeper because long number-plus-unit text
+  was the real-device visual failure.
+- The AppBar keeps all six decorative identity icons; only its right safe padding changed.

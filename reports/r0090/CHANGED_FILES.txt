@@ -1,0 +1,37 @@
+R0090 CHANGED FILES
+
+PRODUCT SOURCE
+1. artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+   Reason:
+   - Replaced the insufficient 24px general right-side inset with 34px.
+   - Added a distinct 44px category-weight gutter.
+   - Added a 16px AppBar right gutter for the decorative identity icon group.
+   - Preserved the Summary's available list-name width through a matching interior
+     chevron-reserve adjustment.
+   - Added non-visual test identifiers for the AppBar icon group and Summary status text.
+
+TEST SOURCE
+2. tests/e2e/phase1b/r0090-right-edge.spec.ts
+   Reason:
+   - New focused 402/390/360 viewport coverage for AppBar icon visibility, Summary
+     status visibility, deeper weight gutter, unchanged shell/wedge/row/Summary geometry,
+     no overflow, no title/weight collision, and no-wrap weights.
+
+REPORTING / ARTIFACTS
+3. reports/r0090/R0090_REPORT.txt
+4. reports/r0090/CHANGED_FILES.txt
+5. reports/r0090/TEST_RESULTS.txt
+6. reports/r0090/BEFORE_AFTER_METRICS.txt
+7. reports/r0090/USER_IPHONE_TEST.txt
+8. reports/r0090/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+9. screenshots/r0090-after-402x714.jpg
+10. screenshots/r0090-after-402x754.jpg
+11. trailweigh-R0090-report.zip
+
+REFERENCE EVIDENCE, NOT MODIFIED
+- attached_assets/R0090_USER_IPHONE_EVIDENCE_1787201620488.png
+- screenshots/r0089-after-402x714.jpg
+- screenshots/r0089-after-402x754.jpg
+
+UNEXPECTED FILES
+No unexpected product-source files were changed by R0090.

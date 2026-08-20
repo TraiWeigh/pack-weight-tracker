@@ -1,0 +1,53 @@
+R0090 TEST RESULTS
+
+FOCUSED RIGHT-EDGE CORRECTION
+Command:
+pnpm exec playwright test tests/e2e/phase1b/r0090-right-edge.spec.ts --workers=1 --project=chromium --output=/tmp/r0090-right-edge-results
+Result:
+4 passed, 0 failed (16.5s)
+
+Viewports:
+- 402x714
+- 402x754
+- 390x844
+- 360x800
+
+Verified:
+- full root and AppBar width;
+- 16px safe right gutter for the rightmost AppBar icon;
+- 34px right gutter for Summary category count and Selected status;
+- 44px right gutter for category weights;
+- fully restored Summary height;
+- unchanged category row/wedge bounds and row-height range;
+- title/weight separation;
+- no-wrap category weights;
+- no horizontal overflow;
+- no browser page errors.
+
+EXISTING VIEWPORT-SAFE REGRESSION
+Command:
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium --output=/tmp/r0090-viewport-results
+Result:
+13 passed, 0 failed (48.9s)
+
+RESTORED SUMMARY / HOME REGRESSION
+Command:
+pnpm exec playwright test tests/e2e/phase1b/screen-efficiency.spec.ts --workers=1 --project=chromium --output=/tmp/r0090-summary-results
+Result:
+3 passed, 0 failed (13.1s)
+
+TYPECHECK
+Command:
+pnpm --filter @workspace/pack-checklist run typecheck
+Result:
+PASS
+
+CHROMIUM VS REAL DEVICE
+All automated results are Chromium verification. They do not supersede the authoritative
+real-iPhone evidence or constitute a Safari user pass.
+
+KNOWN NON-R0090 TEST-SERVER EVENT
+After the required suites passed, an optional older R0089 inset regression could not start
+its configured webServer because configured workflows were stopped. This is not a product
+test failure, does not affect the required R0090/viewport/Summary results above, and was
+not remedied because the scope explicitly prohibits workflow changes.

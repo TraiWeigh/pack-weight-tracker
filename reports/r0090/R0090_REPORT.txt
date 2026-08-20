@@ -1,0 +1,121 @@
+TRAILWEIGH — R0090 GS
+Right-Edge Visual Correction — USER iPhone Evidence Included
+
+STATUS: REPLIT PASS / READY FOR USER IPHONE TEST — NOT USER PASS
+
+AUTHORITATIVE EVIDENCE
+The attached R0090_USER_IPHONE_EVIDENCE image is real iPhone evidence from after R0089.
+It outranks Chromium geometry and prior automated PASS results. R0089 was therefore treated
+as not user-approved.
+
+BRANCH / COMMIT / CHECKPOINT
+Branch: main
+Baseline before R0090 working-tree change: R0089 completed state
+R0088 restoration remains the preserved Summary baseline.
+
+CURRENT-STATE FINDINGS
+FACTS
+- The iPhone screenshot shows category weight units too close to the physical right edge,
+  a partially clipped "29 Selected" Summary status, and a partially clipped rightmost
+  AppBar identity icon.
+- R0089 used one 24px checklist content inset. That was insufficient in the actual iPhone
+  view despite Chromium reporting safe geometry.
+- The AppBar's decorative icon group had no dedicated safe right gutter beyond the bar's
+  8px outer right padding.
+- R0088 Summary vertical restoration remains in the source and in regression checks:
+  88.25px rendered height, 10px/12px vertical padding, unchanged tile and hierarchy.
+- Category rows remain full-width and preserve their 64px minimum density and left wedge.
+
+UNKNOWNS
+- The exact iPhone CSS viewport and Safari rendering contribution cannot be reconstructed
+  from a screenshot alone. No claim is made that R0090 changes Safari chrome or viewport
+  behavior.
+
+ROOT CAUSE
+There was no independent AppBar right-safe inset, and the prior one-size 24px checklist
+gutter was too shallow for real-device visual clearance. The category weight column needs
+more room than general right-side controls because long values such as "1627.3 g" are the
+most visually edge-sensitive content.
+
+SMALLEST COHERENT FIX
+R0090 uses coordinated content insets without changing the shell:
+- General visible right-side checklist content: 34px.
+- Category selected-weight column: 44px.
+- AppBar identity icon group: 16px from the right edge.
+
+These were chosen from the requested candidate ranges as the smallest tested values that
+provide a clear visual separation at 402px, preserve all six header icons, retain unwrapped
+weight values, and remain usable at 390px and 360px. No responsive override was needed:
+the same values passed each requested narrow viewport.
+
+EXACT CHANGES
+1. Increased CHECKLIST_RIGHT_INSET from 24px to 34px. It governs Summary metrics,
+   location names, collapsed quantities, expanded item controls, item/location photo
+   controls, and long-list pager placement.
+2. Added CATEGORY_WEIGHT_RIGHT_INSET = 44px and applied it only to category weight
+   header grids. This gives weights an intentionally deeper visual gutter than general
+   content while preserving their existing alignment and no-wrap behavior.
+3. Added APPBAR_RIGHT_INSET = 16px and applied it to the fixed AppBar's right padding.
+   The icon group keeps its icon order, sizes, zero inter-icon gap, and responsive flex
+   distribution; it is simply no longer allowed to finish against the physical edge.
+4. Adjusted only the Summary's existing interior chevron reserve from 38px to 28px,
+   compensating for the Summary's additional 10px right gutter so the R0089 list-name
+   flex budget remains unchanged. This does not change Summary height or vertical layout.
+5. Added stable AppBar and Summary status test identifiers and a focused R0090 Playwright
+   regression suite at 402x714, 402x754, 390x844, and 360x800.
+
+FINAL EFFECTIVE INSETS
+At 402px, 390px, and 360px:
+- AppBar rightmost icon safe gutter: 16px.
+- General right-side content gutter: 34px.
+- Category selected-weight gutter: 44px.
+- No platform-specific or Android-specific override is present.
+
+AREAS DELIBERATELY UNCHANGED
+- Full TrailWeigh shell width, max-width architecture, and viewport handling.
+- AppBar height, icon sizes/order/style, hamburger, logo, title, and left-side layout.
+- R0088 Summary height, vertical padding, tile size, fixed placement, and proportions.
+- Category row height, title/subtitle typography, full-width background, and left wedge
+  size/shape/icon/colour/position.
+- Bottom Box Groups, Home hero, document/root scrolling, long-category bounded scrolling,
+  drawers, swipes, reorder, Add Item, item/category accordions, data, auth, database,
+  dependencies, workflows, publishing, and deployment.
+- No future Category/Location lock, Photo mode, themes, wedge shadows, Android override,
+  or Safari/PWA work was added.
+
+TEST COMMANDS / RESULTS
+1. pnpm exec playwright test tests/e2e/phase1b/r0090-right-edge.spec.ts
+   --workers=1 --project=chromium --output=/tmp/r0090-right-edge-results
+   Result: 4 passed, 0 failed (16.5s).
+
+2. pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts
+   --workers=1 --project=chromium --output=/tmp/r0090-viewport-results
+   Result: 13 passed, 0 failed (48.9s).
+
+3. pnpm exec playwright test tests/e2e/phase1b/screen-efficiency.spec.ts
+   --workers=1 --project=chromium --output=/tmp/r0090-summary-results
+   Result: 3 passed, 0 failed (13.1s).
+
+4. pnpm --filter @workspace/pack-checklist run typecheck
+   Result: PASS.
+
+Chromium checks establish code/layout safety only. Kevin's real iPhone Safari review remains
+the final visual authority.
+
+STANDING QUESTIONS FOR REPLIT
+1. What did this task teach us?
+   A content gutter that looks mathematically safe in Chromium can still be visually
+   inadequate on a real iPhone. Edge-sensitive content must be separated into general,
+   high-risk (weight), and AppBar classes rather than forcing one shared number.
+
+2. Was anything unclear, unnecessary, risky, or better expressed another way?
+   The prompt was actionable and the attached real-device screenshot made the failure
+   clear. The only inherent unknown is the screenshot's exact CSS viewport; treating its
+   visual clipping as authoritative, rather than reverse-engineering a viewport theory,
+   was the safer approach.
+
+3. What Replit/project detail helps future work?
+   TrailWeigh's isolated package tests are reliable for this UI. Some broader configured
+   workflows have unrelated legacy failures or may be stopped after test-server teardown;
+   do not modify/restart them when the task explicitly forbids workflow changes. Verify
+   mobile geometry with the focused suite and then ask for real-iPhone confirmation.

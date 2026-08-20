@@ -294,3 +294,10 @@ uri = "file://trailweigh-R0089-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0089 report"
 description = "Shared 24px right-side checklist gutter report with source inventory, before/after metrics, focused test results, iPhone verification steps, and screenshots."
+
+[[outputs]]
+id = "MFIcFxP6cb17sHZyr6q39"
+uri = "file://trailweigh-R0090-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0090 report"
+description = "Real-iPhone-informed right-edge correction report with the authoritative user evidence, before/after metrics, final screenshots, focused test results, and iPhone verification checklist."

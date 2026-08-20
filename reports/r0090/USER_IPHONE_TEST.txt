@@ -1,0 +1,35 @@
+KEVIN — R0090 REAL IPHONE SAFARI TEST
+
+Open:
+https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.worf.replit.dev/mobile-functional-v3
+
+Please compare against the attached post-R0089 evidence and check:
+
+1. AppBar
+   - The rightmost moving-box icon is fully visible with clear space before the right edge.
+   - All six right-side identity icons remain present, in the same order and size.
+   - The hamburger, logo, title, fixed header height, and header styling remain unchanged.
+
+2. List Summary
+   - The category count and "29 Selected" equivalent are fully visible and no longer touch
+     or clip at the right edge.
+   - The green Summary's height, tile, item count, and vertical proportions look unchanged.
+
+3. Category weights
+   - Inspect every category weight and unit, especially long values such as 1156.7 g and
+     1627.3 g. Each should be clearly farther inward than the R0089 screenshot, fully
+     visible, aligned vertically, and unwrapped.
+   - Category names/subtitles must not collide with the weight column.
+
+4. Protected layout
+   - Left wedges remain flush to the left edge and unchanged.
+   - The app/row backgrounds remain full width.
+   - Category row height, scrolling, long-category behavior, Bottom Box Groups, Home,
+     drawers, gestures, and Add Item behavior remain unchanged.
+
+5. Safari states
+   - Check both expanded and compact Safari chrome states. R0090 intentionally does not
+     change Safari browser chrome or screen sizing.
+
+If any content remains tight or clipped, please send a screenshot with Safari chrome and the
+affected row/header visible. R0090 is REPLIT PASS / READY FOR USER IPHONE TEST, not USER PASS.

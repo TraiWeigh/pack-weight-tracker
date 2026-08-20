@@ -1,0 +1,25 @@
+R0090 SCREENSHOT / ARTIFACT INDEX
+
+AUTHORITATIVE USER EVIDENCE
+- attached_assets/R0090_USER_IPHONE_EVIDENCE_1787201620488.png
+  Included in the R0090 ZIP as R0090_USER_IPHONE_EVIDENCE.png.
+
+BEFORE — R0089 CHROMIUM REFERENCE
+- screenshots/r0089-after-402x714.jpg
+- screenshots/r0089-after-402x754.jpg
+
+AFTER — R0090 CHROMIUM REGRESSION AID
+- screenshots/r0090-after-402x714.jpg
+- screenshots/r0090-after-402x754.jpg
+
+PLAYWRIGHT OUTPUT (EPHEMERAL)
+- /tmp/r0090-right-edge-results
+- /tmp/r0090-viewport-results
+- /tmp/r0090-summary-results
+
+STANDARD REPLIT USAGE SCREENSHOT
+Not available in this session.
+
+IMPORTANT
+The R0090 Chromium images are layout regression aids only. They are not represented as
+visually equivalent to the authoritative real-iPhone evidence.

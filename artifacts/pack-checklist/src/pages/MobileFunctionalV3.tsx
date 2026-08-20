@@ -179,7 +179,9 @@ const CARD_H      = 68;
 const CHECKLIST_ROW_H = 64;
 // R0089: shared resting-content gutter for the checklist's right edge. This
 // preserves the 402px shell, full-width row backgrounds, and left wedges.
-const CHECKLIST_RIGHT_INSET = 24;
+const CHECKLIST_RIGHT_INSET = 34;
+const CATEGORY_WEIGHT_RIGHT_INSET = 44;
+const APPBAR_RIGHT_INSET = 16;
 
 // ─── TOKENS ─────────────────────────────────────────────────────────────────────
 // R004 Part 3 — Inter Variable primary; former SERIF surfaces keep their weight/size
@@ -3721,13 +3723,13 @@ function MobileFunctionalV3Inner() {
         `}</style>
 
         {/* ── APP BAR — R0082: hamburger added ── */}
-         <div data-testid="app-bar" style={{
+           <div data-testid="app-bar" style={{
           position: 'fixed',
           top: 0,
           left: 'max(0px, calc(50% - 215px))',
           right: 'max(0px, calc(50% - 215px))',
           height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
-          display: 'flex', alignItems: 'center', padding: '0 8px', gap: 0,
+           display: 'flex', alignItems: 'center', padding: '0 8px', paddingRight: APPBAR_RIGHT_INSET, gap: 0,
           flexShrink: 0, zIndex: 10, overflow: 'hidden',
           /* R0086: on Home both the bar and page are white — strengthen the
              bottom-edge shadow so the boundary is clearly visible. */
@@ -3758,6 +3760,7 @@ function MobileFunctionalV3Inner() {
               navigation action, no horizontal overflow. Flex: 1 distributes
               the remaining header width evenly across all six icons. */}
           <div
+             data-testid="appbar-icon-group"
             aria-hidden="true"
             style={{
               flex: 1, display: 'flex', alignItems: 'center',
@@ -3775,6 +3778,7 @@ function MobileFunctionalV3Inner() {
             ] as [React.ComponentType<{ size: number; color: string; strokeWidth: number }>, string][]).map(
               ([Icon, title], i) => (
                 <div
+                   data-testid={`appbar-icon-${i}`}
                   key={title}
                   title={title}
                   style={{
@@ -3852,10 +3856,10 @@ function MobileFunctionalV3Inner() {
                     style={{
                       alignSelf: 'flex-end',
                       marginBottom: 2,
-                       // R0089: retain the pre-inset list-name width while the
+                       // R0090: retain the pre-inset list-name width while the
                        // right metrics use CHECKLIST_RIGHT_INSET. This chevron is
                        // intentionally not a physical-edge control.
-                       marginRight: 38,
+                       marginRight: 28,
                       background: 'none', border: 'none', cursor: 'pointer',
                       color: 'rgba(255,255,255,0.50)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -3874,7 +3878,7 @@ function MobileFunctionalV3Inner() {
               {/* Right: categories / selected / not selected stacked (027U) */}
               <div data-testid="summary-right-metrics" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
                 {/* Category count — top of right stack */}
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.58)', whiteSpace: 'nowrap', letterSpacing: '0.2px' }}>
+                   <span data-testid="summary-category-count" style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.58)', whiteSpace: 'nowrap', letterSpacing: '0.2px' }}>
                   {catCount} {catCount === 1 ? 'category' : 'categories'}
                 </span>
                 {/* Selected */}
@@ -3886,7 +3890,7 @@ function MobileFunctionalV3Inner() {
                   }}>
                     <Check size={9} color="rgba(255,255,255,0.92)" strokeWidth={2.5}/>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT, whiteSpace: 'nowrap' }}>
+                   <span data-testid="summary-selected-status" style={{ fontSize: 13, fontWeight: 500, color: SUMMARY_TEXT, whiteSpace: 'nowrap' }}>
                     {selectedCount} Selected
                   </span>
                 </div>
@@ -4094,7 +4098,7 @@ function MobileFunctionalV3Inner() {
                       display: 'grid',
                       gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
                       alignItems: 'center',
-                      padding: `8px ${CHECKLIST_RIGHT_INSET}px 8px 12px`,
+                       padding: `8px ${CATEGORY_WEIGHT_RIGHT_INSET}px 8px 12px`,
                       columnGap: 10,
                     }}>
                       {/* Col 1 — name + subtitle both inside the button so the
