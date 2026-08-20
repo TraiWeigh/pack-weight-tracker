@@ -6,22 +6,26 @@ Final status: REPLIT PASS / READY FOR USER IPHONE TEST
 USER status: PENDING physical iPhone Safari visual verification
 USER live-device evidence remains authoritative over Chromium and browser-review
 results. The initial physical iPhone check found the narrower shadow
-imperceptible; this corrected build has not yet received a new USER PASS.
+imperceptible. Correction #2 moves shadow rendering to a decorative sibling
+outside the transformed SwipeDeleteRow content layer; this build has not yet
+received a new USER PASS.
 
 SCOPE
 R0100 adds a cosmetic elevation effect to the colored category wedge surface on
 /mobile-functional-v3. Following the failed physical iPhone Safari visual
-check, the correction reuses the Bottom Box Groups bar's exact broad, soft,
+check, correction #1 reused the Bottom Box Groups bar's exact broad, soft,
 low-opacity shadow character, adapted toward the wedge's exposed right-hand
-point. The effect is attached to the clipped wedge button, so the shadow follows
-the angled point without changing the row's geometry or adding a new full-row
-shadow.
+point. After the shadow remained absent on iPhone Safari, correction #2 moved
+the visual shadow responsibility to a non-interactive decorative wedge sibling
+outside the transformed SwipeDeleteRow content layer.
 
 IMPLEMENTATION
-- Added `drop-shadow(3px 0 10px rgba(0,0,0,0.07))` to the active colored wedge
-  button. This preserves the Bottom Box Groups bar's exact 3px offset, 10px
-  blur, and 7% opacity while directing the shadow into the wedge point's exposed
-  white-content side instead of the row's vertically clipped bottom edge.
+- Correction #2: the real wedge button retains its existing clip path, size,
+  color, icon, and interaction behavior but no longer owns the filter.
+- Correction #2: a non-interactive sibling at the category-header wrapper level
+  owns `drop-shadow(3px 0 10px rgba(0,0,0,0.07))`, preserving the Bottom Box
+  Groups bar's exact 3px offset, 10px blur, and 7% opacity while keeping the
+  filter outside the transformed SwipeDeleteRow content layer.
 - Preserved the existing polygon clip path, 72px wedge width, row height,
   colors, icons, text, weights, and focus behavior.
 - Preserved the existing full-row elevation and did not add or change shadow
@@ -30,13 +34,12 @@ IMPLEMENTATION
 FACTS
 - Active route inspected: /mobile-functional-v3.
 - The colored category wedge is the clipped primary accordion trigger.
-- CSS filter drop-shadow is used rather than a box shadow so the angled wedge
-  point is included in the visible shadow. The effect remains subject to the
-  current category overflow clipping. Its horizontal offset puts the broad blur
-  in the available white-content area, where it remains visually apparent inside
-  the existing boundary.
-- The active wedge retains `boxShadow: 'none'`; its elevation is supplied only
-  by the clipped-shape filter.
+- CSS filter drop-shadow is used on the decorative clipped sibling rather than
+  the real button so the angled wedge point is included without asking Safari
+  to filter a button inside the transformed SwipeDeleteRow layer. The existing
+  category-row overflow remains unchanged.
+- The active wedge retains `boxShadow: 'none'` and `filter: 'none'`; the
+  decorative sibling supplies the elevation.
 
 PRESERVATION
 - R0097 shell preserved: YES.
@@ -74,8 +77,9 @@ THREE STANDING REPLIT QUESTIONS
    would help ChatGPT make future prompts more accurate or efficient?
    The active functional route uses a clipped 72px wedge button inside a 65px
    category row. The Bottom Box Groups bar's `0 -3px 10px rgba(0,0,0,0.07)`
-   is the existing elevation reference; the wedge uses the same offset magnitude,
-   blur, and opacity with a rightward offset toward its exposed angled point.
+   is the existing elevation reference; correction #2 uses the same offset
+   magnitude, blur, and opacity on a separate wedge-shaped sibling outside the
+   transformed swipe content layer.
 
 2. Was anything in this prompt unclear, unnecessary, technically risky, or better
    expressed another way for Replit Agent?

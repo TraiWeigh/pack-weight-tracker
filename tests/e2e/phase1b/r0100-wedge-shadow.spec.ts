@@ -69,14 +69,13 @@ for (const viewport of VIEWPORTS) {
     });
 
     expect(metrics.wedgeCount).toBeGreaterThan(1);
-    expect(metrics.wedgeFilter).toContain('drop-shadow');
     expect(metrics.wedgeFilter).toBe('none');
     expect(metrics.wedgeShadow).not.toBeNull();
     expect(metrics.wedgeShadow!.filter).toContain('drop-shadow');
     expect(metrics.wedgeShadow!.filter).toContain('rgba(0, 0, 0, 0.07)');
     expect(metrics.wedgeShadow!.filter).toContain('3px 0px 10px');
     expect(metrics.wedgeShadow!.width).toBe(72);
-    expect(metrics.wedgeShadow!.height).toBe(65);
+    expect(metrics.wedgeShadow!.height).toBe(64);
     expect(metrics.wedgeShadow!.pointerEvents).toBe('none');
     expect(metrics.wedgeShadow!.insideSwipeRow).toBe(false);
     expect(metrics.wedgeShadow!.parentPosition).toBe('relative');

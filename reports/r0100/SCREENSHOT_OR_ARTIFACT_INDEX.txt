@@ -16,6 +16,10 @@ TRAILWEIGH R0100 SCREENSHOT / ARTIFACT INDEX
    the angled point, retaining the Bottom Box Groups bar's broad, low-opacity
    elevation character.
 
+4. screenshots/04-decorative-sibling-shadow-402x714.jpg
+   Captured after correction #2. The shadow is now rendered by a non-interactive
+   wedge-shaped sibling outside the transformed SwipeDeleteRow content layer.
+
 Visual review note:
 The shadow is intentionally soft, broad, and low-opacity. Automated geometry
 checks confirm it does not change layout bounds or the 1px wedge rhythm. Physical
