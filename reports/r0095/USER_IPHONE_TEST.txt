@@ -1,0 +1,34 @@
+R0095 — KEVIN’S REAL IPHONE SAFARI ACCEPTANCE TEST
+
+R0094 was a USER FAIL. R0095 is ready for test but is not USER PASS until this real-iPhone
+check succeeds.
+
+1. Load /mobile-functional-v3 on the same iPhone/Safari path.
+   - Note the physical Y lines of the AppBar, List Summary, and Bottom Box Groups.
+
+2. Slow finger scroll checklist categories.
+   - Only category/list rows should move.
+   - AppBar, Summary, and Bottom Box Groups must stay on exactly the same physical screen
+     lines. They must not chase Safari controls.
+
+3. Fast flick, reverse scroll, and continued swiping while Safari controls compact/expand.
+   - Repeat the check in both directions.
+   - This is the critical R0095 acceptance behavior.
+
+4. Reach final content.
+   - Scroll to the final category/item.
+   - Confirm it fully clears above Bottom Box Groups; no hidden row and no giant blank tail.
+
+5. Long category.
+   - Open a category with many items.
+   - Confirm its existing bounded item area scrolls, the outer category list remains usable,
+     and neither interaction freezes the page.
+
+6. Interactions and preservation.
+   - Test category open/close, checkbox, swipe delete, Add Item, Locker, Summary, Add,
+     Search, Next/Back, and a footer-dependent deck.
+   - Confirm weights, Summary/AppBar horizontal layout, hamburger, wedges, row height, and
+     Bottom Box Groups design remain unchanged.
+
+Send a new recording if any TrailWeigh chrome moves, stating whether it begins on slow drag,
+fast flick, reverse movement, continued swipe, or Safari toolbar animation.

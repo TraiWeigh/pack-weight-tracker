@@ -1,0 +1,134 @@
+TRAILWEIGH — R0095 GS
+LOCK ALL MOBILE CHROME DURING SCROLL
+
+Agent mode used: POWER
+STATUS: REPLIT PASS / READY FOR USER IPHONE TEST — NOT USER PASS
+
+AUTHORITATIVE USER EVIDENCE
+The newest supplied recording,
+attached_assets/R0095_USER_IPHONE_SCROLL_CHROME_MOVEMENT_1787246097547.MP4,
+was watched across its full 7.476667-second duration (1206×2622, 60fps; full-duration
+frame sampling used for review).
+
+R0094 IS A USER FAIL. The newest real-iPhone Safari recording shows the broader problem:
+while the page scrolls and Safari browser controls change, the TrailWeigh AppBar/title,
+List Summary, and Bottom Box Groups all visibly move. Only checklist/category content
+should move. This real-device evidence outranks all prior Chromium and CSS-fixed results.
+
+R0094 CURRENT ARCHITECTURE — BEFORE R0095
+- Scroll owner: document/window. `main-scroll` was flow content with `overflow: visible`.
+- Root: normal document-flow mobile root with minimum viewport height.
+- AppBar: independent CSS fixed layer at top 0.
+- List Summary: independent CSS fixed layer at top 52.
+- Bottom Box Groups: independent fixed layer, top derived from
+  documentElement.clientHeight minus measured nav height.
+- Existing long-category item viewport: bounded internal overflow scroller.
+- Result: even without JavaScript scroll compensation, Safari’s document/page scroll path
+  could visibly move all three separate chrome layers with browser-chrome animation.
+
+FACTS
+- The latest iPhone recording shows all three chrome layers moving during normal page
+  scrolling; this is not only a footer problem.
+- Before R0095, the checklist used document scrolling and the three chrome layers were
+  positioned independently of an app shell.
+- The existing long-category item viewport is already intentionally bounded and scrollable.
+- Home already owns an internal `home-content-scroll` region.
+- No source path in the final R0095 shell listens to window/document/visualViewport scroll
+  to mutate chrome geometry.
+
+UNKNOWNS
+- Chromium cannot reproduce Safari’s browser-chrome compositor behavior.
+- The final iPhone result still requires Kevin’s slow-scroll, flick, reverse-scroll, and
+  continued-Safari-control-animation recording.
+
+ASSUMPTION
+- A route-scoped shell that prevents ordinary document motion and gives the checklist its
+  own middle scroll viewport isolates TrailWeigh chrome from Safari’s page-scroll movement.
+  This is structurally proven in Chromium and must be accepted on the real iPhone.
+
+ROOT CAUSE
+The core issue was scroll ownership, not one footer CSS declaration. The primary checklist
+used document/window scrolling, leaving the AppBar, Summary, and footer as independent
+fixed layers in Safari’s page viewport. Safari can change that page/visual geometry while
+browser controls animate, so every “fixed” chrome layer could appear to drift with the
+document despite stable Chromium rects.
+
+R0095 NEW SCROLL-OWNER ARCHITECTURE
+- The `/mobile-functional-v3` root is a fixed-height, overflow-hidden app shell sized from
+  the stable layout viewport height.
+- Route-scoped `html:has(.tw-v3-root)` and `body:has(.tw-v3-root)` overflow locking removes
+  whole-document checklist scrolling without changing global application behavior.
+- AppBar, List Summary, and Bottom Box Groups are absolute, non-scrolling children of that
+  shell. Their preserved coordinates at 402×714 are AppBar top 0px, Summary below the
+  52px AppBar, and Bottom Box Groups top 656px with 58px height.
+- `main-scroll` is the only ordinary checklist/category scroll owner: flexes between the
+  measured Summary and measured footer, uses `overflow-y:auto`, touch pan-y, and contained
+  overscroll.
+- The prior short-category pager and category-open alignment helper now update
+  `mainScrollRef.scrollTop`, never window/document scroll.
+- The bounded long-category item scroller is preserved; it remains an intentional nested
+  item viewport inside the outer checklist viewport.
+- Home is preserved with its pre-existing own internal content scroller.
+
+APPBAR / SUMMARY / FOOTER CONTAINMENT
+Layer                  Before R0095                         After R0095
+AppBar                 fixed page layer                      absolute child of fixed shell
+List Summary           fixed page layer                      absolute child of fixed shell
+Bottom Box Groups      fixed page layer, layout-top position absolute child of fixed shell
+Checklist categories   document/window scroll                main-scroll internal overflow
+Long category items    bounded internal overflow             unchanged bounded internal overflow
+Home content           internal overflow                     unchanged internal overflow
+
+DO DOCUMENT / ROOT SCROLL DURING CHECKLIST USE AFTER FIX?
+NO. Ordinary category/checklist use changes only `main-scroll.scrollTop`.
+
+DOES visualViewport SCROLL AFFECT CHROME GEOMETRY?
+NO application code updates chrome geometry from visualViewport scroll. Structural browser
+tests and direct dispatched visualViewport scroll checks showed no chrome mutation. This
+does not claim to simulate real Safari browser-chrome animation.
+
+AREAS DELIBERATELY UNCHANGED
+- Data, schema, auth, API, packages, deployment, category/item semantics, weights,
+  typography, colors, wedges, approved horizontal alignment, AppBar icon order/sizing,
+  drawer designs, Home visual design, swipe-to-delete, and long-category design.
+- The hamburger-panel future “stationary frame with interior scroller” redesign was not
+  added. The existing drawer remains otherwise unchanged.
+
+TEST RESULTS
+1. TrailWeigh package typecheck: PASS.
+2. R0095 focused shell suite: PASS — 6/6.
+3. Updated R0092/R0093/R0094 footer/alignment/resize suites plus viewport-safe: PASS — 31/31.
+4. R0091 header/Summary/nav, right-side inset, screen-efficiency: PASS — 12/12.
+5. Independent browser verification: PASS — stable shell, outer and long-category inner
+   scrolling, category accordion, checkbox, Locker, Summary, Add, Search, Next/Back,
+   decks, drawer, and Home internal scroll.
+6. A broad legacy interaction command reached 101 passing checks before the runner’s
+   five-minute cap ended the combined queue; no failure occurred before that cap.
+7. Standalone reorder feasibility test remains FAIL — 3 stale tests expect drag-handle
+   buttons that were intentionally removed in favor of long-press reorder before R0095.
+   This is a known pre-existing accessibility/test gap, not a R0095 regression.
+8. Final `git diff --check`: PASS.
+
+WORKSPACE-WIDE CHECK LIMITATION
+The configured full E2E workflow contains pre-existing unrelated suite failures (including
+the stale drag-handle checks and unrelated import/print/move/shared-item cases). The
+configured recursive workspace typecheck is blocked by pre-existing React ref typing
+errors in artifacts/mockup-sandbox. The changed TrailWeigh package typecheck passes.
+
+STANDING REPLIT QUESTIONS
+1. What did you learn?
+   The decisive boundary is scroll ownership. CSS-fixed layers can still be visually wrong
+   on real Safari if normal use scrolls the document. A stable app shell isolates chrome
+   only when ordinary content scroll is owned by a bounded internal region.
+
+2. Was anything unclear, unnecessary, risky, or better expressed another way?
+   The R0095 direction was clear and correctly prioritized physical stability over Safari
+   address-bar retraction. “Fixed” should always be stated as physical-screen behavior,
+   not a CSS property or Chromium rectangle. Scoped root locking carries nested-scroll risk,
+   so preserving and directly testing the existing long-category viewport was essential.
+
+3. What project detail helps future work?
+   Mobile V3 now intentionally has three scroll modes: outer checklist `main-scroll`,
+   bounded long-category item scrolling, and Home content scrolling. Do not reintroduce
+   document scrolling for ordinary checklist navigation; assert main scroll changes while
+   window/document/body remain zero, then validate the result on real iPhone Safari.

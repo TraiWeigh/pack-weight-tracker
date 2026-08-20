@@ -1155,7 +1155,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
       <div
         ref={ref}
         data-testid="bottom-nav"
-        data-footer-positioning="layout-top-static"
+        data-footer-positioning="shell-top-static"
         data-footer-layout-height={Math.round(layoutViewportHeight)}
         data-footer-stable-top={Math.round(stableTop)}
         onPointerDown={onPointerDown}
@@ -1164,14 +1164,12 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           if (justDraggedRef.current) { justDraggedRef.current = false; e.stopPropagation(); e.preventDefault(); }
         }}
         style={{
-          position: 'fixed',
-          left: 'max(0px, calc(50% - 215px))',
-          right: 'max(0px, calc(50% - 215px))',
-          // R0094: Safari's fixed bottom edge follows its changing visual viewport
-          // during browser-chrome animation. Match the AppBar/Summary's stable
-          // top-coordinate approach instead. `stableTop` comes from
-          // documentElement.clientHeight and only changes when that layout viewport
-          // itself changes (for example, orientation), never during scrolling.
+          left: 0,
+          right: 0,
+          // R0095: the non-scrolling checklist shell is the containing block.
+          // An absolute layer inside that shell cannot follow Safari's page chrome
+          // while only the checklist viewport scrolls.
+          position: 'absolute',
           top: stableTop,
           bottom: 'auto',
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
@@ -2734,8 +2732,10 @@ function MobileFunctionalV3Inner() {
       setTimeout(() => recalcCatOverflow(), 350);
       return;
     }
-    const pageH = window.innerHeight - 52 - summaryH - navHeight - BAR_PEEK_H - 44;
-    window.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
+    const listViewport = mainScrollRef.current;
+    if (!listViewport) return;
+    const pageH = listViewport.clientHeight - BAR_PEEK_H - 44;
+    listViewport.scrollBy({ top: dir === 'down' ? pageH : -pageH, behavior: 'smooth' });
   }, [isCatLong, summaryH, navHeight, recalcCatOverflow]);
 
   // R0076 repair: shared measurement helper — reads live DOM positions and updates
@@ -2786,12 +2786,14 @@ function MobileFunctionalV3Inner() {
       const catTop     = catEl.getBoundingClientRect().top;
       // delta = how far the category header top is from its target (summaryBtm)
       const delta  = catTop - summaryBtm;
-      const target = Math.max(0, window.scrollY + delta);
+      const listViewport = mainScrollRef.current;
+      if (!listViewport) return;
+      const target = Math.max(0, listViewport.scrollTop + delta);
 
       // Direct property assignment — guaranteed synchronous in all browsers.
       // ms.scrollTo({ behavior: 'instant' }) is NOT reliably synchronous in Chrome
       // (it queues a task like smooth scroll); ms.scrollTop = N is always instant.
-      document.documentElement.scrollTop = Math.max(0, target);
+      listViewport.scrollTop = target;
 
       // Second RAF: re-read the actual settled geometry and correct any sub-pixel residual.
       raf2 = requestAnimationFrame(() => {
@@ -2799,7 +2801,8 @@ function MobileFunctionalV3Inner() {
         const summaryBtm2 = summaryEl2 ? summaryEl2.getBoundingClientRect().bottom : summaryH;
         const residual    = catEl.getBoundingClientRect().top - summaryBtm2;
         if (Math.abs(residual) > 0.5) {
-          document.documentElement.scrollTop = Math.max(0, window.scrollY + residual);
+          const currentViewport = mainScrollRef.current;
+          if (currentViewport) currentViewport.scrollTop = Math.max(0, currentViewport.scrollTop + residual);
         }
         // Header is now exactly at summaryBtm — run long-mode measurement and lock.
         remeasureLongMode();
@@ -3702,13 +3705,20 @@ function MobileFunctionalV3Inner() {
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-      <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflow: 'hidden' }}>
       <div className="tw-v3-root" style={{
-        width: '100%', maxWidth: 430, minHeight: '100dvh',
-        // Reserve the stable measured bar so final content clears it at document bottom.
+        // R0095: app shell. It is deliberately fixed to the stable layout viewport
+        // so Safari page scrolling cannot carry the TrailWeigh chrome with it.
+        position: 'fixed', top: 0,
+        left: 'max(0px, calc(50% - 215px))',
+        right: 'max(0px, calc(50% - 215px))',
+        height: layoutViewportHeight, minHeight: 0,
+        // Reserve AppBar and Bottom Box Groups inside the shell. The List Summary's
+        // measured height becomes main-scroll's top margin below.
         paddingTop: 52, paddingBottom: bottomLayerOffset,
+        boxSizing: 'border-box',
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
-        fontFamily: SANS, position: 'relative', overflow: 'visible',
+        fontFamily: SANS, overflow: 'hidden',
       }}>
 
         {/* B6: hide webkit scrollbar chrome on marked scrollers (scrolling unaffected)
@@ -3728,14 +3738,12 @@ function MobileFunctionalV3Inner() {
           .tw-flat > div{border:none!important;border-radius:0!important;box-shadow:none!important}
           .tw-flat-ps > div > button:first-of-type{display:none!important}
           .tw-flat-wd > div > div:first-child > button:first-child{display:none!important}
-          /* R006 Part 5 — the app shell is pinned to the viewport: no page/body
-             rubber-band bounce, no blank area above/below the app. Only the
-             intended internal regions scroll. */
-           /* R0091: the checklist uses the document as its normal scroller so
-              iOS Safari can retract its address bar during a real swipe. */
-           html:has(.tw-v3-root){overscroll-behavior:none}
-           body:has(.tw-v3-root){overscroll-behavior:none}
-           .tw-v3-root{overscroll-behavior:none;min-height:100vh}
+           /* R0095: the checklist owns its scroll inside a stable app shell. Scope
+              the document lock to this route only; overlays and the existing nested
+              long-category item viewport keep their own intentional scrolling. */
+            html:has(.tw-v3-root),body:has(.tw-v3-root){
+              height:100%;overflow:hidden;overscroll-behavior:none}
+            .tw-v3-root{overscroll-behavior:none;min-height:100vh}
           /* R006 Part 6 — Trail palette dropdown: the flattened Weight
              Distribution panel must not clip the menu (the shared card ships
              overflow-hidden), and the menu is pinned to the panel's right edge
@@ -3778,10 +3786,10 @@ function MobileFunctionalV3Inner() {
 
         {/* ── APP BAR — R0082: hamburger added ── */}
            <div data-testid="app-bar" style={{
-          position: 'fixed',
+           position: 'absolute',
           top: 0,
-          left: 'max(0px, calc(50% - 215px))',
-          right: 'max(0px, calc(50% - 215px))',
+           left: 0,
+           right: 0,
           height: 52, background: HEADER_BG, borderBottom: `1px solid ${HEADER_BDR}`,
            display: 'flex', alignItems: 'center', padding: '0 8px', paddingRight: APPBAR_RIGHT_INSET, gap: 0,
           flexShrink: 0, zIndex: 10, overflow: 'hidden',
@@ -3859,13 +3867,13 @@ function MobileFunctionalV3Inner() {
         </div>
 
         {/* ── STATIONARY HEADER: INTEGRATED FILE IDENTITY + PACK SUMMARY BAR (B4) ── */}
-        {/* R0091: true fixed second layer directly below the AppBar. The matching
-            measured spacer is rendered at the start of main-scroll below. */}
+        {/* R0095: stable shell layer directly below the AppBar. main-scroll starts
+            after its measured height instead of relying on a document-flow spacer. */}
         <div ref={summaryRef} data-testid="list-summary-bar" style={{
-          position: 'fixed',
+          position: 'absolute',
           top: 52,
-          left: 'max(0px, calc(50% - 215px))',
-          right: 'max(0px, calc(50% - 215px))',
+          left: 0,
+          right: 0,
           zIndex: 9,
         }}>
 
@@ -3981,16 +3989,25 @@ function MobileFunctionalV3Inner() {
             if (!el || el.dataset.swipeKey !== openSwipe) setOpenSwipe(null);
           }}
           style={{
-             flex: '0 0 auto',
-             overflow: 'visible',
-             overflowX: 'clip', position: 'relative', scrollbarWidth: 'none',
+             // R0095: the only ordinary checklist/category scroll owner.
+             flex: '1 1 0',
+             minHeight: 0,
+             marginTop: summaryH,
+             overflowY: 'auto',
+             overflowX: 'hidden',
+             overscrollBehavior: 'contain',
+             WebkitOverflowScrolling: 'touch',
+             touchAction: 'pan-y',
+             position: 'relative',
+             scrollbarWidth: 'none',
           }}
         >
-          {/* Reserve the fixed Summary's measured height in document flow. */}
+          {/* Retained marker for diagnostics/tests. The scroll viewport itself now
+              begins below the measured Summary rather than consuming this spacer. */}
           <div
             aria-hidden="true"
             data-testid="list-summary-spacer"
-            style={{ height: summaryH }}
+            style={{ height: 0 }}
           />
 
           {/* R0085: the view toggle remains normal scrolling content below the

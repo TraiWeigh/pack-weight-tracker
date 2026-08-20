@@ -1,0 +1,47 @@
+R0095 BEFORE / AFTER METRICS
+
+BEFORE — R0094 CURRENT STATE
+Scroll owner: document/window.
+Window/document/body behavior: ordinary checklist use moved the page.
+AppBar/List Summary/Bottom Box Groups: independent fixed layers in Safari’s page viewport.
+Authoritative outcome: newest post-R0094 iPhone recording shows all three chrome layers
+visibly moving during scrolling/browser-chrome animation.
+
+AFTER — R0095 INTERNAL SHELL
+Scroll owner: main-scroll internal checklist viewport.
+Window/document/body during ordinary checklist use: zero.
+AppBar: absolute top child of fixed shell.
+List Summary: absolute second child of fixed shell.
+Bottom Box Groups: absolute bottom child of fixed shell at layout height minus 58px.
+Representative outer category rows: move with main-scroll.scrollTop.
+
+INDEPENDENT BROWSER METRICS — 402×714
+Representative added category: R0095 Metric H
+Main-scroll range: 394px
+
+State       main scrollTop   AppBar Y   Summary Y   Footer Y   Category row Y   window/doc/body
+Start 0%    0px              0px        73.375px    657px      985px            0 / 0 / 0
+Mid 35%     138px            0px        73.375px    657px      847px            0 / 0 / 0
+Deep 85%    335px            0px        73.375px    657px      650px            0 / 0 / 0
+Reverse 20% 79px             0px        73.375px    657px      906px            0 / 0 / 0
+
+Max chrome movement: 0px for AppBar, List Summary, and Bottom Box Groups across the
+measured internal-scroll states. Representative row movement: 335px from start to deep.
+
+FINAL CONTENT CLEARANCE
+- R0095 focused suite scrolls to bottom and verifies final category clears the footer.
+- Main content viewport ends at the footer top; no document-tail spacer is needed.
+- Browser verification found no clipping/overlap and confirmed final added category clears
+  the nav.
+
+PRESERVATION METRICS
+Metric                         Before R0095          After R0095
+AppBar height                  52px                  52px
+List Summary height            88–89px               88–89px
+Bottom Box Groups height       58px                  58px
+Category row height            64–65px               64–65px
+Weight-column right edge       width − 44px          width − 44px
+Root width at 402px            402px                 402px
+AppBar/Summary/footer order    preserved             preserved
+Outer scroll owner             document/window       main-scroll
+Long-category scroll owner    bounded item viewport  unchanged bounded item viewport

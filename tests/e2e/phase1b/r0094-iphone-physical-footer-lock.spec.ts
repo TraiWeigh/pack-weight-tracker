@@ -24,6 +24,7 @@ type FooterSnapshot = {
   innerHeight: number;
   visualHeight: number;
   scrollY: number;
+  mainScrollTop: number;
   rootPaddingBottom: number;
 };
 
@@ -49,22 +50,24 @@ async function footerSnapshot(page: import('@playwright/test').Page): Promise<Fo
       innerHeight: window.innerHeight,
       visualHeight: window.visualViewport?.height ?? window.innerHeight,
       scrollY: window.scrollY,
+      mainScrollTop: (document.querySelector('[data-testid="main-scroll"]') as HTMLElement).scrollTop,
       rootPaddingBottom: Number.parseFloat(getComputedStyle(root).paddingBottom),
     };
   });
 }
 
-async function scrollDocumentTo(page: import('@playwright/test').Page, fraction: number) {
+async function scrollChecklistTo(page: import('@playwright/test').Page, fraction: number) {
   await page.evaluate((targetFraction) => {
-    const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    window.scrollTo({ top: max * targetFraction, behavior: 'auto' });
+    const main = document.querySelector('[data-testid="main-scroll"]') as HTMLElement;
+    const max = Math.max(0, main.scrollHeight - main.clientHeight);
+    main.scrollTop = max * targetFraction;
   }, fraction);
   await page.waitForTimeout(100);
 }
 
 function expectLayoutTopFooter(snapshot: FooterSnapshot, expectedLayoutHeight: number) {
-  expect(snapshot.lockMode).toBe('layout-top-static');
-  expect(snapshot.position).toBe('fixed');
+  expect(snapshot.lockMode).toBe('shell-top-static');
+  expect(snapshot.position).toBe('absolute');
   expect(snapshot.topStyle).toBe(`${expectedLayoutHeight - 58}px`);
   expect(snapshot.authoredBottom).toBe('auto');
   expect(snapshot.transform).toBe('none');
@@ -92,7 +95,7 @@ test.describe('R0094 — physical-screen Bottom Box Groups lock', () => {
     });
   }
 
-  test('holds one Y coordinate through document scroll and visual-viewport scroll notifications', async ({ page, errors }) => {
+  test('holds one Y coordinate through checklist scroll and visual-viewport scroll notifications', async ({ page, errors }) => {
     await page.setViewportSize({ width: 402, height: 714 });
     await gotoDemo(page);
     for (const suffix of ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']) {
@@ -131,21 +134,21 @@ test.describe('R0094 — physical-screen Bottom Box Groups lock', () => {
     await page.waitForTimeout(100);
     const afterVisualViewportScroll = await footerSnapshot(page);
 
-    await scrollDocumentTo(page, 0.35);
+    await scrollChecklistTo(page, 0.35);
     const mid = await footerSnapshot(page);
     await page.screenshot({ path: 'screenshots/r0094-mid-scroll-402x714.png', fullPage: false });
 
-    await scrollDocumentTo(page, 0.85);
+    await scrollChecklistTo(page, 0.85);
     const deep = await footerSnapshot(page);
     await page.screenshot({ path: 'screenshots/r0094-deep-scroll-402x714.png', fullPage: false });
 
-    await scrollDocumentTo(page, 1);
+    await scrollChecklistTo(page, 1);
     const bottom = await footerSnapshot(page);
     const finalRowBottom = await page.locator('[data-cat="R0094 Physical H"]')
       .evaluate(element => element.getBoundingClientRect().bottom);
     await page.screenshot({ path: 'screenshots/r0094-bottom-of-list-402x714.png', fullPage: false });
 
-    await scrollDocumentTo(page, 0.2);
+    await scrollChecklistTo(page, 0.2);
     const reverse = await footerSnapshot(page);
     await page.screenshot({ path: 'screenshots/r0094-reverse-scroll-402x714.png', fullPage: false });
 
@@ -159,14 +162,15 @@ test.describe('R0094 — physical-screen Bottom Box Groups lock', () => {
     });
 
     const snapshots = [start, afterVisualViewportScroll, mid, deep, bottom, reverse];
-    expect(mid.scrollY).toBeGreaterThanOrEqual(100);
-    expect(deep.scrollY).toBeGreaterThan(mid.scrollY);
-    expect(bottom.scrollY).toBeGreaterThan(deep.scrollY);
-    expect(reverse.scrollY).toBeLessThan(bottom.scrollY);
+    expect(mid.mainScrollTop).toBeGreaterThanOrEqual(100);
+    expect(deep.mainScrollTop).toBeGreaterThan(mid.mainScrollTop);
+    expect(bottom.mainScrollTop).toBeGreaterThan(deep.mainScrollTop);
+    expect(reverse.mainScrollTop).toBeLessThan(bottom.mainScrollTop);
     for (const snapshot of snapshots) {
       expectLayoutTopFooter(snapshot, 714);
       expect(Math.abs(snapshot.top - start.top)).toBeLessThanOrEqual(1);
       expect(Math.abs(snapshot.bottom - start.bottom)).toBeLessThanOrEqual(1);
+      expect(snapshot.scrollY).toBe(0);
     }
     expect(mutationCount, 'scrolling and visualViewport scroll notifications must not mutate footer geometry').toBe(0);
     expect(finalRowBottom, 'the final category must clear the stationary footer').toBeLessThanOrEqual(bottom.top + 1);

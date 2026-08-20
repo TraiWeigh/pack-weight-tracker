@@ -1,0 +1,545 @@
+TRAILWEIGH — R0095 GS
+Gold Standard Replit Prompt
+LOCK ALL MOBILE CHROME DURING SCROLL
+AppBar + List Summary + Bottom Box Groups Stable
+Only Checklist/Category Region Scrolls
+
+REPLIT EXECUTION SETTINGS
+- Agent mode: POWER
+- App Testing: ON
+- Code Optimizations: OFF
+- Build mode, not Plan-only mode
+
+WHY POWER
+This is now a repeated real-iPhone Safari architecture problem that has survived several targeted fixed-position attempts. The newest iPhone evidence shows the issue is broader than the footer alone.
+
+WHY CODE OPTIMIZATIONS OFF
+This is a tightly scoped mobile scroll-architecture correction. Avoid unrelated refactoring.
+
+AUTHORITATIVE USER EVIDENCE
+This ZIP contains:
+
+R0095_USER_IPHONE_SCROLL_CHROME_MOVEMENT.MP4
+
+This is the newest actual iPhone Safari recording AFTER R0094.
+
+WATCH THE ENTIRE VIDEO BEFORE EDITING.
+
+AUTHORITATIVE USER RESULT
+R0094 = USER FAIL.
+
+The recording shows that during scrolling, TrailWeigh's screen chrome itself visibly shifts/moves as Safari browser chrome changes.
+
+This is not limited to the Bottom Box Groups.
+
+The user specifically reports:
+- the top AppBar/title bar moves during scrolling as seen in the video;
+- the Bottom Box Groups moves during scrolling;
+- the intended TrailWeigh chrome should remain visually stationary while only checklist/category content moves.
+
+USER live-device evidence outranks:
+- Replit PASS;
+- Chromium PASS;
+- CSS declarations such as `position: fixed`;
+- getBoundingClientRect results in Chromium;
+- source assumptions.
+
+PRIMARY USER INTENT
+TrailWeigh mobile should behave as a stable app shell.
+
+LOCKED / NON-SCROLLING CHROME:
+1. AppBar / title bar
+2. List Summary directly beneath AppBar
+3. Bottom Box Groups
+
+SCROLLING REGION:
+4. ONLY the checklist/category content between List Summary and Bottom Box Groups
+
+During ordinary finger scrolling:
+- AppBar must not shift;
+- List Summary must not shift;
+- Bottom Box Groups must not shift;
+- only checklist/category content moves.
+
+The three chrome layers must stay on the same physical screen lines even while Safari's own browser controls animate, compact, or expand.
+
+THIS IS THE ARCHITECTURAL DIRECTION
+R0095 should move away from relying on Safari document scrolling for the primary checklist.
+
+Preferred structure:
+
+NON-SCROLLING MOBILE SHELL
+- AppBar
+- List Summary
+- dedicated checklist scroll viewport
+- Bottom Box Groups
+
+The checklist/category region should own the vertical scroll.
+
+The page/document itself should not need to scroll during ordinary checklist use.
+
+This is the first task where a dedicated internal checklist scroller is the preferred solution, not merely a fallback.
+
+WHY
+Previous attempts tried:
+- scroll-reactive visualViewport footer compensation;
+- plain fixed bottom positioning;
+- stable top-coordinate footer positioning.
+
+Real iPhone Safari still showed chrome movement.
+
+The next robust approach is to isolate TrailWeigh chrome from document/Safari page scrolling.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. WATCH the included iPhone MP4 completely.
+2. Inspect CURRENT active `/mobile-functional-v3`.
+3. Read relevant `replit.md` / durable Safari guidance read-only.
+4. Inspect R0094 current implementation.
+5. Identify exact current scroll ownership:
+   - document/body;
+   - root;
+   - checklist region;
+   - long-category internal scrollers.
+6. Identify exact positioning/containing-block architecture of:
+   - AppBar;
+   - List Summary;
+   - Bottom Box Groups.
+7. Identify all JS/CSS that reacts to:
+   - window scroll;
+   - document scroll;
+   - visualViewport scroll;
+   - visualViewport resize;
+   - viewport height.
+8. Identify why all/chosen chrome layers visibly shift with Safari scroll-time browser UI.
+9. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS.
+10. State root cause before editing.
+11. Make the smallest architecture change that produces the required stable shell.
+
+TARGET STRUCTURE
+For `/mobile-functional-v3`, ordinary checklist use should behave like:
+
+APP SHELL — DOES NOT SCROLL
+- AppBar: fixed/stable
+- List Summary: fixed/stable
+- Checklist viewport: flexes to available middle space
+- Bottom Box Groups: fixed/stable
+
+CHECKLIST VIEWPORT
+- owns vertical scrolling;
+- contains category rows and checklist content;
+- scrolls independently of AppBar/Summary/Footer.
+
+Do not use whole-document vertical movement for normal category scrolling once R0095 is complete.
+
+APPBAR REQUIREMENTS
+Preserve:
+- current AppBar height;
+- current hamburger position;
+- current horizontal alignment;
+- current icon order;
+- current icon sizes;
+- current title/logo;
+- current right-side spacing.
+
+Change only what is necessary to keep its physical screen Y stable during checklist scroll.
+
+LIST SUMMARY REQUIREMENTS
+Preserve:
+- restored R0088 height/proportions;
+- current horizontal alignment;
+- current text sizes;
+- current icon/title/items structure;
+- current right-side alignment.
+
+It stays directly beneath the AppBar and does not move during checklist scroll.
+
+BOTTOM BOX GROUPS REQUIREMENTS
+Preserve:
+- 58px height;
+- current resting vertical spot;
+- current Next-chevron inset;
+- Locker / Summary / Add / Search / Next;
+- icons/labels;
+- horizontal group behavior.
+
+It remains visually stationary while checklist content scrolls.
+
+CHECKLIST SCROLL REGION REQUIREMENTS
+The middle region must:
+- begin immediately below List Summary;
+- end immediately above Bottom Box Groups;
+- use the available vertical space;
+- scroll smoothly with touch;
+- not move the three chrome layers;
+- preserve row widths/heights;
+- preserve wedge positions;
+- preserve weight-column position;
+- preserve category accordion behavior.
+
+LONG-CATEGORY BEHAVIOR
+TrailWeigh already has bounded long-category item scrolling/paging behavior.
+
+Do not break it.
+
+Nested-scroll behavior must remain intentional:
+- outer checklist region scrolls categories;
+- existing bounded long-category internal scroller works when active;
+- no freeze;
+- no impossible-to-escape scroll trap.
+
+CONTENT REACHABILITY
+Must ensure:
+- final category/item is fully reachable;
+- final content can clear Bottom Box Groups;
+- no content hidden under footer;
+- no unnecessary giant blank tail;
+- scroll-to-open behavior remains correct.
+
+SAFARI ADDRESS BAR TRADEOFF
+IMPORTANT:
+The user has explicitly prioritized stable TrailWeigh chrome over trying to force Safari address-bar collapse.
+
+Do not reject the internal scroller because it may reduce Safari's automatic address-bar retraction.
+
+A stable app-like interface is the priority.
+
+Do not spend this task trying to hide Safari's address bar.
+
+BODY / ROOT RULE
+Avoid whole-document scroll during normal checklist interaction.
+
+If needed:
+- lock document/root overflow for this route only;
+- but do NOT recreate the old global body-lock freeze bug.
+
+Any body/root lock must be:
+- scoped;
+- safe;
+- reversible;
+- compatible with drawers/modals;
+- compatible with long-category scrolling.
+
+Prefer shell sizing using stable layout dimensions rather than scroll-reactive Safari visualViewport movement.
+
+PHYSICAL-SCREEN ACCEPTANCE
+For the actual iPhone:
+
+During slow scroll, fast flick, reverse scroll, and continued swiping:
+- AppBar stays on exact same physical screen line;
+- List Summary stays on exact same physical screen line;
+- Bottom Box Groups stays on exact same physical screen line;
+- only checklist rows move.
+
+Safari browser UI may animate separately.
+TrailWeigh chrome must not chase it.
+
+PRESERVE CURRENT USER-APPROVED HORIZONTAL WORK
+Do NOT change:
+- weight-column right inset;
+- category weight alignment;
+- Summary horizontal alignment;
+- AppBar horizontal alignment;
+- hamburger location;
+- current right-side header spacing;
+- wedge geometry;
+- category row height;
+- app width.
+
+FUTURE FIX — DO NOT IMPLEMENT IN R0095
+The hamburger panel has a separate future requirement:
+- when open, its panel frame must not move during scrolling;
+- if content exceeds screen height, only its interior may scroll.
+
+DO NOT implement that in R0095 unless the shell change automatically fixes it with zero additional behavior changes.
+If it changes incidentally, document it, but do not broaden scope to redesign the hamburger panel.
+
+OTHER FUTURE ITEMS — DO NOT IMPLEMENT
+Do NOT mix in:
+- Filter control replacing Category / Location / Photo;
+- locked Filter control;
+- Photo mode;
+- wedge shadows;
+- color themes;
+- Android-only overrides;
+- PWA/standalone conversion;
+- address-bar hiding.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- data;
+- DB/schema;
+- auth;
+- packages/dependencies unless absolutely required and approved by existing project constraints;
+- publishing/deployment;
+- category semantics;
+- item semantics;
+- swipe-to-delete;
+- reorder;
+- Add Item behavior;
+- drawer designs;
+- Home visual design;
+- typography;
+- colors;
+- wedges;
+- weight calculations.
+
+HOME
+Inspect whether the same shell architecture affects Home.
+
+Do not regress Home.
+
+If Home already has its own internal scrolling model, preserve it unless a tiny shared-shell adjustment is necessary.
+
+TESTING
+Use App Testing.
+
+At minimum test:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+
+FOCUSED R0095 TESTS
+
+TEST 1 — SCROLL OWNERSHIP
+Verify ordinary category scrolling changes:
+- checklist scrollTop
+
+and does NOT change:
+- window.scrollY
+- documentElement.scrollTop
+- body scroll position
+except trivial/zero values.
+
+TEST 2 — APPBAR STABILITY
+Measure AppBar rect:
+- before scroll
+- mid-scroll
+- deep-scroll
+- reverse-scroll
+
+Max Y movement effectively zero except sub-pixel rounding.
+
+TEST 3 — LIST SUMMARY STABILITY
+Same measurements.
+Max Y movement effectively zero.
+
+TEST 4 — BOTTOM BOX GROUPS STABILITY
+Same measurements.
+Max Y movement effectively zero.
+
+TEST 5 — ONLY CHECKLIST MOVES
+Verify representative category row Y changes as scrollTop changes while all three chrome-layer Y coordinates remain constant.
+
+TEST 6 — CONTENT REACHABILITY
+Scroll to final content.
+Verify:
+- final content fully reachable;
+- not obscured by footer;
+- no giant spacer.
+
+TEST 7 — LONG CATEGORY
+Open/use a long category.
+Verify:
+- bounded internal item scroller works;
+- outer checklist scroller remains usable;
+- no body freeze;
+- no nested-scroll trap.
+
+TEST 8 — INTERACTIONS
+Verify:
+- category accordion open/close;
+- checkbox interactions;
+- swipe-to-delete;
+- reorder if covered by existing regression test;
+- Add Item;
+- Locker;
+- Summary;
+- Add;
+- Search;
+- Next;
+- drawers that depend on footer.
+
+TEST 9 — RESPONSIVE SAFETY
+At 360px width:
+- shell remains usable;
+- no horizontal overflow;
+- weights remain visible;
+- chrome heights unchanged unless existing responsive rules say otherwise.
+
+TEST 10 — SAFARI-STYLE HEIGHT CHANGE
+Where practical, test 402×714 and 402×754 as separate viewport heights.
+In each state:
+- shell should lay out correctly;
+- within that state, scrolling should not move chrome.
+
+Do not simulate continuous visualViewport animation and then claim that proves iPhone Safari behavior.
+
+REAL IPHONE LIMITATION
+Chromium cannot prove the real Safari behavior in the supplied recording.
+
+Therefore:
+REPLIT PASS != USER PASS.
+
+Final status:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Kevin's actual iPhone verification determines USER PASS.
+
+VISUAL ARTIFACTS
+At 402px capture:
+- start
+- mid-scroll
+- deep-scroll
+- reverse-scroll
+- bottom-of-list
+
+These should clearly show:
+- AppBar same Y
+- List Summary same Y
+- Bottom Box Groups same Y
+- category rows moved
+
+REQUIRED REPORT ZIP — PERMANENT REQUIREMENT
+Create and provide:
+
+R0095.zip
+
+IMPORTANT REPORT NAMING RULE
+For all future TrailWeigh reports, use only:
+R####.zip
+
+For this task:
+R0095.zip
+
+Do NOT name it:
+- trailweigh-R0095-report.zip
+- R0095-report.zip
+- anything else
+
+PROMPT ZIP naming remains separate and is already:
+R0095_GS.zip
+
+R0095.zip must contain at minimum:
+
+1. R0095_REPORT.txt
+Include:
+- R0095 GS
+- Agent mode used: POWER
+- acknowledgement newest iPhone MP4 was watched
+- description of movement observed
+- exact R0094 current architecture
+- FACTS / UNKNOWNS / ASSUMPTIONS
+- root cause
+- exact new scroll-owner architecture
+- exact AppBar/List Summary/Footer containment
+- whether document/root scrolls during checklist use after fix: YES/NO
+- whether visualViewport scroll affects chrome geometry: YES/NO
+- areas deliberately unchanged
+- exact tests and PASS/FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+- every changed file
+- reason
+- unexpected files explicitly identified
+
+3. TEST_RESULTS.txt
+- exact commands
+- suites
+- viewport sizes
+- pass/fail totals
+- scroll-owner verification
+- chrome movement metrics
+- blockers/failures
+- Chromium vs iPhone distinction
+
+4. BEFORE_AFTER_METRICS.txt
+Include:
+
+BEFORE:
+- scroll owner
+- window/document scroll behavior
+- AppBar Y
+- Summary Y
+- Footer Y
+- representative row Y
+
+AFTER:
+- scroll owner
+- window/document scroll behavior
+- AppBar Y at start/mid/deep/reverse
+- Summary Y at start/mid/deep/reverse
+- Footer Y at start/mid/deep/reverse
+- representative row movement
+- max chrome movement px
+- checklist scrollTop change
+- final-content clearance
+
+Preservation metrics:
+- AppBar height
+- Summary height
+- Footer height
+- category row height
+- weight-column right edge
+- root width
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to verify:
+- load checklist;
+- note AppBar/Summary/Footer positions;
+- slow finger scroll;
+- fast flick;
+- reverse scroll;
+- continued scrolling while Safari browser controls animate;
+- confirm all three TrailWeigh chrome layers stay on exact same physical screen lines;
+- confirm only checklist/category rows move;
+- scroll to final content;
+- confirm final item reachable;
+- test a long category;
+- confirm no freeze;
+- confirm current weights/header/Summary horizontal layout unchanged.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+List:
+- supplied iPhone MP4
+- start/mid/deep/reverse/bottom screenshots
+- traces/reports
+- any diagnostic artifacts
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state clearly.
+
+IF BLOCKED OR FAILED
+STILL create R0095.zip documenting the blocker/failure.
+
+THREE STANDING REPLIT QUESTIONS — PERMANENT REQUIREMENT
+Answer these in every TrailWeigh Replit report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+Watch the included newest iPhone recording first.
+Do not repeat R0092-R0094 failed viewport/fixed-position assumptions.
+Treat this as a shell/scroll-ownership problem.
+Find root cause first.
+Make the smallest robust architecture correction.
+Protect unrelated USER-PASS behavior.
+
+PERMANENT TRAILWEIGH CONVENTIONS
+- Prompt ZIP: R####_GS.zip
+- Replit report ZIP: R####.zip
+- Every prompt requires a report ZIP
+- Every report answers the three standing Replit questions
+- User live-device evidence outranks Replit/Chromium PASS

@@ -454,7 +454,7 @@ test.describe('R0090/R0091 — bottom nav & safe-area CSS', () => {
     expect(errors.pageErrors).toEqual([]);
   });
 
-  test('document flow scrolls through window instead of the main-scroll div', async ({ page, errors }) => {
+  test('checklist flow scrolls through the main-scroll div instead of the document', async ({ page, errors }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await gotoDemo(page);
     for (let i = 0; i < 5; i++) {
@@ -467,21 +467,25 @@ test.describe('R0090/R0091 — bottom nav & safe-area CSS', () => {
 
     const initial = await page.evaluate(() => ({
       scrollY: window.scrollY,
-      documentHeight: document.documentElement.scrollHeight,
-      viewportHeight: window.innerHeight,
+      documentScrollTop: document.documentElement.scrollTop,
       mainOverflowY: getComputedStyle(document.querySelector('[data-testid="main-scroll"]')!).overflowY,
     }));
-    expect(initial.documentHeight, 'document must be taller than the viewport').toBeGreaterThan(initial.viewportHeight);
-    expect(initial.mainOverflowY, 'main-scroll must not be the primary scroller').not.toBe('auto');
+    expect(initial.documentScrollTop, 'document must start stationary').toBe(0);
+    expect(initial.mainOverflowY, 'main-scroll must be the primary scroller').toBe('auto');
 
-    await page.evaluate(() => window.scrollBy(0, 180));
+    await page.evaluate(() => {
+      const main = document.querySelector('[data-testid="main-scroll"]') as HTMLElement;
+      main.scrollTop += 180;
+    });
     await page.waitForTimeout(50);
     const after = await page.evaluate(() => ({
       scrollY: window.scrollY,
+      documentScrollTop: document.documentElement.scrollTop,
       mainScrollTop: document.querySelector('[data-testid="main-scroll"]')?.scrollTop ?? -1,
     }));
-    expect(after.scrollY, 'window scrollY must change during document scrolling').toBeGreaterThan(0);
-    expect(after.mainScrollTop, 'main-scroll must remain stationary').toBe(0);
+    expect(after.scrollY, 'window must remain stationary during checklist scrolling').toBe(0);
+    expect(after.documentScrollTop, 'document must remain stationary during checklist scrolling').toBe(0);
+    expect(after.mainScrollTop, 'main-scroll must own checklist scrolling').toBeGreaterThan(0);
     expect(errors.pageErrors).toEqual([]);
   });
 

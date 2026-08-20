@@ -30,4 +30,4 @@
 - [Master List Phase 2 — UI screen](master-list-phase2.md) — layout clearance, toast timing, getCategoryTheme(name,index), putMasterItemAndPhoto 6-arg signature, WriteResult.message not .error.
 - [Fixed-layer row counting](fixed-layer-row-counting.md) — use a 1px tolerance at fractional fixed-layer edges so a visibly complete row border is not classified as clipped.
 - [Checklist right-gutter rule](checklist-right-gutter.md) — real iPhone evidence needs separate general, deep-weight, and AppBar insets; preserve the Summary’s flex budget.
-- [Mobile visual-viewport anchoring](mobile-visual-viewport-anchoring.md) — keep native Safari document scroll, but share the live layout-to-visual viewport gap across fixed bottom layers and content clearance.
+- [Mobile visual-viewport anchoring](mobile-visual-viewport-anchoring.md) — physical Safari chrome stability requires a scoped internal-scroll shell, not document-scrolled fixed layers.

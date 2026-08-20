@@ -1,0 +1,52 @@
+R0095 TEST RESULTS
+
+COMMANDS AND RESULTS
+1. pnpm --filter @workspace/pack-checklist run typecheck
+   PASS
+
+2. pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts --workers=1 --project=chromium
+   PASS — 6 passed, 0 failed
+   - 402×714, 402×754, 390×844, 360×800.
+   - Root fixed/hidden; main-scroll auto; window/document/body zero.
+   - AppBar/Summary/footer stable through start/mid/deep/reverse/bottom.
+   - Representative category moves, final content clears footer.
+   - Bottom Box Groups Next/Back/Add works.
+
+3. pnpm exec playwright test r0092 r0093 r0094 viewport-safe suites --workers=1 --project=chromium
+   PASS — 31 passed, 0 failed
+   - Preserved horizontal geometry and header/footer sizes.
+   - Updated legacy regression coverage now verifies internal checklist scroll ownership.
+   - Bounded long-category item scroller and Home internal scroller pass.
+
+4. pnpm exec playwright test r0091-header-summary-nav right-side-inset screen-efficiency suites --workers=1 --project=chromium
+   PASS — 12 passed, 0 failed
+
+5. Independent browser verification at 402×714
+   PASS
+   - App shell/root fixed and hidden; main-scroll auto between summary/footer.
+   - Added categories, real outer wheel scrolling, bounded inner item scrolling.
+   - Accordion, checkbox, Locker, Summary, Add, Search, Next/Back, decks, drawer, and
+     Home all worked.
+   - No app-console errors; expected Clerk development-key warning only.
+
+SCROLL-OWNER VERIFICATION
+- main-scroll.scrollTop changes: YES.
+- window.scrollY changes during ordinary checklist scroll: NO; remains 0.
+- documentElement.scrollTop changes: NO; remains 0.
+- body.scrollTop changes: NO; remains 0.
+- Existing long-category item scroll changes: YES; it remains separate from outer scroll.
+- Home internal content scroll changes: YES; global page remains zero.
+
+BLOCKERS / FAILURES
+- The separate reorder feasibility suite fails 3 stale drag-handle expectations. The
+  handles were intentionally removed earlier in favor of long-press reorder; this is not
+  caused by R0095.
+- A combined 108-test legacy interaction command reached 101 passes before the five-minute
+  command cap ended the queue. No test failed before that cap.
+- Full configured e2e/typecheck workflows remain blocked by unrelated historical suites and
+  mockup-sandbox type errors respectively.
+
+CHROMIUM VS IPHONE
+Chromium proves source structure, scroll ownership, and visual regression behavior. It does
+not prove Safari browser-chrome compositing. The supplied newest iPhone recording is the
+authority for the R0094 USER FAIL; Kevin’s new iPhone recording decides R0095 USER PASS.

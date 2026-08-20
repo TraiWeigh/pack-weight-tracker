@@ -1,0 +1,48 @@
+R0095 CHANGED FILES
+
+PRODUCT SOURCE
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Replaces document-scrolled checklist behavior with a route-scoped fixed app shell and
+  dedicated `main-scroll` middle viewport. AppBar/Summary/Bottom Box Groups are stable
+  absolute shell layers. Redirects short-category scrolling and open-category positioning
+  from window/document offsets to mainScrollRef. Preserves existing bounded item and Home
+  scrollers.
+
+TESTS
+- tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts
+  New focused R0095 shell, scroll-owner, chrome-position, row-movement, clearance,
+  responsive-size, screenshot, and footer-control suite.
+- tests/e2e/phase1b/r0092-bottom-lock-alignment.spec.ts
+  Preserves protected horizontal geometry while updating the footer assertion and scroll
+  lifecycle from document scroll to internal checklist scroll.
+- tests/e2e/phase1b/r0093-true-bottom-lock.spec.ts
+  Preserves nav geometry/mutation/clearance coverage under the R0095 shell.
+- tests/e2e/phase1b/r0094-iphone-physical-footer-lock.spec.ts
+  Preserves layout resize and visualViewport-event regression coverage under the shell.
+- tests/e2e/phase1b/viewport-safe.spec.ts
+  Replaces obsolete document-scroll expectation with main-scroll ownership verification.
+
+DURABLE GUIDANCE
+- .agents/memory/MEMORY.md
+- .agents/memory/mobile-visual-viewport-anchoring.md
+  Corrects the durable mobile Safari rule: use a scoped internal-scroll shell where
+  physical chrome stability is required.
+
+R0095 REPORT / EVIDENCE
+- reports/r0095/R0095_REPORT.txt
+- reports/r0095/CHANGED_FILES.txt
+- reports/r0095/TEST_RESULTS.txt
+- reports/r0095/BEFORE_AFTER_METRICS.txt
+- reports/r0095/USER_IPHONE_TEST.txt
+- reports/r0095/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- screenshots/r0095-start-402x714.png
+- screenshots/r0095-mid-scroll-402x714.png
+- screenshots/r0095-deep-scroll-402x714.png
+- screenshots/r0095-reverse-scroll-402x714.png
+- screenshots/r0095-bottom-of-list-402x714.png
+
+UNEXPECTED / GENERATED FILES
+- playwright-report/index.html is regenerated automatically by Playwright and is not a
+  product-source change.
+- R0095.zip is the requested delivery archive.
+- User-supplied R0095 prompt and MP4 are included unchanged in R0095.zip.

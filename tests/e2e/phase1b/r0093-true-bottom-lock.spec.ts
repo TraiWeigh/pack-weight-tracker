@@ -2,8 +2,8 @@
  * R0093 — true Bottom Box Groups lock.
  *
  * The real iPhone Safari video is authoritative. Chromium proves the structural
- * invariants only: document content scrolls while the footer has no scroll-driven
- * positioning mutation and stays at its fixed resting position.
+ * invariants only: checklist content scrolls inside the R0095 shell while the footer
+ * has no scroll-driven positioning mutation and stays at its resting position.
  */
 import { test, expect, addCategory, expectClean, gotoDemo } from '../helpers/trailweigh';
 
@@ -20,6 +20,7 @@ type FooterSnapshot = {
   layoutViewportHeight: number;
   stableTop: number;
   scrollY: number;
+  mainScrollTop: number;
   rootPaddingBottom: string;
   mainScrollOverflowY: string;
 };
@@ -44,6 +45,7 @@ async function footerSnapshot(page: import('@playwright/test').Page): Promise<Fo
       layoutViewportHeight: Number(nav.getAttribute('data-footer-layout-height') ?? '0'),
       stableTop: Number(nav.getAttribute('data-footer-stable-top') ?? '0'),
       scrollY: window.scrollY,
+      mainScrollTop: mainScroll.scrollTop,
       rootPaddingBottom: getComputedStyle(root).paddingBottom,
       mainScrollOverflowY: getComputedStyle(mainScroll).overflowY,
     };
@@ -58,10 +60,11 @@ async function rectBottom(page: import('@playwright/test').Page, selector: strin
   return page.locator(selector).evaluate(element => element.getBoundingClientRect().bottom);
 }
 
-async function scrollDocumentTo(page: import('@playwright/test').Page, fraction: number) {
+async function scrollChecklistTo(page: import('@playwright/test').Page, fraction: number) {
   await page.evaluate((targetFraction) => {
-    const max = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    window.scrollTo({ top: max * targetFraction, behavior: 'auto' });
+    const main = document.querySelector('[data-testid="main-scroll"]') as HTMLElement;
+    const max = Math.max(0, main.scrollHeight - main.clientHeight);
+    main.scrollTop = max * targetFraction;
   }, fraction);
   await page.waitForTimeout(90);
 }
@@ -84,8 +87,8 @@ test.describe('R0093 — true fixed Bottom Box Groups lock', () => {
       const categoryCountRight = await rectRight(page, '[data-testid="summary-category-count"]');
       const selectedRight = await rectRight(page, '[data-testid="summary-selected-status"]');
 
-      expect(nav.lockMode).toBe('layout-top-static');
-      expect(nav.position).toBe('fixed');
+      expect(nav.lockMode).toBe('shell-top-static');
+      expect(nav.position).toBe('absolute');
       expect(nav.topStyle).toBe(`${viewport.height - 58}px`);
       expect(nav.authoredBottom).toBe('auto');
       expect(nav.transform).toBe('none');
@@ -111,7 +114,7 @@ test.describe('R0093 — true fixed Bottom Box Groups lock', () => {
     });
   }
 
-  test('does not mutate or move the footer through a full document-scroll lifecycle', async ({ page, errors }) => {
+  test('does not mutate or move the footer through a full checklist-scroll lifecycle', async ({ page, errors }) => {
     await page.setViewportSize({ width: 402, height: 714 });
     await gotoDemo(page);
 
@@ -141,20 +144,20 @@ test.describe('R0093 — true fixed Bottom Box Groups lock', () => {
     const initial = await footerSnapshot(page);
     await page.screenshot({ path: 'screenshots/r0093-before-scroll-402x714.png', fullPage: false });
 
-    await scrollDocumentTo(page, 0.35);
+    await scrollChecklistTo(page, 0.35);
     const mid = await footerSnapshot(page);
     await page.screenshot({ path: 'screenshots/r0093-mid-scroll-402x714.png', fullPage: false });
 
-    await scrollDocumentTo(page, 0.85);
+    await scrollChecklistTo(page, 0.85);
     const deep = await footerSnapshot(page);
     await page.screenshot({ path: 'screenshots/r0093-deep-scroll-402x714.png', fullPage: false });
 
-    await scrollDocumentTo(page, 1);
+    await scrollChecklistTo(page, 1);
     const final = await footerSnapshot(page);
     const finalRowBottom = await rectBottom(page, '[data-cat="R0093 Scroll H"]');
     await page.screenshot({ path: 'screenshots/r0093-after-scroll-402x714.png', fullPage: false });
 
-    await scrollDocumentTo(page, 0.2);
+    await scrollChecklistTo(page, 0.2);
     const returned = await footerSnapshot(page);
     const mutationCount = await page.evaluate(() => {
       const testWindow = window as typeof window & {
@@ -166,20 +169,21 @@ test.describe('R0093 — true fixed Bottom Box Groups lock', () => {
     });
 
     const snapshots = [initial, mid, deep, final, returned];
-    expect(mid.scrollY).toBeGreaterThanOrEqual(100);
-    expect(deep.scrollY).toBeGreaterThan(mid.scrollY);
-    expect(final.scrollY).toBeGreaterThan(deep.scrollY);
-    expect(returned.scrollY).toBeLessThan(final.scrollY);
+    expect(mid.mainScrollTop).toBeGreaterThanOrEqual(100);
+    expect(deep.mainScrollTop).toBeGreaterThan(mid.mainScrollTop);
+    expect(final.mainScrollTop).toBeGreaterThan(deep.mainScrollTop);
+    expect(returned.mainScrollTop).toBeLessThan(final.mainScrollTop);
     for (const snapshot of snapshots) {
-      expect(snapshot.position).toBe('fixed');
+      expect(snapshot.position).toBe('absolute');
       expect(snapshot.topStyle).toBe(`${initial.top}px`);
       expect(snapshot.authoredBottom).toBe('auto');
       expect(snapshot.transform).toBe('none');
-      expect(snapshot.lockMode).toBe('layout-top-static');
+      expect(snapshot.lockMode).toBe('shell-top-static');
       expect(snapshot.layoutViewportHeight).toBe(initial.layoutViewportHeight);
       expect(snapshot.stableTop).toBe(initial.stableTop);
       expect(Number.parseFloat(snapshot.rootPaddingBottom)).toBeGreaterThanOrEqual(snapshot.height);
-      expect(snapshot.mainScrollOverflowY).toBe('visible');
+      expect(snapshot.mainScrollOverflowY).toBe('auto');
+      expect(snapshot.scrollY).toBe(0);
       expect(Math.abs(snapshot.top - initial.top)).toBeLessThanOrEqual(1);
       expect(Math.abs(snapshot.bottom - initial.bottom)).toBeLessThanOrEqual(1);
     }

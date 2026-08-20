@@ -1,0 +1,37 @@
+R0095 SCREENSHOT / ARTIFACT INDEX
+
+AUTHORITATIVE USER INPUTS
+- attached_assets/R0095_USER_IPHONE_SCROLL_CHROME_MOVEMENT_1787246097547.MP4
+  Newest real-iPhone post-R0094 USER FAIL evidence; watched before R0095 editing.
+- attached_assets/R0095_GS_PROMPT_1787246097547.txt
+  R0095 Gold Standard requirements.
+
+R0095 CHROMIUM STRUCTURAL SCREENSHOTS — 402×714
+- screenshots/r0095-start-402x714.png
+  Baseline shell: AppBar, Summary, main checklist, and footer.
+- screenshots/r0095-mid-scroll-402x714.png
+  Checklist moved through internal main-scroll; chrome remains in place.
+- screenshots/r0095-deep-scroll-402x714.png
+  Deep internal checklist state; shell chrome remains in place.
+- screenshots/r0095-reverse-scroll-402x714.png
+  Reverse internal checklist state; shell chrome remains in place.
+- screenshots/r0095-bottom-of-list-402x714.png
+  Final category clearance above Bottom Box Groups.
+
+INDEPENDENT BROWSER EVIDENCE
+- pr2tdc: baseline fixed shell.
+- kpqo39: deep outer checklist scroll.
+- 6znynn: expanded long category with bounded item scroller.
+- 4lg4up: hamburger drawer open.
+- xre218: Home internally scrolled while global page stayed fixed.
+
+PLAYWRIGHT ARTIFACTS
+- tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts
+  Focused R0095 shell/scroll-owner/geometry evidence.
+- playwright-report/index.html
+  Generated Playwright report; retry traces, when Playwright creates them, reside under
+  test-results/ and are not needed for passing focused runs.
+
+STANDARD REPLIT USAGE SCREENSHOT
+Unavailable. This package includes the supplied actual iPhone MP4 and five required
+Chromium structural screenshots instead.
