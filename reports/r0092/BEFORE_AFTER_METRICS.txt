@@ -1,0 +1,70 @@
+R0092 BEFORE / AFTER METRICS
+
+All geometry below uses CSS-pixel measurements in the 402×714 Chromium regression
+viewport unless stated otherwise. Kevin's real iPhone screenshot remains authoritative.
+
+MASTER ALIGNMENT
+Metric                                      Before R0092        After R0092
+Viewport width                              402px               402px
+Representative weight/unit right edge       358px               358px
+Terminal AppBar box right edge              386px               358px
+Summary "6 categories" right edge           368px               358px
+Summary "16 Selected" right edge            368px               358px
+Terminal box delta to master                +28px               0px
+Category count delta to master              +10px               0px
+Selected delta to master                    +10px               0px
+
+APPBAR
+Metric                                      Before R0092        After R0092
+AppBar width / height                        402px / 52px        402px / 52px
+Hamburger bounds                             x=8..52             x=8..52
+Non-hamburger group bounds                   x=52..386           x=52..358
+Group master-line boundary shift             n/a                  -28px at right boundary
+Logo/title and identity icon sizes/order     preserved            preserved
+Inter-icon gap                               0px                 0px
+Terminal box right edge                      386px               358px
+
+The whole non-hamburger AppBar region remains one structural group after the protected
+hamburger. The task's phrase "checkbox icon" is ambiguous: literal alignment of the
+left title checkmark to x=358 would overlap the unchanged hamburger. The terminal
+right-side box icon is therefore the measured master anchor.
+
+LIST SUMMARY
+Metric                                      Before R0092        After R0092
+Summary width / height                       402px / 88.25px     402px / 88.25px
+Category count right edge                    368px               358px
+Selected status right edge                   368px               358px
+Alignment delta to master                    +10px               0px
+Vertical padding                             10px / 12px         10px / 12px
+Center/down chevron                          unchanged            unchanged
+
+CATEGORY WEIGHTS — PRESERVED
+Metric                                      Before R0092        After R0092
+Weight/unit right edge                       358px               358px
+Effective right inset                        44px                44px
+Wrapping                                     nowrap              nowrap
+Category row / wedge                         64px / 72px         64px / 72px
+
+BOTTOM BOX GROUPS / SCROLL LOCK
+Metric                                      Before R0092        After R0092
+Bar width / height                           402px / 58px        402px / 58px
+Bar rect before scroll                       x=0..402, y=656..714  x=0..402, y=656..714
+Bar rect after document scroll               could appear to move on iPhone  x=0..402, y=656..714 (Chromium)
+Normal browser-verifier scroll amount        n/a                  0px → 134px
+Focused-test document scroll range           n/a                  >50px confirmed
+Configured visual viewport bottom gap        none                 live-measured; 0px in Chromium
+Root content bottom reservation              58px                nav height + visual viewport gap
+Final category clearance                     unverified           row bottom ≤ bar top + 1px
+
+The visual-viewport bottom gap is computed live as:
+max(0, window.innerHeight - (visualViewport.offsetTop + visualViewport.height)).
+At normal Chromium dimensions it is 0px, preserving the existing visual spot. On a
+Safari state where visualViewport is shorter or offset, the same measured gap moves the
+bar, content reservation, and raised decks together to the usable viewport edge.
+
+RESPONSIVE SAFETY
+Viewport       Master delta   Weight inset   AppBar h   Summary h   Bottom bar h
+402×714        0px            44px           52px       88.25px    58px
+402×754        0px            44px           52px       88.25px    58px
+390×844        0px            44px           52px       88.25px    58px
+360×800        0px            44px           52px       88.25px    58px

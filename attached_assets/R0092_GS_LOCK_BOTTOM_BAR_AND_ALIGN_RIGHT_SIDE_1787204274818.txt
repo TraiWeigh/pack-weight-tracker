@@ -1,0 +1,467 @@
+TRAILWEIGH — R0092 GS
+Gold Standard Replit Prompt
+Lock Bottom Box Groups + Align Header/Summary to Weight-Column "g" Line
+
+AUTHORITATIVE USER EVIDENCE
+This ZIP contains:
+
+R0092_USER_IPHONE_EVIDENCE.png
+
+This is an actual iPhone screenshot from Kevin after the latest right-side refinements.
+
+Treat this screenshot as AUTHORITATIVE USER evidence.
+
+USER live-device evidence outranks:
+- Replit reports;
+- source assumptions;
+- Chromium screenshots;
+- Playwright PASS;
+- computed geometry that does not match what the user actually sees.
+
+CURRENT USER ASSESSMENT
+
+WHAT IS GOOD AND MUST BE PRESERVED
+1. CATEGORY WEIGHT COLUMN
+The current weight-column position is good.
+
+DO NOT move the weight column.
+
+The visible "g" at the right edge of the weight values is now the MASTER HORIZONTAL ALIGNMENT REFERENCE for the right-side alignment work below.
+
+2. BOTTOM BOX GROUPS VERTICAL SPOT
+The bottom bar is currently in a good vertical position.
+
+DO NOT raise or lower it as part of this task.
+
+The problem is that it MOVES during scrolling.
+
+R0092 must preserve its current good visual spot while locking it to the visual viewport so checklist/category scrolling cannot move it.
+
+PRIMARY GOALS
+
+GOAL A — LOCK THE BOTTOM BOX GROUPS
+Keep the Bottom Box Groups exactly where it currently sits visually, but prevent it from moving during document/category scrolling.
+
+Requirements:
+- preserve current vertical placement;
+- preserve current height;
+- preserve current width;
+- preserve current internal icon/label layout;
+- preserve current Next-chevron right-side spacing;
+- preserve current group/slide behavior;
+- bar must not travel with checklist/category content;
+- page/content must reserve enough space below the scrolling content so the last row/item is not hidden behind the locked bar;
+- the bar should remain correctly positioned as Safari's usable visual viewport changes.
+
+Do NOT solve this by:
+- reintroducing a body lock;
+- freezing the document;
+- using overflow:hidden on the main page;
+- breaking native vertical scrolling;
+- breaking Safari toolbar behavior;
+- changing the overall app height.
+
+Use the smallest safe fixed/visual-viewport-aware strategy supported by the current architecture.
+
+GOAL B — ALIGN HEADER + SUMMARY TO THE WEIGHT-COLUMN "g" LINE
+
+IMPORTANT INTERPRETATION
+The user does NOT want only the box icon moved by itself.
+
+On the title bar/AppBar:
+- the hamburger stays where it is;
+- EVERYTHING TO THE RIGHT OF THE HAMBURGER must shift together as ONE GROUP.
+
+That group includes:
+- the box/checkbox TrailWeigh icon;
+- the TrailWeigh title;
+- all right-side AppBar icons.
+
+Do not individually reposition those children unless necessary for preserving internal spacing after the group moves.
+
+MASTER ALIGNMENT LINE
+Use the existing current weight-column "g" right edge as the reference line.
+
+Align these to that same visual vertical line:
+
+1. the box/checkbox icon on the title bar;
+2. "13 categories";
+3. "29 Selected".
+
+The weight column itself must remain unchanged.
+
+HEADER / APPBAR REQUIREMENT
+
+HAMBURGER
+- stays anchored exactly where it currently is;
+- no horizontal movement unless a sub-pixel/flex normalization is unavoidable and documented.
+
+NON-HAMBURGER HEADER GROUP
+Shift the entire group to the right of the hamburger as ONE unit.
+
+This includes:
+- checkbox/box TrailWeigh icon;
+- TrailWeigh title;
+- right-side header icons.
+
+The box/checkbox icon must line up horizontally with the weight-column "g" reference line according to the user's visual intent.
+
+Because moving the whole group affects the right side, Replit must:
+- measure the available width;
+- preserve all icons;
+- preserve icon sizes;
+- preserve icon order;
+- avoid clipping;
+- reduce internal gap(s) only if required to keep the group inside the viewport;
+- do not hide or remove controls.
+
+Do NOT:
+- move just the box icon independently;
+- shrink the whole AppBar;
+- scale the group;
+- alter AppBar height;
+- move the hamburger with the group.
+
+LIST SUMMARY REQUIREMENT
+Use the same weight-column "g" reference line.
+
+Align:
+- "13 categories";
+- "29 Selected";
+
+to that exact same right-side visual line.
+
+The user specifically wants "Selected" lined up with "categories", and both aligned to the same master line used by the weight-column "g".
+
+Preserve:
+- R0088 restored Summary height;
+- current vertical padding;
+- font sizes;
+- text hierarchy;
+- center/down chevron;
+- left icon/title/Items structure;
+- fixed position.
+
+Do NOT compact the Summary.
+Do NOT change its height.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. Inspect the CURRENT active rendered mobile implementation.
+2. Read relevant replit.md/project guidance read-only.
+3. Confirm current R0090/R0091 weight position is still present.
+4. Confirm current Bottom Box Groups position/height/spacing.
+5. Inspect whether Bottom Box Groups is:
+   - truly position:fixed;
+   - sticky;
+   - inside a moving ancestor;
+   - translated by JS;
+   - tied to document scroll;
+   - tied to visualViewport;
+   - affected by transformed ancestors.
+6. Find the ROOT CAUSE of why the bottom bar moves during scrolling before editing.
+7. Measure the current horizontal geometry for:
+   - hamburger;
+   - non-hamburger AppBar group;
+   - box/checkbox icon;
+   - "13 categories";
+   - "29 Selected";
+   - representative weight-column "g" right edge.
+8. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS
+9. Make the smallest reversible patch.
+
+DO NOT GUESS
+Do not use arbitrary offsets without first measuring the current geometry.
+
+Do not assume a generic 24/34/44px gutter is sufficient.
+The alignment target is now the actual current weight-column "g" line.
+
+BOTTOM BAR ROOT-CAUSE CHECKS
+Specifically inspect for:
+- fixed element inside a transformed ancestor;
+- parent translate/transform;
+- containing block created by transform/filter/perspective;
+- document/root scrolling vs internal scroller ownership;
+- visualViewport event handling;
+- position calculations based on clientHeight instead of visualViewport.height;
+- CSS bottom value overridden during scroll;
+- JS scroll handler modifying translate/top/bottom;
+- sticky behavior instead of fixed behavior.
+
+Do not change unrelated viewport architecture unless root cause requires it.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- current weight-column horizontal position;
+- app shell width;
+- viewport meta;
+- category row height;
+- wedge width/shape/position;
+- wedge colors/icons/shadows;
+- List Summary height;
+- List Summary vertical padding;
+- AppBar height;
+- Bottom Box Groups height;
+- Bottom Box Groups visual vertical spot;
+- Next-chevron spacing unless needed only to preserve its existing good position;
+- Home hero;
+- checklist semantics;
+- long-category bounded scrolling behavior;
+- drawers;
+- gestures;
+- swipe-to-delete;
+- reorder;
+- Add Item;
+- category/item accordion behavior;
+- data;
+- DB/schema;
+- auth;
+- packages/dependencies;
+- publishing/deployment.
+
+FUTURE ITEMS — DO NOT IMPLEMENT
+Do NOT mix in:
+- future Filter control replacing Category / Location / Photo;
+- locking the future Filter control;
+- Photo mode;
+- wedge shadows;
+- color themes;
+- Android-only layout variants;
+- Safari/PWA/browser-chrome redesign.
+
+ANDROID / RESPONSIVE SAFETY
+Do not create Android-specific code.
+
+Test at minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+
+If alignment must adapt on narrower screens, use width-responsive spacing while preserving the 402px iPhone target.
+
+VISUAL ACCEPTANCE — 402PX IPHONE REFERENCE
+
+BOTTOM BAR
+- remains at the same good vertical position seen now;
+- does not move when checklist/category content scrolls;
+- remains visible and stable;
+- does not cover the last row/item because content reserves bottom space;
+- no jump when Safari visual viewport changes;
+- no body/document scroll lock regression.
+
+HEADER
+- hamburger remains in its current position;
+- entire non-hamburger header group moves together;
+- box/checkbox icon aligns with the master weight-column "g" line;
+- TrailWeigh title and right-side icons maintain proper internal spacing;
+- no icon clips;
+- no icon disappears;
+- AppBar height unchanged.
+
+LIST SUMMARY
+- "13 categories" and "29 Selected" share the same alignment line;
+- that line matches the weight-column "g" line;
+- both fully visible;
+- Summary height unchanged;
+- no vertical compaction.
+
+WEIGHTS
+- remain exactly in their current good position;
+- units remain fully visible;
+- no wrapping;
+- no movement toward or away from the edge.
+
+PLAYWRIGHT / AUTOMATED VERIFICATION
+
+BOTTOM BAR
+1. Scroll the checklist/document significantly.
+2. Capture Bottom Box Groups rect before scroll.
+3. Capture rect during/after scroll.
+4. Verify viewport-relative top/bottom position remains stable within a small tolerance.
+5. Verify content scroll position changes while bar position does not.
+6. Verify last row/item can still scroll above the locked bar.
+7. Verify no body freeze.
+8. Verify long-category scrolling remains functional.
+
+HEADER / SUMMARY / WEIGHTS
+9. Root/app width unchanged.
+10. AppBar height unchanged.
+11. Hamburger bounds unchanged.
+12. Non-hamburger header group shifted as one group.
+13. Box/checkbox icon alignment matches master weight "g" line within a small visual tolerance.
+14. "13 categories" alignment matches master line.
+15. "29 Selected" alignment matches master line.
+16. Weight-column "g" right edge remains unchanged from current baseline.
+17. No header icon clipping.
+18. No horizontal overflow.
+19. List Summary height unchanged.
+20. Category row height unchanged.
+21. Bottom bar height unchanged.
+
+BEFORE / AFTER METRICS REQUIRED
+
+MASTER ALIGNMENT
+Report:
+- viewport width;
+- representative weight-column "g" right edge X coordinate;
+- box/checkbox icon alignment coordinate BEFORE/AFTER;
+- "13 categories" alignment coordinate BEFORE/AFTER;
+- "29 Selected" alignment coordinate BEFORE/AFTER;
+- alignment delta to master line BEFORE/AFTER for all three.
+
+APPBAR
+Report:
+- hamburger left/right bounds BEFORE/AFTER;
+- non-hamburger group left/right bounds BEFORE/AFTER;
+- group shift amount;
+- internal gaps BEFORE/AFTER if changed;
+- rightmost AppBar icon right edge BEFORE/AFTER.
+
+BOTTOM BAR
+Report:
+- bar top/bottom BEFORE scroll;
+- bar top/bottom AFTER scroll;
+- scroll amount;
+- viewport height during each measurement;
+- bar height;
+- effective bottom clearance;
+- content bottom padding/reservation BEFORE/AFTER;
+- exact root cause of prior movement.
+
+LIST SUMMARY
+Report:
+- Summary height BEFORE/AFTER;
+- right-side text coordinates BEFORE/AFTER;
+- alignment delta to master line.
+
+WEIGHTS
+Report:
+- representative weight "g" right edge BEFORE/AFTER;
+- prove the weight-column position stayed effectively unchanged.
+
+VISUAL ARTIFACTS
+Create screenshots at 402px that show:
+- full AppBar;
+- full List Summary;
+- representative rows with weights;
+- full Bottom Box Groups.
+
+Also create a before-scroll and after-scroll screenshot or trace proving the bottom bar remains locked while content moves.
+
+Compare against:
+R0092_USER_IPHONE_EVIDENCE.png
+
+Chromium screenshots are regression aids only.
+Do not claim they replace real iPhone verification.
+
+PASS STANDARD
+REPLIT PASS requires:
+
+- current weight-column position preserved;
+- Bottom Box Groups stays at same good visual vertical spot;
+- Bottom Box Groups no longer moves with checklist/category scroll;
+- no scroll freeze;
+- last content remains reachable above locked bar;
+- hamburger remains fixed in place;
+- entire non-hamburger AppBar content shifts together;
+- box/checkbox icon aligns with weight-column "g" line;
+- "13 categories" aligns with same line;
+- "29 Selected" aligns with same line;
+- AppBar height unchanged;
+- Summary height unchanged;
+- Bottom bar height unchanged;
+- no horizontal overflow;
+- no clipping;
+- typecheck and focused Playwright pass;
+- 360px responsive safety verified;
+- report and artifacts complete.
+
+Label:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Do NOT call it USER PASS.
+
+Kevin's actual iPhone test is final.
+
+REQUIRED ZIP REPORT
+Create and provide:
+
+trailweigh-R0092-report.zip
+
+It must contain at minimum:
+
+1. R0092_REPORT.txt
+- R0092 GS
+- branch / commit / checkpoint
+- current-state findings
+- root cause of bottom-bar movement
+- exact lock/fixed-position correction
+- exact header-group shift method
+- exact master alignment coordinate
+- exact Summary alignment changes
+- proof weight position preserved
+- areas deliberately unchanged
+- commands / exact PASS-FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+- every changed file;
+- reason for each;
+- unexpected files explicitly identified.
+
+3. TEST_RESULTS.txt
+- exact commands;
+- suites;
+- PASS/FAIL totals;
+- Chromium vs real-device distinction;
+- blockers if any.
+
+4. BEFORE_AFTER_METRICS.txt
+Include all required geometry and scroll-lock metrics above.
+
+5. USER_IPHONE_TEST.txt
+Ask Kevin to verify:
+- bottom bar stays locked during scrolling;
+- bottom bar remains in same good vertical spot;
+- hamburger did not move;
+- entire remaining title-bar group shifted together;
+- box/checkbox icon lines up with weight-column "g";
+- "13 categories" aligns with weight-column "g";
+- "29 Selected" aligns with weight-column "g";
+- weight column stayed where it was;
+- no header icon clipping;
+- Summary height unchanged;
+- last content still reachable above bottom bar.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- before/after AppBar/Summary screenshots;
+- before-scroll/after-scroll bottom-bar screenshots or trace;
+- test artifacts;
+- included user evidence reference.
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state that clearly.
+
+If blocked or failed, STILL create trailweigh-R0092-report.zip documenting the blocker.
+
+THREE STANDING QUESTIONS FOR REPLIT
+Answer in the report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+Use the included iPhone screenshot as the authoritative visual reference.
+Find root cause before editing.
+Make the smallest reversible patch.
+Protect every unrelated USER-PASS behavior.

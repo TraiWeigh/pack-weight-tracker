@@ -308,3 +308,10 @@ uri = "file://trailweigh-R0091-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0091 report"
 description = "Header, Summary alignment, and Bottom Next refinement report with authoritative iPhone evidence, exact before/after metrics, final screenshots, and test results."
+
+[[outputs]]
+id = "cMA5mbtvA5FcovZtKejAF"
+uri = "file://trailweigh-R0092-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0092 report"
+description = "Bottom Box Groups visual-viewport lock, right-side master-line alignment, Chromium regression screenshots, exact metrics, tests, and Kevin’s iPhone verification checklist."

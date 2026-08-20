@@ -1,0 +1,105 @@
+TRAILWEIGH — R0092 GS
+Lock Bottom Box Groups + Align Header/Summary to Weight-Column Master Line
+
+STATUS: REPLIT PASS / READY FOR USER IPHONE TEST — NOT USER PASS
+
+AUTHORITATIVE EVIDENCE
+The attached R0092_USER_IPHONE_EVIDENCE image is real iPhone evidence from Kevin.
+It outranks Chromium measurements and automated PASS results. Chromium evidence in
+this archive is regression coverage only; Kevin's live iPhone Safari review is final.
+
+BRANCH / COMMIT / CHECKPOINT
+Branch: main
+Current HEAD before R0092 working-tree changes: 3c60e72
+R0088 Summary restoration, R0090 category-weight placement, and R0091 Bottom Next
+clearance are preserved.
+
+CURRENT-STATE FINDINGS
+FACTS
+- The Bottom Box Groups was already `position: fixed`, with preserved 58px height and
+  normal document scrolling intentionally enabled for Safari address-bar retraction.
+- It was not sticky, was not inside a transformed/filter/perspective ancestor, and no
+  checklist scroll handler was changing its top, bottom, or transform.
+- The current implementation had no visualViewport listener or layout-to-visual viewport
+  bottom compensation.
+- The approved category weight/unit right edge remains 44px inside the 402px shell:
+  x=358px. Before R0092, Summary metrics ended at x=368px and the terminal AppBar
+  box icon container ended at x=386px.
+
+UNKNOWNS
+- The evidence screenshot alone cannot expose the exact live iPhone layout-versus-visual
+  viewport delta while Safari browser chrome is animating.
+- The TrailWeigh checkmark beside the title is intentionally left of the unchanged
+  hamburger. It cannot literally share a far-right x-coordinate with the weight "g"
+  without overlapping that protected hamburger target and clipping the title/icon row.
+
+ROOT CAUSE OF PRIOR BOTTOM-BAR MOVEMENT
+The bar was fixed only to `bottom: 0` in the layout viewport. Safari can expose a
+shorter/offset visual viewport while its browser chrome changes; without compensating
+for that measured bottom gap, a layout-fixed layer can appear to travel relative to the
+usable viewport even though no React scroll handler moves it.
+
+SMALLEST COHERENT FIX
+- Measure `window.innerHeight - (visualViewport.offsetTop + visualViewport.height)`
+  on window and visualViewport resize/scroll events.
+- Use that measured gap as the fixed Bottom Box Groups bottom offset. It is 0 in normal
+  Chromium/desktop conditions and becomes active only when Safari exposes a shorter or
+  offset usable viewport.
+- Add the same offset to the root content bottom reservation and every raised deck's
+  bottom offset, so final content, decks, and the fixed bar remain synchronized.
+- Retain native document scroll; no body lock, overflow:hidden main-page lock, viewport
+  metadata change, or app-height redesign was introduced.
+- Use the preserved category-weight unit edge (x=358px at 402px) as the shared right-side
+  master line: Summary category/Selected text and the terminal AppBar box icon now end
+  on that line. The whole non-hamburger AppBar content remains one structural group
+  bounded by the master line; its icon order, sizes, and label group remain intact.
+
+HEADER-ANCHOR INTERPRETATION
+The prompt refers to a "box/checkbox" AppBar icon, while the visual TrailWeigh checkmark
+is located immediately after the protected left hamburger. The feasible far-right master
+anchor is the terminal moving-box identity icon, not the left title checkmark. R0092
+therefore aligns the structural non-hamburger group and that terminal box to the weight
+unit edge. This preserves all header controls and is specifically included in Kevin's
+real-iPhone verification checklist.
+
+AREAS DELIBERATELY UNCHANGED
+- App shell width, viewport meta, native document scrolling, Safari/browser-chrome design,
+  AppBar height, hamburger hit target, title/icon sizes/order, and Bottom Next spacing.
+- R0088 Summary height/vertical padding, Summary tile, count hierarchy, and center/down
+  chevron.
+- R0090 category-weight position and 44px right inset, category row density, wedges,
+  colors, shadows, drawer, gestures, swipe-to-delete, reorder, Add Item, accordions,
+  Home, data, DB/schema, auth, packages, deployment, and workflows.
+- No Filter, Photo mode, theme, Android-specific code, or Safari/PWA redesign.
+
+TEST RESULTS
+- R0092 focused suite: 5 passed, 0 failed.
+- Existing R0091/right-inset/Summary/viewport regression suites: 25 passed, 0 failed.
+- Browser-level normal-UI verification after adding four categories: PASS. ScrollY moved
+  from 0 to 134px; the footer rect remained stable; final content cleared the footer;
+  hamburger and visible Next navigation worked; no app console errors were observed.
+- TrailWeigh package typecheck: PASS.
+- Final `git diff --check`: PASS.
+
+All automated/browser results are Chromium regression checks. They do not replace a
+real-iPhone visual pass.
+
+STANDING QUESTIONS FOR REPLIT
+1. What did this task teach us?
+   The checklist intentionally relies on document scrolling for Safari toolbar behavior,
+   so a stable bottom layer must be based on the difference between the live visual
+   viewport and layout viewport. Any content reservation and bottom-raised deck must use
+   the same measured offset as the bar.
+
+2. Was anything unclear, unnecessary, technically risky, or better expressed another way?
+   "Align the checkbox icon" is ambiguous because the visible TrailWeigh checkmark sits
+   by the protected hamburger, not on the right-side master line. Asking for the
+   "terminal AppBar box icon/right edge of the non-hamburger group" would make the
+   intended measurable target unambiguous. The real iPhone screenshot remains necessary
+   to judge the final visual interpretation.
+
+3. What Replit/project detail helps future work?
+   Run focused Playwright commands while the managed web workflow is already running;
+   the configured Playwright server intentionally refuses to cold-start Vite. Vite HMR
+   served this change during validation. Generated Playwright report files can change
+   during normal test runs and are non-product output.

@@ -1,0 +1,36 @@
+R0092 — KEVIN'S IPHONE SAFARI TEST
+
+Please test the real iPhone Safari build. This is the final acceptance step; Chromium
+screenshots and Playwright passes do not replace it.
+
+1. Open the list and scroll the checklist normally, including a long list or category.
+   - Bottom Box Groups should stay locked in its current good vertical position.
+   - It must not travel with checklist/category content.
+   - Safari toolbar/address-bar changes should not cause a noticeable jump.
+
+2. Scroll to the end of the list.
+   - The last category/item must be reachable completely above the fixed Bottom Box Groups.
+   - Native vertical scrolling must remain natural; no frozen page/body behavior.
+
+3. Inspect the title bar.
+   - Hamburger must remain exactly where it was.
+   - TrailWeigh title and all identity icons must remain visible, ordered, and unclipped.
+   - Confirm whether the terminal box icon/right edge of the non-hamburger header group
+     visually aligns with the approved category weight "g" line.
+   - Note: the visible TrailWeigh checkmark next to the title remains by the hamburger;
+     it was not moved across the header, because that would overlap protected controls.
+
+4. Inspect the List Summary and weights.
+   - "13 categories" and "29 Selected" should share a right edge.
+   - That right edge should match the category weight "g" line.
+   - The category weight column itself must remain in its approved R0090 position.
+   - Summary height, padding, tile, item count, and center/down chevron must feel unchanged.
+
+5. Inspect Bottom Box Groups controls.
+   - Height, width, labels, icons, group slide/swipe behavior, and Next chevron spacing
+     should remain unchanged.
+   - Tap Next and use the other visible controls normally.
+
+Please report any Safari-only movement, jump, clipping, changed weight position, footer
+overlap, or header alignment that looks wrong. Do not mark R0092 as USER PASS until this
+real-device review is confirmed.

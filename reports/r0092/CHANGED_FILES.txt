@@ -1,0 +1,37 @@
+R0092 CHANGED FILES
+
+PRODUCT / TEST SOURCE
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Added a measured visual-viewport bottom offset shared by Bottom Box Groups, document
+  content reservation, and raised decks; aligned AppBar terminal box/Summary metrics to
+  the preserved category-weight master line.
+
+- tests/e2e/phase1b/r0092-bottom-lock-alignment.spec.ts
+  Added focused master-line, protected-geometry, visual-viewport-offset, native document
+  scroll, final-content-clearance, narrow-width, and screenshot coverage.
+
+REPORT ARTIFACTS
+- reports/r0092/R0092_REPORT.txt
+- reports/r0092/CHANGED_FILES.txt
+- reports/r0092/TEST_RESULTS.txt
+- reports/r0092/BEFORE_AFTER_METRICS.txt
+- reports/r0092/USER_IPHONE_TEST.txt
+- reports/r0092/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+  Required R0092 evidence and user-test documentation.
+
+- screenshots/r0092-before-402x714.jpg
+- screenshots/r0092-after-402x714.jpg
+- screenshots/r0092-master-line-402x714.png
+- screenshots/r0092-before-scroll-402x714.png
+- screenshots/r0092-after-scroll-402x714.png
+  Chromium regression screenshots; not substitutes for the attached real-iPhone evidence.
+
+NON-PRODUCT GENERATED OUTPUT
+- playwright-report/index.html
+- test-results/.last-run.json
+  Updated automatically by Playwright runs. These files contain no product behavior change.
+
+USER-SUPPLIED INPUTS
+- attached_assets/R0092_GS_LOCK_BOTTOM_BAR_AND_ALIGN_RIGHT_SIDE_1787204274818.txt
+- attached_assets/R0092_USER_IPHONE_EVIDENCE_1787204274818.png
+  Supplied evidence/instructions, not modified by this task.

@@ -1,0 +1,37 @@
+R0092 SCREENSHOT / ARTIFACT INDEX
+
+AUTHORITATIVE USER EVIDENCE (outside this report directory)
+- attached_assets/R0092_USER_IPHONE_EVIDENCE_1787204274818.png
+  Real iPhone Safari screenshot from Kevin. This is the final visual authority.
+
+CHROMIUM REGRESSION SCREENSHOTS
+- screenshots/r0092-before-402x714.jpg
+  Current pre-R0092 rendered 402×714 reference captured before the source patch.
+
+- screenshots/r0092-after-402x714.jpg
+  Post-patch 402×714 rendered top-of-list view, including AppBar, List Summary,
+  representative category weights, and Bottom Box Groups.
+
+- screenshots/r0092-master-line-402x714.png
+  Focused Playwright evidence of master-line AppBar/Summary/weight alignment at 402×714.
+
+- screenshots/r0092-before-scroll-402x714.png
+  Playwright capture immediately before normal document scroll with four added categories.
+
+- screenshots/r0092-after-scroll-402x714.png
+  Playwright capture after normal document scroll. The final category is above the fixed
+  Bottom Box Groups while earlier content has moved.
+
+BROWSER-LEVEL INTERACTION EVIDENCE
+- Chromium verifier screenshot IDs: jou6sq (final content above stable footer),
+  gnvepu (Next advanced to the following control group).
+- Browser verifier result: PASS after normal Add → Add Category setup.
+
+TEST ARTIFACTS
+- tests/e2e/phase1b/r0092-bottom-lock-alignment.spec.ts
+- reports/r0092/TEST_RESULTS.txt
+- reports/r0092/BEFORE_AFTER_METRICS.txt
+
+STANDARD REPLIT USAGE SCREENSHOT
+Unavailable. The attached authoritative iPhone screenshot and the saved Chromium
+regression screenshots are included/referenced instead.

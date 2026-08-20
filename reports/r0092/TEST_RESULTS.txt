@@ -1,0 +1,32 @@
+R0092 TEST RESULTS
+
+COMMANDS
+1. pnpm --filter @workspace/pack-checklist run typecheck
+   PASS
+
+2. pnpm exec playwright test tests/e2e/phase1b/r0092-bottom-lock-alignment.spec.ts --workers=1 --project=chromium
+   PASS — 5 passed, 0 failed
+
+3. pnpm exec playwright test tests/e2e/phase1b/r0091-header-summary-nav.spec.ts tests/e2e/phase1b/right-side-inset.spec.ts tests/e2e/phase1b/screen-efficiency.spec.ts tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
+   PASS — 25 passed, 0 failed
+
+4. Browser verification with normal visible UI at 402×714
+   PASS — created four normal categories through Add → Add Category; document scrolled
+   from scrollY 0 to 134; Bottom Box Groups rect stayed stable; final category cleared
+   the footer; hamburger opened its drawer; visible Next advanced the footer group.
+
+5. git diff --check
+   PASS
+
+SCOPE OF THESE RESULTS
+- Playwright and browser verification used Chromium. They verify layout invariants,
+  document scrolling, normal UI interaction, and no overflow/error regression.
+- They do not reproduce real iPhone Safari browser chrome or replace user evidence.
+- Final status is therefore REPLIT PASS / READY FOR USER IPHONE TEST, not USER PASS.
+
+BLOCKERS
+None for the requested R0092 source, tests, screenshots, or report package.
+
+NOTE
+The workspace-wide typecheck workflow remains unrelatedly blocked by existing
+mockup-sandbox React/ref type errors. The changed TrailWeigh package typecheck passed.

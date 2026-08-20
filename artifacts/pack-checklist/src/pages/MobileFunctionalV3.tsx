@@ -181,7 +181,9 @@ const CHECKLIST_ROW_H = 64;
 // preserves the 402px shell, full-width row backgrounds, and left wedges.
 const CHECKLIST_RIGHT_INSET = 34;
 const CATEGORY_WEIGHT_RIGHT_INSET = 44;
-const APPBAR_RIGHT_INSET = 16;
+// R0092: the preserved category-weight unit edge is the mobile right-side
+// master line. The AppBar's terminal box icon and Summary metrics share it.
+const APPBAR_RIGHT_INSET = CATEGORY_WEIGHT_RIGHT_INSET;
 
 // ─── TOKENS ─────────────────────────────────────────────────────────────────────
 // R004 Part 3 — Inter Variable primary; former SERIF surfaces keep their weight/size
@@ -945,6 +947,8 @@ interface BoxGroupBarProps {
   onSave:    () => void;
   onShare:   () => void;
   onMore:    () => void;
+  /** R0092: layout-viewport space below Safari's usable visual viewport. */
+  visualViewportBottomOffset: number;
   /** R0085 — exposes settle() so the parent can auto-switch to the Edit group on data mutations. */
   groupControlRef?: React.MutableRefObject<{ switchGroup: (idx: number) => void } | null>;
 }
@@ -1018,6 +1022,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
       onUndo, onRedo, onReset,
       onCamera, onPhotos, onPreview,
       onSave, onShare, onMore,
+      visualViewportBottomOffset,
     } = props;
 
     const [groupIdx, setGroupIdx]   = useState(0);
@@ -1149,6 +1154,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
       <div
         ref={ref}
         data-testid="bottom-nav"
+        data-visual-viewport-bottom-offset={visualViewportBottomOffset}
         onPointerDown={onPointerDown}
         onClickCapture={e => {
           // Swallow the synthetic click that immediately follows a drag-end gesture
@@ -1158,7 +1164,10 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           position: 'fixed',
           left: 'max(0px, calc(50% - 215px))',
           right: 'max(0px, calc(50% - 215px))',
-          bottom: 0,
+          // R0092: Safari can expose a visual viewport shorter than its layout
+          // viewport while browser chrome animates. Keep this fixed layer at the
+          // usable viewport edge without changing the document scroll model.
+          bottom: visualViewportBottomOffset,
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
@@ -2048,6 +2057,37 @@ function MobileFunctionalV3Inner() {
   //    deck/backdrop bottom offset. Tracks safe-area inset growth via ResizeObserver.
   const [navHeight, setNavHeight] = useState(NAV_H);
   const navRoRef = useRef<ResizeObserver | null>(null);
+  // R0092: iOS Safari's document scroll is intentionally left native so its
+  // browser chrome can retract. `position: fixed; bottom: 0` is otherwise tied
+  // to the layout viewport on affected Safari states, causing the bar to travel
+  // relative to the usable visual viewport. This is the measured gap between
+  // those two viewport bottoms; zero in normal Chromium and regular desktop use.
+  const [visualViewportBottomOffset, setVisualViewportBottomOffset] = useState(0);
+  const bottomLayerOffset = navHeight + visualViewportBottomOffset;
+
+  useEffect(() => {
+    const update = () => {
+      const visualViewport = window.visualViewport;
+      const visualBottom = visualViewport
+        ? visualViewport.offsetTop + visualViewport.height
+        : window.innerHeight;
+      const next = Math.max(0, Math.round((window.innerHeight - visualBottom) * 100) / 100);
+      setVisualViewportBottomOffset(previous => previous === next ? previous : next);
+    };
+
+    update();
+    const visualViewport = window.visualViewport;
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, { passive: true });
+    visualViewport?.addEventListener('resize', update);
+    visualViewport?.addEventListener('scroll', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update);
+      visualViewport?.removeEventListener('resize', update);
+      visualViewport?.removeEventListener('scroll', update);
+    };
+  }, []);
 
   // R0075: measured List Summary bar height — fixed second layer below the AppBar.
   // The matching spacer in the document flow preserves category geometry.
@@ -3661,7 +3701,9 @@ function MobileFunctionalV3Inner() {
       <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflowX: 'hidden' }}>
       <div className="tw-v3-root" style={{
         width: '100%', maxWidth: 430, minHeight: '100dvh',
-        paddingTop: 52, paddingBottom: navHeight,
+        // Reserve both the measured bar and any Safari layout→visual viewport
+        // gap, so final content can clear the locked bar at document bottom.
+        paddingTop: 52, paddingBottom: bottomLayerOffset,
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
         fontFamily: SANS, position: 'relative', overflow: 'visible',
       }}>
@@ -3758,48 +3800,57 @@ function MobileFunctionalV3Inner() {
             <Menu size={22} color={NAV_ACTIVE} strokeWidth={2}/>
           </button>
           {/* Logo + wordmark */}
-           <div data-testid="appbar-logo-group" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 0 }}>
-            <LogoMark size={24}/>
-            <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
-              TrailWeigh
-            </span>
-          </div>
-          {/* R007 §13 — six decorative identity icons: one consistent family
-              (Lucide), TrailWeigh green, even spacing, no text labels, no
-              navigation action, no horizontal overflow. Flex: 1 distributes
-              the remaining header width evenly across all six icons. */}
           <div
-             data-testid="appbar-icon-group"
-            aria-hidden="true"
+             data-testid="appbar-nonhamburger-group"
             style={{
               flex: 1, display: 'flex', alignItems: 'center',
-              justifyContent: 'flex-end', gap: 0, minWidth: 0,
-              paddingLeft: 8,
+               minWidth: 0,
             }}
           >
-            {([
-              [Backpack, 'Backpack'],
-              [Train,    'Train'],
-              [Plane,    'Plane'],
-              [Ship,     'Boat / Cruise ship'],
-              [Car,      'Car'],
-              [Package,  'Moving box'],
-            ] as [React.ComponentType<{ size: number; color: string; strokeWidth: number }>, string][]).map(
-              ([Icon, title], i) => (
-                <div
-                   data-testid={`appbar-icon-${i}`}
-                  key={title}
-                  title={title}
-                  style={{
-                    flex: '1 1 0', minWidth: 0, maxWidth: 38,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    paddingLeft: i === 0 ? 2 : 0,
-                  }}
-                >
-                  <Icon size={18} color={NAV_ACTIVE} strokeWidth={1.55}/>
-                </div>
-              )
-            )}
+             {/* Logo + wordmark */}
+             <div data-testid="appbar-logo-group" style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, paddingLeft: 0 }}>
+               <LogoMark size={24}/>
+               <span style={{ fontSize: 19, fontWeight: 600, color: PRIMARY, letterSpacing: '0.1px', fontFamily: SERIF }}>
+                 TrailWeigh
+               </span>
+             </div>
+             {/* R007 §13 — six decorative identity icons: one consistent family
+                 (Lucide), TrailWeigh green, even spacing, no text labels, no
+                 navigation action, no horizontal overflow. Flex: 1 distributes
+                 the remaining header width evenly across all six icons. */}
+             <div
+                data-testid="appbar-icon-group"
+               aria-hidden="true"
+               style={{
+                 flex: 1, display: 'flex', alignItems: 'center',
+                 justifyContent: 'flex-end', gap: 0, minWidth: 0,
+                 paddingLeft: 8,
+               }}
+             >
+               {([
+                 [Backpack, 'Backpack'],
+                 [Train,    'Train'],
+                 [Plane,    'Plane'],
+                 [Ship,     'Boat / Cruise ship'],
+                 [Car,      'Car'],
+                 [Package,  'Moving box'],
+               ] as [React.ComponentType<{ size: number; color: string; strokeWidth: number }>, string][]).map(
+                 ([Icon, title], i) => (
+                   <div
+                      data-testid={`appbar-icon-${i}`}
+                     key={title}
+                     title={title}
+                     style={{
+                       flex: '1 1 0', minWidth: 0, maxWidth: 38,
+                       display: 'flex', alignItems: 'center', justifyContent: 'center',
+                       paddingLeft: i === 0 ? 2 : 0,
+                     }}
+                   >
+                     <Icon size={18} color={NAV_ACTIVE} strokeWidth={1.55}/>
+                   </div>
+                 )
+               )}
+             </div>
           </div>
           {/* R0083P1: right-side hamburger removed — hamburger is always left */}
         </div>
@@ -3819,7 +3870,7 @@ function MobileFunctionalV3Inner() {
           <div>
             <div style={{
               margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
-              padding: `10px ${CHECKLIST_RIGHT_INSET}px 12px 14px`, display: 'flex', flexDirection: 'column', gap: 8,
+              padding: `10px ${CATEGORY_WEIGHT_RIGHT_INSET}px 12px 14px`, display: 'flex', flexDirection: 'column', gap: 8,
               /* R0085P3: shadow on the opaque green panel — correctly renders above
                  white category rows; detached from backdrop-filter compositor layer */
               boxShadow: '0 4px 12px rgba(0,0,0,0.22)',
@@ -5121,6 +5172,7 @@ function MobileFunctionalV3Inner() {
         <BoxGroupBar
           ref={navRef}
           groupControlRef={navGroupRef}
+          visualViewportBottomOffset={visualViewportBottomOffset}
           activeDeck={activeDeck}
           undoDisabled={undoHistory.length === 0}
           redoDisabled={redoHistory.length === 0}
@@ -5152,7 +5204,7 @@ function MobileFunctionalV3Inner() {
             onActivateCard={activateCard}
             onClose={closeDeck}
             emptyNote="No saved lists yet. Use More → List Actions → Save to add one."
-            bottomOffset={navHeight}
+            bottomOffset={bottomLayerOffset}
           />
         )}
         {activeDeck === 'summary' && (
@@ -5162,7 +5214,7 @@ function MobileFunctionalV3Inner() {
             activeCardId={activeCardId}
             onActivateCard={activateCard}
             onClose={closeDeck}
-            bottomOffset={navHeight}
+            bottomOffset={bottomLayerOffset}
           />
         )}
         {activeDeck === 'add' && (
@@ -5172,7 +5224,7 @@ function MobileFunctionalV3Inner() {
             activeCardId={activeCardId}
             onActivateCard={activateCard}
             onClose={closeDeck}
-            bottomOffset={navHeight}
+            bottomOffset={bottomLayerOffset}
           />
         )}
         {activeDeck === 'search' && (
@@ -5182,7 +5234,7 @@ function MobileFunctionalV3Inner() {
             activeCardId={activeCardId}
             onActivateCard={activateCard}
             onClose={closeDeck}
-            bottomOffset={navHeight}
+            bottomOffset={bottomLayerOffset}
           />
         )}
         {activeDeck === 'more' && (
@@ -5192,7 +5244,7 @@ function MobileFunctionalV3Inner() {
             activeCardId={activeCardId}
             onActivateCard={activateCard}
             onClose={closeDeck}
-            bottomOffset={navHeight}
+            bottomOffset={bottomLayerOffset}
           />
         )}
 
