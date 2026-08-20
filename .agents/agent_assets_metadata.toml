@@ -315,3 +315,10 @@ uri = "file://trailweigh-R0092-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0092 report"
 description = "Bottom Box Groups visual-viewport lock, right-side master-line alignment, Chromium regression screenshots, exact metrics, tests, and Kevin’s iPhone verification checklist."
+
+[[outputs]]
+id = "orr_aYafAMym-mym8-WeD"
+uri = "file://trailweigh-R0093-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0093 report"
+description = "True static Bottom Box Groups correction with reviewed iPhone evidence, before/mid/deep/after scroll screenshots, metrics, regression results, and Kevin’s final iPhone Safari checklist."

@@ -947,8 +947,6 @@ interface BoxGroupBarProps {
   onSave:    () => void;
   onShare:   () => void;
   onMore:    () => void;
-  /** R0092: layout-viewport space below Safari's usable visual viewport. */
-  visualViewportBottomOffset: number;
   /** R0085 — exposes settle() so the parent can auto-switch to the Edit group on data mutations. */
   groupControlRef?: React.MutableRefObject<{ switchGroup: (idx: number) => void } | null>;
 }
@@ -1022,7 +1020,6 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
       onUndo, onRedo, onReset,
       onCamera, onPhotos, onPreview,
       onSave, onShare, onMore,
-      visualViewportBottomOffset,
     } = props;
 
     const [groupIdx, setGroupIdx]   = useState(0);
@@ -1154,7 +1151,7 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
       <div
         ref={ref}
         data-testid="bottom-nav"
-        data-visual-viewport-bottom-offset={visualViewportBottomOffset}
+        data-footer-positioning="fixed-static"
         onPointerDown={onPointerDown}
         onClickCapture={e => {
           // Swallow the synthetic click that immediately follows a drag-end gesture
@@ -1164,10 +1161,9 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           position: 'fixed',
           left: 'max(0px, calc(50% - 215px))',
           right: 'max(0px, calc(50% - 215px))',
-          // R0092: Safari can expose a visual viewport shorter than its layout
-          // viewport while browser chrome animates. Keep this fixed layer at the
-          // usable viewport edge without changing the document scroll model.
-          bottom: visualViewportBottomOffset,
+          // R0093: this must never move as a function of checklist scrolling.
+          // Native fixed positioning isolates the footer from the content layer.
+          bottom: 0,
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
              suggestion of content/colors underneath. No shine, no gloss. */
@@ -2057,37 +2053,10 @@ function MobileFunctionalV3Inner() {
   //    deck/backdrop bottom offset. Tracks safe-area inset growth via ResizeObserver.
   const [navHeight, setNavHeight] = useState(NAV_H);
   const navRoRef = useRef<ResizeObserver | null>(null);
-  // R0092: iOS Safari's document scroll is intentionally left native so its
-  // browser chrome can retract. `position: fixed; bottom: 0` is otherwise tied
-  // to the layout viewport on affected Safari states, causing the bar to travel
-  // relative to the usable visual viewport. This is the measured gap between
-  // those two viewport bottoms; zero in normal Chromium and regular desktop use.
-  const [visualViewportBottomOffset, setVisualViewportBottomOffset] = useState(0);
-  const bottomLayerOffset = navHeight + visualViewportBottomOffset;
+  // R0093: the nav's measured occupied height remains the sole content/deck
+  // clearance source. No scroll or visualViewport event alters footer placement.
+  const bottomLayerOffset = navHeight;
 
-  useEffect(() => {
-    const update = () => {
-      const visualViewport = window.visualViewport;
-      const visualBottom = visualViewport
-        ? visualViewport.offsetTop + visualViewport.height
-        : window.innerHeight;
-      const next = Math.max(0, Math.round((window.innerHeight - visualBottom) * 100) / 100);
-      setVisualViewportBottomOffset(previous => previous === next ? previous : next);
-    };
-
-    update();
-    const visualViewport = window.visualViewport;
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, { passive: true });
-    visualViewport?.addEventListener('resize', update);
-    visualViewport?.addEventListener('scroll', update);
-    return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update);
-      visualViewport?.removeEventListener('resize', update);
-      visualViewport?.removeEventListener('scroll', update);
-    };
-  }, []);
 
   // R0075: measured List Summary bar height — fixed second layer below the AppBar.
   // The matching spacer in the document flow preserves category geometry.
@@ -3701,8 +3670,7 @@ function MobileFunctionalV3Inner() {
       <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflowX: 'hidden' }}>
       <div className="tw-v3-root" style={{
         width: '100%', maxWidth: 430, minHeight: '100dvh',
-        // Reserve both the measured bar and any Safari layout→visual viewport
-        // gap, so final content can clear the locked bar at document bottom.
+        // Reserve the stable measured bar so final content clears it at document bottom.
         paddingTop: 52, paddingBottom: bottomLayerOffset,
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
         fontFamily: SANS, position: 'relative', overflow: 'visible',
@@ -5172,7 +5140,6 @@ function MobileFunctionalV3Inner() {
         <BoxGroupBar
           ref={navRef}
           groupControlRef={navGroupRef}
-          visualViewportBottomOffset={visualViewportBottomOffset}
           activeDeck={activeDeck}
           undoDisabled={undoHistory.length === 0}
           redoDisabled={redoHistory.length === 0}

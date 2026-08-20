@@ -1,0 +1,39 @@
+R0093 CHANGED FILES
+
+PRODUCT SOURCE
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Removed R0092's scroll-reactive visual-viewport footer offset. Bottom Box Groups is now
+  a stable CSS-fixed layer at bottom: 0; measured nav height alone reserves content/deck
+  clearance.
+
+TEST SOURCE
+- tests/e2e/phase1b/r0092-bottom-lock-alignment.spec.ts
+  Replaced the now-invalid R0092 visual-viewport-gap expectation with a static-footer
+  regression assertion while preserving all master-line and protected geometry checks.
+
+- tests/e2e/phase1b/r0093-true-bottom-lock.spec.ts
+  Added R0093 coverage for four viewport widths, repeated document-scroll geometry,
+  footer mutation observation, final-content clearance, screenshots, and visible
+  Bottom Box Groups Next/Back/Add interactions.
+
+R0093 REPORT / EVIDENCE
+- reports/r0093/R0093_REPORT.txt
+- reports/r0093/CHANGED_FILES.txt
+- reports/r0093/TEST_RESULTS.txt
+- reports/r0093/BEFORE_AFTER_METRICS.txt
+- reports/r0093/USER_IPHONE_TEST.txt
+- reports/r0093/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- screenshots/r0093-before-scroll-402x714.png
+- screenshots/r0093-mid-scroll-402x714.png
+- screenshots/r0093-deep-scroll-402x714.png
+- screenshots/r0093-after-scroll-402x714.png
+
+USER-SUPPLIED INPUTS (NOT MODIFIED)
+- attached_assets/R0093_GS_TRUE_BOTTOM_BAR_LOCK_WITH_VIDEO_1787241608946.txt
+- attached_assets/R0093_R0092_IMPLEMENTATION_REFERENCE_1787241608946.txt
+- attached_assets/R0093_USER_IPHONE_BOTTOM_BAR_MOVEMENT_1787241608946.MP4
+- attached_assets/R0093_USER_IPHONE_POSITION_REFERENCE_1787241608944.png
+
+GENERATED NON-PRODUCT OUTPUT
+- playwright-report/index.html
+  Updated automatically by Playwright during test runs.

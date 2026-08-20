@@ -84,18 +84,22 @@ test.describe('R0092 — lock Bottom Box Groups and align to weight master line'
       expect(nav.width, 'Bottom Box Groups must stay full width').toBe(viewport.width);
       expect(nav.height, 'Bottom Box Groups height must remain protected').toBe(58);
 
-      const viewportData = await page.evaluate(() => ({
-        layoutHeight: window.innerHeight,
-        visualBottom: window.visualViewport
-          ? window.visualViewport.offsetTop + window.visualViewport.height
-          : window.innerHeight,
-        configuredOffset: Number(document.querySelector('[data-testid="bottom-nav"]')
-          ?.getAttribute('data-visual-viewport-bottom-offset') ?? '0'),
+      const viewportData = await page.evaluate(() => {
+        const nav = document.querySelector('[data-testid="bottom-nav"]') as HTMLElement;
+        const navStyle = getComputedStyle(nav);
+        return ({
+        footerPositioning: nav.getAttribute('data-footer-positioning'),
+        footerPosition: navStyle.position,
+        footerBottom: navStyle.bottom,
+        footerTransform: navStyle.transform,
         documentWidth: document.documentElement.scrollWidth,
         bodyWidth: document.body.scrollWidth,
-      }));
-      expect(viewportData.configuredOffset, 'the configured visual-viewport gap must match the live viewport gap')
-        .toBeCloseTo(Math.max(0, viewportData.layoutHeight - viewportData.visualBottom), 1);
+        });
+      });
+      expect(viewportData.footerPositioning, 'R0093 footer must use stable fixed positioning').toBe('fixed-static');
+      expect(viewportData.footerPosition, 'footer must remain CSS fixed').toBe('fixed');
+      expect(viewportData.footerBottom, 'footer must have a static bottom offset').toBe('0px');
+      expect(viewportData.footerTransform, 'footer must not use a transform for positioning').toBe('none');
       expect(viewportData.documentWidth, 'document must not horizontally overflow').toBeLessThanOrEqual(viewport.width);
       expect(viewportData.bodyWidth, 'body must not horizontally overflow').toBeLessThanOrEqual(viewport.width);
       expect(errors.pageErrors).toEqual([]);

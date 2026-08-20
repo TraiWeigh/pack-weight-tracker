@@ -1,0 +1,13 @@
+R0092 IMPLEMENTATION REFERENCE
+
+Relevant R0092 facts:
+- Bottom Box Groups was already position: fixed.
+- R0092 added live visualViewport compensation using:
+  max(0, window.innerHeight - (visualViewport.offsetTop + visualViewport.height))
+- That value was updated on resize, visualViewport resize, and visualViewport scroll.
+- It modified the Bottom Box Groups bottom offset.
+- Chromium reported the bar stayed fixed.
+- The actual iPhone recording shows the bar still visibly moving.
+
+Therefore R0092 footer behavior is USER FAIL despite Chromium PASS.
+R0093 must prioritize the included iPhone recording.

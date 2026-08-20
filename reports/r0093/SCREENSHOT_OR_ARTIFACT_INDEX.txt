@@ -1,0 +1,38 @@
+R0093 SCREENSHOT / ARTIFACT INDEX
+
+AUTHORITATIVE USER EVIDENCE
+- attached_assets/R0093_USER_IPHONE_BOTTOM_BAR_MOVEMENT_1787241608946.MP4
+  Primary real-iPhone Safari movement evidence. Reviewed before R0093 editing.
+
+- attached_assets/R0093_USER_IPHONE_POSITION_REFERENCE_1787241608944.png
+  Real-iPhone reference for the good resting Bottom Box Groups position.
+
+- attached_assets/R0093_GS_TRUE_BOTTOM_BAR_LOCK_WITH_VIDEO_1787241608946.txt
+- attached_assets/R0093_R0092_IMPLEMENTATION_REFERENCE_1787241608946.txt
+  User-supplied task instructions and R0092 implementation reference.
+
+CHROMIUM REGRESSION SCREENSHOTS — 402×714
+- screenshots/r0093-before-scroll-402x714.png
+  Initial document-scroll position; footer is at the stable resting position.
+
+- screenshots/r0093-mid-scroll-402x714.png
+  35% scroll target; content moved while footer remains in the same bottom location.
+
+- screenshots/r0093-deep-scroll-402x714.png
+  85% scroll target; content moved while footer remains in the same bottom location.
+
+- screenshots/r0093-after-scroll-402x714.png
+  100% scroll target; final R0093 Scroll H category is visible above the footer.
+
+INDEPENDENT BROWSER VERIFIER EVIDENCE
+- Screenshot IDs: yx1eed (initial fixed CSS metrics), mga2og (deep-scroll final-content
+  clearance), 3sreeg (Add remains usable after Next/Back).
+
+TEST / REPORT ARTIFACTS
+- tests/e2e/phase1b/r0093-true-bottom-lock.spec.ts
+- reports/r0093/TEST_RESULTS.txt
+- reports/r0093/BEFORE_AFTER_METRICS.txt
+
+STANDARD REPLIT USAGE SCREENSHOT
+Unavailable. The supplied real-iPhone MP4/reference and saved Chromium regression
+screenshots are included instead.

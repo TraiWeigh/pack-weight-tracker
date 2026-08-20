@@ -1,0 +1,41 @@
+R0093 TEST RESULTS
+
+1. pnpm --filter @workspace/pack-checklist run typecheck
+   PASS
+
+   The wider `pnpm -r --if-present run typecheck` command remains blocked by pre-existing
+   React ref typing errors in the unrelated artifacts/mockup-sandbox calendar/spinner
+   components. It does not report an error in the changed TrailWeigh package.
+
+2. pnpm exec playwright test tests/e2e/phase1b/r0093-true-bottom-lock.spec.ts --workers=1 --project=chromium
+   PASS — 6 passed, 0 failed
+   - 402×714, 402×754, 390×844, and 360×800 protected geometry coverage.
+   - Document scroll sampled at initial, 35%, 85%, 100%, and return-to-20% positions.
+   - Footer remained fixed/static with top and bottom movement no greater than 1px.
+   - MutationObserver found 0 footer style/class/lock-marker mutations during scroll.
+   - Final category cleared the footer; Next/Back/Add interaction worked.
+   - Generated before/mid/deep/after 402px screenshots.
+
+3. pnpm exec playwright test tests/e2e/phase1b/r0093-true-bottom-lock.spec.ts tests/e2e/phase1b/r0092-bottom-lock-alignment.spec.ts --workers=1 --project=chromium
+   PASS — 11 passed, 0 failed
+
+4. pnpm exec playwright test tests/e2e/phase1b/r0091-header-summary-nav.spec.ts tests/e2e/phase1b/right-side-inset.spec.ts tests/e2e/phase1b/screen-efficiency.spec.ts tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
+   PASS — 25 passed, 0 failed
+   Includes existing viewport-safe document-flow and bounded long-category scrolling coverage.
+
+5. Independent Playwright browser verification, 402×714
+   PASS
+   - Created four categories through normal Add → Add Category UI.
+   - window.scrollY changed from 0 to 134.
+   - Footer stayed at y=656, position=fixed, bottom=0px, transform=none,
+     data-footer-positioning=fixed-static.
+   - R0093 Browser D cleared the footer; Next, Back, and Add remained usable.
+   - No app console errors; only the expected Clerk development-key warning appeared.
+
+6. git diff --check
+   PASS
+
+LIMITATION
+These are Chromium regression results. The supplied iPhone Safari recording found the
+R0092 failure, so final acceptance remains REPLIT PASS / READY FOR USER IPHONE TEST
+until Kevin confirms R0093 on the real device.

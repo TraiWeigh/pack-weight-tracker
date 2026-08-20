@@ -1,0 +1,385 @@
+TRAILWEIGH — R0093 GS — REVISED WITH REAL IPHONE VIDEO
+Gold Standard Replit Prompt
+TRUE Bottom Box Groups Lock
+
+AUTHORITATIVE USER EVIDENCE INCLUDED
+This ZIP contains:
+1. R0093_USER_IPHONE_BOTTOM_BAR_MOVEMENT.MP4
+   - ACTUAL iPhone Safari recording.
+   - PRIMARY evidence.
+   - Watch the entire recording BEFORE editing.
+2. R0093_USER_IPHONE_POSITION_REFERENCE.png
+   - real iPhone reference image for the current good resting position.
+3. R0093_R0092_IMPLEMENTATION_REFERENCE.txt
+   - summary of the R0092 implementation.
+
+AUTHORITATIVE RESULT
+Kevin's actual iPhone recording proves:
+THE BOTTOM BOX GROUPS STILL MOVES DURING SCROLLING.
+
+This overrides Chromium PASS, Replit PASS, and geometry assumptions.
+R0092 bottom-bar lock = USER FAIL.
+
+WHAT THE VIDEO SHOWS
+- checklist/category content scrolls;
+- Bottom Box Groups also changes vertical screen position;
+- footer rises/falls relative to the physical screen/Safari controls;
+- therefore the footer is not visually locked.
+- Header/List Summary are comparatively stable, so this is a footer-specific problem.
+
+PRIMARY USER INTENT
+The Bottom Box Groups is already in a GOOD resting vertical spot.
+KEEP THAT SPOT.
+
+Required correction:
+DURING ORDINARY FINGER SCROLLING, THE BOTTOM BOX GROUPS MUST REMAIN VISUALLY STATIONARY ON THE IPHONE SCREEN.
+
+The content should move.
+The bottom bar should not.
+
+CRITICAL R0092 FINDING
+R0092 added scroll-reactive visualViewport compensation based on:
+
+max(0, window.innerHeight - (visualViewport.offsetTop + visualViewport.height))
+
+and updated it on:
+- resize;
+- visualViewport resize;
+- visualViewport scroll.
+
+The actual iPhone video still shows movement.
+
+Therefore:
+- treat visualViewport.scroll-driven footer repositioning as the PRIMARY SUSPECT;
+- do not preserve a strategy that continuously changes footer top/bottom/transform during ordinary scrolling.
+
+NARROW TASK
+R0093 is a TRUE FOOTER LOCK task only.
+
+Do NOT:
+- redesign header;
+- change Summary alignment;
+- move weights;
+- alter wedges;
+- add Filter;
+- add Photo mode;
+- work on Safari address-bar hiding.
+
+Preserve all current horizontal work from R0090/R0091/R0092.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+1. WATCH the included MP4 from start to finish.
+2. Inspect CURRENT active `/mobile-functional-v3`.
+3. Read relevant `replit.md` / project guidance read-only.
+4. Confirm exact R0092 footer implementation.
+5. Identify every source that can mutate footer screen position:
+   - top/bottom;
+   - transform/translate;
+   - CSS custom properties;
+   - inline styles;
+   - React state;
+   - resize handlers;
+   - scroll handlers;
+   - visualViewport listeners;
+   - ancestor transforms/filter/perspective.
+6. Identify the actual scroll owner.
+7. Identify the footer containing block.
+8. Determine whether it is inside a transformed/moving ancestor.
+9. Explain why Chromium geometry can look fixed while iPhone video visibly moves.
+10. Separate FACTS / UNKNOWNS / ASSUMPTIONS.
+11. Find root cause before editing.
+
+ABSOLUTE ACCEPTANCE RULE
+During ordinary checklist/category scrolling, the footer's screen position must NOT be a function of scroll.
+
+Do not make footer top/bottom/transform respond to:
+- window.scrollY;
+- scrollTop;
+- visualViewport scroll;
+- visualViewport offsetTop during the gesture;
+- scroll-driven React state;
+- scroll-driven CSS variables.
+
+If visualViewport is used for initial sizing or true resize/orientation changes, it must not create continuous visible movement during ordinary finger scrolling.
+
+PREFERRED ARCHITECTURE
+Prefer structural isolation over chasing Safari with JavaScript.
+
+Preferred conceptual structure:
+NON-SCROLLING MOBILE SHELL
+- fixed AppBar
+- fixed List Summary
+- scrollable checklist/content area
+- locked Bottom Box Groups
+
+The footer should be outside the moving content layer.
+
+If current document scrolling cannot produce a truly stationary footer on iPhone Safari, Replit may introduce a dedicated internal checklist scroll region for `/mobile-functional-v3` ONLY if this is the smallest robust solution.
+
+If so:
+- do not body-lock/freeze the app;
+- preserve long-category scrolling;
+- preserve drawers/interactions;
+- reserve footer space correctly;
+- document Safari toolbar tradeoff honestly.
+
+PRIORITY
+The USER now prioritizes a visually LOCKED bottom bar.
+Do not preserve a failing browser-toolbar strategy at the expense of footer locking.
+
+CURRENT GOOD FOOTER POSITION — PRESERVE
+Do NOT raise or lower the bar as a design change.
+
+Use the resting portions of the included MP4 and the reference image as baseline.
+
+Preserve:
+- 58px height;
+- current resting vertical location;
+- current clearance above Safari controls;
+- width;
+- horizontal placement.
+
+BOTTOM BAR INTERNAL DESIGN — PRESERVE
+Do NOT change:
+- Locker;
+- Summary;
+- Add;
+- Search;
+- Next;
+- Next-chevron inset;
+- icons;
+- labels;
+- typography;
+- group widths except if structurally required for equivalent rendering;
+- slide/group navigation;
+- gestures.
+
+CONTENT RESERVATION
+When the footer is locked:
+- scrolling content must reserve exact footer space;
+- final category/item must scroll fully above it;
+- no content unreachable;
+- no giant blank region;
+- drawers/decks above footer stay synchronized with stable footer position.
+
+PRESERVE CURRENT HORIZONTAL WORK
+Do NOT change:
+- category weight right edge/inset;
+- Summary horizontal alignment;
+- AppBar horizontal alignment;
+- hamburger position;
+- rightmost header icon position;
+- category row width;
+- wedge location.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- app shell width;
+- viewport meta;
+- AppBar height;
+- List Summary height/vertical padding;
+- category row height;
+- wedge geometry/colors/icons;
+- Home design;
+- checklist semantics;
+- swipe-to-delete;
+- reorder;
+- Add Item;
+- accordions;
+- data;
+- auth;
+- DB/schema;
+- packages/dependencies;
+- publishing/deployment.
+
+FUTURE ITEMS — DO NOT IMPLEMENT
+Do NOT mix in:
+- Filter control;
+- future locked Filter bar;
+- Photo mode;
+- wedge shadows;
+- color themes;
+- Android-only overrides;
+- PWA/standalone conversion;
+- broad Safari address-bar work.
+
+AUTOMATED TESTS
+Run at minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+- existing viewport-safe regression suite.
+
+Create focused R0093 scroll-lock tests.
+
+TEST NORMAL SCROLLING
+At 402×714:
+1. Record footer rect initially.
+2. Scroll actual content owner >=100px.
+3. Record footer rect.
+4. Scroll farther.
+5. Record footer rect.
+6. Scroll upward.
+7. Record footer rect.
+
+Footer viewport-relative top/bottom must remain stable within a tiny tolerance.
+
+TEST MUTATION
+Prove during ordinary scroll:
+- no footer top/bottom/transform React state mutation;
+- no CSS variable driving footer position changes;
+- no visualViewport scroll handler moves footer;
+- no scroll handler changes footer position.
+
+If R0092 visualViewport scroll compensation is removed, document that explicitly.
+
+TEST CONTENT REACHABILITY
+- scroll to final category/item;
+- prove it can clear top edge of locked footer;
+- verify no obstruction.
+
+TEST INTERACTIONS
+Verify:
+- Locker;
+- Summary;
+- Add;
+- Search;
+- Next;
+- bottom-group navigation;
+- category scrolling;
+- long-category bounded scrolling;
+- related drawers/decks.
+
+REAL IPHONE LIMITATION
+Chromium cannot prove the real Safari compositing behavior in the included video.
+
+Therefore:
+AUTOMATED PASS = REPLIT PASS ONLY.
+
+Final status:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Never USER PASS.
+The actual iPhone result determines USER PASS.
+
+OPTIONAL QUERY-ONLY DIAGNOSTIC
+If needed:
+`?twFooterDebug=1`
+
+May show:
+- footer top/bottom;
+- computed position;
+- computed bottom;
+- computed transform;
+- scroll owner;
+- scrollTop/window.scrollY;
+- visualViewport height;
+- visualViewport offsetTop.
+
+Rules:
+- OFF by default;
+- no normal UI effect;
+- removable;
+- only if materially helpful.
+
+BEFORE / AFTER METRICS REQUIRED
+BEFORE:
+- footer positioning strategy;
+- containing block;
+- scroll owner;
+- all handlers/listeners affecting footer;
+- footer top/bottom at rest and multiple scroll positions;
+- content bottom reservation.
+
+AFTER:
+- exact positioning strategy;
+- exact scroll owner;
+- footer top/bottom at multiple scroll positions;
+- max observed movement in px;
+- whether any scroll value affects footer position;
+- whether visualViewport scroll listener still affects footer;
+- content bottom reservation;
+- final-content clearance.
+
+Also prove preservation of:
+- AppBar height;
+- Summary height;
+- category weight right edge;
+- Bottom Box Groups height.
+
+VISUAL ARTIFACTS
+Create at 402px:
+- before-scroll screenshot;
+- mid-scroll screenshot;
+- deep-scroll screenshot;
+- after-scroll screenshot.
+
+Footer must occupy same screen location in all automated artifacts.
+
+Include the user's MP4 and position-reference image in artifact index.
+
+PASS STANDARD
+REPLIT PASS requires ALL:
+1. Included iPhone MP4 reviewed and acknowledged.
+2. Current good resting footer position preserved.
+3. Footer does not move with ordinary scrolling in automated geometry.
+4. No scroll-driven footer position mutation remains.
+5. R0092 visualViewport scroll compensation removed/reworked if causal.
+6. Content remains scrollable.
+7. No body/document freeze.
+8. Last content reachable.
+9. Long-category scrolling works.
+10. Bottom interactions work.
+11. Footer remains 58px.
+12. Horizontal R0092 work preserved.
+13. No overflow/clipping regression.
+14. 360px safety passes.
+15. Typecheck passes.
+16. focused Playwright passes.
+17. relevant regression suites pass.
+18. complete report ZIP produced.
+
+REQUIRED ZIP REPORT
+Create:
+`trailweigh-R0093-report.zip`
+
+Must contain:
+1. R0093_REPORT.txt
+   - acknowledge MP4 watched;
+   - describe movement observed;
+   - USER FAIL from R0092;
+   - root cause;
+   - why Chromium differed;
+   - exact correction;
+   - whether visualViewport scroll positioning remains;
+   - exact scroll ownership after R0093;
+   - proof resting position preserved;
+   - proof horizontal work preserved;
+   - exact test totals;
+   - READY / NOT READY FOR USER IPHONE TEST.
+2. CHANGED_FILES.txt
+3. TEST_RESULTS.txt
+4. BEFORE_AFTER_METRICS.txt
+5. USER_IPHONE_TEST.txt
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+7. Standard Replit usage screenshot if available.
+
+If blocked/failed, STILL create the report ZIP.
+
+THREE STANDING QUESTIONS FOR REPLIT
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+THE INCLUDED IPHONE VIDEO IS THE PRIMARY BUG EVIDENCE.
+
+Watch it first.
+Find root cause.
+Do not repeat R0092's failed assumption.
+Make the smallest reversible correction.
+Protect every unrelated USER-PASS behavior.

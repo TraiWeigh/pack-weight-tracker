@@ -1,0 +1,36 @@
+R0093 — KEVIN'S REAL IPHONE SAFARI TEST
+
+R0092 was a USER FAIL. Please test this R0093 build on the same iPhone/Safari path.
+The goal is simple: checklist content moves, Bottom Box Groups never moves on screen.
+
+1. Load /mobile-functional-v3 and pause before touching the list.
+   - Note the Bottom Box Groups resting height and vertical position relative to Safari
+     controls. It should match the good resting spot from your supplied reference/video.
+
+2. Slowly drag the checklist through several categories.
+   - Content must move.
+   - Bottom Box Groups must remain visually stationary: no rise, fall, drift, jump, or slide.
+
+3. Flick-scroll quickly down, then reverse upward.
+   - The bar must remain in the same screen position throughout both directions.
+   - Safari toolbar/address-bar activity must not cause the footer to chase it.
+
+4. Scroll close to the end of a long list.
+   - The last category/item must scroll fully above the bar.
+   - Nothing may be hidden behind it or unreachable.
+   - Normal page scrolling must remain natural; the page must not feel body-locked or frozen.
+
+5. Exercise footer interactions.
+   - Locker, Summary, Add, Search, and Next should still look and work the same.
+   - Tap Next, then Back; horizontal group navigation should still work.
+   - Open a category with many items and confirm its bounded item scrolling still works.
+
+6. Verify R0092 horizontal work did not move.
+   - Hamburger stays in place.
+   - AppBar terminal box/right edge, Summary category/Selected text, and category weight
+     units retain their current approved horizontal line.
+   - Footer remains 58px high with the same labels, icons, spacing, and Next-chevron inset.
+
+Please report PASS only if the footer is truly stationary during slow, fast, and reverse
+scrolling. If it moves at all, send another short iPhone recording and describe when it
+starts (initial drag, toolbar change, fast flick, or reverse scroll).

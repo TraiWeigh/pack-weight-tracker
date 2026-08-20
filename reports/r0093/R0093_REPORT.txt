@@ -1,0 +1,107 @@
+TRAILWEIGH — R0093 GS
+TRUE Bottom Box Groups Lock
+
+STATUS: REPLIT PASS / READY FOR USER IPHONE TEST — NOT USER PASS
+
+AUTHORITATIVE USER RESULT
+R0092 bottom-bar behavior is a USER FAIL. Kevin’s supplied iPhone Safari recording
+shows Bottom Box Groups changing its vertical screen position during ordinary checklist
+scrolling. That real-device result overrides the prior Chromium PASS.
+
+IPHONE EVIDENCE REVIEWED
+The supplied R0093_USER_IPHONE_BOTTOM_BAR_MOVEMENT MP4 was reviewed from start to end
+(3.53 seconds; 1206×2622 source). The recording shows checklist content moving while
+the header/List Summary remain comparatively steady and the footer rises/falls relative
+to the physical screen/Safari controls. The supplied position-reference image establishes
+the existing resting footer placement to preserve.
+
+BRANCH / COMMIT / CHECKPOINT
+Branch: main
+Current HEAD before R0093 working-tree changes: c473820
+
+FACTS FOUND BEFORE EDITING
+- Bottom Box Groups was already a fixed-position element with a 58px occupied height.
+- Its React `bottom` style was not static: it received visualViewportBottomOffset state.
+- R0092 calculated max(0, window.innerHeight - (visualViewport.offsetTop +
+  visualViewport.height)) and updated that state at initial mount, window resize,
+  window scroll, visualViewport resize, and visualViewport scroll.
+- That live value also extended document content reservation and raised deck offsets.
+- The mobile checklist uses ordinary document/window scrolling. main-scroll remains flow
+  content with computed overflow-y: visible; it is not the primary scrolling viewport.
+- The footer is structurally outside that content layer as a fixed viewport layer. No
+  transformed, filtered, or perspective mobile-shell ancestor is used as its containing
+  block.
+
+ROOT CAUSE
+R0092 made a fixed footer’s `bottom` property a function of ordinary scroll-sensitive
+Safari visual-viewport geometry. Safari changes visualViewport offset/height during
+finger scrolling and browser-toolbar animation; R0092 then changed React state and
+repositioned the footer. Chromium did not reproduce the same visual-viewport/compositor
+behavior, so its rect assertion could pass despite the real iPhone movement.
+
+R0093 CORRECTION
+- Removed the visualViewportBottomOffset prop/state/effect completely.
+- Removed all R0092 footer-position listeners, including window scroll and
+  visualViewport scroll listeners.
+- Bottom Box Groups now has one stable strategy: position: fixed; bottom: 0; transform:
+  none. It is marked data-footer-positioning="fixed-static" for focused test inspection.
+- Retained native document scrolling. No body/document freeze or internal-scroller rewrite
+  was introduced.
+- Kept the measured 58px nav height as the sole content and raised-deck clearance value.
+
+VISUAL VIEWPORT SCROLL POSITIONING
+Removed. No visualViewport value, scrollTop, window.scrollY, scroll handler, CSS variable,
+or scroll-driven React state affects Bottom Box Groups position after R0093.
+
+CURRENT GOOD FOOTER POSITION
+The footer preserves the existing rest behavior: it remains full-width, 58px high, and
+flush with the mobile viewport bottom. In the 402×714 Chromium reference viewport its
+rect is x=0..402, y=656..714. The real iPhone reference/video remains final authority
+for its physical-Safari-controls resting relationship.
+
+PRESERVED R0092 HORIZONTAL WORK
+- Category weight/unit right edge: x=358px at the 402px reference viewport (44px inset).
+- Summary category/Selected right edge: x=358px.
+- Terminal AppBar box/right edge: x=358px.
+- Hamburger hit target: x=8..52; AppBar height remains 52px.
+- Summary height remains approximately 88.25px.
+- Bottom Box Groups labels, icons, 58px height, width, Next inner clearance, navigation,
+  swipe behavior, and internal group layout were not redesigned.
+
+TEST RESULTS
+- R0093 focused suite: 6 passed, 0 failed.
+- Preserved R0092 alignment/scroll suite: 5 passed, 0 failed.
+- Existing R0091, right-inset, screen-efficiency, and viewport-safe regressions:
+  25 passed, 0 failed.
+- TrailWeigh package typecheck: PASS.
+- Independent browser verification: PASS. After normal Add → Add Category setup,
+  document scroll moved from 0 to 134px while the fixed footer remained at y=656;
+  the final category cleared it; Next/Back/Add worked; no app console errors appeared.
+- Final git diff --check: PASS.
+
+Chromium proves the structural regression checks only. It cannot prove iPhone Safari
+compositing/browser-toolbar behavior. Kevin’s live iPhone test below determines USER PASS.
+
+WORKSPACE-WIDE TYPECHECK NOTE
+The task-scoped TrailWeigh package typecheck passes. The workspace-wide recursive command
+remains blocked by pre-existing React ref typing errors in artifacts/mockup-sandbox
+(calendar.tsx and spinner.tsx), outside this mobile task’s source and dependencies.
+
+STANDING QUESTIONS FOR REPLIT
+1. What did this task teach us?
+   A CSS-fixed layer is not truly locked if its bottom value is continuously mutated from
+   visual-viewport scroll geometry. For this document-scrolling mobile screen, structural
+   fixed positioning plus one measured bar-height clearance is safer than trying to chase
+   Safari toolbar movement with JavaScript.
+
+2. Was anything unclear, unnecessary, technically risky, or better expressed another way?
+   The original R0092 instruction to synchronize the footer to the live visual viewport
+   was technically risky because it conflated browser geometry changes with normal finger
+   scrolling. The R0093 video made the acceptance condition precise: no scroll-dependent
+   footer position mutation. That direct condition should be used for future mobile fixes.
+
+3. What Replit/project detail helps future work?
+   The managed Vite web workflow hot-reloads source changes. Run focused Playwright
+   commands while it is already serving; the task-specific package typecheck is the
+   relevant validation for this mobile artifact. Generated Playwright report files change
+   during normal browser testing and are not product-source changes.
