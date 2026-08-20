@@ -4221,14 +4221,39 @@ function MobileFunctionalV3Inner() {
                   {/* ── CATEGORY HEADER (R004 — right-edge-to-left slide reveals Delete) ── */}
                   <div
                     data-testid={activeCategorySlot && openCatName === catName ? 'active-category-bar' : undefined}
-                    style={activeCategorySlot && openCatName === catName ? {
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 7,
-                      background: CARD_BG,
-                      boxShadow: '0 3px 8px rgba(0,0,0,0.16)',
-                    } : undefined}
+                    style={{
+                      // R0100 correction #2: provide a containing block outside
+                      // SwipeDeleteRow's transformed/overflow-hidden content layer.
+                      position: 'relative',
+                      ...(activeCategorySlot && openCatName === catName ? {
+                        position: 'sticky',
+                        top: 0,
+                        zIndex: 7,
+                        background: CARD_BG,
+                        boxShadow: '0 3px 8px rgba(0,0,0,0.16)',
+                      } : {}),
+                    }}
                   >
+                  {/* R0100 correction #2: render the wedge elevation on a
+                      non-interactive sibling, outside SwipeDeleteRow's clipping
+                      wrapper. The same clip path keeps the visible color shape
+                      exact while the filter follows its angled point. */}
+                  <div
+                    data-testid={`cat-wedge-shadow-${catName}`}
+                    aria-hidden="true"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: WEDGE_W,
+                      height: CHECKLIST_ROW_H,
+                      background: theme.bg,
+                      clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
+                      filter: 'drop-shadow(3px 0 10px rgba(0,0,0,0.07))',
+                      pointerEvents: 'none',
+                      zIndex: 0,
+                    }}
+                  />
                   <SwipeDeleteRow
                     swipeKey={`cat:${catName}`}
                     reorderActive={dragCatName !== null}
@@ -4288,14 +4313,10 @@ function MobileFunctionalV3Inner() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0, paddingRight: WEDGE_POINT / 2,
                         border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
-                        // R0100 correction: reuse the Bottom Box Groups bar's
-                        // broad, soft, low-opacity elevation language, adapted
-                        // toward this vertical wedge's exposed right-hand point.
-                        // This keeps the blur inside the row's horizontal content
-                        // area instead of spending it against the clipped bottom edge.
-                        // The filter follows the clip-path without changing geometry
-                        // or adding row elevation.
-                        filter: 'drop-shadow(3px 0 10px rgba(0,0,0,0.07))',
+                        // R0100 correction #2: shadow rendering lives on the
+                        // decorative sibling above, not on this clipped button.
+                        // Keep the real trigger's geometry and interaction layer
+                        // otherwise unchanged.
                       }}
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
                       onBlur={e => { e.currentTarget.style.outline = 'none'; }}

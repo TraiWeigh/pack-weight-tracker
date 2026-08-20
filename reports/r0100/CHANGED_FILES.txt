@@ -2,9 +2,9 @@ R0100 CHANGED FILES
 
 Implementation:
 - artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
-  Corrected the wedge-only clipped-shape drop-shadow to reuse the Bottom Box
-  Groups bar's broad 3px / 10px / 7%-opacity shadow language toward the exposed
-  angled point; no shell or row geometry changes.
+  Correction #2 moves the Bottom Box Groups-compatible clipped wedge shadow to
+  a non-interactive sibling outside the transformed SwipeDeleteRow content layer;
+  no shell or row geometry changes.
 
 Focused validation:
 - tests/e2e/phase1b/r0100-wedge-shadow.spec.ts

@@ -32,6 +32,7 @@ for (const viewport of VIEWPORTS) {
       const firstWedge = wedges[0];
       const secondWedge = wedges[1];
       const firstRow = rows[0];
+      const wedgeShadow = document.querySelector<HTMLElement>('[data-testid^="cat-wedge-shadow-"]');
       const weight = document.querySelector<HTMLElement>('[data-cat] [data-testid^="cat-header-"] > div > div:last-child');
       const firstWedgeRect = firstWedge.getBoundingClientRect();
       const secondWedgeRect = secondWedge.getBoundingClientRect();
@@ -39,6 +40,14 @@ for (const viewport of VIEWPORTS) {
         wedgeCount: wedges.length,
         wedgeFilter: getComputedStyle(firstWedge).filter,
         wedgeBoxShadow: getComputedStyle(firstWedge).boxShadow,
+        wedgeShadow: wedgeShadow ? {
+          filter: getComputedStyle(wedgeShadow).filter,
+          width: wedgeShadow.getBoundingClientRect().width,
+          height: wedgeShadow.getBoundingClientRect().height,
+          pointerEvents: getComputedStyle(wedgeShadow).pointerEvents,
+          insideSwipeRow: !!wedgeShadow.closest('[data-swipe-key]'),
+          parentPosition: getComputedStyle(wedgeShadow.parentElement!).position,
+        } : null,
         rowBoxShadow: getComputedStyle(firstRow).boxShadow,
         wedge: {
           first: { ...rect('[data-cat] [data-testid^="cat-header-"] > button') },
@@ -61,8 +70,16 @@ for (const viewport of VIEWPORTS) {
 
     expect(metrics.wedgeCount).toBeGreaterThan(1);
     expect(metrics.wedgeFilter).toContain('drop-shadow');
-    expect(metrics.wedgeFilter).toContain('rgba(0, 0, 0, 0.07)');
-    expect(metrics.wedgeFilter).toContain('3px 0px 10px');
+    expect(metrics.wedgeFilter).toBe('none');
+    expect(metrics.wedgeShadow).not.toBeNull();
+    expect(metrics.wedgeShadow!.filter).toContain('drop-shadow');
+    expect(metrics.wedgeShadow!.filter).toContain('rgba(0, 0, 0, 0.07)');
+    expect(metrics.wedgeShadow!.filter).toContain('3px 0px 10px');
+    expect(metrics.wedgeShadow!.width).toBe(72);
+    expect(metrics.wedgeShadow!.height).toBe(65);
+    expect(metrics.wedgeShadow!.pointerEvents).toBe('none');
+    expect(metrics.wedgeShadow!.insideSwipeRow).toBe(false);
+    expect(metrics.wedgeShadow!.parentPosition).toBe('relative');
     expect(metrics.wedgeBoxShadow).toBe('none');
     expect(metrics.rowBoxShadow).toContain('0px 3px 10px');
     expect(metrics.wedge.first.width).toBe(72);
