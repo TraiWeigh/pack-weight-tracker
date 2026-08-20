@@ -1,0 +1,21 @@
+R0087 SCREENSHOT / ARTIFACT INDEX
+
+WORKSPACE PREVIEW SCREENSHOTS
+- screenshots/r0087-before-402x714.jpg
+- screenshots/r0087-before-402x754.jpg
+- screenshots/r0087-after-402x714.jpg
+- screenshots/r0087-after-402x754.jpg
+
+BROWSER VERIFICATION ARTIFACTS
+- wh3flp — normal six-category 402x714 state.
+- 39n7r7 — normal six-category 402x754 state.
+- v0haqv — verified eight-category 402x714 density state.
+- bv4tg8 — verified eight-category 402x754 density state.
+- bozmv6 — Backpack category expansion check.
+- a223ww / gmt37q — Home hero placement/readability check.
+
+PLAYWRIGHT OUTPUT (ephemeral /tmp paths)
+- /tmp/r0087-density-results
+- /tmp/r0087-viewport-results
+
+No standard Replit usage screenshot was available in this session.

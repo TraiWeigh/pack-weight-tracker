@@ -175,6 +175,8 @@ const QTY_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
 const WEDGE_W     = 72;
 const WEDGE_POINT = 17;
 const CARD_H      = 68;
+// R0087: compact only checklist/location rows. Home retains CARD_H=68.
+const CHECKLIST_ROW_H = 64;
 
 // ─── TOKENS ─────────────────────────────────────────────────────────────────────
 // R004 Part 3 — Inter Variable primary; former SERIF surfaces keep their weight/size
@@ -2951,7 +2953,7 @@ function MobileFunctionalV3Inner() {
     // R005 Part 8 — true finger-follow: remember the finger's offset from the
     // dragged card's center so the card tracks the finger 1:1 for the whole drag.
     let grabDY = 0;
-    let draggedH = CARD_H;
+    let draggedH = CHECKLIST_ROW_H;
     const container = catListRef.current;
     if (container) {
       for (const child of Array.from(container.children) as HTMLElement[]) {
@@ -3801,7 +3803,9 @@ function MobileFunctionalV3Inner() {
           <div>
             <div style={{
               margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
-              padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
+              // R0087: retain all Summary content and its 66px icon tile while
+              // reclaiming non-interactive vertical padding.
+              padding: '4px 14px 6px', display: 'flex', flexDirection: 'column', gap: 8,
               /* R0085P3: shadow on the opaque green panel — correctly renders above
                  white category rows; detached from backdrop-filter compositor layer */
               boxShadow: '0 4px 12px rgba(0,0,0,0.22)',
@@ -4058,7 +4062,7 @@ function MobileFunctionalV3Inner() {
                     // SwipeDeleteRow's onClickCapture swallows post-swipe clicks.
                     // Wedge button stops propagation to prevent double-toggle.
                     onClick={() => handleCatToggle(catName)}
-                    style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG, cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'stretch', minHeight: CHECKLIST_ROW_H, background: CARD_BG, cursor: 'pointer' }}
                   >
 
                     {/* WEDGE / ICON — PRIMARY ACCORDION TRIGGER */}
@@ -4067,7 +4071,7 @@ function MobileFunctionalV3Inner() {
                       aria-expanded={isOpen}
                       aria-label={`${isOpen ? 'Close' : 'Open'} ${catName} category`}
                       style={{
-                        width: WEDGE_W, minHeight: CARD_H,
+                        width: WEDGE_W, minHeight: CHECKLIST_ROW_H,
                         background: theme.bg,
                         clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -4089,12 +4093,12 @@ function MobileFunctionalV3Inner() {
                       display: 'grid',
                       gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
                       alignItems: 'center',
-                      padding: '10px 12px',
+                      padding: '8px 12px',
                       columnGap: 10,
                     }}>
                       {/* Col 1 — name + subtitle both inside the button so the
                           tap target spans both lines. R0077: minHeight:44 is safe
-                          here because 44 + 20px grid-padding = 64 < CARD_H (68). */}
+                          here because 44 + 16px grid-padding = 60 < CHECKLIST_ROW_H (64). */}
                       <div style={{ minWidth: 0 }}>
                         {/* R0083P2: was a <button> opening options; converted to <div>
                             so taps bubble up to the outer onClick and toggle the category. */}
@@ -4675,7 +4679,7 @@ function MobileFunctionalV3Inner() {
                             setOpenCatName(null);
                             setOpenLocId(prev => prev === loc.id ? null : loc.id);
                           }}
-                          style={{ display: 'flex', alignItems: 'stretch', minHeight: CARD_H, background: CARD_BG, cursor: 'pointer' }}
+                          style={{ display: 'flex', alignItems: 'stretch', minHeight: CHECKLIST_ROW_H, background: CARD_BG, cursor: 'pointer' }}
                         >
                           {/* Wedge button */}
                           <button
@@ -4687,7 +4691,7 @@ function MobileFunctionalV3Inner() {
                             aria-expanded={isLocOpen}
                             aria-label={`${isLocOpen ? 'Close' : 'Open'} location ${loc.name}`}
                             style={{
-                              width: WEDGE_W, minHeight: CARD_H,
+                              width: WEDGE_W, minHeight: CHECKLIST_ROW_H,
                               background: NAV_ACTIVE,
                               clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -4704,7 +4708,7 @@ function MobileFunctionalV3Inner() {
                             display: 'grid',
                             gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
                             alignItems: 'center',
-                            padding: '10px 12px',
+                            padding: '8px 12px',
                             columnGap: 10,
                           }}>
                             {/* Col 1 — "Location" label + item count */}

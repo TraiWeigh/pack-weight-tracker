@@ -1,0 +1,21 @@
+KEVIN — R0087 REAL IPHONE SAFARI TEST
+
+Open:
+https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.worf.replit.dev/mobile-functional-v3
+
+1. Start with Safari’s address bar/chrome fully expanded.
+2. Confirm the AppBar, green List Summary, category wedges, title/subtitle text, and
+   right-edge ounce weights all remain fully readable.
+3. Compare how much category content is visible before scrolling. The Summary should be
+   modestly shorter and category rows slightly tighter without looking cramped.
+4. Verify the bottom control groups remain at the visible bottom and do not cover a row.
+5. Scroll the checklist with a finger until Safari chrome compacts, then repeat the
+   header/summary/bottom-nav/right-edge-weight check.
+6. Open a category with enough items to use the bounded item viewport. Confirm its items
+   scroll normally and that the AppBar, Summary, and bottom controls do not move.
+7. Open the drawer, visit Home, and confirm the Home hero still begins directly under the
+   AppBar and Home content scrolls normally.
+8. If anything feels too tight, clipped, or misaligned, take a screenshot including
+   Safari chrome and describe the exact row/state.
+
+This is a density improvement only. Do not interpret it as a Safari browser-chrome fix.

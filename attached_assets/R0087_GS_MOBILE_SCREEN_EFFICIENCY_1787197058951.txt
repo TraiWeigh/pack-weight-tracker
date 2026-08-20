@@ -1,0 +1,274 @@
+TRAILWEIGH — R0087 GS
+Gold Standard Replit Prompt
+Mobile Screen Efficiency / Density Pass
+REAL IPHONE SAFARI EVIDENCE-DRIVEN
+
+BACKGROUND — R0085/R0086 REAL-DEVICE FINDINGS
+The real iPhone Safari diagnostic established the following:
+
+PHYSICAL / VISIBLE VIEWPORT
+- screen: 402 × 874
+- visual viewport with Safari chrome expanded: 402 × 714
+- visual viewport after real finger scroll / compact Safari chrome: 402 × 754
+- visualViewport.scale: 1
+- document/client width: 402
+- root shell width: 402
+- AppBar width: 402
+- List Summary width: 402
+- checklist content right edge: 402
+- category row right edge: 402
+
+BOTTOM NAV FOLLOWING SAFARI
+Expanded Safari state:
+- Bottom Box Groups: top 656 / bottom 714 / height 58
+
+Compacted Safari state:
+- Bottom Box Groups: top 696 / bottom 754 / height 58
+
+Therefore:
+1. TrailWeigh is correctly following Safari's changing visual viewport vertically.
+2. The TrailWeigh shell is fitting the iPhone width correctly.
+3. There is no whole-app 430px overflow or pinch/page zoom issue.
+4. The remaining compact Safari URL pill is browser chrome and should NOT be treated as a TrailWeigh positioning bug.
+5. The user's "TW is too big for the screen" concern is now best treated as a MOBILE SCREEN EFFICIENCY / DENSITY problem, not a viewport-size bug.
+
+CURRENT FIXED-LAYER HEIGHTS FROM REAL IPHONE
+- AppBar/header: 52px
+- List Summary: approximately 88.25px
+- Bottom Box Groups: 58px
+
+Approximately 198px of TrailWeigh UI is permanently fixed before considering Safari's own chrome.
+
+GOAL
+Increase the amount of useful TrailWeigh checklist content visible on an iPhone Safari screen WITHOUT breaking the now-correct Safari viewport architecture or changing TrailWeigh's established visual identity.
+
+This is NOT a redesign.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+1. Read the current active mobile checklist implementation and relevant project guidance/replit.md read-only.
+2. Confirm R0085/R0086 diagnostic findings are still true.
+3. Confirm the current AppBar, List Summary, category rows/wedges, Bottom Box Groups, and scrolling behavior.
+4. Measure current vertical space usage at:
+   - 402 × 714
+   - 402 × 754
+5. Determine where vertical space is being consumed inside TrailWeigh.
+6. Identify the smallest changes that reclaim meaningful space while preserving readability, touch targets, accessibility, wedge recognition, and existing USER-PASS interactions.
+7. Do not infer that a viewport fix is needed; diagnostics already showed the viewport frame is behaving correctly.
+
+NON-NEGOTIABLE USER-PASS PROTECTION
+Do NOT change:
+- AppBar/header visual design, height, icons, or behavior;
+- AppBar fixed position;
+- Bottom Box Groups visual design, height, icons, gesture behavior, or fixed position;
+- Safari visualViewport tracking behavior;
+- fixed List Summary behavior directly below the AppBar;
+- Home hero fixed-layer behavior;
+- document-owned checklist scrolling;
+- long-category bounded item scrolling;
+- category wedge shape;
+- category wedge width;
+- category icons;
+- category colors;
+- checklist semantics;
+- drawers;
+- slide bars;
+- swipe-to-delete;
+- reordering;
+- Add Item behavior;
+- item/category accordion behavior;
+- data persistence;
+- auth;
+- DB/schema;
+- dependencies;
+- deployment/publishing.
+
+CATEGORY WEDGE SPACING RULE
+The current checklist wedge/list rhythm is the reference standard.
+Do NOT increase vertical spacing between checklist wedges/category rows.
+Do NOT create inconsistent row gaps.
+
+CURRENT DESIGN DIRECTION TO PRESERVE
+- Checklist wedges may use stronger/more distinct category colors.
+- Home may use softer/subtle colors.
+- Future color themes are separate work.
+- Do not standardize colors in this task.
+- Do not add wedge shadows in this task; that is separate aesthetic work.
+
+PRIMARY TARGET: LIST SUMMARY EFFICIENCY
+Because the AppBar and Bottom Box Groups are locked USER-PASS elements, first inspect the List Summary for reclaimable vertical space.
+
+If safe and visually clean, compact ONLY the internal vertical spacing/padding of the List Summary while preserving:
+- all current information;
+- current hierarchy;
+- readability;
+- tap targets;
+- icon size unless a tiny reduction is truly necessary;
+- fixed position directly under header;
+- measured spacer/reservation;
+- responsive width;
+- category/location mode behavior below it.
+
+Goal:
+Reduce List Summary height meaningfully if possible, but do not chase an arbitrary pixel target.
+
+SECONDARY TARGET: CHECKLIST ROW INTERNAL DENSITY
+Only if the List Summary alone does not create a meaningful improvement, inspect category row internal vertical padding.
+
+Allowed only if:
+- wedge shape and width remain unchanged;
+- icons remain legible;
+- category title/subtitle remain readable;
+- touch target remains at least a comfortable mobile size;
+- row rhythm remains visually balanced;
+- no text clipping or overlap occurs;
+- no change to horizontal geometry.
+
+Prefer a small, measured reduction rather than globally shrinking fonts.
+
+DO NOT globally scale the app.
+DO NOT reduce font sizes across TrailWeigh.
+DO NOT use CSS transform: scale().
+DO NOT force zoom.
+DO NOT change viewport meta.
+
+SCREEN-EFFICIENCY ACCEPTANCE TARGET
+At 402 × 714 and 402 × 754:
+- show measurably more useful checklist content than before;
+- preserve the fixed header, fixed summary, fixed bottom groups;
+- preserve readability;
+- preserve all right-edge weights/content fully visible;
+- preserve no horizontal overflow;
+- preserve natural Safari chrome behavior;
+- preserve document scrolling.
+
+MEASURE BEFORE / AFTER
+Record and report:
+- AppBar height
+- List Summary height
+- Bottom Box Groups height
+- visible content area between Summary bottom and Bottom Box Groups top
+- number of complete category rows visible at 402×714
+- number of complete category rows visible at 402×754
+- category row height if changed
+- any changed vertical paddings
+- document scroll behavior
+- visualViewport geometry
+
+If no safe density improvement is possible without harming UX, STOP and report that rather than forcing a change.
+
+PLAYWRIGHT / AUTOMATED VERIFICATION
+Run focused checks at minimum:
+- 402 × 714
+- 402 × 754
+- existing 390 × 844 viewport regression coverage
+
+Verify:
+1. Header remains fixed and unchanged.
+2. List Summary remains fixed directly beneath header.
+3. Bottom Box Groups remain fixed and unchanged.
+4. No horizontal overflow.
+5. Category weights remain fully visible at the right edge.
+6. Category titles/subtitles remain readable.
+7. Existing category/item interactions still work.
+8. Long-category bounded scrolling still works.
+9. Home fixed hero behavior still works.
+10. Drawers/slide gestures still work.
+11. Checklist document scrolling still occurs through the window/root architecture.
+12. Diagnostic debug mode, if still present, remains off by default and does not affect normal layout.
+13. Compare before/after visible category-row count.
+
+REAL-DEVICE LIMITATION
+Do not claim Chromium can certify Safari browser-chrome behavior.
+The implementation is not USER PASS until Kevin verifies it on the actual iPhone.
+
+PASS STANDARD
+Replit PASS requires:
+- current-state inspection completed;
+- only smallest safe density changes applied;
+- no protected USER-PASS elements altered;
+- Playwright/typecheck pass;
+- before/after measurements documented;
+- no horizontal regression;
+- no viewport architecture regression;
+- ready for real iPhone USER verification.
+
+REQUIRED ZIP REPORT
+Create and provide:
+trailweigh-R0087-report.zip
+
+The ZIP must contain at minimum:
+
+1. R0087_REPORT.txt
+Include:
+- R0087 GS
+- current branch/commit/checkpoint
+- current-state findings
+- root cause / density findings
+- exact changes made
+- exact areas deliberately left unchanged
+- before/after measurements
+- Playwright/typecheck commands
+- exact PASS/FAIL totals
+- warnings/errors
+- explicit READY / NOT READY FOR USER IPHONE TEST
+- confirmation that no viewport meta/visualViewport/browser-chrome fix was attempted
+
+2. CHANGED_FILES.txt
+- list every changed file
+- reason for each
+- identify unexpected files if any
+
+3. TEST_RESULTS.txt
+- exact commands
+- suites
+- pass/fail totals
+- duration if available
+- failures/blockers
+- distinguish Chromium verification from real-device verification
+
+4. BEFORE_AFTER_METRICS.txt
+Include:
+- AppBar height
+- Summary height
+- Bottom Box Groups height
+- usable content-height calculation
+- visible complete category-row count at 402×714
+- visible complete category-row count at 402×754
+- category row height before/after if changed
+
+5. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- before/after screenshots
+- Playwright screenshots/traces/reports
+- relevant artifact paths
+
+6. USER_IPHONE_TEST.txt
+Tell Kevin exactly what to verify on the iPhone:
+- visual density
+- number of visible rows
+- right-edge weights
+- header/summary/bottom groups
+- Safari compact/expanded states
+- long category
+- Home
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state that explicitly.
+
+If implementation or tests are blocked, STILL create the ZIP report documenting the blocker.
+
+THREE STANDING QUESTIONS FOR REPLIT
+Answer these in the R0087 report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, source assumptions, and Chromium-only PASS results.
+
+Do not redesign TrailWeigh.
+Do not solve browser chrome by shrinking or scaling the whole app.
+Make the smallest reversible density improvement and protect every unrelated USER-PASS behavior.

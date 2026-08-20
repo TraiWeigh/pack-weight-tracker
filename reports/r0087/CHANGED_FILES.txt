@@ -1,0 +1,28 @@
+R0087 CHANGED FILES
+
+SOURCE / TEST
+1. artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+   - Compacted Summary internal vertical padding.
+   - Added checklist-only row height and aligned category/location row padding and
+     drag measurement with it.
+   - Home continues using the original CARD_H=68.
+
+2. tests/e2e/phase1b/screen-efficiency.spec.ts
+   - New focused density tests at 402x714 and 402x754.
+   - Verifies fixed layers, available checklist space, eight-row capacity, right-edge
+     weight visibility, title clipping behavior, no horizontal overflow, category opening,
+     and Home hero position.
+
+REPORT OUTPUT
+3. reports/r0087/*.txt
+   - Required R0087 report files.
+4. screenshots/r0087-before-*.jpg and screenshots/r0087-after-*.jpg
+   - Baseline and final target-viewport previews.
+5. trailweigh-R0087-report.zip
+   - Deliverable archive.
+
+UNEXPECTED / PRE-EXISTING WORKTREE ARTIFACTS
+- Large test-results/ and playwright-report/ changes were created by the concurrently
+  running project-wide e2e workflow. They are not R0087 source changes.
+- R0086 diagnostic source/test files were already modified in the working tree before
+  R0087 and are not part of this density pass.

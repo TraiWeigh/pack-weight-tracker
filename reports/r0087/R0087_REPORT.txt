@@ -1,0 +1,89 @@
+TRAILWEIGH — R0087 GS
+Mobile Screen Efficiency / Density Pass
+
+STATUS: READY FOR USER IPHONE TEST
+
+CURRENT BRANCH / COMMIT
+Branch: main
+HEAD: 1ef9b45 Expand ViewportDiagnostic component logic and add viewport safety tests
+
+CURRENT-STATE FINDINGS
+- Real-device R0085/R0086 evidence remains the authority: TrailWeigh follows the
+  changing Safari visual viewport, has a correct 402px shell width, and does not
+  have a page zoom, whole-app-width, or browser-chrome positioning defect.
+- Before R0087, the fixed AppBar was 52px, List Summary was approximately 88.25px,
+  and Bottom Box Groups were 58px.
+- The Summary's 66px icon tile plus 10px top / 12px bottom padding consumed the
+  Summary height. The protected AppBar and Bottom Box Groups were not candidates.
+- Baseline category rows had a 68px minimum content height (69px including the
+  divider). A Summary-only trim could reclaim space but could not make a complete
+  eighth baseline-size row fit at 402x714.
+
+ROOT CAUSE / DENSITY FINDING
+The remaining "too big for the screen" concern was a density issue, not a viewport
+issue. Almost 200px was permanently allocated to fixed TrailWeigh layers. The smallest
+safe improvement was to remove unused vertical padding from the Summary and four
+vertical pixels from the checklist/location row interiors. No global scaling, font
+reduction, browser-chrome handling, or viewport workaround was used.
+
+EXACT CHANGES
+1. List Summary internal vertical padding changed from 10px top / 12px bottom to
+   4px top / 6px bottom. All Summary information, hierarchy, icon size, controls,
+   colours, width, fixed placement, and measured spacer behavior remain intact.
+2. Added a checklist-only 64px minimum row height. The existing 68px CARD_H remains
+   unchanged for Home bars.
+3. Category and Location row vertical grid padding changed from 10px to 8px.
+   The 44px name/subtitle touch target, font sizes, wedge width/shape, icon size,
+   horizontal weight geometry, and row semantics remain unchanged.
+4. Category drag measurement now follows the checklist-only row height, so reorder
+   geometry stays aligned with the compact row.
+5. Added focused R0087 Playwright coverage for 402x714 and 402x754 geometry.
+
+AREAS DELIBERATELY LEFT UNCHANGED
+- AppBar/header visual design, height, icons, behavior, and fixed placement.
+- Bottom Box Groups visual design, height, icons, gesture behavior, and fixed placement.
+- Safari visualViewport behavior, browser chrome, viewport meta, zoom, and root sizing.
+- List Summary content, hierarchy, fixed placement, and responsive width.
+- Home hero behavior and Home bar sizing.
+- Wedge width, shape, category colours, category icons, fonts, and horizontal layout.
+- Document-owned checklist scrolling, long-category bounded scrolling, drawers,
+  swipe-to-delete, reordering semantics, Add Item, accordion behavior, data, auth,
+  database, dependencies, workflows, and deployment.
+
+BEFORE / AFTER SUMMARY
+See BEFORE_AFTER_METRICS.txt for the full measurement table.
+
+NO VIEWPORT FIX CLAIM
+No visualViewport, viewport meta, Safari browser chrome, browser zoom, or global-scale
+fix was attempted. Chromium geometry validation does not certify iPhone Safari chrome.
+Kevin's real-iPhone capture remains the USER-PASS authority.
+
+WARNINGS / ERRORS
+- The aggregate workspace typecheck workflow remains red on unrelated mockup-sandbox
+  React ref type errors. The TrailWeigh web package typecheck passes.
+- The aggregate phase1B e2e workflow completed with 201 passed / 20 failed tests.
+  Its failures cover pre-existing legacy checks such as removed drag-handle expectations,
+  auth-dependent controls, print, and unit/move scenarios; no R0087-focused check failed.
+- The web artifact was already running and accepted the changes through HMR. No workflow
+  was restarted because the R0087 scope explicitly forbids workflow changes.
+
+STANDING QUESTIONS
+1. What did this task teach us for future prompts?
+   Fixed-layer viewport correctness and screen efficiency are separate concerns. When a
+   mobile app already matches visualViewport dimensions, first measure fixed reservations,
+   content capacity, and inner padding before considering any browser or root-layout fix.
+   The shared CARD_H constant also controls Home bars, so checklist-only density must use
+   a separate value to avoid unintentionally changing Home.
+
+2. Was anything unclear, unnecessary, risky, or better expressed another way?
+   The prompt was clear and correctly protected the Safari architecture. The one subtle
+   testing consideration is fractional CSS edges: the Summary can overlap a row border by
+   0.25px, so a one-pixel visual tolerance is appropriate when counting complete rows.
+   Real-iPhone row-count confirmation remains necessary because Safari's chrome height is
+   not reproducible in Chromium.
+
+3. What Replit/project detail will help future work?
+   Use targeted package typechecks and isolated Playwright output for TrailWeigh changes:
+   the broader workspace typecheck and project-wide e2e workflow currently include
+   unrelated failures. The active web artifact is root-mounted and HMR updates the running
+   web workflow without a configuration change.

@@ -273,3 +273,10 @@ uri = "file://trailweigh-R0086-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0086 report"
 description = "Diagnostic-controls fix report, focused test results, iPhone capture instructions, and preview artifact index."
+
+[[outputs]]
+id = "5fa_inroTODWfe8nEmMBM"
+uri = "file://trailweigh-R0087-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0087 report"
+description = "Mobile density pass report with before/after metrics, focused test results, iPhone verification steps, and target-viewport screenshots."

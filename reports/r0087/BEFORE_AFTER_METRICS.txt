@@ -1,0 +1,48 @@
+R0087 BEFORE / AFTER METRICS
+
+All values are CSS pixels. Before values came from the pre-change 402px read-only
+inspection; after values came from the focused R0087 browser checks. A one-pixel
+rounding tolerance is used for a row touching the Summary's fractional border edge.
+
+FIXED LAYERS
+                                      BEFORE       AFTER         CHANGE
+AppBar height                         52px         52px          unchanged
+List Summary height                   ~88.25px     ~76.25px      -12px
+Bottom Box Groups height              58px         58px          unchanged
+
+USABLE CHECKLIST CONTENT HEIGHT
+Viewport                              BEFORE       AFTER         CHANGE
+402 x 714                             ~515.75px    ~527.75px     +12px
+402 x 754                             ~555.75px    ~567.75px     +12px
+
+CATEGORY / LOCATION ROWS
+                                      BEFORE       AFTER         CHANGE
+Header minimum height                 68px         64px          -4px
+Rendered row incl. divider            ~69px        ~65px         -4px
+Internal vertical grid padding         10px         8px           -2px per side
+Name/subtitle touch block              44px         44px          unchanged
+Wedge width / shape / icon             unchanged    unchanged     unchanged
+
+VISIBLE COMPLETE ROWS
+Normal six-category demo:
+- 402 x 714: six complete rows before and after (all available demo categories).
+- 402 x 754: six complete rows before and after (all available demo categories).
+
+Eight-category density capacity:
+- Before at 402 x 714: measured baseline content capacity was seven full 69px rows,
+  with only part of an eighth row visible.
+- After at 402 x 714: eight complete 65px rendered rows verified.
+- Before at 402 x 754: eight 69px rows could fit.
+- After at 402 x 754: eight complete rows verified with additional space below.
+
+OTHER CONFIRMATIONS
+- document/client/scroll width remained 402 / 402 / 402 in the target checks.
+- root and fixed layers remain responsive to the browser viewport.
+- category weights end within the 402px right edge.
+- category and Home behavior remained usable.
+- R0087 did not alter the document-owned scrolling architecture. The existing focused
+  viewport-safe suite verified document scrolling and bounded long-category scrolling.
+
+REAL-DEVICE LIMITATION
+Chromium does not reproduce iPhone Safari browser chrome. Kevin must verify visual density
+in both Safari expanded-chrome and compacted-chrome states.

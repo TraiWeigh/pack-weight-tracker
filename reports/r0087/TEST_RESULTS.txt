@@ -1,0 +1,54 @@
+R0087 TEST RESULTS
+
+1. R0087 focused screen-efficiency suite
+Command:
+pnpm exec playwright test tests/e2e/phase1b/screen-efficiency.spec.ts --workers=1 --project=chromium --output=/tmp/r0087-density-results
+
+Result:
+3 passed (11.9s)
+
+Covers:
+- 402x714 and 402x754;
+- AppBar remains 52px and fixed;
+- Summary remains below AppBar and compacts safely;
+- Bottom Box Groups remain 58px and fixed at viewport bottom;
+- no horizontal overflow;
+- right-edge weights remain within 402px;
+- category titles retain their 44px readable/tappable text block;
+- eight categories fit completely in the measured content span;
+- category opening and Home fixed hero still work.
+
+2. Existing focused viewport-safe suite
+Command:
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium --output=/tmp/r0087-viewport-results
+
+Result:
+13 passed (46.0s)
+
+Covers:
+- diagnostic remains absent by default;
+- R0086 diagnostic controls and fallback;
+- no horizontal overflow at narrow width;
+- AppBar/Summary/bottom-nav positions;
+- Home scrolling;
+- bounded long-category scrolling;
+- document-owned checklist scrolling;
+- safe-area and dvh fallback checks.
+
+3. TrailWeigh web package typecheck
+Command:
+pnpm --filter @workspace/pack-checklist run typecheck
+
+Result:
+PASS
+
+4. Aggregate project workflow warning (not acceptance evidence)
+Configured e2e workflow:
+pnpm exec playwright test tests/e2e/phase1b/ --workers=1 --project=chromium
+
+Result:
+201 passed, 20 failed (22.6m)
+
+The failures are unrelated legacy/auth/removed-control scenarios. No R0087-focused suite
+failed. Chromium results verify CSS and interaction geometry only; they do not certify
+Safari browser chrome behavior.
