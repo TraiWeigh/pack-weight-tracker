@@ -1,0 +1,526 @@
+TRAILWEIGH — R0096 GS
+Gold Standard Replit Prompt
+LOCKED CONTROL LAYERS + FILTER BAR + HAMBURGER PANEL
+Build on R0095 Stable Mobile Shell
+
+REPLIT EXECUTION SETTINGS
+- Agent mode: POWER
+- App Testing: ON
+- Code Optimizations: OFF
+- Build mode, not Plan-only mode
+
+WHY POWER
+R0096 builds on the new R0095 mobile scroll-shell architecture and touches several fixed/locked UI layers that must remain synchronized across normal checklist, expanded-category, and hamburger-panel states without regressing Safari/iPhone scrolling.
+
+WHY CODE OPTIMIZATIONS OFF
+This is a controlled UI architecture task. Avoid unrelated refactoring.
+
+PERMANENT TRAILWEIGH CONVENTIONS
+- Prompt ZIP: R####_GS.zip
+- Replit report ZIP: R####.zip
+- Every prompt requires a report ZIP
+- Every report answers the three standing Replit questions
+- USER live-device evidence outranks Replit/Chromium PASS
+- Inspect CURRENT state first
+- Root cause before edit
+- Smallest reversible patch
+- Protect unrelated USER-PASS behavior
+
+CURRENT BASELINE
+R0095 established the preferred mobile-shell architecture:
+- AppBar outside normal scrolling
+- List Summary outside normal scrolling
+- checklist/category content owns the middle scroll
+- Bottom Box Groups outside normal scrolling
+- document/body should not own ordinary checklist scrolling
+
+R0096 must preserve that architecture.
+
+Do NOT revert to whole-document scrolling.
+
+PRIMARY USER REQUIREMENTS
+
+1. NEW LOCKED FILTER CONTROL
+Replace the future Category / Location / Photo segmented concept with ONE Filter control.
+
+The Filter control must:
+- sit directly beneath the fixed List Summary;
+- remain locked in place;
+- not scroll with checklist/category content;
+- open a menu/sheet of view/filter choices;
+- initially include:
+  - Category
+  - Location
+  - Photo
+- be extensible later for more filters without changing the top-bar width.
+
+Do not make the Filter control a separate full screen.
+
+The selected option may be shown in the control in a compact way, for example:
+- Filter: Category
+or equivalent existing TrailWeigh visual language.
+
+Do not over-design.
+
+2. FILTER BAR LOCKING
+Normal checklist structure should be:
+
+LOCKED TOP
+- AppBar
+- List Summary
+- Filter control/bar
+
+SCROLLING MIDDLE
+- checklist/category content
+
+LOCKED BOTTOM
+- Bottom Box Groups
+
+The Filter control must remain physically stationary when the checklist scrolls.
+
+3. CATEGORY HEADER LOCKING IN EXPANDED / OVER-EXPANDED STATE
+When a category is opened far enough that its item content becomes the active working region:
+
+- the active Category bar/header must be locked directly beneath the List Summary;
+- it must not scroll away;
+- it should occupy the same top-control slot used by the Filter bar;
+- do NOT stack Filter + Category bar and waste vertical space.
+
+Preferred behavior:
+NORMAL LIST
+List Summary
+→ Filter bar
+→ scrolling categories
+
+ACTIVE / OVER-EXPANDED CATEGORY
+List Summary
+→ active Category bar
+→ scrolling items/content
+
+When category view closes/returns:
+- Filter bar returns.
+
+4. LOCKED ADD ITEM BAR FOR OVER-EXPANDED CATEGORY
+When the active category is over-expanded / using its bounded item-content mode:
+
+- Add Item bar must lock directly ABOVE the Bottom Box Groups;
+- Add Item bar must not scroll with item content;
+- only the item region between active Category bar and Add Item bar scrolls;
+- Bottom Box Groups stays locked below Add Item.
+
+Structure:
+
+LOCKED TOP
+- AppBar
+- List Summary
+- active Category bar
+
+SCROLLING MIDDLE
+- category items/content
+
+LOCKED BOTTOM
+- Add Item bar
+- Bottom Box Groups
+
+Preserve the existing Add Item function and appearance unless a tiny structural wrapper change is required.
+
+5. HAMBURGER PANEL LOCK
+The hamburger panel currently moves when the underlying page/content scrolls.
+
+Fix this.
+
+When hamburger panel is open:
+- panel FRAME stays locked to the screen;
+- panel must not move up/down with checklist scrolling;
+- underlying checklist should not drag the panel;
+- preserve current panel size, appearance, controls, and open/close behavior.
+
+If hamburger panel content is taller than available screen height:
+- only the INSIDE of the panel may scroll;
+- panel frame remains stationary.
+
+Do not redesign the hamburger menu.
+
+6. PHOTO FILTER MODE — PRESERVE DEFINED BEHAVIOR
+The new Filter menu includes Photo.
+
+Photo mode is a VIEW MODE, not a separate screen.
+
+When Photo mode is active and a category accordion is opened:
+- items with photos show the photo in place of normal item accordion content;
+- each item still retains its checkbox;
+- items without photos may remain in normal form rather than disappearing;
+- bottom of each displayed photo has only:
+  - Delete
+  - Edit
+- NO separate Camera button;
+- Delete removes the current item photo, with confirmation if current UI conventions support it;
+- Edit offers:
+  - Take New Photo
+  - Choose from Photo Library
+- replacing/taking a photo changes the photo only, not the underlying item;
+- photo remains associated with that specific item;
+- switching Photo mode off restores normal item presentation.
+
+IMPORTANT:
+If Photo mode implementation would materially broaden R0096 beyond a safe scope, implement the Filter infrastructure and wire Photo as a selectable placeholder/view-state only, then document Photo rendering as NOT YET IMPLEMENTED.
+
+Do not force a risky full photo feature into this task merely because the Filter control exposes the option.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. Inspect CURRENT `/mobile-functional-v3`.
+2. Read relevant `replit.md` / durable project guidance read-only.
+3. Confirm R0095 scroll-shell architecture is active.
+4. Identify:
+   - AppBar container
+   - List Summary container
+   - main checklist scroller
+   - Bottom Box Groups container
+   - category header structure
+   - long-category / over-expanded structure
+   - Add Item bar structure
+   - hamburger panel structure
+   - current Category/Location control implementation
+5. Confirm actual scroll owners in:
+   - normal checklist
+   - expanded category
+   - over-expanded category
+   - hamburger panel open state
+6. Separate FACTS / UNKNOWNS / ASSUMPTIONS.
+7. Identify the smallest shared layout strategy to create locked top/bottom control slots without duplicating positioning hacks.
+
+DO NOT GUESS
+Prefer reusable shell slots / shared layout regions over:
+- arbitrary transforms;
+- per-screen magic numbers;
+- independent fixed offsets scattered across components.
+
+TARGET MOBILE SHELL
+
+NORMAL CHECKLIST
+[AppBar] LOCKED
+[List Summary] LOCKED
+[Filter Bar] LOCKED
+[Checklist Categories] SCROLL
+[Bottom Box Groups] LOCKED
+
+ACTIVE / OVER-EXPANDED CATEGORY
+[AppBar] LOCKED
+[List Summary] LOCKED
+[Active Category Bar] LOCKED
+[Category Items] SCROLL
+[Add Item Bar] LOCKED
+[Bottom Box Groups] LOCKED
+
+HAMBURGER OPEN
+[App shell beneath]
+[Hamburger panel frame] LOCKED OVERLAY
+[Hamburger panel interior] scroll only if necessary
+
+FILTER CONTROL UX
+Keep it compact.
+
+Preferred behavior:
+- one control labelled Filter or equivalent;
+- tap opens compact sheet/menu/popover using current TW drawer/sheet language;
+- choices:
+  - Category
+  - Location
+  - Photo
+- active state visibly indicated;
+- closing filter menu returns focus to checklist;
+- no page navigation.
+
+CATEGORY / LOCATION BEHAVIOR
+Preserve current Category and Location view semantics.
+
+Do not rewrite their underlying data behavior unless necessary to connect them to the new Filter control.
+
+The change is primarily:
+- presentation/control architecture;
+- state selection;
+- locked positioning.
+
+SCROLL OWNERSHIP RULE
+R0095 rule remains:
+
+Ordinary checklist/document use must not cause:
+- AppBar movement;
+- List Summary movement;
+- Filter/Category top-control movement;
+- Add Item bottom-control movement;
+- Bottom Box Groups movement.
+
+Only the designated middle content region scrolls.
+
+For hamburger panel:
+- only panel interior scrolls when needed.
+
+BODY/ROOT
+Do not reintroduce whole-document scrolling for these states.
+
+Do not recreate old global body-lock freeze.
+
+LONG-CATEGORY SAFETY
+This is critical.
+
+Preserve:
+- bounded long-category scrolling;
+- paging if present;
+- Add Item access;
+- no nested-scroll trap;
+- no freeze;
+- category can close/return;
+- outer/inner scroll ownership remains intentional.
+
+HOME
+Do not redesign Home.
+
+Preserve R0095 Home behavior.
+
+If shared shell changes touch Home:
+- AppBar remains stable;
+- Home hero remains where current design expects;
+- Home content keeps its own current internal scroller;
+- Bottom Box Groups remains stable.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- app width;
+- viewport meta;
+- AppBar height/design;
+- List Summary height/design;
+- Bottom Box Groups height/design;
+- weight-column position;
+- Summary horizontal alignment;
+- header horizontal alignment;
+- category row height;
+- wedge geometry/colors/icons/shadows;
+- fonts;
+- typography;
+- checklist semantics;
+- swipe-to-delete;
+- reorder;
+- weight calculations;
+- data model;
+- DB/schema;
+- auth;
+- packages/dependencies;
+- publishing/deployment.
+
+FUTURE ITEMS — DO NOT IMPLEMENT
+Do NOT mix in:
+- wedge shadow redesign;
+- color themes;
+- per-category wedge color customization;
+- Android-only layout variants;
+- PWA conversion;
+- Safari address-bar hiding.
+
+TESTING
+Use App Testing.
+
+At minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+
+FOCUSED R0096 TESTS
+
+TEST 1 — NORMAL CHECKLIST LOCKED LAYERS
+Scroll checklist deeply.
+
+Verify:
+- AppBar Y unchanged
+- List Summary Y unchanged
+- Filter bar Y unchanged
+- Bottom Box Groups Y unchanged
+- category row Y changes
+
+TEST 2 — FILTER FUNCTION
+Verify:
+- Filter opens/closes
+- Category selectable
+- Location selectable
+- Photo selectable
+- active choice visible
+- no document scroll escape
+- no chrome movement
+
+TEST 3 — ACTIVE CATEGORY TOP SLOT
+Open category into active/over-expanded state.
+
+Verify:
+- Filter bar is replaced by active Category bar
+- Category bar sits directly below List Summary
+- Category bar remains fixed while items scroll
+- Filter bar is not stacked simultaneously
+- closing category restores Filter bar
+
+TEST 4 — ADD ITEM BOTTOM SLOT
+In over-expanded category:
+- Add Item bar sits directly above Bottom Box Groups
+- Add Item stays fixed while items scroll
+- Bottom Box Groups stays fixed
+- items scroll in the middle only
+
+TEST 5 — LONG CATEGORY
+Verify:
+- long category item scrolling works
+- no freeze
+- no trapped scroll
+- Add Item remains reachable/locked
+- close/return works
+
+TEST 6 — HAMBURGER PANEL
+Open hamburger panel.
+Attempt to scroll underlying checklist.
+
+Verify:
+- panel frame does not move
+- underlying document/content does not drag panel
+- if panel content exceeds height, panel interior scrolls
+- close works
+- reopening preserves behavior
+
+TEST 7 — HOME REGRESSION
+Verify Home:
+- loads
+- AppBar stable
+- Home content scrolls as before
+- Bottom Box Groups stable
+- no new document scroll
+
+TEST 8 — RESPONSIVE
+At 360px:
+- no horizontal overflow
+- Filter usable
+- active Category bar usable
+- Add Item bar usable
+- hamburger panel usable
+
+TEST 9 — INTERACTIONS
+Verify:
+- checkboxes
+- accordion open/close
+- Add Item
+- Locker
+- Summary
+- Add
+- Search
+- Next
+- Category/Location selection
+- relevant drawers
+
+REAL IPHONE LIMITATION
+Chromium cannot prove iPhone Safari behavior.
+
+Therefore:
+REPLIT PASS != USER PASS.
+
+Result:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Kevin's actual iPhone verification determines USER PASS.
+
+VISUAL ARTIFACTS
+Capture at 402px:
+- normal checklist with Filter bar
+- normal checklist mid-scroll
+- active category with locked Category bar
+- active category mid-item-scroll with locked Add Item
+- hamburger panel open
+- hamburger panel after attempted underlying scroll
+- Home regression screenshot
+
+REQUIRED REPORT ZIP — PERMANENT REQUIREMENT
+Create and provide:
+
+R0096.zip
+
+Do NOT use any other report filename.
+
+R0096.zip must contain:
+
+1. R0096_REPORT.txt
+Include:
+- R0096 GS
+- Agent mode used: POWER
+- R0095 architecture confirmed: YES/NO
+- FACTS / UNKNOWNS / ASSUMPTIONS
+- exact locked-slot architecture implemented
+- exact scroll owners for each state
+- Filter control implementation
+- Category/Location behavior preserved
+- Photo state implemented fully / placeholder only
+- active Category bar replacement behavior
+- Add Item lock behavior
+- hamburger panel lock behavior
+- Home regression status
+- areas deliberately unchanged
+- exact test commands
+- exact PASS/FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+
+3. TEST_RESULTS.txt
+
+4. BEFORE_AFTER_METRICS.txt
+Include:
+- Y coordinates for AppBar/Summary/Filter/Footer during normal scroll
+- Y coordinates for AppBar/Summary/Category/Add Item/Footer during active-category scroll
+- hamburger panel rect before/after underlying-scroll attempt
+- scroll owner / scrollTop values
+- document/window scroll values
+- preservation metrics:
+  - AppBar height
+  - Summary height
+  - Bottom bar height
+  - category row height
+  - weight-column right edge
+  - root width
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to verify:
+- normal checklist: only categories move
+- Filter bar remains locked under Summary
+- Filter Category / Location / Photo options
+- active category replaces Filter bar
+- active Category bar remains locked
+- Add Item locks above Bottom Box Groups
+- category items scroll between those bars
+- hamburger panel frame does not move
+- if needed only hamburger interior scrolls
+- Home still scrolls correctly
+- no header/Summary/footer movement
+- no freezes
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state clearly.
+
+IF BLOCKED OR FAILED
+STILL create R0096.zip documenting the blocker/failure.
+
+THREE STANDING REPLIT QUESTIONS — PERMANENT REQUIREMENT
+Answer these in every TrailWeigh Replit report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+Preserve R0095 stable-shell architecture.
+Do not revert to document scrolling.
+Use shared locked layout slots.
+Keep only working content scrollable.
+Protect unrelated USER-PASS behavior.
