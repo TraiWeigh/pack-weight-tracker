@@ -1,0 +1,20 @@
+R0098 visual evidence index
+
+1. screenshots/01-target-wedges-before-402x714.png
+   Captured before the production change. Home target wedges show the previous 6px
+   inter-wedge buffer.
+
+2. screenshots/02-source-list-wedges-402x714.png
+   Current List category wedges, the measured 1px visual-gap source of truth.
+
+3. screenshots/03-target-wedges-after-402x714.png
+   Home target wedges after the gap change; adjacent wedges now have a 1px buffer.
+
+4. screenshots/04-target-wedges-closeup-scroll-402x714.png
+   Scrolled Home target view showing at least five adjacent wedges after the change.
+
+5. screenshots/05-standard-replit-preview-402x714.jpg
+   Standard Replit artifact preview screenshot captured after the R0098 change.
+
+Independent browser-review screenshots were also captured in the test reviewer
+session. The packaged files above are the workspace-resident report evidence.

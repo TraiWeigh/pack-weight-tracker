@@ -1,0 +1,289 @@
+TRAILWEIGH — R0098 GS — REVISED
+Gold Standard Replit Prompt
+COSMETIC PASS 1 — MATCH WEDGE BUFFER TO CURRENT LIST WEDGES
+
+REPLIT EXECUTION SETTINGS
+- Agent mode: FREE
+- App Testing: ON
+- Code Optimizations: OFF
+- Build mode, not Plan-only mode
+
+PLAIN-ENGLISH TASK SUMMARY
+Measure the vertical spacing already used by the CURRENT List wedges and use that exact spacing as the standard for the wedges being adjusted.
+
+Do NOT invent a new spacing value.
+Do NOT use the earlier suggested 2–4px range unless measurement proves that is exactly the current List-wedge spacing.
+
+This task changes wedge spacing only.
+Wedge shadows are NOT part of R0098.
+
+WHY FREE
+This is a small, isolated cosmetic adjustment with low implementation complexity.
+
+WHY APP TESTING ON
+The visual change touches repeated category/wedge rows, so confirm it does not disturb the R0097 USER-PASS shell, row geometry, or scrolling.
+
+WHY CODE OPTIMIZATIONS OFF
+Do not refactor. Make the smallest cosmetic patch only.
+
+PERMANENT TRAILWEIGH CONVENTIONS
+- Prompt ZIP: R####_GS.zip
+- Replit report ZIP: R####.zip
+- Every prompt requires a report ZIP
+- Every report answers the three standing Replit questions
+- USER live-device evidence outranks Replit/Chromium PASS
+- Inspect CURRENT state first
+- Root cause/current structure before edit
+- Smallest reversible patch
+- Protect unrelated USER-PASS behavior
+
+PROTECTED BASELINE
+R0097 is USER PASS for the core iPhone mobile shell.
+
+Preserve:
+- AppBar locked and visible
+- List Summary locked
+- Filter bar locked
+- only working content scrolls
+- Bottom Box Groups locked
+- current right-side weight alignment
+- current category row height
+- current wedge width, shape, icon, and color
+- current category text layout
+
+USER INTENT
+The vertical gap/buffer between adjacent colored wedges must match the spacing already used by the CURRENT List wedges.
+
+The existing List wedges are the visual source of truth.
+
+Do not create a new spacing system.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. Inspect CURRENT active `/mobile-functional-v3`.
+2. Read relevant `replit.md` / project guidance read-only.
+3. Confirm R0097 stable-shell architecture is present.
+4. Identify the exact CURRENT List-wedge implementation the user is referring to.
+5. Measure the existing visible vertical spacing between adjacent List wedges:
+   - wedge top
+   - wedge bottom
+   - row top/bottom
+   - any border/separator contribution
+   - any top/bottom inset
+   - effective visible gap in rendered pixels
+6. Inspect the target wedges that do not currently match that spacing.
+7. Determine whether both use the same wedge component/style or separate variants.
+8. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS.
+9. Apply the exact measured List-wedge spacing to the target wedges using the smallest shared styling change.
+
+SOURCE-OF-TRUTH RULE
+The correct gap is:
+
+EXACTLY THE CURRENT RENDERED LIST-WEDGE GAP.
+
+Do not:
+- approximate it;
+- visually guess it;
+- choose a new token because it seems cleaner;
+- use 2px, 3px, 4px, or any other value unless that value is what the current List wedges actually measure.
+
+If the current List wedges use a token/variable:
+- reuse that token.
+
+If the gap is produced indirectly by wedge height/inset inside the row:
+- reuse that same mechanism where practical.
+
+DESIGN TARGET
+- Wedges should share the same vertical rhythm as the current List wedges.
+- Keep wedge left anchoring unchanged.
+- Keep wedge width unchanged.
+- Keep wedge point/chevron shape unchanged.
+- Keep icon size and placement unchanged.
+- Keep colors unchanged.
+- Keep row text and weight alignment unchanged.
+- Keep category row height unchanged.
+- Do not turn rows into separated cards.
+
+PREFERRED IMPLEMENTATION
+Prefer matching the existing List-wedge spacing INSIDE the current row geometry.
+
+Do not increase overall list height unless the current List wedges themselves establish that exact row geometry.
+
+CONSISTENCY
+If the exact same reusable wedge component already controls both source and target:
+- identify why the rendered spacing differs before editing.
+
+If separate wedge variants are used:
+- copy only the spacing/rhythm behavior, not unrelated colors or styling.
+
+DO NOT CHANGE
+Do NOT change:
+- R0097 scroll ownership
+- AppBar
+- List Summary
+- Filter behavior
+- Bottom Box Groups
+- category row ordering
+- category semantics
+- category row text
+- category weight column
+- wedge width
+- wedge shape/point angle
+- wedge colors
+- wedge icons
+- wedge shadows
+- typography
+- font sizes
+- swipe-to-delete
+- reorder
+- Add Item
+- accordion behavior
+- data
+- DB/schema
+- auth
+- dependencies
+- publishing/deployment
+
+IMPORTANT
+R0098 = WEDGE BUFFER / SPACING ONLY.
+
+Wedge shadows will be a separate next cosmetic prompt after the user approves R0098 on the iPhone.
+
+VISUAL ACCEPTANCE
+At 402px iPhone reference width:
+
+- target wedges visibly match the current List wedges' vertical spacing;
+- the measured gap is the same;
+- wedge points remain crisp;
+- icons remain centered;
+- row text remains vertically aligned;
+- weights remain in their current USER-approved position;
+- category row height remains unchanged;
+- no clipping;
+- no horizontal movement;
+- no extra card-like whitespace.
+
+TESTING
+Use App Testing.
+
+At minimum test:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+
+Verify:
+1. R0097 shell remains locked.
+2. Normal category scrolling works.
+3. Source List-wedge spacing is measured.
+4. Target wedge spacing matches that measured source value.
+5. Wedge left edge unchanged.
+6. Wedge width unchanged.
+7. Wedge shape unchanged.
+8. Icon position unchanged within tiny tolerance.
+9. Category row height unchanged.
+10. Weight column unchanged.
+11. No horizontal overflow.
+12. No text overlap.
+13. No first/last-row clipping.
+14. Filter/Summary/Bottom Box Groups unaffected.
+15. Home unaffected.
+16. Hamburger panel unaffected.
+
+BEFORE / AFTER METRICS
+Report:
+- exact source List-wedge visible gap
+- exact target wedge gap BEFORE
+- exact target wedge gap AFTER
+- source wedge height
+- target wedge height before/after
+- source top/bottom inset if applicable
+- target top/bottom inset before/after
+- category row height before/after
+- wedge width before/after
+- wedge left/right bounds before/after
+- icon center before/after
+- weight right edge before/after
+- root width
+
+The report must explicitly state whether:
+TARGET GAP AFTER = SOURCE LIST-WEDGE GAP
+YES / NO
+
+VISUAL ARTIFACTS
+At 402px capture:
+- source List wedges showing the reference spacing
+- target wedges BEFORE
+- target wedges AFTER
+- a close-up showing at least 5 adjacent target wedges after the change
+- one screenshot during scroll
+
+REQUIRED REPORT ZIP — PERMANENT REQUIREMENT
+Create and provide:
+
+R0098.zip
+
+Do NOT use any other report filename.
+
+R0098.zip must contain at minimum:
+
+1. R0098_REPORT.txt
+Include:
+- R0098 GS
+- Agent mode used: FREE
+- exact source List-wedge spacing measured
+- target spacing before
+- target spacing after
+- exact implementation method
+- whether row height changed
+- screens/components affected
+- areas deliberately unchanged
+- exact test commands
+- exact PASS/FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+
+3. TEST_RESULTS.txt
+
+4. BEFORE_AFTER_METRICS.txt
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to verify:
+- new wedge spacing matches the current List wedges;
+- wedges still feel bold and recognizable;
+- row height did not change;
+- wedge points still line up;
+- icons remain centered;
+- weights did not move;
+- R0097 scrolling shell remains unchanged.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state clearly.
+
+IF BLOCKED OR FAILED
+STILL create R0098.zip documenting the blocker/failure.
+
+THREE STANDING REPLIT QUESTIONS — PERMANENT REQUIREMENT
+Answer these in every TrailWeigh Replit report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+Preserve R0097.
+Match the CURRENT List-wedge spacing exactly.
+Do not invent a new gap.
+R0098 is spacing only.
+Do not add shadows yet.

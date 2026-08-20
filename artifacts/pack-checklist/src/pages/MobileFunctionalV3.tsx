@@ -5296,7 +5296,10 @@ function MobileFunctionalV3Inner() {
             <div style={{
               paddingLeft: 12, paddingRight: 12,
               paddingBottom: `calc(${NAV_H}px + env(safe-area-inset-bottom, 0px) + 20px)`,
-              display: 'flex', flexDirection: 'column', gap: 6,
+              // R0098: match the current List wedges' rendered 1px rhythm.
+              // The List's 1px separator sits inside its 65px row; Home keeps
+              // its existing 68px row geometry and uses the same visible gap.
+              display: 'flex', flexDirection: 'column', gap: 1,
             }}>
               {(
                 [

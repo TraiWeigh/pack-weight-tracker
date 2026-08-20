@@ -1,0 +1,43 @@
+R0098 wedge-spacing metrics — 402×714 CSS pixels
+
+SOURCE LIST WEDGES (CURRENT REFERENCE)
+- Backpack outer row: top 190, bottom 255, height 65
+- Backpack wedge: top 190, bottom 254, left 0, right 72, width 72, height 64
+- Clothing outer row: top 255, bottom 320, height 65
+- Clothing wedge: top 255, bottom 319, left 0, right 72, width 72, height 64
+- Source outer-row gap: 0px
+- Source top inset: 0px
+- Source bottom inset / separator contribution: 1px
+- Exact source List-wedge visible gap: 1px
+- Source icon local centre: x=31.75px, y=32px
+- Source category-weight right edge: 358px
+
+TARGET HOME WEDGES — BEFORE
+- Start Here row/wedge: top 414, bottom 482, height 68; left/right 12/84; width 72
+- Tutorials row/wedge: top 488, bottom 556, height 68; left/right 12/84; width 72
+- Target visible gap before: 6px
+- Target row height before: 68px
+- Target wedge height before: 68px
+- Target top/bottom inset before: 0px / 0px
+- Target icon local centre before: x=31.75px, y=34px
+- Target Home wedge left/right before: 12px / 84px
+
+TARGET HOME WEDGES — AFTER
+- Start Here row/wedge: top 414, bottom 482, height 68; left/right 12/84; width 72
+- Tutorials row/wedge: top 483, bottom 551, height 68; left/right 12/84; width 72
+- Target visible gap after: 1px
+- Target row height after: 68px
+- Target wedge height after: 68px
+- Target top/bottom inset after: 0px / 0px
+- Target icon local centre after: x=31.75px, y=34px
+- Target Home wedge left/right after: 12px / 84px
+
+PRESERVED LIST / SHELL METRICS
+- Category row height before/after: 65px / 65px
+- Category weight right edge before/after: 358px / 358px
+- Root width: 402px
+- Document scroll width: 402px
+- Horizontal overflow: none
+
+TARGET GAP AFTER = SOURCE LIST-WEDGE GAP
+YES — 1px = 1px.

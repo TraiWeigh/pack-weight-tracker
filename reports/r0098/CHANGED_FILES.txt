@@ -1,0 +1,19 @@
+R0098 changed files
+
+Production
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Home destination wedge stack: flex gap changed from 6px to the measured List
+  wedge rhythm of 1px. No other production behavior or styling changed.
+
+Regression coverage
+- tests/e2e/phase1b/r0098-wedge-spacing.spec.ts
+  New four-viewport measurement and preservation coverage for the source List
+  wedge rhythm and target Home wedge stack.
+
+Report evidence
+- reports/r0098/R0098_REPORT.txt
+- reports/r0098/BEFORE_AFTER_METRICS.txt
+- reports/r0098/TEST_RESULTS.txt
+- reports/r0098/USER_IPHONE_TEST.txt
+- reports/r0098/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- reports/r0098/screenshots/*

@@ -1,0 +1,38 @@
+R0098 validation results
+
+PASS
+
+1. Typecheck
+   Command:
+   pnpm --filter @workspace/pack-checklist run typecheck
+   Result: PASS
+
+2. R0098 + R0097 focused browser validation
+   Command:
+   pnpm exec playwright test tests/e2e/phase1b/r0098-wedge-spacing.spec.ts tests/e2e/phase1b/r0097-appbar-safe-area.spec.ts --workers=1 --project=chromium
+   Result: PASS — 11/11
+
+   R0098 cases: 4/4
+   - 402×714
+   - 402×754
+   - 390×844
+   - 360×800
+   Each confirms source List gap = target Home gap = 1px, unchanged target row
+   height/width/left edge/icon placement, preserved category weight edge, no
+   horizontal overflow, and a scrollable Home content area.
+
+   R0097 cases: 7/7
+   - AppBar and locked stack across all four viewports
+   - controlled safe-area shell behavior
+   - internal checklist scrolling while fixed layers do not move
+   - safe-area-aware Home and hamburger placement
+
+3. Independent browser visual review
+   Result: PASS
+   - Verified List’s thin 1px divider rhythm.
+   - Verified all seven Home destination wedges use the same tight rhythm rather
+     than separated-card spacing.
+   - Verified unchanged chevron shape, icon/text placement, colours, fixed shell
+     after Home/List navigation, and no horizontal overflow.
+
+No page errors or unexpected server errors were reported by the R0098 browser test.

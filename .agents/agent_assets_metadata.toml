@@ -350,3 +350,10 @@ uri = "file://R0097.zip"
 type = "unspecified"
 title = "R0097 AppBar restoration archive"
 description = "Safe-area-aware AppBar restoration with iPhone evidence, reports, fresh screenshots, source changes, and passing focused validation."
+
+[[outputs]]
+id = "c6Kf7knsbYEld1oUHNOT2"
+uri = "file://R0098.zip"
+type = "unspecified"
+title = "R0098 wedge-spacing report archive"
+description = "Measured List-to-Home wedge rhythm alignment, before/after screenshots, validation results, source patch, and iPhone verification checklist."

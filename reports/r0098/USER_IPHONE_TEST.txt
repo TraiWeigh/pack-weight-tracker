@@ -1,0 +1,25 @@
+Kevin — R0098 user iPhone verification checklist
+
+Please open /mobile-functional-v3 on the same iPhone Safari scenario used for
+R0097 and verify:
+
+1. Home destination wedges now have the same tight vertical rhythm as the current
+   List category wedges (no extra card-like 6px buffer).
+2. The Home wedges still feel bold and recognizable.
+3. Home wedge row height did not change.
+4. Wedge points still line up and remain crisp.
+5. Icons remain in their existing visually balanced placement.
+6. List category weights did not move.
+7. The R0097 shell remains unchanged:
+   - AppBar visible and locked
+   - List Summary locked
+   - Filter locked
+   - only list content scrolls
+   - Bottom Box Groups remains locked
+8. Home and the hamburger panel still behave normally.
+
+Expected result:
+- Home target wedge gap is now 1px, matching the List’s measured visible wedge gap.
+
+Please report any live-device mismatch. USER live-device evidence is the final
+acceptance authority.
