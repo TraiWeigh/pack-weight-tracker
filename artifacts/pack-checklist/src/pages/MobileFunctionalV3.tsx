@@ -3803,9 +3803,7 @@ function MobileFunctionalV3Inner() {
           <div>
             <div style={{
               margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
-              // R0087: retain all Summary content and its 66px icon tile while
-              // reclaiming non-interactive vertical padding.
-              padding: '4px 14px 6px', display: 'flex', flexDirection: 'column', gap: 8,
+              padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
               /* R0085P3: shadow on the opaque green panel — correctly renders above
                  white category rows; detached from backdrop-filter compositor layer */
               boxShadow: '0 4px 12px rgba(0,0,0,0.22)',

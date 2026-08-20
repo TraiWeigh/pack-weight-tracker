@@ -1,0 +1,21 @@
+R0088 SCREENSHOT / ARTIFACT INDEX
+
+BEFORE (R0087 COMPACT SUMMARY)
+- screenshots/r0087-after-402x714.jpg
+- screenshots/r0087-after-402x754.jpg
+
+AFTER (R0088 RESTORED SUMMARY)
+- screenshots/r0088-restored-402x714.jpg
+- screenshots/r0088-restored-402x754.jpg
+
+ADDITIONAL BROWSER VERIFICATION ARTIFACTS
+- 75f287 — restored collapsed list at 402x714.
+- m6dmq0 — Backpack expanded after restoration.
+- vlg0dr — restored collapsed list at 402x754.
+- jle7d2 — Home hero under the AppBar after restoration.
+
+PLAYWRIGHT OUTPUT (ephemeral)
+- /tmp/r0088-summary-results
+- /tmp/r0088-viewport-results
+
+No standard Replit usage screenshot was available in this session.

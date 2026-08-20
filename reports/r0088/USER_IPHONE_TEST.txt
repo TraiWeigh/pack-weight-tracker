@@ -1,0 +1,23 @@
+KEVIN — R0088 REAL IPHONE SAFARI TEST
+
+Open:
+https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.worf.replit.dev/mobile-functional-v3
+
+1. Start with Safari browser chrome/address bar expanded.
+2. Confirm the green List Summary visually matches the original pre-R0087 proportions:
+   taller than the R0087 compact version, with the original top and bottom breathing room.
+3. Confirm the header remains fixed at the top.
+4. Confirm the List Summary remains fixed immediately beneath the header.
+5. Confirm category rows still have the current tighter R0087 density; this task should
+   not have made them taller again.
+6. Confirm Bottom Box Groups remain fixed at the visible bottom.
+7. Confirm the category weights on the right edge are not clipped.
+8. Open a category, scroll its item area if applicable, open the drawer, and visit Home.
+   Confirm those behaviors still work normally.
+9. Scroll until Safari chrome compacts, then repeat the visual checks. Safari behavior
+   should be otherwise unchanged; this task does not claim to remove browser chrome.
+
+If anything differs from the original Summary or becomes clipped, include a screenshot
+with Safari chrome visible and describe the exact state.
+
+R0088 is READY FOR USER IPHONE TEST, not USER PASS.

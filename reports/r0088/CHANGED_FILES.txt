@@ -1,0 +1,31 @@
+R0088 CHANGED FILES
+
+PRODUCT SOURCE
+1. artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+   Reason: restored only the List Summary's exact historical pre-R0087 padding:
+   4px 14px 6px -> 10px 14px 12px. No other Summary, category, viewport, or
+   fixed-layer code was changed.
+
+TEST SOURCE
+2. tests/e2e/phase1b/screen-efficiency.spec.ts
+   Reason: converts the R0087 compact-Summary assertions into R0088 restored-Summary
+   assertions while preserving the existing category-row-density checks.
+
+DELIVERABLES
+3. reports/r0088/*.txt
+   Reason: required R0088 report contents.
+4. screenshots/r0088-restored-402x714.jpg
+   screenshots/r0088-restored-402x754.jpg
+   Reason: restored target-size preview evidence.
+5. trailweigh-R0088-report.zip
+   Reason: requested downloadable report archive.
+
+RELEVANT PRIOR ARTIFACTS REFERENCED, NOT CHANGED BY R0088
+- screenshots/r0087-after-402x714.jpg
+- screenshots/r0087-after-402x754.jpg
+  These compact-Summary screenshots serve as R0088 before evidence.
+
+UNEXPECTED FILES
+- No unexpected product-source files were changed by R0088.
+- Existing test-results/playwright-report churn belongs to the project-wide e2e workflow
+  and is not included as an R0088 source change.

@@ -280,3 +280,10 @@ uri = "file://trailweigh-R0087-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0087 report"
 description = "Mobile density pass report with before/after metrics, focused test results, iPhone verification steps, and target-viewport screenshots."
+
+[[outputs]]
+id = "7QnJ8derMEhiQkC6HToUp"
+uri = "file://trailweigh-R0088-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0088 report"
+description = "Exact List Summary restoration report with source-history reference, metrics, tests, iPhone verification steps, and before/after screenshots."

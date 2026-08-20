@@ -1,0 +1,48 @@
+R0088 TEST RESULTS
+
+1. Focused restored-Summary / preserved-density suite
+Command:
+pnpm exec playwright test tests/e2e/phase1b/screen-efficiency.spec.ts --workers=1 --project=chromium --output=/tmp/r0088-summary-results
+
+Result:
+3 passed (12.8s)
+
+Covers:
+- 402x714 and 402x754;
+- restored 88–89px Summary height range;
+- fixed AppBar and Bottom Box Groups;
+- restored measured content reservation;
+- current R0087 64px category-row density;
+- no horizontal overflow and visible right-edge weights;
+- category expansion and Home hero placement.
+
+2. Existing focused mobile viewport regression suite
+Command:
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium --output=/tmp/r0088-viewport-results
+
+Result:
+13 passed (50.6s)
+
+Covers:
+- diagnostic default/no-footprint and constrained-height behavior;
+- long-category bounded scrolling;
+- narrow-width category, open-item, and location safety;
+- bottom navigation visibility;
+- safe-area and viewport CSS fallbacks;
+- document-owned checklist scrolling.
+
+3. TrailWeigh web package typecheck
+Command:
+pnpm --filter @workspace/pack-checklist run typecheck
+
+Result:
+PASS
+
+CHROMIUM VS USER IPHONE
+All automated checks above run in Chromium. They confirm source behavior, CSS geometry,
+and interactions but do not recreate Safari address-bar/browser-chrome behavior. Kevin's
+real-iPhone verification is required before calling this a USER PASS.
+
+BLOCKED / FAILED
+No R0088 focused test is blocked or failed. The broader configured workflows retain
+unrelated legacy failures and were deliberately not restarted or changed in this task.

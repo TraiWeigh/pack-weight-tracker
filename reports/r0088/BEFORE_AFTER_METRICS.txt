@@ -1,0 +1,36 @@
+R0088 BEFORE / AFTER METRICS
+
+All values are CSS pixels.
+
+LIST SUMMARY SOURCE VALUES
+                              Pre-R0087         R0087              R0088 restored
+vertical padding              10px / 12px       4px / 6px          10px / 12px
+horizontal padding            14px              14px               14px
+internal gap                  8px               8px                8px
+outer Summary height          88.25px           ~76.25px           88.25px
+measured spacer               ~88px             ~76px              88px
+
+PROTECTED DIMENSIONS
+                              R0087              R0088
+AppBar                         52px               52px unchanged
+Bottom Box Groups              58px               58px unchanged
+Category outer row             64px               64px unchanged
+Category text target           44px               44px unchanged
+
+RESTORED FIXED-LAYER GEOMETRY
+402 x 714:
+- AppBar: 0–52
+- List Summary: 52–140.25 (88.25px)
+- In-flow spacer: 88px
+- Bottom Box Groups: 656–714 (58px)
+
+402 x 754:
+- AppBar: 0–52
+- List Summary: 52–140.25 (88.25px)
+- In-flow spacer: 88px
+- Bottom Box Groups: 696–754 (58px)
+
+NO-OVERFLOW CONFIRMATION
+At both target sizes in Chromium, clientWidth and scrollWidth were 402px. Right-edge
+weights remained visible. The R0088 target has restored the original List Summary, not
+changed Safari browser behavior or category/location bar behavior.

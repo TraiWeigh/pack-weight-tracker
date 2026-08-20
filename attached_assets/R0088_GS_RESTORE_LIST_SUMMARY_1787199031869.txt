@@ -1,0 +1,223 @@
+TRAILWEIGH — R0088 GS
+Gold Standard Replit Prompt
+Restore List Summary to Exact Pre-R0087 State
+
+USER EVIDENCE / REASON
+The USER tested R0087 on the real iPhone Safari and provided two screen recordings.
+
+USER finding:
+- The Safari screen size did not meaningfully change.
+- The Safari address bar/browser chrome did not disappear.
+- Shortening the List Summary therefore did not solve the user-observed problem.
+- The USER wants the List Summary restored to its original pre-R0087 design.
+
+USER live-device evidence outranks the R0087 density rationale.
+
+GOAL
+Restore ONLY the List Summary changes made by R0087 to the exact state immediately before R0087.
+
+This is a targeted rollback, not a redesign.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+1. Inspect the current active mobile TrailWeigh implementation.
+2. Inspect the R0087 diff/change history.
+3. Identify every R0087 change that affected ONLY the List Summary:
+   - height
+   - internal vertical padding
+   - internal spacing
+   - related measured spacer/reservation
+   - any summary-specific CSS/style values
+4. Identify the exact pre-R0087 values/state from source history rather than estimating.
+5. Confirm the current header, Bottom Box Groups, Safari visualViewport behavior, checklist scrolling, Home hero, and category rows.
+6. Do not change anything until the exact List Summary rollback scope is known.
+
+REQUIRED CHANGE
+Restore the List Summary to its EXACT pre-R0087 state.
+
+That means:
+- original List Summary height;
+- original internal padding;
+- original internal vertical spacing;
+- original visual proportions;
+- original measured spacer/reservation behavior;
+- original icon/text positioning;
+- original information hierarchy.
+
+Do not approximate the old appearance from screenshots.
+Use the actual pre-R0087 source values/history.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- TrailWeigh header/AppBar;
+- header height;
+- Bottom Box Groups;
+- Bottom Box Groups height;
+- Safari viewport logic;
+- visualViewport behavior;
+- viewport meta;
+- 100dvh/viewport-unit behavior;
+- Safari browser chrome behavior;
+- Home hero;
+- fixed-layer architecture;
+- document/root checklist scrolling;
+- long-category bounded scrolling;
+- Category / Location bar behavior in this task;
+- future Photo mode;
+- category wedge geometry;
+- wedge colors;
+- wedge icons;
+- wedge shadows;
+- category row changes made by R0087;
+- category row density/height from R0087;
+- category/item accordion behavior;
+- weights/right-edge layout;
+- drawers;
+- gestures;
+- swipe-to-delete;
+- reorder;
+- Add Item;
+- checklist semantics;
+- data;
+- auth;
+- DB/schema;
+- dependencies;
+- workflows;
+- publishing/deployment.
+
+IMPORTANT
+The USER has separately identified a future fix:
+- Category / Location bar must become locked beneath List Summary and not scroll.
+- A future Photo control will also live on that bar.
+DO NOT implement that in R0088.
+
+R0087 CATEGORY-ROW CHANGES
+Preserve R0087 category-row density changes exactly as they are now.
+R0088 is NOT a full rollback of R0087.
+It is ONLY a rollback of the List Summary portion.
+
+SAFARI / SCREEN-SIZE FINDING
+Do not claim this rollback fixes Safari browser chrome or screen-size behavior.
+
+The real-device videos confirm:
+- Safari browser chrome remains;
+- shortening List Summary did not remove it;
+- the viewport behavior remains governed by Safari.
+
+This task is only to restore the USER-preferred List Summary.
+
+PLAYWRIGHT / REGRESSION VERIFICATION
+Run focused verification at minimum:
+- 402 × 714
+- 402 × 754
+- existing mobile viewport regression suite
+
+Verify:
+1. List Summary matches its exact pre-R0087 dimensions and spacing.
+2. List Summary remains fixed directly beneath the header.
+3. Its measured in-flow spacer matches the restored Summary height.
+4. Header remains fixed and unchanged.
+5. Bottom Box Groups remain fixed and unchanged.
+6. R0087 category-row density remains unchanged.
+7. No horizontal overflow.
+8. Right-edge weights remain visible.
+9. Checklist root/document scrolling remains unchanged.
+10. Home behavior remains unchanged.
+11. Long-category bounded scrolling remains unchanged.
+12. Drawers/gestures/checklist interactions remain unchanged.
+13. No viewport/browser-chrome code was altered.
+
+BEFORE / AFTER REPORTING
+Report:
+- pre-R0087 List Summary height;
+- R0087 List Summary height;
+- restored R0088 List Summary height;
+- exact padding/spacing values restored;
+- confirmation category-row height remained at current R0087 value;
+- confirmation AppBar and Bottom Box Groups heights were untouched.
+
+PASS STANDARD
+Replit PASS requires:
+- exact source-history rollback of List Summary only;
+- no speculative recreation;
+- focused Playwright/typecheck pass;
+- no unrelated changes;
+- ready for real iPhone USER verification.
+
+Do NOT label this USER PASS.
+Kevin will verify on the actual iPhone.
+
+REQUIRED ZIP REPORT
+Create and provide:
+
+trailweigh-R0088-report.zip
+
+ZIP contents at minimum:
+
+1. R0088_REPORT.txt
+- R0088 GS
+- branch / commit / checkpoint
+- exact root cause / user reason
+- exact List Summary values restored
+- exact pre-R0087 source reference used
+- exact changes made
+- areas deliberately unchanged
+- Playwright/typecheck commands and exact results
+- READY / NOT READY FOR USER IPHONE TEST
+- explicit statement that no Safari/browser-chrome fix was attempted
+
+2. CHANGED_FILES.txt
+- every changed file
+- reason for each
+- note any unexpected file explicitly
+
+3. TEST_RESULTS.txt
+- exact commands
+- pass/fail totals
+- duration if available
+- blocked/failed tests
+- distinguish Chromium from USER iPhone verification
+
+4. BEFORE_AFTER_METRICS.txt
+- pre-R0087 Summary height
+- R0087 Summary height
+- restored Summary height
+- restored padding/spacing
+- current category row height
+- AppBar height
+- Bottom Box Groups height
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to verify:
+- Summary visually matches the original
+- Summary height/proportions feel restored
+- header stays fixed
+- Summary stays fixed
+- category rows retain current density
+- Bottom Box Groups remain fixed
+- no right-edge clipping
+- Safari behavior is otherwise unchanged
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- relevant before/after screenshots
+- Playwright screenshots/traces/reports
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state that clearly.
+
+If blocked or failed, STILL create trailweigh-R0088-report.zip documenting the blocker.
+
+THREE STANDING QUESTIONS FOR REPLIT
+Answer these in the R0088 report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports and automated assumptions.
+
+Restore only what the USER asked to restore.
+Protect every unrelated USER-PASS behavior.

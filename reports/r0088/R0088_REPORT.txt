@@ -1,0 +1,99 @@
+TRAILWEIGH — R0088 GS
+Restore List Summary to Exact Pre-R0087 State
+
+STATUS: READY FOR USER IPHONE TEST — NOT USER PASS
+
+BRANCH / COMMIT / CHECKPOINT REFERENCE
+Branch: main
+Current HEAD: d7f4a8b — Update MobileFunctionalV3 component and refresh test artifacts
+R0087 checkpoint source: d7f4a8b
+Exact pre-R0087 source reference: fe05bc8,
+artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx,
+"PACK SUMMARY STRUCTURAL BAR" block.
+
+USER REASON / ROOT CAUSE
+The user tested R0087 on a real iPhone Safari device. Their recordings show that Safari
+browser chrome remained and the screen size did not meaningfully change. Shortening the
+List Summary did not solve the observed Safari behavior, so the user requested the original
+Summary design back. This real-device evidence outranks the earlier Chromium-only density
+rationale.
+
+EXACT SOURCE-HISTORY ROLLBACK
+Pre-R0087 source at fe05bc8:
+  padding: '10px 14px 12px'
+  gap: 8
+
+R0087 source at d7f4a8b:
+  padding: '4px 14px 6px'
+  gap: 8
+
+R0088 restored source:
+  padding: '10px 14px 12px'
+  gap: 8
+
+The R0087 change history confirms that the Summary's measured ref, measured in-flow spacer,
+fixed placement, content hierarchy, icon tile, and spacing gap were not modified by R0087.
+They were therefore left intact. Restoring the exact original padding restores the original
+Summary proportions and its measured reservation behavior without approximation.
+
+EXACT CHANGES MADE
+1. Restored only the List Summary panel padding in MobileFunctionalV3.tsx from
+   4px 14px 6px to the exact pre-R0087 source value of 10px 14px 12px.
+2. Updated the focused density test wording and assertions so it protects the restored
+   Summary height and spacer while continuing to assert the current R0087 category-row
+   density.
+
+AREAS DELIBERATELY UNCHANGED
+- AppBar/header visual design, fixed placement, and 52px height.
+- Bottom Box Groups visual design, fixed placement, gestures, and 58px height.
+- Safari visualViewport, browser chrome, viewport meta, zoom, 100dvh, and root sizing.
+- Fixed-layer architecture and the measured Summary ref/spacer implementation.
+- Document-owned checklist scrolling and long-category bounded scrolling.
+- Home hero.
+- Category and Location row behavior, including R0087's 64px row density.
+- Wedge geometry, colours, icons, shadows, weights, and right-edge layout.
+- Drawers, gestures, swipe-to-delete, reorder, Add Item, accordion behavior, data, auth,
+  DB/schema, dependencies, workflows, publishing, and deployment.
+
+MEASURED RESTORATION (CHROMIUM CSS PIXELS)
+- Pre-R0087 Summary: 88.25px outer fixed Summary height.
+- R0087 compact Summary: approximately 76.25px outer fixed Summary height.
+- R0088 restored Summary: 88.25px outer fixed Summary height.
+- R0088 measured in-flow Summary spacer: 88px (browser fractional-pixel rounding).
+- AppBar: 52px unchanged.
+- Bottom Box Groups: 58px unchanged.
+- Collapsed category rows: 64px unchanged from current R0087 density.
+- At 402x714, Summary is top 52 / bottom 140.25; Bottom Box Groups are top 656 /
+  bottom 714.
+- At 402x754, Summary is top 52 / bottom 140.25; Bottom Box Groups are top 696 /
+  bottom 754.
+
+NO SAFARI / BROWSER-CHROME FIX CLAIM
+No viewport meta, visualViewport, browser-chrome, 100dvh, browser zoom, or global-scale
+fix was attempted. This is a user-preferred Summary restoration only. Chromium validation
+cannot certify real-iPhone Safari chrome behavior.
+
+WARNINGS / PROJECT CONTEXT
+- The aggregate workspace typecheck workflow remains failed on unrelated mockup-sandbox
+  React ref errors. The TrailWeigh web-package typecheck passes.
+- The configured project-wide e2e workflow previously completed with legacy failures
+  outside this scope. R0088 did not restart or modify workflows. The focused R0088 and
+  viewport-safe suites pass.
+
+STANDING QUESTIONS FOR FUTURE PROMPTS
+1. What did this task teach us?
+   User evidence can disprove an otherwise reasonable density hypothesis. Keep fixed-layer
+   geometry work separable from Safari browser-chrome behavior, and use commit history for
+   exact visual rollback values rather than screenshots or estimates.
+
+2. Was anything unclear, unnecessary, risky, or better expressed another way?
+   The prompt clearly and safely constrained the rollback. The explicit instruction to
+   preserve R0087 row density prevented an overly broad revert. The only unavoidable
+   limitation is that Chromium cannot validate dynamic Safari chrome, so the final user
+   iPhone check remains essential.
+
+3. What project/Replit detail helps future work?
+   The current mobile screen has a fixed Summary with a measured in-flow spacer. Restoring
+   its padding automatically restores spacer reservation through the existing ResizeObserver
+   path; do not hardcode a duplicate height. Use package-specific typecheck and isolated
+   Playwright output because wider project workflows include unrelated legacy failures.

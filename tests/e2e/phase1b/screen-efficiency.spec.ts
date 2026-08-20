@@ -1,5 +1,5 @@
 /**
- * R0087 — mobile screen-efficiency regression coverage.
+ * R0088 — List Summary restoration and preserved R0087 row-density coverage.
  *
  * Chromium verifies CSS geometry and interaction safety. It does not reproduce
  * iPhone Safari browser chrome; Kevin's device remains the final authority.
@@ -53,9 +53,9 @@ async function densityMetrics(page: import('@playwright/test').Page): Promise<De
   });
 }
 
-test.describe('R0087 — mobile screen efficiency', () => {
+test.describe('R0088 — restore List Summary, preserve row density', () => {
   for (const height of [714, 754]) {
-    test(`fits eight complete category rows at 402×${height} without changing fixed layers`, async ({ page, errors }) => {
+    test(`restores the pre-R0087 Summary at 402×${height} without changing fixed layers`, async ({ page, errors }) => {
       await page.setViewportSize({ width: 402, height });
       await gotoDemo(page);
 
@@ -73,15 +73,18 @@ test.describe('R0087 — mobile screen efficiency', () => {
       expect(metrics.appBar!.top, 'AppBar remains fixed at the viewport top').toBe(0);
       expect(metrics.appBar!.height, 'AppBar height must remain protected').toBe(52);
       expect(metrics.summary!.top, 'Summary remains directly below AppBar').toBe(52);
-      expect(metrics.summary!.height, 'Summary compacts only its internal padding').toBeLessThanOrEqual(77);
+      expect(metrics.summary!.height, 'Summary returns to its exact pre-R0087 height range')
+        .toBeGreaterThanOrEqual(88);
+      expect(metrics.summary!.height, 'Summary returns to its exact pre-R0087 height range')
+        .toBeLessThan(89);
       expect(metrics.nav!.bottom, 'Bottom Box Groups remain fixed to viewport bottom').toBeLessThanOrEqual(height + 1);
       expect(metrics.nav!.height, 'Bottom Box Groups height remains protected').toBe(58);
 
-      expect(metrics.contentHeight, 'usable checklist area must increase to at least 527px at the shorter target height').toBeGreaterThanOrEqual(
-        height === 714 ? 527 : 567,
+      expect(metrics.contentHeight, 'measured spacer must follow the restored Summary height').toBeGreaterThanOrEqual(
+        height === 714 ? 515 : 555,
       );
-      expect(metrics.completeRows, 'eight categories must fit completely in the usable checklist area').toBe(8);
-      expect(metrics.partialRows, 'the compact list should not leave a clipped eighth row').toBe(0);
+      expect(metrics.completeRows, 'R0087 category-row density remains unchanged').toBe(height === 714 ? 7 : 8);
+      expect(metrics.partialRows, 'the restored Summary leaves only the expected eighth-row clipping at 402×714').toBe(height === 714 ? 1 : 0);
       expect(metrics.rowHeights.every(value => value >= 64 && value <= 65), 'category rows remain comfortable 64px mobile targets').toBe(true);
       expect(metrics.documentWidth).toBeLessThanOrEqual(402);
       expect(metrics.bodyWidth).toBeLessThanOrEqual(402);
@@ -109,7 +112,7 @@ test.describe('R0087 — mobile screen efficiency', () => {
     });
   }
 
-  test('keeps category interaction and the Home fixed hero usable after compaction', async ({ page, errors }) => {
+  test('keeps category interaction and the Home fixed hero usable after Summary restoration', async ({ page, errors }) => {
     await page.setViewportSize({ width: 402, height: 714 });
     await gotoDemo(page);
 
