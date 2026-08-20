@@ -1,0 +1,369 @@
+TRAILWEIGH — R0099 GS
+Gold Standard Replit Prompt
+RESTORE BOTTOM BOX GROUPS LOOPING BEHAVIOR ONLY
+
+REPLIT EXECUTION SETTINGS
+- Agent mode: POWER
+- App Testing: ON
+- Code Optimizations: OFF
+- Build mode, not Plan-only mode
+
+PLAIN-ENGLISH TASK SUMMARY
+Restore the Bottom Box Groups' previous continuous looping/navigation behavior.
+
+This is a regression fix only.
+
+The Bottom Box Groups should once again loop continuously through its groups in BOTH directions, exactly as it did before the regression.
+
+Do NOT redesign the bottom bar.
+Do NOT move it.
+Do NOT change its height.
+Do NOT change its icons, labels, spacing, or current locked position.
+
+WHY POWER
+This is a behavior regression inside a control that participates in the R0097/R0098 USER-PASS mobile shell. The change should remain narrow, but because it affects interaction/state and must not disturb the successful Safari shell, use Power.
+
+WHY APP TESTING ON
+The looping behavior must be functionally verified in both directions and checked against current locked-shell behavior.
+
+WHY CODE OPTIMIZATIONS OFF
+Do not refactor. Restore only the previous loop behavior.
+
+PERMANENT TRAILWEIGH CONVENTIONS
+- Prompt ZIP: R####_GS.zip
+- Prompt text inside ZIP: R####_GS.txt
+- Replit report ZIP: R####.zip
+- Every prompt requires a report ZIP
+- Every report answers the three standing Replit questions
+- USER live-device evidence outranks Replit/Chromium PASS
+- Inspect CURRENT state first
+- Root cause/current structure before edit
+- Smallest reversible patch
+- Protect unrelated USER-PASS behavior
+
+PROTECTED USER-PASS BASELINE
+Preserve all successful work through R0098, especially:
+
+R0097 / R0096 MOBILE SHELL
+- AppBar visible and locked
+- List Summary locked
+- Filter bar locked
+- only intended middle content scrolls
+- Bottom Box Groups locked
+- Home/internal scroll behavior preserved
+- current right-side alignment and weight placement preserved
+
+R0098 USER PASS
+- current wedge-buffer spacing is correct
+- do not change wedge spacing
+- do not add wedge shadows yet
+
+CURRENT USER-REPORTED REGRESSION
+The Bottom Box Groups loop was disabled.
+
+The user wants the previous loop behavior restored.
+
+PRIMARY USER INTENT
+Restore continuous cyclic navigation of the Bottom Box Groups.
+
+At the terminal group in one direction:
+- continuing in that same direction should wrap to the first corresponding group rather than stop.
+
+At the first group in the reverse direction:
+- continuing in the reverse direction should wrap to the last corresponding group rather than stop.
+
+The exact behavior should match the previous TrailWeigh loop implementation that existed before this regression.
+
+SOURCE-OF-TRUTH RULE
+Do not invent new loop semantics.
+
+Use source history/current project history to identify the last known-good Bottom Box Groups looping behavior.
+
+If Git/source history clearly contains the prior loop implementation:
+- restore that logic as narrowly as possible.
+
+If multiple historical implementations exist:
+- choose the most recent version that was part of the USER-PASS bottom-bar behavior before looping disappeared.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. Inspect CURRENT active `/mobile-functional-v3`.
+2. Read relevant `replit.md` / project guidance read-only.
+3. Confirm the current R0097/R0098 stable-shell architecture.
+4. Inspect Bottom Box Groups:
+   - active group state
+   - group count
+   - Next behavior
+   - previous/back behavior if present
+   - horizontal gesture/swipe behavior
+   - chevron/button behavior
+   - current terminal-state logic
+5. Search source history for the previous looping implementation.
+6. Determine exactly when/where the loop behavior was disabled or replaced.
+7. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS.
+8. Restore the smallest possible piece of logic needed for looping.
+
+DO NOT GUESS
+Do not add a new carousel library.
+Do not redesign state management.
+Do not create duplicate bottom-bar implementations.
+Do not change group order.
+
+LOOP ACCEPTANCE BEHAVIOR
+Verify BOTH DIRECTIONS.
+
+FORWARD
+- navigate through all Bottom Box Groups
+- when reaching the last group, the next forward action wraps cleanly to the first group
+- no dead end
+- no disabled terminal state unless it is purely visual and still allows intended loop behavior
+
+REVERSE
+- from the first group, reverse/back navigation wraps cleanly to the last group
+- no dead end
+
+GESTURES / CONTROLS
+If looping previously applied to:
+- chevrons/buttons
+- swipe/drag gesture
+- keyboard/accessibility control
+then restore the same loop behavior for all applicable interaction paths.
+
+Do not broaden beyond the last known-good behavior.
+
+PRESERVE BOTTOM BAR DESIGN
+Do NOT change:
+- Bottom Box Groups height
+- locked vertical position
+- visual clearance
+- group widths
+- Locker icon/label
+- Summary icon/label
+- Add icon/label
+- Search icon/label
+- Next icon/label
+- current Next-chevron inset
+- typography
+- separators
+- icon sizes
+- horizontal alignment
+
+PRESERVE MOBILE SHELL
+Do NOT change:
+- AppBar
+- List Summary
+- Filter
+- main-scroll ownership
+- Bottom Box Groups fixed/locked shell placement
+- Home scroll model
+- safe-area handling
+- viewport meta
+- document/body scroll architecture
+
+PRESERVE R0098
+Do NOT change:
+- wedge buffer
+- wedge spacing
+- wedge geometry
+- wedge colors
+- wedge icons
+
+SHADOWS
+Do NOT add wedge shadows in R0099.
+
+Wedge shadows move to the next cosmetic prompt after R0099 is USER-approved.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- data model
+- DB/schema
+- auth
+- dependencies
+- publishing/deployment
+- category ordering
+- checklist semantics
+- weight calculations
+- swipe-to-delete
+- category reorder
+- Add Item behavior
+- Photo mode
+- Filter options
+- hamburger design
+- typography
+- colors
+
+TESTING
+Use App Testing.
+
+At minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+
+FOCUSED R0099 TESTS
+
+TEST 1 — FORWARD LOOP
+Starting from first Bottom Box Group:
+- advance through every group
+- advance once more from last group
+- verify wrap to first group
+
+TEST 2 — REVERSE LOOP
+Starting from first Bottom Box Group:
+- perform reverse action
+- verify wrap to last group
+- continue reverse through all groups
+- verify cyclic behavior remains consistent
+
+TEST 3 — REPEATED CYCLES
+Perform at least 3 complete forward loops and 3 complete reverse loops.
+Verify:
+- no stuck state
+- no duplicate jump
+- no index drift
+- no console/runtime error
+
+TEST 4 — INTERACTION PATHS
+Verify every existing applicable navigation method:
+- button/chevron tap
+- swipe/drag if supported
+- accessibility/keyboard path if already supported
+
+TEST 5 — SHELL PRESERVATION
+While looping:
+- Bottom Box Groups Y unchanged
+- AppBar Y unchanged
+- List Summary Y unchanged
+- Filter Y unchanged
+- main content scroll ownership unchanged
+
+TEST 6 — RESPONSIVE
+At 360px:
+- loop still works
+- no clipping
+- no horizontal overflow
+
+TEST 7 — R0098 REGRESSION
+Verify wedge spacing remains unchanged from R0098.
+
+TEST 8 — HOME / CHECKLIST REGRESSION
+Verify bottom-group loop works from relevant screens without changing Home/checklist shell behavior.
+
+REAL IPHONE LIMITATION
+Chromium cannot replace real iPhone verification.
+
+Therefore:
+REPLIT PASS != USER PASS.
+
+Final status:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Kevin's actual iPhone verification determines USER PASS.
+
+BEFORE / AFTER METRICS / STATE
+Report:
+- total group count
+- current first/last group indices or IDs
+- current terminal behavior before fix
+- exact restored wrap behavior
+- active index sequence for one complete forward loop
+- active index sequence for one complete reverse loop
+- Bottom Box Groups height before/after
+- Bottom Box Groups Y before/after
+- AppBar/Summary/Filter Y preservation
+- root width
+- wedge-gap preservation
+
+VISUAL / TEST ARTIFACTS
+Capture or otherwise document:
+- first group
+- last group
+- forward wrap result
+- reverse wrap result
+- repeated-loop test result
+
+REQUIRED REPORT ZIP — PERMANENT REQUIREMENT
+Create and provide:
+
+R0099.zip
+
+Do NOT use any other report filename.
+
+R0099.zip must contain at minimum:
+
+1. R0099_REPORT.txt
+Include:
+- R0099 GS
+- Agent mode used: POWER
+- exact root cause of loop regression
+- exact prior last-known-good behavior found
+- exact logic restored
+- forward-loop behavior
+- reverse-loop behavior
+- interactions affected
+- areas deliberately unchanged
+- R0098 wedge spacing preserved: YES/NO
+- R0097 shell preserved: YES/NO
+- exact test commands
+- exact PASS/FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+- every changed file
+- reason
+- any unexpected file explicitly identified
+
+3. TEST_RESULTS.txt
+- exact commands
+- suites
+- viewport sizes
+- pass/fail totals
+- forward loop
+- reverse loop
+- repeated cycles
+- shell regression tests
+
+4. BEFORE_AFTER_METRICS.txt
+Include all requested state/geometry values.
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to verify:
+- move through bottom groups forward repeatedly;
+- confirm last wraps to first;
+- move backward/reverse repeatedly;
+- confirm first wraps to last;
+- confirm no dead end;
+- confirm bottom bar remains locked;
+- confirm Filter/Summary/AppBar stay locked;
+- confirm wedge spacing remains correct.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state clearly.
+
+IF BLOCKED OR FAILED
+STILL create R0099.zip documenting the blocker/failure.
+
+THREE STANDING REPLIT QUESTIONS — PERMANENT REQUIREMENT
+Answer these in every TrailWeigh Replit report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+R0099 is a behavior-regression fix only.
+Restore the last known-good Bottom Box Groups loop.
+Preserve R0097 shell.
+Preserve R0098 wedge spacing.
+Do not add shadows yet.

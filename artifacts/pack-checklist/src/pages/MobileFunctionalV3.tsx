@@ -1068,8 +1068,8 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [groupControlRef]); // settleRef is a stable ref, not a dep
 
-    const goLeft  = useCallback(() => { settle(Math.max(0, groupIdxRef.current - 1)); }, [settle]);
-    // R0080: Next wraps Group 4 → Group 1; Back still clamps (no back-wrap from Group 1).
+    // R0099: both directions loop continuously through the four groups.
+    const goLeft  = useCallback(() => { settle((groupIdxRef.current - 1 + NUM_BOX_GROUPS) % NUM_BOX_GROUPS); }, [settle]);
     const goRight = useCallback(() => { settle((groupIdxRef.current + 1) % NUM_BOX_GROUPS); }, [settle]);
 
     // ── Gesture handling via WINDOW listeners (not pointer capture) ──────────────
@@ -1123,9 +1123,9 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           requestAnimationFrame(() => { justDraggedRef.current = false; });
         }
         const cur = groupIdxRef.current;
-        // R0080P2: swipe clamps at endpoints (no wrap); only tapping Next wraps Group 4 → Group 1.
-        if (dx < -GROUP_SWIPE_THRESHOLD && cur < NUM_BOX_GROUPS - 1) settleRef.current(cur + 1);
-        else if (dx > GROUP_SWIPE_THRESHOLD && cur > 0) settleRef.current(cur - 1);
+        // R0099: release at either endpoint wraps in the direction of the swipe.
+        if (dx < -GROUP_SWIPE_THRESHOLD) settleRef.current((cur + 1) % NUM_BOX_GROUPS);
+        else if (dx > GROUP_SWIPE_THRESHOLD) settleRef.current((cur - 1 + NUM_BOX_GROUPS) % NUM_BOX_GROUPS);
         else settleRef.current(cur); // short/cancelled → revert (no haptic)
       }
 
