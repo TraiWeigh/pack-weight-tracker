@@ -69,6 +69,7 @@ import { getCategoryTheme } from '../lib/mobileCategoryTheme';
 import { calcTotalOz, formatWeight, smallUnit, largeUnit, gramsToOz } from '../lib/weightUtils';
 import { useUnit, UnitProvider } from '../context/UnitContext';
 import { MasterListScreen } from '../components/MasterListScreen';
+import { ViewportDiagnostic } from '../components/ViewportDiagnostic';
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 type PackState = { [category: string]: GearItem[] };
@@ -3715,7 +3716,7 @@ function MobileFunctionalV3Inner() {
         `}</style>
 
         {/* ── APP BAR — R0082: hamburger added ── */}
-        <div style={{
+         <div data-testid="app-bar" style={{
           position: 'fixed',
           top: 0,
           left: 'max(0px, calc(50% - 215px))',
@@ -5114,6 +5115,8 @@ function MobileFunctionalV3Inner() {
           onShare={navigateToShare}
           onMore={()  => openDeck('more')}
         />
+
+         <ViewportDiagnostic />
 
         {/* ── CARD DECKS (conditionally rendered; closed decks do not exist
               in the DOM and therefore cannot intercept pointer events).

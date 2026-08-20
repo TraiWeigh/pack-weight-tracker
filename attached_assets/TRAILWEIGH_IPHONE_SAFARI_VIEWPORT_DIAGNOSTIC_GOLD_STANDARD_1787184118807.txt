@@ -1,0 +1,247 @@
+TRAILWEIGH — GOLD STANDARD REPLIT PROMPT
+Temporary Real-iPhone Safari Viewport Diagnostic
+DIAGNOSTIC ONLY — DO NOT FIX OR REDESIGN THE LAYOUT YET
+
+PURPOSE
+We have real iPhone Safari evidence that TrailWeigh is not fitting the visible browser area correctly.
+
+USER-OBSERVED FAILURES
+1. Safari's bottom address bar/browser chrome remains visible while scrolling.
+2. TrailWeigh has a problem at the bottom of the screen where the app and Safari browser chrome compete for space.
+3. TrailWeigh appears too large for the actual visible iPhone Safari area vertically.
+4. TrailWeigh also appears too large / clipped relative to the actual visible iPhone Safari width.
+5. Chromium/Playwright geometry previously passed at 390×844, but the real iPhone recording did NOT pass. USER device evidence is authoritative.
+
+GOAL OF THIS TASK
+Add a TEMPORARY diagnostic tool that lets the user capture the real Safari viewport and TrailWeigh geometry on the actual iPhone.
+
+Do NOT attempt to solve the viewport problem in this task.
+
+GOLD STANDARD — INSPECT FIRST
+Before making any edit:
+1. Inspect the CURRENT active TrailWeigh mobile implementation.
+2. Confirm the currently active code path for:
+   - TrailWeigh root/mobile shell
+   - AppBar/header
+   - List Summary
+   - Home green hero
+   - Bottom Box Groups
+   - normal checklist scroll owner
+   - Home content scroll owner
+   - long-category bounded item viewport
+3. Confirm the previously USER-PASS fixed-layer repair is still present.
+4. Do not alter any of that behavior for this diagnostic.
+
+STRICT SCOPE
+This task may add ONLY the temporary viewport diagnostic and the minimum wiring needed to activate it.
+
+Do NOT:
+- change TrailWeigh width or height;
+- change viewport units;
+- change Safari scrolling behavior;
+- change the header;
+- change List Summary;
+- change Home hero;
+- change Bottom Box Groups;
+- change wedge geometry, colors, spacing, icons, shadows, or typography;
+- change category/item behavior;
+- change drawers, gestures, swipe-to-delete, reordering, Add Item, checklist semantics, data, auth, database, packages, publishing, or deployment;
+- introduce a speculative visualViewport fix.
+
+TEMPORARY ACTIVATION
+Make the diagnostic OFF by default.
+
+Prefer activating it with a URL query parameter so normal TrailWeigh is completely unaffected, for example:
+
+?twViewportDebug=1
+
+Use the project's actual current route safely rather than hardcoding an obsolete route.
+
+When the parameter is absent, the diagnostic must not render and must not affect layout.
+
+DIAGNOSTIC PANEL
+When enabled, render a small temporary overlay that:
+- is readable on iPhone;
+- can be collapsed/expanded;
+- stays above normal app content without changing the app's measurements;
+- does not consume normal document-flow space;
+- does not itself change the measured viewport;
+- does not block normal scrolling except while the user is deliberately tapping its controls.
+
+The panel should update live on:
+- page load;
+- window resize;
+- window orientation change;
+- visualViewport resize;
+- visualViewport scroll, if available.
+
+CAPTURE THESE VALUES
+
+A. SCREEN / WINDOW
+- screen.width
+- screen.height
+- screen.availWidth
+- screen.availHeight
+- window.innerWidth
+- window.innerHeight
+- window.outerWidth
+- window.outerHeight
+- window.scrollX
+- window.scrollY
+- window.devicePixelRatio
+
+B. DOCUMENT
+- document.documentElement.clientWidth
+- document.documentElement.clientHeight
+- document.documentElement.scrollWidth
+- document.documentElement.scrollHeight
+- document.body.scrollWidth
+- document.body.scrollHeight
+
+C. VISUAL VIEWPORT
+If window.visualViewport exists:
+- visualViewport.width
+- visualViewport.height
+- visualViewport.offsetLeft
+- visualViewport.offsetTop
+- visualViewport.pageLeft
+- visualViewport.pageTop
+- visualViewport.scale
+
+If unavailable, clearly show "visualViewport unavailable."
+
+D. TRAILWEIGH ROOT / CORE FIXED LAYERS
+Capture getBoundingClientRect() values for the actual active elements:
+- TrailWeigh root/mobile shell
+- AppBar/header
+- List Summary, when present
+- Home green hero, when present
+- Bottom Box Groups
+- Home content scroller, when present
+- normal main checklist content/scroller
+- open long-category item viewport, when present
+
+For each available element capture at least:
+- top
+- bottom
+- left
+- right
+- width
+- height
+
+E. CATEGORY WIDTH SAMPLE
+On a checklist screen, capture bounding rectangles for:
+- first visible category wedge/row
+- one middle visible category wedge/row if available
+- last visible category wedge/row if available
+
+The purpose is to determine whether the apparent horizontal oversizing is:
+- the entire shell,
+- a fixed layer,
+- a wedge/category row,
+- clipping from overflow rules,
+- browser zoom/scale,
+- or a layout-vs-visual viewport mismatch.
+
+F. COMPUTED LAYOUT FLAGS
+Display:
+- computed overflow-x / overflow-y for html
+- computed overflow-x / overflow-y for body
+- computed overflow-x / overflow-y for the TrailWeigh root
+- computed box-sizing for the TrailWeigh root
+- computed width / max-width / min-height for the TrailWeigh root
+- current CSS env safe-area values if they can be exposed safely through temporary diagnostic CSS variables/elements
+- whether the current page is using portrait or landscape orientation
+
+SNAPSHOT BUTTON
+Add a "Copy Snapshot" control.
+
+It should copy a compact plain-text/JSON-style diagnostic snapshot containing:
+- timestamp;
+- current page/screen state (Home or checklist if detectable);
+- all measurements above;
+- bounding rectangles;
+- current URL path + query (no secrets/tokens);
+- user agent string.
+
+If clipboard access is denied, show the snapshot in a selectable text area so the user can copy it manually.
+
+Also add a "Refresh Snapshot" button if useful.
+
+IMPORTANT: Do not collect or transmit this information anywhere. It is strictly local/on-screen diagnostic output for the user to share manually.
+
+DEVICE TEST PROCEDURE TO INCLUDE IN COMPLETION REPORT
+After implementation, tell the user exactly how to perform these captures on iPhone Safari:
+
+CAPTURE 1 — CHECKLIST, SAFARI BAR FULLY VISIBLE
+- Open TrailWeigh checklist with the diagnostic parameter enabled.
+- Make sure Safari bottom browser controls/address bar are fully visible.
+- Do not pinch zoom.
+- Capture/copy the diagnostic snapshot.
+- Take a screenshot showing both TrailWeigh and the Safari chrome.
+
+CAPTURE 2 — CHECKLIST AFTER REAL FINGER SCROLL
+- Scroll the checklist with a normal finger swipe.
+- Capture again after Safari chrome has changed as much as it naturally will.
+- Record whether the address bar collapsed, stayed visible, or partially changed.
+- Capture/copy snapshot and screenshot.
+
+CAPTURE 3 — HOME
+- Open Home.
+- With Safari chrome visible, capture snapshot.
+- Scroll Home content.
+- Capture again.
+
+CAPTURE 4 — LONG CATEGORY
+- Open a genuinely long category.
+- Capture snapshot before and after scrolling inside the bounded item viewport.
+- Confirm whether the Safari browser chrome changes while the inner category viewport scrolls.
+
+CAPTURE 5 — OPTIONAL ORIENTATION
+- If practical, rotate once to landscape and back to portrait and capture one snapshot after returning to portrait.
+- Do not make orientation support changes in this task.
+
+PLAYWRIGHT / AUTOMATED VERIFICATION
+Run focused Playwright checks only to verify the diagnostic itself does not regress the app.
+
+At minimum verify:
+1. Without the debug query parameter:
+   - diagnostic panel is absent;
+   - existing app behavior remains unchanged.
+2. With the debug query parameter:
+   - diagnostic panel appears;
+   - values render;
+   - visualViewport fields render in Chromium if supported;
+   - panel does not add document-flow height/width;
+   - no horizontal overflow is introduced by the panel;
+   - AppBar, List Summary/Home hero, and Bottom Box Groups remain at their existing positions;
+   - normal checklist scrolling still works;
+   - Home scrolling still works;
+   - long-category bounded scrolling still works.
+3. Existing focused viewport regression tests still pass.
+
+Do not claim that Chromium reproduces Safari browser chrome. It does not.
+
+PASS STANDARD
+This task passes only if:
+- the diagnostic is actually implemented;
+- it is OFF by default;
+- it can be enabled easily on the iPhone;
+- it reports the requested measurements;
+- it does not alter normal TrailWeigh layout or behavior;
+- Playwright confirms no diagnostic-induced regression;
+- Replit provides simple iPhone instructions for capturing the snapshots.
+
+COMPLETION REPORT
+Report:
+1. what area was changed;
+2. how to enable/disable the temporary diagnostic;
+3. Playwright checks and results;
+4. exact iPhone test instructions;
+5. any measurement unavailable in Safari and why;
+6. confirmation that NO viewport/layout fix was attempted.
+
+GOLD STANDARD RULE
+USER real-device evidence outranks Chromium assumptions.
+Do not infer the final viewport fix from this task.
+The next implementation decision will be made only after reviewing the actual iPhone diagnostic measurements.

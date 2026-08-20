@@ -50,7 +50,143 @@ async function stylesheetContains(page: import('@playwright/test').Page, token: 
   }, token);
 }
 
+/** Open the isolated mobile demo with the temporary Safari diagnostic enabled. */
+async function gotoDiagnosticDemo(page: import('@playwright/test').Page) {
+  const response = await page.goto('/mobile-functional-v3?twViewportDebug=1');
+  expect(response, 'diagnostic navigation response').not.toBeNull();
+  expect(response!.ok(), `diagnostic document request failed: HTTP ${response?.status()}`).toBe(true);
+  await page.waitForSelector('[data-testid="main-scroll"]', { timeout: 15000 });
+  await expect(page.getByTestId('viewport-diagnostic')).toBeVisible();
+  await page.getByTestId('viewport-diagnostic-toggle').click();
+  await expect(page.getByTestId('viewport-diagnostic-values')).toContainText('"innerWidth"');
+}
+
+async function coreGeometry(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    const box = (selector: string) => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+    };
+    return {
+      documentHeight: document.documentElement.scrollHeight,
+      documentWidth: document.documentElement.scrollWidth,
+      bodyWidth: document.body.scrollWidth,
+      appBar: box('[data-testid="app-bar"]'),
+      summary: box('[data-testid="list-summary-bar"]'),
+      nav: box('[data-testid="bottom-nav"]'),
+    };
+  });
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
+
+test.describe('temporary real-device viewport diagnostic', () => {
+  test('is absent by default and has no normal-mode footprint', async ({ page, errors }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoDemo(page);
+
+    await expect(page.getByTestId('viewport-diagnostic')).toHaveCount(0);
+    const geometry = await coreGeometry(page);
+    expect(geometry.documentWidth).toBeLessThanOrEqual(390);
+    expect(geometry.bodyWidth).toBeLessThanOrEqual(390);
+    expect(geometry.appBar).not.toBeNull();
+    expect(geometry.summary).not.toBeNull();
+    expect(geometry.nav).not.toBeNull();
+    expect(errors.pageErrors).toEqual([]);
+  });
+
+  test('reports live geometry without adding document flow or overflow', async ({ page, errors }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoDemo(page);
+    const baseline = await coreGeometry(page);
+
+    await gotoDiagnosticDemo(page);
+    const diagnostic = page.getByTestId('viewport-diagnostic');
+    await expect(diagnostic).toBeVisible();
+    await expect(page.getByTestId('viewport-diagnostic-values')).toContainText('"visualViewport"');
+
+    const snapshot = await page.getByTestId('viewport-diagnostic-values').evaluate(element =>
+      JSON.parse(element.textContent || '{}'),
+    );
+    expect(snapshot.screen.innerWidth).toBe(390);
+    expect(snapshot.visualViewport.available, 'Chromium exposes visualViewport').toBe(true);
+    expect(snapshot.trailweigh.elements.rootMobileShell).not.toBeNull();
+    expect(snapshot.trailweigh.elements.appBar).not.toBeNull();
+    expect(snapshot.trailweigh.elements.listSummary).not.toBeNull();
+    expect(snapshot.trailweigh.elements.bottomBoxGroups).not.toBeNull();
+    expect(snapshot.trailweigh.categorySamples.firstVisible).not.toBeNull();
+
+    const diagnosticStyle = await diagnostic.evaluate(element => getComputedStyle(element).position);
+    expect(diagnosticStyle, 'diagnostic must be out of document flow').toBe('fixed');
+
+    const debugGeometry = await coreGeometry(page);
+    expect(debugGeometry.documentWidth, 'diagnostic must not introduce horizontal document overflow').toBeLessThanOrEqual(390);
+    expect(debugGeometry.bodyWidth, 'diagnostic must not introduce horizontal body overflow').toBeLessThanOrEqual(390);
+    expect(
+      Math.abs(debugGeometry.documentHeight - baseline.documentHeight),
+      'diagnostic must not add document-flow height',
+    ).toBeLessThanOrEqual(2);
+    for (const layer of ['appBar', 'summary', 'nav'] as const) {
+      expect(debugGeometry[layer]).not.toBeNull();
+      expect(baseline[layer]).not.toBeNull();
+      expect(
+        Math.abs(debugGeometry[layer]!.top - baseline[layer]!.top),
+        `${layer} top must remain unchanged with diagnostic enabled`,
+      ).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(debugGeometry[layer]!.bottom - baseline[layer]!.bottom),
+        `${layer} bottom must remain unchanged with diagnostic enabled`,
+      ).toBeLessThanOrEqual(2);
+    }
+
+    // Verify the Home-owned scroller remains usable while the overlay is enabled.
+    await page.getByTestId('hamburger-btn').click();
+    await page.getByRole('button', { name: 'Home', exact: true }).click();
+    await expect(page.getByTestId('home-screen')).toBeVisible();
+    const homeScrollTop = await page.getByTestId('home-content-scroll').evaluate((element: HTMLElement) => {
+      element.scrollTop = 120;
+      return element.scrollTop;
+    });
+    expect(homeScrollTop, 'Home content must remain scrollable').toBeGreaterThan(0);
+
+    await page.getByTestId('viewport-diagnostic-refresh').click();
+    const homeSnapshot = await page.getByTestId('viewport-diagnostic-values').evaluate(element =>
+      JSON.parse(element.textContent || '{}'),
+    );
+    expect(homeSnapshot.trailweigh.pageState).toBe('Home');
+    expect(homeSnapshot.trailweigh.elements.homeContentScroller).not.toBeNull();
+    expect(errors.pageErrors).toEqual([]);
+  });
+
+  test('does not interfere with the bounded long-category item scroller', async ({ page, errors }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await gotoDiagnosticDemo(page);
+
+    await page.getByRole('button', { name: 'Open Kitchen category' }).click();
+    for (let index = 0; index < 14; index += 1) {
+      await page.getByTestId('cat-add-item-btn').click();
+      await page.waitForTimeout(300);
+    }
+    await expect(page.getByTestId('open-cat-items')).toBeVisible({ timeout: 3000 });
+    const innerScroll = await page.getByTestId('open-cat-items').evaluate((element: HTMLElement) => {
+      element.scrollTop = 0;
+      const before = element.scrollTop;
+      element.scrollTop = 120;
+      return { before, after: element.scrollTop, clientHeight: element.clientHeight, scrollHeight: element.scrollHeight };
+    });
+    expect(innerScroll.scrollHeight, 'long category must overflow its bounded viewport').toBeGreaterThan(innerScroll.clientHeight);
+    expect(innerScroll.after, 'bounded item viewport must remain scrollable').toBeGreaterThan(innerScroll.before);
+
+    await page.getByTestId('viewport-diagnostic-refresh').click();
+    const snapshot = await page.getByTestId('viewport-diagnostic-values').evaluate(element =>
+      JSON.parse(element.textContent || '{}'),
+    );
+    expect(snapshot.trailweigh.elements.openLongCategoryViewport).not.toBeNull();
+    expect(errors.pageErrors).toEqual([]);
+  });
+});
 
 test.describe('R0090/R0091 — viewport width safety', () => {
 
