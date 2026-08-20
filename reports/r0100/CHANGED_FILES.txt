@@ -1,0 +1,23 @@
+R0100 CHANGED FILES
+
+Implementation:
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Added the wedge-only clipped-shape drop-shadow; no shell or row geometry
+  changes.
+
+Focused validation:
+- tests/e2e/phase1b/r0100-wedge-shadow.spec.ts
+  Four-viewport wedge filter, geometry, 1px spacing, shell, overflow, and
+  error-state checks.
+
+Evidence:
+- reports/r0100/screenshots/01-wedge-shadow-402x714.png
+- reports/r0100/screenshots/02-standard-checklist-402x714.jpg
+
+Report bundle:
+- reports/r0100/R0100_REPORT.txt
+- reports/r0100/CHANGED_FILES.txt
+- reports/r0100/TEST_RESULTS.txt
+- reports/r0100/BEFORE_AFTER_METRICS.txt
+- reports/r0100/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- reports/r0100/USER_IPHONE_TEST.txt

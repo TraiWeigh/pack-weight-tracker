@@ -1,0 +1,28 @@
+Kevin — R0100 user iPhone verification checklist
+
+Please open /mobile-functional-v3 on the same iPhone Safari scenario used for
+R0097 and verify:
+
+1. Confirm each colored category wedge has a narrow, soft shadow that follows
+   the angled point, without looking heavy or muddy.
+2. Confirm the wedge shadow belongs only to the colored wedge surface and does
+   not appear as a new shadow across the full category row.
+3. Confirm wedge width, angled geometry, icons, colors, row height, text,
+   weights, and the 1px spacing remain unchanged.
+4. Confirm the AppBar, List Summary, Filter, and Bottom Box Groups remain
+   visible and locked while only the intended middle content scrolls.
+5. Repeat forward and reverse Bottom Box Group loops, including the existing
+   reverse swipe from the first group, and confirm there is no stuck state or
+   unexpected order.
+6. Visit Home and confirm the R0097 shell and R0098 wedge rhythm still look
+   correct.
+7. Check the four viewport-shaped device scenarios as applicable and report any
+   clipping, horizontal overflow, shadow artifact, or spacing mismatch.
+
+Expected result:
+- Colored wedges have a subtle clipped-point shadow only; all R0097, R0098, and
+  R0099 behavior remains unchanged.
+
+USER PASS AUTHORITY
+Chromium and Replit preview evidence are regression safeguards. Kevin's live
+iPhone Safari observation is the final USER PASS authority.

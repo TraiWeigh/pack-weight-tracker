@@ -1,0 +1,14 @@
+TRAILWEIGH R0100 SCREENSHOT / ARTIFACT INDEX
+
+1. screenshots/01-wedge-shadow-402x714.png
+   Captured by the focused R0100 Playwright test. Shows the active mobile list
+   with the wedge-only shadow state.
+
+2. screenshots/02-standard-checklist-402x714.jpg
+   Captured from the running Replit preview at /mobile-functional-v3. Shows the
+   standard 402×714 checklist shell with AppBar, Summary, Filter, categories,
+   wedge styling, and Bottom Box Groups.
+
+Visual review note:
+The shadow is intentionally narrow and low-contrast. Automated geometry checks
+confirm it does not change layout bounds or the 1px wedge rhythm.

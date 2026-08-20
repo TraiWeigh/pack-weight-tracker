@@ -1,0 +1,23 @@
+TRAILWEIGH R0100 BEFORE / AFTER METRICS
+
+R0100 change:
+- Wedge filter: `none` → `drop-shadow(0 1px 2px rgba(0,0,0,0.10))`
+- Wedge box shadow: remains `none`
+- Full category row shadow: unchanged
+
+Locked geometry verified after the change:
+- List wedge width: 72px
+- List wedge rendered height: 64px
+- Category row height: 65px
+- Gap between consecutive list wedges: 1px
+- Root width equals viewport width
+- Document scroll width equals viewport width
+- Bottom navigation remains locked to the viewport bottom
+- AppBar, Summary, Filter, main-scroll, and Bottom Box Groups shell geometry
+  remains stable through the R0099 interaction cycles
+
+Required viewports:
+- 402×714: PASS
+- 402×754: PASS
+- 390×844: PASS
+- 360×800: PASS
