@@ -1,0 +1,49 @@
+R0089 TEST RESULTS
+
+1. R0089 shared right-side inset suite
+Command:
+pnpm exec playwright test tests/e2e/phase1b/right-side-inset.spec.ts --workers=1 --project=chromium --output=/tmp/r0089-inset-results
+
+Result:
+4 passed (19.5s)
+
+Covers:
+- 402x714, 402x754, and 390x844;
+- unchanged shell and full-width category rows;
+- unchanged x=0 / 72px wedge geometry;
+- restored Summary height;
+- 24px right gutter for Summary metrics, category weights, collapsed item quantities,
+  expanded item controls, and Location header names;
+- no title/value collision and no horizontal overflow;
+- unchanged 64–65px divider-inclusive category-row measurement;
+- unchanged 58px Bottom Box Groups.
+
+2. Restored Summary / category-density regression
+Command:
+pnpm exec playwright test tests/e2e/phase1b/screen-efficiency.spec.ts --workers=1 --project=chromium --output=/tmp/r0089-summary-results
+
+Result:
+3 passed (12.1s)
+
+3. Existing mobile viewport-safe regression suite
+Command:
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium --output=/tmp/r0089-viewport-results
+
+Result:
+13 passed (49.3s)
+
+4. TrailWeigh web package typecheck
+Command:
+pnpm --filter @workspace/pack-checklist run typecheck
+
+Result:
+PASS
+
+CHROMIUM VS USER IPHONE
+All automated results above are Chromium results. They prove source, layout, width, and
+interaction regressions at the requested viewport sizes; they do not validate Safari browser
+chrome. Kevin's real-iPhone review is required for USER PASS.
+
+BLOCKED / FAILED
+No R0089 focused verification is blocked or failed. The broader project workflows retain
+unrelated failures and were deliberately not restarted or modified.

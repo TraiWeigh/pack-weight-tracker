@@ -1,0 +1,287 @@
+TRAILWEIGH — R0089 GS — REVISED
+Gold Standard Replit Prompt
+Move ALL Right-Side Mobile Checklist Content Inward
+
+USER INTENT
+The prior R0089 wording was too narrow.
+
+The user does NOT want only the category weight column moved inward.
+
+The user wants EVERYTHING that is visually aligned against the RIGHT side of the TrailWeigh mobile checklist interface moved inward toward the center by a consistent amount.
+
+This is a coordinated right-side inset adjustment.
+
+DO NOT narrow the whole TrailWeigh app.
+DO NOT move the left wedges.
+DO NOT globally scale the UI.
+
+GOAL
+Create one consistent internal right gutter for the active mobile checklist experience so all right-edge content has more breathing room from the physical edge of the iPhone screen.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+1. Inspect the CURRENT active mobile checklist implementation.
+2. Read relevant project guidance/replit.md read-only.
+3. Confirm R0088 restored List Summary to its original pre-R0087 state.
+4. Confirm the current category row density and fixed-layer architecture.
+5. Inventory EVERY visible element on the checklist experience whose placement is anchored/aligned to the right side.
+6. Identify whether those elements share an existing layout container, spacing token, padding rule, or frame.
+7. Use the smallest shared structural adjustment possible rather than many unrelated per-element hacks.
+
+RIGHT-SIDE ELEMENTS TO INSPECT AND MOVE INWARD
+This includes, wherever present on the checklist/mobile screen:
+
+- category weight values;
+- List Summary right-side category count / selected count;
+- List Summary right-side icons or status indicators;
+- right-side chevrons/arrows;
+- right-side row controls;
+- right-side item values/totals;
+- right-side accordion indicators;
+- any right-aligned unit values;
+- any right-side text or controls in the Category / Location bar;
+- any comparable checklist UI element visually sitting against the right screen edge.
+
+If another right-aligned checklist element exists that is not named above, include it rather than leaving one element visually stranded at the old edge.
+
+IMPORTANT EXCLUSIONS
+Do NOT move:
+- the physical right edge of the app shell;
+- the full-width row backgrounds;
+- full-width separators;
+- the Bottom Box Groups container itself;
+- the AppBar container itself;
+- category wedges or their left alignment.
+
+The goal is to move the CONTENT inward, not shrink the screen/frame.
+
+CONSISTENT GUTTER
+Use ONE consistent right-side content inset/gutter wherever the design permits.
+
+Inspect the current right padding first.
+Increase it by the smallest amount that produces a clearly visible improvement on the real iPhone.
+
+The likely adjustment may be in the approximately 12–20px range beyond the current effective edge placement, but DO NOT blindly hardcode that range.
+Measure first and choose the smallest coherent value.
+
+Prefer:
+- shared container padding;
+- shared spacing token;
+- common right inset variable/token;
+- stable grid/flex constraints.
+
+Avoid:
+- transform: translateX();
+- per-element arbitrary offsets;
+- negative margins;
+- global app scaling;
+- narrowing the app shell;
+- viewport-specific hacks unless unavoidable and justified.
+
+LIST SUMMARY
+The List Summary has just been restored to its original height and proportions in R0088.
+
+Preserve:
+- exact restored height;
+- exact restored vertical padding;
+- icon size;
+- text hierarchy;
+- fixed position;
+- measured spacer.
+
+Only its RIGHT-SIDE content may move inward horizontally as part of the common right gutter.
+
+Do NOT compact the List Summary again.
+
+CATEGORY ROWS
+Preserve:
+- current row height;
+- wedge width/shape/left location;
+- title/subtitle size and hierarchy;
+- current row density;
+- full row width.
+
+Move right-side values/controls inward consistently.
+
+Do not cause:
+- title overlap;
+- weight wrapping;
+- clipped units;
+- truncation that did not exist before;
+- horizontal overflow.
+
+HEADER / APPBAR
+Do NOT alter the header/AppBar in R0089 unless inspection proves a checklist-specific right-side child within the AppBar is part of the exact same content-alignment system and can be moved inward without changing the header's USER-PASS design.
+
+Default: leave the AppBar unchanged.
+
+BOTTOM BOX GROUPS
+The Bottom Box Groups are a fixed full-width navigation system and are USER-PASS.
+
+Do NOT move or resize the Bottom Box Groups in R0089.
+
+FUTURE LOCKED BAR
+The user has separately specified a future fixed bar:
+Category | Location | Photo
+
+R0089 may adjust the CURRENT right-side content alignment within the existing Category / Location bar only if that content is part of the right-edge problem.
+
+Do NOT:
+- lock the bar in R0089;
+- add Photo mode in R0089.
+
+Those remain future features.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- overall TrailWeigh width;
+- max-width architecture;
+- viewport meta;
+- Safari address-bar behavior;
+- visualViewport logic;
+- AppBar height;
+- List Summary height;
+- Bottom Box Groups height/position;
+- Home hero;
+- fixed-layer architecture;
+- document/root scroll architecture;
+- long-category bounded scrolling;
+- category row height;
+- wedge geometry;
+- wedge colors;
+- wedge icons;
+- wedge shadows;
+- fonts/font sizes;
+- checklist semantics;
+- drawers;
+- slide gestures;
+- swipe-to-delete;
+- reorder;
+- Add Item;
+- category/item accordion behavior;
+- data;
+- auth;
+- DB/schema;
+- dependencies;
+- workflows;
+- publishing/deployment.
+
+VISUAL ACCEPTANCE AT 402PX WIDTH
+At the real-device reference width of 402px:
+
+- app shell remains 402px;
+- rows remain full width;
+- left wedges remain exactly in place;
+- all right-side checklist content visibly shares a more generous consistent inset;
+- no isolated element remains unnecessarily pressed against the right edge;
+- right-aligned weights remain aligned with one another;
+- units remain visible;
+- title/subtitle content remains readable;
+- List Summary keeps original restored proportions;
+- no horizontal overflow;
+- no content clipping.
+
+BEFORE / AFTER MEASUREMENTS
+Measure and report the right edge / right gutter for every adjusted right-side class of element, including at minimum:
+
+- category weights;
+- List Summary right-side category count;
+- List Summary selected count/status;
+- category/row chevrons or controls if present;
+- any item-level right-side values/controls changed;
+- Category / Location bar right-side content if changed.
+
+Also report:
+- viewport width;
+- root width;
+- row width;
+- wedge bounds;
+- List Summary width/height;
+- row height;
+- effective common inset before;
+- effective common inset after.
+
+PLAYWRIGHT / AUTOMATED VERIFICATION
+Run focused verification at:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- existing viewport-safe regression suite
+
+Verify:
+1. Root/app width unchanged.
+2. Full-width row backgrounds unchanged.
+3. Wedge geometry and left position unchanged.
+4. Every intended right-side content group moved inward.
+5. The adjusted elements use a consistent visual gutter.
+6. No title/value overlap.
+7. No weight/unit wrapping.
+8. No horizontal overflow.
+9. List Summary height remains exactly R0088 restored height.
+10. Category row height unchanged.
+11. Header unchanged.
+12. Bottom Box Groups unchanged.
+13. Checklist scrolling unchanged.
+14. Home unchanged.
+15. Long-category bounded scrolling unchanged.
+16. Drawers/gestures/checklist interactions unchanged.
+
+PASS STANDARD
+Replit PASS requires:
+- all relevant right-side checklist content is handled, not just weights;
+- one coherent inset strategy is used wherever possible;
+- no app-width change;
+- no wedge movement;
+- no fixed-layer regression;
+- no List Summary height change;
+- no category-row height change;
+- typecheck and focused Playwright pass;
+- before/after metrics documented;
+- ready for USER iPhone visual verification.
+
+Do NOT call this USER PASS.
+
+REQUIRED ZIP REPORT
+Create and provide:
+
+trailweigh-R0089-report.zip
+
+ZIP must contain at minimum:
+
+1. R0089_REPORT.txt
+- R0089 GS — REVISED
+- branch / commit / checkpoint
+- current-state findings
+- complete inventory of right-side elements inspected
+- complete list of right-side elements actually changed
+- final common inset/gutter value
+- any element intentionally excluded and why
+- exact changes made
+- areas deliberately unchanged
+- typecheck / Playwright commands and exact PASS/FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+3. TEST_RESULTS.txt
+4. BEFORE_AFTER_METRICS.txt
+5. USER_IPHONE_TEST.txt
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+7. Standard Replit usage screenshot if available; if unavailable, state that clearly.
+
+If blocked or failed, STILL create trailweigh-R0089-report.zip documenting the blocker.
+
+THREE STANDING QUESTIONS FOR REPLIT
+Answer these three questions in the report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, screenshots, source assumptions, and Chromium-only PASS results.
+
+Move the right-side CONTENT inward consistently.
+Do not shrink the TrailWeigh frame.
+Protect every unrelated USER-PASS behavior.

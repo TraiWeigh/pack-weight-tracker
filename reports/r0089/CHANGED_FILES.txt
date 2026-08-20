@@ -1,0 +1,35 @@
+R0089 CHANGED FILES
+
+PRODUCT SOURCE
+1. artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+   - Added the shared CHECKLIST_RIGHT_INSET = 24 token.
+   - Applied it to all resting visible right-side checklist content classes:
+     Summary metrics, category/location header values, item values and detail controls,
+     location item controls, inline photo close controls, and long-list pager placement.
+   - Preserved left padding, shell width, full-width rows, wedges, vertical layout,
+     AppBar, Bottom Box Groups, Home, and gesture rail behavior.
+   - Added non-visual test identifiers for alignment measurement.
+
+TEST SOURCE
+2. tests/e2e/phase1b/right-side-inset.spec.ts
+   - New focused R0089 coverage at 402x714, 402x754, and 390x844.
+   - Verifies shared gutter, unchanged shell/row/wedge/fixed-layer dimensions, item
+     controls, location header, no overflow, and title/value separation.
+
+DELIVERABLES
+3. reports/r0089/*.txt
+   - Required R0089 report content.
+4. screenshots/r0089-after-402x714.jpg
+   screenshots/r0089-after-402x754.jpg
+   - Final target-size previews.
+5. trailweigh-R0089-report.zip
+   - Requested archive.
+
+RELEVANT BEFORE EVIDENCE, NOT MODIFIED BY R0089
+- screenshots/r0088-restored-402x714.jpg
+- screenshots/r0088-restored-402x754.jpg
+
+UNEXPECTED FILES
+- No unexpected product-source files were changed by R0089.
+- Existing test-results/playwright-report churn belongs to project-wide workflow activity
+  and is not part of the R0089 source change.

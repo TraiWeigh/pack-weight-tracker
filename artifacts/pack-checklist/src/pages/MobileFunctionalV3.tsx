@@ -177,6 +177,9 @@ const WEDGE_POINT = 17;
 const CARD_H      = 68;
 // R0087: compact only checklist/location rows. Home retains CARD_H=68.
 const CHECKLIST_ROW_H = 64;
+// R0089: shared resting-content gutter for the checklist's right edge. This
+// preserves the 402px shell, full-width row backgrounds, and left wedges.
+const CHECKLIST_RIGHT_INSET = 24;
 
 // ─── TOKENS ─────────────────────────────────────────────────────────────────────
 // R004 Part 3 — Inter Variable primary; former SERIF surfaces keep their weight/size
@@ -3803,7 +3806,7 @@ function MobileFunctionalV3Inner() {
           <div>
             <div style={{
               margin: 0, borderRadius: 0, background: 'rgba(42, 87, 64, 0.94)',
-              padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8,
+              padding: `10px ${CHECKLIST_RIGHT_INSET}px 12px 14px`, display: 'flex', flexDirection: 'column', gap: 8,
               /* R0085P3: shadow on the opaque green panel — correctly renders above
                  white category rows; detached from backdrop-filter compositor layer */
               boxShadow: '0 4px 12px rgba(0,0,0,0.22)',
@@ -3849,10 +3852,10 @@ function MobileFunctionalV3Inner() {
                     style={{
                       alignSelf: 'flex-end',
                       marginBottom: 2,
-                      // R0076: move chevron ~48 px LEFT of its R0075 position.
-                      // flex:1 on the left block absorbs the margin, shifting
-                      // the chevron toward the item-count block.
-                      marginRight: 48,
+                       // R0089: retain the pre-inset list-name width while the
+                       // right metrics use CHECKLIST_RIGHT_INSET. This chevron is
+                       // intentionally not a physical-edge control.
+                       marginRight: 38,
                       background: 'none', border: 'none', cursor: 'pointer',
                       color: 'rgba(255,255,255,0.50)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -3869,7 +3872,7 @@ function MobileFunctionalV3Inner() {
               })()}
 
               {/* Right: categories / selected / not selected stacked (027U) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
+              <div data-testid="summary-right-metrics" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignSelf: 'center' }}>
                 {/* Category count — top of right stack */}
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.58)', whiteSpace: 'nowrap', letterSpacing: '0.2px' }}>
                   {catCount} {catCount === 1 ? 'category' : 'categories'}
@@ -4091,7 +4094,7 @@ function MobileFunctionalV3Inner() {
                       display: 'grid',
                       gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
                       alignItems: 'center',
-                      padding: '8px 12px',
+                      padding: `8px ${CHECKLIST_RIGHT_INSET}px 8px 12px`,
                       columnGap: 10,
                     }}>
                       {/* Col 1 — name + subtitle both inside the button so the
@@ -4122,7 +4125,9 @@ function MobileFunctionalV3Inner() {
                       </div>
 
                       {/* Col 4 — selected-weight */}
-                      <div style={{
+                      <div
+                        data-testid={`cat-weight-${catName}`}
+                        style={{
                         textAlign: 'right',
                         fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
                         whiteSpace: 'nowrap',
@@ -4249,7 +4254,7 @@ function MobileFunctionalV3Inner() {
                                 onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); handleItemToggle(catName, item.id); } }}
                                 style={{
                                   flex: 1, display: 'flex', alignItems: 'center',
-                                  gap: 10, paddingRight: 14, cursor: 'pointer', minHeight: 44,
+                                  gap: 10, paddingRight: CHECKLIST_RIGHT_INSET, cursor: 'pointer', minHeight: 44,
                                 }}
                               >
                                 {/* Item name */}
@@ -4261,7 +4266,7 @@ function MobileFunctionalV3Inner() {
                                 </div>
 
                                 {/* Quantity */}
-                                <span style={{ fontSize: 14, color: SECONDARY, flexShrink: 0 }}>
+                                <span data-testid={`item-quantity-${item.id}`} style={{ fontSize: 14, color: SECONDARY, flexShrink: 0 }}>
                                   {item.qty}
                                 </span>
                               </div>
@@ -4279,7 +4284,7 @@ function MobileFunctionalV3Inner() {
                                 {/* R0077P2: row minHeight:44 (was height:42); input minHeight:44 for >=44px touch target */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', minHeight: 44, gap: 10,
+                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <Hash size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -4326,7 +4331,7 @@ function MobileFunctionalV3Inner() {
                                 {/* R0077P2: row minHeight:44 (was height:42); select minHeight:44 for >=44px touch target */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', minHeight: 44, gap: 10,
+                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <PackageOpen size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -4350,7 +4355,7 @@ function MobileFunctionalV3Inner() {
                                 {/* Total (derived) */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', height: 42, gap: 10,
+                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, height: 42, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <Check size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -4365,7 +4370,7 @@ function MobileFunctionalV3Inner() {
                                 {otherCats.length > 0 && (
                                   <div style={{
                                     display: 'flex', alignItems: 'center',
-                                    padding: '0 14px', minHeight: 44, gap: 10,
+                                    padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
                                     borderBottom: `1px solid ${DETAIL_BDR}`,
                                   }}>
                                     <ArrowRightLeft size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -4391,7 +4396,7 @@ function MobileFunctionalV3Inner() {
                                 {/* R0085C: Location row — dropdown chooser; Create New Location… at bottom */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', minHeight: 44, gap: 10,
+                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <MapPin size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -4432,7 +4437,7 @@ function MobileFunctionalV3Inner() {
                                 {/* R0085: Photo row — replaces disabled stub */}
                                 <div style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '0 14px', minHeight: 44, gap: 10,
+                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <Camera size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
@@ -4472,7 +4477,7 @@ function MobileFunctionalV3Inner() {
                                 {/* R0085: Inline photo viewer — stays open until user closes explicitly */}
                                 {item.photoDataUrl && photoViewFor?.cat === catName && photoViewFor?.id === item.id && (
                                   <div style={{ background: '#111', borderBottom: `1px solid ${DETAIL_BDR}` }}>
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '2px 8px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: `2px ${CHECKLIST_RIGHT_INSET}px 2px 8px` }}>
                                       <button
                                         onClick={e => { e.stopPropagation(); setPhotoViewFor(null); }}
                                         aria-label="Close photo"
@@ -4498,7 +4503,7 @@ function MobileFunctionalV3Inner() {
                                   data-testid={isExpanded && isCatLong && openCatName === catName ? 'item-delete-row' : undefined}
                                   style={{
                                   display: 'flex', alignItems: 'stretch',
-                                  padding: '0 14px', minHeight: 44, gap: 10,
+                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
                                   borderTop: `1px solid ${DETAIL_BDR}`,
                                 }}>
                                   <Trash2 size={14} color="#B03A2E" strokeWidth={1.8} aria-hidden="true" style={{ alignSelf: 'center' }}/>
@@ -4541,6 +4546,7 @@ function MobileFunctionalV3Inner() {
                         display: 'flex', alignItems: 'center',
                         borderTop: `1px solid ${DIVIDER}`,
                         minHeight: 44,
+                        paddingRight: CHECKLIST_RIGHT_INSET,
                       }}
                     >
                       {/* Add Item tap target — full width minus optional chevron */}
@@ -4706,7 +4712,7 @@ function MobileFunctionalV3Inner() {
                             display: 'grid',
                             gridTemplateColumns: 'minmax(0, 1fr) minmax(44px, auto)',
                             alignItems: 'center',
-                            padding: '8px 12px',
+                            padding: `8px ${CHECKLIST_RIGHT_INSET}px 8px 12px`,
                             columnGap: 10,
                           }}>
                             {/* Col 1 — "Location" label + item count */}
@@ -4729,7 +4735,9 @@ function MobileFunctionalV3Inner() {
                             </div>
 
                             {/* Col 2 — location name only (Edit | Delete via swipe reveal) */}
-                            <div style={{
+                            <div
+                              data-testid={`loc-name-${loc.id}`}
+                              style={{
                               fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '-0.2px',
                               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                               maxWidth: 130, textAlign: 'right',
@@ -4746,7 +4754,7 @@ function MobileFunctionalV3Inner() {
                           {/* Location Photo row */}
                           <div style={{
                             display: 'flex', alignItems: 'center',
-                            padding: '0 14px', minHeight: 44, gap: 10,
+                            padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
                             borderBottom: `1px solid ${DETAIL_BDR}`,
                             background: DETAIL_BG,
                           }}>
@@ -4788,7 +4796,7 @@ function MobileFunctionalV3Inner() {
                           {/* Inline location photo viewer */}
                           {loc.photoDataUrl && locPhotoViewId === loc.id && (
                             <div style={{ background: '#111', borderBottom: `1px solid ${DETAIL_BDR}` }}>
-                              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '2px 8px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: `2px ${CHECKLIST_RIGHT_INSET}px 2px 8px` }}>
                                 <button
                                   onClick={e => { e.stopPropagation(); setLocPhotoViewId(null); }}
                                   aria-label="Close location photo"
@@ -4816,7 +4824,7 @@ function MobileFunctionalV3Inner() {
                                 key={item.id}
                                 style={{
                                   display: 'flex', alignItems: 'center',
-                                  padding: '10px 16px', gap: 10,
+                                  padding: `10px ${CHECKLIST_RIGHT_INSET}px 10px 16px`, gap: 10,
                                   borderBottom: `1px solid ${DETAIL_BDR}`,
                                   background: CARD_BG,
                                 }}

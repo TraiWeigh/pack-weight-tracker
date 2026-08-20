@@ -1,0 +1,21 @@
+R0089 SCREENSHOT / ARTIFACT INDEX
+
+BEFORE — R0088 RESTORED SUMMARY / PRIOR RIGHT GUTTERS
+- screenshots/r0088-restored-402x714.jpg
+- screenshots/r0088-restored-402x754.jpg
+
+AFTER — R0089 SHARED 24PX RIGHT CONTENT GUTTER
+- screenshots/r0089-after-402x714.jpg
+- screenshots/r0089-after-402x754.jpg
+
+ADDITIONAL BROWSER VERIFICATION ARTIFACTS
+- bq3eo7 — Backpack expanded with item details.
+- z5ypm0 — temporary location saved through normal UI.
+- xcii1q — Location view with temporary location header.
+
+PLAYWRIGHT OUTPUT (ephemeral)
+- /tmp/r0089-inset-results
+- /tmp/r0089-summary-results
+- /tmp/r0089-viewport-results
+
+No standard Replit usage screenshot was available in this session.

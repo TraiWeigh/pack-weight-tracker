@@ -287,3 +287,10 @@ uri = "file://trailweigh-R0088-report.zip"
 type = "unspecified"
 title = "TrailWeigh R0088 report"
 description = "Exact List Summary restoration report with source-history reference, metrics, tests, iPhone verification steps, and before/after screenshots."
+
+[[outputs]]
+id = "oIsqJhvv46MQi0ZsLfhi3"
+uri = "file://trailweigh-R0089-report.zip"
+type = "unspecified"
+title = "TrailWeigh R0089 report"
+description = "Shared 24px right-side checklist gutter report with source inventory, before/after metrics, focused test results, iPhone verification steps, and screenshots."

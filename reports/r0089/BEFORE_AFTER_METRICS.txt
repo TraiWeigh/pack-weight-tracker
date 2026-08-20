@@ -1,0 +1,40 @@
+R0089 BEFORE / AFTER METRICS
+
+All gutter values are CSS pixels inside the active mobile checklist root at 402px width.
+The root/app shell and category rows remain full width.
+
+RIGHT-SIDE CONTENT CLASS                 BEFORE      AFTER       CHANGE
+Summary category/selected metrics        14px        24px        +10px inward
+Category selected-weight values          12px        24px        +12px inward
+Location header name                     12px        24px        +12px inward
+Collapsed item quantity                  14px        24px        +10px inward
+Expanded item inputs/selects/totals      14px        24px        +10px inward
+Location item content/edit control       16px        24px        +8px inward
+Inline photo close control               8px         24px        +16px inward
+Long-list pager resting right edge       0px         24px        +24px inward
+
+COMMON FINAL INSET
+CHECKLIST_RIGHT_INSET = 24px
+
+PROTECTED GEOMETRY
+Viewport / root width                    402px       402px       unchanged
+Category row background width            402px       402px       unchanged
+Category wedge left / width              0px / 72px  0px / 72px unchanged
+List Summary height                      88.25px     88.25px     unchanged
+List Summary vertical padding            10 / 12px   10 / 12px   unchanged
+Category row content min-height          64px        64px        unchanged
+AppBar height                            52px        52px        unchanged
+Bottom Box Groups height                 58px        58px        unchanged
+
+CHECKS AT 402x714, 402x754, 390x844
+- Shell, root, and full row geometry stayed at viewport width.
+- Category title and selected weight remained separate without overlap.
+- Weight/unit values did not wrap or clip.
+- document/body horizontal scroll width did not exceed the viewport.
+- Summary fixed position and R0088 restored height remained unchanged.
+
+NOTE ON SUMMARY CHEVRON
+The Summary chevron was already an interior, non-edge-aligned control with a legacy 48px
+reserved gap. Its gap is 38px after R0089 to preserve the pre-R0089 list-name width while
+the actual right-side Summary metrics move inward by 10px. It remains comfortably inside
+the common right-gutter boundary.

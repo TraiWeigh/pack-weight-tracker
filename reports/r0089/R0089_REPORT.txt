@@ -1,0 +1,111 @@
+TRAILWEIGH — R0089 GS — REVISED
+Move All Right-Side Mobile Checklist Content Inward
+
+STATUS: READY FOR USER IPHONE TEST — NOT USER PASS
+
+BRANCH / COMMIT / CHECKPOINT
+Branch: main
+Current HEAD before this working-tree change: d7f4a8b
+R0088 restored-Summary checkpoint source: d7f4a8b
+
+CURRENT-STATE FINDINGS
+- R0088's restored List Summary was confirmed before editing: its vertical padding,
+  height, fixed position, measured spacer, icon tile, and hierarchy remain intact.
+- R0087's category/location density remains active: 64px minimum row height.
+- The mobile shell and category row backgrounds remain full-width; category wedges remain
+  anchored at x=0 and 72px wide.
+- Right-aligned checklist content had several inconsistent effective right gutters:
+  12px on category/location headers, 14px on Summary and item detail controls, 16px on
+  location item rows, and 8px on inline photo-viewer close controls.
+
+COMMON INSET STRATEGY
+Added one checklist-only source token:
+  CHECKLIST_RIGHT_INSET = 24
+
+This is a shared resting-content gutter. It moves content inward while leaving the physical
+app edge, full-width row backgrounds, separators, fixed layers, and left wedges unchanged.
+At a 402px root, intended right-aligned content now ends at x=378 (24px from the edge).
+
+COMPLETE INVENTORY — INSPECTED
+1. List Summary right-side category count, selected icon/status, and text.
+2. List Summary expand/collapse chevron.
+3. Category selected-weight values.
+4. Location header right-side location names.
+5. Collapsed item quantity values.
+6. Expanded item weight input/unit, quantity, move, location, photo, and total controls.
+7. Location-detail photo controls, item edit control/content, and inline photo close control.
+8. Long-category paging chevrons.
+9. Category/Location mode bar, AppBar, Bottom Box Groups, Home controls, and hidden
+   swipe-action rail were reviewed as exclusions.
+
+RIGHT-SIDE CONTENT ACTUALLY CHANGED
+- Summary right metrics: right padding 14px -> 24px.
+- Category selected weights: grid right padding 12px -> 24px.
+- Location header names: grid right padding 12px -> 24px.
+- Collapsed item quantities: row right padding 14px -> 24px.
+- Expanded item inputs/selects/totals/photo controls: detail-row right padding 14px -> 24px.
+- Location-detail photo controls: right padding 14px -> 24px.
+- Location item content/edit controls: right padding 16px -> 24px.
+- Inline item/location photo close controls: right padding 8px -> 24px.
+- Long-category paging controls: their full-width bar now reserves the same 24px right
+  gutter, moving the resting arrows inward without changing their button size.
+
+INTENTIONALLY EXCLUDED
+- AppBar: excluded by the prompt's default rule; unchanged.
+- Bottom Box Groups: fixed full-width navigation and explicitly USER-PASS; unchanged.
+- Home: explicitly outside this checklist-only adjustment; unchanged.
+- Category/Location mode bar: its equal-width, centered controls are not visually
+  right-edge-aligned; unchanged.
+- Swipe Delete/Edit rail: hidden until a protected right-edge gesture and position-coupled
+  to the swipe reveal model; unchanged to protect gesture geometry.
+- Summary chevron: inspected but not a physical-edge control. Its legacy reserved margin
+  changed 48px -> 38px solely to preserve the pre-R0089 list-name width after moving the
+  metrics stack inward by 10px. It remains comfortably inside the new gutter.
+
+EXACT CHANGES
+1. Introduced CHECKLIST_RIGHT_INSET = 24.
+2. Replaced the active checklist's varied resting right padding with this shared value
+   where a right-side value/control is present, while retaining each original left padding.
+3. Added stable test identifiers for Summary metrics, category weights, item quantities,
+   and location header names so the alignment is regression-tested.
+4. Added R0089 Playwright coverage at 402x714, 402x754, and 390x844.
+
+AREAS DELIBERATELY UNCHANGED
+- Overall TrailWeigh/app shell width and max-width architecture.
+- Viewport meta, Safari address bar, visualViewport behavior, zoom, and global scaling.
+- AppBar and Bottom Box Groups height/position.
+- R0088 List Summary vertical padding, height, icon size, fixed position, and spacer.
+- R0087 category row height/density.
+- Wedge geometry, colours, icons, shadows, fonts/font sizes, and full-width rows.
+- Home hero, document/root scrolling, long-category bounded scrolling mechanics,
+  drawers, slide gestures, swipe-to-delete, reorder, Add Item, accordions, data, auth,
+  DB/schema, dependencies, workflows, publishing, and deployment.
+
+NO SAFARI / SCREEN-SIZE FIX CLAIM
+R0089 does not alter Safari browser chrome, viewport behavior, or screen size. It is a
+content-gutter adjustment only. Chromium checks verify layout geometry, not iPhone Safari
+browser-chrome behavior.
+
+WARNINGS / PROJECT CONTEXT
+- The aggregate workspace typecheck workflow still contains unrelated mockup-sandbox
+  failures. The TrailWeigh web-package typecheck passes.
+- The configured project-wide e2e workflow has unrelated legacy failures. It was not
+  restarted or altered because R0089 explicitly forbids workflow changes.
+
+STANDING QUESTIONS FOR FUTURE PROMPTS
+1. What did this task teach us?
+   In this UI, "right edge" was not one value: Summary, header grids, item details, and
+   photo controls had different inherited padding. A single named right-gutter token is
+   safer than isolated offsets, but Summary flex space must be checked so right-side
+   movement does not create unintended list-name truncation.
+
+2. Was anything unclear, unnecessary, risky, or better expressed another way?
+   The revised prompt clearly established that this was a coordinated content inset, not
+   a weight-only adjustment. The explicit exclusions for shell width, wedges, AppBar,
+   Bottom Box Groups, and Safari behavior prevented scope creep. The only risk was
+   Summary text-width loss, which was corrected before delivery.
+
+3. What Replit/project detail helps future work?
+   Use target-package typechecks and isolated Playwright outputs for TrailWeigh work;
+   wider workflows have unrelated legacy failures. Chromium can verify right-edge
+   geometry, but real iPhone Safari remains the authority for final visual approval.

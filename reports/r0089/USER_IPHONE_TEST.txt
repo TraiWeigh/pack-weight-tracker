@@ -1,0 +1,26 @@
+KEVIN — R0089 REAL IPHONE SAFARI TEST
+
+Open:
+https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.worf.replit.dev/mobile-functional-v3
+
+1. At the normal checklist view, confirm the category weights sit noticeably farther from
+   the physical right edge while all weights remain aligned with each other.
+2. Confirm the List Summary's category count and Selected status share the same more
+   generous right-side breathing room. Its height and vertical proportions should look
+   exactly like the R0088-restored original.
+3. Confirm category names and subtitles remain readable, do not collide with weights, and
+   do not appear more truncated than before.
+4. Open a category and inspect item quantities plus expanded Weight, Quantity, Move,
+   Location, Photo, and Total controls. They should have matching right-side breathing
+   room, stay usable, and not wrap or clip.
+5. If you have a location assigned, switch to Location view. Confirm the location name and
+   Location-detail controls use the same inset.
+6. Exercise a long category if available and confirm its paging arrows are inset and still
+   work. Test normal scroll, drawer, Home, and Bottom Box Groups.
+7. Check both expanded and compact Safari chrome states. Safari behavior should otherwise
+   be unchanged; this task does not claim to alter browser chrome or screen size.
+
+If an element still feels pressed against the right edge, send a screenshot that includes
+the relevant row and Safari chrome.
+
+R0089 is READY FOR USER IPHONE TEST, not USER PASS.
