@@ -81,7 +81,7 @@ function expectStableShell(frame: ShellSnapshot, viewportHeight: number) {
   expect(frame.filter.top).toBeCloseTo(frame.summary.bottom, 0);
   expect(frame.nav.position).toBe('absolute');
   expect(frame.nav.mode).toBe('shell-top-static');
-  expect(frame.nav.topStyle).toBe(`${viewportHeight - 58}px`);
+  expect(frame.nav.topStyle).toBe(`calc(${viewportHeight - 58}px - var(--tw-safe-top, 0px))`);
   expect(frame.nav.height).toBe(58);
   expect(frame.nav.bottom).toBeCloseTo(viewportHeight, 0);
   expect(frame.main.overflowY).toBe('auto');

@@ -1,0 +1,38 @@
+R0097 — USER IPHONE TEST CHECKLIST
+
+Status: REPLIT PASS / READY FOR USER IPHONE TEST
+This must be tested on the same real iPhone Safari context that supplied the R0097 video.
+
+1. AppBar
+- Open /mobile-functional-v3.
+- Confirm hamburger, TrailWeigh checkbox/logo/title, and all right-side icons are
+  fully visible directly below the usable top/Safari safe area.
+- Confirm no AppBar portion is hidden under the Dynamic Island, status bar, or browser UI.
+
+2. Top stack
+- Confirm List Summary begins directly below AppBar.
+- Confirm Filter begins directly below Summary.
+- Confirm there is no extra blank strip and no overlap.
+
+3. Checklist scrolling
+- Scroll slowly, flick, reverse, and reach the bottom.
+- Confirm only category content moves.
+- Confirm AppBar, Summary, Filter, and Bottom Box Groups remain stationary.
+- Confirm weights and wedge/row geometry are unchanged.
+
+4. Footer
+- Confirm Bottom Box Groups remains exactly where it was after R0096.
+- Confirm the Next-chevron inset and group behavior are unchanged.
+
+5. Home
+- Open Home from the hamburger.
+- Confirm AppBar remains visible and Home content begins below it.
+- Scroll Home content and confirm document/body do not take over scrolling.
+
+6. Hamburger
+- Open the panel, tap outside it to close, and reopen it.
+- Confirm panel frame stays locked and only its interior list scrolls when needed.
+
+If AppBar is still missing or any locked layer moves, record the full screen (including
+Safari chrome) and, if possible, open the in-app viewport diagnostic and copy its text.
+That real-device evidence overrides this Chromium report.

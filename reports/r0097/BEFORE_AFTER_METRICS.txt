@@ -1,0 +1,48 @@
+R0097 geometry and preservation metrics
+
+USER-EVIDENCE BEFORE
+The watched iPhone MP4 is 1206×2622 physical pixels (402×874 CSS at 3×).
+It proves that AppBar was not visible while Summary, Filter, checklist, and footer
+were visible. It has no DOM diagnostic snapshot, so exact historical iPhone safe
+area, shell, and rectangle values are unavailable and are not fabricated here.
+
+R0096 CHROMIUM BASELINE BEFORE (402×714; safe top 0)
+- Shell: top 0, bottom 714, height 714
+- AppBar: top 0, bottom 52, height 52
+- Summary: top 52, bottom 140.25, height 88.25
+- Filter: top 140, bottom 190, height 50
+- main-scroll: top 190, bottom 656, height 466
+- Bottom Box Groups: top 656, bottom 714, height 58
+
+R0097 AFTER — CONTROLLED 20PX SAFE AREA (402×714)
+- Safe-top simulation: 20px
+- Shell: top 20, bottom 714, height 694
+- AppBar: top 20, bottom 72, height 52
+- Summary: top 72, bottom 160.25, height 88.25
+- Filter: top 160, bottom 210, height 50
+- main-scroll: top 210, bottom 656, height 446
+- Bottom Box Groups: top 656, bottom 714, height 58
+- main-scroll mid-scroll: scrollTop 219, scrollHeight 845, clientHeight 446
+- main-scroll bottom: scrollTop 399, scrollHeight 845, clientHeight 446
+- Home: top 72, bottom 714, height 642; content scrollTop 180
+- document/window/body scroll: 0 / 0 / 0
+
+MAX LOCKED-LAYER MOVEMENT DURING MIDDLE SCROLL
+- AppBar: 0px
+- Summary: 0px
+- Filter: 0px
+- Bottom Box Groups: 0px
+
+PRESERVATION
+- AppBar height: 52px
+- Summary height: 88.25px
+- Filter height: 50px
+- Bottom Box Groups height: 58px
+- Weight-column right edge: 358px
+- Root width: 402px
+- Document scroll width: 402px
+
+Safe-area strategy
+- Actual runtime value: env(safe-area-inset-top, 0px)
+- No hardcoded iPhone inset is shipped.
+- The test-only 20px override demonstrates coordinate behavior and is not shipped.

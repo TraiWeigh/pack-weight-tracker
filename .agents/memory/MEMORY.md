@@ -31,3 +31,4 @@
 - [Fixed-layer row counting](fixed-layer-row-counting.md) — use a 1px tolerance at fractional fixed-layer edges so a visibly complete row border is not classified as clipped.
 - [Checklist right-gutter rule](checklist-right-gutter.md) — real iPhone evidence needs separate general, deep-weight, and AppBar insets; preserve the Summary’s flex budget.
 - [Mobile visual-viewport anchoring](mobile-visual-viewport-anchoring.md) — physical Safari chrome stability requires a scoped internal-scroll shell, not document-scrolled fixed layers.
+- [Safe-area shell coordinates](safe-area-shell-coordinates.md) — moving the mobile shell by the top safe inset requires local-coordinate compensation for absolute footer layers.

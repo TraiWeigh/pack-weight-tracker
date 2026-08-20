@@ -1,0 +1,22 @@
+R0097 changed files
+
+Application
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Added a safe-area-derived top shell origin, reduced shell height by the same inset,
+  made the absolute footer coordinate shell-relative, and aligned Home below the
+  safe-area-aware AppBar.
+
+Tests
+- tests/e2e/phase1b/r0097-appbar-safe-area.spec.ts
+  New four-viewport AppBar/stack/scroll/safe-area/Home/drawer coverage.
+- tests/e2e/phase1b/r0097-evidence.spec.ts
+  New reproducible screenshot and metric capture.
+- tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts
+  Updated footer style expectation for its safe-area-relative coordinate.
+- tests/e2e/phase1b/r0096-locked-controls.spec.ts
+  Waits for the existing Summary ResizeObserver measurement to settle before
+  asserting the active-category shared slot after rapid item setup.
+
+Unexpected changed files
+- None. Test-generated legacy R0095 screenshots and Playwright report files may be
+  modified by the test runner but are not part of R0097 source behavior or this ZIP.

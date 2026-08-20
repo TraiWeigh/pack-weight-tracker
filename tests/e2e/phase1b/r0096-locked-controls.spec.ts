@@ -131,6 +131,14 @@ test.describe('R0096 — locked mobile control layers', () => {
     await makeBackpackLong(page);
 
     await expect(page.getByTestId('filter-bar')).not.toBeVisible();
+    // The Summary's ResizeObserver may report its final fractional height on the
+    // frame after the rapid item additions. Assert the settled shared-slot geometry,
+    // not the transitional pre-measurement frame.
+    await page.waitForFunction(() => {
+      const summary = document.querySelector('[data-testid="list-summary-bar"]')?.getBoundingClientRect();
+      const active = document.querySelector('[data-testid="active-category-bar"]')?.getBoundingClientRect();
+      return !!summary && !!active && Math.abs(summary.bottom - active.top) <= 1;
+    }, undefined, { timeout: 2000 });
     const before = {
       summary: await rectOf(page, '[data-testid="list-summary-bar"]'),
       active: await rectOf(page, '[data-testid="active-category-bar"]'),

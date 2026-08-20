@@ -1,0 +1,431 @@
+TRAILWEIGH — R0097 GS
+Gold Standard Replit Prompt
+RESTORE MISSING APPBAR ON IPHONE
+Preserve R0096 Stable Shell + Filter Architecture
+
+REPLIT EXECUTION SETTINGS
+- Agent mode: POWER
+- App Testing: ON
+- Code Optimizations: OFF
+- Build mode, not Plan-only mode
+
+WHY POWER
+This is a narrow but iPhone/Safari-specific shell-geometry regression on top of the newly successful R0095/R0096 internal-scroll architecture. We need careful current-state inspection and real-device-aware reasoning without destabilizing the new shell.
+
+WHY CODE OPTIMIZATIONS OFF
+Do not refactor or broaden scope. This should be the smallest possible AppBar visibility correction.
+
+PERMANENT TRAILWEIGH CONVENTIONS
+- Prompt ZIP: R####_GS.zip
+- Replit report ZIP: R####.zip
+- Every prompt requires a report ZIP
+- Every report answers the three standing Replit questions
+- USER live-device evidence outranks Replit/Chromium PASS
+- Inspect CURRENT state first
+- Root cause before edit
+- Smallest reversible patch
+- Protect unrelated USER-PASS behavior
+
+AUTHORITATIVE USER EVIDENCE INCLUDED
+This ZIP contains:
+1. R0097_USER_IPHONE_R0096_MISSING_APPBAR.MP4
+2. R0097_USER_IPHONE_R0096_CONTACT.png
+
+The video is an actual iPhone recording after R0096.
+
+WATCH THE VIDEO BEFORE EDITING.
+
+AUTHORITATIVE USER RESULT
+R0096 is a major visual/scrolling improvement, but the AppBar/title bar is missing from the visible iPhone screen.
+
+Important:
+- the List Summary is visible;
+- the new Filter bar is visible;
+- category scrolling is much better;
+- Bottom Box Groups is visible and stable;
+- the AppBar / TrailWeigh title row is not visible.
+
+This is a REGRESSION.
+
+DO NOT treat the missing AppBar as an intended tradeoff.
+
+R0096's intended structure was:
+AppBar
+→ List Summary
+→ Filter
+→ scrolling checklist content
+→ Bottom Box Groups
+
+The Filter was intended to replace the old scrolling Category/Location control, NOT the AppBar.
+
+PRIMARY USER INTENT
+Restore the existing AppBar/title bar so it is fully visible on the actual iPhone.
+
+Preserve all successful R0096 architecture and behavior.
+
+TARGET STACK
+LOCKED TOP
+1. AppBar — visible
+2. List Summary
+3. Filter bar
+
+SCROLLING MIDDLE
+4. checklist/category content only
+
+LOCKED BOTTOM
+5. Bottom Box Groups
+
+DO NOT sacrifice any of these layers to make room for another.
+
+GOLD STANDARD — INSPECT FIRST
+Before editing:
+
+1. WATCH the included iPhone MP4.
+2. Inspect CURRENT active `/mobile-functional-v3`.
+3. Read relevant `replit.md` / durable mobile-shell guidance read-only.
+4. Inspect current R0096 implementation and report if available.
+5. Confirm current actual DOM/layout stack:
+   - AppBar
+   - List Summary
+   - Filter bar
+   - main-scroll
+   - Bottom Box Groups
+6. Measure:
+   - shell top
+   - AppBar top/bottom
+   - List Summary top/bottom
+   - Filter top/bottom
+   - main-scroll top/bottom
+   - Bottom Box Groups top/bottom
+7. Inspect:
+   - safe-area handling
+   - `env(safe-area-inset-top)`
+   - shell height
+   - top offsets
+   - containing blocks
+   - fixed/sticky/absolute positioning
+   - visualViewport usage
+   - layout viewport/clientHeight usage
+8. Determine WHY Chromium shows the AppBar but real iPhone Safari does not.
+9. Separate:
+   FACTS
+   UNKNOWNS
+   ASSUMPTIONS.
+10. Find root cause before editing.
+
+DO NOT GUESS
+Do not blindly add 52px.
+Do not blindly add `safe-area-inset-top`.
+Do not blindly reduce the checklist viewport.
+
+First determine which coordinate/safe-area mismatch is actually causing the AppBar to render above or under the visible iPhone area.
+
+CURRENT R0096 SUCCESS — PROTECT IT
+Do NOT undo the R0095/R0096 shell architecture.
+
+Preserve:
+- document/body not owning normal checklist scroll;
+- dedicated middle checklist scroller;
+- AppBar/List Summary/Filter/Footer outside normal checklist scrolling;
+- stable List Summary;
+- stable Filter bar;
+- stable Bottom Box Groups;
+- current weight-column position;
+- current horizontal alignment;
+- category row height;
+- wedge geometry;
+- Bottom Box Groups layout.
+
+APPBAR REQUIREMENTS
+Restore the EXISTING AppBar.
+
+Preserve:
+- current AppBar height;
+- hamburger position;
+- checkbox/TrailWeigh logo/title;
+- right-side header icons;
+- icon sizes;
+- icon order;
+- current horizontal spacing/alignment from R0092/R0096.
+
+Do NOT redesign the AppBar.
+
+The fix should be vertical/safe-area/shell placement only unless inspection proves a tiny horizontal side effect must be corrected.
+
+IPHONE SAFE-AREA REQUIREMENT
+On real iPhone Safari:
+- AppBar must be fully visible;
+- it must not sit under/above the usable content origin;
+- it must remain stationary during checklist scrolling;
+- List Summary must sit directly beneath it;
+- Filter bar must sit directly beneath List Summary.
+
+If the shell needs a safe-area-aware top inset:
+- derive it correctly;
+- do not double-apply it;
+- do not introduce extra blank space;
+- keep Android/non-notch devices responsive.
+
+IMPORTANT HEIGHT RULE
+Do NOT preserve a fixed category viewing height by sacrificing the AppBar.
+
+If restoring the AppBar reduces the available middle scroll-region height, that is acceptable and correct.
+
+The full stack must fit the actual usable mobile viewport:
+AppBar + Summary + Filter + scroll region + Bottom bar.
+
+The scroll region should flex to whatever space remains.
+
+Do not hide chrome to preserve an old numeric scroll height.
+
+BOTTOM BAR
+Do NOT move or redesign Bottom Box Groups.
+
+Preserve:
+- current height;
+- current position;
+- current Next-chevron inset;
+- group behavior.
+
+FILTER BAR
+Do NOT remove or move Filter.
+
+Preserve:
+- directly beneath List Summary;
+- locked/non-scrolling;
+- current behavior.
+
+LIST SUMMARY
+Do NOT compact or resize.
+
+Preserve restored R0088 proportions and current R0096 horizontal alignment.
+
+HOME
+Do not regress Home.
+
+If shared shell safe-area handling affects Home:
+- AppBar visible;
+- Home hero/content remain correctly placed;
+- Home internal scrolling preserved;
+- Bottom Box Groups preserved.
+
+HAMBURGER PANEL
+R0096 included hamburger-panel locking work.
+
+Do not redesign it.
+
+Verify AppBar restoration does not break:
+- opening hamburger;
+- panel frame lock;
+- close behavior.
+
+STRICT SCOPE — DO NOT CHANGE
+Do NOT change:
+- Filter feature semantics
+- Category/Location/Photo options
+- Photo rendering behavior
+- category data
+- item data
+- DB/schema
+- auth
+- packages/dependencies
+- publishing/deployment
+- weight column
+- wedge shape/colors/icons
+- category row height
+- typography
+- swipe-to-delete
+- reorder
+- Add Item behavior
+- Bottom Box Groups design
+- app width
+- viewport meta unless root cause absolutely requires a surgical correction and it is documented
+
+TESTING
+Use App Testing.
+
+At minimum:
+- 402 × 714
+- 402 × 754
+- 390 × 844
+- 360 × 800 or closest practical narrow viewport
+
+FOCUSED R0097 TESTS
+
+TEST 1 — APPBAR VISIBLE
+At each viewport:
+- AppBar fully inside visible root/shell;
+- no negative top;
+- no clipping;
+- no overlap with status/safe area in simulated geometry.
+
+TEST 2 — STACK ORDER
+Verify:
+AppBar
+then List Summary
+then Filter
+then main-scroll
+then Bottom Box Groups.
+
+No overlap and no hidden chrome.
+
+TEST 3 — SCROLL ARCHITECTURE PRESERVED
+Scroll categories deeply.
+
+Verify:
+- AppBar Y unchanged
+- List Summary Y unchanged
+- Filter Y unchanged
+- Bottom Box Groups Y unchanged
+- only category row Y changes
+- window/document scroll remains zero or expected R0096 baseline.
+
+TEST 4 — HEIGHT FLEX
+Verify restoring AppBar does not use a hardcoded middle height that causes overflow.
+The main-scroll region should use remaining space.
+
+TEST 5 — 402×714 / 402×754
+At both heights:
+- AppBar visible
+- Summary visible
+- Filter visible
+- Bottom bar visible
+- middle scroll region resizes appropriately
+- no chrome disappears.
+
+TEST 6 — NARROW WIDTH
+At 360px:
+- no horizontal overflow
+- header icons remain visible
+- Filter usable
+- weights preserved.
+
+TEST 7 — HOME REGRESSION
+Verify Home loads and scrolls as before with AppBar visible.
+
+TEST 8 — HAMBURGER
+Open/close hamburger.
+Verify AppBar restoration does not break panel placement or lock behavior.
+
+REAL IPHONE LIMITATION
+Chromium cannot prove actual iPhone safe-area/Safari compositing behavior.
+
+Therefore:
+REPLIT PASS != USER PASS.
+
+Final status:
+REPLIT PASS / READY FOR USER IPHONE TEST
+
+Kevin's actual iPhone verification determines USER PASS.
+
+VISUAL ARTIFACTS
+At 402px capture:
+- full top stack showing AppBar + Summary + Filter
+- mid-scroll showing all three top layers stable
+- bottom-of-list
+- Home
+- hamburger open
+
+REQUIRED REPORT ZIP — PERMANENT REQUIREMENT
+Create and provide:
+
+R0097.zip
+
+Do NOT use any other report filename.
+
+R0097.zip must contain at minimum:
+
+1. R0097_REPORT.txt
+Include:
+- R0097 GS
+- Agent mode used: POWER
+- acknowledgement iPhone MP4 watched
+- exact R0096 current geometry
+- FACTS / UNKNOWNS / ASSUMPTIONS
+- root cause of missing AppBar
+- exact fix
+- safe-area/top-offset strategy
+- exact final stack
+- whether R0096 internal-scroll architecture remains intact: YES/NO
+- areas deliberately unchanged
+- exact test commands
+- exact PASS/FAIL totals
+- READY / NOT READY FOR USER IPHONE TEST
+
+2. CHANGED_FILES.txt
+- every changed file
+- reason
+- unexpected file explicitly identified
+
+3. TEST_RESULTS.txt
+- commands
+- suites
+- viewport sizes
+- pass/fail totals
+- AppBar visibility checks
+- stack-order checks
+- scroll-owner checks
+- Chromium vs real iPhone distinction
+
+4. BEFORE_AFTER_METRICS.txt
+Include:
+BEFORE:
+- shell top
+- AppBar top/bottom
+- Summary top/bottom
+- Filter top/bottom
+- main-scroll top/bottom
+- footer top/bottom
+- relevant safe-area values
+
+AFTER:
+- same values
+- middle scroll-region height
+- max locked-layer movement during scroll
+
+Preservation:
+- AppBar height
+- Summary height
+- Filter height
+- Bottom bar height
+- weight-column right edge
+- root width
+
+5. USER_IPHONE_TEST.txt
+Tell Kevin to verify:
+- AppBar fully visible;
+- hamburger + TrailWeigh title + right icons visible;
+- Summary directly below AppBar;
+- Filter directly below Summary;
+- only categories scroll;
+- AppBar/Summary/Filter/Footer stay stationary;
+- Bottom Box Groups unchanged;
+- weights unchanged;
+- Home still works;
+- hamburger panel still works.
+
+6. SCREENSHOT_OR_ARTIFACT_INDEX.txt
+
+7. Standard Replit usage screenshot if available.
+If unavailable, state clearly.
+
+IF BLOCKED OR FAILED
+STILL create R0097.zip documenting the blocker/failure.
+
+THREE STANDING REPLIT QUESTIONS — PERMANENT REQUIREMENT
+Answer these in every TrailWeigh Replit report:
+
+1. What did you learn from this task about the current TrailWeigh code/state that would help ChatGPT make future prompts more accurate or efficient?
+
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+
+3. Is there any Replit-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively with this project going forward?
+
+GOLD STANDARD RULE
+USER live-device evidence outranks Replit reports, automated tests, computed assumptions, and Chromium-only PASS results.
+
+Do not repeat old Safari viewport assumptions.
+Preserve R0096's successful internal-scroll shell.
+Restore only the missing AppBar.
+Use flexible remaining-space layout rather than sacrificing chrome.
+Protect unrelated USER-PASS behavior.

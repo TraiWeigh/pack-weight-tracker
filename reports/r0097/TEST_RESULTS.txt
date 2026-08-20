@@ -1,0 +1,42 @@
+R0097 verification results
+
+Typecheck
+Command:
+pnpm --filter @workspace/pack-checklist run typecheck
+Result: PASS
+
+R0095 / R0096 / R0097 mobile shell regression
+Command:
+pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts tests/e2e/phase1b/r0096-locked-controls.spec.ts tests/e2e/phase1b/r0097-appbar-safe-area.spec.ts --workers=1 --project=chromium
+Viewports: 402×714, 402×754, 390×844, 360×800
+Result: PASS — 22/22
+
+Preserved viewport, Location, and right-inset regression
+Command:
+pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts tests/e2e/phase1b/r0085.spec.ts tests/e2e/phase1b/right-side-inset.spec.ts --workers=1 --project=chromium
+Result: PASS — 42/42
+
+Evidence capture
+Command:
+pnpm exec playwright test tests/e2e/phase1b/r0097-evidence.spec.ts --workers=1 --project=chromium
+Result: PASS — 1/1
+
+Validated behavior
+- AppBar is fully within the shell and remains 52px high at all four viewports.
+- Stack order is AppBar → Summary → Filter → main-scroll → Footer without overlap.
+- The controlled 20px safe-inset test moves AppBar/Summary/Filter together while
+  preserving the footer physical bottom line and flexing main-scroll to remaining space.
+- Deep checklist scroll changes only category content; window/document/body remain 0.
+- No horizontal overflow at narrow width.
+- Home begins directly below the AppBar with its own internal scroller.
+- Drawer opens, closes via backdrop, finishes offscreen after its transition, reopens,
+  and can still navigate to Home.
+
+Browser log status
+- No page errors.
+- Expected Clerk development-key warning only.
+
+Chromium versus iPhone
+- Chromium validates layout contracts and a controlled nonzero safe-area simulation.
+- It cannot prove iPhone Safari's actual safe-area/compositing behavior.
+- Final state remains REPLIT PASS / READY FOR USER IPHONE TEST, not USER PASS.

@@ -1,0 +1,28 @@
+R0097 screenshot and artifact index
+
+screenshots/01-top-stack-safe-area-402x714.png
+  Controlled 20px safe-area simulation showing the complete AppBar, Summary, Filter,
+  remaining-space main area, and Bottom Box Groups.
+
+screenshots/02-mid-scroll-safe-area-402x714.png
+  Mid checklist scroll with all top and bottom locked layers stationary.
+
+screenshots/03-bottom-list-safe-area-402x714.png
+  Bottom of checklist with full locked stack intact.
+
+screenshots/04-hamburger-safe-area-402x714.png
+  Hamburger panel open inside the safe-area-aware shell.
+
+screenshots/05-home-safe-area-402x714.png
+  Home starts below the safe-area-aware AppBar and owns its own content scrolling.
+
+screenshots/06-standard-preview-402x714.jpg
+  Fresh standard proxied Replit app-preview screenshot. It shows the regular zero-inset
+  browser environment where the AppBar is visibly rendered.
+
+Included source evidence
+- attached_assets/R0097_USER_IPHONE_R0096_MISSING_APPBAR_1787253277928.MP4
+- attached_assets/R0097_USER_IPHONE_R0096_CONTACT_1787253277928.png
+- attached_assets/R0097_GS_PROMPT_1787253277928.txt
+
+Standard Replit usage screenshot: available as screenshots/06-standard-preview-402x714.jpg.

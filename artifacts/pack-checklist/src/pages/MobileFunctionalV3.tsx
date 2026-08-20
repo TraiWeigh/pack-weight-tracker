@@ -1174,7 +1174,10 @@ const BoxGroupBar = React.forwardRef<HTMLDivElement, BoxGroupBarProps>(
           // An absolute layer inside that shell cannot follow Safari's page chrome
           // while only the checklist viewport scrolls.
           position: 'absolute',
-          top: stableTop,
+           // R0097: stableTop is measured in layout-viewport coordinates, while
+           // this absolute child is positioned inside the safe-area-shifted shell.
+           // Subtract the shell's top inset so its physical bottom edge stays put.
+           top: `calc(${stableTop}px - var(--tw-safe-top, 0px))`,
           bottom: 'auto',
           /* R0085P1: frosted/translucent bottom bar — slightly more opaque than
              List Summary so icons and labels stay highly readable; only a faint
@@ -3736,19 +3739,25 @@ function MobileFunctionalV3Inner() {
   return (
     <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflow: 'hidden' }}>
       <div className="tw-v3-root" style={{
+        // R0097: iPhone Safari can place the layout-viewport origin above the
+        // physically visible content origin. Anchor the shell below the real top
+        // safe area and subtract that same inset from its height so its bottom edge
+        // (and the locked Bottom Box Groups) does not move. This is intentionally
+        // a safe-area value, not a hard-coded AppBar-height compensation.
+        '--tw-safe-top': 'env(safe-area-inset-top, 0px)',
         // R0095: app shell. It is deliberately fixed to the stable layout viewport
         // so Safari page scrolling cannot carry the TrailWeigh chrome with it.
-        position: 'fixed', top: 0,
+        position: 'fixed', top: 'var(--tw-safe-top)',
         left: 'max(0px, calc(50% - 215px))',
         right: 'max(0px, calc(50% - 215px))',
-        height: layoutViewportHeight, minHeight: 0,
+        height: `calc(${layoutViewportHeight}px - var(--tw-safe-top))`, minHeight: 0,
         // Reserve AppBar and Bottom Box Groups inside the shell. The List Summary's
         // measured height becomes main-scroll's top margin below.
         paddingTop: 52, paddingBottom: bottomLayerOffset,
         boxSizing: 'border-box',
         background: PAGE_BG, display: 'flex', flexDirection: 'column',
         fontFamily: SANS, overflow: 'hidden',
-      }}>
+      } as React.CSSProperties}>
 
         {/* B6: hide webkit scrollbar chrome on marked scrollers (scrolling unaffected)
             R005 Part 4: static V3 UI text is non-selectable (no iOS selection
@@ -5206,7 +5215,9 @@ function MobileFunctionalV3Inner() {
             role="main"
             aria-label="TrailWeigh Home"
             style={{
-              position: 'fixed', top: 52,
+              // Match the shell's safe-area-aware AppBar origin. Home intentionally
+              // remains a fixed sibling layer so it must not use a bare viewport top.
+              position: 'fixed', top: 'calc(52px + var(--tw-safe-top))',
               left: 'max(0px, calc(50% - 215px))',
               right: 'max(0px, calc(50% - 215px))',
               bottom: 0,
@@ -5218,7 +5229,7 @@ function MobileFunctionalV3Inner() {
             {/* ── HERO — fixed green second layer below the AppBar (R0091) ── */}
             <div ref={homeHeroRef} data-testid="home-hero" style={{
               position: 'fixed',
-              top: 52,
+              top: 'calc(52px + var(--tw-safe-top))',
               left: 'max(0px, calc(50% - 215px))',
               right: 'max(0px, calc(50% - 215px))',
               background: SUMMARY_BG,

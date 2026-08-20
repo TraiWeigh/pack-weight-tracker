@@ -1,0 +1,135 @@
+TRAILWEIGH — R0097 GS REPORT
+RESTORE MISSING APPBAR ON IPHONE
+
+Agent mode used: POWER
+Final status: REPLIT PASS / READY FOR USER IPHONE TEST
+USER live-device evidence remains authoritative over this Chromium result.
+
+IPHONE EVIDENCE ACKNOWLEDGEMENT
+- Watched R0097_USER_IPHONE_R0096_MISSING_APPBAR_1787253277928.MP4.
+- Inspected its 4.04-second frame sequence and the supplied contact sheet.
+- The recording shows the R0096 List Summary, Filter, checklist, and Bottom Box
+  Groups, but not the AppBar/title row. This is treated as a regression.
+
+FACTS
+- The supplied iPhone evidence is 1206×2622 pixels, corresponding to 402×874 CSS
+  pixels at the device’s 3× capture scale.
+- In that evidence, the Summary is the first visible TrailWeigh layer; the AppBar
+  nominally immediately above it is not visible.
+- R0096's fixed shell already keeps regular checklist scrolling in main-scroll and
+  keeps Summary, Filter, and Bottom Box Groups outside that ordinary scroll owner.
+- Before this change, the fixed shell used top:0 and its full layout-viewport height.
+- Before this change, Bottom Box Groups used a layout-viewport top coordinate while
+  being absolutely positioned inside that shell.
+- Chromium has a zero top safe-area inset, so it cannot recreate the iPhone layout
+  origin/compositing condition by itself.
+
+UNKNOWNS
+- The original iPhone recording did not include viewport-diagnostic DOM telemetry,
+  so no exact historical device-side env(safe-area-inset-top), visualViewport, or
+  AppBar DOM rectangle can be claimed from the recording.
+- The physical iPhone safe-top value may differ by device, orientation, and Safari UI
+  state; the implementation intentionally derives it rather than assuming 20px.
+
+ASSUMPTIONS
+- The iPhone failure is the shell's layout-viewport origin being above the usable
+  content origin because the fixed shell had no top safe-area placement.
+- A controlled 20px custom-property override is appropriate for Chromium geometry
+  validation only. It is not presented as the user's actual safe-area value.
+
+ROOT CAUSE
+The R0095/R0096 shell was fixed at top:0 with no safe-area inset. On the supplied
+iPhone Safari run, its first 52px (the AppBar) lands outside the usable visible
+content origin while its absolute Summary is the first visible layer. The shell
+still used its complete layout height, so simply moving the shell without adjusting
+its height would have displaced the locked Bottom Box Groups.
+
+EXACT FIX
+- Defined --tw-safe-top on the mobile shell from env(safe-area-inset-top, 0px).
+- Positioned the shell at var(--tw-safe-top).
+- Reduced shell height by that exact same inset so the shell bottom remains on the
+  same physical screen line.
+- Made Bottom Box Groups subtract the same inset from its layout-viewport top
+  coordinate because it is an absolute child of the moved shell.
+- Made Home begin at AppBar height + the same safe inset.
+- No hardcoded 52px top compensation was added; the existing 52px AppBar remains
+  its original height inside the safely placed shell.
+
+FINAL STACK
+Locked top:
+1. AppBar
+2. List Summary
+3. Filter
+Scrolling middle:
+4. main-scroll checklist/category content only
+Locked bottom:
+5. Bottom Box Groups
+
+R0096 INTERNAL-SCROLL ARCHITECTURE REMAINS INTACT: YES
+- document/body remain locked for this route.
+- main-scroll remains the ordinary checklist scroll owner.
+- open-cat-items remains the intentional bounded long-category owner.
+- Home retains home-content-scroll.
+- nav-drawer-scroll remains the only drawer interior scroller.
+
+CURRENT / BEFORE GEOMETRY
+R0096 Chromium baseline captured at 402×714 before this R0097 patch:
+- Shell: top 0, bottom 714, height 714.
+- AppBar: top 0, bottom 52, height 52.
+- Summary: top 52, bottom 140.25, height 88.25.
+- Filter: top 140, bottom 190, height 50.
+- main-scroll: top 190, bottom 656, height 466.
+- Bottom Box Groups: top 656, bottom 714, height 58.
+- Safe top in Chromium: 0px.
+
+The iPhone recording established the visible failure but does not supply exact DOM
+metrics. Its observable result is AppBar absent while Summary/Filter/Footer remain
+visible; see the supplied MP4/contact sheet retained in this archive.
+
+AFTER — CONTROLLED 20PX SAFE-AREA GEOMETRY AT 402×714
+- Shell: top 20, bottom 714, height 694.
+- AppBar: top 20, bottom 72, height 52.
+- Summary: top 72, bottom 160.25, height 88.25.
+- Filter: top 160, bottom 210, height 50.
+- main-scroll: top 210, bottom 656, height 446.
+- Bottom Box Groups: top 656, bottom 714, height 58.
+- AppBar / Summary / Filter / Footer movement during middle scroll: 0px.
+- document/window/body scroll: 0 / 0 / 0.
+
+AREAS DELIBERATELY UNCHANGED
+- AppBar contents, icon order, sizes, typography, horizontal spacing, and height.
+- List Summary height and visual treatment.
+- Filter semantics and Category / Location / Photo options.
+- Checklist data, items, category order, weight column, wedge geometry, row heights,
+  type, swipe delete, reordering, Add Item behavior, Bottom Box Groups design,
+  app width, packages, auth, schema, DB, deployment, and viewport meta tag.
+- R0096 drawer frame/interior scroll architecture and Photo mode behavior.
+
+TEST RESULTS
+1. pnpm --filter @workspace/pack-checklist run typecheck
+   PASS
+2. pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts tests/e2e/phase1b/r0096-locked-controls.spec.ts tests/e2e/phase1b/r0097-appbar-safe-area.spec.ts --workers=1 --project=chromium
+   PASS — 22/22
+3. pnpm exec playwright test tests/e2e/phase1b/viewport-safe.spec.ts tests/e2e/phase1b/r0085.spec.ts tests/e2e/phase1b/right-side-inset.spec.ts --workers=1 --project=chromium
+   PASS — 42/42
+4. pnpm exec playwright test tests/e2e/phase1b/r0097-evidence.spec.ts --workers=1 --project=chromium
+   PASS — 1/1
+5. Final R0097 direct close/open/reopen and evidence run
+   PASS — 8/8
+
+Focused total: PASS — 65/65 browser tests plus typecheck.
+
+THREE STANDING REPLIT QUESTIONS
+1. What did you learn that improves future prompts?
+   In a safe-area-shifted fixed shell, every absolute child using a layout-viewport
+   top coordinate must be converted to the shell's local coordinate system; moving
+   only the root would move the footer down.
+2. What was unclear, unnecessary, risky, or better expressed?
+   The iPhone video proves a visual failure but cannot provide exact DOM values. It
+   is best paired with a viewport-diagnostic snapshot in a future report rather
+   than requiring inferred physical-pixel geometry.
+3. What Replit/project guidance helps next time?
+   Use a route-scoped safe-area custom property so Chromium tests can simulate a
+   nonzero safe inset without modifying global viewport behavior. Keep iPhone Safari
+   evidence as the acceptance authority and wait for the drawer close transition
+   before checking its offscreen rectangle.

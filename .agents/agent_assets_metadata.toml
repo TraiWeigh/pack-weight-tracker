@@ -343,3 +343,10 @@ uri = "file://R0096.zip"
 type = "unspecified"
 title = "R0096 report archive"
 description = "Rewritten R0096 archive with reports, fresh screenshots, source and focused test evidence. Integrity checked successfully."
+
+[[outputs]]
+id = "iQdzFdzS_wvhcIlt7zYwO"
+uri = "file://R0097.zip"
+type = "unspecified"
+title = "R0097 AppBar restoration archive"
+description = "Safe-area-aware AppBar restoration with iPhone evidence, reports, fresh screenshots, source changes, and passing focused validation."
