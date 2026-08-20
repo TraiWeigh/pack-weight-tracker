@@ -1,0 +1,25 @@
+R0092 IMPLEMENTATION REFERENCE — SUPPORTING EVIDENCE ONLY
+
+This text is extracted/summarized from the user's returned trailweigh-R0092-report.zip.
+
+R0092 reported:
+- Bottom Box Groups was already position: fixed before R0092.
+- R0092 added a live visual-viewport bottom-gap calculation:
+  max(0, window.innerHeight - (visualViewport.offsetTop + visualViewport.height))
+- It updated that value from window / visualViewport resize AND visualViewport scroll events.
+- That measured value was used as the Bottom Box Groups bottom offset.
+- The same offset was also added to root content bottom reservation / raised decks.
+- Chromium tests reported the footer rect stayed fixed.
+- The user then tested the actual iPhone and reported:
+  "the bottom bar still moves"
+
+Therefore:
+R0092 bottom-bar behavior is USER FAIL despite Chromium PASS.
+
+Also from R0092:
+- Weight/unit right edge was preserved at x=358px in the 402px reference layout.
+- Summary right-side metrics were aligned to that same master line.
+- The terminal/rightmost AppBar box icon was aligned to that master line.
+- Hamburger bounds were preserved.
+
+R0093 must preserve those R0092 horizontal changes unless the user later rejects them with new iPhone evidence.
