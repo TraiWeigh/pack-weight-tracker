@@ -3,8 +3,9 @@ Kevin — R0100 user iPhone verification checklist
 Please open /mobile-functional-v3 on the same iPhone Safari scenario used for
 R0097 and verify:
 
-1. Confirm each colored category wedge has a narrow, soft shadow that follows
-   the angled point, without looking heavy or muddy.
+1. Confirm each colored category wedge has the same broad, soft, low-opacity
+   elevation character as the Bottom Box Groups bar, follows the angled point,
+   and is visibly apparent without looking heavy or muddy.
 2. Confirm the wedge shadow belongs only to the colored wedge surface and does
    not appear as a new shadow across the full category row.
 3. Confirm wedge width, angled geometry, icons, colors, row height, text,

@@ -2,7 +2,8 @@ TRAILWEIGH R0100 SCREENSHOT / ARTIFACT INDEX
 
 1. screenshots/01-wedge-shadow-402x714.png
    Captured by the focused R0100 Playwright test. Shows the active mobile list
-   with the wedge-only shadow state.
+   with the corrected broad Bottom Box Groups-compatible wedge-only shadow
+   state.
 
 2. screenshots/02-standard-checklist-402x714.jpg
    Captured from the running Replit preview at /mobile-functional-v3. Shows the

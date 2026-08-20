@@ -7,14 +7,18 @@ USER live-device evidence remains authoritative over Chromium and browser-review
 results.
 
 SCOPE
-R0100 adds a narrow cosmetic elevation effect to the colored category wedge
-surface on /mobile-functional-v3. The effect is attached to the clipped wedge
-button, so the shadow follows the angled point without changing the row's
-geometry or adding a new full-row shadow.
+R0100 adds a cosmetic elevation effect to the colored category wedge surface on
+/mobile-functional-v3. Following the failed physical iPhone Safari visual
+check, the correction reuses the Bottom Box Groups bar's exact broad, soft,
+low-opacity shadow character, adapted downward for the wedge's position. The
+effect is attached to the clipped wedge button, so the shadow follows the
+angled point without changing the row's geometry or adding a new full-row
+shadow.
 
 IMPLEMENTATION
-- Added a restrained `drop-shadow(0 1px 2px rgba(0,0,0,0.10))` to the active
-  colored wedge button.
+- Added `drop-shadow(0 3px 10px rgba(0,0,0,0.07))` to the active colored wedge
+  button. This preserves the Bottom Box Groups bar's exact 10px blur and 7%
+  opacity while adapting the vertical offset from -3px to +3px.
 - Preserved the existing polygon clip path, 72px wedge width, row height,
   colors, icons, text, weights, and focus behavior.
 - Preserved the existing full-row elevation and did not add or change shadow
@@ -24,7 +28,9 @@ FACTS
 - Active route inspected: /mobile-functional-v3.
 - The colored category wedge is the clipped primary accordion trigger.
 - CSS filter drop-shadow is used rather than a box shadow so the angled wedge
-  point is included in the visible shadow.
+  point is included in the visible shadow. The effect remains subject to the
+  current category overflow clipping and is intentionally broad enough to be
+  visually apparent within that existing boundary.
 - The active wedge retains `boxShadow: 'none'`; its elevation is supplied only
   by the clipped-shape filter.
 
@@ -63,15 +69,16 @@ THREE STANDING REPLIT QUESTIONS
 1. What did you learn from this task about the current TrailWeigh code/state that
    would help ChatGPT make future prompts more accurate or efficient?
    The active functional route uses a clipped 72px wedge button inside a 65px
-   category row. A CSS filter drop-shadow is the appropriate wedge-only
-   elevation mechanism because it follows the clip-path point while preserving
-   the existing 1px separator rhythm.
+   category row. The Bottom Box Groups bar's `0 -3px 10px rgba(0,0,0,0.07)`
+   is the existing elevation reference; the wedge uses the same blur and
+   opacity with a downward offset for its vertical position.
 
 2. Was anything in this prompt unclear, unnecessary, technically risky, or better
    expressed another way for Replit Agent?
    The request was clear. The important technical constraint was distinguishing
    a shadow on the clipped colored wedge from the existing resting elevation on
-   the full category row; the implementation keeps those layers separate.
+   the full category row, while matching the Bottom Box Groups shadow language.
+   The correction keeps those layers separate and does not change the bar.
 
 3. Is there any Replit-specific information, configuration, workflow guidance, or
    project detail ChatGPT should know to work more effectively with this project

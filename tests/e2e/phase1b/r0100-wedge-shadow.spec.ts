@@ -61,7 +61,8 @@ for (const viewport of VIEWPORTS) {
 
     expect(metrics.wedgeCount).toBeGreaterThan(1);
     expect(metrics.wedgeFilter).toContain('drop-shadow');
-    expect(metrics.wedgeFilter).toContain('rgba(0, 0, 0, 0.1)');
+    expect(metrics.wedgeFilter).toContain('rgba(0, 0, 0, 0.07)');
+    expect(metrics.wedgeFilter).toContain('0px 3px 10px');
     expect(metrics.wedgeBoxShadow).toBe('none');
     expect(metrics.rowBoxShadow).toContain('0px 3px 10px');
     expect(metrics.wedge.first.width).toBe(72);

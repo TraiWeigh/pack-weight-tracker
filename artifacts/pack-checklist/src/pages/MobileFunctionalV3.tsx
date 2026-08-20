@@ -4288,10 +4288,12 @@ function MobileFunctionalV3Inner() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0, paddingRight: WEDGE_POINT / 2,
                         border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
-                        // R0100: keep elevation on the clipped colored wedge only.
-                        // drop-shadow follows the clip-path, including the angled point,
+                        // R0100 correction: reuse the Bottom Box Groups bar's
+                        // broad, soft, low-opacity elevation language, adapted
+                        // downward for this vertical wedge position. The filter
+                        // follows the clip-path, including the angled point,
                         // without changing the row's geometry or adding row elevation.
-                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.10))',
+                        filter: 'drop-shadow(0 3px 10px rgba(0,0,0,0.07))',
                       }}
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
                       onBlur={e => { e.currentTarget.style.outline = 'none'; }}
