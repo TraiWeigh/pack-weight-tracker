@@ -1,0 +1,88 @@
+TRAILWEIGH — R0099 GS REPORT
+RESTORE BOTTOM BOX GROUPS LOOPING BEHAVIOR ONLY
+
+Agent mode used: POWER
+Final status: REPLIT PASS / READY FOR USER IPHONE TEST
+USER live-device evidence remains authoritative over Chromium and browser-review
+results.
+
+SCOPE
+R0099 restores cyclic Bottom Box Group navigation only. It preserves the R0097
+safe-area-aware shell and R0098's 1px Home/List wedge rhythm.
+
+FACTS
+- Active route inspected: /mobile-functional-v3.
+- The Bottom Box Groups contain four state indices: 0, 1, 2, and 3.
+- Group 1 (index 0) deliberately has no visible Back chevron in the existing
+  five-box design. Its existing reverse navigation path is a rightward swipe.
+- The fixed mobile shell remains AppBar, List Summary, Filter, main-scroll, and
+  Bottom Box Groups.
+
+ROOT CAUSE OF THE LOOP REGRESSION
+The prior terminal logic clamped reverse chevron navigation at index 0 and
+clamped swipe navigation at both endpoints. Forward chevron navigation still
+wrapped, creating inconsistent control behavior and a reverse-direction dead end.
+
+LAST KNOWN-GOOD BEHAVIOR FOUND
+Source history established that forward navigation had already been intended to
+wrap from Group 4 to Group 1. R0099 restores the corresponding cyclic behavior
+in both directions without altering the existing bar composition: index 0 reverse
+wraps to index 3, and index 3 forward wraps to index 0.
+
+EXACT LOGIC RESTORED
+- Back navigation uses modulo arithmetic across the four existing groups.
+- Next navigation continues to use modulo arithmetic across the same groups.
+- Forward swipe release advances modulo four.
+- Reverse swipe release decrements modulo four.
+- Short or cancelled swipes still settle back to the current group.
+
+BEHAVIOR VERIFIED
+- Forward sequence: 0 → 1 → 2 → 3 → 0.
+- Reverse sequence: 0 → 3 → 2 → 1 → 0. The first reverse action is the existing
+  rightward swipe because Group 1 has no Back chevron by design.
+- Three complete forward cycles and three complete reverse cycles complete with
+  no stuck state, duplicate jump, or index drift.
+- Existing applicable interactions verified: Next chevron/tap, Back chevron/tap
+  where displayed, Enter keyboard activation on an existing Back chevron, and
+  forward/reverse swipe releases.
+- The loop also works from Home without changing its shell behavior.
+
+PRESERVATION
+- R0097 shell preserved: YES.
+- R0098 wedge spacing preserved: YES — rendered category wedge gap remains 1px.
+- Bottom bar design, height, locked position, icons, labels, spacing, group order,
+  safe-area handling, AppBar, Summary, Filter, main-scroll ownership, Home scroll
+  model, data, schema, auth, dependencies, and deployment were deliberately
+  unchanged.
+- No wedge shadows were added.
+
+TEST RESULTS
+1. pnpm exec playwright test tests/e2e/phase1b/r0099-bottom-group-loop.spec.ts --workers=1 --project=chromium
+   PASS — 5/5.
+2. pnpm exec playwright test tests/e2e/phase1b/r0097-appbar-safe-area.spec.ts tests/e2e/phase1b/r0098-wedge-spacing.spec.ts --workers=1 --project=chromium
+   PASS — 11/11.
+3. pnpm --filter @workspace/pack-checklist run typecheck
+   PASS.
+4. git diff --check
+   PASS.
+5. Standard Replit preview at 402×714
+   PASS — AppBar, Summary, Filter, categories, and locked Bottom Box Groups
+   visibly render without horizontal overflow.
+
+THREE STANDING REPLIT QUESTIONS
+1. What did you learn from this task about the current TrailWeigh code/state that
+   would help ChatGPT make future prompts more accurate or efficient?
+   The group state has four indices, but the visual bar is intentionally limited
+   to five boxes. Index 0 has no Back chevron, so reverse wrap must be verified
+   through the existing swipe path before Back chevrons continue the reverse loop.
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better
+   expressed another way for Replit Agent?
+   “Reverse/back navigation” should explicitly state that Group 1 exposes no Back
+   chevron. The requested behavior remains clear when the existing swipe control
+   is named as the Group 1 reverse path.
+3. Is there any Replit-specific information, configuration, workflow guidance, or
+   project detail ChatGPT should know to work more effectively with this project
+   going forward?
+   Keep the artifact workflow running before Playwright: the suite reuses the
+   Replit proxy at http://localhost:80/pack-checklist and must not cold-start
+   Vite. Chromium evidence is a regression safeguard, not an iPhone Safari pass.

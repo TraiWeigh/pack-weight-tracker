@@ -1,0 +1,28 @@
+Kevin — R0099 user iPhone verification checklist
+
+Please open /mobile-functional-v3 on the same iPhone Safari scenario used for
+R0097 and verify:
+
+1. Starting on the first Bottom Box Group, move forward repeatedly through every
+   group. Confirm the last group wraps cleanly back to the first with no dead end.
+2. From the first group, use the existing reverse swipe gesture. Confirm it wraps
+   to the last group. Then continue backward through the visible Back chevrons.
+3. Repeat forward and reverse cycles several times. Confirm there is no stuck
+   state, duplicate jump, or unexpected group order.
+4. Confirm the Bottom Box Groups bar remains locked at the bottom of the screen.
+5. Confirm the AppBar, List Summary, and Filter remain visible and locked while
+   only the intended middle content scrolls.
+6. Visit Home, repeat a forward and reverse loop, and confirm the Home shell still
+   behaves normally.
+7. Confirm Home/List wedges still have the correct tight 1px rhythm and no new
+   wedge shadows.
+8. Confirm no icons, labels, height, spacing, or alignment in the bottom bar
+   changed.
+
+Expected result:
+- The four groups loop continuously in both directions through their existing
+  applicable controls, while the R0097 shell and R0098 wedge spacing remain
+  unchanged.
+
+Please report any live-device mismatch. USER live-device evidence is the final
+acceptance authority.

@@ -167,7 +167,9 @@ test('R0099 loops from Home without changing the checklist shell', async ({ page
   await next(page);
   await next(page);
   expect(await groupIndex(page)).toBe(0);
-  await back(page);
+  // Group 1 intentionally does not render a Back box in the five-box layout.
+  // Verify Home's reverse loop through the existing swipe interaction instead.
+  await swipe(page, 'reverse');
   expect(await groupIndex(page)).toBe(3);
   expect(errors.pageErrors).toEqual([]);
   expect(errors.serverErrors).toEqual([]);

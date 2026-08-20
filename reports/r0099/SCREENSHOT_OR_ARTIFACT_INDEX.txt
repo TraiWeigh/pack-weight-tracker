@@ -1,0 +1,25 @@
+R0099 visual evidence index
+
+1. screenshots/01-forward-wrap-first-group-402x714.png
+   Checklist at 402×714 after a complete forward sequence wraps index 3 back to
+   index 0 (the first group).
+
+2. screenshots/02-reverse-wrap-last-group-402x714.png
+   Checklist at 402×714 after a complete reverse cycle returns to index 0,
+   documenting the continuing cyclic path.
+
+3. screenshots/03-swipe-reverse-wrap-402x714.png
+   Checklist at 402×714 immediately after the Group 1 reverse swipe wraps to
+   index 3 (the last group).
+
+4. screenshots/04-standard-checklist-402x714.jpg
+   Standard Replit artifact preview after R0099. It shows the visible AppBar,
+   List Summary, Filter, category rows, and locked Bottom Box Groups.
+
+5. screenshots/04-standard-checklist-402x714-final.jpg
+   The same standard 402×714 preview captured after the managed web workflow
+   restart. It confirms the final running artifact renders the expected shell.
+
+The R0099 automated suite also records repeated-loop, keyboard, Home, fixed-shell,
+overflow, wedge-gap, and error assertions. The workspace-resident files above are
+the packaged visual evidence.

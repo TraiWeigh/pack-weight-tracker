@@ -1,0 +1,49 @@
+TRAILWEIGH — R0099 GS (REVISED)
+RESTORE BOTTOM BOX GROUPS LOOPING BEHAVIOR ONLY
+
+Objective
+Restore the prior continuous cyclic navigation of the existing four Bottom Box
+Groups in both directions. This is a behavior regression fix only.
+
+Scope and constraints
+- Work on /mobile-functional-v3.
+- Do not redesign or move the bottom bar.
+- Do not change bar height, icons, labels, spacing, group order, current locked
+  position, safe-area shell, AppBar, List Summary, Filter, main-scroll ownership,
+  Home scroll model, data, schema, auth, dependencies, or deployment.
+- Preserve R0098's 1px Home/List wedge rhythm and add no wedge shadows.
+- Use source history to restore the last known-good semantics; do not introduce a
+  carousel library or a second bottom-bar implementation.
+
+Known control constraint
+The four state indices are 0–3. The unchanged five-box visual composition does
+not show a Back chevron for Group 1/index 0. Its existing reverse interaction is
+a rightward swipe. Do not add a visual Back chevron merely to satisfy testing.
+
+Required restored behavior
+- Forward action at index 3 wraps to index 0.
+- Reverse action at index 0 wraps to index 3.
+- Restore the behavior across every existing applicable path: chevrons/buttons,
+  keyboard activation where a control exists, and directional swipe release.
+- Short or cancelled swipes must retain the current group.
+
+Acceptance coverage
+At 402×714, 402×754, 390×844, and 360×800:
+1. Verify forward sequence 0 → 1 → 2 → 3 → 0.
+2. Verify reverse sequence 0 → 3 → 2 → 1 → 0, using the Group 1 swipe first.
+3. Verify at least three complete cycles in each direction with no drift.
+4. Verify existing chevron, keyboard, and swipe paths.
+5. Verify AppBar, Summary, Filter, main-scroll, and Bottom Box Groups geometry
+   are unchanged while looping.
+6. Verify no horizontal overflow and the R0098 wedge gap remains 1px.
+7. Verify looping from Home does not disturb Home/checklist shell behavior.
+8. Treat Chromium results as a Replit regression pass only; physical iPhone
+   Safari evidence remains decisive.
+
+Required delivery
+- Create R0099.zip containing R0099_REPORT.txt, CHANGED_FILES.txt,
+  TEST_RESULTS.txt, BEFORE_AFTER_METRICS.txt, USER_IPHONE_TEST.txt,
+  SCREENSHOT_OR_ARTIFACT_INDEX.txt, screenshots, the active production file, and
+  the R0099 regression test.
+- Create R0099_GS.zip containing this file as R0099_GS.txt.
+- Final status: REPLIT PASS / READY FOR USER IPHONE TEST.

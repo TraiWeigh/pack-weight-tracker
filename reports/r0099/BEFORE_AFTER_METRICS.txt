@@ -1,0 +1,40 @@
+R0099 behavior and geometry metrics — 402×714 CSS pixels
+
+GROUP STATE
+- Total Bottom Box Groups: 4
+- First index: 0
+- Last index: 3
+
+BEFORE R0099
+- Next chevron terminal behavior: index 3 → 0 (already wrapping).
+- Back chevron terminal behavior: index 0 → 0 (clamped).
+- Forward swipe terminal behavior: index 3 → 3 (clamped).
+- Reverse swipe terminal behavior: index 0 → 0 (clamped).
+- Result: reverse navigation had a terminal dead end and interaction paths did
+  not have consistent cyclic semantics.
+
+AFTER R0099
+- Next chevron: (index + 1) modulo 4.
+- Back chevron: (index - 1 + 4) modulo 4.
+- Forward swipe: (index + 1) modulo 4.
+- Reverse swipe: (index - 1 + 4) modulo 4.
+- One complete forward loop: 0 → 1 → 2 → 3 → 0.
+- One complete reverse loop: 0 → 3 → 2 → 1 → 0.
+- Note: Group 1/index 0 has no Back chevron by the unchanged five-box design;
+  its reverse-wrap action is the existing rightward swipe.
+
+LOCKED-SHELL GEOMETRY BEFORE / AFTER
+- AppBar: top 0, bottom 52, height 52 / unchanged.
+- List Summary: top 52, bottom 140.25, height 88.25 / unchanged.
+- Filter: top 140, bottom 190, height 50 / unchanged.
+- main-scroll: top 190, bottom 656, height 466 / unchanged.
+- Bottom Box Groups: top 656, bottom 714, height 58 / unchanged.
+- During looping, each locked layer's measured top/bottom remains within the
+  test's zero-decimal-place tolerance; Bottom Box Groups height remains within
+  the one-decimal-place tolerance.
+
+WIDTH / WEDGE PRESERVATION
+- Root width: 402px.
+- Document scroll width: 402px.
+- Horizontal overflow: none.
+- R0098 category wedge visible gap: 1px before / 1px after.

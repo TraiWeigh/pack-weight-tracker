@@ -357,3 +357,17 @@ uri = "file://R0098.zip"
 type = "unspecified"
 title = "R0098 wedge-spacing report archive"
 description = "Measured List-to-Home wedge rhythm alignment, before/after screenshots, validation results, source patch, and iPhone verification checklist."
+
+[[outputs]]
+id = "tsan5Eg0WQqJkteAYXh2C"
+uri = "file://R0099.zip"
+type = "unspecified"
+title = "R0099 report archive"
+description = "Validated R0099 report, screenshots, revised prompt, production source, and Playwright regression coverage."
+
+[[outputs]]
+id = "lrSaHoxaqFRRh0JVoAi8C"
+uri = "file://R0099_GS.zip"
+type = "unspecified"
+title = "R0099 revised prompt archive"
+description = "Revised R0099 gold-standard prompt stored as R0099_GS.txt."

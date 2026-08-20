@@ -1,0 +1,26 @@
+R0099 changed files
+
+Production
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Restored cyclic modulo navigation for the existing Back control and both
+  directional swipe releases. The existing Next wrapping behavior, four group
+  order, five-box composition, and all layout values are retained.
+
+Regression coverage
+- tests/e2e/phase1b/r0099-bottom-group-loop.spec.ts
+  Adds four-viewport coverage for forward/reverse looping, repeated cycles,
+  keyboard activation, swipe behavior, fixed-shell geometry, no overflow,
+  R0098 wedge spacing, errors, and Home.
+
+Report evidence
+- reports/r0099/R0099_REPORT.txt
+- reports/r0099/BEFORE_AFTER_METRICS.txt
+- reports/r0099/TEST_RESULTS.txt
+- reports/r0099/USER_IPHONE_TEST.txt
+- reports/r0099/SCREENSHOT_OR_ARTIFACT_INDEX.txt
+- reports/r0099/screenshots/*
+- attached_assets/R0099_GS.txt
+
+Unexpected files
+- None. Playwright's transient output directory is restored to its tracked state
+  after validation and is not part of this delivery.

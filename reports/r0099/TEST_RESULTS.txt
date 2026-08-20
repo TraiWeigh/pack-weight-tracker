@@ -1,0 +1,54 @@
+R0099 validation results
+
+PASS
+
+1. Typecheck
+   Command:
+   pnpm --filter @workspace/pack-checklist run typecheck
+   Result: PASS
+
+2. R0099 focused browser validation
+   Command:
+   pnpm exec playwright test tests/e2e/phase1b/r0099-bottom-group-loop.spec.ts --workers=1 --project=chromium
+   Result: PASS — 5/5
+
+   Four checklist viewport cases:
+   - 402×714
+   - 402×754
+   - 390×844
+   - 360×800
+
+   Each checks:
+   - forward loop 0 → 1 → 2 → 3 → 0;
+   - reverse loop 0 → 3 → 2 → 1 → 0;
+   - three repeated forward and reverse cycles;
+   - Next/Back chevrons, Enter keyboard activation, and forward/reverse swipes;
+   - fixed AppBar, Summary, Filter, main-scroll, and Bottom Box Groups;
+   - root/document width equality and no horizontal overflow;
+   - 1px R0098 wedge gap; and
+   - no page, server, or console errors.
+
+   Home case:
+   - loops the Bottom Box Groups from Home and reverse-wraps through the existing
+     Group 1 swipe path without changing Home/checklist shell behavior.
+
+3. R0097 + R0098 focused regression validation
+   Command:
+   pnpm exec playwright test tests/e2e/phase1b/r0097-appbar-safe-area.spec.ts tests/e2e/phase1b/r0098-wedge-spacing.spec.ts --workers=1 --project=chromium
+   Result: PASS — 11/11
+
+   - R0097 locked-shell and safe-area checks: 7/7.
+   - R0098 1px wedge-rhythm checks across 402×714, 402×754, 390×844, and
+     360×800: 4/4.
+
+4. Static validation
+   Command:
+   git diff --check
+   Result: PASS
+
+5. Standard Replit preview review
+   Viewport: 402×714
+   Result: PASS — visible fixed stack and no horizontal overflow.
+
+No unexpected page errors, server errors, or console errors were reported by the
+R0099 browser suite.
