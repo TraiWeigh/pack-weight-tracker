@@ -2,8 +2,8 @@ TRAILWEIGH R0100 SCREENSHOT / ARTIFACT INDEX
 
 1. screenshots/01-wedge-shadow-402x714.png
    Captured by the focused R0100 Playwright test. Shows the active mobile list
-   with the correction #2 broad Bottom Box Groups-compatible shadow state,
-   rendered by the decorative sibling toward the exposed angled point.
+   with the broad Bottom Box Groups-compatible shadow state, rendered by the
+   decorative sibling toward the exposed angled point.
 
 2. screenshots/02-standard-checklist-402x714.jpg
    Captured from the running Replit preview at /mobile-functional-v3. Shows the
@@ -20,6 +20,11 @@ TRAILWEIGH R0100 SCREENSHOT / ARTIFACT INDEX
    Captured after the final correction. The shadow is rendered by a
    non-interactive wedge-shaped sibling inside the transformed category-header
    content layer, above the white row background and below the real wedge.
+
+5. screenshots/05-in-row-wedge-shadow-402x714.jpg
+   Fresh running-preview evidence after the final in-row stacking correction.
+   The shadow uses the unchanged Bottom Box Groups-compatible values and is
+   painted above the white header background, behind the real colored wedge.
 
 Visual review note:
 The shadow is intentionally soft, broad, and low-opacity. Automated geometry

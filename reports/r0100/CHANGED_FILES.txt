@@ -16,6 +16,7 @@ Evidence:
 - reports/r0100/screenshots/02-standard-checklist-402x714.jpg
 - reports/r0100/screenshots/03-corrected-wedge-shadow-402x714.jpg
 - reports/r0100/screenshots/04-decorative-sibling-shadow-402x714.jpg
+- reports/r0100/screenshots/05-in-row-wedge-shadow-402x714.jpg
 
 Report bundle:
 - reports/r0100/R0100_REPORT.txt

@@ -81,9 +81,9 @@ THREE STANDING REPLIT QUESTIONS
    would help ChatGPT make future prompts more accurate or efficient?
    The active functional route uses a clipped 72px wedge button inside a 65px
    category row. The Bottom Box Groups bar's `0 -3px 10px rgba(0,0,0,0.07)`
-   is the existing elevation reference; correction #2 uses the same offset
-   magnitude, blur, and opacity on a separate wedge-shaped sibling outside the
-   transformed swipe content layer.
+   is the existing elevation reference; the final correction uses the same
+   offset magnitude, blur, and opacity on a separate wedge-shaped sibling
+   inside the transformed category-header content layer.
 
 2. Was anything in this prompt unclear, unnecessary, technically risky, or better
    expressed another way for Replit Agent?
