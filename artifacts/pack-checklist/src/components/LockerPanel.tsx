@@ -17,6 +17,11 @@ export interface LockerEntry {
   name: string;
   savedAt: number;
   store: Store;
+  /**
+   * Optional for backwards compatibility. Entries created before Photo Lists
+   * omit this field and continue to load as standard lists.
+   */
+  listKind?: 'standard' | 'photo';
   background: Background | null;
   bgFade: number;
   bgTone: 'light' | 'dark';

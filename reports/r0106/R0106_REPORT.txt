@@ -1,0 +1,57 @@
+R0106 GS — Enable Photo List Creation
+=====================================
+
+Scope implemented
+-----------------
+- Enabled Add → New List in /mobile-functional-v3.
+- Added Standard List and Photo List creation choices.
+- Added the Photo List flow: New List → Photo List → Name List → clean start state.
+- Added a backward-compatible optional Locker entry field:
+  listKind: "standard" | "photo".
+- Missing listKind remains standard mode for legacy Locker entries.
+- Photo List mode persists through Save, Save As, Locker load, and browser reload.
+- New Photo Lists begin empty with a distinct Photo List identity and Add Photo entry.
+
+Compatibility and intentional boundaries
+----------------------------------------
+- Standard-list startup and existing lists remain standard by default.
+- R0097, R0098, R0099, R0101, and R0102–R0105 protected behavior was left
+  unchanged and regression tested.
+- R0100 shadow work was not changed.
+- This foundation intentionally does not implement Location-vs-Item classification,
+  location thumbnails, photo assignment, or Save to Master List.
+- The Add Photo button is a clear start-state affordance only; the later
+  Photo List capture workflow is intentionally out of scope for R0106.
+
+Validation
+----------
+- Pack Checklist typecheck:
+  pnpm --filter @workspace/pack-checklist run typecheck
+  Result: PASS
+
+- Focused R0106 Playwright:
+  tests/e2e/phase1b/r0106-photo-list-creation.spec.ts
+  Result: 5/5 passed
+  Covers creation, blank-name prevention, clean start state, save/reload,
+  Save As/reload, Locker reopen, legacy Locker fallback, and standard default.
+
+- Protected R0097–R0105 Playwright regression set:
+  Result: 64/64 passed
+
+- Independent mobile browser validation:
+  Result: PASS at 390x844
+  Verified New → Photo List → blank-name guard → named clean list → Save →
+  browser reload. No browser console errors; expected Clerk development-key
+  warning only.
+
+Preview result
+--------------
+- The managed Pack Checklist web workflow restarted successfully.
+- Vite started cleanly and /mobile-functional-v3 rendered successfully.
+- Focused visual evidence is in screenshots/01-photo-list-start-390x844.png.
+
+Archive integrity
+-----------------
+R0106.zip was created with the report, screenshot evidence, focused test, and
+relevant source files. `unzip -t R0106.zip` passed with:
+"No errors detected in compressed data of R0106.zip."

@@ -1,0 +1,21 @@
+R0106 changed files
+===================
+
+Source
+------
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Photo List mode state, New List flow, Locker persistence/load behavior,
+  refresh restoration, and Photo List start state.
+- artifacts/pack-checklist/src/components/LockerPanel.tsx
+  Backward-compatible optional LockerEntry.listKind field.
+
+Tests
+-----
+- tests/e2e/phase1b/r0106-photo-list-creation.spec.ts
+  Focused R0106 end-to-end coverage.
+
+Evidence and reporting
+----------------------
+- reports/r0106/R0106_REPORT.txt
+- reports/r0106/CHANGED_FILES.txt
+- reports/r0106/screenshots/01-photo-list-start-390x844.png

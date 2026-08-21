@@ -77,6 +77,7 @@ type PackState = { [category: string]: GearItem[] };
  *  photoDataUrl holds a compressed JPEG owned by TrailWeigh — deleting it never affects the device. */
 type PackLocation = { id: string; name: string; photoDataUrl?: string };
 type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta>; locations: PackLocation[] };
+type ListKind = 'standard' | 'photo';
 // (R002: the old ActiveNav tab type was retired — deck selection uses DeckId below.)
 
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
@@ -300,6 +301,10 @@ function LandscapeDecoration() {
 }
 
 // ─── LOCKER HELPERS (localStorage LOCKER_KEY — reads for browse, writes for save) ──
+/** The active saved Photo List restores after refresh. Standard lists retain their
+ * established startup path; missing LockerEntry.listKind always means standard. */
+const ACTIVE_PHOTO_LIST_KEY = 'tw-v3-active-photo-list-id';
+
 function readLockerEntries(): LockerEntry[] {
   try {
     const raw = localStorage.getItem(LOCKER_KEY);
@@ -2029,6 +2034,7 @@ function MobileFunctionalV3Inner() {
   const [sandbox, setSandbox] = useState<SandboxStore>({ items: {}, order: [], meta: {}, locations: [] });
   const [sandboxReady, setSandboxReady] = useState(false);
   const [listName, setListName] = useState('Untitled List');
+  const [listKind, setListKind] = useState<ListKind>('standard');
 
   // Undo/redo history
   const [undoHistory, setUndoHistory] = useState<SandboxStore[]>([]);
@@ -2229,6 +2235,9 @@ function MobileFunctionalV3Inner() {
   const [saveAsName, setSaveAsName] = useState('');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [lockerDeleteTarget, setLockerDeleteTarget] = useState<LockerEntry | null>(null);
+  // R0106 — New List chooses a kind first, then asks for a name.
+  const [newListKindForName, setNewListKindForName] = useState<ListKind | null>(null);
+  const [newListName, setNewListName] = useState('');
 
   // D6 — item delete confirmation
   const [deleteItemConfirm, setDeleteItemConfirm] = useState<{ cat: string; id: string; name: string } | null>(null);
@@ -2366,18 +2375,39 @@ function MobileFunctionalV3Inner() {
     const key = userId ? `pack-checklist-v5-${userId}` : 'pack-checklist-v5-guest';
     let seeded = false;
     let seed: SandboxStore = DEMO_SEED;
+    setListKind('standard');
     try {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.items && Array.isArray(parsed.order) && parsed.order.length > 0) {
-          seed = {
-            items: parsed.items as PackState,
-            order: parsed.order as string[],
-            meta:  (parsed.meta ?? {}) as Record<string, CategoryMeta>,
-            locations: (parsed.locations ?? []) as PackLocation[],
-          };
-          seeded = true;
+      // R0106: restore a saved Photo List after refresh. Existing standard
+      // startup behavior remains unchanged when this session key is absent.
+      const activePhotoListId = sessionStorage.getItem(ACTIVE_PHOTO_LIST_KEY);
+      const activePhotoEntry = activePhotoListId
+        ? readLockerEntries().find(entry => entry.id === activePhotoListId && entry.listKind === 'photo')
+        : undefined;
+      if (activePhotoEntry?.store) {
+        const store = activePhotoEntry.store as LockerEntry['store'] & { locations?: PackLocation[] };
+        seed = {
+          items: store.items ?? {},
+          order: store.order ?? [],
+          meta: store.meta ?? {},
+          locations: store.locations ?? [],
+        };
+        setListName(activePhotoEntry.name);
+        setListKind('photo');
+        setActiveLockerEntryId(activePhotoEntry.id);
+        seeded = true;
+      } else {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.items && Array.isArray(parsed.order) && parsed.order.length > 0) {
+            seed = {
+              items: parsed.items as PackState,
+              order: parsed.order as string[],
+              meta:  (parsed.meta ?? {}) as Record<string, CategoryMeta>,
+              locations: (parsed.locations ?? []) as PackLocation[],
+            };
+            seeded = true;
+          }
         }
       }
     } catch { /* parsing failed — fall through */ }
@@ -2506,6 +2536,7 @@ function MobileFunctionalV3Inner() {
       if (existing) {
         const updated: LockerEntry = {
           ...existing,
+          listKind,
           savedAt: Date.now(),
           store: {
             items: sandboxRef.current.items,
@@ -2516,15 +2547,21 @@ function MobileFunctionalV3Inner() {
           } as unknown as LockerEntry['store'],
         };
         updateLockerEntry(activeLockerEntryId, updated);
+        if (listKind === 'photo') sessionStorage.setItem(ACTIVE_PHOTO_LIST_KEY, activeLockerEntryId);
+        else sessionStorage.removeItem(ACTIVE_PHOTO_LIST_KEY);
         showToast(`Saved "${existing.name}"`);
         return;
       }
     }
-    // No active entry — create new with auto-generated name (same as legacy behaviour).
-    const name = `${listName} — ${now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
+    // Standard lists retain the legacy timestamped first-save name. A newly
+    // named Photo List saves under the name explicitly chosen in its creation flow.
+    const name = listKind === 'photo'
+      ? (listName.trim() || 'Untitled Photo List')
+      : `${listName} — ${now.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`;
     const entry: LockerEntry = {
       id: crypto.randomUUID(),
       name,
+      listKind,
       savedAt: Date.now(),
       store: {
         items: sandboxRef.current.items,
@@ -2538,8 +2575,10 @@ function MobileFunctionalV3Inner() {
     };
     appendLockerEntry(entry);
     setActiveLockerEntryId(entry.id);
+    if (listKind === 'photo') sessionStorage.setItem(ACTIVE_PHOTO_LIST_KEY, entry.id);
+    else sessionStorage.removeItem(ACTIVE_PHOTO_LIST_KEY);
     showToast(`Saved as "${name}"`);
-  }, [activeLockerEntryId, listName, showToast]);
+  }, [activeLockerEntryId, listKind, listName, showToast]);
 
   /** Open the Save As name dialog. */
   const handleSaveAsOpen = useCallback(() => {
@@ -2555,6 +2594,7 @@ function MobileFunctionalV3Inner() {
     const entry: LockerEntry = {
       id: newId,
       name,
+      listKind,
       savedAt: Date.now(),
       store: {
         items: sandboxRef.current.items,
@@ -2569,9 +2609,41 @@ function MobileFunctionalV3Inner() {
     appendLockerEntry(entry);
     setActiveLockerEntryId(newId);
     setListName(name);
+    if (listKind === 'photo') sessionStorage.setItem(ACTIVE_PHOTO_LIST_KEY, newId);
+    else sessionStorage.removeItem(ACTIVE_PHOTO_LIST_KEY);
     setShowSaveAsDialog(false);
     showToast(`Saved as "${name}"`);
-  }, [saveAsName, listName, showToast]);
+  }, [saveAsName, listKind, listName, showToast]);
+
+  /** R0106: start a deliberately empty list without reusing the demo seed. */
+  const handleCreateNewList = useCallback(() => {
+    const kind = newListKindForName;
+    const name = newListName.trim();
+    if (!kind || !name) return;
+
+    const empty: SandboxStore = { items: {}, order: [], meta: {}, locations: [] };
+    setSandbox(empty);
+    sandboxRef.current = empty;
+    originalSeedRef.current = empty;
+    setUndoHistory([]);
+    setRedoHistory([]);
+    setListName(name);
+    setListKind(kind);
+    setActiveLockerEntryId(null);
+    setOpenCatName(null);
+    setAllExpanded(false);
+    setExpandedItem(null);
+    setAddItemAccordionCat(null);
+    setCatPhotoPickIntent(null);
+    setOpenLocId(null);
+    setViewMode('category');
+    setScreenStack([{ screen: 'list' }]);
+    sessionStorage.removeItem(ACTIVE_PHOTO_LIST_KEY);
+    setNewListKindForName(null);
+    setNewListName('');
+    closeDeck();
+    showToast(kind === 'photo' ? `Photo List "${name}" created` : `List "${name}" created`);
+  }, [closeDeck, newListKindForName, newListName, showToast]);
 
   /** Delete the targeted Locker entry; if it is the active list, detach identity only. */
   const handleLockerDeleteConfirm = useCallback(() => {
@@ -3562,6 +3634,7 @@ function MobileFunctionalV3Inner() {
           <button
             onClick={() => {
               if (store) {
+                const loadedKind: ListKind = entry.listKind === 'photo' ? 'photo' : 'standard';
                 mutateSandbox(() => ({
                   items: store.items ?? {},
                   order: store.order ?? [],
@@ -3571,8 +3644,12 @@ function MobileFunctionalV3Inner() {
                 // A2: the loaded Locker entry's name becomes the active list identity
                 // immediately — subsequent Save and Share use this name.
                 setListName(entry.name);
+                // R0106: a missing field is deliberately the legacy standard mode.
+                setListKind(loadedKind);
                 // R0079: track which Locker entry is active so Save updates it.
                 setActiveLockerEntryId(entry.id);
+                if (loadedKind === 'photo') sessionStorage.setItem(ACTIVE_PHOTO_LIST_KEY, entry.id);
+                else sessionStorage.removeItem(ACTIVE_PHOTO_LIST_KEY);
                 closeDeck();
                 showToast(`Loaded "${entry.name}"`);
               }
@@ -3647,7 +3724,8 @@ function MobileFunctionalV3Inner() {
     },
   ];
 
-  // ADD deck — existing creation workflows only; Create New List is honestly disabled.
+  // ADD deck — New List has its own small, named creation flow; existing item and
+  // category creation controls retain their established behavior.
   const addCards: DeckCardDef[] = [
     {
       id: 'add-item',
@@ -3759,10 +3837,48 @@ function MobileFunctionalV3Inner() {
     },
     {
       id: 'create-list',
-      title: 'Create New List',
-      subtitle: 'Guided setup — coming soon',
+      title: 'New List',
+      subtitle: 'Start a standard or Photo List',
       icon: <FileText size={18} strokeWidth={1.8}/>,
-      disabled: true,
+      render: () => (
+        <div style={{ padding: '8px 16px 16px', fontFamily: SANS }}>
+          <div style={{ fontSize: 12.5, color: SECONDARY, marginBottom: 10 }}>
+            Choose the kind of list you want to create:
+          </div>
+          <button
+            data-testid="new-standard-list-option"
+            onClick={() => { setNewListKindForName('standard'); setNewListName(''); closeDeck(); }}
+            aria-label="Create a new standard list"
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+              textAlign: 'left', background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+              borderRadius: 12, padding: '12px 14px', cursor: 'pointer', marginBottom: 8, fontFamily: SANS,
+            }}
+          >
+            <FileText size={18} color={NAV_ACTIVE} strokeWidth={1.8} aria-hidden="true"/>
+            <span style={{ flex: 1 }}>
+              <span style={{ display: 'block', fontSize: 14.5, fontWeight: 650, color: PRIMARY }}>Standard List</span>
+              <span style={{ display: 'block', fontSize: 12.5, color: SECONDARY, marginTop: 2 }}>Start with an empty gear list</span>
+            </span>
+          </button>
+          <button
+            data-testid="new-photo-list-option"
+            onClick={() => { setNewListKindForName('photo'); setNewListName(''); closeDeck(); }}
+            aria-label="Create a new Photo List"
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+              textAlign: 'left', background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
+              borderRadius: 12, padding: '12px 14px', cursor: 'pointer', fontFamily: SANS,
+            }}
+          >
+            <Camera size={18} color={NAV_ACTIVE} strokeWidth={1.8} aria-hidden="true"/>
+            <span style={{ flex: 1 }}>
+              <span style={{ display: 'block', fontSize: 14.5, fontWeight: 650, color: PRIMARY }}>Photo List</span>
+              <span style={{ display: 'block', fontSize: 12.5, color: SECONDARY, marginTop: 2 }}>Start a visual list, ready for photos</span>
+            </span>
+          </button>
+        </div>
+      ),
     },
   ];
 
@@ -3874,7 +3990,7 @@ function MobileFunctionalV3Inner() {
 
   return (
     <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflow: 'hidden' }}>
-      <div className="tw-v3-root" style={{
+      <div className="tw-v3-root" data-list-kind={listKind} style={{
         // R0097: iPhone Safari can place the layout-viewport origin above the
         // physically visible content origin. Anchor the shell below the real top
         // safe area and subtract that same inset from its height so its bottom edge
@@ -5265,8 +5381,44 @@ function MobileFunctionalV3Inner() {
               );
             })}
 
-            {/* Empty state */}
-            {sandbox.order.length === 0 && (
+            {/* R0106 — Photo Lists deliberately start empty and advertise the
+                next Add Photo milestone without changing standard-list behavior. */}
+            {sandbox.order.length === 0 && listKind === 'photo' && (
+              <div
+                data-testid="photo-list-start"
+                style={{
+                  margin: '24px 16px', padding: '24px 20px', borderRadius: 16,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`, textAlign: 'center',
+                  fontFamily: SANS,
+                }}
+              >
+                <div style={{
+                  width: 48, height: 48, margin: '0 auto 12px', borderRadius: 14,
+                  background: 'rgba(42,87,64,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Camera size={24} color={NAV_ACTIVE} strokeWidth={1.7} aria-hidden="true"/>
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY }}>Your Photo List is ready</div>
+                <div style={{ fontSize: 13.5, lineHeight: 1.5, color: SECONDARY, marginTop: 6 }}>
+                  Add your first photo when you are ready to begin organizing this list.
+                </div>
+                <button
+                  data-testid="photo-list-add-photo"
+                  onClick={() => showToast('Add Photo is the next Photo List step.')}
+                  aria-label="Add Photo to this Photo List"
+                  style={{
+                    marginTop: 16, width: '100%', minHeight: 44, border: 'none', borderRadius: 10,
+                    background: NAV_ACTIVE, color: '#fff', cursor: 'pointer', fontFamily: SANS,
+                    fontSize: 14.5, fontWeight: 650,
+                  }}
+                >
+                  Add Photo
+                </button>
+              </div>
+            )}
+
+            {/* Existing standard-list empty state */}
+            {sandbox.order.length === 0 && listKind === 'standard' && (
               <div style={{ textAlign: 'center', padding: '40px 24px', color: MUTED, fontSize: 14 }}>
                 <div style={{ marginBottom: 8, fontSize: 22 }}>📋</div>
                 <div>No list data found.</div>
@@ -6837,6 +6989,83 @@ function MobileFunctionalV3Inner() {
                   marginTop: 4,
                 }}
               >Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0106: New List name — presented after a Standard or Photo List choice ── */}
+      {newListKindForName !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Name your new ${newListKindForName === 'photo' ? 'Photo List' : 'standard list'}`}
+          data-testid="new-list-name-dialog"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 205,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setNewListKindForName(null)}
+          onKeyDown={e => {
+            if (e.key === 'Escape') { e.preventDefault(); setNewListKindForName(null); }
+            if (e.key === 'Enter') { e.preventDefault(); handleCreateNewList(); }
+          }}
+        >
+          <div
+            className="tw-sa-40"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '24px 20px 40px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 6 }}>
+              Name your {newListKindForName === 'photo' ? 'Photo List' : 'new list'}
+            </div>
+            <div style={{ fontSize: 13.5, color: SECONDARY, lineHeight: 1.5, marginBottom: 16 }}>
+              {newListKindForName === 'photo'
+                ? 'This list will reopen in Photo List mode after you save it.'
+                : 'Start with a clean, empty gear list.'}
+            </div>
+            <input
+              autoFocus
+              data-testid="new-list-name-input"
+              type="text"
+              value={newListName}
+              onChange={e => setNewListName(e.target.value)}
+              placeholder="List name"
+              aria-label="New list name"
+              style={{
+                width: '100%', boxSizing: 'border-box', padding: '11px 14px',
+                borderRadius: 10, border: `1.5px solid ${CARD_BORDER}`, fontSize: 15,
+                fontFamily: SANS, color: PRIMARY, outline: 'none', marginBottom: 18,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                data-testid="new-list-name-cancel"
+                onClick={() => setNewListKindForName(null)}
+                aria-label="Cancel new list"
+                style={{
+                  flex: 1, padding: '12px 0', minHeight: 44, borderRadius: 10,
+                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`, fontSize: 15,
+                  fontWeight: 600, color: SECONDARY, cursor: 'pointer',
+                }}
+              >Cancel</button>
+              <button
+                data-testid="new-list-name-create"
+                disabled={!newListName.trim()}
+                onClick={handleCreateNewList}
+                aria-label={`Create ${newListKindForName === 'photo' ? 'Photo List' : 'new list'}`}
+                style={{
+                  flex: 1, padding: '12px 0', minHeight: 44, borderRadius: 10,
+                  background: newListName.trim() ? NAV_ACTIVE : MUTED, border: 'none',
+                  fontSize: 15, fontWeight: 600, color: '#fff',
+                  cursor: newListName.trim() ? 'pointer' : 'not-allowed',
+                }}
+              >Create List</button>
             </div>
           </div>
         </div>

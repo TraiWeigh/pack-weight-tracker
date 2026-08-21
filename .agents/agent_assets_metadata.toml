@@ -378,3 +378,10 @@ uri = "file://R0100.zip"
 type = "unspecified"
 title = "R0100 final in-row wedge-shadow bundle"
 description = "Updated R0100 package with the shadow inside each category header, focused stacking checks, regression results, clean-preview evidence, and Kevin's pending iPhone Safari checklist."
+
+[[outputs]]
+id = "vv8UiEwWTtpNWwEAdU9dI"
+uri = "file://R0106.zip"
+type = "unspecified"
+title = "R0106 GS delivery package"
+description = "Implementation report, changed-file list, focused screenshot evidence, R0106 Playwright spec, and relevant source files. Archive integrity verified with unzip -t."
