@@ -31,8 +31,15 @@ async function chooseFilter(page: import('@playwright/test').Page, option: 'cate
 
 async function makeBackpackLong(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Open Backpack category' }).click();
-  const addItem = page.getByTestId('cat-add-item-btn');
-  for (let i = 0; i < 14; i++) await addItem.click();
+  // R0102: Add Item now opens a creation accordion — tap Add Item then Name for each row.
+  const addBtn = page.getByTestId('cat-add-item-btn');
+  const nameBtn = page.getByTestId('add-item-by-name');
+  for (let i = 0; i < 14; i++) {
+    await addBtn.click();
+    await nameBtn.waitFor({ state: 'visible', timeout: 2000 });
+    await nameBtn.click();
+    await nameBtn.waitFor({ state: 'hidden', timeout: 2000 });
+  }
   // R0101: wait for the explicit long-mode DOM signal (data-long-mode="true" is set
   // on open-cat-items only when isCatLong becomes true after remeasureLongMode settles).
   await expect(page.locator('[data-testid="open-cat-items"][data-long-mode="true"]'))

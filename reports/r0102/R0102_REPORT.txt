@@ -1,0 +1,96 @@
+════════════════════════════════════════════════════════════════════════════════
+R0102 — Add Item Creation Accordion
+TrailWeigh Standing Report · Chromium PASS · Physical iPhone Safari PENDING
+════════════════════════════════════════════════════════════════════════════════
+
+IMPLEMENTATION SUMMARY
+──────────────────────
+Tapping Add Item on /mobile-functional-v3 no longer immediately creates a blank
+item row. Instead it toggles a 3-row creation-method accordion that sits directly
+above the locked Add Item bar. The accordion reuses all existing flows.
+
+Creation methods
+  Name        → addItem(catName) — blank row, user types inline (existing flow)
+  Photo       → pre-generates UUID, calls addItem(catName, { id }), then
+                setPhotoEditFor({ cat, id }) — existing camera/upload sheet opens
+  Master List → pushScreen({ screen: 'master-list' }) — existing MasterListScreen
+                overlay. Limitation: MasterListScreen has no onAddToCategory
+                callback; browsing only. Adding from it to the active category
+                is a future enhancement (documented, not invented).
+
+Accordion rules
+  • Opening/closing alone never changes item count.
+  • Auto-closes when the category closes or a different one opens (useEffect on
+    openCatName).
+  • In allExpanded mode the button retains direct-create behaviour (unchanged).
+  • aria-expanded on cat-add-item-btn reflects accordion state.
+  • Icon changes from Plus → ChevronDown when accordion is open.
+
+Geometry (R0101 preservation)
+  • ADD_ITEM_ACCORDION_H = 3 × 44 = 132 px constant.
+  • remeasureLongMode subtracts accordionH from rawAvailH so availItemH
+    shrinks by 132 when accordion is open for the bounded category.
+  • A second useEffect fires remeasureLongMode() whenever addItemAccordionCat
+    changes, keeping isCatLong and availItemH immediately correct.
+  • Filter, AppBar, List Summary, active category header remain locked.
+  • Add Item bar remains locked directly above Bottom Box Groups.
+  • R0101 scroll restore unchanged (openCategoryScrollRef path untouched).
+
+FILES CHANGED
+─────────────
+  artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+    • ADD_ITEM_ACCORDION_H = 132 constant (after R0101_TRAILING_SCROLL_H)
+    • addItemAccordionCat state (useState<string | null>(null))
+    • addItem: id: prefill?.id ?? crypto.randomUUID() (Photo method needs pre-gen)
+    • remeasureLongMode: subtract accordionH from rawAvailH; add dep
+    • useEffect: setAddItemAccordionCat(null) on openCatName change
+    • useEffect: remeasureLongMode() on addItemAccordionCat change
+    • cat-add-item-btn: onClick toggles accordion / aria-expanded / icon
+    • add-item-accordion div (Name/Photo/Master List buttons) above Add Item bar
+
+  tests/e2e/phase1b/r0102-add-item-accordion.spec.ts  [NEW — 14 tests]
+  tests/e2e/phase1b/r0096-locked-controls.spec.ts
+    • makeBackpackLong(): updated to open accordion → click Name per iteration
+
+TEST RESULTS (Chromium, workers=1)
+───────────────────────────────────
+  R0102 focused               14/14  PASS
+  R0096 locked controls        9/9   PASS
+  R0097 AppBar safe-area       7/7   PASS  (not rerun; last recorded)
+  R0098 wedge spacing          4/4   PASS
+  R0099 BoxGroup loop          5/5   PASS
+  R0101 anchor & restore       4/4   PASS
+  TypeScript typecheck              PASS
+  git diff --check                  PASS
+
+R0098 PRESERVATION CHECK
+  Category row height:       65 px  ✓ (unchanged)
+  Wedge width:               72 px  ✓ (unchanged)
+  Wedge visible gap:          1 px  ✓ (unchanged)
+
+R0100 SHADOW WORK
+  Deferred — not touched in R0102.
+
+DEFERRED / LIMITATIONS
+───────────────────────
+  1. Master List → no onAddToCategory callback; opens library screen only.
+     Adding from Master List to the active category = future work.
+  2. Physical iPhone Safari acceptance for R0102 is PENDING (Kevin verification).
+  3. R0100 wedge shadows on physical iPhone Safari — still deferred.
+
+PHYSICAL iPHONE SAFARI CHECKLIST (R0102)
+─────────────────────────────────────────
+ [ ] 1. Tap Add Item on an open category → accordion expands (3 rows visible)
+ [ ] 2. Tap Add Item again → accordion collapses without creating an item
+ [ ] 3. Name row → tapping creates one blank row, accordion disappears
+ [ ] 4. Photo row → tapping creates one blank row, photo sheet appears
+ [ ] 5. Master List row → tapping opens master list screen, no item created
+ [ ] 6. Close category while accordion open → accordion gone on reopen
+ [ ] 7. Open a different category → previous accordion auto-closed
+ [ ] 8. AppBar, Summary, Filter remain locked (no movement) while accordion open
+ [ ] 9. Active category header stays pinned at Filter bottom with accordion open
+ [10] 10. No window/document/body scroll at any point
+ [11] 11. Bottom Box Groups does not move with accordion open or closed
+ [12] 12. R0101 scroll restore still works after accordion toggle interaction
+
+════════════════════════════════════════════════════════════════════════════════

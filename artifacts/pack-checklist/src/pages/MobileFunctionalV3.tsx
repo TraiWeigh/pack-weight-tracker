@@ -223,6 +223,7 @@ const FILTER_BAR_H  = 50;
 // Filter-bottom anchor even when the visible category stack is shorter than the
 // dedicated main-scroll viewport. This is scrollable space, not visible layout.
 const R0101_TRAILING_SCROLL_H = 560;
+const ADD_ITEM_ACCORDION_H    = 3 * 44; // R0102: 3 creation-method rows × 44 px each (approximate)
 // DRAG_ACTIVATE removed R0073: stacked bars are tap-only, no drag-to-activate
 const TAP_MAX_PX    = 8;    // pointer movement below this = tap
 // R006 Part 2 — long-press reorder tuning (documented stable values)
@@ -2179,6 +2180,8 @@ function MobileFunctionalV3Inner() {
   // open/close transition. The ref avoids putting scroll state into React
   // renders or changing any row geometry.
   const openCategoryScrollRef = useRef<{ catName: string; scrollTop: number } | null>(null);
+  // R0102: which category has the Add Item creation accordion expanded (null = all closed)
+  const [addItemAccordionCat, setAddItemAccordionCat] = useState<string | null>(null);
 
   // Add category UI (R004 Part 4 — inline control removed; ADD deck is the only entry)
   const [newCatName, setNewCatName] = useState('');
@@ -2418,7 +2421,7 @@ function MobileFunctionalV3Inner() {
 
   const addItem = useCallback((category: string, prefill?: Partial<GearItem>) => {
     const newItem: GearItem = {
-      id: crypto.randomUUID(),
+      id: prefill?.id ?? crypto.randomUUID(), // R0102: caller may pre-generate id (Photo method)
       sub:        prefill?.sub ?? '',
       desc:       prefill?.desc ?? '',
       weightOz:   prefill?.weightOz ?? 0,
@@ -2815,12 +2818,17 @@ function MobileFunctionalV3Inner() {
     // itemsStart = where the item rows begin; falls back to filterBtm + 64px if the
     // sticky header is not yet in the DOM (shouldn't happen in practice).
     const itemsStart  = catHeaderEl ? catHeaderEl.getBoundingClientRect().bottom : filterBtm + 64;
+    // R0102: when the Add Item accordion is open for this category, it occupies
+    // ADD_ITEM_ACCORDION_H px above the 44 px Add Item bar — subtract both so
+    // the bounded item-scroll region does not visually overflow into the accordion.
+    const openCatKey  = catRow?.dataset.cat ?? null;
+    const accordionH  = (openCatKey && openCatKey === addItemAccordionCat) ? ADD_ITEM_ACCORDION_H : 0;
     // availItemH = space from item region top to the Add Item bar top (44 px).
-    const rawAvailH   = navTop - itemsStart - 44;
+    const rawAvailH   = navTop - itemsStart - 44 - accordionH;
     const clampedH    = Math.max(44, rawAvailH);
     setAvailItemH(clampedH);
     setIsCatLong(itemsEl.scrollHeight > rawAvailH + 4);
-  }, [navHeight, summaryH]);
+  }, [navHeight, summaryH, addItemAccordionCat]);
 
   // R0101: scroll category into view beneath the locked Filter, then measure
   // long-mode. On close, restore the exact pre-open outer-list position.
@@ -2943,6 +2951,19 @@ function MobileFunctionalV3Inner() {
     if (isCatLong) setTimeout(() => recalcCatOverflow(), 60);
     else setCatOverflow({ above: false, below: false });
   }, [isCatLong, recalcCatOverflow]);
+
+  // R0102: close the Add Item accordion when the active category changes (opens,
+  // closes, or switches to a different one) so stale state never shows on reopen.
+  useEffect(() => {
+    setAddItemAccordionCat(null);
+  }, [openCatName]);
+
+  // R0102: re-measure long mode when the accordion opens/closes so availItemH
+  // immediately accounts for the ADD_ITEM_ACCORDION_H height.
+  useEffect(() => {
+    remeasureLongMode();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addItemAccordionCat]);
 
   // R0076P2: when an item accordion opens inside the bounded item viewport, auto-scroll
   // ONLY the item viewport just enough to reveal the Delete Item row immediately above
@@ -4956,6 +4977,80 @@ function MobileFunctionalV3Inner() {
                     </div>
                   )}
 
+                  {/* R0102: creation-method accordion — sits above the Add Item bar
+                      and expands when the user taps it. Three methods reuse existing
+                      flows: Name (blank row), Photo (blank row + photo sheet),
+                      Master List (existing MasterListScreen overlay).
+                      Opening/closing alone never alters item count. */}
+                  {isOpen && !allExpanded && addItemAccordionCat === catName && (
+                    <div
+                      data-testid="add-item-accordion"
+                      role="group"
+                      aria-label="Choose how to add an item"
+                      style={{ background: CARD_BG }}
+                    >
+                      {/* ── Name: creates a blank item the user types into inline ── */}
+                      <button
+                        data-testid="add-item-by-name"
+                        onClick={() => { addItem(catName); setAddItemAccordionCat(null); }}
+                        aria-label={`Add item to ${catName} by typing its name`}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '0 14px', minHeight: 44, width: '100%',
+                          background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                          borderTop: `1px solid ${DIVIDER}`, borderBottom: `1px solid ${DIVIDER}`,
+                        }}
+                      >
+                        <Pencil size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                        <span style={{ fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500, fontFamily: SANS }}>Name</span>
+                      </button>
+
+                      {/* ── Photo: creates blank item then opens camera/upload sheet ── */}
+                      <button
+                        data-testid="add-item-by-photo"
+                        onClick={() => {
+                          const newId = crypto.randomUUID();
+                          addItem(catName, { id: newId });
+                          setPhotoEditFor({ cat: catName, id: newId });
+                          setAddItemAccordionCat(null);
+                        }}
+                        aria-label={`Add item to ${catName} with a photo`}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '0 14px', minHeight: 44, width: '100%',
+                          background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                          borderBottom: `1px solid ${DIVIDER}`,
+                        }}
+                      >
+                        <Camera size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                        <span style={{ fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500, fontFamily: SANS }}>Photo</span>
+                      </button>
+
+                      {/* ── Master List: opens existing master item library screen ──
+                          Limitation: MasterListScreen only accepts onBack; there is
+                          no onAddToCategory callback yet.  The screen lets the user
+                          browse the library; adding from it to the current category
+                          is a future enhancement. ── */}
+                      <button
+                        data-testid="add-item-by-master-list"
+                        onClick={() => {
+                          pushScreen({ screen: 'master-list' });
+                          setAddItemAccordionCat(null);
+                        }}
+                        aria-label="Browse Master List to find an item to add"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '0 14px', minHeight: 44, width: '100%',
+                          background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+                          borderBottom: `1px solid ${DIVIDER}`,
+                        }}
+                      >
+                        <BookOpen size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                        <span style={{ fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500, fontFamily: SANS }}>Master List</span>
+                      </button>
+                    </div>
+                  )}
+
                   {/* R0076: Add Item bar — rendered OUTSIDE the item container so it
                       is always visible at the bottom of the bounded viewport for long
                       categories. Also appears for empty categories (items.length === 0). */}
@@ -4969,11 +5064,22 @@ function MobileFunctionalV3Inner() {
                         paddingRight: CHECKLIST_RIGHT_INSET,
                       }}
                     >
-                      {/* Add Item tap target — full width minus optional chevron */}
+                      {/* R0102: Add Item tap target toggles the creation accordion
+                          instead of immediately creating a blank row.
+                          In allExpanded mode the button keeps direct-create behaviour. */}
                       <button
                         data-testid="cat-add-item-btn"
-                        onClick={() => addItem(catName)}
-                        aria-label={`Add item to ${catName}`}
+                        aria-expanded={addItemAccordionCat === catName && !allExpanded}
+                        onClick={() => {
+                          if (allExpanded) {
+                            addItem(catName);
+                          } else {
+                            setAddItemAccordionCat(prev => prev === catName ? null : catName);
+                          }
+                        }}
+                        aria-label={addItemAccordionCat === catName && !allExpanded
+                          ? `Close add-item menu for ${catName}`
+                          : `Add item to ${catName}`}
                         style={{
                           flex: 1, display: 'flex', alignItems: 'center', gap: 8,
                           padding: '0 14px', minHeight: 44,
@@ -4981,7 +5087,9 @@ function MobileFunctionalV3Inner() {
                           textAlign: 'left',
                         }}
                       >
-                        <Plus size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                        {addItemAccordionCat === catName && !allExpanded
+                          ? <ChevronDown size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>
+                          : <Plus size={14} color={NAV_ACTIVE} strokeWidth={2} aria-hidden="true"/>}
                         <span style={{ fontSize: 13.5, color: NAV_ACTIVE, fontWeight: 500, fontFamily: SANS }}>
                           Add Item
                         </span>
