@@ -219,6 +219,10 @@ const BAR_PEEK_H    = 68;   // visible height of an inactive stacked bar (matche
 // Keep this constant independent of individual view labels so future filter choices
 // cannot change the checklist viewport geometry.
 const FILTER_BAR_H  = 50;
+// R0101: enough trailing room for the last short category to reach the
+// Filter-bottom anchor even when the visible category stack is shorter than the
+// dedicated main-scroll viewport. This is scrollable space, not visible layout.
+const R0101_TRAILING_SCROLL_H = 560;
 // DRAG_ACTIVATE removed R0073: stacked bars are tap-only, no drag-to-activate
 const TAP_MAX_PX    = 8;    // pointer movement below this = tap
 // R006 Part 2 — long-press reorder tuning (documented stable values)
@@ -2171,6 +2175,10 @@ function MobileFunctionalV3Inner() {
   const [openCatName, setOpenCatName] = useState<string | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
   const [expandedItem, setExpandedItem] = useState<{ cat: string; id: string } | null>(null);
+  // R0101: preserve the outer category scroller's exact position across the
+  // open/close transition. The ref avoids putting scroll state into React
+  // renders or changing any row geometry.
+  const openCategoryScrollRef = useRef<{ catName: string; scrollTop: number } | null>(null);
 
   // Add category UI (R004 Part 4 — inline control removed; ADD deck is the only entry)
   const [newCatName, setNewCatName] = useState('');
@@ -2695,11 +2703,21 @@ function MobileFunctionalV3Inner() {
     setOpenLocId(null); // one-open-at-a-time across category and location wedges
     if (allExpanded) {
       // Exit expand-all; the tapped category stays open (single-open mode resumes)
+      openCategoryScrollRef.current = {
+        catName,
+        scrollTop: mainScrollRef.current?.scrollTop ?? 0,
+      };
       setAllExpanded(false);
       setOpenCatName(catName);
       setExpandedItem(prev => prev?.cat !== catName ? null : prev);
     } else {
       const closing = openCatName === catName;
+      if (!closing) {
+        openCategoryScrollRef.current = {
+          catName,
+          scrollTop: mainScrollRef.current?.scrollTop ?? 0,
+        };
+      }
       setOpenCatName(closing ? null : catName);
       if (closing) setExpandedItem(prev => prev?.cat === catName ? null : prev);
     }
@@ -2727,11 +2745,11 @@ function MobileFunctionalV3Inner() {
 
   const isCatOpen = (catName: string) => allExpanded || openCatName === catName;
 
-  // R0096: an active bounded category takes the exact same top-control slot as
-  // the Filter. This avoids stacking two locked rows and preserves the R0095
-  // single owner for ordinary checklist scrolling.
-  const activeCategorySlot = !!openCatName && !allExpanded && isCatLong;
-  const showFilterSlot = !activeCategorySlot;
+  // R0101: Filter remains a locked shell layer for every category state. The
+  // selected category header uses the top of main-scroll (directly beneath the
+  // Filter) instead of replacing the Filter slot.
+  const activeCategorySlot = !!openCatName && !allExpanded;
+  const showFilterSlot = true;
 
   useEffect(() => {
     if (activeCategorySlot) setFilterOpen(false);
@@ -2790,12 +2808,33 @@ function MobileFunctionalV3Inner() {
     setIsCatLong(itemsEl.scrollHeight > rawAvailH + 4);
   }, [navHeight]);
 
-  // R0076: scroll category into view then measure long-mode on open/close.
+  // R0101: scroll category into view beneath the locked Filter, then measure
+  // long-mode. On close, restore the exact pre-open outer-list position.
   useEffect(() => {
     if (!openCatName || allExpanded) {
       setCatOverflow({ above: false, below: false });
       setIsCatLong(false);
       prevOpenCatItemCountRef.current = 0;
+      const restore = openCategoryScrollRef.current;
+      const listViewport = mainScrollRef.current;
+      if (restore && listViewport) {
+        let restoreRaf1 = -1;
+        let restoreRaf2 = -1;
+        restoreRaf1 = requestAnimationFrame(() => {
+          listViewport.scrollTop = restore.scrollTop;
+          restoreRaf2 = requestAnimationFrame(() => {
+            // A second frame lets React finish collapsing the category before
+            // the final assignment, including Safari's layout flush.
+            listViewport.scrollTop = restore.scrollTop;
+          });
+        });
+        openCategoryScrollRef.current = null;
+        return () => {
+          cancelAnimationFrame(restoreRaf1);
+          cancelAnimationFrame(restoreRaf2);
+        };
+      }
+      openCategoryScrollRef.current = null;
       return;
     }
     const listEl = catListRef.current;
@@ -2813,11 +2852,14 @@ function MobileFunctionalV3Inner() {
     let raf2 = -1;
 
     raf1 = requestAnimationFrame(() => {
-      const summaryEl = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
-      const summaryBtm = summaryEl ? summaryEl.getBoundingClientRect().bottom : summaryH;
+      const filterEl = document.querySelector('[data-testid="filter-bar"]') as HTMLElement | null;
+      const filterBtm = filterEl
+        ? filterEl.getBoundingClientRect().bottom
+        : summaryH + FILTER_BAR_H;
       const catTop     = catEl.getBoundingClientRect().top;
-      // delta = how far the category header top is from its target (summaryBtm)
-      const delta  = catTop - summaryBtm;
+      // R0101: delta = how far the category header top is from the locked
+      // Filter's bottom edge.
+      const delta  = catTop - filterBtm;
       const listViewport = mainScrollRef.current;
       if (!listViewport) return;
       const target = Math.max(0, listViewport.scrollTop + delta);
@@ -2829,9 +2871,11 @@ function MobileFunctionalV3Inner() {
 
       // Second RAF: re-read the actual settled geometry and correct any sub-pixel residual.
       raf2 = requestAnimationFrame(() => {
-        const summaryEl2 = document.querySelector('[data-testid="list-summary-bar"]') as HTMLElement | null;
-        const summaryBtm2 = summaryEl2 ? summaryEl2.getBoundingClientRect().bottom : summaryH;
-        const residual    = catEl.getBoundingClientRect().top - summaryBtm2;
+        const filterEl2 = document.querySelector('[data-testid="filter-bar"]') as HTMLElement | null;
+        const filterBtm2 = filterEl2
+          ? filterEl2.getBoundingClientRect().bottom
+          : summaryH + FILTER_BAR_H;
+        const residual    = catEl.getBoundingClientRect().top - filterBtm2;
         if (Math.abs(residual) > 0.5) {
           const currentViewport = mainScrollRef.current;
           if (currentViewport) currentViewport.scrollTop = Math.max(0, currentViewport.scrollTop + residual);
@@ -2845,7 +2889,7 @@ function MobileFunctionalV3Inner() {
     });
 
     return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
-  // R0076P2: isCatLong is in deps so the effect re-fires when the category transitions
+  // R0076P2/R0101: isCatLong is in deps so the effect re-fires when the category transitions
   // from short → long.  On first open (few items), the main-scroll content may be too
   // short for the full delta scroll, clamping scrollTop prematurely.  Re-firing when
   // isCatLong=true (content is now tall enough) applies the corrective offset.
@@ -4982,6 +5026,17 @@ function MobileFunctionalV3Inner() {
 
             {/* R004 Part 4 — inline dashed "+ Add Category" control removed.
                 Add Category remains available via the bottom ADD deck only. */}
+
+            {/* R0101: internal trailing range for the dedicated category scroller.
+                It is invisible and only lets a short final category reach the
+                locked position beneath Filter. */}
+            {viewMode === 'category' && (
+              <div
+                data-testid="category-trailing-scroll-space"
+                aria-hidden="true"
+                style={{ height: R0101_TRAILING_SCROLL_H, flexShrink: 0, pointerEvents: 'none' }}
+              />
+            )}
 
             {/* R005 Part 3 — decorative 24px bottom spacer removed: content runs
                 to the bottom nav (nav is in normal flow, so it never covers the
