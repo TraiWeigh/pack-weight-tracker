@@ -2231,10 +2231,6 @@ function MobileFunctionalV3Inner() {
   // D6 — item delete confirmation
   const [deleteItemConfirm, setDeleteItemConfirm] = useState<{ cat: string; id: string; name: string } | null>(null);
 
-  // R0084 — item rename (list-only; no Master Library mutation until real linking exists)
-  const [itemRenameFor, setItemRenameFor] = useState<{ cat: string; id: string; currentDesc: string } | null>(null);
-  const [itemRenameValue, setItemRenameValue] = useState('');
-
   // R0103 — inline name editing inside expanded item detail panel
   const [nameInputs, setNameInputs] = useState<Record<string, string>>({});
   const [focusItemNameId, setFocusItemNameId] = useState<string | null>(null);
@@ -6189,102 +6185,6 @@ function MobileFunctionalV3Inner() {
                 aria-label={`Confirm delete ${deleteItemConfirm.name}`}
                 style={{ flex: 1, padding: '12px 0', borderRadius: 10, background: '#dc2626', border: 'none', fontSize: 15, fontWeight: 600, color: '#fff', cursor: 'pointer', minHeight: 44 }}
               >Delete Item</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── R0084: Item rename panel ── */}
-      {/* List-only rename: updates desc on this list's copy only.
-          Master Library linking is a future feature; no fake mutation here. */}
-      {itemRenameFor && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Rename item"
-          data-testid="item-rename-dialog"
-          style={{
-            position: 'fixed', inset: 0, zIndex: 200,
-            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.45)',
-          }}
-          onClick={() => setItemRenameFor(null)}
-          onKeyDown={e => {
-            if (e.key === 'Escape') { e.preventDefault(); setItemRenameFor(null); }
-          }}
-        >
-          <div
-            className="tw-sa-36"
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: '100%', maxWidth: 500,
-              background: '#fff', borderRadius: '16px 16px 0 0',
-              padding: '24px 20px 36px', fontFamily: SANS,
-              boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
-            }}
-          >
-            <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY, marginBottom: 6 }}>
-              Rename Item
-            </div>
-            <div style={{ fontSize: 13.5, color: SECONDARY, marginBottom: 12 }}>
-              New name for "{itemRenameFor.currentDesc}":
-            </div>
-            <input
-              autoFocus
-              type="text"
-              value={itemRenameValue}
-              onChange={e => setItemRenameValue(e.target.value)}
-              onKeyDown={e => {
-                const v = itemRenameValue.trim();
-                if (e.key === 'Enter' && v && v !== itemRenameFor.currentDesc) {
-                  updateItem(itemRenameFor.cat, itemRenameFor.id, { desc: v }, { edit: true });
-                  showToast(`Renamed to "${v}"`);
-                  setItemRenameFor(null);
-                }
-                if (e.key === 'Escape') { setItemRenameFor(null); }
-              }}
-              placeholder="Item name…"
-              aria-label="New item name"
-              data-testid="item-rename-input"
-              style={{
-                width: '100%', fontSize: 15, color: PRIMARY, fontFamily: SANS,
-                border: `1.5px solid ${CARD_BORDER}`, borderRadius: 10, padding: '10px 12px',
-                background: PAGE_BG, boxSizing: 'border-box' as const,
-              }}
-            />
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-              <button
-                onClick={() => setItemRenameFor(null)}
-                aria-label="Cancel rename item"
-                data-testid="item-rename-cancel"
-                style={{
-                  flex: 1, padding: '12px 0', borderRadius: 10,
-                  background: CARD_BG, border: `1px solid ${CARD_BORDER}`,
-                  fontSize: 15, fontWeight: 600, color: SECONDARY,
-                  cursor: 'pointer', minHeight: 44,
-                }}
-              >Cancel</button>
-              <button
-                disabled={!itemRenameValue.trim() || itemRenameValue.trim() === itemRenameFor.currentDesc}
-                onClick={() => {
-                  const v = itemRenameValue.trim();
-                  if (!v || v === itemRenameFor.currentDesc) return;
-                  updateItem(itemRenameFor.cat, itemRenameFor.id, { desc: v }, { edit: true });
-                  showToast(`Renamed to "${v}"`);
-                  setItemRenameFor(null);
-                }}
-                aria-label="Save item name"
-                data-testid="item-rename-confirm"
-                style={{
-                  flex: 1, padding: '12px 0', borderRadius: 10,
-                  background: itemRenameValue.trim() && itemRenameValue.trim() !== itemRenameFor.currentDesc
-                    ? NAV_ACTIVE : MUTED,
-                  border: 'none', fontSize: 15, fontWeight: 600, color: '#fff',
-                  cursor: itemRenameValue.trim() && itemRenameValue.trim() !== itemRenameFor.currentDesc
-                    ? 'pointer' : 'not-allowed',
-                  minHeight: 44,
-                }}
-              >Save</button>
             </div>
           </div>
         </div>
