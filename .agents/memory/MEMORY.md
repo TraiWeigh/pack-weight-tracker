@@ -37,3 +37,4 @@
 - [R0102 accordion architecture](r0102-accordion-architecture.md) — Add Item toggles a 3-row accordion; subtract ADD_ITEM_ACCORDION_H from remeasureLongMode rawAvailH when open; prefill.id pattern for Photo method.
 - [R0104 photo row tap fix](r0104-photo-row-tap.md) — outer container div needs onClick (not just inner button); bare <img> tap unreliable on iOS Safari — wrap in <button>.
 - [R0105 bottom Camera/Photos contextual photo entry](r0105-bottom-camera-photos.md) — 3 cases: item expanded→target it; cat open→create item; no cat→picker sheet. Filechooser must be captured in tests.
+- [Photo List capture assignment](photo-list-capture-assignment.md) — classify a retained capture exactly once; canceling only defers it, while Locations remain visual destinations without items.

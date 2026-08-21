@@ -1,0 +1,26 @@
+R0108 intentional changes
+=========================
+
+Implementation
+--------------
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Photo List capture classification, visual location destinations, atomic Item
+  assignment, duplicate-commit protection, and accessible modal behavior.
+
+Tests
+-----
+- tests/e2e/phase1b/r0108-photo-list-location-assignment.spec.ts
+  New focused R0108 browser coverage.
+- tests/e2e/phase1b/r0107-photo-list-capture-safari-footer.spec.ts
+  Existing retained-capture test dismisses the new classification sheet before
+  proceeding to Locker save.
+
+Evidence and documentation
+--------------------------
+- reports/r0108/R0108_REPORT.txt
+- reports/r0108/CHANGED_FILES.txt
+- reports/r0108/screenshots/01-photo-location-390x844.png
+- reports/r0108/screenshots/02-photo-item-destination-390x844.png
+- reports/r0108/screenshots/03-live-preview-mobile.jpg
+- .agents/memory/MEMORY.md
+- .agents/memory/photo-list-capture-assignment.md

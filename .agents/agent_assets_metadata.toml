@@ -392,3 +392,10 @@ uri = "file://R0107.zip"
 type = "unspecified"
 title = "R0107 GS delivery package"
 description = "Photo List Camera/Photos capture repair, Safari footer correction, focused evidence, report, and regression-ready source. Archive integrity verified with unzip -t."
+
+[[outputs]]
+id = "cuDUHDD7kYqOo1F4qvpsO"
+uri = "file://R0108.zip"
+type = "unspecified"
+title = "R0108 Photo List evidence package"
+description = "Implementation, focused tests, completion report, changed-file manifest, and mobile screenshots. ZIP integrity verified."

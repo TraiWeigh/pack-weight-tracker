@@ -1,0 +1,60 @@
+R0108 GS — Photo Lists: visual locations and tagged gear
+Completion report
+
+Delivered behavior
+------------------
+- A selected or captured Photo List image now opens a required Location-or-Item
+  classification sheet.
+- Location asks for a name, stores the captured image as the location photo, and
+  makes that location visible as a visual destination even with zero items.
+- Item shows only photographed location thumbnail destinations plus Unassigned.
+  It creates exactly one photo-bearing item, attaches the selected location when
+  applicable, opens the item, and focuses its Name field.
+- Photo List items silently use one structural Items category. The assignment flow
+  does not expose category management and does not bridge to Master List.
+- Pending captures survive cancellation and refresh. Captures are consumed only
+  after their Location or Item is committed.
+- Assignment commits are protected from rapid duplicate activation. The new sheets
+  provide initial focus, Tab/Shift+Tab containment, Escape dismissal, and return
+  focus to the originating Photo List action on cancellation.
+- Standard-list Camera/Photos behavior remains on the existing R0105 path.
+
+Validation
+----------
+- Focused R0107/R0108 Playwright:
+  pnpm exec playwright test tests/e2e/phase1b/r0108-photo-list-location-assignment.spec.ts
+    tests/e2e/phase1b/r0107-photo-list-capture-safari-footer.spec.ts
+    --workers=1 --project=chromium
+  Result: 7 passed.
+
+- Protected R0097–R0106 regressions:
+  R0097–R0105 completed 68 passed before the five-minute environment command
+  ceiling; R0106 was immediately rerun separately and passed 5/5.
+  Combined result: 73 passed.
+
+- TypeScript:
+  pnpm --filter @workspace/pack-checklist run typecheck
+  Result: passed.
+
+- Independent checks:
+  - Post-fix code review: passed; no remaining blocking issue.
+  - Fresh 390×844 browser validation: passed. It verified native Photos chooser,
+    classification display, keyboard focus containment, Escape retaining the
+    pending photo, and the named visual-Location path. No browser errors were
+    observed; the Clerk development-key warning is non-blocking.
+
+Evidence
+--------
+- screenshots/01-photo-location-390x844.png
+  Named photographed Location visible with no assigned items.
+- screenshots/02-photo-item-destination-390x844.png
+  Item destination sheet with photographed-location thumbnail and Unassigned.
+- screenshots/03-live-preview-mobile.jpg
+  Fresh mobile web-artifact preview.
+
+Manual device note
+------------------
+Physical iPhone Safari behavior remains USER PASS pending. The completed R0108
+flow should be checked on a device for Camera/Photos capture and browser-chrome
+occlusion; automated Chromium and independent mobile-viewport browser evidence
+cannot replace that physical-device confirmation.

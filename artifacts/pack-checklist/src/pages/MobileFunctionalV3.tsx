@@ -87,6 +87,8 @@ type SandboxStore = {
 };
 type ListKind = 'standard' | 'photo';
 type PhotoListCaptureSource = 'camera' | 'photos';
+/** Photo Lists use this solely to satisfy the existing item storage shape. */
+const PHOTO_LIST_ITEMS_CATEGORY = 'Items';
 // (R002: the old ActiveNav tab type was retired — deck selection uses DeckId below.)
 
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
@@ -2307,9 +2309,16 @@ function MobileFunctionalV3Inner() {
   const [photoViewFor, setPhotoViewFor] = useState<{ cat: string; id: string } | null>(null);
   const [photoEditFor, setPhotoEditFor] = useState<{ cat: string; id: string } | null>(null);
   // R0107 — a Photo List capture is held at list level until the later
-  // Location-or-Item assignment step. It must never fabricate a category/item.
+  // Location-or-Item assignment step.
   const [photoListSourceOpen, setPhotoListSourceOpen] = useState(false);
   const [photoListCaptureSource, setPhotoListCaptureSource] = useState<PhotoListCaptureSource | null>(null);
+  const [photoListAssignmentOpen, setPhotoListAssignmentOpen] = useState(false);
+  const [photoListLocationNameOpen, setPhotoListLocationNameOpen] = useState(false);
+  const [photoListLocationName, setPhotoListLocationName] = useState('');
+  const [photoListItemDestinationOpen, setPhotoListItemDestinationOpen] = useState(false);
+  const [photoListAssignmentBusy, setPhotoListAssignmentBusy] = useState(false);
+  const photoListAssignmentBusyRef = useRef(false);
+  const photoListDialogReturnFocusRef = useRef<HTMLElement | null>(null);
   // R0085 — Category direct-edit (swipe Edit bypasses Category Options Sheet entirely)
   const [catDirectEditFor, setCatDirectEditFor] = useState<string | null>(null);
   const [catDirectEditValue, setCatDirectEditValue] = useState('');
@@ -3574,20 +3583,23 @@ function MobileFunctionalV3Inner() {
     }).catch(() => showToast('Photo could not be loaded'));
   }, [updateItem, showToast]);
 
-  /** R0107: capture a Photo List image without prematurely deciding whether it is
-   * a Location or an Item. The compressed TrailWeigh copy survives Save/reload. */
+  /** R0107/8: retain the compressed capture until the user classifies it as a
+   * visual Location or an Item. The pending copy also survives Save/reload. */
   const handlePhotoListCapture = useCallback((file: File) => {
     compressPhoto(file).then(dataUrl => {
       mutateSandbox(prev => ({ ...prev, photoListCaptureDataUrl: dataUrl }));
       setPhotoListCaptureSource(null);
-      showToast('Photo saved for the next Photo List step');
+      photoListAssignmentBusyRef.current = false;
+      setPhotoListAssignmentBusy(false);
+      setPhotoListAssignmentOpen(true);
     }).catch(() => {
       setPhotoListCaptureSource(null);
       showToast('Photo could not be loaded');
     });
   }, [mutateSandbox, showToast]);
 
-  const openPhotoListCapture = useCallback(() => {
+  const openPhotoListCapture = useCallback((trigger?: HTMLElement) => {
+    if (trigger) photoListDialogReturnFocusRef.current = trigger;
     setPhotoListCaptureSource(null);
     setPhotoListSourceOpen(true);
   }, []);
@@ -3599,6 +3611,106 @@ function MobileFunctionalV3Inner() {
     setPhotoListCaptureSource(source);
     if (source === 'camera') photoCameraRef.current?.click();
     else photoUploadRef.current?.click();
+  }, []);
+
+  const openPhotoListAssignment = useCallback((trigger?: HTMLElement) => {
+    if (trigger) photoListDialogReturnFocusRef.current = trigger;
+    if (sandboxRef.current.photoListCaptureDataUrl) setPhotoListAssignmentOpen(true);
+  }, []);
+
+  const savePhotoListLocation = useCallback(() => {
+    const name = photoListLocationName.trim();
+    const photoDataUrl = sandboxRef.current.photoListCaptureDataUrl;
+    if (!name || !photoDataUrl || photoListAssignmentBusyRef.current) return;
+    photoListAssignmentBusyRef.current = true;
+    setPhotoListAssignmentBusy(true);
+    const id = crypto.randomUUID();
+    mutateSandbox(prev => ({
+      ...prev,
+      locations: [...prev.locations, { id, name, photoDataUrl }],
+      photoListCaptureDataUrl: undefined,
+    }));
+    setPhotoListLocationName('');
+    setPhotoListLocationNameOpen(false);
+    setPhotoListAssignmentOpen(false);
+    setViewMode('location');
+    setOpenCatName(null);
+    setOpenLocId(id);
+    showToast(`Location "${name}" saved`);
+  }, [mutateSandbox, photoListLocationName, showToast]);
+
+  const assignPhotoListItem = useCallback((locationId?: string) => {
+    const photoDataUrl = sandboxRef.current.photoListCaptureDataUrl;
+    if (!photoDataUrl || photoListAssignmentBusyRef.current) return;
+    photoListAssignmentBusyRef.current = true;
+    setPhotoListAssignmentBusy(true);
+    const id = crypto.randomUUID();
+    mutateSandbox(prev => {
+      const hasItemsCategory = prev.order.includes(PHOTO_LIST_ITEMS_CATEGORY);
+      const newItem: GearItem = {
+        id, sub: '', desc: '', weightOz: 0, qty: 1, checked: true, expendable: false,
+        photoDataUrl, locationId,
+      };
+      return {
+        ...prev,
+        order: hasItemsCategory ? prev.order : [...prev.order, PHOTO_LIST_ITEMS_CATEGORY],
+        meta: hasItemsCategory ? prev.meta : {
+          ...prev.meta,
+          [PHOTO_LIST_ITEMS_CATEGORY]: { countsToBase: true },
+        },
+        items: {
+          ...prev.items,
+          [PHOTO_LIST_ITEMS_CATEGORY]: [...(prev.items[PHOTO_LIST_ITEMS_CATEGORY] ?? []), newItem],
+        },
+        photoListCaptureDataUrl: undefined,
+      };
+    });
+    setPhotoListItemDestinationOpen(false);
+    setPhotoListAssignmentOpen(false);
+    setViewMode('category');
+    setOpenLocId(null);
+    setOpenCatName(PHOTO_LIST_ITEMS_CATEGORY);
+    setExpandedItem({ cat: PHOTO_LIST_ITEMS_CATEGORY, id });
+    setFocusItemNameId(id);
+    showToast(locationId ? 'Photo assigned to location' : 'Photo item saved as Unassigned');
+  }, [mutateSandbox, showToast]);
+
+  const restorePhotoListDialogFocus = useCallback(() => {
+    window.requestAnimationFrame(() => photoListDialogReturnFocusRef.current?.focus());
+  }, []);
+
+  const closePhotoListAssignment = useCallback(() => {
+    setPhotoListAssignmentOpen(false);
+    restorePhotoListDialogFocus();
+  }, [restorePhotoListDialogFocus]);
+
+  const closePhotoListLocationName = useCallback(() => {
+    setPhotoListLocationNameOpen(false);
+    restorePhotoListDialogFocus();
+  }, [restorePhotoListDialogFocus]);
+
+  const closePhotoListItemDestination = useCallback(() => {
+    setPhotoListItemDestinationOpen(false);
+    restorePhotoListDialogFocus();
+  }, [restorePhotoListDialogFocus]);
+
+  const trapPhotoListDialogFocus = useCallback((event: React.KeyboardEvent<HTMLElement>, onClose: () => void) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(el => !el.hasAttribute('hidden'));
+    if (focusable.length === 0) return;
+    const currentIndex = focusable.indexOf(document.activeElement as HTMLElement);
+    const nextIndex = event.shiftKey
+      ? (currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1)
+      : (currentIndex === focusable.length - 1 ? 0 : currentIndex + 1);
+    event.preventDefault();
+    focusable[nextIndex].focus();
   }, []);
 
   const handlePhotoDelete = useCallback((cat: string, id: string) => {
@@ -5493,20 +5605,58 @@ function MobileFunctionalV3Inner() {
                     ? 'Your photo is saved and ready for the next Photo List step.'
                     : 'Add your first photo when you are ready to begin organizing this list.'}
                 </div>
+                {sandbox.locations.some(location => location.photoDataUrl) && (
+                  <div data-testid="photo-list-visual-locations" style={{ marginTop: 16, textAlign: 'left' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.35, color: MUTED, textTransform: 'uppercase', marginBottom: 8 }}>
+                      Visual destinations
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                      {sandbox.locations.filter(location => location.photoDataUrl).map(location => (
+                        <button
+                          key={location.id}
+                          data-testid={`photo-list-location-destination-${location.id}`}
+                          onClick={() => {
+                            setViewMode('location');
+                            setOpenLocId(location.id);
+                          }}
+                          aria-label={`Open photo location ${location.name}`}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, padding: 7,
+                            border: `1px solid ${CARD_BORDER}`, borderRadius: 9, background: '#fff',
+                            cursor: 'pointer', textAlign: 'left', fontFamily: SANS,
+                          }}
+                        >
+                          <img src={location.photoDataUrl} alt="" aria-hidden="true" style={{ width: 34, height: 34, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                          <span style={{ fontSize: 12.5, fontWeight: 650, color: PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{location.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {sandbox.photoListCaptureDataUrl && (
-                  <img
-                    data-testid="photo-list-pending-photo"
-                    src={sandbox.photoListCaptureDataUrl}
-                    alt="Captured photo ready for Photo List assignment"
-                    style={{
-                      width: '100%', height: 168, objectFit: 'cover', display: 'block',
-                      borderRadius: 10, marginTop: 16, border: `1px solid ${CARD_BORDER}`,
-                    }}
-                  />
+                  <>
+                    <img
+                      data-testid="photo-list-pending-photo"
+                      src={sandbox.photoListCaptureDataUrl}
+                      alt="Captured photo ready for Photo List assignment"
+                      style={{
+                        width: '100%', height: 168, objectFit: 'cover', display: 'block',
+                        borderRadius: 10, marginTop: 16, border: `1px solid ${CARD_BORDER}`,
+                      }}
+                    />
+                    <button
+                      data-testid="photo-list-assign-pending"
+                      onClick={e => openPhotoListAssignment(e.currentTarget)}
+                      style={{
+                        marginTop: 10, width: '100%', minHeight: 42, border: `1px solid ${NAV_ACTIVE}`, borderRadius: 9,
+                        background: '#fff', color: NAV_ACTIVE, cursor: 'pointer', fontFamily: SANS, fontSize: 14, fontWeight: 650,
+                      }}
+                    >Choose Location or Item</button>
+                  </>
                 )}
                 <button
                   data-testid="photo-list-add-photo"
-                  onClick={openPhotoListCapture}
+                  onClick={e => openPhotoListCapture(e.currentTarget)}
                   aria-label="Add Photo to this Photo List"
                   style={{
                     marginTop: 16, width: '100%', minHeight: 44, border: 'none', borderRadius: 10,
@@ -5515,6 +5665,23 @@ function MobileFunctionalV3Inner() {
                   }}
                 >
                   {sandbox.photoListCaptureDataUrl ? 'Replace Photo' : 'Add Photo'}
+                </button>
+              </div>
+            )}
+
+            {listKind === 'photo' && sandbox.order.length > 0 && (
+              <div data-testid="photo-list-capture-card" style={{ padding: '12px 14px', background: '#f7faf7', borderBottom: `1px solid ${DIVIDER}` }}>
+                <button
+                  data-testid="photo-list-add-photo-inline"
+                  onClick={e => openPhotoListCapture(e.currentTarget)}
+                  aria-label="Add another photo to this Photo List"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 44,
+                    border: `1px solid ${CARD_BORDER}`, borderRadius: 10, background: '#fff', color: NAV_ACTIVE,
+                    cursor: 'pointer', fontFamily: SANS, fontSize: 14, fontWeight: 650,
+                  }}
+                >
+                  <Camera size={16} aria-hidden="true"/> Add another photo
                 </button>
               </div>
             )}
@@ -5547,8 +5714,9 @@ function MobileFunctionalV3Inner() {
                 last row; no reserved blank band needed). */}
           </div>
 
-          {/* R0085C: Location wedges — rendered below category list in Location view.
-              Each used location gets a wedge bar (visually identical to a category bar)
+          {/* R0108: Location wedges — rendered below category list in Location view.
+              Every photographed location is a visual destination even before it has
+              items; non-photographed locations retain their existing used-only rule.
               where the left slot reads "Location" and the right slot shows the location name.
               Located items appear ONLY here (they are suppressed from their category wedge above). */}
           {viewMode === 'location' && (() => {
@@ -5556,11 +5724,11 @@ function MobileFunctionalV3Inner() {
               (sandbox.items[cat] ?? []).map(item => ({ ...item, _cat: cat }))
             );
             const usedLocIds = new Set(allItemsFlat.filter(i => i.locationId).map(i => i.locationId as string));
-            const usedLocs = sandbox.locations.filter(l => usedLocIds.has(l.id));
-            if (usedLocs.length === 0) return null;
+            const visibleLocs = sandbox.locations.filter(l => usedLocIds.has(l.id) || Boolean(l.photoDataUrl));
+            if (visibleLocs.length === 0) return null;
             return (
               <>
-                {usedLocs.map(loc => {
+                {visibleLocs.map(loc => {
                   const locItems = allItemsFlat.filter(i => i.locationId === loc.id);
                   const isLocOpen = openLocId === loc.id;
                   return (
@@ -5630,6 +5798,15 @@ function MobileFunctionalV3Inner() {
                             padding: `8px ${CHECKLIST_RIGHT_INSET}px 8px 12px`,
                             columnGap: 10,
                           }}>
+                            {loc.photoDataUrl && (
+                              <img
+                                data-testid={`photo-location-thumbnail-${loc.id}`}
+                                src={loc.photoDataUrl}
+                                alt=""
+                                aria-hidden="true"
+                                style={{ width: 42, height: 42, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+                              />
+                            )}
                             {/* Col 1 — "Location" label + item count */}
                             <div style={{ minWidth: 0 }}>
                               <div style={{
@@ -7094,6 +7271,233 @@ function MobileFunctionalV3Inner() {
                 }}
               >Cancel</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0108: classify a retained Photo List image ───────────────────── */}
+      {photoListAssignmentOpen && sandbox.photoListCaptureDataUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Choose what this Photo List photo is"
+          data-testid="photo-list-assignment-sheet"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 213,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={closePhotoListAssignment}
+          onKeyDown={e => trapPhotoListDialogFocus(e, closePhotoListAssignment)}
+        >
+          <div
+            className="tw-sa-40"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '20px 20px 40px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 16 }}>
+              <img src={sandbox.photoListCaptureDataUrl} alt="" aria-hidden="true" style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover' }} />
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY }}>What is this photo?</div>
+                <div style={{ fontSize: 13, lineHeight: 1.4, color: SECONDARY, marginTop: 2 }}>Choose how to organize it in your Photo List.</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                autoFocus
+                data-testid="photo-list-assign-location"
+                onClick={() => {
+                  setPhotoListAssignmentOpen(false);
+                  setPhotoListLocationName('');
+                  setPhotoListLocationNameOpen(true);
+                }}
+                disabled={photoListAssignmentBusy}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 60,
+                  padding: '12px 14px', borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
+                  background: CARD_BG, color: PRIMARY, cursor: 'pointer', fontFamily: SANS, textAlign: 'left',
+                }}
+              >
+                <span style={{ width: 36, height: 36, borderRadius: 9, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <MapPin size={18} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                </span>
+                <span>
+                  <span style={{ display: 'block', fontSize: 15, fontWeight: 650 }}>Location</span>
+                  <span style={{ display: 'block', fontSize: 12.5, color: SECONDARY, marginTop: 2 }}>A place where gear can belong</span>
+                </span>
+              </button>
+              <button
+                data-testid="photo-list-assign-item"
+                onClick={() => {
+                  setPhotoListAssignmentOpen(false);
+                  setPhotoListItemDestinationOpen(true);
+                }}
+                disabled={photoListAssignmentBusy}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 60,
+                  padding: '12px 14px', borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
+                  background: CARD_BG, color: PRIMARY, cursor: 'pointer', fontFamily: SANS, textAlign: 'left',
+                }}
+              >
+                <span style={{ width: 36, height: 36, borderRadius: 9, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <PackageOpen size={18} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                </span>
+                <span>
+                  <span style={{ display: 'block', fontSize: 15, fontWeight: 650 }}>Item</span>
+                  <span style={{ display: 'block', fontSize: 12.5, color: SECONDARY, marginTop: 2 }}>A piece of gear to name and place</span>
+                </span>
+              </button>
+              <button
+                data-testid="photo-list-assignment-cancel"
+                onClick={closePhotoListAssignment}
+                style={{
+                  width: '100%', minHeight: 44, padding: '12px 0', marginTop: 2,
+                  borderRadius: 10, border: `1px solid ${CARD_BORDER}`, background: CARD_BG,
+                  color: SECONDARY, cursor: 'pointer', fontSize: 15, fontWeight: 600, fontFamily: SANS,
+                }}
+              >Decide later</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {photoListLocationNameOpen && sandbox.photoListCaptureDataUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Name this photo location"
+          data-testid="photo-list-location-name-dialog"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 214,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={closePhotoListLocationName}
+          onKeyDown={e => trapPhotoListDialogFocus(e, closePhotoListLocationName)}
+        >
+          <form
+            className="tw-sa-40"
+            onClick={e => e.stopPropagation()}
+            onSubmit={e => { e.preventDefault(); savePhotoListLocation(); }}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '20px 20px 40px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY }}>Name this location</div>
+            <div style={{ fontSize: 13, color: SECONDARY, marginTop: 4, lineHeight: 1.45 }}>This photo becomes a visual destination before any items are placed there.</div>
+            <input
+              autoFocus
+              data-testid="photo-list-location-name-input"
+              value={photoListLocationName}
+              onChange={e => setPhotoListLocationName(e.target.value)}
+              disabled={photoListAssignmentBusy}
+              placeholder="Location name…"
+              aria-label="Location name"
+              style={{
+                display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 16, minHeight: 46,
+                border: `1px solid ${CARD_BORDER}`, borderRadius: 9, padding: '8px 11px',
+                color: PRIMARY, fontFamily: SANS, fontSize: 15,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+              <button
+                type="button"
+                data-testid="photo-list-location-name-cancel"
+                onClick={() => { setPhotoListLocationNameOpen(false); setPhotoListAssignmentOpen(true); }}
+                style={{
+                  flex: 1, minHeight: 44, border: `1px solid ${CARD_BORDER}`, borderRadius: 9, background: CARD_BG,
+                  color: SECONDARY, cursor: 'pointer', fontFamily: SANS, fontSize: 14, fontWeight: 650,
+                }}
+              >Back</button>
+              <button
+                type="submit"
+                data-testid="photo-list-location-name-save"
+                disabled={!photoListLocationName.trim() || photoListAssignmentBusy}
+                style={{
+                  flex: 1, minHeight: 44, border: 'none', borderRadius: 9, background: NAV_ACTIVE,
+                  color: '#fff', cursor: photoListLocationName.trim() && !photoListAssignmentBusy ? 'pointer' : 'not-allowed',
+                  opacity: photoListLocationName.trim() && !photoListAssignmentBusy ? 1 : 0.5, fontFamily: SANS, fontSize: 14, fontWeight: 650,
+                }}
+              >Save Location</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {photoListItemDestinationOpen && sandbox.photoListCaptureDataUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Choose a location for this Photo List item"
+          data-testid="photo-list-item-location-sheet"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 214,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={closePhotoListItemDestination}
+          onKeyDown={e => trapPhotoListDialogFocus(e, closePhotoListItemDestination)}
+        >
+          <div
+            className="tw-sa-40"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '20px 20px 40px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)', maxHeight: '76vh', overflowY: 'auto',
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY }}>Where does this item belong?</div>
+            <div style={{ fontSize: 13, color: SECONDARY, marginTop: 4, marginBottom: 15, lineHeight: 1.45 }}>Choose a photographed location, or keep it Unassigned for now.</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+              <button
+                autoFocus
+                data-testid="photo-list-item-unassigned"
+                onClick={() => assignPhotoListItem()}
+                disabled={photoListAssignmentBusy}
+                style={{
+                  minHeight: 116, border: `1px dashed ${CARD_BORDER}`, borderRadius: 12, background: CARD_BG,
+                  color: PRIMARY, cursor: 'pointer', padding: 10, fontFamily: SANS, textAlign: 'left',
+                }}
+              >
+                <span style={{ width: 36, height: 36, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(42,87,64,0.10)' }}>
+                  <PackageOpen size={18} color={NAV_ACTIVE} aria-hidden="true"/>
+                </span>
+                <span style={{ display: 'block', marginTop: 12, fontSize: 14, fontWeight: 700 }}>Unassigned</span>
+                <span style={{ display: 'block', marginTop: 3, fontSize: 11.5, color: MUTED, lineHeight: 1.3 }}>Choose a location later</span>
+              </button>
+              {sandbox.locations.filter(location => location.photoDataUrl).map(location => (
+                <button
+                  key={location.id}
+                  data-testid={`photo-list-item-location-${location.id}`}
+                  onClick={() => assignPhotoListItem(location.id)}
+                  aria-label={`Assign photo item to ${location.name}`}
+                  disabled={photoListAssignmentBusy}
+                  style={{
+                    minHeight: 116, border: `1px solid ${CARD_BORDER}`, borderRadius: 12, background: '#fff',
+                    color: PRIMARY, cursor: 'pointer', padding: 8, fontFamily: SANS, textAlign: 'left', overflow: 'hidden',
+                  }}
+                >
+                  <img src={location.photoDataUrl} alt="" aria-hidden="true" style={{ width: '100%', height: 66, borderRadius: 7, objectFit: 'cover', display: 'block' }} />
+                  <span style={{ display: 'block', marginTop: 7, fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{location.name}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              data-testid="photo-list-item-location-back"
+              onClick={() => { setPhotoListItemDestinationOpen(false); setPhotoListAssignmentOpen(true); }}
+              style={{
+                width: '100%', minHeight: 44, padding: '12px 0', marginTop: 14,
+                borderRadius: 10, border: `1px solid ${CARD_BORDER}`, background: CARD_BG,
+                color: SECONDARY, cursor: 'pointer', fontSize: 15, fontWeight: 600, fontFamily: SANS,
+              }}
+            >Back</button>
           </div>
         </div>
       )}

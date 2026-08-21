@@ -86,6 +86,7 @@ test.describe('R0107 — Photo List capture and Safari footer correction', () =>
     await expect(page.getByText('0 categories', { exact: true })).toBeVisible();
     await expect(page.locator('[data-cat]')).toHaveCount(0);
     await page.screenshot({ path: 'reports/r0107/screenshots/01-photo-list-captured-390x844.png', fullPage: false });
+    await page.getByTestId('photo-list-assignment-cancel').click();
 
     await saveCurrentPhotoList(page);
     const savedCapture = await page.evaluate((listName) => {
