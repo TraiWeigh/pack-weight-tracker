@@ -1,4 +1,4 @@
-R0096 verification run
+R0096 verification run — final
 
 Package typecheck
 Command:
@@ -10,29 +10,31 @@ Command:
 pnpm exec playwright test tests/e2e/phase1b/r0096-locked-controls.spec.ts --workers=1 --project=chromium
 Result: PASS — 9/9
 
-R0095 shell and viewport-safety regression group
-Command:
-pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
-Result: PASS — 19/19
-
-Location and inset regression group
-Command:
-pnpm exec playwright test tests/e2e/phase1b/r0085.spec.ts tests/e2e/phase1b/right-side-inset.spec.ts --workers=1 --project=chromium
-Result: PASS — 29/29
-
-Evidence capture
+R0096 evidence capture
 Command:
 pnpm exec playwright test tests/e2e/phase1b/r0096-evidence.spec.ts --workers=1 --project=chromium
 Result: PASS — 1/1
 
-Focused total: PASS — 58/58 browser tests, plus typecheck.
+R0095 shell regression
+Command:
+pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts --workers=1 --project=chromium
+Result: PASS — 6/6
 
-Independent browser tester:
-- Final verdict: PASS.
-- Verified Filter options, locked normal chrome, Photo-mode active bounded category,
-  Add Item adjacency, locked hamburger frame, and Home internal scroller.
-- No page errors; only the expected Clerk development-key warning.
+Location, inset, and viewport-safety regression group
+Command:
+pnpm exec playwright test tests/e2e/phase1b/r0085.spec.ts tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
+Result: PASS — 38/38
+Note: viewport-safe long-category diagnostic test updated from direct-add loop to
+R0102 two-step accordion flow (identical to makeBackpackLong pattern).
+
+R0102/R0103 regression group
+Command:
+pnpm exec playwright test tests/e2e/phase1b/r0103-name-field-and-photo-tap.spec.ts tests/e2e/phase1b/r0102-add-item-accordion.spec.ts --workers=1 --project=chromium
+Result: PASS — 24/24
+
+TOTAL: PASS — 78/78 browser tests, plus typecheck.
 
 Known unrelated project status:
 - The configured broad E2E workflow remains historically red outside this focused scope.
-- The recursive workspace typecheck remains historically red in mockup-sandbox React ref typing.
+- The recursive workspace typecheck remains historically red in mockup-sandbox React ref typing
+  (pre-existing, unrelated to R0096).

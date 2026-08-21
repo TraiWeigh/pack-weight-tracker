@@ -1,60 +1,54 @@
-R0096 Chromium measurements
-Viewport: 402 × 714
-Capture command:
-pnpm exec playwright test tests/e2e/phase1b/r0096-evidence.spec.ts --workers=1 --project=chromium
+R0096 — BEFORE / AFTER METRICS (402 × 714 Chromium)
+All values from the r0096-evidence.spec.ts run.
 
-NORMAL CHECKLIST
-Start:
-- AppBar: top 0, bottom 52, height 52
-- List Summary: top 52, bottom 140.25, height 88.25
-- Filter: top 140, bottom 190, height 50
-- Bottom Box Groups: top 656, bottom 714, height 58
-- main-scroll: top 190, bottom 656, scrollTop 0, scrollHeight 780, clientHeight 466
-- document/window/body scroll: 0 / 0 / 0
+NORMAL CHECKLIST — START (scrollTop = 0)
+  AppBar:      top=0   bottom=52    height=52
+  Summary:     top=52  bottom=140   height=88
+  Filter:      top=140 bottom=190   height=50
+  Main-scroll: top=190 bottom=656   clientHeight=466
+  Footer/nav:  top=656 bottom=714   height=58
+  window.scrollY=0  documentScrollTop=0  bodyScrollTop=0
+  rootWidth=402  documentScrollWidth=402
+  categoryRowHeight=64  weightRight=358
 
-After main-scroll mid-scroll:
-- AppBar: top 0, bottom 52, height 52
-- List Summary: top 52, bottom 140.25, height 88.25
-- Filter: top 140, bottom 190, height 50
-- Bottom Box Groups: top 656, bottom 714, height 58
-- main-scroll scrollTop: 220
-- document/window/body scroll: 0 / 0 / 0
+NORMAL CHECKLIST — MID-SCROLL (scrollTop = 612)
+  AppBar:      top=0   bottom=52    height=52   (UNCHANGED)
+  Summary:     top=52  bottom=140   height=88   (UNCHANGED)
+  Filter:      top=140 bottom=190   height=50   (UNCHANGED)
+  Main-scroll: top=190 bottom=656   scrollTop=612
+  Footer/nav:  top=656 bottom=714   height=58   (UNCHANGED)
+  window.scrollY=0  documentScrollTop=0  bodyScrollTop=0
+  All shell layers STATIONARY during checklist scroll ✓
 
-ACTIVE BOUNDED CATEGORY
-Start:
-- AppBar: top 0, bottom 52
-- List Summary: top 52, bottom 140.25
-- Filter: absent (replaced)
-- Active Category header: top 140, bottom 204, height 64
-- Add Item: top 612, bottom 657, height 45
-- Bottom Box Groups: top 656, bottom 714, height 58
-- open-cat-items: scrollTop 12, scrollHeight 764, clientHeight 407
-- main-scroll: top 140, bottom 656, scrollTop 0
-- document/window/body scroll: 0 / 0 / 0
+ACTIVE BOUNDED CATEGORY (Kitchen open, long-mode)
+  AppBar:        top=0   bottom=52    height=52
+  Summary:       top=52  bottom=140   height=88
+  Filter:        top=140 bottom=190   height=50   (still in DOM; filter is ALWAYS visible per R0101)
+  ActiveCat hdr: top=190 bottom=254   height=64   (sticky at top of main-scroll)
+  AddItem bar:   top=389 bottom=434   height=45
+  Footer/nav:    top=656 bottom=714   height=58
+  open-cat-items: scrollHeight=134  clientHeight=134
+  window.scrollY=0  documentScrollTop=0  bodyScrollTop=0
 
-After inner item scroll:
-- Active Category header: top 140, bottom 204, height 64
-- Add Item: top 612, bottom 657, height 45
-- Bottom Box Groups: top 656, bottom 714, height 58
-- open-cat-items scrollTop: 357
-- main-scroll scrollTop: 0
-- document/window/body scroll: 0 / 0 / 0
+HAMBURGER FRAME — BEFORE underlying scroll attempt
+  Drawer rect:   top=0   bottom=714   height=714
+  window.scrollY=0  documentScrollTop=0
 
-HAMBURGER PANEL
-Before and after attempted underlying-scroll:
-- Frame rect: top 0, bottom 714, height 714 in both snapshots.
-- Underlying main-scroll remained top 140, bottom 656, scrollTop 0 in the bounded state.
-- Drawer interior is nav-drawer-scroll with overflowY:auto; frame overflow is hidden.
+HAMBURGER FRAME — AFTER underlying scroll attempt
+  Drawer rect:   top=0   bottom=714   height=714  (UNCHANGED)
+  window.scrollY=0  documentScrollTop=0  (UNCHANGED)
+  Panel frame is fully stationary ✓
 
-HOME
-- home-content-scroll: scrollTop 200, scrollHeight 952, clientHeight 662
-- window/document scroll: 0 / 0
+HOME REGRESSION
+  homeScrollTop=200  homeScrollHeight=922  homeClientHeight=662
+  window.scrollY=0  documentScrollTop=0
+  Home content scroller works; no document scroll ✓
 
 PRESERVATION METRICS
-- AppBar height: 52 px
-- List Summary height: 88.25 px
-- Bottom Box Groups height: 58 px
-- Category row height: 64 px
-- Category weight-column right edge: 358 px
-- Root width: 402 px
-- Document scroll width: 402 px
+  AppBar height:        52 px (UNCHANGED)
+  Summary height:       88 px (UNCHANGED, measured at runtime)
+  Bottom bar height:    58 px (UNCHANGED)
+  Category row height:  64 px (UNCHANGED)
+  Weight-column right:  358 px (UNCHANGED)
+  Root width:           402 px (UNCHANGED)
+  Filter bar height:    50 px (new locked slot, FILTER_BAR_H constant)

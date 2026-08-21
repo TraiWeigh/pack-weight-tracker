@@ -267,11 +267,16 @@ test.describe('temporary real-device viewport diagnostic', () => {
     await gotoDiagnosticDemo(page);
 
     await page.getByRole('button', { name: 'Open Kitchen category' }).click();
+    // R0102: Add Item now opens a creation accordion — tap Add Item then Name for each row.
+    const addBtn = page.getByTestId('cat-add-item-btn');
+    const nameBtn = page.getByTestId('add-item-by-name');
     for (let index = 0; index < 14; index += 1) {
-      await page.getByTestId('cat-add-item-btn').click();
-      await page.waitForTimeout(300);
+      await addBtn.click();
+      await nameBtn.waitFor({ state: 'visible', timeout: 2000 });
+      await nameBtn.click();
+      await nameBtn.waitFor({ state: 'hidden', timeout: 2000 });
     }
-    await expect(page.getByTestId('open-cat-items')).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('[data-testid="open-cat-items"][data-long-mode="true"]')).toBeVisible({ timeout: 8000 });
     const innerScroll = await page.getByTestId('open-cat-items').evaluate((element: HTMLElement) => {
       element.scrollTop = 0;
       const before = element.scrollTop;

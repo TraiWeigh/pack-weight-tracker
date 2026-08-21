@@ -90,20 +90,35 @@ TEST COMMANDS AND RESULTS
    PASS
 2. pnpm exec playwright test tests/e2e/phase1b/r0096-locked-controls.spec.ts --workers=1 --project=chromium
    PASS — 9/9
-3. pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
-   PASS — 19/19
-4. pnpm exec playwright test tests/e2e/phase1b/r0085.spec.ts tests/e2e/phase1b/right-side-inset.spec.ts --workers=1 --project=chromium
-   PASS — 29/29
-5. pnpm exec playwright test tests/e2e/phase1b/r0096-evidence.spec.ts --workers=1 --project=chromium
+3. pnpm exec playwright test tests/e2e/phase1b/r0096-evidence.spec.ts --workers=1 --project=chromium
    PASS — 1/1
+4. pnpm exec playwright test tests/e2e/phase1b/r0095-mobile-shell-scroll-lock.spec.ts --workers=1 --project=chromium
+   PASS — 6/6
+5. pnpm exec playwright test tests/e2e/phase1b/r0085.spec.ts tests/e2e/phase1b/viewport-safe.spec.ts --workers=1 --project=chromium
+   PASS — 38/38
+6. pnpm exec playwright test tests/e2e/phase1b/r0103-name-field-and-photo-tap.spec.ts tests/e2e/phase1b/r0102-add-item-accordion.spec.ts --workers=1 --project=chromium
+   PASS — 24/24
 
-Exact focused total: PASS — 58/58 browser tests plus package typecheck.
-Independent browser pass: PASS after one corrected Photo-mode active-category edge case.
+Cumulative focused total: PASS — 78/78 browser tests plus package typecheck.
+
+Notes:
+- viewport-safe.spec.ts long-category diagnostic test updated to use R0102 two-step
+  accordion add flow (matches makeBackpackLong pattern); 13/13 now pass.
+- Dead R0084 rename dialog code (itemRenameFor/itemRenameValue) removed after R0103
+  delivered inline Name field. No behaviour change.
 
 THREE STANDING REPLIT QUESTIONS
 1. What did you learn that improves future prompts?
-   The R0095 shell is easiest to extend by adding a shared shell slot and adjusting main-scroll clearance. The active long-category header should be sticky within that same scroll viewport, not duplicated with a new fixed offset.
+   The R0095 shell is easiest to extend by adding a shared shell slot and adjusting main-scroll
+   clearance. The active long-category header should be sticky within that same scroll viewport,
+   not duplicated with a new fixed offset.
 2. What was unclear, unnecessary, risky, or better expressed?
-   “Active/over-expanded” needed translation to the current isCatLong bounded-mode state. Making the requirement explicitly apply to every view mode, including Photo, avoids a subtle state-dependent gap.
+   "Active/over-expanded" needed translation to the current isCatLong bounded-mode state. Making
+   the requirement explicitly apply to every view mode, including Photo, avoids a subtle
+   state-dependent gap.
 3. What Replit/project guidance helps next time?
-   Run the focused Playwright suites with one worker. Real iPhone evidence outranks the passed Chromium geometry. The existing drawer is an absolute child of the fixed shell, so frame stability comes from separating its interior overflow rather than adding viewport compensation.
+   Run the focused Playwright suites with one worker. Real iPhone evidence outranks the passed
+   Chromium geometry. The existing drawer is an absolute child of the fixed shell, so frame
+   stability comes from separating its interior overflow rather than adding viewport compensation.
+   When new Add Item creation flows change (e.g. R0102 accordion), update every helper that
+   calls cat-add-item-btn directly — viewport-safe.spec.ts had a stale direct-click loop.
