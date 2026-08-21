@@ -34,3 +34,4 @@
 - [Safe-area shell coordinates](safe-area-shell-coordinates.md) — moving the mobile shell by the top safe inset requires local-coordinate compensation for absolute footer layers.
 - [Wedge shadow Safari visibility](wedge-shadow-safari-visibility.md) — clipped wedges need broad shadows projected into their exposed content-side space, not their overflow-clipped edge.
 - [R0101 anchor & restore lessons](r0101-anchor-restore-lessons.md) — never use itemsEl.getBoundingClientRect().top for available-height in remeasureLongMode; use sticky cat-header bottom instead.
+- [R0102 accordion architecture](r0102-accordion-architecture.md) — Add Item toggles a 3-row accordion; subtract ADD_ITEM_ACCORDION_H from remeasureLongMode rawAvailH when open; prefill.id pattern for Photo method.
