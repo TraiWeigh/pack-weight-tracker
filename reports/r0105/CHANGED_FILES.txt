@@ -1,0 +1,32 @@
+Files changed by R0105
+======================
+
+MODIFIED
+--------
+artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  - Added catPhotoPickIntent state
+  - Rewrote handleCamera (3 contextual cases)
+  - Rewrote handlePhotos (3 contextual cases)
+  - Added handleCatPhotoPick callback
+  - Extended handleViewModeChange to clear picker intent
+  - Added category-picker bottom sheet JSX (~75 lines)
+
+ADDED
+-----
+tests/e2e/phase1b/r0105-bottom-camera-photos.spec.ts
+  - 13 focused tests covering all 3 contextual cases + regression
+reports/r0105/R0105_REPORT.txt
+reports/r0105/CHANGED_FILES.txt
+reports/r0105/screenshots/01-list-view-no-cat-open-390x844.jpg
+reports/r0105/screenshots/02-group3-no-cat-camera-picker-390x844.jpg
+reports/r0105/screenshots/03-group3-cat-open-photo-sheet-390x844.jpg
+reports/r0105/screenshots/04-group3-item-expanded-sheet-390x844.jpg
+
+UNCHANGED (verified by regression)
+------------------------------------
+artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx — all other features:
+  photo-edit-sheet, photo-take-btn, photo-upload-btn, photo-delete-btn,
+  photoCameraRef, photoUploadRef, handlePhotoAdd, handlePhotoDelete,
+  handleLocPhotoAdd, addItem, BoxGroupBar, shell, Filter bar, wedge spacing,
+  Bottom Box Groups loop, Add Item accordion, Name field, swipe Delete,
+  Master List, Locker, Share, Save, Undo/Redo.

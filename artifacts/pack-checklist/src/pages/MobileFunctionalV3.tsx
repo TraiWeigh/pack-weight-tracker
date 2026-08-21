@@ -2182,6 +2182,8 @@ function MobileFunctionalV3Inner() {
   const openCategoryScrollRef = useRef<{ catName: string; scrollTop: number } | null>(null);
   // R0102: which category has the Add Item creation accordion expanded (null = all closed)
   const [addItemAccordionCat, setAddItemAccordionCat] = useState<string | null>(null);
+  // R0105: intent for bottom Camera / Photos when no category is currently open
+  const [catPhotoPickIntent, setCatPhotoPickIntent] = useState<'camera' | 'photos' | null>(null);
 
   // Add category UI (R004 Part 4 — inline control removed; ADD deck is the only entry)
   const [newCatName, setNewCatName] = useState('');
@@ -2660,19 +2662,65 @@ function MobileFunctionalV3Inner() {
     setPendingCardActivation('list-settings');
   }, [openDeck]);
 
-  // ── Camera / Photos (Group 3 stubs — no downstream photo workflow in R007) ──
-  // R007 §10: Camera and Photos are rendered correctly in Group 3. No photo-
-  // storage subsystem exists yet; these handlers show a clear "coming soon" toast
-  // so the controls are honest placeholders. The downstream workflow is noted in
-  // R007.md under "Remaining Defects / Uncertainty".
+  // ── Camera / Photos (R0105 — contextual photo entry from Group 3 bottom bar) ──
+  // Case 1: item expanded → target that item directly (no new item created).
+  // Case 2: single category open, no item expanded → create one item, launch input.
+  // Case 3: no single category open → show category picker, then create item + launch.
 
   const handleCamera = useCallback(() => {
-    showToast('Camera capture — coming in a future update');
-  }, [showToast]);
+    if (expandedItem) {
+      // Case 1 — item already targeted; open sheet (shows Take/Upload/Delete)
+      setPhotoEditFor(expandedItem);
+      photoCameraRef.current?.click();
+      return;
+    }
+    if (openCatName && !allExpanded) {
+      // Case 2 — single open category; create a blank item and launch camera
+      const newId = crypto.randomUUID();
+      addItem(openCatName, { id: newId });
+      setPhotoEditFor({ cat: openCatName, id: newId });
+      photoCameraRef.current?.click();
+      return;
+    }
+    // Case 3 — no single open category; prompt user to pick a destination
+    setCatPhotoPickIntent('camera');
+  }, [expandedItem, openCatName, allExpanded, addItem]);
 
   const handlePhotos = useCallback(() => {
-    showToast('Photo library — coming in a future update');
-  }, [showToast]);
+    if (expandedItem) {
+      // Case 1
+      setPhotoEditFor(expandedItem);
+      photoUploadRef.current?.click();
+      return;
+    }
+    if (openCatName && !allExpanded) {
+      // Case 2
+      const newId = crypto.randomUUID();
+      addItem(openCatName, { id: newId });
+      setPhotoEditFor({ cat: openCatName, id: newId });
+      photoUploadRef.current?.click();
+      return;
+    }
+    // Case 3
+    setCatPhotoPickIntent('photos');
+  }, [expandedItem, openCatName, allExpanded, addItem]);
+
+  /** R0105: called when user picks a category from the picker sheet (Case 3). */
+  const handleCatPhotoPick = useCallback((catName: string) => {
+    const intent = catPhotoPickIntent;
+    setCatPhotoPickIntent(null);
+    if (!intent) return;
+    const newId = crypto.randomUUID();
+    addItem(catName, { id: newId });
+    setOpenCatName(catName);
+    setPhotoEditFor({ cat: catName, id: newId });
+    // Trigger the appropriate input — still inside the user gesture stack
+    if (intent === 'camera') {
+      photoCameraRef.current?.click();
+    } else {
+      photoUploadRef.current?.click();
+    }
+  }, [catPhotoPickIntent, addItem]);
 
   // ── Print (downloads PDF and opens browser print) ────────────────────────────
 
@@ -2737,6 +2785,7 @@ function MobileFunctionalV3Inner() {
     setAllExpanded(false);
     setExpandedItem(null);
     setPhotoViewFor(null);
+    setCatPhotoPickIntent(null);
   }, []);
 
   // R0075: expand/collapse all — restored for the List Summary global chevron
@@ -6714,6 +6763,81 @@ function MobileFunctionalV3Inner() {
                 </>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* ── R0105: Category picker — shown when Camera/Photos tapped with no open category ── */}
+      {catPhotoPickIntent !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Choose a category for the photo"
+          data-testid="cat-photo-picker"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 210,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => setCatPhotoPickIntent(null)}
+          onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); setCatPhotoPickIntent(null); } }}
+        >
+          <div
+            className="tw-sa-40"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '20px 20px 40px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+              maxHeight: '70vh', overflowY: 'auto',
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY, marginBottom: 4 }}>
+              {catPhotoPickIntent === 'camera' ? 'Take a Photo' : 'Choose a Photo'}
+            </div>
+            <div style={{ fontSize: 13, color: MUTED, marginBottom: 16 }}>
+              Pick a category — a new item will be added there with your photo.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {sandbox.order.map(catName => (
+                <button
+                  key={catName}
+                  data-testid={`cat-photo-pick-${catName}`}
+                  onClick={() => handleCatPhotoPick(catName)}
+                  aria-label={`Add photo item to ${catName}`}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14,
+                    background: CARD_BG, border: `1px solid ${CARD_BORDER}`, borderRadius: 12,
+                    padding: '13px 16px', cursor: 'pointer', width: '100%', minHeight: 52,
+                    fontFamily: SANS, textAlign: 'left',
+                  }}
+                >
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 9, background: NAV_ACTIVE, flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Camera size={16} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: PRIMARY }}>{catName}</div>
+                </button>
+              ))}
+              {sandbox.order.length === 0 && (
+                <div style={{ fontSize: 14, color: MUTED, padding: '12px 0', textAlign: 'center' }}>
+                  No categories yet — add one from the Add panel first.
+                </div>
+              )}
+              <button
+                data-testid="cat-photo-pick-cancel"
+                onClick={() => setCatPhotoPickIntent(null)}
+                aria-label="Cancel photo destination choice"
+                style={{
+                  padding: '12px 0', borderRadius: 10, border: `1px solid ${CARD_BORDER}`,
+                  background: CARD_BG, fontSize: 15, fontWeight: 600, color: SECONDARY,
+                  cursor: 'pointer', width: '100%', minHeight: 44, fontFamily: SANS,
+                  marginTop: 4,
+                }}
+              >Cancel</button>
+            </div>
           </div>
         </div>
       )}

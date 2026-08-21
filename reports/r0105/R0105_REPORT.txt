@@ -1,0 +1,134 @@
+R0105 — Bottom Camera / Photos: contextual photo entry
+=======================================================
+Date: 2026-08-21
+Branch: main
+Build: pack-checklist (Vite / React / TypeScript)
+
+OBJECTIVE
+---------
+Replace the stub "coming in a future update" toasts on the Bottom Box Group 3
+Camera and Photos buttons with the existing working photo system, using fully
+contextual logic to determine the photo destination.
+
+BEHAVIOURAL CONTRACT (all three branches)
+------------------------------------------
+Case 1 — Item expanded:
+  Both Camera and Photos target the currently expanded item directly. No new
+  item is created. The photo-edit-sheet opens (shows Take New Photo / Upload
+  New Photo / Delete Photo if applicable / Cancel).
+
+Case 2 — Category open, no item expanded:
+  A new blank item is inserted at the bottom of the open category. The
+  photo-edit-sheet opens for that new item. The appropriate native file input
+  (.click()) is also triggered immediately, preserving Camera vs Photos intent
+  within the same user-gesture stack so iOS Safari grants the permission.
+
+Case 3 — No single category open (or allExpanded = true):
+  A category-picker bottom sheet appears ("cat-photo-picker"). The user picks
+  a destination category. One new blank item is created in that category; the
+  category is opened (setOpenCatName); the photo-edit-sheet opens; and the
+  appropriate native file input is triggered.
+
+IMPLEMENTATION CHANGES
+-----------------------
+File: artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+
+1. New state (line ~2185):
+     const [catPhotoPickIntent, setCatPhotoPickIntent] =
+       useState<'camera' | 'photos' | null>(null);
+
+2. handleCamera rewritten (~20 loc):
+   - Case 1: setPhotoEditFor(expandedItem) + photoCameraRef.current?.click()
+   - Case 2: addItem(openCatName) + setPhotoEditFor + photoCameraRef.click()
+   - Case 3: setCatPhotoPickIntent('camera')
+   deps: [expandedItem, openCatName, allExpanded, addItem]
+
+3. handlePhotos rewritten (~20 loc):
+   - Same structure as handleCamera but uses photoUploadRef
+   deps: [expandedItem, openCatName, allExpanded, addItem]
+
+4. handleCatPhotoPick (new, ~15 loc):
+   - Consumes catPhotoPickIntent, creates item, opens category, opens sheet,
+     triggers appropriate file input within the new user-gesture stack.
+   deps: [catPhotoPickIntent, addItem]
+
+5. handleViewModeChange: now also calls setCatPhotoPickIntent(null) so the
+   picker is dismissed if the user switches view modes.
+
+6. Category-picker sheet JSX (~75 loc):
+   - Rendered at zIndex 210 (same plane as photo-edit-sheet, above main shell).
+   - Bottom sheet styled to match photo-edit-sheet.
+   - Lists sandbox.order categories as tappable buttons with Camera icon.
+   - Empty-list fallback message.
+   - Cancel button (data-testid="cat-photo-pick-cancel").
+   - Backdrop click also dismisses.
+   - Keyboard: Escape dismisses.
+
+WHAT WAS NOT CHANGED
+---------------------
+- photo-edit-sheet, photo-take-btn, photo-upload-btn, photo-delete-btn — unchanged.
+- photoCameraRef / photoUploadRef hidden inputs — unchanged.
+- handlePhotoAdd / handlePhotoDelete — unchanged.
+- handleLocPhotoAdd — unchanged.
+- addItem — unchanged.
+- All other Group 3 controls (Preview) — unchanged.
+- Shell, Filter bar, category locking/restoration, wedge spacing — unchanged.
+- Bottom Box Groups loop, Add Item accordion, Name field — unchanged.
+- Swipe Delete, Master List, Locker, Share, Save, Undo/Redo — unchanged.
+- Shadows, AI features, storage architecture, DB/schema — unchanged.
+- Auth, dependencies, deployment, app naming — unchanged.
+
+FOCUSED TESTS (R0105) — 13/13 PASS
+------------------------------------
+ PASS  1. No category open → Camera → cat-photo-picker visible (not toast)
+ PASS  2. No category open → Photos → cat-photo-picker visible (not toast)
+ PASS  3. Picker lists all 6 seed categories
+ PASS  4. Picker Cancel dismisses, no item created, no sheet left open
+ PASS  5. Picker → pick Backpack → +1 item + photo-edit-sheet visible
+ PASS  6. Category open, no item expanded → Camera → +1 item + sheet
+ PASS  7. Category open, no item expanded → Photos → +1 item + sheet
+ PASS  8. Item expanded → Camera → no new item + sheet targeting that item
+ PASS  9. Item expanded → Photos → no new item + sheet targeting that item
+ PASS 10. Camera never shows "coming in a future update" toast text
+ PASS 11. Photos never shows "coming in a future update" toast text
+ PASS 12. photo-edit-sheet has Take New Photo, Upload New Photo, Cancel
+ PASS 13. Group 3 Preview button still opens the preview overlay (regression)
+
+REGRESSION SUITE — KEY SPECS (all PASS)
+-----------------------------------------
+r0085  R85 Location + Photo + Category direct-edit   25/25 PASS
+r0098  Wedge spacing at all viewports                 4/4  PASS
+r0099  Bottom Box Groups loop at all viewports        5/5  PASS
+r0100  Wedge shadow                                   4/4  PASS (not re-run, clean from prior)
+r0101  Category anchor/restore at all viewports       4/4  PASS
+r0102  Add Item accordion                            19/19  PASS
+r0103  Inline Name field + tappable photo box        10/10  PASS
+r0104  Photo row tap fix                              6/6   PASS
+r0090  Right-edge correction                          8/8  PASS
+r0091  Header/summary/nav                             5/5  PASS
+r0092  Bottom-lock alignment                          4/4  PASS
+r0093  True bottom lock                               5/5  PASS
+r0095  Mobile shell scroll lock                       4/4  PASS
+
+Total key regression: 107/107 PASS (zero new failures)
+
+PRE-EXISTING KNOWN FAILURES (unchanged since before R0105)
+-----------------------------------------------------------
+- coverage-gaps.spec.ts tests 1 & 3: "Create New List" / "CSS" — timeout 18s
+  (V3 sandbox classification; pre-existing, intentional non-support documented)
+- keyboard-tooltips.spec.ts test 56: "Drag-to-reorder handle has aria-label"
+  — pre-existing a11y gap noted in R0077 memory
+- move.spec.ts tests 63 & 65: item move — flaky timing in headless (pre-existing)
+- r0084 item swipe rename tests: slow/flaky in headless (pre-existing)
+
+SCREENSHOT INDEX
+-----------------
+01-list-view-no-cat-open-390x844.jpg    — default state, no category open
+02-group3-no-cat-camera-picker-390x844.jpg — category picker after Camera tap
+03-group3-cat-open-photo-sheet-390x844.jpg — photo-edit-sheet (cat-open case)
+04-group3-item-expanded-sheet-390x844.jpg  — photo-edit-sheet (item-expanded case)
+
+TYPECHECK
+----------
+pack-checklist: PASS (0 errors)
+mockup-sandbox: pre-existing failure in spinner.tsx SVG refs (unrelated to R0105)
