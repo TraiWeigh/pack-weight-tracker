@@ -1,0 +1,129 @@
+════════════════════════════════════════════════════════════════════════════════
+R0103 — Inline Name Field in Item Accordion + Tappable Photo Box
+TrailWeigh Standing Report · Chromium PASS · Physical iPhone Safari PENDING
+════════════════════════════════════════════════════════════════════════════════
+
+IMPLEMENTATION SUMMARY
+──────────────────────
+Three behavioural changes shipped together as a single GS:
+
+1. NAME FIELD IN ITEM ACCORDION (expanded item detail panel)
+   A directly editable text input is now the first row in every expanded item
+   detail panel, sitting above Weight. It shows the item's current name and lets
+   the user edit it in place — no swipe-Edit, no separate rename dialog required.
+
+   Edit commit rules:
+     Enter key  → blur() → onBlur calls updateItem(cat, id, { desc: v }, { edit: true })
+     Blur       → same commit path
+     Escape     → DOM value reset to committed name before blur so onBlur sees no
+                  change and updateItem is NOT called (revert, no save)
+
+   Local edit state uses the same Record<string, string> pattern as weightInputs
+   so intermediate keystrokes don't snap back while the user is typing.
+
+2. ACCORDION NAME → CREATE + EXPAND + FOCUS
+   Tapping the "Name" row in the R0102 creation accordion now:
+     a. Pre-generates a UUID (same as R0102 Photo method)
+     b. Calls addItem(catName, { id: newId }) — one item created
+     c. Sets expandedItem({ cat: catName, id: newId }) — opens that item's panel
+     d. Sets focusItemNameId(newId) — schedules auto-focus after paint
+     e. Closes the creation accordion
+
+   A useEffect([focusItemNameId]) fires after the DOM is ready, queries
+   [data-item-name-id="{id}"] and calls .focus(), then clears focusItemNameId.
+
+3. SWIPE EDIT REMOVED FROM ITEM ROWS
+   The secondaryAction prop is removed from SwipeDeleteRow on item rows.
+   Swipe-left still reveals only the Delete action.
+   Category rows and master-list rows retain their Edit actions unchanged.
+
+4. PHOTO-MODE <img> IS NOW TAPPABLE
+   The large photo <img> in photo-mode item cards now has:
+     onClick={() => setPhotoEditFor({ cat: catName, id: item.id })}
+     cursor: 'pointer'
+   Opens the identical photo-edit sheet that the "Edit" button below it calls.
+
+IMPLEMENTATION NOTES — ESCAPE BUG FIX
+──────────────────────────────────────
+Original Escape handler called .blur() after clearing nameInputs. The blur
+handler reads e.target.value (still the dirty DOM value) and would call
+updateItem with the temp text. Fix: set e.target.value = originalValue BEFORE
+clearing nameInputs and calling .blur(), so onBlur sees no change.
+
+FILES CHANGED
+─────────────
+  artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+    • nameInputs: Record<string,string> — local edit state for name inputs
+    • focusItemNameId: string | null — auto-focus target after item creation
+    • useEffect([focusItemNameId]) — DOM query + focus + clear after paint
+    • Expanded item detail panel: Name input row (first row, above Weight)
+      data-testid="item-name-input"  data-item-name-id={item.id}
+    • add-item-by-name onClick: pre-generate UUID, addItem, setExpandedItem,
+      setFocusItemNameId, setAddItemAccordionCat(null)
+    • SwipeDeleteRow for items: secondaryAction prop removed
+    • Photo-mode <img>: onClick + cursor:pointer added
+
+  tests/e2e/phase1b/r0103-name-field-and-photo-tap.spec.ts  [NEW — 10 tests]
+
+WHAT IS UNCHANGED
+─────────────────
+  • R0101 geometry (AppBar, Summary, Filter, category header, Add Item bar locks)
+  • R0102 creation accordion (Photo, Master List methods unchanged)
+  • R0098 wedge spacing (1px gap, 65px row, 72px wedge)
+  • R0099 BoxGroup loop
+  • Category swipe Edit (still present on category rows)
+  • Master-list row swipe Edit (still present)
+  • itemRenameFor / itemRenameValue state (retained, no longer triggered;
+    can be cleaned up in a future pass)
+  • Photo storage, AI behavior, Locker, sharing, screensaver — untouched
+  • Deferred R0100 wedge-shadow work — untouched
+
+TEST RESULTS (Chromium, workers=1)
+───────────────────────────────────
+  R0103 focused (10 tests)           10/10  PASS
+  R0096 locked controls (9 tests)     9/9   PASS
+  R0098 wedge spacing (4 viewports)   4/4   PASS
+  R0099 BoxGroup loop (5 tests)       5/5   PASS
+  R0101 anchor & restore (4 viewports)     see R0101 report (last recorded 4/4)
+  R0102 accordion (14 tests)         14/14  PASS
+  pack-checklist TypeScript typecheck       PASS
+  git diff --check                          PASS
+
+R0103 TEST COVERAGE
+────────────────────
+  1. Add Item → Name creates one item, expands its panel, and focuses the name input
+  2. Typing a name and pressing Enter commits it
+  3. Typing a name and blurring commits it
+  4. Pressing Escape reverts without saving
+  5. Expanding an existing item shows its name in the name input
+  6. Editing an existing item name via the detail panel persists
+  7. Item rows have no swipe Edit secondary action
+  8. Tapping the photo-mode image opens the photo-edit sheet
+  9. Opening/closing the creation accordion does not change item count
+ 10. Committed name persists after collapsing and re-expanding the item
+
+DEFERRED / KNOWN LIMITATIONS
+──────────────────────────────
+  1. itemRenameFor / itemRenameValue state and the R0084 rename dialog remain
+     in the file as dead code. Safe to remove in a follow-on cleanup pass.
+  2. Master List → no onAddToCategory callback (R0102 documented limitation).
+  3. R0100 wedge shadows — deferred, not touched.
+  4. Physical iPhone Safari acceptance PENDING (Kevin verification).
+
+PHYSICAL iPHONE SAFARI CHECKLIST (R0103)
+─────────────────────────────────────────
+ [ ]  1. Open a category → tap Add Item → tap Name
+        → one item created, detail panel opens, cursor in Name field
+ [ ]  2. Type a name → press Return → name commits, row shows new name
+ [ ]  3. Type a name → tap elsewhere → name commits
+ [ ]  4. Type a name → press Escape (or use back gesture) → name reverts
+ [ ]  5. Tap an existing item row → detail panel opens → Name field shows item name
+ [ ]  6. Edit existing item name → Return → name updates in row
+ [ ]  7. Swipe left on an item → only Delete action visible (no Edit)
+ [ ]  8. Switch to Photo view → tap a photo card image → photo-edit sheet opens
+ [ ]  9. AppBar / Summary / Filter / Add Item bar stay locked with item expanded
+ [ ] 10. No window/document/body scroll at any point
+ [ ] 11. Accordion toggle (Add Item open/close) still does not create items
+ [ ] 12. Photo creation method still works (tap Photo in accordion → sheet opens)
+
+════════════════════════════════════════════════════════════════════════════════

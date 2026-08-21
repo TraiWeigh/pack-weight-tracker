@@ -2235,6 +2235,10 @@ function MobileFunctionalV3Inner() {
   const [itemRenameFor, setItemRenameFor] = useState<{ cat: string; id: string; currentDesc: string } | null>(null);
   const [itemRenameValue, setItemRenameValue] = useState('');
 
+  // R0103 — inline name editing inside expanded item detail panel
+  const [nameInputs, setNameInputs] = useState<Record<string, string>>({});
+  const [focusItemNameId, setFocusItemNameId] = useState<string | null>(null);
+
   // R0085/R0096 — Location / Photo / View-mode state. R0096 presents these
   // through one locked Filter control rather than a scrolling segmented bar.
   const [viewMode, setViewMode] = useState<'category' | 'location' | 'photo'>('category');
@@ -2964,6 +2968,14 @@ function MobileFunctionalV3Inner() {
     remeasureLongMode();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addItemAccordionCat]);
+
+  // R0103: auto-focus the name input for a newly created item after the detail
+  // panel has rendered (useEffect fires post-paint, so DOM is ready).
+  useEffect(() => {
+    if (!focusItemNameId) return;
+    const el = document.querySelector<HTMLInputElement>(`[data-item-name-id="${focusItemNameId}"]`);
+    if (el) { el.focus(); setFocusItemNameId(null); }
+  }, [focusItemNameId]);
 
   // R0076P2: when an item accordion opens inside the bounded item viewport, auto-scroll
   // ONLY the item viewport just enough to reveal the Delete Item row immediately above
@@ -4566,9 +4578,11 @@ function MobileFunctionalV3Inner() {
                                   }}>
                                     {displayName}
                                   </div>
+                                  {/* R0103: tapping the photo opens the existing photo-edit sheet */}
                                   <img
                                     src={item.photoDataUrl}
                                     alt={`Photo of ${displayName}`}
+                                    onClick={() => setPhotoEditFor({ cat: catName, id: item.id })}
                                     style={{
                                       width: '100%',
                                       maxHeight: 220,
@@ -4576,6 +4590,7 @@ function MobileFunctionalV3Inner() {
                                       borderRadius: 8,
                                       objectFit: 'cover',
                                       background: '#111',
+                                      cursor: 'pointer',
                                     }}
                                   />
                                   <div style={{
@@ -4633,18 +4648,6 @@ function MobileFunctionalV3Inner() {
                               onOpenChange={o => setOpenSwipe(o ? `item:${catName}:${item.id}` : null)}
                               deleteLabel={`Delete ${displayName}`}
                               onDelete={() => setDeleteItemConfirm({ cat: catName, id: item.id, name: displayName })}
-                              secondaryAction={{
-                                // R0084: item rename — list-only; no Master Library mutation
-                                // until real item linking is implemented.
-                                // R0084P2: visibleLabel is the short text in the button; label is aria-label only.
-                                label: `Edit ${displayName}`,
-                                visibleLabel: 'Edit',
-                                icon: <Pencil size={15} strokeWidth={1.9} aria-hidden="true"/>,
-                                onAction: () => {
-                                  setItemRenameFor({ cat: catName, id: item.id, currentDesc: displayName });
-                                  setItemRenameValue(displayName);
-                                },
-                              }}
                             >
                             {/* Item row — R0077: two independent keyboard controls, no interactive-inside-interactive.
                                 1. Checkbox button (44px wide hit area, 20×20 visual) — toggles checklist selection.
@@ -4718,6 +4721,54 @@ function MobileFunctionalV3Inner() {
                                 background: DETAIL_BG,
                                 borderBottom: isLast ? 'none' : `1px solid ${DIVIDER}`,
                               }}>
+
+                                {/* R0103: Name row — inline editable; replaces swipe-Edit / rename-dialog flow */}
+                                <div style={{
+                                  display: 'flex', alignItems: 'center',
+                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
+                                  borderBottom: `1px solid ${DETAIL_BDR}`,
+                                }}>
+                                  <Pencil size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
+                                  <input
+                                    type="text"
+                                    data-testid="item-name-input"
+                                    data-item-name-id={item.id}
+                                    aria-label={`Name of ${displayName}`}
+                                    value={item.id in nameInputs ? nameInputs[item.id] : (item.desc || item.sub || '')}
+                                    placeholder="Item name…"
+                                    onFocus={() => {
+                                      setNameInputs(prev => ({ ...prev, [item.id]: item.desc || item.sub || '' }));
+                                    }}
+                                    onChange={e => {
+                                      setNameInputs(prev => ({ ...prev, [item.id]: e.target.value }));
+                                    }}
+                                    onBlur={e => {
+                                      const v = e.target.value.trim();
+                                      if (v !== (item.desc || item.sub || '')) {
+                                        updateItem(catName, item.id, { desc: v }, { edit: true });
+                                      }
+                                      setNameInputs(prev => { const n = { ...prev }; delete n[item.id]; return n; });
+                                    }}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        (e.target as HTMLInputElement).blur();
+                                      }
+                                      if (e.key === 'Escape') {
+                                        // Reset DOM value to committed name BEFORE blur so onBlur
+                                        // sees the original value and does not call updateItem.
+                                        (e.target as HTMLInputElement).value = item.desc || item.sub || '';
+                                        setNameInputs(prev => { const n = { ...prev }; delete n[item.id]; return n; });
+                                        (e.target as HTMLInputElement).blur();
+                                      }
+                                    }}
+                                    style={{
+                                      flex: 1, fontSize: 13.5, color: PRIMARY, fontFamily: SANS,
+                                      border: `1px solid ${CARD_BORDER}`, borderRadius: 6,
+                                      padding: '2px 8px', background: '#fff', minHeight: 44,
+                                    }}
+                                  />
+                                </div>
 
                                 {/* Weight — D2 FIX: local edit state prevents intermediate-value snapping */}
                                 {/* R0077P2: row minHeight:44 (was height:42); input minHeight:44 for >=44px touch target */}
@@ -4992,7 +5043,13 @@ function MobileFunctionalV3Inner() {
                       {/* ── Name: creates a blank item the user types into inline ── */}
                       <button
                         data-testid="add-item-by-name"
-                        onClick={() => { addItem(catName); setAddItemAccordionCat(null); }}
+                        onClick={() => {
+                          const newId = crypto.randomUUID();
+                          addItem(catName, { id: newId });
+                          setExpandedItem({ cat: catName, id: newId });
+                          setFocusItemNameId(newId);
+                          setAddItemAccordionCat(null);
+                        }}
                         aria-label={`Add item to ${catName} by typing its name`}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 8,
