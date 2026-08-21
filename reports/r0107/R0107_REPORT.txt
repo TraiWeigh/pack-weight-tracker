@@ -1,0 +1,70 @@
+R0107 GS — Physical iPhone Photo Capture and Footer Repair
+===========================================================
+
+Scope implemented
+-----------------
+- Replaced the R0106 Photo List Add Photo placeholder with a real source sheet.
+- The source sheet exposes Camera and Photos and invokes the existing hidden
+  native file inputs directly from the user action for iOS Safari compatibility.
+- A captured/selected image is compressed to a TrailWeigh-owned JPEG data URL and
+  retained at the Photo List level as an intentionally unassigned image.
+- The retained image appears in the Photo List start state and survives Save,
+  Save As, Locker reopen, and reload through the existing Locker payload.
+- No category or item is fabricated while the image is unassigned.
+- Added a bounded visible-bottom occlusion correction to the existing R0097 shell
+  footer calculation. It preserves the layout viewport as the shell baseline and
+  subtracts only the measured portion Safari reports as physically occluded.
+
+Intentional boundaries
+----------------------
+- Location-vs-Item classification is still not built.
+- Location thumbnail assignment and the Master List bridge are still not built.
+- R0105's contextual Camera/Photos resolver remains unchanged for standard lists
+  and existing items/categories.
+- R0100 shadow work was not changed.
+
+Validation
+----------
+- Pack Checklist typecheck:
+  pnpm --filter @workspace/pack-checklist run typecheck
+  Result: PASS
+
+- Focused R0107 Playwright:
+  tests/e2e/phase1b/r0107-photo-list-capture-safari-footer.spec.ts
+  Result: 3/3 passed
+  Covers real Camera/Photos file chooser invocation, image compression/retention,
+  no fabricated categories/items, Locker save/reload persistence, and a measured
+  visual-viewport bottom-occlusion footer correction.
+
+- Protected R0097–R0106 Playwright regression set:
+  Result: 69/69 passed
+
+- Independent app-level browser validation:
+  Confirmed the source sheet, Camera/Photos choices, native file chooser, pending
+  image preview, and the exact three-Next Save path. The browser-testing session
+  was interrupted before its final storage/reload inspection when its workflow
+  session restarted; focused Playwright save/reload coverage passed.
+
+Preview result
+--------------
+- Managed Pack Checklist web workflow restarted successfully.
+- /mobile-functional-v3 renders successfully at 390x844.
+- No application runtime error was observed; the normal Clerk development-key
+  warning remains.
+- Focused visual evidence:
+  screenshots/01-photo-list-captured-390x844.png
+
+Physical iPhone Safari acceptance
+---------------------------------
+NOT YET USER PASS. The user must verify on the affected physical iPhone Safari:
+1. New List → Photo List → name → Add Photo opens Camera and Photos.
+2. A captured/selected image appears and remains after Save/reload.
+3. The Bottom Box Groups bar remains visibly above Safari's bottom browser chrome
+   after the naming keyboard opens and closes, including ordinary scrolling.
+4. Existing R0105 Camera/Photos behavior remains intact on the device.
+
+Archive integrity
+-----------------
+R0107.zip contains the report, screenshot evidence, focused test, and relevant
+source file. `unzip -t R0107.zip` passed with:
+"No errors detected in compressed data of R0107.zip."

@@ -1,0 +1,19 @@
+R0107 changed files
+===================
+
+Source
+------
+- artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  Real Photo List Camera/Photos source sheet, unassigned compressed image buffer,
+  Locker persistence/load, and bounded Safari visible-bottom footer correction.
+
+Tests
+-----
+- tests/e2e/phase1b/r0107-photo-list-capture-safari-footer.spec.ts
+  Focused Photo List capture, persistence, and footer-occlusion coverage.
+
+Evidence and reporting
+----------------------
+- reports/r0107/R0107_REPORT.txt
+- reports/r0107/CHANGED_FILES.txt
+- reports/r0107/screenshots/01-photo-list-captured-390x844.png

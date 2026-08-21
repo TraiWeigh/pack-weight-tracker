@@ -76,8 +76,17 @@ type PackState = { [category: string]: GearItem[] };
 /** R0085: a named, reusable gear location (e.g. "Top lid", "Hip belt pocket").
  *  photoDataUrl holds a compressed JPEG owned by TrailWeigh — deleting it never affects the device. */
 type PackLocation = { id: string; name: string; photoDataUrl?: string };
-type SandboxStore = { items: PackState; order: string[]; meta: Record<string, CategoryMeta>; locations: PackLocation[] };
+/** photoListCaptureDataUrl is an intentionally unassigned Photo List image. R0107
+ * retains it until the later Location-or-Item assignment workflow exists. */
+type SandboxStore = {
+  items: PackState;
+  order: string[];
+  meta: Record<string, CategoryMeta>;
+  locations: PackLocation[];
+  photoListCaptureDataUrl?: string;
+};
 type ListKind = 'standard' | 'photo';
+type PhotoListCaptureSource = 'camera' | 'photos';
 // (R002: the old ActiveNav tab type was retired — deck selection uses DeckId below.)
 
 // ─── MOBILE NAVIGATION TYPES ───────────────────────────────────────────────────
@@ -2089,6 +2098,10 @@ function MobileFunctionalV3Inner() {
     return document.documentElement.clientHeight || window.innerHeight || NAV_H;
   });
   const layoutViewportRoRef = useRef<ResizeObserver | null>(null);
+  // R0107: Safari's layout viewport can extend behind its dynamic bottom toolbar
+  // after the New List name input opens/closes. Keep the R0097 layout baseline,
+  // but subtract only the measured part that is currently not visible.
+  const [viewportBottomOcclusion, setViewportBottomOcclusion] = useState(0);
   useEffect(() => {
     const layoutViewport = document.documentElement;
     const syncLayoutHeight = () => {
@@ -2104,9 +2117,38 @@ function MobileFunctionalV3Inner() {
       if (layoutViewportRoRef.current === observer) layoutViewportRoRef.current = null;
     };
   }, []);
-  const stableFooterTop = Math.max(0, layoutViewportHeight - navHeight);
-  // The nav's measured occupied height remains the sole content/deck clearance source.
-  const bottomLayerOffset = navHeight;
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    let frame = 0;
+    const syncVisibleBottom = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const layoutHeight = document.documentElement.clientHeight || window.innerHeight || NAV_H;
+        const visibleBottom = viewport.height + viewport.offsetTop;
+        // Do not replace the layout baseline with visualViewport. It remains the
+        // R0097 shell owner; this only corrects the portion Safari reports as
+        // physically occluded by bottom browser chrome or its keyboard.
+        const next = Math.max(0, Math.round(layoutHeight - visibleBottom));
+        setViewportBottomOcclusion(previous => previous === next ? previous : next);
+      });
+    };
+    syncVisibleBottom();
+    viewport.addEventListener('resize', syncVisibleBottom);
+    viewport.addEventListener('scroll', syncVisibleBottom);
+    window.addEventListener('orientationchange', syncVisibleBottom);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      viewport.removeEventListener('resize', syncVisibleBottom);
+      viewport.removeEventListener('scroll', syncVisibleBottom);
+      window.removeEventListener('orientationchange', syncVisibleBottom);
+    };
+  }, []);
+  const stableFooterTop = Math.max(0, layoutViewportHeight - navHeight - viewportBottomOcclusion);
+  // The nav's measured occupied height remains the clearance source, with the
+  // measured physical-bottom occlusion added only while Safari reports one.
+  const bottomLayerOffset = navHeight + viewportBottomOcclusion;
 
 
   // R0075: measured List Summary bar height — fixed second layer below the AppBar.
@@ -2264,6 +2306,10 @@ function MobileFunctionalV3Inner() {
   // R0085 — Item Photo state
   const [photoViewFor, setPhotoViewFor] = useState<{ cat: string; id: string } | null>(null);
   const [photoEditFor, setPhotoEditFor] = useState<{ cat: string; id: string } | null>(null);
+  // R0107 — a Photo List capture is held at list level until the later
+  // Location-or-Item assignment step. It must never fabricate a category/item.
+  const [photoListSourceOpen, setPhotoListSourceOpen] = useState(false);
+  const [photoListCaptureSource, setPhotoListCaptureSource] = useState<PhotoListCaptureSource | null>(null);
   // R0085 — Category direct-edit (swipe Edit bypasses Category Options Sheet entirely)
   const [catDirectEditFor, setCatDirectEditFor] = useState<string | null>(null);
   const [catDirectEditValue, setCatDirectEditValue] = useState('');
@@ -2384,12 +2430,16 @@ function MobileFunctionalV3Inner() {
         ? readLockerEntries().find(entry => entry.id === activePhotoListId && entry.listKind === 'photo')
         : undefined;
       if (activePhotoEntry?.store) {
-        const store = activePhotoEntry.store as LockerEntry['store'] & { locations?: PackLocation[] };
+        const store = activePhotoEntry.store as LockerEntry['store'] & {
+          locations?: PackLocation[];
+          photoListCaptureDataUrl?: string;
+        };
         seed = {
           items: store.items ?? {},
           order: store.order ?? [],
           meta: store.meta ?? {},
           locations: store.locations ?? [],
+          photoListCaptureDataUrl: store.photoListCaptureDataUrl,
         };
         setListName(activePhotoEntry.name);
         setListKind('photo');
@@ -2544,6 +2594,7 @@ function MobileFunctionalV3Inner() {
             meta:  sandboxRef.current.meta,
             // R0085: persist locations with the list so rename/assignment survives save→load
             locations: sandboxRef.current.locations,
+            photoListCaptureDataUrl: sandboxRef.current.photoListCaptureDataUrl,
           } as unknown as LockerEntry['store'],
         };
         updateLockerEntry(activeLockerEntryId, updated);
@@ -2568,6 +2619,7 @@ function MobileFunctionalV3Inner() {
         order: sandboxRef.current.order,
         meta:  sandboxRef.current.meta,
         locations: sandboxRef.current.locations,
+        photoListCaptureDataUrl: sandboxRef.current.photoListCaptureDataUrl,
       } as unknown as LockerEntry['store'],
       background: null,
       bgFade:     0.3,
@@ -2601,6 +2653,7 @@ function MobileFunctionalV3Inner() {
         order: sandboxRef.current.order,
         meta:  sandboxRef.current.meta,
         locations: sandboxRef.current.locations,
+        photoListCaptureDataUrl: sandboxRef.current.photoListCaptureDataUrl,
       } as unknown as LockerEntry['store'],
       background: null,
       bgFade:     0.3,
@@ -2635,6 +2688,8 @@ function MobileFunctionalV3Inner() {
     setExpandedItem(null);
     setAddItemAccordionCat(null);
     setCatPhotoPickIntent(null);
+    setPhotoListSourceOpen(false);
+    setPhotoListCaptureSource(null);
     setOpenLocId(null);
     setViewMode('category');
     setScreenStack([{ screen: 'list' }]);
@@ -3519,6 +3574,33 @@ function MobileFunctionalV3Inner() {
     }).catch(() => showToast('Photo could not be loaded'));
   }, [updateItem, showToast]);
 
+  /** R0107: capture a Photo List image without prematurely deciding whether it is
+   * a Location or an Item. The compressed TrailWeigh copy survives Save/reload. */
+  const handlePhotoListCapture = useCallback((file: File) => {
+    compressPhoto(file).then(dataUrl => {
+      mutateSandbox(prev => ({ ...prev, photoListCaptureDataUrl: dataUrl }));
+      setPhotoListCaptureSource(null);
+      showToast('Photo saved for the next Photo List step');
+    }).catch(() => {
+      setPhotoListCaptureSource(null);
+      showToast('Photo could not be loaded');
+    });
+  }, [mutateSandbox, showToast]);
+
+  const openPhotoListCapture = useCallback(() => {
+    setPhotoListCaptureSource(null);
+    setPhotoListSourceOpen(true);
+  }, []);
+
+  /** Must click the native input synchronously inside this explicit user gesture
+   * so iOS Safari permits Camera/Photo Library access. */
+  const beginPhotoListCapture = useCallback((source: PhotoListCaptureSource) => {
+    setPhotoListSourceOpen(false);
+    setPhotoListCaptureSource(source);
+    if (source === 'camera') photoCameraRef.current?.click();
+    else photoUploadRef.current?.click();
+  }, []);
+
   const handlePhotoDelete = useCallback((cat: string, id: string) => {
     updateItem(cat, id, { photoDataUrl: undefined }, { edit: true });
     setPhotoViewFor(null);
@@ -3640,12 +3722,15 @@ function MobileFunctionalV3Inner() {
                   order: store.order ?? [],
                   meta:  store.meta ?? {},
                   locations: (store as any).locations ?? [],
+                  photoListCaptureDataUrl: (store as any).photoListCaptureDataUrl,
                 }));
                 // A2: the loaded Locker entry's name becomes the active list identity
                 // immediately — subsequent Save and Share use this name.
                 setListName(entry.name);
                 // R0106: a missing field is deliberately the legacy standard mode.
                 setListKind(loadedKind);
+                setPhotoListSourceOpen(false);
+                setPhotoListCaptureSource(null);
                 // R0079: track which Locker entry is active so Save updates it.
                 setActiveLockerEntryId(entry.id);
                 if (loadedKind === 'photo') sessionStorage.setItem(ACTIVE_PHOTO_LIST_KEY, entry.id);
@@ -3990,7 +4075,11 @@ function MobileFunctionalV3Inner() {
 
   return (
     <div style={{ minHeight: '100dvh', background: '#DDD8CF', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', overflow: 'hidden' }}>
-      <div className="tw-v3-root" data-list-kind={listKind} style={{
+      <div
+        className="tw-v3-root"
+        data-list-kind={listKind}
+        data-footer-viewport-occlusion={Math.round(viewportBottomOcclusion)}
+        style={{
         // R0097: iPhone Safari can place the layout-viewport origin above the
         // physically visible content origin. Anchor the shell below the real top
         // safe area and subtract that same inset from its height so its bottom edge
@@ -5381,8 +5470,8 @@ function MobileFunctionalV3Inner() {
               );
             })}
 
-            {/* R0106 — Photo Lists deliberately start empty and advertise the
-                next Add Photo milestone without changing standard-list behavior. */}
+            {/* R0107 — Photo Lists deliberately remain category/item-free while an
+                initial captured image is held for the later assignment workflow. */}
             {sandbox.order.length === 0 && listKind === 'photo' && (
               <div
                 data-testid="photo-list-start"
@@ -5400,11 +5489,24 @@ function MobileFunctionalV3Inner() {
                 </div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: PRIMARY }}>Your Photo List is ready</div>
                 <div style={{ fontSize: 13.5, lineHeight: 1.5, color: SECONDARY, marginTop: 6 }}>
-                  Add your first photo when you are ready to begin organizing this list.
+                  {sandbox.photoListCaptureDataUrl
+                    ? 'Your photo is saved and ready for the next Photo List step.'
+                    : 'Add your first photo when you are ready to begin organizing this list.'}
                 </div>
+                {sandbox.photoListCaptureDataUrl && (
+                  <img
+                    data-testid="photo-list-pending-photo"
+                    src={sandbox.photoListCaptureDataUrl}
+                    alt="Captured photo ready for Photo List assignment"
+                    style={{
+                      width: '100%', height: 168, objectFit: 'cover', display: 'block',
+                      borderRadius: 10, marginTop: 16, border: `1px solid ${CARD_BORDER}`,
+                    }}
+                  />
+                )}
                 <button
                   data-testid="photo-list-add-photo"
-                  onClick={() => showToast('Add Photo is the next Photo List step.')}
+                  onClick={openPhotoListCapture}
                   aria-label="Add Photo to this Photo List"
                   style={{
                     marginTop: 16, width: '100%', minHeight: 44, border: 'none', borderRadius: 10,
@@ -5412,7 +5514,7 @@ function MobileFunctionalV3Inner() {
                     fontSize: 14.5, fontWeight: 650,
                   }}
                 >
-                  Add Photo
+                  {sandbox.photoListCaptureDataUrl ? 'Replace Photo' : 'Add Photo'}
                 </button>
               </div>
             )}
@@ -6806,6 +6908,7 @@ function MobileFunctionalV3Inner() {
           const pe = photoEditFor;
           const file = e.target.files?.[0];
           if (file && pe) handlePhotoAdd(pe.cat, pe.id, file);
+          else if (file && listKind === 'photo' && photoListCaptureSource === 'camera') handlePhotoListCapture(file);
           e.target.value = '';
         }}
       />
@@ -6819,6 +6922,7 @@ function MobileFunctionalV3Inner() {
           const pe = photoEditFor;
           const file = e.target.files?.[0];
           if (file && pe) handlePhotoAdd(pe.cat, pe.id, file);
+          else if (file && listKind === 'photo' && photoListCaptureSource === 'photos') handlePhotoListCapture(file);
           e.target.value = '';
         }}
       />
@@ -6987,6 +7091,94 @@ function MobileFunctionalV3Inner() {
                   background: CARD_BG, fontSize: 15, fontWeight: 600, color: SECONDARY,
                   cursor: 'pointer', width: '100%', minHeight: 44, fontFamily: SANS,
                   marginTop: 4,
+                }}
+              >Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── R0107: first Photo List capture source, intentionally before assignment ── */}
+      {photoListSourceOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Add a photo to this Photo List"
+          data-testid="photo-list-source-sheet"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 212,
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+          }}
+          onClick={() => { setPhotoListSourceOpen(false); setPhotoListCaptureSource(null); }}
+          onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              setPhotoListSourceOpen(false);
+              setPhotoListCaptureSource(null);
+            }
+          }}
+        >
+          <div
+            className="tw-sa-40"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 500, background: '#fff',
+              borderRadius: '16px 16px 0 0', padding: '20px 20px 40px',
+              fontFamily: SANS, boxShadow: '0 -4px 32px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div style={{ fontSize: 17, fontWeight: 700, color: PRIMARY, marginBottom: 4 }}>
+              Add a Photo
+            </div>
+            <div style={{ fontSize: 13, lineHeight: 1.45, color: SECONDARY, marginBottom: 16 }}>
+              Your photo will be saved here until you choose whether it belongs to a location or an item.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                data-testid="photo-list-source-camera"
+                onClick={() => beginPhotoListCapture('camera')}
+                aria-label="Take a photo for this Photo List"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 56,
+                  padding: '12px 14px', borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
+                  background: CARD_BG, color: PRIMARY, cursor: 'pointer', fontFamily: SANS, textAlign: 'left',
+                }}
+              >
+                <span style={{ width: 34, height: 34, borderRadius: 9, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Camera size={17} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                </span>
+                <span>
+                  <span style={{ display: 'block', fontSize: 15, fontWeight: 650 }}>Camera</span>
+                  <span style={{ display: 'block', fontSize: 12.5, color: SECONDARY, marginTop: 2 }}>Take a new photo</span>
+                </span>
+              </button>
+              <button
+                data-testid="photo-list-source-photos"
+                onClick={() => beginPhotoListCapture('photos')}
+                aria-label="Choose a photo for this Photo List"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14, width: '100%', minHeight: 56,
+                  padding: '12px 14px', borderRadius: 12, border: `1px solid ${CARD_BORDER}`,
+                  background: CARD_BG, color: PRIMARY, cursor: 'pointer', fontFamily: SANS, textAlign: 'left',
+                }}
+              >
+                <span style={{ width: 34, height: 34, borderRadius: 9, background: NAV_ACTIVE, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Image size={17} color="#fff" strokeWidth={1.8} aria-hidden="true"/>
+                </span>
+                <span>
+                  <span style={{ display: 'block', fontSize: 15, fontWeight: 650 }}>Photos</span>
+                  <span style={{ display: 'block', fontSize: 12.5, color: SECONDARY, marginTop: 2 }}>Choose from your photo library</span>
+                </span>
+              </button>
+              <button
+                data-testid="photo-list-source-cancel"
+                onClick={() => { setPhotoListSourceOpen(false); setPhotoListCaptureSource(null); }}
+                aria-label="Cancel adding a Photo List photo"
+                style={{
+                  width: '100%', minHeight: 44, padding: '12px 0', marginTop: 2,
+                  borderRadius: 10, border: `1px solid ${CARD_BORDER}`, background: CARD_BG,
+                  color: SECONDARY, cursor: 'pointer', fontSize: 15, fontWeight: 600, fontFamily: SANS,
                 }}
               >Cancel</button>
             </div>

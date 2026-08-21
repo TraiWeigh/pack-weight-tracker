@@ -385,3 +385,10 @@ uri = "file://R0106.zip"
 type = "unspecified"
 title = "R0106 GS delivery package"
 description = "Implementation report, changed-file list, focused screenshot evidence, R0106 Playwright spec, and relevant source files. Archive integrity verified with unzip -t."
+
+[[outputs]]
+id = "MbNA2Cmhz9Xg07CWqQYnn"
+uri = "file://R0107.zip"
+type = "unspecified"
+title = "R0107 GS delivery package"
+description = "Photo List Camera/Photos capture repair, Safari footer correction, focused evidence, report, and regression-ready source. Archive integrity verified with unzip -t."
