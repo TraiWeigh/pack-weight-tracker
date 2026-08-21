@@ -35,6 +35,19 @@ Fires whenever the active category changes (opens, closes, or switches). Prevent
 
 In `allExpanded` mode the button reverts to direct `addItem(catName)` — the accordion is never shown in that mode.
 
+## R0103 follow-on: Name button now expands item + focuses name input
+
+After R0103 the Name button onClick does:
+  1. pre-generate UUID → addItem(catName, { id: newId })
+  2. setExpandedItem({ cat: catName, id: newId })
+  3. setFocusItemNameId(newId)  ← new state; useEffect queries [data-item-name-id="{id}"] post-paint
+  4. setAddItemAccordionCat(null)
+
+Escape fix: reset e.target.value to original BEFORE blur so onBlur sees no change and does not call updateItem.
+
+SwipeDeleteRow secondaryAction removed from item rows (R0103). Category and master-list rows still have it.
+Photo-mode <img> gains onClick → setPhotoEditFor (R0103 photo-box fix).
+
 ## Test helper update (R0096)
 
 `makeBackpackLong()` in r0096-locked-controls.spec.ts used to click `cat-add-item-btn` N times directly. After R0102 that only toggles the accordion open/closed. Updated to: open accordion → click `add-item-by-name` → wait for accordion hidden — repeat N times.
