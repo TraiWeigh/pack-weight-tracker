@@ -65,6 +65,16 @@ FILES CHANGED
 
   tests/e2e/phase1b/r0103-name-field-and-photo-tap.spec.ts  [NEW — 10 tests]
 
+POST-DELIVERY CLEANUP (same commit batch)
+─────────────────────────────────────────
+  • Dead R0084 rename dialog removed: itemRenameFor, itemRenameValue state
+    declarations and the ~95-line dialog JSX block deleted from
+    MobileFunctionalV3.tsx. Replaced entirely by the R0103 inline Name field.
+  • tests/e2e/phase1b/viewport-safe.spec.ts long-category diagnostic test
+    updated from the pre-R0102 single-tap add loop to the two-step accordion
+    flow (Add Item → Name), matching the makeBackpackLong() pattern used in
+    r0096-locked-controls.spec.ts. Was failing with stale helper; now 13/13.
+
 WHAT IS UNCHANGED
 ─────────────────
   • R0101 geometry (AppBar, Summary, Filter, category header, Add Item bar locks)
@@ -73,39 +83,51 @@ WHAT IS UNCHANGED
   • R0099 BoxGroup loop
   • Category swipe Edit (still present on category rows)
   • Master-list row swipe Edit (still present)
-  • itemRenameFor / itemRenameValue state (retained, no longer triggered;
-    can be cleaned up in a future pass)
   • Photo storage, AI behavior, Locker, sharing, screensaver — untouched
   • Deferred R0100 wedge-shadow work — untouched
 
-TEST RESULTS (Chromium, workers=1)
-───────────────────────────────────
+TEST RESULTS (Chromium, workers=1) — FINAL VERIFIED TOTALS
+────────────────────────────────────────────────────────────
   R0103 focused (10 tests)           10/10  PASS
-  R0096 locked controls (9 tests)     9/9   PASS
-  R0098 wedge spacing (4 viewports)   4/4   PASS
-  R0099 BoxGroup loop (5 tests)       5/5   PASS
-  R0101 anchor & restore (4 viewports)     see R0101 report (last recorded 4/4)
   R0102 accordion (14 tests)         14/14  PASS
+  R0101 anchor & restore (4 tests)    4/4   PASS
+  R0099 BoxGroup loop (5 tests)       5/5   PASS
+  R0098 wedge spacing (4 viewports)   4/4   PASS
+  R0097 wedge shadow geometry (7)     7/7   PASS
+  R0096 locked controls (9 tests)     9/9   PASS
+  R0096 evidence (1 test)             1/1   PASS
+  R0095 shell scroll lock (6 tests)   6/6   PASS
+  R0085 location/photo/direct-edit   25/25  PASS
+  R0089 right-side inset (4 tests)    4/4   PASS
+  viewport-safe (13 tests)           13/13  PASS
   pack-checklist TypeScript typecheck       PASS
-  git diff --check                          PASS
+  ─────────────────────────────────────────
+  TOTAL                              90/90  PASS
 
 R0103 TEST COVERAGE
 ────────────────────
-  1. Add Item → Name creates one item, expands its panel, and focuses the name input
-  2. Typing a name and pressing Enter commits it
-  3. Typing a name and blurring commits it
-  4. Pressing Escape reverts without saving
-  5. Expanding an existing item shows its name in the name input
-  6. Editing an existing item name via the detail panel persists
-  7. Item rows have no swipe Edit secondary action
-  8. Tapping the photo-mode image opens the photo-edit sheet
-  9. Opening/closing the creation accordion does not change item count
- 10. Committed name persists after collapsing and re-expanding the item
+   1. Add Item → Name creates one item, expands its panel, and focuses the name input
+   2. Typing a name and pressing Enter commits it
+   3. Typing a name and blurring commits it
+   4. Pressing Escape reverts without saving
+   5. Expanding an existing item shows its name in the name input
+   6. Editing an existing item name via the detail panel persists
+   7. Item rows have no swipe Edit secondary action
+   8. Tapping the photo-mode image opens the photo-edit sheet
+   9. Opening/closing the creation accordion does not change item count
+  10. Committed name persists after collapsing and re-expanding the item
+
+SCREENSHOTS (390×844)
+──────────────────────
+  01-list-view-390x844.jpg            Normal list, Filter bar visible
+  02-name-field-expanded-390x844.jpg  Category open, item expanded, Name field visible
+  03-add-item-accordion-390x844.jpg   Add Item accordion open (Name / Photo / Master List)
+  04-swipe-delete-only-390x844.jpg    Item swiped left — Delete only, no Edit
 
 DEFERRED / KNOWN LIMITATIONS
 ──────────────────────────────
-  1. itemRenameFor / itemRenameValue state and the R0084 rename dialog remain
-     in the file as dead code. Safe to remove in a follow-on cleanup pass.
+  1. Dead R0084 rename dialog — RESOLVED. itemRenameFor/itemRenameValue and the
+     dialog JSX were removed in the post-delivery cleanup pass.
   2. Master List → no onAddToCategory callback (R0102 documented limitation).
   3. R0100 wedge shadows — deferred, not touched.
   4. Physical iPhone Safari acceptance PENDING (Kevin verification).
