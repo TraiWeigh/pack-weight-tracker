@@ -33,7 +33,13 @@ async function makeBackpackLong(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Open Backpack category' }).click();
   const addItem = page.getByTestId('cat-add-item-btn');
   for (let i = 0; i < 14; i++) await addItem.click();
-  await expect(page.getByTestId('active-category-bar')).toBeVisible({ timeout: 6000 });
+  // R0101 makes active-category-bar visible for every open category. Wait for
+  // the actual bounded item viewport before asserting Add Item geometry.
+  await page.waitForFunction(() => {
+    const items = document.querySelector('[data-testid="open-cat-items"]') as HTMLElement | null;
+    return !!items && getComputedStyle(items).overflowY === 'auto' &&
+      items.scrollHeight > items.clientHeight;
+  }, undefined, { timeout: 6000 });
 }
 
 test.describe('R0096 — locked mobile control layers', () => {
@@ -125,28 +131,30 @@ test.describe('R0096 — locked mobile control layers', () => {
     expectClean(errors);
   });
 
-  test('active bounded category replaces Filter and locks Add Item above Bottom Box Groups', async ({ page, errors }) => {
+  test('active bounded category keeps Filter visible and locks Add Item above Bottom Box Groups', async ({ page, errors }) => {
     await page.setViewportSize({ width: 402, height: 714 });
     await gotoDemo(page);
     await makeBackpackLong(page);
 
-    await expect(page.getByTestId('filter-bar')).not.toBeVisible();
+    await expect(page.getByTestId('filter-bar')).toBeVisible();
     // The Summary's ResizeObserver may report its final fractional height on the
-    // frame after the rapid item additions. Assert the settled shared-slot geometry,
+    // frame after the rapid item additions. Assert the settled stacked-slot geometry,
     // not the transitional pre-measurement frame.
     await page.waitForFunction(() => {
-      const summary = document.querySelector('[data-testid="list-summary-bar"]')?.getBoundingClientRect();
+      const filter = document.querySelector('[data-testid="filter-bar"]')?.getBoundingClientRect();
       const active = document.querySelector('[data-testid="active-category-bar"]')?.getBoundingClientRect();
-      return !!summary && !!active && Math.abs(summary.bottom - active.top) <= 1;
+      return !!filter && !!active && Math.abs(filter.bottom - active.top) <= 1;
     }, undefined, { timeout: 2000 });
     const before = {
       summary: await rectOf(page, '[data-testid="list-summary-bar"]'),
+      filter: await rectOf(page, '[data-testid="filter-bar"]'),
       active: await rectOf(page, '[data-testid="active-category-bar"]'),
       items: await rectOf(page, '[data-testid="open-cat-items"]'),
       add: await rectOf(page, '[data-testid="cat-add-item-bar"]'),
       nav: await rectOf(page, '[data-testid="bottom-nav"]'),
     };
-    expect(before.active.top).toBeCloseTo(before.summary.bottom, 0);
+    expect(before.filter.top).toBeCloseTo(before.summary.bottom, 0);
+    expect(before.active.top).toBeCloseTo(before.filter.bottom, 0);
     expect(Math.abs(before.add.bottom - before.nav.top)).toBeLessThanOrEqual(1);
 
     await page.evaluate(() => {

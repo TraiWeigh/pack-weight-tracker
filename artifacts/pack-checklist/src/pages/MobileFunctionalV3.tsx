@@ -4226,6 +4226,7 @@ function MobileFunctionalV3Inner() {
               // so the correct category stays lifted after crossing positions.
               const isDragging = dragCatName === catName;
               const isDimTarget = dragTargetName === catName && !isDragging;
+              const isActiveAnchoredCategory = activeCategorySlot && openCatName === catName;
 
               const selectedInCat = items.filter(i => i.checked).length;
               const catTotalOz = items
@@ -4239,7 +4240,11 @@ function MobileFunctionalV3Inner() {
                   data-floating={isDragging ? 'true' : 'false'}
                   data-dimtarget={isDimTarget ? 'true' : 'false'}
                   style={{
-                    borderRadius: 0, overflow: 'hidden',
+                    // R0101: sticky descendants cannot cross an overflow-hidden
+                    // category wrapper. Only the currently anchored category
+                    // exposes overflow so its header sticks to main-scroll; the
+                    // nested SwipeDeleteRow wrappers still own swipe clipping.
+                    borderRadius: 0, overflow: isActiveAnchoredCategory ? 'visible' : 'hidden',
                     background: CARD_BG,
                     borderBottom: `1px solid ${DIVIDER}`,
                     // Raised/floating drag state: restrained elevation, no dramatic scale,
@@ -4264,12 +4269,12 @@ function MobileFunctionalV3Inner() {
 
                   {/* ── CATEGORY HEADER (R004 — right-edge-to-left slide reveals Delete) ── */}
                   <div
-                    data-testid={activeCategorySlot && openCatName === catName ? 'active-category-bar' : undefined}
+                    data-testid={isActiveAnchoredCategory ? 'active-category-bar' : undefined}
                     style={{
                       // R0100 correction #2: provide a containing block outside
                       // SwipeDeleteRow's transformed/overflow-hidden content layer.
                       position: 'relative',
-                      ...(activeCategorySlot && openCatName === catName ? {
+                      ...(isActiveAnchoredCategory ? {
                         position: 'sticky',
                         top: 0,
                         zIndex: 7,
