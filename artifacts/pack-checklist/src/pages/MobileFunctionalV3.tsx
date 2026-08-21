@@ -2791,22 +2791,36 @@ function MobileFunctionalV3Inner() {
   // R0076 repair: shared measurement helper — reads live DOM positions and updates
   // isCatLong / availItemH.  Called both from the initial open-effect and from the
   // items-count effect so transitions happen without close/reopen.
-  // KEY: measure from the item container's OWN top (= headerBottom after layout),
-  // NOT from summaryBottom − CARD_H.  This eliminates sub-pixel rounding drift
-  // between the category header position and the summary bar bottom.
+  //
+  // R0101 fix: use the STICKY category header's getBoundingClientRect().bottom as the
+  // start of the item region rather than itemsEl.getBoundingClientRect().top.
+  // The category header is position:sticky so its viewport coordinates are stable
+  // regardless of main-scroll's scrollTop (the header stays pinned at filterBtm even
+  // when main-scroll scrolls down, e.g. because the test auto-scrolled to reach the
+  // Add Item button).  itemsEl.getBoundingClientRect().top goes negative when scrolled
+  // off the top of the viewport, making rawAvailH artificially large and preventing
+  // isCatLong from ever becoming true.
   const remeasureLongMode = useCallback(() => {
     const itemsEl = openCatItemsRef.current;
     if (!itemsEl?.isConnected) { setIsCatLong(false); return; }
     const navEl   = document.querySelector('[data-testid="bottom-nav"]') as HTMLElement | null;
-    const itemsTop = itemsEl.getBoundingClientRect().top;
-    const navTop   = navEl ? navEl.getBoundingClientRect().top : (window.innerHeight - navHeight);
-    // availItemH = space between item container top and the Add Item bar bottom.
-    // Add Item bar is 44px, so: rawAvailH = navTop − itemsTop − 44
-    const rawAvailH = navTop - itemsTop - 44;
-    const clampedH  = Math.max(44, rawAvailH);
+    const navTop  = navEl ? navEl.getBoundingClientRect().top : (window.innerHeight - navHeight);
+    // Find the sticky category header by climbing to the [data-cat] row, then querying
+    // for [data-testid^="cat-header-"] inside it.  The header is position:sticky so
+    // getBoundingClientRect().bottom always reflects its pinned viewport position.
+    const catRow      = itemsEl.closest('[data-cat]') as HTMLElement | null;
+    const catHeaderEl = catRow?.querySelector('[data-testid^="cat-header-"]') as HTMLElement | null;
+    const filterEl    = document.querySelector('[data-testid="filter-bar"]') as HTMLElement | null;
+    const filterBtm   = filterEl ? filterEl.getBoundingClientRect().bottom : summaryH + FILTER_BAR_H;
+    // itemsStart = where the item rows begin; falls back to filterBtm + 64px if the
+    // sticky header is not yet in the DOM (shouldn't happen in practice).
+    const itemsStart  = catHeaderEl ? catHeaderEl.getBoundingClientRect().bottom : filterBtm + 64;
+    // availItemH = space from item region top to the Add Item bar top (44 px).
+    const rawAvailH   = navTop - itemsStart - 44;
+    const clampedH    = Math.max(44, rawAvailH);
     setAvailItemH(clampedH);
     setIsCatLong(itemsEl.scrollHeight > rawAvailH + 4);
-  }, [navHeight]);
+  }, [navHeight, summaryH]);
 
   // R0101: scroll category into view beneath the locked Filter, then measure
   // long-mode. On close, restore the exact pre-open outer-list position.
@@ -4443,6 +4457,7 @@ function MobileFunctionalV3Inner() {
                         if (openCatName === catName && !allExpanded) openCatItemsRef.current = el;
                       }}
                       data-testid={openCatName === catName && !allExpanded ? 'open-cat-items' : undefined}
+                      data-long-mode={(isCatLong && openCatName === catName && !allExpanded) ? 'true' : undefined}
                       onScroll={(isCatLong && openCatName === catName && !allExpanded) ? recalcCatOverflow : undefined}
                       style={{
                         borderTop: `1px solid ${DIVIDER}`,

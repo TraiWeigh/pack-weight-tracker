@@ -33,13 +33,10 @@ async function makeBackpackLong(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Open Backpack category' }).click();
   const addItem = page.getByTestId('cat-add-item-btn');
   for (let i = 0; i < 14; i++) await addItem.click();
-  // R0101 makes active-category-bar visible for every open category. Wait for
-  // the actual bounded item viewport before asserting Add Item geometry.
-  await page.waitForFunction(() => {
-    const items = document.querySelector('[data-testid="open-cat-items"]') as HTMLElement | null;
-    return !!items && getComputedStyle(items).overflowY === 'auto' &&
-      items.scrollHeight > items.clientHeight;
-  }, undefined, { timeout: 6000 });
+  // R0101: wait for the explicit long-mode DOM signal (data-long-mode="true" is set
+  // on open-cat-items only when isCatLong becomes true after remeasureLongMode settles).
+  await expect(page.locator('[data-testid="open-cat-items"][data-long-mode="true"]'))
+    .toBeVisible({ timeout: 8000 });
 }
 
 test.describe('R0096 — locked mobile control layers', () => {

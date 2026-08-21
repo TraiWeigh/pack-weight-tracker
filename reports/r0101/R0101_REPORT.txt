@@ -1,0 +1,142 @@
+═══════════════════════════════════════════════════════════════════════════════
+R0101 — CATEGORY ANCHOR & SCROLL RESTORE
+TrailWeigh Mobile Functional V3
+Date: 2026-08-21
+═══════════════════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. OBJECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every category auto-locks beneath the visible Filter bar when opened, scrolling
+its header to sit flush against Filter's bottom edge. Pre-open list position
+is saved and restored when the category is closed. Short lists and last
+categories can reach the lock position via main-scroll's natural scroll range.
+The Filter bar remains visible throughout (superseding R0096's old behaviour
+that hid Filter when a bounded category was active).
+
+R0100 wedge shadows, R0099 Bottom Box Group looping, R0098 1 px wedge gap, and
+R0097 locked mobile shell are fully preserved.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. IMPLEMENTATION SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+
+2a. showFilterSlot hardwired to true (line ~2752)
+    Previously toggled off for long categories. Now permanently true — the
+    Filter slot is always rendered.
+
+2b. openCategoryScrollRef
+    New ref { catName, scrollTop } captures main-scroll position immediately
+    before opening a category. Set in handleCatToggle.
+
+2c. R0101 main open/close effect
+    Replaces the old shared-slot scroll logic.
+    On OPEN (openCatName set):
+      RAF1: reads filterEl.getBoundingClientRect().bottom, scrolls
+            main-scroll.scrollTop so the category header aligns with filterBtm.
+      RAF2: applies sub-pixel residual correction, then calls
+            remeasureLongMode() to establish bounded-mode if item count warrants.
+    On CLOSE (openCatName cleared):
+      Two-RAF restore: assigns saved scrollTop twice (second frame catches
+      Safari's layout flush after the collapsed DOM settles).
+    Deps: [openCatName, isCatLong, allExpanded, summaryH, navHeight, showFilterSlot]
+
+2d. remeasureLongMode — sticky-header fix
+    Root cause: when the Add Item button scrolls below the viewport as items
+    grow and the auto-scroll (Playwright or real-touch) moves main-scroll down,
+    itemsEl.getBoundingClientRect().top goes negative. This made rawAvailH
+    artificially large, so isCatLong never became true.
+
+    Fix: climb the DOM from itemsEl to the [data-cat] row, find the
+    [data-testid^="cat-header-"] element, and read its
+    getBoundingClientRect().bottom (the sticky header is always pinned at
+    filterBtm regardless of main-scroll position). rawAvailH is then:
+      navTop - catHeaderBottom - addItemBarH(44)
+    useCallback deps updated: [navHeight, summaryH]
+
+2e. data-long-mode attribute on open-cat-items
+    data-long-mode="true" set when isCatLong is active. Provides an explicit
+    DOM observable for automated tests; no user-facing effect.
+
+2f. Overflow exception for active category row
+    The [data-cat] row of the currently anchored category uses overflow:visible
+    so its position:sticky header is contained by main-scroll rather than by
+    the row itself. All closed rows remain overflow:hidden.
+
+2g. R0096 test update (r0096-locked-controls.spec.ts)
+    makeBackpackLong() updated to:
+    - Not assert Filter hidden (R0101 supersedes that behaviour).
+    - Wait for data-long-mode="true" as the explicit long-mode DOM signal.
+    - Geometry assertions: filter visible, filter.bottom ~ active.top (stacked).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. TEST RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Focused R0101 (r0101-category-anchor-restore.spec.ts)    4/4  PASS
+R0096 regression (r0096-locked-controls.spec.ts)         9/9  PASS
+R0097 regression (r0097-appbar-safe-area.spec.ts)        7/7  PASS
+R0098 regression (r0098-wedge-spacing.spec.ts)           4/4  PASS
+R0099 regression (r0099-bottom-group-loop.spec.ts)       5/5  PASS
+
+TOTAL: 29/29 PASS
+
+Pack Checklist TypeScript typecheck:  PASS
+git diff --check:  PASS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. PRESERVATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Item                                     Status
+────────────────────────────────────────────────────────────────────────────
+R0100 wedge shadow drop-shadow styling   UNCHANGED
+R0099 Bottom Box Group looping           VERIFIED (5/5)
+R0098 1 px gap / wedge rhythm            VERIFIED (4/4)
+R0097 locked mobile shell                VERIFIED (7/7)
+R0076 inner bounded scroller             PRESERVED (open-cat-items still used)
+R0076 Add Item bar outside inner scroll  PRESERVED
+SwipeDeleteRow swipe/delete geometry     PRESERVED (overflow:visible only on
+                                         active outer row, not inner SwipeRows)
+Category row height / text / weights     PRESERVED (R0098 confirms geometry)
+Filter visible during open category      NEW BEHAVIOUR — always visible
+Scroll restored on close                 NEW BEHAVIOUR — verified 4/4
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. KNOWN DEFERRALS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+- R0100 wedge shadow physical iPhone Safari — unchanged since R0100; no new
+  code touches the shadow layer.
+- R0101 physical iPhone Safari acceptance — pending user verification.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. PHYSICAL iPHONE SAFARI CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Navigate to /mobile-functional-v3 on a physical iPhone Safari.
+
+[ ] 1. Tap a middle category (e.g. Clothing). Header locks flush under Filter.
+        Filter bar fully visible above the anchored header.
+[ ] 2. Scroll the inner item list while open (long cat). Header stays pinned
+        at Filter bottom. Add Item bar stays pinned at nav top.
+[ ] 3. Close the category. List scrolls back to pre-open position.
+[ ] 4. Tap the last category (Kitchen). Its header locks under Filter.
+[ ] 5. Close Kitchen. List position restored.
+[ ] 6. Open a short category (few items). Both Filter and header visible.
+        Close — position restored.
+[ ] 7. Swipe left on an item to reveal the delete button. Works correctly.
+[ ] 8. Add items until long mode activates. Inner bounded scroll works. Add
+        Item bar stays at nav.
+[ ] 9. Navigate Home, return. List position and state correct.
+[ ] 10. R0099: advance through all Bottom Box Groups. Looping works.
+[ ] 11. R0100: wedge shadows visible on physical iPhone Safari (unchanged).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. ARCHIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+R0101.zip — see root of workspace.
