@@ -7,9 +7,10 @@ R0100 change:
 - Corrected wedge filter matches the Bottom Box Groups bar's 10px blur and 7%
   opacity, with the 3px offset adapted rightward toward the exposed wedge point
   so the effect remains inside the current overflow boundary.
-- Correction #2 moves that filter from the real button to a decorative
-  pointer-events-none sibling at the category-header wrapper level. The real
-  button's computed filter is `none`; the sibling owns the broad shadow.
+- The final correction keeps that filter on a decorative pointer-events-none
+  sibling inside the transformed category-header content layer. The real
+  button's computed filter is `none`; local stacking places the sibling above
+  the white row background and below the button.
 - Wedge box shadow: remains `none`
 - Full category row shadow: unchanged
 

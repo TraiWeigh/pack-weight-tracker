@@ -11,8 +11,9 @@ Coverage:
 - 360×800
 - corrected broad Bottom Box Groups-compatible wedge shadow, directed toward the
   exposed angled point to avoid vertical overflow clipping
-- correction #2 asserts that the real button filter remains `none` and the
-  pointer-events-none decorative sibling outside SwipeDeleteRow owns the shadow
+- final correction asserts that the real button filter remains `none`, the
+  pointer-events-none decorative sibling is inside the category-header content
+  layer, and local stacking places the button above it
 
 R0099 loop regression:
 PASS — 5/5

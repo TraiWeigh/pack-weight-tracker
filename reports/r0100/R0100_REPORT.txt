@@ -6,9 +6,9 @@ Final status: REPLIT PASS / READY FOR USER IPHONE TEST
 USER status: PENDING physical iPhone Safari visual verification
 USER live-device evidence remains authoritative over Chromium and browser-review
 results. The initial physical iPhone check found the narrower shadow
-imperceptible. Correction #2 moves shadow rendering to a decorative sibling
-outside the transformed SwipeDeleteRow content layer; this build has not yet
-received a new USER PASS.
+imperceptible. The final R0100 correction moves shadow rendering into the
+transformed category-header content layer, above the white row background and
+behind the real colored wedge; this build has not yet received a new USER PASS.
 
 SCOPE
 R0100 adds a cosmetic elevation effect to the colored category wedge surface on
@@ -17,15 +17,19 @@ check, correction #1 reused the Bottom Box Groups bar's exact broad, soft,
 low-opacity shadow character, adapted toward the wedge's exposed right-hand
 point. After the shadow remained absent on iPhone Safari, correction #2 moved
 the visual shadow responsibility to a non-interactive decorative wedge sibling
-outside the transformed SwipeDeleteRow content layer.
+outside the transformed SwipeDeleteRow content layer. The final correction
+moved that same sibling into each category header so it is painted above the
+white row background and behind the real wedge.
 
 IMPLEMENTATION
 - Correction #2: the real wedge button retains its existing clip path, size,
   color, icon, and interaction behavior but no longer owns the filter.
-- Correction #2: a non-interactive sibling at the category-header wrapper level
-  owns `drop-shadow(3px 0 10px rgba(0,0,0,0.07))`, preserving the Bottom Box
-  Groups bar's exact 3px offset, 10px blur, and 7% opacity while keeping the
-  filter outside the transformed SwipeDeleteRow content layer.
+- Final correction: the same non-interactive sibling now lives inside the
+  transformed category-header content layer, with local `z-index: 0`; the real
+  wedge remains above it at local `z-index: 1`.
+- The filter remains exactly `drop-shadow(3px 0 10px rgba(0,0,0,0.07))`,
+  preserving the Bottom Box Groups bar's exact 3px offset, 10px blur, and 7%
+  opacity without darkening the effect.
 - Preserved the existing polygon clip path, 72px wedge width, row height,
   colors, icons, text, weights, and focus behavior.
 - Preserved the existing full-row elevation and did not add or change shadow
@@ -35,9 +39,9 @@ FACTS
 - Active route inspected: /mobile-functional-v3.
 - The colored category wedge is the clipped primary accordion trigger.
 - CSS filter drop-shadow is used on the decorative clipped sibling rather than
-  the real button so the angled wedge point is included without asking Safari
-  to filter a button inside the transformed SwipeDeleteRow layer. The existing
-  category-row overflow remains unchanged.
+  the real button so the angled wedge point is included. The sibling now paints
+  inside the transformed content layer, above its white background and below
+  the button; the existing category-row and swipe overflow remain unchanged.
 - The active wedge retains `boxShadow: 'none'` and `filter: 'none'`; the
   decorative sibling supplies the elevation.
 

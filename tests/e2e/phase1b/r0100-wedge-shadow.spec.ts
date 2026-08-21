@@ -46,6 +46,8 @@ for (const viewport of VIEWPORTS) {
           height: wedgeShadow.getBoundingClientRect().height,
           pointerEvents: getComputedStyle(wedgeShadow).pointerEvents,
           insideSwipeRow: !!wedgeShadow.closest('[data-swipe-key]'),
+          insideCatHeader: !!wedgeShadow.closest('[data-testid^="cat-header-"]'),
+          buttonZIndex: getComputedStyle(firstWedge).zIndex,
           parentPosition: getComputedStyle(wedgeShadow.parentElement!).position,
         } : null,
         rowBoxShadow: getComputedStyle(firstRow).boxShadow,
@@ -77,7 +79,9 @@ for (const viewport of VIEWPORTS) {
     expect(metrics.wedgeShadow!.width).toBe(72);
     expect(metrics.wedgeShadow!.height).toBe(64);
     expect(metrics.wedgeShadow!.pointerEvents).toBe('none');
-    expect(metrics.wedgeShadow!.insideSwipeRow).toBe(false);
+    expect(metrics.wedgeShadow!.insideSwipeRow).toBe(true);
+    expect(metrics.wedgeShadow!.insideCatHeader).toBe(true);
+    expect(metrics.wedgeShadow!.buttonZIndex).toBe('1');
     expect(metrics.wedgeShadow!.parentPosition).toBe('relative');
     expect(metrics.wedgeBoxShadow).toBe('none');
     expect(metrics.rowBoxShadow).toContain('0px 3px 10px');

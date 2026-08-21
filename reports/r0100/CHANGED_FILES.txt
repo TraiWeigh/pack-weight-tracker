@@ -2,14 +2,14 @@ R0100 CHANGED FILES
 
 Implementation:
 - artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
-  Correction #2 moves the Bottom Box Groups-compatible clipped wedge shadow to
-  a non-interactive sibling outside the transformed SwipeDeleteRow content layer;
-  no shell or row geometry changes.
+  Final R0100 correction moves the Bottom Box Groups-compatible clipped wedge
+  shadow into each transformed category header, above the white row background
+  and behind the real wedge; no shell or row geometry changes.
 
 Focused validation:
 - tests/e2e/phase1b/r0100-wedge-shadow.spec.ts
-  Four-viewport wedge filter, geometry, 1px spacing, shell, overflow, and
-  error-state checks.
+  Four-viewport in-row wedge shadow, stacking, geometry, 1px spacing, shell,
+  overflow, and error-state checks.
 
 Evidence:
 - reports/r0100/screenshots/01-wedge-shadow-402x714.png

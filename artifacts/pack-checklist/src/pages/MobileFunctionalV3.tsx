@@ -4234,26 +4234,6 @@ function MobileFunctionalV3Inner() {
                       } : {}),
                     }}
                   >
-                  {/* R0100 correction #2: render the wedge elevation on a
-                      non-interactive sibling, outside SwipeDeleteRow's clipping
-                      wrapper. The same clip path keeps the visible color shape
-                      exact while the filter follows its angled point. */}
-                  <div
-                    data-testid={`cat-wedge-shadow-${catName}`}
-                    aria-hidden="true"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: WEDGE_W,
-                      height: CHECKLIST_ROW_H,
-                      background: theme.bg,
-                      clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
-                      filter: 'drop-shadow(3px 0 10px rgba(0,0,0,0.07))',
-                      pointerEvents: 'none',
-                      zIndex: 0,
-                    }}
-                  />
                   <SwipeDeleteRow
                     swipeKey={`cat:${catName}`}
                     reorderActive={dragCatName !== null}
@@ -4298,10 +4278,32 @@ function MobileFunctionalV3Inner() {
                     // SwipeDeleteRow's onClickCapture swallows post-swipe clicks.
                     // Wedge button stops propagation to prevent double-toggle.
                     onClick={() => handleCatToggle(catName)}
-                    style={{ display: 'flex', alignItems: 'stretch', minHeight: CHECKLIST_ROW_H, background: CARD_BG, cursor: 'pointer' }}
+                    style={{
+                      display: 'flex', alignItems: 'stretch', minHeight: CHECKLIST_ROW_H,
+                      background: CARD_BG, cursor: 'pointer', position: 'relative', zIndex: 1,
+                    }}
                   >
 
                     {/* WEDGE / ICON — PRIMARY ACCORDION TRIGGER */}
+                    {/* R0100 final correction: this sibling is inside the transformed
+                        content layer, above the white row background and below the
+                        real button, so Safari paints the elevation in-row. */}
+                    <div
+                      data-testid={`cat-wedge-shadow-${catName}`}
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: WEDGE_W,
+                        height: CHECKLIST_ROW_H,
+                        background: theme.bg,
+                        clipPath: `polygon(0 0, calc(100% - ${WEDGE_POINT}px) 0, 100% 50%, calc(100% - ${WEDGE_POINT}px) 100%, 0 100%)`,
+                        filter: 'drop-shadow(3px 0 10px rgba(0,0,0,0.07))',
+                        pointerEvents: 'none',
+                        zIndex: 0,
+                      }}
+                    />
                     <button
                       onClick={e => { e.stopPropagation(); handleCatToggle(catName); }}
                       aria-expanded={isOpen}
@@ -4313,10 +4315,7 @@ function MobileFunctionalV3Inner() {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0, paddingRight: WEDGE_POINT / 2,
                         border: 'none', cursor: 'pointer', outline: 'none', boxShadow: 'none',
-                        // R0100 correction #2: shadow rendering lives on the
-                        // decorative sibling above, not on this clipped button.
-                        // Keep the real trigger's geometry and interaction layer
-                        // otherwise unchanged.
+                        position: 'relative', zIndex: 1,
                       }}
                       onFocus={e => { e.currentTarget.style.outline = '2px solid rgba(255,255,255,0.6)'; e.currentTarget.style.outlineOffset = '-3px'; }}
                       onBlur={e => { e.currentTarget.style.outline = 'none'; }}
