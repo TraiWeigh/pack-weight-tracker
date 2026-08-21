@@ -4574,21 +4574,32 @@ function MobileFunctionalV3Inner() {
                                   }}>
                                     {displayName}
                                   </div>
-                                  {/* R0103: tapping the photo opens the existing photo-edit sheet */}
-                                  <img
-                                    src={item.photoDataUrl}
-                                    alt={`Photo of ${displayName}`}
-                                    onClick={() => setPhotoEditFor({ cat: catName, id: item.id })}
+                                  {/* R0104: wrapping in <button> makes the tap reliable on iOS Safari
+                                    (click events on bare <img> elements can be silently dropped). */}
+                                  <button
+                                    type="button"
+                                    data-testid="photo-mode-img-btn"
+                                    onClick={e => { e.stopPropagation(); setPhotoEditFor({ cat: catName, id: item.id }); }}
+                                    aria-label={`Edit photo of ${displayName}`}
                                     style={{
-                                      width: '100%',
-                                      maxHeight: 220,
-                                      display: 'block',
-                                      borderRadius: 8,
-                                      objectFit: 'cover',
-                                      background: '#111',
-                                      cursor: 'pointer',
+                                      display: 'block', width: '100%', padding: 0,
+                                      border: 'none', background: 'none', cursor: 'pointer', borderRadius: 8,
                                     }}
-                                  />
+                                  >
+                                    <img
+                                      src={item.photoDataUrl}
+                                      data-testid="photo-mode-img"
+                                      alt={`Photo of ${displayName}`}
+                                      style={{
+                                        width: '100%',
+                                        maxHeight: 220,
+                                        display: 'block',
+                                        borderRadius: 8,
+                                        objectFit: 'cover',
+                                        background: '#111',
+                                      }}
+                                    />
+                                  </button>
                                   <div style={{
                                     display: 'flex',
                                     justifyContent: 'flex-end',
@@ -4921,11 +4932,20 @@ function MobileFunctionalV3Inner() {
                                 </div>
 
                                 {/* R0085: Photo row — replaces disabled stub */}
-                                <div style={{
-                                  display: 'flex', alignItems: 'center',
-                                  padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
-                                  borderBottom: `1px solid ${DETAIL_BDR}`,
-                                }}>
+                                {/* R0104: outer container is tappable when no photo so the camera
+                                    icon and "Photo" label area register the tap (not just the small
+                                    right-side "Add Photo" button). Cursor and onClick only active
+                                    when no photo; when a photo exists the View/Edit buttons handle it. */}
+                                <div
+                                  onClick={!item.photoDataUrl ? (e => { e.stopPropagation(); setPhotoEditFor({ cat: catName, id: item.id }); }) : undefined}
+                                  data-testid={!item.photoDataUrl ? 'item-photo-row' : undefined}
+                                  style={{
+                                    display: 'flex', alignItems: 'center',
+                                    padding: `0 ${CHECKLIST_RIGHT_INSET}px 0 14px`, minHeight: 44, gap: 10,
+                                    borderBottom: `1px solid ${DETAIL_BDR}`,
+                                    cursor: !item.photoDataUrl ? 'pointer' : 'default',
+                                  }}
+                                >
                                   <Camera size={14} color={MUTED} strokeWidth={1.8} aria-hidden="true"/>
                                   <div style={{ flex: 1, fontSize: 13.5, color: SECONDARY }}>Photo</div>
                                   {item.photoDataUrl ? (

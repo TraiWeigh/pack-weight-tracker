@@ -1,0 +1,17 @@
+R0104 — Changed Files
+─────────────────────
+
+artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx
+  • Photo row outer div (expanded item detail panel, ~line 4924):
+    - Added onClick={!item.photoDataUrl ? (e => { e.stopPropagation(); setPhotoEditFor({cat,id}); }) : undefined}
+    - Added data-testid="item-photo-row" (only when no photo)
+    - Added cursor: !item.photoDataUrl ? 'pointer' : 'default'
+  • Photo-mode card img (~line 4578):
+    - Wrapped in <button type="button" data-testid="photo-mode-img-btn" onClick={e=>{e.stopPropagation();setPhotoEditFor({cat,id});}} aria-label="Edit photo of …">
+    - img gains data-testid="photo-mode-img"
+    - cursor:pointer moved from img to button
+
+tests/e2e/phase1b/r0104-photo-row-tap.spec.ts  [NEW]
+  6 focused tests for the R0104 fix.
+
+No other files changed.

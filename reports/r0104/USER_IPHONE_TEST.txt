@@ -1,0 +1,35 @@
+R0104 — Physical iPhone Safari Acceptance Checklist
+─────────────────────────────────────────────────────
+
+Setup: Open /mobile-functional-v3 on physical iPhone (any model).
+       Use demo data (twDemoMode=1) or a live list with at least 2 items.
+
+PHOTO ROW FULL-WIDTH TAP (primary fix)
+ [ ]  1. Open a category → tap any item row to expand its detail panel
+ [ ]  2. Locate the row that shows a Camera icon + "Photo" label + "Add Photo"
+ [ ]  3. Tap the Camera icon (far left of the row)
+        Expected: photo-edit sheet slides up with Take Photo / Choose Library
+ [ ]  4. Cancel → sheet dismisses, no changes
+ [ ]  5. Tap the "Photo" label text (middle of the row)
+        Expected: same photo-edit sheet opens
+ [ ]  6. Cancel → sheet dismisses
+ [ ]  7. Tap the "Add Photo" text button (right side of the row)
+        Expected: same photo-edit sheet opens
+ [ ]  8. Cancel → sheet dismisses
+
+PHOTO-MODE IMAGE TAP (secondary fix)
+ [ ]  9. Use Filter bar → select "Photo"
+ [ ] 10. If any items have photos, tap a photo card image
+         Expected: photo-edit sheet slides up with Take Photo / Choose Library / Delete / Cancel
+ [ ] 11. Cancel → sheet dismisses
+ [ ] 12. Tap "Edit" button below the photo card — confirm same sheet opens
+
+REGRESSION CHECKS
+ [ ] 13. Switch back to Category filter → normal checklist renders
+ [ ] 14. Expand an item → Name field is editable (R0103)
+ [ ] 15. Swipe left on an item → only Delete visible, no Edit (R0103)
+ [ ] 16. Open Add Item accordion → Name / Photo / Master List choices visible (R0102)
+ [ ] 17. AppBar / Summary / Filter bar stay locked during all steps (R0096)
+ [ ] 18. No window/document/body scroll at any point (R0095)
+
+DONE: All steps checked with expected outcomes observed on physical device.
