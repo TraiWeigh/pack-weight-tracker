@@ -48,14 +48,15 @@ import {
   StyleSheet,
   Platform,
   ActivityIndicator,
+  Modal,
+  ScrollView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext';
-import { calcTotalOz } from '@/lib/weightUtils';
+import { calcTotalOz, calcWeights, ozToLbs } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 
 // ─── v3 design constants (exact values from MobileFunctionalV3.tsx) ──────────
@@ -478,11 +479,56 @@ function BottomBox({
   );
 }
 
+// ─── SummaryWeightRow ─────────────────────────────────────────────────────────
+// Compact weight card used inside the Summary sheet modal.
+
+function SummaryWeightRow({
+  label, oz, accent, half,
+}: { label: string; oz: number; accent?: boolean; half?: boolean }) {
+  const lbs   = ozToLbs(oz).toFixed(2);
+  const kg    = ((oz * 28.3495) / 1000).toFixed(3);
+  const bg    = accent ? NAV_ACTIVE : '#F9FAFB';
+  const fg    = accent ? '#FFFFFF'  : '#111827';
+  const muted = accent ? 'rgba(255,255,255,0.72)' : '#6B7280';
+  return (
+    <View style={[
+      styles.sumCard,
+      { backgroundColor: bg, borderColor: accent ? NAV_ACTIVE : 'rgba(0,0,0,0.08)' },
+      half && { flex: 1 },
+    ]}>
+      <Text style={[styles.sumCardLabel, { color: muted }]}>{label}</Text>
+      <Text style={[styles.sumCardValue, { color: fg }]}>
+        {lbs}{' '}
+        <Text style={[styles.sumCardUnit, { color: muted }]}>lbs</Text>
+      </Text>
+      <Text style={[styles.sumCardSub, { color: muted }]}>{oz.toFixed(1)} oz · {kg} kg</Text>
+    </View>
+  );
+}
+
+// ─── SummaryCatBar ────────────────────────────────────────────────────────────
+// Horizontal bar showing one category's share of packed weight.
+
+function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalOz: number }) {
+  const pct = totalOz > 0 ? (oz / totalOz) * 100 : 0;
+  const lbs = ozToLbs(oz).toFixed(2);
+  return (
+    <View style={styles.sumCatRow}>
+      <View style={styles.sumCatMeta}>
+        <Text style={styles.sumCatName} numberOfLines={1}>{name}</Text>
+        <Text style={styles.sumCatWeight}>{lbs} lbs</Text>
+      </View>
+      <View style={styles.sumCatTrack}>
+        <View style={[styles.sumCatFill, { width: `${pct}%` as any }]} />
+      </View>
+    </View>
+  );
+}
+
 // ─── GearScreen ───────────────────────────────────────────────────────────────
 
 export default function GearScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { data, toggleItem, isLoading } = usePackData();
 
   // Category expand/collapse — single-open model matching v3 (openCatName = one open cat)
@@ -492,6 +538,9 @@ export default function GearScreen() {
 
   // Bottom box group index (0–3), matching v3 groupIdx — v3 lines 1054, 1092–1094
   const [groupIdx, setGroupIdx] = useState(0);
+
+  // Summary sheet — shown as a native pageSheet modal instead of pushing a route
+  const [showSummary, setShowSummary] = useState(false);
 
   // ── Data computations ───────────────────────────────────────────────────────
 
@@ -575,7 +624,7 @@ export default function GearScreen() {
           setGroupIdx((g) => (g - 1 + NUM_GROUPS) % NUM_GROUPS);
           break;
         case 'summary':
-          router.push('/(tabs)/summary');
+          setShowSummary(true);
           break;
         case 'reset':
           handleReset();
@@ -585,11 +634,24 @@ export default function GearScreen() {
           break;
       }
     },
-    [router, handleReset],
+    [handleReset],
   );
 
   // Bottom padding: tab bar is hidden, only safe-area inset needed
   const bottomPad = Platform.OS === 'web' ? 20 : insets.bottom;
+
+  // Summary modal computations — same logic as summary.tsx, computed from live PackData
+  const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } =
+    calcWeights(data);
+  const summaryTotals = CATEGORY_ORDER
+    .map(cat => {
+      const oz = (data[cat] || [])
+        .filter(i => i.checked)
+        .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
+      return { name: cat, oz };
+    })
+    .filter(c => c.oz > 0)
+    .sort((a, b) => b.oz - a.oz);
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -654,6 +716,83 @@ export default function GearScreen() {
         onAction={handleBoxAction}
         bottomPad={bottomPad}
       />
+
+      {/* ── Summary sheet ─────────────────────────────────────────────── */}
+      {/* pageSheet = native iOS card sheet with swipe-to-dismiss built in */}
+      <Modal
+        visible={showSummary}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowSummary(false)}
+      >
+        <View style={[
+          styles.summarySheet,
+          { paddingTop: Platform.OS === 'ios' ? 8 : insets.top + 8 },
+        ]}>
+          {/* Drag handle — communicates swipe-to-dismiss */}
+          <View style={styles.summaryHandle} />
+
+          {/* Header */}
+          <View style={styles.summaryHeader}>
+            <View>
+              <Text style={styles.summaryTitle}>Pack Summary</Text>
+              <Text style={styles.summarySubtitle}>
+                {selectedCount} item{selectedCount !== 1 ? 's' : ''} packed
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setShowSummary(false)}
+              hitSlop={16}
+              style={styles.summaryCloseBtn}
+            >
+              <Ionicons name="close" size={22} color="#374151" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Scrollable content */}
+          <ScrollView
+            style={styles.summaryScroll}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 16,
+              paddingBottom: insets.bottom + 24,
+            }}
+            showsVerticalScrollIndicator={false}
+          >
+            {grandTotalOz > 0 ? (
+              <View style={styles.summaryContent}>
+                <SummaryWeightRow label="Grand Total"  oz={grandTotalOz} accent />
+                <View style={styles.summaryPairRow}>
+                  <SummaryWeightRow label="Base Weight"   oz={baseWeightOz}   half />
+                  <SummaryWeightRow label="Clothing Worn" oz={clothingWornOz} half />
+                </View>
+                <View style={styles.summaryPairRow}>
+                  <SummaryWeightRow label="Dog Pack"    oz={dogPackOz}    half />
+                  <SummaryWeightRow label="Expendables" oz={expendablesOz} half />
+                </View>
+                {summaryTotals.length > 0 && (
+                  <View style={styles.summaryBreakdown}>
+                    <Text style={styles.summaryBreakdownTitle}>WEIGHT BREAKDOWN</Text>
+                    {summaryTotals.map(cat => (
+                      <SummaryCatBar
+                        key={cat.name}
+                        name={cat.name}
+                        oz={cat.oz}
+                        totalOz={grandTotalOz}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={styles.summaryEmpty}>
+                <Text style={styles.summaryEmptyText}>Nothing packed yet</Text>
+                <Text style={styles.summaryEmptyHint}>Check off items in the gear list</Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -977,5 +1116,143 @@ const styles = StyleSheet.create({
     fontSize:   10,
     fontFamily: 'PlusJakartaSans_400Regular',
     color:      NAV_INACTIVE,
+  },
+
+  // ── Summary sheet modal ──────────────────────────────────────────────────────
+  summarySheet: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  summaryHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.10)',
+  },
+  summaryTitle: {
+    fontSize: 20,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    color: '#111827',
+    letterSpacing: -0.3,
+  },
+  summarySubtitle: {
+    fontSize: 13,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  summaryCloseBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryScroll: { flex: 1 },
+  summaryContent: { gap: 10 },
+  summaryPairRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  summaryBreakdown: {
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: '#F9FAFB',
+    padding: 14,
+    gap: 10,
+  },
+  summaryBreakdownTitle: {
+    fontSize: 10,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    color: '#6B7280',
+    marginBottom: 2,
+  },
+  summaryEmpty: {
+    alignItems: 'center',
+    paddingVertical: 48,
+    gap: 6,
+  },
+  summaryEmptyText: {
+    fontSize: 15,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: '#6B7280',
+  },
+  summaryEmptyHint: {
+    fontSize: 13,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    color: '#9CA3AF',
+  },
+  sumCard: {
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: 14,
+    gap: 3,
+  },
+  sumCardLabel: {
+    fontSize: 10,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.9,
+  },
+  sumCardValue: {
+    fontSize: 34,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    letterSpacing: -0.8,
+    lineHeight: 40,
+  },
+  sumCardUnit: {
+    fontSize: 16,
+    fontFamily: 'PlusJakartaSans_500Medium',
+  },
+  sumCardSub: {
+    fontSize: 12,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    opacity: 0.85,
+  },
+  sumCatRow: { gap: 5 },
+  sumCatMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sumCatName: {
+    fontSize: 13,
+    fontFamily: 'PlusJakartaSans_500Medium',
+    color: '#111827',
+    flex: 1,
+  },
+  sumCatWeight: {
+    fontSize: 12,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: '#6B7280',
+    letterSpacing: 0.2,
+  },
+  sumCatTrack: {
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    overflow: 'hidden',
+  },
+  sumCatFill: {
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: NAV_ACTIVE,
   },
 });
