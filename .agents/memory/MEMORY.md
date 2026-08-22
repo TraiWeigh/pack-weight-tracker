@@ -40,3 +40,4 @@
 - [Photo List capture assignment](photo-list-capture-assignment.md) — classify a retained capture exactly once; canceling only defers it, while Locations remain visual destinations without items.
 - [N002 native visual shell](n002-native-visual-shell.md) — SUMMARY_BG #2A5740, TILE_W 58, CAT_HEADER_H 62; insets.top inside AppHeader; no clip-path in RN; item.desc=primary, item.sub=tag.
 - [R0112 N004 native lessons](r0112-n004-lessons.md) — react-native-svg already installed; tab bar hidden via display:none; SectionList collapse = data:[]; PackDataContext has no listName; checkbox-outline not checkmark-square-outline.
+- [R0113 v3 migration phase 1](r0113-migration-phase1.md) — addItem/delete/rename/resetAll in context; AddItemModal/SearchModal; AnimatedSwipeRow swipe-reveal.

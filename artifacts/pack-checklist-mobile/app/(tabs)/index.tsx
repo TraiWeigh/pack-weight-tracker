@@ -39,8 +39,11 @@
  *   CSS filter: drop-shadow on wedge → SVG polygon overlay simulating clip-path
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
+  Alert,
+  Animated,
+  PanResponder,
   View,
   Text,
   SectionList,
@@ -58,6 +61,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext';
 import { calcTotalOz, calcWeights, ozToLbs } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
+import { AddItemModal } from '@/components/AddItemModal';
+import { SearchModal } from '@/components/SearchModal';
 
 // ─── v3 design constants (exact values from MobileFunctionalV3.tsx) ──────────
 
@@ -78,6 +83,8 @@ const FILTER_H       = 50;   // FILTER_BAR_H  line 233
 const NAV_H          = 58;   // NAV_H  line 228
 const APPBAR_H       = 52;   // AppBar content height
 const CHECKBOX_HIT   = 44;   // checkbox hit-target width (v3 line 5036)
+const SWIPE_BTN_W    = 80;   // each swipe action button (Rename / Delete)
+const SWIPE_REVEAL   = 160;  // total reveal = 2 × SWIPE_BTN_W
 
 // ─── Box Groups (4 total, matching v3 exactly) ────────────────────────────────
 // Source: MobileFunctionalV3.tsx lines 1227–1281
@@ -525,11 +532,138 @@ function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalO
   );
 }
 
+// ─── Module-level: only one swipe row open at a time ─────────────────────────
+// Each AnimatedSwipeRow registers its close fn here when it opens.
+let _closeOpenSwipe: (() => void) | null = null;
+
+// ─── AnimatedSwipeRow ─────────────────────────────────────────────────────────
+// v3 swipe-reveal equivalent: left-swipe exposes Rename + Delete actions.
+// Pure Animated + PanResponder — no additional gesture-handler dependencies.
+
+function AnimatedSwipeRow({
+  item,
+  category,
+  onToggle,
+  onRename,
+  onDelete,
+}: {
+  item: GearItem;
+  category: string;
+  onToggle: (cat: string, id: string) => void;
+  onRename: (item: GearItem, cat: string) => void;
+  onDelete: (item: GearItem, cat: string) => void;
+}) {
+  const tx           = useRef(new Animated.Value(0)).current;
+  const isOpenRef    = useRef(false);
+  const isSwipingRef = useRef(false);
+
+  // Stable close function — safe to capture inside PanResponder (all deps are refs)
+  const closeRef = useRef(() => {
+    Animated.spring(tx, {
+      toValue: 0, useNativeDriver: true, tension: 220, friction: 22,
+    }).start();
+    isOpenRef.current = false;
+    _closeOpenSwipe = null;
+  });
+
+  const pan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) =>
+        !isSwipingRef.current &&
+        Math.abs(g.dx) > 8 &&
+        Math.abs(g.dx) > Math.abs(g.dy) * 1.4,
+      onPanResponderGrant: () => {
+        isSwipingRef.current = true;
+        tx.stopAnimation();
+        tx.setOffset(isOpenRef.current ? -SWIPE_REVEAL : 0);
+        tx.setValue(0);
+      },
+      onPanResponderMove: (_, g) => {
+        const base = isOpenRef.current ? -SWIPE_REVEAL : 0;
+        tx.setValue(Math.max(-SWIPE_REVEAL, Math.min(0, base + g.dx)));
+      },
+      onPanResponderRelease: (_, g) => {
+        tx.flattenOffset();
+        isSwipingRef.current = false;
+
+        if (!isOpenRef.current && g.dx < -50) {
+          // Commit open — close any other open row first
+          _closeOpenSwipe?.();
+          _closeOpenSwipe = closeRef.current;
+          isOpenRef.current = true;
+          Animated.spring(tx, {
+            toValue: -SWIPE_REVEAL, useNativeDriver: true, tension: 220, friction: 22,
+          }).start();
+        } else if (isOpenRef.current && g.dx > 50) {
+          // Commit close
+          closeRef.current();
+        } else if (isOpenRef.current) {
+          // Snap back to open
+          Animated.spring(tx, {
+            toValue: -SWIPE_REVEAL, useNativeDriver: true, tension: 220, friction: 22,
+          }).start();
+        } else {
+          // Snap back to closed
+          Animated.spring(tx, {
+            toValue: 0, useNativeDriver: true, tension: 220, friction: 22,
+          }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        tx.flattenOffset();
+        isSwipingRef.current = false;
+        Animated.spring(tx, {
+          toValue: isOpenRef.current ? -SWIPE_REVEAL : 0,
+          useNativeDriver: true, tension: 220, friction: 22,
+        }).start();
+      },
+    })
+  ).current;
+
+  return (
+    <View style={{ overflow: 'hidden' }}>
+      {/* Action buttons — visible behind the sliding row */}
+      <View style={[StyleSheet.absoluteFillObject, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
+        <TouchableOpacity
+          style={[styles.swipeActionBtn, { backgroundColor: '#3B82F6' }]}
+          onPress={() => {
+            closeRef.current();
+            onRename(item, category);
+          }}
+        >
+          <Ionicons name="pencil-outline" size={18} color="#fff" />
+          <Text style={styles.swipeActionLabel}>Rename</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.swipeActionBtn, { backgroundColor: '#EF4444' }]}
+          onPress={() => {
+            closeRef.current();
+            onDelete(item, category);
+          }}
+        >
+          <Ionicons name="trash-outline" size={18} color="#fff" />
+          <Text style={styles.swipeActionLabel}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+      {/* Main item row slides left to reveal the action buttons */}
+      <Animated.View
+        style={{ transform: [{ translateX: tx }] }}
+        {...pan.panHandlers}
+      >
+        <ItemRow item={item} category={category} onToggle={onToggle} />
+      </Animated.View>
+    </View>
+  );
+}
+
 // ─── GearScreen ───────────────────────────────────────────────────────────────
 
 export default function GearScreen() {
   const insets = useSafeAreaInsets();
-  const { data, toggleItem, isLoading } = usePackData();
+  const {
+    data, isLoading, toggleItem,
+    deleteItem, renameItem, resetAll, listName,
+  } = usePackData();
 
   // Category expand/collapse — single-open model matching v3 (openCatName = one open cat)
   // Default: all collapsed (openCatName=null, allExpanded=false) — v3 lines 2225–2228
@@ -541,6 +675,12 @@ export default function GearScreen() {
 
   // Summary sheet — shown as a native pageSheet modal instead of pushing a route
   const [showSummary, setShowSummary] = useState(false);
+
+  // Add Item sheet — v3 "Add deck" accordion ported to a pageSheet modal
+  const [showAdd,    setShowAdd]    = useState(false);
+
+  // Search sheet — v3 "Search deck" ported to a pageSheet modal
+  const [showSearch, setShowSearch] = useState(false);
 
   // ── Data computations ───────────────────────────────────────────────────────
 
@@ -598,21 +738,66 @@ export default function GearScreen() {
     });
   }, []);
 
-  // Reset all checked items — v3 onReset (in Group 2)
+  // Reset — v3 onReset: confirmation before clearing all checked items
   const handleReset = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    Alert.alert(
+      'Clear All Checks',
+      'Remove all packed checkmarks from your list?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: () => {
+            if (Platform.OS !== 'web') {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            }
+            resetAll();
+          },
+        },
+      ],
+    );
+  }, [resetAll]);
+
+  // Item rename — v3 rename dialog; uses Alert.prompt on iOS
+  const handleItemRename = useCallback((item: GearItem, cat: string) => {
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        'Rename Item',
+        undefined,
+        (text) => {
+          const newName = text?.trim();
+          if (newName && newName !== (item.desc || item.sub)) {
+            renameItem(cat, item.id, newName);
+          }
+        },
+        'plain-text',
+        item.desc || item.sub,
+      );
+    } else {
+      Alert.alert('Rename', `Item: "${item.desc || item.sub}"\n\nRename requires iOS.`);
     }
-    CATEGORY_ORDER.forEach((cat) => {
-      (data[cat] || []).forEach((item) => {
-        if (item.checked) toggleItem(cat, item.id);
-      });
-    });
-  }, [data, toggleItem]);
+  }, [renameItem]);
+
+  // Item delete — v3: confirmation before removing
+  const handleItemDelete = useCallback((item: GearItem, cat: string) => {
+    Alert.alert(
+      'Delete Item',
+      `Remove "${item.desc || item.sub}" from your list?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteItem(cat, item.id),
+        },
+      ],
+    );
+  }, [deleteItem]);
 
   // Box group action dispatcher
-  // Wired: next, back, summary, reset
-  // Non-functional (visual parity only): locker, add, search, undo, redo,
+  // Wired: next, back, summary, add, search, reset
+  // Non-functional (visual parity only): locker, undo, redo,
   //   camera, photos, preview, save, share, more
   const handleBoxAction = useCallback(
     (action: string) => {
@@ -626,10 +811,17 @@ export default function GearScreen() {
         case 'summary':
           setShowSummary(true);
           break;
+        case 'add':
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          setShowAdd(true);
+          break;
+        case 'search':
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          setShowSearch(true);
+          break;
         case 'reset':
           handleReset();
           break;
-        // All remaining actions are non-functional in N004 — documented above
         default:
           break;
       }
@@ -668,7 +860,7 @@ export default function GearScreen() {
       {/* ── Fixed top ─────────────────────────────────────────────────── */}
       <AppBar />
       <ListSummaryHero
-        listName="Backpacking Gear"
+        listName={listName}
         totalItems={totalItems}
         catCount={catCount}
         selectedCount={selectedCount}
@@ -682,10 +874,12 @@ export default function GearScreen() {
         sections={sections}
         keyExtractor={(item) => item.id}
         renderItem={({ item, section }) => (
-          <ItemRow
+          <AnimatedSwipeRow
             item={item}
             category={(section as Section).title}
             onToggle={toggleItem}
+            onRename={handleItemRename}
+            onDelete={handleItemDelete}
           />
         )}
         renderSectionHeader={({ section }) => {
@@ -793,6 +987,19 @@ export default function GearScreen() {
           </ScrollView>
         </View>
       </Modal>
+
+      {/* ── Add Item sheet (v3 Add deck) ── */}
+      <AddItemModal
+        visible={showAdd}
+        defaultCategory={openCatName || CATEGORY_ORDER[0]}
+        onClose={() => setShowAdd(false)}
+      />
+
+      {/* ── Search sheet (v3 Search deck) ── */}
+      <SearchModal
+        visible={showSearch}
+        onClose={() => setShowSearch(false)}
+      />
     </View>
   );
 }
@@ -1254,5 +1461,20 @@ const styles = StyleSheet.create({
     height: 5,
     borderRadius: 3,
     backgroundColor: NAV_ACTIVE,
+  },
+
+  // ── Swipe action buttons (Rename / Delete) ────────────────────────────────
+  swipeActionBtn: {
+    width: SWIPE_BTN_W,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    alignSelf: 'stretch',
+  },
+  swipeActionLabel: {
+    fontSize: 11,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
 });
