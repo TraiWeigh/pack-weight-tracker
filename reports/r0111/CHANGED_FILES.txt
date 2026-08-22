@@ -1,0 +1,21 @@
+R0111 — N003 Changed Files
+===========================
+
+MODIFIED
+--------
+artifacts/pack-checklist-mobile/app/(tabs)/index.tsx
+  N002 → N003 visual recreation. 835 → 868 lines.
+  All v3 geometry constants added inline (TILE_W 72, CAT_HEADER_H 64, NAV_H 58,
+  NAV_ACTIVE, NAV_INACTIVE, CB_CHECKED, PRIMARY_TEXT, PAGE_BG).
+  AppBar, ListSummaryHero, FilterControl, SectionHeader, ItemRow, BottomBox
+  rebuilt from v3 MobileFunctionalV3.tsx measurements.
+  Data/storage/toggle/haptics/exclusive-group logic: UNCHANGED.
+
+UNCHANGED
+---------
+artifacts/pack-checklist-mobile/lib/categoryTheme.ts        (already correct for N003)
+artifacts/pack-checklist-mobile/hooks/useColors.ts          (N001 fix intact)
+artifacts/pack-checklist-mobile/context/PackDataContext.tsx  (data/state — untouched)
+artifacts/pack-checklist-mobile/lib/weightUtils.ts           (weight math — untouched)
+artifacts/pack-checklist-mobile/constants/colors.ts          (palette — untouched)
+artifacts/pack-checklist/**                                  (web app — untouched)

@@ -1,0 +1,209 @@
+R0111 — N003 Native Visual Recreation
+========================================
+Date:      2026-08-22
+Status:    IMPLEMENTED — awaiting physical iPhone USER PASS
+Source:    MobileFunctionalV3.tsx (web v3, exact geometry reference)
+Changed:   artifacts/pack-checklist-mobile/app/(tabs)/index.tsx ONLY
+
+───────────────────────────────────────────────────────────────────────────────
+TYPECHECK RESULTS
+───────────────────────────────────────────────────────────────────────────────
+
+  Native (@workspace/pack-checklist-mobile)   ✅  0 errors
+  Web    (@workspace/pack-checklist)           ✅  0 errors   (untouched)
+
+Expo web preview:  ✅  rendered correctly — all v3 regions visible
+iOS bundle:        PENDING — requires device reconnect to Expo Go
+Shadow warnings:   expected (web-only; shadow* props are valid on native iOS)
+
+───────────────────────────────────────────────────────────────────────────────
+v3 GEOMETRY MEASUREMENTS (sourced from MobileFunctionalV3.tsx line-by-line)
+───────────────────────────────────────────────────────────────────────────────
+
+GLOBAL CONSTANTS
+  SUMMARY_BG    = '#2A5740'           line 197
+  NAV_ACTIVE    = '#2A5740'           line 218
+  NAV_INACTIVE  = '#6E7672'           line 219
+  CB_CHECKED    = '#4E7D5C'           line 220
+  PRIMARY_TEXT  = '#1A2920'           line 211
+  PAGE_BG       = '#F2EDE4'           line 205
+  CARD_BG       = '#FFFFFF'           line 207
+  DIVIDER       = 'rgba(0,0,0,0.06)'  line 208
+
+REGION DIMENSIONS
+  APPBAR_H (content height)           52px       derived from v3 header layout
+  LIST_SUMMARY_BAR_H (resting)        ~100px     measured from hero layout
+  FILTER_BAR_H                        50px       line 233
+  CHECKLIST_ROW_H (cat header)        64px       line 191 (CAT_HEADER_H)
+  ITEM_ROW_MIN_H                      44px       line 192
+  NAV_H (bottom box content)          58px       line 228
+  WEDGE_W (tile width)                72px       line 187 (TILE_W / WEDGE_W)
+  CHECKBOX_HIT_W                      44px       line ~5036
+  CHECKBOX_VISUAL                     20×20px    line ~5040
+  CHECKBOX_BORDER_RADIUS              5px        line ~5041
+  CHECKBOX_BORDER_WIDTH               1.5px      line ~5042
+  CATEGORY_WEIGHT_RIGHT_INSET         44px       line 195
+  CHECKLIST_RIGHT_INSET               34px       line 194
+
+APPBAR
+  paddingLeft                         8px (→14 native, aligns with hero)
+  paddingRight                        44px       (RIGHT_INSET)
+  backgroundColor                     #FFFFFF
+  borderBottom                        1px rgba(0,0,0,0.07)
+  title font                          19px/600/PRIMARY
+  shadow                              0 2px 10px rgba(0,0,0,0.10) (home only)
+
+LIST SUMMARY HERO
+  layout                              horizontal row
+  backgroundColor                     #2A5740
+  paddingTop / Bottom                 10 / 12 px
+  paddingLeft / Right                 14 / 44 px
+  row gap                             14px
+  shadow                              0 4px 12px rgba(0,0,0,0.22)
+  Icon tile: width×height             66×66px
+  Icon tile: borderRadius             14px
+  Icon tile: overlay                  rgba(0,0,0,0.20)
+  Icon tile: icon size                34px  rgba(255,255,255,0.90)
+  Content column gap                  8px
+  List name font                      15.5px / 700 / white
+  Count number                        40px / 700 (800→700Bold) / white  ls -1.5
+  Count suffix                        17px / 500 / rgba(255,255,255,0.78)
+  Right stack gap                     ~6px
+  Packed count (right)                13px / 600 / rgba(255,255,255,0.58)
+  Selected indicator                  18×18px circle rgba(255,255,255,0.18)
+  Base weight (right)                 12px / 600 / rgba(255,255,255,0.62)
+
+FILTER CONTROL
+  bar height                          50px (FILTER_H)
+  bar paddingV / H                    5 / 14 px
+  button minHeight                    36px
+  button paddingV / H                 6 / 10 px
+  button borderRadius                 8px
+  button border                       1px rgba(0,0,0,0.06)
+  inner gap                           7px
+  sliders icon                        15px NAV_ACTIVE
+  label font                          13px / 600 / PRIMARY
+  chevron icon                        17px NAV_INACTIVE
+  shadow                              0 3px 8px rgba(0,0,0,0.08)
+
+SECTION HEADER (CHECKLIST CATEGORY CARD)
+  height                              64px (CAT_HEADER_H)
+  backgroundColor                     #FFFFFF
+  shadow                              0 3px 10px rgba(0,0,0,0.18)
+  borderBottom                        1px DIVIDER
+  Tile width                          72px (TILE_W/WEDGE_W)
+  Tile: clip-path polygon             → rectangular native tile (unavailable)
+  Tile: right drop-shadow             → thin 2px right-edge border rgba(0,0,0,0.08)
+  Tile: icon size                     26px  rgba(255,255,255,0.93)
+  Text paddingLeft                    12px
+  Text paddingVertical                8px
+  Text column gap                     10px  (was 3 in N002 — major fix)
+  Name font                           17px / 500 / PRIMARY  lh 20  ls -0.1
+  Subtitle font                       12.5px / 400 / NAV_INACTIVE
+  Right weight paddingRight           44px (RIGHT_INSET)
+  Right weight font                   13px / 600 / PRIMARY
+  Right weight maxWidth               96px
+
+ITEM ROW
+  minHeight                           44px
+  backgroundColor                     #FFFFFF (no checked-bg change — v3 line 5069)
+  borderBottom                        1px DIVIDER
+  paddingRight                        34px (ITEM_R_INSET)
+  paddingLeft                         0px (checkbox area provides left touch zone)
+  Checkbox hit area width             44px
+  Checkbox visual: size               20×20px
+  Checkbox visual: borderRadius       5px
+  Checkbox visual: borderWidth        1.5px
+  Checkbox checked: bg                CB_CHECKED #4E7D5C
+  Checkbox unchecked: border          rgba(0,0,0,0.18)
+  Check mark icon                     11px white
+  Item name font                      14.5px / 500 / PRIMARY  (450→500 native)
+  No sub-category tag                 (removed — v3 row has no tag display)
+  Weight: native exception            kept right-aligned 12px/600/NAV_INACTIVE
+
+BOTTOM BOX (NAV BAR)
+  content height                      58px (NAV_H)
+  backgroundColor                     #FFFFFF
+  borderTop                           1px rgba(0,0,0,0.07)
+  shadow                              0 -3px 10px rgba(0,0,0,0.07)
+  layout                              4 equal flex NavBox columns
+  NavBox paddingTop / Bottom          9 / 8 px
+  NavBox gap (icon→label)             2px
+  icon size                           21px
+  label font                          10px / 700 active / 400 inactive
+  Active bg                           rgba(42,87,64,0.10)
+  Active icon/label color             NAV_ACTIVE #2A5740
+  Inactive icon/label color           NAV_INACTIVE #6E7672
+  Columns shown                       Summary | Reset (active) | Add | Search
+
+───────────────────────────────────────────────────────────────────────────────
+N002 → N003 DELTA (all constants are in index.tsx only)
+───────────────────────────────────────────────────────────────────────────────
+
+  TILE_W            58 → 72   (+14pt)
+  CAT_HEADER_H      62 → 64   (+2pt)
+  PAGE_BG           (new)     '#F2EDE4'  — exact v3 page background
+  NAV_ACTIVE        (new)     '#2A5740'
+  NAV_INACTIVE      (new)     '#6E7672'
+  CB_CHECKED        (new)     '#4E7D5C'
+  PRIMARY_TEXT      (new)     '#1A2920'
+  NAV_H             (new)     58pt       — bottom box content height
+
+  AppBar:           two-row  → single row, 52pt content height
+  Hero:             vertical layout → horizontal with 66×66 icon tile + count col
+  FilterControl:    padding tightened to exact v3 values, downward shadow added
+  SectionHeader:    column gap 3→10, name 15→17pt/500, right inset 44, shadow 0.18
+  ItemRow:          sub-tag removed, checked-bg removed, paddingR 34, name 14.5pt/500
+  BottomBox:        progress bar removed → 4×NavBox icon+label columns, height 58pt
+
+───────────────────────────────────────────────────────────────────────────────
+RN LIMITATION NOTES
+───────────────────────────────────────────────────────────────────────────────
+
+  clip-path polygon wedge     → rectangular tile (no clip-path in RN)
+  drop-shadow rightward       → thin right-edge border on tile (2px rgba(.08))
+  per-header sticky shadow    → same shadow on all headers (no sticky CSS state)
+  font-weight 800             → PlusJakartaSans_700Bold (max available)
+  font-weight 450             → PlusJakartaSans_500Medium
+  filter CSS property         → shadow* props (deprecated on web, correct on iOS)
+  backdrop-filter blur        → not used; hero is opaque SUMMARY_BG
+
+───────────────────────────────────────────────────────────────────────────────
+EXPO SMOKE TEST
+───────────────────────────────────────────────────────────────────────────────
+
+  Metro start:         ✅  clean restart, no compile errors
+  Web bundle:          ✅  Expo web preview renders all v3 regions correctly
+  iOS bundle:          PENDING device reconnect (next Expo Go session)
+  Web shadow warn:     expected — shadow* props are web-deprecated / native-valid
+  pointerEvents warn:  pre-existing (not introduced by N003)
+
+───────────────────────────────────────────────────────────────────────────────
+iPhone USER TEST NOTES
+───────────────────────────────────────────────────────────────────────────────
+
+  USER PASS gate:      Physical iPhone approval required before marking PASS
+  N002 status:         PASS pending → N003 supersedes it
+  Acceptance criteria:
+    [ ] AppBar single row (logo + "TrailWeigh"), no subtitle, white bg
+    [ ] Hero horizontal: bag tile | "Backpacking Gear" + "78 items" | 29 packed + 15.0 lbs
+    [ ] Filter: "All Items" button, 50pt slot, sliders icon, chevron
+    [ ] Category cards: coloured 72pt tile, 64pt height, 17pt name, weight right-inset 44pt
+    [ ] Item rows: rounded-square checkbox (5pt radius), no tag, clean name only
+    [ ] Check fills CB_CHECKED (#4E7D5C) green — no red/grey on checked
+    [ ] Bottom box: 4 icon+label columns; Reset is active (green), others grey
+    [ ] Scroll: header rows stick, items scroll between them, bottom box stays locked
+
+  To load N003 on iPhone:
+    1. Fully close Expo Go (swipe out of app switcher)
+    2. Reopen Expo Go → scan QR from Expo workflow log, OR
+       paste exp://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.expo.worf.replit.dev
+    3. Wait ~10–20s for Metro "iOS Bundled" log entry confirming delivery
+
+───────────────────────────────────────────────────────────────────────────────
+VISUAL COMPARISON SCREENSHOTS
+───────────────────────────────────────────────────────────────────────────────
+
+  reports/r0111/screenshots/n002-current.jpg    — N002 state (baseline)
+  reports/r0111/screenshots/n003-web-preview.jpg — N003 Expo web preview
+  iPhone physical result:                         USER PROVIDED (post-test)

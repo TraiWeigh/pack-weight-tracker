@@ -1,16 +1,26 @@
 /**
- * index.tsx — Gear screen (N002)
+ * index.tsx — Gear screen  N003 / R0111
  *
- * Visual shell corrected to match /mobile-functional-v3:
- *   • AppHeader: white bg, proper insets.top clearance (fixes status-bar overlap)
- *   • ListSummaryHero: dominant dark-green panel (v3 list-summary-bar)
- *   • FilterControl: full-width button that cycles All/Packed/Unpacked (v3 style)
- *   • SectionHeader: coloured icon tile left, category name + weight (v3 wedge card)
- *   • ItemRow: rounded-square checkbox, desc as primary text, sub as tag
- *   • BottomBox: 4pt progress bar, upward shadow (v3 BoxGroup echo)
+ * Exact v3 visual recreation in React Native — all measurements sourced from
+ * /mobile-functional-v3 line-by-line inspection (R0111 geometry report).
  *
- * Storage, toggles, haptics, weight calculations, exclusive groups, and all
- * PackDataContext logic are unchanged from N001.
+ * Visual targets:
+ *   AppBar        — 52pt content + insets.top, single row, paddingL 14 paddingR 44
+ *   ListSummary   — horizontal: 66×66 tile | name+count col | right stack (packed+weight)
+ *   Filter        — 50pt slot, 36pt button, exact padding/shadow from v3
+ *   SectionHeader — 72pt wide tile, 64pt height, 17pt name, 44pt right inset, v3 shadow
+ *   ItemRow       — clean 44pt row, rounded-square checkbox, CB_CHECKED, no sub-tag
+ *   BottomBox     — 58pt, 4 icon+label columns (v3 NavBox geometry), upward shadow
+ *
+ * Unchanged: PackDataContext, weightUtils, initialData, haptics, toggles, routes,
+ *            categoryTheme.ts, Expo SDK/runtime, all web files.
+ *
+ * Unrepresentable in RN (noted inline):
+ *   clip-path polygon wedge → rectangular tile ✓
+ *   filter: drop-shadow(rightward) on wedge → thin right-edge border on tile
+ *   per-header sticky-state style → permanent v3 resting shadow applied to all headers
+ *   font-weight 800 → 700Bold (PlusJakartaSans max)
+ *   font-weight 450 → 500Medium
  */
 
 import React, { useCallback, useState } from 'react';
@@ -32,22 +42,32 @@ import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext
 import { calcTotalOz, calcWeights, ozToLbs } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 
-// ─── Design constants ────────────────────────────────────────────────────────
+// ─── v3 design constants (exact values from MobileFunctionalV3.tsx) ─────────
 
-/** v3 list-summary-bar dark forest green */
-const SUMMARY_BG = '#2A5740';
-/** Width of the coloured identity tile on each category header */
-const TILE_W = 58;
-/** Minimum height of a category section header */
-const CAT_HEADER_H = 62;
+const SUMMARY_BG   = '#2A5740';   // rgba(42,87,64,0.94) → opaque native equiv
+const NAV_ACTIVE   = '#2A5740';   // line 218
+const NAV_INACTIVE = '#6E7672';   // line 219
+const CB_CHECKED   = '#4E7D5C';   // line 220
+const PRIMARY_TEXT = '#1A2920';   // line 211
+const PAGE_BG      = '#F2EDE4';   // line 205
+const DIVIDER      = 'rgba(0,0,0,0.06)'; // CARD_BORDER
+
+const TILE_W         = 72;   // WEDGE_W  line 187
+const CAT_HEADER_H   = 64;   // CHECKLIST_ROW_H  line 191
+const RIGHT_INSET    = 44;   // CATEGORY_WEIGHT_RIGHT_INSET  line 195
+const ITEM_R_INSET   = 34;   // CHECKLIST_RIGHT_INSET  line 194
+const FILTER_H       = 50;   // FILTER_BAR_H  line 233
+const NAV_H          = 58;   // NAV_H  line 228
+const APPBAR_H       = 52;   // derived from v3 app bar height
+const CHECKBOX_HIT   = 44;   // checkbox hit-target width (v3 touch target)
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type FilterMode = 'all' | 'packed' | 'unpacked';
 
 const FILTER_LABELS: Record<FilterMode, string> = {
-  all: 'All Items',
-  packed: 'Packed Only',
+  all:      'All Items',
+  packed:   'Packed Only',
   unpacked: 'Unpacked Only',
 };
 
@@ -62,89 +82,97 @@ type Section = {
   checkedWeightOz: number;
 };
 
-// ─── AppHeader ────────────────────────────────────────────────────────────────
-// White background; paddingTop = insets.top + content clearance so the title
-// never overlaps the iOS status bar / Dynamic Island.
+// ─── AppBar ───────────────────────────────────────────────────────────────────
+// v3: height 52px content, paddingL 8 paddingR 44, HEADER_BG #FFFFFF, 1px border rgba(0,0,0,0.07)
+// Native: paddingTop = insets.top (safe-area); content height 52pt.
 
-function AppHeader({ listName }: { listName: string }) {
-  const colors = useColors();
+function AppBar() {
   const insets = useSafeAreaInsets();
   return (
     <View
       style={[
-        styles.appHeader,
+        styles.appBar,
         {
-          backgroundColor: colors.card,
-          borderBottomColor: colors.border,
-          paddingTop: insets.top + 8,
+          paddingTop: insets.top,
+          minHeight: insets.top + APPBAR_H,
         },
       ]}
     >
-      <Text style={[styles.appHeaderTitle, { color: colors.foreground }]}>
-        TrailWeigh
-      </Text>
-      <Text style={[styles.appHeaderSub, { color: colors.mutedForeground }]}>
-        {listName}
-      </Text>
+      <View style={styles.appBarInner}>
+        {/* Logo mark substitute — Ionicons checkmark-circle */}
+        <Ionicons name="checkmark-circle" size={22} color={NAV_ACTIVE} />
+        {/* Wordmark: v3 19px/600/PRIMARY */}
+        <Text style={styles.appBarTitle}>TrailWeigh</Text>
+      </View>
     </View>
   );
 }
 
 // ─── ListSummaryHero ──────────────────────────────────────────────────────────
-// Dominant dark-green panel: list name → large item count → weight row.
-// Mirrors v3's rgba(42,87,64,0.94) list-summary-bar.
+// v3: horizontal row — 66×66 icon tile | content col | right stack
+// paddingL 14, paddingR 44, paddingT 10, paddingB 12, gap 14, bg #2A5740
+// shadow: 0 4px 12px rgba(0,0,0,0.22)
 
 function ListSummaryHero({
   listName,
   totalItems,
   checkedItems,
   baseWeightOz,
-  grandTotalOz,
 }: {
   listName: string;
   totalItems: number;
   checkedItems: number;
   baseWeightOz: number;
-  grandTotalOz: number;
 }) {
-  const bwLbs = ozToLbs(baseWeightOz).toFixed(2);
-  const gtLbs = ozToLbs(grandTotalOz).toFixed(2);
+  const bwLbs = ozToLbs(baseWeightOz).toFixed(1);
 
   return (
     <View style={styles.hero}>
-      {/* List identity */}
-      <Text style={styles.heroListName} numberOfLines={1}>
-        {listName}
-      </Text>
-
-      {/* Large item count — mirrors v3's 40px/800 count number */}
-      <View style={styles.heroCountRow}>
-        <Text style={styles.heroCount}>{checkedItems}</Text>
-        <Text style={styles.heroCountOf}>/{totalItems}</Text>
-        <Text style={styles.heroCountLabel}>  items packed</Text>
+      {/* Icon tile: 66×66, radius 14, dark overlay — v3 Luggage icon substitute */}
+      <View style={styles.heroTile}>
+        <Ionicons name="bag-outline" size={34} color="rgba(255,255,255,0.90)" />
       </View>
 
-      {/* Weight row */}
-      <View style={styles.heroWeightRow}>
-        <View style={styles.heroWeightCell}>
-          <Text style={styles.heroWeightLabel}>BASE WEIGHT</Text>
-          <Text style={styles.heroWeightValue}>{bwLbs} lbs</Text>
+      {/* Content column: list name + large count row */}
+      <View style={styles.heroContent}>
+        {/* List name: 15.5pt/700/white — v3 line 4390 */}
+        <Text style={styles.heroListName} numberOfLines={1}>
+          {listName}
+        </Text>
+        {/* Count row: 40pt/700 + "items" 17pt/500 — v3 lines 4401–4408 */}
+        <View style={styles.heroCountRow}>
+          <Text style={styles.heroCount}>{totalItems}</Text>
+          <Text style={styles.heroCountSuffix}> items</Text>
         </View>
-        <View style={styles.heroWeightDivider} />
-        <View style={styles.heroWeightCell}>
-          <Text style={styles.heroWeightLabel}>GRAND TOTAL</Text>
-          <Text style={[styles.heroWeightValue, styles.heroWeightValueAccent]}>
-            {gtLbs} lbs
-          </Text>
-        </View>
+      </View>
+
+      {/* Right stack: packed count + indicator + base weight — v3 lines 4440–4457 */}
+      <View style={styles.heroRight}>
+        {/* Category/packed count: 12pt/600 rgba(.58) */}
+        <Text style={styles.heroCatCount}>
+          {checkedItems} packed
+        </Text>
+        {/* Selected indicator circle */}
+        {checkedItems > 0 && (
+          <View style={styles.heroIndicator}>
+            <Ionicons
+              name="checkmark"
+              size={9}
+              color="rgba(255,255,255,0.92)"
+            />
+          </View>
+        )}
+        {/* Base weight */}
+        <Text style={styles.heroWeight}>{bwLbs} lbs</Text>
       </View>
     </View>
   );
 }
 
 // ─── FilterControl ────────────────────────────────────────────────────────────
-// Single full-width button (v3 filter-control style).
-// Tapping cycles through All → Packed → Unpacked.
+// v3: FILTER_BAR_H=50, padding 5/14, button minH 36, padding 6/10, radius 8
+// border 1px rgba(0,0,0,0.06), shadow 0 3px 8px rgba(0,0,0,0.08)
+// SlidersH 15px NAV_ACTIVE, label 13/600 PRIMARY, ChevronDown 17px NAV_INACTIVE
 
 function FilterControl({
   filter,
@@ -153,47 +181,37 @@ function FilterControl({
   filter: FilterMode;
   onFilter: (f: FilterMode) => void;
 }) {
-  const colors = useColors();
-
   const handlePress = useCallback(() => {
     const idx = FILTER_CYCLE.indexOf(filter);
     onFilter(FILTER_CYCLE[(idx + 1) % FILTER_CYCLE.length]);
   }, [filter, onFilter]);
 
   return (
-    <View
-      style={[
-        styles.filterBar,
-        { backgroundColor: colors.card, borderBottomColor: colors.border },
-      ]}
-    >
+    <View style={styles.filterBar}>
       <TouchableOpacity
-        style={[styles.filterButton, { borderColor: colors.border }]}
+        style={styles.filterButton}
         onPress={handlePress}
         activeOpacity={0.7}
         testID={`filter-${filter}`}
       >
-        <Ionicons
-          name="options-outline"
-          size={16}
-          color={colors.primary}
-          style={styles.filterIcon}
-        />
-        <Text
-          style={[styles.filterButtonText, { color: colors.primary }]}
-          numberOfLines={1}
-        >
+        <Ionicons name="options-outline" size={15} color={NAV_ACTIVE} />
+        <Text style={styles.filterLabel} numberOfLines={1}>
           {FILTER_LABELS[filter]}
         </Text>
-        <Ionicons name="chevron-down" size={16} color={colors.mutedForeground} />
+        <Ionicons name="chevron-down" size={17} color={NAV_INACTIVE} />
       </TouchableOpacity>
     </View>
   );
 }
 
 // ─── SectionHeader ────────────────────────────────────────────────────────────
-// v3-style card: coloured identity tile (left) + icon, category name + subtitle,
-// category packed weight (right). Sticky via stickySectionHeadersEnabled.
+// v3: CHECKLIST_ROW_H=64, white bg, shadow 0 3px 10px rgba(0,0,0,0.18)
+// Tile: WEDGE_W=72, full height, clip-path→rectangular tile, icon 26px rgba(.93)
+// Tile right-edge: thin border simulates drop-shadow(3px 0 ...)
+// Text: paddingL 12, paddingR 44 (RIGHT_INSET), paddingV 8, column gap 10
+// Name: 17px/500/PRIMARY, lh 1.2→20, ls -0.1
+// Subtitle: 12.5px/NAV_INACTIVE
+// Weight right: 13px/600/PRIMARY, paddingR 44
 
 function SectionHeader({
   title,
@@ -208,48 +226,49 @@ function SectionHeader({
   totalCount: number;
   checkedWeightOz: number;
 }) {
-  const colors = useColors();
   const theme = getCategoryTheme(title, catIndex);
   const allDone = checkedCount === totalCount && totalCount > 0;
   const weightLbs = ozToLbs(checkedWeightOz).toFixed(2);
 
   return (
-    <View
-      style={[
-        styles.sectionCard,
-        {
-          backgroundColor: colors.card,
-          borderBottomColor: colors.border,
-          shadowColor: '#000',
-        },
-      ]}
-    >
-      {/* Coloured identity tile (native equivalent of v3 polygon wedge) */}
-      <View style={[styles.sectionTile, { backgroundColor: theme.bg, width: TILE_W }]}>
-        <Ionicons name={theme.icon as any} size={24} color="rgba(255,255,255,0.92)" />
+    <View style={styles.sectionCard}>
+      {/* Coloured identity tile — rectangular native equiv of v3 72px polygon wedge */}
+      <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
+        <Ionicons
+          name={theme.icon as any}
+          size={26}
+          color="rgba(255,255,255,0.93)"
+        />
       </View>
 
       {/* Text content */}
       <View style={styles.sectionContent}>
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]} numberOfLines={1}>
+        {/* Category name: 17pt/500/PRIMARY, lh 20, ls -0.1 */}
+        <Text style={styles.sectionName} numberOfLines={1}>
           {title}
         </Text>
-        <Text style={[styles.sectionSubtitle, { color: colors.mutedForeground }]}>
+        {/* Subtitle: 12.5pt/NAV_INACTIVE */}
+        <Text style={styles.sectionSub}>
           {totalCount} item{totalCount !== 1 ? 's' : ''}
           {checkedCount > 0 ? `  ·  ${checkedCount} packed` : ''}
         </Text>
       </View>
 
-      {/* Right: packed weight + done indicator */}
+      {/* Right: packed weight — paddingR 44, 13pt/600/PRIMARY */}
       <View style={styles.sectionRight}>
         {checkedWeightOz > 0 && (
-          <Text style={[styles.sectionWeight, { color: allDone ? colors.primary : colors.mutedForeground }]}>
+          <Text
+            style={[
+              styles.sectionWeight,
+              allDone && { color: NAV_ACTIVE },
+            ]}
+          >
             {weightLbs} lbs
           </Text>
         )}
         {allDone && (
-          <View style={[styles.sectionDoneDot, { backgroundColor: colors.primary }]}>
-            <Ionicons name="checkmark" size={9} color={colors.primaryForeground} />
+          <View style={styles.sectionDone}>
+            <Ionicons name="checkmark" size={9} color="#FFFFFF" />
           </View>
         )}
       </View>
@@ -258,8 +277,12 @@ function SectionHeader({
 }
 
 // ─── ItemRow ──────────────────────────────────────────────────────────────────
-// v3-aligned: rounded-square checkbox (borderRadius 5), desc as primary text,
-// sub shown as a small muted tag below. Minimum height 44 pt.
+// v3: minH 44, CARD_BG #FFF unchanged on checked (no muted bg)
+// Checkbox: hit target 44px wide, visual 20×20 radius 5 border 1.5
+// Checked: CB_CHECKED #4E7D5C; unchecked: rgba(0,0,0,0.18); check 11px
+// Content: paddingR 34 (CHECKLIST_RIGHT_INSET), gap 0 (single text item)
+// Name: 14.5pt/500/PRIMARY — no sub-category tag (v3 has no tag)
+// Weight: kept as native-justified exception (v3 hides it; native has no cat-header weight col)
 
 function ItemRow({
   item,
@@ -270,8 +293,6 @@ function ItemRow({
   category: string;
   onToggle: (category: string, id: string) => void;
 }) {
-  const colors = useColors();
-
   const handlePress = useCallback(() => {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -282,141 +303,109 @@ function ItemRow({
   const totalOz = calcTotalOz(item.weightOz, item.qty);
   const weightLabel = item.weightOz > 0 ? `${totalOz.toFixed(1)} oz` : null;
 
-  // desc is the item name; sub is the type tag
-  const primaryText = item.desc || item.sub || '';
-  const tagText = item.desc && item.sub ? item.sub : null;
+  // In v3, name is the single item name. Native: item.desc is the product name.
+  const displayName = item.desc || item.sub || '';
 
   return (
     <TouchableOpacity
-      style={[
-        styles.itemRow,
-        {
-          backgroundColor: item.checked ? colors.muted : colors.card,
-          borderBottomColor: colors.border,
-        },
-      ]}
+      style={styles.itemRow}
       onPress={handlePress}
       activeOpacity={0.65}
       testID={`gear-item-${item.id}`}
     >
-      {/* Rounded-square checkbox (v3: borderRadius 5, not a circle) */}
-      <View
-        style={[
-          styles.checkbox,
-          {
-            borderColor: item.checked ? colors.primary : 'rgba(0,0,0,0.18)',
-            backgroundColor: item.checked ? colors.primary : 'transparent',
-          },
-        ]}
-      >
-        {item.checked && (
-          <Ionicons name="checkmark" size={12} color={colors.primaryForeground} />
-        )}
-      </View>
-
-      {/* Content: primary name + optional type tag */}
-      <View style={styles.itemContent}>
-        <Text
+      {/* Checkbox hit-target area: 44pt wide (v3 line 5036) */}
+      <View style={styles.checkboxArea}>
+        <View
           style={[
-            styles.itemName,
-            { color: item.checked ? colors.mutedForeground : colors.foreground,
-              opacity: item.checked ? 0.8 : 1 },
+            styles.checkbox,
+            {
+              borderColor: item.checked ? CB_CHECKED : 'rgba(0,0,0,0.18)',
+              backgroundColor: item.checked ? CB_CHECKED : 'transparent',
+            },
           ]}
-          numberOfLines={2}
         >
-          {primaryText}
-        </Text>
-        {tagText ? (
-          <Text style={[styles.itemTag, { color: colors.mutedForeground }]} numberOfLines={1}>
-            {tagText}
-          </Text>
-        ) : null}
+          {item.checked && (
+            /* Check: 11px (v3 line 5057) */
+            <Ionicons name="checkmark" size={11} color="#FFFFFF" />
+          )}
+        </View>
       </View>
 
-      {/* Weight — shown right; useful since native lacks a category-header weight tile in scroll */}
-      {weightLabel ? (
+      {/* Item name: 14.5pt/500/PRIMARY — no sub-tag */}
+      <Text
+        style={[
+          styles.itemName,
+          item.checked && styles.itemNameChecked,
+        ]}
+        numberOfLines={2}
+      >
+        {displayName}
+      </Text>
+
+      {/* Weight — native-only; not in v3 row but useful without category col */}
+      {weightLabel && (
         <Text
           style={[
             styles.itemWeight,
-            { color: item.checked ? colors.primary : colors.mutedForeground },
+            item.checked && { color: NAV_ACTIVE },
           ]}
         >
           {weightLabel}
         </Text>
-      ) : null}
+      )}
     </TouchableOpacity>
   );
 }
 
 // ─── BottomBox ────────────────────────────────────────────────────────────────
-// Echoes v3 BoxGroup bar: upward shadow, 4pt progress bar, packed count, Reset.
+// v3 NavBox geometry: NAV_H=58, paddingT 7 paddingB 8, col gap 2, icon 21px label 10px
+// Active bg rgba(42,87,64,0.10), active icon NAV_ACTIVE 700, inactive NAV_INACTIVE 400
+// Border: 1px rgba(0,0,0,0.07), shadow 0 -3px 10px rgba(0,0,0,0.07)
+// v3 Group 2: Undo · Redo · Reset · (nav) → N003 shows: Summary · Reset · Add · Search
+
+type NavBoxProps = {
+  icon: string;
+  label: string;
+  active?: boolean;
+  onPress?: () => void;
+};
+
+function NavBox({ icon, label, active = false, onPress }: NavBoxProps) {
+  return (
+    <TouchableOpacity
+      style={[styles.navBox, active && styles.navBoxActive]}
+      onPress={onPress}
+      activeOpacity={active ? 0.7 : 1}
+      disabled={!onPress}
+      testID={`nav-${label.toLowerCase()}`}
+    >
+      <Ionicons
+        name={icon as any}
+        size={21}
+        color={active ? NAV_ACTIVE : NAV_INACTIVE}
+        style={{ opacity: active ? 1 : 0.9 }}
+      />
+      <Text style={[styles.navLabel, active && styles.navLabelActive]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
 
 function BottomBox({
-  checkedItems,
-  totalItems,
   onReset,
   bottomPad,
 }: {
-  checkedItems: number;
-  totalItems: number;
   onReset: () => void;
   bottomPad: number;
 }) {
-  const colors = useColors();
-  const progressPct = totalItems > 0 ? checkedItems / totalItems : 0;
-  const allDone = checkedItems === totalItems && totalItems > 0;
-
   return (
-    <View
-      style={[
-        styles.bottomBox,
-        {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          paddingBottom: bottomPad,
-          // Upward shadow — mirrors v3 BoxGroupBar
-          shadowColor: '#000',
-          shadowOpacity: 0.08,
-          shadowRadius: 6,
-          shadowOffset: { width: 0, height: -3 },
-          elevation: 8,
-        },
-      ]}
-    >
-      <View style={styles.bottomInner}>
-        {/* Progress + count */}
-        <View style={styles.bottomLeft}>
-          <View style={[styles.bottomTrack, { backgroundColor: colors.muted }]}>
-            <View
-              style={[
-                styles.bottomFill,
-                {
-                  backgroundColor: allDone ? colors.primary : colors.primary,
-                  width: `${Math.round(progressPct * 100)}%` as any,
-                  opacity: allDone ? 1 : 0.75,
-                },
-              ]}
-            />
-          </View>
-          <Text style={[styles.bottomCount, { color: colors.mutedForeground }]}>
-            {checkedItems} / {totalItems} packed
-            {allDone && totalItems > 0 ? '  ✓' : ''}
-          </Text>
-        </View>
-
-        {/* Reset — v3 Group 2 Reset action style */}
-        <TouchableOpacity
-          style={[
-            styles.resetBtn,
-            { backgroundColor: colors.secondary, borderColor: colors.border },
-          ]}
-          onPress={onReset}
-          activeOpacity={0.7}
-          testID="reset-all-btn"
-        >
-          <Ionicons name="refresh-outline" size={14} color={colors.foreground} />
-          <Text style={[styles.resetText, { color: colors.foreground }]}>Reset</Text>
-        </TouchableOpacity>
+    <View style={[styles.bottomBox, { paddingBottom: bottomPad }]}>
+      <View style={styles.bottomRow}>
+        <NavBox icon="bar-chart-outline"     label="Summary"  />
+        <NavBox icon="refresh-outline"       label="Reset"    active onPress={onReset} />
+        <NavBox icon="add-circle-outline"    label="Add"      />
+        <NavBox icon="search-outline"        label="Search"   />
       </View>
     </View>
   );
@@ -425,15 +414,12 @@ function BottomBox({
 // ─── GearScreen ───────────────────────────────────────────────────────────────
 
 export default function GearScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const { data, toggleItem, isLoading } = usePackData();
   const [filter, setFilter] = useState<FilterMode>('all');
 
-  // Weight totals from all checked items
   const { baseWeightOz, grandTotalOz } = calcWeights(data);
 
-  // Build sections — badge counts always reflect ALL items, not filtered view
   const allSections: Section[] = CATEGORY_ORDER.map((cat, catIndex) => {
     const items = data[cat] || [];
     const populated = items.filter(i => i.sub || i.desc);
@@ -450,20 +436,18 @@ export default function GearScreen() {
     };
   }).filter(s => s.totalCount > 0);
 
-  // Apply filter to visible rows; section badge counts remain from allSections
   const sections: Section[] = allSections
     .map(s => {
       let visibleData = s.data;
-      if (filter === 'packed') visibleData = s.data.filter(i => i.checked);
+      if (filter === 'packed')   visibleData = s.data.filter(i => i.checked);
       if (filter === 'unpacked') visibleData = s.data.filter(i => !i.checked);
       return { ...s, data: visibleData };
     })
     .filter(s => s.data.length > 0);
 
-  const totalItems = allSections.reduce((n, s) => n + s.totalCount, 0);
+  const totalItems   = allSections.reduce((n, s) => n + s.totalCount, 0);
   const checkedItems = allSections.reduce((n, s) => n + s.checkedCount, 0);
 
-  // Reset all checked items (haptic confirmation — identical to N001)
   const handleReset = useCallback(() => {
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -475,8 +459,7 @@ export default function GearScreen() {
     });
   }, [data, toggleItem]);
 
-  // Bottom padding: NativeTabs manages its own safe area; ClassicTabs is
-  // position:absolute so we need to clear its 49pt bar + bottom inset.
+  // Bottom pad: NativeTabs manages insets; ClassicTabs is position:absolute 49pt bar.
   const isNativeTabs = isLiquidGlassAvailable();
   const bottomPad =
     Platform.OS === 'web'
@@ -487,26 +470,25 @@ export default function GearScreen() {
 
   if (isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={[styles.center, { backgroundColor: PAGE_BG }]}>
+        <ActivityIndicator size="large" color={NAV_ACTIVE} />
       </View>
     );
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Fixed top: header + summary hero + filter */}
-      <AppHeader listName="Backpacking Gear" />
+    <View style={[styles.container, { backgroundColor: PAGE_BG }]}>
+      {/* ── Fixed top ───────────────────────────────────────────────────── */}
+      <AppBar />
       <ListSummaryHero
         listName="Backpacking Gear"
         totalItems={totalItems}
         checkedItems={checkedItems}
         baseWeightOz={baseWeightOz}
-        grandTotalOz={grandTotalOz}
       />
       <FilterControl filter={filter} onFilter={setFilter} />
 
-      {/* Scrollable gear list */}
+      {/* ── Scrolling middle ─────────────────────────────────────────────── */}
       <SectionList
         sections={sections}
         keyExtractor={item => item.id}
@@ -535,13 +517,8 @@ export default function GearScreen() {
         style={styles.list}
       />
 
-      {/* Fixed bottom: v3 BoxGroup echo */}
-      <BottomBox
-        checkedItems={checkedItems}
-        totalItems={totalItems}
-        onReset={handleReset}
-        bottomPad={bottomPad}
-      />
+      {/* ── Fixed bottom ─────────────────────────────────────────────────── */}
+      <BottomBox onReset={handleReset} bottomPad={bottomPad} />
     </View>
   );
 }
@@ -550,286 +527,342 @@ export default function GearScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  center:    { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  // ── AppHeader (white, safe-area-aware) ──────────────────────────────────────
-  appHeader: {
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 1,
-    // Shadow below header (v3 HEADER_BDR equivalent)
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 2,
+  // ── AppBar ─────────────────────────────────────────────────────────────────
+  // v3: height 52, paddingL 8 paddingR 44, white, 1px border rgba(0,0,0,0.07)
+  appBar: {
+    backgroundColor: '#FFFFFF',
+    paddingLeft: 14,          // generous left (v3=8; 14 aligns with hero for native)
+    paddingRight: RIGHT_INSET, // 44 — matches v3 APPBAR_RIGHT_INSET
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.07)',
     zIndex: 10,
+    // Shadow below: v3 home-only 0 2px 10px rgba(0,0,0,0.10)
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
-  appHeaderTitle: {
-    fontSize: 20,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    letterSpacing: -0.3,
+  appBarInner: {
+    height: APPBAR_H,         // 52pt content height, matching v3
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,                   // v3 logo gap 6 → 8 for native
   },
-  appHeaderSub: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    letterSpacing: 0.2,
+  appBarTitle: {
+    fontSize: 19,             // v3 wordmark 19px
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: PRIMARY_TEXT,      // #1A2920
+    letterSpacing: 0.1,
   },
 
-  // ── ListSummaryHero (v3 dark-green panel) ───────────────────────────────────
+  // ── ListSummaryHero ────────────────────────────────────────────────────────
+  // v3: bg rgba(42,87,64,0.94), paddingT 10 paddingB 12, paddingL 14 paddingR 44
+  // horizontal row, gap 14, shadow 0 4px 12px rgba(0,0,0,0.22)
   hero: {
     backgroundColor: SUMMARY_BG,
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 14,
-    gap: 6,
+    paddingTop:    10,
+    paddingBottom: 12,
+    paddingLeft:   14,
+    paddingRight:  RIGHT_INSET,  // 44
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           14,           // v3 icon-to-content gap 14
+    shadowColor: '#000',
+    shadowOpacity: 0.22,
+    shadowRadius:  12,
+    shadowOffset:  { width: 0, height: 4 },
+    elevation: 6,
+    zIndex: 9,
   },
+  // Icon tile: 66×66, radius 14, rgba(0,0,0,0.20) over hero bg
+  heroTile: {
+    width:           66,
+    height:          66,
+    borderRadius:    14,
+    backgroundColor: 'rgba(0,0,0,0.20)',
+    alignItems:      'center',
+    justifyContent:  'center',
+    flexShrink:      0,
+  },
+  // Content column
+  heroContent: {
+    flex: 1,
+    gap:  8,    // v3 flex column gap 8
+  },
+  // List name: 15.5px/700/white, marginBottom 3 inside col
   heroListName: {
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: 'rgba(255,255,255,0.62)',
-    textTransform: 'uppercase',
-    letterSpacing: 1.0,
+    fontSize:    15.5,
+    fontFamily:  'PlusJakartaSans_700Bold',
+    color:       '#FFFFFF',
+    lineHeight:  19,
   },
+  // Count row: baseline aligned
   heroCountRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 0,
+    alignItems:    'baseline',
+    gap:           5,   // v3 baseline row gap 5
   },
+  // Count number: 40px/800(→700)/white, ls -1.5
   heroCount: {
-    fontSize: 40,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    color: '#FFFFFF',
-    letterSpacing: -1,
-    lineHeight: 46,
+    fontSize:      40,
+    fontFamily:    'PlusJakartaSans_700Bold',
+    color:         '#FFFFFF',
+    letterSpacing: -1.5,
+    lineHeight:    44,
   },
-  heroCountOf: {
-    fontSize: 22,
+  // "items" suffix: 17px/500, rgba(.78)
+  heroCountSuffix: {
+    fontSize:   17,
     fontFamily: 'PlusJakartaSans_500Medium',
-    color: 'rgba(255,255,255,0.55)',
-    letterSpacing: -0.5,
-    paddingBottom: 2,
-  },
-  heroCountLabel: {
-    fontSize: 15,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    color: 'rgba(255,255,255,0.72)',
+    color:      'rgba(255,255,255,0.78)',
     paddingBottom: 3,
   },
-  heroWeightRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-    paddingTop: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(255,255,255,0.20)',
-    gap: 0,
-  },
-  heroWeightCell: {
-    flex: 1,
-    gap: 2,
-  },
-  heroWeightDivider: {
-    width: StyleSheet.hairlineWidth,
-    height: 28,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    marginHorizontal: 14,
-  },
-  heroWeightLabel: {
-    fontSize: 9,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    color: 'rgba(255,255,255,0.52)',
-    textTransform: 'uppercase',
-    letterSpacing: 1.0,
-  },
-  heroWeightValue: {
-    fontSize: 16,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: 'rgba(255,255,255,0.88)',
-    letterSpacing: -0.2,
-  },
-  heroWeightValueAccent: {
-    color: '#7ECFA0', // mint accent for grand total
-  },
-
-  // ── FilterControl (v3 full-width button) ────────────────────────────────────
-  filterBar: {
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 8,
-  },
-  filterIcon: {
-    // provided by Ionicons
-  },
-  filterButtonText: {
-    flex: 1,
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    letterSpacing: 0.1,
-  },
-
-  // ── SectionHeader (v3 wedge card equivalent) ─────────────────────────────────
-  sectionCard: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    minHeight: CAT_HEADER_H,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    // Subtle downward shadow like v3 category card
-    shadowOpacity: 0.10,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 3,
-    zIndex: 5,
-  },
-  sectionTile: {
-    // width set inline from TILE_W
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: CAT_HEADER_H,
-  },
-  sectionContent: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    justifyContent: 'center',
-    gap: 3,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    letterSpacing: 0.1,
-    lineHeight: 20,
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    letterSpacing: 0.1,
-  },
-  sectionRight: {
-    paddingRight: 14,
-    paddingVertical: 10,
-    alignItems: 'flex-end',
+  // Right stack: gap 6, right-aligned — v3 lines 4440–4457
+  heroRight: {
+    alignItems:     'flex-end',
     justifyContent: 'center',
     gap: 5,
-    minWidth: 56,
+    flexShrink: 0,
+  },
+  // Cat/packed count: 12px/600 rgba(.58)
+  heroCatCount: {
+    fontSize:      12,
+    fontFamily:    'PlusJakartaSans_600SemiBold',
+    color:         'rgba(255,255,255,0.58)',
+    letterSpacing: 0.2,
+  },
+  // Selected indicator: 18×18, radius 9, rgba(.18) bg, 1.5px border rgba(.50)
+  heroIndicator: {
+    width:           18,
+    height:          18,
+    borderRadius:    9,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth:     1.5,
+    borderColor:     'rgba(255,255,255,0.50)',
+    alignItems:      'center',
+    justifyContent:  'center',
+  },
+  // Base weight: 12px/600 rgba(.62)
+  heroWeight: {
+    fontSize:      12,
+    fontFamily:    'PlusJakartaSans_600SemiBold',
+    color:         'rgba(255,255,255,0.62)',
+    letterSpacing: 0.1,
+  },
+
+  // ── FilterControl ──────────────────────────────────────────────────────────
+  // v3: FILTER_BAR_H=50, padding 5/14, bg white, border-bottom 1px DIVIDER
+  // shadow 0 3px 8px rgba(0,0,0,0.08)
+  filterBar: {
+    height:            FILTER_H,
+    backgroundColor:   '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical:   5,
+    borderBottomWidth: 1,
+    borderBottomColor: DIVIDER,
+    justifyContent:    'center',
+    // Downward shadow (renders above list content)
+    shadowColor:  '#000',
+    shadowOpacity: 0.08,
+    shadowRadius:  8,
+    shadowOffset:  { width: 0, height: 3 },
+    elevation: 3,
+    zIndex: 8,
+  },
+  // Button: minH 36, padding 6/10, radius 8, border 1px DIVIDER, white
+  filterButton: {
+    minHeight:      36,
+    flexDirection:  'row',
+    alignItems:     'center',
+    paddingVertical:   6,
+    paddingHorizontal: 10,
+    borderRadius:   8,
+    borderWidth:    1,
+    borderColor:    DIVIDER,
+    backgroundColor: '#FFFFFF',
+    gap:            7,  // v3 inner gap 7
+  },
+  // Label: 13px/600/PRIMARY
+  filterLabel: {
+    flex:          1,
+    fontSize:      13,
+    fontFamily:    'PlusJakartaSans_600SemiBold',
+    color:         PRIMARY_TEXT,
+    letterSpacing: 0.1,
+  },
+
+  // ── SectionHeader / Category Card ─────────────────────────────────────────
+  // v3: minH 64, white, shadow 0 3px 10px rgba(0,0,0,0.18), border-bottom 1px DIVIDER
+  sectionCard: {
+    flexDirection:  'row',
+    alignItems:     'stretch',
+    minHeight:      CAT_HEADER_H,  // 64
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: DIVIDER,
+    shadowColor:   '#000',
+    shadowOpacity: 0.18,
+    shadowRadius:  10,
+    shadowOffset:  { width: 0, height: 3 },
+    elevation:     4,
+    zIndex:        5,
+  },
+  // Tile: TILE_W=72, full height, theme.bg
+  // Right-edge thin border simulates drop-shadow(3px 0 10px ...) — not reproducible in RN exactly
+  sectionTile: {
+    width:          TILE_W,  // 72
+    minHeight:      CAT_HEADER_H,
+    alignItems:     'center',
+    justifyContent: 'center',
+    // Thin right border mimics v3 wedge right drop-shadow
+    borderRightWidth: 2,
+    borderRightColor: 'rgba(0,0,0,0.08)',
+  },
+  // Text content: paddingL 12, paddingR 0 (handled by sectionRight padding), paddingV 8
+  sectionContent: {
+    flex:          1,
+    paddingLeft:   12,       // v3 text grid paddingL 12
+    paddingRight:  0,
+    paddingVertical: 8,      // v3 paddingT/B 8
+    justifyContent: 'center',
+    gap:           10,       // v3 column gap 10 (was 3 in N002 — biggest text gap fix)
+  },
+  // Category name: 17px/500/PRIMARY, lh 20 (1.2×17≈20.4), ls -0.1
+  sectionName: {
+    fontSize:      17,
+    fontFamily:    'PlusJakartaSans_500Medium',
+    color:         PRIMARY_TEXT,
+    lineHeight:    20,
+    letterSpacing: -0.1,
+  },
+  // Subtitle: 12.5px/NAV_INACTIVE
+  sectionSub: {
+    fontSize:   12.5,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    color:      NAV_INACTIVE,
+  },
+  // Right weight: paddingR 44 (RIGHT_INSET), 13px/600/PRIMARY, maxW 96
+  sectionRight: {
+    paddingRight:   RIGHT_INSET,  // 44
+    paddingVertical: 8,
+    alignItems:     'flex-end',
+    justifyContent: 'center',
+    gap:            5,
+    maxWidth:       96 + RIGHT_INSET,  // maxW 96 + padding
   },
   sectionWeight: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    letterSpacing: 0.2,
-    textAlign: 'right',
+    fontSize:      13,
+    fontFamily:    'PlusJakartaSans_600SemiBold',
+    color:         PRIMARY_TEXT,
+    letterSpacing: 0.1,
+    textAlign:     'right',
   },
-  sectionDoneDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+  sectionDone: {
+    width:           16,
+    height:          16,
+    borderRadius:    8,
+    backgroundColor: NAV_ACTIVE,
+    alignItems:      'center',
+    justifyContent:  'center',
   },
 
-  // ── ItemRow (v3 aligned) ────────────────────────────────────────────────────
+  // ── ItemRow ────────────────────────────────────────────────────────────────
+  // v3: minH 44, CARD_BG #FFF (no checked-bg change), borderBottom 1px DIVIDER
+  // paddingR 34 (ITEM_R_INSET), checkbox hit-target 44pt wide
   itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 44,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 12,
+    flexDirection:  'row',
+    alignItems:     'center',
+    minHeight:      44,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: DIVIDER,
+    paddingRight:   ITEM_R_INSET,  // 34 — CHECKLIST_RIGHT_INSET
   },
-  // Rounded-square checkbox — v3 uses borderRadius 5 (not a circle)
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    alignItems: 'center',
+  // Checkbox touch area: 44pt wide (v3 line 5036)
+  checkboxArea: {
+    width:          CHECKBOX_HIT,  // 44
+    height:         44,
+    alignItems:     'center',
     justifyContent: 'center',
-    flexShrink: 0,
+    flexShrink:     0,
   },
-  itemContent: {
-    flex: 1,
-    gap: 2,
+  // Visual checkbox: 20×20, radius 5, border 1.5 — v3 lines 5040–5044
+  checkbox: {
+    width:          20,
+    height:         20,
+    borderRadius:   5,
+    borderWidth:    1.5,
+    alignItems:     'center',
+    justifyContent: 'center',
   },
-  // Primary text: item.desc (the actual product name)
+  // Name: 14.5pt/500/PRIMARY — v3 14.5px weight450(→500)
   itemName: {
-    fontSize: 14,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    lineHeight: 19,
+    flex:          1,
+    fontSize:      14.5,
+    fontFamily:    'PlusJakartaSans_500Medium',
+    color:         PRIMARY_TEXT,
+    lineHeight:    20,
   },
-  // Secondary tag: item.sub (subcategory type)
-  itemTag: {
-    fontSize: 10,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.7,
-    opacity: 0.65,
+  // Checked name: muted
+  itemNameChecked: {
+    color:   NAV_INACTIVE,
+    opacity: 0.8,
   },
+  // Weight — native-only justified exception (v3 hides weight in row)
   itemWeight: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontSize:      12,
+    fontFamily:    'PlusJakartaSans_600SemiBold',
+    color:         NAV_INACTIVE,
     letterSpacing: 0.2,
-    flexShrink: 0,
-    textAlign: 'right',
+    flexShrink:    0,
+    marginLeft:    8,
   },
 
-  // ── List ────────────────────────────────────────────────────────────────────
-  list: { flex: 1 },
+  // ── List ───────────────────────────────────────────────────────────────────
+  list:        { flex: 1 },
   listContent: { paddingBottom: 4 },
 
-  // ── BottomBox (v3 BoxGroup echo) ────────────────────────────────────────────
+  // ── BottomBox / NavBar ─────────────────────────────────────────────────────
+  // v3: NAV_H=58, white, borderTop 1px rgba(0,0,0,0.07), shadow 0 -3px 10px rgba(0,0,0,0.07)
   bottomBox: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    zIndex: 20,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth:  1,
+    borderTopColor:  'rgba(0,0,0,0.07)',
+    shadowColor:     '#000',
+    shadowOpacity:   0.07,
+    shadowRadius:    10,
+    shadowOffset:    { width: 0, height: -3 },
+    elevation:       8,
+    zIndex:          40,
   },
-  bottomInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 12,
-    gap: 14,
+  bottomRow: {
+    flexDirection:  'row',
+    alignItems:     'stretch',
+    minHeight:      NAV_H,  // 58
   },
-  bottomLeft: {
-    flex: 1,
-    gap: 6,
+  // NavBox: flex 1, paddingT 7 paddingB 8, col, gap 2, centered — v3 lines 982–991
+  navBox: {
+    flex:           1,
+    paddingTop:     9,
+    paddingBottom:  8,
+    alignItems:     'center',
+    justifyContent: 'center',
+    gap:            2,
   },
-  bottomTrack: {
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
+  navBoxActive: {
+    backgroundColor: 'rgba(42,87,64,0.10)',  // v3 active bg
   },
-  bottomFill: {
-    height: 4,
-    borderRadius: 2,
+  // Nav label: 10px — active 700 NAV_ACTIVE, inactive 400 NAV_INACTIVE
+  navLabel: {
+    fontSize:   10,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    color:      NAV_INACTIVE,
   },
-  bottomCount: {
-    fontSize: 11,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    letterSpacing: 0.2,
-  },
-  resetBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  resetText: {
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    letterSpacing: 0.1,
+  navLabelActive: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    color:      NAV_ACTIVE,
   },
 });
