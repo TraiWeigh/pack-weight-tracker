@@ -1,0 +1,111 @@
+R0110 GS / N002 — Native Visual Shell Correction
+=================================================
+Date: 2026-08-22
+Status: IMPLEMENTED — visual verification PASS (Expo web preview)
+Physical iPhone USER PASS: PENDING (Expo Go QR code delivery)
+
+OBJECTIVE
+---------
+Correct the N001 native visual shell so that the Expo native screen genuinely
+resembles /mobile-functional-v3 rather than the old backpacking prototype.
+Physical iPhone evidence confirmed N001 missed the visual target:
+  • TrailWeigh title overlapping the iOS status bar
+  • Pale muted SummaryStrip (instead of dark-green immersive panel)
+  • Segmented pill filter (instead of v3 full-width filter control)
+  • Plain iOS-style section headers (instead of v3 coloured wedge cards)
+  • Circular checkboxes (instead of v3 rounded-square form)
+  • N1 thin grey BottomBox (instead of v3 BoxGroup visual weight)
+
+CHANGES — 2 files only (native artifact only)
+----------------------------------------------
+NEW:
+  artifacts/pack-checklist-mobile/lib/categoryTheme.ts
+    Native-only category identity: NativeCategoryTheme { bg: hex, icon: string }.
+    Keyword→colour map copied from web mobileCategoryTheme.ts hex values.
+    Icons mapped to @expo/vector-icons Ionicons v5 (no web imports).
+    getCategoryTheme(name, index) → keyword match first, rotating fallback.
+
+MODIFIED:
+  artifacts/pack-checklist-mobile/app/(tabs)/index.tsx
+    Full visual shell correction:
+    ─ AppHeader: paddingTop = insets.top + 8 (fixes status-bar overlap);
+                 backgroundColor: colors.card (white, was #F8F6F2 cream)
+    ─ ListSummaryHero (replaces SummaryStrip):
+        background #2A5740 (v3 rgba(42,87,64,0.94) dark forest green)
+        list name → large packed count (40pt/700) → weight row
+        BASE WEIGHT | hairline | GRAND TOTAL (mint accent)
+    ─ FilterControl (replaces FilterBar):
+        single full-width button, white card bg, 1px border, radius 8
+        options-outline icon left, label centre, chevron-down right
+        tapping cycles All Items → Packed Only → Unpacked Only
+    ─ SectionHeader (v3 category card):
+        min-height 62pt; left coloured tile 58pt wide (native wedge equivalent)
+        Ionicons icon 24pt white 0.92; category name 15pt/500 normal case
+        subtitle: N items · M packed (12pt muted)
+        right: packed weight lbs + done-dot when complete
+        downward shadow (v3 card shadow)
+    ─ ItemRow (v3 aligned):
+        checkbox borderRadius 5 (rounded square, was 11=circle)
+        item.desc as primary text (14pt/400 normal case)
+        item.sub as small uppercase tag below (10pt/600, opacity 0.65)
+        min-height 44pt; checked bg = colors.muted
+    ─ Section type: added catIndex + checkedWeightOz fields
+    ─ BottomBox: progress bar 4pt (was 3pt), upward shadow (−3 offset),
+                 borderWidth 1 on Reset, paddingTop 14 (was 12)
+    ─ Design constant: SUMMARY_BG = '#2A5740', TILE_W = 58, CAT_HEADER_H = 62
+
+UNCHANGED (representative — zero modifications)
+-----------------------------------------------
+  artifacts/pack-checklist-mobile/context/PackDataContext.tsx  (state/data layer)
+  artifacts/pack-checklist-mobile/lib/weightUtils.ts           (weight math)
+  artifacts/pack-checklist-mobile/data/initialData.ts          (seed data)
+  artifacts/pack-checklist-mobile/app/_layout.tsx              (root shell)
+  artifacts/pack-checklist-mobile/app/(tabs)/_layout.tsx       (tab config)
+  artifacts/pack-checklist-mobile/hooks/useColors.ts           (tokens)
+  artifacts/pack-checklist-mobile/constants/colors.ts          (palette)
+  artifacts/pack-checklist-mobile/app/(tabs)/summary.tsx       (weight summary)
+  artifacts/pack-checklist/ (entire web artifact)
+  artifacts/api-server/    (entire API artifact)
+  tests/                   (all e2e tests)
+  .replit, artifact.toml, workflows, pnpm-lock.yaml            (all config)
+
+VERIFICATION
+------------
+Native typecheck:  PASS — 0 errors (tsc --noEmit)
+Web typecheck:     PASS — 0 errors (tsc --noEmit)
+Expo workflow:     RUNNING — Metro bundled successfully, QR available
+Expo web preview:  Visual PASS — see screenshots/native-n002.jpg
+
+Visual comparison (Expo web preview):
+  ✅ AppHeader: white background, "TrailWeigh / Backpacking Gear"
+  ✅ ListSummaryHero: dark green #2A5740, "29/78 items packed" large count,
+       BASE WEIGHT 15.01 lbs | GRAND TOTAL 18.53 lbs (mint accent)
+  ✅ FilterControl: "≡ All Items  ˅" full-width button, card bg, 1px border
+  ✅ SectionHeader (Backpack): dark-teal tile, bag icon, "4 items · 1 packed",
+       "2.55 lbs" right — Ionicons icon resolved correctly
+  ✅ SectionHeader (Shelter): forest-green tile, home icon, "10 items · 4 packed"
+  ✅ ItemRow: "ULA Ultra Circuit" primary (14pt normal), "BACKPACK" tag below,
+       rounded-square green checkbox when checked
+  ✅ BottomBox: 4pt progress bar, "29/78 packed", Reset button with refresh icon
+
+Known minor: RN shadow* deprecation warnings in Expo web renderer only.
+  On physical iOS the shadow* props are the correct API; boxShadow is for
+  React Native 0.76+ new architecture builds, not applicable to Expo SDK 54.
+
+EXPO GO DELIVERY
+----------------
+QR code URL: exp://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.expo.worf.replit.dev
+(Valid while expo workflow is running; refresh Expo Go or use Camera app on iOS)
+
+iPhone USER PASS items:
+  1. Status bar: TrailWeigh header does NOT overlap status bar / Dynamic Island
+  2. Hero: dark green panel visible below white header, large item count readable
+  3. Hero weights: BASE WEIGHT and GRAND TOTAL values shown in white/mint text
+  4. Filter: single "All Items" button tappable → cycles Packed Only → Unpacked
+  5. Category headers: coloured tile + icon visible; name + subtitle + weight shown
+  6. Backpack category: teal/blue tile, bag icon
+  7. Shelter category: green tile, home icon
+  8. Item rows: rounded-square checkbox (not circle); desc name primary; sub tag
+  9. Checked item: checkbox fills green; row background goes muted; text dims
+  10. Reset: tap → haptic Warning → all checks clear in one action
+  11. Summary tab: still shows weight cards and category breakdown

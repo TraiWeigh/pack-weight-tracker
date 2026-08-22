@@ -38,3 +38,4 @@
 - [R0104 photo row tap fix](r0104-photo-row-tap.md) — outer container div needs onClick (not just inner button); bare <img> tap unreliable on iOS Safari — wrap in <button>.
 - [R0105 bottom Camera/Photos contextual photo entry](r0105-bottom-camera-photos.md) — 3 cases: item expanded→target it; cat open→create item; no cat→picker sheet. Filechooser must be captured in tests.
 - [Photo List capture assignment](photo-list-capture-assignment.md) — classify a retained capture exactly once; canceling only defers it, while Locations remain visual destinations without items.
+- [N002 native visual shell](n002-native-visual-shell.md) — SUMMARY_BG #2A5740, TILE_W 58, CAT_HEADER_H 62; insets.top inside AppHeader; no clip-path in RN; item.desc=primary, item.sub=tag.

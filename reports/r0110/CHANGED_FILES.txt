@@ -1,0 +1,35 @@
+R0110 Changed Files Manifest
+=============================
+Only files within artifacts/pack-checklist-mobile/ were modified.
+No web, API, shared library, test, config, or workflow files changed.
+No new package dependencies added.
+
+NEW:
+  artifacts/pack-checklist-mobile/lib/categoryTheme.ts
+    NativeCategoryTheme interface; getCategoryTheme(name, index) function.
+    24 keyword groups; 10-entry fallback palette; Ionicons icon names only.
+
+MODIFIED:
+  artifacts/pack-checklist-mobile/app/(tabs)/index.tsx
+    AppHeader      — insets.top clearance, white bg
+    ListSummaryHero — dark green hero replaces pale SummaryStrip
+    FilterControl  — full-width cycle button replaces pill segment
+    SectionHeader  — coloured tile + icon, 62pt height, weight shown
+    ItemRow        — rounded-square checkbox, desc-primary, sub-tag
+    BottomBox      — 4pt bar, upward shadow, stronger Reset button
+    Section type   — added catIndex, checkedWeightOz fields
+    Styles         — SUMMARY_BG, TILE_W, CAT_HEADER_H constants
+
+UNCHANGED:
+  artifacts/pack-checklist-mobile/context/PackDataContext.tsx
+  artifacts/pack-checklist-mobile/lib/weightUtils.ts
+  artifacts/pack-checklist-mobile/data/initialData.ts
+  artifacts/pack-checklist-mobile/app/_layout.tsx
+  artifacts/pack-checklist-mobile/app/(tabs)/_layout.tsx
+  artifacts/pack-checklist-mobile/app/(tabs)/summary.tsx
+  artifacts/pack-checklist-mobile/hooks/useColors.ts
+  artifacts/pack-checklist-mobile/constants/colors.ts
+  artifacts/pack-checklist/ (entire web artifact — zero changes)
+  artifacts/api-server/ (entire API artifact — zero changes)
+  tests/ (all e2e tests — zero changes)
+  .replit, artifact.toml files, pnpm-lock.yaml (all config — zero changes)
