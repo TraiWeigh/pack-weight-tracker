@@ -1,0 +1,36 @@
+R0109 Changed Files Manifest
+=============================
+Only files within artifacts/pack-checklist-mobile/ were modified.
+No web, API, shared library, test, or config files were changed.
+
+MODIFIED:
+  artifacts/pack-checklist-mobile/app/(tabs)/index.tsx
+    - Full TrailWeigh-style shell: AppHeader, SummaryStrip, FilterBar,
+      SectionList (unchanged behavior), BottomBox
+    - All existing logic preserved: toggles, haptics, exclusive groups,
+      CATEGORY_ORDER, AsyncStorage, calcWeights
+
+  artifacts/pack-checklist-mobile/app/(tabs)/summary.tsx
+    - Added inline ScreenHeader ("TrailWeigh / Weight Summary")
+    - Adaptive bottomPad for NativeTabs vs ClassicTabs
+    - All weight cards and category bar logic unchanged
+
+  artifacts/pack-checklist-mobile/hooks/useColors.ts
+    - Fixed pre-existing TS2352 cast error (Record<string,...> with radius)
+    - Simplified to direct colors.dark / colors.light access
+    - Behavior identical; no color values changed
+
+UNCHANGED (representative):
+  artifacts/pack-checklist-mobile/app/_layout.tsx
+  artifacts/pack-checklist-mobile/app/(tabs)/_layout.tsx
+  artifacts/pack-checklist-mobile/constants/colors.ts
+  artifacts/pack-checklist-mobile/context/PackDataContext.tsx
+  artifacts/pack-checklist-mobile/data/initialData.ts
+  artifacts/pack-checklist-mobile/lib/weightUtils.ts
+  artifacts/pack-checklist-mobile/app.json
+  artifacts/pack-checklist-mobile/package.json
+  artifacts/pack-checklist/ (entire web artifact)
+  artifacts/api-server/ (entire API artifact)
+  lib/ (all shared packages)
+  tests/ (all e2e tests)
+  .replit

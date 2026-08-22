@@ -1,0 +1,93 @@
+R0109 — N001 Native Foundation Shell
+TrailWeigh Native Milestone 1
+==============================
+Date: 2026-08-22
+
+SCOPE
+-----
+Implement a TrailWeigh-style native shell layout for the existing
+artifacts/pack-checklist-mobile Expo/React Native artifact.
+Web app (artifacts/pack-checklist) left completely untouched.
+
+LAYOUT IMPLEMENTED
+------------------
+Gear Tab (app/(tabs)/index.tsx):
+  [AppHeader]      — "TrailWeigh" wordmark + "Backpacking Gear" subtitle
+  [SummaryStrip]   — Base Weight | Grand Total in compact 2-column strip
+  [FilterBar]      — All / Packed / Unpacked segmented filter (pill track)
+  [SectionList]    — Sticky-header gear list (all existing behavior preserved)
+  [BottomBox]      — Progress bar + packed count + Reset button above tab bar
+
+Summary Tab (app/(tabs)/summary.tsx):
+  [ScreenHeader]   — Inline "TrailWeigh / Weight Summary" identity (scrolls)
+  [WeightCards]    — Base Weight, Clothing Worn, Dog Pack, Expendables, Grand Total
+  [CategoryBars]   — Weight breakdown bar chart (all existing behavior preserved)
+
+PRESERVED UNCHANGED
+-------------------
+- Expo Router structure (app/ file layout)
+- AsyncStorage persistence (key: pack-checklist-mobile-v1)
+- PackDataContext — all state, toggleItem, isLoading, CATEGORY_ORDER
+- Exclusive-group enforcement (Backpack / Shelter types / Sleep)
+- Haptic feedback (toggle: Light; reset: Warning)
+- calcWeights / calcTotalOz / ozToLbs / formatWeight utilities
+- Tab layout with NativeTabs (liquid glass iOS 26) / ClassicTabs fallback
+- Safe-area insets handling (NativeTabs vs ClassicTabs adaptive bottomPad)
+- Sample backpacking gear seed data (N001 test fixture)
+
+FILTER BEHAVIOR
+---------------
+- "All" (default): all populated items shown
+- "Packed": only checked items shown per visible category
+- "Unpacked": only unchecked items shown per visible category
+- Section badge always shows whole-category counts regardless of filter
+- Empty categories (after filter) are hidden
+
+BOTTOM BOX
+----------
+- Thin progress bar (primary color fill)
+- "X / Y packed" count label
+- "Reset" pill button with refresh icon
+- Reset uses haptic Warning + toggles all checked items off (batched)
+- bottomPad: NativeTabs→insets.bottom, ClassicTabs→insets.bottom+49, web→84
+
+CHANGED FILES (mobile artifact only)
+-------------------------------------
+artifacts/pack-checklist-mobile/app/(tabs)/index.tsx   — full shell restructure
+artifacts/pack-checklist-mobile/app/(tabs)/summary.tsx — identity header + cleanup
+artifacts/pack-checklist-mobile/hooks/useColors.ts     — pre-existing TS cast fixed
+
+UNCHANGED FILES (confirmed by git diff)
+----------------------------------------
+All files under artifacts/pack-checklist/      — web app UNTOUCHED
+All files under artifacts/api-server/          — API server UNTOUCHED
+All files under lib/                           — shared packages UNTOUCHED
+All test files under tests/                    — test suite UNTOUCHED
+.replit                                        — workflow config UNTOUCHED
+
+VERIFICATION
+------------
+Native typecheck:  PASS (0 errors)
+Web typecheck:     PASS (0 errors)
+Expo workflow:     RUNNING (Metro serving, HMR active)
+Git diff scope:    3 files, all inside artifacts/pack-checklist-mobile/
+
+USER PASS STATUS
+----------------
+Physical iPhone Safari verification PENDING.
+Expo Go connection active at:
+  exp://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.expo.worf.replit.dev
+
+Expected on device:
+  - Gear tab: TrailWeigh header, weight strip, filter pills, gear list, bottom box
+  - Summary tab: identity header, weight cards, category breakdown
+  - Toggle items → haptic + check state + weight totals update live
+  - Filter pills → list narrows to packed/unpacked items
+  - Reset → haptic Warning + all items uncheck
+
+OUT OF SCOPE (N001)
+-------------------
+Photo Lists, Camera/Photos, Locker, Master List, Share, Cloud sync,
+EAS/TestFlight/App Store setup, route rewrite, new shared libraries,
+bundle identifier, Apple account configuration.
+

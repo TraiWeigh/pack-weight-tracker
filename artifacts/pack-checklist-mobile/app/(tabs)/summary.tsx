@@ -1,9 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useColors } from '@/hooks/useColors';
 import { usePackData, CATEGORY_ORDER } from '@/context/PackDataContext';
-import { calcWeights, calcTotalOz, formatWeight, ozToLbs } from '@/lib/weightUtils';
+import { calcWeights, calcTotalOz, ozToLbs } from '@/lib/weightUtils';
+
+// ─── Weight Card ──────────────────────────────────────────────────────────────
 
 function WeightCard({
   label,
@@ -18,7 +28,7 @@ function WeightCard({
 }) {
   const colors = useColors();
   const lbs = ozToLbs(oz).toFixed(2);
-  const kg = (oz * 28.3495 / 1000).toFixed(3);
+  const kg = ((oz * 28.3495) / 1000).toFixed(3);
 
   return (
     <View
@@ -59,7 +69,10 @@ function WeightCard({
       <Text
         style={[
           styles.cardSub,
-          { color: accent ? colors.primaryForeground : colors.mutedForeground, opacity: 0.75 },
+          {
+            color: accent ? colors.primaryForeground : colors.mutedForeground,
+            opacity: 0.75,
+          },
         ]}
       >
         {oz.toFixed(1)} oz · {kg} kg
@@ -67,6 +80,8 @@ function WeightCard({
     </View>
   );
 }
+
+// ─── Category Bar ─────────────────────────────────────────────────────────────
 
 function CategoryBar({
   name,
@@ -84,7 +99,10 @@ function CategoryBar({
   return (
     <View style={styles.catBarRow}>
       <View style={styles.catBarMeta}>
-        <Text style={[styles.catBarName, { color: colors.foreground }]} numberOfLines={1}>
+        <Text
+          style={[styles.catBarName, { color: colors.foreground }]}
+          numberOfLines={1}
+        >
           {name}
         </Text>
         <Text style={[styles.catBarWeight, { color: colors.mutedForeground }]}>
@@ -103,10 +121,20 @@ function CategoryBar({
   );
 }
 
+// ─── Summary Screen ───────────────────────────────────────────────────────────
+
 export default function SummaryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { data, isLoading } = usePackData();
+
+  const isNativeTabs = isLiquidGlassAvailable();
+  const bottomPad =
+    Platform.OS === 'web'
+      ? 84
+      : isNativeTabs
+      ? insets.bottom
+      : insets.bottom + 49;
 
   if (isLoading) {
     return (
@@ -119,7 +147,6 @@ export default function SummaryScreen() {
   const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } =
     calcWeights(data);
 
-  // Per-category totals for bar chart
   const catTotals = CATEGORY_ORDER.map(cat => {
     const items = data[cat] || [];
     const oz = items
@@ -137,19 +164,31 @@ export default function SummaryScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={[
         styles.scrollContent,
-        {
-          paddingBottom: insets.bottom + (Platform.OS === 'web' ? 84 : 90),
-          paddingTop: Platform.OS === 'web' ? 67 : 0,
-        },
+        { paddingBottom: bottomPad + 12, paddingTop: Platform.OS === 'web' ? 67 : 0 },
       ]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header note */}
+      {/* Screen identity header */}
+      <View
+        style={[
+          styles.screenHeader,
+          { borderBottomColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.screenHeaderTitle, { color: colors.foreground }]}>
+          TrailWeigh
+        </Text>
+        <Text style={[styles.screenHeaderSub, { color: colors.mutedForeground }]}>
+          Weight Summary
+        </Text>
+      </View>
+
+      {/* Packed count note */}
       <Text style={[styles.headerNote, { color: colors.mutedForeground }]}>
         {totalChecked} item{totalChecked !== 1 ? 's' : ''} packed
       </Text>
 
-      {/* Main weight cards */}
+      {/* Weight cards */}
       <WeightCard label="Base Weight" oz={baseWeightOz} large accent />
 
       <View style={styles.smallCards}>
@@ -163,7 +202,6 @@ export default function SummaryScreen() {
 
       <WeightCard label="Expendables" oz={expendablesOz} />
 
-      {/* Divider */}
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <WeightCard label="Grand Total" oz={grandTotalOz} large />
@@ -206,20 +244,44 @@ export default function SummaryScreen() {
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+
   scrollContent: {
     paddingHorizontal: 16,
     gap: 10,
   },
+
+  // Screen identity header (inline, scrolls with content)
+  screenHeader: {
+    paddingTop: 12,
+    paddingBottom: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 1,
+    marginBottom: 2,
+  },
+  screenHeaderTitle: {
+    fontSize: 20,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    letterSpacing: -0.3,
+  },
+  screenHeaderSub: {
+    fontSize: 12,
+    fontFamily: 'PlusJakartaSans_500Medium',
+    letterSpacing: 0.2,
+  },
+
   headerNote: {
     fontSize: 12,
     fontFamily: 'PlusJakartaSans_500Medium',
-    paddingTop: 14,
+    paddingTop: 2,
     paddingBottom: 2,
     letterSpacing: 0.3,
   },
+
   card: {
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -259,6 +321,7 @@ const styles = StyleSheet.create({
     fontFamily: 'PlusJakartaSans_400Regular',
     letterSpacing: 0.2,
   },
+
   smallCards: {
     flexDirection: 'row',
     gap: 10,
@@ -266,10 +329,12 @@ const styles = StyleSheet.create({
   smallCardHalf: {
     flex: 1,
   },
+
   divider: {
     height: StyleSheet.hairlineWidth,
     marginVertical: 4,
   },
+
   breakdownSection: {
     borderRadius: 12,
     borderWidth: StyleSheet.hairlineWidth,
@@ -311,6 +376,7 @@ const styles = StyleSheet.create({
     height: 5,
     borderRadius: 3,
   },
+
   emptyState: {
     alignItems: 'center',
     paddingVertical: 40,
