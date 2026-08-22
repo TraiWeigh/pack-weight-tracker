@@ -39,3 +39,4 @@
 - [R0105 bottom Camera/Photos contextual photo entry](r0105-bottom-camera-photos.md) — 3 cases: item expanded→target it; cat open→create item; no cat→picker sheet. Filechooser must be captured in tests.
 - [Photo List capture assignment](photo-list-capture-assignment.md) — classify a retained capture exactly once; canceling only defers it, while Locations remain visual destinations without items.
 - [N002 native visual shell](n002-native-visual-shell.md) — SUMMARY_BG #2A5740, TILE_W 58, CAT_HEADER_H 62; insets.top inside AppHeader; no clip-path in RN; item.desc=primary, item.sub=tag.
+- [R0112 N004 native lessons](r0112-n004-lessons.md) — react-native-svg already installed; tab bar hidden via display:none; SectionList collapse = data:[]; PackDataContext has no listName; checkbox-outline not checkmark-square-outline.

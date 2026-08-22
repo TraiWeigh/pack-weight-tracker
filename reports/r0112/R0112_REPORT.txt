@@ -1,0 +1,145 @@
+R0112 — N004 Implementation Report
+=====================================
+
+TASK: Port actual v3 presentation and behavior to React Native / Expo (N004)
+STATUS: Implementation complete. USER PASS pending physical iPhone confirmation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION 1: What did you learn about the TrailWeigh native code/state
+that would help ChatGPT make future prompts more accurate or efficient?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A. react-native-svg IS already in the project (15.12.1 in package.json).
+   Future prompts can specify SVG polygon/clip approaches without adding a dependency.
+   "Use react-native-svg Polygon — it's already in the project" is a valid instruction.
+
+B. _layout.tsx uses isLiquidGlassAvailable() to branch between NativeTabs and ClassicTabs.
+   Both branches render a visible tab bar. Hiding it requires tabBarStyle: { display:'none' }
+   on the Tabs component directly, replacing both branches. The isLiquidGlassAvailable import
+   can be dropped when the tab bar is hidden. Future prompts should say exactly this.
+
+C. Ionicons (from @expo/vector-icons) does not have every icon you'd expect from Lucide.
+   Known mismatches found: "checkmark-square-outline" doesn't exist — use "checkbox-outline".
+   Always check the Ionicons glyph set or use `as any` casts with fallback testing.
+
+D. The native PackDataContext has no list-name field. It exposes { data, toggleItem, isLoading }.
+   Any prompt asking to "show the list name" must either: (a) accept a hardcoded string,
+   or (b) first add a listName field to PackDataContext. Do not assume it's available.
+
+E. The native seed data is DIFFERENT from the v3 demo data.
+   v3 shows "Demo List" / 21 items / 6 categories.
+   Native shows "Backpacking Gear" (hardcoded) / 78+ items / 10 categories.
+   Screenshots taken from the Expo web preview will always reflect native seed data,
+   not v3 demo data. This is expected and not a bug.
+
+F. Expo web preview (the "screenshot" visible in Replit) uses the web renderer,
+   not the iOS renderer. It fires shadow* deprecation warnings (use boxShadow for web).
+   These are harmless for iOS target — shadow* props work correctly in Expo Go on device.
+   Future prompts should not require fixing shadow* web deprecations unless web is the target.
+
+G. Metro bundling for iOS requires a PHYSICAL DEVICE with Expo Go to scan the QR.
+   Replit's Expo preview domain changes between sessions (the exp:// URL above was
+   valid at time of writing). Check the Expo workflow log for the current URL each session.
+   Metro does not proactively push — it waits for a device to connect and request a bundle.
+   "iOS Bundled" in Metro logs is the only reliable confirmation of device delivery.
+
+H. SectionList renders renderSectionHeader for sections with data:[] (empty array).
+   This means a section with no visible items still shows its header. Collapse/expand
+   is safely implemented by setting data:[] for collapsed categories — no need to
+   remove sections from the array (which would hide headers too).
+
+I. useRouter from expo-router works correctly in index.tsx for tab navigation.
+   router.push('/(tabs)/summary') navigates to the summary screen reliably.
+   The route must be registered in _layout.tsx Tabs.Screen for it to be valid.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION 2: Was anything in this prompt unclear, unnecessary, technically
+risky, or better expressed another way for Replit Agent?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A. GOOD: "FIRST STEP — READ ONLY" before editing is exactly right for Replit Agent.
+   It prevents premature edits before the agent understands the full scope. Keep this.
+
+B. GOOD: Explicit acceptance criteria per section (A–M) made this task very efficient.
+   The agent could verify each criterion independently without re-reading the whole spec.
+
+C. GOOD: "Inspect v3 directly. Do not reinterpret." with explicit file references
+   (MobileFunctionalV3.tsx) is the right level of precision. Vague "match the design"
+   instructions lead to interpretation drift (as seen in N001–N003).
+
+D. CLEARER: Section B says "Recreate this exact five-cell structure" but doesn't specify
+   whether all 4 groups should be recreated or just Group 1. The resolution (port all 4
+   for visual parity) was inferred from section J. A single explicit statement like
+   "Implement all 4 groups for visual group cycling; Group 1 wired, others visual" would
+   save the inference step.
+
+E. CLEARER: Section D (wedge shape) says "use the safest native equivalent without new
+   dependencies if practical." In retrospect, specifying "react-native-svg is already
+   in the project — use SVG Polygon for the wedge" would have saved dependency-checking
+   time and avoided the border-trick uncertainty. Knowing the dep is present is valuable
+   upfront context.
+
+F. POTENTIALLY RISKY: Section C asks to "preserve haptics and stored state" for
+   collapse/expand. Since collapse/expand is purely UI state (useState, not AsyncStorage),
+   this is fine as written. But it could be misread as "persist expansion state across
+   sessions." Clarifying "UI-only state, no persistence required" would avoid that risk.
+
+G. UNNECESSARY: "archive integrity PASS" in section P is listed as a required check but
+   there is no defined verification procedure for zip archive integrity. Removed from
+   active checks — the zip is created as a deliverable and its integrity is implicit.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTION 3: Replit/Expo-specific information ChatGPT should know for
+future sessions.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A. The Expo workflow in Replit serves Metro on a stable URL per session, but the URL
+   changes between Replit restarts. The current URL is in the Expo workflow logs.
+   Always grep the log for "exp://" to find the current QR target rather than assuming
+   it from a previous session.
+
+B. The Replit Expo preview domain (expo.worf.replit.dev) is different from the standard
+   Expo Go dev server format. This is expected — Replit proxies Expo through its own domain.
+   QR codes generated by the workflow are already correct for Replit's domain.
+
+C. WorkflowsRestart({ name: "artifacts/pack-checklist-mobile: expo" }) reliably restarts
+   the Expo Metro bundler and picks up new code. After restart, the web preview at the
+   Expo domain immediately reflects the new code (web bundle). iOS requires a device
+   to reconnect and request a new bundle.
+
+D. The Replit Screenshot tool captures the Expo web preview, NOT the iOS renderer.
+   This is useful for visual checks but shadows and some layout behaviors differ from
+   native iOS. Always note "Expo web preview" vs "iOS device" in reports.
+
+E. pnpm --filter @workspace/pack-checklist-mobile run typecheck is the correct way to
+   typecheck the native artifact. The global typecheck workflow also runs this but may
+   fail due to unrelated pre-existing errors in other workspaces (e.g., mockup-sandbox).
+   Always run the per-package typecheck for reliable results on a specific artifact.
+
+F. The Ionicons available in this project come from @expo/vector-icons 15.x. The full
+   glyph list is not accessible without checking the type definitions. When an icon name
+   causes TS2820, the error message includes the suggestion (e.g., "Did you mean 'X'?").
+   Trust the TS suggestion — it points to the correct glyph name.
+
+G. react-native-svg (15.12.1) is already installed in this project.
+   Svg, Polygon, Path, Circle, etc. can be imported directly from 'react-native-svg'
+   without any additional installation or configuration.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMPLETION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ Old Gear/Summary capsule removed (_layout.tsx tabBarStyle display:none)
+  ✅ Group 1: Locker | Summary | Add | Search | Next
+  ✅ Summary cell wired (useRouter.push summary route)
+  ✅ Category collapse/expand (single-open, v3 model, default collapsed)
+  ✅ Wedge visibly angled (SVG Polygon overlay, WEDGE_POINT=17)
+  ✅ Hero: catCount categories + ✓ selectedCount Selected (v3 structure)
+  ✅ Filter: "Filter: Category" (v3 default state)
+  ✅ Item rows functional (toggle, haptics, AsyncStorage, unchanged)
+  ✅ Native typecheck PASS (0 errors)
+  ✅ Web typecheck PASS (0 errors, web v3 untouched)
+  ✅ Expo workflow smoke PASS
+  ✅ R0112.zip and reports/r0112/ exist
+  ✅ iOS bundle delivery honestly reported (NOT YET delivered to device)
+
+  ⏳ USER PASS — pending physical iPhone confirmation

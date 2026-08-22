@@ -1,0 +1,29 @@
+R0112 / N004 — Changed Files
+============================
+
+MODIFIED (2 files, native-only):
+  artifacts/pack-checklist-mobile/app/(tabs)/_layout.tsx
+    - Replaced NativeTabs/ClassicTabs dual layout with single Tabs + display:none
+    - Removes the old Gear/Summary capsule from all iOS configurations
+    - Both index and summary routes preserved and navigable via useRouter
+
+  artifacts/pack-checklist-mobile/app/(tabs)/index.tsx
+    - Full N004 rewrite (N003 → N004): 868 lines → ~1,050 lines
+    - BOX_GROUPS: 4 groups × 5 cells matching v3 exactly (lines 1227–1281)
+    - WEDGE_POINT=17: SVG polygon overlay simulating v3 clip-path pentagon
+    - AppBar: hamburger icon + 6 decorative shortcut icons (v3 lines 4319–4354)
+    - ListSummaryHero: catCount categories + ✓ selectedCount Selected (v3 lines 4440–4459)
+    - FilterControl: static "Filter: Category" (v3 default viewMode)
+    - SectionHeader: tappable collapse/expand, wedge shape, oz weights, "selected" subtitle
+    - BottomBox: 5-cell Group 1, 4-group cycling via Next/Back
+    - useRouter: Summary cell navigates to /(tabs)/summary
+    - bottomPad: insets.bottom only (tab bar hidden)
+
+UNCHANGED (all web and shared files untouched):
+  artifacts/pack-checklist/          — web v3, completely untouched
+  artifacts/api-server/              — API server, untouched
+  artifacts/pack-checklist-mobile/lib/categoryTheme.ts  — N002 asset, correct for N004
+  artifacts/pack-checklist-mobile/context/PackDataContext.tsx — data layer, untouched
+  artifacts/pack-checklist-mobile/lib/weightUtils.ts    — untouched
+  artifacts/pack-checklist-mobile/hooks/                — untouched
+  Shared packages, schemas, databases                   — untouched

@@ -1,0 +1,25 @@
+R0112 — iOS Bundle Delivery Status
+=====================================
+
+Post-N004 iOS bundle status: NOT DELIVERED TO PHYSICAL DEVICE
+
+Verification method:
+  grep "iOS Bundled" /tmp/logs/artifactspack-checklist-mobile_expo_*.log
+
+Result: 0 matches — no iOS bundle has been requested or served since N004 was written.
+
+Metro is running and waiting at:
+  exp://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.expo.worf.replit.dev
+
+Web bundle (Expo web preview): served and confirmed functional.
+iOS bundle: NOT YET SERVED. Requires physical iPhone to open Expo Go and scan QR.
+
+Action required for USER PASS:
+  1. Fully close Expo Go on iPhone
+  2. Open Expo Go → Scan QR from the exp:// URL above
+  3. Metro will log "iOS Bundled in Xms (NNNN modules)" to confirm N004 loaded
+  4. User physically verifies the result on device
+  5. USER PASS requires physical iPhone confirmation from the user
+
+This report will not claim "delivered to iPhone" until Metro logs an actual
+post-N004 iOS bundle request. Current status: PENDING DEVICE DELIVERY.

@@ -1,0 +1,337 @@
+R0112 GS — TrailWeigh iOS N004 — Port Actual v3, Do Not Reinterpret
+
+PURPOSE
+N003 / R0111 is NOT USER PASS.
+
+The user has confirmed that the native app still does not match the actual TrailWeigh v3 and that several visible controls do not work.
+
+This task is a correction pass.
+
+CRITICAL SOURCE-OF-TRUTH RULE
+Ignore conflicting visual descriptions from N001, N002, N003, or earlier prompts.
+
+The authoritative reference is:
+1. The CURRENT working web implementation at /mobile-functional-v3
+2. The actual v3 source code already present in this Replit project
+3. The saved authoritative v3 screenshots in reports/r0111/screenshots/
+4. Physical iPhone evidence from the user, when it conflicts with assumptions
+
+DO NOT invent or reinterpret the UI.
+DO NOT make a “native-inspired” variation.
+PORT the actual v3 presentation and behavior into React Native / Expo as faithfully as practical.
+
+FIRST STEP — READ ONLY
+Before editing:
+- inspect current /mobile-functional-v3 implementation
+- inspect all visible v3 states needed for this task
+- inspect current N003 native implementation
+- inspect reports/r0111/screenshots/v3-reference.jpg
+- inspect reports/r0111/screenshots/n003-current.jpg
+- inspect current native tab layout/navigation
+- identify the minimum native files needed
+
+Then implement only after the comparison is complete.
+
+STRICT SCOPE
+May modify only:
+  artifacts/pack-checklist-mobile/
+
+Do not modify:
+- artifacts/pack-checklist/
+- web v3 source
+- API server
+- shared data/schema
+- deployment/publishing
+- auth
+- EAS/TestFlight/App Store setup
+- package dependencies unless absolutely necessary; if a new dependency is required, STOP and explain first
+
+PRIMARY GOAL
+Make the native iPhone screen visibly and behaviorally match the existing v3 screen much more closely.
+
+The web v3 is already working. Use it as the specification.
+
+A. REMOVE THE OLD NATIVE GEAR / SUMMARY CAPSULE
+The physical iPhone currently shows two bottom interfaces:
+1. the new TrailWeigh bottom bar
+2. the old native Gear / Summary tab capsule
+
+The old Gear / Summary capsule must be completely hidden from the visible UI.
+
+Preserve the existing routes internally if needed, but the user must not see the old native tab bar.
+
+Acceptance:
+- only ONE bottom navigation/control bar is visible
+- no Gear / Summary capsule remains
+- no extra blank gap remains where the native tab bar used to be
+- bottom bar remains above the iPhone home indicator safe area
+
+B. MATCH THE ACTUAL v3 BOTTOM BOX GROUP 1
+The default visible v3 bottom group is:
+
+Locker | Summary | Add | Search | Next ›
+
+Recreate this exact five-cell structure and relative spacing from v3.
+
+Remove Reset from Group 1.
+Reset belongs to a later v3 Box Group and must not occupy the default group.
+
+Use the same icon/label hierarchy as v3.
+
+Functional requirements:
+- Summary must navigate to the existing native Summary route
+- Locker: if the corresponding native destination does not yet exist, keep it visibly present but non-destructive; document limitation
+- Add: inspect the working v3 behavior and current native data layer. If it can be safely ported without expanding scope dramatically, wire the appropriate native action. If not, keep visual parity and document exactly what is missing.
+- Search: same rule as Add
+- Next: implement movement to the next bottom Box Group if the native task can safely port the existing v3 behavior in scope; otherwise preserve the exact visible control and document the limitation
+
+Do not invent alternate bottom controls.
+
+C. PORT v3 CATEGORY COLLAPSE / EXPAND
+The v3 screenshot shows collapsed category headers.
+
+Port the actual v3 category behavior:
+- categories are represented as category headers
+- tapping a category expands its item list
+- tapping again collapses it
+- item rows only render visibly for expanded categories
+- preserve item checkbox/toggle behavior
+- preserve haptics and stored state
+- do not replace this with always-expanded SectionList behavior
+
+If v3 has a specific single-open-category or multi-open-category rule, inspect the actual web implementation and reproduce that rule rather than guessing.
+
+If v3 performs automatic scrolling when opening a category, inspect and reproduce the current v3 behavior as closely as practical with native scroll APIs.
+
+D. PORT THE ACTUAL v3 WEDGE SHAPE
+The category identity block must look like the actual v3 angled wedge, not a rectangle.
+
+Reference the exact v3 shape.
+
+React Native does not have CSS clip-path, so use the safest native equivalent without new dependencies if practical:
+- base colored rectangle plus native triangle/angled extension
+or
+- another existing-dependency/native approach
+
+Acceptance:
+- right edge is visibly angled/pointed
+- category color and white icon remain clear
+- wedge proportion matches v3 closely
+- approximately 1 px visible category separation remains
+- category name/subtitle and right-side weight align like v3
+
+Do not return to the flat rectangular N002/N003 tile.
+
+E. MATCH v3 HERO / LIST SUMMARY CONTENT
+Use the ACTUAL current v3 implementation as authority.
+
+Do not invent hero metrics.
+
+Match:
+- dark green summary background
+- left identity tile/icon
+- actual list name treatment
+- large item count treatment
+- “items” labeling and chevron if present in current v3
+- actual right-side category count
+- actual selected-item count/status
+- spacing, alignment, typography hierarchy, and gutters as closely as native permits
+
+The current N003 right stack showing packed count and base weight is not the v3 target if current v3 shows category count + selected count.
+
+Do not hardcode “Backpacking Gear” if the current native data already exposes an appropriate list name. If the native data does not yet have the v3 list-name model, preserve a safe temporary value and document that limitation rather than changing the data model.
+
+F. MATCH v3 FILTER
+Use the actual current v3 filter control.
+
+Expected visible treatment from the saved v3 reference:
+- white/light full-width row
+- filter icon at left
+- label formatted like current v3, including “Filter: Category” when that is the current state
+- chevron at right
+- same approximate 50 pt height and border/shadow treatment
+
+Behavior:
+Inspect v3 filter behavior directly.
+Port only the behavior that can be safely supported by current native state without redesigning the data model.
+Do not substitute a generic “All Items” cycling control if that is not what v3 does.
+
+G. APPBAR
+Match current v3:
+- compact white top bar
+- current TrailWeigh mark/wordmark treatment
+- current right-side controls/shortcuts if they are part of v3
+- correct safe-area placement
+- no status-bar overlap
+- no oversized native heading
+
+If some v3 AppBar shortcuts require native screens not yet implemented:
+- preserve visual structure where useful
+- do not make unsafe fake navigation
+- document what remains intentionally inactive
+
+H. ITEM ROWS
+Match actual v3 item rows:
+- compact height
+- white/light row
+- rounded-square checkbox
+- primary item name hierarchy
+- minimal secondary detail
+- subtle separators
+- right-side weight/unit exactly as v3 uses for the visible state
+- maintain accessible touch target
+
+Preserve:
+- toggle state
+- AsyncStorage
+- haptics
+- exclusive groups
+- weight calculations
+
+I. CATEGORY WEIGHTS / UNITS
+Use the unit shown by the actual current v3 category header.
+
+If v3 displays oz in category headers, native must display oz there too.
+Do not automatically convert category-header values to lbs merely because native previously did so.
+
+Do not change underlying stored weight units unless required; presentation conversion is sufficient.
+
+J. BOTTOM BOX GROUPS — INSPECT EXISTING v3
+The web v3 already contains multiple Box Groups.
+
+Inspect the actual v3 implementation to determine:
+- exact groups
+- labels
+- order
+- icons
+- Next/Back behavior
+- looping/swiping behavior if present
+- which controls are functional in current v3
+
+For N004:
+- Group 1 must be correct
+- if the existing native shell can safely support the rest without large data-model work, port the visible group switching behavior
+- otherwise do not invent; document deferred behavior
+
+K. FUNCTIONALITY PRINCIPLE
+Visible controls should not silently look active while doing nothing.
+
+For each visible control in N004:
+1. If the native capability already exists, wire it.
+2. If the equivalent v3 behavior can be safely ported using current native data/routes, port it.
+3. If it requires a larger future feature, keep the visual control only if needed for parity, but make the limitation explicit in the report.
+
+Do not falsely claim functional parity.
+
+L. PRESERVE
+Do not break:
+- Expo Go
+- current Expo SDK/runtime
+- native AsyncStorage
+- item toggles
+- haptics
+- exclusive groups
+- weight calculations
+- Summary route
+- native routing
+- current seed/sample data
+- web v3
+
+Web v3 must remain untouched.
+
+M. OUT OF SCOPE
+Do not add:
+- AI
+- cloud
+- auth
+- Siri
+- EAS/TestFlight/App Store
+- API migration
+- photo-storage redesign
+- full native list-model rewrite
+unless absolutely required for one of the explicitly requested v3 behaviors. If required, STOP and explain before expanding scope.
+
+N. VISUAL COMPARISON
+Before completion:
+1. Capture current actual web v3 at iPhone-like width.
+2. Capture updated native N004 preview at the closest comparable width.
+3. Compare region by region:
+   - AppBar
+   - Summary
+   - Filter
+   - category wedge
+   - collapsed category state
+   - expanded category state
+   - item row
+   - bottom Group 1
+   - absence of old Gear/Summary capsule
+4. Record remaining mismatches honestly.
+
+Do not mark PASS because it has a “similar feel.”
+
+O. IPHONE DELIVERY CHECK
+Previous work repeatedly existed on disk without reaching the physical iPhone.
+
+For N004, verify the Expo workflow and explicitly report:
+- whether an iOS bundle was actually requested after N004 was written
+- whether Metro logged an iOS bundle containing N004
+- timestamp of that bundle
+- whether only a web preview was bundled
+
+Do NOT claim “delivered to iPhone” unless an actual post-N004 iOS bundle request appears in the Expo logs.
+
+USER PASS still requires physical iPhone confirmation from the user.
+
+P. TESTS
+Required:
+- native typecheck PASS
+- TrailWeigh web typecheck PASS
+- no changes to web v3
+- item toggle smoke PASS
+- category expand/collapse smoke PASS
+- Summary bottom-cell navigation smoke PASS
+- old native Gear/Summary visible tab bar absent in native preview/config
+- Expo workflow smoke PASS
+- report actual iOS bundle-delivery status
+- archive integrity PASS
+
+Ignore unrelated pre-existing mockup-sandbox typecheck failures when clearly unrelated, but document them separately.
+
+Q. REPORT / DELIVERABLE
+Create:
+- R0112.zip
+- reports/r0112/
+
+Include:
+- R0112_REPORT.txt
+- CHANGED_FILES.txt
+- NATIVE_TYPECHECK.txt
+- WEB_UNTOUCHED_CHECK.txt
+- EXPO_SMOKE_RESULTS.txt
+- IOS_BUNDLE_DELIVERY.txt
+- V3_TO_NATIVE_BEHAVIOR_MAP.txt
+- VISUAL_COMPARISON.txt
+- IPHONE_USER_TEST.txt
+- screenshots/ or visual-comparison/ evidence
+
+R0112_REPORT.txt must answer:
+1. What did you learn from this task about current TrailWeigh native code/state that would help ChatGPT make future prompts more accurate/efficient?
+2. Was anything in this prompt unclear, unnecessary, technically risky, or better expressed another way for Replit Agent?
+3. Is there any Replit/Expo-specific information, configuration, workflow guidance, or project detail ChatGPT should know to work more effectively going forward?
+
+COMPLETION STANDARD
+Do not call N004 complete unless:
+- old Gear/Summary capsule is removed from visible native UI
+- Group 1 is Locker | Summary | Add | Search | Next
+- Summary cell works
+- category headers collapse/expand according to actual v3 behavior
+- wedge is visibly angled
+- hero content matches current v3 structure substantially better
+- filter matches current v3 structure substantially better
+- item rows remain functional
+- native typecheck passes
+- web remains untouched
+- R0112.zip and reports exist
+- actual iOS delivery status is reported truthfully
+
+USER PASS remains pending until the user approves the result on the physical iPhone.

@@ -1,0 +1,47 @@
+R0112 — Expo Smoke Test Results
+=================================
+
+EXPO WORKFLOW: PASS
+  Workflow "artifacts/pack-checklist-mobile: expo" running cleanly
+  Metro bundler active, waiting at:
+    exp://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.expo.worf.replit.dev
+
+EXPO WEB PREVIEW: PASS
+  URL: https://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.expo.worf.replit.dev
+  Screenshot captured: reports/r0112/screenshots/n004-web-preview.jpg
+  No crash, no blank screen, no error boundary triggered
+
+VISUAL SMOKE (from web preview screenshot):
+  ✅ AppBar visible: hamburger + checkbox + TrailWeigh + 6 shortcut icons
+  ✅ Hero visible: dark green, bag tile, list name, item count, categories + selected
+  ✅ Filter visible: "Filter: Category" with icon + chevron
+  ✅ Category headers: 10 categories, all collapsed (no item rows visible)
+  ✅ Wedge shape: angled right edge visible on colored tiles (SVG polygon working)
+  ✅ Category weight: oz format ("40.80 oz", "57.40 oz", etc.)
+  ✅ Category subtitle: "N items · N selected" format
+  ✅ Bottom bar Group 1: Locker | Summary | Add | Search | Next (5 cells)
+  ✅ Old Gear/Summary tab capsule: ABSENT
+
+CATEGORY COLLAPSE/EXPAND SMOKE:
+  Logic: openCatName state (null by default) controls data: [] for collapsed sections
+  SectionList renders headers for all sections regardless of data emptiness
+  Tap handler: handleCatToggle(name) → setOpenCatName(prev === name ? null : name)
+  Default state: all collapsed ✓ (matches v3 lines 2225–2228)
+  Single-open model verified in code ✓
+
+ITEM TOGGLE SMOKE:
+  ItemRow.onPress → toggleItem(category, item.id) via usePackData
+  Haptics.ImpactFeedbackStyle.Light (non-web) ✓
+  State persisted via AsyncStorage (PackDataContext, unchanged) ✓
+
+SUMMARY NAVIGATION SMOKE:
+  NavBox "Summary" action → handleBoxAction('summary') → router.push('/(tabs)/summary')
+  Route /(tabs)/summary: registered in _layout.tsx (Tabs.Screen name="summary") ✓
+  summary.tsx: existing native screen, untouched ✓
+
+DEPRECATION WARNINGS (web preview only, not iOS-critical):
+  "shadow* style props are deprecated. Use boxShadow" — RN 0.81 web renderer only;
+    shadow* props work correctly on iOS native. Not fixed (native target is iOS).
+  "props.pointerEvents is deprecated" — removed from Svg component in final edit.
+
+iOS BUNDLE DELIVERY: NOT YET (see IOS_BUNDLE_DELIVERY.txt)

@@ -1,0 +1,16 @@
+R0112 — Native Typecheck Results
+==================================
+
+Command: pnpm --filter @workspace/pack-checklist-mobile run typecheck
+Result:  PASS — 0 errors
+
+Initial run had 1 error:
+  app/(tabs)/index.tsx:164 — TS2820
+  "checkmark-square-outline" not in Ionicons glyph set
+  Fixed: replaced with "checkbox-outline" (correct Ionicons equivalent)
+
+Final run: PASS — 0 errors
+
+Pre-existing unrelated typecheck failure (separate workspace):
+  @workspace/mockup-sandbox — calendar.tsx / spinner.tsx TS2322 ref type
+  Not related to N004 changes. Documented but not fixed (out of scope).

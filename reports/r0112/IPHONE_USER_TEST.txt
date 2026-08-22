@@ -1,0 +1,38 @@
+R0112 — iPhone User Test
+==========================
+
+STATUS: PENDING — awaiting physical iPhone confirmation from user
+
+N004 code is on disk and the Expo workflow is running.
+
+To load N004 on the physical iPhone:
+  1. Fully close Expo Go (swipe up from app switcher)
+  2. Open Expo Go
+  3. Scan QR code from the Expo workflow log, or enter:
+     exp://c7673744-9832-4856-8dfd-a2d2e3ae4371-00-17l4ijroha3i8.expo.worf.replit.dev
+  4. Wait for Metro to log "iOS Bundled" (N004 confirmation)
+  5. Verify the following on device:
+     - Only ONE bottom bar visible (TrailWeigh Group 1: Locker|Summary|Add|Search|Next)
+     - No old Gear/Summary native tab capsule
+     - No extra blank gap at bottom
+     - Dark green hero with bag tile, list name, item count ▼, categories + selected
+     - "Filter: Category" row visible below hero
+     - Category headers collapsed (no items visible by default)
+     - Category headers tappable to expand/collapse items
+     - Colored wedge tiles with angled right edge
+     - Category weight in oz
+     - Summary button navigates to Weight Summary screen
+     - Next button advances to Group 2 (Back|Undo|Redo|Reset|Next)
+     - Back button returns to Group 1
+
+USER PASS criteria (per R0112 spec):
+  ☐ Old Gear/Summary capsule absent
+  ☐ Group 1 correct (Locker|Summary|Add|Search|Next)
+  ☐ Summary cell works
+  ☐ Categories collapse/expand per v3 behavior
+  ☐ Wedge visibly angled
+  ☐ Hero content substantially better than N003
+  ☐ Filter label correct
+  ☐ Item rows functional
+
+Result: [ ] USER PASS  [ ] USER FAIL  — pending device confirmation

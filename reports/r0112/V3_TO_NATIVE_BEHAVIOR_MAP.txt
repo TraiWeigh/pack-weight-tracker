@@ -1,0 +1,52 @@
+R0112 — v3 to Native Behavior Map (N004)
+==========================================
+
+WIRED / FUNCTIONAL IN N004:
+  Next (›)        Group cycling (g+1) % 4 — matches v3 modulo wrap (lines 1092–1094)
+  Back (‹)        Group cycling (g-1+4) % 4 — matches v3 back wrap
+  Summary         useRouter.push('/(tabs)/summary') → existing native Summary route
+  Reset           Unchecks all items with haptic notification — matches v3 onReset
+  Category toggle Tap header → single-open expand/collapse — matches v3 openCatName model
+  Expand all ▼    Hero chevron → allExpanded toggle — matches v3 global accordion
+  Item toggle     AsyncStorage persist + haptics — unchanged from N002/N003
+  Haptics         ImpactFeedbackStyle.Light on category toggle; Warning on reset
+
+VISUAL ONLY (non-functional in N004 — documented limitations):
+  Locker          No native Locker route yet. Visual presence matches v3 Group 1.
+  Add             Requires add-item panel/data model. Visual only.
+  Search          Requires search index/panel. Visual only.
+  Undo            No undo history in native data layer. Visual only (Group 2).
+  Redo            No redo history. Visual only (Group 2).
+  Camera          Photo capture not in N004 scope. Visual only (Group 3).
+  Photos          Photo library picker not in N004 scope. Visual only (Group 3).
+  Preview         Print layout requires separate screen. Visual only (Group 3).
+  Save            No native Locker save flow yet. Visual only (Group 4).
+  Share           Native share requires list-export format. Visual only (Group 4).
+  More            No more-menu defined for native yet. Visual only (Group 4).
+  AppBar hamburger  No drawer in native yet. Visual only.
+  AppBar shortcuts  Decorative, matching v3 aria-hidden treatment (lines 4319–4354).
+  Filter menu     Location/Photo viewModes require data model. Static "Filter: Category".
+
+GROUP STRUCTURE — matches v3 exactly:
+  Group 1 (index 0): Locker · Summary · Add · Search · Next
+  Group 2 (index 1): Back · Undo · Redo · Reset · Next
+  Group 3 (index 2): Back · Camera · Photos · Preview · Next
+  Group 4 (index 3): Back · Save · Share · More · Next
+  Wrap: Next from 4→1, Back from 1→4 (modulo, matches v3 lines 1092–1094)
+
+CATEGORY COLLAPSE/EXPAND — matches v3 single-open model:
+  openCatName: string|null — one category open at a time
+  allExpanded: boolean — hero chevron toggles all
+  Tap closed cat → opens it, closes previous (setOpenCatName)
+  Tap open cat → collapses it (setOpenCatName null)
+  Expand all → setAllExpanded(true), sections show all data
+  Collapse all → setAllExpanded(false), openCatName null
+  Default: all collapsed (openCatName=null, allExpanded=false) — matches v3 lines 2225–2228
+  Note: v3 auto-scrolls to opened category; native scroll-to-section deferred
+
+WEDGE SHAPE — react-native-svg polygon overlay:
+  v3:     clip-path polygon(0 0, calc(100%-17px) 0, 100% 50%, calc(100%-17px) 100%, 0 100%)
+  Native: Two white SVG Polygon triangles over right 17px of 72px-wide tile:
+          Top:    points="0,0 17,0 17,32"   (cuts top-right corner)
+          Bottom: points="0,64 17,64 17,32" (cuts bottom-right corner)
+          No new dependency: react-native-svg 15.12.1 already in package.json

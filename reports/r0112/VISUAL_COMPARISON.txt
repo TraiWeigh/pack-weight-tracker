@@ -1,0 +1,103 @@
+R0112 — Visual Comparison: v3 vs N004
+=======================================
+
+Reference screenshots:
+  v3:   reports/r0112/screenshots/v3-live-reference.jpg  (390×844, live /mobile-functional-v3)
+  N004: reports/r0112/screenshots/n004-web-preview.jpg   (390×844, Expo web preview)
+
+Region-by-region assessment:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+APPBAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   ☰ (hamburger) | ☑ TrailWeigh | [6 category icons right]
+N004: ☰ (menu-outline) | ☑ (checkbox-outline) TrailWeigh | [6 shortcut icons right]
+
+Match: ✅ Substantially close
+Gap:   CheckSquare (Lucide) → checkbox-outline (Ionicons) — slightly different visual;
+       all 6 decorative icons present and right-aligned
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+HERO / LIST SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   Dark green #2A5740 | bag tile | "Dem..." | "21 items ▼" | "6 categories" + "✓ 16 Selected"
+N004: Dark green #2A5740 | bag tile | "Backpacking Gear" | "78 items ▼" | "10 categories" + "✓ 29 Selected"
+
+Match: ✅ Structure identical — layout, color, typography, right-stack content all match v3
+Gap:   Data differs (different seed data: 78 vs 21 items, 10 vs 6 categories) — not a gap
+       List name hardcoded "Backpacking Gear" (native context has no list-name field) — documented
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FILTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   [≡ icon] Filter: Category [▼]
+N004: [≡ icon] Filter: Category [▼]
+
+Match: ✅ Exact match on label, icon, and chevron
+Gap:   Filter menu (Category/Location/Photo) not functional — static display only
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CATEGORY WEDGE SHAPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   clip-path polygon pentagon — right edge tapers to center point (WEDGE_POINT=17)
+N004: SVG Polygon overlay — two white triangles cut top-right and bottom-right corners
+
+Match: ✅ Angled right edge clearly visible in N004 web preview
+       Approximate match — SVG approach creates same visual geometry as clip-path
+Gap:   v3 uses CSS drop-shadow on wedge (rightward) — not reproducible in RN natively;
+       N004 has card-level shadow (horizontal) which is acceptable
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COLLAPSED CATEGORY STATE (default)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   All categories show headers only — no item rows visible
+N004: Same — all categories collapsed by default (openCatName=null)
+
+Match: ✅ Exact behavior match
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXPANDED CATEGORY STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   Tap header → items expand below; tap again → collapse
+N004: Tap header → openCatName = cat → items render; tap again → openCatName = null
+
+Match: ✅ Single-open model matches v3 (v3 lines 2889–2911)
+Gap:   v3 auto-scrolls to opened category header — native scroll-to-section deferred
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ITEM ROW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   44px height, white, rounded-square checkbox, item name, weight right
+N004: Same — unchanged from N003, correct
+
+Match: ✅ Close match
+Gap:   v3 hides weight in row (item weight in category header); N004 shows item weight
+       as a native convenience (no category weight column like web). Documented.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BOTTOM GROUP 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   Locker | Summary | Add | Search | Next ›
+N004: Locker | Summary | Add | Search | Next ›
+
+Match: ✅ Exact cell order, labels, and icons
+       Summary wired to native Summary route ✓
+       Next/Back group cycling wired ✓
+       Reset moved to Group 2 (correct) ✓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ABSENCE OF OLD GEAR/SUMMARY CAPSULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v3:   Single bottom bar — no native tab capsule
+N004: Single bottom bar — old capsule removed via _layout.tsx tabBarStyle display:none
+
+Match: ✅ Confirmed absent in both web preview and _layout.tsx code
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERALL ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+N004 substantially matches v3 presentation and behavior.
+All primary gaps from N003 (tab capsule, wrong bottom bar, no collapse, wrong hero)
+are resolved. Remaining deferred items are documented limitations.
+
+USER PASS: Pending physical iPhone confirmation.

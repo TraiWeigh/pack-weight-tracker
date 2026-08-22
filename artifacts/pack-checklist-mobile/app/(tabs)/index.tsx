@@ -1,26 +1,42 @@
 /**
- * index.tsx — Gear screen  N003 / R0111
+ * index.tsx — Gear screen  N004 / R0112
  *
- * Exact v3 visual recreation in React Native — all measurements sourced from
- * /mobile-functional-v3 line-by-line inspection (R0111 geometry report).
+ * Faithful port of the working /mobile-functional-v3 web screen.
+ * All measurements, colors, and behaviors sourced directly from
+ * MobileFunctionalV3.tsx and the live v3 screenshot.
  *
- * Visual targets:
- *   AppBar        — 52pt content + insets.top, single row, paddingL 14 paddingR 44
- *   ListSummary   — horizontal: 66×66 tile | name+count col | right stack (packed+weight)
- *   Filter        — 50pt slot, 36pt button, exact padding/shadow from v3
- *   SectionHeader — 72pt wide tile, 64pt height, 17pt name, 44pt right inset, v3 shadow
- *   ItemRow       — clean 44pt row, rounded-square checkbox, CB_CHECKED, no sub-tag
- *   BottomBox     — 58pt, 4 icon+label columns (v3 NavBox geometry), upward shadow
+ * Changes from N003:
+ *   - OLD Gear/Summary tab capsule removed (handled in _layout.tsx)
+ *   - BottomBox: 4 correct groups, Group 1 = Locker|Summary|Add|Search|Next
+ *   - Summary cell wired to /(tabs)/summary via useRouter
+ *   - Category headers tappable: single-open collapse/expand (openCatName)
+ *   - Expand-all/collapse-all chevron on hero
+ *   - Hero right stack: catCount categories + ✓ selectedCount Selected
+ *   - Filter label: static "Filter: Category" (v3 default state)
+ *   - Category tile: angled wedge via react-native-svg Polygon overlay
+ *   - Category weight: oz (not lbs)
+ *   - Category subtitle: "N selected" (not "N packed")
+ *   - AppBar: hamburger icon + 6 decorative shortcut icons (non-functional, matches v3)
+ *   - bottomPad: insets.bottom only (tab bar hidden)
  *
- * Unchanged: PackDataContext, weightUtils, initialData, haptics, toggles, routes,
- *            categoryTheme.ts, Expo SDK/runtime, all web files.
+ * Documented limitations (non-functional in N004, deferred):
+ *   - Locker: no native Locker route yet — visual only
+ *   - Add / Search: require data model work not in N004 scope — visual only
+ *   - Undo / Redo: no undo history in native data layer — visual only
+ *   - Camera / Photos / Save / Share / More / Preview: out of scope — visual only
+ *   - AppBar hamburger: no drawer in native yet — visual only
+ *   - AppBar shortcut icons: decorative, matching v3 aria-hidden treatment
+ *   - Filter: Location/Photo viewModes require data model changes — static Category label
+ *   - List name "Backpacking Gear": hardcoded; native PackDataContext has no list-name field
+ *
+ * Preserved: PackDataContext, weightUtils, initialData, haptics,
+ *            item toggles, exclusive groups, AsyncStorage, routes,
+ *            categoryTheme.ts, Expo SDK/runtime, web v3 (untouched).
  *
  * Unrepresentable in RN (noted inline):
- *   clip-path polygon wedge → rectangular tile ✓
- *   filter: drop-shadow(rightward) on wedge → thin right-edge border on tile
- *   per-header sticky-state style → permanent v3 resting shadow applied to all headers
  *   font-weight 800 → 700Bold (PlusJakartaSans max)
  *   font-weight 450 → 500Medium
+ *   CSS filter: drop-shadow on wedge → SVG polygon overlay simulating clip-path
  */
 
 import React, { useCallback, useState } from 'react';
@@ -33,16 +49,16 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useColors } from '@/hooks/useColors';
 import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext';
-import { calcTotalOz, calcWeights, ozToLbs } from '@/lib/weightUtils';
+import { calcTotalOz } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 
-// ─── v3 design constants (exact values from MobileFunctionalV3.tsx) ─────────
+// ─── v3 design constants (exact values from MobileFunctionalV3.tsx) ──────────
 
 const SUMMARY_BG   = '#2A5740';   // rgba(42,87,64,0.94) → opaque native equiv
 const NAV_ACTIVE   = '#2A5740';   // line 218
@@ -50,28 +66,72 @@ const NAV_INACTIVE = '#6E7672';   // line 219
 const CB_CHECKED   = '#4E7D5C';   // line 220
 const PRIMARY_TEXT = '#1A2920';   // line 211
 const PAGE_BG      = '#F2EDE4';   // line 205
-const DIVIDER      = 'rgba(0,0,0,0.06)'; // CARD_BORDER
+const DIVIDER      = 'rgba(0,0,0,0.06)';
 
 const TILE_W         = 72;   // WEDGE_W  line 187
+const WEDGE_POINT    = 17;   // WEDGE_POINT  line 190 — angled right edge depth
 const CAT_HEADER_H   = 64;   // CHECKLIST_ROW_H  line 191
 const RIGHT_INSET    = 44;   // CATEGORY_WEIGHT_RIGHT_INSET  line 195
 const ITEM_R_INSET   = 34;   // CHECKLIST_RIGHT_INSET  line 194
 const FILTER_H       = 50;   // FILTER_BAR_H  line 233
 const NAV_H          = 58;   // NAV_H  line 228
-const APPBAR_H       = 52;   // derived from v3 app bar height
-const CHECKBOX_HIT   = 44;   // checkbox hit-target width (v3 touch target)
+const APPBAR_H       = 52;   // AppBar content height
+const CHECKBOX_HIT   = 44;   // checkbox hit-target width (v3 line 5036)
+
+// ─── Box Groups (4 total, matching v3 exactly) ────────────────────────────────
+// Source: MobileFunctionalV3.tsx lines 1227–1281
+
+const NUM_GROUPS = 4;
+
+type BoxCell = { icon: string; label: string; action: string };
+
+const BOX_GROUPS: BoxCell[][] = [
+  // Group 1 — default (v3 lines 1227–1238)
+  [
+    { icon: 'folder-outline',              label: 'Locker',   action: 'locker'   },
+    { icon: 'bar-chart-outline',           label: 'Summary',  action: 'summary'  },
+    { icon: 'add-circle-outline',          label: 'Add',      action: 'add'      },
+    { icon: 'search-outline',              label: 'Search',   action: 'search'   },
+    { icon: 'chevron-forward-outline',     label: 'Next',     action: 'next'     },
+  ],
+  // Group 2 (v3 lines 1241–1252)
+  [
+    { icon: 'chevron-back-outline',        label: 'Back',     action: 'back'     },
+    { icon: 'arrow-undo-outline',          label: 'Undo',     action: 'undo'     },
+    { icon: 'arrow-redo-outline',          label: 'Redo',     action: 'redo'     },
+    { icon: 'refresh-outline',             label: 'Reset',    action: 'reset'    },
+    { icon: 'chevron-forward-outline',     label: 'Next',     action: 'next'     },
+  ],
+  // Group 3 (v3 lines 1255–1266)
+  [
+    { icon: 'chevron-back-outline',        label: 'Back',     action: 'back'     },
+    { icon: 'camera-outline',              label: 'Camera',   action: 'camera'   },
+    { icon: 'images-outline',              label: 'Photos',   action: 'photos'   },
+    { icon: 'print-outline',               label: 'Preview',  action: 'preview'  },
+    { icon: 'chevron-forward-outline',     label: 'Next',     action: 'next'     },
+  ],
+  // Group 4 (v3 lines 1269–1281)
+  [
+    { icon: 'chevron-back-outline',        label: 'Back',     action: 'back'     },
+    { icon: 'save-outline',                label: 'Save',     action: 'save'     },
+    { icon: 'share-social-outline',        label: 'Share',    action: 'share'    },
+    { icon: 'ellipsis-horizontal-outline', label: 'More',     action: 'more'     },
+    { icon: 'chevron-forward-outline',     label: 'Next',     action: 'next'     },
+  ],
+];
+
+// v3 AppBar decorative shortcut icons (right side, aria-hidden in v3, non-functional in N004)
+// Source: MobileFunctionalV3.tsx lines 4319–4354
+const APPBAR_SHORTCUT_ICONS = [
+  'bag-outline',       // Backpack
+  'train-outline',     // Train
+  'airplane-outline',  // Plane
+  'boat-outline',      // Ship
+  'car-outline',       // Car
+  'cube-outline',      // Package
+] as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type FilterMode = 'all' | 'packed' | 'unpacked';
-
-const FILTER_LABELS: Record<FilterMode, string> = {
-  all:      'All Items',
-  packed:   'Packed Only',
-  unpacked: 'Unpacked Only',
-};
-
-const FILTER_CYCLE: FilterMode[] = ['all', 'packed', 'unpacked'];
 
 type Section = {
   title: string;
@@ -83,8 +143,8 @@ type Section = {
 };
 
 // ─── AppBar ───────────────────────────────────────────────────────────────────
-// v3: height 52px content, paddingL 8 paddingR 44, HEADER_BG #FFFFFF, 1px border rgba(0,0,0,0.07)
-// Native: paddingTop = insets.top (safe-area); content height 52pt.
+// v3: hamburger left | CheckSquare + "TrailWeigh" | spacer | 6 shortcut icons right
+// height 52pt content, safe-area paddingTop
 
 function AppBar() {
   const insets = useSafeAreaInsets();
@@ -92,126 +152,132 @@ function AppBar() {
     <View
       style={[
         styles.appBar,
-        {
-          paddingTop: insets.top,
-          minHeight: insets.top + APPBAR_H,
-        },
+        { paddingTop: insets.top, minHeight: insets.top + APPBAR_H },
       ]}
     >
       <View style={styles.appBarInner}>
-        {/* Logo mark substitute — Ionicons checkmark-circle */}
-        <Ionicons name="checkmark-circle" size={22} color={NAV_ACTIVE} />
-        {/* Wordmark: v3 19px/600/PRIMARY */}
-        <Text style={styles.appBarTitle}>TrailWeigh</Text>
+        {/* Hamburger — v3 Menu button; non-functional in N004 (no drawer yet) */}
+        <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
+
+        {/* Logo: mark + wordmark */}
+        <View style={styles.appBarLogo}>
+          <Ionicons name="checkbox-outline" size={20} color={NAV_ACTIVE} />
+          <Text style={styles.appBarTitle}>TrailWeigh</Text>
+        </View>
+
+        {/* Flex spacer */}
+        <View style={{ flex: 1 }} />
+
+        {/* Decorative category shortcut icons — non-functional (v3 aria-hidden) */}
+        <View style={styles.appBarShortcuts}>
+          {APPBAR_SHORTCUT_ICONS.map((icon) => (
+            <Ionicons key={icon} name={icon} size={17} color={NAV_INACTIVE} />
+          ))}
+        </View>
       </View>
     </View>
   );
 }
 
 // ─── ListSummaryHero ──────────────────────────────────────────────────────────
-// v3: horizontal row — 66×66 icon tile | content col | right stack
-// paddingL 14, paddingR 44, paddingT 10, paddingB 12, gap 14, bg #2A5740
-// shadow: 0 4px 12px rgba(0,0,0,0.22)
+// v3: horizontal row — 66×66 icon tile | content col (name + count + chevron) | right stack
+// Right stack: catCount categories + ✓ selectedCount Selected
+// Source: MobileFunctionalV3.tsx lines 4360–4465
 
 function ListSummaryHero({
   listName,
   totalItems,
-  checkedItems,
-  baseWeightOz,
+  catCount,
+  selectedCount,
+  allExpanded,
+  onExpandToggle,
 }: {
   listName: string;
   totalItems: number;
-  checkedItems: number;
-  baseWeightOz: number;
+  catCount: number;
+  selectedCount: number;
+  allExpanded: boolean;
+  onExpandToggle: () => void;
 }) {
-  const bwLbs = ozToLbs(baseWeightOz).toFixed(1);
-
   return (
     <View style={styles.hero}>
-      {/* Icon tile: 66×66, radius 14, dark overlay — v3 Luggage icon substitute */}
+      {/* Icon tile: 66×66, radius 14, dark overlay — Luggage/bag icon */}
       <View style={styles.heroTile}>
         <Ionicons name="bag-outline" size={34} color="rgba(255,255,255,0.90)" />
       </View>
 
-      {/* Content column: list name + large count row */}
+      {/* Content column: list name + count row with expand/collapse chevron */}
       <View style={styles.heroContent}>
-        {/* List name: 15.5pt/700/white — v3 line 4390 */}
+        {/* List name: 15.5pt/700/white (v3 line 4390) */}
         <Text style={styles.heroListName} numberOfLines={1}>
           {listName}
         </Text>
-        {/* Count row: 40pt/700 + "items" 17pt/500 — v3 lines 4401–4408 */}
+        {/* Count row: 40pt big number + "items" + chevron (v3 lines 4401–4436) */}
         <View style={styles.heroCountRow}>
           <Text style={styles.heroCount}>{totalItems}</Text>
           <Text style={styles.heroCountSuffix}> items</Text>
+          {/* Expand/collapse all chevron — v3 global accordion control */}
+          <TouchableOpacity
+            onPress={onExpandToggle}
+            hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            style={styles.heroChevronBtn}
+          >
+            <Ionicons
+              name={allExpanded ? 'chevron-up' : 'chevron-down'}
+              size={16}
+              color="rgba(255,255,255,0.78)"
+            />
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Right stack: packed count + indicator + base weight — v3 lines 4440–4457 */}
+      {/* Right stack: category count + selected count (v3 lines 4440–4459) */}
       <View style={styles.heroRight}>
-        {/* Category/packed count: 12pt/600 rgba(.58) */}
+        {/* Category count: 12pt/600 rgba(.58) */}
         <Text style={styles.heroCatCount}>
-          {checkedItems} packed
+          {catCount} {catCount === 1 ? 'category' : 'categories'}
         </Text>
-        {/* Selected indicator circle */}
-        {checkedItems > 0 && (
-          <View style={styles.heroIndicator}>
-            <Ionicons
-              name="checkmark"
-              size={9}
-              color="rgba(255,255,255,0.92)"
-            />
-          </View>
-        )}
-        {/* Base weight */}
-        <Text style={styles.heroWeight}>{bwLbs} lbs</Text>
+        {/* ✓ Selected: checkmark-circle + count */}
+        <View style={styles.heroSelectedRow}>
+          <Ionicons
+            name="checkmark-circle"
+            size={13}
+            color="rgba(255,255,255,0.80)"
+          />
+          <Text style={styles.heroSelectedText}>
+            {selectedCount} Selected
+          </Text>
+        </View>
       </View>
     </View>
   );
 }
 
 // ─── FilterControl ────────────────────────────────────────────────────────────
-// v3: FILTER_BAR_H=50, padding 5/14, button minH 36, padding 6/10, radius 8
-// border 1px rgba(0,0,0,0.06), shadow 0 3px 8px rgba(0,0,0,0.08)
-// SlidersH 15px NAV_ACTIVE, label 13/600 PRIMARY, ChevronDown 17px NAV_INACTIVE
+// v3: static "Filter: Category" in default state (FILTER_BAR_H=50)
+// Full filter (Location/Photo) requires data model changes not in N004 scope.
+// Source: MobileFunctionalV3.tsx lines 4471–4577
 
-function FilterControl({
-  filter,
-  onFilter,
-}: {
-  filter: FilterMode;
-  onFilter: (f: FilterMode) => void;
-}) {
-  const handlePress = useCallback(() => {
-    const idx = FILTER_CYCLE.indexOf(filter);
-    onFilter(FILTER_CYCLE[(idx + 1) % FILTER_CYCLE.length]);
-  }, [filter, onFilter]);
-
+function FilterControl() {
   return (
     <View style={styles.filterBar}>
-      <TouchableOpacity
-        style={styles.filterButton}
-        onPress={handlePress}
-        activeOpacity={0.7}
-        testID={`filter-${filter}`}
-      >
+      <View style={styles.filterButton}>
+        {/* SlidersHorizontal icon → Ionicons options-outline */}
         <Ionicons name="options-outline" size={15} color={NAV_ACTIVE} />
-        <Text style={styles.filterLabel} numberOfLines={1}>
-          {FILTER_LABELS[filter]}
-        </Text>
+        <Text style={styles.filterLabel}>Filter: Category</Text>
         <Ionicons name="chevron-down" size={17} color={NAV_INACTIVE} />
-      </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 // ─── SectionHeader ────────────────────────────────────────────────────────────
-// v3: CHECKLIST_ROW_H=64, white bg, shadow 0 3px 10px rgba(0,0,0,0.18)
-// Tile: WEDGE_W=72, full height, clip-path→rectangular tile, icon 26px rgba(.93)
-// Tile right-edge: thin border simulates drop-shadow(3px 0 ...)
-// Text: paddingL 12, paddingR 44 (RIGHT_INSET), paddingV 8, column gap 10
-// Name: 17px/500/PRIMARY, lh 1.2→20, ls -0.1
-// Subtitle: 12.5px/NAV_INACTIVE
-// Weight right: 13px/600/PRIMARY, paddingR 44
+// v3: CHECKLIST_ROW_H=64, tappable row, collapses/expands items
+// Wedge: clip-path polygon(0 0, calc(100%-17px) 0, 100% 50%, calc(100%-17px) 100%, 0 100%)
+//        → approximated with react-native-svg Polygon overlay (two white corner triangles)
+// Weight: oz (small unit, v3 line 4823)
+// Subtitle: "N items · N selected" (not packed)
+// Source: MobileFunctionalV3.tsx lines 4720–4830
 
 function SectionHeader({
   title,
@@ -219,70 +285,87 @@ function SectionHeader({
   checkedCount,
   totalCount,
   checkedWeightOz,
+  isOpen,
+  onToggle,
 }: {
   title: string;
   catIndex: number;
   checkedCount: number;
   totalCount: number;
   checkedWeightOz: number;
+  isOpen: boolean;
+  onToggle: () => void;
 }) {
   const theme = getCategoryTheme(title, catIndex);
-  const allDone = checkedCount === totalCount && totalCount > 0;
-  const weightLbs = ozToLbs(checkedWeightOz).toFixed(2);
+  const weightOz = checkedWeightOz.toFixed(2);
 
   return (
-    <View style={styles.sectionCard}>
-      {/* Coloured identity tile — rectangular native equiv of v3 72px polygon wedge */}
-      <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
-        <Ionicons
-          name={theme.icon as any}
-          size={26}
-          color="rgba(255,255,255,0.93)"
-        />
-      </View>
-
-      {/* Text content */}
-      <View style={styles.sectionContent}>
-        {/* Category name: 17pt/500/PRIMARY, lh 20, ls -0.1 */}
-        <Text style={styles.sectionName} numberOfLines={1}>
-          {title}
-        </Text>
-        {/* Subtitle: 12.5pt/NAV_INACTIVE */}
-        <Text style={styles.sectionSub}>
-          {totalCount} item{totalCount !== 1 ? 's' : ''}
-          {checkedCount > 0 ? `  ·  ${checkedCount} packed` : ''}
-        </Text>
-      </View>
-
-      {/* Right: packed weight — paddingR 44, 13pt/600/PRIMARY */}
-      <View style={styles.sectionRight}>
-        {checkedWeightOz > 0 && (
-          <Text
-            style={[
-              styles.sectionWeight,
-              allDone && { color: NAV_ACTIVE },
-            ]}
+    <TouchableOpacity
+      onPress={onToggle}
+      activeOpacity={0.78}
+      style={styles.sectionCardTouchable}
+      testID={`cat-header-${title}`}
+    >
+      <View style={styles.sectionCard}>
+        {/* Coloured wedge tile — v3 WEDGE_W=72, clip-path polygon */}
+        {/* SVG overlay simulates the angled right edge (WEDGE_POINT=17) */}
+        <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
+          <Ionicons
+            name={theme.icon as any}
+            size={26}
+            color="rgba(255,255,255,0.93)"
+          />
+          {/*
+           * Wedge approximation: two white right-triangles positioned at the
+           * top-right and bottom-right corners of the tile. Together they
+           * replicate the v3 clip-path: polygon(0 0, 55px 0, 72px 32px, 55px 64px, 0 64px)
+           *
+           * SVG local coords (width=17, height=64, right:0 of tile):
+           *   (0,0) = tile (55,0), (17,0) = tile (72,0)
+           * Top white triangle:    (0,0)  (17,0)  (17,32)  — cuts top-right corner
+           * Bottom white triangle: (0,64) (17,64) (17,32)  — cuts bottom-right corner
+           */}
+          <Svg
+            width={WEDGE_POINT}
+            height={CAT_HEADER_H}
+            style={styles.wedgeSvg}
           >
-            {weightLbs} lbs
+            <Polygon
+              points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`}
+              fill="#FFFFFF"
+            />
+            <Polygon
+              points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`}
+              fill="#FFFFFF"
+            />
+          </Svg>
+        </View>
+
+        {/* Text content */}
+        <View style={styles.sectionContent}>
+          <Text style={styles.sectionName} numberOfLines={1}>
+            {title}
           </Text>
-        )}
-        {allDone && (
-          <View style={styles.sectionDone}>
-            <Ionicons name="checkmark" size={9} color="#FFFFFF" />
-          </View>
-        )}
+          <Text style={styles.sectionSub}>
+            {totalCount} item{totalCount !== 1 ? 's' : ''}
+            {checkedCount > 0 ? `  ·  ${checkedCount} selected` : ''}
+          </Text>
+        </View>
+
+        {/* Right: weight in oz, paddingR 44 (RIGHT_INSET) */}
+        <View style={styles.sectionRight}>
+          {checkedWeightOz > 0 && (
+            <Text style={styles.sectionWeight}>{weightOz} oz</Text>
+          )}
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 // ─── ItemRow ──────────────────────────────────────────────────────────────────
-// v3: minH 44, CARD_BG #FFF unchanged on checked (no muted bg)
-// Checkbox: hit target 44px wide, visual 20×20 radius 5 border 1.5
-// Checked: CB_CHECKED #4E7D5C; unchecked: rgba(0,0,0,0.18); check 11px
-// Content: paddingR 34 (CHECKLIST_RIGHT_INSET), gap 0 (single text item)
-// Name: 14.5pt/500/PRIMARY — no sub-category tag (v3 has no tag)
-// Weight: kept as native-justified exception (v3 hides it; native has no cat-header weight col)
+// v3: minH 44, white bg, rounded-square checkbox, name only, weight right
+// Source: MobileFunctionalV3.tsx lines 5028–5190
 
 function ItemRow({
   item,
@@ -302,8 +385,6 @@ function ItemRow({
 
   const totalOz = calcTotalOz(item.weightOz, item.qty);
   const weightLabel = item.weightOz > 0 ? `${totalOz.toFixed(1)} oz` : null;
-
-  // In v3, name is the single item name. Native: item.desc is the product name.
   const displayName = item.desc || item.sub || '';
 
   return (
@@ -313,7 +394,7 @@ function ItemRow({
       activeOpacity={0.65}
       testID={`gear-item-${item.id}`}
     >
-      {/* Checkbox hit-target area: 44pt wide (v3 line 5036) */}
+      {/* Checkbox hit-target: 44pt wide (v3 line 5036) */}
       <View style={styles.checkboxArea}>
         <View
           style={[
@@ -325,30 +406,23 @@ function ItemRow({
           ]}
         >
           {item.checked && (
-            /* Check: 11px (v3 line 5057) */
             <Ionicons name="checkmark" size={11} color="#FFFFFF" />
           )}
         </View>
       </View>
 
-      {/* Item name: 14.5pt/500/PRIMARY — no sub-tag */}
+      {/* Item name: 14.5pt/500/PRIMARY */}
       <Text
-        style={[
-          styles.itemName,
-          item.checked && styles.itemNameChecked,
-        ]}
+        style={[styles.itemName, item.checked && styles.itemNameChecked]}
         numberOfLines={2}
       >
         {displayName}
       </Text>
 
-      {/* Weight — native-only; not in v3 row but useful without category col */}
+      {/* Weight in oz (native convenience — not in v3 row but useful without cat col) */}
       {weightLabel && (
         <Text
-          style={[
-            styles.itemWeight,
-            item.checked && { color: NAV_ACTIVE },
-          ]}
+          style={[styles.itemWeight, item.checked && { color: NAV_ACTIVE }]}
         >
           {weightLabel}
         </Text>
@@ -357,55 +431,48 @@ function ItemRow({
   );
 }
 
-// ─── BottomBox ────────────────────────────────────────────────────────────────
-// v3 NavBox geometry: NAV_H=58, paddingT 7 paddingB 8, col gap 2, icon 21px label 10px
-// Active bg rgba(42,87,64,0.10), active icon NAV_ACTIVE 700, inactive NAV_INACTIVE 400
-// Border: 1px rgba(0,0,0,0.07), shadow 0 -3px 10px rgba(0,0,0,0.07)
-// v3 Group 2: Undo · Redo · Reset · (nav) → N003 shows: Summary · Reset · Add · Search
+// ─── NavBox / BottomBox ───────────────────────────────────────────────────────
+// v3: 4 groups × 5 cells, NAV_H=58, modulo Next/Back cycling
+// Group 1 wired: Summary → router, Reset (Group 2) → handleReset, Next/Back → groupIdx
+// All other cells: visual parity, documented non-functional
+// Source: MobileFunctionalV3.tsx lines 982–1150, 1227–1281
 
-type NavBoxProps = {
-  icon: string;
-  label: string;
-  active?: boolean;
-  onPress?: () => void;
-};
-
-function NavBox({ icon, label, active = false, onPress }: NavBoxProps) {
+function NavBox({
+  cell,
+  onAction,
+}: {
+  cell: BoxCell;
+  onAction: (action: string) => void;
+}) {
   return (
     <TouchableOpacity
-      style={[styles.navBox, active && styles.navBoxActive]}
-      onPress={onPress}
-      activeOpacity={active ? 0.7 : 1}
-      disabled={!onPress}
-      testID={`nav-${label.toLowerCase()}`}
+      style={styles.navBox}
+      onPress={() => onAction(cell.action)}
+      activeOpacity={0.65}
+      testID={`nav-${cell.label.toLowerCase().replace(/\s/g, '-')}`}
     >
-      <Ionicons
-        name={icon as any}
-        size={21}
-        color={active ? NAV_ACTIVE : NAV_INACTIVE}
-        style={{ opacity: active ? 1 : 0.9 }}
-      />
-      <Text style={[styles.navLabel, active && styles.navLabelActive]}>
-        {label}
-      </Text>
+      <Ionicons name={cell.icon as any} size={21} color={NAV_INACTIVE} />
+      <Text style={styles.navLabel}>{cell.label}</Text>
     </TouchableOpacity>
   );
 }
 
 function BottomBox({
-  onReset,
+  groupIdx,
+  onAction,
   bottomPad,
 }: {
-  onReset: () => void;
+  groupIdx: number;
+  onAction: (action: string) => void;
   bottomPad: number;
 }) {
+  const cells = BOX_GROUPS[groupIdx];
   return (
     <View style={[styles.bottomBox, { paddingBottom: bottomPad }]}>
       <View style={styles.bottomRow}>
-        <NavBox icon="bar-chart-outline"     label="Summary"  />
-        <NavBox icon="refresh-outline"       label="Reset"    active onPress={onReset} />
-        <NavBox icon="add-circle-outline"    label="Add"      />
-        <NavBox icon="search-outline"        label="Search"   />
+        {cells.map((cell) => (
+          <NavBox key={`g${groupIdx}-${cell.action}`} cell={cell} onAction={onAction} />
+        ))}
       </View>
     </View>
   );
@@ -415,58 +482,116 @@ function BottomBox({
 
 export default function GearScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { data, toggleItem, isLoading } = usePackData();
-  const [filter, setFilter] = useState<FilterMode>('all');
 
-  const { baseWeightOz, grandTotalOz } = calcWeights(data);
+  // Category expand/collapse — single-open model matching v3 (openCatName = one open cat)
+  // Default: all collapsed (openCatName=null, allExpanded=false) — v3 lines 2225–2228
+  const [openCatName, setOpenCatName] = useState<string | null>(null);
+  const [allExpanded, setAllExpanded] = useState(false);
 
+  // Bottom box group index (0–3), matching v3 groupIdx — v3 lines 1054, 1092–1094
+  const [groupIdx, setGroupIdx] = useState(0);
+
+  // ── Data computations ───────────────────────────────────────────────────────
+
+  // allSections: full stats for all non-empty categories (used for header display)
   const allSections: Section[] = CATEGORY_ORDER.map((cat, catIndex) => {
     const items = data[cat] || [];
-    const populated = items.filter(i => i.sub || i.desc);
+    const populated = items.filter((i) => i.sub || i.desc);
     const checkedWeightOz = populated
-      .filter(i => i.checked)
+      .filter((i) => i.checked)
       .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
     return {
       title: cat,
       catIndex,
       data: populated,
-      checkedCount: populated.filter(i => i.checked).length,
+      checkedCount: populated.filter((i) => i.checked).length,
       totalCount: populated.length,
       checkedWeightOz,
     };
-  }).filter(s => s.totalCount > 0);
+  }).filter((s) => s.totalCount > 0);
 
-  const sections: Section[] = allSections
-    .map(s => {
-      let visibleData = s.data;
-      if (filter === 'packed')   visibleData = s.data.filter(i => i.checked);
-      if (filter === 'unpacked') visibleData = s.data.filter(i => !i.checked);
-      return { ...s, data: visibleData };
-    })
-    .filter(s => s.data.length > 0);
-
+  // Hero metrics
   const totalItems   = allSections.reduce((n, s) => n + s.totalCount, 0);
-  const checkedItems = allSections.reduce((n, s) => n + s.checkedCount, 0);
+  const selectedCount = allSections.reduce((n, s) => n + s.checkedCount, 0);
+  const catCount     = allSections.length;
 
+  // sections for SectionList: item rows only visible when category is expanded
+  // Collapsed categories get data:[] — SectionList still renders their headers
+  const sections: Section[] = allSections.map((s) => ({
+    ...s,
+    data: allExpanded || openCatName === s.title ? s.data : [],
+  }));
+
+  // ── Handlers ────────────────────────────────────────────────────────────────
+
+  // Single-open toggle — v3 lines 2889–2911
+  const handleCatToggle = useCallback(
+    (catName: string) => {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      setAllExpanded(false);
+      setOpenCatName((prev) => (prev === catName ? null : catName));
+    },
+    [],
+  );
+
+  // Expand-all / collapse-all — v3 lines 2927–2929
+  const handleExpandAll = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setAllExpanded((prev) => {
+      if (prev) setOpenCatName(null);
+      return !prev;
+    });
+  }, []);
+
+  // Reset all checked items — v3 onReset (in Group 2)
   const handleReset = useCallback(() => {
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     }
-    CATEGORY_ORDER.forEach(cat => {
-      (data[cat] || []).forEach(item => {
+    CATEGORY_ORDER.forEach((cat) => {
+      (data[cat] || []).forEach((item) => {
         if (item.checked) toggleItem(cat, item.id);
       });
     });
   }, [data, toggleItem]);
 
-  // Bottom pad: NativeTabs manages insets; ClassicTabs is position:absolute 49pt bar.
-  const isNativeTabs = isLiquidGlassAvailable();
-  const bottomPad =
-    Platform.OS === 'web'
-      ? 84
-      : isNativeTabs
-      ? insets.bottom
-      : insets.bottom + 49;
+  // Box group action dispatcher
+  // Wired: next, back, summary, reset
+  // Non-functional (visual parity only): locker, add, search, undo, redo,
+  //   camera, photos, preview, save, share, more
+  const handleBoxAction = useCallback(
+    (action: string) => {
+      switch (action) {
+        case 'next':
+          setGroupIdx((g) => (g + 1) % NUM_GROUPS);
+          break;
+        case 'back':
+          setGroupIdx((g) => (g - 1 + NUM_GROUPS) % NUM_GROUPS);
+          break;
+        case 'summary':
+          router.push('/(tabs)/summary');
+          break;
+        case 'reset':
+          handleReset();
+          break;
+        // All remaining actions are non-functional in N004 — documented above
+        default:
+          break;
+      }
+    },
+    [router, handleReset],
+  );
+
+  // Bottom padding: tab bar is hidden, only safe-area inset needed
+  const bottomPad = Platform.OS === 'web' ? 20 : insets.bottom;
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
@@ -478,20 +603,22 @@ export default function GearScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: PAGE_BG }]}>
-      {/* ── Fixed top ───────────────────────────────────────────────────── */}
+      {/* ── Fixed top ─────────────────────────────────────────────────── */}
       <AppBar />
       <ListSummaryHero
         listName="Backpacking Gear"
         totalItems={totalItems}
-        checkedItems={checkedItems}
-        baseWeightOz={baseWeightOz}
+        catCount={catCount}
+        selectedCount={selectedCount}
+        allExpanded={allExpanded}
+        onExpandToggle={handleExpandAll}
       />
-      <FilterControl filter={filter} onFilter={setFilter} />
+      <FilterControl />
 
-      {/* ── Scrolling middle ─────────────────────────────────────────────── */}
+      {/* ── Scrolling category list ───────────────────────────────────── */}
       <SectionList
         sections={sections}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={({ item, section }) => (
           <ItemRow
             item={item}
@@ -501,13 +628,17 @@ export default function GearScreen() {
         )}
         renderSectionHeader={({ section }) => {
           const s = section as Section;
+          // Use allSections for true stats (section.data may be [] when collapsed)
+          const full = allSections.find((a) => a.title === s.title) || s;
           return (
             <SectionHeader
               title={s.title}
               catIndex={s.catIndex}
-              checkedCount={s.checkedCount}
-              totalCount={s.totalCount}
-              checkedWeightOz={s.checkedWeightOz}
+              checkedCount={full.checkedCount}
+              totalCount={full.totalCount}
+              checkedWeightOz={full.checkedWeightOz}
+              isOpen={allExpanded || openCatName === s.title}
+              onToggle={() => handleCatToggle(s.title)}
             />
           );
         }}
@@ -517,8 +648,12 @@ export default function GearScreen() {
         style={styles.list}
       />
 
-      {/* ── Fixed bottom ─────────────────────────────────────────────────── */}
-      <BottomBox onReset={handleReset} bottomPad={bottomPad} />
+      {/* ── Fixed bottom ─────────────────────────────────────────────── */}
+      <BottomBox
+        groupIdx={groupIdx}
+        onAction={handleBoxAction}
+        bottomPad={bottomPad}
+      />
     </View>
   );
 }
@@ -529,36 +664,45 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center:    { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  // ── AppBar ─────────────────────────────────────────────────────────────────
-  // v3: height 52, paddingL 8 paddingR 44, white, 1px border rgba(0,0,0,0.07)
+  // ── AppBar ──────────────────────────────────────────────────────────────────
+  // v3: height 52, paddingL 8 paddingR 8, white, 1px border rgba(0,0,0,0.07)
   appBar: {
     backgroundColor: '#FFFFFF',
-    paddingLeft: 14,          // generous left (v3=8; 14 aligns with hero for native)
-    paddingRight: RIGHT_INSET, // 44 — matches v3 APPBAR_RIGHT_INSET
+    paddingLeft:  8,
+    paddingRight: 8,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.07)',
     zIndex: 10,
-    // Shadow below: v3 home-only 0 2px 10px rgba(0,0,0,0.10)
     shadowColor: '#000',
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.06,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
   appBarInner: {
-    height: APPBAR_H,         // 52pt content height, matching v3
+    height: APPBAR_H,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,                   // v3 logo gap 6 → 8 for native
+    gap: 10,
+  },
+  appBarLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   appBarTitle: {
-    fontSize: 19,             // v3 wordmark 19px
+    fontSize: 19,
     fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: PRIMARY_TEXT,      // #1A2920
+    color: PRIMARY_TEXT,
     letterSpacing: 0.1,
   },
+  appBarShortcuts: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
 
-  // ── ListSummaryHero ────────────────────────────────────────────────────────
+  // ── ListSummaryHero ─────────────────────────────────────────────────────────
   // v3: bg rgba(42,87,64,0.94), paddingT 10 paddingB 12, paddingL 14 paddingR 44
   // horizontal row, gap 14, shadow 0 4px 12px rgba(0,0,0,0.22)
   hero: {
@@ -566,10 +710,10 @@ const styles = StyleSheet.create({
     paddingTop:    10,
     paddingBottom: 12,
     paddingLeft:   14,
-    paddingRight:  RIGHT_INSET,  // 44
+    paddingRight:  RIGHT_INSET,
     flexDirection: 'row',
     alignItems:    'center',
-    gap:           14,           // v3 icon-to-content gap 14
+    gap:           14,
     shadowColor: '#000',
     shadowOpacity: 0.22,
     shadowRadius:  12,
@@ -577,7 +721,6 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex: 9,
   },
-  // Icon tile: 66×66, radius 14, rgba(0,0,0,0.20) over hero bg
   heroTile: {
     width:           66,
     height:          66,
@@ -587,25 +730,22 @@ const styles = StyleSheet.create({
     justifyContent:  'center',
     flexShrink:      0,
   },
-  // Content column
   heroContent: {
     flex: 1,
-    gap:  8,    // v3 flex column gap 8
+    gap:  6,
   },
-  // List name: 15.5px/700/white, marginBottom 3 inside col
   heroListName: {
-    fontSize:    15.5,
-    fontFamily:  'PlusJakartaSans_700Bold',
-    color:       '#FFFFFF',
-    lineHeight:  19,
+    fontSize:   15.5,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    color:      '#FFFFFF',
+    lineHeight: 19,
   },
-  // Count row: baseline aligned
+  // Count row: big number + "items" suffix + chevron
   heroCountRow: {
     flexDirection: 'row',
     alignItems:    'baseline',
-    gap:           5,   // v3 baseline row gap 5
+    gap:           4,
   },
-  // Count number: 40px/800(→700)/white, ls -1.5
   heroCount: {
     fontSize:      40,
     fontFamily:    'PlusJakartaSans_700Bold',
@@ -613,49 +753,43 @@ const styles = StyleSheet.create({
     letterSpacing: -1.5,
     lineHeight:    44,
   },
-  // "items" suffix: 17px/500, rgba(.78)
   heroCountSuffix: {
     fontSize:   17,
     fontFamily: 'PlusJakartaSans_500Medium',
     color:      'rgba(255,255,255,0.78)',
     paddingBottom: 3,
   },
-  // Right stack: gap 6, right-aligned — v3 lines 4440–4457
+  heroChevronBtn: {
+    paddingBottom: 3,
+    alignSelf: 'flex-end',
+  },
+  // Right stack: category count + ✓ selected count
   heroRight: {
     alignItems:     'flex-end',
     justifyContent: 'center',
-    gap: 5,
+    gap: 6,
     flexShrink: 0,
   },
-  // Cat/packed count: 12px/600 rgba(.58)
   heroCatCount: {
     fontSize:      12,
     fontFamily:    'PlusJakartaSans_600SemiBold',
     color:         'rgba(255,255,255,0.58)',
     letterSpacing: 0.2,
   },
-  // Selected indicator: 18×18, radius 9, rgba(.18) bg, 1.5px border rgba(.50)
-  heroIndicator: {
-    width:           18,
-    height:          18,
-    borderRadius:    9,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderWidth:     1.5,
-    borderColor:     'rgba(255,255,255,0.50)',
-    alignItems:      'center',
-    justifyContent:  'center',
+  heroSelectedRow: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           4,
   },
-  // Base weight: 12px/600 rgba(.62)
-  heroWeight: {
+  heroSelectedText: {
     fontSize:      12,
     fontFamily:    'PlusJakartaSans_600SemiBold',
-    color:         'rgba(255,255,255,0.62)',
+    color:         'rgba(255,255,255,0.80)',
     letterSpacing: 0.1,
   },
 
-  // ── FilterControl ──────────────────────────────────────────────────────────
-  // v3: FILTER_BAR_H=50, padding 5/14, bg white, border-bottom 1px DIVIDER
-  // shadow 0 3px 8px rgba(0,0,0,0.08)
+  // ── FilterControl ───────────────────────────────────────────────────────────
+  // v3: FILTER_BAR_H=50, white, border-bottom 1px DIVIDER, shadow downward
   filterBar: {
     height:            FILTER_H,
     backgroundColor:   '#FFFFFF',
@@ -664,15 +798,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: DIVIDER,
     justifyContent:    'center',
-    // Downward shadow (renders above list content)
-    shadowColor:  '#000',
+    shadowColor:   '#000',
     shadowOpacity: 0.08,
     shadowRadius:  8,
     shadowOffset:  { width: 0, height: 3 },
     elevation: 3,
     zIndex: 8,
   },
-  // Button: minH 36, padding 6/10, radius 8, border 1px DIVIDER, white
   filterButton: {
     minHeight:      36,
     flexDirection:  'row',
@@ -683,9 +815,8 @@ const styles = StyleSheet.create({
     borderWidth:    1,
     borderColor:    DIVIDER,
     backgroundColor: '#FFFFFF',
-    gap:            7,  // v3 inner gap 7
+    gap: 7,
   },
-  // Label: 13px/600/PRIMARY
   filterLabel: {
     flex:          1,
     fontSize:      13,
@@ -694,12 +825,16 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
 
-  // ── SectionHeader / Category Card ─────────────────────────────────────────
+  // ── SectionHeader ───────────────────────────────────────────────────────────
+  // TouchableOpacity wrapper
+  sectionCardTouchable: {
+    zIndex: 5,
+  },
   // v3: minH 64, white, shadow 0 3px 10px rgba(0,0,0,0.18), border-bottom 1px DIVIDER
   sectionCard: {
-    flexDirection:  'row',
-    alignItems:     'stretch',
-    minHeight:      CAT_HEADER_H,  // 64
+    flexDirection:   'row',
+    alignItems:      'stretch',
+    height:          CAT_HEADER_H,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: DIVIDER,
@@ -708,29 +843,29 @@ const styles = StyleSheet.create({
     shadowRadius:  10,
     shadowOffset:  { width: 0, height: 3 },
     elevation:     4,
-    zIndex:        5,
   },
-  // Tile: TILE_W=72, full height, theme.bg
-  // Right-edge thin border simulates drop-shadow(3px 0 10px ...) — not reproducible in RN exactly
+  // Tile: TILE_W=72, full height, category color, overflow visible for SVG
   sectionTile: {
-    width:          TILE_W,  // 72
-    minHeight:      CAT_HEADER_H,
+    width:          TILE_W,
+    height:         CAT_HEADER_H,
     alignItems:     'center',
     justifyContent: 'center',
-    // Thin right border mimics v3 wedge right drop-shadow
-    borderRightWidth: 2,
-    borderRightColor: 'rgba(0,0,0,0.08)',
   },
-  // Text content: paddingL 12, paddingR 0 (handled by sectionRight padding), paddingV 8
+  // Wedge SVG: positioned at right edge of tile (right 17px strip)
+  wedgeSvg: {
+    position: 'absolute',
+    right:    0,
+    top:      0,
+  },
+  // Text content: paddingL 12, paddingV 8, column gap 10
   sectionContent: {
-    flex:          1,
-    paddingLeft:   12,       // v3 text grid paddingL 12
-    paddingRight:  0,
-    paddingVertical: 8,      // v3 paddingT/B 8
-    justifyContent: 'center',
-    gap:           10,       // v3 column gap 10 (was 3 in N002 — biggest text gap fix)
+    flex:            1,
+    paddingLeft:     12,
+    paddingVertical: 8,
+    justifyContent:  'center',
+    gap:             10,
   },
-  // Category name: 17px/500/PRIMARY, lh 20 (1.2×17≈20.4), ls -0.1
+  // Category name: 17px/500/PRIMARY, lh 20, ls -0.1
   sectionName: {
     fontSize:      17,
     fontFamily:    'PlusJakartaSans_500Medium',
@@ -744,14 +879,13 @@ const styles = StyleSheet.create({
     fontFamily: 'PlusJakartaSans_400Regular',
     color:      NAV_INACTIVE,
   },
-  // Right weight: paddingR 44 (RIGHT_INSET), 13px/600/PRIMARY, maxW 96
+  // Right weight: oz, paddingR 44, 13px/600/PRIMARY
   sectionRight: {
-    paddingRight:   RIGHT_INSET,  // 44
+    paddingRight:    RIGHT_INSET,
     paddingVertical: 8,
-    alignItems:     'flex-end',
-    justifyContent: 'center',
-    gap:            5,
-    maxWidth:       96 + RIGHT_INSET,  // maxW 96 + padding
+    alignItems:      'flex-end',
+    justifyContent:  'center',
+    maxWidth:        96 + RIGHT_INSET,
   },
   sectionWeight: {
     fontSize:      13,
@@ -760,36 +894,25 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
     textAlign:     'right',
   },
-  sectionDone: {
-    width:           16,
-    height:          16,
-    borderRadius:    8,
-    backgroundColor: NAV_ACTIVE,
-    alignItems:      'center',
-    justifyContent:  'center',
-  },
 
-  // ── ItemRow ────────────────────────────────────────────────────────────────
-  // v3: minH 44, CARD_BG #FFF (no checked-bg change), borderBottom 1px DIVIDER
-  // paddingR 34 (ITEM_R_INSET), checkbox hit-target 44pt wide
+  // ── ItemRow ─────────────────────────────────────────────────────────────────
+  // v3: minH 44, white, borderBottom 1px DIVIDER, paddingR 34
   itemRow: {
-    flexDirection:  'row',
-    alignItems:     'center',
-    minHeight:      44,
-    backgroundColor: '#FFFFFF',
+    flexDirection:     'row',
+    alignItems:        'center',
+    minHeight:         44,
+    backgroundColor:   '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: DIVIDER,
-    paddingRight:   ITEM_R_INSET,  // 34 — CHECKLIST_RIGHT_INSET
+    paddingRight:      ITEM_R_INSET,
   },
-  // Checkbox touch area: 44pt wide (v3 line 5036)
   checkboxArea: {
-    width:          CHECKBOX_HIT,  // 44
+    width:          CHECKBOX_HIT,
     height:         44,
     alignItems:     'center',
     justifyContent: 'center',
     flexShrink:     0,
   },
-  // Visual checkbox: 20×20, radius 5, border 1.5 — v3 lines 5040–5044
   checkbox: {
     width:          20,
     height:         20,
@@ -798,20 +921,17 @@ const styles = StyleSheet.create({
     alignItems:     'center',
     justifyContent: 'center',
   },
-  // Name: 14.5pt/500/PRIMARY — v3 14.5px weight450(→500)
   itemName: {
-    flex:          1,
-    fontSize:      14.5,
-    fontFamily:    'PlusJakartaSans_500Medium',
-    color:         PRIMARY_TEXT,
-    lineHeight:    20,
+    flex:       1,
+    fontSize:   14.5,
+    fontFamily: 'PlusJakartaSans_500Medium',
+    color:      PRIMARY_TEXT,
+    lineHeight: 20,
   },
-  // Checked name: muted
   itemNameChecked: {
     color:   NAV_INACTIVE,
     opacity: 0.8,
   },
-  // Weight — native-only justified exception (v3 hides weight in row)
   itemWeight: {
     fontSize:      12,
     fontFamily:    'PlusJakartaSans_600SemiBold',
@@ -821,11 +941,11 @@ const styles = StyleSheet.create({
     marginLeft:    8,
   },
 
-  // ── List ───────────────────────────────────────────────────────────────────
+  // ── List ────────────────────────────────────────────────────────────────────
   list:        { flex: 1 },
   listContent: { paddingBottom: 4 },
 
-  // ── BottomBox / NavBar ─────────────────────────────────────────────────────
+  // ── BottomBox / NavBar ──────────────────────────────────────────────────────
   // v3: NAV_H=58, white, borderTop 1px rgba(0,0,0,0.07), shadow 0 -3px 10px rgba(0,0,0,0.07)
   bottomBox: {
     backgroundColor: '#FFFFFF',
@@ -835,15 +955,15 @@ const styles = StyleSheet.create({
     shadowOpacity:   0.07,
     shadowRadius:    10,
     shadowOffset:    { width: 0, height: -3 },
-    elevation:       8,
-    zIndex:          40,
+    elevation: 8,
+    zIndex:    40,
   },
   bottomRow: {
-    flexDirection:  'row',
-    alignItems:     'stretch',
-    minHeight:      NAV_H,  // 58
+    flexDirection: 'row',
+    alignItems:    'stretch',
+    minHeight:     NAV_H,
   },
-  // NavBox: flex 1, paddingT 7 paddingB 8, col, gap 2, centered — v3 lines 982–991
+  // NavBox: flex 1, col, paddingT 9 paddingB 8, gap 2, centered
   navBox: {
     flex:           1,
     paddingTop:     9,
@@ -852,17 +972,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap:            2,
   },
-  navBoxActive: {
-    backgroundColor: 'rgba(42,87,64,0.10)',  // v3 active bg
-  },
-  // Nav label: 10px — active 700 NAV_ACTIVE, inactive 400 NAV_INACTIVE
+  // Nav label: 10px/400 NAV_INACTIVE
   navLabel: {
     fontSize:   10,
     fontFamily: 'PlusJakartaSans_400Regular',
     color:      NAV_INACTIVE,
-  },
-  navLabelActive: {
-    fontFamily: 'PlusJakartaSans_700Bold',
-    color:      NAV_ACTIVE,
   },
 });
