@@ -10,7 +10,7 @@
 import React, { useMemo } from 'react';
 import {
   Modal, View, Text, TouchableOpacity, ScrollView,
-  StyleSheet, Platform,
+  StyleSheet, Platform, Share,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
@@ -65,23 +65,54 @@ export function ChecklistOverlay({ visible, onClose, weightUnit }: ChecklistOver
       onRequestClose={onClose}
     >
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Header */}
+        {/* D-59/61/62: ← Back, title, conditional Clear, Print, Share icons */}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>Checklist</Text>
-            <Text style={styles.headerSub}>{usedCount}/{totalPacked} loaded</Text>
+          <TouchableOpacity onPress={onClose} style={styles.backBtn} hitSlop={12}>
+            <Ionicons name="arrow-back" size={20} color={NAV_ACTIVE} />
+            <Text style={styles.backBtnText}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Trail Checklist</Text>
+          <View style={styles.headerRight}>
+            {usedCount > 0 && (
+              <TouchableOpacity onPress={clearChecklistUse} hitSlop={8}>
+                <Text style={styles.clearBtnText}>Clear</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              hitSlop={8}
+              onPress={() => {
+                const lines = sections.flatMap(s =>
+                  s.items.map(i => `• ${i.desc || i.sub || 'Item'}${i.qty > 1 ? ` ×${i.qty}` : ''}`)
+                );
+                Share.share({ message: ['Trail Checklist', '─────────────', ...lines].join('\n'), title: 'Trail Checklist' });
+              }}
+            >
+              <Ionicons name="print-outline" size={20} color={NAV_ACTIVE} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              hitSlop={8}
+              onPress={() => {
+                const lines = sections.flatMap(s =>
+                  s.items.map(i => `• ${i.desc || i.sub || 'Item'}${i.qty > 1 ? ` ×${i.qty}` : ''}`)
+                );
+                Share.share({ message: ['Trail Checklist', '─────────────', ...lines].join('\n'), title: 'Trail Checklist' });
+              }}
+            >
+              <Ionicons name="share-outline" size={20} color={NAV_ACTIVE} />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={clearChecklistUse} style={styles.clearBtn} hitSlop={8}>
-            <Text style={styles.clearBtnText}>Clear</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onClose} style={styles.doneBtn} hitSlop={8}>
-            <Text style={styles.doneBtnText}>Done</Text>
-          </TouchableOpacity>
         </View>
         <View style={styles.progressBar}>
           <View style={[styles.progressFill, {
             width: totalPacked > 0 ? `${Math.round((usedCount / totalPacked) * 100)}%` as any : '0%',
           }]} />
+        </View>
+        {/* D-60: informational banner */}
+        <View style={styles.banner}>
+          <Ionicons name="information-circle-outline" size={14} color={MUTED} />
+          <Text style={styles.bannerText}>
+            Items you've packed — check them off as you load onto the trail. Your pack list is unchanged.
+          </Text>
         </View>
 
         {/* List */}
@@ -148,22 +179,33 @@ export function ChecklistOverlay({ visible, onClose, weightUnit }: ChecklistOver
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  // D-59/60/61/62: background updated to PAGE_BG (#F2EDE4) per v3 spec
+  container: { flex: 1, backgroundColor: '#F2EDE4' },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#FFFFFF',
     borderBottomWidth: 1, borderBottomColor: DIVIDER,
   },
-  headerTitle: { fontSize: 18, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT },
+  // ← Back button (D-59)
+  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  backBtnText: { fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  // Title centered between Back and right actions (D-59)
+  headerTitle: { flex: 1, fontSize: 16, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT, textAlign: 'center' },
+  // Right-side action cluster (D-61/62)
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  // D-60: banner below progress bar
+  banner: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+    paddingHorizontal: 16, paddingVertical: 9,
+    backgroundColor: 'rgba(42,87,64,0.05)',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(42,87,64,0.10)',
+  },
+  bannerText: { flex: 1, fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, lineHeight: 16 },
+  // Legacy (kept to avoid TS errors from any stray references)
   headerSub: { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, marginTop: 2 },
-  clearBtn: {
-    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8,
-    borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', backgroundColor: '#F3F4F6',
-  },
+  clearBtn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', backgroundColor: '#F3F4F6' },
   clearBtnText: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED },
-  doneBtn: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, backgroundColor: NAV_ACTIVE,
-  },
+  doneBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, backgroundColor: NAV_ACTIVE },
   doneBtnText: { fontSize: 13, fontFamily: 'PlusJakartaSans_700Bold', color: '#FFFFFF' },
   progressBar: { height: 3, backgroundColor: 'rgba(0,0,0,0.07)' },
   progressFill: { height: 3, backgroundColor: NAV_ACTIVE, borderRadius: 1.5 },

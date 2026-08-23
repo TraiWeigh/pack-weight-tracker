@@ -42,11 +42,13 @@ interface ItemDetailPanelProps {
   onDelete: () => void;
   onPhoto: () => void;
   onClose: () => void;
+  /** D-42: create a new location; callback receives the new location id */
+  onCreateLocation?: (name: string, onCreated: (locId: string) => void) => void;
 }
 
 export function ItemDetailPanel({
   item, category, categories, locations, weightUnit,
-  onRename, onUpdate, onMove, onDelete, onPhoto, onClose,
+  onRename, onUpdate, onMove, onDelete, onPhoto, onClose, onCreateLocation,
 }: ItemDetailPanelProps) {
   const nameRef = useRef<TextInput>(null);
   const [localName, setLocalName] = useState(item.desc || item.sub || '');
@@ -59,12 +61,15 @@ export function ItemDetailPanel({
   };
   const [localWt,   setLocalWt  ] = useState(item.weightOz > 0 ? ozToDisplay(item.weightOz) : '');
   const [localQty,  setLocalQty ] = useState(item.qty);
+  // N-03: controls the inline photo viewer — toggled by "View Photo" button
+  const [showViewer, setShowViewer] = useState(false);
 
   // Sync back if item changes externally or unit switches
   useEffect(() => {
     setLocalName(item.desc || item.sub || '');
     setLocalWt(item.weightOz > 0 ? ozToDisplay(item.weightOz) : '');
     setLocalQty(item.qty);
+    setShowViewer(false); // N-03: collapse viewer when item switches
   }, [item.id, weightUnit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // autoFocus Name on mount
@@ -110,6 +115,19 @@ export function ItemDetailPanel({
     }
   }, [categories, category, onMove]);
 
+  // D-42: opens name prompt and creates a new location via onCreateLocation callback
+  const promptCreateLocation = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      Alert.prompt('New Location', 'Enter a name for the new location:', (text) => {
+        if (text?.trim() && onCreateLocation) {
+          onCreateLocation(text.trim(), (locId) => onUpdate({ locationId: locId }));
+        }
+      }, 'plain-text');
+    } else {
+      Alert.alert('Create Location', 'Location creation is available on iOS.');
+    }
+  }, [onCreateLocation, onUpdate]);
+
   const handleLocation = useCallback(() => {
     const locOptions = [
       { label: 'No Location', value: null as string | null },
@@ -118,10 +136,16 @@ export function ItemDetailPanel({
     if (Platform.OS === 'ios') {
       const labels = locOptions.map(o => o.label);
       ActionSheetIOS.showActionSheetWithOptions(
-        { options: [...labels, 'Cancel'], cancelButtonIndex: labels.length, title: 'Assign Location' },
+        {
+          options: [...labels, 'Create New Location…', 'Cancel'],
+          cancelButtonIndex: labels.length + 1,
+          title: 'Assign Location',
+        },
         (idx) => {
           if (idx < locOptions.length) {
             onUpdate({ locationId: locOptions[idx].value || undefined });
+          } else if (idx === locOptions.length) {
+            promptCreateLocation();
           }
         },
       );
@@ -131,10 +155,11 @@ export function ItemDetailPanel({
           text: o.label,
           onPress: () => onUpdate({ locationId: o.value || undefined }),
         })),
+        ...(onCreateLocation ? [{ text: 'Create New Location…', onPress: promptCreateLocation }] : []),
         { text: 'Cancel', style: 'cancel' },
       ]);
     }
-  }, [locations, onUpdate]);
+  }, [locations, onUpdate, onCreateLocation, promptCreateLocation]);
 
   const handleDelete = useCallback(() => {
     Alert.alert(
@@ -254,14 +279,14 @@ export function ItemDetailPanel({
 
       <View style={styles.rowDivider} />
 
-      {/* Row 7: Photo */}
+      {/* Row 7: Photo — N-03: View Photo toggles inline viewer; Edit Photo opens sheet */}
       <View style={styles.row}>
         <Text style={styles.rowLabel}>Photo</Text>
         <View style={styles.photoActions}>
           {item.photoDataUrl ? (
             <>
-              <TouchableOpacity style={styles.photoBtn} onPress={onPhoto}>
-                <Text style={styles.photoBtnText}>View Photo</Text>
+              <TouchableOpacity style={styles.photoBtn} onPress={() => setShowViewer(v => !v)}>
+                <Text style={styles.photoBtnText}>{showViewer ? 'Hide Photo' : 'View Photo'}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.photoBtn} onPress={onPhoto}>
                 <Text style={styles.photoBtnText}>Edit Photo</Text>
@@ -276,8 +301,8 @@ export function ItemDetailPanel({
         </View>
       </View>
 
-      {/* Row 8: Inline photo viewer */}
-      {!!item.photoDataUrl && (
+      {/* Row 8: Inline photo viewer — N-03: only shown when View Photo is toggled on */}
+      {showViewer && !!item.photoDataUrl && (
         <>
           <View style={styles.rowDivider} />
           <View style={styles.photoViewerRow}>

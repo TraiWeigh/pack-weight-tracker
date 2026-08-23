@@ -46,3 +46,4 @@
 - [Photo List native architecture](photo-list-native-architecture.md) — sheet cascade, SectionList section kinds, empty-card states, LocationBar, filter toggle, typecheck baseline, deferred items.
 - [R0113 repair pass architecture](r0113-repair-pass.md) — 9 new components, context additions (weightUnit/checklistUse/addItem→string), filterView replaces photoListView, expandedItemKey, SWIPE_BTN_W=88.
 - [Batch G native parity repairs](batch-g-repairs.md) — F-01–F-20 final status; 12 Batch G fixes; two F-series regressions (D-35/D-41) and remaining gap list.
+- [Batch H native parity repairs](batch-h-repairs.md) — 12 repairs: N-01–N-05, D-42, D-46, D-48p, D-54, D-59–67; all pass TypeScript clean; DEVICE TEST REQUIRED for N-02 drag, D-42 Alert.prompt (iOS only), D-64 camera sheet.

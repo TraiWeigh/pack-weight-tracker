@@ -38,6 +38,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import {
   usePackData, CATEGORY_ORDER, GearItem, PHOTO_ITEMS_CATEGORY, PackLocation,
@@ -155,14 +156,15 @@ function AppBar({ onMenuPress, handedness }: { onMenuPress: () => void; handedne
           </TouchableOpacity>
         )}
         <View style={styles.appBarLogo}>
-          <Ionicons name="checkbox-outline" size={20} color={NAV_ACTIVE} />
+          {/* N-04: logo icon spec size=24 */}
+          <Ionicons name="checkbox-outline" size={24} color={NAV_ACTIVE} />
           <Text style={styles.appBarTitle}>TrailWeigh</Text>
         </View>
         <View style={{ flex: 1 }} />
-        {/* D-23: decorative icons = NAV_ACTIVE per v3 §2 */}
+        {/* D-23: decorative icons = NAV_ACTIVE; N-05: spec size=18 */}
         <View style={styles.appBarShortcuts}>
           {APPBAR_SHORTCUT_ICONS.map((icon) => (
-            <Ionicons key={icon} name={icon} size={17} color={NAV_ACTIVE} />
+            <Ionicons key={icon} name={icon} size={18} color={NAV_ACTIVE} />
           ))}
         </View>
         {handedness === 'left' && (
@@ -258,7 +260,9 @@ function SectionHeader({
   isOpen, onToggle, onLongPress, weightUnit,
 }: {
   title: string; catIndex: number; checkedCount: number; totalCount: number;
-  checkedWeightOz: number; isOpen: boolean; onToggle: () => void; onLongPress?: () => void;
+  checkedWeightOz: number; isOpen: boolean; onToggle: () => void;
+  // N-02: pageY from the long-press gesture event, used to compute drag start position
+  onLongPress?: (pageY: number) => void;
   weightUnit: 'imperial' | 'metric';
 }) {
   const theme       = getCategoryTheme(title, catIndex);
@@ -268,7 +272,10 @@ function SectionHeader({
 
   return (
     <TouchableOpacity
-      onPress={onToggle} onLongPress={onLongPress} delayLongPress={500}
+      onPress={onToggle}
+      // N-02: delayLongPress = 400ms (spec §5.3); pass pageY so GearScreen can position the drag overlay
+      onLongPress={e => onLongPress?.(e.nativeEvent.pageY)}
+      delayLongPress={400}
       activeOpacity={0.78} style={styles.sectionCardTouchable}
       testID={`cat-header-${title}`}
     >
@@ -298,20 +305,23 @@ function SectionHeader({
 }
 
 // ─── LocationBar ─────────────────────────────────────────────────────────────
+// D-63/64: Restructured so rename/camera buttons don't nest inside the toggle TouchableOpacity
 
 function LocationBar({
-  loc, totalCount, checkedCount, isOpen, onToggle,
+  loc, totalCount, checkedCount, isOpen, onToggle, onRename, onCamera,
 }: {
   loc: PackLocation; totalCount: number; checkedCount: number;
   isOpen: boolean; onToggle: () => void;
+  onRename?: () => void;   // D-63: pencil → Alert.prompt rename
+  onCamera?: () => void;   // D-64: camera → location photo sheet
 }) {
   return (
-    <TouchableOpacity
-      onPress={onToggle} activeOpacity={0.78}
-      style={styles.sectionCardTouchable}
-      testID={`loc-header-${loc.id}`}
-    >
-      <View style={styles.sectionCard}>
+    <View style={[styles.sectionCard, { zIndex: 5 }]} testID={`loc-header-${loc.id}`}>
+      {/* Toggle area covers the full bar except the action buttons */}
+      <TouchableOpacity
+        onPress={onToggle} activeOpacity={0.78}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'stretch' }}
+      >
         <View style={[styles.sectionTile, { backgroundColor: NAV_ACTIVE }]}>
           <Ionicons name="location-outline" size={26} color="rgba(255,255,255,0.93)" />
           <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
@@ -329,12 +339,27 @@ function LocationBar({
           )}
           <Text style={styles.locBarName} numberOfLines={2}>{loc.name}</Text>
         </View>
-        <View style={styles.locBarRight}>
+        <View style={[styles.locBarRight, { paddingRight: 8 }]}>
           <Text style={styles.locBarType}>Location</Text>
           <Text style={styles.locBarCount}>{totalCount} item{totalCount !== 1 ? 's' : ''}</Text>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+      {/* D-63/64: Rename + Camera action buttons — separate from the toggle area */}
+      {(onRename || onCamera) && (
+        <View style={styles.locBarActions}>
+          {onRename && (
+            <TouchableOpacity onPress={onRename} hitSlop={8} style={styles.locBarActionBtn}>
+              <Ionicons name="pencil-outline" size={16} color={NAV_ACTIVE} />
+            </TouchableOpacity>
+          )}
+          {onCamera && (
+            <TouchableOpacity onPress={onCamera} hitSlop={8} style={styles.locBarActionBtn}>
+              <Ionicons name="camera-outline" size={16} color={NAV_ACTIVE} />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </View>
   );
 }
 
@@ -484,24 +509,25 @@ function ItemRow({
 
 // ─── NavBox / BottomBox ───────────────────────────────────────────────────────
 
-function NavBox({ cell, onAction, disabled }: { cell: BoxCell; onAction: (a: string) => void; disabled?: boolean }) {
+// D-46: isActive shows the active deck/screen highlight (bg + heavier icon + bold label)
+function NavBox({ cell, onAction, disabled, isActive }: { cell: BoxCell; onAction: (a: string) => void; disabled?: boolean; isActive?: boolean }) {
   return (
     <TouchableOpacity
-      style={[styles.navBox, disabled && { opacity: 0.30 }]}
+      style={[styles.navBox, disabled && { opacity: 0.30 }, isActive && styles.navBoxActive]}
       onPress={() => { if (!disabled) onAction(cell.action); }}
       activeOpacity={disabled ? 1 : 0.65}
       testID={`nav-${cell.label.toLowerCase().replace(/\s/g, '-')}`}
     >
-      <Ionicons name={cell.icon as any} size={21} color={NAV_INACTIVE} />
-      <Text style={styles.navLabel}>{cell.label}</Text>
+      <Ionicons name={cell.icon as any} size={21} color={isActive ? NAV_ACTIVE : NAV_INACTIVE} />
+      <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>{cell.label}</Text>
     </TouchableOpacity>
   );
 }
 
 // F-02: handedness reverses cell order so primary thumb gets the most-used actions
 function BottomBox({
-  groupIdx, onAction, bottomPad, disabledSet, handedness,
-}: { groupIdx: number; onAction: (a: string) => void; bottomPad: number; disabledSet?: Set<string>; handedness?: 'right' | 'left' }) {
+  groupIdx, onAction, bottomPad, disabledSet, handedness, activeAction,
+}: { groupIdx: number; onAction: (a: string) => void; bottomPad: number; disabledSet?: Set<string>; handedness?: 'right' | 'left'; activeAction?: string }) {
   const rawCells = BOX_GROUPS[groupIdx];
   const cells = handedness === 'left' ? [...rawCells].reverse() : rawCells;
   const onActionRef = useRef(onAction);
@@ -532,6 +558,7 @@ function BottomBox({
             key={`g${groupIdx}-${cell.action}`}
             cell={cell} onAction={onAction}
             disabled={disabledSet?.has(cell.action)}
+            isActive={activeAction === cell.action}
           />
         ))}
       </View>
@@ -669,6 +696,38 @@ function AnimatedSwipeRow({
   );
 }
 
+// ─── PhotoItemCard ─────────────────────────────────────────────────────────────
+// D-67: full-width photo card for the photo filter view (shows image + Edit/Delete controls)
+
+function PhotoItemCard({
+  item, onDelete, onEditPhoto, weightUnit,
+}: {
+  item: GearItem; onDelete: () => void; onEditPhoto: () => void; weightUnit: 'imperial' | 'metric';
+}) {
+  const displayName = item.desc || item.sub || 'Unnamed item';
+  const totalOz     = calcTotalOz(item.weightOz, item.qty);
+  const wtLabel     = item.weightOz > 0 ? formatDisplayWeight(totalOz, weightUnit) : null;
+  return (
+    <View style={styles.photoItemCard}>
+      <Image source={{ uri: item.photoDataUrl! }} style={styles.photoItemImg} resizeMode="cover" />
+      <View style={styles.photoItemMeta}>
+        <Text style={styles.photoItemName} numberOfLines={2}>{displayName}</Text>
+        {wtLabel && <Text style={styles.photoItemWeight}>{wtLabel}</Text>}
+      </View>
+      <View style={styles.photoItemActions}>
+        <TouchableOpacity style={styles.photoItemBtn} onPress={onEditPhoto} activeOpacity={0.7}>
+          <Ionicons name="pencil-outline" size={14} color={NAV_ACTIVE} />
+          <Text style={styles.photoItemBtnText}>Edit Photo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.photoItemBtn, styles.photoItemDeleteBtn]} onPress={onDelete} activeOpacity={0.7}>
+          <Ionicons name="trash-outline" size={14} color="#B03A2E" />
+          <Text style={[styles.photoItemBtnText, { color: '#B03A2E' }]}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 // ─── GearScreen ───────────────────────────────────────────────────────────────
 
 export default function GearScreen() {
@@ -678,7 +737,7 @@ export default function GearScreen() {
     toggleItem, addItem, deleteItem, updateItem, renameItem, moveItem, resetAll,
     listName, setListName,
     listKind, locations, photoListCaptureDataUrl,
-    setPendingCapture,
+    setPendingCapture, addLocation, updateLocation,
     canUndo, canRedo, undo, redo,
     addCategory, deleteCategory, renameCategory, reorderCategories,
     saveToLocker, saveAsToLocker, refreshLockerEntries,
@@ -733,6 +792,25 @@ export default function GearScreen() {
   // ── Pending new-item cleanup (F-06: cancel after contextual photo add) ───────
   const [pendingNewItemCleanup, setPendingNewItemCleanup] = useState<{ cat: string; id: string } | null>(null);
 
+  // N-01: skip first render when saving handedness
+  const handednessInitRef = useRef(false);
+
+  // N-02: category drag-reorder state + refs
+  const [draggingCat,  setDraggingCat]  = useState<string | null>(null);
+  const [dragOverlayY, setDragOverlayY] = useState(0);
+  const dragCatRef               = useRef<string | null>(null);
+  const reorderJustHappenedRef   = useRef(false);
+  const catBarYsRef              = useRef<Map<string, number>>(new Map());
+  const catBarHsRef              = useRef<Map<string, number>>(new Map());
+  const scrollYRef               = useRef(0);
+  const listContainerRef         = useRef<View>(null);
+  const listTopRef               = useRef(0);
+  const catDragAnimsRef          = useRef<Map<string, Animated.Value>>(new Map());
+
+  // D-63/64: location photo sheet
+  const [locPhotoTarget,    setLocPhotoTarget]    = useState<string | null>(null);
+  const [showLocPhotoSheet, setShowLocPhotoSheet] = useState(false);
+
   // ── Toast ───────────────────────────────────────────────────────────────────
   const [toastMsg,  setToastMsg]  = useState('');
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -741,6 +819,17 @@ export default function GearScreen() {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToastMsg(''), 3000);   // 3000ms (was 2200)
   }, []);
+
+  // N-01: persist handedness to AsyncStorage across app restarts
+  useEffect(() => {
+    AsyncStorage.getItem('twm-handedness').then((v) => {
+      if (v === 'left' || v === 'right') setHandedness(v as 'left' | 'right');
+    }).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (!handednessInitRef.current) { handednessInitRef.current = true; return; }
+    AsyncStorage.setItem('twm-handedness', handedness).catch(() => {});
+  }, [handedness]);
 
   // ── Photo List sheet cascade ──────────────────────────────────────────────
 
@@ -913,40 +1002,61 @@ export default function GearScreen() {
     ]);
   }, [deleteItem, expandedItemKey]);
 
-  const handleCatLongPress = useCallback((catName: string) => {
+  // N-02: drag-reorder helper — create/return Animated.Value per category bar
+  const getDragAnim = useCallback((cat: string): Animated.Value => {
+    if (!catDragAnimsRef.current.has(cat)) {
+      catDragAnimsRef.current.set(cat, new Animated.Value(0));
+    }
+    return catDragAnimsRef.current.get(cat)!;
+  }, []);
+
+  // N-02: compute target drop index from absolute screen Y
+  const computeTargetIdx = useCallback((absY: number): number => {
+    const contentY = absY - listTopRef.current + scrollYRef.current;
+    const order    = categoryOrder;
+    let best = order.length - 1;
+    for (let i = 0; i < order.length; i++) {
+      const barTop = catBarYsRef.current.get(order[i]) ?? 0;
+      const barH   = catBarHsRef.current.get(order[i]) ?? 62;
+      if (contentY < barTop + barH / 2) { best = i; break; }
+    }
+    return best;
+  }, [categoryOrder]);
+
+  // N-02: commit the drag — reorder categories and clean up
+  const commitDrag = useCallback((absY: number) => {
+    const dragging = dragCatRef.current;
+    if (!dragging) return;
+    const fromIdx  = categoryOrder.indexOf(dragging);
+    const toIdx    = computeTargetIdx(absY);
+    if (fromIdx !== toIdx && fromIdx >= 0) {
+      const o = [...categoryOrder];
+      o.splice(fromIdx, 1);
+      o.splice(toIdx, 0, dragging);
+      reorderCategories(o);
+    }
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    reorderJustHappenedRef.current = true;
+    setTimeout(() => { reorderJustHappenedRef.current = false; }, 400);
+    // reset all anims
+    catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
+    dragCatRef.current = null;
+    setDraggingCat(null);
+  }, [categoryOrder, computeTargetIdx, reorderCategories]);
+
+  // N-02: long-press activates drag (no Alert menu); pageY positions the floating overlay
+  const handleCatLongPress = useCallback((catName: string, pageY: number) => {
+    if (reorderJustHappenedRef.current) return;
     if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
-    const idx      = categoryOrder.indexOf(catName);
-    const catItems = data[catName] || [];
-    Alert.alert(catName,
-      catItems.length > 0 ? `${catItems.length} item${catItems.length !== 1 ? 's' : ''}` : 'Empty category',
-      [
-        { text: 'Rename', onPress: () => {
-          if (Platform.OS === 'ios') {
-            Alert.prompt('Rename Category', undefined, (text) => {
-              if (text?.trim()) renameCategory(catName, text.trim());
-            }, 'plain-text', catName);
-          } else Alert.alert('Rename', 'Renaming categories is available on iOS.');
-        }},
-        { text: 'Delete', style: 'destructive', onPress: () =>
-          Alert.alert('Delete Category',
-            catItems.length > 0
-              ? `Remove "${catName}" and its ${catItems.length} item${catItems.length !== 1 ? 's' : ''}?`
-              : `Remove the empty category "${catName}"?`,
-            [{ text: 'Cancel', style: 'cancel' },
-             { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(catName) }],
-          ),
-        },
-        ...(idx > 0 ? [{ text: '▲ Move Up', onPress: () => {
-          const o = [...categoryOrder]; [o[idx-1],o[idx]] = [o[idx],o[idx-1]]; reorderCategories(o);
-        }}] : []),
-        ...(idx < categoryOrder.length - 1 ? [{ text: '▼ Move Down', onPress: () => {
-          const o = [...categoryOrder]; [o[idx+1],o[idx]] = [o[idx],o[idx+1]]; reorderCategories(o);
-        }}] : []),
-        { text: 'Cancel', style: 'cancel' },
-      ],
-    );
-  }, [categoryOrder, data, renameCategory, deleteCategory, reorderCategories, listKind]);
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // record list top in screen coordinates
+    listContainerRef.current?.measure((_x, _y, _w, _h, _px, py) => {
+      listTopRef.current = py;
+    });
+    dragCatRef.current = catName;
+    setDraggingCat(catName);
+    setDragOverlayY(pageY - (catBarHsRef.current.get(catName) ?? 62) / 2);
+  }, [listKind]);
 
   const handleHeroNameTap = useCallback(() => {
     if (Platform.OS === 'ios') {
@@ -1254,6 +1364,7 @@ export default function GearScreen() {
       )}
 
       {/* ── Scrolling category / location list ──────────────────────── */}
+      <View ref={listContainerRef} style={{ flex: 1 }}>
       <SectionList
         ref={sectionListRef}
         sections={sections}
@@ -1271,6 +1382,18 @@ export default function GearScreen() {
           const s = section as Section;
           if (s.sectionKind === 'add-photo-bar') return null;
           const isExpanded = expandedItemKey?.cat === s.title && expandedItemKey?.id === item.id;
+          // D-67: in photo filter view, render full-width photo card instead of swipe row
+          if (filterView === 'photo' && !!item.photoDataUrl) {
+            const picCat = s.sectionKind === 'location' ? PHOTO_ITEMS_CATEGORY : s.title;
+            return (
+              <PhotoItemCard
+                item={item}
+                weightUnit={weightUnit}
+                onDelete={() => handleItemDelete(item, picCat)}
+                onEditPhoto={() => { setPhotoTarget({ cat: picCat, id: item.id }); setShowItemPhotoSheet(true); }}
+              />
+            );
+          }
           return (
             <View>
               <AnimatedSwipeRow
@@ -1298,6 +1421,7 @@ export default function GearScreen() {
                     onDelete={()      => handleDetailDelete(itemCat, item.id)}
                     onPhoto={()       => { setPhotoTarget({ cat: itemCat, id: item.id }); setShowItemPhotoSheet(true); }}
                     onClose={()       => setExpandedItemKey(null)}
+                    onCreateLocation={(name, cb) => { const locId = addLocation(name, ''); cb(locId); }}
                   />
                 );
               })()}
@@ -1315,13 +1439,33 @@ export default function GearScreen() {
             const loc = locations.find(l => l.id === s.locId);
             if (!loc) return null;
             return (
-              <LocationBar
-                loc={loc}
-                totalCount={s.totalCount}
-                checkedCount={s.checkedCount}
-                isOpen={openLocNames.has(s.locId)}
-                onToggle={() => handleLocToggle(s.locId!)}
-              />
+              <View>
+                <LocationBar
+                  loc={loc}
+                  totalCount={s.totalCount}
+                  checkedCount={s.checkedCount}
+                  isOpen={openLocNames.has(s.locId)}
+                  onToggle={() => handleLocToggle(s.locId!)}
+                  onRename={() => {
+                    if (Platform.OS === 'ios') {
+                      Alert.prompt('Rename Location', undefined, (text) => {
+                        if (text?.trim()) updateLocation(s.locId!, { name: text.trim() });
+                      }, 'plain-text', loc.name);
+                    } else {
+                      Alert.alert('Rename Location', 'Renaming is available on iOS.');
+                    }
+                  }}
+                  onCamera={() => { setLocPhotoTarget(s.locId!); setShowLocPhotoSheet(true); }}
+                />
+                {/* D-65: full-width location photo below open accordion */}
+                {openLocNames.has(s.locId) && !!loc.photoDataUrl && (
+                  <Image
+                    source={{ uri: loc.photoDataUrl }}
+                    style={styles.locAccordionPhoto}
+                    resizeMode="cover"
+                  />
+                )}
+              </View>
             );
           }
 
@@ -1329,6 +1473,11 @@ export default function GearScreen() {
           const full = allSections.find(a => a.title === s.title) || s;
           // Suppress swipe on Photo List structural category
           const suppressSwipe = listKind === 'photo' && s.title === PHOTO_ITEMS_CATEGORY;
+          // N-02: record this bar's content-space Y + height so computeTargetIdx can find the drop slot
+          const catHeaderLayout = (e: any) => {
+            catBarYsRef.current.set(s.title, e.nativeEvent.layout.y);
+            catBarHsRef.current.set(s.title, e.nativeEvent.layout.height);
+          };
           const header = (
             <SectionHeader
               title={s.title}
@@ -1338,25 +1487,27 @@ export default function GearScreen() {
               checkedWeightOz={full.checkedWeightOz}
               isOpen={allExpanded || openCatName === s.title}
               onToggle={() => handleCatToggle(s.title)}
-              onLongPress={() => handleCatLongPress(s.title)}
+              onLongPress={(y) => handleCatLongPress(s.title, y)}
               weightUnit={weightUnit}
             />
           );
-          if (suppressSwipe) return header;
+          if (suppressSwipe) return <View onLayout={catHeaderLayout}>{header}</View>;
           return (
-            <CategorySwipeRow
-              catName={s.title}
-              onRename={(oldName) => {
-                if (Platform.OS === 'ios') {
-                  Alert.prompt('Rename Category', undefined, (text) => {
-                    if (text?.trim()) renameCategory(oldName, text.trim());
-                  }, 'plain-text', oldName);
-                }
-              }}
-              onDelete={(catName) => deleteCategory(catName)}
-            >
-              {header}
-            </CategorySwipeRow>
+            <View onLayout={catHeaderLayout}>
+              <CategorySwipeRow
+                catName={s.title}
+                onRename={(oldName) => {
+                  if (Platform.OS === 'ios') {
+                    Alert.prompt('Rename Category', undefined, (text) => {
+                      if (text?.trim()) renameCategory(oldName, text.trim());
+                    }, 'plain-text', oldName);
+                  }
+                }}
+                onDelete={(catName) => deleteCategory(catName)}
+              >
+                {header}
+              </CategorySwipeRow>
+            </View>
           );
         }}
         renderSectionFooter={({ section }) => {
@@ -1424,13 +1575,25 @@ export default function GearScreen() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         style={styles.list}
+        onScroll={e => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+        scrollEventThrottle={16}
       />
+      </View>
 
       {/* ── Fixed bottom ──────────────────────────────────────────────── */}
       <BottomBox
         groupIdx={groupIdx} onAction={handleBoxAction}
         bottomPad={bottomPad} disabledSet={disabledActions}
         handedness={handedness}
+        activeAction={
+          showLocker    ? 'locker'    :
+          showSummary   ? 'summary'   :
+          showAdd       ? 'add'       :
+          showSearch    ? 'search'    :
+          showMore      ? 'more'      :
+          showChecklist ? 'checklist' :
+          undefined
+        }
       />
 
       {/* ── Summary sheet ─────────────────────────────────────────────── */}
@@ -1488,7 +1651,11 @@ export default function GearScreen() {
 
       {/* ── Locker / Add / Search sheets ──────────────────────────────── */}
       <LockerModal visible={showLocker} onClose={() => setShowLocker(false)} showToast={showToast} />
-      <AddDeck visible={showAdd} onClose={() => setShowAdd(false)} showToast={showToast} />
+      {/* D-54: onItemAdded expands/focuses the new item after creation from the Add Deck */}
+      <AddDeck
+        visible={showAdd} onClose={() => setShowAdd(false)} showToast={showToast}
+        onItemAdded={(cat, id) => { setOpenCatName(cat); setExpandedItemKey({ cat, id }); }}
+      />
       <SearchModal visible={showSearch} onClose={() => setShowSearch(false)} />
 
       {/* ── Photo List sheets (cascade chain) ─────────────────────────── */}
@@ -1545,9 +1712,22 @@ export default function GearScreen() {
         visible={showMore}
         onClose={() => setShowMore(false)}
         onSave={() => {
-          // D-48: Save from More deck card 1 — same chooser flow as the bottom Save button
-          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          saveToLocker(); showToast('List saved');
+          // D-48p: More Deck Save shows the Save Chooser (same as Group 4 Save button)
+          setShowMore(false);
+          setTimeout(() => {
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            Alert.alert('Save List', undefined, [
+              { text: 'Save', onPress: () => { saveToLocker(); showToast('List saved'); } },
+              { text: 'Save As Copy…', onPress: () => {
+                if (Platform.OS === 'ios') {
+                  Alert.prompt('Save As', 'Name for the new copy:', (text) => {
+                    if (text?.trim()) { saveAsToLocker(text.trim()); showToast('Saved as new copy'); }
+                  }, 'plain-text', listName);
+                } else Alert.alert('Save As', 'Saving as a copy is available on iOS.');
+              }},
+              { text: 'Cancel', style: 'cancel' },
+            ]);
+          }, 300);
         }}
         onSaveAs={() => {
           if (Platform.OS === 'ios') {
@@ -1592,6 +1772,65 @@ export default function GearScreen() {
           setShowItemPhotoSheet(false);
         }}
       />
+
+      {/* D-64: Location photo sheet — updates location.photoDataUrl via updateLocation */}
+      <ItemPhotoSheet
+        visible={showLocPhotoSheet}
+        hasPhoto={!!(locPhotoTarget && locations.find(l => l.id === locPhotoTarget)?.photoDataUrl)}
+        onCapture={(dataUrl) => {
+          if (locPhotoTarget) updateLocation(locPhotoTarget, { photoDataUrl: dataUrl });
+          setShowLocPhotoSheet(false);
+        }}
+        onDelete={() => {
+          if (locPhotoTarget) updateLocation(locPhotoTarget, { photoDataUrl: '' });
+          setShowLocPhotoSheet(false);
+        }}
+        onClose={() => setShowLocPhotoSheet(false)}
+        onCancel={() => setShowLocPhotoSheet(false)}
+      />
+
+      {/* N-02: Drag-reorder floating category header overlay */}
+      {draggingCat !== null && (() => {
+        const catIdx   = categoryOrder.indexOf(draggingCat);
+        const catItems = data[draggingCat] || [];
+        return (
+          <View
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, zIndex: 998 }}
+            onStartShouldSetResponder={() => true}
+            onMoveShouldSetResponder={() => true}
+            onResponderMove={(e) => {
+              setDragOverlayY(e.nativeEvent.pageY - (catBarHsRef.current.get(draggingCat) ?? 62) / 2);
+            }}
+            onResponderRelease={(e) => commitDrag(e.nativeEvent.pageY)}
+            onResponderTerminate={(e) => commitDrag(e.nativeEvent.pageY)}
+          >
+            <View
+              style={[
+                styles.sectionCard,
+                {
+                  position: 'absolute', left: 0, right: 0,
+                  top: dragOverlayY,
+                  transform: [{ scale: 1.015 }],
+                  shadowOpacity: 0.35, shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 8 }, elevation: 10,
+                },
+              ]}
+              pointerEvents="none"
+            >
+              <SectionHeader
+                title={draggingCat}
+                catIndex={catIdx}
+                checkedCount={catItems.filter(i => i.checked).length}
+                totalCount={catItems.length}
+                checkedWeightOz={catItems.filter(i => i.checked).reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0)}
+                isOpen={false}
+                onToggle={() => {}}
+                weightUnit={weightUnit}
+              />
+            </View>
+          </View>
+        );
+      })()}
 
       {/* ── Toast overlay ─────────────────────────────────────────────── */}
       {!!toastMsg && (
@@ -1812,4 +2051,34 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18, shadowRadius: 6, elevation: 6,
   },
   toastText: { color: '#FFFFFF', fontSize: 13.5, fontFamily: 'PlusJakartaSans_500Medium' },
+
+  // D-46: NavBox active state (active deck/screen highlight)
+  navBoxActive: { backgroundColor: 'rgba(42,87,64,0.10)', borderRadius: 10 },
+  navLabelActive: { fontFamily: 'PlusJakartaSans_700Bold', color: NAV_ACTIVE },
+
+  // D-63/64: LocationBar rename + camera action buttons
+  locBarActions: { flexDirection: 'row', alignItems: 'center', paddingRight: 10, gap: 2 },
+  locBarActionBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
+
+  // D-65: full-width location photo shown below open LocationBar accordion
+  locAccordionPhoto: { width: '100%', height: 200, backgroundColor: 'rgba(0,0,0,0.05)' },
+
+  // D-67: PhotoItemCard — full-width photo card for photo filter view
+  photoItemCard: {
+    margin: 8, backgroundColor: '#FFFFFF', borderRadius: 12,
+    overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2,
+  },
+  photoItemImg:     { width: '100%', height: 200 },
+  photoItemMeta:    { paddingHorizontal: 12, paddingVertical: 10, gap: 4 },
+  photoItemName:    { fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, lineHeight: 20 },
+  photoItemWeight:  { fontSize: 13, fontFamily: 'PlusJakartaSans_500Medium', color: MUTED },
+  photoItemActions: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 12, gap: 10 },
+  photoItemBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingVertical: 9, borderRadius: 9,
+    borderWidth: 1, borderColor: 'rgba(42,87,64,0.3)', backgroundColor: 'rgba(42,87,64,0.05)',
+  },
+  photoItemDeleteBtn: { borderColor: 'rgba(176,58,46,0.3)', backgroundColor: 'rgba(176,58,46,0.05)' },
+  photoItemBtnText: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
 });

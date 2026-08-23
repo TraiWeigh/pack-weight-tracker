@@ -222,6 +222,7 @@ type PackDataContextType = {
   // Photo List actions
   startNewPhotoList:  (name: string) => void;
   addLocation:        (name: string, photoDataUrl: string) => string; // returns new location id
+  updateLocation:     (id: string, patch: Partial<Pick<PackLocation, 'name' | 'photoDataUrl'>>) => void;
   setPendingCapture:  (dataUrl: string) => void;
   clearPendingCapture: () => void;
   assignPhotoToItem:  (locationId: string | null) => string; // creates item, returns id
@@ -597,6 +598,14 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     return id;
   }, []);
 
+  /** Update an existing location's name or photo. */
+  const updateLocation = useCallback((
+    id: string,
+    patch: Partial<Pick<PackLocation, 'name' | 'photoDataUrl'>>,
+  ) => {
+    setLocations_state(prev => prev.map(l => l.id === id ? { ...l, ...patch } : l));
+  }, []);
+
   /** Store a captured image as pending (waiting for classification). */
   const setPendingCapture = useCallback((dataUrl: string) => {
     setPhotoListCaptureDataUrl_state(dataUrl);
@@ -779,7 +788,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     toggleItem,     addItem,        deleteItem,     renameItem,
     updateItem,     moveItem,       resetAll,
     addCategory,    deleteCategory, renameCategory, reorderCategories,
-    startNewPhotoList, addLocation, setPendingCapture, clearPendingCapture, assignPhotoToItem,
+    startNewPhotoList, addLocation, updateLocation, setPendingCapture, clearPendingCapture, assignPhotoToItem,
     lockerEntries,  activeLockerEntryId,
     refreshLockerEntries, saveToLocker, saveAsToLocker,
     loadFromLocker, deleteLockerEntry, renameLockerEntry, startNewList,
@@ -790,7 +799,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     canUndo, canRedo, undo, redo,
     toggleItem, addItem, deleteItem, renameItem, updateItem, moveItem, resetAll,
     addCategory, deleteCategory, renameCategory, reorderCategories,
-    startNewPhotoList, addLocation, setPendingCapture, clearPendingCapture, assignPhotoToItem,
+    startNewPhotoList, addLocation, updateLocation, setPendingCapture, clearPendingCapture, assignPhotoToItem,
     lockerEntries, activeLockerEntryId,
     refreshLockerEntries, saveToLocker, saveAsToLocker,
     loadFromLocker, deleteLockerEntry, renameLockerEntry, startNewList,

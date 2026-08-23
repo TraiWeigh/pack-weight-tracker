@@ -79,14 +79,16 @@ const CARDS = [
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 export interface AddDeckProps {
-  visible:   boolean;
-  onClose:   () => void;
-  showToast: (msg: string) => void;
+  visible:      boolean;
+  onClose:      () => void;
+  showToast:    (msg: string) => void;
+  /** D-54: called after a new item is created so GearScreen can expand/focus it */
+  onItemAdded?: (cat: string, id: string) => void;
 }
 
 // ─── AddDeck ──────────────────────────────────────────────────────────────────
 
-export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
+export function AddDeck({ visible, onClose, showToast, onItemAdded }: AddDeckProps) {
   const { categoryOrder, addItem, addCategory, startNewList } = usePackData();
   const insets = useSafeAreaInsets();
 
@@ -122,11 +124,13 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
   }, []);
 
   // ── Card 1: Add Item (v3 lines 3937–3963) ───────────────────────────────────
+  // D-54: capture the new item id and call onItemAdded so GearScreen can expand/focus it
   const handleAddItem = useCallback((cat: string) => {
-    addItem(cat, '', 0, 1);
+    const newId = addItem(cat, '', 0, 1);
     showToast(`Item added to "${cat}"`);
+    onItemAdded?.(cat, newId);
     onClose();
-  }, [addItem, showToast, onClose]);
+  }, [addItem, showToast, onClose, onItemAdded]);
 
   // ── Card 2: Add Category (v3 lines 3980–3997) ───────────────────────────────
   const handleAddCategory = useCallback(() => {
