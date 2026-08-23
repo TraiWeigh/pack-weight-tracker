@@ -128,7 +128,7 @@ export function MoreDeck({
                           onPress={() => onSetWeightUnit('imperial')}
                         >
                           <Text style={[styles.unitBtnText, weightUnit === 'imperial' && styles.unitBtnTextActive]}>
-                            Imperial  /* v3 §12.5 Card 2: "Imperial"/"Metric". Prior "lbs / oz" was wrong. MATCH. */
+                            Imperial
                           </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
