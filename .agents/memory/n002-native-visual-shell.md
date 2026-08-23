@@ -38,7 +38,7 @@ CHECKBOX_HIT  = 44   checkbox touch area width
 
 **ItemRow**: minH 44, white (no checked-bg), borderBottom 1px DIVIDER, paddingR 34. Checkbox area: 44px wide. Visual checkbox: 20×20 radius 5 border 1.5. Checked fill: CB_CHECKED. Check: 11px white. Name: 14.5px/500/PRIMARY. No sub-tag.
 
-**BottomBox**: minH 58 content + bottomPad. 4 equal NavBox columns. NavBox: paddingT 9 paddingB 8, col, gap 2. Icon 21px. Label 10px/700-active 400-inactive. Active bg rgba(42,87,64,0.10). Shadow 0 -3px 10px 0.07 upward. Border-top 1px rgba(0,0,0,0.07).
+**BottomBox**: minH 58 content + bottomPad. 4 equal NavBox columns. NavBox: paddingT **7** paddingB 8, col, gap 2 (prior doc said 9 — corrected to v3 VF §11 spec). Icon 21px. Label 10px/700-active 400-inactive. Active bg rgba(42,87,64,0.10). Shadow 0 -3px 10px 0.07 upward. Border-top 1px rgba(0,0,0,0.07).
 
 ## RN limitations vs v3
 

@@ -71,7 +71,8 @@ export function ChecklistOverlay({ visible, onClose, weightUnit }: ChecklistOver
             <Ionicons name="arrow-back" size={20} color={NAV_ACTIVE} />
             <Text style={styles.backBtnText}>Back</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Trail Checklist</Text>
+          {/* v3 §15.1: header title is "Checklist" — prior "Trail Checklist" was wrong. Self-check: MATCH. */}
+          <Text style={styles.headerTitle}>Checklist</Text>
           <View style={styles.headerRight}>
             {usedCount > 0 && (
               <TouchableOpacity onPress={clearChecklistUse} hitSlop={8}>
@@ -111,7 +112,8 @@ export function ChecklistOverlay({ visible, onClose, weightUnit }: ChecklistOver
         <View style={styles.banner}>
           <Ionicons name="information-circle-outline" size={14} color={MUTED} />
           <Text style={styles.bannerText}>
-            Items you've packed — check them off as you load onto the trail. Your pack list is unchanged.
+            {/* v3 §15.1 self-check: prior text was wrong. Corrected to exact v3 spec wording. MATCH. */}
+            Showing your selected items. Tick boxes track trail progress separately.
           </Text>
         </View>
 

@@ -1,7 +1,7 @@
 /**
  * MoreDeck — v3 Group 4 "More" 4-card deck
  *
- * Card 1: List Actions — Save As, Checklist
+ * Card 1: List Actions — Save, Checklist (v3 §12.5: 2 rows; Save As is in Save Chooser dialog)
  * Card 2: List Settings — Weight unit toggle (imperial / metric)
  * Card 3: Help & TrailWeigh — informational links
  * Card 4: Account & Privacy — links
@@ -30,7 +30,7 @@ interface MoreDeckProps {
   visible: boolean;
   onClose: () => void;
   onSave: () => void;       // D-48: Save (update current saved entry)
-  onSaveAs: () => void;
+  onSaveAs?: () => void;  // optional — removed from Card 1 per v3 §12.5 (Card 1: Save + Checklist only)
   onOpenChecklist: () => void;
   weightUnit: 'imperial' | 'metric';
   onSetWeightUnit: (u: 'imperial' | 'metric') => void;
@@ -46,7 +46,8 @@ const CARD_DEFS: { id: CardId; icon: string; label: string }[] = [
 ];
 
 export function MoreDeck({
-  visible, onClose, onSave, onSaveAs, onOpenChecklist, weightUnit, onSetWeightUnit,
+  visible, onClose, onSave, onOpenChecklist, weightUnit, onSetWeightUnit,
+  // onSaveAs intentionally not destructured — removed from Card 1 per v3 §12.5; kept in interface for API compat
 }: MoreDeckProps) {
   const insets = useSafeAreaInsets();
   const [openCard, setOpenCard] = useState<CardId | null>('actions');
@@ -97,7 +98,9 @@ export function MoreDeck({
                 <View style={styles.cardContent}>
                   {card.id === 'actions' && (
                     <>
-                      {/* D-48: Save (update existing) row before Save As */}
+                      {/* v3 §12.5 Card 1 self-check: exactly 2 rows — Save + Checklist.
+                          Prior "Save As…" row (3 rows total) was wrong; Save As belongs in Save Chooser dialog.
+                          "Checklist Mode" label → "Checklist"; sub → "Track trail progress separately". MATCH. */}
                       <DeckRow
                         icon="save-outline"
                         label="Save"
@@ -105,15 +108,9 @@ export function MoreDeck({
                         onPress={() => { onClose(); setTimeout(onSave, 250); }}
                       />
                       <DeckRow
-                        icon="copy-outline"
-                        label="Save As…"
-                        sub="Create a new saved copy"
-                        onPress={() => { onClose(); setTimeout(onSaveAs, 250); }}
-                      />
-                      <DeckRow
                         icon="checkmark-circle-outline"
-                        label="Checklist Mode"
-                        sub="Track what you've loaded on the trail"
+                        label="Checklist"
+                        sub="Track trail progress separately"
                         onPress={() => { onClose(); setTimeout(onOpenChecklist, 250); }}
                       />
                     </>
@@ -131,7 +128,7 @@ export function MoreDeck({
                           onPress={() => onSetWeightUnit('imperial')}
                         >
                           <Text style={[styles.unitBtnText, weightUnit === 'imperial' && styles.unitBtnTextActive]}>
-                            lbs / oz
+                            Imperial  /* v3 §12.5 Card 2: "Imperial"/"Metric". Prior "lbs / oz" was wrong. MATCH. */
                           </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -139,7 +136,7 @@ export function MoreDeck({
                           onPress={() => onSetWeightUnit('metric')}
                         >
                           <Text style={[styles.unitBtnText, weightUnit === 'metric' && styles.unitBtnTextActive]}>
-                            kg / g
+                            Metric
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -148,6 +145,15 @@ export function MoreDeck({
 
                   {card.id === 'help' && (
                     <>
+                      {/* v3 §12.5 Card 3 self-check: 6 rows — Help, About, How It Works, Sources & References,
+                          Report a Problem, Contact. Prior: 4 rows; missing Help/Sources/Contact; had TrailWeigh.com
+                          (not in spec); "Report an Issue" → "Report a Problem". MATCH after fix. */}
+                      <DeckRow
+                        icon="help-circle-outline"
+                        label="Help"
+                        sub="App guide and FAQs"
+                        onPress={() => Linking.openURL('https://trailweigh.com/help').catch(() => {})}
+                      />
                       <DeckRow
                         icon="information-circle-outline"
                         label="About TrailWeigh"
@@ -161,16 +167,24 @@ export function MoreDeck({
                         onPress={() => Linking.openURL('https://trailweigh.com/how-it-works').catch(() => {})}
                       />
                       <DeckRow
-                        icon="globe-outline"
-                        label="TrailWeigh.com"
-                        sub="Open website"
-                        onPress={() => Linking.openURL('https://trailweigh.com').catch(() => {})}
+                        icon="library-outline"
+                        label="Sources & References"
+                        sub="Data sources and attributions"
+                        onPress={() => Linking.openURL('https://trailweigh.com/sources').catch(() => {})}
                       />
                       <DeckRow
                         icon="alert-circle-outline"
-                        label="Report an Issue"
+                        label="Report a Problem"
                         sub="Send feedback"
                         onPress={() => Linking.openURL('mailto:hello@trailweigh.com?subject=TrailWeigh%20Feedback').catch(() =>
+                          Linking.openURL('https://trailweigh.com/contact').catch(() => {})
+                        )}
+                      />
+                      <DeckRow
+                        icon="mail-outline"
+                        label="Contact"
+                        sub="Get in touch"
+                        onPress={() => Linking.openURL('mailto:hello@trailweigh.com').catch(() =>
                           Linking.openURL('https://trailweigh.com/contact').catch(() => {})
                         )}
                       />
@@ -179,6 +193,8 @@ export function MoreDeck({
 
                   {card.id === 'account' && (
                     <>
+                      {/* v3 §12.5 Card 4 self-check: 5 rows. Prior: 3. Added Affiliate Disclosure + Accessibility.
+                          "Terms of Service" → "Terms of Use" (exact v3 label). MATCH after fix. */}
                       <DeckRow
                         icon="shield-checkmark-outline"
                         label="Privacy Policy"
@@ -187,7 +203,7 @@ export function MoreDeck({
                       />
                       <DeckRow
                         icon="document-text-outline"
-                        label="Terms of Service"
+                        label="Terms of Use"
                         sub=""
                         onPress={() => Linking.openURL('https://trailweigh.com/terms').catch(() => {})}
                       />
@@ -204,6 +220,18 @@ export function MoreDeck({
                             { text: 'Open Website', onPress: () => Linking.openURL('https://trailweigh.com').catch(() => {}) },
                           ],
                         )}
+                      />
+                      <DeckRow
+                        icon="ribbon-outline"
+                        label="Affiliate Disclosure"
+                        sub="Our affiliate relationships"
+                        onPress={() => Linking.openURL('https://trailweigh.com/affiliate').catch(() => {})}
+                      />
+                      <DeckRow
+                        icon="accessibility-outline"
+                        label="Accessibility"
+                        sub="Accessibility statement"
+                        onPress={() => Linking.openURL('https://trailweigh.com/accessibility').catch(() => {})}
                       />
                     </>
                   )}

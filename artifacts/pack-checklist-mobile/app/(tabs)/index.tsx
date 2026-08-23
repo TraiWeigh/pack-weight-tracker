@@ -74,9 +74,14 @@ const PAGE_BG      = '#F2EDE4';
 const MUTED        = '#667270';
 const DIVIDER      = 'rgba(0,0,0,0.06)';
 
-const TILE_W         = 58;   // F-18: v3-spec 58px
+// v3 VF §1: WEDGE_W = 72px. Prior comment "F-18: v3-spec 58px" was factually wrong;
+// N002 memory (section "Constants N003/R0111 — current") later confirmed 72. Now corrected.
+// Self-check: VF §1 unambiguous. → MATCH after fix.
+const TILE_W         = 72;
 const WEDGE_POINT    = 17;
-const CAT_HEADER_H   = 62;   // F-18: v3-spec 62px
+// v3 VF §1: CHECKLIST_ROW_H = 64px. Prior comment "F-18: v3-spec 62px" was factually wrong.
+// Self-check: VF §1 unambiguous. → MATCH after fix.
+const CAT_HEADER_H   = 64;
 const RIGHT_INSET    = 44;
 const ITEM_R_INSET   = 34;
 const FILTER_H       = 50;
@@ -210,9 +215,10 @@ function ListSummaryHero({
             hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
             style={styles.heroChevronBtn}
           >
+            {/* v3 VF §5: "Chevron: size=36". Prior size=16 was wrong. Self-check: MATCH. */}
             <Ionicons
               name={allExpanded ? 'chevron-up' : 'chevron-down'}
-              size={16} color="rgba(255,255,255,0.78)"
+              size={36} color="rgba(255,255,255,0.78)"
             />
           </TouchableOpacity>
         </View>
@@ -243,7 +249,8 @@ function FilterControl({
         activeOpacity={0.7}
       >
         <Ionicons name="options-outline" size={15} color={NAV_ACTIVE} />
-        <Text style={styles.filterLabel}>View: {viewLabel}</Text>
+        {/* v3 §4.1: label prefix is "Filter:" — prior "View:" was wrong. Self-check: MATCH. */}
+        <Text style={styles.filterLabel}>Filter: {viewLabel}</Text>
         <Ionicons
           name={isOpen ? 'chevron-up' : 'chevron-down'}
           size={17} color={NAV_INACTIVE}
@@ -365,14 +372,18 @@ function LocationBar({
 
 // ─── AddItemBar ───────────────────────────────────────────────────────────────
 
-// D-35: accordionOpen prop shows chevron-up and changes label when 3-option sheet is visible
-function AddItemBar({ catName, accordionOpen, onPress }: { catName: string; accordionOpen?: boolean; onPress: () => void }) {
+// D-35: Add Item bar — accordion toggle
+// v3 §7.1 self-check:
+//   closed icon = Plus (14px, green) → Ionicons "add-outline" (RN translation, documented)
+//   open icon   = ChevronDown (14px) → "chevron-down" (prior "chevron-up" was wrong direction)
+//   size: 16 → 14 (prior value wrong)
+//   label: always "Add Item" regardless of open/closed state (prior showed category name — wrong)
+//   catName prop kept for API compatibility; no longer shown in label per v3 spec.
+function AddItemBar({ catName: _catName, accordionOpen, onPress }: { catName: string; accordionOpen?: boolean; onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.addItemBar} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name={accordionOpen ? 'chevron-up' : 'add-circle-outline'} size={16} color={NAV_ACTIVE} />
-      <Text style={styles.addItemBarText}>
-        {accordionOpen ? 'Choose how to add:' : `Add item to ${catName}`}
-      </Text>
+      <Ionicons name={accordionOpen ? 'chevron-down' : 'add-outline'} size={14} color={NAV_ACTIVE} />
+      <Text style={styles.addItemBarText}>Add Item</Text>
     </TouchableOpacity>
   );
 }
@@ -1837,7 +1848,7 @@ export default function GearScreen() {
             onStartShouldSetResponder={() => true}
             onMoveShouldSetResponder={() => true}
             onResponderMove={(e) => {
-              setDragOverlayY(e.nativeEvent.pageY - (catBarHsRef.current.get(draggingCat) ?? 62) / 2);
+              setDragOverlayY(e.nativeEvent.pageY - (catBarHsRef.current.get(draggingCat) ?? CAT_HEADER_H) / 2);
               updateDragAnims(e.nativeEvent.pageY); // Task 4: animate siblings to show drop slot
             }}
             onResponderRelease={(e) => commitDrag(e.nativeEvent.pageY)}
@@ -1872,8 +1883,9 @@ export default function GearScreen() {
       })()}
 
       {/* ── Toast overlay ─────────────────────────────────────────────── */}
+      {/* v3 §24: bottom = insets.bottom + 76 (76px above safe-area edge). Prior NAV_H+insets.bottom+8 ≈ 66px was wrong. MATCH. */}
       {!!toastMsg && (
-        <View style={[styles.toast, { bottom: NAV_H + insets.bottom + 8 }]} pointerEvents="none">
+        <View style={[styles.toast, { bottom: insets.bottom + 76 }]} pointerEvents="none">
           <Text style={styles.toastText}>{toastMsg}</Text>
         </View>
       )}
@@ -2047,7 +2059,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -3 }, elevation: 8, zIndex: 40,
   },
   bottomRow: { flexDirection: 'row', alignItems: 'stretch', minHeight: NAV_H },
-  navBox: { flex: 1, paddingTop: 9, paddingBottom: 8, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  // v3 VF §11: "padding: 7px 0 8px". Prior paddingTop=9 was wrong. Self-check: MATCH.
+  navBox: { flex: 1, paddingTop: 7, paddingBottom: 8, alignItems: 'center', justifyContent: 'center', gap: 2 },
   navLabel: { fontSize: 10, fontFamily: 'PlusJakartaSans_400Regular', color: NAV_INACTIVE },
 
   // Summary sheet
@@ -2081,15 +2094,19 @@ const styles = StyleSheet.create({
   swipeActionBtn: { width: SWIPE_BTN_W, alignItems: 'center', justifyContent: 'center', gap: 4, alignSelf: 'stretch' },
   swipeActionLabel: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#FFFFFF', letterSpacing: 0.3 },
 
-  // Toast — solid #2A5740 (not rgba). F-17: `bottom` applied inline via NAV_H + insets.bottom + 8
+  // Toast — v3 §24. Self-check:
+  //   backgroundColor #2A5740 ✅ (MATCH)
+  //   borderRadius: 10 → 12 (v3 §24: "12px border-radius") ✅ MATCH after fix
+  //   fontSize: 13.5 → 14 (v3 §24: "14px font") ✅ MATCH after fix
+  //   bottom applied inline (see above): insets.bottom + 76 ✅ MATCH after fix
   toast: {
     position: 'absolute', left: 20, right: 20,
-    backgroundColor: '#2A5740', borderRadius: 10,
+    backgroundColor: '#2A5740', borderRadius: 12,
     paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center',
     zIndex: 999, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18, shadowRadius: 6, elevation: 6,
   },
-  toastText: { color: '#FFFFFF', fontSize: 13.5, fontFamily: 'PlusJakartaSans_500Medium' },
+  toastText: { color: '#FFFFFF', fontSize: 14, fontFamily: 'PlusJakartaSans_500Medium' },
 
   // D-46: NavBox active state (active deck/screen highlight)
   navBoxActive: { backgroundColor: 'rgba(42,87,64,0.10)', borderRadius: 10 },
