@@ -185,7 +185,7 @@ export function ItemDetailPanel({
     <View style={styles.panel}>
       {/* Row 1: Name — v3 §6.4: left icon size=14, color MUTED. Lucide Pencil → Ionicons pencil-outline. */}
       <View style={styles.row}>
-        <Ionicons name="pencil-outline" size={14} color={MUTED} style={{ marginRight: 6, flexShrink: 0 }} />
+        <Ionicons name="pencil-outline" size={14} color={MUTED} style={{ flexShrink: 0 }} />
         <Text style={styles.rowLabel}>Name</Text>
         <TextInput
           ref={nameRef}
@@ -206,7 +206,7 @@ export function ItemDetailPanel({
 
       {/* Row 2: Weight — v3 §6.4: Lucide Hash → Ionicons barbell-outline (weight field). Documented translation. */}
       <View style={styles.row}>
-        <Ionicons name="barbell-outline" size={14} color={MUTED} style={{ marginRight: 6, flexShrink: 0 }} />
+        <Ionicons name="barbell-outline" size={14} color={MUTED} style={{ flexShrink: 0 }} />
         <Text style={styles.rowLabel}>Weight</Text>
         <View style={styles.weightRow}>
           <TextInput
@@ -228,7 +228,7 @@ export function ItemDetailPanel({
 
       {/* Row 3: Quantity — v3 §6.4: Lucide PackageOpen → Ionicons cube-outline. Documented translation. */}
       <View style={styles.row}>
-        <Ionicons name="cube-outline" size={14} color={MUTED} style={{ marginRight: 6, flexShrink: 0 }} />
+        <Ionicons name="cube-outline" size={14} color={MUTED} style={{ flexShrink: 0 }} />
         <Text style={styles.rowLabel}>Quantity</Text>
         <View style={styles.qtyRow}>
           <TouchableOpacity
@@ -256,7 +256,7 @@ export function ItemDetailPanel({
       {/* Row 4: Total (read-only) — v3 VF §19: FIXED height=42px, not min-height.
           Self-check: only this row uses a fixed height; all others use minHeight=44. MATCH. */}
       <View style={styles.totalRow}>
-        <Ionicons name="checkmark-circle-outline" size={14} color={MUTED} style={{ marginRight: 6, flexShrink: 0 }} />
+        <Ionicons name="checkmark-circle-outline" size={14} color={MUTED} style={{ flexShrink: 0 }} />
         <Text style={styles.rowLabel}>Total</Text>
         <Text style={styles.totalValue}>{totalLabel}</Text>
       </View>
@@ -265,7 +265,7 @@ export function ItemDetailPanel({
 
       {/* Row 5: Move — v3 §6.4: Lucide ArrowRightLeft → Ionicons swap-horizontal-outline. Documented translation. */}
       <TouchableOpacity style={styles.row} onPress={handleMove} activeOpacity={0.65}>
-        <Ionicons name="swap-horizontal-outline" size={14} color={MUTED} style={{ marginRight: 6, flexShrink: 0 }} />
+        <Ionicons name="swap-horizontal-outline" size={14} color={MUTED} style={{ flexShrink: 0 }} />
         <Text style={styles.rowLabel}>Move</Text>
         <View style={styles.rowRight}>
           <Text style={styles.rowValue}>{category}</Text>
@@ -277,7 +277,7 @@ export function ItemDetailPanel({
 
       {/* Row 6: Location — v3 §6.4: Lucide MapPin → Ionicons location-outline. Documented translation. */}
       <TouchableOpacity style={styles.row} onPress={handleLocation} activeOpacity={0.65}>
-        <Ionicons name="location-outline" size={14} color={MUTED} style={{ marginRight: 6, flexShrink: 0 }} />
+        <Ionicons name="location-outline" size={14} color={MUTED} style={{ flexShrink: 0 }} />
         <Text style={styles.rowLabel}>Location</Text>
         <View style={styles.rowRight}>
           <Text style={[styles.rowValue, !item.locationId && { color: MUTED }]}>
@@ -291,7 +291,7 @@ export function ItemDetailPanel({
 
       {/* Row 7: Photo — v3 §6.4: Lucide Camera → Ionicons camera-outline. Documented translation. */}
       <View style={styles.row}>
-        <Ionicons name="camera-outline" size={14} color={MUTED} style={{ marginRight: 6, flexShrink: 0 }} />
+        <Ionicons name="camera-outline" size={14} color={MUTED} style={{ flexShrink: 0 }} />
         <Text style={styles.rowLabel}>Photo</Text>
         <View style={styles.photoActions}>
           {item.photoDataUrl ? (
@@ -345,15 +345,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.09)',
   },
-  // v3 VF §9: "Padding: 0 34px 0 14px" — paddingLeft=14, paddingRight=34 (asymmetric).
-  // Self-check: prior paddingHorizontal=16 was wrong on both sides. MATCH after fix.
+  // v3 VF §9: "Padding: 0 34px 0 14px; min-height=44; gap=10" — paddingLeft=14, paddingRight=34, gap=10.
+  // Item 31: gap:10 replaces the old fixed 82px label column (gap is the v3 row formula).
+  // Self-check: prior paddingHorizontal=16 was wrong on both sides; label width:82 was not in spec. MATCH after fix.
   row: {
     flexDirection: 'row', alignItems: 'center',
-    minHeight: 44, paddingLeft: 14, paddingRight: 34, paddingVertical: 6,
+    minHeight: 44, paddingLeft: 14, paddingRight: 34, paddingVertical: 6, gap: 10,
   },
   rowDivider: { height: 1, backgroundColor: DIVIDER, marginLeft: 14 },
   rowLabel: {
-    width: 82, fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED,
+    fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED,
     flexShrink: 0,
   },
   nameInput: {
@@ -375,10 +376,11 @@ const styles = StyleSheet.create({
   },
   qtyValue: { fontSize: 16, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT, minWidth: 24, textAlign: 'center' },
   // v3 VF §19: Total row has fixed height=42 (the ONLY row that is not min-height).
+  // Item 31: gap:10 applied for consistency with the row formula (VF §9).
   // Self-check: all other rows use minHeight: 44. Total is the lone exception. MATCH.
   totalRow: {
     flexDirection: 'row', alignItems: 'center',
-    height: 42, paddingLeft: 14, paddingRight: 34, paddingVertical: 6,
+    height: 42, paddingLeft: 14, paddingRight: 34, paddingVertical: 6, gap: 10,
   },
   totalValue: { flex: 1, textAlign: 'right', fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
   rowRight: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6 },
@@ -390,17 +392,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(42,87,64,0.06)',
   },
   photoBtnText: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
-  photoAddBtn: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  photoAddBtnText: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  // Item 23: v3 VF §9 "Add Photo button: fontSize=11.5, min-height=36" — was fontSize:12.5, no minHeight.
+  photoAddBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 36 },
+  photoAddBtnText: { fontSize: 11.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
   // v3 VF §9: "max-height=300px; object-fit=contain; background=#111"
   // Self-check: prior height=160 wrong; cover wrong; no dark bg wrong. All three fixed.
   // RN translation note: height:300 is the correct equivalent of CSS max-height:300px for a
   // fixed-height image viewer. resizeMode="contain" letterboxes inside the #111 container. MATCH.
   photoViewerRow: { backgroundColor: '#111111' },
   photoViewer: { width: '100%', height: 300, borderRadius: 0 },
+  // Item 25: v3 VF §9 all detail rows use min-height=44 (Total is the only exception at fixed 42).
+  // Was minHeight:48, paddingVertical:12 — too tall. MATCH after fix.
   deleteRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, minHeight: 48, paddingVertical: 12,
+    gap: 8, minHeight: 44, paddingVertical: 6,
     borderTopWidth: 1, borderTopColor: 'rgba(176,58,46,0.15)',
   },
   deleteText: { fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: DELETE_RED },

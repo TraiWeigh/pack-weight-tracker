@@ -1914,7 +1914,9 @@ export default function GearScreen() {
                   position: 'absolute', left: 0, right: 0,
                   top: dragOverlayY,
                   transform: [{ scale: 1.015 }],
-                  shadowOpacity: 0.35, shadowRadius: 18,
+                  // Item 24: v3 VF §8 drag shadow dominant layer = 0 8px 26px rgba(0,0,0,0.24)
+                  // RN only supports one shadow; approximate with opacity=0.24, radius=26
+                  shadowOpacity: 0.24, shadowRadius: 26,
                   shadowOffset: { width: 0, height: 8 }, elevation: 10,
                 },
               ]}
