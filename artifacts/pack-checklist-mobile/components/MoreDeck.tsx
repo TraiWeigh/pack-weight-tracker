@@ -29,6 +29,7 @@ const DIVIDER      = 'rgba(0,0,0,0.07)';
 interface MoreDeckProps {
   visible: boolean;
   onClose: () => void;
+  onSave: () => void;       // D-48: Save (update current saved entry)
   onSaveAs: () => void;
   onOpenChecklist: () => void;
   weightUnit: 'imperial' | 'metric';
@@ -45,7 +46,7 @@ const CARD_DEFS: { id: CardId; icon: string; label: string }[] = [
 ];
 
 export function MoreDeck({
-  visible, onClose, onSaveAs, onOpenChecklist, weightUnit, onSetWeightUnit,
+  visible, onClose, onSave, onSaveAs, onOpenChecklist, weightUnit, onSetWeightUnit,
 }: MoreDeckProps) {
   const insets = useSafeAreaInsets();
   const [openCard, setOpenCard] = useState<CardId | null>('actions');
@@ -96,8 +97,15 @@ export function MoreDeck({
                 <View style={styles.cardContent}>
                   {card.id === 'actions' && (
                     <>
+                      {/* D-48: Save (update existing) row before Save As */}
                       <DeckRow
                         icon="save-outline"
+                        label="Save"
+                        sub="Update the saved version"
+                        onPress={() => { onClose(); setTimeout(onSave, 250); }}
+                      />
+                      <DeckRow
+                        icon="copy-outline"
                         label="Save As…"
                         sub="Create a new saved copy"
                         onPress={() => { onClose(); setTimeout(onSaveAs, 250); }}

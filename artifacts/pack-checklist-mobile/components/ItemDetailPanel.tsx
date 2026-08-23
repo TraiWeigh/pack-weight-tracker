@@ -85,7 +85,8 @@ export function ItemDetailPanel({
     if (Math.abs(oz - item.weightOz) > 0.0001) {
       onUpdate({ weightOz: oz });
     }
-  }, [localWt, item.weightOz, onUpdate]);
+  // D-39: weightUnit must be in deps — displayToOz reads it via closure
+  }, [localWt, item.weightOz, onUpdate, weightUnit]);
 
   const adjustQty = useCallback((delta: number) => {
     const next = Math.max(1, Math.min(99, localQty + delta));
@@ -146,10 +147,8 @@ export function ItemDetailPanel({
     );
   }, [item.desc, item.sub, onDelete]);
 
-  const totalOz   = calcTotalOz(
-    parseFloat(localWt) || 0,
-    localQty,
-  );
+  // D-41: localWt is in display units (oz or g) — must convert to oz before multiplying qty
+  const totalOz   = calcTotalOz(displayToOz(localWt), localQty);
   const totalLabel = formatDisplayWeight(totalOz, weightUnit);
 
   const currentLocName = locations.find(l => l.id === item.locationId)?.name ?? 'No location';

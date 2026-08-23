@@ -29,7 +29,8 @@ const NAV_ACTIVE   = '#2A5740';
 const NAV_INACTIVE = '#6E7672';
 const PRIMARY_TEXT = '#1A2920';
 const MUTED        = '#667270';
-const DRAWER_W     = Math.min(280, Dimensions.get('window').width * 0.78);
+// D-26: v3 spec §10.1 — 55% shell width, max 240px
+const DRAWER_W     = Math.min(240, Dimensions.get('window').width * 0.55);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,7 @@ interface NavDrawerProps {
   visible: boolean;
   onClose: () => void;
   onMyLists: () => void;       // opens Locker
+  onOpenMore?: () => void;     // D-27/D-28: Settings + Help both open More deck
   handedness: 'right' | 'left';
   onToggleHandedness: () => void;
 }
@@ -62,7 +64,7 @@ const NAV_ROWS: NavRow[] = [
 // ─── NavigationDrawer ─────────────────────────────────────────────────────────
 
 export function NavigationDrawer({
-  visible, onClose, onMyLists, handedness, onToggleHandedness,
+  visible, onClose, onMyLists, onOpenMore, handedness, onToggleHandedness,
 }: NavDrawerProps) {
   const insets = useSafeAreaInsets();
   const tx = useRef(new Animated.Value(-DRAWER_W)).current;
@@ -109,10 +111,13 @@ export function NavigationDrawer({
         setTimeout(onMyLists, 250);
         break;
       case 'home':
+        onClose();
+        break;
       case 'help':
       case 'settings':
-        // Coming soon — show a brief Alert or just close
+        // D-27/D-28: close drawer then open More deck (Help card / Settings card)
         onClose();
+        if (onOpenMore) setTimeout(onOpenMore, 300);
         break;
       case 'master':
         // disabled — no-op

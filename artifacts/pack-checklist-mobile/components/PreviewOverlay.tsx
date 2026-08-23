@@ -96,26 +96,32 @@ export function PreviewOverlay({ visible, onClose, weightUnit }: PreviewOverlayP
       onRequestClose={onClose}
     >
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Header */}
+        {/* Header — D-55: ← Back replaces ✕ Close */}
         <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>Preview</Text>
-            <Text style={styles.headerSub}>
-              {checkedCount}/{totalCount} checked in preview
-            </Text>
-          </View>
-          <TouchableOpacity onPress={handleClear} style={styles.clearBtn} hitSlop={8}>
-            <Text style={styles.clearBtnText}>Clear</Text>
+          <TouchableOpacity onPress={onClose} hitSlop={10} style={styles.backBtn}>
+            <Ionicons name="arrow-back" size={20} color={NAV_ACTIVE} />
+            <Text style={styles.backBtnText}>Back</Text>
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>Preview</Text>
+          {/* D-57: Clear only visible when at least one preview box is ticked */}
+          {checkedCount > 0 && (
+            <TouchableOpacity onPress={handleClear} style={styles.clearBtn} hitSlop={8}>
+              <Text style={styles.clearBtnText}>Clear</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={handlePrint} style={styles.printBtn} hitSlop={8}>
             <Ionicons name="print-outline" size={18} color="#FFFFFF" />
             <Text style={styles.printBtnText}>Export</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onClose} hitSlop={10} style={styles.closeBtn}>
-            <Ionicons name="close" size={22} color={MUTED} />
-          </TouchableOpacity>
         </View>
         <View style={styles.divider} />
+        {/* D-56: Banner text per v3 §13.3 */}
+        <View style={styles.banner}>
+          <Ionicons name="information-circle-outline" size={14} color={NAV_ACTIVE} />
+          <Text style={styles.bannerText}>
+            All items in this list — tap the printer icon to print or download.
+          </Text>
+        </View>
 
         {/* List */}
         <ScrollView
@@ -182,12 +188,16 @@ export function PreviewOverlay({ visible, onClose, weightUnit }: PreviewOverlayP
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  // D-58: PAGE_BG from v3 visual formula §1
+  container: { flex: 1, backgroundColor: '#F2EDE4' },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#FFFFFF',
   },
-  headerTitle: { fontSize: 18, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT },
+  // D-55: ← Back button replaces ✕ Close
+  backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, marginRight: 4 },
+  backBtnText: { fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  headerTitle: { flex: 1, fontSize: 17, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT },
   headerSub: { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, marginTop: 2 },
   clearBtn: {
     paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8,
@@ -199,10 +209,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: NAV_ACTIVE,
   },
   printBtnText: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#FFFFFF' },
-  closeBtn: {
-    width: 34, height: 34, borderRadius: 17, backgroundColor: '#F3F4F6',
-    alignItems: 'center', justifyContent: 'center',
+  // D-56: banner below header
+  banner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 14, paddingVertical: 9,
+    backgroundColor: 'rgba(42,87,64,0.07)', borderBottomWidth: 1, borderBottomColor: 'rgba(42,87,64,0.12)',
   },
+  bannerText: { flex: 1, fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: NAV_ACTIVE, lineHeight: 17 },
   divider: { height: 1, backgroundColor: DIVIDER },
   scroll: { paddingHorizontal: 12, paddingTop: 12, gap: 12 },
   section: { borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: DIVIDER },

@@ -18,8 +18,10 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActionSheetIOS,
   Alert,
   Animated,
+  Dimensions,
   Image,
   PanResponder,
   Share,
@@ -146,9 +148,10 @@ function AppBar({ onMenuPress, handedness }: { onMenuPress: () => void; handedne
   return (
     <View style={[styles.appBar, { paddingTop: insets.top, minHeight: insets.top + APPBAR_H }]}>
       <View style={styles.appBarInner}>
+        {/* D-21: hamburger = NAV_ACTIVE per v3 §2 */}
         {handedness !== 'left' && (
           <TouchableOpacity onPress={onMenuPress} hitSlop={10}>
-            <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
+            <Ionicons name="menu-outline" size={22} color={NAV_ACTIVE} />
           </TouchableOpacity>
         )}
         <View style={styles.appBarLogo}>
@@ -156,14 +159,15 @@ function AppBar({ onMenuPress, handedness }: { onMenuPress: () => void; handedne
           <Text style={styles.appBarTitle}>TrailWeigh</Text>
         </View>
         <View style={{ flex: 1 }} />
+        {/* D-23: decorative icons = NAV_ACTIVE per v3 §2 */}
         <View style={styles.appBarShortcuts}>
           {APPBAR_SHORTCUT_ICONS.map((icon) => (
-            <Ionicons key={icon} name={icon} size={17} color={NAV_INACTIVE} />
+            <Ionicons key={icon} name={icon} size={17} color={NAV_ACTIVE} />
           ))}
         </View>
         {handedness === 'left' && (
           <TouchableOpacity onPress={onMenuPress} hitSlop={10} style={{ marginLeft: 8 }}>
-            <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
+            <Ionicons name="menu-outline" size={22} color={NAV_ACTIVE} />
           </TouchableOpacity>
         )}
       </View>
@@ -336,11 +340,14 @@ function LocationBar({
 
 // ─── AddItemBar ───────────────────────────────────────────────────────────────
 
-function AddItemBar({ catName, onPress }: { catName: string; onPress: () => void }) {
+// D-35: accordionOpen prop shows chevron-up and changes label when 3-option sheet is visible
+function AddItemBar({ catName, accordionOpen, onPress }: { catName: string; accordionOpen?: boolean; onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.addItemBar} onPress={onPress} activeOpacity={0.7}>
-      <Ionicons name="add-circle-outline" size={16} color={NAV_ACTIVE} />
-      <Text style={styles.addItemBarText}>Add item to {catName}</Text>
+      <Ionicons name={accordionOpen ? 'chevron-up' : 'add-circle-outline'} size={16} color={NAV_ACTIVE} />
+      <Text style={styles.addItemBarText}>
+        {accordionOpen ? 'Choose how to add:' : `Add item to ${catName}`}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -534,29 +541,45 @@ function BottomBox({
 
 // ─── SummaryWeightRow / SummaryCatBar ─────────────────────────────────────────
 
-function SummaryWeightRow({ label, oz, accent, half }: { label: string; oz: number; accent?: boolean; half?: boolean }) {
-  const lbsVal = ozToLbs(oz).toFixed(2);
-  const kgVal  = ((oz * 28.3495) / 1000).toFixed(3);
+// D-53: both summary widgets respect weightUnit
+function SummaryWeightRow({
+  label, oz, accent, half, weightUnit = 'imperial',
+}: { label: string; oz: number; accent?: boolean; half?: boolean; weightUnit?: 'imperial' | 'metric' }) {
+  const grams = oz * 28.3495;
+  const displayVal  = weightUnit === 'metric'
+    ? (grams >= 1000 ? (grams / 1000).toFixed(2) : Math.round(grams).toString())
+    : ozToLbs(oz).toFixed(2);
+  const displayUnit = weightUnit === 'metric' ? (grams >= 1000 ? 'kg' : 'g') : 'lbs';
+  const subLine     = weightUnit === 'metric'
+    ? `${Math.round(grams)} g · ${ozToLbs(oz).toFixed(2)} lbs`
+    : `${oz.toFixed(1)} oz · ${(grams / 1000).toFixed(3)} kg`;
   const bg  = accent ? NAV_ACTIVE : '#F9FAFB';
   const fg  = accent ? '#FFFFFF'  : '#111827';
   const mu  = accent ? 'rgba(255,255,255,0.72)' : '#6B7280';
   return (
     <View style={[styles.sumCard, { backgroundColor: bg, borderColor: accent ? NAV_ACTIVE : 'rgba(0,0,0,0.08)' }, half && { flex: 1 }]}>
       <Text style={[styles.sumCardLabel, { color: mu }]}>{label}</Text>
-      <Text style={[styles.sumCardValue, { color: fg }]}>{lbsVal} <Text style={[styles.sumCardUnit, { color: mu }]}>lbs</Text></Text>
-      <Text style={[styles.sumCardSub, { color: mu }]}>{oz.toFixed(1)} oz · {kgVal} kg</Text>
+      <Text style={[styles.sumCardValue, { color: fg }]}>
+        {displayVal} <Text style={[styles.sumCardUnit, { color: mu }]}>{displayUnit}</Text>
+      </Text>
+      <Text style={[styles.sumCardSub, { color: mu }]}>{subLine}</Text>
     </View>
   );
 }
 
-function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalOz: number }) {
-  const pct    = totalOz > 0 ? (oz / totalOz) * 100 : 0;
-  const lbsVal = ozToLbs(oz).toFixed(2);
+function SummaryCatBar({
+  name, oz, totalOz, weightUnit = 'imperial',
+}: { name: string; oz: number; totalOz: number; weightUnit?: 'imperial' | 'metric' }) {
+  const pct   = totalOz > 0 ? (oz / totalOz) * 100 : 0;
+  const grams = oz * 28.3495;
+  const displayVal = weightUnit === 'metric'
+    ? (grams >= 1000 ? `${(grams / 1000).toFixed(2)} kg` : `${Math.round(grams)} g`)
+    : `${ozToLbs(oz).toFixed(2)} lbs`;
   return (
     <View style={styles.sumCatRow}>
       <View style={styles.sumCatMeta}>
         <Text style={styles.sumCatName} numberOfLines={1}>{name}</Text>
-        <Text style={styles.sumCatWeight}>{lbsVal} lbs</Text>
+        <Text style={styles.sumCatWeight}>{displayVal}</Text>
       </View>
       <View style={styles.sumCatTrack}>
         <View style={[styles.sumCatFill, { width: `${pct}%` as any }]} />
@@ -590,8 +613,10 @@ function AnimatedSwipeRow({
 
   const pan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) =>
-        !isSwipingRef.current && Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.4,
+      // D-45: swipe only activates from right 40% of screen (pageX > 60% width)
+      onMoveShouldSetPanResponder: (evt, g) =>
+        !isSwipingRef.current && Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.4
+        && evt.nativeEvent.pageX > Dimensions.get('window').width * 0.60,
       onPanResponderGrant: () => {
         isSwipingRef.current = true;
         tx.stopAnimation();
@@ -628,8 +653,9 @@ function AnimatedSwipeRow({
   return (
     <View style={{ overflow: 'hidden' }}>
       <View style={[StyleSheet.absoluteFillObject, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
+        {/* D-44: delete button = DELETE_RED_SWIPE #B03A2E per v3 §6.3 */}
         <TouchableOpacity
-          style={[styles.swipeActionBtn, { backgroundColor: '#EF4444' }]}
+          style={[styles.swipeActionBtn, { backgroundColor: '#B03A2E' }]}
           onPress={() => { closeRef.current(); onDelete(item, category); }}
         >
           <Ionicons name="trash-outline" size={18} color="#fff" />
@@ -663,6 +689,8 @@ export default function GearScreen() {
   // ── Standard list UI state ──────────────────────────────────────────────────
   const [openCatName, setOpenCatName] = useState<string | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
+  // D-35: track which category's add-item accordion is open (normal mode only)
+  const [addItemAccordionCat, setAddItemAccordionCat] = useState<string | null>(null);
   const [groupIdx, setGroupIdx]       = useState(0);
   const [showSummary, setShowSummary] = useState(false);
   const [showAdd, setShowAdd]         = useState(false);
@@ -1015,9 +1043,29 @@ export default function GearScreen() {
       case 'undo': undo(); break;
       case 'redo': redo(); break;
       case 'save':
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        saveToLocker();
-        showToast('List saved');
+        // D-47: v3 §13.8 — open Save Chooser (Save / Save As / Cancel) instead of direct save
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        if (Platform.OS === 'ios') {
+          ActionSheetIOS.showActionSheetWithOptions(
+            { title: 'Save List', options: ['Save', 'Save As…', 'Cancel'], cancelButtonIndex: 2 },
+            (idx) => {
+              if (idx === 0) {
+                if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                saveToLocker(); showToast('List saved');
+              } else if (idx === 1) {
+                Alert.prompt('Save As', 'Name for the new copy:',
+                  (text) => { if (text?.trim()) { saveAsToLocker(text.trim()); showToast('Saved as new copy'); } },
+                  'plain-text', listName);
+              }
+            }
+          );
+        } else {
+          Alert.alert('Save List', undefined, [
+            { text: 'Save', onPress: () => { saveToLocker(); showToast('List saved'); } },
+            { text: 'Save As…', onPress: () => { Alert.alert('Save As', 'Saving as a copy is available on iOS.'); } },
+            { text: 'Cancel', style: 'cancel' },
+          ]);
+        }
         break;
       case 'share': {
         const packedLines = categoryOrder.flatMap(cat =>
@@ -1038,7 +1086,7 @@ export default function GearScreen() {
     }
   }, [
     handleReset, handleContextualMediaAction,
-    undo, redo, saveToLocker, refreshLockerEntries,
+    undo, redo, saveToLocker, saveAsToLocker, refreshLockerEntries,
     listName, categoryOrder, data, listKind, showToast,
   ]);
 
@@ -1316,16 +1364,56 @@ export default function GearScreen() {
           if (s.sectionKind === 'add-photo-bar' || s.sectionKind === 'location') return null;
           const isOpen = allExpanded || openCatName === s.title;
           if (!isOpen) return null;
+          // D-35: normal mode shows 3-option accordion; all-expanded goes direct
+          const showAccordion = !allExpanded && addItemAccordionCat === s.title;
           return (
             <View>
               <AddItemBar
                 catName={s.title}
+                accordionOpen={showAccordion}
                 onPress={() => {
-                  // F-13: directly add to the open category, then expand the detail panel
-                  const newId = addItem(s.title, '', 0, 1);
-                  setExpandedItemKey({ cat: s.title, id: newId });
+                  if (allExpanded) {
+                    // all-expanded: direct add (correct for that mode per spec §8)
+                    const newId = addItem(s.title, '', 0, 1);
+                    setExpandedItemKey({ cat: s.title, id: newId });
+                  } else {
+                    // normal mode: toggle the 3-option accordion
+                    setAddItemAccordionCat(prev => prev === s.title ? null : s.title);
+                  }
                 }}
               />
+              {showAccordion && (
+                <View style={styles.addItemAccordion}>
+                  {/* Row 1: Name — create item + expand name input */}
+                  <TouchableOpacity style={styles.accordionRow} activeOpacity={0.7} onPress={() => {
+                    const newId = addItem(s.title, '', 0, 1);
+                    setExpandedItemKey({ cat: s.title, id: newId });
+                    setAddItemAccordionCat(null);
+                  }}>
+                    <Ionicons name="pencil-outline" size={14} color={NAV_ACTIVE} />
+                    <Text style={styles.accordionRowText}>Name</Text>
+                  </TouchableOpacity>
+                  {/* Row 2: Photo — create item + open photo sheet */}
+                  <TouchableOpacity style={styles.accordionRow} activeOpacity={0.7} onPress={() => {
+                    const newId = addItem(s.title, '', 0, 1);
+                    setPhotoTarget({ cat: s.title, id: newId });
+                    setExpandedItemKey({ cat: s.title, id: newId });
+                    setAddItemAccordionCat(null);
+                    setTimeout(() => setShowItemPhotoSheet(true), 50);
+                  }}>
+                    <Ionicons name="camera-outline" size={14} color={NAV_ACTIVE} />
+                    <Text style={styles.accordionRowText}>Photo</Text>
+                  </TouchableOpacity>
+                  {/* Row 3: Master List — coming soon placeholder */}
+                  <TouchableOpacity style={styles.accordionRow} activeOpacity={0.7} onPress={() => {
+                    setAddItemAccordionCat(null);
+                    Alert.alert('Master List', 'Master List search is coming soon on mobile.');
+                  }}>
+                    <Ionicons name="library-outline" size={14} color={NAV_ACTIVE} />
+                    <Text style={styles.accordionRowText}>Master List</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               {listKind === 'photo' && s.title === PHOTO_ITEMS_CATEGORY && (
                 <AddAnotherPhotoBar onPress={handleOpenSource} />
               )}
@@ -1369,20 +1457,21 @@ export default function GearScreen() {
           >
             {grandTotalOz > 0 ? (
               <View style={styles.summaryContent}>
-                <SummaryWeightRow label="Grand Total"  oz={grandTotalOz} accent />
+                {/* D-53: pass weightUnit to all summary rows */}
+                <SummaryWeightRow label="Grand Total"  oz={grandTotalOz} accent weightUnit={weightUnit} />
                 <View style={styles.summaryPairRow}>
-                  <SummaryWeightRow label="Base Weight"   oz={baseWeightOz}   half />
-                  <SummaryWeightRow label="Clothing Worn" oz={clothingWornOz} half />
+                  <SummaryWeightRow label="Base Weight"   oz={baseWeightOz}   half weightUnit={weightUnit} />
+                  <SummaryWeightRow label="Clothing Worn" oz={clothingWornOz} half weightUnit={weightUnit} />
                 </View>
                 <View style={styles.summaryPairRow}>
-                  <SummaryWeightRow label="Dog Pack"    oz={dogPackOz}    half />
-                  <SummaryWeightRow label="Expendables" oz={expendablesOz} half />
+                  <SummaryWeightRow label="Dog Pack"    oz={dogPackOz}    half weightUnit={weightUnit} />
+                  <SummaryWeightRow label="Expendables" oz={expendablesOz} half weightUnit={weightUnit} />
                 </View>
                 {summaryTotals.length > 0 && (
                   <View style={styles.summaryBreakdown}>
                     <Text style={styles.summaryBreakdownTitle}>WEIGHT BREAKDOWN</Text>
                     {summaryTotals.map(cat => (
-                      <SummaryCatBar key={cat.name} name={cat.name} oz={cat.oz} totalOz={grandTotalOz} />
+                      <SummaryCatBar key={cat.name} name={cat.name} oz={cat.oz} totalOz={grandTotalOz} weightUnit={weightUnit} />
                     ))}
                   </View>
                 )}
@@ -1443,6 +1532,7 @@ export default function GearScreen() {
           setShowDrawer(false);
           setTimeout(() => { refreshLockerEntries(); setShowLocker(true); }, 200);
         }}
+        onOpenMore={() => { setShowDrawer(false); setTimeout(() => setShowMore(true), 300); }}
       />
 
       <PreviewOverlay
@@ -1454,10 +1544,15 @@ export default function GearScreen() {
       <MoreDeck
         visible={showMore}
         onClose={() => setShowMore(false)}
+        onSave={() => {
+          // D-48: Save from More deck card 1 — same chooser flow as the bottom Save button
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          saveToLocker(); showToast('List saved');
+        }}
         onSaveAs={() => {
           if (Platform.OS === 'ios') {
             Alert.prompt('Save As', 'Name for the new copy:', (text) => {
-              if (text?.trim()) saveAsToLocker(text.trim());
+              if (text?.trim()) { saveAsToLocker(text.trim()); showToast('Saved as new copy'); }
             }, 'plain-text', listName);
           } else {
             Alert.alert('Save As', 'Saving as a copy is available on iOS.');
@@ -1605,13 +1700,24 @@ const styles = StyleSheet.create({
   itemNameChecked: { color: NAV_INACTIVE, opacity: 0.8 },
   itemWeight: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE, letterSpacing: 0.2, flexShrink: 0, marginLeft: 8 },
 
-  // AddItemBar
+  // AddItemBar (D-35)
   addItemBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, minHeight: 42, backgroundColor: 'rgba(42,87,64,0.04)',
     borderBottomWidth: 1, borderBottomColor: DIVIDER, borderTopWidth: 1, borderTopColor: DIVIDER,
   },
   addItemBarText: { fontSize: 13.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  // D-35: accordion rows below AddItemBar in normal mode
+  addItemAccordion: {
+    backgroundColor: '#FAFDF9',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(42,87,64,0.12)',
+  },
+  accordionRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 24, minHeight: 44,
+    borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(42,87,64,0.15)',
+  },
+  accordionRowText: { fontSize: 14, fontFamily: 'PlusJakartaSans_500Medium', color: NAV_ACTIVE },
 
   // List
   list:        { flex: 1 },
