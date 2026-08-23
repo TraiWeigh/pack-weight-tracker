@@ -9,7 +9,7 @@
 
 import React, { useState } from 'react';
 import {
-  Modal, View, Text, TouchableOpacity, ScrollView,
+  Alert, Modal, View, Text, TouchableOpacity, ScrollView,
   StyleSheet, Platform, Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -148,18 +148,63 @@ export function MoreDeck({
 
                   {card.id === 'help' && (
                     <>
-                      <DeckRow icon="information-circle-outline" label="About TrailWeigh" sub="Version info and credits" onPress={() => {}} />
-                      <DeckRow icon="book-outline" label="How It Works" sub="Quick guide to the app" onPress={() => {}} />
-                      <DeckRow icon="globe-outline" label="TrailWeigh.com" sub="Open website" onPress={() => Linking.openURL('https://trailweigh.com').catch(() => {})} />
-                      <DeckRow icon="alert-circle-outline" label="Report an Issue" sub="Send feedback" onPress={() => {}} />
+                      <DeckRow
+                        icon="information-circle-outline"
+                        label="About TrailWeigh"
+                        sub="Version info and credits"
+                        onPress={() => Linking.openURL('https://trailweigh.com/about').catch(() => {})}
+                      />
+                      <DeckRow
+                        icon="book-outline"
+                        label="How It Works"
+                        sub="Quick guide to the app"
+                        onPress={() => Linking.openURL('https://trailweigh.com/how-it-works').catch(() => {})}
+                      />
+                      <DeckRow
+                        icon="globe-outline"
+                        label="TrailWeigh.com"
+                        sub="Open website"
+                        onPress={() => Linking.openURL('https://trailweigh.com').catch(() => {})}
+                      />
+                      <DeckRow
+                        icon="alert-circle-outline"
+                        label="Report an Issue"
+                        sub="Send feedback"
+                        onPress={() => Linking.openURL('mailto:hello@trailweigh.com?subject=TrailWeigh%20Feedback').catch(() =>
+                          Linking.openURL('https://trailweigh.com/contact').catch(() => {})
+                        )}
+                      />
                     </>
                   )}
 
                   {card.id === 'account' && (
                     <>
-                      <DeckRow icon="shield-checkmark-outline" label="Privacy Policy" sub="How we handle your data" onPress={() => {}} />
-                      <DeckRow icon="document-text-outline" label="Terms of Service" sub="" onPress={() => {}} />
-                      <DeckRow icon="trash-outline" label="Delete Account" sub="Permanently remove your data" danger onPress={() => {}} />
+                      <DeckRow
+                        icon="shield-checkmark-outline"
+                        label="Privacy Policy"
+                        sub="How we handle your data"
+                        onPress={() => Linking.openURL('https://trailweigh.com/privacy').catch(() => {})}
+                      />
+                      <DeckRow
+                        icon="document-text-outline"
+                        label="Terms of Service"
+                        sub=""
+                        onPress={() => Linking.openURL('https://trailweigh.com/terms').catch(() => {})}
+                      />
+                      <DeckRow
+                        icon="trash-outline"
+                        label="Delete Account"
+                        sub="Permanently remove your data"
+                        danger
+                        onPress={() => Alert.alert(
+                          'Delete Account',
+                          'To request account deletion, please visit trailweigh.com or contact hello@trailweigh.com.',
+                          [
+                            { text: 'Cancel', style: 'cancel' },
+                            { text: 'Open Website', onPress: () => Linking.openURL('https://trailweigh.com').catch(() => {}) },
+                          ],
+                        )}
+                      />
                     </>
                   )}
                 </View>

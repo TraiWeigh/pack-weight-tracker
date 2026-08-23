@@ -47,3 +47,4 @@
 - [R0113 repair pass architecture](r0113-repair-pass.md) — 9 new components, context additions (weightUnit/checklistUse/addItem→string), filterView replaces photoListView, expandedItemKey, SWIPE_BTN_W=88.
 - [Batch G native parity repairs](batch-g-repairs.md) — F-01–F-20 final status; 12 Batch G fixes; two F-series regressions (D-35/D-41) and remaining gap list.
 - [Batch H native parity repairs](batch-h-repairs.md) — 12 repairs: N-01–N-05, D-42, D-46, D-48p, D-54, D-59–67; all pass TypeScript clean; DEVICE TEST REQUIRED for N-02 drag, D-42 Alert.prompt (iOS only), D-64 camera sheet.
+- [Batch I native parity repairs](batch-i-repairs.md) — 5 repairs: donut chart (Summary), MoreDeck link rows, loc-photo edit pencil, sibling drag anim (Animated.View), accordion-Photo auto-camera; TS clean; Tasks 4 & 5 need device test.

@@ -769,8 +769,10 @@ export default function GearScreen() {
   const [expandedItemKey, setExpandedItemKey] = useState<{ cat: string; id: string } | null>(null);
 
   // ── Item photo sheet state ──────────────────────────────────────────────────
-  const [showItemPhotoSheet, setShowItemPhotoSheet] = useState(false);
-  const [photoTarget,        setPhotoTarget]        = useState<{ cat: string; id: string } | null>(null);
+  const [showItemPhotoSheet,    setShowItemPhotoSheet]    = useState(false);
+  const [photoTarget,           setPhotoTarget]           = useState<{ cat: string; id: string } | null>(null);
+  // Task 5 (Batch I): source passed to ItemPhotoSheet so accordion "Photo" auto-launches camera
+  const [itemPhotoInitialSource, setItemPhotoInitialSource] = useState<'camera' | 'library' | undefined>(undefined);
 
   // ── Category picker state (contextual camera/photos case 3) ────────────────
   const [showCatPicker,  setShowCatPicker]  = useState(false);
@@ -1057,6 +1059,24 @@ export default function GearScreen() {
     setDraggingCat(catName);
     setDragOverlayY(pageY - (catBarHsRef.current.get(catName) ?? 62) / 2);
   }, [listKind]);
+
+  // Task 4 (Batch I): animate sibling bars to show drop target while dragging
+  const updateDragAnims = useCallback((screenY: number) => {
+    const dragging = dragCatRef.current;
+    if (!dragging) return;
+    const fromIdx = categoryOrder.indexOf(dragging);
+    const toIdx   = computeTargetIdx(screenY);
+    const barH    = catBarHsRef.current.get(dragging) ?? CAT_HEADER_H;
+    categoryOrder.forEach((cat, i) => {
+      if (cat === dragging) return;
+      let shift = 0;
+      if (fromIdx < toIdx && i > fromIdx && i <= toIdx)  shift = -barH; // drag down: gap opens above
+      if (fromIdx > toIdx && i >= toIdx  && i < fromIdx) shift =  barH; // drag up: gap opens below
+      Animated.spring(getDragAnim(cat), {
+        toValue: shift, useNativeDriver: true, tension: 300, friction: 26,
+      }).start();
+    });
+  }, [categoryOrder, computeTargetIdx, getDragAnim]);
 
   const handleHeroNameTap = useCallback(() => {
     if (Platform.OS === 'ios') {
@@ -1457,13 +1477,22 @@ export default function GearScreen() {
                   }}
                   onCamera={() => { setLocPhotoTarget(s.locId!); setShowLocPhotoSheet(true); }}
                 />
-                {/* D-65: full-width location photo below open accordion */}
+                {/* D-65: full-width location photo + D-66: pencil edit overlay (Task 3 / Batch I) */}
                 {openLocNames.has(s.locId) && !!loc.photoDataUrl && (
-                  <Image
-                    source={{ uri: loc.photoDataUrl }}
-                    style={styles.locAccordionPhoto}
-                    resizeMode="cover"
-                  />
+                  <View style={{ position: 'relative' }}>
+                    <Image
+                      source={{ uri: loc.photoDataUrl }}
+                      style={styles.locAccordionPhoto}
+                      resizeMode="cover"
+                    />
+                    <TouchableOpacity
+                      style={styles.locAccordionPhotoEdit}
+                      onPress={() => { setLocPhotoTarget(s.locId!); setShowLocPhotoSheet(true); }}
+                      hitSlop={8}
+                    >
+                      <Ionicons name="pencil-outline" size={16} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </View>
                 )}
               </View>
             );
@@ -1491,9 +1520,14 @@ export default function GearScreen() {
               weightUnit={weightUnit}
             />
           );
-          if (suppressSwipe) return <View onLayout={catHeaderLayout}>{header}</View>;
+          // Task 4 (Batch I): wrap in Animated.View so sibling bars shift during drag
+          if (suppressSwipe) return (
+            <Animated.View onLayout={catHeaderLayout} style={{ transform: [{ translateY: getDragAnim(s.title) }] }}>
+              {header}
+            </Animated.View>
+          );
           return (
-            <View onLayout={catHeaderLayout}>
+            <Animated.View onLayout={catHeaderLayout} style={{ transform: [{ translateY: getDragAnim(s.title) }] }}>
               <CategorySwipeRow
                 catName={s.title}
                 onRename={(oldName) => {
@@ -1507,7 +1541,7 @@ export default function GearScreen() {
               >
                 {header}
               </CategorySwipeRow>
-            </View>
+            </Animated.View>
           );
         }}
         renderSectionFooter={({ section }) => {
@@ -1544,11 +1578,13 @@ export default function GearScreen() {
                     <Ionicons name="pencil-outline" size={14} color={NAV_ACTIVE} />
                     <Text style={styles.accordionRowText}>Name</Text>
                   </TouchableOpacity>
-                  {/* Row 2: Photo — create item + open photo sheet */}
+                  {/* Row 2: Photo — create item + immediately launch camera (Task 5 / F-05) */}
                   <TouchableOpacity style={styles.accordionRow} activeOpacity={0.7} onPress={() => {
                     const newId = addItem(s.title, '', 0, 1);
                     setPhotoTarget({ cat: s.title, id: newId });
                     setExpandedItemKey({ cat: s.title, id: newId });
+                    setPendingNewItemCleanup({ cat: s.title, id: newId }); // F-06: cleanup on cancel
+                    setItemPhotoInitialSource('camera');                   // Task 5: skip sheet → camera
                     setAddItemAccordionCat(null);
                     setTimeout(() => setShowItemPhotoSheet(true), 50);
                   }}>
@@ -1762,7 +1798,8 @@ export default function GearScreen() {
         hasPhoto={!!(photoTarget && (data[photoTarget.cat] || []).find(i => i.id === photoTarget?.id)?.photoDataUrl)}
         onCapture={handleItemPhotoCapture}
         onDelete={handleItemPhotoDelete}
-        onClose={() => setShowItemPhotoSheet(false)}
+        initialSource={itemPhotoInitialSource}
+        onClose={() => { setShowItemPhotoSheet(false); setItemPhotoInitialSource(undefined); }}
         onCancel={() => {    // F-06: delete blank item if user cancels without taking a photo
           if (pendingNewItemCleanup) {
             deleteItem(pendingNewItemCleanup.cat, pendingNewItemCleanup.id);
@@ -1770,6 +1807,7 @@ export default function GearScreen() {
             setPendingNewItemCleanup(null);
           }
           setShowItemPhotoSheet(false);
+          setItemPhotoInitialSource(undefined);
         }}
       />
 
@@ -1800,6 +1838,7 @@ export default function GearScreen() {
             onMoveShouldSetResponder={() => true}
             onResponderMove={(e) => {
               setDragOverlayY(e.nativeEvent.pageY - (catBarHsRef.current.get(draggingCat) ?? 62) / 2);
+              updateDragAnims(e.nativeEvent.pageY); // Task 4: animate siblings to show drop slot
             }}
             onResponderRelease={(e) => commitDrag(e.nativeEvent.pageY)}
             onResponderTerminate={(e) => commitDrag(e.nativeEvent.pageY)}
@@ -2062,6 +2101,13 @@ const styles = StyleSheet.create({
 
   // D-65: full-width location photo shown below open LocationBar accordion
   locAccordionPhoto: { width: '100%', height: 200, backgroundColor: 'rgba(0,0,0,0.05)' },
+  // D-66 (Task 3 / Batch I): pencil edit button overlaid on location accordion photo
+  locAccordionPhotoEdit: {
+    position: 'absolute', bottom: 10, right: 10,
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center', justifyContent: 'center',
+  },
 
   // D-67: PhotoItemCard — full-width photo card for photo filter view
   photoItemCard: {
