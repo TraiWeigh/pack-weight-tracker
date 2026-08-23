@@ -40,9 +40,10 @@ const PAGE_BG     = '#F2EDE4';
 interface LockerModalProps {
   visible: boolean;
   onClose: () => void;
+  showToast: (msg: string) => void;   // F-14
 }
 
-export function LockerModal({ visible, onClose }: LockerModalProps) {
+export function LockerModal({ visible, onClose, showToast }: LockerModalProps) {
   const insets = useSafeAreaInsets();
   const {
     listName, lockerEntries, activeLockerEntryId,
@@ -126,11 +127,12 @@ export function LockerModal({ visible, onClose }: LockerModalProps) {
             if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             loadFromLocker(entry);
             onClose();
+            setTimeout(() => showToast(`"${entry.name}" loaded`), 350);  // F-14
           },
         },
       ],
     );
-  }, [loadFromLocker, onClose]);
+  }, [loadFromLocker, onClose, showToast]);
 
   // ── Delete entry ──────────────────────────────────────────────────────────
 

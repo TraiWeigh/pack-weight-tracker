@@ -50,15 +50,22 @@ export function ItemDetailPanel({
 }: ItemDetailPanelProps) {
   const nameRef = useRef<TextInput>(null);
   const [localName, setLocalName] = useState(item.desc || item.sub || '');
-  const [localWt,   setLocalWt  ] = useState(item.weightOz > 0 ? String(item.weightOz) : '');
+  // F-08: localWt is stored in display unit (oz or g depending on weightUnit)
+  const ozToDisplay = (oz: number) =>
+    weightUnit === 'metric' ? String(Math.round(oz * 28.3495)) : String(oz);
+  const displayToOz = (s: string) => {
+    const v = parseFloat(s) || 0;
+    return weightUnit === 'metric' ? v / 28.3495 : v;
+  };
+  const [localWt,   setLocalWt  ] = useState(item.weightOz > 0 ? ozToDisplay(item.weightOz) : '');
   const [localQty,  setLocalQty ] = useState(item.qty);
 
-  // Sync back if item changes externally
+  // Sync back if item changes externally or unit switches
   useEffect(() => {
     setLocalName(item.desc || item.sub || '');
-    setLocalWt(item.weightOz > 0 ? String(item.weightOz) : '');
+    setLocalWt(item.weightOz > 0 ? ozToDisplay(item.weightOz) : '');
     setLocalQty(item.qty);
-  }, [item.id]);
+  }, [item.id, weightUnit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // autoFocus Name on mount
   useEffect(() => {
@@ -74,9 +81,9 @@ export function ItemDetailPanel({
   }, [localName, item.desc, item.sub, onRename]);
 
   const commitWeight = useCallback(() => {
-    const oz = parseFloat(localWt) || 0;
-    if (oz !== item.weightOz) {
-      onUpdate({ weightOz: Math.max(0, oz) });
+    const oz = Math.max(0, displayToOz(localWt));
+    if (Math.abs(oz - item.weightOz) > 0.0001) {
+      onUpdate({ weightOz: oz });
     }
   }, [localWt, item.weightOz, onUpdate]);
 
@@ -184,7 +191,7 @@ export function ItemDetailPanel({
             keyboardType="decimal-pad"
             returnKeyType="done"
           />
-          <Text style={styles.weightUnit}>oz</Text>
+          <Text style={styles.weightUnit}>{weightUnit === 'metric' ? 'g' : 'oz'}</Text>
         </View>
       </View>
 

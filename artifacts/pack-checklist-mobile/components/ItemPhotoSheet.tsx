@@ -11,7 +11,7 @@
  * Calls onDelete() when user taps Delete Photo.
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Modal, View, Text, TouchableOpacity, StyleSheet, Platform, Alert,
 } from 'react-native';
@@ -36,6 +36,10 @@ interface ItemPhotoSheetProps {
   onCapture: (dataUrl: string) => void;
   onDelete: () => void;
   onClose: () => void;
+  /** F-05: auto-launch this picker as soon as the sheet becomes visible */
+  initialSource?: 'camera' | 'library';
+  /** F-06: called when user explicitly cancels (not when camera/library auto-closes) */
+  onCancel?: () => void;
 }
 
 async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
@@ -78,9 +82,25 @@ async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
 }
 
 export function ItemPhotoSheet({
-  visible, hasPhoto, onCapture, onDelete, onClose,
+  visible, hasPhoto, onCapture, onDelete, onClose, initialSource, onCancel,
 }: ItemPhotoSheetProps) {
   const insets = useSafeAreaInsets();
+
+  // F-05: auto-launch the requested picker when the sheet becomes visible
+  const didAutoLaunch = useRef(false);
+  useEffect(() => {
+    if (visible && initialSource && !didAutoLaunch.current) {
+      didAutoLaunch.current = true;
+      const launch = async () => {
+        onClose();   // close the sheet so system picker appears on top
+        const dataUrl = await pickImage(initialSource);
+        if (dataUrl) onCapture(dataUrl);
+        else onCancel?.();   // user cancelled system picker → clean up blank item
+      };
+      setTimeout(launch, 150);
+    }
+    if (!visible) didAutoLaunch.current = false;
+  }, [visible, initialSource]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCamera = async () => {
     onClose();
@@ -111,7 +131,7 @@ export function ItemPhotoSheet({
       transparent
       onRequestClose={onClose}
     >
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={() => { onCancel?.(); onClose(); }} />
       <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         <View style={styles.handle} />
         <Text style={styles.title}>{hasPhoto ? 'Edit Photo' : 'Add a Photo'}</Text>
@@ -160,7 +180,7 @@ export function ItemPhotoSheet({
 
         {/* Cancel */}
         <View style={[styles.divider, { marginTop: 8 }]} />
-        <TouchableOpacity style={styles.cancelRow} onPress={onClose} activeOpacity={0.65}>
+        <TouchableOpacity style={styles.cancelRow} onPress={() => { onCancel?.(); onClose(); }} activeOpacity={0.65}>
           <Text style={styles.cancelText}>Cancel</Text>
         </TouchableOpacity>
       </View>

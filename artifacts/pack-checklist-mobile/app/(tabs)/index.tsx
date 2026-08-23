@@ -16,7 +16,7 @@
  * 12. SWIPE_BTN_W 80 → 88
  */
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -71,9 +71,9 @@ const PAGE_BG      = '#F2EDE4';
 const MUTED        = '#667270';
 const DIVIDER      = 'rgba(0,0,0,0.06)';
 
-const TILE_W         = 72;
+const TILE_W         = 58;   // F-18: v3-spec 58px
 const WEDGE_POINT    = 17;
-const CAT_HEADER_H   = 64;
+const CAT_HEADER_H   = 62;   // F-18: v3-spec 62px
 const RIGHT_INSET    = 44;
 const ITEM_R_INSET   = 34;
 const FILTER_H       = 50;
@@ -140,14 +140,17 @@ type Section = {
 
 // ─── AppBar ───────────────────────────────────────────────────────────────────
 
-function AppBar({ onMenuPress }: { onMenuPress: () => void }) {
+// F-02: handedness moves hamburger to the preferred thumb side
+function AppBar({ onMenuPress, handedness }: { onMenuPress: () => void; handedness: 'right' | 'left' }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.appBar, { paddingTop: insets.top, minHeight: insets.top + APPBAR_H }]}>
       <View style={styles.appBarInner}>
-        <TouchableOpacity onPress={onMenuPress} hitSlop={10}>
-          <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
-        </TouchableOpacity>
+        {handedness !== 'left' && (
+          <TouchableOpacity onPress={onMenuPress} hitSlop={10}>
+            <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
+          </TouchableOpacity>
+        )}
         <View style={styles.appBarLogo}>
           <Ionicons name="checkbox-outline" size={20} color={NAV_ACTIVE} />
           <Text style={styles.appBarTitle}>TrailWeigh</Text>
@@ -158,6 +161,11 @@ function AppBar({ onMenuPress }: { onMenuPress: () => void }) {
             <Ionicons key={icon} name={icon} size={17} color={NAV_INACTIVE} />
           ))}
         </View>
+        {handedness === 'left' && (
+          <TouchableOpacity onPress={onMenuPress} hitSlop={10} style={{ marginLeft: 8 }}>
+            <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -407,12 +415,14 @@ function PhotoListEmptyCard({
 // ─── ItemRow ──────────────────────────────────────────────────────────────────
 // Split into two touch zones: checkbox (toggles checked) and name/weight (opens detail panel).
 
+// F-07: ItemRow now receives weightUnit and uses formatDisplayWeight for the weight badge
 function ItemRow({
-  item, category, onToggle, onTapName,
+  item, category, onToggle, onTapName, weightUnit,
 }: {
   item: GearItem; category: string;
   onToggle: (category: string, id: string) => void;
   onTapName: (category: string, id: string) => void;
+  weightUnit: 'imperial' | 'metric';
 }) {
   const handleCheck = useCallback(() => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -424,7 +434,7 @@ function ItemRow({
   }, [category, item.id, onTapName]);
 
   const totalOz     = calcTotalOz(item.weightOz, item.qty);
-  const weightLabel = item.weightOz > 0 ? `${totalOz.toFixed(1)} oz` : null;
+  const weightLabel = item.weightOz > 0 ? formatDisplayWeight(totalOz, weightUnit) : null; // F-07
   const displayName = item.desc || item.sub || 'Unnamed item';
 
   return (
@@ -481,10 +491,12 @@ function NavBox({ cell, onAction, disabled }: { cell: BoxCell; onAction: (a: str
   );
 }
 
+// F-02: handedness reverses cell order so primary thumb gets the most-used actions
 function BottomBox({
-  groupIdx, onAction, bottomPad, disabledSet,
-}: { groupIdx: number; onAction: (a: string) => void; bottomPad: number; disabledSet?: Set<string> }) {
-  const cells = BOX_GROUPS[groupIdx];
+  groupIdx, onAction, bottomPad, disabledSet, handedness,
+}: { groupIdx: number; onAction: (a: string) => void; bottomPad: number; disabledSet?: Set<string>; handedness?: 'right' | 'left' }) {
+  const rawCells = BOX_GROUPS[groupIdx];
+  const cells = handedness === 'left' ? [...rawCells].reverse() : rawCells;
   const onActionRef = useRef(onAction);
   onActionRef.current = onAction;
 
@@ -558,12 +570,13 @@ function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalO
 let _closeOpenSwipe: (() => void) | null = null;
 
 function AnimatedSwipeRow({
-  item, category, onToggle, onTapName, onDelete,
+  item, category, onToggle, onTapName, onDelete, weightUnit,
 }: {
   item: GearItem; category: string;
   onToggle: (cat: string, id: string) => void;
   onTapName: (cat: string, id: string) => void;
   onDelete: (item: GearItem, cat: string) => void;
+  weightUnit: 'imperial' | 'metric';
 }) {
   const tx           = useRef(new Animated.Value(0)).current;
   const isOpenRef    = useRef(false);
@@ -624,7 +637,7 @@ function AnimatedSwipeRow({
         </TouchableOpacity>
       </View>
       <Animated.View style={{ transform: [{ translateX: tx }] }} {...pan.panHandlers}>
-        <ItemRow item={item} category={category} onToggle={onToggle} onTapName={onTapName} />
+        <ItemRow item={item} category={category} onToggle={onToggle} onTapName={onTapName} weightUnit={weightUnit} />
       </Animated.View>
     </View>
   );
@@ -684,6 +697,13 @@ export default function GearScreen() {
   const [showItemName,    setShowItemName]    = useState(false);
   const [newItemId,       setNewItemId]       = useState<string | null>(null);
   const [openLocNames,    setOpenLocNames]    = useState<Set<string>>(new Set());
+
+  // ── SectionList ref (F-10: scroll-to-category) ───────────────────────────────
+  const sectionListRef = useRef<any>(null);
+  const [filterBarBottom,  setFilterBarBottom]  = useState(0);  // F-12
+
+  // ── Pending new-item cleanup (F-06: cancel after contextual photo add) ───────
+  const [pendingNewItemCleanup, setPendingNewItemCleanup] = useState<{ cat: string; id: string } | null>(null);
 
   // ── Toast ───────────────────────────────────────────────────────────────────
   const [toastMsg,  setToastMsg]  = useState('');
@@ -783,6 +803,7 @@ export default function GearScreen() {
       const newId = addItem(openCatName, '', 0, 1);
       setExpandedItemKey({ cat: openCatName, id: newId });
       setPhotoTarget({ cat: openCatName, id: newId });
+      setPendingNewItemCleanup({ cat: openCatName, id: newId });  // F-06: cleanup on cancel
       setShowItemPhotoSheet(true);
       return;
     }
@@ -797,12 +818,14 @@ export default function GearScreen() {
     setOpenCatName(cat);
     setExpandedItemKey({ cat, id: newId });
     setPhotoTarget({ cat, id: newId });
+    setPendingNewItemCleanup({ cat, id: newId });  // F-06: cleanup on cancel
     setShowItemPhotoSheet(true);
   }, [addItem]);
 
   const handleItemPhotoCapture = useCallback((dataUrl: string) => {
     if (!photoTarget) return;
     updateItem(photoTarget.cat, photoTarget.id, { photoDataUrl: dataUrl });
+    setPendingNewItemCleanup(null);   // F-06: capture succeeded — no cleanup needed
     showToast('Photo saved');
   }, [photoTarget, updateItem, showToast]);
 
@@ -820,6 +843,21 @@ export default function GearScreen() {
     setExpandedItemKey(null);   // close item detail panel when switching categories
     setOpenCatName(prev => prev === catName ? null : catName);
   }, []);
+
+  // F-10: scroll to the newly opened category header
+  useEffect(() => {
+    if (!openCatName || allExpanded) return;
+    const idx = sections.findIndex(s => s.title === openCatName);
+    if (idx < 0) return;
+    const t = setTimeout(() => {
+      try {
+        sectionListRef.current?.scrollToLocation({
+          sectionIndex: idx, itemIndex: 0, animated: true, viewOffset: 0,
+        });
+      } catch { /* ignore — section may not be measured yet */ }
+    }, 80);
+    return () => clearTimeout(t);
+  }, [openCatName, allExpanded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExpandAll = useCallback(() => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1076,7 +1114,12 @@ export default function GearScreen() {
               .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0),
           };
         });
-        return [itemsSection, addPhotoBarSection, ...locSections];
+        // F-20: omit itemsSection when there are no unassigned items
+        return [
+          ...(unassigned.length > 0 ? [itemsSection] : []),
+          addPhotoBarSection,
+          ...locSections,
+        ];
       }
       // Photo List category view (filterView === 'category')
       return allSections.map(s => ({
@@ -1127,21 +1170,24 @@ export default function GearScreen() {
   return (
     <View style={[styles.container, { backgroundColor: PAGE_BG }]}>
       {/* ── Fixed top ──────────────────────────────────────────────────── */}
-      <AppBar onMenuPress={() => setShowDrawer(true)} />
+      <AppBar onMenuPress={() => setShowDrawer(true)} handedness={handedness} />
       <ListSummaryHero
         listName={listName} totalItems={totalItems} catCount={catCount}
         selectedCount={selectedCount} allExpanded={allExpanded}
         onExpandToggle={handleExpandAll} onNameTap={handleHeroNameTap}
       />
-      <FilterControl
-        viewLabel={filterLabel}
-        isOpen={showFilterDD}
-        onToggle={() => setShowFilterDD(v => !v)}
-      />
+      {/* F-12: measure filter bar bottom for dropdown positioning */}
+      <View onLayout={e => setFilterBarBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
+        <FilterControl
+          viewLabel={filterLabel}
+          isOpen={showFilterDD}
+          onToggle={() => setShowFilterDD(v => !v)}
+        />
+      </View>
 
       {/* ── Filter dropdown overlay ──────────────────────────────────── */}
       {showFilterDD && (
-        <View style={styles.filterDDContainer} pointerEvents="box-none">
+        <View style={[styles.filterDDContainer, { top: filterBarBottom }]} pointerEvents="box-none">
           <FilterDropdown
             visible={showFilterDD}
             current={filterView}
@@ -1161,9 +1207,10 @@ export default function GearScreen() {
 
       {/* ── Scrolling category / location list ──────────────────────── */}
       <SectionList
+        ref={sectionListRef}
         sections={sections}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={showPhotoListEmpty ? (
+        ListHeaderComponent={showPhotoListEmpty && !(filterView === 'location' && locations.length > 0) ? ( // F-19
           <PhotoListEmptyCard
             pendingCapture={photoListCaptureDataUrl}
             locations={locations}
@@ -1184,6 +1231,7 @@ export default function GearScreen() {
                 onToggle={toggleItem}
                 onTapName={handleTapItemName}
                 onDelete={handleItemDelete}
+                weightUnit={weightUnit}
               />
               {isExpanded && (() => {
                 const itemCat = s.sectionKind === 'location' ? PHOTO_ITEMS_CATEGORY : s.title;
@@ -1273,7 +1321,9 @@ export default function GearScreen() {
               <AddItemBar
                 catName={s.title}
                 onPress={() => {
-                  setShowAdd(true);
+                  // F-13: directly add to the open category, then expand the detail panel
+                  const newId = addItem(s.title, '', 0, 1);
+                  setExpandedItemKey({ cat: s.title, id: newId });
                 }}
               />
               {listKind === 'photo' && s.title === PHOTO_ITEMS_CATEGORY && (
@@ -1292,6 +1342,7 @@ export default function GearScreen() {
       <BottomBox
         groupIdx={groupIdx} onAction={handleBoxAction}
         bottomPad={bottomPad} disabledSet={disabledActions}
+        handedness={handedness}
       />
 
       {/* ── Summary sheet ─────────────────────────────────────────────── */}
@@ -1347,7 +1398,7 @@ export default function GearScreen() {
       </Modal>
 
       {/* ── Locker / Add / Search sheets ──────────────────────────────── */}
-      <LockerModal visible={showLocker} onClose={() => setShowLocker(false)} />
+      <LockerModal visible={showLocker} onClose={() => setShowLocker(false)} showToast={showToast} />
       <AddDeck visible={showAdd} onClose={() => setShowAdd(false)} showToast={showToast} />
       <SearchModal visible={showSearch} onClose={() => setShowSearch(false)} />
 
@@ -1437,11 +1488,19 @@ export default function GearScreen() {
         onCapture={handleItemPhotoCapture}
         onDelete={handleItemPhotoDelete}
         onClose={() => setShowItemPhotoSheet(false)}
+        onCancel={() => {    // F-06: delete blank item if user cancels without taking a photo
+          if (pendingNewItemCleanup) {
+            deleteItem(pendingNewItemCleanup.cat, pendingNewItemCleanup.id);
+            setExpandedItemKey(null);
+            setPendingNewItemCleanup(null);
+          }
+          setShowItemPhotoSheet(false);
+        }}
       />
 
       {/* ── Toast overlay ─────────────────────────────────────────────── */}
       {!!toastMsg && (
-        <View style={styles.toast} pointerEvents="none">
+        <View style={[styles.toast, { bottom: NAV_H + insets.bottom + 8 }]} pointerEvents="none">
           <Text style={styles.toastText}>{toastMsg}</Text>
         </View>
       )}
@@ -1502,11 +1561,9 @@ const styles = StyleSheet.create({
   filterLabel: { flex: 1, fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1 },
 
   // Filter dropdown container — sits below filter bar at z=100
+  // F-12: `top` is applied inline via filterBarBottom measurement; bottom:0 lets it fill down
   filterDDContainer: {
-    position: 'absolute', left: 0, right: 0, zIndex: 100,
-    // Top will be set dynamically; approximate: insets.top + APPBAR_H + ~86 + FILTER_H
-    // The FilterDropdown panel itself is positioned inside this
-    top: 0, bottom: 0,
+    position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 100,
   },
 
   // SectionHeader
@@ -1640,9 +1697,9 @@ const styles = StyleSheet.create({
   swipeActionBtn: { width: SWIPE_BTN_W, alignItems: 'center', justifyContent: 'center', gap: 4, alignSelf: 'stretch' },
   swipeActionLabel: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#FFFFFF', letterSpacing: 0.3 },
 
-  // Toast — solid #2A5740 (not rgba)
+  // Toast — solid #2A5740 (not rgba). F-17: `bottom` applied inline via NAV_H + insets.bottom + 8
   toast: {
-    position: 'absolute', bottom: 90, left: 20, right: 20,
+    position: 'absolute', left: 20, right: 20,
     backgroundColor: '#2A5740', borderRadius: 10,
     paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center',
     zIndex: 999, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },

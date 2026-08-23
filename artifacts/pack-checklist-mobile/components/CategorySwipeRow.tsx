@@ -161,7 +161,7 @@ export function CategorySwipeRow({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { overflow: 'hidden' },
+  container: {},   // F-11: overflow:hidden removed — it clipped elevation/box-shadow on sticky headers
   actions: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',

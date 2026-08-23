@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { usePackData, GearItem } from '@/context/PackDataContext';
-import { calcTotalOz, formatWeight } from '@/lib/weightUtils';
+import { calcTotalOz, formatDisplayWeight } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -109,7 +109,7 @@ export function ChecklistOverlay({ visible, onClose, weightUnit }: ChecklistOver
                     const used    = !!checklistUse[item.id];
                     const name    = item.desc || item.sub || 'Unnamed item';
                     const totalOz = calcTotalOz(item.weightOz, item.qty);
-                    const wtLabel = item.weightOz > 0 ? formatWeight(totalOz, weightUnit) : null;
+                    const wtLabel = item.weightOz > 0 ? formatDisplayWeight(totalOz, weightUnit) : null; // F-09
                     return (
                       <TouchableOpacity
                         key={item.id}

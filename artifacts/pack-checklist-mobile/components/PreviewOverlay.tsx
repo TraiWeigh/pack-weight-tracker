@@ -6,7 +6,7 @@
  * Print/PDF button triggers native Share with text export.
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Modal, View, Text, TouchableOpacity, ScrollView, Share,
   StyleSheet, Platform,
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { usePackData, GearItem } from '@/context/PackDataContext';
-import { calcTotalOz, formatWeight } from '@/lib/weightUtils';
+import { calcTotalOz, formatDisplayWeight } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -47,6 +47,11 @@ export function PreviewOverlay({ visible, onClose, weightUnit }: PreviewOverlayP
     setPreviewChecked(prev => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
+  // F-03: reset local check state whenever overlay closes
+  useEffect(() => {
+    if (!visible) setPreviewChecked({});
+  }, [visible]);
+
   const handleClear = useCallback(() => {
     setPreviewChecked({});
   }, []);
@@ -61,7 +66,7 @@ export function PreviewOverlay({ visible, onClose, weightUnit }: PreviewOverlayP
         const name = item.desc || item.sub || 'Unnamed item';
         const qty  = item.qty > 1 ? ` ×${item.qty}` : '';
         const wt   = item.weightOz > 0
-          ? ` (${formatWeight(calcTotalOz(item.weightOz, item.qty), weightUnit)})`
+          ? ` (${formatDisplayWeight(calcTotalOz(item.weightOz, item.qty), weightUnit)})` // F-04
           : '';
         const tick = previewChecked[item.id] ? '✓ ' : '○ ';
         lines.push(`  ${tick}${name}${qty}${wt}`);
@@ -132,7 +137,7 @@ export function PreviewOverlay({ visible, onClose, weightUnit }: PreviewOverlayP
                   const name     = item.desc || item.sub || 'Unnamed item';
                   const totalOz  = calcTotalOz(item.weightOz, item.qty);
                   const wtLabel  = item.weightOz > 0
-                    ? formatWeight(totalOz, weightUnit)
+                    ? formatDisplayWeight(totalOz, weightUnit)  // F-04
                     : null;
                   return (
                     <TouchableOpacity

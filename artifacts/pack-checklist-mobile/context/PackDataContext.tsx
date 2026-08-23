@@ -76,6 +76,7 @@ export interface NativeLockerEntry {
     listKind?: 'standard' | 'photo';
     locations?: PackLocation[];
     photoListCaptureDataUrl?: string | null;
+    weightUnit?: 'imperial' | 'metric';   // F-15
   };
 }
 
@@ -255,6 +256,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   const [activeLockerEntryId, setActiveLockerEntryId] = useState<string | null>(null);
   const [lockerEntries, setLockerEntries] = useState<NativeLockerEntry[]>([]);
   const [weightUnit, setWeightUnit_state] = useState<'imperial' | 'metric'>('imperial');
+  const weightUnitRef = useRef<'imperial' | 'metric'>('imperial');   // F-15: stale-closure-safe ref
   const [checklistUse, setChecklistUse]   = useState<Record<string, boolean>>({});
 
   // Refs for stale-closure-safe access
@@ -269,6 +271,8 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   const pendingCaptureRef = useRef(photoListCaptureDataUrl);
   pendingCaptureRef.current = photoListCaptureDataUrl;
   const activeIdRef = useRef(activeLockerEntryId);
+  // Keep weightUnitRef in sync with state for use in locker helpers
+  weightUnitRef.current = weightUnit;
   activeIdRef.current = activeLockerEntryId;
   const undoStackRef = useRef<NativeSnapshot[]>([]);
   const redoStackRef = useRef<NativeSnapshot[]>([]);
@@ -278,7 +282,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function load() {
       try {
-        const [rawData, rawOrder, rawName, rawActiveId, rawListKind, rawLocations, rawPending] =
+        const [rawData, rawOrder, rawName, rawActiveId, rawListKind, rawLocations, rawPending, rawWeightUnit] =
           await Promise.all([
             AsyncStorage.getItem(STORAGE_KEY),
             AsyncStorage.getItem(CATORDER_KEY),
@@ -287,6 +291,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
             AsyncStorage.getItem(LISTKIND_KEY),
             AsyncStorage.getItem(LOCATIONS_KEY),
             AsyncStorage.getItem(PENDING_CAPTURE_KEY),
+            AsyncStorage.getItem('twm-weight-unit'),    // F-16
           ]);
 
         const order: string[] = rawOrder
@@ -305,6 +310,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
           try { setLocations_state(JSON.parse(rawLocations)); } catch { /* ignore */ }
         }
         if (rawPending) setPhotoListCaptureDataUrl_state(rawPending);
+        if (rawWeightUnit === 'metric' || rawWeightUnit === 'imperial') setWeightUnit_state(rawWeightUnit);  // F-16
       } catch {
         const order = CATEGORY_ORDER.slice();
         setCurrent({ data: seedInitialData(order), categoryOrder: order });
@@ -687,6 +693,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
       listKind: lKind,
       locations: locs,
       photoListCaptureDataUrl: pending,
+      weightUnit: weightUnitRef.current,   // F-15
     };
 
     if (activeId) {
@@ -717,6 +724,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
       store: {
         data: state.data, categoryOrder: state.categoryOrder, listName: lName,
         listKind: lKind, locations: locs, photoListCaptureDataUrl: pending,
+        weightUnit: weightUnitRef.current,   // F-15
       },
     };
     await _writeLockerEntries([...entries, entry]);
@@ -729,6 +737,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     setListKind_state(entry.store.listKind || 'standard');
     setLocations_state(entry.store.locations || []);
     setPhotoListCaptureDataUrl_state(entry.store.photoListCaptureDataUrl || null);
+    if (entry.store.weightUnit) setWeightUnit_state(entry.store.weightUnit);  // F-15
     setActiveLockerEntryId(entry.id);
     clearHistory();
   }, []);

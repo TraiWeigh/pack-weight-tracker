@@ -8,7 +8,7 @@
  * Close: ✕ button, backdrop tap, leftward swipe ≥50px.
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -68,8 +68,12 @@ export function NavigationDrawer({
   const tx = useRef(new Animated.Value(-DRAWER_W)).current;
   const backdropOpacity = useRef(new Animated.Value(0)).current;
 
+  // F-01: keep mounted during close animation; unmount only after spring settles
+  const [isRendered, setIsRendered] = useState(visible);
+
   useEffect(() => {
     if (visible) {
+      setIsRendered(true);
       Animated.parallel([
         Animated.spring(tx, { toValue: 0, useNativeDriver: true, tension: 220, friction: 24 }),
         Animated.timing(backdropOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
@@ -78,7 +82,9 @@ export function NavigationDrawer({
       Animated.parallel([
         Animated.spring(tx, { toValue: -DRAWER_W, useNativeDriver: true, tension: 260, friction: 28 }),
         Animated.timing(backdropOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
-      ]).start();
+      ]).start(({ finished }) => {
+        if (finished) setIsRendered(false);
+      });
     }
   }, [visible, tx, backdropOpacity]);
 
@@ -114,10 +120,10 @@ export function NavigationDrawer({
     }
   };
 
-  if (!visible) return null;
+  if (!isRendered) return null;
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
+    <View style={StyleSheet.absoluteFillObject} pointerEvents={visible ? 'box-none' : 'none'}>
       {/* Backdrop */}
       <Animated.View
         style={[StyleSheet.absoluteFillObject, styles.backdrop, { opacity: backdropOpacity }]}
