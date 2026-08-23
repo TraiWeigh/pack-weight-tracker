@@ -21,7 +21,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext';
+import { usePackData, GearItem } from '@/context/PackDataContext';
 import { calcTotalOz, ozToLbs } from '@/lib/weightUtils';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ interface ResultSection {
 
 export function SearchModal({ visible, onClose }: SearchModalProps) {
   const insets = useSafeAreaInsets();
-  const { data, toggleItem } = usePackData();
+  const { data, toggleItem, categoryOrder } = usePackData();
   const inputRef = useRef<TextInput>(null);
   const [query, setQuery] = useState('');
 
@@ -62,7 +62,7 @@ export function SearchModal({ visible, onClose }: SearchModalProps) {
     if (!q) return [];
 
     const results: ResultSection[] = [];
-    for (const cat of CATEGORY_ORDER) {
+    for (const cat of categoryOrder) {
       const items = (data[cat] || []).filter(item => {
         const name = (item.desc || item.sub || '').toLowerCase();
         return name.includes(q);
@@ -70,7 +70,7 @@ export function SearchModal({ visible, onClose }: SearchModalProps) {
       if (items.length > 0) results.push({ title: cat, data: items });
     }
     return results;
-  }, [query, data]);
+  }, [query, data, categoryOrder]);
 
   const totalResults = sections.reduce((n, s) => n + s.data.length, 0);
 

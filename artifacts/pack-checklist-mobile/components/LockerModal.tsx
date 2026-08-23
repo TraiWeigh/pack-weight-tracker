@@ -1,0 +1,519 @@
+/**
+ * LockerModal — v3 Locker deck ported to a native pageSheet modal.
+ *
+ * v3 reference: Locker panel shows saved lists as cards; Save updates the
+ * active entry OR auto-creates a new timestamped one; Save As creates a copy;
+ * Load replaces current state (undo history cleared).
+ *
+ * Native implementation: pageSheet with Save / Save As / New List actions at
+ * top, then a scrollable list of saved entries. Swipe-to-delete or long-press
+ * on an entry row for Rename / Delete.
+ */
+
+import React, { useEffect, useCallback, useState } from 'react';
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Alert,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { usePackData, NativeLockerEntry } from '@/context/PackDataContext';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const NAV_ACTIVE  = '#2A5740';
+const PAGE_BG     = '#F2EDE4';
+
+// ─── LockerModal ──────────────────────────────────────────────────────────────
+
+interface LockerModalProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+export function LockerModal({ visible, onClose }: LockerModalProps) {
+  const insets = useSafeAreaInsets();
+  const {
+    listName, lockerEntries, activeLockerEntryId,
+    refreshLockerEntries, saveToLocker, saveAsToLocker,
+    loadFromLocker, deleteLockerEntry, renameLockerEntry, startNewList,
+  } = usePackData();
+
+  const [saving, setSaving] = useState(false);
+
+  // Refresh entries when the sheet opens
+  useEffect(() => {
+    if (visible) refreshLockerEntries();
+  }, [visible, refreshLockerEntries]);
+
+  // ── Save (update or auto-create) ──────────────────────────────────────────
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    await saveToLocker();
+    await refreshLockerEntries();
+    setSaving(false);
+  }, [saveToLocker, refreshLockerEntries]);
+
+  // ── Save As ───────────────────────────────────────────────────────────────
+
+  const handleSaveAs = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        'Save As',
+        'Enter a name for this list',
+        async (text) => {
+          const name = text?.trim();
+          if (!name) return;
+          setSaving(true);
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          await saveAsToLocker(name);
+          await refreshLockerEntries();
+          setSaving(false);
+        },
+        'plain-text',
+        listName,
+      );
+    } else {
+      Alert.alert('Save As', 'Enter a name in the text field above, then tap Save.');
+    }
+  }, [listName, saveAsToLocker, refreshLockerEntries]);
+
+  // ── New List ──────────────────────────────────────────────────────────────
+
+  const handleNewList = useCallback(() => {
+    Alert.alert(
+      'Start New List',
+      'Your current list will be cleared. Save it first if you want to keep it.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Start New',
+          style: 'destructive',
+          onPress: () => {
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            startNewList();
+            onClose();
+          },
+        },
+      ],
+    );
+  }, [startNewList, onClose]);
+
+  // ── Load entry ────────────────────────────────────────────────────────────
+
+  const handleLoad = useCallback((entry: NativeLockerEntry) => {
+    Alert.alert(
+      `Load "${entry.name}"`,
+      'This will replace your current list. Unsaved changes will be lost.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Load',
+          onPress: () => {
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            loadFromLocker(entry);
+            onClose();
+          },
+        },
+      ],
+    );
+  }, [loadFromLocker, onClose]);
+
+  // ── Delete entry ──────────────────────────────────────────────────────────
+
+  const handleDelete = useCallback((entry: NativeLockerEntry) => {
+    Alert.alert(
+      'Delete List',
+      `Delete "${entry.name}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            await deleteLockerEntry(entry.id);
+          },
+        },
+      ],
+    );
+  }, [deleteLockerEntry]);
+
+  // ── Rename entry ──────────────────────────────────────────────────────────
+
+  const handleRename = useCallback((entry: NativeLockerEntry) => {
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        'Rename List',
+        undefined,
+        async (text) => {
+          const newName = text?.trim();
+          if (!newName || newName === entry.name) return;
+          await renameLockerEntry(entry.id, newName);
+        },
+        'plain-text',
+        entry.name,
+      );
+    } else {
+      Alert.alert('Rename', 'Rename is available on iOS only.');
+    }
+  }, [renameLockerEntry]);
+
+  // ── Entry row actions ─────────────────────────────────────────────────────
+
+  const handleEntryLongPress = useCallback((entry: NativeLockerEntry) => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Alert.alert(
+      entry.name,
+      undefined,
+      [
+        { text: 'Rename', onPress: () => handleRename(entry) },
+        { text: 'Load',   onPress: () => handleLoad(entry) },
+        { text: 'Delete', style: 'destructive', onPress: () => handleDelete(entry) },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    );
+  }, [handleRename, handleLoad, handleDelete]);
+
+  // ── Render entry ──────────────────────────────────────────────────────────
+
+  const renderEntry = useCallback(({ item }: { item: NativeLockerEntry }) => {
+    const isActive = item.id === activeLockerEntryId;
+    const date     = new Date(item.savedAt);
+    const dateStr  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr  = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+    return (
+      <TouchableOpacity
+        style={[styles.entryRow, isActive && styles.entryRowActive]}
+        onPress={() => handleLoad(item)}
+        onLongPress={() => handleEntryLongPress(item)}
+        activeOpacity={0.7}
+      >
+        {/* Active indicator */}
+        {isActive && (
+          <View style={styles.activeIndicator} />
+        )}
+
+        {/* Folder icon */}
+        <View style={[styles.entryIcon, isActive && styles.entryIconActive]}>
+          <Ionicons name="folder-outline" size={20} color={isActive ? '#fff' : '#6B7280'} />
+        </View>
+
+        {/* Name + date */}
+        <View style={styles.entryMeta}>
+          <Text style={[styles.entryName, isActive && styles.entryNameActive]} numberOfLines={1}>
+            {item.name}
+          </Text>
+          <Text style={styles.entryDate}>{dateStr} · {timeStr}</Text>
+          <Text style={styles.entryStats}>
+            {Object.values(item.store.data).reduce((n, items) => n + items.length, 0)} items ·{' '}
+            {item.store.categoryOrder.length} categories
+          </Text>
+        </View>
+
+        {/* Load button */}
+        <TouchableOpacity
+          style={[styles.loadBtn, isActive && styles.loadBtnActive]}
+          onPress={() => handleLoad(item)}
+          hitSlop={8}
+        >
+          <Text style={[styles.loadBtnText, isActive && styles.loadBtnTextActive]}>
+            Load
+          </Text>
+        </TouchableOpacity>
+
+        {/* Delete button */}
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={() => handleDelete(item)}
+          hitSlop={8}
+        >
+          <Ionicons name="trash-outline" size={16} color="#9CA3AF" />
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  }, [activeLockerEntryId, handleLoad, handleDelete, handleEntryLongPress]);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+    >
+      <View style={[styles.sheet, { paddingTop: Platform.OS === 'ios' ? 8 : insets.top + 8 }]}>
+        {/* Drag handle */}
+        <View style={styles.handle} />
+
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Ionicons name="folder-outline" size={22} color={NAV_ACTIVE} />
+            <Text style={styles.headerTitle}>My Lists</Text>
+          </View>
+          <TouchableOpacity onPress={onClose} hitSlop={16} style={styles.closeBtn}>
+            <Ionicons name="close" size={20} color="#374151" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Action row */}
+        <View style={styles.actionRow}>
+          {/* Save / Update button */}
+          <TouchableOpacity
+            style={styles.btnSave}
+            onPress={handleSave}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="save-outline" size={16} color="#fff" />
+                <Text style={styles.btnSaveText}>
+                  {activeLockerEntryId ? 'Update Saved' : 'Save'}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          {/* Save As */}
+          <TouchableOpacity style={styles.btnSecondary} onPress={handleSaveAs}>
+            <Ionicons name="copy-outline" size={15} color={NAV_ACTIVE} />
+            <Text style={styles.btnSecondaryText}>Save As</Text>
+          </TouchableOpacity>
+
+          {/* New List */}
+          <TouchableOpacity style={styles.btnSecondary} onPress={handleNewList}>
+            <Ionicons name="add-outline" size={15} color="#6B7280" />
+            <Text style={[styles.btnSecondaryText, { color: '#6B7280' }]}>New</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Divider */}
+        <View style={styles.divider} />
+
+        {/* Saved entries */}
+        {lockerEntries.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons name="folder-open-outline" size={40} color="#D1D5DB" />
+            <Text style={styles.emptyTitle}>No saved lists</Text>
+            <Text style={styles.emptyBody}>
+              Tap <Text style={styles.emptyBold}>Save</Text> to save your current list here.
+              Load it back anytime from any device.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={lockerEntries}
+            keyExtractor={item => item.id}
+            renderItem={renderEntry}
+            contentContainerStyle={[
+              styles.listContent,
+              { paddingBottom: insets.bottom + 24 },
+            ]}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View style={styles.rowSep} />}
+          />
+        )}
+      </View>
+    </Modal>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  sheet: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  handle: {
+    width: 36, height: 4, borderRadius: 2,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    alignSelf: 'center',
+    marginTop: 0, marginBottom: 8,
+  },
+
+  // ── Header ─────────────────────────────────────────────────────────────────
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 8, paddingBottom: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(0,0,0,0.10)',
+  },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerTitle: {
+    fontSize: 20,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    color: '#111827',
+    letterSpacing: -0.3,
+  },
+  closeBtn: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center', justifyContent: 'center',
+  },
+
+  // ── Action row ─────────────────────────────────────────────────────────────
+  actionRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 10,
+    alignItems: 'center',
+  },
+  btnSave: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: NAV_ACTIVE,
+    borderRadius: 10,
+    paddingVertical: 11,
+  },
+  btnSaveText: {
+    fontSize: 14,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    color: '#FFFFFF',
+  },
+  btnSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.12)',
+    backgroundColor: '#F9FAFB',
+  },
+  btnSecondaryText: {
+    fontSize: 13,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: NAV_ACTIVE,
+  },
+
+  // ── Divider ────────────────────────────────────────────────────────────────
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    marginHorizontal: 0,
+  },
+
+  // ── List ───────────────────────────────────────────────────────────────────
+  listContent: { paddingTop: 8 },
+  rowSep: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    marginLeft: 72,
+  },
+
+  // ── Entry row ──────────────────────────────────────────────────────────────
+  entryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  entryRowActive: {
+    backgroundColor: '#F0F7F3',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    left: 0, top: 0, bottom: 0,
+    width: 3,
+    backgroundColor: NAV_ACTIVE,
+    borderRadius: 2,
+  },
+  entryIcon: {
+    width: 40, height: 40,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  entryIconActive: {
+    backgroundColor: NAV_ACTIVE,
+  },
+  entryMeta: { flex: 1, gap: 2 },
+  entryName: {
+    fontSize: 15,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: '#111827',
+  },
+  entryNameActive: { color: NAV_ACTIVE },
+  entryDate: {
+    fontSize: 12,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    color: '#9CA3AF',
+  },
+  entryStats: {
+    fontSize: 11,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    color: '#9CA3AF',
+  },
+  loadBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: NAV_ACTIVE,
+  },
+  loadBtnActive: {
+    backgroundColor: NAV_ACTIVE,
+    borderColor: NAV_ACTIVE,
+  },
+  loadBtnText: {
+    fontSize: 13,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: NAV_ACTIVE,
+  },
+  loadBtnTextActive: { color: '#FFFFFF' },
+  deleteBtn: {
+    padding: 6,
+  },
+
+  // ── Empty state ────────────────────────────────────────────────────────────
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+    gap: 12,
+    paddingBottom: 80,
+  },
+  emptyTitle: {
+    fontSize: 17,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    color: '#374151',
+  },
+  emptyBody: {
+    fontSize: 14,
+    fontFamily: 'PlusJakartaSans_400Regular',
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  emptyBold: {
+    fontFamily: 'PlusJakartaSans_700Bold',
+    color: '#374151',
+  },
+});

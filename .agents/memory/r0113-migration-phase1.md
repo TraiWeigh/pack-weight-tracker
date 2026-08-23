@@ -1,30 +1,59 @@
 ---
-name: R0113 v3-to-Native Migration Phase 1
-description: What was migrated from MobileFunctionalV3 to the Expo app in the R0113 session.
+name: R0113-R0114 Native Migration (v3→native) — completed
+description: Architecture decisions for the native port of MobileFunctionalV3, through R0114 (Locker, undo/redo, category management, share).
 ---
 
-## What Was Done
+## Context architecture (R0114 final state)
 
-PackDataContext expanded with: addItem, deleteItem, renameItem, updateItem, moveItem, resetAll, listName/setListName.  
-Two new pageSheet modals created: AddItemModal (name/weight/qty/category form) and SearchModal (text filter with grouped results).  
-AnimatedSwipeRow (Animated + PanResponder, module-level) wraps ItemRow to reveal Rename+Delete on left swipe.  
-GearScreen: handleReset now shows Alert confirmation; handleItemRename/handleItemDelete wired; handleBoxAction wires 'add' and 'search'; listName from context replaces hardcoded string.
+- Single `NativeState = { data: PackState; categoryOrder: string[] }` — unified runtime state.
+- `mutate(fn)` helper: pushes snapshot to undoStack first, then applies change. ALL gear mutations use it; `toggleItem` and `listName` bypass it (v3 parity).
+- Undo/redo stacks are refs (not state) to avoid re-renders; `canUndo`/`canRedo` are state booleans updated after each mutation.
+- HISTORY_LIMIT = 30 snapshots.
 
-## Key Architecture Points
+**Why:** Mirrors v3's `mutateSandbox` pattern exactly: check/uncheck does not pollute history; list name is user metadata.
 
-- _closeOpenSwipe: module-level variable (not React state) — safe because only one GearScreen instance exists
-- closeFnRef pattern: useRef(() => {...}) captures stable Animated.Value and isOpenRef objects — no stale closure inside PanResponder
-- Alert.prompt is iOS-only; Android fallback is an Alert.alert info message
-- AddItemModal and SearchModal each call usePackData() internally — GearScreen doesn't thread the mutations down as props
+**How to apply:** Any new gear mutation must call `mutate()`; display-only changes (filters, UI state) never touch `mutate()`.
 
-## Still Outstanding (future phases)
+## categoryOrder is runtime, not static
 
-- List name tap-to-edit UI on the hero
-- Undo/Redo history stack
-- Locker (multi-list save/load via AsyncStorage)
-- Category reorder (long-press drag)
-- Native share sheet
-- Filter modes (Locations / Photos)
-- Photo flows (camera/library)
+- `CATEGORY_ORDER` constant is still exported from context as a seed/fallback.
+- At runtime, `categoryOrder` comes from `usePackData()` — it is stored in AsyncStorage (`twm-catorder`) and can be reordered by the user.
+- All components (index.tsx, AddItemModal, SearchModal) use `categoryOrder` from hook, NOT the static constant.
 
-**Why:** Systematic inventory-driven v3 migration. Build addItem/deleteItem/renameItem/resetAll into context first, then each feature layer on top.
+**Why:** Required for Locker (each saved list can have different category order) and category reorder feature.
+
+## Modal structure
+
+- `AddItemModal`: pageSheet; uses `categoryOrder` from `usePackData()`; has "New Category" pill → `Alert.prompt` → `addCategory()` → auto-select.
+- `SearchModal`: pageSheet; uses `categoryOrder` from `usePackData()` for iteration order.
+- `LockerModal`: pageSheet; uses `usePackData()` internally for all locker ops; no props except `visible`/`onClose`.
+- Summary: pageSheet Modal inside `index.tsx` (not a route).
+
+## Category long-press management
+
+`handleCatLongPress(catName)` in index.tsx shows an Alert with:
+- Rename (iOS Alert.prompt only)
+- Delete (with item count confirmation)
+- ▲ Move Up / ▼ Move Down (only shown when possible, via spread conditional options)
+
+Uses `reorderCategories(newOrder)` for move — creates a copy of `categoryOrder` and swaps adjacent elements.
+
+**Why:** v3 uses complex Pointer drag; native minimum viable parity = alert-based. Proper DnD is a follow-up.
+
+## Native Share
+
+`Share.share({ message, title })` with a formatted text list of packed items + total weight. No API server dependency.
+
+**Why:** v3's Share requires API server + Clerk to generate a URL. Text-based share works offline and is simpler.
+
+## Disabled NavBox actions
+
+`disabledActions = useMemo(() => new Set([!canUndo && 'undo', !canRedo && 'redo'].filter(Boolean)), [canUndo, canRedo])` passed as `disabledSet` to `BottomBox`. NavBox applies `opacity: 0.30` and blocks `onPress` when disabled.
+
+## Hero list name tap-to-edit
+
+`ListSummaryHero` accepts `onNameTap?` prop. When provided, the name text is wrapped in a `TouchableOpacity` with a pencil icon hint. Uses `Alert.prompt` on iOS; graceful fallback on Android.
+
+## AnimatedSwipeRow
+
+Module-level `_closeOpenSwipe` ref ensures only one swipe row is open at a time. Left swipe reveals Rename + Delete actions.

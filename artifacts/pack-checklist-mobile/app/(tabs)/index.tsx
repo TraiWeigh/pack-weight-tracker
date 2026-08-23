@@ -39,11 +39,12 @@
  *   CSS filter: drop-shadow on wedge → SVG polygon overlay simulating clip-path
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
   PanResponder,
+  Share,
   View,
   Text,
   SectionList,
@@ -58,11 +59,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext';
+import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext'; // CATEGORY_ORDER kept for seed reference
 import { calcTotalOz, calcWeights, ozToLbs } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
-import { AddItemModal } from '@/components/AddItemModal';
+import { AddDeck } from '@/components/AddDeck';
 import { SearchModal } from '@/components/SearchModal';
+import { LockerModal } from '@/components/LockerModal';
 
 // ─── v3 design constants (exact values from MobileFunctionalV3.tsx) ──────────
 
@@ -83,8 +85,8 @@ const FILTER_H       = 50;   // FILTER_BAR_H  line 233
 const NAV_H          = 58;   // NAV_H  line 228
 const APPBAR_H       = 52;   // AppBar content height
 const CHECKBOX_HIT   = 44;   // checkbox hit-target width (v3 line 5036)
-const SWIPE_BTN_W    = 80;   // each swipe action button (Rename / Delete)
-const SWIPE_REVEAL   = 160;  // total reveal = 2 × SWIPE_BTN_W
+const SWIPE_BTN_W    = 80;   // Delete action button width (v3: SWIPE_ACTION_W = 88px)
+const SWIPE_REVEAL   = 80;   // total reveal = 1 × SWIPE_BTN_W — Delete only, matches v3
 
 // ─── Box Groups (4 total, matching v3 exactly) ────────────────────────────────
 // Source: MobileFunctionalV3.tsx lines 1227–1281
@@ -199,6 +201,7 @@ function ListSummaryHero({
   selectedCount,
   allExpanded,
   onExpandToggle,
+  onNameTap,
 }: {
   listName: string;
   totalItems: number;
@@ -206,6 +209,7 @@ function ListSummaryHero({
   selectedCount: number;
   allExpanded: boolean;
   onExpandToggle: () => void;
+  onNameTap?: () => void;
 }) {
   return (
     <View style={styles.hero}>
@@ -216,10 +220,20 @@ function ListSummaryHero({
 
       {/* Content column: list name + count row with expand/collapse chevron */}
       <View style={styles.heroContent}>
-        {/* List name: 15.5pt/700/white (v3 line 4390) */}
-        <Text style={styles.heroListName} numberOfLines={1}>
-          {listName}
-        </Text>
+        {/* List name: tappable for rename (v3 line 4390) */}
+        <TouchableOpacity
+          onPress={onNameTap}
+          activeOpacity={onNameTap ? 0.65 : 1}
+          hitSlop={{ top: 6, bottom: 6, left: 0, right: 0 }}
+          style={styles.heroListNameRow}
+        >
+          <Text style={styles.heroListName} numberOfLines={1}>
+            {listName}
+          </Text>
+          {onNameTap && (
+            <Ionicons name="pencil-outline" size={11} color="rgba(255,255,255,0.45)" />
+          )}
+        </TouchableOpacity>
         {/* Count row: 40pt big number + "items" + chevron (v3 lines 4401–4436) */}
         <View style={styles.heroCountRow}>
           <Text style={styles.heroCount}>{totalItems}</Text>
@@ -295,6 +309,7 @@ function SectionHeader({
   checkedWeightOz,
   isOpen,
   onToggle,
+  onLongPress,
 }: {
   title: string;
   catIndex: number;
@@ -303,6 +318,7 @@ function SectionHeader({
   checkedWeightOz: number;
   isOpen: boolean;
   onToggle: () => void;
+  onLongPress?: () => void;
 }) {
   const theme = getCategoryTheme(title, catIndex);
   const weightOz = checkedWeightOz.toFixed(2);
@@ -310,6 +326,8 @@ function SectionHeader({
   return (
     <TouchableOpacity
       onPress={onToggle}
+      onLongPress={onLongPress}
+      delayLongPress={500}
       activeOpacity={0.78}
       style={styles.sectionCardTouchable}
       testID={`cat-header-${title}`}
@@ -448,15 +466,17 @@ function ItemRow({
 function NavBox({
   cell,
   onAction,
+  disabled,
 }: {
   cell: BoxCell;
   onAction: (action: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <TouchableOpacity
-      style={styles.navBox}
-      onPress={() => onAction(cell.action)}
-      activeOpacity={0.65}
+      style={[styles.navBox, disabled && { opacity: 0.30 }]}
+      onPress={() => { if (!disabled) onAction(cell.action); }}
+      activeOpacity={disabled ? 1 : 0.65}
       testID={`nav-${cell.label.toLowerCase().replace(/\s/g, '-')}`}
     >
       <Ionicons name={cell.icon as any} size={21} color={NAV_INACTIVE} />
@@ -465,21 +485,57 @@ function NavBox({
   );
 }
 
+// ─── BottomBox ────────────────────────────────────────────────────────────────
+// 4-group sliding bar matching v3 BoxGroupBar exactly.
+// Supports: tap Next/Back chevrons + horizontal swipe on the bar itself.
+// v3 GROUP_SWIPE_THRESHOLD = 44px; wraps continuously.
+
 function BottomBox({
   groupIdx,
   onAction,
   bottomPad,
+  disabledSet,
 }: {
   groupIdx: number;
   onAction: (action: string) => void;
   bottomPad: number;
+  disabledSet?: Set<string>;
 }) {
   const cells = BOX_GROUPS[groupIdx];
+
+  // Keep a ref so PanResponder (created once) always calls the latest onAction
+  const onActionRef = useRef(onAction);
+  onActionRef.current = onAction;
+
+  // Horizontal swipe on the bar cycles groups — v3 GROUP_SWIPE_THRESHOLD = 44px
+  const pan = useRef(
+    PanResponder.create({
+      // Only claim clearly horizontal gestures; let vertical pass through
+      onMoveShouldSetPanResponder: (_, g) =>
+        Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -44) {
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onActionRef.current('next');
+        } else if (g.dx > 44) {
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onActionRef.current('back');
+        }
+      },
+      onPanResponderTerminate: () => {},
+    })
+  ).current;
+
   return (
-    <View style={[styles.bottomBox, { paddingBottom: bottomPad }]}>
+    <View style={[styles.bottomBox, { paddingBottom: bottomPad }]} {...pan.panHandlers}>
       <View style={styles.bottomRow}>
         {cells.map((cell) => (
-          <NavBox key={`g${groupIdx}-${cell.action}`} cell={cell} onAction={onAction} />
+          <NavBox
+            key={`g${groupIdx}-${cell.action}`}
+            cell={cell}
+            onAction={onAction}
+            disabled={disabledSet?.has(cell.action)}
+          />
         ))}
       </View>
     </View>
@@ -537,20 +593,19 @@ function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalO
 let _closeOpenSwipe: (() => void) | null = null;
 
 // ─── AnimatedSwipeRow ─────────────────────────────────────────────────────────
-// v3 swipe-reveal equivalent: left-swipe exposes Rename + Delete actions.
+// v3 SwipeDeleteRow equivalent: left-swipe from right edge reveals Delete only.
+// v3 source: MobileFunctionalV3.tsx lines 796–940 — Delete only, no Rename.
 // Pure Animated + PanResponder — no additional gesture-handler dependencies.
 
 function AnimatedSwipeRow({
   item,
   category,
   onToggle,
-  onRename,
   onDelete,
 }: {
   item: GearItem;
   category: string;
   onToggle: (cat: string, id: string) => void;
-  onRename: (item: GearItem, cat: string) => void;
   onDelete: (item: GearItem, cat: string) => void;
 }) {
   const tx           = useRef(new Animated.Value(0)).current;
@@ -622,18 +677,8 @@ function AnimatedSwipeRow({
 
   return (
     <View style={{ overflow: 'hidden' }}>
-      {/* Action buttons — visible behind the sliding row */}
+      {/* Delete action — v3: swipe reveals Delete only (SwipeDeleteRow, no rename) */}
       <View style={[StyleSheet.absoluteFillObject, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
-        <TouchableOpacity
-          style={[styles.swipeActionBtn, { backgroundColor: '#3B82F6' }]}
-          onPress={() => {
-            closeRef.current();
-            onRename(item, category);
-          }}
-        >
-          <Ionicons name="pencil-outline" size={18} color="#fff" />
-          <Text style={styles.swipeActionLabel}>Rename</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.swipeActionBtn, { backgroundColor: '#EF4444' }]}
           onPress={() => {
@@ -661,8 +706,12 @@ function AnimatedSwipeRow({
 export default function GearScreen() {
   const insets = useSafeAreaInsets();
   const {
-    data, isLoading, toggleItem,
-    deleteItem, renameItem, resetAll, listName,
+    data, isLoading, categoryOrder,
+    toggleItem, deleteItem, resetAll,
+    listName, setListName,
+    canUndo, canRedo, undo, redo,
+    addCategory, deleteCategory, renameCategory, reorderCategories,
+    saveToLocker, refreshLockerEntries,
   } = usePackData();
 
   // Category expand/collapse — single-open model matching v3 (openCatName = one open cat)
@@ -682,10 +731,22 @@ export default function GearScreen() {
   // Search sheet — v3 "Search deck" ported to a pageSheet modal
   const [showSearch, setShowSearch] = useState(false);
 
+  // Locker sheet — multi-list save/load (v3 Locker)
+  const [showLocker, setShowLocker] = useState(false);
+
+  // Toast — lightweight in-app feedback matching v3's showToast()
+  const [toastMsg, setToastMsg] = useState('');
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showToast = useCallback((msg: string) => {
+    setToastMsg(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToastMsg(''), 2200);
+  }, []);
+
   // ── Data computations ───────────────────────────────────────────────────────
 
   // allSections: full stats for all non-empty categories (used for header display)
-  const allSections: Section[] = CATEGORY_ORDER.map((cat, catIndex) => {
+  const allSections: Section[] = categoryOrder.map((cat, catIndex) => {
     const items = data[cat] || [];
     const populated = items.filter((i) => i.sub || i.desc);
     const checkedWeightOz = populated
@@ -759,26 +820,6 @@ export default function GearScreen() {
     );
   }, [resetAll]);
 
-  // Item rename — v3 rename dialog; uses Alert.prompt on iOS
-  const handleItemRename = useCallback((item: GearItem, cat: string) => {
-    if (Platform.OS === 'ios') {
-      Alert.prompt(
-        'Rename Item',
-        undefined,
-        (text) => {
-          const newName = text?.trim();
-          if (newName && newName !== (item.desc || item.sub)) {
-            renameItem(cat, item.id, newName);
-          }
-        },
-        'plain-text',
-        item.desc || item.sub,
-      );
-    } else {
-      Alert.alert('Rename', `Item: "${item.desc || item.sub}"\n\nRename requires iOS.`);
-    }
-  }, [renameItem]);
-
   // Item delete — v3: confirmation before removing
   const handleItemDelete = useCallback((item: GearItem, cat: string) => {
     Alert.alert(
@@ -795,17 +836,102 @@ export default function GearScreen() {
     );
   }, [deleteItem]);
 
-  // Box group action dispatcher
-  // Wired: next, back, summary, add, search, reset
-  // Non-functional (visual parity only): locker, undo, redo,
-  //   camera, photos, preview, save, share, more
+  // ── Category long-press: Rename / Delete / Move Up / Move Down ──────────────
+  const handleCatLongPress = useCallback((catName: string) => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const idx = categoryOrder.indexOf(catName);
+    const catItems = data[catName] || [];
+    Alert.alert(
+      catName,
+      catItems.length > 0 ? `${catItems.length} item${catItems.length !== 1 ? 's' : ''}` : 'Empty category',
+      [
+        {
+          text: 'Rename',
+          onPress: () => {
+            if (Platform.OS === 'ios') {
+              Alert.prompt('Rename Category', undefined, (text) => {
+                const newName = text?.trim();
+                if (newName) renameCategory(catName, newName);
+              }, 'plain-text', catName);
+            } else {
+              Alert.alert('Rename', 'Renaming categories is available on iOS.');
+            }
+          },
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () =>
+            Alert.alert(
+              'Delete Category',
+              catItems.length > 0
+                ? `Remove "${catName}" and its ${catItems.length} item${catItems.length !== 1 ? 's' : ''}?`
+                : `Remove the empty category "${catName}"?`,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(catName) },
+              ],
+            ),
+        },
+        ...(idx > 0 ? [{
+          text: '▲ Move Up',
+          onPress: () => {
+            const newOrder = [...categoryOrder];
+            [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]];
+            reorderCategories(newOrder);
+          },
+        }] : []),
+        ...(idx < categoryOrder.length - 1 ? [{
+          text: '▼ Move Down',
+          onPress: () => {
+            const newOrder = [...categoryOrder];
+            [newOrder[idx + 1], newOrder[idx]] = [newOrder[idx], newOrder[idx + 1]];
+            reorderCategories(newOrder);
+          },
+        }] : []),
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    );
+  }, [categoryOrder, data, renameCategory, deleteCategory, reorderCategories]);
+
+  // ── Hero list-name tap-to-edit ────────────────────────────────────────────
+  const handleHeroNameTap = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      Alert.prompt(
+        'List Name',
+        undefined,
+        (text) => {
+          const newName = text?.trim();
+          if (newName) setListName(newName);
+        },
+        'plain-text',
+        listName,
+      );
+    } else {
+      Alert.alert('List Name', 'Tap-to-rename is available on iOS.');
+    }
+  }, [listName, setListName]);
+
+  // ── Disabled NavBox actions ───────────────────────────────────────────────
+  const disabledActions = useMemo<Set<string>>(() => {
+    const s = new Set<string>();
+    if (!canUndo) s.add('undo');
+    if (!canRedo) s.add('redo');
+    return s;
+  }, [canUndo, canRedo]);
+
+  // ── Box group action dispatcher ───────────────────────────────────────────
+  // Wired: next, back, summary, add, search, reset, locker, undo, redo, save, share
+  // Non-functional: camera, photos, preview, more
   const handleBoxAction = useCallback(
     (action: string) => {
       switch (action) {
         case 'next':
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           setGroupIdx((g) => (g + 1) % NUM_GROUPS);
           break;
         case 'back':
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           setGroupIdx((g) => (g - 1 + NUM_GROUPS) % NUM_GROUPS);
           break;
         case 'summary':
@@ -819,6 +945,43 @@ export default function GearScreen() {
           if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           setShowSearch(true);
           break;
+        case 'locker':
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          refreshLockerEntries();
+          setShowLocker(true);
+          break;
+        case 'undo':
+          undo();
+          break;
+        case 'redo':
+          redo();
+          break;
+        case 'save':
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          saveToLocker();
+          break;
+        case 'share': {
+          const packedLines = categoryOrder
+            .flatMap(cat =>
+              (data[cat] || [])
+                .filter(i => i.checked)
+                .map(i => `• ${i.desc || i.sub}${i.qty > 1 ? ` ×${i.qty}` : ''}`)
+            );
+          const totalOz = categoryOrder
+            .flatMap(cat => (data[cat] || []).filter(i => i.checked))
+            .reduce((sum, i) => sum + calcTotalOz(i.weightOz, i.qty), 0);
+          const lbs = ozToLbs(totalOz).toFixed(2);
+          const message = [
+            listName,
+            '─────────────────',
+            packedLines.length > 0 ? packedLines.join('\n') : '(No items packed yet)',
+            '',
+            `Packed: ${lbs} lbs (${totalOz.toFixed(1)} oz)`,
+            'via TrailWeigh',
+          ].join('\n');
+          Share.share({ message, title: listName });
+          break;
+        }
         case 'reset':
           handleReset();
           break;
@@ -826,7 +989,7 @@ export default function GearScreen() {
           break;
       }
     },
-    [handleReset],
+    [handleReset, undo, redo, saveToLocker, refreshLockerEntries, listName, categoryOrder, data],
   );
 
   // Bottom padding: tab bar is hidden, only safe-area inset needed
@@ -835,7 +998,7 @@ export default function GearScreen() {
   // Summary modal computations — same logic as summary.tsx, computed from live PackData
   const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } =
     calcWeights(data);
-  const summaryTotals = CATEGORY_ORDER
+  const summaryTotals = categoryOrder
     .map(cat => {
       const oz = (data[cat] || [])
         .filter(i => i.checked)
@@ -866,6 +1029,7 @@ export default function GearScreen() {
         selectedCount={selectedCount}
         allExpanded={allExpanded}
         onExpandToggle={handleExpandAll}
+        onNameTap={handleHeroNameTap}
       />
       <FilterControl />
 
@@ -878,7 +1042,6 @@ export default function GearScreen() {
             item={item}
             category={(section as Section).title}
             onToggle={toggleItem}
-            onRename={handleItemRename}
             onDelete={handleItemDelete}
           />
         )}
@@ -895,6 +1058,7 @@ export default function GearScreen() {
               checkedWeightOz={full.checkedWeightOz}
               isOpen={allExpanded || openCatName === s.title}
               onToggle={() => handleCatToggle(s.title)}
+              onLongPress={() => handleCatLongPress(s.title)}
             />
           );
         }}
@@ -909,6 +1073,7 @@ export default function GearScreen() {
         groupIdx={groupIdx}
         onAction={handleBoxAction}
         bottomPad={bottomPad}
+        disabledSet={disabledActions}
       />
 
       {/* ── Summary sheet ─────────────────────────────────────────────── */}
@@ -988,11 +1153,17 @@ export default function GearScreen() {
         </View>
       </Modal>
 
-      {/* ── Add Item sheet (v3 Add deck) ── */}
-      <AddItemModal
+      {/* ── Locker sheet — multi-list save/load ── */}
+      <LockerModal
+        visible={showLocker}
+        onClose={() => setShowLocker(false)}
+      />
+
+      {/* ── Add deck — v3 4-card panel (Add Item | Add Category | Scan/Import | New List) ── */}
+      <AddDeck
         visible={showAdd}
-        defaultCategory={openCatName || CATEGORY_ORDER[0]}
         onClose={() => setShowAdd(false)}
+        showToast={showToast}
       />
 
       {/* ── Search sheet (v3 Search deck) ── */}
@@ -1000,6 +1171,13 @@ export default function GearScreen() {
         visible={showSearch}
         onClose={() => setShowSearch(false)}
       />
+
+      {/* ── Toast overlay (matches v3 showToast) ── */}
+      {!!toastMsg && (
+        <View style={styles.toast} pointerEvents="none">
+          <Text style={styles.toastText}>{toastMsg}</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -1080,11 +1258,17 @@ const styles = StyleSheet.create({
     flex: 1,
     gap:  6,
   },
+  heroListNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   heroListName: {
     fontSize:   15.5,
     fontFamily: 'PlusJakartaSans_700Bold',
     color:      '#FFFFFF',
     lineHeight: 19,
+    flexShrink: 1,
   },
   // Count row: big number + "items" suffix + chevron
   heroCountRow: {
@@ -1476,5 +1660,29 @@ const styles = StyleSheet.create({
     fontFamily: 'PlusJakartaSans_600SemiBold',
     color: '#FFFFFF',
     letterSpacing: 0.3,
+  },
+
+  // ── Toast overlay (v3 showToast equivalent) ──────────────────────────────
+  toast: {
+    position: 'absolute',
+    bottom: 90,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(26,41,32,0.92)',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    zIndex: 999,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  toastText: {
+    color: '#FFFFFF',
+    fontSize: 13.5,
+    fontWeight: '500',
   },
 });

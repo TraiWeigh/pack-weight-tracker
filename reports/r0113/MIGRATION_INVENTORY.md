@@ -1,130 +1,218 @@
-# R0113 — v3-to-Native Migration: Phase 1 Inventory
-
-**Date:** 2026-08-22  
-**Session:** Systematic migration of MobileFunctionalV3.tsx features into the Expo/React Native app
-
----
-
-## What Was Built This Session
-
-### 1. PackDataContext — Full Mutation Set
-**File:** `artifacts/pack-checklist-mobile/context/PackDataContext.tsx`  
-**Added beyond original `toggleItem`:**
-
-| Export | Description |
-|---|---|
-| `listName: string` | User-editable list name, persisted to AsyncStorage (`twm-listname`) |
-| `setListName(name)` | Saves name to AsyncStorage |
-| `addItem(cat, desc, weightOz, qty)` | Appends item to category |
-| `deleteItem(cat, id)` | Removes item by id |
-| `renameItem(cat, id, newDesc)` | Updates item desc in place |
-| `updateItem(cat, id, patch)` | Partial update (weightOz, qty, expendable, sub) |
-| `moveItem(fromCat, toCat, id)` | Moves item across categories |
-| `resetAll()` | Clears all checked states across all categories |
-
-Storage architecture:
-- `pack-checklist-mobile-v1` — pack data (unchanged key)
-- `twm-listname` — list name (new key)
+# TrailWeigh Native — Migration Inventory
+**v3 source:** `artifacts/pack-checklist/src/pages/MobileFunctionalV3.tsx`  
+**Native target:** `artifacts/pack-checklist-mobile/`  
+**Last updated:** 2026-08-23 (R0114 complete)
 
 ---
 
-### 2. AddItemModal
-**File:** `artifacts/pack-checklist-mobile/components/AddItemModal.tsx`  
-**v3 reference:** Add deck accordion (items / Camera / Photos)  
-**Native implementation:** `pageSheet` Modal
-
-Features:
-- **Item name** TextInput (autofocused, 400ms delay for sheet animation)
-- **Weight (oz)** numeric TextInput with oz label
-- **Quantity** 1-20 horizontal pill picker with haptic selection
-- **Category** horizontal scrolling pill picker (all CATEGORY_ORDER options)
-- **Add to List** — saves and closes
-- **Add & add another** — saves and resets form (name/weight) while keeping category+qty
-- Pre-selects the currently open category (`defaultCategory` prop)
+## Status Legend
+| Symbol | Meaning |
+|--------|---------|
+| ✅ | Ported and wired |
+| 🔶 | Partial / degraded parity (noted) |
+| ❌ | Not yet started |
+| 🚫 | Out of scope (documented decision) |
 
 ---
 
-### 3. SearchModal
-**File:** `artifacts/pack-checklist-mobile/components/SearchModal.tsx`  
-**v3 reference:** Search deck text filter with interactive results  
-**Native implementation:** `pageSheet` Modal
+## Data Layer
 
-Features:
-- Autofocused TextInput with clearButtonMode
-- Real-time filter across all categories (matches `item.desc || item.sub`)
-- Results grouped by category (SectionList with section headers)
-- Result count shown below input
-- Each result row: checkbox state + name + weight in oz × qty
-- Tap result row: toggles checked state (calls `toggleItem`)
-- Empty query: shows "Type to search" hint
-- No results: shows "No items match" message
-
----
-
-### 4. AnimatedSwipeRow — Swipe-to-Reveal
-**File:** `artifacts/pack-checklist-mobile/app/(tabs)/index.tsx` (module-level component)  
-**v3 reference:** Custom swipe-reveal gesture on item rows  
-**Native implementation:** Pure `Animated` + `PanResponder` (no new deps)
-
-Features:
-- Left-swipe reveals **Rename** (blue, #3B82F6) + **Delete** (red, #EF4444) buttons
-- Each button: 80px wide × full row height = 160px total reveal
-- Swipe threshold: 50px to commit open or close
-- Module-level `_closeOpenSwipe` ref ensures only one row can be open at a time
-- Tapping Rename triggers Alert.prompt (iOS) or Alert.alert (Android fallback)
-- Tapping Delete triggers Alert.alert confirmation before deleteItem
+| Feature | Status | Notes |
+|---------|--------|-------|
+| GearItem model (sub/desc/weightOz/qty/checked/expendable) | ✅ | `PackDataContext.tsx` |
+| PackState by category | ✅ | AsyncStorage key `pack-checklist-mobile-v1` |
+| categoryOrder (runtime, not static) | ✅ | `twm-catorder`; passed from context |
+| listName persistence | ✅ | `twm-listname` |
+| Seed / initial data | ✅ | `data/initialData.ts` |
+| EXCLUSIVE_GROUPS (one Tent/one Backpack active) | ✅ | Enforced in `toggleItem` in context |
+| Undo/Redo (30-step history on gear mutations) | ✅ | `mutate()` pattern; `undo`/`redo` exported |
+| toggleItem bypasses undo (v3 parity) | ✅ | Matches v3 design decision |
+| listName bypasses undo (v3 parity) | ✅ | User metadata, not pack data |
+| Locker — save/load multiple lists | ✅ | `twm-locker-v1`; `NativeLockerEntry[]` |
+| Locker — active entry tracking | ✅ | `twm-active-locker-id` |
+| Locker — save, saveAs, load, delete, rename, new list | ✅ | All in context + LockerModal |
 
 ---
 
-### 5. GearScreen Mutations Wired
+## AppBar
 
-| Feature | v3 status | Native status AFTER this session |
-|---|---|---|
-| Add Item | Bottom deck accordion | ✅ AddItemModal (pageSheet) |
-| Search | Text filter deck | ✅ SearchModal (pageSheet) |
-| Item rename | Pre-filled dialog | ✅ Alert.prompt (iOS) / Alert fallback |
-| Item delete | Confirmation + remove | ✅ Alert confirmation + deleteItem |
-| Reset confirmation | Alert before clearing | ✅ Alert.alert confirmation + resetAll |
-| List name from context | Shown in hero | ✅ listName from PackDataContext |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Hamburger icon | ✅ | Visual only (no drawer) |
+| TrailWeigh logo (CheckSquare + wordmark) | ✅ | `checkbox-outline` + `PlusJakartaSans_600` |
+| 6 decorative shortcut icons | ✅ | Non-functional (v3 aria-hidden) |
+| Safe-area paddingTop | ✅ | `useSafeAreaInsets()` |
 
 ---
 
-## Outstanding v3 Features (Future Phases)
+## ListSummaryHero
 
-| Feature | v3 behavior | Native status |
-|---|---|---|
-| List name editing | Tap to rename | ❌ No tap-to-edit UI on hero |
-| Undo / Redo | 30-step history | ❌ No history stack |
-| Locker | Multi-list save/load | ❌ Not started |
-| Category reorder | Long-press drag | ❌ Not started |
-| Share | Native share sheet | ❌ Not started |
-| Filter modes | Locations / Photos | ❌ Data model not ready |
-| Photo flows | Camera/library assignment | ❌ Deferred |
-| Category add/delete | Manage category list | ❌ Not started |
-| Import / Scan | PDF or barcode | ❌ Not started |
-
----
-
-## Key v3 Constants (for fidelity reference)
-
-| Constant | Value | Usage |
-|---|---|---|
-| `SUMMARY_BG` | `#2A5740` | Hero background, nav active |
-| `CB_CHECKED` | `#4E7D5C` | Checked checkbox fill |
-| `PAGE_BG` | `#F2EDE4` | Main background |
-| `SWIPE_BTN_W` | 80 | Each action button width |
-| `SWIPE_REVEAL` | 160 | Total swipe reveal (2×80) |
-| `NAV_H` | 58 | Bottom nav height |
-| `FILTER_H` | 50 | Filter bar height |
-| `APPBAR_H` | 52 | App bar content height |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Luggage icon tile (66×66) | ✅ | |
+| List name display | ✅ | |
+| List name tap-to-edit | ✅ | `Alert.prompt` (iOS); graceful fallback Android |
+| Pencil hint icon beside name | ✅ | `pencil-outline` at 11pt opacity 0.45 |
+| Total item count + "items" label | ✅ | |
+| Expand/collapse all chevron | ✅ | |
+| Category count + ✓ selected count | ✅ | |
+| SUMMARY_BG (#2A5740) | ✅ | |
 
 ---
 
-## Architecture Decisions
+## Filter Bar
 
-- **AddItemModal** calls `addItem` from `usePackData()` internally — GearScreen doesn't need to pass it
-- **SearchModal** calls `toggleItem` from `usePackData()` internally — no prop threading
-- **AnimatedSwipeRow** is module-level (not inside GearScreen) so `_closeOpenSwipe` module var works correctly
-- **PanResponder** approach chosen over ReanimatedSwipeable to avoid API surface uncertainty with RNGH v2.28
-- **closeFnRef** pattern: stable ref created once, captures stable `Animated.Value` and `isOpenRef` — no stale closure risk inside PanResponder
-- **Alert.prompt** is iOS-only; Android gets a descriptive Alert.alert fallback until a custom dialog is built
+| Feature | Status | Notes |
+|---------|--------|-------|
+| "Filter: Category" static bar | ✅ | Static visual; full filter out of scope for N004 |
+
+---
+
+## Category (SectionHeader) — wedge tile rows
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| 64pt height row | ✅ | `CAT_HEADER_H = 64` |
+| Coloured wedge tile (72pt, angled right edge) | ✅ | SVG Polygon overlay approximation |
+| Category icon from `getCategoryTheme` | ✅ | `lib/categoryTheme.ts` |
+| Category name + item count + selected count | ✅ | |
+| Checked weight in oz | ✅ | |
+| Tap to expand/collapse | ✅ | Single-open accordion |
+| Expand-all / collapse-all from hero chevron | ✅ | |
+| Long-press for category management | ✅ | Alert: Rename / Delete / Move Up / Move Down |
+| Category rename (iOS) | ✅ | `Alert.prompt` |
+| Category delete (with confirmation) | ✅ | `Alert.alert` |
+| Category reorder (Move Up / Move Down) | 🔶 | Alert-based; native drag-to-reorder not yet |
+| Sticky headers | ✅ | `stickySectionHeadersEnabled` |
+
+---
+
+## ItemRow
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| 44pt+ min height | ✅ | |
+| Rounded-square checkbox | ✅ | `CB_CHECKED = #4E7D5C` |
+| Item name display | ✅ | `item.desc \|\| item.sub` |
+| Weight in oz | ✅ | Calculated total via `calcTotalOz` |
+| Tap to toggle check (with haptic) | ✅ | |
+| Swipe-left to reveal Rename + Delete | ✅ | `AnimatedSwipeRow` / `PanResponder` |
+| Item rename (iOS Alert.prompt) | ✅ | |
+| Item delete (with confirmation) | ✅ | |
+
+---
+
+## Add Item Modal
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| pageSheet modal | ✅ | |
+| Item name TextInput | ✅ | Autofocus on open |
+| Weight (oz) numeric input | ✅ | |
+| Quantity picker (1–20 pill scroll) | ✅ | |
+| Category pill picker | ✅ | Uses runtime `categoryOrder` from context |
+| "New Category" pill | ✅ | `Alert.prompt` → `addCategory` → auto-select |
+| Save and close | ✅ | |
+| Save and add another | ✅ | Resets name/weight, keeps category |
+
+---
+
+## Search Modal
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| pageSheet modal | ✅ | |
+| Autofocused text filter | ✅ | |
+| Results grouped by category | ✅ | Uses runtime `categoryOrder` |
+| Interactive results (toggle checked) | ✅ | Haptic + toggleItem |
+| Empty query → prompt state | ✅ | |
+| Result count display | ✅ | |
+
+---
+
+## Locker Modal
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| pageSheet modal | ✅ | |
+| Save button (update active entry) | ✅ | |
+| Save As button (new named copy, iOS prompt) | ✅ | |
+| New List button (blank slate, clears history) | ✅ | |
+| Saved list rows (name + date + item count) | ✅ | |
+| Load a saved list | ✅ | Confirmation alert |
+| Delete a saved list | ✅ | Swipe or long-press → confirm |
+| Rename a saved list (iOS) | ✅ | Long-press → `Alert.prompt` |
+| Active entry badge | ✅ | Highlighted row |
+| Saving indicator | ✅ | `ActivityIndicator` |
+
+---
+
+## Summary Modal
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| pageSheet modal | ✅ | |
+| Grand Total weight | ✅ | |
+| Base Weight / Clothing Worn / Dog Pack / Expendables | ✅ | |
+| Weight breakdown by category (bar chart) | ✅ | `SummaryCatBar` |
+| lbs / oz / kg display | ✅ | |
+| Empty state | ✅ | |
+
+---
+
+## Bottom Box / NavBox Groups
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| 4 groups × 5 cells (NAV_H=58) | ✅ | |
+| Next / Back cycling | ✅ | |
+| Summary → opens Summary modal | ✅ | |
+| Add → opens Add Item modal | ✅ | |
+| Search → opens Search modal | ✅ | |
+| Locker → opens Locker modal | ✅ | |
+| Undo / Redo | ✅ | Context undo()/redo(); disabled state dimmed |
+| Save → saves to Locker | ✅ | `saveToLocker()` + haptic |
+| Share → native text share | ✅ | `Share.share()` with packed item summary |
+| Reset → clear all checks | ✅ | Confirmation alert |
+| Disabled state visual dimming | ✅ | `disabledSet` + opacity 0.30 |
+| Camera / Photos / Preview / More | 🔶 | Visual parity; non-functional (out of N004 scope) |
+
+---
+
+## Navigation / Layout
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Tab bar hidden | ✅ | `tabBarStyle: { display:'none' }` in `_layout.tsx` |
+| Safe-area insets | ✅ | top (AppBar) + bottom (BottomBox pad) |
+| Summary as pageSheet Modal (not a route) | ✅ | |
+
+---
+
+## Out-of-Scope (Documented Decisions)
+
+| Feature | Decision |
+|---------|---------|
+| Native drag-to-reorder categories | Deferred; Alert Move Up/Down as minimum viable parity |
+| Background / theme in Locker entries | Not in native data model; web-only feature |
+| Camera / Photos / Location for items | Requires camera permission + data model changes; post-N004 |
+| URL-based Share (API server + Clerk) | No native equivalent; text-based Share.share() chosen |
+| Full filter (Location, Photo) | Requires photo/location data model; post-N004 |
+
+---
+
+## Files Modified / Created
+
+| File | Status | Description |
+|------|--------|-------------|
+| `context/PackDataContext.tsx` | Modified | Full rewrite — unified NativeState, mutate(), undo/redo, Locker |
+| `components/LockerModal.tsx` | Created | pageSheet Locker modal |
+| `components/AddItemModal.tsx` | Modified | Dynamic categoryOrder + New Category pill |
+| `components/SearchModal.tsx` | Modified | Dynamic categoryOrder |
+| `app/(tabs)/index.tsx` | Modified | All R0114 wiring — hero tap, cat long-press, undo/redo, locker, share |
+| `app/(tabs)/_layout.tsx` | Modified | Tab bar hidden |
+| `app/(tabs)/summary.tsx` | Untouched | Old standalone route (no longer reachable) |
+| `lib/weightUtils.ts` | Untouched | calcTotalOz, calcWeights, ozToLbs |
+| `lib/categoryTheme.ts` | Untouched | getCategoryTheme(name, index) |
+| `data/initialData.ts` | Untouched | Native seed data |
+| `app/_layout.tsx` | Untouched | GestureHandlerRootView, KeyboardProvider, PackDataProvider |

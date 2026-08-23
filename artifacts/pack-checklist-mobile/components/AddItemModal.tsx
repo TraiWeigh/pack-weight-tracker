@@ -26,7 +26,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { usePackData, CATEGORY_ORDER } from '@/context/PackDataContext';
+import { usePackData } from '@/context/PackDataContext';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -43,14 +43,14 @@ interface AddItemModalProps {
 
 export function AddItemModal({ visible, defaultCategory, onClose }: AddItemModalProps) {
   const insets = useSafeAreaInsets();
-  const { addItem } = usePackData();
+  const { addItem, addCategory, categoryOrder } = usePackData();
   const nameRef = useRef<TextInput>(null);
 
   // Form state
   const [name,     setName]     = useState('');
   const [weightStr, setWeightStr] = useState('');
   const [qty,      setQty]      = useState(1);
-  const [category, setCategory] = useState(defaultCategory || CATEGORY_ORDER[0]);
+  const [category, setCategory] = useState(defaultCategory || '');
 
   // Reset form when modal opens
   useEffect(() => {
@@ -58,7 +58,7 @@ export function AddItemModal({ visible, defaultCategory, onClose }: AddItemModal
       setName('');
       setWeightStr('');
       setQty(1);
-      setCategory(defaultCategory || CATEGORY_ORDER[0]);
+      setCategory(defaultCategory || categoryOrder[0] || '');
       // Autofocus name input after sheet animates in
       setTimeout(() => nameRef.current?.focus(), 400);
     }
@@ -197,7 +197,7 @@ export function AddItemModal({ visible, defaultCategory, onClose }: AddItemModal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.catRow}
             >
-              {CATEGORY_ORDER.map(cat => (
+              {categoryOrder.map(cat => (
                 <TouchableOpacity
                   key={cat}
                   style={[styles.catPill, category === cat && styles.catPillActive]}
@@ -214,6 +214,29 @@ export function AddItemModal({ visible, defaultCategory, onClose }: AddItemModal
                   </Text>
                 </TouchableOpacity>
               ))}
+              {/* New Category pill */}
+              <TouchableOpacity
+                style={styles.catPillNew}
+                onPress={() => {
+                  if (Platform.OS === 'ios') {
+                    Alert.prompt('New Category', 'Enter a name for the new category', (text) => {
+                      const name = text?.trim();
+                      if (!name) return;
+                      const ok = addCategory(name);
+                      if (ok) {
+                        setCategory(name);
+                      } else {
+                        Alert.alert('Already exists', `"${name}" is already in your list.`);
+                      }
+                    }, 'plain-text');
+                  } else {
+                    Alert.alert('New Category', 'Creating categories is available on iOS only.');
+                  }
+                }}
+              >
+                <Ionicons name="add" size={14} color={NAV_ACTIVE} />
+                <Text style={styles.catPillNewText}>New…</Text>
+              </TouchableOpacity>
             </ScrollView>
           </View>
 
@@ -369,6 +392,22 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
   catPillTextActive: { color: '#FFFFFF' },
+  catPillNew: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: NAV_ACTIVE,
+    backgroundColor: 'rgba(42,87,64,0.06)',
+  },
+  catPillNewText: {
+    fontSize: 13,
+    fontFamily: 'PlusJakartaSans_500Medium',
+    color: NAV_ACTIVE,
+  },
   actions: { gap: 10, marginTop: 4 },
   btnSave: {
     backgroundColor: NAV_ACTIVE,
