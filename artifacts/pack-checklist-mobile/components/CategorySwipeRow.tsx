@@ -31,13 +31,14 @@ let _closeCatSwipe: (() => void) | null = null;
 
 interface CategorySwipeRowProps {
   catName: string;
+  itemCount: number;            // Item 11: shown in delete confirmation body
   onRename: (catName: string) => void;
   onDelete: (catName: string) => void;
   children: React.ReactNode;
 }
 
 export function CategorySwipeRow({
-  catName, onRename, onDelete, children,
+  catName, itemCount, onRename, onDelete, children,
 }: CategorySwipeRowProps) {
   const tx          = useRef(new Animated.Value(0)).current;
   const isOpenRef   = useRef(false);
@@ -79,7 +80,7 @@ export function CategorySwipeRow({
       onPanResponderRelease: (_, g) => {
         tx.flattenOffset();
         isSwiping.current = false;
-        if (!isOpenRef.current && g.dx < -50) {
+        if (!isOpenRef.current && g.dx < -ACTION_W) { // Item 5: commit threshold = full button width (88px), not 50px
           // Close any previously open category swipe
           _closeCatSwipe?.();
           _closeCatSwipe = closeRef.current;
@@ -117,12 +118,14 @@ export function CategorySwipeRow({
   const handleDelete = () => {
     closeRef.current();
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Items 11 & 12: body includes item count (§13.3); button label = "Delete Category"
+    const n = itemCount;
     Alert.alert(
       'Delete Category',
-      `Remove "${catName}"? All items in this category will also be deleted.`,
+      `Remove "${catName}"? This will permanently delete ${n} item${n !== 1 ? 's' : ''} inside. This cannot be undone.`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => onDelete(catName) },
+        { text: 'Delete Category', style: 'destructive', onPress: () => onDelete(catName) },
       ],
     );
   };

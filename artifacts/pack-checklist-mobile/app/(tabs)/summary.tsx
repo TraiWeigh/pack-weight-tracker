@@ -1,9 +1,9 @@
 /**
- * summary.tsx — Weight Summary screen
+ * summary.tsx — Weight Summary screen (Expo tab)
  *
- * Task 1 (Batch I): Added Weight Distribution donut chart (react-native-svg)
- * to match v3 §12.2 Card 2 "MobileWeightDistribution" behaviour.
- * Each slice uses getCategoryTheme colour; legend rendered below the chart.
+ * Items 1 & 2 repair: WeightCard and CategoryBar now respect the active
+ * weightUnit setting from context. Previously both hardcoded lbs.
+ * DonutChart extracted to components/DonutChart.tsx (shared with GearScreen modal).
  */
 
 import React from 'react';
@@ -15,143 +15,56 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useColors } from '@/hooks/useColors';
 import { usePackData } from '@/context/PackDataContext';
-import { calcWeights, calcTotalOz, ozToLbs } from '@/lib/weightUtils';
+import { calcWeights, calcTotalOz, ozToLbs, formatDisplayWeight } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
+import { DonutChart, Slice } from '@/components/DonutChart';
 
-// ─── Donut chart helpers ───────────────────────────────────────────────────────
-
-function polarToCart(
-  cx: number, cy: number, r: number, angleDeg: number,
-): { x: number; y: number } {
-  const rad = ((angleDeg - 90) * Math.PI) / 180;
-  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-}
-
-/** Build an SVG donut-slice path string. Handles full-circle edge-case. */
-function slicePath(
-  cx: number, cy: number,
-  R: number, r: number,
-  startDeg: number, endDeg: number,
-): string {
-  const sweep = Math.min(endDeg - startDeg, 359.98); // clamp to avoid degenerate full-circle
-  const large = sweep > 180 ? 1 : 0;
-  const p1 = polarToCart(cx, cy, R, startDeg);
-  const p2 = polarToCart(cx, cy, R, startDeg + sweep);
-  const p3 = polarToCart(cx, cy, r, startDeg + sweep);
-  const p4 = polarToCart(cx, cy, r, startDeg);
-  return [
-    `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`,
-    `A ${R} ${R} 0 ${large} 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
-    `L ${p3.x.toFixed(2)} ${p3.y.toFixed(2)}`,
-    `A ${r} ${r} 0 ${large} 0 ${p4.x.toFixed(2)} ${p4.y.toFixed(2)}`,
-    'Z',
-  ].join(' ');
-}
-
-// ─── DonutChart ───────────────────────────────────────────────────────────────
-
-interface Slice {
-  name: string;
-  oz: number;
-  color: string;
-  pct: number; // 0-100
-}
-
-const CHART_SIZE = 180;
-const CX = CHART_SIZE / 2;   // 90
-const CY = CHART_SIZE / 2;   // 90
-const R_OUTER = 82;
-const R_INNER = 50;           // donut hole
-const GAP_DEG = 1.5;          // gap between slices (0.75 each side)
-
-function DonutChart({ slices }: { slices: Slice[] }) {
-  if (slices.length === 0) return null;
-
-  // build path + angle data
-  const paths: Array<{ d: string; color: string; name: string; pct: number }> = [];
-  let cursor = 0;
-
-  slices.forEach((slice) => {
-    const angleFull = (slice.pct / 100) * 360;
-    // if only one slice, skip gap so we don't get a gap on a 100% ring
-    const gapEach = slices.length === 1 ? 0 : GAP_DEG / 2;
-    const startAngle = cursor + gapEach;
-    const endAngle   = cursor + angleFull - gapEach;
-    if (endAngle > startAngle) {
-      paths.push({
-        d: slicePath(CX, CY, R_OUTER, R_INNER, startAngle, endAngle),
-        color: slice.color,
-        name: slice.name,
-        pct: slice.pct,
-      });
-    }
-    cursor += angleFull;
-  });
-
-  return (
-    <View style={chartStyles.root}>
-      {/* SVG donut */}
-      <View style={chartStyles.svgWrap}>
-        <Svg width={CHART_SIZE} height={CHART_SIZE} viewBox={`0 0 ${CHART_SIZE} ${CHART_SIZE}`}>
-          {paths.map((p, i) => (
-            <Path key={i} d={p.d} fill={p.color} />
-          ))}
-        </Svg>
-        {/* centre label */}
-        <View style={chartStyles.centre} pointerEvents="none">
-          <Text style={chartStyles.centreTitle}>Weight</Text>
-          <Text style={chartStyles.centreSub}>by category</Text>
-        </View>
-      </View>
-
-      {/* Legend */}
-      <View style={chartStyles.legend}>
-        {slices.map((slice) => (
-          <View key={slice.name} style={chartStyles.legendRow}>
-            <View style={[chartStyles.dot, { backgroundColor: slice.color }]} />
-            <Text style={chartStyles.legendName} numberOfLines={1}>{slice.name}</Text>
-            <Text style={chartStyles.legendPct}>{slice.pct.toFixed(0)}%</Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-const chartStyles = StyleSheet.create({
-  root: { alignItems: 'center', gap: 16, paddingVertical: 4 },
-  svgWrap: { width: CHART_SIZE, height: CHART_SIZE, alignItems: 'center', justifyContent: 'center' },
-  centre: { position: 'absolute', alignItems: 'center' },
-  centreTitle: { fontSize: 13, fontFamily: 'PlusJakartaSans_700Bold', color: '#1A2920', letterSpacing: -0.2 },
-  centreSub:   { fontSize: 10, fontFamily: 'PlusJakartaSans_400Regular', color: '#667270', marginTop: 1 },
-  legend: { width: '100%', gap: 6 },
-  legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
-  legendName: { flex: 1, fontSize: 13, fontFamily: 'PlusJakartaSans_500Medium', color: '#1A2920' },
-  legendPct:  { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#667270', minWidth: 36, textAlign: 'right' },
-});
-
-// ─── Weight Card ──────────────────────────────────────────────────────────────
+// ─── WeightCard ───────────────────────────────────────────────────────────────
 
 function WeightCard({
   label,
   oz,
   large,
   accent,
+  weightUnit,
 }: {
   label: string;
   oz: number;
   large?: boolean;
   accent?: boolean;
+  weightUnit: 'imperial' | 'metric';
 }) {
   const colors = useColors();
-  const lbs = ozToLbs(oz).toFixed(2);
-  const kg = ((oz * 28.3495) / 1000).toFixed(3);
+  const grams = oz * 28.3495;
+
+  // Primary display — respects active unit. Items 1 & 2: prior code ignored weightUnit.
+  // Self-check: imperial oz<16 → oz/oz; ≥16 → lbs/lbs. metric g<1000 → g/g; ≥1000 → kg/kg. MATCH.
+  let displayVal: string;
+  let displayUnitStr: string;
+  if (weightUnit === 'metric') {
+    if (grams >= 1000) {
+      displayVal = (grams / 1000).toFixed(3);
+      displayUnitStr = 'kg';
+    } else {
+      displayVal = Math.round(grams).toString();
+      displayUnitStr = 'g';
+    }
+  } else {
+    if (oz >= 16) {
+      displayVal = ozToLbs(oz).toFixed(2);
+      displayUnitStr = 'lbs';
+    } else {
+      displayVal = oz.toFixed(1);
+      displayUnitStr = 'oz';
+    }
+  }
+
+  // Sub-line: always show both reference values
+  const subLine = `${oz.toFixed(1)} oz · ${(grams / 1000).toFixed(3)} kg`;
 
   return (
     <View
@@ -178,7 +91,7 @@ function WeightCard({
             { color: accent ? colors.primaryForeground : colors.foreground },
           ]}
         >
-          {lbs}
+          {displayVal}
         </Text>
         <Text
           style={[
@@ -186,7 +99,7 @@ function WeightCard({
             { color: accent ? colors.primaryForeground : colors.mutedForeground },
           ]}
         >
-          lbs
+          {displayUnitStr}
         </Text>
       </View>
       <Text
@@ -198,26 +111,29 @@ function WeightCard({
           },
         ]}
       >
-        {oz.toFixed(1)} oz · {kg} kg
+        {subLine}
       </Text>
     </View>
   );
 }
 
-// ─── Category Bar ─────────────────────────────────────────────────────────────
+// ─── CategoryBar ─────────────────────────────────────────────────────────────
 
 function CategoryBar({
   name,
   oz,
   totalOz,
+  weightUnit,
 }: {
   name: string;
   oz: number;
   totalOz: number;
+  weightUnit: 'imperial' | 'metric';
 }) {
   const colors = useColors();
   const pct = totalOz > 0 ? (oz / totalOz) * 100 : 0;
-  const lbs = ozToLbs(oz).toFixed(2);
+  // Item 2: prior code hardcoded lbs. formatDisplayWeight respects active unit.
+  const displayWt = formatDisplayWeight(oz, weightUnit);
 
   return (
     <View style={styles.catBarRow}>
@@ -229,7 +145,7 @@ function CategoryBar({
           {name}
         </Text>
         <Text style={[styles.catBarWeight, { color: colors.mutedForeground }]}>
-          {lbs} lbs
+          {displayWt}
         </Text>
       </View>
       <View style={[styles.catTrack, { backgroundColor: colors.muted }]}>
@@ -249,7 +165,8 @@ function CategoryBar({
 export default function SummaryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { data, isLoading, categoryOrder } = usePackData();
+  // Items 1 & 2: add weightUnit to destructure so WeightCard + CategoryBar respect it
+  const { data, isLoading, categoryOrder, weightUnit } = usePackData();
 
   const isNativeTabs = isLiquidGlassAvailable();
   const bottomPad =
@@ -270,7 +187,7 @@ export default function SummaryScreen() {
   const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } =
     calcWeights(data);
 
-  // Use dynamic categoryOrder (not static CATEGORY_ORDER) so custom/renamed cats appear
+  // Use dynamic categoryOrder so custom/renamed cats appear
   const catTotals = categoryOrder.map((cat, idx) => {
     const items = data[cat] || [];
     const oz = items
@@ -321,25 +238,25 @@ export default function SummaryScreen() {
         {totalChecked} item{totalChecked !== 1 ? 's' : ''} packed
       </Text>
 
-      {/* Weight cards */}
-      <WeightCard label="Base Weight" oz={baseWeightOz} large accent />
+      {/* Weight cards — all pass weightUnit */}
+      <WeightCard label="Base Weight" oz={baseWeightOz} large accent weightUnit={weightUnit} />
 
       <View style={styles.smallCards}>
         <View style={styles.smallCardHalf}>
-          <WeightCard label="Clothing Worn" oz={clothingWornOz} />
+          <WeightCard label="Clothing Worn" oz={clothingWornOz} weightUnit={weightUnit} />
         </View>
         <View style={styles.smallCardHalf}>
-          <WeightCard label="Dog Pack" oz={dogPackOz} />
+          <WeightCard label="Dog Pack" oz={dogPackOz} weightUnit={weightUnit} />
         </View>
       </View>
 
-      <WeightCard label="Expendables" oz={expendablesOz} />
+      <WeightCard label="Expendables" oz={expendablesOz} weightUnit={weightUnit} />
 
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-      <WeightCard label="Grand Total" oz={grandTotalOz} large />
+      <WeightCard label="Grand Total" oz={grandTotalOz} large weightUnit={weightUnit} />
 
-      {/* Category breakdown bars */}
+      {/* Category breakdown bars — each passes weightUnit */}
       {catTotals.length > 0 && (
         <View
           style={[
@@ -358,6 +275,7 @@ export default function SummaryScreen() {
                 name={cat.name}
                 oz={cat.oz}
                 totalOz={grandTotalOz}
+                weightUnit={weightUnit}
               />
             ))}
         </View>

@@ -22,7 +22,8 @@ const NAV_ACTIVE   = '#2A5740';
 const NAV_INACTIVE = '#6E7672';
 const PRIMARY_TEXT = '#1A2920';
 const MUTED        = '#667270';
-const DIVIDER      = 'rgba(0,0,0,0.07)';
+const DIVIDER      = 'rgba(0,0,0,0.06)'; // content card borders + row separators — VF §2
+const HEADER_BDR   = 'rgba(0,0,0,0.07)'; // sheet header bottom border — VF §2
 
 // ─── MoreDeck ─────────────────────────────────────────────────────────────────
 
@@ -283,7 +284,7 @@ const styles = StyleSheet.create({
   },
   sheetHeader: {
     flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: DIVIDER,
+    paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: HEADER_BDR,
   },
   sheetTitle: { flex: 1, fontSize: 17, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT },
   closeBtn: {

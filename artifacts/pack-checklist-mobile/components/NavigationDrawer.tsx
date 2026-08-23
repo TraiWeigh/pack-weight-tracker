@@ -37,8 +37,12 @@ const DRAWER_W     = Math.min(240, Dimensions.get('window').width * 0.55);
 interface NavDrawerProps {
   visible: boolean;
   onClose: () => void;
-  onMyLists: () => void;       // opens Locker
-  onOpenMore?: () => void;     // D-27/D-28: Settings + Help both open More deck
+  onMyLists: () => void;
+  onOpenMore?: () => void;
+  /** Item 13: dismiss all open modals so Home truly resets to bare list view */
+  onResetScreen?: () => void;
+  /** Item 14: open help destination (MoreDeck Card 3 until HelpScreen exists) */
+  onOpenHelp?: () => void;
   handedness: 'right' | 'left';
   onToggleHandedness: () => void;
 }
@@ -64,7 +68,7 @@ const NAV_ROWS: NavRow[] = [
 // ─── NavigationDrawer ─────────────────────────────────────────────────────────
 
 export function NavigationDrawer({
-  visible, onClose, onMyLists, onOpenMore, handedness, onToggleHandedness,
+  visible, onClose, onMyLists, onOpenMore, onResetScreen, onOpenHelp, handedness, onToggleHandedness,
 }: NavDrawerProps) {
   const insets = useSafeAreaInsets();
   const tx = useRef(new Animated.Value(-DRAWER_W)).current;
@@ -112,10 +116,15 @@ export function NavigationDrawer({
         break;
       case 'home':
         onClose();
+        // Item 13: dismiss all open modals so Home truly returns to the bare list view
+        setTimeout(() => onResetScreen?.(), 250);
         break;
       case 'help':
+        // Item 14: open help destination; falls back to More deck until HelpScreen exists
+        onClose();
+        setTimeout(() => onOpenHelp ? onOpenHelp() : onOpenMore?.(), 300);
+        break;
       case 'settings':
-        // D-27/D-28: close drawer then open More deck (Help card / Settings card)
         onClose();
         if (onOpenMore) setTimeout(onOpenMore, 300);
         break;

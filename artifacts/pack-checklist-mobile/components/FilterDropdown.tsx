@@ -30,7 +30,7 @@ interface FilterDropdownProps {
 const NAV_ACTIVE   = '#2A5740';
 const PRIMARY_TEXT = '#1A2920';
 const MUTED        = '#667270';
-const DIVIDER      = 'rgba(0,0,0,0.07)';
+const DIVIDER      = 'rgba(0,0,0,0.06)'; // content panel borders + option separators — VF §2
 
 const OPTIONS: { value: FilterViewMode; icon: string; label: string; sub: string }[] = [
   { value: 'category', icon: 'list-outline',    label: 'Category', sub: 'Group by gear category' },

@@ -25,7 +25,8 @@ const NAV_ACTIVE   = '#2A5740';
 const NAV_INACTIVE = '#6E7672';
 const PRIMARY_TEXT = '#1A2920';
 const MUTED        = '#667270';
-const DIVIDER      = 'rgba(0,0,0,0.07)';
+const DIVIDER      = 'rgba(0,0,0,0.06)'; // content row separators — VF §2
+const HEADER_BDR   = 'rgba(0,0,0,0.07)'; // AppBar / panel-header bottom borders — VF §2
 const CB_CHECKED   = '#4E7D5C';
 
 // ─── ChecklistOverlay ─────────────────────────────────────────────────────────
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1, borderBottomColor: DIVIDER,
+    borderBottomWidth: 1, borderBottomColor: HEADER_BDR,
   },
   // ← Back button (D-59)
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },

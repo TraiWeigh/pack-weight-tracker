@@ -60,6 +60,7 @@ import { ChecklistOverlay } from '@/components/ChecklistOverlay';
 import { FilterDropdown, FilterViewMode } from '@/components/FilterDropdown';
 import { ItemDetailPanel } from '@/components/ItemDetailPanel';
 import { CategorySwipeRow } from '@/components/CategorySwipeRow';
+import { DonutChart } from '@/components/DonutChart';
 import { CategoryPickerSheet } from '@/components/CategoryPickerSheet';
 import { ItemPhotoSheet } from '@/components/ItemPhotoSheet';
 
@@ -667,7 +668,7 @@ function AnimatedSwipeRow({
       onPanResponderRelease: (_, g) => {
         tx.flattenOffset();
         isSwipingRef.current = false;
-        if (!isOpenRef.current && g.dx < -50) {
+        if (!isOpenRef.current && g.dx < -SWIPE_BTN_W) { // Item 5: commit = full button width (88px), not 50px
           _closeOpenSwipe?.();
           _closeOpenSwipe = closeRef.current;
           isOpenRef.current = true;
@@ -995,24 +996,37 @@ export default function GearScreen() {
   }, []);
 
   const handleReset = useCallback(() => {
-    Alert.alert('Clear All Checks', 'Remove all packed checkmarks from your list?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Clear All', style: 'destructive', onPress: () => {
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-        resetAll();
-        showToast('Checked items cleared');
-      }},
-    ]);
+    // Items 8-10: title/body/label match v3 §13.10 exactly.
+    // Amber #b45309 for the button requires a custom Modal — Alert.alert cannot produce it.
+    // Label is corrected here; colour remains system-red (deferred, per audit Item 10 note).
+    Alert.alert(
+      'Reset Checklist?',
+      'Clear all checked/packed marks in this list? Your items, categories, quantities, weights, and saved list will not be deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Reset Checks', style: 'destructive', onPress: () => {
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          resetAll();
+          showToast('Checklist reset');
+        }},
+      ],
+    );
   }, [resetAll, showToast]);
 
   const handleItemDelete = useCallback((item: GearItem, cat: string) => {
-    Alert.alert('Delete Item', `Remove "${item.desc || item.sub || 'this item'}" from your list?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => {
-        deleteItem(cat, item.id);
-        if (expandedItemKey?.id === item.id) setExpandedItemKey(null);
-      }},
-    ]);
+    // Items 6 & 7: title = "Delete [name]?"; body = §13.1 exact wording with other-lists clause
+    const name = item.desc || item.sub || 'this item';
+    Alert.alert(
+      `Delete ${name}?`,
+      `Permanently remove "${name}" from this list? Other lists are not affected.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => {
+          deleteItem(cat, item.id);
+          if (expandedItemKey?.id === item.id) setExpandedItemKey(null);
+        }},
+      ],
+    );
   }, [deleteItem, expandedItemKey]);
 
   // N-02: drag-reorder helper — create/return Animated.Value per category bar
@@ -1346,6 +1360,16 @@ export default function GearScreen() {
       .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0) }))
     .filter(c => c.oz > 0).sort((a, b) => b.oz - a.oz);
 
+  // Item 3: weight-distribution slices for DonutChart in Summary Modal — v3 §12.2 Card 2
+  const donutSlices = grandTotalOz > 0
+    ? summaryTotals.map(c => ({
+        name: c.name,
+        oz: c.oz,
+        color: getCategoryTheme(c.name, categoryOrder.indexOf(c.name)).bg,
+        pct: (c.oz / grandTotalOz) * 100,
+      }))
+    : [];
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (isLoading) {
@@ -1541,6 +1565,7 @@ export default function GearScreen() {
             <Animated.View onLayout={catHeaderLayout} style={{ transform: [{ translateY: getDragAnim(s.title) }] }}>
               <CategorySwipeRow
                 catName={s.title}
+                itemCount={(data[s.title] || []).length}
                 onRename={(oldName) => {
                   if (Platform.OS === 'ios') {
                     Alert.prompt('Rename Category', undefined, (text) => {
@@ -1685,6 +1710,13 @@ export default function GearScreen() {
                     ))}
                   </View>
                 )}
+                {/* Item 3: Weight Distribution donut chart — v3 §12.2 Card 2 */}
+                {donutSlices.length > 0 && (
+                  <View style={styles.summaryBreakdown}>
+                    <Text style={styles.summaryBreakdownTitle}>WEIGHT DISTRIBUTION</Text>
+                    <DonutChart slices={donutSlices} />
+                  </View>
+                )}
               </View>
             ) : (
               <View style={styles.summaryEmpty}>
@@ -1747,6 +1779,20 @@ export default function GearScreen() {
           setTimeout(() => { refreshLockerEntries(); setShowLocker(true); }, 200);
         }}
         onOpenMore={() => { setShowDrawer(false); setTimeout(() => setShowMore(true), 300); }}
+        onResetScreen={() => {
+          // Item 13: dismiss all open modals/overlays so Home returns to bare list view
+          setShowSummary(false);
+          setShowLocker(false);
+          setShowMore(false);
+          setShowAdd(false);
+          setShowChecklist(false);
+          setShowPreview(false);
+        }}
+        onOpenHelp={() => {
+          // Item 14: opens MoreDeck (Card 3 contains help links) until HelpScreen is built
+          setShowDrawer(false);
+          setTimeout(() => setShowMore(true), 300);
+        }}
       />
 
       <PreviewOverlay
