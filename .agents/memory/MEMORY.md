@@ -42,3 +42,4 @@
 - [R0112 N004 native lessons](r0112-n004-lessons.md) — react-native-svg already installed; tab bar hidden via display:none; SectionList collapse = data:[]; PackDataContext has no listName; checkbox-outline not checkmark-square-outline.
 - [R0113 v3 migration phase 1](r0113-migration-phase1.md) — addItem/delete/rename/resetAll in context; AddItemModal/SearchModal; AnimatedSwipeRow swipe-reveal.
 - [TrailWeigh V3 product audit](trailweigh-v3-product-audit.md) — exhaustive pre-native-conversion product spec: every screen, deck, dialog, gesture, flow, and constant in MobileFunctionalV3.
+- [V3 visual-formula audit](v3-visual-formulas.md) — exact pixel values, formulas, colours, z-indexes, animations, gestures, and Photo List UI geometry for native-app parity checks.
