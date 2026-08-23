@@ -157,7 +157,8 @@ function AppBar({ onMenuPress, handedness }: { onMenuPress: () => void; handedne
       <View style={styles.appBarInner}>
         {/* D-21: hamburger = NAV_ACTIVE per v3 §2 */}
         {handedness !== 'left' && (
-          <TouchableOpacity onPress={onMenuPress} hitSlop={10}>
+          // Item 15: v3 VF §4 min-width/height=44px tap target; hitSlop=10 gave 42px
+          <TouchableOpacity onPress={onMenuPress} style={{ minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="menu-outline" size={22} color={NAV_ACTIVE} />
           </TouchableOpacity>
         )}
@@ -174,7 +175,8 @@ function AppBar({ onMenuPress, handedness }: { onMenuPress: () => void; handedne
           ))}
         </View>
         {handedness === 'left' && (
-          <TouchableOpacity onPress={onMenuPress} hitSlop={10} style={{ marginLeft: 8 }}>
+          // Item 15: same 44×44 minimum for left-handed position
+          <TouchableOpacity onPress={onMenuPress} style={{ marginLeft: 8, minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="menu-outline" size={22} color={NAV_ACTIVE} />
           </TouchableOpacity>
         )}
@@ -229,7 +231,8 @@ function ListSummaryHero({
           {catCount} {catCount === 1 ? 'category' : 'categories'}
         </Text>
         <View style={styles.heroSelectedRow}>
-          <Ionicons name="checkmark-circle" size={13} color="rgba(255,255,255,0.80)" />
+          {/* Item 22: v3 VF §5 — 18×18 filled circle, border-radius=9; not an icon glyph */}
+          <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.80)' }} />
           <Text style={styles.heroSelectedText}>{selectedCount} Selected</Text>
         </View>
       </View>
@@ -772,6 +775,7 @@ export default function GearScreen() {
   const [showDrawer,   setShowDrawer]   = useState(false);
   const [showPreview,  setShowPreview]  = useState(false);
   const [showMore,     setShowMore]     = useState(false);
+  const [moreInitialCard, setMoreInitialCard] = useState<'actions' | 'settings' | 'help' | 'account'>('actions');
   const [showChecklist,setShowChecklist]= useState(false);
   const [showFilterDD, setShowFilterDD] = useState(false);
   const [filterView,   setFilterView]   = useState<FilterViewMode>('category');
@@ -1021,7 +1025,7 @@ export default function GearScreen() {
       `Permanently remove "${name}" from this list? Other lists are not affected.`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => {
+        { text: 'Delete Item', style: 'destructive', onPress: () => {
           deleteItem(cat, item.id);
           if (expandedItemKey?.id === item.id) setExpandedItemKey(null);
         }},
@@ -1778,7 +1782,7 @@ export default function GearScreen() {
           setShowDrawer(false);
           setTimeout(() => { refreshLockerEntries(); setShowLocker(true); }, 200);
         }}
-        onOpenMore={() => { setShowDrawer(false); setTimeout(() => setShowMore(true), 300); }}
+        onOpenMore={() => { setShowDrawer(false); setMoreInitialCard('actions'); setTimeout(() => setShowMore(true), 300); }}
         onResetScreen={() => {
           // Item 13: dismiss all open modals/overlays so Home returns to bare list view
           setShowSummary(false);
@@ -1787,10 +1791,12 @@ export default function GearScreen() {
           setShowAdd(false);
           setShowChecklist(false);
           setShowPreview(false);
+          setExpandedItemKey(null); // Item 13 gap: also clear any expanded item detail panel
         }}
         onOpenHelp={() => {
-          // Item 14: opens MoreDeck (Card 3 contains help links) until HelpScreen is built
+          // Item 14a/26: open MoreDeck directly on Card 3 (Help & TrailWeigh) — v3 §10
           setShowDrawer(false);
+          setMoreInitialCard('help');
           setTimeout(() => setShowMore(true), 300);
         }}
       />
@@ -1834,6 +1840,7 @@ export default function GearScreen() {
         onOpenChecklist={() => { setShowMore(false); setTimeout(() => setShowChecklist(true), 200); }}
         weightUnit={weightUnit}
         onSetWeightUnit={setWeightUnit}
+        initialCard={moreInitialCard}
       />
 
       <ChecklistOverlay
@@ -1947,7 +1954,8 @@ const styles = StyleSheet.create({
 
   // AppBar
   appBar: {
-    backgroundColor: '#FFFFFF', paddingLeft: 8, paddingRight: 8,
+    // Item 16: v3 VF §4 padding: 0 44px 0 8px (paddingRight=RIGHT_INSET=44, not 8)
+    backgroundColor: '#FFFFFF', paddingLeft: 8, paddingRight: RIGHT_INSET,
     borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.07)',
     zIndex: 10, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 }, elevation: 3,
@@ -2009,8 +2017,8 @@ const styles = StyleSheet.create({
   sectionContent: { flex: 1, paddingLeft: 12, paddingVertical: 8, justifyContent: 'center', gap: 10 },
   sectionName: { fontSize: 17, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, lineHeight: 20, letterSpacing: -0.1 },
   sectionSub: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_400Regular', color: NAV_INACTIVE },
-  sectionRight: { paddingRight: RIGHT_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', maxWidth: 96 + RIGHT_INSET },
-  sectionWeight: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1, textAlign: 'right' },
+  sectionRight: { paddingLeft: 10, paddingRight: RIGHT_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', maxWidth: 96 + RIGHT_INSET }, // Item 21: v3 VF §8 column-gap=10px between name col and weight col
+  sectionWeight: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: -0.2, textAlign: 'right' }, // Item 17: v3 VF §8 letterSpacing=-0.2 (was +0.1)
 
   // LocationBar
   locBarContent: {
@@ -2039,10 +2047,10 @@ const styles = StyleSheet.create({
   // AddItemBar (D-35)
   addItemBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, minHeight: 42, backgroundColor: 'rgba(42,87,64,0.04)',
+    gap: 8, minHeight: 44, backgroundColor: 'rgba(42,87,64,0.04)', // Item 18: v3 VF §10 min-height=44 (was 42)
     borderBottomWidth: 1, borderBottomColor: DIVIDER, borderTopWidth: 1, borderTopColor: DIVIDER,
   },
-  addItemBarText: { fontSize: 13.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  addItemBarText: { fontSize: 13.5, fontFamily: 'PlusJakartaSans_500Medium', color: NAV_ACTIVE }, // Item 19: v3 §7.1 weight=500 (was 600)
   // D-35: accordion rows below AddItemBar in normal mode
   addItemAccordion: {
     backgroundColor: '#FAFDF9',
@@ -2053,7 +2061,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, minHeight: 44,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(42,87,64,0.15)',
   },
-  accordionRowText: { fontSize: 14, fontFamily: 'PlusJakartaSans_500Medium', color: NAV_ACTIVE },
+  accordionRowText: { fontSize: 13.5, fontFamily: 'PlusJakartaSans_500Medium', color: NAV_ACTIVE }, // Item 20: v3 VF §10 fontSize=13.5 (was 14)
 
   // List
   list:        { flex: 1 },

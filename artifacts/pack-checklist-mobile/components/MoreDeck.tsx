@@ -7,7 +7,7 @@
  * Card 4: Account & Privacy — links
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Alert, Modal, View, Text, TouchableOpacity, ScrollView,
   StyleSheet, Platform, Linking,
@@ -35,6 +35,8 @@ interface MoreDeckProps {
   onOpenChecklist: () => void;
   weightUnit: 'imperial' | 'metric';
   onSetWeightUnit: (u: 'imperial' | 'metric') => void;
+  /** Item 14a/26: when the sheet opens, jump directly to this card (default: 'actions') */
+  initialCard?: CardId;
 }
 
 type CardId = 'actions' | 'settings' | 'help' | 'account';
@@ -47,11 +49,20 @@ const CARD_DEFS: { id: CardId; icon: string; label: string }[] = [
 ];
 
 export function MoreDeck({
-  visible, onClose, onSave, onOpenChecklist, weightUnit, onSetWeightUnit,
+  visible, onClose, onSave, onOpenChecklist, weightUnit, onSetWeightUnit, initialCard,
   // onSaveAs intentionally not destructured — removed from Card 1 per v3 §12.5; kept in interface for API compat
 }: MoreDeckProps) {
   const insets = useSafeAreaInsets();
-  const [openCard, setOpenCard] = useState<CardId | null>('actions');
+  const [openCard, setOpenCard] = useState<CardId | null>(initialCard ?? 'actions');
+  const prevVisibleRef = useRef(false);
+
+  // Item 14a/26: reset to initialCard each time the sheet re-opens — v3 §10 Help → Card 3 directly
+  useEffect(() => {
+    if (visible && !prevVisibleRef.current) {
+      setOpenCard(initialCard ?? 'actions');
+    }
+    prevVisibleRef.current = visible;
+  }, [visible, initialCard]);
 
   const toggleCard = (id: CardId) => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
