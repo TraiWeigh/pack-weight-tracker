@@ -1,0 +1,245 @@
+/**
+ * MoreDeck — v3 Group 4 "More" 4-card deck
+ *
+ * Card 1: List Actions — Save As, Checklist
+ * Card 2: List Settings — Weight unit toggle (imperial / metric)
+ * Card 3: Help & TrailWeigh — informational links
+ * Card 4: Account & Privacy — links
+ */
+
+import React, { useState } from 'react';
+import {
+  Modal, View, Text, TouchableOpacity, ScrollView,
+  StyleSheet, Platform, Linking,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
+import { Ionicons } from '@expo/vector-icons';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const NAV_ACTIVE   = '#2A5740';
+const NAV_INACTIVE = '#6E7672';
+const PRIMARY_TEXT = '#1A2920';
+const MUTED        = '#667270';
+const DIVIDER      = 'rgba(0,0,0,0.07)';
+
+// ─── MoreDeck ─────────────────────────────────────────────────────────────────
+
+interface MoreDeckProps {
+  visible: boolean;
+  onClose: () => void;
+  onSaveAs: () => void;
+  onOpenChecklist: () => void;
+  weightUnit: 'imperial' | 'metric';
+  onSetWeightUnit: (u: 'imperial' | 'metric') => void;
+}
+
+type CardId = 'actions' | 'settings' | 'help' | 'account';
+
+const CARD_DEFS: { id: CardId; icon: string; label: string }[] = [
+  { id: 'actions',  icon: 'list-outline',          label: 'List Actions'      },
+  { id: 'settings', icon: 'options-outline',        label: 'List Settings'     },
+  { id: 'help',     icon: 'help-circle-outline',    label: 'Help & TrailWeigh' },
+  { id: 'account',  icon: 'person-circle-outline',  label: 'Account & Privacy' },
+];
+
+export function MoreDeck({
+  visible, onClose, onSaveAs, onOpenChecklist, weightUnit, onSetWeightUnit,
+}: MoreDeckProps) {
+  const insets = useSafeAreaInsets();
+  const [openCard, setOpenCard] = useState<CardId | null>('actions');
+
+  const toggleCard = (id: CardId) => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setOpenCard(prev => prev === id ? null : id);
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+      <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        <View style={styles.handle} />
+        <View style={styles.sheetHeader}>
+          <Text style={styles.sheetTitle}>More</Text>
+          <TouchableOpacity onPress={onClose} hitSlop={10} style={styles.closeBtn}>
+            <Ionicons name="close" size={20} color={MUTED} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={{ flex: 1 }} bounces={false}>
+          {CARD_DEFS.map(card => (
+            <View key={card.id} style={styles.card}>
+              {/* Card header bar */}
+              <TouchableOpacity
+                style={styles.cardBar}
+                onPress={() => toggleCard(card.id)}
+                activeOpacity={0.72}
+              >
+                <View style={styles.cardBarIcon}>
+                  <Ionicons name={card.icon as any} size={18} color={NAV_ACTIVE} />
+                </View>
+                <Text style={styles.cardBarLabel}>{card.label}</Text>
+                <Ionicons
+                  name={openCard === card.id ? 'chevron-up' : 'chevron-down'}
+                  size={16} color={NAV_INACTIVE}
+                />
+              </TouchableOpacity>
+
+              {/* Card content */}
+              {openCard === card.id && (
+                <View style={styles.cardContent}>
+                  {card.id === 'actions' && (
+                    <>
+                      <DeckRow
+                        icon="save-outline"
+                        label="Save As…"
+                        sub="Create a new saved copy"
+                        onPress={() => { onClose(); setTimeout(onSaveAs, 250); }}
+                      />
+                      <DeckRow
+                        icon="checkmark-circle-outline"
+                        label="Checklist Mode"
+                        sub="Track what you've loaded on the trail"
+                        onPress={() => { onClose(); setTimeout(onOpenChecklist, 250); }}
+                      />
+                    </>
+                  )}
+
+                  {card.id === 'settings' && (
+                    <View style={styles.settingRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.settingLabel}>Weight Units</Text>
+                        <Text style={styles.settingSub}>Display weights in imperial or metric</Text>
+                      </View>
+                      <View style={styles.unitToggle}>
+                        <TouchableOpacity
+                          style={[styles.unitBtn, weightUnit === 'imperial' && styles.unitBtnActive]}
+                          onPress={() => onSetWeightUnit('imperial')}
+                        >
+                          <Text style={[styles.unitBtnText, weightUnit === 'imperial' && styles.unitBtnTextActive]}>
+                            lbs / oz
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.unitBtn, weightUnit === 'metric' && styles.unitBtnActive]}
+                          onPress={() => onSetWeightUnit('metric')}
+                        >
+                          <Text style={[styles.unitBtnText, weightUnit === 'metric' && styles.unitBtnTextActive]}>
+                            kg / g
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  {card.id === 'help' && (
+                    <>
+                      <DeckRow icon="information-circle-outline" label="About TrailWeigh" sub="Version info and credits" onPress={() => {}} />
+                      <DeckRow icon="book-outline" label="How It Works" sub="Quick guide to the app" onPress={() => {}} />
+                      <DeckRow icon="globe-outline" label="TrailWeigh.com" sub="Open website" onPress={() => Linking.openURL('https://trailweigh.com').catch(() => {})} />
+                      <DeckRow icon="alert-circle-outline" label="Report an Issue" sub="Send feedback" onPress={() => {}} />
+                    </>
+                  )}
+
+                  {card.id === 'account' && (
+                    <>
+                      <DeckRow icon="shield-checkmark-outline" label="Privacy Policy" sub="How we handle your data" onPress={() => {}} />
+                      <DeckRow icon="document-text-outline" label="Terms of Service" sub="" onPress={() => {}} />
+                      <DeckRow icon="trash-outline" label="Delete Account" sub="Permanently remove your data" danger onPress={() => {}} />
+                    </>
+                  )}
+                </View>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    </Modal>
+  );
+}
+
+// ─── DeckRow ──────────────────────────────────────────────────────────────────
+
+function DeckRow({
+  icon, label, sub, danger, onPress,
+}: {
+  icon: string; label: string; sub?: string; danger?: boolean; onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.deckRow} onPress={onPress} activeOpacity={0.65}>
+      <View style={[styles.deckRowIcon, danger && { backgroundColor: 'rgba(176,58,46,0.10)' }]}>
+        <Ionicons name={icon as any} size={18} color={danger ? '#B03A2E' : NAV_ACTIVE} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.deckRowLabel, danger && { color: '#B03A2E' }]}>{label}</Text>
+        {!!sub && <Text style={styles.deckRowSub}>{sub}</Text>}
+      </View>
+      <Ionicons name="chevron-forward" size={14} color="rgba(0,0,0,0.2)" />
+    </TouchableOpacity>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.38)' },
+  sheet: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    maxHeight: '90%',
+    shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 20,
+    shadowOffset: { width: 0, height: -4 }, elevation: 12,
+  },
+  handle: {
+    width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(0,0,0,0.18)',
+    alignSelf: 'center', marginTop: 10, marginBottom: 4,
+  },
+  sheetHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: DIVIDER,
+  },
+  sheetTitle: { flex: 1, fontSize: 17, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT },
+  closeBtn: {
+    width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  card: { borderBottomWidth: 1, borderBottomColor: DIVIDER },
+  cardBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 14, minHeight: 56,
+  },
+  cardBarIcon: {
+    width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(42,87,64,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  cardBarLabel: { flex: 1, fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT },
+  cardContent: { backgroundColor: '#FAFAF9', borderTopWidth: 1, borderTopColor: DIVIDER },
+  deckRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: DIVIDER,
+    minHeight: 52,
+  },
+  deckRowIcon: {
+    width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(42,87,64,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  deckRowLabel: { fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, marginBottom: 1 },
+  deckRowSub: { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED },
+  settingRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 16, paddingVertical: 14, minHeight: 60,
+  },
+  settingLabel: { fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, marginBottom: 2 },
+  settingSub: { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED },
+  unitToggle: { flexDirection: 'row', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', overflow: 'hidden' },
+  unitBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#F3F4F6' },
+  unitBtnActive: { backgroundColor: NAV_ACTIVE },
+  unitBtnText: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED },
+  unitBtnTextActive: { color: '#FFFFFF' },
+});

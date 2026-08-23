@@ -1,22 +1,19 @@
 /**
- * index.tsx — Gear screen with full Photo List support
+ * index.tsx — Gear screen (v3-parity) with full Photo List support
  *
- * Faithful port of MobileFunctionalV3.tsx including the complete Photo List
- * workflow (Task #140). All standard-list behaviour is preserved unchanged.
- *
- * Photo List additions:
- *   - Empty state card: camera badge, title, subtitle, 2-col VISUAL DESTINATIONS grid,
- *     pending capture image with "Choose Location or Item" + "Replace Photo" buttons,
- *     "Add Photo" CTA
- *   - PhotoListSourceSheet   → Camera / Photos / Cancel
- *   - PhotoListAssignmentSheet → What is this photo? (Location / Item / Decide later)
- *   - PhotoListLocationNameSheet → Name this location (autoFocus, Save Location)
- *   - PhotoListItemDestinationSheet → 2-col grid (Unassigned + location tiles)
- *   - PhotoListItemNameSheet → Name this item (auto-opens after assignment)
- *   - "Add another photo" bar above list when items exist
- *   - Location view: Items section + add-photo bar + location wedge bars
- *   - Filter control shows Category / Location; tappable in Photo List mode
- *   - Locker save/load preserves all Photo List state
+ * R0113 repair pass — all 12 regressions fixed:
+ *  1. NavigationDrawer wired to hamburger
+ *  2. FilterControl always interactive; dropdown shows 3 options
+ *  3. ItemRow split: checkbox zone vs name zone (expandedItemKey)
+ *  4. CategorySwipeRow wraps SectionHeaders
+ *  5. renderSectionFooter: AddItemBar per open category
+ *  6. ItemDetailPanel inline below item
+ *  7. PreviewOverlay (Group 3 Print btn)
+ *  8. MoreDeck (Group 4 More btn)
+ *  9. ChecklistOverlay (inside MoreDeck → Card 1)
+ * 10. Toast: 3000ms, solid #2A5740
+ * 11. SectionHeader weight: formatDisplayWeight
+ * 12. SWIPE_BTN_W 80 → 88
  */
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -43,7 +40,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   usePackData, CATEGORY_ORDER, GearItem, PHOTO_ITEMS_CATEGORY, PackLocation,
 } from '@/context/PackDataContext';
-import { calcTotalOz, calcWeights, ozToLbs } from '@/lib/weightUtils';
+import { calcTotalOz, calcWeights, formatDisplayWeight, ozToLbs } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 import { AddDeck } from '@/components/AddDeck';
 import { SearchModal } from '@/components/SearchModal';
@@ -53,6 +50,15 @@ import { PhotoListAssignmentSheet } from '@/components/PhotoListAssignmentSheet'
 import { PhotoListLocationNameSheet } from '@/components/PhotoListLocationNameSheet';
 import { PhotoListItemDestinationSheet } from '@/components/PhotoListItemDestinationSheet';
 import { PhotoListItemNameSheet } from '@/components/PhotoListItemNameSheet';
+import { NavigationDrawer } from '@/components/NavigationDrawer';
+import { PreviewOverlay } from '@/components/PreviewOverlay';
+import { MoreDeck } from '@/components/MoreDeck';
+import { ChecklistOverlay } from '@/components/ChecklistOverlay';
+import { FilterDropdown, FilterViewMode } from '@/components/FilterDropdown';
+import { ItemDetailPanel } from '@/components/ItemDetailPanel';
+import { CategorySwipeRow } from '@/components/CategorySwipeRow';
+import { CategoryPickerSheet } from '@/components/CategoryPickerSheet';
+import { ItemPhotoSheet } from '@/components/ItemPhotoSheet';
 
 // ─── v3 design constants ──────────────────────────────────────────────────────
 
@@ -74,8 +80,8 @@ const FILTER_H       = 50;
 const NAV_H          = 58;
 const APPBAR_H       = 52;
 const CHECKBOX_HIT   = 44;
-const SWIPE_BTN_W    = 80;
-const SWIPE_REVEAL   = 80;
+const SWIPE_BTN_W    = 88;   // v3-parity (was 80)
+const SWIPE_REVEAL   = 88;
 const NUM_GROUPS     = 4;
 
 // ─── Box Groups ───────────────────────────────────────────────────────────────
@@ -127,7 +133,6 @@ type Section = {
   checkedCount:  number;
   totalCount:    number;
   checkedWeightOz: number;
-  // Photo List extensions
   sectionKind?: 'normal' | 'add-photo-bar' | 'location';
   locId?:        string;
   locPhotoDataUrl?: string;
@@ -135,12 +140,14 @@ type Section = {
 
 // ─── AppBar ───────────────────────────────────────────────────────────────────
 
-function AppBar() {
+function AppBar({ onMenuPress }: { onMenuPress: () => void }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.appBar, { paddingTop: insets.top, minHeight: insets.top + APPBAR_H }]}>
       <View style={styles.appBarInner}>
-        <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
+        <TouchableOpacity onPress={onMenuPress} hitSlop={10}>
+          <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
+        </TouchableOpacity>
         <View style={styles.appBarLogo}>
           <Ionicons name="checkbox-outline" size={20} color={NAV_ACTIVE} />
           <Text style={styles.appBarTitle}>TrailWeigh</Text>
@@ -191,8 +198,7 @@ function ListSummaryHero({
           >
             <Ionicons
               name={allExpanded ? 'chevron-up' : 'chevron-down'}
-              size={16}
-              color="rgba(255,255,255,0.78)"
+              size={16} color="rgba(255,255,255,0.78)"
             />
           </TouchableOpacity>
         </View>
@@ -213,19 +219,21 @@ function ListSummaryHero({
 // ─── FilterControl ────────────────────────────────────────────────────────────
 
 function FilterControl({
-  viewLabel, onToggle,
-}: { viewLabel: string; onToggle?: () => void }) {
+  viewLabel, isOpen, onToggle,
+}: { viewLabel: string; isOpen: boolean; onToggle: () => void }) {
   return (
     <View style={styles.filterBar}>
       <TouchableOpacity
         style={styles.filterButton}
         onPress={onToggle}
-        activeOpacity={onToggle ? 0.7 : 1}
-        disabled={!onToggle}
+        activeOpacity={0.7}
       >
         <Ionicons name="options-outline" size={15} color={NAV_ACTIVE} />
-        <Text style={styles.filterLabel}>Filter: {viewLabel}</Text>
-        <Ionicons name={onToggle ? 'chevron-down' : 'chevron-down'} size={17} color={NAV_INACTIVE} />
+        <Text style={styles.filterLabel}>View: {viewLabel}</Text>
+        <Ionicons
+          name={isOpen ? 'chevron-up' : 'chevron-down'}
+          size={17} color={NAV_INACTIVE}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -235,13 +243,16 @@ function FilterControl({
 
 function SectionHeader({
   title, catIndex, checkedCount, totalCount, checkedWeightOz,
-  isOpen, onToggle, onLongPress,
+  isOpen, onToggle, onLongPress, weightUnit,
 }: {
   title: string; catIndex: number; checkedCount: number; totalCount: number;
   checkedWeightOz: number; isOpen: boolean; onToggle: () => void; onLongPress?: () => void;
+  weightUnit: 'imperial' | 'metric';
 }) {
-  const theme = getCategoryTheme(title, catIndex);
-  const weightOz = checkedWeightOz.toFixed(2);
+  const theme       = getCategoryTheme(title, catIndex);
+  const weightLabel = checkedWeightOz > 0
+    ? formatDisplayWeight(checkedWeightOz, weightUnit)
+    : null;
 
   return (
     <TouchableOpacity
@@ -265,8 +276,8 @@ function SectionHeader({
           </Text>
         </View>
         <View style={styles.sectionRight}>
-          {checkedWeightOz > 0 && (
-            <Text style={styles.sectionWeight}>{weightOz} oz</Text>
+          {weightLabel && (
+            <Text style={styles.sectionWeight}>{weightLabel}</Text>
           )}
         </View>
       </View>
@@ -275,10 +286,6 @@ function SectionHeader({
 }
 
 // ─── LocationBar ─────────────────────────────────────────────────────────────
-// v3 location wedge bar: same pentagon shape as category bar, NAV_ACTIVE bg,
-// MapPin icon, 42×42 thumbnail, location name col right-aligned.
-// From visual-formula audit §16: content grid padding 8px 34px 8px 12px;
-// thumbnail 42×42 border-radius 8; name col fontSize=13 fontWeight=600 max-width=130 right.
 
 function LocationBar({
   loc, totalCount, checkedCount, isOpen, onToggle,
@@ -288,13 +295,11 @@ function LocationBar({
 }) {
   return (
     <TouchableOpacity
-      onPress={onToggle}
-      activeOpacity={0.78}
+      onPress={onToggle} activeOpacity={0.78}
       style={styles.sectionCardTouchable}
       testID={`loc-header-${loc.id}`}
     >
       <View style={styles.sectionCard}>
-        {/* Wedge — NAV_ACTIVE green, MapPin icon */}
         <View style={[styles.sectionTile, { backgroundColor: NAV_ACTIVE }]}>
           <Ionicons name="location-outline" size={26} color="rgba(255,255,255,0.93)" />
           <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
@@ -302,40 +307,37 @@ function LocationBar({
             <Polygon points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
           </Svg>
         </View>
-
-        {/* Content: thumbnail + name col + right meta */}
         <View style={styles.locBarContent}>
-          {/* 42×42 thumbnail */}
           {loc.photoDataUrl ? (
-            <Image
-              source={{ uri: loc.photoDataUrl }}
-              style={styles.locBarThumb}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: loc.photoDataUrl }} style={styles.locBarThumb} resizeMode="cover" />
           ) : (
             <View style={[styles.locBarThumb, styles.locBarThumbFallback]}>
               <Ionicons name="location-outline" size={18} color="rgba(255,255,255,0.6)" />
             </View>
           )}
-
-          {/* Location name below thumbnail */}
           <Text style={styles.locBarName} numberOfLines={2}>{loc.name}</Text>
         </View>
-
-        {/* Right meta: "Location" + item count */}
         <View style={styles.locBarRight}>
           <Text style={styles.locBarType}>Location</Text>
-          <Text style={styles.locBarCount}>
-            {totalCount} item{totalCount !== 1 ? 's' : ''}
-          </Text>
+          <Text style={styles.locBarCount}>{totalCount} item{totalCount !== 1 ? 's' : ''}</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 }
 
+// ─── AddItemBar ───────────────────────────────────────────────────────────────
+
+function AddItemBar({ catName, onPress }: { catName: string; onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.addItemBar} onPress={onPress} activeOpacity={0.7}>
+      <Ionicons name="add-circle-outline" size={16} color={NAV_ACTIVE} />
+      <Text style={styles.addItemBarText}>Add item to {catName}</Text>
+    </TouchableOpacity>
+  );
+}
+
 // ─── AddAnotherPhotoBar ───────────────────────────────────────────────────────
-// v3: Camera icon + "Add another photo" min-height=44 bg #f7faf7 border-bottom 1px rgba(0,0,0,0.06)
 
 function AddAnotherPhotoBar({ onPress }: { onPress: () => void }) {
   return (
@@ -347,71 +349,35 @@ function AddAnotherPhotoBar({ onPress }: { onPress: () => void }) {
 }
 
 // ─── PhotoListEmptyCard ───────────────────────────────────────────────────────
-// State 1: fresh empty state (no items, no pending capture)
-// State 3: pending capture held (image + "Choose Location or Item" + "Replace Photo")
-// State 6: locations exist but no items (VISUAL DESTINATIONS grid + Add Photo CTA)
 
 function PhotoListEmptyCard({
-  pendingCapture,
-  locations,
-  onAddPhoto,
-  onChooseClassification,
-  onReplacePhoto,
+  pendingCapture, locations, onAddPhoto, onChooseClassification, onReplacePhoto,
 }: {
-  pendingCapture: string | null;
-  locations: PackLocation[];
-  onAddPhoto: () => void;
-  onChooseClassification: () => void;
-  onReplacePhoto: () => void;
+  pendingCapture: string | null; locations: PackLocation[];
+  onAddPhoto: () => void; onChooseClassification: () => void; onReplacePhoto: () => void;
 }) {
-  // Locations with photos (shown in grid)
   const photoLocations = locations.filter(l => l.photoDataUrl);
-
   const subtitle = pendingCapture
     ? 'Your photo is saved and ready for the next Photo List step.'
     : 'Add your first photo when you are ready to begin organizing this list.';
-
   return (
     <View style={styles.emptyCard}>
-      {/* Camera icon badge: 48×48, border-radius=14, bg rgba(42,87,64,0.10) */}
       <View style={styles.emptyCardBadge}>
-        <Ionicons name="camera-outline" size={24} color={NAV_ACTIVE} strokeWidth={1.7} />
+        <Ionicons name="camera-outline" size={24} color={NAV_ACTIVE} />
       </View>
-
-      {/* Title */}
       <Text style={styles.emptyCardTitle}>Your Photo List is ready</Text>
-
-      {/* Subtitle */}
       <Text style={styles.emptyCardSubtitle}>{subtitle}</Text>
-
-      {/* Pending capture image (state 3) */}
       {pendingCapture ? (
         <View style={styles.pendingBlock}>
-          <Image
-            source={{ uri: pendingCapture }}
-            style={styles.pendingImage}
-            resizeMode="cover"
-          />
-          {/* "Choose Location or Item" — white bg, NAV_ACTIVE border */}
-          <TouchableOpacity
-            style={styles.chooseBtn}
-            onPress={onChooseClassification}
-            activeOpacity={0.8}
-          >
+          <Image source={{ uri: pendingCapture }} style={styles.pendingImage} resizeMode="cover" />
+          <TouchableOpacity style={styles.chooseBtn} onPress={onChooseClassification} activeOpacity={0.8}>
             <Text style={styles.chooseBtnText}>Choose Location or Item</Text>
           </TouchableOpacity>
-          {/* "Replace Photo" — NAV_ACTIVE bg (spec correction from screenshot 3) */}
-          <TouchableOpacity
-            style={styles.replaceBtn}
-            onPress={onReplacePhoto}
-            activeOpacity={0.8}
-          >
+          <TouchableOpacity style={styles.replaceBtn} onPress={onReplacePhoto} activeOpacity={0.8}>
             <Text style={styles.replaceBtnText}>Replace Photo</Text>
           </TouchableOpacity>
         </View>
       ) : null}
-
-      {/* VISUAL DESTINATIONS grid (state 6 — shown when locations exist) */}
       {photoLocations.length > 0 && !pendingCapture && (
         <View style={styles.visualDestBlock}>
           <Text style={styles.visualDestLabel}>VISUAL DESTINATIONS</Text>
@@ -419,11 +385,7 @@ function PhotoListEmptyCard({
             {photoLocations.map(loc => (
               <View key={loc.id} style={styles.visualDestTile}>
                 {loc.photoDataUrl ? (
-                  <Image
-                    source={{ uri: loc.photoDataUrl }}
-                    style={styles.visualDestThumb}
-                    resizeMode="cover"
-                  />
+                  <Image source={{ uri: loc.photoDataUrl }} style={styles.visualDestThumb} resizeMode="cover" />
                 ) : (
                   <View style={[styles.visualDestThumb, styles.visualDestThumbFallback]} />
                 )}
@@ -433,8 +395,6 @@ function PhotoListEmptyCard({
           </View>
         </View>
       )}
-
-      {/* "Add Photo" CTA — always shown (hidden when pending + choose showing) */}
       {!pendingCapture && (
         <TouchableOpacity style={styles.addPhotoCTA} onPress={onAddPhoto} activeOpacity={0.85}>
           <Text style={styles.addPhotoCTAText}>Add Photo</Text>
@@ -445,29 +405,37 @@ function PhotoListEmptyCard({
 }
 
 // ─── ItemRow ──────────────────────────────────────────────────────────────────
+// Split into two touch zones: checkbox (toggles checked) and name/weight (opens detail panel).
 
 function ItemRow({
-  item, category, onToggle,
+  item, category, onToggle, onTapName,
 }: {
-  item: GearItem; category: string; onToggle: (category: string, id: string) => void;
+  item: GearItem; category: string;
+  onToggle: (category: string, id: string) => void;
+  onTapName: (category: string, id: string) => void;
 }) {
-  const handlePress = useCallback(() => {
+  const handleCheck = useCallback(() => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onToggle(category, item.id);
   }, [category, item.id, onToggle]);
+
+  const handleTapName = useCallback(() => {
+    onTapName(category, item.id);
+  }, [category, item.id, onTapName]);
 
   const totalOz     = calcTotalOz(item.weightOz, item.qty);
   const weightLabel = item.weightOz > 0 ? `${totalOz.toFixed(1)} oz` : null;
   const displayName = item.desc || item.sub || 'Unnamed item';
 
   return (
-    <TouchableOpacity
-      style={styles.itemRow}
-      onPress={handlePress}
-      activeOpacity={0.65}
-      testID={`gear-item-${item.id}`}
-    >
-      <View style={styles.checkboxArea}>
+    <View style={styles.itemRow} testID={`gear-item-${item.id}`}>
+      {/* Checkbox zone */}
+      <TouchableOpacity
+        style={styles.checkboxArea}
+        onPress={handleCheck}
+        activeOpacity={0.65}
+        hitSlop={{ top: 0, bottom: 0, left: 0, right: 4 }}
+      >
         <View style={[
           styles.checkbox,
           {
@@ -477,16 +445,23 @@ function ItemRow({
         ]}>
           {item.checked && <Ionicons name="checkmark" size={11} color="#FFFFFF" />}
         </View>
-      </View>
-      <Text style={[styles.itemName, item.checked && styles.itemNameChecked]} numberOfLines={2}>
-        {displayName}
-      </Text>
-      {weightLabel && (
-        <Text style={[styles.itemWeight, item.checked && { color: NAV_ACTIVE }]}>
-          {weightLabel}
+      </TouchableOpacity>
+      {/* Name + weight zone → opens detail panel */}
+      <TouchableOpacity
+        style={styles.itemNameZone}
+        onPress={handleTapName}
+        activeOpacity={0.55}
+      >
+        <Text style={[styles.itemName, item.checked && styles.itemNameChecked]} numberOfLines={2}>
+          {displayName}
         </Text>
-      )}
-    </TouchableOpacity>
+        {weightLabel && (
+          <Text style={[styles.itemWeight, item.checked && { color: NAV_ACTIVE }]}>
+            {weightLabel}
+          </Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -548,28 +523,28 @@ function BottomBox({
 // ─── SummaryWeightRow / SummaryCatBar ─────────────────────────────────────────
 
 function SummaryWeightRow({ label, oz, accent, half }: { label: string; oz: number; accent?: boolean; half?: boolean }) {
-  const lbs = ozToLbs(oz).toFixed(2);
-  const kg  = ((oz * 28.3495) / 1000).toFixed(3);
+  const lbsVal = ozToLbs(oz).toFixed(2);
+  const kgVal  = ((oz * 28.3495) / 1000).toFixed(3);
   const bg  = accent ? NAV_ACTIVE : '#F9FAFB';
   const fg  = accent ? '#FFFFFF'  : '#111827';
   const mu  = accent ? 'rgba(255,255,255,0.72)' : '#6B7280';
   return (
     <View style={[styles.sumCard, { backgroundColor: bg, borderColor: accent ? NAV_ACTIVE : 'rgba(0,0,0,0.08)' }, half && { flex: 1 }]}>
       <Text style={[styles.sumCardLabel, { color: mu }]}>{label}</Text>
-      <Text style={[styles.sumCardValue, { color: fg }]}>{lbs} <Text style={[styles.sumCardUnit, { color: mu }]}>lbs</Text></Text>
-      <Text style={[styles.sumCardSub, { color: mu }]}>{oz.toFixed(1)} oz · {kg} kg</Text>
+      <Text style={[styles.sumCardValue, { color: fg }]}>{lbsVal} <Text style={[styles.sumCardUnit, { color: mu }]}>lbs</Text></Text>
+      <Text style={[styles.sumCardSub, { color: mu }]}>{oz.toFixed(1)} oz · {kgVal} kg</Text>
     </View>
   );
 }
 
 function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalOz: number }) {
-  const pct = totalOz > 0 ? (oz / totalOz) * 100 : 0;
-  const lbs = ozToLbs(oz).toFixed(2);
+  const pct    = totalOz > 0 ? (oz / totalOz) * 100 : 0;
+  const lbsVal = ozToLbs(oz).toFixed(2);
   return (
     <View style={styles.sumCatRow}>
       <View style={styles.sumCatMeta}>
         <Text style={styles.sumCatName} numberOfLines={1}>{name}</Text>
-        <Text style={styles.sumCatWeight}>{lbs} lbs</Text>
+        <Text style={styles.sumCatWeight}>{lbsVal} lbs</Text>
       </View>
       <View style={styles.sumCatTrack}>
         <View style={[styles.sumCatFill, { width: `${pct}%` as any }]} />
@@ -583,10 +558,11 @@ function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalO
 let _closeOpenSwipe: (() => void) | null = null;
 
 function AnimatedSwipeRow({
-  item, category, onToggle, onDelete,
+  item, category, onToggle, onTapName, onDelete,
 }: {
   item: GearItem; category: string;
   onToggle: (cat: string, id: string) => void;
+  onTapName: (cat: string, id: string) => void;
   onDelete: (item: GearItem, cat: string) => void;
 }) {
   const tx           = useRef(new Animated.Value(0)).current;
@@ -648,7 +624,7 @@ function AnimatedSwipeRow({
         </TouchableOpacity>
       </View>
       <Animated.View style={{ transform: [{ translateX: tx }] }} {...pan.panHandlers}>
-        <ItemRow item={item} category={category} onToggle={onToggle} />
+        <ItemRow item={item} category={category} onToggle={onToggle} onTapName={onTapName} />
       </Animated.View>
     </View>
   );
@@ -660,16 +636,18 @@ export default function GearScreen() {
   const insets = useSafeAreaInsets();
   const {
     data, isLoading, categoryOrder,
-    toggleItem, deleteItem, resetAll,
+    toggleItem, addItem, deleteItem, updateItem, renameItem, moveItem, resetAll,
     listName, setListName,
     listKind, locations, photoListCaptureDataUrl,
     setPendingCapture,
     canUndo, canRedo, undo, redo,
     addCategory, deleteCategory, renameCategory, reorderCategories,
-    saveToLocker, refreshLockerEntries,
+    saveToLocker, saveAsToLocker, refreshLockerEntries,
+    weightUnit, setWeightUnit,
+    checklistUse, toggleChecklistItem, clearChecklistUse,
   } = usePackData();
 
-  // Standard list UI state
+  // ── Standard list UI state ──────────────────────────────────────────────────
   const [openCatName, setOpenCatName] = useState<string | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
   const [groupIdx, setGroupIdx]       = useState(0);
@@ -678,82 +656,89 @@ export default function GearScreen() {
   const [showSearch, setShowSearch]   = useState(false);
   const [showLocker, setShowLocker]   = useState(false);
 
-  // Photo List UI state
-  const [photoListView, setPhotoListView]       = useState<'category' | 'location'>('category');
-  const [showSourceSheet, setShowSourceSheet]   = useState(false);
-  const [showAssignment, setShowAssignment]     = useState(false);
-  const [showLocName, setShowLocName]           = useState(false);
-  const [showItemDest, setShowItemDest]         = useState(false);
-  const [showItemName, setShowItemName]         = useState(false);
-  const [newItemId, setNewItemId]               = useState<string | null>(null);
-  // Tracks whether we came from source picker (for "Replace Photo" replace flow)
-  const [openLocNames, setOpenLocNames]         = useState<Set<string>>(new Set());
+  // ── New overlay/deck state ──────────────────────────────────────────────────
+  const [showDrawer,   setShowDrawer]   = useState(false);
+  const [showPreview,  setShowPreview]  = useState(false);
+  const [showMore,     setShowMore]     = useState(false);
+  const [showChecklist,setShowChecklist]= useState(false);
+  const [showFilterDD, setShowFilterDD] = useState(false);
+  const [filterView,   setFilterView]   = useState<FilterViewMode>('category');
+  const [handedness,   setHandedness]   = useState<'left' | 'right'>('right');
 
-  // Toast
-  const [toastMsg, setToastMsg] = useState('');
+  // ── Item detail panel state ─────────────────────────────────────────────────
+  const [expandedItemKey, setExpandedItemKey] = useState<{ cat: string; id: string } | null>(null);
+
+  // ── Item photo sheet state ──────────────────────────────────────────────────
+  const [showItemPhotoSheet, setShowItemPhotoSheet] = useState(false);
+  const [photoTarget,        setPhotoTarget]        = useState<{ cat: string; id: string } | null>(null);
+
+  // ── Category picker state (contextual camera/photos case 3) ────────────────
+  const [showCatPicker,  setShowCatPicker]  = useState(false);
+  const [catPickerSource,setCatPickerSource]= useState<'camera' | 'photos'>('camera');
+
+  // ── Photo List UI state ─────────────────────────────────────────────────────
+  const [showSourceSheet, setShowSourceSheet] = useState(false);
+  const [showAssignment,  setShowAssignment]  = useState(false);
+  const [showLocName,     setShowLocName]     = useState(false);
+  const [showItemDest,    setShowItemDest]    = useState(false);
+  const [showItemName,    setShowItemName]    = useState(false);
+  const [newItemId,       setNewItemId]       = useState<string | null>(null);
+  const [openLocNames,    setOpenLocNames]    = useState<Set<string>>(new Set());
+
+  // ── Toast ───────────────────────────────────────────────────────────────────
+  const [toastMsg,  setToastMsg]  = useState('');
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const showToast = useCallback((msg: string) => {
+  const showToast  = useCallback((msg: string) => {
     setToastMsg(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToastMsg(''), 2200);
+    toastTimer.current = setTimeout(() => setToastMsg(''), 3000);   // 3000ms (was 2200)
   }, []);
 
   // ── Photo List sheet cascade ──────────────────────────────────────────────
 
-  /** Open source sheet (Camera/Photos). */
   const handleOpenSource = useCallback(() => {
     setShowSourceSheet(true);
   }, []);
 
-  /** Image captured from camera or photos library. */
   const handleCaptured = useCallback((dataUrl: string) => {
     setPendingCapture(dataUrl);
-    // Small delay so source sheet fully closes
     setTimeout(() => setShowAssignment(true), 300);
   }, [setPendingCapture]);
 
-  /** Assignment sheet: user chose Location. */
   const handlePickLocation = useCallback(() => {
     setShowAssignment(false);
     setTimeout(() => setShowLocName(true), 200);
   }, []);
 
-  /** Assignment sheet: user chose Item. */
   const handlePickItem = useCallback(() => {
     setShowAssignment(false);
     setTimeout(() => setShowItemDest(true), 200);
   }, []);
 
-  /** Assignment sheet: user chose Decide later — pending capture retained. */
   const handleDecideLater = useCallback(() => {
     setShowAssignment(false);
     showToast('Photo saved — choose a location or item later');
   }, [showToast]);
 
-  /** Location Name form: user saved. Switch to location view. */
-  const handleLocationSaved = useCallback((locationId: string) => {
+  const handleLocationSaved = useCallback((locationId: string, name?: string) => {
     setShowLocName(false);
-    setPhotoListView('location');
-    showToast(`Location saved`);
+    setFilterView('location');
+    showToast(name ? `Location "${name}" saved` : 'Location saved');
   }, [showToast]);
 
-  /** Location Name form: back to assignment sheet. */
   const handleLocNameBack = useCallback(() => {
     setShowLocName(false);
     setTimeout(() => setShowAssignment(true), 200);
   }, []);
 
-  /** Item Destination: back to assignment sheet. */
   const handleItemDestBack = useCallback(() => {
     setShowItemDest(false);
     setTimeout(() => setShowAssignment(true), 200);
   }, []);
 
-  /** Item assigned to location or Unassigned. Open name sheet. */
   const handleItemAssigned = useCallback((itemId: string) => {
     setShowItemDest(false);
     setNewItemId(itemId);
-    // Open Items category and open name sheet
     setOpenCatName(PHOTO_ITEMS_CATEGORY);
     setTimeout(() => {
       setShowItemName(true);
@@ -761,13 +746,11 @@ export default function GearScreen() {
     }, 200);
   }, [showToast]);
 
-  /** Item Name sheet: closed. */
   const handleItemNameClose = useCallback(() => {
     setShowItemName(false);
     setNewItemId(null);
   }, []);
 
-  /** Toggle location view accordion. */
   const handleLocToggle = useCallback((locId: string) => {
     setOpenLocNames(prev => {
       const next = new Set(prev);
@@ -777,98 +760,64 @@ export default function GearScreen() {
     });
   }, []);
 
-  /** Filter toggle — only in Photo List mode. */
-  const handleFilterToggle = useCallback(() => {
-    if (listKind !== 'photo') return;
-    setPhotoListView(v => v === 'category' ? 'location' : 'category');
-  }, [listKind]);
+  // ── Contextual camera/photos handler (standard list) ──────────────────────
 
-  // ── Data computations ────────────────────────────────────────────────────
+  const openItemPhotoSheetFor = useCallback((
+    source: 'camera' | 'photos',
+    cat: string,
+    id: string,
+  ) => {
+    setPhotoTarget({ cat, id });
+    setShowItemPhotoSheet(true);
+    // Note: ItemPhotoSheet handles source internally via its own pickers
+  }, []);
 
-  const allSections: Section[] = categoryOrder.map((cat, catIndex) => {
-    const items    = data[cat] || [];
-    const populated = items.filter((i) => i.sub || i.desc || i.weightOz > 0 || i.photoDataUrl);
-    const checkedWeightOz = populated.filter(i => i.checked)
-      .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
-    return {
-      title: cat, catIndex, data: populated,
-      checkedCount:   populated.filter(i => i.checked).length,
-      totalCount:     populated.length,
-      checkedWeightOz,
-    };
-  }).filter(s => s.totalCount > 0 || s.title === PHOTO_ITEMS_CATEGORY);
-
-  // Hero metrics
-  const totalItems    = allSections.reduce((n, s) => n + s.totalCount, 0);
-  const selectedCount = allSections.reduce((n, s) => n + s.checkedCount, 0);
-  const catCount      = allSections.length;
-
-  // Photo List: does the Items category have any items?
-  const photoListHasItems = listKind === 'photo' &&
-    (data[PHOTO_ITEMS_CATEGORY] || []).filter(i => i.sub || i.desc || i.photoDataUrl).length > 0;
-
-  // Photo List: show empty card?
-  const showPhotoListEmpty = listKind === 'photo' && !photoListHasItems;
-
-  // ── Sections for SectionList ─────────────────────────────────────────────
-
-  const sections: Section[] = useMemo(() => {
-    if (listKind === 'photo') {
-      if (photoListView === 'location') {
-        // Location view: Items (unassigned) + add-photo-bar + location sections
-        const itemsAll  = data[PHOTO_ITEMS_CATEGORY] || [];
-        const itemsPopulated = itemsAll.filter(i => i.sub || i.desc || i.photoDataUrl);
-        const unassigned = itemsPopulated.filter(i => !i.locationId);
-
-        const itemsSection: Section = {
-          title: PHOTO_ITEMS_CATEGORY, catIndex: 0, sectionKind: 'normal',
-          data: (allExpanded || openCatName === PHOTO_ITEMS_CATEGORY) ? unassigned : [],
-          checkedCount:   unassigned.filter(i => i.checked).length,
-          totalCount:     unassigned.length,
-          checkedWeightOz: unassigned.filter(i => i.checked)
-            .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0),
-        };
-
-        const addPhotoBarSection: Section = {
-          title: '__add_photo_bar__', catIndex: -1, sectionKind: 'add-photo-bar',
-          data: [], checkedCount: 0, totalCount: 0, checkedWeightOz: 0,
-        };
-
-        const locSections: Section[] = locations.map(loc => {
-          const locItems = itemsPopulated.filter(i => i.locationId === loc.id);
-          return {
-            title: loc.name, catIndex: 0, sectionKind: 'location',
-            locId: loc.id, locPhotoDataUrl: loc.photoDataUrl,
-            data: openLocNames.has(loc.id) ? locItems : [],
-            checkedCount:   locItems.filter(i => i.checked).length,
-            totalCount:     locItems.length,
-            checkedWeightOz: locItems.filter(i => i.checked)
-              .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0),
-          };
-        });
-
-        return [itemsSection, addPhotoBarSection, ...locSections];
-      } else {
-        // Category view: just the Items category (standard rendering)
-        return allSections.map(s => ({
-          ...s,
-          data: allExpanded || openCatName === s.title ? s.data : [],
-        }));
-      }
+  const handleContextualMediaAction = useCallback((source: 'camera' | 'photos') => {
+    // Case 1: item detail panel is open → use that item
+    if (expandedItemKey) {
+      openItemPhotoSheetFor(source, expandedItemKey.cat, expandedItemKey.id);
+      return;
     }
+    // Case 2: category is open → create new item, open its photo flow
+    if (openCatName) {
+      const newId = addItem(openCatName, '', 0, 1);
+      setExpandedItemKey({ cat: openCatName, id: newId });
+      setPhotoTarget({ cat: openCatName, id: newId });
+      setShowItemPhotoSheet(true);
+      return;
+    }
+    // Case 3: nothing open → open category picker
+    setCatPickerSource(source);
+    setShowCatPicker(true);
+  }, [expandedItemKey, openCatName, addItem, openItemPhotoSheetFor]);
 
-    // Standard list: normal sections
-    return allSections.map(s => ({
-      ...s,
-      data: allExpanded || openCatName === s.title ? s.data : [],
-    }));
-  }, [listKind, photoListView, data, allSections, allExpanded, openCatName, locations, openLocNames]);
+  const handleCatPickerSelect = useCallback((cat: string) => {
+    setShowCatPicker(false);
+    const newId = addItem(cat, '', 0, 1);
+    setOpenCatName(cat);
+    setExpandedItemKey({ cat, id: newId });
+    setPhotoTarget({ cat, id: newId });
+    setShowItemPhotoSheet(true);
+  }, [addItem]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleItemPhotoCapture = useCallback((dataUrl: string) => {
+    if (!photoTarget) return;
+    updateItem(photoTarget.cat, photoTarget.id, { photoDataUrl: dataUrl });
+    showToast('Photo saved');
+  }, [photoTarget, updateItem, showToast]);
+
+  const handleItemPhotoDelete = useCallback(() => {
+    if (!photoTarget) return;
+    updateItem(photoTarget.cat, photoTarget.id, { photoDataUrl: undefined });
+    showToast('Photo removed');
+  }, [photoTarget, updateItem, showToast]);
+
+  // ── Category handlers ─────────────────────────────────────────────────────
 
   const handleCatToggle = useCallback((catName: string) => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setAllExpanded(false);
+    setExpandedItemKey(null);   // close item detail panel when switching categories
     setOpenCatName(prev => prev === catName ? null : catName);
   }, []);
 
@@ -883,20 +832,23 @@ export default function GearScreen() {
       { text: 'Clear All', style: 'destructive', onPress: () => {
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         resetAll();
+        showToast('Checked items cleared');
       }},
     ]);
-  }, [resetAll]);
+  }, [resetAll, showToast]);
 
   const handleItemDelete = useCallback((item: GearItem, cat: string) => {
     Alert.alert('Delete Item', `Remove "${item.desc || item.sub || 'this item'}" from your list?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteItem(cat, item.id) },
+      { text: 'Delete', style: 'destructive', onPress: () => {
+        deleteItem(cat, item.id);
+        if (expandedItemKey?.id === item.id) setExpandedItemKey(null);
+      }},
     ]);
-  }, [deleteItem]);
+  }, [deleteItem, expandedItemKey]);
 
   const handleCatLongPress = useCallback((catName: string) => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Don't allow managing the structural Items category in Photo List mode
     if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
     const idx      = categoryOrder.indexOf(catName);
     const catItems = data[catName] || [];
@@ -938,6 +890,39 @@ export default function GearScreen() {
     } else Alert.alert('List Name', 'Tap-to-rename is available on iOS.');
   }, [listName, setListName]);
 
+  // ── Item detail panel handlers ─────────────────────────────────────────────
+
+  const handleTapItemName = useCallback((cat: string, id: string) => {
+    setExpandedItemKey(prev => {
+      if (prev?.cat === cat && prev?.id === id) return null;  // toggle off same item
+      return { cat, id };
+    });
+  }, []);
+
+  const handleDetailRename = useCallback((cat: string, id: string, newName: string) => {
+    renameItem(cat, id, newName);
+  }, [renameItem]);
+
+  const handleDetailUpdate = useCallback((
+    cat: string, id: string,
+    patch: Partial<Pick<GearItem, 'weightOz' | 'qty' | 'expendable' | 'sub' | 'photoDataUrl' | 'locationId'>>,
+  ) => {
+    updateItem(cat, id, patch);
+  }, [updateItem]);
+
+  const handleDetailMove = useCallback((cat: string, id: string, newCat: string) => {
+    moveItem(cat, newCat, id);
+    setExpandedItemKey({ cat: newCat, id });
+    setOpenCatName(newCat);
+  }, [moveItem]);
+
+  const handleDetailDelete = useCallback((cat: string, id: string) => {
+    deleteItem(cat, id);
+    setExpandedItemKey(null);
+  }, [deleteItem]);
+
+  // ── Box actions ────────────────────────────────────────────────────────────
+
   const disabledActions = useMemo<Set<string>>(() => {
     const s = new Set<string>();
     if (!canUndo) s.add('undo');
@@ -970,10 +955,24 @@ export default function GearScreen() {
         setShowLocker(true);
         break;
       case 'camera':
-        // Photo List: open source sheet for camera
         if (listKind === 'photo') {
           setShowSourceSheet(true);
+        } else {
+          handleContextualMediaAction('camera');
         }
+        break;
+      case 'photos':
+        if (listKind === 'photo') {
+          setShowSourceSheet(true);
+        } else {
+          handleContextualMediaAction('photos');
+        }
+        break;
+      case 'preview':
+        setShowPreview(true);
+        break;
+      case 'more':
+        setShowMore(true);
         break;
       case 'undo': undo(); break;
       case 'redo': redo(); break;
@@ -989,34 +988,133 @@ export default function GearScreen() {
         );
         const totalOz = categoryOrder.flatMap(cat => (data[cat] || []).filter(i => i.checked))
           .reduce((sum, i) => sum + calcTotalOz(i.weightOz, i.qty), 0);
-        const lbs = ozToLbs(totalOz).toFixed(2);
+        const lbsVal  = ozToLbs(totalOz).toFixed(2);
         const message = [listName, '─────────────────',
           packedLines.length > 0 ? packedLines.join('\n') : '(No items packed yet)',
-          '', `Packed: ${lbs} lbs (${totalOz.toFixed(1)} oz)`, 'via TrailWeigh'].join('\n');
+          '', `Packed: ${lbsVal} lbs (${totalOz.toFixed(1)} oz)`, 'via TrailWeigh'].join('\n');
         Share.share({ message, title: listName });
         break;
       }
       case 'reset': handleReset(); break;
       default: break;
     }
-  }, [handleReset, undo, redo, saveToLocker, refreshLockerEntries, listName, categoryOrder, data, listKind, showToast]);
+  }, [
+    handleReset, handleContextualMediaAction,
+    undo, redo, saveToLocker, refreshLockerEntries,
+    listName, categoryOrder, data, listKind, showToast,
+  ]);
 
   const bottomPad = Platform.OS === 'web' ? 20 : insets.bottom;
+
+  // ── Data computations ─────────────────────────────────────────────────────
+
+  const allSections: Section[] = categoryOrder.map((cat, catIndex) => {
+    const items      = data[cat] || [];
+    const populated  = items.filter(i => i.sub || i.desc || i.weightOz > 0 || i.photoDataUrl);
+    const checkedWeightOz = populated.filter(i => i.checked)
+      .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
+    return {
+      title: cat, catIndex, data: populated,
+      checkedCount:   populated.filter(i => i.checked).length,
+      totalCount:     populated.length,
+      checkedWeightOz,
+    };
+  }).filter(s => s.totalCount > 0 || s.title === PHOTO_ITEMS_CATEGORY);
+
+  const totalItems    = allSections.reduce((n, s) => n + s.totalCount, 0);
+  const selectedCount = allSections.reduce((n, s) => n + s.checkedCount, 0);
+  const catCount      = allSections.length;
+
+  const photoListHasItems = listKind === 'photo' &&
+    (data[PHOTO_ITEMS_CATEGORY] || []).filter(i => i.sub || i.desc || i.photoDataUrl).length > 0;
+
+  const showPhotoListEmpty = listKind === 'photo' && !photoListHasItems;
+
+  // filterView label
+  const filterLabel = filterView === 'location' ? 'Location'
+    : filterView === 'photo' ? 'Photo'
+    : 'Category';
+
+  // ── Sections for SectionList ──────────────────────────────────────────────
+
+  const sections: Section[] = useMemo(() => {
+    if (listKind === 'photo') {
+      if (filterView === 'location') {
+        const itemsAll       = data[PHOTO_ITEMS_CATEGORY] || [];
+        const itemsPopulated = itemsAll.filter(i => i.sub || i.desc || i.photoDataUrl);
+        if (showPhotoListEmpty) {
+          // State 6: locations exist but no items — show location sections only
+          return locations.map(loc => ({
+            title: loc.name, catIndex: 0, sectionKind: 'location' as const,
+            locId: loc.id, locPhotoDataUrl: loc.photoDataUrl,
+            data: [],
+            checkedCount: 0, totalCount: 0, checkedWeightOz: 0,
+          }));
+        }
+        const unassigned = itemsPopulated.filter(i => !i.locationId);
+        const itemsSection: Section = {
+          title: PHOTO_ITEMS_CATEGORY, catIndex: 0, sectionKind: 'normal',
+          data: (allExpanded || openCatName === PHOTO_ITEMS_CATEGORY) ? unassigned : [],
+          checkedCount:    unassigned.filter(i => i.checked).length,
+          totalCount:      unassigned.length,
+          checkedWeightOz: unassigned.filter(i => i.checked)
+            .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0),
+        };
+        const addPhotoBarSection: Section = {
+          title: '__add_photo_bar__', catIndex: -1, sectionKind: 'add-photo-bar',
+          data: [], checkedCount: 0, totalCount: 0, checkedWeightOz: 0,
+        };
+        const locSections: Section[] = locations.map(loc => {
+          const locItems = itemsPopulated.filter(i => i.locationId === loc.id);
+          return {
+            title: loc.name, catIndex: 0, sectionKind: 'location' as const,
+            locId: loc.id, locPhotoDataUrl: loc.photoDataUrl,
+            data: openLocNames.has(loc.id) ? locItems : [],
+            checkedCount:    locItems.filter(i => i.checked).length,
+            totalCount:      locItems.length,
+            checkedWeightOz: locItems.filter(i => i.checked)
+              .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0),
+          };
+        });
+        return [itemsSection, addPhotoBarSection, ...locSections];
+      }
+      // Photo List category view (filterView === 'category')
+      return allSections.map(s => ({
+        ...s,
+        data: allExpanded || openCatName === s.title ? s.data : [],
+      }));
+    }
+
+    // Standard list
+    if (filterView === 'photo') {
+      // Show only items that have a photoDataUrl
+      return allSections.map(s => {
+        const photoItems = s.data.filter(i => !!i.photoDataUrl);
+        return {
+          ...s, data: (allExpanded || openCatName === s.title) ? photoItems : [],
+          totalCount: photoItems.length,
+          checkedCount: photoItems.filter(i => i.checked).length,
+        };
+      }).filter(s => s.totalCount > 0);
+    }
+
+    return allSections.map(s => ({
+      ...s,
+      data: allExpanded || openCatName === s.title ? s.data : [],
+    }));
+  }, [
+    listKind, filterView, data, allSections,
+    allExpanded, openCatName, locations, openLocNames, showPhotoListEmpty,
+  ]);
 
   // Summary calculations
   const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } = calcWeights(data);
   const summaryTotals = categoryOrder
     .map(cat => ({ name: cat, oz: (data[cat] || []).filter(i => i.checked)
       .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0) }))
-    .filter(c => c.oz > 0)
-    .sort((a, b) => b.oz - a.oz);
+    .filter(c => c.oz > 0).sort((a, b) => b.oz - a.oz);
 
-  // Filter label
-  const filterLabel = listKind === 'photo'
-    ? (photoListView === 'location' ? 'Location' : 'Category')
-    : 'Category';
-
-  // ── Render ───────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
@@ -1029,7 +1127,7 @@ export default function GearScreen() {
   return (
     <View style={[styles.container, { backgroundColor: PAGE_BG }]}>
       {/* ── Fixed top ──────────────────────────────────────────────────── */}
-      <AppBar />
+      <AppBar onMenuPress={() => setShowDrawer(true)} />
       <ListSummaryHero
         listName={listName} totalItems={totalItems} catCount={catCount}
         selectedCount={selectedCount} allExpanded={allExpanded}
@@ -1037,16 +1135,35 @@ export default function GearScreen() {
       />
       <FilterControl
         viewLabel={filterLabel}
-        onToggle={listKind === 'photo' ? handleFilterToggle : undefined}
+        isOpen={showFilterDD}
+        onToggle={() => setShowFilterDD(v => !v)}
       />
 
-      {/* ── Photo List empty state card ─────────────────────────────────── */}
-      {showPhotoListEmpty ? (
-        <ScrollView
-          style={styles.list}
-          contentContainerStyle={styles.photoListEmptyScroll}
-          showsVerticalScrollIndicator={false}
-        >
+      {/* ── Filter dropdown overlay ──────────────────────────────────── */}
+      {showFilterDD && (
+        <View style={styles.filterDDContainer} pointerEvents="box-none">
+          <FilterDropdown
+            visible={showFilterDD}
+            current={filterView}
+            onSelect={(mode) => { setFilterView(mode); setShowFilterDD(false); }}
+            onClose={() => setShowFilterDD(false)}
+          />
+        </View>
+      )}
+
+      {/* ── Photo List empty state — via ListHeaderComponent ────────── */}
+      {/* Main SectionList always rendered; empty card shows as header */}
+
+      {/* ── "Add another photo" bar (top of Photo List, has items) ──── */}
+      {listKind === 'photo' && photoListHasItems && filterView === 'category' && (
+        <AddAnotherPhotoBar onPress={handleOpenSource} />
+      )}
+
+      {/* ── Scrolling category / location list ──────────────────────── */}
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={showPhotoListEmpty ? (
           <PhotoListEmptyCard
             pendingCapture={photoListCaptureDataUrl}
             locations={locations}
@@ -1054,73 +1171,122 @@ export default function GearScreen() {
             onChooseClassification={() => setShowAssignment(true)}
             onReplacePhoto={handleOpenSource}
           />
-        </ScrollView>
-      ) : (
-        <>
-          {/* ── "Add another photo" bar — top of list in Photo List mode ── */}
-          {listKind === 'photo' && photoListHasItems && photoListView === 'category' && (
-            <AddAnotherPhotoBar onPress={handleOpenSource} />
-          )}
-
-          {/* ── Scrolling category / location list ──────────────────────── */}
-          <SectionList
-            sections={sections}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item, section }) => {
-              const s = section as Section;
-              if (s.sectionKind === 'add-photo-bar') return null;
-              return (
-                <AnimatedSwipeRow
-                  item={item}
-                  category={s.sectionKind === 'location' ? PHOTO_ITEMS_CATEGORY : s.title}
-                  onToggle={toggleItem}
-                  onDelete={handleItemDelete}
-                />
-              );
-            }}
-            renderSectionHeader={({ section }) => {
-              const s = section as Section;
-
-              if (s.sectionKind === 'add-photo-bar') {
-                return <AddAnotherPhotoBar onPress={handleOpenSource} />;
-              }
-
-              if (s.sectionKind === 'location' && s.locId) {
-                const loc = locations.find(l => l.id === s.locId);
-                if (!loc) return null;
+        ) : null}
+        renderItem={({ item, section }) => {
+          const s = section as Section;
+          if (s.sectionKind === 'add-photo-bar') return null;
+          const isExpanded = expandedItemKey?.cat === s.title && expandedItemKey?.id === item.id;
+          return (
+            <View>
+              <AnimatedSwipeRow
+                item={item}
+                category={s.sectionKind === 'location' ? PHOTO_ITEMS_CATEGORY : s.title}
+                onToggle={toggleItem}
+                onTapName={handleTapItemName}
+                onDelete={handleItemDelete}
+              />
+              {isExpanded && (() => {
+                const itemCat = s.sectionKind === 'location' ? PHOTO_ITEMS_CATEGORY : s.title;
+                const liveItem = (data[itemCat] || []).find(i => i.id === item.id);
+                if (!liveItem) return null;
                 return (
-                  <LocationBar
-                    loc={loc}
-                    totalCount={s.totalCount}
-                    checkedCount={s.checkedCount}
-                    isOpen={openLocNames.has(s.locId)}
-                    onToggle={() => handleLocToggle(s.locId!)}
+                  <ItemDetailPanel
+                    item={liveItem}
+                    category={itemCat}
+                    categories={categoryOrder}
+                    locations={locations}
+                    weightUnit={weightUnit}
+                    onRename={(name) => handleDetailRename(itemCat, item.id, name)}
+                    onUpdate={(patch) => handleDetailUpdate(itemCat, item.id, patch)}
+                    onMove={(newCat)  => handleDetailMove(itemCat, item.id, newCat)}
+                    onDelete={()      => handleDetailDelete(itemCat, item.id)}
+                    onPhoto={()       => { setPhotoTarget({ cat: itemCat, id: item.id }); setShowItemPhotoSheet(true); }}
+                    onClose={()       => setExpandedItemKey(null)}
                   />
                 );
-              }
+              })()}
+            </View>
+          );
+        }}
+        renderSectionHeader={({ section }) => {
+          const s = section as Section;
 
-              // Normal category header
-              const full = allSections.find(a => a.title === s.title) || s;
-              return (
-                <SectionHeader
-                  title={s.title}
-                  catIndex={s.catIndex}
-                  checkedCount={full.checkedCount}
-                  totalCount={full.totalCount}
-                  checkedWeightOz={full.checkedWeightOz}
-                  isOpen={allExpanded || openCatName === s.title}
-                  onToggle={() => handleCatToggle(s.title)}
-                  onLongPress={() => handleCatLongPress(s.title)}
-                />
-              );
-            }}
-            stickySectionHeadersEnabled
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            style={styles.list}
-          />
-        </>
-      )}
+          if (s.sectionKind === 'add-photo-bar') {
+            return <AddAnotherPhotoBar onPress={handleOpenSource} />;
+          }
+
+          if (s.sectionKind === 'location' && s.locId) {
+            const loc = locations.find(l => l.id === s.locId);
+            if (!loc) return null;
+            return (
+              <LocationBar
+                loc={loc}
+                totalCount={s.totalCount}
+                checkedCount={s.checkedCount}
+                isOpen={openLocNames.has(s.locId)}
+                onToggle={() => handleLocToggle(s.locId!)}
+              />
+            );
+          }
+
+          // Normal category header — wrapped in CategorySwipeRow for swipe reveal
+          const full = allSections.find(a => a.title === s.title) || s;
+          // Suppress swipe on Photo List structural category
+          const suppressSwipe = listKind === 'photo' && s.title === PHOTO_ITEMS_CATEGORY;
+          const header = (
+            <SectionHeader
+              title={s.title}
+              catIndex={s.catIndex}
+              checkedCount={full.checkedCount}
+              totalCount={full.totalCount}
+              checkedWeightOz={full.checkedWeightOz}
+              isOpen={allExpanded || openCatName === s.title}
+              onToggle={() => handleCatToggle(s.title)}
+              onLongPress={() => handleCatLongPress(s.title)}
+              weightUnit={weightUnit}
+            />
+          );
+          if (suppressSwipe) return header;
+          return (
+            <CategorySwipeRow
+              catName={s.title}
+              onRename={(oldName) => {
+                if (Platform.OS === 'ios') {
+                  Alert.prompt('Rename Category', undefined, (text) => {
+                    if (text?.trim()) renameCategory(oldName, text.trim());
+                  }, 'plain-text', oldName);
+                }
+              }}
+              onDelete={(catName) => deleteCategory(catName)}
+            >
+              {header}
+            </CategorySwipeRow>
+          );
+        }}
+        renderSectionFooter={({ section }) => {
+          const s = section as Section;
+          if (s.sectionKind === 'add-photo-bar' || s.sectionKind === 'location') return null;
+          const isOpen = allExpanded || openCatName === s.title;
+          if (!isOpen) return null;
+          return (
+            <View>
+              <AddItemBar
+                catName={s.title}
+                onPress={() => {
+                  setShowAdd(true);
+                }}
+              />
+              {listKind === 'photo' && s.title === PHOTO_ITEMS_CATEGORY && (
+                <AddAnotherPhotoBar onPress={handleOpenSource} />
+              )}
+            </View>
+          );
+        }}
+        stickySectionHeadersEnabled
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        style={styles.list}
+      />
 
       {/* ── Fixed bottom ──────────────────────────────────────────────── */}
       <BottomBox
@@ -1216,6 +1382,63 @@ export default function GearScreen() {
         onClose={handleItemNameClose}
       />
 
+      {/* ── New overlays (repair pass) ─────────────────────────────────── */}
+      <NavigationDrawer
+        visible={showDrawer}
+        handedness={handedness}
+        onClose={() => setShowDrawer(false)}
+        onToggleHandedness={() => setHandedness(h => h === 'right' ? 'left' : 'right')}
+        onMyLists={() => {
+          setShowDrawer(false);
+          setTimeout(() => { refreshLockerEntries(); setShowLocker(true); }, 200);
+        }}
+      />
+
+      <PreviewOverlay
+        visible={showPreview}
+        onClose={() => setShowPreview(false)}
+        weightUnit={weightUnit}
+      />
+
+      <MoreDeck
+        visible={showMore}
+        onClose={() => setShowMore(false)}
+        onSaveAs={() => {
+          if (Platform.OS === 'ios') {
+            Alert.prompt('Save As', 'Name for the new copy:', (text) => {
+              if (text?.trim()) saveAsToLocker(text.trim());
+            }, 'plain-text', listName);
+          } else {
+            Alert.alert('Save As', 'Saving as a copy is available on iOS.');
+          }
+        }}
+        onOpenChecklist={() => { setShowMore(false); setTimeout(() => setShowChecklist(true), 200); }}
+        weightUnit={weightUnit}
+        onSetWeightUnit={setWeightUnit}
+      />
+
+      <ChecklistOverlay
+        visible={showChecklist}
+        onClose={() => setShowChecklist(false)}
+        weightUnit={weightUnit}
+      />
+
+      <CategoryPickerSheet
+        visible={showCatPicker}
+        categories={categoryOrder}
+        source={catPickerSource}
+        onSelect={handleCatPickerSelect}
+        onClose={() => setShowCatPicker(false)}
+      />
+
+      <ItemPhotoSheet
+        visible={showItemPhotoSheet}
+        hasPhoto={!!(photoTarget && (data[photoTarget.cat] || []).find(i => i.id === photoTarget?.id)?.photoDataUrl)}
+        onCapture={handleItemPhotoCapture}
+        onDelete={handleItemPhotoDelete}
+        onClose={() => setShowItemPhotoSheet(false)}
+      />
+
       {/* ── Toast overlay ─────────────────────────────────────────────── */}
       {!!toastMsg && (
         <View style={styles.toast} pointerEvents="none">
@@ -1278,6 +1501,14 @@ const styles = StyleSheet.create({
   },
   filterLabel: { flex: 1, fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1 },
 
+  // Filter dropdown container — sits below filter bar at z=100
+  filterDDContainer: {
+    position: 'absolute', left: 0, right: 0, zIndex: 100,
+    // Top will be set dynamically; approximate: insets.top + APPBAR_H + ~86 + FILTER_H
+    // The FilterDropdown panel itself is positioned inside this
+    top: 0, bottom: 0,
+  },
+
   // SectionHeader
   sectionCardTouchable: { zIndex: 5 },
   sectionCard: {
@@ -1293,41 +1524,41 @@ const styles = StyleSheet.create({
   sectionRight: { paddingRight: RIGHT_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', maxWidth: 96 + RIGHT_INSET },
   sectionWeight: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1, textAlign: 'right' },
 
-  // LocationBar content area (right of wedge)
+  // LocationBar
   locBarContent: {
     flex: 1, paddingLeft: 12, paddingVertical: 8,
     flexDirection: 'column', justifyContent: 'center', gap: 4,
   },
-  locBarThumb: {
-    width: 42, height: 42, borderRadius: 8,
-    backgroundColor: NAV_ACTIVE,
-  },
+  locBarThumb: { width: 42, height: 42, borderRadius: 8, backgroundColor: NAV_ACTIVE },
   locBarThumbFallback: { alignItems: 'center', justifyContent: 'center' },
-  locBarName: {
-    fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT,
-    maxWidth: 130,
-  },
-  locBarRight: {
-    paddingRight: ITEM_R_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', gap: 3,
-  },
+  locBarName: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, maxWidth: 130 },
+  locBarRight: { paddingRight: ITEM_R_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', gap: 3 },
   locBarType: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE },
   locBarCount: { fontSize: 11, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED },
 
   // ItemRow
   itemRow: {
     flexDirection: 'row', alignItems: 'center', minHeight: 44, backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1, borderBottomColor: DIVIDER, paddingRight: ITEM_R_INSET,
+    borderBottomWidth: 1, borderBottomColor: DIVIDER,
   },
   checkboxArea: { width: CHECKBOX_HIT, height: 44, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   checkbox: { width: 20, height: 20, borderRadius: 5, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  itemNameZone: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingRight: ITEM_R_INSET, minHeight: 44, justifyContent: 'space-between' },
   itemName: { flex: 1, fontSize: 14.5, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, lineHeight: 20 },
   itemNameChecked: { color: NAV_INACTIVE, opacity: 0.8 },
   itemWeight: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE, letterSpacing: 0.2, flexShrink: 0, marginLeft: 8 },
 
+  // AddItemBar
+  addItemBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, minHeight: 42, backgroundColor: 'rgba(42,87,64,0.04)',
+    borderBottomWidth: 1, borderBottomColor: DIVIDER, borderTopWidth: 1, borderTopColor: DIVIDER,
+  },
+  addItemBarText: { fontSize: 13.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+
   // List
   list:        { flex: 1 },
   listContent: { paddingBottom: 4 },
-  photoListEmptyScroll: { flexGrow: 1, padding: 16 },
 
   // Photo List empty card
   emptyCard: {
@@ -1336,18 +1567,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyCardBadge: {
-    width: 48, height: 48, borderRadius: 14,
-    backgroundColor: 'rgba(42,87,64,0.10)',
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 12,
+    width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(42,87,64,0.10)',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
   },
-  emptyCardTitle: {
-    fontSize: 18, fontWeight: '700', color: PRIMARY_TEXT, textAlign: 'center', marginBottom: 6,
-  },
-  emptyCardSubtitle: {
-    fontSize: 13.5, color: MUTED, lineHeight: 20, textAlign: 'center', marginBottom: 16,
-  },
-  // Pending capture block (state 3)
+  emptyCardTitle: { fontSize: 18, fontWeight: '700', color: PRIMARY_TEXT, textAlign: 'center', marginBottom: 6 },
+  emptyCardSubtitle: { fontSize: 13.5, color: MUTED, lineHeight: 20, textAlign: 'center', marginBottom: 16 },
   pendingBlock: { width: '100%', marginBottom: 16 },
   pendingImage: { width: '100%', height: 168, borderRadius: 10, marginBottom: 10 },
   chooseBtn: {
@@ -1355,31 +1579,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', marginBottom: 8,
   },
   chooseBtnText: { fontSize: 14, fontWeight: '600', color: NAV_ACTIVE },
-  replaceBtn: {
-    width: '100%', minHeight: 42, borderRadius: 9, backgroundColor: NAV_ACTIVE,
-    alignItems: 'center', justifyContent: 'center',
-  },
+  replaceBtn: { width: '100%', minHeight: 42, borderRadius: 9, backgroundColor: NAV_ACTIVE, alignItems: 'center', justifyContent: 'center' },
   replaceBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
-  // VISUAL DESTINATIONS grid (state 6)
   visualDestBlock: { width: '100%', marginBottom: 16, alignItems: 'flex-start' },
-  visualDestLabel: {
-    fontSize: 11, fontWeight: '700', color: MUTED, letterSpacing: 1.2,
-    textTransform: 'uppercase', marginBottom: 8, alignSelf: 'flex-start',
-  },
+  visualDestLabel: { fontSize: 11, fontWeight: '700', color: MUTED, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8, alignSelf: 'flex-start' },
   visualDestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, width: '100%' },
-  visualDestTile: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderRadius: 9, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
-    backgroundColor: '#FAFAF9', padding: 6,
-  },
+  visualDestTile: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 9, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)', backgroundColor: '#FAFAF9', padding: 6 },
   visualDestThumb: { width: 34, height: 34, borderRadius: 6, backgroundColor: NAV_ACTIVE },
   visualDestThumbFallback: { backgroundColor: 'rgba(42,87,64,0.15)' },
   visualDestName: { fontSize: 12.5, fontWeight: '650' as any, color: PRIMARY_TEXT },
-  // Add Photo CTA
-  addPhotoCTA: {
-    width: '100%', minHeight: 44, borderRadius: 10, backgroundColor: NAV_ACTIVE,
-    alignItems: 'center', justifyContent: 'center',
-  },
+  addPhotoCTA: { width: '100%', minHeight: 44, borderRadius: 10, backgroundColor: NAV_ACTIVE, alignItems: 'center', justifyContent: 'center' },
   addPhotoCTAText: { fontSize: 14.5, fontWeight: '650' as any, color: '#fff' },
 
   // "Add another photo" bar
@@ -1431,13 +1640,13 @@ const styles = StyleSheet.create({
   swipeActionBtn: { width: SWIPE_BTN_W, alignItems: 'center', justifyContent: 'center', gap: 4, alignSelf: 'stretch' },
   swipeActionLabel: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#FFFFFF', letterSpacing: 0.3 },
 
-  // Toast
+  // Toast — solid #2A5740 (not rgba)
   toast: {
     position: 'absolute', bottom: 90, left: 20, right: 20,
-    backgroundColor: 'rgba(26,41,32,0.92)', borderRadius: 10,
+    backgroundColor: '#2A5740', borderRadius: 10,
     paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center',
     zIndex: 999, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18, shadowRadius: 6, elevation: 6,
   },
-  toastText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '500' },
+  toastText: { color: '#FFFFFF', fontSize: 13.5, fontFamily: 'PlusJakartaSans_500Medium' },
 });

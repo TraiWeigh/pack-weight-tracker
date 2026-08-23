@@ -194,9 +194,18 @@ type PackDataContextType = {
   undo: () => void;
   redo: () => void;
 
+  // Weight unit
+  weightUnit:    'imperial' | 'metric';
+  setWeightUnit: (u: 'imperial' | 'metric') => void;
+
+  // Trail checklist use state
+  checklistUse:       Record<string, boolean>;
+  toggleChecklistItem:(id: string) => void;
+  clearChecklistUse:  () => void;
+
   // Item mutations (undo-able via mutate())
   toggleItem:  (category: string, id: string) => void;
-  addItem:     (category: string, desc: string, weightOz: number, qty: number) => void;
+  addItem:     (category: string, desc: string, weightOz: number, qty: number) => string;
   deleteItem:  (category: string, id: string) => void;
   renameItem:  (category: string, id: string, newDesc: string) => void;
   updateItem:  (category: string, id: string, patch: Partial<Pick<GearItem, 'weightOz' | 'qty' | 'expendable' | 'sub' | 'photoDataUrl' | 'locationId'>>) => void;
@@ -245,6 +254,8 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   const [canRedo, setCanRedo] = useState(false);
   const [activeLockerEntryId, setActiveLockerEntryId] = useState<string | null>(null);
   const [lockerEntries, setLockerEntries] = useState<NativeLockerEntry[]>([]);
+  const [weightUnit, setWeightUnit_state] = useState<'imperial' | 'metric'>('imperial');
+  const [checklistUse, setChecklistUse]   = useState<Record<string, boolean>>({});
 
   // Refs for stale-closure-safe access
   const currentRef = useRef(current);
@@ -428,7 +439,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
 
   // ── Item mutations (undo-able) ────────────────────────────────────────────────
 
-  const addItem = useCallback((category: string, desc: string, weightOz: number, qty: number) => {
+  const addItem = useCallback((category: string, desc: string, weightOz: number, qty: number): string => {
     const newItem: GearItem = {
       id: generateId(), sub: desc, desc,
       weightOz: Math.max(0, weightOz), qty: Math.max(1, qty),
@@ -438,7 +449,21 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       data: { ...prev.data, [category]: [...(prev.data[category] || []), newItem] },
     }));
+    return newItem.id;
   }, [mutate]);
+
+  const setWeightUnit = useCallback(async (u: 'imperial' | 'metric') => {
+    setWeightUnit_state(u);
+    try { await AsyncStorage.setItem('twm-weight-unit', u); } catch {}
+  }, []);
+
+  const toggleChecklistItem = useCallback((id: string) => {
+    setChecklistUse(prev => ({ ...prev, [id]: !prev[id] }));
+  }, []);
+
+  const clearChecklistUse = useCallback(() => {
+    setChecklistUse({});
+  }, []);
 
   const deleteItem = useCallback((category: string, id: string) => {
     mutate(prev => ({
@@ -739,6 +764,8 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     listName,       setListName,
     listKind,       locations,      photoListCaptureDataUrl,
+    weightUnit,     setWeightUnit,
+    checklistUse,   toggleChecklistItem, clearChecklistUse,
     canUndo,        canRedo,        undo,           redo,
     toggleItem,     addItem,        deleteItem,     renameItem,
     updateItem,     moveItem,       resetAll,
@@ -750,6 +777,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   }), [
     current, isLoading, listName, setListName,
     listKind, locations, photoListCaptureDataUrl,
+    weightUnit, setWeightUnit, checklistUse, toggleChecklistItem, clearChecklistUse,
     canUndo, canRedo, undo, redo,
     toggleItem, addItem, deleteItem, renameItem, updateItem, moveItem, resetAll,
     addCategory, deleteCategory, renameCategory, reorderCategories,

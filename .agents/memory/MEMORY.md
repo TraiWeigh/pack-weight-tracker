@@ -44,3 +44,4 @@
 - [TrailWeigh V3 product audit](trailweigh-v3-product-audit.md) — exhaustive pre-native-conversion product spec: every screen, deck, dialog, gesture, flow, and constant in MobileFunctionalV3.
 - [V3 visual-formula audit](v3-visual-formulas.md) — exact pixel values, formulas, colours, z-indexes, animations, gestures, and Photo List UI geometry for native-app parity checks.
 - [Photo List native architecture](photo-list-native-architecture.md) — sheet cascade, SectionList section kinds, empty-card states, LocationBar, filter toggle, typecheck baseline, deferred items.
+- [R0113 repair pass architecture](r0113-repair-pass.md) — 9 new components, context additions (weightUnit/checklistUse/addItem→string), filterView replaces photoListView, expandedItemKey, SWIPE_BTN_W=88.
