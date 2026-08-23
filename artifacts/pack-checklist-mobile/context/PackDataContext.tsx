@@ -6,13 +6,17 @@
  *     mutate(), which pushes the current snapshot to undoStack then applies the change.
  *   – toggleItem (check/uncheck) bypasses mutate() — same as v3 where check/uncheck
  *     does NOT pollute the undo history.
- *   – listName changes bypass mutate() — list name is user metadata, not pack data.
+ *   – listName / listKind / locations / photoListCaptureDataUrl bypass mutate() —
+ *     list metadata, not pack data.
  *   – Undo/redo history: up to HISTORY_LIMIT=30 snapshots of { data, categoryOrder }.
  *
  * Storage keys (AsyncStorage):
  *   pack-checklist-mobile-v1   – PackState (items by category)
  *   twm-catorder               – string[] (runtime category order)
  *   twm-listname               – string (list name)
+ *   twm-listkind               – 'standard' | 'photo'
+ *   twm-locations              – PackLocation[] (photo list locations)
+ *   twm-pending-capture        – string | null (pending photo dataUrl)
  *   twm-active-locker-id       – string | null (active saved list id)
  *   twm-locker-v1              – NativeLockerEntry[] (saved lists)
  */
@@ -39,9 +43,17 @@ export type GearItem = {
   qty: number;
   checked: boolean;
   expendable: boolean;
+  photoDataUrl?: string;
+  locationId?: string;
 };
 
 export type PackState = { [category: string]: GearItem[] };
+
+export type PackLocation = {
+  id: string;
+  name: string;
+  photoDataUrl?: string;
+};
 
 /** Internal snapshot stored in undo/redo stacks. */
 type NativeSnapshot = {
@@ -52,7 +64,7 @@ type NativeSnapshot = {
 /** Unified runtime state — single source of truth for mutate(). */
 type NativeState = NativeSnapshot;
 
-/** Native equivalent of v3's LockerEntry (no background/photo/meta). */
+/** Native equivalent of v3's LockerEntry. */
 export interface NativeLockerEntry {
   id: string;
   name: string;
@@ -61,6 +73,9 @@ export interface NativeLockerEntry {
     data: PackState;
     categoryOrder: string[];
     listName: string;
+    listKind?: 'standard' | 'photo';
+    locations?: PackLocation[];
+    photoListCaptureDataUrl?: string | null;
   };
 }
 
@@ -73,13 +88,19 @@ export const CATEGORY_ORDER = [
   'Clothing Worn', 'Dog Pack', 'Expendables',
 ];
 
+/** Structural category for Photo List items (created silently on first assignment). */
+export const PHOTO_ITEMS_CATEGORY = 'Items';
+
 const HISTORY_LIMIT = 30;
 
-const STORAGE_KEY   = 'pack-checklist-mobile-v1';
-const CATORDER_KEY  = 'twm-catorder';
-const LISTNAME_KEY  = 'twm-listname';
-const ACTIVE_ID_KEY = 'twm-active-locker-id';
-const LOCKER_KEY    = 'twm-locker-v1';
+const STORAGE_KEY        = 'pack-checklist-mobile-v1';
+const CATORDER_KEY       = 'twm-catorder';
+const LISTNAME_KEY       = 'twm-listname';
+const LISTKIND_KEY       = 'twm-listkind';
+const LOCATIONS_KEY      = 'twm-locations';
+const PENDING_CAPTURE_KEY = 'twm-pending-capture';
+const ACTIVE_ID_KEY      = 'twm-active-locker-id';
+const LOCKER_KEY         = 'twm-locker-v1';
 
 /** Exclusive-check groups (only one item active per sub-label within category). */
 const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
@@ -111,36 +132,38 @@ function validateData(parsed: unknown, order: string[]): PackState {
   const src = (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
     ? (parsed as Record<string, unknown>) : {};
 
-  // All categories in the loaded order
   for (const cat of order) {
     const raw = Array.isArray(src[cat]) ? (src[cat] as unknown[]) : [];
     validated[cat] = raw.map((item: unknown) => {
       const i = item as Record<string, unknown>;
       return {
-        sub:        String(i.sub        ?? i.desc ?? ''),
-        desc:       String(i.desc       ?? i.sub  ?? ''),
-        weightOz:   Number(i.weightOz   ?? 0),
-        qty:        Number(i.qty        ?? 1),
-        checked:    Boolean(i.checked   ?? false),
-        expendable: Boolean(i.expendable ?? false),
-        id:         String(i.id         ?? generateId()),
+        sub:          String(i.sub          ?? i.desc ?? ''),
+        desc:         String(i.desc         ?? i.sub  ?? ''),
+        weightOz:     Number(i.weightOz     ?? 0),
+        qty:          Number(i.qty          ?? 1),
+        checked:      Boolean(i.checked     ?? false),
+        expendable:   Boolean(i.expendable  ?? false),
+        id:           String(i.id           ?? generateId()),
+        photoDataUrl: typeof i.photoDataUrl === 'string' ? i.photoDataUrl : undefined,
+        locationId:   typeof i.locationId   === 'string' ? i.locationId   : undefined,
       };
     });
   }
-  // Categories in data not in order — append them
   for (const cat of Object.keys(src)) {
     if (!validated[cat]) {
       const raw = Array.isArray(src[cat]) ? (src[cat] as unknown[]) : [];
       validated[cat] = raw.map((item: unknown) => {
         const i = item as Record<string, unknown>;
         return {
-          sub:        String(i.sub        ?? i.desc ?? ''),
-          desc:       String(i.desc       ?? i.sub  ?? ''),
-          weightOz:   Number(i.weightOz   ?? 0),
-          qty:        Number(i.qty        ?? 1),
-          checked:    Boolean(i.checked   ?? false),
-          expendable: Boolean(i.expendable ?? false),
-          id:         String(i.id         ?? generateId()),
+          sub:          String(i.sub          ?? i.desc ?? ''),
+          desc:         String(i.desc         ?? i.sub  ?? ''),
+          weightOz:     Number(i.weightOz     ?? 0),
+          qty:          Number(i.qty          ?? 1),
+          checked:      Boolean(i.checked     ?? false),
+          expendable:   Boolean(i.expendable  ?? false),
+          id:           String(i.id           ?? generateId()),
+          photoDataUrl: typeof i.photoDataUrl === 'string' ? i.photoDataUrl : undefined,
+          locationId:   typeof i.locationId   === 'string' ? i.locationId   : undefined,
         };
       });
     }
@@ -156,22 +179,27 @@ type PackDataContextType = {
   categoryOrder: string[];
   isLoading: boolean;
 
-  // List name (not part of undo history — user metadata)
+  // List metadata (not part of undo history)
   listName: string;
   setListName: (name: string) => void;
 
-  // Undo / Redo — v3 HISTORY_LIMIT=30, same class of mutations
+  // Photo List metadata
+  listKind: 'standard' | 'photo';
+  locations: PackLocation[];
+  photoListCaptureDataUrl: string | null;
+
+  // Undo / Redo
   canUndo: boolean;
   canRedo: boolean;
   undo: () => void;
   redo: () => void;
 
   // Item mutations (undo-able via mutate())
-  toggleItem:  (category: string, id: string) => void;  // NOT undo-able (v3 parity)
+  toggleItem:  (category: string, id: string) => void;
   addItem:     (category: string, desc: string, weightOz: number, qty: number) => void;
   deleteItem:  (category: string, id: string) => void;
   renameItem:  (category: string, id: string, newDesc: string) => void;
-  updateItem:  (category: string, id: string, patch: Partial<Pick<GearItem, 'weightOz' | 'qty' | 'expendable' | 'sub'>>) => void;
+  updateItem:  (category: string, id: string, patch: Partial<Pick<GearItem, 'weightOz' | 'qty' | 'expendable' | 'sub' | 'photoDataUrl' | 'locationId'>>) => void;
   moveItem:    (fromCat: string, toCat: string, id: string) => void;
   resetAll:    () => void;
 
@@ -180,6 +208,13 @@ type PackDataContextType = {
   deleteCategory:     (name: string) => void;
   renameCategory:     (oldName: string, newName: string) => boolean;
   reorderCategories:  (newOrder: string[]) => void;
+
+  // Photo List actions
+  startNewPhotoList:  (name: string) => void;
+  addLocation:        (name: string, photoDataUrl: string) => string; // returns new location id
+  setPendingCapture:  (dataUrl: string) => void;
+  clearPendingCapture: () => void;
+  assignPhotoToItem:  (locationId: string | null) => string; // creates item, returns id
 
   // Locker
   lockerEntries:       NativeLockerEntry[];
@@ -202,17 +237,26 @@ const PackDataContext = createContext<PackDataContextType | null>(null);
 export function PackDataProvider({ children }: { children: React.ReactNode }) {
   const [current, setCurrent] = useState<NativeState>({ data: {}, categoryOrder: [] });
   const [listName, setListName_state] = useState('My Pack');
+  const [listKind, setListKind_state] = useState<'standard' | 'photo'>('standard');
+  const [locations, setLocations_state] = useState<PackLocation[]>([]);
+  const [photoListCaptureDataUrl, setPhotoListCaptureDataUrl_state] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [activeLockerEntryId, setActiveLockerEntryId] = useState<string | null>(null);
   const [lockerEntries, setLockerEntries] = useState<NativeLockerEntry[]>([]);
 
-  // Refs for stale-closure-safe access in callbacks
+  // Refs for stale-closure-safe access
   const currentRef = useRef(current);
   currentRef.current = current;
   const listNameRef = useRef(listName);
   listNameRef.current = listName;
+  const listKindRef = useRef(listKind);
+  listKindRef.current = listKind;
+  const locationsRef = useRef(locations);
+  locationsRef.current = locations;
+  const pendingCaptureRef = useRef(photoListCaptureDataUrl);
+  pendingCaptureRef.current = photoListCaptureDataUrl;
   const activeIdRef = useRef(activeLockerEntryId);
   activeIdRef.current = activeLockerEntryId;
   const undoStackRef = useRef<NativeSnapshot[]>([]);
@@ -223,12 +267,16 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function load() {
       try {
-        const [rawData, rawOrder, rawName, rawActiveId] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEY),
-          AsyncStorage.getItem(CATORDER_KEY),
-          AsyncStorage.getItem(LISTNAME_KEY),
-          AsyncStorage.getItem(ACTIVE_ID_KEY),
-        ]);
+        const [rawData, rawOrder, rawName, rawActiveId, rawListKind, rawLocations, rawPending] =
+          await Promise.all([
+            AsyncStorage.getItem(STORAGE_KEY),
+            AsyncStorage.getItem(CATORDER_KEY),
+            AsyncStorage.getItem(LISTNAME_KEY),
+            AsyncStorage.getItem(ACTIVE_ID_KEY),
+            AsyncStorage.getItem(LISTKIND_KEY),
+            AsyncStorage.getItem(LOCATIONS_KEY),
+            AsyncStorage.getItem(PENDING_CAPTURE_KEY),
+          ]);
 
         const order: string[] = rawOrder
           ? (JSON.parse(rawOrder) as string[])
@@ -239,8 +287,13 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
           : seedInitialData(order);
 
         setCurrent({ data, categoryOrder: order });
-        if (rawName) setListName_state(rawName);
+        if (rawName)     setListName_state(rawName);
         if (rawActiveId) setActiveLockerEntryId(rawActiveId);
+        if (rawListKind) setListKind_state(rawListKind as 'standard' | 'photo');
+        if (rawLocations) {
+          try { setLocations_state(JSON.parse(rawLocations)); } catch { /* ignore */ }
+        }
+        if (rawPending) setPhotoListCaptureDataUrl_state(rawPending);
       } catch {
         const order = CATEGORY_ORDER.slice();
         setCurrent({ data: seedInitialData(order), categoryOrder: order });
@@ -265,6 +318,24 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   }, [listName, isLoading]);
 
   useEffect(() => {
+    if (!isLoading) AsyncStorage.setItem(LISTKIND_KEY, listKind).catch(() => {});
+  }, [listKind, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading) AsyncStorage.setItem(LOCATIONS_KEY, JSON.stringify(locations)).catch(() => {});
+  }, [locations, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (photoListCaptureDataUrl) {
+        AsyncStorage.setItem(PENDING_CAPTURE_KEY, photoListCaptureDataUrl).catch(() => {});
+      } else {
+        AsyncStorage.removeItem(PENDING_CAPTURE_KEY).catch(() => {});
+      }
+    }
+  }, [photoListCaptureDataUrl, isLoading]);
+
+  useEffect(() => {
     if (!isLoading) {
       if (activeLockerEntryId) AsyncStorage.setItem(ACTIVE_ID_KEY, activeLockerEntryId).catch(() => {});
       else AsyncStorage.removeItem(ACTIVE_ID_KEY).catch(() => {});
@@ -272,7 +343,6 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   }, [activeLockerEntryId, isLoading]);
 
   // ── mutate() — core undo-aware state updater ──────────────────────────────────
-  // Every undo-able mutation calls this.  Mirrors v3's mutateSandbox().
 
   const mutate = useCallback((updater: (prev: NativeState) => NativeState) => {
     const snapshot = currentRef.current;
@@ -312,7 +382,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     setCanRedo(false);
   }
 
-  // ── List name (NOT undo-able — user metadata, same as v3) ────────────────────
+  // ── List name ────────────────────────────────────────────────────────────────
 
   const setListName = useCallback((name: string) => {
     setListName_state(name.trim() || 'My Pack');
@@ -383,7 +453,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
       data: {
         ...prev.data,
         [category]: (prev.data[category] || []).map(item =>
-          item.id === id ? { ...item, desc: newDesc.trim() } : item,
+          item.id === id ? { ...item, desc: newDesc.trim(), sub: newDesc.trim() } : item,
         ),
       },
     }));
@@ -392,7 +462,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   const updateItem = useCallback((
     category: string,
     id: string,
-    patch: Partial<Pick<GearItem, 'weightOz' | 'qty' | 'expendable' | 'sub'>>,
+    patch: Partial<Pick<GearItem, 'weightOz' | 'qty' | 'expendable' | 'sub' | 'photoDataUrl' | 'locationId'>>,
   ) => {
     mutate(prev => ({
       ...prev,
@@ -474,6 +544,84 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     mutate(prev => ({ ...prev, categoryOrder: newOrder }));
   }, [mutate]);
 
+  // ── Photo List actions ────────────────────────────────────────────────────────
+
+  /** Start a new Photo List — clears all data and sets listKind='photo'. */
+  const startNewPhotoList = useCallback((name: string) => {
+    setCurrent({ data: {}, categoryOrder: [] });
+    setListName_state(name.trim() || 'My Photo List');
+    setListKind_state('photo');
+    setLocations_state([]);
+    setPhotoListCaptureDataUrl_state(null);
+    setActiveLockerEntryId(null);
+    clearHistory();
+  }, []);
+
+  /** Add a location; transfers pending capture to the location. Returns new location id. */
+  const addLocation = useCallback((name: string, photoDataUrl: string): string => {
+    const id = generateId();
+    const loc: PackLocation = { id, name: name.trim(), photoDataUrl };
+    setLocations_state(prev => [...prev, loc]);
+    setPhotoListCaptureDataUrl_state(null);
+    return id;
+  }, []);
+
+  /** Store a captured image as pending (waiting for classification). */
+  const setPendingCapture = useCallback((dataUrl: string) => {
+    setPhotoListCaptureDataUrl_state(dataUrl);
+  }, []);
+
+  /** Clear the pending capture (user chose "Decide later" or assignment complete). */
+  const clearPendingCapture = useCallback(() => {
+    setPhotoListCaptureDataUrl_state(null);
+  }, []);
+
+  /**
+   * Assign the pending photo to a new item in the structural 'Items' category.
+   * Silently creates 'Items' category if absent.
+   * Clears pending capture.
+   * Returns the new item id.
+   */
+  const assignPhotoToItem = useCallback((locationId: string | null): string => {
+    const newId = generateId();
+    const pendingCapture = pendingCaptureRef.current;
+
+    mutate(prev => {
+      // Ensure 'Items' category exists at position 0
+      const hasItems = prev.categoryOrder.includes(PHOTO_ITEMS_CATEGORY);
+      const newCatOrder = hasItems
+        ? prev.categoryOrder
+        : [PHOTO_ITEMS_CATEGORY, ...prev.categoryOrder];
+
+      const newItem: GearItem = {
+        id: newId,
+        sub: '',
+        desc: '',
+        weightOz: 0,
+        qty: 1,
+        checked: true,  // auto-check new Photo List items (v3 parity)
+        expendable: false,
+        photoDataUrl: pendingCapture || undefined,
+        locationId: locationId || undefined,
+      };
+
+      return {
+        categoryOrder: newCatOrder,
+        data: {
+          ...prev.data,
+          [PHOTO_ITEMS_CATEGORY]: [
+            ...(prev.data[PHOTO_ITEMS_CATEGORY] || []),
+            newItem,
+          ],
+        },
+      };
+    });
+
+    // Clear pending capture after assignment
+    setPhotoListCaptureDataUrl_state(null);
+    return newId;
+  }, [mutate]);
+
   // ── Locker helpers ────────────────────────────────────────────────────────────
 
   const refreshLockerEntries = useCallback(async () => {
@@ -498,44 +646,64 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     } catch { return []; }
   };
 
-  /** Save — updates existing active entry OR creates new with timestamped name (v3 parity). */
   const saveToLocker = useCallback(async () => {
-    const state  = currentRef.current;
-    const lName  = listNameRef.current;
+    const state    = currentRef.current;
+    const lName    = listNameRef.current;
+    const lKind    = listKindRef.current;
+    const locs     = locationsRef.current;
+    const pending  = pendingCaptureRef.current;
     const activeId = activeIdRef.current;
-    const entries = await _readLockerEntries();
+    const entries  = await _readLockerEntries();
+
+    const storeBase = {
+      data: state.data,
+      categoryOrder: state.categoryOrder,
+      listName: lName,
+      listKind: lKind,
+      locations: locs,
+      photoListCaptureDataUrl: pending,
+    };
 
     if (activeId) {
       const idx = entries.findIndex(e => e.id === activeId);
       if (idx !== -1) {
-        entries[idx] = { ...entries[idx], savedAt: Date.now(), store: { data: state.data, categoryOrder: state.categoryOrder, listName: lName } };
+        entries[idx] = { ...entries[idx], savedAt: Date.now(), store: storeBase };
         await _writeLockerEntries(entries);
         return;
       }
     }
-    // Auto-name: "My Pack — Aug 22, 3:45 PM"
     const now  = new Date();
     const name = `${lName} — ${now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    const entry: NativeLockerEntry = { id: generateId(), name, savedAt: Date.now(), store: { data: state.data, categoryOrder: state.categoryOrder, listName: lName } };
+    const entry: NativeLockerEntry = { id: generateId(), name, savedAt: Date.now(), store: storeBase };
     await _writeLockerEntries([...entries, entry]);
     setActiveLockerEntryId(entry.id);
   }, []);
 
-  /** Save As — always creates a new entry with the provided name. */
   const saveAsToLocker = useCallback(async (name: string) => {
     const state   = currentRef.current;
     const lName   = listNameRef.current;
+    const lKind   = listKindRef.current;
+    const locs    = locationsRef.current;
+    const pending = pendingCaptureRef.current;
     const trimmed = name.trim() || lName;
     const entries = await _readLockerEntries();
-    const entry: NativeLockerEntry = { id: generateId(), name: trimmed, savedAt: Date.now(), store: { data: state.data, categoryOrder: state.categoryOrder, listName: lName } };
+    const entry: NativeLockerEntry = {
+      id: generateId(), name: trimmed, savedAt: Date.now(),
+      store: {
+        data: state.data, categoryOrder: state.categoryOrder, listName: lName,
+        listKind: lKind, locations: locs, photoListCaptureDataUrl: pending,
+      },
+    };
     await _writeLockerEntries([...entries, entry]);
     setActiveLockerEntryId(entry.id);
   }, []);
 
-  /** Load — replaces current state with a saved entry; clears undo/redo (v3 parity). */
   const loadFromLocker = useCallback((entry: NativeLockerEntry) => {
     setCurrent({ data: entry.store.data, categoryOrder: entry.store.categoryOrder });
     setListName_state(entry.store.listName);
+    setListKind_state(entry.store.listKind || 'standard');
+    setLocations_state(entry.store.locations || []);
+    setPhotoListCaptureDataUrl_state(entry.store.photoListCaptureDataUrl || null);
     setActiveLockerEntryId(entry.id);
     clearHistory();
   }, []);
@@ -551,11 +719,14 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     await _writeLockerEntries(entries.map(e => e.id === id ? { ...e, name: newName.trim() } : e));
   }, []);
 
-  /** Start a new empty list — matches v3's handleCreateNewList. */
+  /** Start a new empty standard list. */
   const startNewList = useCallback(() => {
     const order = CATEGORY_ORDER.slice();
     setCurrent({ data: Object.fromEntries(order.map(c => [c, []])), categoryOrder: order });
     setListName_state('New List');
+    setListKind_state('standard');
+    setLocations_state([]);
+    setPhotoListCaptureDataUrl_state(null);
     setActiveLockerEntryId(null);
     clearHistory();
   }, []);
@@ -566,19 +737,23 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
     data:          current.data,
     categoryOrder: current.categoryOrder,
     isLoading,
-    listName,
-    setListName,
-    canUndo, canRedo, undo, redo,
-    toggleItem, addItem, deleteItem, renameItem, updateItem, moveItem, resetAll,
-    addCategory, deleteCategory, renameCategory, reorderCategories,
-    lockerEntries, activeLockerEntryId,
+    listName,       setListName,
+    listKind,       locations,      photoListCaptureDataUrl,
+    canUndo,        canRedo,        undo,           redo,
+    toggleItem,     addItem,        deleteItem,     renameItem,
+    updateItem,     moveItem,       resetAll,
+    addCategory,    deleteCategory, renameCategory, reorderCategories,
+    startNewPhotoList, addLocation, setPendingCapture, clearPendingCapture, assignPhotoToItem,
+    lockerEntries,  activeLockerEntryId,
     refreshLockerEntries, saveToLocker, saveAsToLocker,
     loadFromLocker, deleteLockerEntry, renameLockerEntry, startNewList,
   }), [
     current, isLoading, listName, setListName,
+    listKind, locations, photoListCaptureDataUrl,
     canUndo, canRedo, undo, redo,
     toggleItem, addItem, deleteItem, renameItem, updateItem, moveItem, resetAll,
     addCategory, deleteCategory, renameCategory, reorderCategories,
+    startNewPhotoList, addLocation, setPendingCapture, clearPendingCapture, assignPhotoToItem,
     lockerEntries, activeLockerEntryId,
     refreshLockerEntries, saveToLocker, saveAsToLocker,
     loadFromLocker, deleteLockerEntry, renameLockerEntry, startNewList,

@@ -8,6 +8,9 @@
  * Native implementation: pageSheet with Save / Save As / New List actions at
  * top, then a scrollable list of saved entries. Swipe-to-delete or long-press
  * on an entry row for Rename / Delete.
+ *
+ * Photo List entries show a "Photo List" badge (Camera icon + label) so they
+ * are distinguishable from standard lists (v3 parity: listKind in store).
  */
 
 import React, { useEffect, useCallback, useState } from 'react';
@@ -188,10 +191,13 @@ export function LockerModal({ visible, onClose }: LockerModalProps) {
   // ── Render entry ──────────────────────────────────────────────────────────
 
   const renderEntry = useCallback(({ item }: { item: NativeLockerEntry }) => {
-    const isActive = item.id === activeLockerEntryId;
-    const date     = new Date(item.savedAt);
-    const dateStr  = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const timeStr  = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const isActive    = item.id === activeLockerEntryId;
+    const isPhotoList = item.store.listKind === 'photo';
+    const date        = new Date(item.savedAt);
+    const dateStr     = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr     = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const itemCount   = Object.values(item.store.data).reduce((n, items) => n + items.length, 0);
+    const catCount    = item.store.categoryOrder.length;
 
     return (
       <TouchableOpacity
@@ -201,24 +207,37 @@ export function LockerModal({ visible, onClose }: LockerModalProps) {
         activeOpacity={0.7}
       >
         {/* Active indicator */}
-        {isActive && (
-          <View style={styles.activeIndicator} />
-        )}
+        {isActive && <View style={styles.activeIndicator} />}
 
-        {/* Folder icon */}
-        <View style={[styles.entryIcon, isActive && styles.entryIconActive]}>
-          <Ionicons name="folder-outline" size={20} color={isActive ? '#fff' : '#6B7280'} />
+        {/* Folder / Camera icon */}
+        <View style={[styles.entryIcon, isActive && styles.entryIconActive, isPhotoList && styles.entryIconPhoto]}>
+          <Ionicons
+            name={isPhotoList ? 'camera-outline' : 'folder-outline'}
+            size={20}
+            color={isActive || isPhotoList ? '#fff' : '#6B7280'}
+          />
         </View>
 
-        {/* Name + date */}
+        {/* Name + date + stats */}
         <View style={styles.entryMeta}>
-          <Text style={[styles.entryName, isActive && styles.entryNameActive]} numberOfLines={1}>
-            {item.name}
-          </Text>
+          <View style={styles.entryNameRow}>
+            <Text style={[styles.entryName, isActive && styles.entryNameActive]} numberOfLines={1}>
+              {item.name}
+            </Text>
+            {/* Photo List badge — v3 parity: listKind displayed in Locker */}
+            {isPhotoList && (
+              <View style={styles.photoListBadge}>
+                <Ionicons name="camera-outline" size={10} color={NAV_ACTIVE} />
+                <Text style={styles.photoListBadgeText}>Photo List</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.entryDate}>{dateStr} · {timeStr}</Text>
           <Text style={styles.entryStats}>
-            {Object.values(item.store.data).reduce((n, items) => n + items.length, 0)} items ·{' '}
-            {item.store.categoryOrder.length} categories
+            {itemCount} item{itemCount !== 1 ? 's' : ''} · {catCount} categor{catCount !== 1 ? 'ies' : 'y'}
+            {isPhotoList && item.store.locations && item.store.locations.length > 0
+              ? ` · ${item.store.locations.length} location${item.store.locations.length !== 1 ? 's' : ''}`
+              : ''}
           </Text>
         </View>
 
@@ -271,7 +290,6 @@ export function LockerModal({ visible, onClose }: LockerModalProps) {
 
         {/* Action row */}
         <View style={styles.actionRow}>
-          {/* Save / Update button */}
           <TouchableOpacity
             style={styles.btnSave}
             onPress={handleSave}
@@ -289,13 +307,11 @@ export function LockerModal({ visible, onClose }: LockerModalProps) {
             )}
           </TouchableOpacity>
 
-          {/* Save As */}
           <TouchableOpacity style={styles.btnSecondary} onPress={handleSaveAs}>
             <Ionicons name="copy-outline" size={15} color={NAV_ACTIVE} />
             <Text style={styles.btnSecondaryText}>Save As</Text>
           </TouchableOpacity>
 
-          {/* New List */}
           <TouchableOpacity style={styles.btnSecondary} onPress={handleNewList}>
             <Ionicons name="add-outline" size={15} color="#6B7280" />
             <Text style={[styles.btnSecondaryText, { color: '#6B7280' }]}>New</Text>
@@ -347,7 +363,6 @@ const styles = StyleSheet.create({
     marginTop: 0, marginBottom: 8,
   },
 
-  // ── Header ─────────────────────────────────────────────────────────────────
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -370,7 +385,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
 
-  // ── Action row ─────────────────────────────────────────────────────────────
   actionRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -410,14 +424,11 @@ const styles = StyleSheet.create({
     color: NAV_ACTIVE,
   },
 
-  // ── Divider ────────────────────────────────────────────────────────────────
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: 'rgba(0,0,0,0.08)',
-    marginHorizontal: 0,
   },
 
-  // ── List ───────────────────────────────────────────────────────────────────
   listContent: { paddingTop: 8 },
   rowSep: {
     height: StyleSheet.hairlineWidth,
@@ -425,7 +436,6 @@ const styles = StyleSheet.create({
     marginLeft: 72,
   },
 
-  // ── Entry row ──────────────────────────────────────────────────────────────
   entryRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -453,13 +463,40 @@ const styles = StyleSheet.create({
   entryIconActive: {
     backgroundColor: NAV_ACTIVE,
   },
+  entryIconPhoto: {
+    backgroundColor: '#4E7B5C',
+  },
   entryMeta: { flex: 1, gap: 2 },
+  entryNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
   entryName: {
     fontSize: 15,
     fontFamily: 'PlusJakartaSans_600SemiBold',
     color: '#111827',
+    flexShrink: 1,
   },
   entryNameActive: { color: NAV_ACTIVE },
+
+  // Photo List badge — Camera icon + "Photo List" label (v3 parity)
+  photoListBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(42,87,64,0.10)',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  photoListBadgeText: {
+    fontSize: 10,
+    fontFamily: 'PlusJakartaSans_600SemiBold',
+    color: NAV_ACTIVE,
+  },
+
   entryDate: {
     fontSize: 12,
     fontFamily: 'PlusJakartaSans_400Regular',
@@ -487,11 +524,8 @@ const styles = StyleSheet.create({
     color: NAV_ACTIVE,
   },
   loadBtnTextActive: { color: '#FFFFFF' },
-  deleteBtn: {
-    padding: 6,
-  },
+  deleteBtn: { padding: 6 },
 
-  // ── Empty state ────────────────────────────────────────────────────────────
   emptyState: {
     flex: 1,
     alignItems: 'center',

@@ -43,3 +43,4 @@
 - [R0113 v3 migration phase 1](r0113-migration-phase1.md) — addItem/delete/rename/resetAll in context; AddItemModal/SearchModal; AnimatedSwipeRow swipe-reveal.
 - [TrailWeigh V3 product audit](trailweigh-v3-product-audit.md) — exhaustive pre-native-conversion product spec: every screen, deck, dialog, gesture, flow, and constant in MobileFunctionalV3.
 - [V3 visual-formula audit](v3-visual-formulas.md) — exact pixel values, formulas, colours, z-indexes, animations, gestures, and Photo List UI geometry for native-app parity checks.
+- [Photo List native architecture](photo-list-native-architecture.md) — sheet cascade, SectionList section kinds, empty-card states, LocationBar, filter toggle, typecheck baseline, deferred items.

@@ -7,7 +7,9 @@
  *   1. Add Item      — list of categories; tap one → blank item added + deck closes
  *   2. Add Category  — TextInput + Add button → addCategory → deck closes
  *   3. Scan / Import — button → document import (coming soon for mobile)
- *   4. New List      — Standard List | Photo List → confirmation → startNewList
+ *   4. New List      — Standard List | Photo List tiles
+ *                      Standard → confirmation alert → startNewList
+ *                      Photo    → PhotoListNameSheet → startNewPhotoList
  *
  * Interaction model (matches v3 DeckInactiveCard):
  *   - Tapping a card's header row expands/collapses it (accordion; one open at a time)
@@ -33,6 +35,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { usePackData } from '@/context/PackDataContext';
+import { PhotoListNameSheet } from '@/components/PhotoListNameSheet';
 
 // ─── Design constants (v3 colour system) ─────────────────────────────────────
 
@@ -89,6 +92,7 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
 
   const [activeCard, setActiveCard] = useState<string | null>(null);
   const [newCatName, setNewCatName] = useState('');
+  const [showPhotoListName, setShowPhotoListName] = useState(false);
 
   // Bottom-sheet slide animation (matches v3 CardDeck "rise from bottom")
   const translateY = useRef(new Animated.Value(700)).current;
@@ -118,7 +122,6 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
   }, []);
 
   // ── Card 1: Add Item (v3 lines 3937–3963) ───────────────────────────────────
-  // tap category → addItem → toast → close (v3: setOpenCatName to reveal the row)
   const handleAddItem = useCallback((cat: string) => {
     addItem(cat, '', 0, 1);
     showToast(`Item added to "${cat}"`);
@@ -140,7 +143,6 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
   }, [newCatName, addCategory, showToast, onClose]);
 
   // ── Card 3: Scan / Import (v3 lines 4021–4031) ──────────────────────────────
-  // v3 opens ScannerOverlay; native equivalent is document import (coming soon)
   const handleScanImport = useCallback(() => {
     Alert.alert(
       'Scan / Import',
@@ -149,12 +151,11 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
     );
   }, []);
 
-  // ── Card 4: New List (v3 lines 4045–4076) ───────────────────────────────────
-  // v3: setNewListKindForName → naming dialog → create in locker
-  // native: confirmation alert → startNewList (same flow as LockerModal "New List")
-  const handleNewList = useCallback((kind: 'standard' | 'photo') => {
+  // ── Card 4: New List — Standard path ────────────────────────────────────────
+  // v3: confirmation → startNewList
+  const handleNewStandardList = useCallback(() => {
     Alert.alert(
-      kind === 'standard' ? 'New Standard List' : 'New Photo List',
+      'New Standard List',
       'Your current list will be cleared. Save it first if you want to keep it.',
       [
         { text: 'Cancel', style: 'cancel' },
@@ -165,12 +166,26 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
             if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             startNewList();
             onClose();
-            showToast(kind === 'photo' ? 'New Photo List started' : 'New list started');
+            showToast('New list started');
           },
         },
       ],
     );
   }, [startNewList, onClose, showToast]);
+
+  // ── Card 4: New List — Photo List path ──────────────────────────────────────
+  // v3: opens New List Name Dialog then creates Photo List
+  const handleNewPhotoList = useCallback(() => {
+    // Close the deck first, then show the name sheet
+    onClose();
+    setTimeout(() => setShowPhotoListName(true), 250);
+  }, [onClose]);
+
+  const handlePhotoListCreated = useCallback((name: string) => {
+    setShowPhotoListName(false);
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    showToast(`Photo List "${name}" created`);
+  }, [showToast]);
 
   // ── Expanded content per card ────────────────────────────────────────────────
 
@@ -241,28 +256,36 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
         return (
           <View style={styles.cardContent}>
             <Text style={styles.hint}>Choose the kind of list you want to create:</Text>
+
+            {/* Standard List tile */}
             <TouchableOpacity
               style={styles.listOption}
-              onPress={() => handleNewList('standard')}
+              onPress={handleNewStandardList}
               activeOpacity={0.8}
               accessibilityLabel="Create a new standard list"
             >
-              <Ionicons name="document-text-outline" size={18} color={NAV_ACTIVE} />
+              <View style={[styles.listOptionIcon, { backgroundColor: NAV_ACTIVE }]}>
+                <Ionicons name="list-outline" size={18} color="#fff" />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.listOptionTitle}>Standard List</Text>
-                <Text style={styles.listOptionSub}>Start with an empty gear list</Text>
+                <Text style={styles.listOptionSub}>Track items with weights and checkboxes</Text>
               </View>
             </TouchableOpacity>
+
+            {/* Photo List tile — now opens PhotoListNameSheet instead of an Alert */}
             <TouchableOpacity
               style={styles.listOption}
-              onPress={() => handleNewList('photo')}
+              onPress={handleNewPhotoList}
               activeOpacity={0.8}
               accessibilityLabel="Create a new Photo List"
             >
-              <Ionicons name="camera-outline" size={18} color={NAV_ACTIVE} />
+              <View style={[styles.listOptionIcon, { backgroundColor: '#4E7B5C' }]}>
+                <Ionicons name="camera-outline" size={18} color="#fff" />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.listOptionTitle}>Photo List</Text>
-                <Text style={styles.listOptionSub}>Start a visual list, ready for photos</Text>
+                <Text style={styles.listOptionSub}>Capture photos to build your list visually</Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -273,84 +296,94 @@ export function AddDeck({ visible, onClose, showToast }: AddDeckProps) {
     }
   };
 
-  if (!visible) return null;
+  if (!visible && !showPhotoListName) return null;
 
   return (
-    <Modal
-      transparent
-      visible={visible}
-      animationType="none"
-      onRequestClose={onClose}
-      statusBarTranslucent
-    >
-      {/* Backdrop — tap to close (matches v3 CardDeck backdrop) */}
-      <TouchableOpacity
-        style={styles.backdrop}
-        onPress={onClose}
-        activeOpacity={1}
-        accessible={false}
-      />
-
-      {/* Deck sheet */}
-      <Animated.View
-        style={[
-          styles.deck,
-          { paddingBottom: insets.bottom, transform: [{ translateY }] },
-        ]}
-      >
-        {/* ── Header (label + close ×) ── */}
-        <View style={styles.deckHeader}>
-          <Text style={styles.deckLabel}>Add</Text>
-          <TouchableOpacity
-            onPress={onClose}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel="Close Add panel"
-          >
-            <Ionicons name="close" size={22} color={PRIMARY} />
-          </TouchableOpacity>
-        </View>
-
-        {/* ── Card list (accordion) ── */}
-        <ScrollView
-          style={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          bounces={false}
-          showsVerticalScrollIndicator={false}
+    <>
+      {/* ── Main deck sheet ── */}
+      {visible && (
+        <Modal
+          transparent
+          visible={visible}
+          animationType="none"
+          onRequestClose={onClose}
+          statusBarTranslucent
         >
-          {CARDS.map((card, idx) => {
-            const isActive = activeCard === card.id;
-            return (
-              <View key={card.id} style={[styles.cardWrap, idx > 0 && styles.cardTopBorder]}>
-                {/* Inactive bar / tap target (v3 DeckInactiveCard) */}
-                <TouchableOpacity
-                  style={styles.cardBar}
-                  onPress={() => toggleCard(card.id)}
-                  activeOpacity={0.65}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${card.title} — ${isActive ? 'collapse' : 'open card'}`}
-                >
-                  <View style={styles.cardIconWrap}>
-                    <Ionicons name={card.icon} size={18} color={NAV_ACTIVE} />
+          {/* Backdrop — tap to close */}
+          <TouchableOpacity
+            style={styles.backdrop}
+            onPress={onClose}
+            activeOpacity={1}
+            accessible={false}
+          />
+
+          {/* Deck sheet */}
+          <Animated.View
+            style={[
+              styles.deck,
+              { paddingBottom: insets.bottom, transform: [{ translateY }] },
+            ]}
+          >
+            {/* ── Header (label + close ×) ── */}
+            <View style={styles.deckHeader}>
+              <Text style={styles.deckLabel}>Add</Text>
+              <TouchableOpacity
+                onPress={onClose}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityLabel="Close Add panel"
+              >
+                <Ionicons name="close" size={22} color={PRIMARY} />
+              </TouchableOpacity>
+            </View>
+
+            {/* ── Card list (accordion) ── */}
+            <ScrollView
+              style={styles.scroll}
+              keyboardShouldPersistTaps="handled"
+              bounces={false}
+              showsVerticalScrollIndicator={false}
+            >
+              {CARDS.map((card, idx) => {
+                const isActive = activeCard === card.id;
+                return (
+                  <View key={card.id} style={[styles.cardWrap, idx > 0 && styles.cardTopBorder]}>
+                    <TouchableOpacity
+                      style={styles.cardBar}
+                      onPress={() => toggleCard(card.id)}
+                      activeOpacity={0.65}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${card.title} — ${isActive ? 'collapse' : 'open card'}`}
+                    >
+                      <View style={styles.cardIconWrap}>
+                        <Ionicons name={card.icon} size={18} color={NAV_ACTIVE} />
+                      </View>
+                      <View style={styles.cardMeta}>
+                        <Text style={styles.cardTitle}>{card.title}</Text>
+                        <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+                      </View>
+                      <Ionicons
+                        name={isActive ? 'chevron-up' : 'chevron-down'}
+                        size={16}
+                        color={MUTED}
+                      />
+                    </TouchableOpacity>
+                    {isActive && renderContent(card.id)}
                   </View>
-                  <View style={styles.cardMeta}>
-                    <Text style={styles.cardTitle}>{card.title}</Text>
-                    <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
-                  </View>
-                  <Ionicons
-                    name={isActive ? 'chevron-up' : 'chevron-down'}
-                    size={16}
-                    color={MUTED}
-                  />
-                </TouchableOpacity>
-                {/* Expanded content */}
-                {isActive && renderContent(card.id)}
-              </View>
-            );
-          })}
-          <View style={{ height: 24 }} />
-        </ScrollView>
-      </Animated.View>
-    </Modal>
+                );
+              })}
+              <View style={{ height: 24 }} />
+            </ScrollView>
+          </Animated.View>
+        </Modal>
+      )}
+
+      {/* ── Photo List naming sheet (shown after deck closes) ── */}
+      <PhotoListNameSheet
+        visible={showPhotoListName}
+        onClose={() => setShowPhotoListName(false)}
+        onCreated={handlePhotoListCreated}
+      />
+    </>
   );
 }
 
@@ -390,7 +423,6 @@ const styles = StyleSheet.create({
   },
   scroll: { flex: 1 },
 
-  // ── Card row ──────────────────────────────────────────────────────────────
   cardWrap:      { backgroundColor: CARD_BG },
   cardTopBorder: { borderTopWidth: 1, borderTopColor: DIVIDER },
   cardBar: {
@@ -411,12 +443,10 @@ const styles = StyleSheet.create({
   cardTitle:    { fontSize: 14.5, fontWeight: '600', color: PRIMARY },
   cardSubtitle: { fontSize: 11.5, color: MUTED, marginTop: 1 },
 
-  // ── Expanded content panels ───────────────────────────────────────────────
   cardContent: { paddingHorizontal: 16, paddingBottom: 14 },
   hint:  { fontSize: 12.5, color: SECONDARY, marginBottom: 8, lineHeight: 18 },
   empty: { fontSize: 13, color: MUTED, paddingVertical: 4 },
 
-  // Add Item — category rows
   catRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -427,7 +457,6 @@ const styles = StyleSheet.create({
   },
   catRowText: { fontSize: 14.5, color: PRIMARY, flex: 1 },
 
-  // Add Category — text input row
   catInputRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 4 },
   catInput: {
     flex: 1,
@@ -444,11 +473,9 @@ const styles = StyleSheet.create({
   addBtnDim: { backgroundColor: MUTED },
   addBtnText: { color: '#fff', fontSize: 13.5, fontWeight: '600' },
 
-  // Scan / Import — full-width button
   importBtn:     { width: '100%', backgroundColor: NAV_ACTIVE, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   importBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
 
-  // New List — option tiles
   listOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -459,6 +486,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 8,
+  },
+  listOptionIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
   listOptionTitle: { fontSize: 14.5, fontWeight: '600', color: PRIMARY },
   listOptionSub:   { fontSize: 12.5, color: SECONDARY, marginTop: 2 },

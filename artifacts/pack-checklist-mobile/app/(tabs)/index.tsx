@@ -1,48 +1,29 @@
 /**
- * index.tsx — Gear screen  N004 / R0112
+ * index.tsx — Gear screen with full Photo List support
  *
- * Faithful port of the working /mobile-functional-v3 web screen.
- * All measurements, colors, and behaviors sourced directly from
- * MobileFunctionalV3.tsx and the live v3 screenshot.
+ * Faithful port of MobileFunctionalV3.tsx including the complete Photo List
+ * workflow (Task #140). All standard-list behaviour is preserved unchanged.
  *
- * Changes from N003:
- *   - OLD Gear/Summary tab capsule removed (handled in _layout.tsx)
- *   - BottomBox: 4 correct groups, Group 1 = Locker|Summary|Add|Search|Next
- *   - Summary cell wired to /(tabs)/summary via useRouter
- *   - Category headers tappable: single-open collapse/expand (openCatName)
- *   - Expand-all/collapse-all chevron on hero
- *   - Hero right stack: catCount categories + ✓ selectedCount Selected
- *   - Filter label: static "Filter: Category" (v3 default state)
- *   - Category tile: angled wedge via react-native-svg Polygon overlay
- *   - Category weight: oz (not lbs)
- *   - Category subtitle: "N selected" (not "N packed")
- *   - AppBar: hamburger icon + 6 decorative shortcut icons (non-functional, matches v3)
- *   - bottomPad: insets.bottom only (tab bar hidden)
- *
- * Documented limitations (non-functional in N004, deferred):
- *   - Locker: no native Locker route yet — visual only
- *   - Add / Search: require data model work not in N004 scope — visual only
- *   - Undo / Redo: no undo history in native data layer — visual only
- *   - Camera / Photos / Save / Share / More / Preview: out of scope — visual only
- *   - AppBar hamburger: no drawer in native yet — visual only
- *   - AppBar shortcut icons: decorative, matching v3 aria-hidden treatment
- *   - Filter: Location/Photo viewModes require data model changes — static Category label
- *   - List name "Backpacking Gear": hardcoded; native PackDataContext has no list-name field
- *
- * Preserved: PackDataContext, weightUtils, initialData, haptics,
- *            item toggles, exclusive groups, AsyncStorage, routes,
- *            categoryTheme.ts, Expo SDK/runtime, web v3 (untouched).
- *
- * Unrepresentable in RN (noted inline):
- *   font-weight 800 → 700Bold (PlusJakartaSans max)
- *   font-weight 450 → 500Medium
- *   CSS filter: drop-shadow on wedge → SVG polygon overlay simulating clip-path
+ * Photo List additions:
+ *   - Empty state card: camera badge, title, subtitle, 2-col VISUAL DESTINATIONS grid,
+ *     pending capture image with "Choose Location or Item" + "Replace Photo" buttons,
+ *     "Add Photo" CTA
+ *   - PhotoListSourceSheet   → Camera / Photos / Cancel
+ *   - PhotoListAssignmentSheet → What is this photo? (Location / Item / Decide later)
+ *   - PhotoListLocationNameSheet → Name this location (autoFocus, Save Location)
+ *   - PhotoListItemDestinationSheet → 2-col grid (Unassigned + location tiles)
+ *   - PhotoListItemNameSheet → Name this item (auto-opens after assignment)
+ *   - "Add another photo" bar above list when items exist
+ *   - Location view: Items section + add-photo bar + location wedge bars
+ *   - Filter control shows Category / Location; tappable in Photo List mode
+ *   - Locker save/load preserves all Photo List state
  */
 
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
+  Image,
   PanResponder,
   Share,
   View,
@@ -59,44 +40,49 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Polygon } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
-import { usePackData, CATEGORY_ORDER, GearItem } from '@/context/PackDataContext'; // CATEGORY_ORDER kept for seed reference
+import {
+  usePackData, CATEGORY_ORDER, GearItem, PHOTO_ITEMS_CATEGORY, PackLocation,
+} from '@/context/PackDataContext';
 import { calcTotalOz, calcWeights, ozToLbs } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 import { AddDeck } from '@/components/AddDeck';
 import { SearchModal } from '@/components/SearchModal';
 import { LockerModal } from '@/components/LockerModal';
+import { PhotoListSourceSheet } from '@/components/PhotoListSourceSheet';
+import { PhotoListAssignmentSheet } from '@/components/PhotoListAssignmentSheet';
+import { PhotoListLocationNameSheet } from '@/components/PhotoListLocationNameSheet';
+import { PhotoListItemDestinationSheet } from '@/components/PhotoListItemDestinationSheet';
+import { PhotoListItemNameSheet } from '@/components/PhotoListItemNameSheet';
 
-// ─── v3 design constants (exact values from MobileFunctionalV3.tsx) ──────────
+// ─── v3 design constants ──────────────────────────────────────────────────────
 
-const SUMMARY_BG   = '#2A5740';   // rgba(42,87,64,0.94) → opaque native equiv
-const NAV_ACTIVE   = '#2A5740';   // line 218
-const NAV_INACTIVE = '#6E7672';   // line 219
-const CB_CHECKED   = '#4E7D5C';   // line 220
-const PRIMARY_TEXT = '#1A2920';   // line 211
-const PAGE_BG      = '#F2EDE4';   // line 205
+const SUMMARY_BG   = '#2A5740';
+const NAV_ACTIVE   = '#2A5740';
+const NAV_INACTIVE = '#6E7672';
+const CB_CHECKED   = '#4E7D5C';
+const PRIMARY_TEXT = '#1A2920';
+const PAGE_BG      = '#F2EDE4';
+const MUTED        = '#667270';
 const DIVIDER      = 'rgba(0,0,0,0.06)';
 
-const TILE_W         = 72;   // WEDGE_W  line 187
-const WEDGE_POINT    = 17;   // WEDGE_POINT  line 190 — angled right edge depth
-const CAT_HEADER_H   = 64;   // CHECKLIST_ROW_H  line 191
-const RIGHT_INSET    = 44;   // CATEGORY_WEIGHT_RIGHT_INSET  line 195
-const ITEM_R_INSET   = 34;   // CHECKLIST_RIGHT_INSET  line 194
-const FILTER_H       = 50;   // FILTER_BAR_H  line 233
-const NAV_H          = 58;   // NAV_H  line 228
-const APPBAR_H       = 52;   // AppBar content height
-const CHECKBOX_HIT   = 44;   // checkbox hit-target width (v3 line 5036)
-const SWIPE_BTN_W    = 80;   // Delete action button width (v3: SWIPE_ACTION_W = 88px)
-const SWIPE_REVEAL   = 80;   // total reveal = 1 × SWIPE_BTN_W — Delete only, matches v3
+const TILE_W         = 72;
+const WEDGE_POINT    = 17;
+const CAT_HEADER_H   = 64;
+const RIGHT_INSET    = 44;
+const ITEM_R_INSET   = 34;
+const FILTER_H       = 50;
+const NAV_H          = 58;
+const APPBAR_H       = 52;
+const CHECKBOX_HIT   = 44;
+const SWIPE_BTN_W    = 80;
+const SWIPE_REVEAL   = 80;
+const NUM_GROUPS     = 4;
 
-// ─── Box Groups (4 total, matching v3 exactly) ────────────────────────────────
-// Source: MobileFunctionalV3.tsx lines 1227–1281
-
-const NUM_GROUPS = 4;
+// ─── Box Groups ───────────────────────────────────────────────────────────────
 
 type BoxCell = { icon: string; label: string; action: string };
 
 const BOX_GROUPS: BoxCell[][] = [
-  // Group 1 — default (v3 lines 1227–1238)
   [
     { icon: 'folder-outline',              label: 'Locker',   action: 'locker'   },
     { icon: 'bar-chart-outline',           label: 'Summary',  action: 'summary'  },
@@ -104,7 +90,6 @@ const BOX_GROUPS: BoxCell[][] = [
     { icon: 'search-outline',              label: 'Search',   action: 'search'   },
     { icon: 'chevron-forward-outline',     label: 'Next',     action: 'next'     },
   ],
-  // Group 2 (v3 lines 1241–1252)
   [
     { icon: 'chevron-back-outline',        label: 'Back',     action: 'back'     },
     { icon: 'arrow-undo-outline',          label: 'Undo',     action: 'undo'     },
@@ -112,7 +97,6 @@ const BOX_GROUPS: BoxCell[][] = [
     { icon: 'refresh-outline',             label: 'Reset',    action: 'reset'    },
     { icon: 'chevron-forward-outline',     label: 'Next',     action: 'next'     },
   ],
-  // Group 3 (v3 lines 1255–1266)
   [
     { icon: 'chevron-back-outline',        label: 'Back',     action: 'back'     },
     { icon: 'camera-outline',              label: 'Camera',   action: 'camera'   },
@@ -120,7 +104,6 @@ const BOX_GROUPS: BoxCell[][] = [
     { icon: 'print-outline',               label: 'Preview',  action: 'preview'  },
     { icon: 'chevron-forward-outline',     label: 'Next',     action: 'next'     },
   ],
-  // Group 4 (v3 lines 1269–1281)
   [
     { icon: 'chevron-back-outline',        label: 'Back',     action: 'back'     },
     { icon: 'save-outline',                label: 'Save',     action: 'save'     },
@@ -130,55 +113,39 @@ const BOX_GROUPS: BoxCell[][] = [
   ],
 ];
 
-// v3 AppBar decorative shortcut icons (right side, aria-hidden in v3, non-functional in N004)
-// Source: MobileFunctionalV3.tsx lines 4319–4354
 const APPBAR_SHORTCUT_ICONS = [
-  'bag-outline',       // Backpack
-  'train-outline',     // Train
-  'airplane-outline',  // Plane
-  'boat-outline',      // Ship
-  'car-outline',       // Car
-  'cube-outline',      // Package
+  'bag-outline', 'train-outline', 'airplane-outline',
+  'boat-outline', 'car-outline',  'cube-outline',
 ] as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Section = {
-  title: string;
-  catIndex: number;
-  data: GearItem[];
-  checkedCount: number;
-  totalCount: number;
+  title:         string;
+  catIndex:      number;
+  data:          GearItem[];
+  checkedCount:  number;
+  totalCount:    number;
   checkedWeightOz: number;
+  // Photo List extensions
+  sectionKind?: 'normal' | 'add-photo-bar' | 'location';
+  locId?:        string;
+  locPhotoDataUrl?: string;
 };
 
 // ─── AppBar ───────────────────────────────────────────────────────────────────
-// v3: hamburger left | CheckSquare + "TrailWeigh" | spacer | 6 shortcut icons right
-// height 52pt content, safe-area paddingTop
 
 function AppBar() {
   const insets = useSafeAreaInsets();
   return (
-    <View
-      style={[
-        styles.appBar,
-        { paddingTop: insets.top, minHeight: insets.top + APPBAR_H },
-      ]}
-    >
+    <View style={[styles.appBar, { paddingTop: insets.top, minHeight: insets.top + APPBAR_H }]}>
       <View style={styles.appBarInner}>
-        {/* Hamburger — v3 Menu button; non-functional in N004 (no drawer yet) */}
         <Ionicons name="menu-outline" size={22} color={PRIMARY_TEXT} />
-
-        {/* Logo: mark + wordmark */}
         <View style={styles.appBarLogo}>
           <Ionicons name="checkbox-outline" size={20} color={NAV_ACTIVE} />
           <Text style={styles.appBarTitle}>TrailWeigh</Text>
         </View>
-
-        {/* Flex spacer */}
         <View style={{ flex: 1 }} />
-
-        {/* Decorative category shortcut icons — non-functional (v3 aria-hidden) */}
         <View style={styles.appBarShortcuts}>
           {APPBAR_SHORTCUT_ICONS.map((icon) => (
             <Ionicons key={icon} name={icon} size={17} color={NAV_INACTIVE} />
@@ -190,55 +157,33 @@ function AppBar() {
 }
 
 // ─── ListSummaryHero ──────────────────────────────────────────────────────────
-// v3: horizontal row — 66×66 icon tile | content col (name + count + chevron) | right stack
-// Right stack: catCount categories + ✓ selectedCount Selected
-// Source: MobileFunctionalV3.tsx lines 4360–4465
 
 function ListSummaryHero({
-  listName,
-  totalItems,
-  catCount,
-  selectedCount,
-  allExpanded,
-  onExpandToggle,
-  onNameTap,
+  listName, totalItems, catCount, selectedCount,
+  allExpanded, onExpandToggle, onNameTap,
 }: {
-  listName: string;
-  totalItems: number;
-  catCount: number;
-  selectedCount: number;
-  allExpanded: boolean;
-  onExpandToggle: () => void;
-  onNameTap?: () => void;
+  listName: string; totalItems: number; catCount: number; selectedCount: number;
+  allExpanded: boolean; onExpandToggle: () => void; onNameTap?: () => void;
 }) {
   return (
     <View style={styles.hero}>
-      {/* Icon tile: 66×66, radius 14, dark overlay — Luggage/bag icon */}
       <View style={styles.heroTile}>
         <Ionicons name="bag-outline" size={34} color="rgba(255,255,255,0.90)" />
       </View>
-
-      {/* Content column: list name + count row with expand/collapse chevron */}
       <View style={styles.heroContent}>
-        {/* List name: tappable for rename (v3 line 4390) */}
         <TouchableOpacity
-          onPress={onNameTap}
-          activeOpacity={onNameTap ? 0.65 : 1}
+          onPress={onNameTap} activeOpacity={onNameTap ? 0.65 : 1}
           hitSlop={{ top: 6, bottom: 6, left: 0, right: 0 }}
           style={styles.heroListNameRow}
         >
-          <Text style={styles.heroListName} numberOfLines={1}>
-            {listName}
-          </Text>
+          <Text style={styles.heroListName} numberOfLines={1}>{listName}</Text>
           {onNameTap && (
             <Ionicons name="pencil-outline" size={11} color="rgba(255,255,255,0.45)" />
           )}
         </TouchableOpacity>
-        {/* Count row: 40pt big number + "items" + chevron (v3 lines 4401–4436) */}
         <View style={styles.heroCountRow}>
           <Text style={styles.heroCount}>{totalItems}</Text>
           <Text style={styles.heroCountSuffix}> items</Text>
-          {/* Expand/collapse all chevron — v3 global accordion control */}
           <TouchableOpacity
             onPress={onExpandToggle}
             hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
@@ -252,23 +197,13 @@ function ListSummaryHero({
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Right stack: category count + selected count (v3 lines 4440–4459) */}
       <View style={styles.heroRight}>
-        {/* Category count: 12pt/600 rgba(.58) */}
         <Text style={styles.heroCatCount}>
           {catCount} {catCount === 1 ? 'category' : 'categories'}
         </Text>
-        {/* ✓ Selected: checkmark-circle + count */}
         <View style={styles.heroSelectedRow}>
-          <Ionicons
-            name="checkmark-circle"
-            size={13}
-            color="rgba(255,255,255,0.80)"
-          />
-          <Text style={styles.heroSelectedText}>
-            {selectedCount} Selected
-          </Text>
+          <Ionicons name="checkmark-circle" size={13} color="rgba(255,255,255,0.80)" />
+          <Text style={styles.heroSelectedText}>{selectedCount} Selected</Text>
         </View>
       </View>
     </View>
@@ -276,109 +211,59 @@ function ListSummaryHero({
 }
 
 // ─── FilterControl ────────────────────────────────────────────────────────────
-// v3: static "Filter: Category" in default state (FILTER_BAR_H=50)
-// Full filter (Location/Photo) requires data model changes not in N004 scope.
-// Source: MobileFunctionalV3.tsx lines 4471–4577
 
-function FilterControl() {
+function FilterControl({
+  viewLabel, onToggle,
+}: { viewLabel: string; onToggle?: () => void }) {
   return (
     <View style={styles.filterBar}>
-      <View style={styles.filterButton}>
-        {/* SlidersHorizontal icon → Ionicons options-outline */}
+      <TouchableOpacity
+        style={styles.filterButton}
+        onPress={onToggle}
+        activeOpacity={onToggle ? 0.7 : 1}
+        disabled={!onToggle}
+      >
         <Ionicons name="options-outline" size={15} color={NAV_ACTIVE} />
-        <Text style={styles.filterLabel}>Filter: Category</Text>
-        <Ionicons name="chevron-down" size={17} color={NAV_INACTIVE} />
-      </View>
+        <Text style={styles.filterLabel}>Filter: {viewLabel}</Text>
+        <Ionicons name={onToggle ? 'chevron-down' : 'chevron-down'} size={17} color={NAV_INACTIVE} />
+      </TouchableOpacity>
     </View>
   );
 }
 
 // ─── SectionHeader ────────────────────────────────────────────────────────────
-// v3: CHECKLIST_ROW_H=64, tappable row, collapses/expands items
-// Wedge: clip-path polygon(0 0, calc(100%-17px) 0, 100% 50%, calc(100%-17px) 100%, 0 100%)
-//        → approximated with react-native-svg Polygon overlay (two white corner triangles)
-// Weight: oz (small unit, v3 line 4823)
-// Subtitle: "N items · N selected" (not packed)
-// Source: MobileFunctionalV3.tsx lines 4720–4830
 
 function SectionHeader({
-  title,
-  catIndex,
-  checkedCount,
-  totalCount,
-  checkedWeightOz,
-  isOpen,
-  onToggle,
-  onLongPress,
+  title, catIndex, checkedCount, totalCount, checkedWeightOz,
+  isOpen, onToggle, onLongPress,
 }: {
-  title: string;
-  catIndex: number;
-  checkedCount: number;
-  totalCount: number;
-  checkedWeightOz: number;
-  isOpen: boolean;
-  onToggle: () => void;
-  onLongPress?: () => void;
+  title: string; catIndex: number; checkedCount: number; totalCount: number;
+  checkedWeightOz: number; isOpen: boolean; onToggle: () => void; onLongPress?: () => void;
 }) {
   const theme = getCategoryTheme(title, catIndex);
   const weightOz = checkedWeightOz.toFixed(2);
 
   return (
     <TouchableOpacity
-      onPress={onToggle}
-      onLongPress={onLongPress}
-      delayLongPress={500}
-      activeOpacity={0.78}
-      style={styles.sectionCardTouchable}
+      onPress={onToggle} onLongPress={onLongPress} delayLongPress={500}
+      activeOpacity={0.78} style={styles.sectionCardTouchable}
       testID={`cat-header-${title}`}
     >
       <View style={styles.sectionCard}>
-        {/* Coloured wedge tile — v3 WEDGE_W=72, clip-path polygon */}
-        {/* SVG overlay simulates the angled right edge (WEDGE_POINT=17) */}
         <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
-          <Ionicons
-            name={theme.icon as any}
-            size={26}
-            color="rgba(255,255,255,0.93)"
-          />
-          {/*
-           * Wedge approximation: two white right-triangles positioned at the
-           * top-right and bottom-right corners of the tile. Together they
-           * replicate the v3 clip-path: polygon(0 0, 55px 0, 72px 32px, 55px 64px, 0 64px)
-           *
-           * SVG local coords (width=17, height=64, right:0 of tile):
-           *   (0,0) = tile (55,0), (17,0) = tile (72,0)
-           * Top white triangle:    (0,0)  (17,0)  (17,32)  — cuts top-right corner
-           * Bottom white triangle: (0,64) (17,64) (17,32)  — cuts bottom-right corner
-           */}
-          <Svg
-            width={WEDGE_POINT}
-            height={CAT_HEADER_H}
-            style={styles.wedgeSvg}
-          >
-            <Polygon
-              points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`}
-              fill="#FFFFFF"
-            />
-            <Polygon
-              points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`}
-              fill="#FFFFFF"
-            />
+          <Ionicons name={theme.icon as any} size={26} color="rgba(255,255,255,0.93)" />
+          <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
+            <Polygon points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
+            <Polygon points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
           </Svg>
         </View>
-
-        {/* Text content */}
         <View style={styles.sectionContent}>
-          <Text style={styles.sectionName} numberOfLines={1}>
-            {title}
-          </Text>
+          <Text style={styles.sectionName} numberOfLines={1}>{title}</Text>
           <Text style={styles.sectionSub}>
             {totalCount} item{totalCount !== 1 ? 's' : ''}
             {checkedCount > 0 ? `  ·  ${checkedCount} selected` : ''}
           </Text>
         </View>
-
-        {/* Right: weight in oz, paddingR 44 (RIGHT_INSET) */}
         <View style={styles.sectionRight}>
           {checkedWeightOz > 0 && (
             <Text style={styles.sectionWeight}>{weightOz} oz</Text>
@@ -389,29 +274,191 @@ function SectionHeader({
   );
 }
 
+// ─── LocationBar ─────────────────────────────────────────────────────────────
+// v3 location wedge bar: same pentagon shape as category bar, NAV_ACTIVE bg,
+// MapPin icon, 42×42 thumbnail, location name col right-aligned.
+// From visual-formula audit §16: content grid padding 8px 34px 8px 12px;
+// thumbnail 42×42 border-radius 8; name col fontSize=13 fontWeight=600 max-width=130 right.
+
+function LocationBar({
+  loc, totalCount, checkedCount, isOpen, onToggle,
+}: {
+  loc: PackLocation; totalCount: number; checkedCount: number;
+  isOpen: boolean; onToggle: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onToggle}
+      activeOpacity={0.78}
+      style={styles.sectionCardTouchable}
+      testID={`loc-header-${loc.id}`}
+    >
+      <View style={styles.sectionCard}>
+        {/* Wedge — NAV_ACTIVE green, MapPin icon */}
+        <View style={[styles.sectionTile, { backgroundColor: NAV_ACTIVE }]}>
+          <Ionicons name="location-outline" size={26} color="rgba(255,255,255,0.93)" />
+          <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
+            <Polygon points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
+            <Polygon points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
+          </Svg>
+        </View>
+
+        {/* Content: thumbnail + name col + right meta */}
+        <View style={styles.locBarContent}>
+          {/* 42×42 thumbnail */}
+          {loc.photoDataUrl ? (
+            <Image
+              source={{ uri: loc.photoDataUrl }}
+              style={styles.locBarThumb}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.locBarThumb, styles.locBarThumbFallback]}>
+              <Ionicons name="location-outline" size={18} color="rgba(255,255,255,0.6)" />
+            </View>
+          )}
+
+          {/* Location name below thumbnail */}
+          <Text style={styles.locBarName} numberOfLines={2}>{loc.name}</Text>
+        </View>
+
+        {/* Right meta: "Location" + item count */}
+        <View style={styles.locBarRight}>
+          <Text style={styles.locBarType}>Location</Text>
+          <Text style={styles.locBarCount}>
+            {totalCount} item{totalCount !== 1 ? 's' : ''}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+// ─── AddAnotherPhotoBar ───────────────────────────────────────────────────────
+// v3: Camera icon + "Add another photo" min-height=44 bg #f7faf7 border-bottom 1px rgba(0,0,0,0.06)
+
+function AddAnotherPhotoBar({ onPress }: { onPress: () => void }) {
+  return (
+    <TouchableOpacity style={styles.addPhotoBar} onPress={onPress} activeOpacity={0.7}>
+      <Ionicons name="camera-outline" size={16} color={NAV_ACTIVE} />
+      <Text style={styles.addPhotoBarText}>Add another photo</Text>
+    </TouchableOpacity>
+  );
+}
+
+// ─── PhotoListEmptyCard ───────────────────────────────────────────────────────
+// State 1: fresh empty state (no items, no pending capture)
+// State 3: pending capture held (image + "Choose Location or Item" + "Replace Photo")
+// State 6: locations exist but no items (VISUAL DESTINATIONS grid + Add Photo CTA)
+
+function PhotoListEmptyCard({
+  pendingCapture,
+  locations,
+  onAddPhoto,
+  onChooseClassification,
+  onReplacePhoto,
+}: {
+  pendingCapture: string | null;
+  locations: PackLocation[];
+  onAddPhoto: () => void;
+  onChooseClassification: () => void;
+  onReplacePhoto: () => void;
+}) {
+  // Locations with photos (shown in grid)
+  const photoLocations = locations.filter(l => l.photoDataUrl);
+
+  const subtitle = pendingCapture
+    ? 'Your photo is saved and ready for the next Photo List step.'
+    : 'Add your first photo when you are ready to begin organizing this list.';
+
+  return (
+    <View style={styles.emptyCard}>
+      {/* Camera icon badge: 48×48, border-radius=14, bg rgba(42,87,64,0.10) */}
+      <View style={styles.emptyCardBadge}>
+        <Ionicons name="camera-outline" size={24} color={NAV_ACTIVE} strokeWidth={1.7} />
+      </View>
+
+      {/* Title */}
+      <Text style={styles.emptyCardTitle}>Your Photo List is ready</Text>
+
+      {/* Subtitle */}
+      <Text style={styles.emptyCardSubtitle}>{subtitle}</Text>
+
+      {/* Pending capture image (state 3) */}
+      {pendingCapture ? (
+        <View style={styles.pendingBlock}>
+          <Image
+            source={{ uri: pendingCapture }}
+            style={styles.pendingImage}
+            resizeMode="cover"
+          />
+          {/* "Choose Location or Item" — white bg, NAV_ACTIVE border */}
+          <TouchableOpacity
+            style={styles.chooseBtn}
+            onPress={onChooseClassification}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.chooseBtnText}>Choose Location or Item</Text>
+          </TouchableOpacity>
+          {/* "Replace Photo" — NAV_ACTIVE bg (spec correction from screenshot 3) */}
+          <TouchableOpacity
+            style={styles.replaceBtn}
+            onPress={onReplacePhoto}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.replaceBtnText}>Replace Photo</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+
+      {/* VISUAL DESTINATIONS grid (state 6 — shown when locations exist) */}
+      {photoLocations.length > 0 && !pendingCapture && (
+        <View style={styles.visualDestBlock}>
+          <Text style={styles.visualDestLabel}>VISUAL DESTINATIONS</Text>
+          <View style={styles.visualDestGrid}>
+            {photoLocations.map(loc => (
+              <View key={loc.id} style={styles.visualDestTile}>
+                {loc.photoDataUrl ? (
+                  <Image
+                    source={{ uri: loc.photoDataUrl }}
+                    style={styles.visualDestThumb}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.visualDestThumb, styles.visualDestThumbFallback]} />
+                )}
+                <Text style={styles.visualDestName} numberOfLines={1}>{loc.name}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+
+      {/* "Add Photo" CTA — always shown (hidden when pending + choose showing) */}
+      {!pendingCapture && (
+        <TouchableOpacity style={styles.addPhotoCTA} onPress={onAddPhoto} activeOpacity={0.85}>
+          <Text style={styles.addPhotoCTAText}>Add Photo</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
 // ─── ItemRow ──────────────────────────────────────────────────────────────────
-// v3: minH 44, white bg, rounded-square checkbox, name only, weight right
-// Source: MobileFunctionalV3.tsx lines 5028–5190
 
 function ItemRow({
-  item,
-  category,
-  onToggle,
+  item, category, onToggle,
 }: {
-  item: GearItem;
-  category: string;
-  onToggle: (category: string, id: string) => void;
+  item: GearItem; category: string; onToggle: (category: string, id: string) => void;
 }) {
   const handlePress = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onToggle(category, item.id);
   }, [category, item.id, onToggle]);
 
-  const totalOz = calcTotalOz(item.weightOz, item.qty);
+  const totalOz     = calcTotalOz(item.weightOz, item.qty);
   const weightLabel = item.weightOz > 0 ? `${totalOz.toFixed(1)} oz` : null;
-  const displayName = item.desc || item.sub || '';
+  const displayName = item.desc || item.sub || 'Unnamed item';
 
   return (
     <TouchableOpacity
@@ -420,36 +467,22 @@ function ItemRow({
       activeOpacity={0.65}
       testID={`gear-item-${item.id}`}
     >
-      {/* Checkbox hit-target: 44pt wide (v3 line 5036) */}
       <View style={styles.checkboxArea}>
-        <View
-          style={[
-            styles.checkbox,
-            {
-              borderColor: item.checked ? CB_CHECKED : 'rgba(0,0,0,0.18)',
-              backgroundColor: item.checked ? CB_CHECKED : 'transparent',
-            },
-          ]}
-        >
-          {item.checked && (
-            <Ionicons name="checkmark" size={11} color="#FFFFFF" />
-          )}
+        <View style={[
+          styles.checkbox,
+          {
+            borderColor:     item.checked ? CB_CHECKED : 'rgba(0,0,0,0.18)',
+            backgroundColor: item.checked ? CB_CHECKED : 'transparent',
+          },
+        ]}>
+          {item.checked && <Ionicons name="checkmark" size={11} color="#FFFFFF" />}
         </View>
       </View>
-
-      {/* Item name: 14.5pt/500/PRIMARY */}
-      <Text
-        style={[styles.itemName, item.checked && styles.itemNameChecked]}
-        numberOfLines={2}
-      >
+      <Text style={[styles.itemName, item.checked && styles.itemNameChecked]} numberOfLines={2}>
         {displayName}
       </Text>
-
-      {/* Weight in oz (native convenience — not in v3 row but useful without cat col) */}
       {weightLabel && (
-        <Text
-          style={[styles.itemWeight, item.checked && { color: NAV_ACTIVE }]}
-        >
+        <Text style={[styles.itemWeight, item.checked && { color: NAV_ACTIVE }]}>
           {weightLabel}
         </Text>
       )}
@@ -458,20 +491,8 @@ function ItemRow({
 }
 
 // ─── NavBox / BottomBox ───────────────────────────────────────────────────────
-// v3: 4 groups × 5 cells, NAV_H=58, modulo Next/Back cycling
-// Group 1 wired: Summary → router, Reset (Group 2) → handleReset, Next/Back → groupIdx
-// All other cells: visual parity, documented non-functional
-// Source: MobileFunctionalV3.tsx lines 982–1150, 1227–1281
 
-function NavBox({
-  cell,
-  onAction,
-  disabled,
-}: {
-  cell: BoxCell;
-  onAction: (action: string) => void;
-  disabled?: boolean;
-}) {
+function NavBox({ cell, onAction, disabled }: { cell: BoxCell; onAction: (a: string) => void; disabled?: boolean }) {
   return (
     <TouchableOpacity
       style={[styles.navBox, disabled && { opacity: 0.30 }]}
@@ -485,32 +506,15 @@ function NavBox({
   );
 }
 
-// ─── BottomBox ────────────────────────────────────────────────────────────────
-// 4-group sliding bar matching v3 BoxGroupBar exactly.
-// Supports: tap Next/Back chevrons + horizontal swipe on the bar itself.
-// v3 GROUP_SWIPE_THRESHOLD = 44px; wraps continuously.
-
 function BottomBox({
-  groupIdx,
-  onAction,
-  bottomPad,
-  disabledSet,
-}: {
-  groupIdx: number;
-  onAction: (action: string) => void;
-  bottomPad: number;
-  disabledSet?: Set<string>;
-}) {
+  groupIdx, onAction, bottomPad, disabledSet,
+}: { groupIdx: number; onAction: (a: string) => void; bottomPad: number; disabledSet?: Set<string> }) {
   const cells = BOX_GROUPS[groupIdx];
-
-  // Keep a ref so PanResponder (created once) always calls the latest onAction
   const onActionRef = useRef(onAction);
   onActionRef.current = onAction;
 
-  // Horizontal swipe on the bar cycles groups — v3 GROUP_SWIPE_THRESHOLD = 44px
   const pan = useRef(
     PanResponder.create({
-      // Only claim clearly horizontal gestures; let vertical pass through
       onMoveShouldSetPanResponder: (_, g) =>
         Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 1.5,
       onPanResponderRelease: (_, g) => {
@@ -532,8 +536,7 @@ function BottomBox({
         {cells.map((cell) => (
           <NavBox
             key={`g${groupIdx}-${cell.action}`}
-            cell={cell}
-            onAction={onAction}
+            cell={cell} onAction={onAction}
             disabled={disabledSet?.has(cell.action)}
           />
         ))}
@@ -542,35 +545,22 @@ function BottomBox({
   );
 }
 
-// ─── SummaryWeightRow ─────────────────────────────────────────────────────────
-// Compact weight card used inside the Summary sheet modal.
+// ─── SummaryWeightRow / SummaryCatBar ─────────────────────────────────────────
 
-function SummaryWeightRow({
-  label, oz, accent, half,
-}: { label: string; oz: number; accent?: boolean; half?: boolean }) {
-  const lbs   = ozToLbs(oz).toFixed(2);
-  const kg    = ((oz * 28.3495) / 1000).toFixed(3);
-  const bg    = accent ? NAV_ACTIVE : '#F9FAFB';
-  const fg    = accent ? '#FFFFFF'  : '#111827';
-  const muted = accent ? 'rgba(255,255,255,0.72)' : '#6B7280';
+function SummaryWeightRow({ label, oz, accent, half }: { label: string; oz: number; accent?: boolean; half?: boolean }) {
+  const lbs = ozToLbs(oz).toFixed(2);
+  const kg  = ((oz * 28.3495) / 1000).toFixed(3);
+  const bg  = accent ? NAV_ACTIVE : '#F9FAFB';
+  const fg  = accent ? '#FFFFFF'  : '#111827';
+  const mu  = accent ? 'rgba(255,255,255,0.72)' : '#6B7280';
   return (
-    <View style={[
-      styles.sumCard,
-      { backgroundColor: bg, borderColor: accent ? NAV_ACTIVE : 'rgba(0,0,0,0.08)' },
-      half && { flex: 1 },
-    ]}>
-      <Text style={[styles.sumCardLabel, { color: muted }]}>{label}</Text>
-      <Text style={[styles.sumCardValue, { color: fg }]}>
-        {lbs}{' '}
-        <Text style={[styles.sumCardUnit, { color: muted }]}>lbs</Text>
-      </Text>
-      <Text style={[styles.sumCardSub, { color: muted }]}>{oz.toFixed(1)} oz · {kg} kg</Text>
+    <View style={[styles.sumCard, { backgroundColor: bg, borderColor: accent ? NAV_ACTIVE : 'rgba(0,0,0,0.08)' }, half && { flex: 1 }]}>
+      <Text style={[styles.sumCardLabel, { color: mu }]}>{label}</Text>
+      <Text style={[styles.sumCardValue, { color: fg }]}>{lbs} <Text style={[styles.sumCardUnit, { color: mu }]}>lbs</Text></Text>
+      <Text style={[styles.sumCardSub, { color: mu }]}>{oz.toFixed(1)} oz · {kg} kg</Text>
     </View>
   );
 }
-
-// ─── SummaryCatBar ────────────────────────────────────────────────────────────
-// Horizontal bar showing one category's share of packed weight.
 
 function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalOz: number }) {
   const pct = totalOz > 0 ? (oz / totalOz) * 100 : 0;
@@ -588,23 +578,14 @@ function SummaryCatBar({ name, oz, totalOz }: { name: string; oz: number; totalO
   );
 }
 
-// ─── Module-level: only one swipe row open at a time ─────────────────────────
-// Each AnimatedSwipeRow registers its close fn here when it opens.
+// ─── AnimatedSwipeRow ─────────────────────────────────────────────────────────
+
 let _closeOpenSwipe: (() => void) | null = null;
 
-// ─── AnimatedSwipeRow ─────────────────────────────────────────────────────────
-// v3 SwipeDeleteRow equivalent: left-swipe from right edge reveals Delete only.
-// v3 source: MobileFunctionalV3.tsx lines 796–940 — Delete only, no Rename.
-// Pure Animated + PanResponder — no additional gesture-handler dependencies.
-
 function AnimatedSwipeRow({
-  item,
-  category,
-  onToggle,
-  onDelete,
+  item, category, onToggle, onDelete,
 }: {
-  item: GearItem;
-  category: string;
+  item: GearItem; category: string;
   onToggle: (cat: string, id: string) => void;
   onDelete: (item: GearItem, cat: string) => void;
 }) {
@@ -612,11 +593,8 @@ function AnimatedSwipeRow({
   const isOpenRef    = useRef(false);
   const isSwipingRef = useRef(false);
 
-  // Stable close function — safe to capture inside PanResponder (all deps are refs)
   const closeRef = useRef(() => {
-    Animated.spring(tx, {
-      toValue: 0, useNativeDriver: true, tension: 220, friction: 22,
-    }).start();
+    Animated.spring(tx, { toValue: 0, useNativeDriver: true, tension: 220, friction: 22 }).start();
     isOpenRef.current = false;
     _closeOpenSwipe = null;
   });
@@ -624,9 +602,7 @@ function AnimatedSwipeRow({
   const pan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) =>
-        !isSwipingRef.current &&
-        Math.abs(g.dx) > 8 &&
-        Math.abs(g.dx) > Math.abs(g.dy) * 1.4,
+        !isSwipingRef.current && Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy) * 1.4,
       onPanResponderGrant: () => {
         isSwipingRef.current = true;
         tx.stopAnimation();
@@ -634,67 +610,44 @@ function AnimatedSwipeRow({
         tx.setValue(0);
       },
       onPanResponderMove: (_, g) => {
-        const base = isOpenRef.current ? -SWIPE_REVEAL : 0;
-        tx.setValue(Math.max(-SWIPE_REVEAL, Math.min(0, base + g.dx)));
+        tx.setValue(Math.max(-SWIPE_REVEAL, Math.min(0, (isOpenRef.current ? -SWIPE_REVEAL : 0) + g.dx)));
       },
       onPanResponderRelease: (_, g) => {
         tx.flattenOffset();
         isSwipingRef.current = false;
-
         if (!isOpenRef.current && g.dx < -50) {
-          // Commit open — close any other open row first
           _closeOpenSwipe?.();
           _closeOpenSwipe = closeRef.current;
           isOpenRef.current = true;
-          Animated.spring(tx, {
-            toValue: -SWIPE_REVEAL, useNativeDriver: true, tension: 220, friction: 22,
-          }).start();
+          Animated.spring(tx, { toValue: -SWIPE_REVEAL, useNativeDriver: true, tension: 220, friction: 22 }).start();
         } else if (isOpenRef.current && g.dx > 50) {
-          // Commit close
           closeRef.current();
         } else if (isOpenRef.current) {
-          // Snap back to open
-          Animated.spring(tx, {
-            toValue: -SWIPE_REVEAL, useNativeDriver: true, tension: 220, friction: 22,
-          }).start();
+          Animated.spring(tx, { toValue: -SWIPE_REVEAL, useNativeDriver: true, tension: 220, friction: 22 }).start();
         } else {
-          // Snap back to closed
-          Animated.spring(tx, {
-            toValue: 0, useNativeDriver: true, tension: 220, friction: 22,
-          }).start();
+          Animated.spring(tx, { toValue: 0, useNativeDriver: true, tension: 220, friction: 22 }).start();
         }
       },
       onPanResponderTerminate: () => {
         tx.flattenOffset();
         isSwipingRef.current = false;
-        Animated.spring(tx, {
-          toValue: isOpenRef.current ? -SWIPE_REVEAL : 0,
-          useNativeDriver: true, tension: 220, friction: 22,
-        }).start();
+        Animated.spring(tx, { toValue: isOpenRef.current ? -SWIPE_REVEAL : 0, useNativeDriver: true, tension: 220, friction: 22 }).start();
       },
     })
   ).current;
 
   return (
     <View style={{ overflow: 'hidden' }}>
-      {/* Delete action — v3: swipe reveals Delete only (SwipeDeleteRow, no rename) */}
       <View style={[StyleSheet.absoluteFillObject, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
         <TouchableOpacity
           style={[styles.swipeActionBtn, { backgroundColor: '#EF4444' }]}
-          onPress={() => {
-            closeRef.current();
-            onDelete(item, category);
-          }}
+          onPress={() => { closeRef.current(); onDelete(item, category); }}
         >
           <Ionicons name="trash-outline" size={18} color="#fff" />
           <Text style={styles.swipeActionLabel}>Delete</Text>
         </TouchableOpacity>
       </View>
-      {/* Main item row slides left to reveal the action buttons */}
-      <Animated.View
-        style={{ transform: [{ translateX: tx }] }}
-        {...pan.panHandlers}
-      >
+      <Animated.View style={{ transform: [{ translateX: tx }] }} {...pan.panHandlers}>
         <ItemRow item={item} category={category} onToggle={onToggle} />
       </Animated.View>
     </View>
@@ -709,32 +662,34 @@ export default function GearScreen() {
     data, isLoading, categoryOrder,
     toggleItem, deleteItem, resetAll,
     listName, setListName,
+    listKind, locations, photoListCaptureDataUrl,
+    setPendingCapture,
     canUndo, canRedo, undo, redo,
     addCategory, deleteCategory, renameCategory, reorderCategories,
     saveToLocker, refreshLockerEntries,
   } = usePackData();
 
-  // Category expand/collapse — single-open model matching v3 (openCatName = one open cat)
-  // Default: all collapsed (openCatName=null, allExpanded=false) — v3 lines 2225–2228
+  // Standard list UI state
   const [openCatName, setOpenCatName] = useState<string | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
-
-  // Bottom box group index (0–3), matching v3 groupIdx — v3 lines 1054, 1092–1094
-  const [groupIdx, setGroupIdx] = useState(0);
-
-  // Summary sheet — shown as a native pageSheet modal instead of pushing a route
+  const [groupIdx, setGroupIdx]       = useState(0);
   const [showSummary, setShowSummary] = useState(false);
+  const [showAdd, setShowAdd]         = useState(false);
+  const [showSearch, setShowSearch]   = useState(false);
+  const [showLocker, setShowLocker]   = useState(false);
 
-  // Add Item sheet — v3 "Add deck" accordion ported to a pageSheet modal
-  const [showAdd,    setShowAdd]    = useState(false);
+  // Photo List UI state
+  const [photoListView, setPhotoListView]       = useState<'category' | 'location'>('category');
+  const [showSourceSheet, setShowSourceSheet]   = useState(false);
+  const [showAssignment, setShowAssignment]     = useState(false);
+  const [showLocName, setShowLocName]           = useState(false);
+  const [showItemDest, setShowItemDest]         = useState(false);
+  const [showItemName, setShowItemName]         = useState(false);
+  const [newItemId, setNewItemId]               = useState<string | null>(null);
+  // Tracks whether we came from source picker (for "Replace Photo" replace flow)
+  const [openLocNames, setOpenLocNames]         = useState<Set<string>>(new Set());
 
-  // Search sheet — v3 "Search deck" ported to a pageSheet modal
-  const [showSearch, setShowSearch] = useState(false);
-
-  // Locker sheet — multi-list save/load (v3 Locker)
-  const [showLocker, setShowLocker] = useState(false);
-
-  // Toast — lightweight in-app feedback matching v3's showToast()
+  // Toast
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showToast = useCallback((msg: string) => {
@@ -743,176 +698,246 @@ export default function GearScreen() {
     toastTimer.current = setTimeout(() => setToastMsg(''), 2200);
   }, []);
 
-  // ── Data computations ───────────────────────────────────────────────────────
+  // ── Photo List sheet cascade ──────────────────────────────────────────────
 
-  // allSections: full stats for all non-empty categories (used for header display)
-  const allSections: Section[] = categoryOrder.map((cat, catIndex) => {
-    const items = data[cat] || [];
-    const populated = items.filter((i) => i.sub || i.desc);
-    const checkedWeightOz = populated
-      .filter((i) => i.checked)
-      .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
-    return {
-      title: cat,
-      catIndex,
-      data: populated,
-      checkedCount: populated.filter((i) => i.checked).length,
-      totalCount: populated.length,
-      checkedWeightOz,
-    };
-  }).filter((s) => s.totalCount > 0);
+  /** Open source sheet (Camera/Photos). */
+  const handleOpenSource = useCallback(() => {
+    setShowSourceSheet(true);
+  }, []);
 
-  // Hero metrics
-  const totalItems   = allSections.reduce((n, s) => n + s.totalCount, 0);
-  const selectedCount = allSections.reduce((n, s) => n + s.checkedCount, 0);
-  const catCount     = allSections.length;
+  /** Image captured from camera or photos library. */
+  const handleCaptured = useCallback((dataUrl: string) => {
+    setPendingCapture(dataUrl);
+    // Small delay so source sheet fully closes
+    setTimeout(() => setShowAssignment(true), 300);
+  }, [setPendingCapture]);
 
-  // sections for SectionList: item rows only visible when category is expanded
-  // Collapsed categories get data:[] — SectionList still renders their headers
-  const sections: Section[] = allSections.map((s) => ({
-    ...s,
-    data: allExpanded || openCatName === s.title ? s.data : [],
-  }));
+  /** Assignment sheet: user chose Location. */
+  const handlePickLocation = useCallback(() => {
+    setShowAssignment(false);
+    setTimeout(() => setShowLocName(true), 200);
+  }, []);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  /** Assignment sheet: user chose Item. */
+  const handlePickItem = useCallback(() => {
+    setShowAssignment(false);
+    setTimeout(() => setShowItemDest(true), 200);
+  }, []);
 
-  // Single-open toggle — v3 lines 2889–2911
-  const handleCatToggle = useCallback(
-    (catName: string) => {
-      if (Platform.OS !== 'web') {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-      setAllExpanded(false);
-      setOpenCatName((prev) => (prev === catName ? null : catName));
-    },
-    [],
-  );
+  /** Assignment sheet: user chose Decide later — pending capture retained. */
+  const handleDecideLater = useCallback(() => {
+    setShowAssignment(false);
+    showToast('Photo saved — choose a location or item later');
+  }, [showToast]);
 
-  // Expand-all / collapse-all — v3 lines 2927–2929
-  const handleExpandAll = useCallback(() => {
-    if (Platform.OS !== 'web') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setAllExpanded((prev) => {
-      if (prev) setOpenCatName(null);
-      return !prev;
+  /** Location Name form: user saved. Switch to location view. */
+  const handleLocationSaved = useCallback((locationId: string) => {
+    setShowLocName(false);
+    setPhotoListView('location');
+    showToast(`Location saved`);
+  }, [showToast]);
+
+  /** Location Name form: back to assignment sheet. */
+  const handleLocNameBack = useCallback(() => {
+    setShowLocName(false);
+    setTimeout(() => setShowAssignment(true), 200);
+  }, []);
+
+  /** Item Destination: back to assignment sheet. */
+  const handleItemDestBack = useCallback(() => {
+    setShowItemDest(false);
+    setTimeout(() => setShowAssignment(true), 200);
+  }, []);
+
+  /** Item assigned to location or Unassigned. Open name sheet. */
+  const handleItemAssigned = useCallback((itemId: string) => {
+    setShowItemDest(false);
+    setNewItemId(itemId);
+    // Open Items category and open name sheet
+    setOpenCatName(PHOTO_ITEMS_CATEGORY);
+    setTimeout(() => {
+      setShowItemName(true);
+      showToast('Photo item saved');
+    }, 200);
+  }, [showToast]);
+
+  /** Item Name sheet: closed. */
+  const handleItemNameClose = useCallback(() => {
+    setShowItemName(false);
+    setNewItemId(null);
+  }, []);
+
+  /** Toggle location view accordion. */
+  const handleLocToggle = useCallback((locId: string) => {
+    setOpenLocNames(prev => {
+      const next = new Set(prev);
+      if (next.has(locId)) next.delete(locId);
+      else next.add(locId);
+      return next;
     });
   }, []);
 
-  // Reset — v3 onReset: confirmation before clearing all checked items
+  /** Filter toggle — only in Photo List mode. */
+  const handleFilterToggle = useCallback(() => {
+    if (listKind !== 'photo') return;
+    setPhotoListView(v => v === 'category' ? 'location' : 'category');
+  }, [listKind]);
+
+  // ── Data computations ────────────────────────────────────────────────────
+
+  const allSections: Section[] = categoryOrder.map((cat, catIndex) => {
+    const items    = data[cat] || [];
+    const populated = items.filter((i) => i.sub || i.desc || i.weightOz > 0 || i.photoDataUrl);
+    const checkedWeightOz = populated.filter(i => i.checked)
+      .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
+    return {
+      title: cat, catIndex, data: populated,
+      checkedCount:   populated.filter(i => i.checked).length,
+      totalCount:     populated.length,
+      checkedWeightOz,
+    };
+  }).filter(s => s.totalCount > 0 || s.title === PHOTO_ITEMS_CATEGORY);
+
+  // Hero metrics
+  const totalItems    = allSections.reduce((n, s) => n + s.totalCount, 0);
+  const selectedCount = allSections.reduce((n, s) => n + s.checkedCount, 0);
+  const catCount      = allSections.length;
+
+  // Photo List: does the Items category have any items?
+  const photoListHasItems = listKind === 'photo' &&
+    (data[PHOTO_ITEMS_CATEGORY] || []).filter(i => i.sub || i.desc || i.photoDataUrl).length > 0;
+
+  // Photo List: show empty card?
+  const showPhotoListEmpty = listKind === 'photo' && !photoListHasItems;
+
+  // ── Sections for SectionList ─────────────────────────────────────────────
+
+  const sections: Section[] = useMemo(() => {
+    if (listKind === 'photo') {
+      if (photoListView === 'location') {
+        // Location view: Items (unassigned) + add-photo-bar + location sections
+        const itemsAll  = data[PHOTO_ITEMS_CATEGORY] || [];
+        const itemsPopulated = itemsAll.filter(i => i.sub || i.desc || i.photoDataUrl);
+        const unassigned = itemsPopulated.filter(i => !i.locationId);
+
+        const itemsSection: Section = {
+          title: PHOTO_ITEMS_CATEGORY, catIndex: 0, sectionKind: 'normal',
+          data: (allExpanded || openCatName === PHOTO_ITEMS_CATEGORY) ? unassigned : [],
+          checkedCount:   unassigned.filter(i => i.checked).length,
+          totalCount:     unassigned.length,
+          checkedWeightOz: unassigned.filter(i => i.checked)
+            .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0),
+        };
+
+        const addPhotoBarSection: Section = {
+          title: '__add_photo_bar__', catIndex: -1, sectionKind: 'add-photo-bar',
+          data: [], checkedCount: 0, totalCount: 0, checkedWeightOz: 0,
+        };
+
+        const locSections: Section[] = locations.map(loc => {
+          const locItems = itemsPopulated.filter(i => i.locationId === loc.id);
+          return {
+            title: loc.name, catIndex: 0, sectionKind: 'location',
+            locId: loc.id, locPhotoDataUrl: loc.photoDataUrl,
+            data: openLocNames.has(loc.id) ? locItems : [],
+            checkedCount:   locItems.filter(i => i.checked).length,
+            totalCount:     locItems.length,
+            checkedWeightOz: locItems.filter(i => i.checked)
+              .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0),
+          };
+        });
+
+        return [itemsSection, addPhotoBarSection, ...locSections];
+      } else {
+        // Category view: just the Items category (standard rendering)
+        return allSections.map(s => ({
+          ...s,
+          data: allExpanded || openCatName === s.title ? s.data : [],
+        }));
+      }
+    }
+
+    // Standard list: normal sections
+    return allSections.map(s => ({
+      ...s,
+      data: allExpanded || openCatName === s.title ? s.data : [],
+    }));
+  }, [listKind, photoListView, data, allSections, allExpanded, openCatName, locations, openLocNames]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────
+
+  const handleCatToggle = useCallback((catName: string) => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setAllExpanded(false);
+    setOpenCatName(prev => prev === catName ? null : catName);
+  }, []);
+
+  const handleExpandAll = useCallback(() => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setAllExpanded(prev => { if (prev) setOpenCatName(null); return !prev; });
+  }, []);
+
   const handleReset = useCallback(() => {
-    Alert.alert(
-      'Clear All Checks',
-      'Remove all packed checkmarks from your list?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear All',
-          style: 'destructive',
-          onPress: () => {
-            if (Platform.OS !== 'web') {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            }
-            resetAll();
-          },
-        },
-      ],
-    );
+    Alert.alert('Clear All Checks', 'Remove all packed checkmarks from your list?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Clear All', style: 'destructive', onPress: () => {
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        resetAll();
+      }},
+    ]);
   }, [resetAll]);
 
-  // Item delete — v3: confirmation before removing
   const handleItemDelete = useCallback((item: GearItem, cat: string) => {
-    Alert.alert(
-      'Delete Item',
-      `Remove "${item.desc || item.sub}" from your list?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteItem(cat, item.id),
-        },
-      ],
-    );
+    Alert.alert('Delete Item', `Remove "${item.desc || item.sub || 'this item'}" from your list?`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteItem(cat, item.id) },
+    ]);
   }, [deleteItem]);
 
-  // ── Category long-press: Rename / Delete / Move Up / Move Down ──────────────
   const handleCatLongPress = useCallback((catName: string) => {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const idx = categoryOrder.indexOf(catName);
+    // Don't allow managing the structural Items category in Photo List mode
+    if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
+    const idx      = categoryOrder.indexOf(catName);
     const catItems = data[catName] || [];
-    Alert.alert(
-      catName,
+    Alert.alert(catName,
       catItems.length > 0 ? `${catItems.length} item${catItems.length !== 1 ? 's' : ''}` : 'Empty category',
       [
-        {
-          text: 'Rename',
-          onPress: () => {
-            if (Platform.OS === 'ios') {
-              Alert.prompt('Rename Category', undefined, (text) => {
-                const newName = text?.trim();
-                if (newName) renameCategory(catName, newName);
-              }, 'plain-text', catName);
-            } else {
-              Alert.alert('Rename', 'Renaming categories is available on iOS.');
-            }
-          },
+        { text: 'Rename', onPress: () => {
+          if (Platform.OS === 'ios') {
+            Alert.prompt('Rename Category', undefined, (text) => {
+              if (text?.trim()) renameCategory(catName, text.trim());
+            }, 'plain-text', catName);
+          } else Alert.alert('Rename', 'Renaming categories is available on iOS.');
+        }},
+        { text: 'Delete', style: 'destructive', onPress: () =>
+          Alert.alert('Delete Category',
+            catItems.length > 0
+              ? `Remove "${catName}" and its ${catItems.length} item${catItems.length !== 1 ? 's' : ''}?`
+              : `Remove the empty category "${catName}"?`,
+            [{ text: 'Cancel', style: 'cancel' },
+             { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(catName) }],
+          ),
         },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () =>
-            Alert.alert(
-              'Delete Category',
-              catItems.length > 0
-                ? `Remove "${catName}" and its ${catItems.length} item${catItems.length !== 1 ? 's' : ''}?`
-                : `Remove the empty category "${catName}"?`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => deleteCategory(catName) },
-              ],
-            ),
-        },
-        ...(idx > 0 ? [{
-          text: '▲ Move Up',
-          onPress: () => {
-            const newOrder = [...categoryOrder];
-            [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]];
-            reorderCategories(newOrder);
-          },
-        }] : []),
-        ...(idx < categoryOrder.length - 1 ? [{
-          text: '▼ Move Down',
-          onPress: () => {
-            const newOrder = [...categoryOrder];
-            [newOrder[idx + 1], newOrder[idx]] = [newOrder[idx], newOrder[idx + 1]];
-            reorderCategories(newOrder);
-          },
-        }] : []),
+        ...(idx > 0 ? [{ text: '▲ Move Up', onPress: () => {
+          const o = [...categoryOrder]; [o[idx-1],o[idx]] = [o[idx],o[idx-1]]; reorderCategories(o);
+        }}] : []),
+        ...(idx < categoryOrder.length - 1 ? [{ text: '▼ Move Down', onPress: () => {
+          const o = [...categoryOrder]; [o[idx+1],o[idx]] = [o[idx],o[idx+1]]; reorderCategories(o);
+        }}] : []),
         { text: 'Cancel', style: 'cancel' },
       ],
     );
-  }, [categoryOrder, data, renameCategory, deleteCategory, reorderCategories]);
+  }, [categoryOrder, data, renameCategory, deleteCategory, reorderCategories, listKind]);
 
-  // ── Hero list-name tap-to-edit ────────────────────────────────────────────
   const handleHeroNameTap = useCallback(() => {
     if (Platform.OS === 'ios') {
-      Alert.prompt(
-        'List Name',
-        undefined,
-        (text) => {
-          const newName = text?.trim();
-          if (newName) setListName(newName);
-        },
-        'plain-text',
-        listName,
-      );
-    } else {
-      Alert.alert('List Name', 'Tap-to-rename is available on iOS.');
-    }
+      Alert.prompt('List Name', undefined, (text) => {
+        if (text?.trim()) setListName(text.trim());
+      }, 'plain-text', listName);
+    } else Alert.alert('List Name', 'Tap-to-rename is available on iOS.');
   }, [listName, setListName]);
 
-  // ── Disabled NavBox actions ───────────────────────────────────────────────
   const disabledActions = useMemo<Set<string>>(() => {
     const s = new Set<string>();
     if (!canUndo) s.add('undo');
@@ -920,95 +945,78 @@ export default function GearScreen() {
     return s;
   }, [canUndo, canRedo]);
 
-  // ── Box group action dispatcher ───────────────────────────────────────────
-  // Wired: next, back, summary, add, search, reset, locker, undo, redo, save, share
-  // Non-functional: camera, photos, preview, more
-  const handleBoxAction = useCallback(
-    (action: string) => {
-      switch (action) {
-        case 'next':
-          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          setGroupIdx((g) => (g + 1) % NUM_GROUPS);
-          break;
-        case 'back':
-          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          setGroupIdx((g) => (g - 1 + NUM_GROUPS) % NUM_GROUPS);
-          break;
-        case 'summary':
-          setShowSummary(true);
-          break;
-        case 'add':
-          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          setShowAdd(true);
-          break;
-        case 'search':
-          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          setShowSearch(true);
-          break;
-        case 'locker':
-          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          refreshLockerEntries();
-          setShowLocker(true);
-          break;
-        case 'undo':
-          undo();
-          break;
-        case 'redo':
-          redo();
-          break;
-        case 'save':
-          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          saveToLocker();
-          break;
-        case 'share': {
-          const packedLines = categoryOrder
-            .flatMap(cat =>
-              (data[cat] || [])
-                .filter(i => i.checked)
-                .map(i => `• ${i.desc || i.sub}${i.qty > 1 ? ` ×${i.qty}` : ''}`)
-            );
-          const totalOz = categoryOrder
-            .flatMap(cat => (data[cat] || []).filter(i => i.checked))
-            .reduce((sum, i) => sum + calcTotalOz(i.weightOz, i.qty), 0);
-          const lbs = ozToLbs(totalOz).toFixed(2);
-          const message = [
-            listName,
-            '─────────────────',
-            packedLines.length > 0 ? packedLines.join('\n') : '(No items packed yet)',
-            '',
-            `Packed: ${lbs} lbs (${totalOz.toFixed(1)} oz)`,
-            'via TrailWeigh',
-          ].join('\n');
-          Share.share({ message, title: listName });
-          break;
+  const handleBoxAction = useCallback((action: string) => {
+    switch (action) {
+      case 'next':
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setGroupIdx(g => (g + 1) % NUM_GROUPS);
+        break;
+      case 'back':
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setGroupIdx(g => (g - 1 + NUM_GROUPS) % NUM_GROUPS);
+        break;
+      case 'summary': setShowSummary(true); break;
+      case 'add':
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setShowAdd(true);
+        break;
+      case 'search':
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        setShowSearch(true);
+        break;
+      case 'locker':
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        refreshLockerEntries();
+        setShowLocker(true);
+        break;
+      case 'camera':
+        // Photo List: open source sheet for camera
+        if (listKind === 'photo') {
+          setShowSourceSheet(true);
         }
-        case 'reset':
-          handleReset();
-          break;
-        default:
-          break;
+        break;
+      case 'undo': undo(); break;
+      case 'redo': redo(); break;
+      case 'save':
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        saveToLocker();
+        showToast('List saved');
+        break;
+      case 'share': {
+        const packedLines = categoryOrder.flatMap(cat =>
+          (data[cat] || []).filter(i => i.checked)
+            .map(i => `• ${i.desc || i.sub}${i.qty > 1 ? ` ×${i.qty}` : ''}`)
+        );
+        const totalOz = categoryOrder.flatMap(cat => (data[cat] || []).filter(i => i.checked))
+          .reduce((sum, i) => sum + calcTotalOz(i.weightOz, i.qty), 0);
+        const lbs = ozToLbs(totalOz).toFixed(2);
+        const message = [listName, '─────────────────',
+          packedLines.length > 0 ? packedLines.join('\n') : '(No items packed yet)',
+          '', `Packed: ${lbs} lbs (${totalOz.toFixed(1)} oz)`, 'via TrailWeigh'].join('\n');
+        Share.share({ message, title: listName });
+        break;
       }
-    },
-    [handleReset, undo, redo, saveToLocker, refreshLockerEntries, listName, categoryOrder, data],
-  );
+      case 'reset': handleReset(); break;
+      default: break;
+    }
+  }, [handleReset, undo, redo, saveToLocker, refreshLockerEntries, listName, categoryOrder, data, listKind, showToast]);
 
-  // Bottom padding: tab bar is hidden, only safe-area inset needed
   const bottomPad = Platform.OS === 'web' ? 20 : insets.bottom;
 
-  // Summary modal computations — same logic as summary.tsx, computed from live PackData
-  const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } =
-    calcWeights(data);
+  // Summary calculations
+  const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } = calcWeights(data);
   const summaryTotals = categoryOrder
-    .map(cat => {
-      const oz = (data[cat] || [])
-        .filter(i => i.checked)
-        .reduce((sum, item) => sum + calcTotalOz(item.weightOz, item.qty), 0);
-      return { name: cat, oz };
-    })
+    .map(cat => ({ name: cat, oz: (data[cat] || []).filter(i => i.checked)
+      .reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0) }))
     .filter(c => c.oz > 0)
     .sort((a, b) => b.oz - a.oz);
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // Filter label
+  const filterLabel = listKind === 'photo'
+    ? (photoListView === 'location' ? 'Location' : 'Category')
+    : 'Category';
+
+  // ── Render ───────────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
@@ -1020,102 +1028,126 @@ export default function GearScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: PAGE_BG }]}>
-      {/* ── Fixed top ─────────────────────────────────────────────────── */}
+      {/* ── Fixed top ──────────────────────────────────────────────────── */}
       <AppBar />
       <ListSummaryHero
-        listName={listName}
-        totalItems={totalItems}
-        catCount={catCount}
-        selectedCount={selectedCount}
-        allExpanded={allExpanded}
-        onExpandToggle={handleExpandAll}
-        onNameTap={handleHeroNameTap}
+        listName={listName} totalItems={totalItems} catCount={catCount}
+        selectedCount={selectedCount} allExpanded={allExpanded}
+        onExpandToggle={handleExpandAll} onNameTap={handleHeroNameTap}
       />
-      <FilterControl />
+      <FilterControl
+        viewLabel={filterLabel}
+        onToggle={listKind === 'photo' ? handleFilterToggle : undefined}
+      />
 
-      {/* ── Scrolling category list ───────────────────────────────────── */}
-      <SectionList
-        sections={sections}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, section }) => (
-          <AnimatedSwipeRow
-            item={item}
-            category={(section as Section).title}
-            onToggle={toggleItem}
-            onDelete={handleItemDelete}
+      {/* ── Photo List empty state card ─────────────────────────────────── */}
+      {showPhotoListEmpty ? (
+        <ScrollView
+          style={styles.list}
+          contentContainerStyle={styles.photoListEmptyScroll}
+          showsVerticalScrollIndicator={false}
+        >
+          <PhotoListEmptyCard
+            pendingCapture={photoListCaptureDataUrl}
+            locations={locations}
+            onAddPhoto={handleOpenSource}
+            onChooseClassification={() => setShowAssignment(true)}
+            onReplacePhoto={handleOpenSource}
           />
-        )}
-        renderSectionHeader={({ section }) => {
-          const s = section as Section;
-          // Use allSections for true stats (section.data may be [] when collapsed)
-          const full = allSections.find((a) => a.title === s.title) || s;
-          return (
-            <SectionHeader
-              title={s.title}
-              catIndex={s.catIndex}
-              checkedCount={full.checkedCount}
-              totalCount={full.totalCount}
-              checkedWeightOz={full.checkedWeightOz}
-              isOpen={allExpanded || openCatName === s.title}
-              onToggle={() => handleCatToggle(s.title)}
-              onLongPress={() => handleCatLongPress(s.title)}
-            />
-          );
-        }}
-        stickySectionHeadersEnabled
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        style={styles.list}
-      />
+        </ScrollView>
+      ) : (
+        <>
+          {/* ── "Add another photo" bar — top of list in Photo List mode ── */}
+          {listKind === 'photo' && photoListHasItems && photoListView === 'category' && (
+            <AddAnotherPhotoBar onPress={handleOpenSource} />
+          )}
 
-      {/* ── Fixed bottom ─────────────────────────────────────────────── */}
+          {/* ── Scrolling category / location list ──────────────────────── */}
+          <SectionList
+            sections={sections}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item, section }) => {
+              const s = section as Section;
+              if (s.sectionKind === 'add-photo-bar') return null;
+              return (
+                <AnimatedSwipeRow
+                  item={item}
+                  category={s.sectionKind === 'location' ? PHOTO_ITEMS_CATEGORY : s.title}
+                  onToggle={toggleItem}
+                  onDelete={handleItemDelete}
+                />
+              );
+            }}
+            renderSectionHeader={({ section }) => {
+              const s = section as Section;
+
+              if (s.sectionKind === 'add-photo-bar') {
+                return <AddAnotherPhotoBar onPress={handleOpenSource} />;
+              }
+
+              if (s.sectionKind === 'location' && s.locId) {
+                const loc = locations.find(l => l.id === s.locId);
+                if (!loc) return null;
+                return (
+                  <LocationBar
+                    loc={loc}
+                    totalCount={s.totalCount}
+                    checkedCount={s.checkedCount}
+                    isOpen={openLocNames.has(s.locId)}
+                    onToggle={() => handleLocToggle(s.locId!)}
+                  />
+                );
+              }
+
+              // Normal category header
+              const full = allSections.find(a => a.title === s.title) || s;
+              return (
+                <SectionHeader
+                  title={s.title}
+                  catIndex={s.catIndex}
+                  checkedCount={full.checkedCount}
+                  totalCount={full.totalCount}
+                  checkedWeightOz={full.checkedWeightOz}
+                  isOpen={allExpanded || openCatName === s.title}
+                  onToggle={() => handleCatToggle(s.title)}
+                  onLongPress={() => handleCatLongPress(s.title)}
+                />
+              );
+            }}
+            stickySectionHeadersEnabled
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            style={styles.list}
+          />
+        </>
+      )}
+
+      {/* ── Fixed bottom ──────────────────────────────────────────────── */}
       <BottomBox
-        groupIdx={groupIdx}
-        onAction={handleBoxAction}
-        bottomPad={bottomPad}
-        disabledSet={disabledActions}
+        groupIdx={groupIdx} onAction={handleBoxAction}
+        bottomPad={bottomPad} disabledSet={disabledActions}
       />
 
       {/* ── Summary sheet ─────────────────────────────────────────────── */}
-      {/* pageSheet = native iOS card sheet with swipe-to-dismiss built in */}
       <Modal
         visible={showSummary}
         animationType="slide"
         presentationStyle="pageSheet"
         onRequestClose={() => setShowSummary(false)}
       >
-        <View style={[
-          styles.summarySheet,
-          { paddingTop: Platform.OS === 'ios' ? 8 : insets.top + 8 },
-        ]}>
-          {/* Drag handle — communicates swipe-to-dismiss */}
+        <View style={[styles.summarySheet, { paddingTop: Platform.OS === 'ios' ? 8 : insets.top + 8 }]}>
           <View style={styles.summaryHandle} />
-
-          {/* Header */}
           <View style={styles.summaryHeader}>
             <View>
               <Text style={styles.summaryTitle}>Pack Summary</Text>
-              <Text style={styles.summarySubtitle}>
-                {selectedCount} item{selectedCount !== 1 ? 's' : ''} packed
-              </Text>
+              <Text style={styles.summarySubtitle}>{selectedCount} item{selectedCount !== 1 ? 's' : ''} packed</Text>
             </View>
-            <TouchableOpacity
-              onPress={() => setShowSummary(false)}
-              hitSlop={16}
-              style={styles.summaryCloseBtn}
-            >
+            <TouchableOpacity onPress={() => setShowSummary(false)} hitSlop={16} style={styles.summaryCloseBtn}>
               <Ionicons name="close" size={22} color="#374151" />
             </TouchableOpacity>
           </View>
-
-          {/* Scrollable content */}
-          <ScrollView
-            style={styles.summaryScroll}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingTop: 16,
-              paddingBottom: insets.bottom + 24,
-            }}
+          <ScrollView style={styles.summaryScroll}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: insets.bottom + 24 }}
             showsVerticalScrollIndicator={false}
           >
             {grandTotalOz > 0 ? (
@@ -1133,12 +1165,7 @@ export default function GearScreen() {
                   <View style={styles.summaryBreakdown}>
                     <Text style={styles.summaryBreakdownTitle}>WEIGHT BREAKDOWN</Text>
                     {summaryTotals.map(cat => (
-                      <SummaryCatBar
-                        key={cat.name}
-                        name={cat.name}
-                        oz={cat.oz}
-                        totalOz={grandTotalOz}
-                      />
+                      <SummaryCatBar key={cat.name} name={cat.name} oz={cat.oz} totalOz={grandTotalOz} />
                     ))}
                   </View>
                 )}
@@ -1153,26 +1180,43 @@ export default function GearScreen() {
         </View>
       </Modal>
 
-      {/* ── Locker sheet — multi-list save/load ── */}
-      <LockerModal
-        visible={showLocker}
-        onClose={() => setShowLocker(false)}
+      {/* ── Locker / Add / Search sheets ──────────────────────────────── */}
+      <LockerModal visible={showLocker} onClose={() => setShowLocker(false)} />
+      <AddDeck visible={showAdd} onClose={() => setShowAdd(false)} showToast={showToast} />
+      <SearchModal visible={showSearch} onClose={() => setShowSearch(false)} />
+
+      {/* ── Photo List sheets (cascade chain) ─────────────────────────── */}
+      <PhotoListSourceSheet
+        visible={showSourceSheet}
+        onClose={() => setShowSourceSheet(false)}
+        onCapture={handleCaptured}
+      />
+      <PhotoListAssignmentSheet
+        visible={showAssignment}
+        photoDataUrl={photoListCaptureDataUrl}
+        onDecideLater={handleDecideLater}
+        onPickLocation={handlePickLocation}
+        onPickItem={handlePickItem}
+      />
+      <PhotoListLocationNameSheet
+        visible={showLocName}
+        photoDataUrl={photoListCaptureDataUrl}
+        onBack={handleLocNameBack}
+        onSaved={handleLocationSaved}
+      />
+      <PhotoListItemDestinationSheet
+        visible={showItemDest}
+        locations={locations}
+        onBack={handleItemDestBack}
+        onAssigned={handleItemAssigned}
+      />
+      <PhotoListItemNameSheet
+        visible={showItemName}
+        itemId={newItemId}
+        onClose={handleItemNameClose}
       />
 
-      {/* ── Add deck — v3 4-card panel (Add Item | Add Category | Scan/Import | New List) ── */}
-      <AddDeck
-        visible={showAdd}
-        onClose={() => setShowAdd(false)}
-        showToast={showToast}
-      />
-
-      {/* ── Search sheet (v3 Search deck) ── */}
-      <SearchModal
-        visible={showSearch}
-        onClose={() => setShowSearch(false)}
-      />
-
-      {/* ── Toast overlay (matches v3 showToast) ── */}
+      {/* ── Toast overlay ─────────────────────────────────────────────── */}
       {!!toastMsg && (
         <View style={styles.toast} pointerEvents="none">
           <Text style={styles.toastText}>{toastMsg}</Text>
@@ -1188,501 +1232,212 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   center:    { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  // ── AppBar ──────────────────────────────────────────────────────────────────
-  // v3: height 52, paddingL 8 paddingR 8, white, 1px border rgba(0,0,0,0.07)
+  // AppBar
   appBar: {
-    backgroundColor: '#FFFFFF',
-    paddingLeft:  8,
-    paddingRight: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.07)',
-    zIndex: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
+    backgroundColor: '#FFFFFF', paddingLeft: 8, paddingRight: 8,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.07)',
+    zIndex: 10, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 }, elevation: 3,
   },
-  appBarInner: {
-    height: APPBAR_H,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  appBarLogo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  appBarTitle: {
-    fontSize: 19,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: PRIMARY_TEXT,
-    letterSpacing: 0.1,
-  },
-  appBarShortcuts: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
+  appBarInner:    { height: APPBAR_H, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  appBarLogo:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  appBarTitle:    { fontSize: 19, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1 },
+  appBarShortcuts: { flexDirection: 'row', alignItems: 'center', gap: 5 },
 
-  // ── ListSummaryHero ─────────────────────────────────────────────────────────
-  // v3: bg rgba(42,87,64,0.94), paddingT 10 paddingB 12, paddingL 14 paddingR 44
-  // horizontal row, gap 14, shadow 0 4px 12px rgba(0,0,0,0.22)
+  // Hero
   hero: {
-    backgroundColor: SUMMARY_BG,
-    paddingTop:    10,
-    paddingBottom: 12,
-    paddingLeft:   14,
-    paddingRight:  RIGHT_INSET,
-    flexDirection: 'row',
-    alignItems:    'center',
-    gap:           14,
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius:  12,
-    shadowOffset:  { width: 0, height: 4 },
-    elevation: 6,
-    zIndex: 9,
+    backgroundColor: SUMMARY_BG, paddingTop: 10, paddingBottom: 12,
+    paddingLeft: 14, paddingRight: RIGHT_INSET, flexDirection: 'row',
+    alignItems: 'center', gap: 14, shadowColor: '#000', shadowOpacity: 0.22,
+    shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6, zIndex: 9,
   },
-  heroTile: {
-    width:           66,
-    height:          66,
-    borderRadius:    14,
-    backgroundColor: 'rgba(0,0,0,0.20)',
-    alignItems:      'center',
-    justifyContent:  'center',
-    flexShrink:      0,
-  },
-  heroContent: {
-    flex: 1,
-    gap:  6,
-  },
-  heroListNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  heroListName: {
-    fontSize:   15.5,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    color:      '#FFFFFF',
-    lineHeight: 19,
-    flexShrink: 1,
-  },
-  // Count row: big number + "items" suffix + chevron
-  heroCountRow: {
-    flexDirection: 'row',
-    alignItems:    'baseline',
-    gap:           4,
-  },
-  heroCount: {
-    fontSize:      40,
-    fontFamily:    'PlusJakartaSans_700Bold',
-    color:         '#FFFFFF',
-    letterSpacing: -1.5,
-    lineHeight:    44,
-  },
-  heroCountSuffix: {
-    fontSize:   17,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    color:      'rgba(255,255,255,0.78)',
-    paddingBottom: 3,
-  },
-  heroChevronBtn: {
-    paddingBottom: 3,
-    alignSelf: 'flex-end',
-  },
-  // Right stack: category count + ✓ selected count
-  heroRight: {
-    alignItems:     'flex-end',
-    justifyContent: 'center',
-    gap: 6,
-    flexShrink: 0,
-  },
-  heroCatCount: {
-    fontSize:      12,
-    fontFamily:    'PlusJakartaSans_600SemiBold',
-    color:         'rgba(255,255,255,0.58)',
-    letterSpacing: 0.2,
-  },
-  heroSelectedRow: {
-    flexDirection: 'row',
-    alignItems:    'center',
-    gap:           4,
-  },
-  heroSelectedText: {
-    fontSize:      12,
-    fontFamily:    'PlusJakartaSans_600SemiBold',
-    color:         'rgba(255,255,255,0.80)',
-    letterSpacing: 0.1,
-  },
+  heroTile: { width: 66, height: 66, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.20)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  heroContent: { flex: 1, gap: 6 },
+  heroListNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  heroListName: { fontSize: 15.5, fontFamily: 'PlusJakartaSans_700Bold', color: '#FFFFFF', lineHeight: 19, flexShrink: 1 },
+  heroCountRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  heroCount: { fontSize: 40, fontFamily: 'PlusJakartaSans_700Bold', color: '#FFFFFF', letterSpacing: -1.5, lineHeight: 44 },
+  heroCountSuffix: { fontSize: 17, fontFamily: 'PlusJakartaSans_500Medium', color: 'rgba(255,255,255,0.78)', paddingBottom: 3 },
+  heroChevronBtn: { paddingBottom: 3, alignSelf: 'flex-end' },
+  heroRight: { alignItems: 'flex-end', justifyContent: 'center', gap: 6, flexShrink: 0 },
+  heroCatCount: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: 'rgba(255,255,255,0.58)', letterSpacing: 0.2 },
+  heroSelectedRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  heroSelectedText: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: 'rgba(255,255,255,0.80)', letterSpacing: 0.1 },
 
-  // ── FilterControl ───────────────────────────────────────────────────────────
-  // v3: FILTER_BAR_H=50, white, border-bottom 1px DIVIDER, shadow downward
+  // FilterControl
   filterBar: {
-    height:            FILTER_H,
-    backgroundColor:   '#FFFFFF',
-    paddingHorizontal: 14,
-    paddingVertical:   5,
-    borderBottomWidth: 1,
-    borderBottomColor: DIVIDER,
-    justifyContent:    'center',
-    shadowColor:   '#000',
-    shadowOpacity: 0.08,
-    shadowRadius:  8,
-    shadowOffset:  { width: 0, height: 3 },
-    elevation: 3,
-    zIndex: 8,
+    height: FILTER_H, backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 5,
+    borderBottomWidth: 1, borderBottomColor: DIVIDER, justifyContent: 'center',
+    shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
+    elevation: 3, zIndex: 8,
   },
   filterButton: {
-    minHeight:      36,
-    flexDirection:  'row',
-    alignItems:     'center',
-    paddingVertical:   6,
-    paddingHorizontal: 10,
-    borderRadius:   8,
-    borderWidth:    1,
-    borderColor:    DIVIDER,
-    backgroundColor: '#FFFFFF',
-    gap: 7,
+    minHeight: 36, flexDirection: 'row', alignItems: 'center', paddingVertical: 6,
+    paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: DIVIDER,
+    backgroundColor: '#FFFFFF', gap: 7,
   },
-  filterLabel: {
-    flex:          1,
-    fontSize:      13,
-    fontFamily:    'PlusJakartaSans_600SemiBold',
-    color:         PRIMARY_TEXT,
-    letterSpacing: 0.1,
-  },
+  filterLabel: { flex: 1, fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1 },
 
-  // ── SectionHeader ───────────────────────────────────────────────────────────
-  // TouchableOpacity wrapper
-  sectionCardTouchable: {
-    zIndex: 5,
-  },
-  // v3: minH 64, white, shadow 0 3px 10px rgba(0,0,0,0.18), border-bottom 1px DIVIDER
+  // SectionHeader
+  sectionCardTouchable: { zIndex: 5 },
   sectionCard: {
-    flexDirection:   'row',
-    alignItems:      'stretch',
-    height:          CAT_HEADER_H,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: DIVIDER,
-    shadowColor:   '#000',
-    shadowOpacity: 0.18,
-    shadowRadius:  10,
-    shadowOffset:  { width: 0, height: 3 },
-    elevation:     4,
+    flexDirection: 'row', alignItems: 'stretch', height: CAT_HEADER_H,
+    backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: DIVIDER,
+    shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 10, shadowOffset: { width: 0, height: 3 }, elevation: 4,
   },
-  // Tile: TILE_W=72, full height, category color, overflow visible for SVG
-  sectionTile: {
-    width:          TILE_W,
-    height:         CAT_HEADER_H,
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-  // Wedge SVG: positioned at right edge of tile (right 17px strip)
-  wedgeSvg: {
-    position: 'absolute',
-    right:    0,
-    top:      0,
-  },
-  // Text content: paddingL 12, paddingV 8, column gap 10
-  sectionContent: {
-    flex:            1,
-    paddingLeft:     12,
-    paddingVertical: 8,
-    justifyContent:  'center',
-    gap:             10,
-  },
-  // Category name: 17px/500/PRIMARY, lh 20, ls -0.1
-  sectionName: {
-    fontSize:      17,
-    fontFamily:    'PlusJakartaSans_500Medium',
-    color:         PRIMARY_TEXT,
-    lineHeight:    20,
-    letterSpacing: -0.1,
-  },
-  // Subtitle: 12.5px/NAV_INACTIVE
-  sectionSub: {
-    fontSize:   12.5,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    color:      NAV_INACTIVE,
-  },
-  // Right weight: oz, paddingR 44, 13px/600/PRIMARY
-  sectionRight: {
-    paddingRight:    RIGHT_INSET,
-    paddingVertical: 8,
-    alignItems:      'flex-end',
-    justifyContent:  'center',
-    maxWidth:        96 + RIGHT_INSET,
-  },
-  sectionWeight: {
-    fontSize:      13,
-    fontFamily:    'PlusJakartaSans_600SemiBold',
-    color:         PRIMARY_TEXT,
-    letterSpacing: 0.1,
-    textAlign:     'right',
-  },
+  sectionTile: { width: TILE_W, height: CAT_HEADER_H, alignItems: 'center', justifyContent: 'center' },
+  wedgeSvg: { position: 'absolute', right: 0, top: 0 },
+  sectionContent: { flex: 1, paddingLeft: 12, paddingVertical: 8, justifyContent: 'center', gap: 10 },
+  sectionName: { fontSize: 17, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, lineHeight: 20, letterSpacing: -0.1 },
+  sectionSub: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_400Regular', color: NAV_INACTIVE },
+  sectionRight: { paddingRight: RIGHT_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', maxWidth: 96 + RIGHT_INSET },
+  sectionWeight: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1, textAlign: 'right' },
 
-  // ── ItemRow ─────────────────────────────────────────────────────────────────
-  // v3: minH 44, white, borderBottom 1px DIVIDER, paddingR 34
-  itemRow: {
-    flexDirection:     'row',
-    alignItems:        'center',
-    minHeight:         44,
-    backgroundColor:   '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: DIVIDER,
-    paddingRight:      ITEM_R_INSET,
+  // LocationBar content area (right of wedge)
+  locBarContent: {
+    flex: 1, paddingLeft: 12, paddingVertical: 8,
+    flexDirection: 'column', justifyContent: 'center', gap: 4,
   },
-  checkboxArea: {
-    width:          CHECKBOX_HIT,
-    height:         44,
-    alignItems:     'center',
-    justifyContent: 'center',
-    flexShrink:     0,
-  },
-  checkbox: {
-    width:          20,
-    height:         20,
-    borderRadius:   5,
-    borderWidth:    1.5,
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-  itemName: {
-    flex:       1,
-    fontSize:   14.5,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    color:      PRIMARY_TEXT,
-    lineHeight: 20,
-  },
-  itemNameChecked: {
-    color:   NAV_INACTIVE,
-    opacity: 0.8,
-  },
-  itemWeight: {
-    fontSize:      12,
-    fontFamily:    'PlusJakartaSans_600SemiBold',
-    color:         NAV_INACTIVE,
-    letterSpacing: 0.2,
-    flexShrink:    0,
-    marginLeft:    8,
-  },
-
-  // ── List ────────────────────────────────────────────────────────────────────
-  list:        { flex: 1 },
-  listContent: { paddingBottom: 4 },
-
-  // ── BottomBox / NavBar ──────────────────────────────────────────────────────
-  // v3: NAV_H=58, white, borderTop 1px rgba(0,0,0,0.07), shadow 0 -3px 10px rgba(0,0,0,0.07)
-  bottomBox: {
-    backgroundColor: '#FFFFFF',
-    borderTopWidth:  1,
-    borderTopColor:  'rgba(0,0,0,0.07)',
-    shadowColor:     '#000',
-    shadowOpacity:   0.07,
-    shadowRadius:    10,
-    shadowOffset:    { width: 0, height: -3 },
-    elevation: 8,
-    zIndex:    40,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems:    'stretch',
-    minHeight:     NAV_H,
-  },
-  // NavBox: flex 1, col, paddingT 9 paddingB 8, gap 2, centered
-  navBox: {
-    flex:           1,
-    paddingTop:     9,
-    paddingBottom:  8,
-    alignItems:     'center',
-    justifyContent: 'center',
-    gap:            2,
-  },
-  // Nav label: 10px/400 NAV_INACTIVE
-  navLabel: {
-    fontSize:   10,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    color:      NAV_INACTIVE,
-  },
-
-  // ── Summary sheet modal ──────────────────────────────────────────────────────
-  summarySheet: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  summaryHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(0,0,0,0.18)',
-    alignSelf: 'center',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  summaryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(0,0,0,0.10)',
-  },
-  summaryTitle: {
-    fontSize: 20,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    color: '#111827',
-    letterSpacing: -0.3,
-  },
-  summarySubtitle: {
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  summaryCloseBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  summaryScroll: { flex: 1 },
-  summaryContent: { gap: 10 },
-  summaryPairRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  summaryBreakdown: {
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(0,0,0,0.08)',
-    backgroundColor: '#F9FAFB',
-    padding: 14,
-    gap: 10,
-  },
-  summaryBreakdownTitle: {
-    fontSize: 10,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    color: '#6B7280',
-    marginBottom: 2,
-  },
-  summaryEmpty: {
-    alignItems: 'center',
-    paddingVertical: 48,
-    gap: 6,
-  },
-  summaryEmptyText: {
-    fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: '#6B7280',
-  },
-  summaryEmptyHint: {
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    color: '#9CA3AF',
-  },
-  sumCard: {
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 14,
-    gap: 3,
-  },
-  sumCardLabel: {
-    fontSize: 10,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.9,
-  },
-  sumCardValue: {
-    fontSize: 34,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    letterSpacing: -0.8,
-    lineHeight: 40,
-  },
-  sumCardUnit: {
-    fontSize: 16,
-    fontFamily: 'PlusJakartaSans_500Medium',
-  },
-  sumCardSub: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    opacity: 0.85,
-  },
-  sumCatRow: { gap: 5 },
-  sumCatMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sumCatName: {
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    color: '#111827',
-    flex: 1,
-  },
-  sumCatWeight: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: '#6B7280',
-    letterSpacing: 0.2,
-  },
-  sumCatTrack: {
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: 'rgba(0,0,0,0.08)',
-    overflow: 'hidden',
-  },
-  sumCatFill: {
-    height: 5,
-    borderRadius: 3,
+  locBarThumb: {
+    width: 42, height: 42, borderRadius: 8,
     backgroundColor: NAV_ACTIVE,
   },
+  locBarThumbFallback: { alignItems: 'center', justifyContent: 'center' },
+  locBarName: {
+    fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT,
+    maxWidth: 130,
+  },
+  locBarRight: {
+    paddingRight: ITEM_R_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', gap: 3,
+  },
+  locBarType: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE },
+  locBarCount: { fontSize: 11, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED },
 
-  // ── Swipe action buttons (Rename / Delete) ────────────────────────────────
-  swipeActionBtn: {
-    width: SWIPE_BTN_W,
+  // ItemRow
+  itemRow: {
+    flexDirection: 'row', alignItems: 'center', minHeight: 44, backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1, borderBottomColor: DIVIDER, paddingRight: ITEM_R_INSET,
+  },
+  checkboxArea: { width: CHECKBOX_HIT, height: 44, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  checkbox: { width: 20, height: 20, borderRadius: 5, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  itemName: { flex: 1, fontSize: 14.5, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, lineHeight: 20 },
+  itemNameChecked: { color: NAV_INACTIVE, opacity: 0.8 },
+  itemWeight: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE, letterSpacing: 0.2, flexShrink: 0, marginLeft: 8 },
+
+  // List
+  list:        { flex: 1 },
+  listContent: { paddingBottom: 4 },
+  photoListEmptyScroll: { flexGrow: 1, padding: 16 },
+
+  // Photo List empty card
+  emptyCard: {
+    margin: 8, padding: 20, borderRadius: 16,
+    backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    alignSelf: 'stretch',
   },
-  swipeActionLabel: {
-    fontSize: 11,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: '#FFFFFF',
-    letterSpacing: 0.3,
+  emptyCardBadge: {
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: 'rgba(42,87,64,0.10)',
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 12,
   },
+  emptyCardTitle: {
+    fontSize: 18, fontWeight: '700', color: PRIMARY_TEXT, textAlign: 'center', marginBottom: 6,
+  },
+  emptyCardSubtitle: {
+    fontSize: 13.5, color: MUTED, lineHeight: 20, textAlign: 'center', marginBottom: 16,
+  },
+  // Pending capture block (state 3)
+  pendingBlock: { width: '100%', marginBottom: 16 },
+  pendingImage: { width: '100%', height: 168, borderRadius: 10, marginBottom: 10 },
+  chooseBtn: {
+    width: '100%', minHeight: 42, borderRadius: 9, borderWidth: 1, borderColor: NAV_ACTIVE,
+    backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', marginBottom: 8,
+  },
+  chooseBtnText: { fontSize: 14, fontWeight: '600', color: NAV_ACTIVE },
+  replaceBtn: {
+    width: '100%', minHeight: 42, borderRadius: 9, backgroundColor: NAV_ACTIVE,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  replaceBtnText: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  // VISUAL DESTINATIONS grid (state 6)
+  visualDestBlock: { width: '100%', marginBottom: 16, alignItems: 'flex-start' },
+  visualDestLabel: {
+    fontSize: 11, fontWeight: '700', color: MUTED, letterSpacing: 1.2,
+    textTransform: 'uppercase', marginBottom: 8, alignSelf: 'flex-start',
+  },
+  visualDestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, width: '100%' },
+  visualDestTile: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderRadius: 9, borderWidth: 1, borderColor: 'rgba(0,0,0,0.08)',
+    backgroundColor: '#FAFAF9', padding: 6,
+  },
+  visualDestThumb: { width: 34, height: 34, borderRadius: 6, backgroundColor: NAV_ACTIVE },
+  visualDestThumbFallback: { backgroundColor: 'rgba(42,87,64,0.15)' },
+  visualDestName: { fontSize: 12.5, fontWeight: '650' as any, color: PRIMARY_TEXT },
+  // Add Photo CTA
+  addPhotoCTA: {
+    width: '100%', minHeight: 44, borderRadius: 10, backgroundColor: NAV_ACTIVE,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  addPhotoCTAText: { fontSize: 14.5, fontWeight: '650' as any, color: '#fff' },
 
-  // ── Toast overlay (v3 showToast equivalent) ──────────────────────────────
+  // "Add another photo" bar
+  addPhotoBar: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, minHeight: 44, backgroundColor: '#f7faf7',
+    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.06)',
+  },
+  addPhotoBarText: { fontSize: 14, fontWeight: '600', color: NAV_ACTIVE },
+
+  // BottomBox
+  bottomBox: {
+    backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.07)',
+    shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 10,
+    shadowOffset: { width: 0, height: -3 }, elevation: 8, zIndex: 40,
+  },
+  bottomRow: { flexDirection: 'row', alignItems: 'stretch', minHeight: NAV_H },
+  navBox: { flex: 1, paddingTop: 9, paddingBottom: 8, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  navLabel: { fontSize: 10, fontFamily: 'PlusJakartaSans_400Regular', color: NAV_INACTIVE },
+
+  // Summary sheet
+  summarySheet: { flex: 1, backgroundColor: '#FFFFFF' },
+  summaryHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(0,0,0,0.18)', alignSelf: 'center', marginTop: 8, marginBottom: 4 },
+  summaryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(0,0,0,0.10)' },
+  summaryTitle: { fontSize: 20, fontFamily: 'PlusJakartaSans_700Bold', color: '#111827', letterSpacing: -0.3 },
+  summarySubtitle: { fontSize: 13, fontFamily: 'PlusJakartaSans_400Regular', color: '#6B7280', marginTop: 2 },
+  summaryCloseBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
+  summaryScroll: { flex: 1 },
+  summaryContent: { gap: 10 },
+  summaryPairRow: { flexDirection: 'row', gap: 10 },
+  summaryBreakdown: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(0,0,0,0.08)', backgroundColor: '#F9FAFB', padding: 14, gap: 10 },
+  summaryBreakdownTitle: { fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', textTransform: 'uppercase', letterSpacing: 1.2, color: '#6B7280', marginBottom: 2 },
+  summaryEmpty: { alignItems: 'center', paddingVertical: 48, gap: 6 },
+  summaryEmptyText: { fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#6B7280' },
+  summaryEmptyHint: { fontSize: 13, fontFamily: 'PlusJakartaSans_400Regular', color: '#9CA3AF' },
+  sumCard: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, gap: 3 },
+  sumCardLabel: { fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', textTransform: 'uppercase', letterSpacing: 0.9 },
+  sumCardValue: { fontSize: 34, fontFamily: 'PlusJakartaSans_700Bold', letterSpacing: -0.8, lineHeight: 40 },
+  sumCardUnit: { fontSize: 16, fontFamily: 'PlusJakartaSans_500Medium' },
+  sumCardSub: { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', opacity: 0.85 },
+  sumCatRow: { gap: 5 },
+  sumCatMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sumCatName: { fontSize: 13, fontFamily: 'PlusJakartaSans_500Medium', color: '#111827', flex: 1 },
+  sumCatWeight: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#6B7280', letterSpacing: 0.2 },
+  sumCatTrack: { height: 5, borderRadius: 3, backgroundColor: 'rgba(0,0,0,0.08)', overflow: 'hidden' },
+  sumCatFill: { height: 5, borderRadius: 3, backgroundColor: NAV_ACTIVE },
+
+  // Swipe
+  swipeActionBtn: { width: SWIPE_BTN_W, alignItems: 'center', justifyContent: 'center', gap: 4, alignSelf: 'stretch' },
+  swipeActionLabel: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#FFFFFF', letterSpacing: 0.3 },
+
+  // Toast
   toast: {
-    position: 'absolute',
-    bottom: 90,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(26,41,32,0.92)',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    zIndex: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    elevation: 6,
+    position: 'absolute', bottom: 90, left: 20, right: 20,
+    backgroundColor: 'rgba(26,41,32,0.92)', borderRadius: 10,
+    paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center',
+    zIndex: 999, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18, shadowRadius: 6, elevation: 6,
   },
-  toastText: {
-    color: '#FFFFFF',
-    fontSize: 13.5,
-    fontWeight: '500',
-  },
+  toastText: { color: '#FFFFFF', fontSize: 13.5, fontWeight: '500' },
 });
