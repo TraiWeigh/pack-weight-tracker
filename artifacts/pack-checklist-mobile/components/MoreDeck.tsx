@@ -41,11 +41,11 @@ interface MoreDeckProps {
 
 type CardId = 'actions' | 'settings' | 'help' | 'account';
 
-const CARD_DEFS: { id: CardId; icon: string; label: string }[] = [
-  { id: 'actions',  icon: 'list-outline',          label: 'List Actions'      },
-  { id: 'settings', icon: 'options-outline',        label: 'List Settings'     },
-  { id: 'help',     icon: 'help-circle-outline',    label: 'Help & TrailWeigh' },
-  { id: 'account',  icon: 'person-circle-outline',  label: 'Account & Privacy' },
+const CARD_DEFS: { id: CardId; icon: string; label: string; sub: string }[] = [
+  { id: 'actions',  icon: 'list-outline',          label: 'List Actions',      sub: 'Save, print, or check off your list'   },
+  { id: 'settings', icon: 'options-outline',        label: 'List Settings',     sub: 'Units and display options'             },
+  { id: 'help',     icon: 'help-circle-outline',    label: 'Help & TrailWeigh', sub: 'Tutorials, about, and feedback'        },
+  { id: 'account',  icon: 'person-circle-outline',  label: 'Account & Privacy', sub: 'Your account, privacy, and legal'      },
 ];
 
 export function MoreDeck({
@@ -98,7 +98,10 @@ export function MoreDeck({
                 <View style={styles.cardBarIcon}>
                   <Ionicons name={card.icon as any} size={18} color={NAV_ACTIVE} />
                 </View>
-                <Text style={styles.cardBarLabel}>{card.label}</Text>
+                <View style={styles.cardBarTextGroup}>
+                  <Text style={styles.cardBarLabel}>{card.label}</Text>
+                  <Text style={styles.deckRowSub}>{card.sub}</Text>
+                </View>
                 <Ionicons
                   name={openCard === card.id ? 'chevron-up' : 'chevron-down'}
                   size={16} color={NAV_INACTIVE}
@@ -229,7 +232,7 @@ export function MoreDeck({
                           'To request account deletion, please visit trailweigh.com or contact hello@trailweigh.com.',
                           [
                             { text: 'Cancel', style: 'cancel' },
-                            { text: 'Open Website', onPress: () => Linking.openURL('https://trailweigh.com').catch(() => {}) },
+                            { text: 'Open Website', onPress: () => Linking.openURL('https://trailweigh.com/delete-account').catch(() => {}) },
                           ],
                         )}
                       />
@@ -281,7 +284,7 @@ function DeckRow({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.38)' },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(20,28,24,0.45)' },
   sheet: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20,
@@ -305,13 +308,14 @@ const styles = StyleSheet.create({
   card: { borderBottomWidth: 1, borderBottomColor: DIVIDER },
   cardBar: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingVertical: 14, minHeight: 56,
+    paddingHorizontal: 16, paddingVertical: 14, minHeight: 68,
   },
   cardBarIcon: {
-    width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(42,87,64,0.08)',
+    width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(42,87,64,0.08)',
     alignItems: 'center', justifyContent: 'center',
   },
-  cardBarLabel: { flex: 1, fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT },
+  cardBarTextGroup: { flex: 1 },
+  cardBarLabel: { fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT },
   cardContent: { backgroundColor: '#FAFAF9', borderTopWidth: 1, borderTopColor: DIVIDER },
   deckRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
