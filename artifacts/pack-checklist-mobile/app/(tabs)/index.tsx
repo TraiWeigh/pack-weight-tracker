@@ -63,6 +63,7 @@ import { CategorySwipeRow } from '@/components/CategorySwipeRow';
 import { DonutChart } from '@/components/DonutChart';
 import { CategoryPickerSheet } from '@/components/CategoryPickerSheet';
 import { ItemPhotoSheet } from '@/components/ItemPhotoSheet';
+import { ConfirmSheet } from '@/components/ConfirmSheet';
 
 // ─── v3 design constants ──────────────────────────────────────────────────────
 
@@ -778,6 +779,8 @@ export default function GearScreen() {
   const [moreInitialCard, setMoreInitialCard] = useState<'actions' | 'settings' | 'help' | 'account'>('actions');
   const [showChecklist,setShowChecklist]= useState(false);
   const [showFilterDD, setShowFilterDD] = useState(false);
+  // Item 10: custom amber confirm sheet replaces Alert.alert for Reset Checks (v3 §13.10)
+  const [showResetSheet, setShowResetSheet] = useState(false);
   const [filterView,   setFilterView]   = useState<FilterViewMode>('category');
   const [handedness,   setHandedness]   = useState<'left' | 'right'>('right');
 
@@ -1000,22 +1003,10 @@ export default function GearScreen() {
   }, []);
 
   const handleReset = useCallback(() => {
-    // Items 8-10: title/body/label match v3 §13.10 exactly.
-    // Amber #b45309 for the button requires a custom Modal — Alert.alert cannot produce it.
-    // Label is corrected here; colour remains system-red (deferred, per audit Item 10 note).
-    Alert.alert(
-      'Reset Checklist?',
-      'Clear all checked/packed marks in this list? Your items, categories, quantities, weights, and saved list will not be deleted.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Reset Checks', style: 'destructive', onPress: () => {
-          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          resetAll();
-          showToast('Checklist reset');
-        }},
-      ],
-    );
-  }, [resetAll, showToast]);
+    // Item 10: open amber ConfirmSheet instead of Alert.alert — v3 §13.10 exact spec.
+    // Title, body, label, and amber colour (#b45309) now all match. Toast also corrected.
+    setShowResetSheet(true);
+  }, [setShowResetSheet]);
 
   const handleItemDelete = useCallback((item: GearItem, cat: string) => {
     // Items 6 & 7: title = "Delete [name]?"; body = §13.1 exact wording with other-lists clause
@@ -1936,6 +1927,23 @@ export default function GearScreen() {
           </View>
         );
       })()}
+
+      {/* ── Item 10: Reset Checks confirm sheet ─────────────────────────── */}
+      {/* v3 §13.10: title/body/label/colour all match exactly now. */}
+      {/* VF §13: bg #fff; radius 16/16/0/0; shadow 0 -4px 32px rgba(0,0,0,0.18); z-index 200 */}
+      <ConfirmSheet
+        visible={showResetSheet}
+        onClose={() => setShowResetSheet(false)}
+        title="Reset Checklist?"
+        body="Clear all checked/packed marks in this list? Your items, categories, quantities, weights, and saved list will not be deleted."
+        confirmLabel="Reset Checks"
+        confirmColor="#b45309"
+        onConfirm={() => {
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          resetAll();
+          showToast('Checked items cleared'); // v3 §13.10: "Checked items cleared" (was "Checklist reset")
+        }}
+      />
 
       {/* ── Toast overlay ─────────────────────────────────────────────── */}
       {/* v3 §24: bottom = insets.bottom + 76 (76px above safe-area edge). Prior NAV_H+insets.bottom+8 ≈ 66px was wrong. MATCH. */}

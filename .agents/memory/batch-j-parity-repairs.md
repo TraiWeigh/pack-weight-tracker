@@ -64,10 +64,35 @@ description: Corrections from the full Batch J audit pass — confirmed mismatch
 
 - **ND-04**: Navigation drawer Home action only calls `onClose()` — should also call `setScreenStack([])` to truly reset to list root
 - **ND-37**: Navigation drawer "Help & Tutorials" opens More deck — should navigate to help content (no Help screen exists in native yet)
-- **B-43**: Summary tab is a flat list; v3 has 3-section card deck (Base / Non-base / Grand Total)
 - **B-44**: Share screen is unimplemented
 - **AB-04**: Hamburger tap target ~42px vs v3 minimum 44px (add `minWidth`/`minHeight: 44` or `hitSlop`)
 - **B-52–B-85**: 34 items still unconfirmed — require device testing or dedicated visual pass
+
+## Batch K repairs (Items 10, 28) — completed
+
+| Item | Fix | Files |
+|---|---|---|
+| **10** | ConfirmSheet bottom-sheet replaces Alert.alert for Reset; amber #b45309; toast "Checked items cleared" | `components/ConfirmSheet.tsx` (new), `app/(tabs)/index.tsx` |
+| **28** | Summary tab rewritten as v3 §12.2 two-card accordion (Pack Summary + Weight Distribution) | `app/(tabs)/summary.tsx` |
+
+### ConfirmSheet spec checklist (v3 VF §13)
+- bg #FFFFFF; borderTopLeftRadius/Right 16; shadow 0 -4px 32px rgba(0,0,0,0.18) ✓
+- backdrop rgba(0,0,0,0.45) ✓
+- paddingTop:24, paddingHorizontal:20, paddingBottom:36+insets.bottom ✓
+- z-index 200 (rendered in Modal — floats above everything) ✓
+- Cancel: minHeight:44, borderRadius:10, fontSize:15 ✓
+- Confirm: same geometry, filled with confirmColor (#b45309 amber for Reset) ✓
+- Slide-up Animated.spring (same isRendered pattern as NavigationDrawer) ✓
+
+### Summary tab card spec checklist (v3 VF §12)
+- Card 1: scale-outline icon; "Pack Summary" / "Base, expendables, and total weight" ✓
+- Card 2: bar-chart-outline icon; "Weight Distribution" / "Category share of pack weight" ✓
+- Active card: bg #FFFFFF; shadow 0 4px 18px rgba(0,0,0,0.18) ✓
+- Inactive bar: bg #FFFFFF; borderTopWidth:1; borderTopColor rgba(0,0,0,0.07) ✓
+- Header: minHeight:68; paddingHorizontal:14; iconSlot 32×32 radius:8 ✓
+- Chevron: chevron-up/down-outline size 16 ✓
+- Default open: Card 1 ✓
+- Non-base rows (Clothing Worn, Dog Pack, Expendables) only shown if category exists in data ✓
 
 ## TypeScript status
 

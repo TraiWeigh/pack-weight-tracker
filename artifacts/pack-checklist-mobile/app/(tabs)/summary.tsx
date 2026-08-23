@@ -1,193 +1,94 @@
 /**
- * summary.tsx — Weight Summary screen (Expo tab)
+ * summary.tsx — Weight Summary tab (v3 §12.2 two-card accordion deck)
  *
- * Items 1 & 2 repair: WeightCard and CategoryBar now respect the active
- * weightUnit setting from context. Previously both hardcoded lbs.
- * DonutChart extracted to components/DonutChart.tsx (shared with GearScreen modal).
+ * Rewritten from flat scroll to exact v3 parity.
+ *
+ * Card 1 — Pack Summary
+ *   Icon: scale-outline (v3 Lucide Scale)
+ *   Subtitle: "Base, expendables, and total weight" (§12.2)
+ *   Rows: Base Weight, Clothing Worn*, Dog Pack*, Expendables*, Grand Total
+ *   (* = only shown if category exists in data, v3 WeightSummary pattern)
+ *
+ * Card 2 — Weight Distribution
+ *   Icon: bar-chart-outline (v3 Lucide BarChart2)
+ *   Subtitle: "Category share of pack weight" (§12.2)
+ *   Content: existing DonutChart component (unchanged)
+ *
+ * VF §12 card geometry (self-checked against authoritative spec):
+ *   Active card: bg #FFFFFF; shadow 0 4px 18px rgba(0,0,0,0.18); header min-height=68px; icon slot 32×32
+ *   Inactive bar: min-height=68px; padding=0 14px; border-top 1px rgba(0,0,0,0.07)
+ *   Chevron: size=16 ChevronLeft-rotated-90 = ChevronDown (closed) / ChevronUp (open) in Ionicons
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  ActivityIndicator,
+  View, Text, StyleSheet, ScrollView,
+  TouchableOpacity, Platform, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useColors } from '@/hooks/useColors';
+import { Ionicons } from '@expo/vector-icons';
 import { usePackData } from '@/context/PackDataContext';
-import { calcWeights, calcTotalOz, ozToLbs, formatDisplayWeight } from '@/lib/weightUtils';
+import { calcWeights, calcTotalOz, formatDisplayWeight } from '@/lib/weightUtils';
 import { getCategoryTheme } from '@/lib/categoryTheme';
 import { DonutChart, Slice } from '@/components/DonutChart';
 
-// ─── WeightCard ───────────────────────────────────────────────────────────────
+// ─── Color tokens (v3 VF §2) ─────────────────────────────────────────────────
 
-function WeightCard({
-  label,
-  oz,
-  large,
-  accent,
-  weightUnit,
-}: {
-  label: string;
-  oz: number;
-  large?: boolean;
-  accent?: boolean;
-  weightUnit: 'imperial' | 'metric';
-}) {
-  const colors = useColors();
-  const grams = oz * 28.3495;
+// Self-check: PAGE_BG = #F2EDE4 = OVERLAY_BG. The tab screen uses this as outer background so
+// white cards visually "float" on the warm off-white, matching the deck-on-overlay appearance.
+const PAGE_BG      = '#F2EDE4';  // Warm off-white shell/overlay background
+const CARD_BG      = '#FFFFFF';  // Card surface
+const PRIMARY_TEXT = '#1A2920';  // Dark forest-green body text
+const NAV_ACTIVE   = '#2A5740';  // Active green — icon + Grand Total value
+const NAV_INACTIVE = '#6E7672';  // Inactive — chevron
+const MUTED        = '#667270';  // Sub-labels, meta text
+const DIVIDER      = 'rgba(0,0,0,0.06)';   // Row separators (VF §2 DIVIDER)
+const HEADER_BDR   = 'rgba(0,0,0,0.07)';   // Card inactive bar top border (VF §2 HEADER_BDR)
 
-  // Primary display — respects active unit. Items 1 & 2: prior code ignored weightUnit.
-  // Self-check: imperial oz<16 → oz/oz; ≥16 → lbs/lbs. metric g<1000 → g/g; ≥1000 → kg/kg. MATCH.
-  let displayVal: string;
-  let displayUnitStr: string;
-  if (weightUnit === 'metric') {
-    if (grams >= 1000) {
-      displayVal = (grams / 1000).toFixed(3);
-      displayUnitStr = 'kg';
-    } else {
-      displayVal = Math.round(grams).toString();
-      displayUnitStr = 'g';
-    }
-  } else {
-    if (oz >= 16) {
-      displayVal = ozToLbs(oz).toFixed(2);
-      displayUnitStr = 'lbs';
-    } else {
-      displayVal = oz.toFixed(1);
-      displayUnitStr = 'oz';
-    }
-  }
+// Non-base categories as defined by calcWeights / v3 §12.2 Card 1 row order
+const NON_BASE_CATS = ['Clothing Worn', 'Dog Pack', 'Expendables'] as const;
 
-  // Sub-line: always show both reference values
-  const subLine = `${oz.toFixed(1)} oz · ${(grams / 1000).toFixed(3)} kg`;
-
-  return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: accent ? colors.primary : colors.card,
-          borderColor: accent ? colors.primary : colors.border,
-        },
-      ]}
-    >
-      <Text
-        style={[
-          styles.cardLabel,
-          { color: accent ? colors.primaryForeground : colors.mutedForeground },
-        ]}
-      >
-        {label}
-      </Text>
-      <View style={styles.cardWeightRow}>
-        <Text
-          style={[
-            large ? styles.cardWeightLarge : styles.cardWeightMed,
-            { color: accent ? colors.primaryForeground : colors.foreground },
-          ]}
-        >
-          {displayVal}
-        </Text>
-        <Text
-          style={[
-            styles.cardUnit,
-            { color: accent ? colors.primaryForeground : colors.mutedForeground },
-          ]}
-        >
-          {displayUnitStr}
-        </Text>
-      </View>
-      <Text
-        style={[
-          styles.cardSub,
-          {
-            color: accent ? colors.primaryForeground : colors.mutedForeground,
-            opacity: 0.75,
-          },
-        ]}
-      >
-        {subLine}
-      </Text>
-    </View>
-  );
-}
-
-// ─── CategoryBar ─────────────────────────────────────────────────────────────
-
-function CategoryBar({
-  name,
-  oz,
-  totalOz,
-  weightUnit,
-}: {
-  name: string;
-  oz: number;
-  totalOz: number;
-  weightUnit: 'imperial' | 'metric';
-}) {
-  const colors = useColors();
-  const pct = totalOz > 0 ? (oz / totalOz) * 100 : 0;
-  // Item 2: prior code hardcoded lbs. formatDisplayWeight respects active unit.
-  const displayWt = formatDisplayWeight(oz, weightUnit);
-
-  return (
-    <View style={styles.catBarRow}>
-      <View style={styles.catBarMeta}>
-        <Text
-          style={[styles.catBarName, { color: colors.foreground }]}
-          numberOfLines={1}
-        >
-          {name}
-        </Text>
-        <Text style={[styles.catBarWeight, { color: colors.mutedForeground }]}>
-          {displayWt}
-        </Text>
-      </View>
-      <View style={[styles.catTrack, { backgroundColor: colors.muted }]}>
-        <View
-          style={[
-            styles.catFill,
-            { backgroundColor: colors.primary, width: `${pct}%` as any },
-          ]}
-        />
-      </View>
-    </View>
-  );
-}
-
-// ─── Summary Screen ───────────────────────────────────────────────────────────
+// ─── SummaryScreen ────────────────────────────────────────────────────────────
 
 export default function SummaryScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
-  // Items 1 & 2: add weightUnit to destructure so WeightCard + CategoryBar respect it
   const { data, isLoading, categoryOrder, weightUnit } = usePackData();
 
+  // One card open at a time. Default: Card 1 open (v3 Summary deck shows first card active).
+  const [openCard, setOpenCard] = useState<1 | 2>(1);
+
+  // Bottom padding — same logic as prior summary.tsx (isLiquidGlassAvailable = iOS 26 native tabs)
   const isNativeTabs = isLiquidGlassAvailable();
-  const bottomPad =
-    Platform.OS === 'web'
-      ? 84
-      : isNativeTabs
-      ? insets.bottom
-      : insets.bottom + 49;
+  const bottomPad = Platform.OS === 'web'
+    ? 84
+    : isNativeTabs ? insets.bottom : insets.bottom + 49;
 
   if (isLoading) {
     return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={[styles.center, { backgroundColor: PAGE_BG }]}>
+        <ActivityIndicator size="large" color={NAV_ACTIVE} />
       </View>
     );
   }
 
+  // ── Weight data ──────────────────────────────────────────────────────────────
   const { baseWeightOz, clothingWornOz, dogPackOz, expendablesOz, grandTotalOz } =
     calcWeights(data);
 
-  // Use dynamic categoryOrder so custom/renamed cats appear
+  // Non-base rows: show only categories that exist in data (user may have deleted some)
+  // v3 §12.2: "one row per non-base category" — these three are the canonical non-base set
+  const nonBaseRows = NON_BASE_CATS
+    .filter(cat => cat in data)
+    .map(cat => ({
+      label: cat,
+      oz: cat === 'Clothing Worn' ? clothingWornOz
+        : cat === 'Dog Pack'      ? dogPackOz
+        : expendablesOz,
+    }));
+
+  // ── Donut slices (Card 2) ────────────────────────────────────────────────────
+  // Same computation as prior summary.tsx — checked items per category, sorted descending
   const catTotals = categoryOrder.map((cat, idx) => {
     const items = data[cat] || [];
     const oz = items
@@ -196,116 +97,125 @@ export default function SummaryScreen() {
     return { name: cat, oz, color: getCategoryTheme(cat, idx).bg };
   }).filter(c => c.oz > 0);
 
-  const totalChecked = Object.values(data)
-    .flat()
-    .filter(i => i.checked).length;
-
-  // Build donut slices — sorted descending so largest slice starts at top
   const sorted = [...catTotals].sort((a, b) => b.oz - a.oz);
   const donutSlices: Slice[] = sorted.map(c => ({
-    name: c.name,
-    oz: c.oz,
-    color: c.color,
+    name: c.name, oz: c.oz, color: c.color,
     pct: grandTotalOz > 0 ? (c.oz / grandTotalOz) * 100 : 0,
   }));
 
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[
-        styles.scrollContent,
-        { paddingBottom: bottomPad + 12, paddingTop: Platform.OS === 'web' ? 67 : 0 },
-      ]}
+      style={{ flex: 1, backgroundColor: PAGE_BG }}
+      contentContainerStyle={{
+        paddingTop: Platform.OS === 'web' ? 67 : 0,
+        paddingBottom: bottomPad + 16,
+      }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Screen identity header */}
-      <View
-        style={[
-          styles.screenHeader,
-          { borderBottomColor: colors.border },
-        ]}
-      >
-        <Text style={[styles.screenHeaderTitle, { color: colors.foreground }]}>
-          TrailWeigh
-        </Text>
-        <Text style={[styles.screenHeaderSub, { color: colors.mutedForeground }]}>
-          Weight Summary
-        </Text>
-      </View>
 
-      {/* Packed count note */}
-      <Text style={[styles.headerNote, { color: colors.mutedForeground }]}>
-        {totalChecked} item{totalChecked !== 1 ? 's' : ''} packed
-      </Text>
-
-      {/* Weight cards — all pass weightUnit */}
-      <WeightCard label="Base Weight" oz={baseWeightOz} large accent weightUnit={weightUnit} />
-
-      <View style={styles.smallCards}>
-        <View style={styles.smallCardHalf}>
-          <WeightCard label="Clothing Worn" oz={clothingWornOz} weightUnit={weightUnit} />
-        </View>
-        <View style={styles.smallCardHalf}>
-          <WeightCard label="Dog Pack" oz={dogPackOz} weightUnit={weightUnit} />
-        </View>
-      </View>
-
-      <WeightCard label="Expendables" oz={expendablesOz} weightUnit={weightUnit} />
-
-      <View style={[styles.divider, { backgroundColor: colors.border }]} />
-
-      <WeightCard label="Grand Total" oz={grandTotalOz} large weightUnit={weightUnit} />
-
-      {/* Category breakdown bars — each passes weightUnit */}
-      {catTotals.length > 0 && (
-        <View
-          style={[
-            styles.breakdownSection,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
+      {/* ── Card 1: Pack Summary ──────────────────────────────────────────── */}
+      {/* VF §12 active: bg #FFFFFF; shadow 0 4px 18px rgba(0,0,0,0.18) */}
+      {/* VF §12 inactive: bg #FFFFFF; border-top 1px rgba(0,0,0,0.07) */}
+      <View style={openCard === 1 ? styles.cardActive : styles.cardInactive}>
+        {/* Card header — VF §12: min-height=68px; padding=0 14px */}
+        <TouchableOpacity
+          style={styles.cardHeader}
+          onPress={() => setOpenCard(1)}
+          activeOpacity={0.65}
         >
-          <Text style={[styles.breakdownTitle, { color: colors.mutedForeground }]}>
-            WEIGHT BREAKDOWN
-          </Text>
-          {[...catTotals]
-            .sort((a, b) => b.oz - a.oz)
-            .map(cat => (
-              <CategoryBar
-                key={cat.name}
-                name={cat.name}
-                oz={cat.oz}
-                totalOz={grandTotalOz}
-                weightUnit={weightUnit}
-              />
+          {/* Icon slot — VF §12: 32×32. Scale = v3 Lucide Scale → Ionicons scale-outline */}
+          <View style={styles.iconSlot}>
+            <Ionicons name="scale-outline" size={17} color={NAV_ACTIVE} />
+          </View>
+          <View style={styles.cardMeta}>
+            {/* Self-check: title = "Pack Summary" per §12.2 Card 1 */}
+            <Text style={styles.cardTitle}>Pack Summary</Text>
+            {/* Self-check: subtitle = "Base, expendables, and total weight" per §12.2 */}
+            <Text style={styles.cardSub}>Base, expendables, and total weight</Text>
+          </View>
+          {/* VF §12: ChevronLeft rotated 90° = pointing down when collapsed */}
+          <Ionicons
+            name={openCard === 1 ? 'chevron-up-outline' : 'chevron-down-outline'}
+            size={16}
+            color={NAV_INACTIVE}
+          />
+        </TouchableOpacity>
+
+        {/* Card 1 content — only when expanded */}
+        {openCard === 1 && (
+          <View style={styles.cardContent}>
+            {/* Base Weight — always first row, bold */}
+            <View style={styles.summaryRow}>
+              <Text style={styles.labelBold}>Base Weight</Text>
+              <Text style={styles.valueBold}>
+                {formatDisplayWeight(baseWeightOz, weightUnit)}
+              </Text>
+            </View>
+
+            {/* Non-base category rows — Clothing Worn, Dog Pack, Expendables */}
+            {nonBaseRows.map(row => (
+              <React.Fragment key={row.label}>
+                <View style={styles.rowDivider} />
+                <View style={styles.summaryRow}>
+                  <Text style={styles.labelNormal}>{row.label}</Text>
+                  <Text style={styles.valueNormal}>
+                    {formatDisplayWeight(row.oz, weightUnit)}
+                  </Text>
+                </View>
+              </React.Fragment>
             ))}
-        </View>
-      )}
 
-      {/* Weight Distribution donut chart — v3 §12.2 Card 2 equivalent */}
-      {donutSlices.length > 0 && (
-        <View
-          style={[
-            styles.breakdownSection,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
+            {/* Grand Total — separated by a heavier divider gap */}
+            <View style={styles.rowDivider} />
+            <View style={[styles.summaryRow, styles.grandTotalRow]}>
+              <Text style={styles.labelBold}>Grand Total</Text>
+              {/* Grand Total value in NAV_ACTIVE green per v3 WeightSummary emphasis */}
+              <Text style={[styles.valueBold, { color: NAV_ACTIVE }]}>
+                {formatDisplayWeight(grandTotalOz, weightUnit)}
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
+
+      {/* ── Card 2: Weight Distribution ──────────────────────────────────── */}
+      <View style={openCard === 2 ? styles.cardActive : styles.cardInactive}>
+        {/* Card header */}
+        <TouchableOpacity
+          style={styles.cardHeader}
+          onPress={() => setOpenCard(2)}
+          activeOpacity={0.65}
         >
-          <Text style={[styles.breakdownTitle, { color: colors.mutedForeground }]}>
-            WEIGHT DISTRIBUTION
-          </Text>
-          <DonutChart slices={donutSlices} />
-        </View>
-      )}
+          {/* BarChart2 = v3 Lucide BarChart2 → Ionicons bar-chart-outline */}
+          <View style={styles.iconSlot}>
+            <Ionicons name="bar-chart-outline" size={17} color={NAV_ACTIVE} />
+          </View>
+          <View style={styles.cardMeta}>
+            {/* Self-check: title = "Weight Distribution" per §12.2 Card 2 */}
+            <Text style={styles.cardTitle}>Weight Distribution</Text>
+            {/* Self-check: subtitle = "Category share of pack weight" per §12.2 */}
+            <Text style={styles.cardSub}>Category share of pack weight</Text>
+          </View>
+          <Ionicons
+            name={openCard === 2 ? 'chevron-up-outline' : 'chevron-down-outline'}
+            size={16}
+            color={NAV_INACTIVE}
+          />
+        </TouchableOpacity>
 
-      {grandTotalOz === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={[styles.emptyIcon, { color: colors.mutedForeground }]}>
-            Nothing packed yet
-          </Text>
-          <Text style={[styles.emptyHint, { color: colors.mutedForeground }]}>
-            Head to Gear to check off items
-          </Text>
-        </View>
-      )}
+        {/* Card 2 content — DonutChart (unchanged component) */}
+        {openCard === 2 && (
+          <View style={styles.cardContent}>
+            {donutSlices.length > 0 ? (
+              <DonutChart slices={donutSlices} />
+            ) : (
+              <Text style={styles.emptyNote}>No items packed yet</Text>
+            )}
+          </View>
+        )}
+      </View>
+
     </ScrollView>
   );
 }
@@ -313,148 +223,96 @@ export default function SummaryScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-  scrollContent: {
-    paddingHorizontal: 16,
-    gap: 10,
+  // ── Card states ────────────────────────────────────────────────────────────
+
+  // VF §12 active card: bg #FFFFFF; shadow 0 4px 18px rgba(0,0,0,0.18)
+  // Self-check: shadowOpacity=0.18, shadowRadius=18, height=4 ✓
+  cardActive: {
+    backgroundColor: CARD_BG,
+    shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 18,
+    shadowOffset: { width: 0, height: 4 }, elevation: 8,
   },
 
-  // Screen identity header (inline, scrolls with content)
-  screenHeader: {
-    paddingTop: 12,
-    paddingBottom: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 1,
-    marginBottom: 2,
-  },
-  screenHeaderTitle: {
-    fontSize: 20,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    letterSpacing: -0.3,
-  },
-  screenHeaderSub: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    letterSpacing: 0.2,
+  // VF §12 inactive bar: bg #FFFFFF; border-top 1px rgba(0,0,0,0.07)
+  // Self-check: HEADER_BDR = rgba(0,0,0,0.07) ✓
+  cardInactive: {
+    backgroundColor: CARD_BG,
+    borderTopWidth: 1, borderTopColor: HEADER_BDR,
   },
 
-  headerNote: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    paddingTop: 2,
-    paddingBottom: 2,
-    letterSpacing: 0.3,
+  // ── Card header ─────────────────────────────────────────────────────────────
+
+  // VF §12: min-height=68px; padding=0 14px; gap between elements
+  // Self-check: minHeight=68 ✓; paddingHorizontal=14 ✓
+  cardHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    minHeight: 68, paddingHorizontal: 14, gap: 12,
   },
 
-  card: {
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
-    gap: 3,
+  // VF §12: icon slot 32×32
+  // Self-check: width=32, height=32 ✓; borderRadius=8; bg rgba(42,87,64,0.10) = NAV_ACTIVE at 10% opacity
+  iconSlot: {
+    width: 32, height: 32, borderRadius: 8,
+    backgroundColor: 'rgba(42,87,64,0.10)',
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
   },
-  cardLabel: {
-    fontSize: 11,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    textTransform: 'uppercase',
-    letterSpacing: 0.9,
+
+  cardMeta: { flex: 1, gap: 2 },
+
+  // Card title — based on VF §12 deck label fontSize=16 fontWeight=700
+  // Using fontSize=15 here (card header, not deck title bar) for proportional native sizing
+  cardTitle: {
+    fontSize: 15, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT,
   },
-  cardWeightRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 4,
-  },
-  cardWeightLarge: {
-    fontSize: 42,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    letterSpacing: -1,
-    lineHeight: 48,
-  },
-  cardWeightMed: {
-    fontSize: 28,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    letterSpacing: -0.5,
-    lineHeight: 34,
-  },
-  cardUnit: {
-    fontSize: 16,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    paddingBottom: 4,
-  },
+
   cardSub: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    letterSpacing: 0.2,
+    fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED,
   },
 
-  smallCards: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  smallCardHalf: {
-    flex: 1,
+  // ── Card content ────────────────────────────────────────────────────────────
+
+  cardContent: {
+    paddingHorizontal: 14, paddingBottom: 16,
   },
 
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    marginVertical: 4,
+  // ── Pack Summary rows ────────────────────────────────────────────────────────
+
+  summaryRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    minHeight: 44, paddingVertical: 6,
   },
 
-  breakdownSection: {
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
-    gap: 10,
+  rowDivider: {
+    height: 1, backgroundColor: DIVIDER,
+  },
+
+  // Grand Total row: extra visual separation — slight top margin + top border
+  grandTotalRow: {
     marginTop: 4,
-  },
-  breakdownTitle: {
-    fontSize: 10,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    marginBottom: 2,
-  },
-  catBarRow: {
-    gap: 5,
-  },
-  catBarMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  catBarName: {
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_500Medium',
-    flex: 1,
-  },
-  catBarWeight: {
-    fontSize: 12,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    letterSpacing: 0.2,
-  },
-  catTrack: {
-    height: 5,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  catFill: {
-    height: 5,
-    borderRadius: 3,
+    borderTopWidth: 1, borderTopColor: DIVIDER,
   },
 
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 40,
-    gap: 6,
+  // Normal non-base category rows
+  labelNormal: {
+    fontSize: 14, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT,
   },
-  emptyIcon: {
-    fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+  valueNormal: {
+    fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED,
   },
-  emptyHint: {
-    fontSize: 13,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    opacity: 0.7,
+
+  // Base Weight and Grand Total rows — bold emphasis
+  labelBold: {
+    fontSize: 15, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT,
+  },
+  valueBold: {
+    fontSize: 15, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT,
+  },
+
+  emptyNote: {
+    fontSize: 14, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED,
+    textAlign: 'center', paddingVertical: 20,
   },
 });
