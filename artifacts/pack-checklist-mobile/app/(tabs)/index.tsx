@@ -1965,10 +1965,12 @@ const styles = StyleSheet.create({
   // AppBar
   appBar: {
     // Item 16: v3 VF §4 padding: 0 44px 0 8px (paddingRight=RIGHT_INSET=44, not 8)
+    // Item 32: v3 normal-state AppBar has NO shadow — only border-bottom 1px rgba(0,0,0,0.07).
+    // The v3 shadow (0 2px 10px rgba(0,0,0,0.10)) appeared ONLY on the Home screen overlay,
+    // which has no native equivalent. All shadow/elevation properties removed.
     backgroundColor: '#FFFFFF', paddingLeft: 8, paddingRight: RIGHT_INSET,
     borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.07)',
-    zIndex: 10, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 }, elevation: 3,
+    zIndex: 10,
   },
   appBarInner:    { height: APPBAR_H, flexDirection: 'row', alignItems: 'center', gap: 10 },
   appBarLogo:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
