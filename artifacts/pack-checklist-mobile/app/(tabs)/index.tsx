@@ -391,9 +391,9 @@ function LocationBar({
 //   size: 16 → 14 (prior value wrong)
 //   label: always "Add Item" regardless of open/closed state (prior showed category name — wrong)
 //   catName prop kept for API compatibility; no longer shown in label per v3 spec.
-function AddItemBar({ catName: _catName, accordionOpen, onPress }: { catName: string; accordionOpen?: boolean; onPress: () => void }) {
+function AddItemBar({ catName: _catName, accordionOpen, onPress, style }: { catName: string; accordionOpen?: boolean; onPress: () => void; style?: any }) {
   return (
-    <TouchableOpacity style={styles.addItemBar} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.addItemBar, style]} onPress={onPress} activeOpacity={0.7}>
       <Ionicons name={accordionOpen ? 'chevron-down' : 'add-outline'} size={14} color={NAV_ACTIVE} />
       <Text style={styles.addItemBarText}>Add Item</Text>
     </TouchableOpacity>
@@ -817,6 +817,12 @@ export default function GearScreen() {
   // ── SectionList ref (F-10: scroll-to-category) ───────────────────────────────
   const sectionListRef = useRef<any>(null);
   const [filterBarBottom,  setFilterBarBottom]  = useState(0);  // F-12
+  const [listViewportH, setListViewportH] = useState(0);
+  const lockedItemsRef = useRef<ScrollView>(null);
+  const lockedContentHRef = useRef(0);
+  const lockedViewportHRef = useRef(0);
+  const [lockedScrollY, setLockedScrollY] = useState(0);
+  const [lockedCanScrollDown, setLockedCanScrollDown] = useState(false);
 
   // ── Pending new-item cleanup (F-06: cancel after contextual photo add) ───────
   const [pendingNewItemCleanup, setPendingNewItemCleanup] = useState<{ cat: string; id: string } | null>(null);
@@ -1387,6 +1393,29 @@ export default function GearScreen() {
       }))
     : [];
 
+  // P3 R0076/R0101: only a genuinely long single-open category gets a
+  // bounded item viewport. Header and Add Item remain stationary around it.
+  const lockedSection = openCatName && !allExpanded
+    ? allSections.find(section => section.title === openCatName) ?? null
+    : null;
+  const lockedAvailH = Math.max(44, listViewportH - CAT_HEADER_H - 44);
+  const expandedExtraH = expandedItemKey?.cat === openCatName ? 352 : 0;
+  const isLongCategoryOpen = !!lockedSection && filterView === 'category' &&
+    (lockedSection.data.length * 44 + expandedExtraH > lockedAvailH + 4);
+
+  const recalcLockedOverflow = useCallback((y: number) => {
+    const maxY = Math.max(0, lockedContentHRef.current - lockedViewportHRef.current);
+    setLockedScrollY(y);
+    setLockedCanScrollDown(y < maxY - 4);
+  }, []);
+
+  useEffect(() => {
+    setLockedScrollY(0);
+    if (isLongCategoryOpen) {
+      requestAnimationFrame(() => lockedItemsRef.current?.scrollTo({ y: 0, animated: false }));
+    }
+  }, [openCatName, isLongCategoryOpen]);
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   if (isLoading) {
@@ -1436,7 +1465,11 @@ export default function GearScreen() {
       )}
 
       {/* ── Scrolling category / location list ──────────────────────── */}
-      <View ref={listContainerRef} style={{ flex: 1 }}>
+      <View
+        ref={listContainerRef}
+        style={{ flex: 1 }}
+        onLayout={e => setListViewportH(e.nativeEvent.layout.height)}
+      >
       <SectionList
         ref={sectionListRef}
         sections={sections}
@@ -1670,6 +1703,142 @@ export default function GearScreen() {
         onScroll={e => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
       />
+
+      {isLongCategoryOpen && lockedSection && (
+        <View style={styles.lockedCategoryViewport}>
+          <CategorySwipeRow
+            catName={lockedSection.title}
+            itemCount={(data[lockedSection.title] || []).length}
+            onRename={(oldName) => {
+              if (Platform.OS === 'ios') {
+                Alert.prompt('Rename Category', undefined, (text) => {
+                  if (text?.trim()) renameCategory(oldName, text.trim());
+                }, 'plain-text', oldName);
+              }
+            }}
+            onDelete={(catName) => deleteCategory(catName)}
+          >
+            <SectionHeader
+              title={lockedSection.title}
+              catIndex={lockedSection.catIndex}
+              checkedCount={lockedSection.checkedCount}
+              totalCount={lockedSection.totalCount}
+              checkedWeightOz={lockedSection.checkedWeightOz}
+              isOpen
+              onToggle={() => handleCatToggle(lockedSection.title)}
+              onLongPress={(y) => handleCatLongPress(lockedSection.title, y)}
+              weightUnit={weightUnit}
+            />
+          </CategorySwipeRow>
+
+          <ScrollView
+            ref={lockedItemsRef}
+            style={styles.lockedItems}
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={false}
+            onLayout={e => {
+              lockedViewportHRef.current = e.nativeEvent.layout.height;
+              recalcLockedOverflow(lockedScrollY);
+            }}
+            onContentSizeChange={(_w, h) => {
+              lockedContentHRef.current = h;
+              recalcLockedOverflow(lockedScrollY);
+            }}
+            onScroll={e => recalcLockedOverflow(e.nativeEvent.contentOffset.y)}
+            scrollEventThrottle={16}
+          >
+            {lockedSection.data.map(item => {
+              const isExpanded = expandedItemKey?.cat === lockedSection.title && expandedItemKey?.id === item.id;
+              const liveItem = (data[lockedSection.title] || []).find(i => i.id === item.id);
+              return (
+                <View key={item.id}>
+                  <AnimatedSwipeRow
+                    item={item}
+                    category={lockedSection.title}
+                    onToggle={toggleItem}
+                    onTapName={handleTapItemName}
+                    onDelete={handleItemDelete}
+                    weightUnit={weightUnit}
+                  />
+                  {isExpanded && liveItem && (
+                    <ItemDetailPanel
+                      item={liveItem}
+                      category={lockedSection.title}
+                      categories={categoryOrder}
+                      locations={locations}
+                      weightUnit={weightUnit}
+                      onRename={(name) => handleDetailRename(lockedSection.title, item.id, name)}
+                      onUpdate={(patch) => handleDetailUpdate(lockedSection.title, item.id, patch)}
+                      onMove={(newCat) => handleDetailMove(lockedSection.title, item.id, newCat)}
+                      onDelete={() => handleDetailDelete(lockedSection.title, item.id)}
+                      onPhoto={() => { setPhotoTarget({ cat: lockedSection.title, id: item.id }); setShowItemPhotoSheet(true); }}
+                      onClose={() => setExpandedItemKey(null)}
+                      onCreateLocation={(name, cb) => { const locId = addLocation(name, ''); cb(locId); }}
+                    />
+                  )}
+                </View>
+              );
+            })}
+          </ScrollView>
+
+          {addItemAccordionCat === lockedSection.title && (
+            <View style={styles.addItemAccordion}>
+              <TouchableOpacity style={styles.accordionRow} activeOpacity={0.7} onPress={() => {
+                const newId = addItem(lockedSection.title, '', 0, 1);
+                setExpandedItemKey({ cat: lockedSection.title, id: newId });
+                setAddItemAccordionCat(null);
+              }}>
+                <Ionicons name="pencil-outline" size={14} color={NAV_ACTIVE} />
+                <Text style={styles.accordionRowText}>Name</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.accordionRow} activeOpacity={0.7} onPress={() => {
+                const newId = addItem(lockedSection.title, '', 0, 1);
+                setPhotoTarget({ cat: lockedSection.title, id: newId });
+                setExpandedItemKey({ cat: lockedSection.title, id: newId });
+                setPendingNewItemCleanup({ cat: lockedSection.title, id: newId });
+                setItemPhotoInitialSource('camera');
+                setAddItemAccordionCat(null);
+                setTimeout(() => setShowItemPhotoSheet(true), 50);
+              }}>
+                <Ionicons name="camera-outline" size={14} color={NAV_ACTIVE} />
+                <Text style={styles.accordionRowText}>Photo</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.accordionRow} activeOpacity={0.7} onPress={() => {
+                setAddItemAccordionCat(null);
+                Alert.alert('Master List', 'Master List search is coming soon on mobile.');
+              }}>
+                <Ionicons name="library-outline" size={14} color={NAV_ACTIVE} />
+                <Text style={styles.accordionRowText}>Master List</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={styles.lockedAddRow}>
+            <AddItemBar
+              catName={lockedSection.title}
+              accordionOpen={addItemAccordionCat === lockedSection.title}
+              style={{ flex: 1, borderBottomWidth: 0 }}
+              onPress={() => setAddItemAccordionCat(prev => prev === lockedSection.title ? null : lockedSection.title)}
+            />
+            <TouchableOpacity
+              style={[styles.lockedPageButton, lockedScrollY <= 4 && styles.lockedPageButtonDisabled]}
+              disabled={lockedScrollY <= 4}
+              onPress={() => lockedItemsRef.current?.scrollTo({ y: Math.max(0, lockedScrollY - lockedViewportHRef.current), animated: true })}
+              accessibilityLabel="Show earlier items"
+            >
+              <Ionicons name="chevron-up" size={18} color={NAV_INACTIVE} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.lockedPageButton, !lockedCanScrollDown && styles.lockedPageButtonDisabled]}
+              disabled={!lockedCanScrollDown}
+              onPress={() => lockedItemsRef.current?.scrollTo({ y: lockedScrollY + lockedViewportHRef.current, animated: true })}
+              accessibilityLabel="Show later items"
+            >
+              <Ionicons name="chevron-down" size={18} color={NAV_INACTIVE} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       </View>
 
       {/* ── Fixed bottom ──────────────────────────────────────────────── */}
@@ -2130,6 +2299,21 @@ const styles = StyleSheet.create({
   // List
   list:        { flex: 1 },
   listContent: { paddingBottom: 4 },
+  lockedCategoryViewport: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: PAGE_BG,
+    zIndex: 7,
+  },
+  lockedItems: { flex: 1, backgroundColor: '#FFFFFF' },
+  lockedAddRow: {
+    minHeight: 44, flexDirection: 'row', backgroundColor: '#FFFFFF',
+    borderTopWidth: 1, borderTopColor: DIVIDER,
+  },
+  lockedPageButton: {
+    width: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center',
+    borderLeftWidth: 1, borderLeftColor: DIVIDER,
+  },
+  lockedPageButtonDisabled: { opacity: 0.35 },
 
   // Photo List empty card
   emptyCard: {
