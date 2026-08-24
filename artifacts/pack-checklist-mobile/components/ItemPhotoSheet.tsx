@@ -52,7 +52,7 @@ async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
       }
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.55,
+        quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
         base64: true,
         allowsEditing: true,
         aspect: [4, 3],
@@ -68,7 +68,7 @@ async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
       }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.55,
+        quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
         base64: true,
         allowsEditing: true,
         aspect: [4, 3],

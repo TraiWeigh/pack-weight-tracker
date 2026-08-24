@@ -4,7 +4,9 @@
  * Camera row and Photos row, each with 34×34 dark-green icon pills.
  * Cancel row at bottom. z-index equivalent = 212 in v3.
  *
- * On selection, compresses to JPEG quality=0.55 and calls onCapture(dataUrl).
+ * On selection, compresses to JPEG quality=0.72 and calls onCapture(dataUrl).
+ * NOTE: v3 also caps the longest edge at 800px via canvas resize. That requires
+ * expo-image-manipulator (not currently installed); tracked as a known gap.
  * Uses expo-image-picker for both Camera and Photos.
  */
 
@@ -62,7 +64,7 @@ export function PhotoListSourceSheet({ visible, onClose, onCapture }: Props) {
 
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: 'images',
-      quality: 0.55,
+      quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
       base64: true,
       allowsEditing: false,
     } as ImagePicker.ImagePickerOptions);
@@ -88,7 +90,7 @@ export function PhotoListSourceSheet({ visible, onClose, onCapture }: Props) {
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: 'images',
-      quality: 0.55,
+      quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
       base64: true,
       allowsEditing: false,
     } as ImagePicker.ImagePickerOptions);
