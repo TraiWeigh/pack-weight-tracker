@@ -94,6 +94,9 @@ const CHECKBOX_HIT   = 44;
 const SWIPE_BTN_W    = 88;   // v3-parity (was 80)
 const SWIPE_REVEAL   = 88;
 const NUM_GROUPS     = 4;
+// P3 R0101: invisible trailing range lets the final short category reach the
+// same anchored position beneath Filter as every earlier category.
+const CATEGORY_TRAILING_SCROLL_H = 560;
 
 // ─── Box Groups ───────────────────────────────────────────────────────────────
 
@@ -827,6 +830,7 @@ export default function GearScreen() {
   const catBarYsRef              = useRef<Map<string, number>>(new Map());
   const catBarHsRef              = useRef<Map<string, number>>(new Map());
   const scrollYRef               = useRef(0);
+  const openCategoryScrollRef    = useRef<{ catName: string; y: number } | null>(null);
   const listContainerRef         = useRef<View>(null);
   const listTopRef               = useRef(0);
   const catDragAnimsRef          = useRef<Map<string, Animated.Value>>(new Map());
@@ -982,18 +986,31 @@ export default function GearScreen() {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setAllExpanded(false);
     setExpandedItemKey(null);   // close item detail panel when switching categories
-    setOpenCatName(prev => prev === catName ? null : catName);
+    setOpenCatName(prev => {
+      const closing = prev === catName;
+      if (!closing) openCategoryScrollRef.current = { catName, y: scrollYRef.current };
+      return closing ? null : catName;
+    });
   }, []);
 
-  // F-10: scroll to the newly opened category header
+  // P3 R0101: anchor the opened category beneath Filter. On close, restore the
+  // exact pre-open category-list position saved by handleCatToggle.
   useEffect(() => {
-    if (!openCatName || allExpanded) return;
+    if (!openCatName || allExpanded) {
+      const restore = openCategoryScrollRef.current;
+      if (!restore) return;
+      const t = setTimeout(() => {
+        sectionListRef.current?.getScrollResponder()?.scrollTo({ y: restore.y, animated: false });
+        openCategoryScrollRef.current = null;
+      }, 40);
+      return () => clearTimeout(t);
+    }
     const idx = sections.findIndex(s => s.title === openCatName);
     if (idx < 0) return;
     const t = setTimeout(() => {
       try {
         sectionListRef.current?.scrollToLocation({
-          sectionIndex: idx, itemIndex: 0, animated: true, viewOffset: 0,
+          sectionIndex: idx, itemIndex: 0, animated: false, viewOffset: 0,
         });
       } catch { /* ignore — section may not be measured yet */ }
     }, 80);
@@ -1642,6 +1659,9 @@ export default function GearScreen() {
           );
         }}
         stickySectionHeadersEnabled
+        ListFooterComponent={filterView === 'category'
+          ? <View style={{ height: CATEGORY_TRAILING_SCROLL_H }} pointerEvents="none" />
+          : null}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         style={styles.list}
