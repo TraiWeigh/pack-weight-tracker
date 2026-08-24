@@ -1,0 +1,19 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.62.1","options":{},"platform":"linux","wallTime":1787530295183,"monotonicTime":59978.861,"sdkLanguage":"javascript","contextId":"request-context@69eb576da436d97e5234058ce71d5d16","title":"phase1b/importer-pdf.spec.ts:128 › PDF importer — additional fixtures › image-only PDF returns 422 with code:image_only_pdf"}
+{"type":"before","callId":"call@424","startTime":59980.132,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:80/api/import-gear","method":"POST","multipartData":[{"name":"file","file":{"name":"trailweigh_image_only_fixture.pdf","mimeType":"application/pdf","buffer":"<Buffer>"}}]},"stepId":"pw:api@23"}
+{"type":"log","callId":"call@424","time":59980.406,"message":"→ POST http://localhost/api/import-gear"}
+{"type":"log","callId":"call@424","time":59980.413,"message":"  user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36"}
+{"type":"log","callId":"call@424","time":59980.414,"message":"  accept: */*"}
+{"type":"log","callId":"call@424","time":59980.415,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@424","time":59980.416,"message":"  content-type: multipart/form-data; boundary=----WebKitFormBoundarywpPGhglszWd3ZlKl"}
+{"type":"log","callId":"call@424","time":59980.418,"message":"  content-length: 533"}
+{"type":"log","callId":"call@424","time":59983.622,"message":"← 422 Unprocessable Entity"}
+{"type":"log","callId":"call@424","time":59983.628,"message":"  access-control-allow-credentials: true"}
+{"type":"log","callId":"call@424","time":59983.629,"message":"  content-length: 123"}
+{"type":"log","callId":"call@424","time":59983.631,"message":"  content-type: application/json; charset=utf-8"}
+{"type":"log","callId":"call@424","time":59983.632,"message":"  date: Mon, 24 Aug 2026 00:11:35 GMT"}
+{"type":"log","callId":"call@424","time":59983.633,"message":"  etag: W/\"7b-Ck+zqgZJgIIFKTFg54pmYHqHP/w\""}
+{"type":"log","callId":"call@424","time":59983.637,"message":"  vary: Origin"}
+{"type":"log","callId":"call@424","time":59983.683,"message":"  x-clerk-auth-reason: dev-browser-missing"}
+{"type":"log","callId":"call@424","time":59983.686,"message":"  x-clerk-auth-status: signed-out"}
+{"type":"log","callId":"call@424","time":59983.688,"message":"  x-powered-by: Express"}
+{"type":"after","callId":"call@424","endTime":59983.74,"result":{"response":{"url":"http://localhost/api/import-gear","status":422,"statusText":"Unprocessable Entity","headers":[{"name":"Access-Control-Allow-Credentials","value":"true"},{"name":"Content-Length","value":"123"},{"name":"Content-Type","value":"application/json; charset=utf-8"},{"name":"Date","value":"Mon, 24 Aug 2026 00:11:35 GMT"},{"name":"Etag","value":"W/\"7b-Ck+zqgZJgIIFKTFg54pmYHqHP/w\""},{"name":"Vary","value":"Origin"},{"name":"X-Clerk-Auth-Reason","value":"dev-browser-missing"},{"name":"X-Clerk-Auth-Status","value":"signed-out"},{"name":"X-Powered-By","value":"Express"}],"serverAddr":{"ipAddress":"127.0.0.1","port":80},"timing":{"startTime":1787530295184,"domainLookupStart":-1,"domainLookupEnd":-1,"connectStart":-1,"secureConnectionStart":-1,"connectEnd":-1,"requestStart":0.16600000000471482,"responseStart":2.9510000000009313},"responseEndTiming":3.1460000000006403,"fetchUid":"599a2117202edb46aef0bd8edbd157d5"}}}

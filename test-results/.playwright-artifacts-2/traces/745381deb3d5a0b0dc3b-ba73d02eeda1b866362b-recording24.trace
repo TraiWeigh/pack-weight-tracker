@@ -1,0 +1,19 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.62.1","options":{},"platform":"linux","wallTime":1787530293540,"monotonicTime":58335.948,"sdkLanguage":"javascript","contextId":"request-context@56c77aae116f0da8da39d847efd45db1","title":"phase1b/importer-errors.spec.ts:22 › Malformed / empty files › empty file upload returns non-200 JSON error"}
+{"type":"before","callId":"call@265","startTime":58337.745,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:80/api/import-gear","method":"POST","multipartData":[{"name":"file","file":{"name":"empty.pdf","mimeType":"application/pdf","buffer":"<Buffer>"}}]},"stepId":"pw:api@23"}
+{"type":"log","callId":"call@265","time":58338.198,"message":"→ POST http://localhost/api/import-gear"}
+{"type":"log","callId":"call@265","time":58338.261,"message":"  user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36"}
+{"type":"log","callId":"call@265","time":58338.284,"message":"  accept: */*"}
+{"type":"log","callId":"call@265","time":58338.285,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@265","time":58338.287,"message":"  content-type: multipart/form-data; boundary=----WebKitFormBoundaryuPOeG6ZEkc4Zvsbz"}
+{"type":"log","callId":"call@265","time":58338.29,"message":"  content-length: 188"}
+{"type":"log","callId":"call@265","time":58545.322,"message":"← 422 Unprocessable Entity"}
+{"type":"log","callId":"call@265","time":58545.332,"message":"  access-control-allow-credentials: true"}
+{"type":"log","callId":"call@265","time":58545.335,"message":"  content-length: 130"}
+{"type":"log","callId":"call@265","time":58545.337,"message":"  content-type: application/json; charset=utf-8"}
+{"type":"log","callId":"call@265","time":58545.338,"message":"  date: Mon, 24 Aug 2026 00:11:33 GMT"}
+{"type":"log","callId":"call@265","time":58545.341,"message":"  etag: W/\"82-oON/eaq8iikWl3fkSnUKidRyyYw\""}
+{"type":"log","callId":"call@265","time":58545.343,"message":"  vary: Origin"}
+{"type":"log","callId":"call@265","time":58545.345,"message":"  x-clerk-auth-reason: dev-browser-missing"}
+{"type":"log","callId":"call@265","time":58545.347,"message":"  x-clerk-auth-status: signed-out"}
+{"type":"log","callId":"call@265","time":58545.35,"message":"  x-powered-by: Express"}
+{"type":"after","callId":"call@265","endTime":58545.471,"result":{"response":{"url":"http://localhost/api/import-gear","status":422,"statusText":"Unprocessable Entity","headers":[{"name":"Access-Control-Allow-Credentials","value":"true"},{"name":"Content-Length","value":"130"},{"name":"Content-Type","value":"application/json; charset=utf-8"},{"name":"Date","value":"Mon, 24 Aug 2026 00:11:33 GMT"},{"name":"Etag","value":"W/\"82-oON/eaq8iikWl3fkSnUKidRyyYw\""},{"name":"Vary","value":"Origin"},{"name":"X-Clerk-Auth-Reason","value":"dev-browser-missing"},{"name":"X-Clerk-Auth-Status","value":"signed-out"},{"name":"X-Powered-By","value":"Express"}],"serverAddr":{"ipAddress":"127.0.0.1","port":80},"timing":{"startTime":1787530293542,"domainLookupStart":-1,"domainLookupEnd":-1,"connectStart":-1,"secureConnectionStart":-1,"connectEnd":-1,"requestStart":0.34900000000197906,"responseStart":206.71100000000297},"responseEndTiming":206.99600000000646,"fetchUid":"ad0fef407c70fffa01d6ec91012a8ea1"}}}

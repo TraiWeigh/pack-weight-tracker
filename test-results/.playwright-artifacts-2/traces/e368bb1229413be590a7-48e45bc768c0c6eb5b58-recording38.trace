@@ -1,0 +1,19 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.62.1","options":{},"platform":"linux","wallTime":1787530294971,"monotonicTime":59766.878,"sdkLanguage":"javascript","contextId":"request-context@be2ee84b92ed6ef3278b4b3fe2ad9efb","title":"phase1b/importer-pdf.spec.ts:103 › PDF importer — additional fixtures › 024K test PDF parses without crash"}
+{"type":"before","callId":"call@404","startTime":59880.042,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:80/api/import-gear","method":"POST","multipartData":[{"name":"file","file":{"name":"TrailWeigh-024K-Test-Pack-Weight_1786438200935.pdf","mimeType":"application/pdf","buffer":"<Buffer>"}}]},"stepId":"pw:api@23"}
+{"type":"log","callId":"call@404","time":59881.265,"message":"→ POST http://localhost/api/import-gear"}
+{"type":"log","callId":"call@404","time":59881.278,"message":"  user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36"}
+{"type":"log","callId":"call@404","time":59881.28,"message":"  accept: */*"}
+{"type":"log","callId":"call@404","time":59881.281,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@404","time":59881.282,"message":"  content-type: multipart/form-data; boundary=----WebKitFormBoundaryHZ12SPhk58NuFD0u"}
+{"type":"log","callId":"call@404","time":59881.283,"message":"  content-length: 619460"}
+{"type":"log","callId":"call@404","time":59949.103,"message":"← 200 OK"}
+{"type":"log","callId":"call@404","time":59949.108,"message":"  access-control-allow-credentials: true"}
+{"type":"log","callId":"call@404","time":59949.11,"message":"  content-length: 8425"}
+{"type":"log","callId":"call@404","time":59949.111,"message":"  content-type: application/json; charset=utf-8"}
+{"type":"log","callId":"call@404","time":59949.112,"message":"  date: Mon, 24 Aug 2026 00:11:35 GMT"}
+{"type":"log","callId":"call@404","time":59949.113,"message":"  etag: W/\"20e9-69DK+yqTCcyApNAMHlUc2YhRm8U\""}
+{"type":"log","callId":"call@404","time":59949.115,"message":"  vary: Origin"}
+{"type":"log","callId":"call@404","time":59949.116,"message":"  x-clerk-auth-reason: dev-browser-missing"}
+{"type":"log","callId":"call@404","time":59949.117,"message":"  x-clerk-auth-status: signed-out"}
+{"type":"log","callId":"call@404","time":59949.118,"message":"  x-powered-by: Express"}
+{"type":"after","callId":"call@404","endTime":59949.218,"result":{"response":{"url":"http://localhost/api/import-gear","status":200,"statusText":"OK","headers":[{"name":"Access-Control-Allow-Credentials","value":"true"},{"name":"Content-Length","value":"8425"},{"name":"Content-Type","value":"application/json; charset=utf-8"},{"name":"Date","value":"Mon, 24 Aug 2026 00:11:35 GMT"},{"name":"Etag","value":"W/\"20e9-69DK+yqTCcyApNAMHlUc2YhRm8U\""},{"name":"Vary","value":"Origin"},{"name":"X-Clerk-Auth-Reason","value":"dev-browser-missing"},{"name":"X-Clerk-Auth-Status","value":"signed-out"},{"name":"X-Powered-By","value":"Express"}],"serverAddr":{"ipAddress":"127.0.0.1","port":80},"timing":{"startTime":1787530295085,"domainLookupStart":-1,"domainLookupEnd":-1,"connectStart":-1,"secureConnectionStart":-1,"connectEnd":-1,"requestStart":0.2680000000036671,"responseStart":67.59000000000378},"responseEndTiming":67.77900000000227,"fetchUid":"0eac56adf2819526987fcb2178df1bbe"}}}

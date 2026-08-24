@@ -1,0 +1,12 @@
+------WebKitFormBoundaryBa6P80fTTvwB6suY
+content-disposition: form-data; name="file"; filename="simple-valid.csv"
+content-type: text/csv
+
+Category,Item Name,Description,Quantity,Weight,Unit,Worn,Consumable
+Shelter,Tent,Zpacks Duplex lightweight shelter,1,19.5,oz,FALSE,FALSE
+Sleep System,Quilt,EE Revelation 20 degree quilt,1,17.8,oz,FALSE,FALSE
+Kitchen,Stove,MSR PocketRocket 2,1,2.6,oz,FALSE,FALSE
+Kitchen,Fuel,Isobutane 100g canister,1,5.3,oz,FALSE,TRUE
+Pack,Backpack,Hyperlite Mountain Gear 3400,1,26.4,oz,FALSE,FALSE
+
+------WebKitFormBoundaryBa6P80fTTvwB6suY--

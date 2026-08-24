@@ -1,0 +1,19 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.62.1","options":{},"platform":"linux","wallTime":1787530294009,"monotonicTime":58805.154,"sdkLanguage":"javascript","contextId":"request-context@524da8c372583f3eb3d76ea845fb017f","title":"phase1b/importer-errors.spec.ts:93 › Malformed / empty files › unsupported file extension returns 400 JSON"}
+{"type":"before","callId":"call@325","startTime":58806.925,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:80/api/import-gear","method":"POST","multipartData":[{"name":"file","file":{"name":"page.html","mimeType":"text/html","buffer":"<Buffer>"}}]},"stepId":"pw:api@23"}
+{"type":"log","callId":"call@325","time":58807.224,"message":"→ POST http://localhost/api/import-gear"}
+{"type":"log","callId":"call@325","time":58807.231,"message":"  user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36"}
+{"type":"log","callId":"call@325","time":58807.234,"message":"  accept: */*"}
+{"type":"log","callId":"call@325","time":58807.235,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@325","time":58807.236,"message":"  content-type: multipart/form-data; boundary=----WebKitFormBoundary9mdIDIP28kq9FRv9"}
+{"type":"log","callId":"call@325","time":58807.237,"message":"  content-length: 223"}
+{"type":"log","callId":"call@325","time":58809.358,"message":"← 400 Bad Request"}
+{"type":"log","callId":"call@325","time":58809.364,"message":"  access-control-allow-credentials: true"}
+{"type":"log","callId":"call@325","time":58809.365,"message":"  content-length: 110"}
+{"type":"log","callId":"call@325","time":58809.367,"message":"  content-type: application/json; charset=utf-8"}
+{"type":"log","callId":"call@325","time":58809.368,"message":"  date: Mon, 24 Aug 2026 00:11:34 GMT"}
+{"type":"log","callId":"call@325","time":58809.369,"message":"  etag: W/\"6e-BxxwEox6pq3nIFxPh5kOSQYUV3M\""}
+{"type":"log","callId":"call@325","time":58809.371,"message":"  vary: Origin"}
+{"type":"log","callId":"call@325","time":58809.372,"message":"  x-clerk-auth-reason: dev-browser-missing"}
+{"type":"log","callId":"call@325","time":58809.374,"message":"  x-clerk-auth-status: signed-out"}
+{"type":"log","callId":"call@325","time":58809.375,"message":"  x-powered-by: Express"}
+{"type":"after","callId":"call@325","endTime":58809.426,"result":{"response":{"url":"http://localhost/api/import-gear","status":400,"statusText":"Bad Request","headers":[{"name":"Access-Control-Allow-Credentials","value":"true"},{"name":"Content-Length","value":"110"},{"name":"Content-Type","value":"application/json; charset=utf-8"},{"name":"Date","value":"Mon, 24 Aug 2026 00:11:34 GMT"},{"name":"Etag","value":"W/\"6e-BxxwEox6pq3nIFxPh5kOSQYUV3M\""},{"name":"Vary","value":"Origin"},{"name":"X-Clerk-Auth-Reason","value":"dev-browser-missing"},{"name":"X-Clerk-Auth-Status","value":"signed-out"},{"name":"X-Powered-By","value":"Express"}],"serverAddr":{"ipAddress":"127.0.0.1","port":80},"timing":{"startTime":1787530294011,"domainLookupStart":-1,"domainLookupEnd":-1,"connectStart":-1,"secureConnectionStart":-1,"connectEnd":-1,"requestStart":0.15399999999499414,"responseStart":1.9539999999979045},"responseEndTiming":2.0799999999944703,"fetchUid":"9e2ef72bfc026ab532f30dfc6d083566"}}}

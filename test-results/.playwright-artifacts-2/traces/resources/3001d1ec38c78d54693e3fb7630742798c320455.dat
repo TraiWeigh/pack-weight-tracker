@@ -1,0 +1,10 @@
+------WebKitFormBoundaryTk0ZUju8zsMfypou
+content-disposition: form-data; name="file"; filename="unicode.csv"
+content-type: text/csv
+
+Category,Item Name,Weight,Unit
+Clothing,Montaña Jacket,8.5,oz
+Electronics,充電バンク,5.3,oz
+Kitchen,Café Stove Set,3.2,oz
+
+------WebKitFormBoundaryTk0ZUju8zsMfypou--

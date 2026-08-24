@@ -1,0 +1,14 @@
+------WebKitFormBoundarybr5doJpjBdU9fqut
+content-disposition: form-data; name="file"; filename="02_metagear_style_1786443199277.csv"
+content-type: text/csv
+
+Name,Category,Qty,Weight,Weight Unit,Consumable,Worn,Notes
+Backpack,Backpack,1,1.55,lb,No,No,Main pack
+Rain Jacket,Clothing,1,6.4,oz,No,No,Carried layer
+Trail Runners,Worn Gear,1,22.0,oz,No,Yes,Pair weight
+Water Filter,Hydration,1,2.3,oz,No,No,Reusable
+Water - 1 Liter,Water,2,1.0,kg,Yes,No,Consumable water
+Dog Food - Daily,Dog Gear,3,20.0,oz,Yes,No,Three daily portions
+Headlamp,Electronics,1,2.8,oz,No,No,Rechargeable
+
+------WebKitFormBoundarybr5doJpjBdU9fqut--

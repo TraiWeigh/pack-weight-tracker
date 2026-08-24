@@ -1,0 +1,14 @@
+{"version":8,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.62.1","options":{},"platform":"linux","wallTime":1787530289422,"monotonicTime":54218.529,"sdkLanguage":"javascript","contextId":"request-context@ccc2029de2c1432d81794476797a7a14","title":"phase1b/coverage-gaps.spec.ts:84 › [NEEDS_AUTH] Themes / Background Picker › Static theme asset for \"share-default\" resolves (200)"}
+{"type":"before","callId":"call@16","startTime":54225.977,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:80/pack-checklist/themes/share-default/01.png","method":"GET"},"stepId":"pw:api@38"}
+{"type":"log","callId":"call@16","time":54238.13,"message":"→ GET http://localhost/pack-checklist/themes/share-default/01.png"}
+{"type":"log","callId":"call@16","time":54238.172,"message":"  user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36"}
+{"type":"log","callId":"call@16","time":54238.187,"message":"  accept: */*"}
+{"type":"log","callId":"call@16","time":54238.227,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"call@16","time":54548.809,"message":"← 200 OK"}
+{"type":"log","callId":"call@16","time":54548.839,"message":"  cache-control: no-cache"}
+{"type":"log","callId":"call@16","time":54548.845,"message":"  content-length: 70579"}
+{"type":"log","callId":"call@16","time":54548.849,"message":"  content-type: text/html"}
+{"type":"log","callId":"call@16","time":54548.853,"message":"  date: Mon, 24 Aug 2026 00:11:29 GMT"}
+{"type":"log","callId":"call@16","time":54548.866,"message":"  etag: W/\"113b3-ELYpGtmty3gIdn+rtGTeE3o5j80\""}
+{"type":"log","callId":"call@16","time":54548.874,"message":"  vary: Origin"}
+{"type":"after","callId":"call@16","endTime":54550.856,"result":{"response":{"url":"http://localhost/pack-checklist/themes/share-default/01.png","status":200,"statusText":"OK","headers":[{"name":"Cache-Control","value":"no-cache"},{"name":"Content-Length","value":"70579"},{"name":"Content-Type","value":"text/html"},{"name":"Date","value":"Mon, 24 Aug 2026 00:11:29 GMT"},{"name":"Etag","value":"W/\"113b3-ELYpGtmty3gIdn+rtGTeE3o5j80\""},{"name":"Vary","value":"Origin"}],"serverAddr":{"ipAddress":"127.0.0.1","port":80},"timing":{"startTime":1787530289432,"domainLookupStart":0,"domainLookupEnd":11.021999999997206,"connectStart":11.021999999997206,"secureConnectionStart":-1,"connectEnd":313.0769999999975,"requestStart":313.0769999999975,"responseStart":320.137999999999},"responseEndTiming":321.6779999999999,"fetchUid":"44132024f685e6f195eed1dcd378f35d"}}}
