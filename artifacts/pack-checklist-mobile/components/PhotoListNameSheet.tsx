@@ -56,7 +56,8 @@ export function PhotoListNameSheet({ visible, onClose, onCreated }: Props) {
   }, [visible, slideY]);
 
   const handleCreate = () => {
-    const trimmed = name.trim() || 'My Photo List';
+    const trimmed = name.trim();
+    if (!trimmed) return;
     startNewPhotoList(trimmed);
     onCreated(trimmed);
   };
@@ -109,9 +110,10 @@ export function PhotoListNameSheet({ visible, onClose, onCreated }: Props) {
               <Text style={styles.btnCancelText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.btn, styles.btnCreate]}
+              style={[styles.btn, styles.btnCreate, !name.trim() && { opacity: 0.38 }]}
               onPress={handleCreate}
               activeOpacity={0.8}
+              disabled={!name.trim()}
             >
               <Text style={styles.btnCreateText}>Create List</Text>
             </TouchableOpacity>

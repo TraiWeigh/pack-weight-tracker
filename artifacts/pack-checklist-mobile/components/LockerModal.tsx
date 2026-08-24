@@ -83,6 +83,7 @@ export function LockerModal({ visible, onClose, showToast }: LockerModalProps) {
           await saveAsToLocker(name);
           await refreshLockerEntries();
           setSaving(false);
+          showToast(`Saved as '${name}'`);
         },
         'plain-text',
         listName,
@@ -90,7 +91,7 @@ export function LockerModal({ visible, onClose, showToast }: LockerModalProps) {
     } else {
       Alert.alert('Save As', 'Enter a name in the text field above, then tap Save.');
     }
-  }, [listName, saveAsToLocker, refreshLockerEntries]);
+  }, [listName, saveAsToLocker, refreshLockerEntries, showToast]);
 
   // ── New List ──────────────────────────────────────────────────────────────
 
@@ -138,21 +139,22 @@ export function LockerModal({ visible, onClose, showToast }: LockerModalProps) {
 
   const handleDelete = useCallback((entry: NativeLockerEntry) => {
     Alert.alert(
-      'Delete List',
-      `Delete "${entry.name}"? This cannot be undone.`,
+      'Delete Saved List?',
+      `Delete "${entry.name}"? This removes the saved list only. Items in your Master Library will not be deleted.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete',
+          text: 'Delete List',
           style: 'destructive',
           onPress: async () => {
             if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             await deleteLockerEntry(entry.id);
+            showToast('List deleted');
           },
         },
       ],
     );
-  }, [deleteLockerEntry]);
+  }, [deleteLockerEntry, showToast]);
 
   // ── Rename entry ──────────────────────────────────────────────────────────
 

@@ -473,7 +473,6 @@ function ItemRow({
   weightUnit: 'imperial' | 'metric';
 }) {
   const handleCheck = useCallback(() => {
-    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onToggle(category, item.id);
   }, [category, item.id, onToggle]);
 
@@ -1204,7 +1203,7 @@ export default function GearScreen() {
                 saveToLocker(); showToast('List saved');
               } else if (idx === 1) {
                 Alert.prompt('Save As', 'Name for the new copy:',
-                  (text) => { if (text?.trim()) { saveAsToLocker(text.trim()); showToast('Saved as new copy'); } },
+                  (text) => { if (text?.trim()) { saveAsToLocker(text.trim()); showToast(`Saved as '${text.trim()}'`); } },
                   'plain-text', listName);
               }
             }
@@ -1811,7 +1810,7 @@ export default function GearScreen() {
               { text: 'Save As Copy…', onPress: () => {
                 if (Platform.OS === 'ios') {
                   Alert.prompt('Save As', 'Name for the new copy:', (text) => {
-                    if (text?.trim()) { saveAsToLocker(text.trim()); showToast('Saved as new copy'); }
+                    if (text?.trim()) { saveAsToLocker(text.trim()); showToast(`Saved as '${text.trim()}'`); }
                   }, 'plain-text', listName);
                 } else Alert.alert('Save As', 'Saving as a copy is available on iOS.');
               }},
@@ -1822,7 +1821,7 @@ export default function GearScreen() {
         onSaveAs={() => {
           if (Platform.OS === 'ios') {
             Alert.prompt('Save As', 'Name for the new copy:', (text) => {
-              if (text?.trim()) { saveAsToLocker(text.trim()); showToast('Saved as new copy'); }
+              if (text?.trim()) { saveAsToLocker(text.trim()); showToast(`Saved as '${text.trim()}'`); }
             }, 'plain-text', listName);
           } else {
             Alert.alert('Save As', 'Saving as a copy is available on iOS.');
