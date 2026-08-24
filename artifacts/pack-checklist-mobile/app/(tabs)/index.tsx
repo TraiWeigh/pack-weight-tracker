@@ -2117,7 +2117,7 @@ const styles = StyleSheet.create({
 
   // Photo List empty card
   emptyCard: {
-    margin: 8, padding: 20, borderRadius: 16,
+    margin: 8, paddingHorizontal: 20, paddingVertical: 24, borderRadius: 16,
     backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: 'rgba(0,0,0,0.06)',
     alignItems: 'center',
   },

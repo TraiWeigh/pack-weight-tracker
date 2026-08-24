@@ -54,8 +54,8 @@ async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
         base64: true,
-        allowsEditing: true,
-        aspect: [4, 3],
+        // P3 opens the camera directly and does not insert a crop/edit step.
+        allowsEditing: false,
       });
       if (!result.canceled && result.assets[0]?.base64) {
         return `data:image/jpeg;base64,${result.assets[0].base64}`;
@@ -70,8 +70,8 @@ async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
         base64: true,
-        allowsEditing: true,
-        aspect: [4, 3],
+        // P3 opens the photo library directly and does not insert a crop/edit step.
+        allowsEditing: false,
       });
       if (!result.canceled && result.assets[0]?.base64) {
         return `data:image/jpeg;base64,${result.assets[0].base64}`;

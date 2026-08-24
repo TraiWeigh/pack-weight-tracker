@@ -29,13 +29,14 @@ const DIVIDER    = 'rgba(0,0,0,0.06)';
 
 interface Props {
   visible:   boolean;
+  kind?:     'photo' | 'standard';
   onClose:   () => void;  // Cancel — return to Add deck
   onCreated: (name: string) => void;  // Called after list is created
 }
 
-export function PhotoListNameSheet({ visible, onClose, onCreated }: Props) {
+export function PhotoListNameSheet({ visible, kind = 'photo', onClose, onCreated }: Props) {
   const insets = useSafeAreaInsets();
-  const { startNewPhotoList } = usePackData();
+  const { startNewPhotoList, startNewList, setListName } = usePackData();
   const [name, setName] = useState('');
   const inputRef = useRef<TextInput>(null);
 
@@ -58,7 +59,12 @@ export function PhotoListNameSheet({ visible, onClose, onCreated }: Props) {
   const handleCreate = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    startNewPhotoList(trimmed);
+    if (kind === 'photo') {
+      startNewPhotoList(trimmed);
+    } else {
+      startNewList();
+      setListName(trimmed);
+    }
     onCreated(trimmed);
   };
 
@@ -85,9 +91,11 @@ export function PhotoListNameSheet({ visible, onClose, onCreated }: Props) {
           ]}
         >
           {/* Title */}
-          <Text style={styles.title}>Name your Photo List</Text>
+          <Text style={styles.title}>{kind === 'photo' ? 'Name your Photo List' : 'Name your new list'}</Text>
           <Text style={styles.subtitle}>
-            Give this list a name so you can find it later. You can rename it any time.
+            {kind === 'photo'
+              ? 'Give this list a name so you can find it later. You can rename it any time.'
+              : 'Start with a clean, empty gear list.'}
           </Text>
 
           {/* Input */}
@@ -96,7 +104,7 @@ export function PhotoListNameSheet({ visible, onClose, onCreated }: Props) {
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Gear Cabinet, Car Boot…"
+            placeholder={kind === 'photo' ? 'e.g. Gear Cabinet, Car Boot…' : 'e.g. Weekend Backpacking'}
             placeholderTextColor={MUTED}
             returnKeyType="done"
             onSubmitEditing={handleCreate}

@@ -8,7 +8,7 @@
  *   2. Add Category  — TextInput + Add button → addCategory → deck closes
  *   3. Scan / Import — button → document import (coming soon for mobile)
  *   4. New List      — Standard List | Photo List tiles
- *                      Standard → confirmation alert → startNewList
+ *                      Standard → required-name sheet → startNewList
  *                      Photo    → PhotoListNameSheet → startNewPhotoList
  *
  * Interaction model (matches v3 DeckInactiveCard):
@@ -89,12 +89,13 @@ export interface AddDeckProps {
 // ─── AddDeck ──────────────────────────────────────────────────────────────────
 
 export function AddDeck({ visible, onClose, showToast, onItemAdded }: AddDeckProps) {
-  const { categoryOrder, addItem, addCategory, startNewList } = usePackData();
+  const { categoryOrder, addItem, addCategory } = usePackData();
   const insets = useSafeAreaInsets();
 
   const [activeCard, setActiveCard] = useState<string | null>(null);
   const [newCatName, setNewCatName] = useState('');
   const [showPhotoListName, setShowPhotoListName] = useState(false);
+  const [showStandardListName, setShowStandardListName] = useState(false);
 
   // Bottom-sheet slide animation (matches v3 CardDeck "rise from bottom")
   const translateY = useRef(new Animated.Value(700)).current;
@@ -156,26 +157,11 @@ export function AddDeck({ visible, onClose, showToast, onItemAdded }: AddDeckPro
   }, []);
 
   // ── Card 4: New List — Standard path ────────────────────────────────────────
-  // v3: confirmation → startNewList
+  // P3 Item 53: standard lists use the same required-name flow as Photo Lists.
   const handleNewStandardList = useCallback(() => {
-    Alert.alert(
-      'New Standard List',
-      'Your current list will be cleared. Save it first if you want to keep it.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Start New',
-          style: 'destructive',
-          onPress: () => {
-            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            startNewList();
-            onClose();
-            showToast('New list started');
-          },
-        },
-      ],
-    );
-  }, [startNewList, onClose, showToast]);
+    onClose();
+    setTimeout(() => setShowStandardListName(true), 250);
+  }, [onClose]);
 
   // ── Card 4: New List — Photo List path ──────────────────────────────────────
   // v3: opens New List Name Dialog then creates Photo List
@@ -300,7 +286,7 @@ export function AddDeck({ visible, onClose, showToast, onItemAdded }: AddDeckPro
     }
   };
 
-  if (!visible && !showPhotoListName) return null;
+  if (!visible && !showPhotoListName && !showStandardListName) return null;
 
   return (
     <>
@@ -384,8 +370,19 @@ export function AddDeck({ visible, onClose, showToast, onItemAdded }: AddDeckPro
       {/* ── Photo List naming sheet (shown after deck closes) ── */}
       <PhotoListNameSheet
         visible={showPhotoListName}
+        kind="photo"
         onClose={() => setShowPhotoListName(false)}
         onCreated={handlePhotoListCreated}
+      />
+      <PhotoListNameSheet
+        visible={showStandardListName}
+        kind="standard"
+        onClose={() => setShowStandardListName(false)}
+        onCreated={(name) => {
+          setShowStandardListName(false);
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          showToast(`Created '${name}'`);
+        }}
       />
     </>
   );
