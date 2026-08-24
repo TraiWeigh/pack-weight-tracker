@@ -65,6 +65,7 @@ import { CategoryPickerSheet } from '@/components/CategoryPickerSheet';
 import { ItemPhotoSheet } from '@/components/ItemPhotoSheet';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { InfoPage, InfoScreen } from '@/components/InfoScreen';
+import { PhotoListNameSheet } from '@/components/PhotoListNameSheet';
 
 // ─── v3 design constants ──────────────────────────────────────────────────────
 
@@ -801,6 +802,7 @@ export default function GearScreen() {
 
   // ── Category picker state (contextual camera/photos case 3) ────────────────
   const [showCatPicker,  setShowCatPicker]  = useState(false);
+  const [showStandardListName, setShowStandardListName] = useState(false);
   const [catPickerSource,setCatPickerSource]= useState<'camera' | 'photos'>('camera');
 
   // ── Photo List UI state ─────────────────────────────────────────────────────
@@ -1747,7 +1749,21 @@ export default function GearScreen() {
       </Modal>
 
       {/* ── Locker / Add / Search sheets ──────────────────────────────── */}
-      <LockerModal visible={showLocker} onClose={() => setShowLocker(false)} showToast={showToast} />
+      <LockerModal
+        visible={showLocker}
+        onClose={() => setShowLocker(false)}
+        showToast={showToast}
+        onNewList={() => setShowStandardListName(true)}
+      />
+      <PhotoListNameSheet
+        visible={showStandardListName}
+        kind="standard"
+        onClose={() => setShowStandardListName(false)}
+        onCreated={(name) => {
+          setShowStandardListName(false);
+          showToast(`Created '${name}'`);
+        }}
+      />
       {/* D-54: onItemAdded expands/focuses the new item after creation from the Add Deck */}
       <AddDeck
         visible={showAdd} onClose={() => setShowAdd(false)} showToast={showToast}

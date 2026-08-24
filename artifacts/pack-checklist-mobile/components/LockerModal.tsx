@@ -41,14 +41,15 @@ interface LockerModalProps {
   visible: boolean;
   onClose: () => void;
   showToast: (msg: string) => void;   // F-14
+  onNewList: () => void;
 }
 
-export function LockerModal({ visible, onClose, showToast }: LockerModalProps) {
+export function LockerModal({ visible, onClose, showToast, onNewList }: LockerModalProps) {
   const insets = useSafeAreaInsets();
   const {
     listName, lockerEntries, activeLockerEntryId,
     refreshLockerEntries, saveToLocker, saveAsToLocker,
-    loadFromLocker, deleteLockerEntry, renameLockerEntry, startNewList,
+    loadFromLocker, deleteLockerEntry, renameLockerEntry,
   } = usePackData();
 
   const [saving, setSaving] = useState(false);
@@ -96,23 +97,9 @@ export function LockerModal({ visible, onClose, showToast }: LockerModalProps) {
   // ── New List ──────────────────────────────────────────────────────────────
 
   const handleNewList = useCallback(() => {
-    Alert.alert(
-      'Start New List',
-      'Your current list will be cleared. Save it first if you want to keep it.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Start New',
-          style: 'destructive',
-          onPress: () => {
-            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            startNewList();
-            onClose();
-          },
-        },
-      ],
-    );
-  }, [startNewList, onClose]);
+    onClose();
+    setTimeout(onNewList, 250);
+  }, [onClose, onNewList]);
 
   // ── Load entry ────────────────────────────────────────────────────────────
 
