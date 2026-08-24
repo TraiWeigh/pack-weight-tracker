@@ -44,10 +44,10 @@ interface MoreDeckProps {
 type CardId = 'actions' | 'settings' | 'help' | 'account';
 
 const CARD_DEFS: { id: CardId; icon: string; label: string; sub: string }[] = [
-  { id: 'actions',  icon: 'list-outline',          label: 'List Actions',      sub: 'Save, print, or check off your list'   },
-  { id: 'settings', icon: 'options-outline',        label: 'List Settings',     sub: 'Units and display options'             },
-  { id: 'help',     icon: 'help-circle-outline',    label: 'Help & TrailWeigh', sub: 'Tutorials, about, and feedback'        },
-  { id: 'account',  icon: 'person-circle-outline',  label: 'Account & Privacy', sub: 'Your account, privacy, and legal'      },
+  { id: 'actions',  icon: 'list-outline',          label: 'List Actions',      sub: 'Save and trail checklist'              },
+  { id: 'settings', icon: 'options-outline',        label: 'List Settings',     sub: ''                                      },
+  { id: 'help',     icon: 'help-circle-outline',    label: 'Help & TrailWeigh', sub: 'Guides, about, sources, contact'      },
+  { id: 'account',  icon: 'person-circle-outline',  label: 'Account & Privacy', sub: 'Policies and account data'             },
 ];
 
 export function MoreDeck({
@@ -102,7 +102,11 @@ export function MoreDeck({
                 </View>
                 <View style={styles.cardBarTextGroup}>
                   <Text style={styles.cardBarLabel}>{card.label}</Text>
-                  <Text style={styles.deckRowSub}>{card.sub}</Text>
+                  <Text style={styles.deckRowSub}>
+                    {card.id === 'settings'
+                      ? `Units: ${weightUnit === 'imperial' ? 'Imperial (lb / oz)' : 'Metric (kg / g)'}`
+                      : card.sub}
+                  </Text>
                 </View>
                 <Ionicons
                   name={openCard === card.id ? 'chevron-up' : 'chevron-down'}
@@ -313,7 +317,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14, minHeight: 68,
   },
   cardBarIcon: {
-    width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(42,87,64,0.08)',
+    width: 32, height: 32, borderRadius: 0, backgroundColor: 'rgba(42,87,64,0.08)',
     alignItems: 'center', justifyContent: 'center',
   },
   cardBarTextGroup: { flex: 1 },

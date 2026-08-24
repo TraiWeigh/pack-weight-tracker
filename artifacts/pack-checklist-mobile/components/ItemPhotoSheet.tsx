@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -27,6 +28,20 @@ const PRIMARY_TEXT = '#1A2920';
 const MUTED        = '#667270';
 const DIVIDER      = 'rgba(0,0,0,0.07)';
 const DELETE_RED   = '#B03A2E';
+const MAX_IMAGE_EDGE = 800;
+
+async function compressPhoto(asset: ImagePicker.ImagePickerAsset): Promise<string | null> {
+  const longestEdge = Math.max(asset.width, asset.height);
+  const resizeAction = longestEdge > MAX_IMAGE_EDGE
+    ? [{ resize: asset.width >= asset.height ? { width: MAX_IMAGE_EDGE } : { height: MAX_IMAGE_EDGE } }]
+    : [];
+  const compressed = await ImageManipulator.manipulateAsync(asset.uri, resizeAction, {
+    base64: true,
+    compress: 0.72,
+    format: ImageManipulator.SaveFormat.JPEG,
+  });
+  return compressed.base64 ? `data:image/jpeg;base64,${compressed.base64}` : compressed.uri;
+}
 
 // ─── ItemPhotoSheet ───────────────────────────────────────────────────────────
 
@@ -52,13 +67,11 @@ async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
       }
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
-        base64: true,
         // P3 opens the camera directly and does not insert a crop/edit step.
         allowsEditing: false,
       });
-      if (!result.canceled && result.assets[0]?.base64) {
-        return `data:image/jpeg;base64,${result.assets[0].base64}`;
+      if (!result.canceled && result.assets[0]) {
+        return await compressPhoto(result.assets[0]);
       }
     } else {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -68,13 +81,11 @@ async function pickImage(source: 'camera' | 'library'): Promise<string | null> {
       }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.72,   // v3 compressPhoto: quality=0.72 (audit Item 61)
-        base64: true,
         // P3 opens the photo library directly and does not insert a crop/edit step.
         allowsEditing: false,
       });
-      if (!result.canceled && result.assets[0]?.base64) {
-        return `data:image/jpeg;base64,${result.assets[0].base64}`;
+      if (!result.canceled && result.assets[0]) {
+        return await compressPhoto(result.assets[0]);
       }
     }
   } catch {}

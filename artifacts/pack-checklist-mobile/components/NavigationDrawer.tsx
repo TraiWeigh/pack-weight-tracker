@@ -29,8 +29,8 @@ const NAV_ACTIVE   = '#2A5740';
 const NAV_INACTIVE = '#6E7672';
 const PRIMARY_TEXT = '#1A2920';
 const MUTED        = '#667270';
-// D-26: v3 spec §10.1 — 55% shell width, max 240px
-const DRAWER_W     = Math.min(240, Dimensions.get('window').width * 0.55);
+// D-26: v3 spec §10.1 — 55% shell width, min 160px, max 240px
+const DRAWER_W     = Math.min(240, Math.max(160, Dimensions.get('window').width * 0.55));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
