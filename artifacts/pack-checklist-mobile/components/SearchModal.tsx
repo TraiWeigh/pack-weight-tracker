@@ -1,27 +1,33 @@
 /**
  * SearchModal — v3 "Search" deck ported to a native pageSheet modal.
  *
- * Final v3 reference: Search is a disabled three-card deck. There is no active
- * search input, filtering, result toggling, or search-result haptic behavior.
+ * v3 reference: Search deck filters items by text; results are interactive (toggle checked);
+ * grouped by category. Native equivalent: pageSheet with autofocused TextInput + filtered list.
+ *
+ * Empty query shows a "Start typing…" prompt matching v3 search deck default state.
  */
 
-import React from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
   Modal,
+  TextInput,
   TouchableOpacity,
+  SectionList,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { usePackData, GearItem } from '@/context/PackDataContext';
+import { calcTotalOz, ozToLbs } from '@/lib/weightUtils';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const NAV_ACTIVE  = '#2A5740';
-const NAV_INACTIVE = '#6E7672';
-const MUTED = '#667270';
-const CB_CHECKED = '#4E7D5C';
+const CB_CHECKED  = '#4E7D5C';
 
 // ─── SearchModal ──────────────────────────────────────────────────────────────
 
@@ -30,8 +36,54 @@ interface SearchModalProps {
   onClose: () => void;
 }
 
+interface ResultSection {
+  title: string;
+  data: GearItem[];
+}
+
 export function SearchModal({ visible, onClose }: SearchModalProps) {
   const insets = useSafeAreaInsets();
+  const { data, toggleItem, categoryOrder } = usePackData();
+  const inputRef = useRef<TextInput>(null);
+  const [query, setQuery] = useState('');
+
+  // Autofocus and reset on open
+  useEffect(() => {
+    if (visible) {
+      setQuery('');
+      setTimeout(() => inputRef.current?.focus(), 400);
+    }
+  }, [visible]);
+
+  // ── Filtered results, grouped by category ─────────────────────────────────
+
+  const sections: ResultSection[] = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+
+    const results: ResultSection[] = [];
+    for (const cat of categoryOrder) {
+      const items = (data[cat] || []).filter(item => {
+        const name = (item.desc || item.sub || '').toLowerCase();
+        return name.includes(q);
+      });
+      if (items.length > 0) results.push({ title: cat, data: items });
+    }
+    return results;
+  }, [query, data, categoryOrder]);
+
+  const totalResults = sections.reduce((n, s) => n + s.data.length, 0);
+
+  // ── Toggle with haptic ────────────────────────────────────────────────────
+
+  const handleToggle = useCallback((cat: string, id: string) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    toggleItem(cat, id);
+  }, [toggleItem]);
+
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <Modal
@@ -40,66 +92,121 @@ export function SearchModal({ visible, onClose }: SearchModalProps) {
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={[styles.sheet, { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 24 }]}>
+      <View style={[styles.sheet, { paddingTop: Platform.OS === 'ios' ? 8 : insets.top + 8 }]}>
+        {/* Drag handle */}
         <View style={styles.handle} />
 
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Ionicons name="search-outline" size={18} color={NAV_ACTIVE} />
+        {/* Search input row */}
+        <View style={styles.inputRow}>
+          <View style={styles.inputWrap}>
+            <Ionicons name="search-outline" size={18} color="#9CA3AF" style={styles.searchIcon} />
+            <TextInput
+              ref={inputRef}
+              style={styles.input}
+              placeholder="Search items…"
+              placeholderTextColor="#9CA3AF"
+              value={query}
+              onChangeText={setQuery}
+              returnKeyType="search"
+              autoCorrect={false}
+              autoCapitalize="none"
+              clearButtonMode="while-editing"
+            />
           </View>
-          <Text style={styles.title}>Search</Text>
           <TouchableOpacity onPress={onClose} hitSlop={12} style={styles.cancelBtn}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.cardList}>
-          <SearchDisabledCard
-            icon="list-outline"
-            title="Search Current List"
-            subtitle="Not available yet"
+        {/* Result count */}
+        {query.trim().length > 0 && (
+          <Text style={styles.resultCount}>
+            {totalResults === 0
+              ? 'No results'
+              : `${totalResults} item${totalResults !== 1 ? 's' : ''}`}
+          </Text>
+        )}
+
+        {/* Results or empty hint */}
+        {query.trim().length === 0 ? (
+          <View style={styles.emptyHint}>
+            <Ionicons name="search-outline" size={36} color="#D1D5DB" />
+            <Text style={styles.emptyHintText}>Type to search your gear</Text>
+          </View>
+        ) : sections.length === 0 ? (
+          <View style={styles.emptyHint}>
+            <Text style={styles.emptyHintText}>No items match "{query}"</Text>
+          </View>
+        ) : (
+          <SectionList
+            sections={sections}
+            keyExtractor={item => item.id}
+            contentContainerStyle={[
+              styles.listContent,
+              { paddingBottom: insets.bottom + 20 },
+            ]}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            renderSectionHeader={({ section }) => (
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+              </View>
+            )}
+            renderItem={({ item, section }) => (
+              <SearchResultRow
+                item={item}
+                category={section.title}
+                onToggle={handleToggle}
+              />
+            )}
+            ItemSeparatorComponent={() => (
+              <View style={styles.separator} />
+            )}
           />
-          <SearchDisabledCard
-            icon="folder-outline"
-            title="Search Locker"
-            subtitle="Not available yet"
-          />
-          <SearchDisabledCard
-            icon="grid-outline"
-            title="Search Catalog"
-            subtitle="Future feature"
-          />
-        </View>
+        )}
       </View>
     </Modal>
   );
 }
 
-function SearchDisabledCard({
-  icon,
-  title,
-  subtitle,
+// ─── SearchResultRow ──────────────────────────────────────────────────────────
+
+function SearchResultRow({
+  item,
+  category,
+  onToggle,
 }: {
-  icon: string;
-  title: string;
-  subtitle: string;
+  item: GearItem;
+  category: string;
+  onToggle: (cat: string, id: string) => void;
 }) {
+  const oz  = calcTotalOz(item.weightOz, item.qty);
+  const lbs = ozToLbs(oz);
+
   return (
     <TouchableOpacity
-      style={styles.disabledCard}
-      disabled
-      activeOpacity={1}
-      accessibilityRole="button"
-      accessibilityState={{ disabled: true }}
+      style={styles.resultRow}
+      onPress={() => onToggle(category, item.id)}
+      activeOpacity={0.7}
     >
-      <View style={styles.cardIcon}>
-        <Ionicons name={icon as any} size={19} color={NAV_INACTIVE} />
+      {/* Checkbox */}
+      <View style={[styles.cb, item.checked && styles.cbChecked]}>
+        {item.checked && <Ionicons name="checkmark" size={13} color="#fff" />}
       </View>
-      <View style={styles.cardText}>
-        <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardSubtitle}>{subtitle}</Text>
+
+      {/* Name + weight */}
+      <View style={styles.resultMeta}>
+        <Text
+          style={[styles.resultName, item.checked && styles.resultNameChecked]}
+          numberOfLines={1}
+        >
+          {item.desc || item.sub}
+        </Text>
+        <Text style={styles.resultWeight}>
+          {oz.toFixed(1)} oz
+          {item.qty > 1 ? ` × ${item.qty}` : ''}
+        </Text>
       </View>
-      <Ionicons name="lock-closed-outline" size={16} color={MUTED} />
     </TouchableOpacity>
   );
 }
@@ -119,67 +226,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginTop: 0,
     marginBottom: 8,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    gap: 10,
-  },
-  headerIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#F3F4F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    flex: 1,
-    fontSize: 18,
-    fontFamily: 'PlusJakartaSans_700Bold',
-    color: '#111827',
-  },
-  cardList: {
-    paddingHorizontal: 16,
-    gap: 10,
-  },
-  disabledCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    minHeight: 68,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    gap: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
-    backgroundColor: '#F9FAFB',
-    opacity: 0.72,
-  },
-  cardIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 9,
-    backgroundColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  cardText: {
-    flex: 1,
-    gap: 2,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
-    color: '#374151',
-  },
-  cardSubtitle: {
-    fontSize: 12.5,
-    fontFamily: 'PlusJakartaSans_400Regular',
-    color: MUTED,
   },
 
   // ── Input row ───────────────────────────────────────────────────────────────

@@ -94,7 +94,7 @@ export function PhotoListNameSheet({ visible, kind = 'photo', onClose, onCreated
           <Text style={styles.title}>{kind === 'photo' ? 'Name your Photo List' : 'Name your new list'}</Text>
           <Text style={styles.subtitle}>
             {kind === 'photo'
-              ? 'This list will reopen in Photo List mode after you save it.'
+              ? 'Give this list a name so you can find it later. You can rename it any time.'
               : 'Start with a clean, empty gear list.'}
           </Text>
 
@@ -104,7 +104,7 @@ export function PhotoListNameSheet({ visible, kind = 'photo', onClose, onCreated
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="List name"
+            placeholder={kind === 'photo' ? 'e.g. Gear Cabinet, Car Boot…' : 'e.g. Weekend Backpacking'}
             placeholderTextColor={MUTED}
             returnKeyType="done"
             onSubmitEditing={handleCreate}
