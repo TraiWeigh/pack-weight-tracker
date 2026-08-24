@@ -49,3 +49,4 @@
 - [Batch H native parity repairs](batch-h-repairs.md) — 12 repairs: N-01–N-05, D-42, D-46, D-48p, D-54, D-59–67; all pass TypeScript clean; DEVICE TEST REQUIRED for N-02 drag, D-42 Alert.prompt (iOS only), D-64 camera sheet.
 - [Batch I native parity repairs](batch-i-repairs.md) — 5 repairs: donut chart (Summary), MoreDeck link rows, loc-photo edit pencil, sibling drag anim (Animated.View), accordion-Photo auto-camera; TS clean; Tasks 4 & 5 need device test.
 - [Batch J native parity repairs](batch-j-parity-repairs.md) — 20+ corrections from full audit: TILE_W/CAT_HEADER_H constants (code was 58/62; correct is 72/64), MoreDeck labels/rows, ItemDetailPanel icons+photo, ChecklistOverlay text, toast geometry. JSX comment-in-conditional pitfall documented.
+- [Native source citation navigation](native-source-citation-navigation.md) — React Native Web needs section-aware citation scrolling; nested layout offsets open later references at the top.

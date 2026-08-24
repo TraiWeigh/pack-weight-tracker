@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
+import { InfoPage } from '@/components/InfoScreen';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ interface MoreDeckProps {
   onSave: () => void;       // D-48: Save (update current saved entry)
   onSaveAs?: () => void;  // optional — removed from Card 1 per v3 §12.5 (Card 1: Save + Checklist only)
   onOpenChecklist: () => void;
+  onOpenInfo: (page: InfoPage) => void;
   weightUnit: 'imperial' | 'metric';
   onSetWeightUnit: (u: 'imperial' | 'metric') => void;
   /** Item 14a/26: when the sheet opens, jump directly to this card (default: 'actions') */
@@ -49,7 +51,7 @@ const CARD_DEFS: { id: CardId; icon: string; label: string; sub: string }[] = [
 ];
 
 export function MoreDeck({
-  visible, onClose, onSave, onOpenChecklist, weightUnit, onSetWeightUnit, initialCard,
+  visible, onClose, onSave, onOpenChecklist, onOpenInfo, weightUnit, onSetWeightUnit, initialCard,
   // onSaveAs intentionally not destructured — removed from Card 1 per v3 §12.5; kept in interface for API compat
 }: MoreDeckProps) {
   const insets = useSafeAreaInsets();
@@ -167,25 +169,25 @@ export function MoreDeck({
                         icon="help-circle-outline"
                         label="Help"
                         sub="App guide and FAQs"
-                        onPress={() => Linking.openURL('https://trailweigh.com/help').catch(() => {})}
+                        onPress={() => onOpenInfo('help')}
                       />
                       <DeckRow
                         icon="information-circle-outline"
                         label="About TrailWeigh"
                         sub="Version info and credits"
-                        onPress={() => Linking.openURL('https://trailweigh.com/about').catch(() => {})}
+                        onPress={() => onOpenInfo('about')}
                       />
                       <DeckRow
                         icon="book-outline"
                         label="How It Works"
                         sub="Quick guide to the app"
-                        onPress={() => Linking.openURL('https://trailweigh.com/how-it-works').catch(() => {})}
+                        onPress={() => onOpenInfo('how-it-works')}
                       />
                       <DeckRow
                         icon="library-outline"
                         label="Sources & References"
                         sub="Data sources and attributions"
-                        onPress={() => Linking.openURL('https://trailweigh.com/sources').catch(() => {})}
+                        onPress={() => onOpenInfo('sources')}
                       />
                       <DeckRow
                         icon="alert-circle-outline"

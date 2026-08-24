@@ -64,6 +64,7 @@ import { DonutChart } from '@/components/DonutChart';
 import { CategoryPickerSheet } from '@/components/CategoryPickerSheet';
 import { ItemPhotoSheet } from '@/components/ItemPhotoSheet';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
+import { InfoPage, InfoScreen } from '@/components/InfoScreen';
 
 // ─── v3 design constants ──────────────────────────────────────────────────────
 
@@ -147,6 +148,8 @@ type Section = {
   locId?:        string;
   locPhotoDataUrl?: string;
 };
+
+type InfoEntry = { page: InfoPage; sourceRef?: number | null };
 
 // ─── AppBar ───────────────────────────────────────────────────────────────────
 
@@ -780,6 +783,7 @@ export default function GearScreen() {
   const [showFilterDD, setShowFilterDD] = useState(false);
   // Item 10: custom amber confirm sheet replaces Alert.alert for Reset Checks (v3 §13.10)
   const [showResetSheet, setShowResetSheet] = useState(false);
+  const [infoStack, setInfoStack] = useState<InfoEntry[]>([]);
   const [filterView,   setFilterView]   = useState<FilterViewMode>('category');
   const [handedness,   setHandedness]   = useState<'left' | 'right'>('right');
 
@@ -1784,10 +1788,9 @@ export default function GearScreen() {
           setExpandedItemKey(null); // Item 13 gap: also clear any expanded item detail panel
         }}
         onOpenHelp={() => {
-          // Item 14a/26: open MoreDeck directly on Card 3 (Help & TrailWeigh) — v3 §10
           setShowDrawer(false);
-          setMoreInitialCard('help');
-          setTimeout(() => setShowMore(true), 300);
+          setShowMore(false);
+          setInfoStack([{ page: 'help' }]);
         }}
       />
 
@@ -1800,6 +1803,11 @@ export default function GearScreen() {
       <MoreDeck
         visible={showMore}
         onClose={() => setShowMore(false)}
+        onOpenInfo={(page) => {
+          setShowMore(false);
+          setShowDrawer(false);
+          setInfoStack([{ page }]);
+        }}
         onSave={() => {
           // D-48p: More Deck Save shows the Save Chooser (same as Group 4 Save button)
           setShowMore(false);
@@ -1831,6 +1839,15 @@ export default function GearScreen() {
         weightUnit={weightUnit}
         onSetWeightUnit={setWeightUnit}
         initialCard={moreInitialCard}
+      />
+
+      <InfoScreen
+        visible={infoStack.length > 0}
+        page={infoStack.at(-1)?.page ?? null}
+        sourceRef={infoStack.at(-1)?.sourceRef}
+        onBack={() => setInfoStack((stack) => stack.length > 1 ? stack.slice(0, -1) : [])}
+        onOpenHelp={() => setInfoStack((stack) => [...stack, { page: 'help' }])}
+        onOpenSources={(ref) => setInfoStack((stack) => [...stack, { page: 'sources', sourceRef: ref ?? null }])}
       />
 
       <ChecklistOverlay
