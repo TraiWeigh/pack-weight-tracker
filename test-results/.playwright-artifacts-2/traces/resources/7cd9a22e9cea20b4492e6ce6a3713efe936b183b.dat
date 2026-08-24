@@ -1,7 +1,0 @@
-------WebKitFormBoundarymhDO7BXeLKzM842u
-content-disposition: form-data; name="file"; filename="fake.pdf"
-content-type: application/pdf
-
-This is just a text file, not a PDF.
-
-------WebKitFormBoundarymhDO7BXeLKzM842u--

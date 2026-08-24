@@ -1,9 +1,0 @@
-------WebKitFormBoundary1msJf5cAgw754Vrm
-content-disposition: form-data; name="file"; filename="malformed.csv"
-content-type: text/csv
-
-this,is,not,a,gear,list
-random,data,without,proper,headers,here
-1234,5678,9012,,,,
-
-------WebKitFormBoundary1msJf5cAgw754Vrm--
