@@ -239,8 +239,10 @@ function ListSummaryHero({
           {catCount} {catCount === 1 ? 'category' : 'categories'}
         </Text>
         <View style={styles.heroSelectedRow}>
-          {/* Item 22: v3 VF §5 — 18×18 filled circle, border-radius=9; not an icon glyph */}
-          <View style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.80)' }} />
+          {/* Item 22: v3 VF §5 — exact 18px selected indicator with checkmark */}
+          <View style={styles.heroSelectedIndicator}>
+            <Ionicons name="checkmark" size={9} color="rgba(255,255,255,0.92)" />
+          </View>
           <Text style={styles.heroSelectedText}>{selectedCount} Selected</Text>
         </View>
       </View>
@@ -2216,6 +2218,17 @@ const styles = StyleSheet.create({
   heroRight: { alignItems: 'flex-end', justifyContent: 'center', gap: 6, flexShrink: 0 },
   heroCatCount: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: 'rgba(255,255,255,0.58)', letterSpacing: 0.2 },
   heroSelectedRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  heroSelectedIndicator: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.50)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   heroSelectedText: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: 'rgba(255,255,255,0.80)', letterSpacing: 0.1 },
 
   // FilterControl
