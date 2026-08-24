@@ -22,8 +22,8 @@ description: Full findings for haptics, camera, safe-area, keyboard, photo quali
 ## Item 59 — Camera permission and crop step
 
 - v3: <input type="file"> — no permission dialog, no crop
-- Native: requestCameraPermissionsAsync + launchCameraAsync with allowsEditing:true, aspect:[4,3]
-- Status: DIFFERENT INTERNALLY BUT EQUIVALENT BY DESIGN for permission; crop step (allowsEditing:true) is behavioural ADDITION not in v3 spec
+- Native: requestCameraPermissionsAsync + direct ImagePicker launch with `allowsEditing:false`
+- Status: MATCHES the no-crop behavior; native camera permission remains the necessary platform equivalent
 - NEEDS PHYSICAL IPHONE CONFIRMATION for end-to-end flow
 
 ## Item 60 — Safe-area insets on real hardware
@@ -36,11 +36,9 @@ description: Full findings for haptics, camera, safe-area, keyboard, photo quali
 ## Item 61 — Photo compression quality ← CODE-VERIFIABLE MISMATCH
 
 - v3 (MobileFunctionalV3.tsx lines 107-126): quality=0.72, max 800px canvas resize
-- Native ItemPhotoSheet.tsx lines 55,71: quality=0.55, NO maxWidth/maxHeight
-- Native PhotoListSourceSheet.tsx lines 65,91: quality=0.55, NO maxWidth/maxHeight
-- Status: DOES NOT MATCH — code-verifiable
-- Safe fix: quality 0.55→0.72 + add maxWidth:800,maxHeight:800 in both files, both calls (4 quality values, 4 dimension props total)
-- expo-image-picker supports maxWidth/maxHeight natively — no new package
+- Native item and Photo List sources resize the longest edge to 800 px with ImageManipulator and encode JPEG at quality=0.72
+- Status: MATCHES the final-V3 output constraint
+- Physical-device confirmation remains useful for image orientation and perceived quality
 
 ## Item 62 — Keyboard avoidance for weight/name inputs
 
@@ -48,4 +46,4 @@ description: Full findings for haptics, camera, safe-area, keyboard, photo quali
 - Gap: ItemDetailPanel (weight TextInput line 212, name TextInput line 200) — NO KeyboardAvoidingView; panel is absolute overlay
 - Status: NEEDS PHYSICAL IPHONE CONFIRMATION — concern is iPhone SE (667pt) where panel+keyboard may collide
 
-**Why:** photo quality and item-check haptic are the only Items 57-62 with code-verifiable mismatches; all others need device confirmation.
+**Why:** the earlier device audit became stale after the picker and compression parity repairs. Item-check haptic remains the only code-verifiable behavior mismatch in this range; Items 58, 60, and 62 still need physical-device confirmation.

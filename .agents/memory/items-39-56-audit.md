@@ -19,10 +19,10 @@ This audit recovered them individually. Two mismatches were found in 39–47; tw
 | 41 | Nav Drawer "Home" action | setScreenStack([]) | onResetScreen (250ms delay then reset) | MATCHES | — |
 | 42 | Nav Drawer "My Lists" action | openDeck('locker') | onMyLists → opens Locker | MATCHES | — |
 | 43 | Nav Drawer "Settings" action | openDeck('more') | onOpenMore → opens More deck | MATCHES | — |
-| 44 | Nav Drawer "Help & Tutorials" | footer-page:'help' (in-app) | Falls back to onOpenMore (no HelpScreen) | DOES NOT MATCH | No — requires HelpScreen (same scope as Items 37–38) |
+| 44 | Nav Drawer "Help & Tutorials" | footer-page:'help' (in-app) | `onOpenHelp` opens the native in-app Help screen | MATCHES | — |
 | 45 | Handedness toggle | Two-state toggle, persists localStorage | handedness prop + onToggleHandedness; AsyncStorage | MATCHES (platform-equivalent) | — |
 | 46 | Save toast — direct Save | "List saved" | showToast('List saved') | MATCHES | — |
-| 47 | Save As toast text | "Saved as '[name]'" | "Saved as new copy" (no name) | DOES NOT MATCH | Yes — 1-line: interpolate name into string |
+| 47 | Save As toast text | "Saved as '[name]'" | `Saved as '[name]'` | MATCHES | — |
 
 ---
 
@@ -31,13 +31,13 @@ This audit recovered them individually. Two mismatches were found in 39–47; tw
 | Item | Feature | v3 exact | Native exact | Classification | Safe fix? |
 |---|---|---|---|---|---|
 | 48 | Locker empty-state text | "No saved lists yet. Use More → List Actions → Save to add one." | Title "No saved lists" + Body "Tap Save to save your current list here." | DIFFERENT INTERNALLY BUT EQUIVALENT BY DESIGN | No — native instruction suits native navigation |
-| 49 | Search deck | 3 disabled cards ("Not available yet") | Functional live text search (SearchModal) | DIFFERENT — native exceeds v3 | No — improvement |
-| 50 | Locker Delete Confirmation | Title "Delete Saved List?", Body "…This removes the saved list only. Items in your Master Library will not be deleted.", Button "Delete List" (destructive), Toast "List deleted" | Title "Delete List", Body "…This cannot be undone.", Button "Delete" (destructive), NO toast | DOES NOT MATCH | Yes — Task #162 proposed |
+| 49 | Search deck | 3 disabled cards ("Not available yet") | 3 disabled cards with the same labels and unavailable/future wording | MATCHES | — |
+| 50 | Locker Delete Confirmation | Title "Delete Saved List?", Body "…This removes the saved list only. Items in your Master Library will not be deleted.", Button "Delete List" (destructive), Toast "List deleted" | Same title/body/button meaning and `List deleted` toast | MATCHES | — |
 | 51 | Load entry flow | Direct load (no confirm dialog), toast "Loaded '[name]'" | Alert.alert confirmation; toast `"[name]" loaded` | DIFFERENT INTERNALLY BUT EQUIVALENT BY DESIGN | Optional (minor toast word order) |
-| 52 | New List Name — Photo List path | "Create List" disabled until non-empty; no fallback name | button NOT disabled; falls back to 'My Photo List' when empty | DOES NOT MATCH | Yes — Task #163 proposed |
-| 53 | New List Name — Standard List path | Title "Name your new list", Body "Start with a clean, empty gear list.", name input required, Button "Create List" | Alert.alert confirmation only (no name entry): Title "New Standard List", Body "Your current list will be cleared…", Button "Start New" (destructive) | DOES NOT MATCH | Not trivially — requires new sheet or reuse of PhotoListNameSheet for standard mode |
+| 52 | New List Name — Photo List path | "Create List" disabled until non-empty; no fallback name | Native name sheet disables creation until a non-whitespace name is supplied | MATCHES | — |
+| 53 | New List Name — Standard List path | Title "Name your new list", Body "Start with a clean, empty gear list.", name input required, Button "Create List" | Same shared native name sheet and required-name behavior | MATCHES | — |
 | 54 | Home screen disabled rows | 7 rows; Tutorials/Controls/Locations disabled ("Soon") | Nav Drawer 5 rows; Tutorials/Controls/Locations absent (not disabled, just not present) | DIFFERENT INTERNALLY BUT EQUIVALENT BY DESIGN | No — platform-adapted scope |
 | 55 | Add Deck Card 3 Scan/Import | Opens Scanner overlay (ImportGearPanel) | Alert.alert "coming soon for mobile" | DOES NOT MATCH | No — requires full scanner port |
 | 56 | Save Chooser sheet | Separate 3-button bottom sheet (Save / Save As / Cancel) | Integrated into Locker modal; no separate gating sheet | DIFFERENT INTERNALLY BUT EQUIVALENT BY DESIGN | No — architectural decision |
 
-**Why:** batch-k's blanket claim was partially wrong — Items 44, 47, 50, 52, 53, 55 do not match v3. Items 49 exceeds v3 (improvement). Items 39–43, 45–46, 48, 51, 54, 56 are equivalent or matching.
+**Why:** the earlier recovery audit became stale after later parity repairs. The remaining confirmed mismatch in this range is Item 55 (the mobile Scan / Import card remains a coming-soon alert rather than the V3 scanner flow); the account/report routing surface warrants separate review because it is broader than the Drawer Help item itself.
