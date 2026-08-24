@@ -43,6 +43,14 @@ export function CategorySwipeRow({
   const tx          = useRef(new Animated.Value(0)).current;
   const isOpenRef   = useRef(false);
   const isSwiping   = useRef(false);
+  // Keep the actions invisible during ordinary tap jitter. They fade in only
+  // after a deliberate horizontal swipe has moved the header far enough to
+  // establish intent; the 88px commit threshold remains unchanged.
+  const actionOpacity = tx.interpolate({
+    inputRange: [-REVEAL_W, -32, -20, 0],
+    outputRange: [1, 1, 0, 0],
+    extrapolate: 'clamp',
+  });
 
   const closeAnim = () => {
     Animated.spring(tx, { toValue: 0, useNativeDriver: true, tension: 230, friction: 24 }).start();
@@ -133,7 +141,7 @@ export function CategorySwipeRow({
   return (
     <View style={styles.container}>
       {/* Action buttons behind the header */}
-      <View style={styles.actions}>
+      <Animated.View style={[styles.actions, { opacity: actionOpacity }]}>
         <TouchableOpacity
           style={[styles.actionBtn, { backgroundColor: NAV_ACTIVE }]}
           onPress={handleEdit}
@@ -148,7 +156,7 @@ export function CategorySwipeRow({
           <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
           <Text style={styles.actionLabel}>Delete</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {/* Sliding header */}
       <Animated.View

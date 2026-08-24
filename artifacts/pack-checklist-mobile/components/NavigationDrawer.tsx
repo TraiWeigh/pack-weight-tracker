@@ -137,7 +137,10 @@ export function NavigationDrawer({
   if (!isRendered) return null;
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents={visible ? 'box-none' : 'none'}>
+    <View
+      style={[StyleSheet.absoluteFillObject, styles.overlay]}
+      pointerEvents={visible ? 'box-none' : 'none'}
+    >
       {/* Backdrop */}
       <Animated.View
         style={[StyleSheet.absoluteFillObject, styles.backdrop, { opacity: backdropOpacity }]}
@@ -231,6 +234,12 @@ export function NavigationDrawer({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  // v3 layer stack: Navigation drawer = 100, above AppBar (10), Summary (9),
+  // Filter (8), sticky category headers (7), and BottomBox (40).
+  overlay: {
+    zIndex: 100,
+    elevation: 100,
+  },
   backdrop: {
     backgroundColor: 'rgba(0,0,0,0.45)',
   },
