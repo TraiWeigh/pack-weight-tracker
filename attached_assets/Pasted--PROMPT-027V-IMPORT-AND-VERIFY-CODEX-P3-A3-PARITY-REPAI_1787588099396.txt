@@ -1,0 +1,149 @@
+# PROMPT 027V — IMPORT AND VERIFY CODEX P3→A3 PARITY REPAIRS
+
+## AUTHORITY AND DEFINITIONS
+
+- **p3** means final pre-app `/mobile-functional-v3`.
+- **a3** means the native Expo mobile app.
+- p3 is the sole authority for appearance, behavior, interaction, scrolling, overlays, and workflow.
+- This is an implementation and verification prompt, not a planning-only prompt.
+- Continue the permanent prompt ledger as:
+
+`PROMPT 027V → task → response → fixes → verification → PASS / FAIL / UNVERIFIED`
+
+## PRIMARY TASK
+
+Fetch and inspect the private GitHub branch:
+
+`codex/native-overlay-gesture-parity`
+
+Expected latest repair commit:
+
+`2ba5f2fd` — Add P3 bounded long-category viewport
+
+The branch contains previously authorized p3-to-a3 parity repairs. Bring those repairs into a safe Replit working branch and verify them in the Expo preview.
+
+Do not remain paused in Plan mode. Proceed with the bounded work below.
+
+## GIT SAFETY REQUIREMENTS
+
+1. First inspect and report the current branch, Git status, local commits, and remote status.
+2. Preserve all existing Replit work, including any commits currently ahead of `origin/main`.
+3. Do not discard, overwrite, reset, rebase, amend, or force-push anything.
+4. Do not merge into `main`.
+5. Do not push changes to `main`.
+6. Fetch only what is needed to access `codex/native-overlay-gesture-parity`.
+7. Create or use a separate local working branch based on the Codex repair branch.
+8. Confirm that the branch contains commits through `2ba5f2fd`.
+9. If Git history conflicts or the Codex branch cannot be fetched safely, stop and report the exact conflict. Do not guess.
+
+## REPAIRS TO VERIFY
+
+### 027V-1 — Hamburger drawer layering
+
+**p3 target:** The hamburger drawer and its dimmed backdrop appear above the header, Pack Summary, category list, and bottom controls.
+
+**Known a3 difference:** The drawer appeared underneath the Pack Summary/List Summary.
+
+Verify the Codex repair makes the drawer the top interactive layer across the full screen.
+
+Ask and answer:
+
+**Does this match final pre-app v3 exactly? If not, why not?**
+
+### 027V-2 — Closed-category tap behavior
+
+**p3 target:** Tapping a closed category opens it normally. Edit/Delete controls must not flash or briefly appear.
+
+**Known a3 difference:** Edit/Delete briefly appeared when a category was tapped.
+
+Verify that normal taps do not activate or expose swipe actions.
+
+Ask and answer:
+
+**Does this match final pre-app v3 exactly? If not, why not?**
+
+### 027V-3 — Category scrolling and open-category scroll lock
+
+**p3 target:** Categories scroll normally without stacking on one another. When a category is opened, its category header and Add Item control remain fixed while that category’s item area scrolls within the bounded available viewport.
+
+**Known a3 differences:**
+
+- Categories appeared to stack on top of one another.
+- The p3 open-category scroll lock was missing.
+- Long categories did not remain inside the correct bounded viewport.
+
+Verify normal category scrolling, sticky behavior, bounded long-category scrolling, and the up/down paging controls.
+
+Ask and answer:
+
+**Does this match final pre-app v3 exactly? If not, why not?**
+
+### 027V-4 — Category opening position and closing restoration
+
+**p3 target:** Opening a category places it at the correct p3 anchor. Closing it restores the user’s prior category-list scroll position.
+
+Verify both behaviors and confirm that sufficient trailing space exists for the final categories.
+
+Ask and answer:
+
+**Does this match final pre-app v3 exactly? If not, why not?**
+
+### 027V-5 — Preview parity
+
+**p3 target:** Preview must use the p3 PDF-style preview layout, controls, spacing, typography, and behavior.
+
+**Known a3 difference:** The Preview looked different from p3.
+
+Verify the repaired Preview against p3. Do not substitute a merely similar native design.
+
+Ask and answer:
+
+**Does this match final pre-app v3 exactly? If not, why not?**
+
+### 027V-6 — Photo List parity
+
+Verify:
+
+- Correct p3 empty-state spacing/padding.
+- No extra crop step that was absent from p3.
+- The expected p3 photo-selection workflow.
+
+Ask and answer:
+
+**Does this match final pre-app v3 exactly? If not, why not?**
+
+### 027V-7 — Named Standard List workflow
+
+Verify that creating a new Standard List from the appropriate entry points follows the p3 naming workflow, including from Locker.
+
+Ask and answer:
+
+**Does this match final pre-app v3 exactly? If not, why not?**
+
+## IMPLEMENTATION LIMITS
+
+Initially, do not rewrite the Codex repairs. Import and verify them first.
+
+If a repair causes a clear compile or runtime failure, make only the smallest correction required on the separate repair working branch. Do not redesign behavior or broaden scope.
+
+Do not modify:
+
+- p3 or any web-v3 route
+- authentication
+- database or schema
+- dependencies
+- APIs
+- publishing or deployment
+- unrelated screens or systems
+- `main` Git history
+
+Do not authorize or begin broad “fix everything” work under this prompt.
+
+## REQUIRED TECHNICAL CHECKS
+
+Run and report separately:
+
+1. Native TypeScript check.
+2. Expo web export/bundle check.
+3. Expo preview startup.
+4. Relevant automated tests already available
