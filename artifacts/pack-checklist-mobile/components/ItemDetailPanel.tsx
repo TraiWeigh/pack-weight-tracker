@@ -163,11 +163,11 @@ export function ItemDetailPanel({
   }, [locations, onUpdate, onCreateLocation, promptCreateLocation]);
 
   const handleDelete = useCallback(() => {
-    // Items 6 & 7: title = "Delete [name]?"; body = §13.1 exact wording with other-lists clause.
+    // Items 6 & 7: match the final-v3 delete confirmation exactly.
     const name = item.desc || item.sub || 'this item';
     Alert.alert(
-      `Delete ${name}?`,
-      `Permanently remove "${name}" from this list? Other lists are not affected.`,
+      `Delete "${name}"?`,
+      'This will permanently remove this item from the current list. Other lists are not affected.',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Delete Item', style: 'destructive', onPress: onDelete },

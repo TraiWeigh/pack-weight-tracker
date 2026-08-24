@@ -126,11 +126,14 @@ export function CategorySwipeRow({
   const handleDelete = () => {
     closeRef.current();
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // Items 11 & 12: body includes item count (§13.3); button label = "Delete Category"
+    // Item 11: use the final-v3 empty/non-empty confirmation wording.
     const n = itemCount;
+    const body = n === 0
+      ? 'This category is empty. It will be permanently removed from this list.'
+      : `This category contains ${n} item${n === 1 ? '' : 's'}. Deleting the category will also permanently delete ${n === 1 ? 'that item' : 'those items'} from this list.`;
     Alert.alert(
       'Delete Category',
-      `Remove "${catName}"? This will permanently delete ${n} item${n !== 1 ? 's' : ''} inside. This cannot be undone.`,
+      body,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Delete Category', style: 'destructive', onPress: () => onDelete(catName) },
