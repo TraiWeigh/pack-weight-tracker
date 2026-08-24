@@ -51,3 +51,4 @@
 - [Batch J native parity repairs](batch-j-parity-repairs.md) — 20+ corrections from full audit: TILE_W/CAT_HEADER_H constants (code was 58/62; correct is 72/64), MoreDeck labels/rows, ItemDetailPanel icons+photo, ChecklistOverlay text, toast geometry. JSX comment-in-conditional pitfall documented.
 - [Native source citation navigation](native-source-citation-navigation.md) — React Native Web needs section-aware citation scrolling; nested layout offsets open later references at the top.
 - [Expo image resize parity](expo-image-resize-parity.md) — SDK 54 ImagePicker has no max-dimension option; use ImageManipulator for proportional caps without crop UI.
+- [Expo Web disabled touchables](expo-web-touchable-disabled.md) — React Native Web’s disabled TouchableOpacity is not reliably exposed as an HTML disabled button in browser tests.

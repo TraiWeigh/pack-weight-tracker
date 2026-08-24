@@ -580,8 +580,10 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
 
   /** Start a new Photo List — clears all data and sets listKind='photo'. */
   const startNewPhotoList = useCallback((name: string) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
     setCurrent({ data: {}, categoryOrder: [] });
-    setListName_state(name.trim() || 'My Photo List');
+    setListName_state(trimmedName);
     setListKind_state('photo');
     setLocations_state([]);
     setPhotoListCaptureDataUrl_state(null);

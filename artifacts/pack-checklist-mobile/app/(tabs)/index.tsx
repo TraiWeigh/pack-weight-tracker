@@ -17,6 +17,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
 import {
   ActionSheetIOS,
   Alert,
@@ -755,6 +756,7 @@ function PhotoItemCard({
 // ─── GearScreen ───────────────────────────────────────────────────────────────
 
 export default function GearScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const {
     data, isLoading, categoryOrder,
@@ -1186,7 +1188,7 @@ export default function GearScreen() {
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         setGroupIdx(g => (g - 1 + NUM_GROUPS) % NUM_GROUPS);
         break;
-      case 'summary': setShowSummary(true); break;
+      case 'summary': router.push('/summary'); break;
       case 'add':
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         setShowAdd(true);
