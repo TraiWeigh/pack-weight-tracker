@@ -2,7 +2,7 @@
  * NavigationDrawer — v3 left-side drawer
  *
  * v3 §10.1: Slides in from left, 55% shell width (~260px).
- * 5 navigation rows: Home (coming soon), Master Library (disabled),
+ * 5 navigation rows: Home, Master Library (disabled),
  * My Lists, Help & Tutorials (coming soon), Settings (coming soon).
  * Footer: handedness toggle.
  * Close: ✕ button, backdrop tap, leftward swipe ≥50px.
@@ -39,8 +39,8 @@ interface NavDrawerProps {
   onClose: () => void;
   onMyLists: () => void;
   onOpenMore?: () => void;
-  /** Item 13: dismiss all open modals so Home truly resets to bare list view */
-  onResetScreen?: () => void;
+  /** Open the mounted Home overlay after closing the drawer. */
+  onOpenHome?: () => void;
   /** Item 14: open help destination (MoreDeck Card 3 until HelpScreen exists) */
   onOpenHelp?: () => void;
   handedness: 'right' | 'left';
@@ -68,7 +68,7 @@ const NAV_ROWS: NavRow[] = [
 // ─── NavigationDrawer ─────────────────────────────────────────────────────────
 
 export function NavigationDrawer({
-  visible, onClose, onMyLists, onOpenMore, onResetScreen, onOpenHelp, handedness, onToggleHandedness,
+  visible, onClose, onMyLists, onOpenMore, onOpenHome, onOpenHelp, handedness, onToggleHandedness,
 }: NavDrawerProps) {
   const insets = useSafeAreaInsets();
   const tx = useRef(new Animated.Value(-DRAWER_W)).current;
@@ -116,8 +116,7 @@ export function NavigationDrawer({
         break;
       case 'home':
         onClose();
-        // Item 13: dismiss all open modals so Home truly returns to the bare list view
-        setTimeout(() => onResetScreen?.(), 250);
+        setTimeout(() => onOpenHome?.(), 250);
         break;
       case 'help':
         // Item 14: open help destination; falls back to More deck until HelpScreen exists

@@ -67,6 +67,7 @@ import { ItemPhotoSheet } from '@/components/ItemPhotoSheet';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { InfoPage, InfoScreen } from '@/components/InfoScreen';
 import { PhotoListNameSheet } from '@/components/PhotoListNameSheet';
+import { HomeOverlay } from '@/components/HomeOverlay';
 
 // ─── v3 design constants ──────────────────────────────────────────────────────
 
@@ -279,50 +280,122 @@ function FilterControl({
 
 function SectionHeader({
   title, catIndex, checkedCount, totalCount, checkedWeightOz,
-  isOpen, onToggle, onLongPress, weightUnit,
+  isOpen, onToggle, onLongPress, onDragMove, onDragEnd, weightUnit,
 }: {
   title: string; catIndex: number; checkedCount: number; totalCount: number;
   checkedWeightOz: number; isOpen: boolean; onToggle: () => void;
-  // N-02: pageY from the long-press gesture event, used to compute drag start position
-  onLongPress?: (pageY: number) => void;
+  // Drag stays owned by the original Touchable; a newly-rendered overlay cannot
+  // reliably claim an already-active native touch sequence.
+  onLongPress?: (pageX: number, pageY: number) => void;
+  onDragMove?: (pageY: number) => void;
+  onDragEnd?: (pageY: number) => void;
   weightUnit: 'imperial' | 'metric';
 }) {
   const theme       = getCategoryTheme(title, catIndex);
   const weightLabel = checkedWeightOz > 0
     ? formatDisplayWeight(checkedWeightOz, weightUnit)
     : null;
+  const onToggleRef = useRef(onToggle);
+  const onLongPressRef = useRef(onLongPress);
+  const onDragMoveRef = useRef(onDragMove);
+  const onDragEndRef = useRef(onDragEnd);
+  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gestureMovedRef = useRef(false);
+  const dragStartedRef = useRef(false);
+  const startPointRef = useRef({ x: 0, y: 0 });
+
+  onToggleRef.current = onToggle;
+  onLongPressRef.current = onLongPress;
+  onDragMoveRef.current = onDragMove;
+  onDragEndRef.current = onDragEnd;
+
+  const clearPressTimer = () => {
+    if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
+    pressTimerRef.current = null;
+  };
+
+  // Own only touches that begin outside CategorySwipeRow's right 40% action
+  // zone. This makes the drag continuous on native and web while preserving the
+  // existing right-zone swipe reveal and allowing pre-lift drags to scroll.
+  const headerPan = useRef(PanResponder.create({
+    onStartShouldSetPanResponder: e =>
+      e.nativeEvent.pageX <= Dimensions.get('window').width * 0.60,
+    onPanResponderGrant: e => {
+      const { pageX, pageY } = e.nativeEvent;
+      startPointRef.current = { x: pageX, y: pageY };
+      gestureMovedRef.current = false;
+      dragStartedRef.current = false;
+      clearPressTimer();
+      pressTimerRef.current = setTimeout(() => {
+        if (!gestureMovedRef.current) {
+          dragStartedRef.current = true;
+          onLongPressRef.current?.(pageX, pageY);
+        }
+      }, 400);
+    },
+    onPanResponderMove: (e, gesture) => {
+      if (!dragStartedRef.current && Math.hypot(gesture.dx, gesture.dy) > 8) {
+        gestureMovedRef.current = true;
+        clearPressTimer();
+      }
+      if (dragStartedRef.current) onDragMoveRef.current?.(e.nativeEvent.pageY);
+    },
+    onPanResponderRelease: e => {
+      clearPressTimer();
+      if (dragStartedRef.current) onDragEndRef.current?.(e.nativeEvent.pageY);
+      else if (!gestureMovedRef.current) onToggleRef.current();
+      dragStartedRef.current = false;
+    },
+    onPanResponderTerminate: e => {
+      clearPressTimer();
+      if (dragStartedRef.current) onDragEndRef.current?.(e.nativeEvent.pageY);
+      dragStartedRef.current = false;
+    },
+    // Prior to lift, a parent ScrollView may take over a vertical drag. A live
+    // reorder deliberately keeps ownership so the row stays under the finger.
+    onPanResponderTerminationRequest: () => !dragStartedRef.current,
+  })).current;
 
   return (
-    <TouchableOpacity
-      onPress={onToggle}
-      // N-02: delayLongPress = 400ms (spec §5.3); pass pageY so GearScreen can position the drag overlay
-      onLongPress={e => onLongPress?.(e.nativeEvent.pageY)}
-      delayLongPress={400}
-      activeOpacity={0.78} style={styles.sectionCardTouchable}
-      testID={`cat-header-${title}`}
-    >
-      <View style={styles.sectionCard}>
-        <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
-          <Ionicons name={theme.icon as any} size={26} color="rgba(255,255,255,0.93)" />
-          <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
-            <Polygon points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
-            <Polygon points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
-          </Svg>
+    <View {...(Platform.OS === 'web' ? {} : headerPan.panHandlers)}>
+      <TouchableOpacity
+        onPress={onToggle}
+        // React Native Web's Touchable pressability reliably owns long-press
+        // timing. Native uses headerPan above so it can retain the same finger
+        // throughout an active reorder.
+        onLongPress={Platform.OS === 'web'
+          ? e => onLongPress?.(e.nativeEvent.pageX, e.nativeEvent.pageY)
+          : undefined}
+        onPressOut={Platform.OS === 'web'
+          ? e => onDragEnd?.(e.nativeEvent.pageY)
+          : undefined}
+        delayLongPress={400}
+        activeOpacity={0.78} style={styles.sectionCardTouchable}
+        testID={`cat-header-${title}`}
+      >
+        <View style={styles.sectionCard}>
+          <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
+            <Ionicons name={theme.icon as any} size={26} color="rgba(255,255,255,0.93)" />
+            <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
+              <Polygon points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
+              <Polygon points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
+            </Svg>
+          </View>
+          <View style={styles.sectionContent}>
+            <Text style={styles.sectionName} numberOfLines={1}>{title}</Text>
+            <Text style={styles.sectionSub}>
+              {totalCount} item{totalCount !== 1 ? 's' : ''}
+              {checkedCount > 0 ? `  ·  ${checkedCount} selected` : ''}
+            </Text>
+          </View>
+          <View style={styles.sectionRight}>
+            {weightLabel && (
+              <Text style={styles.sectionWeight}>{weightLabel}</Text>
+            )}
+          </View>
         </View>
-        <View style={styles.sectionContent}>
-          <Text style={styles.sectionName} numberOfLines={1}>{title}</Text>
-          <Text style={styles.sectionSub}>
-            {totalCount} item{totalCount !== 1 ? 's' : ''}
-            {checkedCount > 0 ? `  ·  ${checkedCount} selected` : ''}
-          </Text>
-        </View>
-        <View style={styles.sectionRight}>
-          {weightLabel && (
-            <Text style={styles.sectionWeight}>{weightLabel}</Text>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -784,6 +857,7 @@ export default function GearScreen() {
 
   // ── New overlay/deck state ──────────────────────────────────────────────────
   const [showDrawer,   setShowDrawer]   = useState(false);
+  const [showHome,     setShowHome]     = useState(false);
   const [showPreview,  setShowPreview]  = useState(false);
   const [showMore,     setShowMore]     = useState(false);
   const [moreInitialCard, setMoreInitialCard] = useState<'actions' | 'settings' | 'help' | 'account'>('actions');
@@ -837,6 +911,7 @@ export default function GearScreen() {
   // N-02: category drag-reorder state + refs
   const [draggingCat,  setDraggingCat]  = useState<string | null>(null);
   const [dragOverlayY, setDragOverlayY] = useState(0);
+  const [dragTargetIdx, setDragTargetIdx] = useState<number | null>(null);
   const dragCatRef               = useRef<string | null>(null);
   const reorderJustHappenedRef   = useRef(false);
   const catBarYsRef              = useRef<Map<string, number>>(new Map());
@@ -995,6 +1070,8 @@ export default function GearScreen() {
   // ── Category handlers ─────────────────────────────────────────────────────
 
   const handleCatToggle = useCallback((catName: string) => {
+    // Suppress the tap emitted after a completed long-press drag.
+    if (dragCatRef.current || reorderJustHappenedRef.current) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setAllExpanded(false);
     setExpandedItemKey(null);   // close item detail panel when switching categories
@@ -1095,12 +1172,15 @@ export default function GearScreen() {
     // reset all anims
     catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
     dragCatRef.current = null;
+    setDragTargetIdx(null);
     setDraggingCat(null);
   }, [categoryOrder, computeTargetIdx, reorderCategories]);
 
-  // N-02: long-press activates drag (no Alert menu); pageY positions the floating overlay
-  const handleCatLongPress = useCallback((catName: string, pageY: number) => {
+  // Long-press activates drag only outside CategorySwipeRow's right-side action zone.
+  const handleCatLongPress = useCallback((catName: string, pageX: number, pageY: number) => {
     if (reorderJustHappenedRef.current) return;
+    if (pageX > Dimensions.get('window').width * 0.60) return;
+    if (openCatName || allExpanded) return;
     if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     // record list top in screen coordinates
@@ -1109,8 +1189,9 @@ export default function GearScreen() {
     });
     dragCatRef.current = catName;
     setDraggingCat(catName);
+    setDragTargetIdx(categoryOrder.indexOf(catName));
     setDragOverlayY(pageY - (catBarHsRef.current.get(catName) ?? 62) / 2);
-  }, [listKind]);
+  }, [allExpanded, categoryOrder, listKind, openCatName]);
 
   // Task 4 (Batch I): animate sibling bars to show drop target while dragging
   const updateDragAnims = useCallback((screenY: number) => {
@@ -1118,6 +1199,7 @@ export default function GearScreen() {
     if (!dragging) return;
     const fromIdx = categoryOrder.indexOf(dragging);
     const toIdx   = computeTargetIdx(screenY);
+    setDragTargetIdx(toIdx);
     const barH    = catBarHsRef.current.get(dragging) ?? CAT_HEADER_H;
     categoryOrder.forEach((cat, i) => {
       if (cat === dragging) return;
@@ -1129,6 +1211,28 @@ export default function GearScreen() {
       }).start();
     });
   }, [categoryOrder, computeTargetIdx, getDragAnim]);
+
+  // Once a web Touchable has crossed the 400ms long-press threshold, follow
+  // the same active pointer globally. RN Web does not forward moves from an
+  // already-active Touchable to a newly-rendered floating overlay.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || !draggingCat || typeof document === 'undefined') return;
+    const move = (screenY: number) => {
+      setDragOverlayY(screenY - (catBarHsRef.current.get(draggingCat) ?? CAT_HEADER_H) / 2);
+      updateDragAnims(screenY);
+    };
+    const onPointerMove = (event: PointerEvent) => move(event.pageY);
+    const onTouchMove = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (touch) move(touch.pageY);
+    };
+    document.addEventListener('pointermove', onPointerMove, { passive: true });
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    return () => {
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('touchmove', onTouchMove);
+    };
+  }, [draggingCat, updateDragAnims]);
 
   const handleHeroNameTap = useCallback(() => {
     if (Platform.OS === 'ios') {
@@ -1179,6 +1283,9 @@ export default function GearScreen() {
   }, [canUndo, canRedo]);
 
   const handleBoxAction = useCallback((action: string) => {
+    // BottomBox remains usable above Home. Navigating to an actual list action
+    // returns to the still-mounted checklist before opening that action.
+    if (showHome && action !== 'next' && action !== 'back') setShowHome(false);
     switch (action) {
       case 'next':
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1269,7 +1376,7 @@ export default function GearScreen() {
   }, [
     handleReset, handleContextualMediaAction,
     undo, redo, saveToLocker, saveAsToLocker, refreshLockerEntries,
-    listName, categoryOrder, data, listKind, showToast,
+    listName, categoryOrder, data, listKind, showHome, showToast,
   ]);
 
   const bottomPad = Platform.OS === 'web' ? 20 : insets.bottom;
@@ -1605,18 +1712,26 @@ export default function GearScreen() {
               checkedWeightOz={full.checkedWeightOz}
               isOpen={allExpanded || openCatName === s.title}
               onToggle={() => handleCatToggle(s.title)}
-              onLongPress={(y) => handleCatLongPress(s.title, y)}
+              onLongPress={(x, y) => handleCatLongPress(s.title, x, y)}
+              onDragMove={updateDragAnims}
+              onDragEnd={commitDrag}
               weightUnit={weightUnit}
             />
           );
           // Task 4 (Batch I): wrap in Animated.View so sibling bars shift during drag
           if (suppressSwipe) return (
-            <Animated.View onLayout={catHeaderLayout} style={{ transform: [{ translateY: getDragAnim(s.title) }] }}>
+            <Animated.View onLayout={catHeaderLayout} style={{
+              transform: [{ translateY: getDragAnim(s.title) }],
+              opacity: draggingCat === s.title ? 0 : (dragTargetIdx === categoryOrder.indexOf(s.title) ? 0.55 : 1),
+            }}>
               {header}
             </Animated.View>
           );
           return (
-            <Animated.View onLayout={catHeaderLayout} style={{ transform: [{ translateY: getDragAnim(s.title) }] }}>
+            <Animated.View onLayout={catHeaderLayout} style={{
+              transform: [{ translateY: getDragAnim(s.title) }],
+              opacity: draggingCat === s.title ? 0 : (dragTargetIdx === categoryOrder.indexOf(s.title) ? 0.55 : 1),
+            }}>
               <CategorySwipeRow
                 catName={s.title}
                 itemCount={(data[s.title] || []).length}
@@ -1730,7 +1845,9 @@ export default function GearScreen() {
               checkedWeightOz={lockedSection.checkedWeightOz}
               isOpen
               onToggle={() => handleCatToggle(lockedSection.title)}
-              onLongPress={(y) => handleCatLongPress(lockedSection.title, y)}
+              onLongPress={(x, y) => handleCatLongPress(lockedSection.title, x, y)}
+              onDragMove={updateDragAnims}
+              onDragEnd={commitDrag}
               weightUnit={weightUnit}
             />
           </CategorySwipeRow>
@@ -1844,6 +1961,30 @@ export default function GearScreen() {
         </View>
       )}
       </View>
+
+      {/* Home is an absolute sibling of the list, preserving all list state and
+          refs underneath while BottomBox stays above it at z-index 40. */}
+      {showHome && (
+        <HomeOverlay
+          top={insets.top + APPBAR_H}
+          bottomInset={bottomPad}
+          onStartHere={() => { setShowHome(false); setShowAdd(true); }}
+          onMyLists={() => {
+            setShowHome(false);
+            refreshLockerEntries();
+            setShowLocker(true);
+          }}
+          onMasterList={() => {
+            setShowHome(false);
+            Alert.alert('Master List', 'Master List search is coming soon on mobile.');
+          }}
+          onSettings={() => {
+            setShowHome(false);
+            setMoreInitialCard('actions');
+            setShowMore(true);
+          }}
+        />
+      )}
 
       {/* ── Fixed bottom ──────────────────────────────────────────────── */}
       <BottomBox
@@ -1986,15 +2127,27 @@ export default function GearScreen() {
           setTimeout(() => { refreshLockerEntries(); setShowLocker(true); }, 200);
         }}
         onOpenMore={() => { setShowDrawer(false); setMoreInitialCard('actions'); setTimeout(() => setShowMore(true), 300); }}
-        onResetScreen={() => {
-          // Item 13: dismiss all open modals/overlays so Home returns to bare list view
+        onOpenHome={() => {
+          // Home starts from a clean navigation layer without unmounting or
+          // mutating the underlying list, so returning preserves its state.
           setShowSummary(false);
           setShowLocker(false);
           setShowMore(false);
           setShowAdd(false);
           setShowChecklist(false);
           setShowPreview(false);
-          setExpandedItemKey(null); // Item 13 gap: also clear any expanded item detail panel
+          setShowFilterDD(false);
+          setShowResetSheet(false);
+          setInfoStack([]);
+          setShowSourceSheet(false);
+          setShowAssignment(false);
+          setShowLocName(false);
+          setShowItemDest(false);
+          setShowItemName(false);
+          setShowItemPhotoSheet(false);
+          setShowLocPhotoSheet(false);
+          setShowCatPicker(false);
+          setShowHome(true);
         }}
         onOpenHelp={() => {
           setShowDrawer(false);

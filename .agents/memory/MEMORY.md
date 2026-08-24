@@ -52,3 +52,4 @@
 - [Native source citation navigation](native-source-citation-navigation.md) — React Native Web needs section-aware citation scrolling; nested layout offsets open later references at the top.
 - [Expo image resize parity](expo-image-resize-parity.md) — SDK 54 ImagePicker has no max-dimension option; use ImageManipulator for proportional caps without crop UI.
 - [Expo Web disabled touchables](expo-web-touchable-disabled.md) — React Native Web’s disabled TouchableOpacity is not reliably exposed as an HTML disabled button in browser tests.
+- [Native category reorder gestures](native-category-reorder-gestures.md) — native and RN Web need different continuous-move ownership after the same 400ms category long press.
