@@ -103,7 +103,7 @@ export function HomeOverlay({
     >
       <View style={styles.hero} testID="home-hero">
         <Text style={styles.eyebrow}>TrailWeigh</Text>
-        <Text style={styles.heroTitle}>Checklist Engine</Text>
+        <Text style={styles.heroTitle}>Checklist Generator</Text>
         <Text style={styles.heroSubtitle}>Create your own custom checklist or let AI do it for you!</Text>
       </View>
 

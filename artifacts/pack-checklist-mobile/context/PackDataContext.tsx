@@ -102,6 +102,7 @@ const LOCATIONS_KEY      = 'twm-locations';
 const PENDING_CAPTURE_KEY = 'twm-pending-capture';
 const ACTIVE_ID_KEY      = 'twm-active-locker-id';
 const LOCKER_KEY         = 'twm-locker-v1';
+const TEST_PACK_SEED_KEY = 'twm-test-pack-seed-v1';
 
 /** Exclusive-check groups (only one item active per sub-label within category). */
 const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
@@ -283,7 +284,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function load() {
       try {
-        const [rawData, rawOrder, rawName, rawActiveId, rawListKind, rawLocations, rawPending, rawWeightUnit] =
+        const [rawData, rawOrder, rawName, rawActiveId, rawListKind, rawLocations, rawPending, rawWeightUnit, rawTestPackSeed] =
           await Promise.all([
             AsyncStorage.getItem(STORAGE_KEY),
             AsyncStorage.getItem(CATORDER_KEY),
@@ -293,15 +294,29 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
             AsyncStorage.getItem(LOCATIONS_KEY),
             AsyncStorage.getItem(PENDING_CAPTURE_KEY),
             AsyncStorage.getItem('twm-weight-unit'),    // F-16
+            AsyncStorage.getItem(TEST_PACK_SEED_KEY),
           ]);
 
         const order: string[] = rawOrder
           ? (JSON.parse(rawOrder) as string[])
           : CATEGORY_ORDER.slice();
 
-        const data: PackState = rawData
+        let data: PackState = rawData
           ? validateData(JSON.parse(rawData), order)
           : seedInitialData(order);
+
+        // Existing Expo installs may already have persisted an empty default
+        // standard list, which previously prevented INITIAL_DATA from loading.
+        // Seed that empty default once so a usable pack is always available for
+        // testing, while preserving every non-empty or Photo List installation.
+        const storedItemCount = Object.values(data).reduce((count, items) => count + items.length, 0);
+        const shouldSeedTestPack = !rawTestPackSeed && storedItemCount === 0 && rawListKind !== 'photo';
+        if (shouldSeedTestPack) {
+          data = seedInitialData(order);
+        }
+        if (!rawTestPackSeed && (!rawData || shouldSeedTestPack)) {
+          await AsyncStorage.setItem(TEST_PACK_SEED_KEY, '1');
+        }
 
         setCurrent({ data, categoryOrder: order });
         if (rawName)     setListName_state(rawName);
