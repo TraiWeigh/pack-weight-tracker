@@ -103,6 +103,8 @@ const PENDING_CAPTURE_KEY = 'twm-pending-capture';
 const ACTIVE_ID_KEY      = 'twm-active-locker-id';
 const LOCKER_KEY         = 'twm-locker-v1';
 const TEST_PACK_SEED_KEY = 'twm-test-pack-seed-v1';
+const TEST_PACK_LOCKER_SEED_KEY = 'twm-test-pack-locker-seed-v1';
+const TEST_PACK_LOCKER_ID = 'twm-default-test-pack-v1';
 
 /** Exclusive-check groups (only one item active per sub-label within category). */
 const EXCLUSIVE_GROUPS: Array<{ category: string; subs: string[] }> = [
@@ -284,7 +286,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function load() {
       try {
-        const [rawData, rawOrder, rawName, rawActiveId, rawListKind, rawLocations, rawPending, rawWeightUnit, rawTestPackSeed] =
+        const [rawData, rawOrder, rawName, rawActiveId, rawListKind, rawLocations, rawPending, rawWeightUnit, rawTestPackSeed, rawLocker, rawLockerSeed] =
           await Promise.all([
             AsyncStorage.getItem(STORAGE_KEY),
             AsyncStorage.getItem(CATORDER_KEY),
@@ -295,6 +297,8 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
             AsyncStorage.getItem(PENDING_CAPTURE_KEY),
             AsyncStorage.getItem('twm-weight-unit'),    // F-16
             AsyncStorage.getItem(TEST_PACK_SEED_KEY),
+            AsyncStorage.getItem(LOCKER_KEY),
+            AsyncStorage.getItem(TEST_PACK_LOCKER_SEED_KEY),
           ]);
 
         const order: string[] = rawOrder
@@ -318,9 +322,49 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
           await AsyncStorage.setItem(TEST_PACK_SEED_KEY, '1');
         }
 
+        let locker: NativeLockerEntry[] = [];
+        try { locker = rawLocker ? JSON.parse(rawLocker) : []; } catch { locker = []; }
+        const finalItemCount = Object.values(data).reduce((count, items) => count + items.length, 0);
+        const shouldSaveTestPack = !rawLockerSeed && rawListKind !== 'photo' && finalItemCount > 0;
+        let seededLockerId: string | null = null;
+        if (shouldSaveTestPack) {
+          const testPackName = rawName || 'My Pack';
+          const existing = locker.find(entry =>
+            entry.id === TEST_PACK_LOCKER_ID ||
+            (entry.name === testPackName && entry.store?.listKind !== 'photo')
+          );
+          if (existing) {
+            seededLockerId = existing.id;
+          } else {
+            const entry: NativeLockerEntry = {
+              id: TEST_PACK_LOCKER_ID,
+              name: testPackName,
+              savedAt: Date.now(),
+              store: {
+                data,
+                categoryOrder: order,
+                listName: testPackName,
+                listKind: 'standard',
+                locations: [],
+                photoListCaptureDataUrl: null,
+                weightUnit: rawWeightUnit === 'metric' ? 'metric' : 'imperial',
+              },
+            };
+            locker = [...locker, entry];
+            seededLockerId = entry.id;
+            await AsyncStorage.setItem(LOCKER_KEY, JSON.stringify(locker));
+          }
+          await AsyncStorage.setItem(TEST_PACK_LOCKER_SEED_KEY, '1');
+        }
+
         setCurrent({ data, categoryOrder: order });
+        setLockerEntries([...locker].sort((a, b) => b.savedAt - a.savedAt));
         if (rawName)     setListName_state(rawName);
         if (rawActiveId) setActiveLockerEntryId(rawActiveId);
+        else if (seededLockerId) {
+          setActiveLockerEntryId(seededLockerId);
+          await AsyncStorage.setItem(ACTIVE_ID_KEY, seededLockerId);
+        }
         if (rawListKind) setListKind_state(rawListKind as 'standard' | 'photo');
         if (rawLocations) {
           try { setLocations_state(JSON.parse(rawLocations)); } catch { /* ignore */ }
