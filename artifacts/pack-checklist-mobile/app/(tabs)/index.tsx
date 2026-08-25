@@ -160,10 +160,20 @@ type InfoEntry = { page: InfoPage; sourceRef?: number | null };
 // ─── AppBar ───────────────────────────────────────────────────────────────────
 
 // F-02: handedness moves hamburger to the preferred thumb side
-function AppBar({ onMenuPress, handedness }: { onMenuPress: () => void; handedness: 'right' | 'left' }) {
+function AppBar({
+  onMenuPress, handedness, homeVisible,
+}: {
+  onMenuPress: () => void;
+  handedness: 'right' | 'left';
+  homeVisible: boolean;
+}) {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.appBar, { paddingTop: insets.top, minHeight: insets.top + APPBAR_H }]}>
+    <View style={[
+      styles.appBar,
+      homeVisible && styles.appBarHome,
+      { paddingTop: insets.top, minHeight: insets.top + APPBAR_H },
+    ]}>
       <View style={styles.appBarInner}>
         {/* D-21: hamburger = NAV_ACTIVE per v3 §2 */}
         {handedness !== 'left' && (
@@ -1558,7 +1568,7 @@ export default function GearScreen() {
       style={[styles.container, { backgroundColor: PAGE_BG }]}
     >
       {/* ── Fixed top ──────────────────────────────────────────────────── */}
-      <AppBar onMenuPress={() => setShowDrawer(true)} handedness={handedness} />
+      <AppBar onMenuPress={() => setShowDrawer(true)} handedness={handedness} homeVisible={showHome} />
       <ListSummaryHero
         listName={listName} totalItems={totalItems} catCount={catCount}
         selectedCount={selectedCount} allExpanded={allExpanded}
@@ -2362,12 +2372,20 @@ const styles = StyleSheet.create({
   // AppBar
   appBar: {
     // Item 16: v3 VF §4 padding: 0 44px 0 8px (paddingRight=RIGHT_INSET=44, not 8)
-    // Item 32: v3 normal-state AppBar has NO shadow — only border-bottom 1px rgba(0,0,0,0.07).
-    // The v3 shadow (0 2px 10px rgba(0,0,0,0.10)) appeared ONLY on the Home screen overlay,
-    // which has no native equivalent. All shadow/elevation properties removed.
+    // Item 32: normal-state AppBar has only the border; Home adds the v3 shadow below.
     backgroundColor: '#FFFFFF', paddingLeft: 8, paddingRight: RIGHT_INSET,
     borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.07)',
     zIndex: 10,
+  },
+  // Item 32: v3 Home-only shadow = 0 2px 10px rgba(0,0,0,0.10).
+  // React Native's shadow properties are the native equivalent; elevation keeps
+  // the same subtle separation on Android.
+  appBarHome: {
+    shadowColor: '#000',
+    shadowOpacity: 0.10,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   appBarInner:    { height: APPBAR_H, flexDirection: 'row', alignItems: 'center', gap: 10 },
   appBarLogo:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
