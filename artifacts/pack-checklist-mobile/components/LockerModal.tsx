@@ -29,6 +29,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { usePackData, NativeLockerEntry } from '@/context/PackDataContext';
+import { ConfirmSheet } from '@/components/ConfirmSheet';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ export function LockerModal({ visible, onClose, showToast, onNewList }: LockerMo
   } = usePackData();
 
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<NativeLockerEntry | null>(null);
 
   // Refresh entries when the sheet opens
   useEffect(() => {
@@ -125,23 +127,16 @@ export function LockerModal({ visible, onClose, showToast, onNewList }: LockerMo
   // ── Delete entry ──────────────────────────────────────────────────────────
 
   const handleDelete = useCallback((entry: NativeLockerEntry) => {
-    Alert.alert(
-      'Delete Saved List?',
-      `Delete "${entry.name}"? This removes the saved list only. Items in your Master Library will not be deleted.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete List',
-          style: 'destructive',
-          onPress: async () => {
-            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            await deleteLockerEntry(entry.id);
-            showToast('List deleted');
-          },
-        },
-      ],
-    );
-  }, [deleteLockerEntry, showToast]);
+    setDeleteTarget(entry);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    const entry = deleteTarget;
+    if (!entry) return;
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await deleteLockerEntry(entry.id);
+    showToast('List deleted');
+  }, [deleteTarget, deleteLockerEntry, showToast]);
 
   // ── Rename entry ──────────────────────────────────────────────────────────
 
@@ -258,13 +253,14 @@ export function LockerModal({ visible, onClose, showToast, onNewList }: LockerMo
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.sheet, { paddingTop: Platform.OS === 'ios' ? 8 : insets.top + 8 }]}>
+    <>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={onClose}
+      >
+        <View style={[styles.sheet, { paddingTop: Platform.OS === 'ios' ? 8 : insets.top + 8 }]}>
         {/* Drag handle */}
         <View style={styles.handle} />
 
@@ -335,8 +331,21 @@ export function LockerModal({ visible, onClose, showToast, onNewList }: LockerMo
             ItemSeparatorComponent={() => <View style={styles.rowSep} />}
           />
         )}
-      </View>
-    </Modal>
+        </View>
+      </Modal>
+      <ConfirmSheet
+        visible={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title="Delete Saved List?"
+        body={deleteTarget
+          ? `Delete "${deleteTarget.name}"?\nThis removes the saved list only. Items in your Master Library will not be deleted.`
+          : ''}
+        confirmLabel="Delete List"
+        confirmColor="#dc2626"
+        variant="locker-delete"
+        onConfirm={handleDeleteConfirm}
+      />
+    </>
   );
 }
 

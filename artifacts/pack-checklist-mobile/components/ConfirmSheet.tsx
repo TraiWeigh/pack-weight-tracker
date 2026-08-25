@@ -30,13 +30,17 @@ interface ConfirmSheetProps {
   confirmLabel: string;
   /** Confirm button background — #b45309 amber (Reset) or #dc2626 red (Delete) */
   confirmColor: string;
+  /** Optional exact visual treatment for the V3 Locker deletion confirmation. */
+  variant?: 'default' | 'locker-delete';
 }
 
 export function ConfirmSheet({
   visible, onClose, onConfirm, title, body, confirmLabel, confirmColor,
+  variant = 'default',
 }: ConfirmSheetProps) {
   const insets = useSafeAreaInsets();
   const slideY = useRef(new Animated.Value(400)).current;
+  const isLockerDelete = variant === 'locker-delete';
 
   // Keep modal mounted during exit animation so slide-down plays
   const [isRendered, setIsRendered] = useState(visible);
@@ -63,7 +67,11 @@ export function ConfirmSheet({
       <View style={StyleSheet.absoluteFillObject} pointerEvents="box-none">
         {/* Backdrop — VF §13: rgba(0,0,0,0.45) */}
         <TouchableOpacity
-          style={[StyleSheet.absoluteFillObject, styles.backdrop]}
+          style={[
+            StyleSheet.absoluteFillObject,
+            styles.backdrop,
+            isLockerDelete && styles.lockerBackdrop,
+          ]}
           activeOpacity={1}
           onPress={onClose}
         />
@@ -72,24 +80,27 @@ export function ConfirmSheet({
         <Animated.View
           style={[
             styles.sheet,
+            isLockerDelete && styles.lockerSheet,
             { paddingBottom: 36 + insets.bottom, transform: [{ translateY: slideY }] },
           ]}
         >
           {/* Title — VF §13 name dialog baseline: fontSize=17, fontWeight=700 */}
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, isLockerDelete && styles.lockerTitle]}>{title}</Text>
 
           {/* Body — informational text below the title */}
-          <Text style={styles.body}>{body}</Text>
+          <Text style={[styles.body, isLockerDelete && styles.lockerBody]}>{body}</Text>
 
           {/* Buttons — "Cancel | confirmLabel" side-by-side per §13.10 format */}
-          <View style={styles.btnRow}>
+          <View style={[styles.btnRow, isLockerDelete && styles.lockerBtnRow]}>
             {/* Cancel — VF §13: min-height=44, border-radius=10, fontSize=15 */}
             <TouchableOpacity
-              style={styles.cancelBtn}
+              style={[styles.cancelBtn, isLockerDelete && styles.lockerCancelBtn]}
               onPress={onClose}
               activeOpacity={0.65}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={[styles.cancelText, isLockerDelete && styles.lockerButtonText]}>
+                Cancel
+              </Text>
             </TouchableOpacity>
             {/* Confirm — same geometry, filled confirmColor */}
             <TouchableOpacity
@@ -97,7 +108,9 @@ export function ConfirmSheet({
               onPress={() => { onConfirm(); onClose(); }}
               activeOpacity={0.80}
             >
-              <Text style={styles.confirmText}>{confirmLabel}</Text>
+              <Text style={[styles.confirmText, isLockerDelete && styles.lockerButtonText]}>
+                {confirmLabel}
+              </Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -116,6 +129,9 @@ const styles = StyleSheet.create({
   backdrop: {
     backgroundColor: 'rgba(0,0,0,0.45)',
   },
+  lockerBackdrop: {
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
 
   // VF §13 confirm dialog sheet geometry
   sheet: {
@@ -129,12 +145,22 @@ const styles = StyleSheet.create({
     // padding: 24 top / 20 horizontal — paddingBottom set inline
     paddingTop: 24, paddingHorizontal: 20,
   },
+  lockerSheet: {
+    width: '100%',
+    maxWidth: 500,
+    alignSelf: 'center',
+  },
 
   title: {
     fontSize: 17,
     fontFamily: 'Arial',
     color: PRIMARY_TEXT,
     marginBottom: 8,
+  },
+  lockerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#dc2626',
   },
 
   body: {
@@ -144,10 +170,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: 20,
   },
+  lockerBody: {
+    color: '#4A5D54',
+    lineHeight: 21.7,
+    marginBottom: 24,
+  },
 
   btnRow: {
     flexDirection: 'row',
     gap: 10,
+  },
+  lockerBtnRow: {
+    gap: 8,
   },
 
   // VF §13 cancel: min-height=44, border-radius=10, fontSize=15
@@ -155,6 +189,10 @@ const styles = StyleSheet.create({
     flex: 1, minHeight: 44, borderRadius: 10,
     borderWidth: 1, borderColor: 'rgba(0,0,0,0.15)',
     alignItems: 'center', justifyContent: 'center', paddingVertical: 12,
+  },
+  lockerCancelBtn: {
+    backgroundColor: '#FFFFFF',
+    borderColor: 'rgba(0,0,0,0.06)',
   },
   cancelText: {
     fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT,
@@ -166,5 +204,8 @@ const styles = StyleSheet.create({
   },
   confirmText: {
     fontSize: 15, fontFamily: 'Arial', color: '#FFFFFF',
+  },
+  lockerButtonText: {
+    fontWeight: '600',
   },
 });
