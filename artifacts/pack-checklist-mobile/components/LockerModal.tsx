@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   headerTitle: {
     fontSize: 20,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: '#111827',
     letterSpacing: -0.3,
   },
@@ -395,7 +395,7 @@ const styles = StyleSheet.create({
   },
   btnSaveText: {
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: '#FFFFFF',
   },
   btnSecondary: {
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
   },
   btnSecondaryText: {
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: NAV_ACTIVE,
   },
 
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   },
   entryName: {
     fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: '#111827',
     flexShrink: 1,
   },
@@ -484,18 +484,18 @@ const styles = StyleSheet.create({
   },
   photoListBadgeText: {
     fontSize: 10,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: NAV_ACTIVE,
   },
 
   entryDate: {
     fontSize: 12,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'Arial',
     color: '#9CA3AF',
   },
   entryStats: {
     fontSize: 11,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'Arial',
     color: '#9CA3AF',
   },
   loadBtn: {
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   },
   loadBtnText: {
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: NAV_ACTIVE,
   },
   loadBtnTextActive: { color: '#FFFFFF' },
@@ -527,18 +527,18 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 17,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: '#374151',
   },
   emptyBody: {
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'Arial',
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 22,
   },
   emptyBold: {
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: '#374151',
   },
 });

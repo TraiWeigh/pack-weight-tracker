@@ -2371,7 +2371,7 @@ const styles = StyleSheet.create({
   },
   appBarInner:    { height: APPBAR_H, flexDirection: 'row', alignItems: 'center', gap: 10 },
   appBarLogo:     { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  appBarTitle:    { fontSize: 19, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1 },
+  appBarTitle:    { fontSize: 19, fontFamily: 'Arial', color: PRIMARY_TEXT, letterSpacing: 0.1 },
   appBarShortcuts: { flexDirection: 'row', alignItems: 'center', gap: 5 },
 
   // Hero
@@ -2384,13 +2384,13 @@ const styles = StyleSheet.create({
   heroTile: { width: 66, height: 66, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.20)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   heroContent: { flex: 1, gap: 6 },
   heroListNameRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  heroListName: { fontSize: 15.5, fontFamily: 'PlusJakartaSans_700Bold', color: '#FFFFFF', lineHeight: 19, flexShrink: 1 },
+  heroListName: { fontSize: 15.5, fontFamily: 'Arial', color: '#FFFFFF', lineHeight: 19, flexShrink: 1 },
   heroCountRow: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
-  heroCount: { fontSize: 40, fontFamily: 'PlusJakartaSans_700Bold', color: '#FFFFFF', letterSpacing: -1.5, lineHeight: 44 },
-  heroCountSuffix: { fontSize: 17, fontFamily: 'PlusJakartaSans_500Medium', color: 'rgba(255,255,255,0.78)', paddingBottom: 3 },
+  heroCount: { fontSize: 40, fontFamily: 'Arial', color: '#FFFFFF', letterSpacing: -1.5, lineHeight: 44 },
+  heroCountSuffix: { fontSize: 17, fontFamily: 'Arial', color: 'rgba(255,255,255,0.78)', paddingBottom: 3 },
   heroChevronBtn: { paddingBottom: 3, alignSelf: 'flex-end' },
   heroRight: { alignItems: 'flex-end', justifyContent: 'center', gap: 6, flexShrink: 0 },
-  heroCatCount: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: 'rgba(255,255,255,0.58)', letterSpacing: 0.2 },
+  heroCatCount: { fontSize: 12, fontFamily: 'Arial', color: 'rgba(255,255,255,0.58)', letterSpacing: 0.2 },
   heroSelectedRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   heroSelectedIndicator: {
     width: 18,
@@ -2403,7 +2403,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  heroSelectedText: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: 'rgba(255,255,255,0.80)', letterSpacing: 0.1 },
+  heroSelectedText: { fontSize: 12, fontFamily: 'Arial', color: 'rgba(255,255,255,0.80)', letterSpacing: 0.1 },
 
   // FilterControl
   filterBar: {
@@ -2417,7 +2417,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: DIVIDER,
     backgroundColor: '#FFFFFF', gap: 7,
   },
-  filterLabel: { flex: 1, fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: 0.1 },
+  filterLabel: { flex: 1, fontSize: 13, fontFamily: 'Arial', color: PRIMARY_TEXT, letterSpacing: 0.1 },
 
   // Filter dropdown container — sits below filter bar at z=100
   // F-12: `top` is applied inline via filterBarBottom measurement; bottom:0 lets it fill down
@@ -2435,10 +2435,10 @@ const styles = StyleSheet.create({
   sectionTile: { width: TILE_W, height: CAT_HEADER_H, alignItems: 'center', justifyContent: 'center' },
   wedgeSvg: { position: 'absolute', right: 0, top: 0 },
   sectionContent: { flex: 1, paddingLeft: 12, paddingVertical: 8, justifyContent: 'center', gap: 10 },
-  sectionName: { fontSize: 17, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, lineHeight: 20, letterSpacing: -0.1 },
-  sectionSub: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_400Regular', color: NAV_INACTIVE },
+  sectionName: { fontSize: 17, fontFamily: 'Arial', color: PRIMARY_TEXT, lineHeight: 20, letterSpacing: -0.1 },
+  sectionSub: { fontSize: 12.5, fontFamily: 'Arial', color: NAV_INACTIVE },
   sectionRight: { paddingLeft: 10, paddingRight: RIGHT_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', maxWidth: 96 + RIGHT_INSET }, // Item 21: v3 VF §8 column-gap=10px between name col and weight col
-  sectionWeight: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, letterSpacing: -0.2, textAlign: 'right' }, // Item 17: v3 VF §8 letterSpacing=-0.2 (was +0.1)
+  sectionWeight: { fontSize: 13, fontFamily: 'Arial', color: PRIMARY_TEXT, letterSpacing: -0.2, textAlign: 'right' }, // Item 17: v3 VF §8 letterSpacing=-0.2 (was +0.1)
 
   // LocationBar
   locBarContent: {
@@ -2447,10 +2447,10 @@ const styles = StyleSheet.create({
   },
   locBarThumb: { width: 42, height: 42, borderRadius: 8, backgroundColor: NAV_ACTIVE },
   locBarThumbFallback: { alignItems: 'center', justifyContent: 'center' },
-  locBarName: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, maxWidth: 130 },
+  locBarName: { fontSize: 13, fontFamily: 'Arial', color: PRIMARY_TEXT, maxWidth: 130 },
   locBarRight: { paddingRight: ITEM_R_INSET, paddingVertical: 8, alignItems: 'flex-end', justifyContent: 'center', gap: 3 },
-  locBarType: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE },
-  locBarCount: { fontSize: 11, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED },
+  locBarType: { fontSize: 11, fontFamily: 'Arial', color: NAV_INACTIVE },
+  locBarCount: { fontSize: 11, fontFamily: 'Arial', color: MUTED },
 
   // ItemRow
   itemRow: {
@@ -2460,9 +2460,9 @@ const styles = StyleSheet.create({
   checkboxArea: { width: CHECKBOX_HIT, height: 44, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   checkbox: { width: 20, height: 20, borderRadius: 5, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   itemNameZone: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingRight: ITEM_R_INSET, minHeight: 44, justifyContent: 'space-between' },
-  itemName: { flex: 1, fontSize: 14.5, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, lineHeight: 20 },
+  itemName: { flex: 1, fontSize: 14.5, fontFamily: 'Arial', color: PRIMARY_TEXT, lineHeight: 20 },
   itemNameChecked: { color: NAV_INACTIVE, opacity: 0.8 },
-  itemWeight: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE, letterSpacing: 0.2, flexShrink: 0, marginLeft: 8 },
+  itemWeight: { fontSize: 12, fontFamily: 'Arial', color: NAV_INACTIVE, letterSpacing: 0.2, flexShrink: 0, marginLeft: 8 },
 
   // AddItemBar (D-35)
   addItemBar: {
@@ -2470,7 +2470,7 @@ const styles = StyleSheet.create({
     gap: 8, minHeight: 44, backgroundColor: 'rgba(42,87,64,0.04)', // Item 18: v3 VF §10 min-height=44 (was 42)
     borderBottomWidth: 1, borderBottomColor: DIVIDER, borderTopWidth: 1, borderTopColor: DIVIDER,
   },
-  addItemBarText: { fontSize: 13.5, fontFamily: 'PlusJakartaSans_500Medium', color: NAV_ACTIVE }, // Item 19: v3 §7.1 weight=500 (was 600)
+  addItemBarText: { fontSize: 13.5, fontFamily: 'Arial', color: NAV_ACTIVE }, // Item 19: v3 §7.1 weight=500 (was 600)
   // D-35: accordion rows below AddItemBar in normal mode
   addItemAccordion: {
     backgroundColor: '#FAFDF9',
@@ -2481,7 +2481,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, minHeight: 44,
     borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(42,87,64,0.15)',
   },
-  accordionRowText: { fontSize: 13.5, fontFamily: 'PlusJakartaSans_500Medium', color: NAV_ACTIVE }, // Item 20: v3 VF §10 fontSize=13.5 (was 14)
+  accordionRowText: { fontSize: 13.5, fontFamily: 'Arial', color: NAV_ACTIVE }, // Item 20: v3 VF §10 fontSize=13.5 (was 14)
 
   // List
   list:        { flex: 1 },
@@ -2550,38 +2550,38 @@ const styles = StyleSheet.create({
   bottomRow: { flexDirection: 'row', alignItems: 'stretch', minHeight: NAV_H },
   // v3 VF §11: "padding: 7px 0 8px". Prior paddingTop=9 was wrong. Self-check: MATCH.
   navBox: { flex: 1, paddingTop: 7, paddingBottom: 8, alignItems: 'center', justifyContent: 'center', gap: 2 },
-  navLabel: { fontSize: 10, fontFamily: 'PlusJakartaSans_400Regular', color: NAV_INACTIVE },
+  navLabel: { fontSize: 10, fontFamily: 'Arial', color: NAV_INACTIVE },
 
   // Summary sheet
   summarySheet: { flex: 1, backgroundColor: '#FFFFFF' },
   summaryHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: 'rgba(0,0,0,0.18)', alignSelf: 'center', marginTop: 8, marginBottom: 4 },
   summaryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: 'rgba(0,0,0,0.10)' },
-  summaryTitle: { fontSize: 20, fontFamily: 'PlusJakartaSans_700Bold', color: '#111827', letterSpacing: -0.3 },
-  summarySubtitle: { fontSize: 13, fontFamily: 'PlusJakartaSans_400Regular', color: '#6B7280', marginTop: 2 },
+  summaryTitle: { fontSize: 20, fontFamily: 'Arial', color: '#111827', letterSpacing: -0.3 },
+  summarySubtitle: { fontSize: 13, fontFamily: 'Arial', color: '#6B7280', marginTop: 2 },
   summaryCloseBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },
   summaryScroll: { flex: 1 },
   summaryContent: { gap: 10 },
   summaryPairRow: { flexDirection: 'row', gap: 10 },
   summaryBreakdown: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(0,0,0,0.08)', backgroundColor: '#F9FAFB', padding: 14, gap: 10 },
-  summaryBreakdownTitle: { fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', textTransform: 'uppercase', letterSpacing: 1.2, color: '#6B7280', marginBottom: 2 },
+  summaryBreakdownTitle: { fontSize: 10, fontFamily: 'Arial', textTransform: 'uppercase', letterSpacing: 1.2, color: '#6B7280', marginBottom: 2 },
   summaryEmpty: { alignItems: 'center', paddingVertical: 48, gap: 6 },
-  summaryEmptyText: { fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#6B7280' },
-  summaryEmptyHint: { fontSize: 13, fontFamily: 'PlusJakartaSans_400Regular', color: '#9CA3AF' },
+  summaryEmptyText: { fontSize: 15, fontFamily: 'Arial', color: '#6B7280' },
+  summaryEmptyHint: { fontSize: 13, fontFamily: 'Arial', color: '#9CA3AF' },
   sumCard: { borderRadius: 12, borderWidth: StyleSheet.hairlineWidth, padding: 14, gap: 3 },
-  sumCardLabel: { fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', textTransform: 'uppercase', letterSpacing: 0.9 },
-  sumCardValue: { fontSize: 34, fontFamily: 'PlusJakartaSans_700Bold', letterSpacing: -0.8, lineHeight: 40 },
-  sumCardUnit: { fontSize: 16, fontFamily: 'PlusJakartaSans_500Medium' },
-  sumCardSub: { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', opacity: 0.85 },
+  sumCardLabel: { fontSize: 10, fontFamily: 'Arial', textTransform: 'uppercase', letterSpacing: 0.9 },
+  sumCardValue: { fontSize: 34, fontFamily: 'Arial', letterSpacing: -0.8, lineHeight: 40 },
+  sumCardUnit: { fontSize: 16, fontFamily: 'Arial' },
+  sumCardSub: { fontSize: 12, fontFamily: 'Arial', opacity: 0.85 },
   sumCatRow: { gap: 5 },
   sumCatMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sumCatName: { fontSize: 13, fontFamily: 'PlusJakartaSans_500Medium', color: '#111827', flex: 1 },
-  sumCatWeight: { fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#6B7280', letterSpacing: 0.2 },
+  sumCatName: { fontSize: 13, fontFamily: 'Arial', color: '#111827', flex: 1 },
+  sumCatWeight: { fontSize: 12, fontFamily: 'Arial', color: '#6B7280', letterSpacing: 0.2 },
   sumCatTrack: { height: 5, borderRadius: 3, backgroundColor: 'rgba(0,0,0,0.08)', overflow: 'hidden' },
   sumCatFill: { height: 5, borderRadius: 3, backgroundColor: NAV_ACTIVE },
 
   // Swipe
   swipeActionBtn: { width: SWIPE_BTN_W, alignItems: 'center', justifyContent: 'center', gap: 4, alignSelf: 'stretch' },
-  swipeActionLabel: { fontSize: 11, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#FFFFFF', letterSpacing: 0.3 },
+  swipeActionLabel: { fontSize: 11, fontFamily: 'Arial', color: '#FFFFFF', letterSpacing: 0.3 },
 
   // Toast — v3 §24. Self-check:
   //   backgroundColor #2A5740 ✅ (MATCH)
@@ -2595,11 +2595,11 @@ const styles = StyleSheet.create({
     zIndex: 999, shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.18, shadowRadius: 6, elevation: 6,
   },
-  toastText: { color: '#FFFFFF', fontSize: 14, fontFamily: 'PlusJakartaSans_500Medium' },
+  toastText: { color: '#FFFFFF', fontSize: 14, fontFamily: 'Arial' },
 
   // D-46: NavBox active state (active deck/screen highlight)
   navBoxActive: { backgroundColor: 'rgba(42,87,64,0.10)', borderRadius: 10 },
-  navLabelActive: { fontFamily: 'PlusJakartaSans_700Bold', color: NAV_ACTIVE },
+  navLabelActive: { fontFamily: 'Arial', color: NAV_ACTIVE },
 
   // D-63/64: LocationBar rename + camera action buttons
   locBarActions: { flexDirection: 'row', alignItems: 'center', paddingRight: 10, gap: 2 },
@@ -2623,8 +2623,8 @@ const styles = StyleSheet.create({
   },
   photoItemImg:     { width: '100%', height: 200 },
   photoItemMeta:    { paddingHorizontal: 12, paddingVertical: 10, gap: 4 },
-  photoItemName:    { fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, lineHeight: 20 },
-  photoItemWeight:  { fontSize: 13, fontFamily: 'PlusJakartaSans_500Medium', color: MUTED },
+  photoItemName:    { fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT, lineHeight: 20 },
+  photoItemWeight:  { fontSize: 13, fontFamily: 'Arial', color: MUTED },
   photoItemActions: { flexDirection: 'row', paddingHorizontal: 12, paddingBottom: 12, gap: 10 },
   photoItemBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -2632,5 +2632,5 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(42,87,64,0.3)', backgroundColor: 'rgba(42,87,64,0.05)',
   },
   photoItemDeleteBtn: { borderColor: 'rgba(176,58,46,0.3)', backgroundColor: 'rgba(176,58,46,0.05)' },
-  photoItemBtnText: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  photoItemBtnText: { fontSize: 13, fontFamily: 'Arial', color: NAV_ACTIVE },
 });

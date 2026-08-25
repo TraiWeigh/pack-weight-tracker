@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   eyebrow: {
     marginBottom: 6,
     fontSize: 11,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: 'rgba(255,255,255,0.60)',
     letterSpacing: 1.2,
     textTransform: 'uppercase',
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 26,
     lineHeight: 29,
-    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontFamily: 'Arial',
     color: '#FFFFFF',
     letterSpacing: -0.3,
     textTransform: 'uppercase',
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     fontSize: 14,
     lineHeight: 22,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'Arial',
     color: 'rgba(255,255,255,0.82)',
   },
   scroll: { flex: 1, minHeight: 0 },
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     marginBottom: 10,
     fontSize: 11,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: MUTED,
     letterSpacing: 0.9,
     textTransform: 'uppercase',
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  useCaseText: { fontSize: 13, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY },
+  useCaseText: { fontSize: 13, fontFamily: 'Arial', color: PRIMARY },
   divider: { height: 1, marginTop: 4, marginBottom: 12, backgroundColor: DIVIDER },
   destinations: { paddingHorizontal: 12, gap: 1 },
   destinationShadow: {
@@ -235,12 +235,12 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     fontSize: 17,
     lineHeight: 21,
-    fontFamily: 'Georgia',
+    fontFamily: 'Arial',
     fontWeight: '500',
     color: PRIMARY,
     letterSpacing: -0.1,
   },
-  destinationSubtitle: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED },
+  destinationSubtitle: { fontSize: 12.5, fontFamily: 'Arial', color: MUTED },
   soonBadge: {
     flexShrink: 0,
     borderRadius: 6,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   soonBadgeText: {
     fontSize: 11,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: NAV_ACTIVE,
     letterSpacing: 0.3,
   },

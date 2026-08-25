@@ -191,9 +191,9 @@ const styles = StyleSheet.create({
   },
   // ← Back button (D-59)
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  backBtnText: { fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  backBtnText: { fontSize: 14, fontFamily: 'Arial', color: NAV_ACTIVE },
   // Title centered between Back and right actions (D-59)
-  headerTitle: { flex: 1, fontSize: 16, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT, textAlign: 'center' },
+  headerTitle: { flex: 1, fontSize: 16, fontFamily: 'Arial', color: PRIMARY_TEXT, textAlign: 'center' },
   // Right-side action cluster (D-61/62)
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   // D-60: banner below progress bar
@@ -203,25 +203,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(42,87,64,0.05)',
     borderBottomWidth: 1, borderBottomColor: 'rgba(42,87,64,0.10)',
   },
-  bannerText: { flex: 1, fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, lineHeight: 16 },
+  bannerText: { flex: 1, fontSize: 12, fontFamily: 'Arial', color: MUTED, lineHeight: 16 },
   // Legacy (kept to avoid TS errors from any stray references)
-  headerSub: { fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, marginTop: 2 },
+  headerSub: { fontSize: 12, fontFamily: 'Arial', color: MUTED, marginTop: 2 },
   clearBtn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(0,0,0,0.12)', backgroundColor: '#F3F4F6' },
-  clearBtnText: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED },
+  clearBtnText: { fontSize: 13, fontFamily: 'Arial', color: MUTED },
   doneBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8, backgroundColor: NAV_ACTIVE },
-  doneBtnText: { fontSize: 13, fontFamily: 'PlusJakartaSans_700Bold', color: '#FFFFFF' },
+  doneBtnText: { fontSize: 13, fontFamily: 'Arial', color: '#FFFFFF' },
   progressBar: { height: 3, backgroundColor: 'rgba(0,0,0,0.07)' },
   progressFill: { height: 3, backgroundColor: NAV_ACTIVE, borderRadius: 1.5 },
   scroll: { paddingHorizontal: 12, paddingTop: 12, gap: 10 },
   empty: { alignItems: 'center', paddingVertical: 64, gap: 10 },
-  emptyTitle: { fontSize: 16, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED },
-  emptySub: { fontSize: 13, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, textAlign: 'center' },
+  emptyTitle: { fontSize: 16, fontFamily: 'Arial', color: MUTED },
+  emptySub: { fontSize: 13, fontFamily: 'Arial', color: MUTED, textAlign: 'center' },
   section: { borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: DIVIDER },
   sectionHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 12, paddingVertical: 9,
   },
-  sectionTitle: { fontSize: 13, fontFamily: 'PlusJakartaSans_700Bold', color: 'rgba(255,255,255,0.95)' },
+  sectionTitle: { fontSize: 13, fontFamily: 'Arial', color: 'rgba(255,255,255,0.95)' },
   itemRow: {
     flexDirection: 'row', alignItems: 'center', minHeight: 44,
     backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: DIVIDER,
@@ -233,11 +233,11 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   itemName: {
-    flex: 1, fontSize: 14.5, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, lineHeight: 20,
+    flex: 1, fontSize: 14.5, fontFamily: 'Arial', color: PRIMARY_TEXT, lineHeight: 20,
   },
   itemNameUsed: { color: NAV_INACTIVE, textDecorationLine: 'line-through', opacity: 0.75 },
   itemWeight: {
-    fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_INACTIVE,
+    fontSize: 12, fontFamily: 'Arial', color: NAV_INACTIVE,
     letterSpacing: 0.2, flexShrink: 0,
   },
 });

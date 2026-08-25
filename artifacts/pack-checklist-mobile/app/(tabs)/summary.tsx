@@ -265,11 +265,11 @@ const styles = StyleSheet.create({
   // Card title — based on VF §12 deck label fontSize=16 fontWeight=700
   // Using fontSize=15 here (card header, not deck title bar) for proportional native sizing
   cardTitle: {
-    fontSize: 15, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT,
+    fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT,
   },
 
   cardSub: {
-    fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED,
+    fontSize: 12, fontFamily: 'Arial', color: MUTED,
   },
 
   // ── Card content ────────────────────────────────────────────────────────────
@@ -297,22 +297,22 @@ const styles = StyleSheet.create({
 
   // Normal non-base category rows
   labelNormal: {
-    fontSize: 14, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT,
+    fontSize: 14, fontFamily: 'Arial', color: PRIMARY_TEXT,
   },
   valueNormal: {
-    fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED,
+    fontSize: 14, fontFamily: 'Arial', color: MUTED,
   },
 
   // Base Weight and Grand Total rows — bold emphasis
   labelBold: {
-    fontSize: 15, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT,
+    fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT,
   },
   valueBold: {
-    fontSize: 15, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT,
+    fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT,
   },
 
   emptyNote: {
-    fontSize: 14, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED,
+    fontSize: 14, fontFamily: 'Arial', color: MUTED,
     textAlign: 'center', paddingVertical: 20,
   },
 });

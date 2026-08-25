@@ -295,13 +295,13 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: '#111827',
     letterSpacing: -0.3,
   },
   headerSub: {
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'Arial',
     color: '#6B7280',
     marginTop: 1,
   },
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
   field: { gap: 8 },
   fieldLabel: {
     fontSize: 11,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: '#6B7280',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'Arial',
     color: '#111827',
     backgroundColor: '#FAFAFA',
   },
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
   },
   weightUnitText: {
     fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: '#374151',
   },
   qtyRow: { gap: 6, paddingVertical: 2 },
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
   },
   qtyCellText: {
     fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: '#374151',
   },
   qtyCellTextActive: { color: '#FFFFFF' },
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
   catPillText: {
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_500Medium',
+    fontFamily: 'Arial',
     color: '#374151',
   },
   catPillTextActive: { color: '#FFFFFF' },
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   },
   catPillNewText: {
     fontSize: 13,
-    fontFamily: 'PlusJakartaSans_500Medium',
+    fontFamily: 'Arial',
     color: NAV_ACTIVE,
   },
   actions: { gap: 10, marginTop: 4 },
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.38 },
   btnSaveText: {
     fontSize: 16,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: '#FFFFFF',
     letterSpacing: 0.2,
   },
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   },
   btnAnotherText: {
     fontSize: 15,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: NAV_ACTIVE,
   },
 });

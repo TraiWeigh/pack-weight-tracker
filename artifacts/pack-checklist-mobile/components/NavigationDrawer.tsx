@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14,
   },
   drawerLogoRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
-  drawerLogoText: { fontSize: 18, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT },
+  drawerLogoText: { fontSize: 18, fontFamily: 'Arial', color: PRIMARY_TEXT },
   closeBtn: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: 'rgba(0,0,0,0.06)',
@@ -274,14 +274,14 @@ const styles = StyleSheet.create({
   },
   navRowText: { flex: 1 },
   navRowLabel: {
-    fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT,
+    fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT,
   },
   navRowLabelDisabled: { color: MUTED },
   navRowSub: {
-    fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, marginTop: 1,
+    fontSize: 12, fontFamily: 'Arial', color: MUTED, marginTop: 1,
   },
   navRowBadge: {
-    fontSize: 10, fontFamily: 'PlusJakartaSans_700Bold', color: NAV_ACTIVE,
+    fontSize: 10, fontFamily: 'Arial', color: NAV_ACTIVE,
     backgroundColor: 'rgba(42,87,64,0.10)', paddingHorizontal: 6, paddingVertical: 2,
     borderRadius: 5, overflow: 'hidden',
   },
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 12,
   },
   handednessLabel: {
-    fontSize: 13, fontFamily: 'PlusJakartaSans_500Medium', color: MUTED,
+    fontSize: 13, fontFamily: 'Arial', color: MUTED,
   },
   handednessToggle: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
@@ -303,6 +303,6 @@ const styles = StyleSheet.create({
     backgroundColor: NAV_ACTIVE, borderColor: NAV_ACTIVE,
   },
   handednessToggleText: {
-    fontSize: 12, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED,
+    fontSize: 12, fontFamily: 'Arial', color: MUTED,
   },
 });

@@ -124,10 +124,10 @@ const styles = StyleSheet.create({
   },
   optionIconActive: { backgroundColor: NAV_ACTIVE },
   optionLabel: {
-    fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, marginBottom: 2,
+    fontSize: 14, fontFamily: 'Arial', color: PRIMARY_TEXT, marginBottom: 2,
   },
   optionLabelActive: { color: NAV_ACTIVE },
   optionSub: {
-    fontSize: 12, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED,
+    fontSize: 12, fontFamily: 'Arial', color: MUTED,
   },
 });

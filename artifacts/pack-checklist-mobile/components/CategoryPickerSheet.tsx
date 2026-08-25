@@ -112,8 +112,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: DIVIDER,
   },
-  headerTitle: { fontSize: 16, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT },
-  headerSub: { fontSize: 13, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED, marginTop: 2 },
+  headerTitle: { fontSize: 16, fontFamily: 'Arial', color: PRIMARY_TEXT },
+  headerSub: { fontSize: 13, fontFamily: 'Arial', color: MUTED, marginTop: 2 },
   closeBtn: {
     width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6',
     alignItems: 'center', justifyContent: 'center',
@@ -128,5 +128,5 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 9,
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
-  catName: { flex: 1, fontSize: 15, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT },
+  catName: { flex: 1, fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT },
 });

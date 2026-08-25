@@ -132,14 +132,14 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 17,
-    fontFamily: 'PlusJakartaSans_700Bold',
+    fontFamily: 'Arial',
     color: PRIMARY_TEXT,
     marginBottom: 8,
   },
 
   body: {
     fontSize: 14,
-    fontFamily: 'PlusJakartaSans_400Regular',
+    fontFamily: 'Arial',
     color: MUTED,
     lineHeight: 20,
     marginBottom: 20,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', paddingVertical: 12,
   },
   cancelText: {
-    fontSize: 15, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT,
+    fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT,
   },
 
   confirmBtn: {
@@ -165,6 +165,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', paddingVertical: 12,
   },
   confirmText: {
-    fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: '#FFFFFF',
+    fontSize: 15, fontFamily: 'Arial', color: '#FFFFFF',
   },
 });

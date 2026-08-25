@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     fontSize: 11,
-    fontFamily: 'PlusJakartaSans_600SemiBold',
+    fontFamily: 'Arial',
     color: '#FFFFFF',
     letterSpacing: 0.3,
   },

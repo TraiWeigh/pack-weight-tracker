@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center', marginTop: 10, marginBottom: 8,
   },
   title: {
-    fontSize: 16, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT,
+    fontSize: 16, fontFamily: 'Arial', color: PRIMARY_TEXT,
     paddingHorizontal: 16, paddingBottom: 10,
   },
   divider: { height: 1, backgroundColor: DIVIDER },
@@ -228,10 +228,10 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   },
   optIconDelete: { backgroundColor: 'rgba(176,58,46,0.10)' },
-  optLabel: { fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: PRIMARY_TEXT, marginBottom: 2 },
-  optSub: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_400Regular', color: MUTED },
+  optLabel: { fontSize: 15, fontFamily: 'Arial', color: PRIMARY_TEXT, marginBottom: 2 },
+  optSub: { fontSize: 12.5, fontFamily: 'Arial', color: MUTED },
   cancelRow: {
     paddingVertical: 16, alignItems: 'center', justifyContent: 'center',
   },
-  cancelText: { fontSize: 15, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED },
+  cancelText: { fontSize: 15, fontFamily: 'Arial', color: MUTED },
 });

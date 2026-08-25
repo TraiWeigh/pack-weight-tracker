@@ -354,27 +354,27 @@ const styles = StyleSheet.create({
   },
   rowDivider: { height: 1, backgroundColor: DIVIDER, marginLeft: 14 },
   rowLabel: {
-    fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED,
+    fontSize: 13, fontFamily: 'Arial', color: MUTED,
     flexShrink: 0,
   },
   nameInput: {
-    flex: 1, fontSize: 14.5, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT,
+    flex: 1, fontSize: 14.5, fontFamily: 'Arial', color: PRIMARY_TEXT,
     borderBottomWidth: 1.5, borderBottomColor: NAV_ACTIVE,
     paddingVertical: 2, paddingHorizontal: 0, minHeight: 32,
   },
   weightRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   weightInput: {
-    width: 72, fontSize: 14.5, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT,
+    width: 72, fontSize: 14.5, fontFamily: 'Arial', color: PRIMARY_TEXT,
     borderBottomWidth: 1.5, borderBottomColor: NAV_ACTIVE,
     paddingVertical: 2, textAlign: 'right', minHeight: 32,
   },
-  weightUnit: { fontSize: 13, fontFamily: 'PlusJakartaSans_600SemiBold', color: MUTED },
+  weightUnit: { fontSize: 13, fontFamily: 'Arial', color: MUTED },
   qtyRow: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 16 },
   qtyBtn: {
     width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(0,0,0,0.07)',
     alignItems: 'center', justifyContent: 'center',
   },
-  qtyValue: { fontSize: 16, fontFamily: 'PlusJakartaSans_700Bold', color: PRIMARY_TEXT, minWidth: 24, textAlign: 'center' },
+  qtyValue: { fontSize: 16, fontFamily: 'Arial', color: PRIMARY_TEXT, minWidth: 24, textAlign: 'center' },
   // v3 VF §19: Total row has fixed height=42 (the ONLY row that is not min-height).
   // Item 31: gap:10 applied for consistency with the row formula (VF §9).
   // Self-check: all other rows use minHeight: 44. Total is the lone exception. MATCH.
@@ -382,19 +382,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     height: 42, paddingLeft: 14, paddingRight: 34, paddingVertical: 6, gap: 10,
   },
-  totalValue: { flex: 1, textAlign: 'right', fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  totalValue: { flex: 1, textAlign: 'right', fontSize: 14, fontFamily: 'Arial', color: NAV_ACTIVE },
   rowRight: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 6 },
-  rowValue: { fontSize: 14, fontFamily: 'PlusJakartaSans_500Medium', color: PRIMARY_TEXT, maxWidth: 180, textAlign: 'right' },
+  rowValue: { fontSize: 14, fontFamily: 'Arial', color: PRIMARY_TEXT, maxWidth: 180, textAlign: 'right' },
   photoActions: { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
   photoBtn: {
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 7,
     borderWidth: 1, borderColor: 'rgba(42,87,64,0.28)',
     backgroundColor: 'rgba(42,87,64,0.06)',
   },
-  photoBtnText: { fontSize: 12.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  photoBtnText: { fontSize: 12.5, fontFamily: 'Arial', color: NAV_ACTIVE },
   // Item 23: v3 VF §9 "Add Photo button: fontSize=11.5, min-height=36" — was fontSize:12.5, no minHeight.
   photoAddBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 36 },
-  photoAddBtnText: { fontSize: 11.5, fontFamily: 'PlusJakartaSans_600SemiBold', color: NAV_ACTIVE },
+  photoAddBtnText: { fontSize: 11.5, fontFamily: 'Arial', color: NAV_ACTIVE },
   // v3 VF §9: "max-height=300px; object-fit=contain; background=#111"
   // Self-check: prior height=160 wrong; cover wrong; no dark bg wrong. All three fixed.
   // RN translation note: height:300 is the correct equivalent of CSS max-height:300px for a
@@ -408,5 +408,5 @@ const styles = StyleSheet.create({
     gap: 8, minHeight: 44, paddingVertical: 6,
     borderTopWidth: 1, borderTopColor: 'rgba(176,58,46,0.15)',
   },
-  deleteText: { fontSize: 14, fontFamily: 'PlusJakartaSans_600SemiBold', color: DELETE_RED },
+  deleteText: { fontSize: 14, fontFamily: 'Arial', color: DELETE_RED },
 });
