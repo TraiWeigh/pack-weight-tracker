@@ -106,6 +106,10 @@ export function CategorySwipeRow({
         isSwiping.current = false;
         Animated.timing(tx, { toValue: isOpenRef.current ? -REVEAL_W : 0, duration: 180, useNativeDriver: true }).start();
       },
+      // Match p3 pointer capture: after a deliberate horizontal swipe claims
+      // the row, the parent list must not terminate it and snap the bar closed.
+      onPanResponderTerminationRequest: () => false,
+      onShouldBlockNativeResponder: () => true,
     })
   ).current;
 
