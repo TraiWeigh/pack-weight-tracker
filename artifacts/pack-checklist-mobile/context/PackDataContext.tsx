@@ -730,7 +730,35 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
   const refreshLockerEntries = useCallback(async () => {
     try {
       const raw = await AsyncStorage.getItem(LOCKER_KEY);
-      const entries: NativeLockerEntry[] = raw ? JSON.parse(raw) : [];
+      let entries: NativeLockerEntry[] = raw ? JSON.parse(raw) : [];
+      const existingTestPack = entries.find(entry => {
+        const entryItemCount = Object.values(entry.store?.data || {})
+          .reduce((count, items) => count + items.length, 0);
+        return entry.id === TEST_PACK_LOCKER_ID ||
+          (entry.name === 'My Pack' && entry.store?.listKind !== 'photo' && entryItemCount > 0);
+      });
+
+      // Expo Fast Refresh can preserve the provider and skip the startup
+      // migration. Ensure the canonical test pack whenever My Lists opens too.
+      if (!existingTestPack) {
+        const categoryOrder = CATEGORY_ORDER.slice();
+        entries = [...entries, {
+          id: TEST_PACK_LOCKER_ID,
+          name: 'My Pack',
+          savedAt: Date.now(),
+          store: {
+            data: seedInitialData(categoryOrder),
+            categoryOrder,
+            listName: 'My Pack',
+            listKind: 'standard',
+            locations: [],
+            photoListCaptureDataUrl: null,
+            weightUnit: weightUnitRef.current,
+          },
+        }];
+        await AsyncStorage.setItem(LOCKER_KEY, JSON.stringify(entries));
+        await AsyncStorage.setItem(TEST_PACK_LOCKER_SEED_KEY, '1');
+      }
       setLockerEntries([...entries].sort((a, b) => b.savedAt - a.savedAt));
     } catch {
       setLockerEntries([]);
