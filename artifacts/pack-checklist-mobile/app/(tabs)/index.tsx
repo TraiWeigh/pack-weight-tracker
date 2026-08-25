@@ -23,6 +23,7 @@ import {
   Alert,
   Animated,
   Dimensions,
+  Easing,
   Image,
   PanResponder,
   Share,
@@ -932,6 +933,7 @@ export default function GearScreen() {
   const [dragTargetIdx, setDragTargetIdx] = useState<number | null>(null);
   const dragCatRef               = useRef<string | null>(null);
   const dragPointerOffsetRef     = useRef(0);
+  const dragTargetIdxRef         = useRef<number | null>(null);
   const reorderJustHappenedRef   = useRef(false);
   const catBarYsRef              = useRef<Map<string, number>>(new Map());
   const catBarHsRef              = useRef<Map<string, number>>(new Map());
@@ -1211,6 +1213,7 @@ export default function GearScreen() {
     // reset all anims
     catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
     dragCatRef.current = null;
+    dragTargetIdxRef.current = null;
     setDragTargetIdx(null);
     setDraggingCat(null);
   }, [categoryOrder, computeTargetIdx, reorderCategories]);
@@ -1222,7 +1225,6 @@ export default function GearScreen() {
     if (openCatName || allExpanded) return;
     if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    let remaining = categoryOrder.length;
     const beginDrag = () => {
       if (dragCatRef.current === catName) return;
       const barH = catBarHsRef.current.get(catName) ?? CAT_HEADER_H;
@@ -1230,21 +1232,14 @@ export default function GearScreen() {
       dragPointerOffsetRef.current = barY == null ? barH / 2 : pageY - barY;
       dragCatRef.current = catName;
       setDraggingCat(catName);
-      setDragTargetIdx(categoryOrder.indexOf(catName));
+      const sourceIdx = categoryOrder.indexOf(catName);
+      dragTargetIdxRef.current = sourceIdx;
+      setDragTargetIdx(sourceIdx);
       setDragOverlayY(pageY - rootTopRef.current - dragPointerOffsetRef.current);
     };
-    // Lift immediately at the completed 400 ms hold. Row measurements refine
-    // drop targets asynchronously but must never delay visible activation.
+    // Lift immediately at the completed 400 ms hold. The on-layout position
+    // map remains fixed for this drag, matching p3's stable original slots.
     beginDrag();
-    categoryOrder.forEach((cat) => {
-      catBarRefsRef.current.get(cat)?.measureInWindow((_x: number, y: number, _w: number, h: number) => {
-        catBarYsRef.current.set(cat, y);
-        catBarHsRef.current.set(cat, h);
-        remaining -= 1;
-        if (remaining === 0) beginDrag();
-      });
-    });
-    if (categoryOrder.length === 0) return;
   }, [allExpanded, categoryOrder, listKind, openCatName]);
 
   // Task 4 (Batch I): animate sibling bars to show drop target while dragging
@@ -1253,6 +1248,8 @@ export default function GearScreen() {
     if (!dragging) return;
     const fromIdx = categoryOrder.indexOf(dragging);
     const toIdx   = computeTargetIdx(screenY);
+    if (dragTargetIdxRef.current === toIdx) return;
+    dragTargetIdxRef.current = toIdx;
     setDragTargetIdx(toIdx);
     const barH    = catBarHsRef.current.get(dragging) ?? CAT_HEADER_H;
     categoryOrder.forEach((cat, i) => {
@@ -1260,8 +1257,13 @@ export default function GearScreen() {
       let shift = 0;
       if (fromIdx < toIdx && i > fromIdx && i <= toIdx)  shift = -barH; // drag down: gap opens above
       if (fromIdx > toIdx && i >= toIdx  && i < fromIdx) shift =  barH; // drag up: gap opens below
-      Animated.spring(getDragAnim(cat), {
-        toValue: shift, useNativeDriver: true, tension: 300, friction: 26,
+      const anim = getDragAnim(cat);
+      anim.stopAnimation();
+      Animated.timing(anim, {
+        toValue: shift,
+        duration: 280,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
       }).start();
     });
   }, [categoryOrder, computeTargetIdx, getDragAnim]);
@@ -1277,6 +1279,7 @@ export default function GearScreen() {
   const cancelDrag = useCallback(() => {
     catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
     dragCatRef.current = null;
+    dragTargetIdxRef.current = null;
     setDragTargetIdx(null);
     setDraggingCat(null);
   }, []);
@@ -1287,7 +1290,7 @@ export default function GearScreen() {
   useEffect(() => {
     if (Platform.OS !== 'web' || !draggingCat || typeof document === 'undefined') return;
     const move = (screenY: number) => {
-      setDragOverlayY(screenY - rootTopRef.current - (catBarHsRef.current.get(draggingCat) ?? CAT_HEADER_H) / 2);
+      setDragOverlayY(screenY - rootTopRef.current - dragPointerOffsetRef.current);
       updateDragAnims(screenY);
     };
     const onPointerMove = (event: PointerEvent) => move(event.pageY);
