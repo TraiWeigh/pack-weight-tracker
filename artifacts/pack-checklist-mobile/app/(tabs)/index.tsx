@@ -324,6 +324,8 @@ function SectionHeader({
   // zone. This makes the drag continuous on native and web while preserving the
   // existing right-zone swipe reveal and allowing pre-lift drags to scroll.
   const headerPan = useRef(PanResponder.create({
+    onStartShouldSetPanResponderCapture: e =>
+      e.nativeEvent.pageX <= Dimensions.get('window').width * 0.60,
     onStartShouldSetPanResponder: e =>
       e.nativeEvent.pageX <= Dimensions.get('window').width * 0.60,
     onPanResponderGrant: e => {
@@ -1220,11 +1222,15 @@ export default function GearScreen() {
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     let remaining = categoryOrder.length;
     const beginDrag = () => {
+      if (dragCatRef.current === catName) return;
       dragCatRef.current = catName;
       setDraggingCat(catName);
       setDragTargetIdx(categoryOrder.indexOf(catName));
       setDragOverlayY(pageY - rootTopRef.current - (catBarHsRef.current.get(catName) ?? CAT_HEADER_H) / 2);
     };
+    // Lift immediately at the completed 400 ms hold. Row measurements refine
+    // drop targets asynchronously but must never delay visible activation.
+    beginDrag();
     categoryOrder.forEach((cat) => {
       catBarRefsRef.current.get(cat)?.measureInWindow((_x: number, y: number, _w: number, h: number) => {
         catBarYsRef.current.set(cat, y);
@@ -1234,8 +1240,6 @@ export default function GearScreen() {
       });
     });
     if (categoryOrder.length === 0) return;
-    // Missing native refs must not prevent reorder activation.
-    if (categoryOrder.some(cat => !catBarRefsRef.current.get(cat))) beginDrag();
   }, [allExpanded, categoryOrder, listKind, openCatName]);
 
   // Task 4 (Batch I): animate sibling bars to show drop target while dragging
