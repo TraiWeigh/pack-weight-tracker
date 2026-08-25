@@ -291,7 +291,7 @@ function FilterControl({
 
 function SectionHeader({
   title, catIndex, checkedCount, totalCount, checkedWeightOz,
-  isOpen, onToggle, onLongPress, onDragMove, onDragEnd, onDragCancel, weightUnit,
+  isOpen, onToggle, onLongPress, onDragMove, onDragEnd, weightUnit,
 }: {
   title: string; catIndex: number; checkedCount: number; totalCount: number;
   checkedWeightOz: number; isOpen: boolean; onToggle: () => void;
@@ -300,14 +300,12 @@ function SectionHeader({
   onLongPress?: (pageX: number, pageY: number) => void;
   onDragMove?: (pageY: number) => void;
   onDragEnd?: (pageY: number) => void;
-  onDragCancel?: () => void;
   weightUnit: 'imperial' | 'metric';
 }) {
   const onToggleRef = useRef(onToggle);
   const onLongPressRef = useRef(onLongPress);
   const onDragMoveRef = useRef(onDragMove);
   const onDragEndRef = useRef(onDragEnd);
-  const onDragCancelRef = useRef(onDragCancel);
   const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gestureMovedRef = useRef(false);
   const dragStartedRef = useRef(false);
@@ -317,7 +315,6 @@ function SectionHeader({
   onLongPressRef.current = onLongPress;
   onDragMoveRef.current = onDragMove;
   onDragEndRef.current = onDragEnd;
-  onDragCancelRef.current = onDragCancel;
 
   const clearPressTimer = () => {
     if (pressTimerRef.current) clearTimeout(pressTimerRef.current);
@@ -360,7 +357,7 @@ function SectionHeader({
     },
     onPanResponderTerminate: e => {
       clearPressTimer();
-      if (dragStartedRef.current) onDragCancelRef.current?.();
+      if (dragStartedRef.current) onDragEndRef.current?.(e.nativeEvent.pageY);
       dragStartedRef.current = false;
     },
     // Prior to lift, a parent ScrollView may take over a vertical drag. A live
@@ -932,10 +929,10 @@ export default function GearScreen() {
 
   // N-02: category drag-reorder state + refs
   const [draggingCat,  setDraggingCat]  = useState<string | null>(null);
+  const [dragOverlayY, setDragOverlayY] = useState(0);
   const [dragTargetIdx, setDragTargetIdx] = useState<number | null>(null);
   const dragCatRef               = useRef<string | null>(null);
-  const dragLiftAnim             = useRef(new Animated.Value(0)).current;
-  const dragStartPageYRef        = useRef(0);
+  const dragPointerOffsetRef     = useRef(0);
   const dragTargetIdxRef         = useRef<number | null>(null);
   const reorderJustHappenedRef   = useRef(false);
   const catBarYsRef              = useRef<Map<string, number>>(new Map());
@@ -944,6 +941,7 @@ export default function GearScreen() {
   const scrollYRef               = useRef(0);
   const openCategoryScrollRef    = useRef<{ catName: string; y: number } | null>(null);
   const listContainerRef         = useRef<View>(null);
+  const rootTopRef               = useRef(0);
   const catDragAnimsRef          = useRef<Map<string, Animated.Value>>(new Map());
 
   // D-63/64: location photo sheet
@@ -1203,25 +1201,22 @@ export default function GearScreen() {
     if (!dragging) return;
     const fromIdx  = categoryOrder.indexOf(dragging);
     const toIdx    = computeTargetIdx(absY);
-    const changed = fromIdx !== toIdx && fromIdx >= 0;
-    if (changed) {
+    if (fromIdx !== toIdx && fromIdx >= 0) {
       const o = [...categoryOrder];
       o.splice(fromIdx, 1);
       o.splice(toIdx, 0, dragging);
       reorderCategories(o);
-      showToast('Category order saved');
-      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     reorderJustHappenedRef.current = true;
     setTimeout(() => { reorderJustHappenedRef.current = false; }, 400);
     // reset all anims
     catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
-    dragLiftAnim.setValue(0);
     dragCatRef.current = null;
     dragTargetIdxRef.current = null;
     setDragTargetIdx(null);
     setDraggingCat(null);
-  }, [categoryOrder, computeTargetIdx, dragLiftAnim, reorderCategories, showToast]);
+  }, [categoryOrder, computeTargetIdx, reorderCategories]);
 
   // Long-press activates drag only outside CategorySwipeRow's right-side action zone.
   const handleCatLongPress = useCallback((catName: string, pageX: number, pageY: number) => {
@@ -1229,21 +1224,23 @@ export default function GearScreen() {
     if (pageX > Dimensions.get('window').width * 0.60) return;
     if (openCatName || allExpanded) return;
     if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
-    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const beginDrag = () => {
       if (dragCatRef.current === catName) return;
-      dragStartPageYRef.current = pageY;
-      dragLiftAnim.setValue(0);
+      const barH = catBarHsRef.current.get(catName) ?? CAT_HEADER_H;
+      const barY = catBarYsRef.current.get(catName);
+      dragPointerOffsetRef.current = barY == null ? barH / 2 : pageY - barY;
       dragCatRef.current = catName;
       setDraggingCat(catName);
       const sourceIdx = categoryOrder.indexOf(catName);
       dragTargetIdxRef.current = sourceIdx;
       setDragTargetIdx(sourceIdx);
+      setDragOverlayY(pageY - rootTopRef.current - dragPointerOffsetRef.current);
     };
     // Lift immediately at the completed 400 ms hold. The on-layout position
     // map remains fixed for this drag, matching p3's stable original slots.
     beginDrag();
-  }, [allExpanded, categoryOrder, dragLiftAnim, listKind, openCatName]);
+  }, [allExpanded, categoryOrder, listKind, openCatName]);
 
   // Task 4 (Batch I): animate sibling bars to show drop target while dragging
   const updateDragAnims = useCallback((screenY: number) => {
@@ -1275,18 +1272,17 @@ export default function GearScreen() {
     if (!dragCatRef.current) return;
     // Match p3: once the 400 ms hold activates, the lifted category follows
     // the same finger 1:1 while the list itself remains locked.
-    dragLiftAnim.setValue(screenY - dragStartPageYRef.current);
+    setDragOverlayY(screenY - rootTopRef.current - dragPointerOffsetRef.current);
     updateDragAnims(screenY);
-  }, [dragLiftAnim, updateDragAnims]);
+  }, [updateDragAnims]);
 
   const cancelDrag = useCallback(() => {
     catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
-    dragLiftAnim.setValue(0);
     dragCatRef.current = null;
     dragTargetIdxRef.current = null;
     setDragTargetIdx(null);
     setDraggingCat(null);
-  }, [dragLiftAnim]);
+  }, []);
 
   // Once a web Touchable has crossed the 400ms long-press threshold, follow
   // the same active pointer globally. RN Web does not forward moves from an
@@ -1294,7 +1290,7 @@ export default function GearScreen() {
   useEffect(() => {
     if (Platform.OS !== 'web' || !draggingCat || typeof document === 'undefined') return;
     const move = (screenY: number) => {
-      dragLiftAnim.setValue(screenY - dragStartPageYRef.current);
+      setDragOverlayY(screenY - rootTopRef.current - dragPointerOffsetRef.current);
       updateDragAnims(screenY);
     };
     const onPointerMove = (event: PointerEvent) => move(event.pageY);
@@ -1308,7 +1304,7 @@ export default function GearScreen() {
       document.removeEventListener('pointermove', onPointerMove);
       document.removeEventListener('touchmove', onTouchMove);
     };
-  }, [draggingCat, dragLiftAnim, updateDragAnims]);
+  }, [draggingCat, updateDragAnims]);
 
   const handleHeroNameTap = useCallback(() => {
     if (Platform.OS === 'ios') {
@@ -1614,7 +1610,10 @@ export default function GearScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: PAGE_BG }]}>
+    <View
+      ref={(node) => node?.measureInWindow((_x, y) => { rootTopRef.current = y; })}
+      style={[styles.container, { backgroundColor: PAGE_BG }]}
+    >
       {/* ── Fixed top ──────────────────────────────────────────────────── */}
       <AppBar onMenuPress={() => setShowDrawer(true)} handedness={handedness} homeVisible={showHome} />
       <ListSummaryHero
@@ -1784,20 +1783,6 @@ export default function GearScreen() {
               });
             });
           };
-          const isDraggingHeader = draggingCat === s.title;
-          const isTargetHeader = !isDraggingHeader && dragTargetIdx === categoryOrder.indexOf(s.title);
-          const dragStyle = {
-            transform: [
-              { translateY: isDraggingHeader ? dragLiftAnim : getDragAnim(s.title) },
-              { scale: isDraggingHeader ? 1.015 : 1 },
-            ],
-            opacity: isTargetHeader ? 0.55 : 1,
-            zIndex: isDraggingHeader ? 998 : 0,
-            elevation: isDraggingHeader ? 10 : 0,
-            shadowOpacity: isDraggingHeader ? 0.24 : 0,
-            shadowRadius: isDraggingHeader ? 26 : 0,
-            shadowOffset: { width: 0, height: isDraggingHeader ? 8 : 0 },
-          };
           const header = (
             <SectionHeader
               title={s.title}
@@ -1810,18 +1795,23 @@ export default function GearScreen() {
               onLongPress={(x, y) => handleCatLongPress(s.title, x, y)}
               onDragMove={handleCatDragMove}
               onDragEnd={commitDrag}
-              onDragCancel={cancelDrag}
               weightUnit={weightUnit}
             />
           );
           // Task 4 (Batch I): wrap in Animated.View so sibling bars shift during drag
           if (suppressSwipe) return (
-            <Animated.View ref={(node) => { catBarRefsRef.current.set(s.title, node); }} onLayout={catHeaderLayout} style={dragStyle}>
+            <Animated.View ref={(node) => { catBarRefsRef.current.set(s.title, node); }} onLayout={catHeaderLayout} style={{
+              transform: [{ translateY: getDragAnim(s.title) }],
+              opacity: draggingCat === s.title ? 0 : (dragTargetIdx === categoryOrder.indexOf(s.title) ? 0.55 : 1),
+            }}>
               {header}
             </Animated.View>
           );
           return (
-            <Animated.View ref={(node) => { catBarRefsRef.current.set(s.title, node); }} onLayout={catHeaderLayout} style={dragStyle}>
+            <Animated.View ref={(node) => { catBarRefsRef.current.set(s.title, node); }} onLayout={catHeaderLayout} style={{
+              transform: [{ translateY: getDragAnim(s.title) }],
+              opacity: draggingCat === s.title ? 0 : (dragTargetIdx === categoryOrder.indexOf(s.title) ? 0.55 : 1),
+            }}>
               <CategorySwipeRow
                 catName={s.title}
                 itemCount={(data[s.title] || []).length}
@@ -1902,8 +1892,7 @@ export default function GearScreen() {
             </View>
           );
         }}
-        stickySectionHeadersEnabled={draggingCat === null}
-        removeClippedSubviews={false}
+        stickySectionHeadersEnabled
         ListFooterComponent={filterView === 'category'
           ? <View style={{ height: CATEGORY_TRAILING_SCROLL_H }} pointerEvents="none" />
           : null}
@@ -1939,7 +1928,6 @@ export default function GearScreen() {
               onLongPress={(x, y) => handleCatLongPress(lockedSection.title, x, y)}
               onDragMove={handleCatDragMove}
               onDragEnd={commitDrag}
-              onDragCancel={cancelDrag}
               weightUnit={weightUnit}
             />
           </CategorySwipeRow>
@@ -2351,6 +2339,42 @@ export default function GearScreen() {
         onClose={() => setShowLocPhotoSheet(false)}
         onCancel={() => setShowLocPhotoSheet(false)}
       />
+
+      {/* N-02: Drag-reorder floating category header overlay */}
+      {draggingCat !== null && (() => {
+        const catIdx   = categoryOrder.indexOf(draggingCat);
+        const catItems = data[draggingCat] || [];
+        return (
+          <View
+            style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, zIndex: 998 }}
+            pointerEvents="none"
+          >
+            <View
+              style={[
+                {
+                  position: 'absolute', left: 0, right: 0,
+                  top: dragOverlayY,
+                  transform: [{ scale: 1.015 }],
+                  // Item 24: v3 VF §8 drag shadow dominant layer = 0 8px 26px rgba(0,0,0,0.24)
+                  // RN only supports one shadow; approximate with opacity=0.24, radius=26
+                  shadowOpacity: 0.24, shadowRadius: 26,
+                  shadowOffset: { width: 0, height: 8 }, elevation: 10,
+                },
+              ]}
+              pointerEvents="none"
+            >
+              <CategoryCardContent
+                title={draggingCat}
+                catIndex={catIdx}
+                checkedCount={catItems.filter(i => i.checked).length}
+                totalCount={catItems.length}
+                checkedWeightOz={catItems.filter(i => i.checked).reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0)}
+                weightUnit={weightUnit}
+              />
+            </View>
+          </View>
+        );
+      })()}
 
       {/* ── Item 10: Reset Checks confirm sheet ─────────────────────────── */}
       {/* v3 §13.10: title/body/label/colour all match exactly now. */}
