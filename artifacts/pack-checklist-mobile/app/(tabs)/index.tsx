@@ -362,6 +362,7 @@ function SectionHeader({
     // Prior to lift, a parent ScrollView may take over a vertical drag. A live
     // reorder deliberately keeps ownership so the row stays under the finger.
     onPanResponderTerminationRequest: () => !dragStartedRef.current,
+    onShouldBlockNativeResponder: () => true,
   })).current;
 
   return (
@@ -930,6 +931,7 @@ export default function GearScreen() {
   const [dragOverlayY, setDragOverlayY] = useState(0);
   const [dragTargetIdx, setDragTargetIdx] = useState<number | null>(null);
   const dragCatRef               = useRef<string | null>(null);
+  const dragPointerOffsetRef     = useRef(0);
   const reorderJustHappenedRef   = useRef(false);
   const catBarYsRef              = useRef<Map<string, number>>(new Map());
   const catBarHsRef              = useRef<Map<string, number>>(new Map());
@@ -1223,10 +1225,13 @@ export default function GearScreen() {
     let remaining = categoryOrder.length;
     const beginDrag = () => {
       if (dragCatRef.current === catName) return;
+      const barH = catBarHsRef.current.get(catName) ?? CAT_HEADER_H;
+      const barY = catBarYsRef.current.get(catName);
+      dragPointerOffsetRef.current = barY == null ? barH / 2 : pageY - barY;
       dragCatRef.current = catName;
       setDraggingCat(catName);
       setDragTargetIdx(categoryOrder.indexOf(catName));
-      setDragOverlayY(pageY - rootTopRef.current - (catBarHsRef.current.get(catName) ?? CAT_HEADER_H) / 2);
+      setDragOverlayY(pageY - rootTopRef.current - dragPointerOffsetRef.current);
     };
     // Lift immediately at the completed 400 ms hold. Row measurements refine
     // drop targets asynchronously but must never delay visible activation.
@@ -1260,6 +1265,14 @@ export default function GearScreen() {
       }).start();
     });
   }, [categoryOrder, computeTargetIdx, getDragAnim]);
+
+  const handleCatDragMove = useCallback((screenY: number) => {
+    if (!dragCatRef.current) return;
+    // Match p3: once the 400 ms hold activates, the lifted category follows
+    // the same finger 1:1 while the list itself remains locked.
+    setDragOverlayY(screenY - rootTopRef.current - dragPointerOffsetRef.current);
+    updateDragAnims(screenY);
+  }, [updateDragAnims]);
 
   const cancelDrag = useCallback(() => {
     catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
@@ -1642,6 +1655,7 @@ export default function GearScreen() {
       >
       <SectionList
         ref={sectionListRef}
+        scrollEnabled={draggingCat === null}
         sections={sections}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={showPhotoListEmpty && !(filterView === 'location' && locations.length > 0) ? ( // F-19
@@ -1776,7 +1790,7 @@ export default function GearScreen() {
               isOpen={allExpanded || openCatName === s.title}
               onToggle={() => handleCatToggle(s.title)}
               onLongPress={(x, y) => handleCatLongPress(s.title, x, y)}
-              onDragMove={updateDragAnims}
+              onDragMove={handleCatDragMove}
               onDragEnd={commitDrag}
               weightUnit={weightUnit}
             />
@@ -1909,7 +1923,7 @@ export default function GearScreen() {
               isOpen
               onToggle={() => handleCatToggle(lockedSection.title)}
               onLongPress={(x, y) => handleCatLongPress(lockedSection.title, x, y)}
-              onDragMove={updateDragAnims}
+              onDragMove={handleCatDragMove}
               onDragEnd={commitDrag}
               weightUnit={weightUnit}
             />
