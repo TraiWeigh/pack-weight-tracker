@@ -1105,22 +1105,41 @@ export default function GearScreen() {
     if (!openCatName || allExpanded) {
       const restore = openCategoryScrollRef.current;
       if (!restore) return;
-      const t = setTimeout(() => {
+      const t = requestAnimationFrame(() => {
         sectionListRef.current?.getScrollResponder()?.scrollTo({ y: restore.y, animated: false });
-        openCategoryScrollRef.current = null;
-      }, 40);
-      return () => clearTimeout(t);
-    }
-    const idx = sections.findIndex(s => s.title === openCatName);
-    if (idx < 0) return;
-    const t = setTimeout(() => {
-      try {
-        sectionListRef.current?.scrollToLocation({
-          sectionIndex: idx, itemIndex: 0, animated: false, viewOffset: 0,
+        requestAnimationFrame(() => {
+          sectionListRef.current?.getScrollResponder()?.scrollTo({ y: restore.y, animated: false });
         });
-      } catch { /* ignore — section may not be measured yet */ }
-    }, 80);
-    return () => clearTimeout(t);
+        openCategoryScrollRef.current = null;
+      });
+      return () => cancelAnimationFrame(t);
+    }
+    let cancelled = false;
+    const align = () => {
+      const header = catBarRefsRef.current.get(openCatName);
+      const viewport = listContainerRef.current;
+      if (!header || !viewport) return;
+      viewport.measureInWindow((_vx: number, viewportY: number) => {
+        header.measureInWindow((_hx: number, headerY: number) => {
+          if (cancelled) return;
+          const targetY = Math.max(0, scrollYRef.current + headerY - viewportY);
+          sectionListRef.current?.getScrollResponder()?.scrollTo({ y: targetY, animated: false });
+          requestAnimationFrame(() => {
+            header.measureInWindow((_x2: number, settledY: number) => {
+              if (cancelled) return;
+              const residual = settledY - viewportY;
+              if (Math.abs(residual) > 0.5) {
+                sectionListRef.current?.getScrollResponder()?.scrollTo({
+                  y: Math.max(0, targetY + residual), animated: false,
+                });
+              }
+            });
+          });
+        });
+      });
+    };
+    const t = requestAnimationFrame(() => requestAnimationFrame(align));
+    return () => { cancelled = true; cancelAnimationFrame(t); };
   }, [openCatName, allExpanded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExpandAll = useCallback(() => {
@@ -1199,16 +1218,24 @@ export default function GearScreen() {
     if (openCatName || allExpanded) return;
     if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    let remaining = categoryOrder.length;
+    const beginDrag = () => {
+      dragCatRef.current = catName;
+      setDraggingCat(catName);
+      setDragTargetIdx(categoryOrder.indexOf(catName));
+      setDragOverlayY(pageY - rootTopRef.current - (catBarHsRef.current.get(catName) ?? CAT_HEADER_H) / 2);
+    };
     categoryOrder.forEach((cat) => {
       catBarRefsRef.current.get(cat)?.measureInWindow((_x: number, y: number, _w: number, h: number) => {
         catBarYsRef.current.set(cat, y);
         catBarHsRef.current.set(cat, h);
+        remaining -= 1;
+        if (remaining === 0) beginDrag();
       });
     });
-    dragCatRef.current = catName;
-    setDraggingCat(catName);
-    setDragTargetIdx(categoryOrder.indexOf(catName));
-    setDragOverlayY(pageY - rootTopRef.current - (catBarHsRef.current.get(catName) ?? CAT_HEADER_H) / 2);
+    if (categoryOrder.length === 0) return;
+    // Missing native refs must not prevent reorder activation.
+    if (categoryOrder.some(cat => !catBarRefsRef.current.get(cat))) beginDrag();
   }, [allExpanded, categoryOrder, listKind, openCatName]);
 
   // Task 4 (Batch I): animate sibling bars to show drop target while dragging
@@ -2299,14 +2326,7 @@ export default function GearScreen() {
         return (
           <View
             style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, zIndex: 998 }}
-            onStartShouldSetResponder={() => true}
-            onMoveShouldSetResponder={() => true}
-            onResponderMove={(e) => {
-              setDragOverlayY(e.nativeEvent.pageY - rootTopRef.current - (catBarHsRef.current.get(draggingCat) ?? CAT_HEADER_H) / 2);
-              updateDragAnims(e.nativeEvent.pageY); // Task 4: animate siblings to show drop slot
-            }}
-            onResponderRelease={(e) => commitDrag(e.nativeEvent.pageY)}
-            onResponderTerminate={cancelDrag}
+            pointerEvents="none"
           >
             <View
               style={[

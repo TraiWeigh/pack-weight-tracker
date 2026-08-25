@@ -53,7 +53,7 @@ export function CategorySwipeRow({
   });
 
   const closeAnim = () => {
-    Animated.spring(tx, { toValue: 0, useNativeDriver: true, tension: 230, friction: 24 }).start();
+    Animated.timing(tx, { toValue: 0, duration: 180, useNativeDriver: true }).start();
     isOpenRef.current = false;
     _closeCatSwipe = null;
   };
@@ -78,15 +78,14 @@ export function CategorySwipeRow({
       onPanResponderGrant: () => {
         isSwiping.current = true;
         tx.stopAnimation();
-        tx.setOffset(isOpenRef.current ? -REVEAL_W : 0);
-        tx.setValue(0);
+        tx.setOffset(0);
+        tx.setValue(isOpenRef.current ? -REVEAL_W : 0);
       },
       onPanResponderMove: (_, g) => {
         const base = isOpenRef.current ? -REVEAL_W : 0;
         tx.setValue(Math.max(-REVEAL_W, Math.min(0, base + g.dx)));
       },
       onPanResponderRelease: (_, g) => {
-        tx.flattenOffset();
         isSwiping.current = false;
         if (!isOpenRef.current && g.dx < -ACTION_W) { // Item 5: commit threshold = full button width (88px), not 50px
           // Close any previously open category swipe
@@ -94,19 +93,18 @@ export function CategorySwipeRow({
           _closeCatSwipe = closeRef.current;
           isOpenRef.current = true;
           if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          Animated.spring(tx, { toValue: -REVEAL_W, useNativeDriver: true, tension: 230, friction: 24 }).start();
+          Animated.timing(tx, { toValue: -REVEAL_W, duration: 180, useNativeDriver: true }).start();
         } else if (isOpenRef.current && g.dx > 50) {
           closeRef.current();
         } else if (isOpenRef.current) {
-          Animated.spring(tx, { toValue: -REVEAL_W, useNativeDriver: true, tension: 230, friction: 24 }).start();
+          Animated.timing(tx, { toValue: -REVEAL_W, duration: 180, useNativeDriver: true }).start();
         } else {
-          Animated.spring(tx, { toValue: 0, useNativeDriver: true, tension: 230, friction: 24 }).start();
+          Animated.timing(tx, { toValue: 0, duration: 180, useNativeDriver: true }).start();
         }
       },
       onPanResponderTerminate: () => {
-        tx.flattenOffset();
         isSwiping.current = false;
-        Animated.spring(tx, { toValue: isOpenRef.current ? -REVEAL_W : 0, useNativeDriver: true, tension: 230, friction: 24 }).start();
+        Animated.timing(tx, { toValue: isOpenRef.current ? -REVEAL_W : 0, duration: 180, useNativeDriver: true }).start();
       },
     })
   ).current;
@@ -175,7 +173,7 @@ export function CategorySwipeRow({
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: {},   // F-11: overflow:hidden removed — it clipped elevation/box-shadow on sticky headers
+  container: { position: 'relative' },
   actions: {
     ...StyleSheet.absoluteFillObject,
     flexDirection: 'row',
