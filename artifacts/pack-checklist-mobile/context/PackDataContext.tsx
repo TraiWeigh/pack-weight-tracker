@@ -325,35 +325,37 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
         let locker: NativeLockerEntry[] = [];
         try { locker = rawLocker ? JSON.parse(rawLocker) : []; } catch { locker = []; }
         const finalItemCount = Object.values(data).reduce((count, items) => count + items.length, 0);
-        const shouldSaveTestPack = !rawLockerSeed && rawListKind !== 'photo' && finalItemCount > 0;
+        const testPackName = 'My Pack';
+        const existingTestPack = locker.find(entry => {
+          const entryItemCount = Object.values(entry.store?.data || {})
+            .reduce((count, items) => count + items.length, 0);
+          return entry.id === TEST_PACK_LOCKER_ID ||
+            (entry.name === testPackName && entry.store?.listKind !== 'photo' && entryItemCount > 0);
+        });
         let seededLockerId: string | null = null;
-        if (shouldSaveTestPack) {
-          const testPackName = rawName || 'My Pack';
-          const existing = locker.find(entry =>
-            entry.id === TEST_PACK_LOCKER_ID ||
-            (entry.name === testPackName && entry.store?.listKind !== 'photo')
-          );
-          if (existing) {
-            seededLockerId = existing.id;
-          } else {
-            const entry: NativeLockerEntry = {
-              id: TEST_PACK_LOCKER_ID,
-              name: testPackName,
-              savedAt: Date.now(),
-              store: {
-                data,
-                categoryOrder: order,
-                listName: testPackName,
-                listKind: 'standard',
-                locations: [],
-                photoListCaptureDataUrl: null,
-                weightUnit: rawWeightUnit === 'metric' ? 'metric' : 'imperial',
-              },
-            };
-            locker = [...locker, entry];
-            seededLockerId = entry.id;
-            await AsyncStorage.setItem(LOCKER_KEY, JSON.stringify(locker));
-          }
+        if (existingTestPack) {
+          seededLockerId = existingTestPack.id;
+        } else {
+          const canonicalOrder = CATEGORY_ORDER.slice();
+          const entry: NativeLockerEntry = {
+            id: TEST_PACK_LOCKER_ID,
+            name: testPackName,
+            savedAt: Date.now(),
+            store: {
+              data: seedInitialData(canonicalOrder),
+              categoryOrder: canonicalOrder,
+              listName: testPackName,
+              listKind: 'standard',
+              locations: [],
+              photoListCaptureDataUrl: null,
+              weightUnit: rawWeightUnit === 'metric' ? 'metric' : 'imperial',
+            },
+          };
+          locker = [...locker, entry];
+          seededLockerId = entry.id;
+          await AsyncStorage.setItem(LOCKER_KEY, JSON.stringify(locker));
+        }
+        if (!rawLockerSeed) {
           await AsyncStorage.setItem(TEST_PACK_LOCKER_SEED_KEY, '1');
         }
 
@@ -361,7 +363,7 @@ export function PackDataProvider({ children }: { children: React.ReactNode }) {
         setLockerEntries([...locker].sort((a, b) => b.savedAt - a.savedAt));
         if (rawName)     setListName_state(rawName);
         if (rawActiveId) setActiveLockerEntryId(rawActiveId);
-        else if (seededLockerId) {
+        else if (seededLockerId && rawListKind !== 'photo' && finalItemCount > 0) {
           setActiveLockerEntryId(seededLockerId);
           await AsyncStorage.setItem(ACTIVE_ID_KEY, seededLockerId);
         }
