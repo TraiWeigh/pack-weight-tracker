@@ -6,9 +6,8 @@ description: Full findings for haptics, camera, safe-area, keyboard, photo quali
 ## Item 57 — Haptic: item check/uncheck
 
 - v3: NO haptic on item check/uncheck (hapticDock() not called there)
-- Native (index.tsx line 476): ImpactFeedbackStyle.Light on every toggle
-- Status: DOES NOT MATCH — code-verifiable; native adds haptic v3 never had
-- Fix: remove line 476; product decision whether this enhancement is desired
+- Native: the current ItemRow checkbox handler calls only `toggleItem(category, item.id)`; it has no haptic invocation.
+- Status: MATCHES — the native app no longer adds a check/uncheck haptic.
 
 ## Item 58 — Haptic: drag-reorder
 
@@ -46,4 +45,4 @@ description: Full findings for haptics, camera, safe-area, keyboard, photo quali
 - Gap: ItemDetailPanel (weight TextInput line 212, name TextInput line 200) — NO KeyboardAvoidingView; panel is absolute overlay
 - Status: NEEDS PHYSICAL IPHONE CONFIRMATION — concern is iPhone SE (667pt) where panel+keyboard may collide
 
-**Why:** the earlier device audit became stale after the picker and compression parity repairs. Item-check haptic remains the only code-verifiable behavior mismatch in this range; Items 58, 60, and 62 still need physical-device confirmation.
+**Why:** the earlier device audit became stale after the picker, compression, and checkbox-haptic repairs. Items 58, 60, and 62 still need physical-device confirmation.
