@@ -66,6 +66,7 @@ import { ItemPhotoSheet } from '@/components/ItemPhotoSheet';
 import { ConfirmSheet } from '@/components/ConfirmSheet';
 import { InfoPage, InfoScreen } from '@/components/InfoScreen';
 import { PhotoListNameSheet } from '@/components/PhotoListNameSheet';
+import { HomeScreen } from '@/components/HomeScreen';
 
 // ─── v3 design constants ──────────────────────────────────────────────────────
 
@@ -284,11 +285,6 @@ function SectionHeader({
   onLongPress?: (pageY: number) => void;
   weightUnit: 'imperial' | 'metric';
 }) {
-  const theme       = getCategoryTheme(title, catIndex);
-  const weightLabel = checkedWeightOz > 0
-    ? formatDisplayWeight(checkedWeightOz, weightUnit)
-    : null;
-
   return (
     <TouchableOpacity
       onPress={onToggle}
@@ -298,28 +294,37 @@ function SectionHeader({
       activeOpacity={0.78} style={styles.sectionCardTouchable}
       testID={`cat-header-${title}`}
     >
-      <View style={styles.sectionCard}>
-        <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
-          <Ionicons name={theme.icon as any} size={26} color="rgba(255,255,255,0.93)" />
-          <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
-            <Polygon points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
-            <Polygon points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
-          </Svg>
-        </View>
-        <View style={styles.sectionContent}>
-          <Text style={styles.sectionName} numberOfLines={1}>{title}</Text>
-          <Text style={styles.sectionSub}>
-            {totalCount} item{totalCount !== 1 ? 's' : ''}
-            {checkedCount > 0 ? `  ·  ${checkedCount} selected` : ''}
-          </Text>
-        </View>
-        <View style={styles.sectionRight}>
-          {weightLabel && (
-            <Text style={styles.sectionWeight}>{weightLabel}</Text>
-          )}
-        </View>
-      </View>
+      <CategoryCardContent
+        title={title} catIndex={catIndex} checkedCount={checkedCount}
+        totalCount={totalCount} checkedWeightOz={checkedWeightOz} weightUnit={weightUnit}
+      />
     </TouchableOpacity>
+  );
+}
+
+function CategoryCardContent({ title, catIndex, checkedCount, totalCount, checkedWeightOz, weightUnit }: {
+  title: string; catIndex: number; checkedCount: number; totalCount: number;
+  checkedWeightOz: number; weightUnit: 'imperial' | 'metric';
+}) {
+  const theme = getCategoryTheme(title, catIndex);
+  const weightLabel = checkedWeightOz > 0 ? formatDisplayWeight(checkedWeightOz, weightUnit) : null;
+  return (
+    <View style={styles.sectionCard}>
+      <View style={[styles.sectionTile, { backgroundColor: theme.bg }]}>
+        <Ionicons name={theme.icon as any} size={26} color="rgba(255,255,255,0.93)" />
+        <Svg width={WEDGE_POINT} height={CAT_HEADER_H} style={styles.wedgeSvg}>
+          <Polygon points={`0,0 ${WEDGE_POINT},0 ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
+          <Polygon points={`0,${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H} ${WEDGE_POINT},${CAT_HEADER_H / 2}`} fill="#FFFFFF" />
+        </Svg>
+      </View>
+      <View style={styles.sectionContent}>
+        <Text style={styles.sectionName} numberOfLines={1}>{title}</Text>
+        <Text style={styles.sectionSub}>
+          {totalCount} item{totalCount !== 1 ? 's' : ''}{checkedCount > 0 ? `  ·  ${checkedCount} selected` : ''}
+        </Text>
+      </View>
+      <View style={styles.sectionRight}>{weightLabel && <Text style={styles.sectionWeight}>{weightLabel}</Text>}</View>
+    </View>
   );
 }
 
@@ -780,6 +785,7 @@ export default function GearScreen() {
 
   // ── New overlay/deck state ──────────────────────────────────────────────────
   const [showDrawer,   setShowDrawer]   = useState(false);
+  const [showHome,     setShowHome]     = useState(true);
   const [showPreview,  setShowPreview]  = useState(false);
   const [showMore,     setShowMore]     = useState(false);
   const [moreInitialCard, setMoreInitialCard] = useState<'actions' | 'settings' | 'help' | 'account'>('actions');
@@ -833,14 +839,16 @@ export default function GearScreen() {
   // N-02: category drag-reorder state + refs
   const [draggingCat,  setDraggingCat]  = useState<string | null>(null);
   const [dragOverlayY, setDragOverlayY] = useState(0);
+  const [dragTargetIdx, setDragTargetIdx] = useState<number | null>(null);
   const dragCatRef               = useRef<string | null>(null);
   const reorderJustHappenedRef   = useRef(false);
   const catBarYsRef              = useRef<Map<string, number>>(new Map());
   const catBarHsRef              = useRef<Map<string, number>>(new Map());
+  const catBarRefsRef            = useRef<Map<string, any>>(new Map());
   const scrollYRef               = useRef(0);
   const openCategoryScrollRef    = useRef<{ catName: string; y: number } | null>(null);
   const listContainerRef         = useRef<View>(null);
-  const listTopRef               = useRef(0);
+  const rootTopRef               = useRef(0);
   const catDragAnimsRef          = useRef<Map<string, Animated.Value>>(new Map());
 
   // D-63/64: location photo sheet
@@ -991,6 +999,7 @@ export default function GearScreen() {
   // ── Category handlers ─────────────────────────────────────────────────────
 
   const handleCatToggle = useCallback((catName: string) => {
+    if (dragCatRef.current || reorderJustHappenedRef.current) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setAllExpanded(false);
     setExpandedItemKey(null);   // close item detail panel when switching categories
@@ -1062,13 +1071,12 @@ export default function GearScreen() {
 
   // N-02: compute target drop index from absolute screen Y
   const computeTargetIdx = useCallback((absY: number): number => {
-    const contentY = absY - listTopRef.current + scrollYRef.current;
     const order    = categoryOrder;
     let best = order.length - 1;
     for (let i = 0; i < order.length; i++) {
       const barTop = catBarYsRef.current.get(order[i]) ?? 0;
       const barH   = catBarHsRef.current.get(order[i]) ?? 62;
-      if (contentY < barTop + barH / 2) { best = i; break; }
+      if (absY < barTop + barH / 2) { best = i; break; }
     }
     return best;
   }, [categoryOrder]);
@@ -1092,21 +1100,32 @@ export default function GearScreen() {
     catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
     dragCatRef.current = null;
     setDraggingCat(null);
+    setDragTargetIdx(null);
   }, [categoryOrder, computeTargetIdx, reorderCategories]);
+
+  const cancelDrag = useCallback(() => {
+    catDragAnimsRef.current.forEach((anim) => { anim.setValue(0); });
+    dragCatRef.current = null;
+    setDraggingCat(null);
+    setDragTargetIdx(null);
+  }, []);
 
   // N-02: long-press activates drag (no Alert menu); pageY positions the floating overlay
   const handleCatLongPress = useCallback((catName: string, pageY: number) => {
     if (reorderJustHappenedRef.current) return;
     if (listKind === 'photo' && catName === PHOTO_ITEMS_CATEGORY) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // record list top in screen coordinates
-    listContainerRef.current?.measure((_x, _y, _w, _h, _px, py) => {
-      listTopRef.current = py;
+    categoryOrder.forEach((cat) => {
+      catBarRefsRef.current.get(cat)?.measureInWindow((_x: number, y: number, _w: number, h: number) => {
+        catBarYsRef.current.set(cat, y);
+        catBarHsRef.current.set(cat, h);
+      });
     });
     dragCatRef.current = catName;
     setDraggingCat(catName);
-    setDragOverlayY(pageY - (catBarHsRef.current.get(catName) ?? 62) / 2);
-  }, [listKind]);
+    setDragTargetIdx(categoryOrder.indexOf(catName));
+    setDragOverlayY(pageY - rootTopRef.current - (catBarHsRef.current.get(catName) ?? CAT_HEADER_H) / 2);
+  }, [categoryOrder, listKind]);
 
   // Task 4 (Batch I): animate sibling bars to show drop target while dragging
   const updateDragAnims = useCallback((screenY: number) => {
@@ -1114,6 +1133,7 @@ export default function GearScreen() {
     if (!dragging) return;
     const fromIdx = categoryOrder.indexOf(dragging);
     const toIdx   = computeTargetIdx(screenY);
+    setDragTargetIdx(toIdx);
     const barH    = catBarHsRef.current.get(dragging) ?? CAT_HEADER_H;
     categoryOrder.forEach((cat, i) => {
       if (cat === dragging) return;
@@ -1175,6 +1195,7 @@ export default function GearScreen() {
   }, [canUndo, canRedo]);
 
   const handleBoxAction = useCallback((action: string) => {
+    if (action !== 'next' && action !== 'back') setShowHome(false);
     switch (action) {
       case 'next':
         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1427,7 +1448,10 @@ export default function GearScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: PAGE_BG }]}>
+    <View
+      ref={(node) => node?.measureInWindow((_x, y) => { rootTopRef.current = y; })}
+      style={[styles.container, { backgroundColor: PAGE_BG }]}
+    >
       {/* ── Fixed top ──────────────────────────────────────────────────── */}
       <AppBar onMenuPress={() => setShowDrawer(true)} handedness={handedness} />
       <ListSummaryHero
@@ -1587,10 +1611,18 @@ export default function GearScreen() {
           const full = allSections.find(a => a.title === s.title) || s;
           // Suppress swipe on Photo List structural category
           const suppressSwipe = listKind === 'photo' && s.title === PHOTO_ITEMS_CATEGORY;
-          // N-02: record this bar's content-space Y + height so computeTargetIdx can find the drop slot
           const catHeaderLayout = (e: any) => {
-            catBarYsRef.current.set(s.title, e.nativeEvent.layout.y);
             catBarHsRef.current.set(s.title, e.nativeEvent.layout.height);
+            requestAnimationFrame(() => {
+              catBarRefsRef.current.get(s.title)?.measureInWindow((_x: number, y: number, _w: number, h: number) => {
+                catBarYsRef.current.set(s.title, y);
+                catBarHsRef.current.set(s.title, h);
+              });
+            });
+          };
+          const dragStyle = {
+            opacity: draggingCat === s.title ? 0 : dragTargetIdx === categoryOrder.indexOf(s.title) ? 0.55 : 1,
+            transform: [{ translateY: getDragAnim(s.title) }],
           };
           const header = (
             <SectionHeader
@@ -1607,12 +1639,12 @@ export default function GearScreen() {
           );
           // Task 4 (Batch I): wrap in Animated.View so sibling bars shift during drag
           if (suppressSwipe) return (
-            <Animated.View onLayout={catHeaderLayout} style={{ transform: [{ translateY: getDragAnim(s.title) }] }}>
+            <Animated.View ref={(node) => { catBarRefsRef.current.set(s.title, node); }} onLayout={catHeaderLayout} style={dragStyle}>
               {header}
             </Animated.View>
           );
           return (
-            <Animated.View onLayout={catHeaderLayout} style={{ transform: [{ translateY: getDragAnim(s.title) }] }}>
+            <Animated.View ref={(node) => { catBarRefsRef.current.set(s.title, node); }} onLayout={catHeaderLayout} style={dragStyle}>
               <CategorySwipeRow
                 catName={s.title}
                 itemCount={(data[s.title] || []).length}
@@ -1841,6 +1873,17 @@ export default function GearScreen() {
       )}
       </View>
 
+      <HomeScreen
+        visible={showHome}
+        bottomInset={NAV_H + bottomPad}
+        onAction={(action) => {
+          if (action === 'start') { setShowHome(false); setShowAdd(true); }
+          if (action === 'lists') { setShowHome(false); refreshLockerEntries(); setShowLocker(true); }
+          if (action === 'settings') { setShowHome(false); setMoreInitialCard('settings'); setShowMore(true); }
+          if (action === 'master') Alert.alert('Master List', 'Master List browsing is not yet available in a3.');
+        }}
+      />
+
       {/* ── Fixed bottom ──────────────────────────────────────────────── */}
       <BottomBox
         groupIdx={groupIdx} onAction={handleBoxAction}
@@ -1991,6 +2034,7 @@ export default function GearScreen() {
           setShowChecklist(false);
           setShowPreview(false);
           setExpandedItemKey(null); // Item 13 gap: also clear any expanded item detail panel
+          setShowHome(true);
         }}
         onOpenHelp={() => {
           setShowDrawer(false);
@@ -2113,15 +2157,14 @@ export default function GearScreen() {
             onStartShouldSetResponder={() => true}
             onMoveShouldSetResponder={() => true}
             onResponderMove={(e) => {
-              setDragOverlayY(e.nativeEvent.pageY - (catBarHsRef.current.get(draggingCat) ?? CAT_HEADER_H) / 2);
+              setDragOverlayY(e.nativeEvent.pageY - rootTopRef.current - (catBarHsRef.current.get(draggingCat) ?? CAT_HEADER_H) / 2);
               updateDragAnims(e.nativeEvent.pageY); // Task 4: animate siblings to show drop slot
             }}
             onResponderRelease={(e) => commitDrag(e.nativeEvent.pageY)}
-            onResponderTerminate={(e) => commitDrag(e.nativeEvent.pageY)}
+            onResponderTerminate={cancelDrag}
           >
             <View
               style={[
-                styles.sectionCard,
                 {
                   position: 'absolute', left: 0, right: 0,
                   top: dragOverlayY,
@@ -2134,14 +2177,12 @@ export default function GearScreen() {
               ]}
               pointerEvents="none"
             >
-              <SectionHeader
+              <CategoryCardContent
                 title={draggingCat}
                 catIndex={catIdx}
                 checkedCount={catItems.filter(i => i.checked).length}
                 totalCount={catItems.length}
                 checkedWeightOz={catItems.filter(i => i.checked).reduce((s, i) => s + calcTotalOz(i.weightOz, i.qty), 0)}
-                isOpen={false}
-                onToggle={() => {}}
                 weightUnit={weightUnit}
               />
             </View>
